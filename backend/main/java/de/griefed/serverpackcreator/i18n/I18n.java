@@ -117,11 +117,8 @@ public class I18n {
    * @author Griefed
    */
   public I18n(ApplicationProperties injectedApplicationProperties, String locale) {
-    if (injectedApplicationProperties == null) {
-      this.APPLICATIONPROPERTIES = new ApplicationProperties();
-    } else {
-      this.APPLICATIONPROPERTIES = injectedApplicationProperties;
-    }
+    this.APPLICATIONPROPERTIES = injectedApplicationProperties;
+
     try {
 
       initialize(locale);
@@ -285,23 +282,20 @@ public class I18n {
       }
     }
 
-    if (doesLanguageExist && !locale.equals("en_us")) {
+    try {
 
-      try {
+      jarResources =
+          ResourceBundle.getBundle(
+              String.format("de/griefed/resources/lang/lang_%s", locale),
+              new Locale(
+                  CURRENT_LANGUAGE.get(MAP_PATH_LANGUAGE).toLowerCase(),
+                  CURRENT_LANGUAGE.get(MAP_PATH_COUNTRY).toUpperCase()),
+              new UTF8Control());
 
-        jarResources =
-            ResourceBundle.getBundle(
-                String.format("de/griefed/resources/lang/lang_%s", locale),
-                new Locale(
-                    CURRENT_LANGUAGE.get(MAP_PATH_LANGUAGE).toLowerCase(),
-                    CURRENT_LANGUAGE.get(MAP_PATH_COUNTRY).toUpperCase()),
-                new UTF8Control());
+    } catch (Exception ex) {
 
-      } catch (Exception ex) {
-
-        LOG.error("Locale resource for " + locale + " not found in JAR-file.", ex);
-        jarResources = FALLBACKRESOURCES;
-      }
+      LOG.error("Locale resource for " + locale + " not found in JAR-file.", ex);
+      jarResources = FALLBACKRESOURCES;
     }
 
     if (APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION().equals("dev")) {
