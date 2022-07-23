@@ -18,14 +18,9 @@
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
 /**
- * Miscellaneous things that don't really fit into any other package, don't warrant their own
- * package creation, but still need a place in ServerPackCreator somewhere.<br>
- * <br>
- *
- * <p>The best example for one such class would be the {@link
- * de.griefed.serverpackcreator.utilities.misc.Generated} annotation, which is used to exclude
- * classes and/or methods from JaCoCo test coverage.
+ * Common utilities used by various parts, projects, things, cheeseburgers. Mostly composed of
+ * smaller methods which are meant to do one and one thing only. Ya know, utilities.
  *
  * @author Griefed
  */
-package de.griefed.serverpackcreator.utilities.misc;
+package de.griefed.serverpackcreator.utilities.common;

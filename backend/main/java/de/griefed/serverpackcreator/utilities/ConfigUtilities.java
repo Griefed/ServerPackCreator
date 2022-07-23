@@ -19,14 +19,11 @@
  */
 package de.griefed.serverpackcreator.utilities;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.ConfigurationModel;
-import de.griefed.serverpackcreator.i18n.I18n;
 import de.griefed.serverpackcreator.utilities.common.Utilities;
-import de.griefed.serverpackcreator.versionmeta.VersionMeta;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -59,50 +56,19 @@ public class ConfigUtilities {
   // anyway?
   private static final Logger LOG = LogManager.getLogger(ConfigUtilities.class);
 
-  private final I18n I18N;
   private final Utilities UTILITIES;
   private final ApplicationProperties APPLICATIONPROPERTIES;
-  private final VersionMeta VERSIONMETA;
+  private final ObjectMapper OBJECT_MAPPER;
 
   @Autowired
   public ConfigUtilities(
-      I18n injectedI18n,
       Utilities injectedUtilities,
       ApplicationProperties injectedApplicationProperties,
-      VersionMeta injectedVersionMeta)
-      throws IOException {
+      ObjectMapper objectMapper) {
 
-    if (injectedApplicationProperties == null) {
-      this.APPLICATIONPROPERTIES = new ApplicationProperties();
-    } else {
-      this.APPLICATIONPROPERTIES = injectedApplicationProperties;
-    }
-
-    if (injectedI18n == null) {
-      this.I18N = new I18n(APPLICATIONPROPERTIES);
-    } else {
-      this.I18N = injectedI18n;
-    }
-
-    if (injectedUtilities == null) {
-      this.UTILITIES = new Utilities(I18N, APPLICATIONPROPERTIES);
-    } else {
-      this.UTILITIES = injectedUtilities;
-    }
-
-    if (injectedVersionMeta == null) {
-      this.VERSIONMETA =
-          new VersionMeta(
-              APPLICATIONPROPERTIES.MINECRAFT_VERSION_MANIFEST_LOCATION(),
-              APPLICATIONPROPERTIES.FORGE_VERSION_MANIFEST_LOCATION(),
-              APPLICATIONPROPERTIES.FABRIC_VERSION_MANIFEST_LOCATION(),
-              APPLICATIONPROPERTIES.FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION(),
-              APPLICATIONPROPERTIES.FABRIC_INTERMEDIARIES_MANIFEST_LOCATION(),
-              APPLICATIONPROPERTIES.QUILT_VERSION_MANIFEST_LOCATION(),
-              APPLICATIONPROPERTIES.QUILT_INSTALLER_VERSION_MANIFEST_LOCATION());
-    } else {
-      this.VERSIONMETA = injectedVersionMeta;
-    }
+    this.APPLICATIONPROPERTIES = injectedApplicationProperties;
+    this.UTILITIES = injectedUtilities;
+    this.OBJECT_MAPPER = objectMapper;
   }
 
   /**
@@ -666,21 +632,8 @@ public class ConfigUtilities {
    * @author Griefed
    */
   private JsonNode getJson(File jsonFile) throws IOException {
-    return getObjectMapper()
-        .readTree(Files.readAllBytes(Paths.get(jsonFile.getAbsolutePath().replace("\\", "/"))));
-  }
-
-  /**
-   * Getter for the object-mapper used for working with JSON-data.
-   *
-   * @return ObjectMapper. Returns the object-mapper used for working with JSON-data.
-   * @author Griefed
-   */
-  private ObjectMapper getObjectMapper() {
-    ObjectMapper objectMapper = new ObjectMapper();
-    objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-    objectMapper.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
-    return objectMapper;
+    return OBJECT_MAPPER.readTree(
+        Files.readAllBytes(Paths.get(jsonFile.getAbsolutePath().replace("\\", "/"))));
   }
 
   /**
@@ -773,7 +726,8 @@ public class ConfigUtilities {
    * Acquire a list of directories in the base-directory of a ZIP-file.
    *
    * @param zipFile {@link java.nio.file.Path} The ZIP-archive to get the list of files from.
-   * @return {@link List} {@link String} A list of all directories in the base-directory of the ZIP-file.
+   * @return {@link List} {@link String} A list of all directories in the base-directory of the
+   *     ZIP-file.
    * @throws IllegalArgumentException if the pre-conditions for the uri parameter are not met, or
    *     the env parameter does not contain properties required by the provider, or a property value
    *     is invalid.
@@ -885,7 +839,7 @@ public class ConfigUtilities {
    */
   public List<String> getAllFilesAndDirectoriesInModpackZip(ZipFile zipFile)
       throws IllegalArgumentException, FileSystemAlreadyExistsException, ProviderNotFoundException,
-      IOException, SecurityException {
+          IOException, SecurityException {
 
     List<String> filesAndDirectories = new ArrayList<>(100);
 
@@ -896,12 +850,12 @@ public class ConfigUtilities {
               try {
                 filesAndDirectories.addAll(getDirectoriesInModpackZip(zipFile));
               } catch (IOException ex) {
-                LOG.error("Could not acquire file or directory from ZIP-archive.",ex);
+                LOG.error("Could not acquire file or directory from ZIP-archive.", ex);
               }
               try {
                 filesAndDirectories.addAll(getFilesInModpackZip(zipFile));
               } catch (IOException ex) {
-                LOG.error("Could not acquire file or directory from ZIP-archive.",ex);
+                LOG.error("Could not acquire file or directory from ZIP-archive.", ex);
               }
             });
 

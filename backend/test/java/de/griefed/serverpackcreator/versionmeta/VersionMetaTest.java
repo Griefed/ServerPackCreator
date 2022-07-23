@@ -1,26 +1,13 @@
 package de.griefed.serverpackcreator.versionmeta;
 
-import de.griefed.serverpackcreator.ApplicationProperties;
+import static de.griefed.serverpackcreator.Dependencies.VERSIONMETA;
+
 import java.io.IOException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class VersionMetaTest {
-
-  private final VersionMeta VERSIONMETA;
-
-  public VersionMetaTest() throws IOException {
-    ApplicationProperties APPLICATIONPROPERTIES = new ApplicationProperties();
-    this.VERSIONMETA =
-        new VersionMeta(
-            APPLICATIONPROPERTIES.MINECRAFT_VERSION_MANIFEST_LOCATION(),
-            APPLICATIONPROPERTIES.FORGE_VERSION_MANIFEST_LOCATION(),
-            APPLICATIONPROPERTIES.FABRIC_VERSION_MANIFEST_LOCATION(),
-            APPLICATIONPROPERTIES.FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION(),
-            APPLICATIONPROPERTIES.FABRIC_INTERMEDIARIES_MANIFEST_LOCATION(),
-            APPLICATIONPROPERTIES.QUILT_VERSION_MANIFEST_LOCATION(),
-            APPLICATIONPROPERTIES.QUILT_INSTALLER_VERSION_MANIFEST_LOCATION());
-  }
+  public VersionMetaTest() {}
 
   @Test
   void meta() throws IOException {

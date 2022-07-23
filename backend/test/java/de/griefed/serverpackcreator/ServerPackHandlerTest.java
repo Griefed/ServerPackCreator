@@ -1,12 +1,10 @@
 package de.griefed.serverpackcreator;
 
+import static de.griefed.serverpackcreator.Dependencies.CONFIGURATIONHANDLER;
+import static de.griefed.serverpackcreator.Dependencies.SERVERPACKHANDLER;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
-import de.griefed.serverpackcreator.i18n.I18n;
 import de.griefed.serverpackcreator.spring.serverpack.ServerPackModel;
-import de.griefed.serverpackcreator.utilities.ConfigUtilities;
-import de.griefed.serverpackcreator.utilities.common.Utilities;
-import de.griefed.serverpackcreator.versionmeta.VersionMeta;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -21,11 +19,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class ServerPackHandlerTest {
-
-  private final ServerPackHandler SERVERPACKHANDLER;
-  private final ConfigurationHandler CONFIGURATIONHANDLER;
-
-  ServerPackHandlerTest() throws IOException {
+  ServerPackHandlerTest() {
     try {
       FileUtils.copyFile(
           new File("backend/main/resources/serverpackcreator.properties"),
@@ -33,29 +27,6 @@ class ServerPackHandlerTest {
     } catch (IOException e) {
       e.printStackTrace();
     }
-
-    ApplicationProperties APPLICATIONPROPERTIES = new ApplicationProperties();
-    I18n I18N = new I18n(APPLICATIONPROPERTIES);
-    ServerPackCreator SERVER_PACK_CREATOR = new ServerPackCreator(new String[] {"--setup"});
-    SERVER_PACK_CREATOR.run(ServerPackCreator.CommandlineParser.Mode.SETUP);
-    VersionMeta VERSIONMETA =
-        new VersionMeta(
-            APPLICATIONPROPERTIES.MINECRAFT_VERSION_MANIFEST_LOCATION(),
-            APPLICATIONPROPERTIES.FORGE_VERSION_MANIFEST_LOCATION(),
-            APPLICATIONPROPERTIES.FABRIC_VERSION_MANIFEST_LOCATION(),
-            APPLICATIONPROPERTIES.FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION(),
-            APPLICATIONPROPERTIES.FABRIC_INTERMEDIARIES_MANIFEST_LOCATION(),
-            APPLICATIONPROPERTIES.QUILT_VERSION_MANIFEST_LOCATION(),
-            APPLICATIONPROPERTIES.QUILT_INSTALLER_VERSION_MANIFEST_LOCATION());
-    Utilities UTILITIES = new Utilities(I18N, APPLICATIONPROPERTIES);
-    ConfigUtilities CONFIGUTILITIES =
-        new ConfigUtilities(I18N, UTILITIES, APPLICATIONPROPERTIES, VERSIONMETA);
-    this.CONFIGURATIONHANDLER =
-        new ConfigurationHandler(
-            I18N, VERSIONMETA, APPLICATIONPROPERTIES, UTILITIES, CONFIGUTILITIES);
-    ApplicationPlugins PLUGINMANAGER = new ApplicationPlugins();
-    this.SERVERPACKHANDLER =
-        new ServerPackHandler(I18N, APPLICATIONPROPERTIES, VERSIONMETA, UTILITIES, PLUGINMANAGER);
   }
 
   @Test

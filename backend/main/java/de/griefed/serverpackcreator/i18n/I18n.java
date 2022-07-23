@@ -80,7 +80,7 @@ public class I18n {
   private final List<String> SUPPORTED_LANGUAGES =
       new ArrayList<>(Arrays.asList("en_us", "uk_ua", "de_de"));
 
-  private ResourceBundle filesystemResources;
+  private ResourceBundle filesystemResources = null;
   private ResourceBundle jarResources = null;
 
   /**
@@ -95,15 +95,12 @@ public class I18n {
    */
   @Autowired
   public I18n(ApplicationProperties injectedApplicationProperties) {
-    if (injectedApplicationProperties == null) {
-      this.APPLICATIONPROPERTIES = new ApplicationProperties();
-    } else {
-      this.APPLICATIONPROPERTIES = injectedApplicationProperties;
-    }
+    this.APPLICATIONPROPERTIES = injectedApplicationProperties;
 
     try {
       initialize(APPLICATIONPROPERTIES);
     } catch (IncorrectLanguageException ex) {
+      LOG.error("Incorrect language specified.", ex);
       initialize();
     }
   }
@@ -303,7 +300,7 @@ public class I18n {
       } catch (Exception ex) {
 
         LOG.error("Locale resource for " + locale + " not found in JAR-file.", ex);
-        jarResources = null;
+        jarResources = FALLBACKRESOURCES;
       }
     }
 

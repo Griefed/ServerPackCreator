@@ -19,11 +19,11 @@
  */
 package de.griefed.serverpackcreator.swing;
 
+import de.griefed.serverpackcreator.ApplicationPlugins;
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.ConfigurationHandler;
 import de.griefed.serverpackcreator.ServerPackHandler;
 import de.griefed.serverpackcreator.i18n.I18n;
-import de.griefed.serverpackcreator.ApplicationPlugins;
 import de.griefed.serverpackcreator.swing.themes.DarkTheme;
 import de.griefed.serverpackcreator.swing.themes.LightTheme;
 import de.griefed.serverpackcreator.swing.utilities.BackgroundPanel;
@@ -142,79 +142,7 @@ public class ServerPackCreatorGui {
 
     this.SERVERPACKCREATORSPLASH = injectedServerPackCreatorSplash;
     this.SERVERPACKCREATORSPLASH.update(90);
-
-    if (injectedApplicationProperties == null) {
-      this.APPLICATIONPROPERTIES = new ApplicationProperties();
-    } else {
-      this.APPLICATIONPROPERTIES = injectedApplicationProperties;
-    }
-    I18n I18N;
-    if (injectedI18n == null) {
-      I18N = new I18n(APPLICATIONPROPERTIES);
-    } else {
-      I18N = injectedI18n;
-    }
-
-    VersionMeta VERSIONMETA;
-    if (injectedVersionMeta == null) {
-      VERSIONMETA =
-          new VersionMeta(
-              APPLICATIONPROPERTIES.MINECRAFT_VERSION_MANIFEST_LOCATION(),
-              APPLICATIONPROPERTIES.FORGE_VERSION_MANIFEST_LOCATION(),
-              APPLICATIONPROPERTIES.FABRIC_VERSION_MANIFEST_LOCATION(),
-              APPLICATIONPROPERTIES.FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION(),
-              APPLICATIONPROPERTIES.FABRIC_INTERMEDIARIES_MANIFEST_LOCATION(),
-              APPLICATIONPROPERTIES.QUILT_VERSION_MANIFEST_LOCATION(),
-              APPLICATIONPROPERTIES.QUILT_INSTALLER_VERSION_MANIFEST_LOCATION());
-    } else {
-      VERSIONMETA = injectedVersionMeta;
-    }
-
-    Utilities UTILITIES;
-    if (injectedUtilities == null) {
-      UTILITIES = new Utilities(I18N, APPLICATIONPROPERTIES);
-    } else {
-      UTILITIES = injectedUtilities;
-    }
-
-    ConfigUtilities CONFIGUTILITIES;
-    if (injectedConfigUtilities == null) {
-      CONFIGUTILITIES = new ConfigUtilities(I18N, UTILITIES, APPLICATIONPROPERTIES, VERSIONMETA);
-    } else {
-      CONFIGUTILITIES = injectedConfigUtilities;
-    }
-
-    ConfigurationHandler CONFIGURATIONHANDLER;
-    if (injectedConfigurationHandler == null) {
-      CONFIGURATIONHANDLER =
-          new ConfigurationHandler(
-              I18N, VERSIONMETA, APPLICATIONPROPERTIES, UTILITIES, CONFIGUTILITIES);
-    } else {
-      CONFIGURATIONHANDLER = injectedConfigurationHandler;
-    }
-
-    ApplicationPlugins APPLICATIONPLUGINS;
-    if (injectedPluginManager == null) {
-      APPLICATIONPLUGINS = new ApplicationPlugins();
-    } else {
-      APPLICATIONPLUGINS = injectedPluginManager;
-    }
-
-    ServerPackHandler CREATESERVERPACK;
-    if (injectedServerPackHandler == null) {
-      CREATESERVERPACK =
-          new ServerPackHandler(
-              I18N, APPLICATIONPROPERTIES, VERSIONMETA, UTILITIES, APPLICATIONPLUGINS);
-    } else {
-      CREATESERVERPACK = injectedServerPackHandler;
-    }
-
-    UpdateChecker UPDATECHECKER;
-    if (injectedUpdateChecker == null) {
-      UPDATECHECKER = new UpdateChecker();
-    } else {
-      UPDATECHECKER = injectedUpdateChecker;
-    }
+    this.APPLICATIONPROPERTIES = injectedApplicationProperties;
 
     try {
       bufferedImage =
@@ -229,50 +157,50 @@ public class ServerPackCreatorGui {
 
     this.FRAME_SERVERPACKCREATOR =
         new JFrame(
-            I18N.getMessage("createserverpack.gui.createandshowgui")
+            injectedI18n.getMessage("createserverpack.gui.createandshowgui")
                 + " - "
                 + APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION());
 
     this.TAB_CREATESERVERPACK =
         new TabCreateServerPack(
-            I18N,
-            CONFIGURATIONHANDLER,
-            CREATESERVERPACK,
-            VERSIONMETA,
+            injectedI18n,
+            injectedConfigurationHandler,
+            injectedServerPackHandler,
+            injectedVersionMeta,
             APPLICATIONPROPERTIES,
             FRAME_SERVERPACKCREATOR,
-            UTILITIES,
-            APPLICATIONPLUGINS,
-            CONFIGUTILITIES,
+            injectedUtilities,
+            injectedConfigUtilities,
             DARKTHEME,
             LIGHTTHEME);
 
     TabServerPackCreatorLog TAB_LOG_SERVERPACKCREATOR =
         new TabServerPackCreatorLog(
-            I18N.getMessage("createserverpack.gui.tabbedpane.serverpackcreatorlog.tooltip"));
+            injectedI18n.getMessage(
+                "createserverpack.gui.tabbedpane.serverpackcreatorlog.tooltip"));
 
     TabAddonsHandlerLog TAB_LOG_ADDONSHANDLER =
         new TabAddonsHandlerLog(
-            I18N.getMessage("createserverpack.gui.tabbedpane.addonshandlerlog.tip"));
+            injectedI18n.getMessage("createserverpack.gui.tabbedpane.addonshandlerlog.tip"));
 
     this.BACKGROUNDPANEL = new BackgroundPanel(bufferedImage, BackgroundPanel.TILED, 0.0f, 0.0f);
 
     this.TABBEDPANE = new JTabbedPane(JTabbedPane.TOP);
 
     TABBEDPANE.addTab(
-        I18N.getMessage("createserverpack.gui.tabbedpane.createserverpack.title"),
+        injectedI18n.getMessage("createserverpack.gui.tabbedpane.createserverpack.title"),
         null,
         TAB_CREATESERVERPACK,
-        I18N.getMessage("createserverpack.gui.tabbedpane.createserverpack.tip"));
+        injectedI18n.getMessage("createserverpack.gui.tabbedpane.createserverpack.tip"));
 
     TABBEDPANE.addTab(
-        I18N.getMessage("createserverpack.gui.tabbedpane.serverpackcreatorlog.title"),
+        injectedI18n.getMessage("createserverpack.gui.tabbedpane.serverpackcreatorlog.title"),
         null,
         TAB_LOG_SERVERPACKCREATOR,
-        I18N.getMessage("createserverpack.gui.tabbedpane.serverpackcreatorlog.tip"));
+        injectedI18n.getMessage("createserverpack.gui.tabbedpane.serverpackcreatorlog.tip"));
 
     TABBEDPANE.addTab(
-        I18N.getMessage("createserverpack.gui.tabbedpane.addonshandlerlog.title"),
+        injectedI18n.getMessage("createserverpack.gui.tabbedpane.addonshandlerlog.title"),
         null,
         TAB_LOG_ADDONSHANDLER);
 
@@ -280,8 +208,8 @@ public class ServerPackCreatorGui {
     TABBEDPANE.setMnemonicAt(1, KeyEvent.VK_2);
     TABBEDPANE.setMnemonicAt(2, KeyEvent.VK_3);
 
-    if (!APPLICATIONPLUGINS.pluginsTabExtension().isEmpty()) {
-      APPLICATIONPLUGINS
+    if (!injectedPluginManager.pluginsTabExtension().isEmpty()) {
+      injectedPluginManager
           .pluginsTabExtension()
           .forEach(
               plugin ->
@@ -298,7 +226,7 @@ public class ServerPackCreatorGui {
 
     MENUBAR =
         new MainMenuBar(
-            I18N,
+            injectedI18n,
             LIGHTTHEME,
             DARKTHEME,
             FRAME_SERVERPACKCREATOR,
@@ -307,8 +235,8 @@ public class ServerPackCreatorGui {
             TAB_CREATESERVERPACK,
             TABBEDPANE,
             APPLICATIONPROPERTIES,
-            UPDATECHECKER,
-            UTILITIES);
+            injectedUpdateChecker,
+            injectedUtilities);
 
     FRAME_SERVERPACKCREATOR.setJMenuBar(MENUBAR.createMenuBar());
   }

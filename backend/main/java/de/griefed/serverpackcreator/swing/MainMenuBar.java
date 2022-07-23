@@ -171,31 +171,10 @@ public class MainMenuBar extends Component {
       UpdateChecker injectedUpdateChecker,
       de.griefed.serverpackcreator.utilities.common.Utilities injectedUtilities) {
 
-    if (injectedApplicationProperties == null) {
-      this.APPLICATIONPROPERTIES = new ApplicationProperties();
-    } else {
-      this.APPLICATIONPROPERTIES = injectedApplicationProperties;
-    }
-
-    if (injectedI18n == null) {
-      this.I18N = new I18n(APPLICATIONPROPERTIES);
-    } else {
-      this.I18N = injectedI18n;
-    }
-
-    if (injectedUpdateChecker == null) {
-      this.UPDATECHECKER = new UpdateChecker();
-    } else {
-      this.UPDATECHECKER = injectedUpdateChecker;
-    }
-
-    if (injectedUtilities == null) {
-      this.UTILITIES =
-          new de.griefed.serverpackcreator.utilities.common.Utilities(I18N, APPLICATIONPROPERTIES);
-    } else {
-      this.UTILITIES = injectedUtilities;
-    }
-
+    this.APPLICATIONPROPERTIES = injectedApplicationProperties;
+    this.I18N = injectedI18n;
+    this.UPDATECHECKER = injectedUpdateChecker;
+    this.UTILITIES = injectedUtilities;
     this.LIGHTTHEME = injectedLightTheme;
     this.DARKTHEME = injectedDarkTheme;
     this.FRAME_SERVERPACKCREATOR = injectedJFrame;

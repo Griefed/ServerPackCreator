@@ -18,9 +18,8 @@
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
 /**
- * The VersionMeta gives you access to various information about various modloaders, their versions,
- * installers, compatibility and so on.
+ * Anything and everything related to the Fabric-modloader.
  *
  * @author Griefed
  */
-package de.griefed.serverpackcreator.versionmeta;
+package de.griefed.serverpackcreator.versionmeta.fabric;

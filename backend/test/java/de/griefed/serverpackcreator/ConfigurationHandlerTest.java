@@ -1,9 +1,8 @@
 package de.griefed.serverpackcreator;
 
-import de.griefed.serverpackcreator.i18n.I18n;
-import de.griefed.serverpackcreator.utilities.ConfigUtilities;
-import de.griefed.serverpackcreator.utilities.common.Utilities;
-import de.griefed.serverpackcreator.versionmeta.VersionMeta;
+import static de.griefed.serverpackcreator.Dependencies.CONFIGURATIONHANDLER;
+import static de.griefed.serverpackcreator.Dependencies.VERSIONMETA;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -16,9 +15,6 @@ import org.junit.jupiter.api.Test;
 
 class ConfigurationHandlerTest {
 
-  private final ConfigurationHandler CONFIGURATIONHANDLER;
-  private final VersionMeta VERSIONMETA;
-
   ConfigurationHandlerTest() throws IOException {
     try {
       FileUtils.copyFile(
@@ -27,26 +23,6 @@ class ConfigurationHandlerTest {
     } catch (IOException e) {
       e.printStackTrace();
     }
-
-    ApplicationProperties APPLICATIONPROPERTIES = new ApplicationProperties();
-    I18n I18N = new I18n(APPLICATIONPROPERTIES);
-    ServerPackCreator SERVER_PACK_CREATOR = new ServerPackCreator(new String[] {"--setup"});
-    SERVER_PACK_CREATOR.run(ServerPackCreator.CommandlineParser.Mode.SETUP);
-    this.VERSIONMETA =
-        new VersionMeta(
-            APPLICATIONPROPERTIES.MINECRAFT_VERSION_MANIFEST_LOCATION(),
-            APPLICATIONPROPERTIES.FORGE_VERSION_MANIFEST_LOCATION(),
-            APPLICATIONPROPERTIES.FABRIC_VERSION_MANIFEST_LOCATION(),
-            APPLICATIONPROPERTIES.FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION(),
-            APPLICATIONPROPERTIES.FABRIC_INTERMEDIARIES_MANIFEST_LOCATION(),
-            APPLICATIONPROPERTIES.QUILT_VERSION_MANIFEST_LOCATION(),
-            APPLICATIONPROPERTIES.QUILT_INSTALLER_VERSION_MANIFEST_LOCATION());
-    Utilities UTILITIES = new Utilities(I18N, APPLICATIONPROPERTIES);
-    ConfigUtilities CONFIGUTILITIES =
-        new ConfigUtilities(I18N, UTILITIES, APPLICATIONPROPERTIES, VERSIONMETA);
-    this.CONFIGURATIONHANDLER =
-        new ConfigurationHandler(
-            I18N, VERSIONMETA, APPLICATIONPROPERTIES, UTILITIES, CONFIGUTILITIES);
   }
 
   @Test
@@ -414,10 +390,14 @@ class ConfigurationHandlerTest {
 
   @Test
   void checkZipArchiveTest() {
-    Assertions.assertFalse(CONFIGURATIONHANDLER.checkZipArchive(Paths.get("backend/test/resources/testresources/Survive_Create_Prosper_4_valid.zip"),
-        new ArrayList<>()));
+    Assertions.assertFalse(
+        CONFIGURATIONHANDLER.checkZipArchive(
+            Paths.get("backend/test/resources/testresources/Survive_Create_Prosper_4_valid.zip"),
+            new ArrayList<>()));
 
-    Assertions.assertTrue(CONFIGURATIONHANDLER.checkZipArchive(Paths.get("backend/test/resources/testresources/Survive_Create_Prosper_4_invalid.zip"),
-        new ArrayList<>()));
+    Assertions.assertTrue(
+        CONFIGURATIONHANDLER.checkZipArchive(
+            Paths.get("backend/test/resources/testresources/Survive_Create_Prosper_4_invalid.zip"),
+            new ArrayList<>()));
   }
 }

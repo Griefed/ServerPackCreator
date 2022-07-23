@@ -1,8 +1,8 @@
 package de.griefed.serverpackcreator;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
+import static de.griefed.serverpackcreator.Dependencies.OBJECT_MAPPER;
+
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -374,14 +374,7 @@ public class ConfigurationModelTest {
   }
 
   private JsonNode getJson(File jsonFile) throws IOException {
-    return getObjectMapper()
-        .readTree(Files.readAllBytes(Paths.get(jsonFile.getAbsolutePath().replace("\\", "/"))));
-  }
-
-  private ObjectMapper getObjectMapper() {
-    ObjectMapper objectMapper = new ObjectMapper();
-    objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-    objectMapper.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
-    return objectMapper;
+    return OBJECT_MAPPER.readTree(
+        Files.readAllBytes(Paths.get(jsonFile.getAbsolutePath().replace("\\", "/"))));
   }
 }

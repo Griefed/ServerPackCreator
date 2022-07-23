@@ -1,17 +1,10 @@
 package de.griefed.serverpackcreator.utilities;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import de.griefed.serverpackcreator.ApplicationProperties;
+import static de.griefed.serverpackcreator.Dependencies.CONFIGUTILITIES;
+
 import de.griefed.serverpackcreator.ConfigurationModel;
-import de.griefed.serverpackcreator.i18n.I18n;
-import de.griefed.serverpackcreator.utilities.common.Utilities;
-import de.griefed.serverpackcreator.versionmeta.VersionMeta;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -20,25 +13,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class ConfigUtilitiesTest {
-
-  private final ConfigUtilities CONFIGUTILITIES;
-
-  ConfigUtilitiesTest() throws IOException {
-    I18n I18N = new I18n();
-    ApplicationProperties APPLICATIONPROPERTIES = new ApplicationProperties();
-    VersionMeta VERSIONMETA =
-        new VersionMeta(
-            APPLICATIONPROPERTIES.MINECRAFT_VERSION_MANIFEST_LOCATION(),
-            APPLICATIONPROPERTIES.FORGE_VERSION_MANIFEST_LOCATION(),
-            APPLICATIONPROPERTIES.FABRIC_VERSION_MANIFEST_LOCATION(),
-            APPLICATIONPROPERTIES.FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION(),
-            APPLICATIONPROPERTIES.FABRIC_INTERMEDIARIES_MANIFEST_LOCATION(),
-            APPLICATIONPROPERTIES.QUILT_VERSION_MANIFEST_LOCATION(),
-            APPLICATIONPROPERTIES.QUILT_INSTALLER_VERSION_MANIFEST_LOCATION());
-    this.CONFIGUTILITIES =
-        new ConfigUtilities(
-            I18N, new Utilities(I18N, APPLICATIONPROPERTIES), APPLICATIONPROPERTIES, VERSIONMETA);
-  }
 
   @SuppressWarnings("ResultOfMethodCallIgnored")
   @Test
@@ -491,37 +465,49 @@ public class ConfigUtilitiesTest {
 
   @Test
   void filesAndDirsInZipTest() throws IOException {
-    Assertions.assertTrue(CONFIGUTILITIES.getFilesInModpackZip(
-        new ZipFile(
-            "backend/test/resources/testresources/Survive_Create_Prosper_4_invalid.zip")).size() > 0);
-    Assertions.assertTrue(CONFIGUTILITIES.getFilesInModpackZip(
-        new ZipFile(
-            "backend/test/resources/testresources/Survive_Create_Prosper_4_valid.zip")).size() > 0);
+    Assertions.assertTrue(
+        CONFIGUTILITIES
+                .getFilesInModpackZip(
+                    new ZipFile(
+                        "backend/test/resources/testresources/Survive_Create_Prosper_4_invalid.zip"))
+                .size()
+            > 0);
+    Assertions.assertTrue(
+        CONFIGUTILITIES
+                .getFilesInModpackZip(
+                    new ZipFile(
+                        "backend/test/resources/testresources/Survive_Create_Prosper_4_valid.zip"))
+                .size()
+            > 0);
 
-    Assertions.assertTrue(CONFIGUTILITIES.getDirectoriesInModpackZip(
-        new ZipFile(
-            "backend/test/resources/testresources/Survive_Create_Prosper_4_invalid.zip")).size() > 0);
-    Assertions.assertTrue(CONFIGUTILITIES.getDirectoriesInModpackZip(
-        new ZipFile(
-            "backend/test/resources/testresources/Survive_Create_Prosper_4_valid.zip")).size() > 0);
+    Assertions.assertTrue(
+        CONFIGUTILITIES
+                .getDirectoriesInModpackZip(
+                    new ZipFile(
+                        "backend/test/resources/testresources/Survive_Create_Prosper_4_invalid.zip"))
+                .size()
+            > 0);
+    Assertions.assertTrue(
+        CONFIGUTILITIES
+                .getDirectoriesInModpackZip(
+                    new ZipFile(
+                        "backend/test/resources/testresources/Survive_Create_Prosper_4_valid.zip"))
+                .size()
+            > 0);
 
-    Assertions.assertTrue(CONFIGUTILITIES.getAllFilesAndDirectoriesInModpackZip(
-        new ZipFile(
-            "backend/test/resources/testresources/Survive_Create_Prosper_4_invalid.zip")).size() > 0);
-    Assertions.assertTrue(CONFIGUTILITIES.getAllFilesAndDirectoriesInModpackZip(
-        new ZipFile(
-            "backend/test/resources/testresources/Survive_Create_Prosper_4_valid.zip")).size() > 0);
-  }
-
-  private ObjectMapper getObjectMapper() {
-    ObjectMapper objectMapper = new ObjectMapper();
-    objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-    objectMapper.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
-    return objectMapper;
-  }
-
-  private JsonNode getJson(File jsonFile) throws IOException {
-    return getObjectMapper()
-        .readTree(Files.readAllBytes(Paths.get(jsonFile.getAbsolutePath().replace("\\", "/"))));
+    Assertions.assertTrue(
+        CONFIGUTILITIES
+                .getAllFilesAndDirectoriesInModpackZip(
+                    new ZipFile(
+                        "backend/test/resources/testresources/Survive_Create_Prosper_4_invalid.zip"))
+                .size()
+            > 0);
+    Assertions.assertTrue(
+        CONFIGUTILITIES
+                .getAllFilesAndDirectoriesInModpackZip(
+                    new ZipFile(
+                        "backend/test/resources/testresources/Survive_Create_Prosper_4_valid.zip"))
+                .size()
+            > 0);
   }
 }

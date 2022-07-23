@@ -26,7 +26,6 @@ import de.griefed.serverpackcreator.ConfigurationHandler;
 import de.griefed.serverpackcreator.ConfigurationModel;
 import de.griefed.serverpackcreator.ServerPackHandler;
 import de.griefed.serverpackcreator.i18n.I18n;
-import de.griefed.serverpackcreator.ApplicationPlugins;
 import de.griefed.serverpackcreator.swing.themes.DarkTheme;
 import de.griefed.serverpackcreator.swing.themes.LightTheme;
 import de.griefed.serverpackcreator.swing.utilities.CompoundIcon;
@@ -284,7 +283,6 @@ public class TabCreateServerPack extends JPanel {
    *     different things.
    * @param injectedServerPackCreatorFrame Our parent frame which contains all of ServerPackCreator.
    * @param injectedUtilities Instance of {@link Utilities}.
-   * @param injectedPluginManager Instance of {@link ApplicationPlugins}.
    * @param injectedConfigUtilities Instance of {@link ConfigUtilities}.
    * @param injectedDarkTheme Instance of {@link DarkTheme}.
    * @param injectedLightTheme Instance of {@link LightTheme}.
@@ -299,7 +297,6 @@ public class TabCreateServerPack extends JPanel {
       ApplicationProperties injectedApplicationProperties,
       JFrame injectedServerPackCreatorFrame,
       Utilities injectedUtilities,
-      ApplicationPlugins injectedPluginManager,
       ConfigUtilities injectedConfigUtilities,
       DarkTheme injectedDarkTheme,
       LightTheme injectedLightTheme)
@@ -307,69 +304,13 @@ public class TabCreateServerPack extends JPanel {
 
     this.DARKTHEME = injectedDarkTheme;
     this.LIGHTTHEME = injectedLightTheme;
-
-    if (injectedApplicationProperties == null) {
-      this.APPLICATIONPROPERTIES = new ApplicationProperties();
-    } else {
-      this.APPLICATIONPROPERTIES = injectedApplicationProperties;
-    }
-
-    if (injectedI18n == null) {
-      this.I18N = new I18n(APPLICATIONPROPERTIES);
-    } else {
-      this.I18N = injectedI18n;
-    }
-
-    if (injectedVersionMeta == null) {
-      this.VERSIONMETA =
-          new VersionMeta(
-              APPLICATIONPROPERTIES.MINECRAFT_VERSION_MANIFEST_LOCATION(),
-              APPLICATIONPROPERTIES.FORGE_VERSION_MANIFEST_LOCATION(),
-              APPLICATIONPROPERTIES.FABRIC_VERSION_MANIFEST_LOCATION(),
-              APPLICATIONPROPERTIES.FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION(),
-              APPLICATIONPROPERTIES.FABRIC_INTERMEDIARIES_MANIFEST_LOCATION(),
-              APPLICATIONPROPERTIES.QUILT_VERSION_MANIFEST_LOCATION(),
-              APPLICATIONPROPERTIES.QUILT_INSTALLER_VERSION_MANIFEST_LOCATION());
-    } else {
-      this.VERSIONMETA = injectedVersionMeta;
-    }
-
-    if (injectedUtilities == null) {
-      this.UTILITIES = new Utilities(I18N, APPLICATIONPROPERTIES);
-    } else {
-      this.UTILITIES = injectedUtilities;
-    }
-
-    ApplicationPlugins APPLICATIONPLUGINS;
-    if (injectedPluginManager == null) {
-      APPLICATIONPLUGINS = new ApplicationPlugins();
-    } else {
-      APPLICATIONPLUGINS = injectedPluginManager;
-    }
-
-    if (injectedConfigUtilities == null) {
-      this.CONFIGUTILITIES =
-          new ConfigUtilities(I18N, UTILITIES, APPLICATIONPROPERTIES, VERSIONMETA);
-    } else {
-      this.CONFIGUTILITIES = injectedConfigUtilities;
-    }
-
-    if (injectedConfigurationHandler == null) {
-      this.CONFIGURATIONHANDLER =
-          new ConfigurationHandler(
-              I18N, VERSIONMETA, APPLICATIONPROPERTIES, UTILITIES, CONFIGUTILITIES);
-    } else {
-      this.CONFIGURATIONHANDLER = injectedConfigurationHandler;
-    }
-
-    if (injectedServerPackHandler == null) {
-      this.SERVERPACKHANDLER =
-          new ServerPackHandler(
-              I18N, APPLICATIONPROPERTIES, VERSIONMETA, UTILITIES, APPLICATIONPLUGINS);
-    } else {
-      this.SERVERPACKHANDLER = injectedServerPackHandler;
-    }
-
+    this.APPLICATIONPROPERTIES = injectedApplicationProperties;
+    this.I18N = injectedI18n;
+    this.VERSIONMETA = injectedVersionMeta;
+    this.UTILITIES = injectedUtilities;
+    this.CONFIGUTILITIES = injectedConfigUtilities;
+    this.CONFIGURATIONHANDLER = injectedConfigurationHandler;
+    this.SERVERPACKHANDLER = injectedServerPackHandler;
     this.FRAME_SERVERPACKCREATOR = injectedServerPackCreatorFrame;
 
     SERVERPACKGENERATEDTEXTPANE.setOpaque(false);

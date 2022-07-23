@@ -18,8 +18,8 @@
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
 /**
- * Anything and everything related to the Fabric-modloader.
+ * Anything and everything related to the Forge-modloader.
  *
  * @author Griefed
  */
-package de.griefed.serverpackcreator.versionmeta.fabric;
+package de.griefed.serverpackcreator.versionmeta.forge;

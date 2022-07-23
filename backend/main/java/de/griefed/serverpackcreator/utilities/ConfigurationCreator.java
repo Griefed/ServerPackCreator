@@ -26,7 +26,6 @@ import de.griefed.serverpackcreator.utilities.common.Utilities;
 import de.griefed.serverpackcreator.utilities.misc.Generated;
 import de.griefed.serverpackcreator.versionmeta.VersionMeta;
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -58,55 +57,14 @@ public class ConfigurationCreator {
       ApplicationProperties injectedApplicationProperties,
       Utilities injectedUtilities,
       VersionMeta injectedVersionMeta,
-      ConfigUtilities injectedConfigUtilities)
-      throws IOException {
+      ConfigUtilities injectedConfigUtilities) {
 
-    if (injectedApplicationProperties == null) {
-      this.APPLICATIONPROPERTIES = new ApplicationProperties();
-    } else {
-      this.APPLICATIONPROPERTIES = injectedApplicationProperties;
-    }
-
-    if (injectedI18n == null) {
-      this.I18N = new I18n(APPLICATIONPROPERTIES);
-    } else {
-      this.I18N = injectedI18n;
-    }
-
-    if (injectedVersionMeta == null) {
-      this.VERSIONMETA =
-          new VersionMeta(
-              APPLICATIONPROPERTIES.MINECRAFT_VERSION_MANIFEST_LOCATION(),
-              APPLICATIONPROPERTIES.FORGE_VERSION_MANIFEST_LOCATION(),
-              APPLICATIONPROPERTIES.FABRIC_VERSION_MANIFEST_LOCATION(),
-              APPLICATIONPROPERTIES.FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION(),
-              APPLICATIONPROPERTIES.FABRIC_INTERMEDIARIES_MANIFEST_LOCATION(),
-              APPLICATIONPROPERTIES.QUILT_VERSION_MANIFEST_LOCATION(),
-              APPLICATIONPROPERTIES.QUILT_INSTALLER_VERSION_MANIFEST_LOCATION());
-    } else {
-      this.VERSIONMETA = injectedVersionMeta;
-    }
-
-    if (injectedUtilities == null) {
-      this.UTILITIES = new Utilities(I18N, APPLICATIONPROPERTIES);
-    } else {
-      this.UTILITIES = injectedUtilities;
-    }
-
-    if (injectedConfigUtilities == null) {
-      this.CONFIGUTILITIES =
-          new ConfigUtilities(I18N, UTILITIES, APPLICATIONPROPERTIES, VERSIONMETA);
-    } else {
-      this.CONFIGUTILITIES = injectedConfigUtilities;
-    }
-
-    if (injectedConfigurationHandler == null) {
-      this.CONFIGURATIONHANDLER =
-          new ConfigurationHandler(
-              I18N, VERSIONMETA, APPLICATIONPROPERTIES, UTILITIES, CONFIGUTILITIES);
-    } else {
-      this.CONFIGURATIONHANDLER = injectedConfigurationHandler;
-    }
+    this.APPLICATIONPROPERTIES = injectedApplicationProperties;
+    this.I18N = injectedI18n;
+    this.VERSIONMETA = injectedVersionMeta;
+    this.UTILITIES = injectedUtilities;
+    this.CONFIGUTILITIES = injectedConfigUtilities;
+    this.CONFIGURATIONHANDLER = injectedConfigurationHandler;
   }
 
   /**
