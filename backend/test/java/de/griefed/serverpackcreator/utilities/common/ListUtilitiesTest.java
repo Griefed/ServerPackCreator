@@ -8,10 +8,10 @@ import org.junit.jupiter.api.Test;
 
 public class ListUtilitiesTest {
 
-  private final ListUtilities LISTUTILITIES;
+  ListUtilities listUtilities;
 
   ListUtilitiesTest() {
-    this.LISTUTILITIES = new ListUtilities();
+    listUtilities = new ListUtilities();
   }
 
   @Test
@@ -42,60 +42,60 @@ public class ListUtilitiesTest {
                 "SpawnerFix",
                 "TipTheScales",
                 "WorldNameRandomizer"));
-    System.out.println(LISTUTILITIES.encapsulateListElements(clientMods));
-    Assertions.assertNotNull(LISTUTILITIES.encapsulateListElements(clientMods));
+    System.out.println(listUtilities.encapsulateListElements(clientMods));
+    Assertions.assertNotNull(listUtilities.encapsulateListElements(clientMods));
     Assertions.assertTrue(
-        LISTUTILITIES.encapsulateListElements(clientMods).contains("\"A[mbient]Sounds\""));
+        listUtilities.encapsulateListElements(clientMods).contains("\"A[mbient]Sounds\""));
     Assertions.assertTrue(
-        LISTUTILITIES.encapsulateListElements(clientMods).contains("\"Back[Tools\""));
+        listUtilities.encapsulateListElements(clientMods).contains("\"Back[Tools\""));
     Assertions.assertTrue(
-        LISTUTILITIES.encapsulateListElements(clientMods).contains("\"Bett[er[][]Advancement\""));
+        listUtilities.encapsulateListElements(clientMods).contains("\"Bett[er[][]Advancement\""));
     Assertions.assertTrue(
-        LISTUTILITIES.encapsulateListElements(clientMods).contains("\"Bett   erPing\""));
+        listUtilities.encapsulateListElements(clientMods).contains("\"Bett   erPing\""));
     Assertions.assertTrue(
-        LISTUTILITIES.encapsulateListElements(clientMods).contains("\"cheri[ ]shed\""));
+        listUtilities.encapsulateListElements(clientMods).contains("\"cheri[ ]shed\""));
     Assertions.assertTrue(
-        LISTUTILITIES.encapsulateListElements(clientMods).contains("\"ClientT&/$weaks\""));
+        listUtilities.encapsulateListElements(clientMods).contains("\"ClientT&/$weaks\""));
     Assertions.assertTrue(
-        LISTUTILITIES.encapsulateListElements(clientMods).contains("\"Control§!%(?=)ling\""));
+        listUtilities.encapsulateListElements(clientMods).contains("\"Control§!%(?=)ling\""));
     Assertions.assertTrue(
-        LISTUTILITIES.encapsulateListElements(clientMods).contains("\"Defau/()&=?ltOptions\""));
+        listUtilities.encapsulateListElements(clientMods).contains("\"Defau/()&=?ltOptions\""));
     Assertions.assertTrue(
-        LISTUTILITIES.encapsulateListElements(clientMods).contains("\"durabi!§/&?lity\""));
+        listUtilities.encapsulateListElements(clientMods).contains("\"durabi!§/&?lity\""));
     Assertions.assertTrue(
-        LISTUTILITIES.encapsulateListElements(clientMods).contains("\"DynamicS[]urroundings\""));
+        listUtilities.encapsulateListElements(clientMods).contains("\"DynamicS[]urroundings\""));
     Assertions.assertTrue(
-        LISTUTILITIES.encapsulateListElements(clientMods).contains("\"itemz/oom\""));
+        listUtilities.encapsulateListElements(clientMods).contains("\"itemz/oom\""));
     Assertions.assertTrue(
-        LISTUTILITIES.encapsulateListElements(clientMods).contains("\"jei-/($?professions\""));
+        listUtilities.encapsulateListElements(clientMods).contains("\"jei-/($?professions\""));
     Assertions.assertTrue(
-        LISTUTILITIES.encapsulateListElements(clientMods).contains("\"jeiinteg}][ration\""));
+        listUtilities.encapsulateListElements(clientMods).contains("\"jeiinteg}][ration\""));
     Assertions.assertTrue(
-        LISTUTILITIES.encapsulateListElements(clientMods).contains("\"JustEnoughResources\""));
+        listUtilities.encapsulateListElements(clientMods).contains("\"JustEnoughResources\""));
     Assertions.assertTrue(
-        LISTUTILITIES.encapsulateListElements(clientMods).contains("\"MouseTweaks\""));
-    Assertions.assertTrue(LISTUTILITIES.encapsulateListElements(clientMods).contains("\"Neat\""));
+        listUtilities.encapsulateListElements(clientMods).contains("\"MouseTweaks\""));
+    Assertions.assertTrue(listUtilities.encapsulateListElements(clientMods).contains("\"Neat\""));
     Assertions.assertTrue(
-        LISTUTILITIES.encapsulateListElements(clientMods).contains("\"OldJavaWarning\""));
+        listUtilities.encapsulateListElements(clientMods).contains("\"OldJavaWarning\""));
     Assertions.assertTrue(
-        LISTUTILITIES.encapsulateListElements(clientMods).contains("\"PackMenu\""));
+        listUtilities.encapsulateListElements(clientMods).contains("\"PackMenu\""));
     Assertions.assertTrue(
-        LISTUTILITIES.encapsulateListElements(clientMods).contains("\"preciseblockplacing\""));
+        listUtilities.encapsulateListElements(clientMods).contains("\"preciseblockplacing\""));
     Assertions.assertTrue(
-        LISTUTILITIES
+        listUtilities
             .encapsulateListElements(clientMods)
             .contains("\"SimpleDiscordRichPresence\""));
     Assertions.assertTrue(
-        LISTUTILITIES.encapsulateListElements(clientMods).contains("\"SpawnerFix\""));
+        listUtilities.encapsulateListElements(clientMods).contains("\"SpawnerFix\""));
     Assertions.assertTrue(
-        LISTUTILITIES.encapsulateListElements(clientMods).contains("\"WorldNameRandomizer\""));
+        listUtilities.encapsulateListElements(clientMods).contains("\"WorldNameRandomizer\""));
   }
 
   @Test
   void cleanListTest() {
     Assertions.assertEquals(
         1,
-        LISTUTILITIES
+        listUtilities
             .cleanList(
                 new ArrayList<>(
                     Arrays.asList(

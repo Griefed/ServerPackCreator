@@ -8,28 +8,28 @@ import org.junit.jupiter.api.Test;
 
 public class JarUtilitiesTest {
 
-  private final JarUtilities JARUTILITIES;
+  JarUtilities jarUtilities;
 
   JarUtilitiesTest() {
-    this.JARUTILITIES = new JarUtilities();
+    jarUtilities = new JarUtilities();
   }
 
   @Test
   void copyFileFromJarTest() {
-    JARUTILITIES.copyFileFromJar(new File("banner.txt"), JarUtilitiesTest.class);
+    jarUtilities.copyFileFromJar(new File("banner.txt"), JarUtilitiesTest.class);
     Assertions.assertTrue(new File("banner.txt").exists());
   }
 
   @Test
   void getApplicationHomeForClassTest() {
-    Assertions.assertNotNull(JARUTILITIES.getApplicationHomeForClass(JarUtilitiesTest.class));
+    Assertions.assertNotNull(jarUtilities.getApplicationHomeForClass(JarUtilitiesTest.class));
   }
 
   @Test
   void systemInformationTest() {
     HashMap<String, String> system =
-        JARUTILITIES.systemInformation(
-            JARUTILITIES.getApplicationHomeForClass(JarUtilitiesTest.class));
+        jarUtilities.systemInformation(
+            jarUtilities.getApplicationHomeForClass(JarUtilitiesTest.class));
     Assertions.assertNotNull(system);
     Assertions.assertNotNull(system.get("jarPath"));
     Assertions.assertTrue(system.get("jarPath").length() > 0);
@@ -49,7 +49,7 @@ public class JarUtilitiesTest {
   void copyFolderFromJarTest() {
     new File("testruns").mkdir();
     try {
-      JARUTILITIES.copyFolderFromJar(
+      jarUtilities.copyFolderFromJar(
           JarUtilitiesTest.class,
           "/de/griefed/resources/lang",
           "testruns/langTest",

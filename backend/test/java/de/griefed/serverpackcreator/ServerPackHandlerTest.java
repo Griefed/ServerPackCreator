@@ -2,7 +2,15 @@ package de.griefed.serverpackcreator;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
+import com.electronwill.nightconfig.toml.TomlParser;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import de.griefed.serverpackcreator.i18n.I18n;
+import de.griefed.serverpackcreator.modscanning.AnnotationScanner;
+import de.griefed.serverpackcreator.modscanning.FabricScanner;
+import de.griefed.serverpackcreator.modscanning.ModScanner;
+import de.griefed.serverpackcreator.modscanning.QuiltScanner;
+import de.griefed.serverpackcreator.modscanning.TomlScanner;
 import de.griefed.serverpackcreator.spring.serverpack.ServerPackModel;
 import de.griefed.serverpackcreator.utilities.ConfigUtilities;
 import de.griefed.serverpackcreator.utilities.common.Utilities;
@@ -21,9 +29,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class ServerPackHandlerTest {
-
-  private final ServerPackHandler SERVERPACKHANDLER;
-  private final ConfigurationHandler CONFIGURATIONHANDLER;
+  private final ConfigurationHandler configurationHandler;
+  private final ServerPackHandler serverPackHandler;
 
   ServerPackHandlerTest() throws IOException {
     try {
@@ -33,39 +40,51 @@ class ServerPackHandlerTest {
     } catch (IOException e) {
       e.printStackTrace();
     }
-
-    ApplicationProperties APPLICATIONPROPERTIES = new ApplicationProperties();
-    I18n I18N = new I18n(APPLICATIONPROPERTIES);
-    ServerPackCreator SERVER_PACK_CREATOR = new ServerPackCreator(new String[] {"--setup"});
-    SERVER_PACK_CREATOR.run(ServerPackCreator.CommandlineParser.Mode.SETUP);
-    VersionMeta VERSIONMETA =
+    ApplicationProperties applicationProperties = new ApplicationProperties();
+    ObjectMapper objectMapper =
+        new ObjectMapper()
+            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+            .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
+    I18n i18N = new I18n();
+    Utilities utilities = new Utilities(i18N, applicationProperties);
+    VersionMeta versionMeta =
         new VersionMeta(
-            APPLICATIONPROPERTIES.MINECRAFT_VERSION_MANIFEST_LOCATION(),
-            APPLICATIONPROPERTIES.FORGE_VERSION_MANIFEST_LOCATION(),
-            APPLICATIONPROPERTIES.FABRIC_VERSION_MANIFEST_LOCATION(),
-            APPLICATIONPROPERTIES.FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION(),
-            APPLICATIONPROPERTIES.FABRIC_INTERMEDIARIES_MANIFEST_LOCATION(),
-            APPLICATIONPROPERTIES.QUILT_VERSION_MANIFEST_LOCATION(),
-            APPLICATIONPROPERTIES.QUILT_INSTALLER_VERSION_MANIFEST_LOCATION());
-    Utilities UTILITIES = new Utilities(I18N, APPLICATIONPROPERTIES);
-    ConfigUtilities CONFIGUTILITIES =
-        new ConfigUtilities(I18N, UTILITIES, APPLICATIONPROPERTIES, VERSIONMETA);
-    this.CONFIGURATIONHANDLER =
+            applicationProperties.MINECRAFT_VERSION_MANIFEST(),
+            applicationProperties.FORGE_VERSION_MANIFEST(),
+            applicationProperties.FABRIC_VERSION_MANIFEST(),
+            applicationProperties.FABRIC_INSTALLER_VERSION_MANIFEST(),
+            applicationProperties.FABRIC_INTERMEDIARIES_MANIFEST_LOCATION(),
+            applicationProperties.QUILT_VERSION_MANIFEST(),
+            applicationProperties.QUILT_INSTALLER_VERSION_MANIFEST(),
+            objectMapper);
+    configurationHandler =
         new ConfigurationHandler(
-            I18N, VERSIONMETA, APPLICATIONPROPERTIES, UTILITIES, CONFIGUTILITIES);
-    ApplicationPlugins PLUGINMANAGER = new ApplicationPlugins();
-    this.SERVERPACKHANDLER =
-        new ServerPackHandler(I18N, APPLICATIONPROPERTIES, VERSIONMETA, UTILITIES, PLUGINMANAGER);
+            i18N,
+            versionMeta,
+            applicationProperties,
+            utilities,
+            new ConfigUtilities(utilities, applicationProperties, objectMapper));
+    serverPackHandler =
+        new ServerPackHandler(
+            applicationProperties,
+            versionMeta,
+            utilities,
+            new ApplicationPlugins(),
+            new ModScanner(
+                new AnnotationScanner(objectMapper),
+                new FabricScanner(objectMapper),
+                new QuiltScanner(objectMapper),
+                new TomlScanner(new TomlParser())));
   }
 
   @Test
   void runTest() {
     ConfigurationModel configurationModel = new ConfigurationModel();
-    CONFIGURATIONHANDLER.checkConfiguration(
+    configurationHandler.checkConfiguration(
         new File("./backend/test/resources/testresources/serverpackcreator.conf"),
         configurationModel,
         true);
-    Assertions.assertTrue(SERVERPACKHANDLER.run(configurationModel));
+    Assertions.assertTrue(serverPackHandler.run(configurationModel));
     Assertions.assertTrue(new File("server-packs/forge_tests/libraries").isDirectory());
     Assertions.assertTrue(new File("server-packs/forge_tests/config").isDirectory());
     Assertions.assertTrue(new File("server-packs/forge_tests/defaultconfigs").isDirectory());
@@ -144,17 +163,17 @@ class ServerPackHandlerTest {
       throw new RuntimeException(e);
     }
 
-    CONFIGURATIONHANDLER.checkConfiguration(
+    configurationHandler.checkConfiguration(
         new File("./backend/test/resources/testresources/serverpackcreator_quilt.conf"),
         configurationModel,
         true);
-    Assertions.assertTrue(SERVERPACKHANDLER.run(configurationModel));
+    Assertions.assertTrue(serverPackHandler.run(configurationModel));
 
-    CONFIGURATIONHANDLER.checkConfiguration(
+    configurationHandler.checkConfiguration(
         new File("./backend/test/resources/testresources/serverpackcreator_fabric.conf"),
         configurationModel,
         true);
-    Assertions.assertTrue(SERVERPACKHANDLER.run(configurationModel));
+    Assertions.assertTrue(serverPackHandler.run(configurationModel));
   }
 
   @Test
@@ -206,8 +225,8 @@ class ServerPackHandlerTest {
     serverPackModel.setModLoaderVersion("0.14.6");
     serverPackModel.setMinecraftVersion("1.18.2");
     serverPackModel.setJavaArgs("");
-    CONFIGURATIONHANDLER.checkConfiguration(serverPackModel, false);
-    Assertions.assertNotNull(SERVERPACKHANDLER.run(serverPackModel));
+    configurationHandler.checkConfiguration(serverPackModel, false);
+    Assertions.assertNotNull(serverPackHandler.run(serverPackModel));
     Assertions.assertTrue(new File("server-packs/fabric_tests_copy_server_pack.zip").isFile());
 
     try {
@@ -228,8 +247,8 @@ class ServerPackHandlerTest {
     serverPackModel.setModLoaderVersion("0.16.1");
     serverPackModel.setMinecraftVersion("1.18.2");
     serverPackModel.setJavaArgs("");
-    CONFIGURATIONHANDLER.checkConfiguration(serverPackModel, false);
-    Assertions.assertNotNull(SERVERPACKHANDLER.run(serverPackModel));
+    configurationHandler.checkConfiguration(serverPackModel, false);
+    Assertions.assertNotNull(serverPackHandler.run(serverPackModel));
     Assertions.assertTrue(new File("server-packs/quilt_tests_copy_server_pack.zip").isFile());
 
     serverPackModel = new ServerPackModel();
@@ -251,8 +270,8 @@ class ServerPackHandlerTest {
     serverPackModel.setModLoaderVersion("14.23.5.2855");
     serverPackModel.setMinecraftVersion("1.12.2");
     serverPackModel.setJavaArgs("");
-    CONFIGURATIONHANDLER.checkConfiguration(serverPackModel, false);
-    Assertions.assertNotNull(SERVERPACKHANDLER.run(serverPackModel));
+    configurationHandler.checkConfiguration(serverPackModel, false);
+    Assertions.assertNotNull(serverPackHandler.run(serverPackModel));
     Assertions.assertTrue(new File("server-packs/forge_tests_copy_server_pack.zip").isFile());
   }
 
@@ -264,7 +283,7 @@ class ServerPackHandlerTest {
     }
     String minecraftVersion = "1.16.5";
     String modpackDir = "./backend/test/resources/fabric_tests";
-    SERVERPACKHANDLER.zipBuilder(minecraftVersion, true, modpackDir, "Forge", "36.2.25");
+    serverPackHandler.zipBuilder(minecraftVersion, true, modpackDir, "Forge", "36.2.25");
     Assertions.assertTrue(new File(modpackDir + "_server_pack.zip").exists());
     try {
       Files.copy(
@@ -283,7 +302,7 @@ class ServerPackHandlerTest {
     }
     String minecraftVersion = "1.16.5";
     String modpackDir = "./backend/test/resources/forge_tests";
-    SERVERPACKHANDLER.zipBuilder(minecraftVersion, true, modpackDir, "Forge", "36.2.25");
+    serverPackHandler.zipBuilder(minecraftVersion, true, modpackDir, "Forge", "36.2.25");
     Assertions.assertTrue(new File(modpackDir + "_server_pack.zip").exists());
     try {
       Files.copy(
@@ -302,7 +321,7 @@ class ServerPackHandlerTest {
     }
     String minecraftVersion = "1.16.5";
     String modpackDir = "./backend/test/resources/quilt_tests";
-    SERVERPACKHANDLER.zipBuilder(minecraftVersion, true, modpackDir, "Forge", "36.2.25");
+    serverPackHandler.zipBuilder(minecraftVersion, true, modpackDir, "Forge", "36.2.25");
     Assertions.assertTrue(new File(modpackDir + "_server_pack.zip").exists());
     try {
       Files.copy(

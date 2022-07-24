@@ -8,17 +8,17 @@ import org.junit.jupiter.api.Test;
 
 public class FileUtilitiesTest {
 
-  private final FileUtilities FILE_UTILITIES;
+  FileUtilities fileUtilities;
 
   FileUtilitiesTest() {
-    this.FILE_UTILITIES = new FileUtilities();
+    fileUtilities = new FileUtilities();
   }
 
   @Test
   void unzipArchiveTest() {
     String modpackDir = "backend/test/resources/curseforge_tests";
     String zipFile = "backend/test/resources/curseforge_tests/modpack.zip";
-    FILE_UTILITIES.unzipArchive(zipFile, modpackDir);
+    fileUtilities.unzipArchive(zipFile, modpackDir);
     Assertions.assertTrue(
         new File("./backend/test/resources/curseforge_tests/manifest.json").exists());
     Assertions.assertTrue(
@@ -37,7 +37,7 @@ public class FileUtilitiesTest {
     File destination = new File("destination.file");
     source.createNewFile();
     destination.createNewFile();
-    FILE_UTILITIES.replaceFile(source, destination);
+    fileUtilities.replaceFile(source, destination);
     Assertions.assertFalse(source.exists());
     Assertions.assertTrue(destination.exists());
     FileUtils.deleteQuietly(destination);

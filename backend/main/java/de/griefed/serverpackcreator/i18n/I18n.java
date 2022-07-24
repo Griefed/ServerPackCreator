@@ -80,7 +80,7 @@ public class I18n {
   private final List<String> SUPPORTED_LANGUAGES =
       new ArrayList<>(Arrays.asList("en_us", "uk_ua", "de_de"));
 
-  private ResourceBundle filesystemResources;
+  private ResourceBundle filesystemResources = null;
   private ResourceBundle jarResources = null;
 
   /**
@@ -95,15 +95,12 @@ public class I18n {
    */
   @Autowired
   public I18n(ApplicationProperties injectedApplicationProperties) {
-    if (injectedApplicationProperties == null) {
-      this.APPLICATIONPROPERTIES = new ApplicationProperties();
-    } else {
-      this.APPLICATIONPROPERTIES = injectedApplicationProperties;
-    }
+    this.APPLICATIONPROPERTIES = injectedApplicationProperties;
 
     try {
       initialize(APPLICATIONPROPERTIES);
     } catch (IncorrectLanguageException ex) {
+      LOG.error("Incorrect language specified.", ex);
       initialize();
     }
   }
@@ -120,17 +117,15 @@ public class I18n {
    * @author Griefed
    */
   public I18n(ApplicationProperties injectedApplicationProperties, String locale) {
-    if (injectedApplicationProperties == null) {
-      this.APPLICATIONPROPERTIES = new ApplicationProperties();
-    } else {
-      this.APPLICATIONPROPERTIES = injectedApplicationProperties;
-    }
+    this.APPLICATIONPROPERTIES = injectedApplicationProperties;
+
     try {
 
       initialize(locale);
       writeLocaleToFile(locale);
 
     } catch (IncorrectLanguageException ex) {
+      LOG.error("Could not initialize i18n with specified locale.",ex);
       try {
         initialize(APPLICATIONPROPERTIES);
       } catch (IncorrectLanguageException e) {
@@ -217,13 +212,8 @@ public class I18n {
    */
   public void initialize(String locale) throws IncorrectLanguageException {
 
-    boolean doesLanguageExist = false;
 
-    if (SUPPORTED_LANGUAGES.contains(locale)) {
-
-      doesLanguageExist = true;
-
-    } else {
+    if (!SUPPORTED_LANGUAGES.contains(locale)) {
 
       LOG.warn(
           "The specified language is not officially supported. You may provide your own definitions and translations.");
@@ -288,23 +278,20 @@ public class I18n {
       }
     }
 
-    if (doesLanguageExist && !locale.equals("en_us")) {
+    try {
 
-      try {
+      jarResources =
+          ResourceBundle.getBundle(
+              String.format("de/griefed/resources/lang/lang_%s", locale),
+              new Locale(
+                  CURRENT_LANGUAGE.get(MAP_PATH_LANGUAGE).toLowerCase(),
+                  CURRENT_LANGUAGE.get(MAP_PATH_COUNTRY).toUpperCase()),
+              new UTF8Control());
 
-        jarResources =
-            ResourceBundle.getBundle(
-                String.format("de/griefed/resources/lang/lang_%s", locale),
-                new Locale(
-                    CURRENT_LANGUAGE.get(MAP_PATH_LANGUAGE).toLowerCase(),
-                    CURRENT_LANGUAGE.get(MAP_PATH_COUNTRY).toUpperCase()),
-                new UTF8Control());
+    } catch (Exception ex) {
 
-      } catch (Exception ex) {
-
-        LOG.error("Locale resource for " + locale + " not found in JAR-file.", ex);
-        jarResources = null;
-      }
+      LOG.error("Locale resource for " + locale + " not found in JAR-file. Falling back to en_us.", ex);
+      jarResources = FALLBACKRESOURCES;
     }
 
     if (APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION().equals("dev")) {

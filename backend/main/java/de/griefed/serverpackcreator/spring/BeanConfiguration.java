@@ -19,6 +19,9 @@
  */
 package de.griefed.serverpackcreator.spring;
 
+import com.electronwill.nightconfig.toml.TomlParser;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import de.griefed.serverpackcreator.ApplicationProperties;
 import java.io.File;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -133,5 +136,29 @@ public class BeanConfiguration {
   @Bean
   public String[] args() {
     return new String[0];
+  }
+
+  /**
+   * {@link ObjectMapper}-bean for use in various JSON-related things. Disabled <code>
+   * DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES</code>, enabled <code>
+   * DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY</code>.
+   *
+   * @return {@link ObjectMapper}
+   */
+  @Bean
+  public ObjectMapper objectMapper() {
+    return new ObjectMapper()
+        .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+        .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
+  }
+
+  /**
+   * {@link TomlParser} for parsing <code>.toml</code>-files.
+   *
+   * @return {@link TomlParser}
+   */
+  @Bean
+  public TomlParser tomlParser() {
+    return new TomlParser();
   }
 }

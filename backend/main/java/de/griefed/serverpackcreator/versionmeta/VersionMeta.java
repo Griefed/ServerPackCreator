@@ -19,7 +19,6 @@
  */
 package de.griefed.serverpackcreator.versionmeta;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.griefed.serverpackcreator.versionmeta.fabric.FabricMeta;
@@ -56,11 +55,7 @@ public class VersionMeta {
 
   private static final Logger LOG = LogManager.getLogger(VersionMeta.class);
 
-  private final ObjectMapper OBJECT_MAPPER =
-      new ObjectMapper()
-          .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-          .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
-
+  private final ObjectMapper OBJECT_MAPPER;
   private final File MINECRAFT_MANIFEST;
   private final File FORGE_MANIFEST;
   private final File FABRIC_MANIFEST;
@@ -99,6 +94,7 @@ public class VersionMeta {
    * @param fabricInstallerManifest {@link File} Fabric-installer manifest file.
    * @param quiltManifest {@link File} Quilt manifest file.
    * @param quiltInstallerManifest {@link File} Quilt-installer manifest file.
+   * @param injectedObjectMapper {@link ObjectMapper}-instance.
    * @throws IOException if one of the metas could not be initialized.
    * @author Griefed
    */
@@ -110,7 +106,8 @@ public class VersionMeta {
       File fabricInstallerManifest,
       File fabricIntermediariesManifest,
       File quiltManifest,
-      File quiltInstallerManifest)
+      File quiltInstallerManifest,
+      ObjectMapper injectedObjectMapper)
       throws IOException {
 
     this.MINECRAFT_MANIFEST = minecraftManifest;
@@ -120,6 +117,7 @@ public class VersionMeta {
     this.FABRIC_INSTALLER_MANIFEST = fabricInstallerManifest;
     this.QUILT_MANIFEST = quiltManifest;
     this.QUILT_INSTALLER_MANIFEST = quiltInstallerManifest;
+    this.OBJECT_MAPPER = injectedObjectMapper;
 
     checkManifests();
 

@@ -22,12 +22,8 @@ package de.griefed.serverpackcreator;
 import static java.nio.file.StandardCopyOption.COPY_ATTRIBUTES;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
-import com.fasterxml.jackson.core.json.JsonReadFeature;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.moandjiezana.toml.Toml;
 import de.griefed.serverpackcreator.i18n.I18n;
+import de.griefed.serverpackcreator.modscanning.ModScanner;
 import de.griefed.serverpackcreator.spring.serverpack.ServerPackModel;
 import de.griefed.serverpackcreator.utilities.common.Utilities;
 import de.griefed.serverpackcreator.versionmeta.VersionMeta;
@@ -38,7 +34,6 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
@@ -56,8 +51,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
+import java.util.TreeSet;
 import java.util.stream.Stream;
 import javax.imageio.ImageIO;
 import net.lingala.zip4j.ZipFile;
@@ -87,10 +81,12 @@ public class ServerPackHandler {
   private static final Logger LOG_INSTALLER = LogManager.getLogger("InstallerLogger");
 
   private final VersionMeta VERSIONMETA;
+  private final ModScanner MODSCANNER;
   private final ApplicationProperties APPLICATIONPROPERTIES;
   private final Utilities UTILITIES;
   private final ApplicationPlugins APPLICATIONPLUGINS;
   private final StopWatch STOPWATCH_SCANS = new StopWatch();
+  private final String[] MOD_FILE_ENDINGS = new String[] {"jar"};
 
   /**
    * <strong>Constructor</strong>
@@ -102,76 +98,31 @@ public class ServerPackHandler {
    *
    * <p>
    *
-   * @param injectedI18n Instance of {@link I18n} required for localized log messages.
    * @param injectedApplicationProperties Instance of {@link Properties} required for various
    *     different things.
    * @param injectedVersionMeta Instance of {@link VersionMeta} required for everything version
    *     related.
    * @param injectedUtilities Instance of {@link Utilities}.
    * @param injectedApplicationPlugins Instance of {@link ApplicationPlugins}.
+   * @param injectedModScanner Instance of {@link ModScanner} required to determine sideness of
+   *     mods.
    * @throws IOException if the {@link VersionMeta} could not be instantiated.
    * @author Griefed
    */
   @Autowired
   public ServerPackHandler(
-      I18n injectedI18n,
       ApplicationProperties injectedApplicationProperties,
       VersionMeta injectedVersionMeta,
       Utilities injectedUtilities,
-      ApplicationPlugins injectedApplicationPlugins)
+      ApplicationPlugins injectedApplicationPlugins,
+      ModScanner injectedModScanner)
       throws IOException {
 
-    if (injectedApplicationProperties == null) {
-      this.APPLICATIONPROPERTIES = new ApplicationProperties();
-    } else {
-      this.APPLICATIONPROPERTIES = injectedApplicationProperties;
-    }
-
-    I18n i18N;
-    if (injectedI18n == null) {
-      i18N = new I18n(APPLICATIONPROPERTIES);
-    } else {
-      i18N = injectedI18n;
-    }
-
-    if (injectedVersionMeta == null) {
-      this.VERSIONMETA =
-          new VersionMeta(
-              APPLICATIONPROPERTIES.MINECRAFT_VERSION_MANIFEST_LOCATION(),
-              APPLICATIONPROPERTIES.FORGE_VERSION_MANIFEST_LOCATION(),
-              APPLICATIONPROPERTIES.FABRIC_VERSION_MANIFEST_LOCATION(),
-              APPLICATIONPROPERTIES.FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION(),
-              APPLICATIONPROPERTIES.FABRIC_INTERMEDIARIES_MANIFEST_LOCATION(),
-              APPLICATIONPROPERTIES.QUILT_VERSION_MANIFEST_LOCATION(),
-              APPLICATIONPROPERTIES.QUILT_INSTALLER_VERSION_MANIFEST_LOCATION());
-    } else {
-      this.VERSIONMETA = injectedVersionMeta;
-    }
-
-    if (injectedUtilities == null) {
-      this.UTILITIES = new Utilities(i18N, APPLICATIONPROPERTIES);
-    } else {
-      this.UTILITIES = injectedUtilities;
-    }
-
-    if (injectedApplicationPlugins == null) {
-      this.APPLICATIONPLUGINS = new ApplicationPlugins();
-    } else {
-      this.APPLICATIONPLUGINS = injectedApplicationPlugins;
-    }
-  }
-
-  /**
-   * Getter for the object-mapper used for working with JSON-data.
-   *
-   * @return ObjectMapper. Returns the object-mapper used for working with JSON-data.
-   * @author Griefed
-   */
-  private ObjectMapper getObjectMapper() {
-    ObjectMapper objectMapper = new ObjectMapper();
-    objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-    objectMapper.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
-    return objectMapper;
+    this.APPLICATIONPROPERTIES = injectedApplicationProperties;
+    this.VERSIONMETA = injectedVersionMeta;
+    this.UTILITIES = injectedUtilities;
+    this.APPLICATIONPLUGINS = injectedApplicationPlugins;
+    this.MODSCANNER = injectedModScanner;
   }
 
   /**
@@ -275,7 +226,7 @@ public class ServerPackHandler {
 
                   try {
                     plugin.run(APPLICATIONPROPERTIES, configurationModel, destination);
-                  } catch (Exception ex) {
+                  } catch (Exception | Error ex) {
                     LOG_ADDONS.error("Addon " + plugin.getName() + " encountered an error.", ex);
                   }
                 });
@@ -331,7 +282,7 @@ public class ServerPackHandler {
 
                   try {
                     plugin.run(APPLICATIONPROPERTIES, configurationModel, destination);
-                  } catch (Exception ex) {
+                  } catch (Exception | Error ex) {
                     LOG_ADDONS.error("Addon " + plugin.getName() + " encountered an error.", ex);
                   }
                 });
@@ -381,7 +332,7 @@ public class ServerPackHandler {
 
                   try {
                     plugin.run(APPLICATIONPROPERTIES, configurationModel, destination);
-                  } catch (Exception ex) {
+                  } catch (Exception | Error ex) {
                     LOG_ADDONS.error("Addon " + plugin.getName() + " encountered an error.", ex);
                   }
                 });
@@ -502,8 +453,7 @@ public class ServerPackHandler {
    * Copies all specified directories and mods, excluding clientside-only mods, from the modpack
    * directory into the server pack directory. If a <code>source/file;destination/file</code>
    * -combination is provided, the specified source-file is copied to the specified
-   * destination-file. Calls {@link #excludeClientMods(String, List, String, String)} to generate a
-   * list of all mods to copy to server pack, excluding clientside-only mods.
+   * destination-file.
    *
    * @param modpackDir String. Files and directories are copied into the server_pack directory
    *     inside the modpack directory.
@@ -766,7 +716,8 @@ public class ServerPackHandler {
 
   /**
    * Generates a list of all mods to include in the server pack excluding clientside-only mods.
-   * Automatically detects clientside-only mods for Minecraft 1.13+, if the mods <code>mods.toml
+   * Automatically detects clientside-only mods for Minecraft 1.13+, if the mods <code>
+   * mods.tomls
    * </code>-file is correctly set up.
    *
    * @param modsDir String. The mods-directory of the modpack of which to generate a list of all
@@ -786,45 +737,36 @@ public class ServerPackHandler {
     LOG.info("Preparing a list of mods to include in server pack...");
 
     Collection<File> filesInModsDir =
-        FileUtils.listFiles(new File(modsDir), new String[] {"jar"}, true);
+        FileUtils.listFiles(new File(modsDir), MOD_FILE_ENDINGS, true);
 
-    List<String> modsInModpack = new ArrayList<>();
-    List<String> autodiscoveredClientMods = new ArrayList<>();
+    TreeSet<String> modsInModpack = new TreeSet<>();
+    List<File> autodiscoveredClientMods = new ArrayList<>();
 
     // Check whether scanning mods for sideness is activated.
-    if (APPLICATIONPROPERTIES
-            .getProperty("de.griefed.serverpackcreator.serverpack.autodiscoverenabled")
-            .equals("true")
-        && filesInModsDir != null) {
+    if (APPLICATIONPROPERTIES.isAutoExcludingModsEnabled()) {
 
-      String[] split = minecraftVersion.split("\\.");
-
-      STOPWATCH_SCANS.reset();
       STOPWATCH_SCANS.start();
       // If Minecraft version is 1.12 or newer, scan Tomls, else scan annotations.
 
       switch (modloader) {
         case "Fabric":
-          autodiscoveredClientMods.addAll(scanFabricModJson(filesInModsDir));
+          autodiscoveredClientMods.addAll(MODSCANNER.fabric().scan(filesInModsDir));
           break;
 
         case "Forge":
-          if (Integer.parseInt(split[1]) > 12) {
-            autodiscoveredClientMods.addAll(scanTomls(filesInModsDir));
+          if (Integer.parseInt(minecraftVersion.split("\\.")[1]) > 12) {
+            autodiscoveredClientMods.addAll(MODSCANNER.tomls().scan(filesInModsDir));
           } else {
-            autodiscoveredClientMods.addAll(scanAnnotations(filesInModsDir));
+            autodiscoveredClientMods.addAll(MODSCANNER.annotations().scan(filesInModsDir));
           }
           break;
 
         case "Quilt":
-          autodiscoveredClientMods.addAll(scanFabricModJson(filesInModsDir));
-          scanQuiltModJson(filesInModsDir)
-              .forEach(
-                  quiltMod -> {
-                    if (!autodiscoveredClientMods.contains(quiltMod)) {
-                      autodiscoveredClientMods.add(quiltMod);
-                    }
-                  });
+          TreeSet<File> discoMods = new TreeSet<>();
+          discoMods.addAll(MODSCANNER.fabric().scan(filesInModsDir));
+          discoMods.addAll(MODSCANNER.quilt().scan(filesInModsDir));
+          autodiscoveredClientMods.addAll(discoMods);
+          discoMods.clear();
       }
 
       STOPWATCH_SCANS.stop();
@@ -858,22 +800,26 @@ public class ServerPackHandler {
     }
 
     // Exclude scanned mods from copying if said functionality is enabled.
-    if (APPLICATIONPROPERTIES
-            .getProperty("de.griefed.serverpackcreator.serverpack.autodiscoverenabled")
-            .equals("true")
-        && autodiscoveredClientMods.size() > 0) {
+    if (APPLICATIONPROPERTIES.isAutoExcludingModsEnabled() && autodiscoveredClientMods.size() > 0) {
       for (int m = 0; m < autodiscoveredClientMods.size(); m++) {
 
         int i = m;
 
         if (modsInModpack.removeIf(
-            n -> (n.replace("\\", "/").contains(autodiscoveredClientMods.get(i))))) {
-          LOG.debug("Automatically excluding mod: " + autodiscoveredClientMods.get(i));
+            modInModpack ->
+                (modInModpack
+                    .replace("\\", "/")
+                    .contains(autodiscoveredClientMods.get(i).getName())))) {
+
+          LOG.warn("Automatically excluding mod: " + autodiscoveredClientMods.get(i));
         }
       }
     }
 
-    return modsInModpack;
+    autodiscoveredClientMods.clear();
+    filesInModsDir.clear();
+
+    return new ArrayList<>(modsInModpack);
   }
 
   /**
@@ -1343,1196 +1289,6 @@ public class ServerPackHandler {
     } catch (IOException ignored) {
 
     }
-  }
-
-  /**
-   * Scan the <code>mods.toml</code>-files in mod JAR-files of a given directory for their sideness.
-   * <br>
-   * If <code>[[mods]]</code> specifies <code>side=BOTH|SERVER</code>, it is added.<br>
-   * If <code>[[dependencies.modId]]</code> for Forge|Minecraft specifies <code>side=BOTH|SERVER
-   * </code>, it is added.<br>
-   * Any modId of a dependency specifying <code>side=BOTH|SERVER</code> is added.<br>
-   * If no sideness can be found for a given mod, it is added to prevent false positives.
-   *
-   * @param filesInModsDir A list of files in which to check the <code>mods.toml</code>-files.
-   * @return List String. List of mods not to include in server pack based on
-   *     mods.toml-configuration.
-   * @author Griefed
-   */
-  private List<String> scanTomls(Collection<File> filesInModsDir) {
-
-    /*
-     * Can I just say:
-     * WHAT THE EVERLOVING FUCK IS THIS METHOD? try catch if try catch if else try catch what the actual fucking fuck?
-     */
-    LOG.info("Scanning Minecraft 1.13.x and newer Forge mods for sideness...");
-
-    List<String> serverMods = new ArrayList<>();
-    List<String> modsDelta = new ArrayList<>();
-
-    for (File mod : filesInModsDir) {
-      if (mod.toString().endsWith("jar")) {
-
-        JarFile jarFile = null;
-        JarEntry jarEntry;
-        InputStream inputStream = null;
-
-        try {
-          jarFile = new JarFile(mod);
-          jarEntry = jarFile.getJarEntry("META-INF/mods.toml");
-          inputStream = jarFile.getInputStream(jarEntry);
-        } catch (Exception ex) {
-          LOG.error("Can not scan " + mod);
-        }
-
-        try {
-
-          if (inputStream != null) {
-
-            Toml modToml = new Toml().read(inputStream);
-
-            String modId = modToml.getString("mods[0].modId");
-
-            // Check whether the sideness is specified in [[mods]]
-            try {
-              if (modToml.getString("mods[0].side").toLowerCase().matches("(server|both)")) {
-
-                if (!serverMods.contains(modId)) {
-
-                  LOG.debug("Adding modId to list of server mods: " + modId);
-                  serverMods.add(modId);
-                }
-              }
-            } catch (NullPointerException ignored) {
-            }
-
-            try {
-              if (modToml.getList("dependencies." + modId) != null) {
-                for (int i = 0; i < modToml.getList("dependencies." + modId).size(); i++) {
-
-                  // If sideness in FORGE|MINECRAFT is BOTH|SERVER, add the mod to the list.
-                  try {
-                    if (modToml
-                        .getString("dependencies." + modId + "[" + i + "].modId")
-                        .toLowerCase()
-                        .matches("(forge|minecraft)")) {
-
-                      /*
-                       * If Forge|Minecraft are listed as dependencies, but no sideness is specified, we need to add this mod just in case,
-                       * so we do not exclude any mods which MAY need to be on the server.
-                       */
-                      if (modToml.getString("dependencies." + modId + "[" + i + "].side") == null) {
-
-                        if (!serverMods.contains(modId)) {
-
-                          LOG.debug("Adding modId to list of server mods: " + modId);
-                          serverMods.add(modId);
-                        }
-                      }
-
-                      /*
-                       * If Forge|Minecraft sideness is BOTH|SERVER, add the mod to the list.
-                       */
-                      if (modToml
-                          .getString("dependencies." + modId + "[" + i + "].side")
-                          .toLowerCase()
-                          .matches("(server|both)")) {
-
-                        if (!serverMods.contains(modId)) {
-
-                          LOG.debug("Adding modId to list of server mods: " + modId);
-                          serverMods.add(modId);
-                        }
-                      }
-
-                    } else {
-                      /*
-                       * I know this looks stupid. If a mod does not specify BOTH|SERVER in either of the Forge or Minecraft dependencies,
-                       * and NO sideness was detected in [[mods]], we need to add this mod just in case, so we do not exclude any mods
-                       * which MAY need to be on the server.
-                       */
-                      if (!serverMods.contains(modId)
-                          && modToml.getString("mods[0].side") == null) {
-
-                        LOG.debug("Adding modId to list of server mods: " + modId);
-                        serverMods.add(modId);
-                      }
-                    }
-
-                  } catch (NullPointerException ignored) {
-                  }
-
-                  /*
-                   * Add every dependency of the mod we are currently checking, which specifies BOTH|SERVER as their sideness, to the list.
-                   */
-                  try {
-
-                    if (!modToml
-                        .getString("dependencies." + modId + "[" + i + "].modId")
-                        .toLowerCase()
-                        .matches("(forge|minecraft)")) {
-                      if (modToml
-                          .getString("dependencies." + modId + "[" + i + "].side")
-                          .toLowerCase()
-                          .matches("(server|both)")) {
-
-                        if (!serverMods.contains(
-                            modToml.getString("dependencies." + modId + "[" + i + "].modId"))) {
-
-                          LOG.debug(
-                              "Adding modId to list of server mods: "
-                                  + modToml.getString(
-                                      "dependencies." + modId + "[" + i + "].modId"));
-                          serverMods.add(
-                              modToml.getString("dependencies." + modId + "[" + i + "].modId"));
-                        }
-                      }
-                    }
-
-                  } catch (NullPointerException ignored) {
-                  }
-                }
-              }
-            } catch (NullPointerException | ClassCastException ex) {
-              try {
-
-                for (int i = 0; i < modToml.getList("dependencies").size(); i++) {
-
-                  LOG.warn(
-                      modId
-                          + " does not contain valid dependency definitions. Please contact the mod maker and ask them to fix their shit. :D");
-
-                  String subDependencyId = null;
-                  String subDependencySide = null;
-
-                  for (String element :
-                      modToml
-                          .getList("dependencies")
-                          .get(i)
-                          .toString()
-                          .replace("{", "")
-                          .replace("}", "")
-                          .split(",")) {
-                    // If sideness in FORGE|MINECRAFT is BOTH|SERVER, add the mod to the list.
-                    if (element.contains("modId")) {
-                      subDependencyId = element.substring(element.lastIndexOf("=") + 1);
-                    } else if (element.contains("side")) {
-                      subDependencySide = element.substring(element.lastIndexOf("=") + 1);
-                    }
-                  }
-
-                  if (subDependencyId != null && subDependencySide != null) {
-
-                    if (!subDependencyId.equalsIgnoreCase("minecraft")
-                        && !subDependencyId.equalsIgnoreCase("forge")) {
-
-                      if (subDependencySide.equalsIgnoreCase("both")
-                          || subDependencySide.equalsIgnoreCase("server")) {
-                        if (!serverMods.contains(subDependencyId)) {
-
-                          LOG.debug("Adding modId to list of server mods: " + subDependencyId);
-                          serverMods.add(subDependencyId);
-                        }
-                      }
-
-                    } else {
-
-                      if (subDependencySide.equalsIgnoreCase("both")
-                          || subDependencySide.equalsIgnoreCase("server")) {
-                        if (!serverMods.contains(modId)) {
-
-                          LOG.debug("Adding modId to list of server mods: " + modId);
-                          serverMods.add(modId);
-                        }
-                      }
-                    }
-                  }
-                }
-
-              } catch (ClassCastException | NullPointerException ignored) {
-              }
-            }
-
-            /*
-             * If sideness is neither specified in [[mods]] and no dependencies exist, we need to add this mod just in case, so we do
-             * not exclude any mods which MAY need to be on the server.
-             */
-            try {
-              if (modToml.getString("mods[0].side") == null) {
-
-                try {
-
-                  if (modToml.getList("dependencies." + modId) == null) {
-
-                    try {
-
-                      if (modToml.getList("dependencies") == null) {
-
-                        if (!serverMods.contains(modId)) {
-
-                          LOG.debug("Adding modId to list of server mods: " + modId);
-                          serverMods.add(modId);
-                        }
-                      }
-
-                    } catch (ClassCastException ex) {
-
-                      if (!serverMods.contains(modId)) {
-
-                        LOG.debug("Adding modId to list of server mods: " + modId);
-                        serverMods.add(modId);
-                      }
-                    }
-
-                    if (!serverMods.contains(modId)) {
-
-                      LOG.debug("Adding modId to list of server mods: " + modId);
-                      serverMods.add(modId);
-                    }
-                  }
-
-                } catch (NullPointerException ex) {
-
-                  if (!serverMods.contains(modId)) {
-
-                    LOG.debug("Adding modId to list of server mods: " + modId);
-                    serverMods.add(modId);
-                  }
-                }
-              }
-            } catch (ClassCastException | NullPointerException ignored) {
-            }
-          }
-
-        } catch (Exception ex) {
-
-          LOG.error("Error acquiring sideness from mod " + mod, ex);
-
-        } finally {
-
-          try {
-            //noinspection ConstantConditions
-            jarFile.close();
-          } catch (Exception ignored) {
-
-          }
-
-          try {
-            inputStream.close();
-          } catch (Exception ignored) {
-
-          }
-        }
-      }
-    }
-
-    for (File mod : filesInModsDir) {
-
-      String modToCheck = mod.toString().replace("\\", "/");
-
-      boolean addToDelta = true;
-
-      JarFile jarFile = null;
-      JarEntry jarEntry;
-      InputStream inputStream = null;
-
-      try {
-        jarFile = new JarFile(mod);
-        jarEntry = jarFile.getJarEntry("META-INF/mods.toml");
-        inputStream = jarFile.getInputStream(jarEntry);
-      } catch (Exception ex) {
-        LOG.error("Can not scan " + mod);
-      }
-
-      try {
-
-        if (inputStream != null) {
-
-          Toml modToml = new Toml().read(inputStream);
-
-          for (String modId : serverMods) {
-
-            if (modToml.getString("mods[0].modId").toLowerCase().matches(modId)) {
-              addToDelta = false;
-            }
-          }
-
-          if (addToDelta) {
-            modsDelta.add(modToCheck);
-          }
-        }
-
-      } catch (Exception ex) {
-
-        LOG.error("Couldn't acquire modId for mod " + mod, ex);
-
-      } finally {
-
-        try {
-          //noinspection ConstantConditions
-          jarFile.close();
-        } catch (Exception ignored) {
-
-        }
-
-        try {
-          //noinspection ConstantConditions
-          inputStream.close();
-        } catch (Exception ignored) {
-
-        }
-      }
-    }
-
-    return modsDelta;
-  }
-
-  /**
-   * Scan the <code>fml-cache-annotation.json</code>-files in mod JAR-files of a given directory for
-   * their sideness.<br>
-   * If <code>clientSideOnly</code> specifies <code>"value": "true"</code>, and is not listed as a
-   * dependency for another mod, it is added and therefore later on excluded from the server pack.
-   *
-   * @param filesInModsDir A list of files in which to check the <code>fml-cache-annotation.json
-   *     </code>-files.
-   * @return List String. List of mods not to include in server pack based on
-   *     fml-cache-annotation.json-content.
-   * @author Griefed
-   */
-  private List<String> scanAnnotations(Collection<File> filesInModsDir) {
-
-    LOG.info("Scanning Minecraft 1.12.x and older mods for sideness...");
-
-    List<String> modDependencies = new ArrayList<>();
-    List<String> clientMods = new ArrayList<>();
-    List<String> modsDelta = new ArrayList<>();
-
-    for (File mod : filesInModsDir) {
-      if (mod.toString().endsWith("jar")) {
-
-        String modId = null;
-        List<String> additionalMods = new ArrayList<>();
-
-        JarFile jarFile = null;
-        JarEntry jarEntry;
-        InputStream inputStream = null;
-
-        try {
-          jarFile = new JarFile(mod);
-          jarEntry = jarFile.getJarEntry("META-INF/fml_cache_annotation.json");
-          inputStream = jarFile.getInputStream(jarEntry);
-        } catch (Exception ex) {
-          LOG.error("Can not scan " + mod);
-        }
-
-        try {
-
-          if (inputStream != null) {
-
-            JsonNode modJson = getObjectMapper().readTree(inputStream);
-
-            // base of json
-            for (JsonNode node : modJson) {
-
-              try {
-                // iterate though annotations
-                for (JsonNode child : node.get("annotations")) {
-
-                  // Get the mod ID and check for clientside only, if we have not yet received a
-                  // modID
-                  if (modId == null) {
-
-                    try {
-                      // Get the modId
-                      if (!child.get("values").get("modid").get("value").asText().isEmpty()) {
-                        modId = child.get("values").get("modid").get("value").asText();
-                      }
-
-                      // Add mod to list of clientmods if clientSideOnly is true
-                      if (child
-                          .get("values")
-                          .get("clientSideOnly")
-                          .get("value")
-                          .asText()
-                          .equalsIgnoreCase("true")) {
-                        if (!clientMods.contains(modId)) {
-                          clientMods.add(modId);
-
-                          LOG.debug("Added clientMod: " + modId);
-                        }
-                      }
-                    } catch (NullPointerException ignored) {
-
-                    }
-
-                    // We already received a modId, perform additional checks to prevent false
-                    // positives
-                  } else {
-
-                    try {
-                      // Get the second modID
-                      if (!child.get("values").get("modid").get("value").asText().isEmpty()) {
-
-                        // ModIDs are the same, so check for clientside-only
-                        if (modId.equals(child.get("values").get("modid").get("value").asText())) {
-
-                          try {
-                            // Add mod to list of clientmods if clientSideOnly is true
-                            if (child
-                                .get("values")
-                                .get("clientSideOnly")
-                                .get("value")
-                                .asText()
-                                .equalsIgnoreCase("true")) {
-                              if (!clientMods.contains(modId)) {
-                                clientMods.add(modId);
-
-                                LOG.debug("Added clientMod: " + modId);
-                              }
-                            }
-                          } catch (NullPointerException ignored) {
-
-                          }
-
-                          // ModIDs are different, possibly two mods in one JAR-file.......
-                        } else {
-
-                          // Add additional modId to list, so we can check those later
-                          additionalMods.add(
-                              child.get("values").get("modid").get("value").asText());
-                        }
-                      }
-
-                    } catch (NullPointerException ignored) {
-
-                    }
-                  }
-
-                  // Get dependency modIds
-                  try {
-                    if (!child.get("values").get("dependencies").get("value").asText().isEmpty()) {
-
-                      if (child
-                          .get("values")
-                          .get("dependencies")
-                          .get("value")
-                          .asText()
-                          .contains(";")) {
-
-                        String[] dependencies =
-                            child
-                                .get("values")
-                                .get("dependencies")
-                                .get("value")
-                                .asText()
-                                .split(";");
-
-                        for (String dependency : dependencies) {
-
-                          if (dependency.matches("(before:.*|after:.*|required-after:.*|)")) {
-
-                            dependency =
-                                dependency
-                                    .substring(dependency.lastIndexOf(":") + 1)
-                                    .replaceAll("(@.*|\\[.*)", "");
-
-                            if (!modDependencies.contains(dependency)
-                                && !dependency.equalsIgnoreCase("forge")
-                                && !dependency.equals("*")) {
-                              modDependencies.add(dependency);
-
-                              LOG.debug("Added dependency " + dependency);
-                            }
-                          }
-                        }
-                      } else {
-                        if (child
-                            .get("values")
-                            .get("dependencies")
-                            .get("value")
-                            .asText()
-                            .matches("(before:.*|after:.*|required-after:.*|)")) {
-
-                          String dependency =
-                              child
-                                  .get("values")
-                                  .get("dependencies")
-                                  .get("value")
-                                  .asText()
-                                  .substring(
-                                      child
-                                              .get("values")
-                                              .get("dependencies")
-                                              .get("value")
-                                              .asText()
-                                              .lastIndexOf(":")
-                                          + 1)
-                                  .replaceAll("(@.*|\\[.*)", "");
-
-                          if (!modDependencies.contains(dependency)
-                              && !dependency.equalsIgnoreCase("forge")
-                              && !dependency.equals("*")) {
-                            modDependencies.add(dependency);
-
-                            LOG.debug("Added dependency " + dependency);
-                          }
-                        }
-                      }
-                    }
-                  } catch (NullPointerException ignored) {
-
-                  }
-                }
-
-              } catch (NullPointerException ignored) {
-
-              }
-            }
-
-            if (!additionalMods.isEmpty()) {
-              for (String additionalModId : additionalMods) {
-
-                // base of json
-                for (JsonNode node : modJson) {
-
-                  try {
-                    // iterate though annotations again but this time for the modID of the second
-                    // mod
-                    for (JsonNode child : node.get("annotations")) {
-                      boolean additionalModDependsOnFirst = false;
-
-                      // check if second mod depends on first
-                      try {
-                        // if the modId is that of our additional mod, check the dependencies
-                        // whether the first modId is present
-                        if (child
-                            .get("values")
-                            .get("modid")
-                            .get("value")
-                            .asText()
-                            .equals(additionalModId)) {
-                          if (!child
-                              .get("values")
-                              .get("dependencies")
-                              .get("value")
-                              .asText()
-                              .isEmpty()) {
-
-                            if (child
-                                .get("values")
-                                .get("dependencies")
-                                .get("value")
-                                .asText()
-                                .contains(";")) {
-
-                              String[] dependencies =
-                                  child
-                                      .get("values")
-                                      .get("dependencies")
-                                      .get("value")
-                                      .asText()
-                                      .split(";");
-
-                              for (String dependency : dependencies) {
-
-                                if (dependency.matches("(before:.*|after:.*|required-after:.*|)")) {
-
-                                  dependency =
-                                      dependency
-                                          .substring(dependency.lastIndexOf(":") + 1)
-                                          .replaceAll("(@.*|\\[.*)", "");
-
-                                  if (dependency.equals(modId)) {
-                                    additionalModDependsOnFirst = true;
-                                  }
-                                }
-                              }
-                            } else {
-                              if (child
-                                  .get("values")
-                                  .get("dependencies")
-                                  .get("value")
-                                  .asText()
-                                  .matches("(before:.*|after:.*|required-after:.*|)")) {
-
-                                String dependency =
-                                    child
-                                        .get("values")
-                                        .get("dependencies")
-                                        .get("value")
-                                        .asText()
-                                        .substring(
-                                            child
-                                                    .get("values")
-                                                    .get("dependencies")
-                                                    .get("value")
-                                                    .asText()
-                                                    .lastIndexOf(":")
-                                                + 1)
-                                        .replaceAll("(@.*|\\[.*)", "");
-
-                                if (dependency.equals(modId)) {
-                                  additionalModDependsOnFirst = true;
-                                }
-                              }
-                            }
-                          }
-                        }
-
-                      } catch (NullPointerException ignored) {
-
-                      }
-
-                      // If the additional mod depends on the first one, check if the additional one
-                      // is clientside-only
-                      if (additionalModDependsOnFirst) {
-
-                        boolean clientSide = false;
-
-                        try {
-                          // iterate though annotations
-                          for (JsonNode children : node.get("annotations")) {
-
-                            try {
-                              if (children
-                                      .get("values")
-                                      .get("modid")
-                                      .get("value")
-                                      .asText()
-                                      .equals(additionalModId)
-                                  && children
-                                      .get("values")
-                                      .get("clientSideOnly")
-                                      .get("value")
-                                      .asText()
-                                      .equalsIgnoreCase("true")) {
-
-                                clientSide = true;
-                              }
-                            } catch (NullPointerException ignored) {
-
-                            }
-                          }
-                        } catch (NullPointerException ignored) {
-
-                        }
-
-                        // if the additional mod is NOT clientside-only, we have to remove this mod
-                        // from the list of clientside-only mods
-                        if (!clientSide) {
-                          String finalModId = modId;
-                          if (clientMods.removeIf(n -> n.equals(finalModId))) {
-                            LOG.info(
-                                "Removing "
-                                    + modId
-                                    + " from list of clientside-only mods. It contains multiple mods at once, and one of them is NOT clientside-only.");
-                          }
-                        }
-                      }
-                    }
-                  } catch (NullPointerException ignored) {
-
-                  }
-                }
-              }
-            }
-          }
-
-        } catch (IOException ex) {
-
-          LOG.error("Couldn't acquire sideness for mod " + mod, ex);
-
-        } finally {
-
-          try {
-            //noinspection ConstantConditions
-            jarFile.close();
-          } catch (Exception ignored) {
-
-          }
-
-          try {
-            inputStream.close();
-          } catch (Exception ignored) {
-
-          }
-        }
-      }
-    }
-
-    // Remove dependencies from list of clientmods to ensure we do not, well, exclude a dependency
-    // of another mod.
-    for (String dependency : modDependencies) {
-
-      if (clientMods.removeIf(n -> (n.contains(dependency)))) {
-        LOG.debug(
-            "Removing "
-                + dependency
-                + " from list of clientmods as it is a dependency for another mod.");
-      }
-    }
-
-    // After removing dependencies from the list of potential clientside mods, we can remove any mod
-    // that says it is clientside-only.
-    for (File mod : filesInModsDir) {
-
-      String modToCheck = mod.toString().replace("\\", "/");
-      String modIdTocheck = null;
-
-      boolean addToDelta = false;
-
-      JarFile jarFile = null;
-      JarEntry jarEntry;
-      InputStream inputStream = null;
-
-      try {
-        jarFile = new JarFile(mod);
-        jarEntry = jarFile.getJarEntry("META-INF/fml_cache_annotation.json");
-        inputStream = jarFile.getInputStream(jarEntry);
-      } catch (Exception ex) {
-        LOG.error("Can not scan " + mod);
-      }
-
-      try {
-
-        if (inputStream != null) {
-
-          JsonNode modJson = getObjectMapper().readTree(inputStream);
-
-          // base of json
-          for (JsonNode node : modJson) {
-
-            try {
-              // iterate though annotations
-              for (JsonNode child : node.get("annotations")) {
-
-                // Get the modId
-                try {
-                  if (!child.get("values").get("modid").get("value").asText().isEmpty()) {
-                    modIdTocheck = child.get("values").get("modid").get("value").asText();
-                  }
-                } catch (NullPointerException ignored) {
-
-                }
-
-                // Add mod to list of clientmods if clientSideOnly is true
-                try {
-                  if (child
-                      .get("values")
-                      .get("clientSideOnly")
-                      .get("value")
-                      .asText()
-                      .equalsIgnoreCase("true")) {
-                    if (clientMods.contains(modIdTocheck)) {
-                      addToDelta = true;
-                    }
-                  }
-                } catch (NullPointerException ignored) {
-
-                }
-              }
-            } catch (NullPointerException ignored) {
-
-            }
-          }
-
-          if (addToDelta) {
-            modsDelta.add(modToCheck);
-          }
-        }
-
-      } catch (Exception ex) {
-
-        LOG.error("Couldn't acquire modId for mod " + mod, ex);
-
-      } finally {
-
-        try {
-          //noinspection ConstantConditions
-          jarFile.close();
-        } catch (Exception ignored) {
-
-        }
-
-        try {
-          //noinspection ConstantConditions
-          inputStream.close();
-        } catch (Exception ignored) {
-
-        }
-      }
-    }
-
-    return modsDelta;
-  }
-
-  /**
-   * Scan the <code>fabric.mod.json</code>-files in mod JAR-files of a given directory for their
-   * sideness.<br>
-   * If <code>environment</code> specifies <code>client</code>, and is not listed as a dependency
-   * for another mod, it is added and therefore later on excluded from the server pack.
-   *
-   * @param filesInModsDir A list of files in which to check the <code>fabric.mod.json</code>-files.
-   * @return List String. List of mods not to include in server pack based on
-   *     fabric.mod.json-content.
-   * @author Griefed
-   */
-  private List<String> scanFabricModJson(Collection<File> filesInModsDir) {
-    LOG.info("Scanning Fabric mods for sideness...");
-
-    List<String> modDependencies = new ArrayList<>();
-    List<String> clientMods = new ArrayList<>();
-    List<String> modsDelta = new ArrayList<>();
-
-    for (File mod : filesInModsDir) {
-      if (mod.toString().endsWith("jar")) {
-
-        String modId;
-
-        JarFile jarFile = null;
-        JarEntry jarEntry;
-        InputStream inputStream = null;
-
-        try {
-          jarFile = new JarFile(mod);
-          jarEntry = jarFile.getJarEntry("fabric.mod.json");
-          inputStream = jarFile.getInputStream(jarEntry);
-        } catch (Exception ex) {
-          LOG.error("Can not scan " + mod);
-        }
-
-        try {
-
-          if (inputStream != null) {
-
-            JsonNode modJson =
-                getObjectMapper()
-                    .enable(JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS.mappedFeature())
-                    .readTree(inputStream);
-
-            modId = modJson.get("id").asText();
-
-            // Get this mods id/name
-            try {
-              if (modJson.get("environment").asText().equalsIgnoreCase("client")) {
-                if (!clientMods.contains(modId)) {
-                  clientMods.add(modId);
-
-                  LOG.debug("Added clientMod: " + modId);
-                }
-              }
-            } catch (NullPointerException ignored) {
-
-            }
-
-            // Get this mods dependencies
-            try {
-              modJson
-                  .get("depends")
-                  .fieldNames()
-                  .forEachRemaining(
-                      dependency -> {
-                        if (!modDependencies.contains(dependency)) {
-                          modDependencies.add(dependency);
-                        }
-                      });
-            } catch (NullPointerException ignored) {
-
-            }
-          }
-
-        } catch (IOException ex) {
-
-          LOG.error("Couldn't acquire sideness for mod " + mod, ex);
-
-        } finally {
-
-          try {
-            //noinspection ConstantConditions
-            jarFile.close();
-          } catch (Exception ignored) {
-
-          }
-
-          try {
-            //noinspection ConstantConditions
-            inputStream.close();
-          } catch (Exception ignored) {
-
-          }
-        }
-      }
-    }
-
-    // Remove dependencies from list of clientmods to ensure we do not, well, exclude a dependency
-    // of another mod.
-    for (String dependency : modDependencies) {
-
-      clientMods.removeIf(n -> (n.contains(dependency)));
-      LOG.debug(
-          "Removing "
-              + dependency
-              + " from list of clientmods as it is a dependency for another mod.");
-    }
-
-    // After removing dependencies from the list of potential clientside mods, we can remove any mod
-    // that says it is clientside-only.
-    for (File mod : filesInModsDir) {
-
-      String modToCheck = mod.toString().replace("\\", "/");
-      String modIdTocheck;
-
-      boolean addToDelta = false;
-
-      JarFile jarFile = null;
-      JarEntry jarEntry;
-      InputStream inputStream = null;
-
-      try {
-        jarFile = new JarFile(mod);
-        jarEntry = jarFile.getJarEntry("fabric.mod.json");
-        inputStream = jarFile.getInputStream(jarEntry);
-      } catch (Exception ex) {
-        LOG.error("Can not scan " + mod);
-      }
-
-      try {
-
-        if (inputStream != null) {
-
-          JsonNode modJson =
-              getObjectMapper()
-                  .enable(JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS.mappedFeature())
-                  .readTree(inputStream);
-
-          // Get the modId
-          modIdTocheck = modJson.get("id").asText();
-
-          try {
-            if (modJson.get("environment").asText().equalsIgnoreCase("client")) {
-              if (clientMods.contains(modIdTocheck)) {
-                addToDelta = true;
-              }
-            }
-          } catch (NullPointerException ignored) {
-
-          }
-
-          if (addToDelta) {
-            modsDelta.add(modToCheck);
-          }
-        }
-
-      } catch (Exception ex) {
-
-        LOG.error("Couldn't acquire modId for mod " + mod, ex);
-
-      } finally {
-
-        try {
-          //noinspection ConstantConditions
-          jarFile.close();
-        } catch (Exception ignored) {
-
-        }
-
-        try {
-          //noinspection ConstantConditions
-          inputStream.close();
-        } catch (Exception ignored) {
-
-        }
-      }
-    }
-
-    return modsDelta;
-  }
-
-  /**
-   * Scan the <code>quilt.mod.json</code>-files in mod JAR-files of a given directory for their
-   * sideness.<br>
-   * If <code>minecraft.environment</code> specifies <code>client</code>, and is not listed as a
-   * dependency for another mod, it is added and therefore later on excluded from the server pack.
-   *
-   * @param filesInModsDir A list of files in which to check the <code>fabric.mod.json</code>-files.
-   * @return List String. List of mods not to include in server pack based on
-   *     fabric.mod.json-content.
-   * @author Griefed
-   */
-  private List<String> scanQuiltModJson(Collection<File> filesInModsDir) {
-    LOG.info("Scanning Quilt mods for sideness...");
-
-    List<String> modDependencies = new ArrayList<>();
-    List<String> clientMods = new ArrayList<>();
-    List<String> modsDelta = new ArrayList<>();
-
-    for (File mod : filesInModsDir) {
-      if (mod.toString().endsWith("jar")) {
-
-        String modId;
-
-        JarFile jarFile = null;
-        JarEntry jarEntry;
-        InputStream inputStream = null;
-
-        try {
-          jarFile = new JarFile(mod);
-          jarEntry = jarFile.getJarEntry("quilt.mod.json");
-          inputStream = jarFile.getInputStream(jarEntry);
-        } catch (Exception ex) {
-          LOG.error("Can not scan " + mod);
-        }
-
-        try {
-
-          if (inputStream != null) {
-
-            JsonNode modJson =
-                getObjectMapper()
-                    .enable(JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS.mappedFeature())
-                    .readTree(inputStream);
-
-            modId = modJson.get("quilt_loader").get("id").asText();
-
-            // Get this mods id/name
-            try {
-              if (modJson.get("minecraft").get("environment").asText().equalsIgnoreCase("client")) {
-                if (!clientMods.contains(modId)) {
-                  clientMods.add(modId);
-
-                  LOG.debug("Added clientMod: " + modId);
-                }
-              }
-            } catch (NullPointerException ignored) {
-
-            }
-
-            // Get this mods dependencies
-            try {
-
-              for (JsonNode dependency : modJson.get("quilt_loader").get("depends")) {
-
-                if (dependency.isContainerNode()) {
-                  if (!modDependencies.contains(dependency.get("id").asText())) {
-                    modDependencies.add(dependency.get("id").asText());
-                  }
-                } else {
-                  if (!modDependencies.contains(dependency.asText())) {
-                    modDependencies.add(dependency.asText());
-                  }
-                }
-              }
-
-            } catch (NullPointerException ignored) {
-
-            }
-          }
-
-        } catch (IOException ex) {
-
-          LOG.error("Couldn't acquire sideness for mod " + mod, ex);
-
-        } finally {
-
-          try {
-            //noinspection ConstantConditions
-            jarFile.close();
-          } catch (Exception ignored) {
-
-          }
-
-          try {
-            //noinspection ConstantConditions
-            inputStream.close();
-          } catch (Exception ignored) {
-
-          }
-        }
-      }
-    }
-
-    // Remove dependencies from list of clientmods to ensure we do not, well, exclude a dependency
-    // of another mod.
-    for (String dependency : modDependencies) {
-
-      clientMods.removeIf(n -> (n.contains(dependency)));
-      LOG.debug(
-          "Removing "
-              + dependency
-              + " from list of clientmods as it is a dependency for another mod.");
-    }
-
-    // After removing dependencies from the list of potential clientside mods, we can remove any mod
-    // that says it is clientside-only.
-    for (File mod : filesInModsDir) {
-
-      String modToCheck = mod.toString().replace("\\", "/");
-      String modIdTocheck;
-
-      boolean addToDelta = false;
-
-      JarFile jarFile = null;
-      JarEntry jarEntry;
-      InputStream inputStream = null;
-
-      try {
-        jarFile = new JarFile(mod);
-        jarEntry = jarFile.getJarEntry("quilt.mod.json");
-        inputStream = jarFile.getInputStream(jarEntry);
-      } catch (Exception ex) {
-        LOG.error("Can not scan " + mod);
-      }
-
-      try {
-
-        if (inputStream != null) {
-
-          JsonNode modJson =
-              getObjectMapper()
-                  .enable(JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS.mappedFeature())
-                  .readTree(inputStream);
-
-          // Get the modId
-          modIdTocheck = modJson.get("quilt_loader").get("id").asText();
-
-          try {
-            if (modJson.get("minecraft").get("environment").asText().equalsIgnoreCase("client")) {
-              if (clientMods.contains(modIdTocheck)) {
-                addToDelta = true;
-              }
-            }
-          } catch (NullPointerException ignored) {
-
-          }
-
-          if (addToDelta) {
-            modsDelta.add(modToCheck);
-          }
-        }
-
-      } catch (Exception ex) {
-
-        LOG.error("Couldn't acquire modId for mod " + mod, ex);
-
-      } finally {
-
-        try {
-          //noinspection ConstantConditions
-          jarFile.close();
-        } catch (Exception ignored) {
-
-        }
-
-        try {
-          //noinspection ConstantConditions
-          inputStream.close();
-        } catch (Exception ignored) {
-
-        }
-      }
-    }
-
-    return modsDelta;
   }
 
   /**

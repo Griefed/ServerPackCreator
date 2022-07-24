@@ -1,307 +1,143 @@
 package de.griefed.serverpackcreator;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class ApplicationPropertiesTest {
 
-  private final ApplicationProperties APPLICATIONPROPERTIES;
+  ApplicationProperties applicationProperties;
 
   ApplicationPropertiesTest() {
-    try {
-      FileUtils.copyFile(
-          new File("backend/test/resources/serverpackcreator.properties"),
-          new File("serverpackcreator.properties"));
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-    this.APPLICATIONPROPERTIES = new ApplicationProperties();
+    applicationProperties = new ApplicationProperties();
   }
 
   @Test
   void finalsTest() {
-    Assertions.assertNotNull(APPLICATIONPROPERTIES.SERVERPACKCREATOR_PROPERTIES());
+    Assertions.assertNotNull(applicationProperties.SERVERPACKCREATOR_PROPERTIES());
     Assertions.assertEquals(
-        APPLICATIONPROPERTIES.SERVERPACKCREATOR_PROPERTIES(),
+        applicationProperties.SERVERPACKCREATOR_PROPERTIES(),
         new File("serverpackcreator.properties"));
 
-    Assertions.assertNotNull(APPLICATIONPROPERTIES.FALLBACK_CLIENTSIDE_MODS());
+    Assertions.assertNotNull(applicationProperties.FALLBACK_CLIENTSIDE_MODS());
     Assertions.assertEquals(
-        APPLICATIONPROPERTIES.FALLBACK_CLIENTSIDE_MODS(),
+        applicationProperties.FALLBACK_CLIENTSIDE_MODS(),
         new ArrayList<>(
             Arrays.asList(
-                ("3dSkinLayers-,"
-                        + "3dskinlayers-,"
-                        + "Absolutely-Not-A-Zoom-Mod-,"
-                        + "AdvancementPlaques-,"
-                        + "AmbientEnvironment-,"
-                        + "AmbientSounds_,"
-                        + "antighost-,"
-                        + "armorchroma-,"
-                        + "armorpointspp-,"
-                        + "ArmorSoundTweak-,"
-                        + "authme-,"
-                        + "autoreconnect-,"
-                        + "auto-reconnect-,"
-                        + "axolotl-item-fix-,"
-                        + "backtools-,"
-                        + "BetterAdvancements-,"
-                        + "BetterAnimationsCollection-,"
-                        + "betterbiomeblend-,"
-                        + "BetterDarkMode-,"
-                        + "BetterF3-,"
-                        + "BetterFoliage-,"
-                        + "BetterPingDisplay-,"
-                        + "BetterPlacement-,"
-                        + "BetterTaskbar-,"
-                        + "bhmenu-,"
-                        + "BH-Menu-,"
-                        + "blur-,"
-                        + "Blur-,"
-                        + "borderless-mining-,"
-                        + "catalogue-,"
-                        + "charmonium-,"
-                        + "Charmonium-,"
-                        + "chat_heads-,"
-                        + "cherishedworlds-,"
-                        + "classicbar-,"
-                        + "clickadv-,"
-                        + "ClientTweaks_,"
-                        + "configured-,"
-                        + "Controlling-,"
-                        + "CraftPresence-,"
-                        + "CTM-,"
-                        + "cullleaves-,"
-                        + "customdiscordrpc-,"
-                        + "CustomMainMenu-,"
-                        + "dashloader-,"
-                        + "DefaultOptions_,"
-                        + "defaultoptions-,"
-                        + "DefaultSettings-,"
-                        + "DeleteWorldsToTrash-,"
-                        + "desiredservers-,"
-                        + "Ding-,"
-                        + "drippyloadingscreen_,"
-                        + "drippyloadingscreen-,"
-                        + "DripSounds-,"
-                        + "Durability101-,"
-                        + "DurabilityNotifier-,"
-                        + "dynamic-fps-,"
-                        + "dynamic-music-,"
-                        + "DynamicSurroundings-,"
-                        + "DynamicSurroundingsHuds-,"
-                        + "dynmus-,"
-                        + "effective-,"
-                        + "eggtab-,"
-                        + "EiraMoticons_,"
-                        + "eiramoticons-,"
-                        + "EnchantmentDescriptions-,"
-                        + "entity-texture-features-,"
-                        + "EquipmentCompare-,"
-                        + "extremesoundmuffler-,"
-                        + "extremeSoundMuffler-,"
-                        + "fabricemotes-,"
-                        + "Fallingleaves-,"
-                        + "fallingleaves-,"
-                        + "fancymenu_,"
-                        + "findme-,"
-                        + "flickerfix-,"
-                        + "FPS-Monitor-,"
-                        + "FpsReducer-,"
-                        + "FullscreenWindowed-,"
-                        + "InventoryEssentials_,"
-                        + "InventorySpam-,"
-                        + "InventoryTweaks-,"
-                        + "invtweaks-,"
-                        + "ItemBorders-,"
-                        + "ItemStitchingFix-,"
-                        + "itemzoom,"
-                        + "itlt-,"
-                        + "jeed-,"
-                        + "jehc-,"
-                        + "jeiintegration_,"
-                        + "just-enough-harvestcraft-,"
-                        + "justenoughbeacons-,"
-                        + "JustEnoughCalculation-,"
-                        + "JustEnoughProfessions-,"
-                        + "JustEnoughProfessions-,"
-                        + "JustEnoughResources-,"
-                        + "keymap-,"
-                        + "keywizard-,"
-                        + "konkrete_,"
-                        + "lazydfu-,"
-                        + "LegendaryTooltips-,"
-                        + "light-overlay-,"
-                        + "LightOverlay-,"
-                        + "LLOverlayReloaded-,"
-                        + "loadmyresources_,"
-                        + "lootbeams-,"
-                        + "mcbindtype-,"
-                        + "medievalmusic-,"
-                        + "modcredits-,"
-                        + "modmenu-,"
-                        + "modnametooltip_,"
-                        + "modnametooltip-,"
-                        + "moreoverlays-,"
-                        + "MouseTweaks-,"
-                        + "movement-vision-,"
-                        + "multihotbar-,"
-                        + "musicdr-,"
-                        + "music-duration-reducer-,"
-                        + "MyServerIsCompatible-,"
-                        + "Neat ,"
-                        + "ngrok-lan-expose-mod-,"
-                        + "NotifMod-,"
-                        + "OldJavaWarning-,"
-                        + "OptiFine,"
-                        + "OptiForge,"
-                        + "ornaments-,"
-                        + "overloadedarmorbar-,"
-                        + "PackMenu-,"
-                        + "PickUpNotifier-,"
-                        + "Ping-,"
-                        + "preciseblockplacing-,"
-                        + "presencefootsteps-,"
-                        + "PresenceFootsteps-,"
-                        + "ReAuth-,"
-                        + "rebrand-,"
-                        + "ResourceLoader-,"
-                        + "shutupexperimentalsettings-,"
-                        + "SimpleDiscordRichPresence-,"
-                        + "smoothboot-,"
-                        + "sounddeviceoptions-,"
-                        + "SpawnerFix-,"
-                        + "spoticraft-,"
-                        + "tconplanner-,"
-                        + "timestamps-,"
-                        + "Tips-,"
-                        + "TipTheScales-,"
-                        + "Toast Control-,"
-                        + "Toast-Control-,"
-                        + "ToastControl-,"
-                        + "torchoptimizer-,"
-                        + "torohealth-,"
-                        + "toughnessbar-,"
-                        + "TravelersTitles-,"
-                        + "WindowedFullscreen-,"
-                        + "WorldNameRandomizer-,"
-                        + "yisthereautojump-")
+                ("Armor Status HUD-,[1.12.2]bspkrscore-,[1.12.2]DamageIndicatorsMod-,3dskinlayers-,Absolutely-Not-A-Zoom-Mod-,AdvancedChat-,AdvancedCompas-,AdvancementPlaques-,Ambience,AmbientEnvironment-,AmbientSounds_,antighost-,anviltooltipmod-,appleskin-,armorchroma-,armorpointspp-,ArmorSoundTweak-,AromaBackup-,authme-,autobackup-,autoreconnect-,auto-reconnect-,axolotl-item-fix-,backtools-,Backups-,bannerunlimited-,Batty's Coordinates PLUS Mod,beenfo-1.19-,BetterAdvancements-,BetterAnimationsCollection-,betterbiomeblend-,BetterDarkMode-,BetterF3-,BetterFoliage-,BetterPingDisplay-,BetterPlacement-,better-recipe-book-,BetterTaskbar-,BetterThirdPerson,BetterTitleScreen-,bhmenu-,BH-Menu-,blur-,borderless-mining-,BorderlessWindow-,catalogue-,charmonium-,chat_heads-,cherishedworlds-,ChunkAnimator-,cirback-1.0-,classicbar-,clickadv-,clienttweaks-,ClientTweaks_,combat_music-,configured-,controllable-,Controller Support-,Controlling-,CraftPresence-,CTM-,cullleaves-,cullparticles-,custom-crosshair-mod-,CustomCursorMod-,customdiscordrpc-,CustomMainMenu-,darkness-,dashloader-,defaultoptions-,DefaultOptions_,DefaultSettings-,DeleteWorldsToTrash-,desiredservers-,DetailArmorBar-,Ding-,discordrpc-,DistantHorizons-,drippyloadingscreen-,drippyloadingscreen_,DripSounds-,Durability101-,DurabilityNotifier-,dynamic-fps-,dynamiclights-,dynamic-music-,DynamicSurroundings-,DynamicSurroundingsHuds-,dynmus-,effective-,EffectsLeft-,eggtab-,eguilib-,eiramoticons-,EiraMoticons_,EnchantmentDescriptions-,enchantment-lore-,EnhancedVisuals_,entityculling-,entity-texture-features-,EquipmentCompare-,exhaustedstamina-,extremesoundmuffler-,FabricCustomCursorMod-,fabricemotes-,Fallingleaves-,fancymenu_,fancymenu_video_extension,FancySpawnEggs,FancyVideo-API-,findme-,FirstPersonMod,flickerfix-,fm_audio_extension_,FogTweaker-,ForgeCustomCursorMod-,forgemod_VoxelMap-,FPS-Monitor-,FpsReducer-,FpsReducer2-,freelook-,ftb-backups-,ftbbackups2-,FullscreenWindowed-,galacticraft-rpc-,GameMenuModOption-,gamestagesviewer-,grid-,HealthOverlay-,hiddenrecipebook_,HorseStatsMod-,infinitemusic-,InventoryEssentials_,InventoryHud_[1.17.1].forge-,inventoryprofiles,InventorySpam-,InventoryTweaks-,invtweaks-,ItemBorders-,ItemPhysicLite_,ItemStitchingFix-,itemzoom,itlt-,JBRA-Client-,jeed-,jehc-,jeiintegration_,justenoughbeacons-,JustEnoughCalculation-,justenoughdrags-,JustEnoughEffects-,just-enough-harvestcraft-,JustEnoughProfessions-,JustEnoughResources-,justzoom_,keymap-,keywizard-,konkrete_,konkrete_forge_,lazydfu-,LegendaryTooltips,LegendaryTooltips-,lightfallclient-,LightOverlay-,light-overlay-,LLOverlayReloaded-,loadmyresources_,lock_minecart_view-,lootbeams-,LOTRDRP-,lwl-,magnesium_extras-,maptooltip-,massunbind,mcbindtype-,mcwifipnp-,medievalmusic-,mightyarchitect-,mindful-eating-,minetogether-,MoBends,mobplusplus-,modcredits-,modernworldcreation_,modmenu-,modnametooltip-,modnametooltip_,moreoverlays-,MouseTweaks-,mousewheelie-,movement-vision-,multihotbar-,musicdr-,music-duration-reducer-,MyServerIsCompatible-,Neat-,Neat ,neiRecipeHandlers-,NekosEnchantedBooks-,ngrok-lan-expose-mod-,NoAutoJump-,NoFog-,nopotionshift_,notenoughanimations-,Notes-,NotifMod-,oculus-,OldJavaWarning-,openbackup-,OptiFine,OptiForge,OptiForge-,ornaments-,overloadedarmorbar-,PackMenu-,PackModeMenu-,panorama-,paperdoll-,phosphor-,PickUpNotifier-,Ping-,preciseblockplacing-,PresenceFootsteps-,realm-of-lost-souls-,ReAuth-,rebrand-,replanter-,ResourceLoader-,ResourcePackOrganizer,RPG-HUD-,rubidium-,rubidium_extras-,screenshot-to-clipboard-,ShoulderSurfing-,ShulkerTooltip-,shutupexperimentalsettings-,shutupmodelloader-,signtools-,simpleautorun-,simplebackup-,SimpleBackups-,SimpleDiscordRichPresence-,simple-rpc-,SimpleWorldTimer-,smartcursor-,smoothboot-,smoothfocus-,sounddeviceoptions-,SoundFilters-,soundreloader-,SpawnerFix-,spoticraft-,tconplanner-,textile_backup-,timestamps-,Tips-,TipTheScales-,Toast Control-,ToastControl-,Toast-Control-,tooltipscroller-,torchoptimizer-,torohealth-,totaldarkness,toughnessbar-,TRansliterationLib-,TravelersTitles-,VoidFog-,WindowedFullscreen-,wisla-,WorldNameRandomizer-,xlifeheartcolors-,yisthereautojump-")
                     .split(","))));
-    Assertions.assertNotNull(APPLICATIONPROPERTIES.getListFallbackMods());
-    APPLICATIONPROPERTIES.setProperty(
+    Assertions.assertNotNull(applicationProperties.getListFallbackMods());
+    applicationProperties.setProperty(
         "de.griefed.serverpackcreator.configuration.fallbackmodslist", "bla");
-    APPLICATIONPROPERTIES.updateFallback();
+    applicationProperties.updateFallback();
     Assertions.assertNotEquals(
-        APPLICATIONPROPERTIES.getProperty(
+        applicationProperties.getProperty(
             "de.griefed.serverpackcreator.configuration.fallbackmodslist"),
         "bla");
 
-    Assertions.assertNotNull(APPLICATIONPROPERTIES.DEFAULT_CONFIG());
+    Assertions.assertNotNull(applicationProperties.DEFAULT_CONFIG());
     Assertions.assertEquals(
-        APPLICATIONPROPERTIES.DEFAULT_CONFIG(), new File("serverpackcreator.conf"));
+        applicationProperties.DEFAULT_CONFIG(), new File("serverpackcreator.conf"));
 
-    Assertions.assertNotNull(APPLICATIONPROPERTIES.OLD_CONFIG());
-    Assertions.assertEquals(APPLICATIONPROPERTIES.OLD_CONFIG(), new File("creator.conf"));
+    Assertions.assertNotNull(applicationProperties.OLD_CONFIG());
+    Assertions.assertEquals(applicationProperties.OLD_CONFIG(), new File("creator.conf"));
 
-    Assertions.assertNotNull(APPLICATIONPROPERTIES.DEFAULT_SERVER_PROPERTIES());
+    Assertions.assertNotNull(applicationProperties.DEFAULT_SERVER_PROPERTIES());
     Assertions.assertEquals(
-        APPLICATIONPROPERTIES.DEFAULT_SERVER_PROPERTIES(), new File("server.properties"));
+        applicationProperties.DEFAULT_SERVER_PROPERTIES(), new File("server.properties"));
 
-    Assertions.assertNotNull(APPLICATIONPROPERTIES.DEFAULT_SERVER_ICON());
+    Assertions.assertNotNull(applicationProperties.DEFAULT_SERVER_ICON());
     Assertions.assertEquals(
-        APPLICATIONPROPERTIES.DEFAULT_SERVER_ICON(), new File("server-icon.png"));
+        applicationProperties.DEFAULT_SERVER_ICON(), new File("server-icon.png"));
 
-    Assertions.assertNotNull(APPLICATIONPROPERTIES.MINECRAFT_VERSION_MANIFEST());
+    Assertions.assertNotNull(applicationProperties.MINECRAFT_VERSION_MANIFEST());
     Assertions.assertEquals(
-        APPLICATIONPROPERTIES.MINECRAFT_VERSION_MANIFEST(), new File("minecraft-manifest.json"));
+        applicationProperties.MINECRAFT_VERSION_MANIFEST(), new File("minecraft-manifest.json"));
 
-    Assertions.assertNotNull(APPLICATIONPROPERTIES.FORGE_VERSION_MANIFEST());
+    Assertions.assertNotNull(applicationProperties.FORGE_VERSION_MANIFEST());
     Assertions.assertEquals(
-        APPLICATIONPROPERTIES.FORGE_VERSION_MANIFEST(), new File("forge-manifest.json"));
+        applicationProperties.FORGE_VERSION_MANIFEST(), new File("forge-manifest.json"));
 
-    Assertions.assertNotNull(APPLICATIONPROPERTIES.FABRIC_VERSION_MANIFEST());
+    Assertions.assertNotNull(applicationProperties.FABRIC_VERSION_MANIFEST());
     Assertions.assertEquals(
-        APPLICATIONPROPERTIES.FABRIC_VERSION_MANIFEST(), new File("fabric-manifest.xml"));
+        applicationProperties.FABRIC_VERSION_MANIFEST(), new File("fabric-manifest.xml"));
 
-    Assertions.assertNotNull(APPLICATIONPROPERTIES.FABRIC_INSTALLER_VERSION_MANIFEST());
+    Assertions.assertNotNull(applicationProperties.FABRIC_INSTALLER_VERSION_MANIFEST());
     Assertions.assertEquals(
-        APPLICATIONPROPERTIES.FABRIC_INSTALLER_VERSION_MANIFEST(),
+        applicationProperties.FABRIC_INSTALLER_VERSION_MANIFEST(),
         new File("fabric-installer-manifest.xml"));
 
-    Assertions.assertNotNull(APPLICATIONPROPERTIES.QUILT_VERSION_MANIFEST());
+    Assertions.assertNotNull(applicationProperties.QUILT_VERSION_MANIFEST());
     Assertions.assertEquals(
-        APPLICATIONPROPERTIES.QUILT_VERSION_MANIFEST(), new File("quilt-manifest.xml"));
+        applicationProperties.QUILT_VERSION_MANIFEST(), new File("quilt-manifest.xml"));
 
-    Assertions.assertNotNull(APPLICATIONPROPERTIES.QUILT_INSTALLER_VERSION_MANIFEST());
+    Assertions.assertNotNull(applicationProperties.QUILT_INSTALLER_VERSION_MANIFEST());
     Assertions.assertEquals(
-        APPLICATIONPROPERTIES.QUILT_INSTALLER_VERSION_MANIFEST(),
+        applicationProperties.QUILT_INSTALLER_VERSION_MANIFEST(),
         new File("quilt-installer-manifest.xml"));
 
-    Assertions.assertNotNull(APPLICATIONPROPERTIES.SERVERPACKCREATOR_DATABASE());
+    Assertions.assertNotNull(applicationProperties.SERVERPACKCREATOR_DATABASE());
     Assertions.assertEquals(
-        APPLICATIONPROPERTIES.SERVERPACKCREATOR_DATABASE(), new File("serverpackcreator.db"));
+        applicationProperties.SERVERPACKCREATOR_DATABASE(), new File("serverpackcreator.db"));
 
-    Assertions.assertNotNull(APPLICATIONPROPERTIES.MINECRAFT_VERSION_MANIFEST_LOCATION());
+    Assertions.assertNotNull(applicationProperties.MINECRAFT_VERSION_MANIFEST_LOCATION());
     Assertions.assertEquals(
-        APPLICATIONPROPERTIES.MINECRAFT_VERSION_MANIFEST_LOCATION(),
+        applicationProperties.MINECRAFT_VERSION_MANIFEST_LOCATION(),
         new File("./work/minecraft-manifest.json"));
 
-    Assertions.assertNotNull(APPLICATIONPROPERTIES.FORGE_VERSION_MANIFEST_LOCATION());
+    Assertions.assertNotNull(applicationProperties.FORGE_VERSION_MANIFEST_LOCATION());
     Assertions.assertEquals(
-        APPLICATIONPROPERTIES.FORGE_VERSION_MANIFEST_LOCATION(),
+        applicationProperties.FORGE_VERSION_MANIFEST_LOCATION(),
         new File("./work/forge-manifest.json"));
 
-    Assertions.assertNotNull(APPLICATIONPROPERTIES.FABRIC_VERSION_MANIFEST_LOCATION());
+    Assertions.assertNotNull(applicationProperties.FABRIC_VERSION_MANIFEST_LOCATION());
     Assertions.assertEquals(
-        APPLICATIONPROPERTIES.FABRIC_VERSION_MANIFEST_LOCATION(),
+        applicationProperties.FABRIC_VERSION_MANIFEST_LOCATION(),
         new File("./work/fabric-manifest.xml"));
 
-    Assertions.assertNotNull(APPLICATIONPROPERTIES.FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION());
+    Assertions.assertNotNull(applicationProperties.FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION());
     Assertions.assertEquals(
-        APPLICATIONPROPERTIES.FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION(),
+        applicationProperties.FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION(),
         new File("./work/fabric-installer-manifest.xml"));
 
-    Assertions.assertNotNull(APPLICATIONPROPERTIES.QUILT_VERSION_MANIFEST_LOCATION());
+    Assertions.assertNotNull(applicationProperties.QUILT_VERSION_MANIFEST_LOCATION());
     Assertions.assertEquals(
-        APPLICATIONPROPERTIES.QUILT_VERSION_MANIFEST_LOCATION(),
+        applicationProperties.QUILT_VERSION_MANIFEST_LOCATION(),
         new File("./work/quilt-manifest.xml"));
 
-    Assertions.assertNotNull(APPLICATIONPROPERTIES.QUILT_INSTALLER_VERSION_MANIFEST_LOCATION());
+    Assertions.assertNotNull(applicationProperties.QUILT_INSTALLER_VERSION_MANIFEST_LOCATION());
     Assertions.assertEquals(
-        APPLICATIONPROPERTIES.QUILT_INSTALLER_VERSION_MANIFEST_LOCATION(),
+        applicationProperties.QUILT_INSTALLER_VERSION_MANIFEST_LOCATION(),
         new File("./work/quilt-installer-manifest.xml"));
   }
 
   @Test
   void getDirectoryServerPacksTest() {
-    Assertions.assertNotNull(APPLICATIONPROPERTIES.getDirectoryServerPacks());
+    Assertions.assertNotNull(applicationProperties.getDirectoryServerPacks());
   }
 
   @Test
   void getListOfDirectoriesToExcludeTest() {
-    Assertions.assertNotNull(APPLICATIONPROPERTIES.getDirectoriesToExclude());
-    APPLICATIONPROPERTIES.addDirectoryToExclude("test");
-    Assertions.assertTrue(APPLICATIONPROPERTIES.getDirectoriesToExclude().contains("test"));
+    Assertions.assertNotNull(applicationProperties.getDirectoriesToExclude());
+    applicationProperties.addDirectoryToExclude("test");
+    Assertions.assertTrue(applicationProperties.getDirectoriesToExclude().contains("test"));
   }
 
   @Test
   void booleanTests() {
-    Assertions.assertFalse(APPLICATIONPROPERTIES.getSaveLoadedConfiguration());
-    Assertions.assertFalse(APPLICATIONPROPERTIES.checkForAvailablePreReleases());
+    Assertions.assertFalse(applicationProperties.getSaveLoadedConfiguration());
+    Assertions.assertFalse(applicationProperties.checkForAvailablePreReleases());
   }
 
   @Test
   void queueMaxUsageTest() {
-    Assertions.assertEquals(90, APPLICATIONPROPERTIES.getQueueMaxDiskUsage());
+    Assertions.assertEquals(90, applicationProperties.getQueueMaxDiskUsage());
   }
 
   @Test
   void getServerPackCreatorVersionTest() {
-    Assertions.assertEquals("dev", APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION());
+    Assertions.assertEquals("dev", applicationProperties.SERVERPACKCREATOR_VERSION());
   }
 }

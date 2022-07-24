@@ -20,9 +20,6 @@
 package de.griefed.serverpackcreator.utilities.common;
 
 import java.io.File;
-import java.io.PrintStream;
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -44,42 +41,7 @@ public class SystemUtilities {
               "A:", "B:", "C:", "D:", "E:", "F:", "G:", "H:", "I:", "J:", "K:", "L:", "M:", "N:",
               "O:", "P:", "Q:", "R:", "S:", "T:", "U:", "V:", "W:", "X:", "Y:", "Z:"));
 
-  private PrintStream ps;
-
-  public SystemUtilities() {
-    try {
-      ps = new PrintStream(System.out, true, StandardCharsets.UTF_8.name());
-    } catch (UnsupportedEncodingException ex) {
-      LOG.error("Couldn't set printStream.", ex);
-    }
-  }
-
-  /**
-   * Print the output to a new line to console using a {@link StandardCharsets#UTF_8} {@link
-   * PrintStream}.
-   *
-   * @author Griefed
-   * @param output {@link String} The text you want to print to console.
-   */
-  public void println(String output) {
-    if (ps == null) {
-      System.out.println(output);
-    }
-    ps.println(output);
-  }
-
-  /**
-   * Print the output to console using a {@link StandardCharsets#UTF_8} {@link PrintStream}.
-   *
-   * @author Griefed
-   * @param output {@link String} The text you want to print to console.
-   */
-  public void print(String output) {
-    if (ps == null) {
-      System.out.print(output);
-    }
-    ps.print(output);
-  }
+  public SystemUtilities() {}
 
   /**
    * Automatically acquire the path to the systems default Java installation.

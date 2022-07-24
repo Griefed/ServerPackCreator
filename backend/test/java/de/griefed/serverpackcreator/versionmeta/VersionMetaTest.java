@@ -1,62 +1,66 @@
 package de.griefed.serverpackcreator.versionmeta;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import de.griefed.serverpackcreator.ApplicationProperties;
 import java.io.IOException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class VersionMetaTest {
-
-  private final VersionMeta VERSIONMETA;
+  private final VersionMeta versionMeta;
 
   public VersionMetaTest() throws IOException {
-    ApplicationProperties APPLICATIONPROPERTIES = new ApplicationProperties();
-    this.VERSIONMETA =
+    ApplicationProperties applicationProperties = new ApplicationProperties();
+    versionMeta =
         new VersionMeta(
-            APPLICATIONPROPERTIES.MINECRAFT_VERSION_MANIFEST_LOCATION(),
-            APPLICATIONPROPERTIES.FORGE_VERSION_MANIFEST_LOCATION(),
-            APPLICATIONPROPERTIES.FABRIC_VERSION_MANIFEST_LOCATION(),
-            APPLICATIONPROPERTIES.FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION(),
-            APPLICATIONPROPERTIES.FABRIC_INTERMEDIARIES_MANIFEST_LOCATION(),
-            APPLICATIONPROPERTIES.QUILT_VERSION_MANIFEST_LOCATION(),
-            APPLICATIONPROPERTIES.QUILT_INSTALLER_VERSION_MANIFEST_LOCATION());
+            applicationProperties.MINECRAFT_VERSION_MANIFEST(),
+            applicationProperties.FORGE_VERSION_MANIFEST(),
+            applicationProperties.FABRIC_VERSION_MANIFEST(),
+            applicationProperties.FABRIC_INSTALLER_VERSION_MANIFEST(),
+            applicationProperties.FABRIC_INTERMEDIARIES_MANIFEST_LOCATION(),
+            applicationProperties.QUILT_VERSION_MANIFEST(),
+            applicationProperties.QUILT_INSTALLER_VERSION_MANIFEST(),
+            new ObjectMapper()
+                .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY));
   }
 
   @Test
   void meta() throws IOException {
-    Assertions.assertNotNull(VERSIONMETA.update());
+    Assertions.assertNotNull(versionMeta.update());
   }
 
   @Test
   void minecraft() {
-    Assertions.assertTrue(VERSIONMETA.minecraft().checkMinecraftVersion("1.16.5"));
-    Assertions.assertFalse(VERSIONMETA.minecraft().checkMinecraftVersion("1.16.7"));
-    Assertions.assertNotNull(VERSIONMETA.minecraft().latestRelease());
-    Assertions.assertNotNull(VERSIONMETA.minecraft().latestRelease().version());
-    Assertions.assertNotNull(VERSIONMETA.minecraft().latestRelease().server());
-    Assertions.assertNotNull(VERSIONMETA.minecraft().latestRelease().url());
-    Assertions.assertEquals(VERSIONMETA.minecraft().latestRelease().type(), Type.RELEASE);
-    Assertions.assertNotNull(VERSIONMETA.minecraft().releaseVersionsDescending());
-    Assertions.assertNotNull(VERSIONMETA.minecraft().releaseVersionsAscending());
-    Assertions.assertNotNull(VERSIONMETA.minecraft().releaseVersionsArrayDescending());
+    Assertions.assertTrue(versionMeta.minecraft().checkMinecraftVersion("1.16.5"));
+    Assertions.assertFalse(versionMeta.minecraft().checkMinecraftVersion("1.16.7"));
+    Assertions.assertNotNull(versionMeta.minecraft().latestRelease());
+    Assertions.assertNotNull(versionMeta.minecraft().latestRelease().version());
+    Assertions.assertNotNull(versionMeta.minecraft().latestRelease().server());
+    Assertions.assertNotNull(versionMeta.minecraft().latestRelease().url());
+    Assertions.assertEquals(versionMeta.minecraft().latestRelease().type(), Type.RELEASE);
+    Assertions.assertNotNull(versionMeta.minecraft().releaseVersionsDescending());
+    Assertions.assertNotNull(versionMeta.minecraft().releaseVersionsAscending());
+    Assertions.assertNotNull(versionMeta.minecraft().releaseVersionsArrayDescending());
     Assertions.assertEquals(
-        VERSIONMETA.minecraft().releaseVersionsArrayDescending().length,
-        VERSIONMETA.minecraft().releaseVersionsDescending().size());
+        versionMeta.minecraft().releaseVersionsArrayDescending().length,
+        versionMeta.minecraft().releaseVersionsDescending().size());
     Assertions.assertEquals(
-        VERSIONMETA.minecraft().releaseVersionsArrayDescending()[0],
-        VERSIONMETA.minecraft()
+        versionMeta.minecraft().releaseVersionsArrayDescending()[0],
+        versionMeta.minecraft()
             .releaseVersionsArrayAscending()[
-            VERSIONMETA.minecraft().releaseVersionsArrayAscending().length - 1]);
-    Assertions.assertNotNull(VERSIONMETA.minecraft().releaseVersionsArrayAscending());
+            versionMeta.minecraft().releaseVersionsArrayAscending().length - 1]);
+    Assertions.assertNotNull(versionMeta.minecraft().releaseVersionsArrayAscending());
     Assertions.assertEquals(
-        VERSIONMETA.minecraft().releaseVersionsArrayAscending().length,
-        VERSIONMETA.minecraft().releaseVersionsAscending().size());
+        versionMeta.minecraft().releaseVersionsArrayAscending().length,
+        versionMeta.minecraft().releaseVersionsAscending().size());
     Assertions.assertEquals(
-        VERSIONMETA.minecraft().releaseVersionsArrayAscending()[0],
-        VERSIONMETA.minecraft()
+        versionMeta.minecraft().releaseVersionsArrayAscending()[0],
+        versionMeta.minecraft()
             .releaseVersionsArrayDescending()[
-            VERSIONMETA.minecraft().releaseVersionsArrayDescending().length - 1]);
-    VERSIONMETA
+            versionMeta.minecraft().releaseVersionsArrayDescending().length - 1]);
+    versionMeta
         .minecraft()
         .releasesDescending()
         .forEach(
@@ -75,31 +79,31 @@ public class VersionMetaTest {
               Assertions.assertNotNull(release.url());
               Assertions.assertEquals(release.type(), Type.RELEASE);
             });
-    Assertions.assertNotNull(VERSIONMETA.minecraft().latestSnapshot());
-    Assertions.assertNotNull(VERSIONMETA.minecraft().latestSnapshot().version());
-    Assertions.assertNotNull(VERSIONMETA.minecraft().latestSnapshot().url());
-    Assertions.assertEquals(VERSIONMETA.minecraft().latestSnapshot().type(), Type.SNAPSHOT);
-    Assertions.assertNotNull(VERSIONMETA.minecraft().snapshotsVersionsDescending());
-    Assertions.assertNotNull(VERSIONMETA.minecraft().snapshotVersionsAscending());
-    Assertions.assertNotNull(VERSIONMETA.minecraft().snapshotVersionsArrayDescending());
+    Assertions.assertNotNull(versionMeta.minecraft().latestSnapshot());
+    Assertions.assertNotNull(versionMeta.minecraft().latestSnapshot().version());
+    Assertions.assertNotNull(versionMeta.minecraft().latestSnapshot().url());
+    Assertions.assertEquals(versionMeta.minecraft().latestSnapshot().type(), Type.SNAPSHOT);
+    Assertions.assertNotNull(versionMeta.minecraft().snapshotsVersionsDescending());
+    Assertions.assertNotNull(versionMeta.minecraft().snapshotVersionsAscending());
+    Assertions.assertNotNull(versionMeta.minecraft().snapshotVersionsArrayDescending());
     Assertions.assertEquals(
-        VERSIONMETA.minecraft().snapshotVersionsArrayDescending().length,
-        VERSIONMETA.minecraft().snapshotsVersionsDescending().size());
+        versionMeta.minecraft().snapshotVersionsArrayDescending().length,
+        versionMeta.minecraft().snapshotsVersionsDescending().size());
     Assertions.assertEquals(
-        VERSIONMETA.minecraft().snapshotVersionsArrayDescending()[0],
-        VERSIONMETA.minecraft()
+        versionMeta.minecraft().snapshotVersionsArrayDescending()[0],
+        versionMeta.minecraft()
             .snapshotVersionsArrayAscending()[
-            VERSIONMETA.minecraft().snapshotVersionsArrayAscending().length - 1]);
-    Assertions.assertNotNull(VERSIONMETA.minecraft().snapshotVersionsArrayAscending());
+            versionMeta.minecraft().snapshotVersionsArrayAscending().length - 1]);
+    Assertions.assertNotNull(versionMeta.minecraft().snapshotVersionsArrayAscending());
     Assertions.assertEquals(
-        VERSIONMETA.minecraft().snapshotVersionsArrayAscending().length,
-        VERSIONMETA.minecraft().snapshotVersionsAscending().size());
+        versionMeta.minecraft().snapshotVersionsArrayAscending().length,
+        versionMeta.minecraft().snapshotVersionsAscending().size());
     Assertions.assertEquals(
-        VERSIONMETA.minecraft().snapshotVersionsArrayAscending()[0],
-        VERSIONMETA.minecraft()
+        versionMeta.minecraft().snapshotVersionsArrayAscending()[0],
+        versionMeta.minecraft()
             .snapshotVersionsArrayDescending()[
-            VERSIONMETA.minecraft().snapshotVersionsArrayDescending().length - 1]);
-    VERSIONMETA
+            versionMeta.minecraft().snapshotVersionsArrayDescending().length - 1]);
+    versionMeta
         .minecraft()
         .releasesDescending()
         .forEach(
@@ -122,48 +126,48 @@ public class VersionMetaTest {
                         });
               }
             });
-    VERSIONMETA
+    versionMeta
         .minecraft()
         .releaseVersionsAscending()
         .forEach(
-            mcVer -> Assertions.assertTrue(VERSIONMETA.minecraft().getClient(mcVer).isPresent()));
-    Assertions.assertNotNull(VERSIONMETA.minecraft().releasesArrayAscending());
+            mcVer -> Assertions.assertTrue(versionMeta.minecraft().getClient(mcVer).isPresent()));
+    Assertions.assertNotNull(versionMeta.minecraft().releasesArrayAscending());
     Assertions.assertEquals(
-        VERSIONMETA.minecraft().releasesArrayAscending().length,
-        VERSIONMETA.minecraft().releasesAscending().size());
+        versionMeta.minecraft().releasesArrayAscending().length,
+        versionMeta.minecraft().releasesAscending().size());
     Assertions.assertEquals(
-        VERSIONMETA.minecraft().releasesArrayAscending()[0],
-        VERSIONMETA.minecraft()
+        versionMeta.minecraft().releasesArrayAscending()[0],
+        versionMeta.minecraft()
             .releasesArrayDescending()[
-            VERSIONMETA.minecraft().releasesArrayDescending().length - 1]);
-    Assertions.assertNotNull(VERSIONMETA.minecraft().snapshotsDescending());
-    Assertions.assertNotNull(VERSIONMETA.minecraft().snapshotsAscending());
-    Assertions.assertNotNull(VERSIONMETA.minecraft().snapshotsArrayDescending());
+            versionMeta.minecraft().releasesArrayDescending().length - 1]);
+    Assertions.assertNotNull(versionMeta.minecraft().snapshotsDescending());
+    Assertions.assertNotNull(versionMeta.minecraft().snapshotsAscending());
+    Assertions.assertNotNull(versionMeta.minecraft().snapshotsArrayDescending());
     Assertions.assertEquals(
-        VERSIONMETA.minecraft().snapshotsArrayDescending().length,
-        VERSIONMETA.minecraft().snapshotsDescending().size());
+        versionMeta.minecraft().snapshotsArrayDescending().length,
+        versionMeta.minecraft().snapshotsDescending().size());
     Assertions.assertEquals(
-        VERSIONMETA.minecraft().snapshotsArrayDescending()[0],
-        VERSIONMETA.minecraft()
+        versionMeta.minecraft().snapshotsArrayDescending()[0],
+        versionMeta.minecraft()
             .snapshotsArrayAscending()[
-            VERSIONMETA.minecraft().snapshotsArrayAscending().length - 1]);
-    Assertions.assertNotNull(VERSIONMETA.minecraft().snapshotsArrayAscending());
+            versionMeta.minecraft().snapshotsArrayAscending().length - 1]);
+    Assertions.assertNotNull(versionMeta.minecraft().snapshotsArrayAscending());
     Assertions.assertEquals(
-        VERSIONMETA.minecraft().snapshotsArrayAscending().length,
-        VERSIONMETA.minecraft().snapshotsAscending().size());
+        versionMeta.minecraft().snapshotsArrayAscending().length,
+        versionMeta.minecraft().snapshotsAscending().size());
     Assertions.assertEquals(
-        VERSIONMETA.minecraft().snapshotsArrayAscending()[0],
-        VERSIONMETA.minecraft()
+        versionMeta.minecraft().snapshotsArrayAscending()[0],
+        versionMeta.minecraft()
             .snapshotsArrayDescending()[
-            VERSIONMETA.minecraft().snapshotsArrayDescending().length - 1]);
-    Assertions.assertNotNull(VERSIONMETA.minecraft().getServer("1.16.5").get());
-    Assertions.assertTrue(VERSIONMETA.minecraft().checkServerAvailability("1.16.5"));
-    Assertions.assertFalse(VERSIONMETA.minecraft().checkServerAvailability("1.16.6"));
-    Assertions.assertNotNull(VERSIONMETA.minecraft().latestReleaseServer());
-    Assertions.assertNotNull(VERSIONMETA.minecraft().latestSnapshotServer());
-    Assertions.assertNotNull(VERSIONMETA.minecraft().releasesServersDescending());
-    Assertions.assertNotNull(VERSIONMETA.minecraft().releasesServersAscending());
-    VERSIONMETA
+            versionMeta.minecraft().snapshotsArrayDescending().length - 1]);
+    Assertions.assertNotNull(versionMeta.minecraft().getServer("1.16.5").get());
+    Assertions.assertTrue(versionMeta.minecraft().checkServerAvailability("1.16.5"));
+    Assertions.assertFalse(versionMeta.minecraft().checkServerAvailability("1.16.6"));
+    Assertions.assertNotNull(versionMeta.minecraft().latestReleaseServer());
+    Assertions.assertNotNull(versionMeta.minecraft().latestSnapshotServer());
+    Assertions.assertNotNull(versionMeta.minecraft().releasesServersDescending());
+    Assertions.assertNotNull(versionMeta.minecraft().releasesServersAscending());
+    versionMeta
         .minecraft()
         .snapshotsDescending()
         .forEach(
@@ -173,96 +177,96 @@ public class VersionMetaTest {
               Assertions.assertNotNull(snapshot.url());
               Assertions.assertEquals(snapshot.type(), Type.SNAPSHOT);
             });
-    Assertions.assertNotNull(VERSIONMETA.minecraft().releasesServersArrayDescending());
+    Assertions.assertNotNull(versionMeta.minecraft().releasesServersArrayDescending());
     Assertions.assertEquals(
-        VERSIONMETA.minecraft().releasesServersArrayDescending().length,
-        VERSIONMETA.minecraft().releasesServersDescending().size());
+        versionMeta.minecraft().releasesServersArrayDescending().length,
+        versionMeta.minecraft().releasesServersDescending().size());
     Assertions.assertEquals(
-        VERSIONMETA.minecraft().releasesServersArrayDescending()[0],
-        VERSIONMETA.minecraft()
+        versionMeta.minecraft().releasesServersArrayDescending()[0],
+        versionMeta.minecraft()
             .releasesServersArrayAscending()[
-            VERSIONMETA.minecraft().releasesServersArrayAscending().length - 1]);
-    Assertions.assertNotNull(VERSIONMETA.minecraft().releasesServersArrayAscending());
+            versionMeta.minecraft().releasesServersArrayAscending().length - 1]);
+    Assertions.assertNotNull(versionMeta.minecraft().releasesServersArrayAscending());
     Assertions.assertEquals(
-        VERSIONMETA.minecraft().releasesServersArrayAscending().length,
-        VERSIONMETA.minecraft().releasesServersAscending().size());
+        versionMeta.minecraft().releasesServersArrayAscending().length,
+        versionMeta.minecraft().releasesServersAscending().size());
     Assertions.assertEquals(
-        VERSIONMETA.minecraft().releasesServersArrayAscending()[0],
-        VERSIONMETA.minecraft()
+        versionMeta.minecraft().releasesServersArrayAscending()[0],
+        versionMeta.minecraft()
             .releasesServersArrayDescending()[
-            VERSIONMETA.minecraft().releasesServersArrayDescending().length - 1]);
-    Assertions.assertNotNull(VERSIONMETA.minecraft().snapshotsServersDescending());
-    Assertions.assertNotNull(VERSIONMETA.minecraft().snapshotsServersAscending());
-    Assertions.assertNotNull(VERSIONMETA.minecraft().snapshotsServersArrayDescending());
+            versionMeta.minecraft().releasesServersArrayDescending().length - 1]);
+    Assertions.assertNotNull(versionMeta.minecraft().snapshotsServersDescending());
+    Assertions.assertNotNull(versionMeta.minecraft().snapshotsServersAscending());
+    Assertions.assertNotNull(versionMeta.minecraft().snapshotsServersArrayDescending());
     Assertions.assertEquals(
-        VERSIONMETA.minecraft().snapshotsServersArrayDescending().length,
-        VERSIONMETA.minecraft().snapshotsServersDescending().size());
+        versionMeta.minecraft().snapshotsServersArrayDescending().length,
+        versionMeta.minecraft().snapshotsServersDescending().size());
     Assertions.assertEquals(
-        VERSIONMETA.minecraft().snapshotsServersArrayDescending()[0],
-        VERSIONMETA.minecraft()
+        versionMeta.minecraft().snapshotsServersArrayDescending()[0],
+        versionMeta.minecraft()
             .snapshotsServersArrayAscending()[
-            VERSIONMETA.minecraft().snapshotsServersArrayAscending().length - 1]);
-    Assertions.assertNotNull(VERSIONMETA.minecraft().snapshotsServersArrayAscending());
+            versionMeta.minecraft().snapshotsServersArrayAscending().length - 1]);
+    Assertions.assertNotNull(versionMeta.minecraft().snapshotsServersArrayAscending());
     Assertions.assertEquals(
-        VERSIONMETA.minecraft().snapshotsServersArrayAscending().length,
-        VERSIONMETA.minecraft().snapshotsServersAscending().size());
+        versionMeta.minecraft().snapshotsServersArrayAscending().length,
+        versionMeta.minecraft().snapshotsServersAscending().size());
     Assertions.assertEquals(
-        VERSIONMETA.minecraft().snapshotsServersArrayAscending()[0],
-        VERSIONMETA.minecraft()
+        versionMeta.minecraft().snapshotsServersArrayAscending()[0],
+        versionMeta.minecraft()
             .snapshotsServersArrayDescending()[
-            VERSIONMETA.minecraft().snapshotsServersArrayDescending().length - 1]);
+            versionMeta.minecraft().snapshotsServersArrayDescending().length - 1]);
   }
 
   @Test
   void forge() {
-    Assertions.assertTrue(VERSIONMETA.forge().checkForgeVersion("40.0.45"));
-    Assertions.assertFalse(VERSIONMETA.forge().checkForgeVersion("40.99.99"));
-    Assertions.assertTrue(VERSIONMETA.forge().checkMinecraftVersion("1.16.5"));
-    Assertions.assertFalse(VERSIONMETA.forge().checkMinecraftVersion("1.16.8"));
-    Assertions.assertTrue(VERSIONMETA.forge().checkForgeAndMinecraftVersion("1.18.2", "40.0.45"));
-    Assertions.assertFalse(VERSIONMETA.forge().checkForgeAndMinecraftVersion("1.18.21", "99.0.45"));
-    Assertions.assertTrue(VERSIONMETA.forge().isForgeInstanceAvailable("1.18.2", "40.0.45"));
-    Assertions.assertFalse(VERSIONMETA.forge().isForgeInstanceAvailable("1.182.2", "40.023.45"));
-    Assertions.assertTrue(VERSIONMETA.forge().isForgeInstanceAvailable("40.0.4"));
-    Assertions.assertFalse(VERSIONMETA.forge().isForgeInstanceAvailable("40.0123.4"));
-    Assertions.assertNotNull(VERSIONMETA.forge().supportedMinecraftVersion("40.0.4").get());
-    Assertions.assertTrue(VERSIONMETA.forge().supportedMinecraftVersion("40.0.4").isPresent());
-    Assertions.assertFalse(VERSIONMETA.forge().supportedMinecraftVersion("40.0123.4").isPresent());
-    Assertions.assertNotNull(VERSIONMETA.forge().getForgeInstance("1.18.2", "40.0.45").get());
-    Assertions.assertTrue(VERSIONMETA.forge().getForgeInstance("1.18.2", "40.0.45").isPresent());
+    Assertions.assertTrue(versionMeta.forge().checkForgeVersion("40.0.45"));
+    Assertions.assertFalse(versionMeta.forge().checkForgeVersion("40.99.99"));
+    Assertions.assertTrue(versionMeta.forge().checkMinecraftVersion("1.16.5"));
+    Assertions.assertFalse(versionMeta.forge().checkMinecraftVersion("1.16.8"));
+    Assertions.assertTrue(versionMeta.forge().checkForgeAndMinecraftVersion("1.18.2", "40.0.45"));
+    Assertions.assertFalse(versionMeta.forge().checkForgeAndMinecraftVersion("1.18.21", "99.0.45"));
+    Assertions.assertTrue(versionMeta.forge().isForgeInstanceAvailable("1.18.2", "40.0.45"));
+    Assertions.assertFalse(versionMeta.forge().isForgeInstanceAvailable("1.182.2", "40.023.45"));
+    Assertions.assertTrue(versionMeta.forge().isForgeInstanceAvailable("40.0.4"));
+    Assertions.assertFalse(versionMeta.forge().isForgeInstanceAvailable("40.0123.4"));
+    Assertions.assertNotNull(versionMeta.forge().supportedMinecraftVersion("40.0.4").get());
+    Assertions.assertTrue(versionMeta.forge().supportedMinecraftVersion("40.0.4").isPresent());
+    Assertions.assertFalse(versionMeta.forge().supportedMinecraftVersion("40.0123.4").isPresent());
+    Assertions.assertNotNull(versionMeta.forge().getForgeInstance("1.18.2", "40.0.45").get());
+    Assertions.assertTrue(versionMeta.forge().getForgeInstance("1.18.2", "40.0.45").isPresent());
     Assertions.assertFalse(
-        VERSIONMETA.forge().getForgeInstance("1.18.2", "40.0123.45").isPresent());
-    Assertions.assertNotNull(VERSIONMETA.forge().getForgeInstance("40.0.45").get());
-    Assertions.assertTrue(VERSIONMETA.forge().getForgeInstance("40.0.45").isPresent());
-    Assertions.assertFalse(VERSIONMETA.forge().getForgeInstance("40.0.45123").isPresent());
-    Assertions.assertNotNull(VERSIONMETA.forge().forgeVersions());
-    Assertions.assertNotNull(VERSIONMETA.forge().forgeVersionsDescending());
-    Assertions.assertNotNull(VERSIONMETA.forge().forgeVersionsArray());
-    Assertions.assertNotNull(VERSIONMETA.forge().forgeVersionsArrayDescending());
-    VERSIONMETA
+        versionMeta.forge().getForgeInstance("1.18.2", "40.0123.45").isPresent());
+    Assertions.assertNotNull(versionMeta.forge().getForgeInstance("40.0.45").get());
+    Assertions.assertTrue(versionMeta.forge().getForgeInstance("40.0.45").isPresent());
+    Assertions.assertFalse(versionMeta.forge().getForgeInstance("40.0.45123").isPresent());
+    Assertions.assertNotNull(versionMeta.forge().forgeVersions());
+    Assertions.assertNotNull(versionMeta.forge().forgeVersionsDescending());
+    Assertions.assertNotNull(versionMeta.forge().forgeVersionsArray());
+    Assertions.assertNotNull(versionMeta.forge().forgeVersionsArrayDescending());
+    versionMeta
         .forge()
         .forgeVersions()
         .forEach(
             forgeVersion -> {
-              Assertions.assertTrue(VERSIONMETA.forge().getForgeInstance(forgeVersion).isPresent());
-              Assertions.assertNotNull(VERSIONMETA.forge().getForgeInstance(forgeVersion).get());
+              Assertions.assertTrue(versionMeta.forge().getForgeInstance(forgeVersion).isPresent());
+              Assertions.assertNotNull(versionMeta.forge().getForgeInstance(forgeVersion).get());
               Assertions.assertNotNull(
-                  VERSIONMETA.forge().getForgeInstance(forgeVersion).get().forgeVersion());
+                  versionMeta.forge().getForgeInstance(forgeVersion).get().forgeVersion());
               Assertions.assertNotNull(
-                  VERSIONMETA.forge().getForgeInstance(forgeVersion).get().minecraftVersion());
+                  versionMeta.forge().getForgeInstance(forgeVersion).get().minecraftVersion());
               Assertions.assertNotNull(
-                  VERSIONMETA.forge().getForgeInstance(forgeVersion).get().installerUrl());
+                  versionMeta.forge().getForgeInstance(forgeVersion).get().installerUrl());
               Assertions.assertNotNull(
-                  VERSIONMETA.forge().getForgeInstance(forgeVersion).get().minecraftClient());
+                  versionMeta.forge().getForgeInstance(forgeVersion).get().minecraftClient());
             });
-    VERSIONMETA
+    versionMeta
         .forge()
         .minecraftVersionsAscending()
         .forEach(
             minecraftVersion -> {
               Assertions.assertTrue(
-                  VERSIONMETA.forge().getForgeInstances(minecraftVersion).isPresent());
-              VERSIONMETA
+                  versionMeta.forge().getForgeInstances(minecraftVersion).isPresent());
+              versionMeta
                   .forge()
                   .getForgeInstances(minecraftVersion)
                   .get()
@@ -275,15 +279,15 @@ public class VersionMetaTest {
                         Assertions.assertNotNull(instance.minecraftClient());
                       });
             });
-    VERSIONMETA
+    versionMeta
         .forge()
         .minecraftVersionsDescending()
         .forEach(
             minecraftVersion -> {
               Assertions.assertTrue(
-                  VERSIONMETA.forge().getForgeInstances(minecraftVersion).isPresent());
-              if (VERSIONMETA.forge().getForgeInstances(minecraftVersion).isPresent()) {
-                VERSIONMETA
+                  versionMeta.forge().getForgeInstances(minecraftVersion).isPresent());
+              if (versionMeta.forge().getForgeInstances(minecraftVersion).isPresent()) {
+                versionMeta
                     .forge()
                     .getForgeInstances(minecraftVersion)
                     .get()
@@ -297,168 +301,168 @@ public class VersionMetaTest {
                         });
               }
             });
-    Assertions.assertNotNull(VERSIONMETA.forge().latestForgeVersion("1.18.2").get());
-    Assertions.assertTrue(VERSIONMETA.forge().latestForgeVersion("1.18.2").isPresent());
-    Assertions.assertFalse(VERSIONMETA.forge().latestForgeVersion("1.18.2123").isPresent());
-    Assertions.assertNotNull(VERSIONMETA.forge().oldestForgeVersion("1.18.2").get());
-    Assertions.assertTrue(VERSIONMETA.forge().oldestForgeVersion("1.18.2").isPresent());
-    Assertions.assertFalse(VERSIONMETA.forge().oldestForgeVersion("1.18.2123").isPresent());
-    Assertions.assertNotNull(VERSIONMETA.forge().minecraftVersionsArrayAscending());
+    Assertions.assertNotNull(versionMeta.forge().latestForgeVersion("1.18.2").get());
+    Assertions.assertTrue(versionMeta.forge().latestForgeVersion("1.18.2").isPresent());
+    Assertions.assertFalse(versionMeta.forge().latestForgeVersion("1.18.2123").isPresent());
+    Assertions.assertNotNull(versionMeta.forge().oldestForgeVersion("1.18.2").get());
+    Assertions.assertTrue(versionMeta.forge().oldestForgeVersion("1.18.2").isPresent());
+    Assertions.assertFalse(versionMeta.forge().oldestForgeVersion("1.18.2123").isPresent());
+    Assertions.assertNotNull(versionMeta.forge().minecraftVersionsArrayAscending());
     Assertions.assertEquals(
-        VERSIONMETA.forge().minecraftVersionsArrayAscending().length,
-        VERSIONMETA.forge().minecraftVersionsAscending().size());
+        versionMeta.forge().minecraftVersionsArrayAscending().length,
+        versionMeta.forge().minecraftVersionsAscending().size());
     Assertions.assertEquals(
-        VERSIONMETA.forge().minecraftVersionsArrayAscending()[0],
-        VERSIONMETA.forge()
+        versionMeta.forge().minecraftVersionsArrayAscending()[0],
+        versionMeta.forge()
             .minecraftVersionsArrayDescending()[
-            VERSIONMETA.forge().minecraftVersionsArrayDescending().length - 1]);
-    Assertions.assertNotNull(VERSIONMETA.forge().minecraftVersionsArrayDescending());
+            versionMeta.forge().minecraftVersionsArrayDescending().length - 1]);
+    Assertions.assertNotNull(versionMeta.forge().minecraftVersionsArrayDescending());
     Assertions.assertEquals(
-        VERSIONMETA.forge().minecraftVersionsArrayDescending().length,
-        VERSIONMETA.forge().minecraftVersionsDescending().size());
+        versionMeta.forge().minecraftVersionsArrayDescending().length,
+        versionMeta.forge().minecraftVersionsDescending().size());
     Assertions.assertEquals(
-        VERSIONMETA.forge().minecraftVersionsArrayDescending()[0],
-        VERSIONMETA.forge()
+        versionMeta.forge().minecraftVersionsArrayDescending()[0],
+        versionMeta.forge()
             .minecraftVersionsArrayAscending()[
-            VERSIONMETA.forge().minecraftVersionsArrayAscending().length - 1]);
-    Assertions.assertNotNull(VERSIONMETA.forge().availableForgeVersionsAscending("1.16.5").get());
+            versionMeta.forge().minecraftVersionsArrayAscending().length - 1]);
+    Assertions.assertNotNull(versionMeta.forge().availableForgeVersionsAscending("1.16.5").get());
     Assertions.assertTrue(
-        VERSIONMETA.forge().availableForgeVersionsAscending("1.16.5").isPresent());
+        versionMeta.forge().availableForgeVersionsAscending("1.16.5").isPresent());
     Assertions.assertFalse(
-        VERSIONMETA.forge().availableForgeVersionsAscending("1.16.5123").isPresent());
-    Assertions.assertNotNull(VERSIONMETA.forge().availableForgeVersionsDescending("1.16.5").get());
+        versionMeta.forge().availableForgeVersionsAscending("1.16.5123").isPresent());
+    Assertions.assertNotNull(versionMeta.forge().availableForgeVersionsDescending("1.16.5").get());
     Assertions.assertTrue(
-        VERSIONMETA.forge().availableForgeVersionsDescending("1.16.5").isPresent());
+        versionMeta.forge().availableForgeVersionsDescending("1.16.5").isPresent());
     Assertions.assertFalse(
-        VERSIONMETA.forge().availableForgeVersionsDescending("1.16.5123").isPresent());
+        versionMeta.forge().availableForgeVersionsDescending("1.16.5123").isPresent());
     Assertions.assertNotNull(
-        VERSIONMETA.forge().availableForgeVersionsArrayAscending("1.16.5").get());
+        versionMeta.forge().availableForgeVersionsArrayAscending("1.16.5").get());
     Assertions.assertTrue(
-        VERSIONMETA.forge().availableForgeVersionsArrayAscending("1.16.5").isPresent());
+        versionMeta.forge().availableForgeVersionsArrayAscending("1.16.5").isPresent());
     Assertions.assertFalse(
-        VERSIONMETA.forge().availableForgeVersionsArrayAscending("1.16.5123").isPresent());
+        versionMeta.forge().availableForgeVersionsArrayAscending("1.16.5123").isPresent());
     Assertions.assertEquals(
-        VERSIONMETA.forge().availableForgeVersionsArrayAscending("1.16.5").get().length,
-        VERSIONMETA.forge().availableForgeVersionsAscending("1.16.5").get().size());
+        versionMeta.forge().availableForgeVersionsArrayAscending("1.16.5").get().length,
+        versionMeta.forge().availableForgeVersionsAscending("1.16.5").get().size());
     Assertions.assertEquals(
-        VERSIONMETA.forge().availableForgeVersionsArrayAscending("1.16.5").get()[0],
-        VERSIONMETA
+        versionMeta.forge().availableForgeVersionsArrayAscending("1.16.5").get()[0],
+        versionMeta
             .forge()
             .availableForgeVersionsArrayDescending("1.16.5")
             .get()[
-            VERSIONMETA.forge().availableForgeVersionsArrayDescending("1.16.5").get().length - 1]);
+            versionMeta.forge().availableForgeVersionsArrayDescending("1.16.5").get().length - 1]);
     Assertions.assertNotNull(
-        VERSIONMETA.forge().availableForgeVersionsArrayDescending("1.16.5").get());
+        versionMeta.forge().availableForgeVersionsArrayDescending("1.16.5").get());
     Assertions.assertTrue(
-        VERSIONMETA.forge().availableForgeVersionsArrayDescending("1.16.5").isPresent());
+        versionMeta.forge().availableForgeVersionsArrayDescending("1.16.5").isPresent());
     Assertions.assertFalse(
-        VERSIONMETA.forge().availableForgeVersionsArrayDescending("1.16.5123").isPresent());
+        versionMeta.forge().availableForgeVersionsArrayDescending("1.16.5123").isPresent());
     Assertions.assertEquals(
-        VERSIONMETA.forge().availableForgeVersionsArrayDescending("1.16.5").get().length,
-        VERSIONMETA.forge().availableForgeVersionsDescending("1.16.5").get().size());
+        versionMeta.forge().availableForgeVersionsArrayDescending("1.16.5").get().length,
+        versionMeta.forge().availableForgeVersionsDescending("1.16.5").get().size());
     Assertions.assertEquals(
-        VERSIONMETA.forge().availableForgeVersionsArrayDescending("1.16.5").get()[0],
-        VERSIONMETA
+        versionMeta.forge().availableForgeVersionsArrayDescending("1.16.5").get()[0],
+        versionMeta
             .forge()
             .availableForgeVersionsArrayAscending("1.16.5")
             .get()[
-            VERSIONMETA.forge().availableForgeVersionsArrayAscending("1.16.5").get().length - 1]);
-    Assertions.assertNotNull(VERSIONMETA.forge().installerUrl("40.0.45").get());
-    Assertions.assertTrue(VERSIONMETA.forge().installerUrl("40.0.45").isPresent());
-    Assertions.assertFalse(VERSIONMETA.forge().installerUrl("40.0.41235").isPresent());
+            versionMeta.forge().availableForgeVersionsArrayAscending("1.16.5").get().length - 1]);
+    Assertions.assertNotNull(versionMeta.forge().installerUrl("40.0.45").get());
+    Assertions.assertTrue(versionMeta.forge().installerUrl("40.0.45").isPresent());
+    Assertions.assertFalse(versionMeta.forge().installerUrl("40.0.41235").isPresent());
   }
 
   @Test
   void fabric() {
-    Assertions.assertNotNull(VERSIONMETA.fabric().loaderVersionsAscending());
-    Assertions.assertNotNull(VERSIONMETA.fabric().loaderVersionsDescending());
-    Assertions.assertNotNull(VERSIONMETA.fabric().loaderVersionsArrayAscending());
-    Assertions.assertNotNull(VERSIONMETA.fabric().loaderVersionsArrayDescending());
-    Assertions.assertNotNull(VERSIONMETA.fabric().latestLoaderVersion());
-    Assertions.assertNotNull(VERSIONMETA.fabric().releaseLoaderVersion());
-    Assertions.assertNotNull(VERSIONMETA.fabric().latestInstallerVersion());
-    Assertions.assertNotNull(VERSIONMETA.fabric().releaseInstallerVersion());
-    Assertions.assertNotNull(VERSIONMETA.fabric().installerVersionsAscending());
-    Assertions.assertNotNull(VERSIONMETA.fabric().installerVersionsDescending());
-    Assertions.assertNotNull(VERSIONMETA.fabric().installerVersionsAscending());
-    Assertions.assertNotNull(VERSIONMETA.fabric().installerVersionsArrayAscending());
+    Assertions.assertNotNull(versionMeta.fabric().loaderVersionsAscending());
+    Assertions.assertNotNull(versionMeta.fabric().loaderVersionsDescending());
+    Assertions.assertNotNull(versionMeta.fabric().loaderVersionsArrayAscending());
+    Assertions.assertNotNull(versionMeta.fabric().loaderVersionsArrayDescending());
+    Assertions.assertNotNull(versionMeta.fabric().latestLoaderVersion());
+    Assertions.assertNotNull(versionMeta.fabric().releaseLoaderVersion());
+    Assertions.assertNotNull(versionMeta.fabric().latestInstallerVersion());
+    Assertions.assertNotNull(versionMeta.fabric().releaseInstallerVersion());
+    Assertions.assertNotNull(versionMeta.fabric().installerVersionsAscending());
+    Assertions.assertNotNull(versionMeta.fabric().installerVersionsDescending());
+    Assertions.assertNotNull(versionMeta.fabric().installerVersionsAscending());
+    Assertions.assertNotNull(versionMeta.fabric().installerVersionsArrayAscending());
     Assertions.assertEquals(
-        VERSIONMETA.fabric().installerVersionsArrayAscending().length,
-        VERSIONMETA.fabric().installerVersionsAscending().size());
+        versionMeta.fabric().installerVersionsArrayAscending().length,
+        versionMeta.fabric().installerVersionsAscending().size());
     Assertions.assertEquals(
-        VERSIONMETA.fabric().installerVersionsArrayAscending()[0],
-        VERSIONMETA.fabric()
+        versionMeta.fabric().installerVersionsArrayAscending()[0],
+        versionMeta.fabric()
             .installerVersionsArrayDescending()[
-            VERSIONMETA.fabric().installerVersionsArrayDescending().length - 1]);
-    Assertions.assertNotNull(VERSIONMETA.fabric().installerVersionsArrayDescending());
+            versionMeta.fabric().installerVersionsArrayDescending().length - 1]);
+    Assertions.assertNotNull(versionMeta.fabric().installerVersionsArrayDescending());
     Assertions.assertEquals(
-        VERSIONMETA.fabric().installerVersionsArrayDescending().length,
-        VERSIONMETA.fabric().installerVersionsDescending().size());
+        versionMeta.fabric().installerVersionsArrayDescending().length,
+        versionMeta.fabric().installerVersionsDescending().size());
     Assertions.assertEquals(
-        VERSIONMETA.fabric().installerVersionsArrayDescending()[0],
-        VERSIONMETA.fabric()
+        versionMeta.fabric().installerVersionsArrayDescending()[0],
+        versionMeta.fabric()
             .installerVersionsArrayAscending()[
-            VERSIONMETA.fabric().installerVersionsArrayAscending().length - 1]);
-    Assertions.assertNotNull(VERSIONMETA.fabric().latestInstallerUrl());
-    Assertions.assertNotNull(VERSIONMETA.fabric().releaseInstallerUrl());
-    VERSIONMETA
+            versionMeta.fabric().installerVersionsArrayAscending().length - 1]);
+    Assertions.assertNotNull(versionMeta.fabric().latestInstallerUrl());
+    Assertions.assertNotNull(versionMeta.fabric().releaseInstallerUrl());
+    versionMeta
         .fabric()
         .installerVersionsAscending()
         .forEach(
             version -> {
-              Assertions.assertTrue(VERSIONMETA.fabric().isInstallerUrlAvailable(version));
-              Assertions.assertNotNull(VERSIONMETA.fabric().installerUrl(version).get());
+              Assertions.assertTrue(versionMeta.fabric().isInstallerUrlAvailable(version));
+              Assertions.assertNotNull(versionMeta.fabric().installerUrl(version).get());
             });
-    Assertions.assertFalse(VERSIONMETA.fabric().isInstallerUrlAvailable("0.11233.3"));
-    Assertions.assertFalse(VERSIONMETA.fabric().installerUrl("0.13123.3").isPresent());
-    Assertions.assertTrue(VERSIONMETA.fabric().checkFabricVersion("0.13.3"));
-    Assertions.assertFalse(VERSIONMETA.fabric().checkFabricVersion("0.12313.3"));
+    Assertions.assertFalse(versionMeta.fabric().isInstallerUrlAvailable("0.11233.3"));
+    Assertions.assertFalse(versionMeta.fabric().installerUrl("0.13123.3").isPresent());
+    Assertions.assertTrue(versionMeta.fabric().checkFabricVersion("0.13.3"));
+    Assertions.assertFalse(versionMeta.fabric().checkFabricVersion("0.12313.3"));
   }
 
   @Test
   void quilt() {
-    Assertions.assertNotNull(VERSIONMETA.quilt().loaderVersionsAscending());
-    Assertions.assertNotNull(VERSIONMETA.quilt().loaderVersionsDescending());
-    Assertions.assertNotNull(VERSIONMETA.quilt().loaderVersionsArrayAscending());
-    Assertions.assertNotNull(VERSIONMETA.quilt().loaderVersionsArrayDescending());
-    Assertions.assertNotNull(VERSIONMETA.quilt().latestLoaderVersion());
-    Assertions.assertNotNull(VERSIONMETA.quilt().releaseLoaderVersion());
-    Assertions.assertNotNull(VERSIONMETA.quilt().latestInstallerVersion());
-    Assertions.assertNotNull(VERSIONMETA.quilt().releaseInstallerVersion());
-    Assertions.assertNotNull(VERSIONMETA.quilt().installerVersionsAscending());
-    Assertions.assertNotNull(VERSIONMETA.quilt().installerVersionsDescending());
-    Assertions.assertNotNull(VERSIONMETA.quilt().installerVersionsAscending());
-    Assertions.assertNotNull(VERSIONMETA.quilt().installerVersionsArrayAscending());
+    Assertions.assertNotNull(versionMeta.quilt().loaderVersionsAscending());
+    Assertions.assertNotNull(versionMeta.quilt().loaderVersionsDescending());
+    Assertions.assertNotNull(versionMeta.quilt().loaderVersionsArrayAscending());
+    Assertions.assertNotNull(versionMeta.quilt().loaderVersionsArrayDescending());
+    Assertions.assertNotNull(versionMeta.quilt().latestLoaderVersion());
+    Assertions.assertNotNull(versionMeta.quilt().releaseLoaderVersion());
+    Assertions.assertNotNull(versionMeta.quilt().latestInstallerVersion());
+    Assertions.assertNotNull(versionMeta.quilt().releaseInstallerVersion());
+    Assertions.assertNotNull(versionMeta.quilt().installerVersionsAscending());
+    Assertions.assertNotNull(versionMeta.quilt().installerVersionsDescending());
+    Assertions.assertNotNull(versionMeta.quilt().installerVersionsAscending());
+    Assertions.assertNotNull(versionMeta.quilt().installerVersionsArrayAscending());
     Assertions.assertEquals(
-        VERSIONMETA.quilt().installerVersionsArrayAscending().length,
-        VERSIONMETA.quilt().installerVersionsAscending().size());
+        versionMeta.quilt().installerVersionsArrayAscending().length,
+        versionMeta.quilt().installerVersionsAscending().size());
     Assertions.assertEquals(
-        VERSIONMETA.quilt().installerVersionsArrayAscending()[0],
-        VERSIONMETA.quilt()
+        versionMeta.quilt().installerVersionsArrayAscending()[0],
+        versionMeta.quilt()
             .installerVersionsArrayDescending()[
-            VERSIONMETA.quilt().installerVersionsArrayDescending().length - 1]);
-    Assertions.assertNotNull(VERSIONMETA.quilt().installerVersionsArrayDescending());
+            versionMeta.quilt().installerVersionsArrayDescending().length - 1]);
+    Assertions.assertNotNull(versionMeta.quilt().installerVersionsArrayDescending());
     Assertions.assertEquals(
-        VERSIONMETA.quilt().installerVersionsArrayDescending().length,
-        VERSIONMETA.quilt().installerVersionsDescending().size());
+        versionMeta.quilt().installerVersionsArrayDescending().length,
+        versionMeta.quilt().installerVersionsDescending().size());
     Assertions.assertEquals(
-        VERSIONMETA.quilt().installerVersionsArrayDescending()[0],
-        VERSIONMETA.quilt()
+        versionMeta.quilt().installerVersionsArrayDescending()[0],
+        versionMeta.quilt()
             .installerVersionsArrayAscending()[
-            VERSIONMETA.quilt().installerVersionsArrayAscending().length - 1]);
-    Assertions.assertNotNull(VERSIONMETA.quilt().latestInstallerUrl());
-    Assertions.assertNotNull(VERSIONMETA.quilt().releaseInstallerUrl());
-    VERSIONMETA
+            versionMeta.quilt().installerVersionsArrayAscending().length - 1]);
+    Assertions.assertNotNull(versionMeta.quilt().latestInstallerUrl());
+    Assertions.assertNotNull(versionMeta.quilt().releaseInstallerUrl());
+    versionMeta
         .quilt()
         .installerVersionsAscending()
         .forEach(
             version -> {
-              Assertions.assertTrue(VERSIONMETA.quilt().isInstallerUrlAvailable(version));
-              Assertions.assertNotNull(VERSIONMETA.quilt().installerUrl(version).get());
+              Assertions.assertTrue(versionMeta.quilt().isInstallerUrlAvailable(version));
+              Assertions.assertNotNull(versionMeta.quilt().installerUrl(version).get());
             });
-    Assertions.assertFalse(VERSIONMETA.quilt().isInstallerUrlAvailable("0.11233.3"));
-    Assertions.assertFalse(VERSIONMETA.quilt().installerUrl("0.13123.3").isPresent());
-    Assertions.assertTrue(VERSIONMETA.quilt().checkQuiltVersion("0.16.1"));
-    Assertions.assertFalse(VERSIONMETA.quilt().checkQuiltVersion("0.12313.3"));
+    Assertions.assertFalse(versionMeta.quilt().isInstallerUrlAvailable("0.11233.3"));
+    Assertions.assertFalse(versionMeta.quilt().installerUrl("0.13123.3").isPresent());
+    Assertions.assertTrue(versionMeta.quilt().checkQuiltVersion("0.16.1"));
+    Assertions.assertFalse(versionMeta.quilt().checkQuiltVersion("0.12313.3"));
   }
 }

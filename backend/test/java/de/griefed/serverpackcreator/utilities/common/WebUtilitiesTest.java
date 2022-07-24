@@ -9,17 +9,16 @@ import org.junit.jupiter.api.Test;
 
 public class WebUtilitiesTest {
 
-  private final WebUtilities WEB_UTILITIES;
+  WebUtilities webUtilities;
 
   WebUtilitiesTest() {
-    ApplicationProperties applicationProperties = new ApplicationProperties();
-    this.WEB_UTILITIES = new WebUtilities(applicationProperties);
+    webUtilities = new WebUtilities(new ApplicationProperties());
   }
 
   @Test
   void downloadFileTest() {
     try {
-      WEB_UTILITIES.downloadFile(
+      webUtilities.downloadFile(
           "Fabric-Server-Launcher.jar",
           new URL("https://meta.fabricmc.net/v2/versions/loader/1.18.1/0.12.12/0.10.2/server/jar"));
     } catch (Exception ignored) {
@@ -27,7 +26,7 @@ public class WebUtilitiesTest {
     Assertions.assertTrue(new File("Fabric-Server-Launcher.jar").exists());
     FileUtils.deleteQuietly(new File("Fabric-Server-Launcher.jar"));
     try {
-      WEB_UTILITIES.downloadFile(
+      webUtilities.downloadFile(
           "some_foooooolder/foooobar/Fabric-Server-Launcher.jar",
           new URL("https://meta.fabricmc.net/v2/versions/loader/1.18.1/0.12.12/0.10.2/server/jar"));
     } catch (Exception ignored) {

@@ -200,3 +200,7 @@ backend/main/resources/VERSION.txt
 /backend/test/resources/fabric_tests/server_pack/download_minecraft-server.jar_fabric.bat
 /backend/test/resources/fabric_tests/server_pack/download_minecraft-server.jar_fabric.sh
 /backend/test/resources/fabric_tests/server_pack/fabric-installer.jar
+/fabric-installer-manifest.xml
+/minecraft-manifest.json
+/quilt-installer-manifest.xml
+/quilt-manifest.xml

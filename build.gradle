@@ -1,6 +1,5 @@
 //file:noinspection GroovyAssignabilityCheck
 //file:noinspection GrUnresolvedAccess
-
 import org.siouan.frontendgradleplugin.infrastructure.gradle.RunNpm
 
 import java.text.SimpleDateFormat
@@ -9,7 +8,7 @@ plugins {
   id 'java'
   id 'idea'
 
-  id 'jacoco'
+  //id 'jacoco'
   id 'signing'
   id 'maven-publish'
   id 'java-library'
@@ -64,11 +63,11 @@ dependencies {
   // Backend
   embed 'de.griefed:versionchecker:1.1.0'
   embed 'com.electronwill.night-config:hocon:3.6.5'
+  embed 'com.electronwill.night-config:toml:3.6.5'
   embed 'commons-io:commons-io:2.11.0'
   embed 'commons-lang:commons-lang:2.6'
 
   embed 'net.lingala.zip4j:zip4j:2.11.1'
-  embed 'com.moandjiezana.toml:toml4j:0.7.2'
   embed 'org.xerial:sqlite-jdbc:3.36.0.3'
   embed 'org.pf4j:pf4j:3.7.0'
   embed 'com.github.vatbub:mslinks:1.0.5'
@@ -210,10 +209,10 @@ test {
         "failed"
   }
 
-  finalizedBy jacocoTestReport, cleanUp
+  //finalizedBy jacocoTestReport, cleanUp
 }
 
-jacocoTestReport {
+/*jacocoTestReport {
   dependsOn test // tests are required to run before generating the report
 
   reports {
@@ -226,7 +225,7 @@ jacocoTestReport {
 jacoco {
   toolVersion = "0.8.7"
   reportsDirectory = layout.buildDirectory.dir('reports/jacoco')
-}
+}*/
 
 javadoc {
   if (JavaVersion.current().isJava9Compatible()) {
@@ -401,7 +400,7 @@ publishing {
         header(HttpHeaderAuthentication)
       }
     }
-    
+
   }
 }
 

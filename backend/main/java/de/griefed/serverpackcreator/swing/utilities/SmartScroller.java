@@ -38,8 +38,8 @@
  * technical articles
  * tutorials
  * the Java API
- * The Java API is huge, and we don’t have time to read it from start to finish. If the examples don’t solve your problem,
- * hopefully they can at least give you some ideas and introduce you to new API’s and concepts.
+ * The Java API is huge, and we do not have time to read it from start to finish. If the examples do not solve your problem,
+ * hopefully they can at least give you some ideas and introduce you to new APIs and concepts.
  *
  * Rob
  *

@@ -3,7 +3,7 @@ stages:
   - Documentation
   - Release
   - Build Release
-  - Other
+#  - Other
 
 variables:
   project_name: "$CI_PROJECT_NAME"
@@ -151,15 +151,15 @@ Gradle Test:
     - echo "**** Renaming files to please the eye ****"
     - mv build/libs/${CI_PROJECT_NAME}.exe build/libs/ServerPackCreator-$CI_COMMIT_REF_NAME.exe
     - mv build/libs/${CI_PROJECT_NAME}-dev.jar build/libs/ServerPackCreator-$CI_COMMIT_REF_NAME.jar
-    - echo "**** Fetching jacoco test coverage ****"
-    - cat build/reports/jacoco/test/html/index.html | grep -o 'Total[^%]*%'
-  coverage: '/Total.*?([0-9]{1,3})%/'
+#    - echo "**** Fetching jacoco test coverage ****"
+#    - cat build/reports/jacoco/test/html/index.html | grep -o 'Total[^%]*%'
+#  coverage: '/Total.*?([0-9]{1,3})%/'
   artifacts:
     paths:
       - build/libs/${CI_PROJECT_NAME}-$CI_COMMIT_REF_NAME.exe
       - build/libs/${CI_PROJECT_NAME}-$CI_COMMIT_REF_NAME.jar
-      - build/reports/jacoco/test/jacocoTestReport.xml
-      - build/reports/
+#      - build/reports/jacoco/test/jacocoTestReport.xml
+#      - build/reports/
     expire_in: 1 week
 
 Docker Test:
@@ -347,20 +347,20 @@ Build Docker PreRelease:
 #  rules:
 #    - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-(alpha|beta)\.\d+$/'
 #    - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/'
-
-coverage:
-  stage: Other
-  image: registry.gitlab.com/haynes/jacoco2cobertura:1.0.8
-  allow_failure: true
-  script:
-    - python /opt/cover2cover.py build/jacoco/test/jacocoTestReport.xml $CI_PROJECT_DIR/backend/main/java/ > build/cobertura.xml || true
-    - python /opt/source2filename.py build/cobertura.xml || true
-  needs: ["Gradle Test"]
-  artifacts:
-    reports:
-      coverage_report:
-        coverage_format: cobertura
-        path: build/cobertura.xml
+#
+#coverage:
+#  stage: Other
+#  image: registry.gitlab.com/haynes/jacoco2cobertura:1.0.8
+#  allow_failure: true
+#  script:
+#    - python /opt/cover2cover.py build/jacoco/test/jacocoTestReport.xml $CI_PROJECT_DIR/backend/main/java/ > build/cobertura.xml || true
+#    - python /opt/source2filename.py build/cobertura.xml || true
+#  needs: ["Gradle Test"]
+#  artifacts:
+#    reports:
+#      coverage_report:
+#        coverage_format: cobertura
+#        path: build/cobertura.xml
 
 Qodana Expose:
   stage: Documentation

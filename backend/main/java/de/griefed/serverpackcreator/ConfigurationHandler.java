@@ -91,44 +91,11 @@ public class ConfigurationHandler {
       ConfigUtilities injectedConfigUtilities)
       throws IOException {
 
-    if (injectedApplicationProperties == null) {
-      this.APPLICATIONPROPERTIES = new ApplicationProperties();
-    } else {
-      this.APPLICATIONPROPERTIES = injectedApplicationProperties;
-    }
-
-    if (injectedI18n == null) {
-      this.I18N = new I18n(APPLICATIONPROPERTIES);
-    } else {
-      this.I18N = injectedI18n;
-    }
-
-    if (injectedVersionMeta == null) {
-      this.VERSIONMETA =
-          new VersionMeta(
-              APPLICATIONPROPERTIES.MINECRAFT_VERSION_MANIFEST_LOCATION(),
-              APPLICATIONPROPERTIES.FORGE_VERSION_MANIFEST_LOCATION(),
-              APPLICATIONPROPERTIES.FABRIC_VERSION_MANIFEST_LOCATION(),
-              APPLICATIONPROPERTIES.FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION(),
-              APPLICATIONPROPERTIES.FABRIC_INTERMEDIARIES_MANIFEST_LOCATION(),
-              APPLICATIONPROPERTIES.QUILT_VERSION_MANIFEST_LOCATION(),
-              APPLICATIONPROPERTIES.QUILT_INSTALLER_VERSION_MANIFEST_LOCATION());
-    } else {
-      this.VERSIONMETA = injectedVersionMeta;
-    }
-
-    if (injectedUtilities == null) {
-      this.UTILITIES = new Utilities(I18N, APPLICATIONPROPERTIES);
-    } else {
-      this.UTILITIES = injectedUtilities;
-    }
-
-    if (injectedConfigUtilities == null) {
-      this.CONFIGUTILITIES =
-          new ConfigUtilities(I18N, UTILITIES, APPLICATIONPROPERTIES, VERSIONMETA);
-    } else {
-      this.CONFIGUTILITIES = injectedConfigUtilities;
-    }
+    this.APPLICATIONPROPERTIES = injectedApplicationProperties;
+    this.I18N = injectedI18n;
+    this.VERSIONMETA = injectedVersionMeta;
+    this.UTILITIES = injectedUtilities;
+    this.CONFIGUTILITIES = injectedConfigUtilities;
   }
 
   /**
@@ -958,12 +925,13 @@ public class ConfigurationHandler {
       }
 
     } catch (IOException ex) {
-      LOG.error("Could not validate ZIP-file " + pathToZip + ".",ex);
+      LOG.error("Could not validate ZIP-file " + pathToZip + ".", ex);
       return true;
     }
 
     try {
-      List<String> foldersInModpackZip = CONFIGUTILITIES.getDirectoriesInModpackZipBaseDirectory(modpackZip);
+      List<String> foldersInModpackZip =
+          CONFIGUTILITIES.getDirectoriesInModpackZipBaseDirectory(modpackZip);
 
       // If the ZIP-file only contains one directory, assume it is overrides and return true to
       // indicate invalid configuration.
@@ -983,7 +951,8 @@ public class ConfigurationHandler {
         return true;
 
         // If the ZIP-file does not contain the mods or config directories, consider it invalid.
-      } else if (!foldersInModpackZip.contains("mods/") || !foldersInModpackZip.contains("config/")) {
+      } else if (!foldersInModpackZip.contains("mods/")
+          || !foldersInModpackZip.contains("config/")) {
 
         LOG.error(
             "The ZIP-file you specified does not contain the mods or config directories. What use is a modded server without mods and their configurations?");
