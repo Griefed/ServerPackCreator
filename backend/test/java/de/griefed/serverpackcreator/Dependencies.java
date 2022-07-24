@@ -35,7 +35,7 @@ public final class Dependencies {
     private static final Dependencies INSTANCE = new Dependencies();
   }
 
-  public static Dependencies getInstance() {
+  public static synchronized Dependencies getInstance() {
     return Holder.INSTANCE;
   }
 
