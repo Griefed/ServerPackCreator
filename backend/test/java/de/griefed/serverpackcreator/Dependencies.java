@@ -31,6 +31,14 @@ public final class Dependencies {
   private final ApplicationPlugins APPLICATION_PLUGINS;
   private final ModScanner MODSCANNER;
 
+  private static class Holder {
+    private static final Dependencies INSTANCE = new Dependencies();
+  }
+
+  public static Dependencies getInstance() {
+    return Holder.INSTANCE;
+  }
+
   private Dependencies() {
     try {
       FileUtils.copyDirectory(
@@ -52,7 +60,7 @@ public final class Dependencies {
     } catch (IOException e) {
       e.printStackTrace();
     }
-    
+
     try {
       SERVER_PACK_CREATOR = new ServerPackCreator(new String[] {"--setup"});
       SERVER_PACK_CREATOR.run();
@@ -106,13 +114,6 @@ public final class Dependencies {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
-  }
-
-  public static Dependencies getInstance() {
-    if (instance == null) {
-      instance = new Dependencies();
-    }
-    return instance;
   }
 
   public ServerPackCreator SERVER_PACK_CREATOR() {
