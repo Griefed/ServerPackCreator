@@ -1,14 +1,26 @@
 package de.griefed.serverpackcreator;
 
+import java.io.File;
+import java.io.IOException;
+import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class ApplicationPluginsTest {
 
+  private static final Logger LOG = LogManager.getLogger(ApplicationPluginsTest.class);
   ApplicationPlugins applicationPlugins;
 
   ApplicationPluginsTest() {
-    applicationPlugins = Dependencies.getInstance().APPLICATION_PLUGINS();
+    try {
+      FileUtils.copyDirectory(
+          new File("backend/test/resources/testresources/addons"), new File("plugins"));
+    } catch (IOException e) {
+      LOG.error("Error copying file.", e);
+    }
+    applicationPlugins = new ApplicationPlugins();
   }
 
   @Test

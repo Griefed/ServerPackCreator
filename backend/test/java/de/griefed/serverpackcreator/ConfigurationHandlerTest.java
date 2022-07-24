@@ -1,5 +1,10 @@
 package de.griefed.serverpackcreator;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import de.griefed.serverpackcreator.i18n.I18n;
+import de.griefed.serverpackcreator.utilities.ConfigUtilities;
+import de.griefed.serverpackcreator.utilities.common.Utilities;
 import de.griefed.serverpackcreator.versionmeta.VersionMeta;
 import java.io.File;
 import java.io.IOException;
@@ -16,7 +21,7 @@ class ConfigurationHandlerTest {
   ConfigurationHandler configurationHandler;
   VersionMeta versionMeta;
 
-  ConfigurationHandlerTest() {
+  ConfigurationHandlerTest() throws IOException {
     try {
       FileUtils.copyFile(
           new File("backend/main/resources/serverpackcreator.properties"),
@@ -24,8 +29,30 @@ class ConfigurationHandlerTest {
     } catch (IOException e) {
       e.printStackTrace();
     }
-    configurationHandler = Dependencies.getInstance().CONFIGURATIONHANDLER();
-    versionMeta = Dependencies.getInstance().VERSIONMETA();
+    I18n i18N = new I18n();
+    ApplicationProperties applicationProperties = new ApplicationProperties();
+    ObjectMapper objectMapper =
+        new ObjectMapper()
+            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+            .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
+    Utilities utilities = new Utilities(i18N, applicationProperties);
+    versionMeta =
+        new VersionMeta(
+            applicationProperties.MINECRAFT_VERSION_MANIFEST(),
+            applicationProperties.FORGE_VERSION_MANIFEST(),
+            applicationProperties.FABRIC_VERSION_MANIFEST(),
+            applicationProperties.FABRIC_INSTALLER_VERSION_MANIFEST(),
+            applicationProperties.FABRIC_INTERMEDIARIES_MANIFEST_LOCATION(),
+            applicationProperties.QUILT_VERSION_MANIFEST(),
+            applicationProperties.QUILT_INSTALLER_VERSION_MANIFEST(),
+            objectMapper);
+    configurationHandler =
+        new ConfigurationHandler(
+            i18N,
+            versionMeta,
+            applicationProperties,
+            utilities,
+            new ConfigUtilities(utilities, applicationProperties, objectMapper));
   }
 
   @Test

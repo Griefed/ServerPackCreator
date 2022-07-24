@@ -1,6 +1,5 @@
 package de.griefed.serverpackcreator.utilities.common;
 
-import de.griefed.serverpackcreator.Dependencies;
 import java.io.File;
 import java.io.IOException;
 import org.apache.commons.io.FileUtils;
@@ -12,7 +11,7 @@ public class FileUtilitiesTest {
   FileUtilities fileUtilities;
 
   FileUtilitiesTest() {
-    fileUtilities = Dependencies.getInstance().UTILITIES().FileUtils();
+    fileUtilities = new FileUtilities();
   }
 
   @Test

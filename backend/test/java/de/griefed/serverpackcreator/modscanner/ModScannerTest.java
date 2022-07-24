@@ -1,7 +1,13 @@
 package de.griefed.serverpackcreator.modscanner;
 
-import de.griefed.serverpackcreator.Dependencies;
+import com.electronwill.nightconfig.toml.TomlParser;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import de.griefed.serverpackcreator.modscanning.AnnotationScanner;
+import de.griefed.serverpackcreator.modscanning.FabricScanner;
 import de.griefed.serverpackcreator.modscanning.ModScanner;
+import de.griefed.serverpackcreator.modscanning.QuiltScanner;
+import de.griefed.serverpackcreator.modscanning.TomlScanner;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -15,7 +21,15 @@ public class ModScannerTest {
   ModScanner modScanner;
 
   ModScannerTest() {
-    modScanner = Dependencies.getInstance().MODSCANNER();
+    ObjectMapper objectMapper =
+        new ObjectMapper()
+            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+            .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
+    modScanner = new ModScanner(
+        new AnnotationScanner(objectMapper),
+        new FabricScanner(objectMapper),
+        new QuiltScanner(objectMapper),
+        new TomlScanner(new TomlParser()));
   }
 
   @Test

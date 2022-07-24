@@ -1,6 +1,5 @@
 package de.griefed.serverpackcreator.utilities.common;
 
-import de.griefed.serverpackcreator.Dependencies;
 import java.io.File;
 import java.util.HashMap;
 import org.apache.commons.io.FileUtils;
@@ -12,7 +11,7 @@ public class JarUtilitiesTest {
   JarUtilities jarUtilities;
 
   JarUtilitiesTest() {
-    jarUtilities = Dependencies.getInstance().UTILITIES().JarUtils();
+    jarUtilities = new JarUtilities();
   }
 
   @Test

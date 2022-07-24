@@ -11,7 +11,7 @@ public class ServerPackCreatorTest {
   ServerPackCreator serverPackCreator;
 
   ServerPackCreatorTest() throws IOException {
-    serverPackCreator = Dependencies.getInstance().SERVER_PACK_CREATOR();
+    serverPackCreator = new ServerPackCreator(new String[] {"--setup"});
     serverPackCreator.run(ServerPackCreator.CommandlineParser.Mode.SETUP);
   }
 

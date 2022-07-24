@@ -1,6 +1,5 @@
 package de.griefed.serverpackcreator.utilities.common;
 
-import de.griefed.serverpackcreator.Dependencies;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -12,7 +11,7 @@ public class StringUtilitiesTest {
   StringUtilities stringUtilities;
 
   StringUtilitiesTest() {
-    stringUtilities = Dependencies.getInstance().UTILITIES().StringUtils();
+    stringUtilities = new StringUtilities();
   }
 
   @Test

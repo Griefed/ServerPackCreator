@@ -1,6 +1,5 @@
 package de.griefed.serverpackcreator.utilities.common;
 
-import de.griefed.serverpackcreator.Dependencies;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -9,7 +8,7 @@ public class BooleanUtilitiesTest {
   BooleanUtilities booleanUtilities;
 
   BooleanUtilitiesTest() {
-    booleanUtilities = Dependencies.getInstance().UTILITIES().BooleanUtils();
+    booleanUtilities = new BooleanUtilities();
   }
 
   @Test

@@ -1,6 +1,8 @@
 package de.griefed.serverpackcreator.versionmeta;
 
-import de.griefed.serverpackcreator.Dependencies;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import de.griefed.serverpackcreator.ApplicationProperties;
 import java.io.IOException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -8,8 +10,20 @@ import org.junit.jupiter.api.Test;
 public class VersionMetaTest {
   private final VersionMeta versionMeta;
 
-  public VersionMetaTest() {
-    versionMeta = Dependencies.getInstance().VERSIONMETA();
+  public VersionMetaTest() throws IOException {
+    ApplicationProperties applicationProperties = new ApplicationProperties();
+    versionMeta =
+        new VersionMeta(
+            applicationProperties.MINECRAFT_VERSION_MANIFEST(),
+            applicationProperties.FORGE_VERSION_MANIFEST(),
+            applicationProperties.FABRIC_VERSION_MANIFEST(),
+            applicationProperties.FABRIC_INSTALLER_VERSION_MANIFEST(),
+            applicationProperties.FABRIC_INTERMEDIARIES_MANIFEST_LOCATION(),
+            applicationProperties.QUILT_VERSION_MANIFEST(),
+            applicationProperties.QUILT_INSTALLER_VERSION_MANIFEST(),
+            new ObjectMapper()
+                .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY));
   }
 
   @Test

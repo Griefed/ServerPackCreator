@@ -1,6 +1,6 @@
 package de.griefed.serverpackcreator.utilities.common;
 
-import de.griefed.serverpackcreator.Dependencies;
+import de.griefed.serverpackcreator.ApplicationProperties;
 import java.io.File;
 import java.net.URL;
 import org.apache.commons.io.FileUtils;
@@ -12,7 +12,7 @@ public class WebUtilitiesTest {
   WebUtilities webUtilities;
 
   WebUtilitiesTest() {
-    webUtilities = Dependencies.getInstance().UTILITIES().WebUtils();
+    webUtilities = new WebUtilities(new ApplicationProperties());
   }
 
   @Test

@@ -11,7 +11,7 @@ public class ApplicationPropertiesTest {
   ApplicationProperties applicationProperties;
 
   ApplicationPropertiesTest() {
-    applicationProperties = Dependencies.getInstance().APPLICATIONPROPERTIES();
+    applicationProperties = new ApplicationProperties();
   }
 
   @Test
