@@ -18,7 +18,6 @@ import org.apache.commons.io.FileUtils;
 
 public final class Dependencies {
 
-  private static Dependencies instance = null;
   private final ServerPackCreator SERVER_PACK_CREATOR;
   private final ObjectMapper OBJECT_MAPPER;
   private final ApplicationProperties APPLICATIONPROPERTIES;
@@ -31,12 +30,13 @@ public final class Dependencies {
   private final ApplicationPlugins APPLICATION_PLUGINS;
   private final ModScanner MODSCANNER;
 
-  private static class Holder {
-    private static final Dependencies INSTANCE = new Dependencies();
+  private static final class InstanceHolder {
+
+    static final Dependencies instance = new Dependencies();
   }
 
-  public static synchronized Dependencies getInstance() {
-    return Holder.INSTANCE;
+  public static Dependencies getInstance() {
+    return InstanceHolder.instance;
   }
 
   private Dependencies() {
