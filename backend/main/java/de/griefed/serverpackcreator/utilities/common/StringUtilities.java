@@ -151,7 +151,6 @@ public class StringUtilities {
    *   <li><b>&#125;</b>
    *   <li><b>&#36;</b>
    *   <li><b>&#33;</b>
-   *   <li><b>&#39;</b>
    *   <li><b>&#64;</b>
    *   <li><b>&#43;</b>
    *   <li><b>&#180;</b>
@@ -185,7 +184,6 @@ public class StringUtilities {
         .replace("}", "")
         .replace("$", "")
         .replace("!", "")
-        .replace("'", "")
         .replace("@", "")
         .replace("+", "")
         .replace("´", "")
@@ -213,7 +211,6 @@ public class StringUtilities {
    *   <li><b>&#125;</b>
    *   <li><b>&#36;</b>
    *   <li><b>&#33;</b>
-   *   <li><b>&#39;</b>
    *   <li><b>&#64;</b>
    *   <li><b>&#43;</b>
    *   <li><b>&#180;</b>
@@ -244,7 +241,6 @@ public class StringUtilities {
         && !text.contains("}")
         && !text.contains("$")
         && !text.contains("!")
-        && !text.contains("'")
         && !text.contains("@")
         && !text.contains("+")
         && !text.contains("`")
