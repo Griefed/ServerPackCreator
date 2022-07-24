@@ -125,6 +125,7 @@ public class I18n {
       writeLocaleToFile(locale);
 
     } catch (IncorrectLanguageException ex) {
+      LOG.error("Could not initialize i18n with specified locale.",ex);
       try {
         initialize(APPLICATIONPROPERTIES);
       } catch (IncorrectLanguageException e) {
@@ -211,13 +212,8 @@ public class I18n {
    */
   public void initialize(String locale) throws IncorrectLanguageException {
 
-    boolean doesLanguageExist = false;
 
-    if (SUPPORTED_LANGUAGES.contains(locale)) {
-
-      doesLanguageExist = true;
-
-    } else {
+    if (!SUPPORTED_LANGUAGES.contains(locale)) {
 
       LOG.warn(
           "The specified language is not officially supported. You may provide your own definitions and translations.");
@@ -294,7 +290,7 @@ public class I18n {
 
     } catch (Exception ex) {
 
-      LOG.error("Locale resource for " + locale + " not found in JAR-file.", ex);
+      LOG.error("Locale resource for " + locale + " not found in JAR-file. Falling back to en_us.", ex);
       jarResources = FALLBACKRESOURCES;
     }
 
