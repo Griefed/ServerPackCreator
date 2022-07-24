@@ -1,5 +1,6 @@
 de.griefed.serverpackcreator
 de.griefed.serverpackcreator.i18n
+de.griefed.serverpackcreator.modscanning
 de.griefed.serverpackcreator.plugins
 de.griefed.serverpackcreator.plugins.serverpackhandler
 de.griefed.serverpackcreator.plugins.swinggui

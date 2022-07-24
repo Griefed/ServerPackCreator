@@ -96,6 +96,16 @@
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/swing/utilities/SmartScroller.html#adjustmentValueChanged-java.awt.event.AdjustmentEvent-">adjustmentValueChanged(AdjustmentEvent)</a></span> - Method in class de.griefed.serverpackcreator.swing.utilities.<a href="de/griefed/serverpackcreator/swing/utilities/SmartScroller.html" title="class in de.griefed.serverpackcreator.swing.utilities">SmartScroller</a></dt>
 <dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/modscanning/ModScanner.html#annotations--">annotations()</a></span> - Method in class de.griefed.serverpackcreator.modscanning.<a href="de/griefed/serverpackcreator/modscanning/ModScanner.html" title="class in de.griefed.serverpackcreator.modscanning">ModScanner</a></dt>
+<dd>
+<div class="block">Forge annotation-based scanner.</div>
+</dd>
+<dt><a href="de/griefed/serverpackcreator/modscanning/AnnotationScanner.html" title="class in de.griefed.serverpackcreator.modscanning"><span class="typeNameLink">AnnotationScanner</span></a> - Class in <a href="de/griefed/serverpackcreator/modscanning/package-summary.html">de.griefed.serverpackcreator.modscanning</a></dt>
+<dd>
+<div class="block"><code>fml-cache-annotation.json</code>-based scanning of Forge-Minecraft mods of older versions.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/modscanning/AnnotationScanner.html#AnnotationScanner-com.fasterxml.jackson.databind.ObjectMapper-">AnnotationScanner(ObjectMapper)</a></span> - Constructor for class de.griefed.serverpackcreator.modscanning.<a href="de/griefed/serverpackcreator/modscanning/AnnotationScanner.html" title="class in de.griefed.serverpackcreator.modscanning">AnnotationScanner</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="de/griefed/serverpackcreator/ApplicationPlugins.html" title="class in de.griefed.serverpackcreator"><span class="typeNameLink">ApplicationPlugins</span></a> - Class in <a href="de/griefed/serverpackcreator/package-summary.html">de.griefed.serverpackcreator</a></dt>
 <dd>
 <div class="block">Manager for ServerPackCreator plugins.</div>
@@ -326,7 +336,6 @@
    <b>&#125;</b>
    <b>&#36;</b>
    <b>&#33;</b>
-   <b>&#39;</b>
    <b>&#64;</b>
    <b>&#43;</b>
    <b>&#180;</b>
@@ -510,7 +519,7 @@
 <dd>
 <div class="block">Utility-class revolving around configuration utilities.</div>
 </dd>
-<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/ConfigUtilities.html#ConfigUtilities-de.griefed.serverpackcreator.i18n.I18n-de.griefed.serverpackcreator.utilities.common.Utilities-de.griefed.serverpackcreator.ApplicationProperties-de.griefed.serverpackcreator.versionmeta.VersionMeta-">ConfigUtilities(I18n, Utilities, ApplicationProperties, VersionMeta)</a></span> - Constructor for class de.griefed.serverpackcreator.utilities.<a href="de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ConfigUtilities</a></dt>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/ConfigUtilities.html#ConfigUtilities-de.griefed.serverpackcreator.utilities.common.Utilities-de.griefed.serverpackcreator.ApplicationProperties-com.fasterxml.jackson.databind.ObjectMapper-">ConfigUtilities(Utilities, ApplicationProperties, ObjectMapper)</a></span> - Constructor for class de.griefed.serverpackcreator.utilities.<a href="de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ConfigUtilities</a></dt>
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/common/BooleanUtilities.html#convertToBoolean-java.lang.String-">convertToBoolean(String)</a></span> - Method in class de.griefed.serverpackcreator.utilities.common.<a href="de/griefed/serverpackcreator/utilities/common/BooleanUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">BooleanUtilities</a></dt>
 <dd>
@@ -593,6 +602,11 @@
 <dd>
 <div class="block">i18n i.e.</div>
 </dd>
+<dt><a href="de/griefed/serverpackcreator/modscanning/package-summary.html">de.griefed.serverpackcreator.modscanning</a> - package de.griefed.serverpackcreator.modscanning</dt>
+<dd>
+<div class="block">Modscanning to determine which mod can safely be excluded from a given modpack and therefor, soon
+ to be server pack.</div>
+</dd>
 <dt><a href="de/griefed/serverpackcreator/plugins/package-summary.html">de.griefed.serverpackcreator.plugins</a> - package de.griefed.serverpackcreator.plugins</dt>
 <dd>
 <div class="block">Annotations for ServerPackCreator plugins/addons.</div>
@@ -607,7 +621,7 @@
 </dd>
 <dt><a href="de/griefed/serverpackcreator/spring/package-summary.html">de.griefed.serverpackcreator.spring</a> - package de.griefed.serverpackcreator.spring</dt>
 <dd>
-<div class="block">ServerPackCreators REST API.<br>
+<div class="block">ServerPackCreators Webservice.<br>
  This package provides the complete access and control of ServerPackCreator functionality through
  the Spring Boot framework REST API.</div>
 </dd>
@@ -641,7 +655,9 @@
  throughout ServerPackCreator.</div>
 </dd>
 <dt><a href="de/griefed/serverpackcreator/utilities/common/package-summary.html">de.griefed.serverpackcreator.utilities.common</a> - package de.griefed.serverpackcreator.utilities.common</dt>
-<dd>&nbsp;</dd>
+<dd>
+<div class="block">Common utilities used by various parts, projects, things, cheeseburgers.</div>
+</dd>
 <dt><a href="de/griefed/serverpackcreator/utilities/misc/package-summary.html">de.griefed.serverpackcreator.utilities.misc</a> - package de.griefed.serverpackcreator.utilities.misc</dt>
 <dd>
 <div class="block">Miscellaneous things that don't really fit into any other package, don't warrant their own
@@ -649,15 +665,26 @@
  <br></div>
 </dd>
 <dt><a href="de/griefed/serverpackcreator/versionmeta/package-summary.html">de.griefed.serverpackcreator.versionmeta</a> - package de.griefed.serverpackcreator.versionmeta</dt>
-<dd>&nbsp;</dd>
+<dd>
+<div class="block">The VersionMeta gives you access to various information about various modloaders, their versions,
+ installers, compatibility and, of course, Minecraft itself.</div>
+</dd>
 <dt><a href="de/griefed/serverpackcreator/versionmeta/fabric/package-summary.html">de.griefed.serverpackcreator.versionmeta.fabric</a> - package de.griefed.serverpackcreator.versionmeta.fabric</dt>
-<dd>&nbsp;</dd>
+<dd>
+<div class="block">Anything and everything related to the Fabric-modloader.</div>
+</dd>
 <dt><a href="de/griefed/serverpackcreator/versionmeta/forge/package-summary.html">de.griefed.serverpackcreator.versionmeta.forge</a> - package de.griefed.serverpackcreator.versionmeta.forge</dt>
-<dd>&nbsp;</dd>
+<dd>
+<div class="block">Anything and everything related to the Forge-modloader.</div>
+</dd>
 <dt><a href="de/griefed/serverpackcreator/versionmeta/minecraft/package-summary.html">de.griefed.serverpackcreator.versionmeta.minecraft</a> - package de.griefed.serverpackcreator.versionmeta.minecraft</dt>
-<dd>&nbsp;</dd>
+<dd>
+<div class="block">Anything and everything related to the Minecraft itself.</div>
+</dd>
 <dt><a href="de/griefed/serverpackcreator/versionmeta/quilt/package-summary.html">de.griefed.serverpackcreator.versionmeta.quilt</a> - package de.griefed.serverpackcreator.versionmeta.quilt</dt>
-<dd>&nbsp;</dd>
+<dd>
+<div class="block">Anything and everything related to the Quilt-modloader.</div>
+</dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/ApplicationProperties.html#DEFAULT_CONFIG--">DEFAULT_CONFIG()</a></span> - Method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a></dt>
 <dd>
 <div class="block">Default configuration-file for a server pack generation.</div>
@@ -741,6 +768,10 @@
 </a>
 <h2 class="title">F</h2>
 <dl>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/modscanning/ModScanner.html#fabric--">fabric()</a></span> - Method in class de.griefed.serverpackcreator.modscanning.<a href="de/griefed/serverpackcreator/modscanning/ModScanner.html" title="class in de.griefed.serverpackcreator.modscanning">ModScanner</a></dt>
+<dd>
+<div class="block">Fabric-based scanner.</div>
+</dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/versionmeta/VersionMeta.html#fabric--">fabric()</a></span> - Method in class de.griefed.serverpackcreator.versionmeta.<a href="de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta">VersionMeta</a></dt>
 <dd>
 <div class="block">The QuiltMeta-instance for working with Fabric versions and information about them.</div>
@@ -831,6 +862,12 @@
 <dd>
 <div class="block">Create a new Fabric Meta instance.</div>
 </dd>
+<dt><a href="de/griefed/serverpackcreator/modscanning/FabricScanner.html" title="class in de.griefed.serverpackcreator.modscanning"><span class="typeNameLink">FabricScanner</span></a> - Class in <a href="de/griefed/serverpackcreator/modscanning/package-summary.html">de.griefed.serverpackcreator.modscanning</a></dt>
+<dd>
+<div class="block"><code>fabric.mod.json</code>-based scanning of Fabric-Minecraft mods.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/modscanning/FabricScanner.html#FabricScanner-com.fasterxml.jackson.databind.ObjectMapper-">FabricScanner(ObjectMapper)</a></span> - Constructor for class de.griefed.serverpackcreator.modscanning.<a href="de/griefed/serverpackcreator/modscanning/FabricScanner.html" title="class in de.griefed.serverpackcreator.modscanning">FabricScanner</a></dt>
+<dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/ApplicationProperties.html#FALLBACK_CLIENTSIDE_MODS--">FALLBACK_CLIENTSIDE_MODS()</a></span> - Method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a></dt>
 <dd>
 <div class="block">String-list of fallback clientside-only mods.</div>
@@ -1675,6 +1712,10 @@
 </dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/versionmeta/InvalidTypeException.html#InvalidTypeException-java.lang.String-">InvalidTypeException(String)</a></span> - Constructor for exception de.griefed.serverpackcreator.versionmeta.<a href="de/griefed/serverpackcreator/versionmeta/InvalidTypeException.html" title="class in de.griefed.serverpackcreator.versionmeta">InvalidTypeException</a></dt>
 <dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/ApplicationProperties.html#isAutoExcludingModsEnabled--">isAutoExcludingModsEnabled()</a></span> - Method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a></dt>
+<dd>
+<div class="block">Is auto excluding of clientside-only mods enabled.</div>
+</dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/swing/utilities/RotatedIcon.html#isCircularIcon--">isCircularIcon()</a></span> - Method in class de.griefed.serverpackcreator.swing.utilities.<a href="de/griefed/serverpackcreator/swing/utilities/RotatedIcon.html" title="class in de.griefed.serverpackcreator.swing.utilities">RotatedIcon</a></dt>
 <dd>
 <div class="block">Is the image circular or rectangular? Only used for Rotate.ABOUT_CENTER.</div>
@@ -1996,6 +2037,12 @@
 <dd>
 <div class="block">Get the list of Forge supported Minecraft versions, in <a href="de/griefed/serverpackcreator/versionmeta/Type.html#DESCENDING"><code>Type.DESCENDING</code></a> order.</div>
 </dd>
+<dt><a href="de/griefed/serverpackcreator/modscanning/ModScanner.html" title="class in de.griefed.serverpackcreator.modscanning"><span class="typeNameLink">ModScanner</span></a> - Class in <a href="de/griefed/serverpackcreator/modscanning/package-summary.html">de.griefed.serverpackcreator.modscanning</a></dt>
+<dd>
+<div class="block">Easy-access class for scanning of mods inside a modpack.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/modscanning/ModScanner.html#ModScanner-de.griefed.serverpackcreator.modscanning.AnnotationScanner-de.griefed.serverpackcreator.modscanning.FabricScanner-de.griefed.serverpackcreator.modscanning.QuiltScanner-de.griefed.serverpackcreator.modscanning.TomlScanner-">ModScanner(AnnotationScanner, FabricScanner, QuiltScanner, TomlScanner)</a></span> - Constructor for class de.griefed.serverpackcreator.modscanning.<a href="de/griefed/serverpackcreator/modscanning/ModScanner.html" title="class in de.griefed.serverpackcreator.modscanning">ModScanner</a></dt>
+<dd>&nbsp;</dd>
 </dl>
 <a name="I:N">
 <!--   -->
@@ -2016,6 +2063,10 @@
 </a>
 <h2 class="title">O</h2>
 <dl>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/spring/BeanConfiguration.html#objectMapper--">objectMapper()</a></span> - Method in class de.griefed.serverpackcreator.spring.<a href="de/griefed/serverpackcreator/spring/BeanConfiguration.html" title="class in de.griefed.serverpackcreator.spring">BeanConfiguration</a></dt>
+<dd>
+<div class="block"><code>ObjectMapper</code>-bean for use in various JSON-related things.</div>
+</dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/ApplicationProperties.html#OLD_CONFIG--">OLD_CONFIG()</a></span> - Method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a></dt>
 <dd>
 <div class="block">Old configuration-file used for automated migration in case anyone upgrades from 1.x.</div>
@@ -2119,10 +2170,6 @@
 <div class="block">Plugin interface for plugins which are to be executed after a server pack has been generated, but
  before the ZIP-archive is created.</div>
 </dd>
-<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/common/SystemUtilities.html#print-java.lang.String-">print(String)</a></span> - Method in class de.griefed.serverpackcreator.utilities.common.<a href="de/griefed/serverpackcreator/utilities/common/SystemUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">SystemUtilities</a></dt>
-<dd>
-<div class="block">Print the output to console using a <code>StandardCharsets.UTF_8</code> <code>PrintStream</code>.</div>
-</dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/ConfigUtilities.html#printConfigurationModel-de.griefed.serverpackcreator.ConfigurationModel-">printConfigurationModel(ConfigurationModel)</a></span> - Method in class de.griefed.serverpackcreator.utilities.<a href="de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ConfigUtilities</a></dt>
 <dd>
 <div class="block">Convenience method which passes the important fields from an instance of <a href="de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a> to <a href="de/griefed/serverpackcreator/utilities/ConfigUtilities.html#printConfigurationModel-java.lang.String-java.util.List-java.util.List-boolean-java.lang.String-java.lang.String-java.lang.String-java.lang.String-boolean-boolean-boolean-java.lang.String-java.lang.String-java.lang.String-java.lang.String-"><code>ConfigUtilities.printConfigurationModel(String, List, List, boolean, String,
@@ -2132,10 +2179,6 @@
 <dd>
 <div class="block">Prints all passed fields to the console and serverpackcreator.log.</div>
 </dd>
-<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/common/SystemUtilities.html#println-java.lang.String-">println(String)</a></span> - Method in class de.griefed.serverpackcreator.utilities.common.<a href="de/griefed/serverpackcreator/utilities/common/SystemUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">SystemUtilities</a></dt>
-<dd>
-<div class="block">Print the output to a new line to console using a <code>StandardCharsets.UTF_8</code> <code>PrintStream</code>.</div>
-</dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/swing/utilities/TextIcon.html#propertyChange-java.beans.PropertyChangeEvent-">propertyChange(PropertyChangeEvent)</a></span> - Method in class de.griefed.serverpackcreator.swing.utilities.<a href="de/griefed/serverpackcreator/swing/utilities/TextIcon.html" title="class in de.griefed.serverpackcreator.swing.utilities">TextIcon</a></dt>
 <dd>&nbsp;</dd>
 </dl>
@@ -2144,6 +2187,10 @@
 </a>
 <h2 class="title">Q</h2>
 <dl>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/modscanning/ModScanner.html#quilt--">quilt()</a></span> - Method in class de.griefed.serverpackcreator.modscanning.<a href="de/griefed/serverpackcreator/modscanning/ModScanner.html" title="class in de.griefed.serverpackcreator.modscanning">ModScanner</a></dt>
+<dd>
+<div class="block">Quilt-based scanner.</div>
+</dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/versionmeta/VersionMeta.html#quilt--">quilt()</a></span> - Method in class de.griefed.serverpackcreator.versionmeta.<a href="de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta">VersionMeta</a></dt>
 <dd>
 <div class="block">The QuiltMeta-instance for working with Quilt versions and information about them.</div>
@@ -2196,6 +2243,12 @@
 <dd>
 <div class="block">Create a new Quilt Meta instance.</div>
 </dd>
+<dt><a href="de/griefed/serverpackcreator/modscanning/QuiltScanner.html" title="class in de.griefed.serverpackcreator.modscanning"><span class="typeNameLink">QuiltScanner</span></a> - Class in <a href="de/griefed/serverpackcreator/modscanning/package-summary.html">de.griefed.serverpackcreator.modscanning</a></dt>
+<dd>
+<div class="block"><code>quilt.mod.json</code>-based scanning of Fabric-Minecraft mods.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/modscanning/QuiltScanner.html#QuiltScanner-com.fasterxml.jackson.databind.ObjectMapper-">QuiltScanner(ObjectMapper)</a></span> - Constructor for class de.griefed.serverpackcreator.modscanning.<a href="de/griefed/serverpackcreator/modscanning/QuiltScanner.html" title="class in de.griefed.serverpackcreator.modscanning">QuiltScanner</a></dt>
+<dd>&nbsp;</dd>
 </dl>
 <a name="I:R">
 <!--   -->
@@ -2436,6 +2489,45 @@
 </dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/swing/utilities/BackgroundPanel.html#SCALED">SCALED</a></span> - Static variable in class de.griefed.serverpackcreator.swing.utilities.<a href="de/griefed/serverpackcreator/swing/utilities/BackgroundPanel.html" title="class in de.griefed.serverpackcreator.swing.utilities">BackgroundPanel</a></dt>
 <dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/modscanning/AnnotationScanner.html#scan-java.util.Collection-">scan(Collection&lt;File&gt;)</a></span> - Method in class de.griefed.serverpackcreator.modscanning.<a href="de/griefed/serverpackcreator/modscanning/AnnotationScanner.html" title="class in de.griefed.serverpackcreator.modscanning">AnnotationScanner</a></dt>
+<dd>
+<div class="block">Scan the <code>fml-cache-annotation.json</code>-files in mod JAR-files of a given directory for
+ their sideness.<br>
+ If <code>clientSideOnly</code> specifies <code>"value": "true"</code>, and is not listed as a
+ dependency for another mod, it is added and therefore later on excluded from the server pack.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/modscanning/FabricScanner.html#scan-java.util.Collection-">scan(Collection&lt;File&gt;)</a></span> - Method in class de.griefed.serverpackcreator.modscanning.<a href="de/griefed/serverpackcreator/modscanning/FabricScanner.html" title="class in de.griefed.serverpackcreator.modscanning">FabricScanner</a></dt>
+<dd>
+<div class="block">Scan the <code>fabric.mod.json</code>-files in mod JAR-files of a given directory for their
+ sideness.<br>
+ If <code>environment</code> specifies <code>client</code>, and is not listed as a dependency
+ for another mod, it is added and therefore later on excluded from the server pack.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/modscanning/QuiltScanner.html#scan-java.util.Collection-">scan(Collection&lt;File&gt;)</a></span> - Method in class de.griefed.serverpackcreator.modscanning.<a href="de/griefed/serverpackcreator/modscanning/QuiltScanner.html" title="class in de.griefed.serverpackcreator.modscanning">QuiltScanner</a></dt>
+<dd>
+<div class="block">Scan the <code>quilt.mod.json</code>-files in mod JAR-files of a given directory for their
+ sideness.<br>
+ If <code>minecraft.environment</code> specifies <code>client</code>, and is not listed as a
+ dependency for another mod, it is added and therefore later on excluded from the server pack.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/modscanning/Scanner.html#scan-U-">scan(U)</a></span> - Method in interface de.griefed.serverpackcreator.modscanning.<a href="de/griefed/serverpackcreator/modscanning/Scanner.html" title="interface in de.griefed.serverpackcreator.modscanning">Scanner</a></dt>
+<dd>
+<div class="block">Scan the given files and return a list of files.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/modscanning/TomlScanner.html#scan-java.util.Collection-">scan(Collection&lt;File&gt;)</a></span> - Method in class de.griefed.serverpackcreator.modscanning.<a href="de/griefed/serverpackcreator/modscanning/TomlScanner.html" title="class in de.griefed.serverpackcreator.modscanning">TomlScanner</a></dt>
+<dd>
+<div class="block">Scan the <code>mods.toml</code>-files in mod JAR-files of a given directory for their sideness.</div>
+</dd>
+<dt><a href="de/griefed/serverpackcreator/modscanning/Scanner.html" title="interface in de.griefed.serverpackcreator.modscanning"><span class="typeNameLink">Scanner</span></a>&lt;<a href="de/griefed/serverpackcreator/modscanning/Scanner.html" title="type parameter in Scanner">T</a>,<a href="de/griefed/serverpackcreator/modscanning/Scanner.html" title="type parameter in Scanner">U</a>&gt; - Interface in <a href="de/griefed/serverpackcreator/modscanning/package-summary.html">de.griefed.serverpackcreator.modscanning</a></dt>
+<dd>
+<div class="block">Small interface for making sure each scanner has a <code>scan</code>-method with a given format.</div>
+</dd>
+<dt><a href="de/griefed/serverpackcreator/modscanning/ScanningException.html" title="class in de.griefed.serverpackcreator.modscanning"><span class="typeNameLink">ScanningException</span></a> - Exception in <a href="de/griefed/serverpackcreator/modscanning/package-summary.html">de.griefed.serverpackcreator.modscanning</a></dt>
+<dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/modscanning/ScanningException.html#ScanningException-java.lang.String-java.lang.Throwable-">ScanningException(String, Throwable)</a></span> - Constructor for exception de.griefed.serverpackcreator.modscanning.<a href="de/griefed/serverpackcreator/modscanning/ScanningException.html" title="class in de.griefed.serverpackcreator.modscanning">ScanningException</a></dt>
+<dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/modscanning/ScanningException.html#ScanningException-java.lang.String-">ScanningException(String)</a></span> - Constructor for exception de.griefed.serverpackcreator.modscanning.<a href="de/griefed/serverpackcreator/modscanning/ScanningException.html" title="class in de.griefed.serverpackcreator.modscanning">ScanningException</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="de/griefed/serverpackcreator/spring/Schedules.html" title="class in de.griefed.serverpackcreator.spring"><span class="typeNameLink">Schedules</span></a> - Class in <a href="de/griefed/serverpackcreator/spring/package-summary.html">de.griefed.serverpackcreator.spring</a></dt>
 <dd>
 <div class="block">Schedules to cover all kinds of aspects of ServerPackCreator.</div>
@@ -2516,7 +2608,7 @@
  to the server pack as well as installing the modloader server for the specified modloader,
  modloader version and Minecraft version.</div>
 </dd>
-<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/ServerPackHandler.html#ServerPackHandler-de.griefed.serverpackcreator.i18n.I18n-de.griefed.serverpackcreator.ApplicationProperties-de.griefed.serverpackcreator.versionmeta.VersionMeta-de.griefed.serverpackcreator.utilities.common.Utilities-de.griefed.serverpackcreator.ApplicationPlugins-">ServerPackHandler(I18n, ApplicationProperties, VersionMeta, Utilities, ApplicationPlugins)</a></span> - Constructor for class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/ServerPackHandler.html" title="class in de.griefed.serverpackcreator">ServerPackHandler</a></dt>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/ServerPackHandler.html#ServerPackHandler-de.griefed.serverpackcreator.ApplicationProperties-de.griefed.serverpackcreator.versionmeta.VersionMeta-de.griefed.serverpackcreator.utilities.common.Utilities-de.griefed.serverpackcreator.ApplicationPlugins-de.griefed.serverpackcreator.modscanning.ModScanner-">ServerPackHandler(ApplicationProperties, VersionMeta, Utilities, ApplicationPlugins, ModScanner)</a></span> - Constructor for class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/ServerPackHandler.html" title="class in de.griefed.serverpackcreator">ServerPackHandler</a></dt>
 <dd>
 <div class="block"><strong>Constructor</strong></div>
 </dd>
@@ -2886,7 +2978,7 @@
 <div class="block">This class creates the tab which displays the labels, textfields, buttons and functions in order
  to create a new server pack.</div>
 </dd>
-<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/swing/TabCreateServerPack.html#TabCreateServerPack-de.griefed.serverpackcreator.i18n.I18n-de.griefed.serverpackcreator.ConfigurationHandler-de.griefed.serverpackcreator.ServerPackHandler-de.griefed.serverpackcreator.versionmeta.VersionMeta-de.griefed.serverpackcreator.ApplicationProperties-javax.swing.JFrame-de.griefed.serverpackcreator.utilities.common.Utilities-de.griefed.serverpackcreator.ApplicationPlugins-de.griefed.serverpackcreator.utilities.ConfigUtilities-de.griefed.serverpackcreator.swing.themes.DarkTheme-de.griefed.serverpackcreator.swing.themes.LightTheme-">TabCreateServerPack(I18n, ConfigurationHandler, ServerPackHandler, VersionMeta, ApplicationProperties, JFrame, Utilities, ApplicationPlugins, ConfigUtilities, DarkTheme, LightTheme)</a></span> - Constructor for class de.griefed.serverpackcreator.swing.<a href="de/griefed/serverpackcreator/swing/TabCreateServerPack.html" title="class in de.griefed.serverpackcreator.swing">TabCreateServerPack</a></dt>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/swing/TabCreateServerPack.html#TabCreateServerPack-de.griefed.serverpackcreator.i18n.I18n-de.griefed.serverpackcreator.ConfigurationHandler-de.griefed.serverpackcreator.ServerPackHandler-de.griefed.serverpackcreator.versionmeta.VersionMeta-de.griefed.serverpackcreator.ApplicationProperties-javax.swing.JFrame-de.griefed.serverpackcreator.utilities.common.Utilities-de.griefed.serverpackcreator.utilities.ConfigUtilities-de.griefed.serverpackcreator.swing.themes.DarkTheme-de.griefed.serverpackcreator.swing.themes.LightTheme-">TabCreateServerPack(I18n, ConfigurationHandler, ServerPackHandler, VersionMeta, ApplicationProperties, JFrame, Utilities, ConfigUtilities, DarkTheme, LightTheme)</a></span> - Constructor for class de.griefed.serverpackcreator.swing.<a href="de/griefed/serverpackcreator/swing/TabCreateServerPack.html" title="class in de.griefed.serverpackcreator.swing">TabCreateServerPack</a></dt>
 <dd>
 <div class="block"><strong>Constructor</strong></div>
 </dd>
@@ -2958,6 +3050,18 @@
 <dt><a href="de/griefed/serverpackcreator/swing/utilities/TextIcon.Layout.html" title="enum in de.griefed.serverpackcreator.swing.utilities"><span class="typeNameLink">TextIcon.Layout</span></a> - Enum in <a href="de/griefed/serverpackcreator/swing/utilities/package-summary.html">de.griefed.serverpackcreator.swing.utilities</a></dt>
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/swing/utilities/BackgroundPanel.html#TILED">TILED</a></span> - Static variable in class de.griefed.serverpackcreator.swing.utilities.<a href="de/griefed/serverpackcreator/swing/utilities/BackgroundPanel.html" title="class in de.griefed.serverpackcreator.swing.utilities">BackgroundPanel</a></dt>
+<dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/spring/BeanConfiguration.html#tomlParser--">tomlParser()</a></span> - Method in class de.griefed.serverpackcreator.spring.<a href="de/griefed/serverpackcreator/spring/BeanConfiguration.html" title="class in de.griefed.serverpackcreator.spring">BeanConfiguration</a></dt>
+<dd>
+<div class="block"><code>TomlParser</code> for parsing <code>.toml</code>-files.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/modscanning/ModScanner.html#tomls--">tomls()</a></span> - Method in class de.griefed.serverpackcreator.modscanning.<a href="de/griefed/serverpackcreator/modscanning/ModScanner.html" title="class in de.griefed.serverpackcreator.modscanning">ModScanner</a></dt>
+<dd>
+<div class="block">Forge toml-based scanner.</div>
+</dd>
+<dt><a href="de/griefed/serverpackcreator/modscanning/TomlScanner.html" title="class in de.griefed.serverpackcreator.modscanning"><span class="typeNameLink">TomlScanner</span></a> - Class in <a href="de/griefed/serverpackcreator/modscanning/package-summary.html">de.griefed.serverpackcreator.modscanning</a></dt>
+<dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/modscanning/TomlScanner.html#TomlScanner-com.electronwill.nightconfig.toml.TomlParser-">TomlScanner(TomlParser)</a></span> - Constructor for class de.griefed.serverpackcreator.modscanning.<a href="de/griefed/serverpackcreator/modscanning/TomlScanner.html" title="class in de.griefed.serverpackcreator.modscanning">TomlScanner</a></dt>
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/ConfigurationModel.html#toString--">toString()</a></span> - Method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a></dt>
 <dd>&nbsp;</dd>
@@ -3203,7 +3307,7 @@ the order they are declared.</div>
 <dd>
 <div class="block">VersionMeta containing available versions and important details for Minecraft, Fabric and Forge.</div>
 </dd>
-<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/versionmeta/VersionMeta.html#VersionMeta-java.io.File-java.io.File-java.io.File-java.io.File-java.io.File-java.io.File-java.io.File-">VersionMeta(File, File, File, File, File, File, File)</a></span> - Constructor for class de.griefed.serverpackcreator.versionmeta.<a href="de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta">VersionMeta</a></dt>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/versionmeta/VersionMeta.html#VersionMeta-java.io.File-java.io.File-java.io.File-java.io.File-java.io.File-java.io.File-java.io.File-com.fasterxml.jackson.databind.ObjectMapper-">VersionMeta(File, File, File, File, File, File, File, ObjectMapper)</a></span> - Constructor for class de.griefed.serverpackcreator.versionmeta.<a href="de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta">VersionMeta</a></dt>
 <dd>
 <div class="block">Constructor.</div>
 </dd>

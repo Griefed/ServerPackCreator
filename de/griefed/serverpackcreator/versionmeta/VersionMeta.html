@@ -129,13 +129,14 @@ extends java.lang.Object</pre>
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html#VersionMeta-java.io.File-java.io.File-java.io.File-java.io.File-java.io.File-java.io.File-java.io.File-">VersionMeta</a></span>(java.io.File&nbsp;minecraftManifest,
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html#VersionMeta-java.io.File-java.io.File-java.io.File-java.io.File-java.io.File-java.io.File-java.io.File-com.fasterxml.jackson.databind.ObjectMapper-">VersionMeta</a></span>(java.io.File&nbsp;minecraftManifest,
            java.io.File&nbsp;forgeManifest,
            java.io.File&nbsp;fabricManifest,
            java.io.File&nbsp;fabricInstallerManifest,
            java.io.File&nbsp;fabricIntermediariesManifest,
            java.io.File&nbsp;quiltManifest,
-           java.io.File&nbsp;quiltInstallerManifest)</code>
+           java.io.File&nbsp;quiltInstallerManifest,
+           com.fasterxml.jackson.databind.ObjectMapper&nbsp;injectedObjectMapper)</code>
 <div class="block">Constructor.</div>
 </td>
 </tr>
@@ -206,7 +207,7 @@ extends java.lang.Object</pre>
 <!--   -->
 </a>
 <h3>Constructor Detail</h3>
-<a name="VersionMeta-java.io.File-java.io.File-java.io.File-java.io.File-java.io.File-java.io.File-java.io.File-">
+<a name="VersionMeta-java.io.File-java.io.File-java.io.File-java.io.File-java.io.File-java.io.File-java.io.File-com.fasterxml.jackson.databind.ObjectMapper-">
 <!--   -->
 </a>
 <ul class="blockListLast">
@@ -219,7 +220,8 @@ public&nbsp;VersionMeta(java.io.File&nbsp;minecraftManifest,
                               java.io.File&nbsp;fabricInstallerManifest,
                               java.io.File&nbsp;fabricIntermediariesManifest,
                               java.io.File&nbsp;quiltManifest,
-                              java.io.File&nbsp;quiltInstallerManifest)
+                              java.io.File&nbsp;quiltInstallerManifest,
+                              com.fasterxml.jackson.databind.ObjectMapper&nbsp;injectedObjectMapper)
                        throws java.io.IOException</pre>
 <div class="block">Constructor.</div>
 <dl>
@@ -231,6 +233,7 @@ public&nbsp;VersionMeta(java.io.File&nbsp;minecraftManifest,
 <dd><code>fabricInstallerManifest</code> - <code>File</code> Fabric-installer manifest file.</dd>
 <dd><code>quiltManifest</code> - <code>File</code> Quilt manifest file.</dd>
 <dd><code>quiltInstallerManifest</code> - <code>File</code> Quilt-installer manifest file.</dd>
+<dd><code>injectedObjectMapper</code> - <code>ObjectMapper</code>-instance.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code>java.io.IOException</code> - if one of the metas could not be initialized.</dd>
 </dl>

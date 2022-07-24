@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -190,15 +190,27 @@ extends java.lang.Object</pre>
 </td>
 </tr>
 <tr id="i6" class="altColor">
+<td class="colFirst"><code>com.fasterxml.jackson.databind.ObjectMapper</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/spring/BeanConfiguration.html#objectMapper--">objectMapper</a></span>()</code>
+<div class="block"><code>ObjectMapper</code>-bean for use in various JSON-related things.</div>
+</td>
+</tr>
+<tr id="i7" class="rowColor">
 <td class="colFirst"><code>java.io.File</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/spring/BeanConfiguration.html#quiltInstallerManifest--">quiltInstallerManifest</a></span>()</code>
 <div class="block">Bean for the location of the Quilt installer version manifest-file.</div>
 </td>
 </tr>
-<tr id="i7" class="rowColor">
+<tr id="i8" class="altColor">
 <td class="colFirst"><code>java.io.File</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/spring/BeanConfiguration.html#quiltManifest--">quiltManifest</a></span>()</code>
 <div class="block">Bean for the location of the Quilt version manifest-file.</div>
+</td>
+</tr>
+<tr id="i9" class="rowColor">
+<td class="colFirst"><code>com.electronwill.nightconfig.toml.TomlParser</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/spring/BeanConfiguration.html#tomlParser--">tomlParser</a></span>()</code>
+<div class="block"><code>TomlParser</code> for parsing <code>.toml</code>-files.</div>
 </td>
 </tr>
 </table>
@@ -349,7 +361,7 @@ public&nbsp;java.io.File&nbsp;quiltInstallerManifest()</pre>
 <a name="args--">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>args</h4>
 <pre>@Bean
@@ -364,6 +376,38 @@ public&nbsp;java.lang.String[]&nbsp;args()</pre>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>empty String array.</dd>
+</dl>
+</li>
+</ul>
+<a name="objectMapper--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>objectMapper</h4>
+<pre>@Bean
+public&nbsp;com.fasterxml.jackson.databind.ObjectMapper&nbsp;objectMapper()</pre>
+<div class="block"><code>ObjectMapper</code>-bean for use in various JSON-related things. Disabled <code>
+ DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES</code>, enabled <code>
+ DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY</code>.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd><code>ObjectMapper</code></dd>
+</dl>
+</li>
+</ul>
+<a name="tomlParser--">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>tomlParser</h4>
+<pre>@Bean
+public&nbsp;com.electronwill.nightconfig.toml.TomlParser&nbsp;tomlParser()</pre>
+<div class="block"><code>TomlParser</code> for parsing <code>.toml</code>-files.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd><code>TomlParser</code></dd>
 </dl>
 </li>
 </ul>
