@@ -44,28 +44,28 @@ public final class Dependencies {
     try {
       FileUtils.copyDirectory(
           new File("backend/test/resources/testresources/addons"), new File("plugins"));
-    } catch (IOException e) {
+    } catch (IOException | NoClassDefFoundError e) {
       LOG.error("Error initializing dependency.", e);
     }
     try {
       FileUtils.copyFile(
           new File("backend/test/resources/serverpackcreator.properties"),
           new File("serverpackcreator.properties"));
-    } catch (IOException e) {
+    } catch (IOException | NoClassDefFoundError e) {
       LOG.error("Error initializing dependency.", e);
     }
     try {
       FileUtils.copyFile(
           new File("backend/test/resources/serverpackcreator.db"),
           new File("serverpackcreator.db"));
-    } catch (IOException e) {
+    } catch (IOException | NoClassDefFoundError e) {
       LOG.error("Error initializing dependency.", e);
     }
 
     SERVER_PACK_CREATOR = new ServerPackCreator(new String[] {"--setup"});
     try {
       SERVER_PACK_CREATOR.run();
-    } catch (IOException e) {
+    } catch (IOException | NoClassDefFoundError e) {
       LOG.error("Error initializing dependency.", e);
     }
 
@@ -103,7 +103,7 @@ public final class Dependencies {
               APPLICATIONPROPERTIES.QUILT_VERSION_MANIFEST_LOCATION(),
               APPLICATIONPROPERTIES.QUILT_INSTALLER_VERSION_MANIFEST_LOCATION(),
               OBJECT_MAPPER);
-    } catch (IOException e) {
+    } catch (IOException | NoClassDefFoundError e) {
       LOG.error("Error initializing dependency.", e);
     }
 
@@ -111,7 +111,7 @@ public final class Dependencies {
       CONFIGURATIONHANDLER =
           new ConfigurationHandler(
               I18N, VERSIONMETA, APPLICATIONPROPERTIES, UTILITIES, CONFIGUTILITIES);
-    } catch (IOException e) {
+    } catch (IOException | NoClassDefFoundError e) {
       LOG.error("Error initializing dependency.", e);
     }
 
@@ -119,13 +119,18 @@ public final class Dependencies {
       SERVERPACKHANDLER =
           new ServerPackHandler(
               APPLICATIONPROPERTIES, VERSIONMETA, UTILITIES, APPLICATION_PLUGINS, MODSCANNER);
-    } catch (IOException e) {
+    } catch (IOException | NoClassDefFoundError e) {
       LOG.error("Error initializing dependency.", e);
     }
   }
 
   public static synchronized Dependencies getInstance() {
-    return InstanceHolder.instance;
+    try {
+      return InstanceHolder.instance();
+    } catch (NoClassDefFoundError e) {
+      LOG.error("Error initializing class.",e);
+    }
+    return new Dependencies();
   }
 
   public synchronized ServerPackCreator SERVER_PACK_CREATOR() {
@@ -190,7 +195,7 @@ public final class Dependencies {
                 getInstance().APPLICATIONPROPERTIES().QUILT_VERSION_MANIFEST_LOCATION(),
                 getInstance().APPLICATIONPROPERTIES().QUILT_INSTALLER_VERSION_MANIFEST_LOCATION(),
                 getInstance().OBJECT_MAPPER());
-      } catch (IOException e) {
+      } catch (IOException | NoClassDefFoundError e) {
         LOG.error("Error initializing dependency.", e);
       }
     }
@@ -207,7 +212,7 @@ public final class Dependencies {
                 getInstance().APPLICATIONPROPERTIES(),
                 getInstance().UTILITIES(),
                 getInstance().CONFIGUTILITIES());
-      } catch (IOException e) {
+      } catch (IOException | NoClassDefFoundError e) {
         LOG.error("Error initializing dependency.", e);
       }
     }
@@ -224,7 +229,7 @@ public final class Dependencies {
                 getInstance().UTILITIES(),
                 getInstance().APPLICATION_PLUGINS(),
                 getInstance().MODSCANNER());
-      } catch (IOException e) {
+      } catch (IOException | NoClassDefFoundError e) {
         LOG.error("Error initializing dependency.", e);
       }
     }
@@ -286,6 +291,12 @@ public final class Dependencies {
   }
 
   private static final class InstanceHolder {
-    static final Dependencies instance = new Dependencies();
+    private static Dependencies instance;
+    public static Dependencies instance() {
+      if (instance == null) {
+        instance = new Dependencies();
+      }
+      return instance;
+    }
   }
 }
