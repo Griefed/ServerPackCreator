@@ -7,24 +7,18 @@ import org.junit.jupiter.api.Test;
 
 public class SystemUtilitiesTest {
 
-  SystemUtilitiesTest() {}
+  SystemUtilities systemUtilities;
+
+  SystemUtilitiesTest() {
+    systemUtilities = Dependencies.getInstance().UTILITIES().SystemUtils();
+  }
 
   @Test
   void acquireJavaPathFromSystemTest() {
-    Assertions.assertNotNull(
-        Dependencies.getInstance().UTILITIES().SystemUtils().acquireJavaPathFromSystem());
+    Assertions.assertNotNull(systemUtilities.acquireJavaPathFromSystem());
+    Assertions.assertTrue(new File(systemUtilities.acquireJavaPathFromSystem()).exists());
+    Assertions.assertTrue(new File(systemUtilities.acquireJavaPathFromSystem()).isFile());
     Assertions.assertTrue(
-        new File(Dependencies.getInstance().UTILITIES().SystemUtils().acquireJavaPathFromSystem())
-            .exists());
-    Assertions.assertTrue(
-        new File(Dependencies.getInstance().UTILITIES().SystemUtils().acquireJavaPathFromSystem())
-            .isFile());
-    Assertions.assertTrue(
-        Dependencies.getInstance()
-            .UTILITIES()
-            .SystemUtils()
-            .acquireJavaPathFromSystem()
-            .replace("\\", "/")
-            .contains("bin/java"));
+        systemUtilities.acquireJavaPathFromSystem().replace("\\", "/").contains("bin/java"));
   }
 }

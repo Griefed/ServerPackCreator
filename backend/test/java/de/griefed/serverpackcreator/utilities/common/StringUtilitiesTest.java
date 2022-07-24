@@ -9,14 +9,17 @@ import org.junit.jupiter.api.Test;
 
 public class StringUtilitiesTest {
 
-  StringUtilitiesTest() {}
+  StringUtilities stringUtilities;
+
+  StringUtilitiesTest() {
+    stringUtilities = Dependencies.getInstance().UTILITIES().StringUtils();
+  }
 
   @Test
   void buildStringTest() {
     List<String> args =
         new ArrayList<>(Arrays.asList("config", "mods", "scripts", "seeds", "defaultconfigs"));
-    String result =
-        Dependencies.getInstance().UTILITIES().StringUtils().buildString(args.toString());
+    String result = stringUtilities.buildString(args.toString());
     Assertions.assertEquals(args.toString(), String.format("[%s]", result));
   }
 }

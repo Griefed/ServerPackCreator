@@ -1,5 +1,6 @@
 package de.griefed.serverpackcreator;
 
+import de.griefed.serverpackcreator.versionmeta.VersionMeta;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -12,6 +13,9 @@ import org.junit.jupiter.api.Test;
 
 class ConfigurationHandlerTest {
 
+  ConfigurationHandler configurationHandler;
+  VersionMeta versionMeta;
+
   ConfigurationHandlerTest() {
     try {
       FileUtils.copyFile(
@@ -20,95 +24,79 @@ class ConfigurationHandlerTest {
     } catch (IOException e) {
       e.printStackTrace();
     }
+    configurationHandler = Dependencies.getInstance().CONFIGURATIONHANDLER();
+    versionMeta = Dependencies.getInstance().VERSIONMETA();
   }
 
   @Test
   void checkConfigFileTest() {
     Assertions.assertFalse(
-        Dependencies.getInstance()
-            .CONFIGURATIONHANDLER()
-            .checkConfiguration(
-                new File("./backend/test/resources/testresources/serverpackcreator.conf"), false));
+        configurationHandler.checkConfiguration(
+            new File("./backend/test/resources/testresources/serverpackcreator.conf"), false));
   }
 
   @Test
   void isDirTestCopyDirs() {
     Assertions.assertTrue(
-        Dependencies.getInstance()
-            .CONFIGURATIONHANDLER()
-            .checkConfiguration(
-                new File("./backend/test/resources/testresources/serverpackcreator_copydirs.conf"),
-                false));
+        configurationHandler.checkConfiguration(
+            new File("./backend/test/resources/testresources/serverpackcreator_copydirs.conf"),
+            false));
   }
 
   @Test
   void isDirTestJavaPath() {
     Assertions.assertFalse(
-        Dependencies.getInstance()
-            .CONFIGURATIONHANDLER()
-            .checkConfiguration(
-                new File("./backend/test/resources/testresources/serverpackcreator_javapath.conf"),
-                false));
+        configurationHandler.checkConfiguration(
+            new File("./backend/test/resources/testresources/serverpackcreator_javapath.conf"),
+            false));
   }
 
   @Test
   void isDirTestMinecraftVersion() {
     Assertions.assertTrue(
-        Dependencies.getInstance()
-            .CONFIGURATIONHANDLER()
-            .checkConfiguration(
-                new File(
-                    "./backend/test/resources/testresources/serverpackcreator_minecraftversion.conf"),
-                false));
+        configurationHandler.checkConfiguration(
+            new File(
+                "./backend/test/resources/testresources/serverpackcreator_minecraftversion.conf"),
+            false));
   }
 
   @Test
   void isDirTestModLoader() {
     Assertions.assertFalse(
-        Dependencies.getInstance()
-            .CONFIGURATIONHANDLER()
-            .checkConfiguration(
-                new File("./backend/test/resources/testresources/serverpackcreator_modloader.conf"),
-                false));
+        configurationHandler.checkConfiguration(
+            new File("./backend/test/resources/testresources/serverpackcreator_modloader.conf"),
+            false));
   }
 
   @Test
   void isDirTestModLoaderFalse() {
     Assertions.assertTrue(
-        Dependencies.getInstance()
-            .CONFIGURATIONHANDLER()
-            .checkConfiguration(
-                new File(
-                    "./backend/test/resources/testresources/serverpackcreator_modloaderfalse.conf"),
-                false));
+        configurationHandler.checkConfiguration(
+            new File(
+                "./backend/test/resources/testresources/serverpackcreator_modloaderfalse.conf"),
+            false));
   }
 
   @Test
   void isDirTestModLoaderVersion() {
     Assertions.assertTrue(
-        Dependencies.getInstance()
-            .CONFIGURATIONHANDLER()
-            .checkConfiguration(
-                new File(
-                    "./backend/test/resources/testresources/serverpackcreator_modloaderversion.conf"),
-                false));
+        configurationHandler.checkConfiguration(
+            new File(
+                "./backend/test/resources/testresources/serverpackcreator_modloaderversion.conf"),
+            false));
   }
 
   @Test
   void checkModpackDirTest() {
     String modpackDirCorrect = "./backend/test/resources/forge_tests";
     Assertions.assertTrue(
-        Dependencies.getInstance()
-            .CONFIGURATIONHANDLER()
-            .checkModpackDir(modpackDirCorrect, new ArrayList<>(100)));
+        configurationHandler.checkModpackDir(modpackDirCorrect, new ArrayList<>(100)));
   }
 
   @Test
   void checkModpackDirTestFalse() {
     Assertions.assertFalse(
-        Dependencies.getInstance()
-            .CONFIGURATIONHANDLER()
-            .checkModpackDir("modpackDir", new ArrayList<>(100)));
+        configurationHandler.checkModpackDir("modpackDir", new ArrayList<>(100)));
   }
 
   @Test
@@ -117,9 +105,7 @@ class ConfigurationHandlerTest {
     List<String> copyDirs =
         new ArrayList<>(Arrays.asList("config", "mods", "scripts", "seeds", "defaultconfigs"));
     Assertions.assertTrue(
-        Dependencies.getInstance()
-            .CONFIGURATIONHANDLER()
-            .checkCopyDirs(copyDirs, modpackDir, new ArrayList<>(100)));
+        configurationHandler.checkCopyDirs(copyDirs, modpackDir, new ArrayList<>(100)));
   }
 
   @Test
@@ -128,9 +114,7 @@ class ConfigurationHandlerTest {
     List<String> copyDirsInvalid =
         new ArrayList<>(Arrays.asList("configs", "modss", "scriptss", "seedss", "defaultconfigss"));
     Assertions.assertFalse(
-        Dependencies.getInstance()
-            .CONFIGURATIONHANDLER()
-            .checkCopyDirs(copyDirsInvalid, modpackDir, new ArrayList<>(100)));
+        configurationHandler.checkCopyDirs(copyDirsInvalid, modpackDir, new ArrayList<>(100)));
   }
 
   @Test
@@ -147,9 +131,7 @@ class ConfigurationHandlerTest {
                 "test.txt;test.txt",
                 "test2.txt;test2.txt"));
     Assertions.assertTrue(
-        Dependencies.getInstance()
-            .CONFIGURATIONHANDLER()
-            .checkCopyDirs(copyDirsAndFiles, modpackDir, new ArrayList<>(100)));
+        configurationHandler.checkCopyDirs(copyDirsAndFiles, modpackDir, new ArrayList<>(100)));
   }
 
   @Test
@@ -168,9 +150,8 @@ class ConfigurationHandlerTest {
                 "LICENSEee;test/LICENSE",
                 "LICENSEee;test/license.md"));
     Assertions.assertFalse(
-        Dependencies.getInstance()
-            .CONFIGURATIONHANDLER()
-            .checkCopyDirs(copyDirsAndFilesFalse, modpackDir, new ArrayList<>(100)));
+        configurationHandler.checkCopyDirs(
+            copyDirsAndFilesFalse, modpackDir, new ArrayList<>(100)));
   }
 
   @Test
@@ -187,103 +168,63 @@ class ConfigurationHandlerTest {
     } else {
       javaPath = autoJavaPath;
     }
-    Assertions.assertNotNull(
-        Dependencies.getInstance().CONFIGURATIONHANDLER().getJavaPath(javaPath));
-    Assertions.assertTrue(
-        new File(Dependencies.getInstance().CONFIGURATIONHANDLER().getJavaPath(javaPath)).exists());
+    Assertions.assertNotNull(configurationHandler.getJavaPath(javaPath));
+    Assertions.assertTrue(new File(configurationHandler.getJavaPath(javaPath)).exists());
   }
 
   @Test
   void checkModloaderTestForge() {
-    Assertions.assertTrue(
-        Dependencies.getInstance().CONFIGURATIONHANDLER().checkModloader("Forge"));
-    Assertions.assertTrue(
-        Dependencies.getInstance().CONFIGURATIONHANDLER().checkModloader("fOrGe"));
-    Assertions.assertTrue(
-        Dependencies.getInstance().CONFIGURATIONHANDLER().checkModloader("Fabric"));
-    Assertions.assertTrue(
-        Dependencies.getInstance().CONFIGURATIONHANDLER().checkModloader("fAbRiC"));
-    Assertions.assertTrue(
-        Dependencies.getInstance().CONFIGURATIONHANDLER().checkModloader("Quilt"));
-    Assertions.assertTrue(
-        Dependencies.getInstance().CONFIGURATIONHANDLER().checkModloader("qUiLt"));
+    Assertions.assertTrue(configurationHandler.checkModloader("Forge"));
+    Assertions.assertTrue(configurationHandler.checkModloader("fOrGe"));
+    Assertions.assertTrue(configurationHandler.checkModloader("Fabric"));
+    Assertions.assertTrue(configurationHandler.checkModloader("fAbRiC"));
+    Assertions.assertTrue(configurationHandler.checkModloader("Quilt"));
+    Assertions.assertTrue(configurationHandler.checkModloader("qUiLt"));
 
-    Assertions.assertFalse(
-        Dependencies.getInstance().CONFIGURATIONHANDLER().checkModloader("modloader"));
+    Assertions.assertFalse(configurationHandler.checkModloader("modloader"));
   }
 
   @Test
   void checkModloaderVersionTestForge() {
-    Assertions.assertTrue(
-        Dependencies.getInstance()
-            .CONFIGURATIONHANDLER()
-            .checkModloaderVersion("Forge", "36.1.2", "1.16.5"));
-    Assertions.assertFalse(
-        Dependencies.getInstance()
-            .CONFIGURATIONHANDLER()
-            .checkModloaderVersion("Forge", "90.0.0", "1.16.5"));
+    Assertions.assertTrue(configurationHandler.checkModloaderVersion("Forge", "36.1.2", "1.16.5"));
+    Assertions.assertFalse(configurationHandler.checkModloaderVersion("Forge", "90.0.0", "1.16.5"));
   }
 
   @Test
   void checkModloaderVersionTestFabric() {
-    Assertions.assertTrue(
-        Dependencies.getInstance()
-            .CONFIGURATIONHANDLER()
-            .checkModloaderVersion("Fabric", "0.11.3", "1.16.5"));
+    Assertions.assertTrue(configurationHandler.checkModloaderVersion("Fabric", "0.11.3", "1.16.5"));
     Assertions.assertFalse(
-        Dependencies.getInstance()
-            .CONFIGURATIONHANDLER()
-            .checkModloaderVersion("Fabric", "0.90.3", "1.16.5"));
+        configurationHandler.checkModloaderVersion("Fabric", "0.90.3", "1.16.5"));
   }
 
   @Test
   void checkModloaderVersionTestQuilt() {
-    Assertions.assertTrue(
-        Dependencies.getInstance()
-            .CONFIGURATIONHANDLER()
-            .checkModloaderVersion("Quilt", "0.16.1", "1.16.5"));
-    Assertions.assertFalse(
-        Dependencies.getInstance()
-            .CONFIGURATIONHANDLER()
-            .checkModloaderVersion("Quilt", "0.90.3", "1.16.5"));
+    Assertions.assertTrue(configurationHandler.checkModloaderVersion("Quilt", "0.16.1", "1.16.5"));
+    Assertions.assertFalse(configurationHandler.checkModloaderVersion("Quilt", "0.90.3", "1.16.5"));
   }
 
   @Test
   void isMinecraftVersionCorrectTest() {
-    Assertions.assertTrue(
-        Dependencies.getInstance().VERSIONMETA().minecraft().checkMinecraftVersion("1.16.5"));
-    Assertions.assertFalse(
-        Dependencies.getInstance().VERSIONMETA().minecraft().checkMinecraftVersion("1.99.5"));
+    Assertions.assertTrue(versionMeta.minecraft().checkMinecraftVersion("1.16.5"));
+    Assertions.assertFalse(versionMeta.minecraft().checkMinecraftVersion("1.99.5"));
   }
 
   @Test
   void isFabricVersionCorrectTest() {
-    Assertions.assertTrue(
-        Dependencies.getInstance().VERSIONMETA().fabric().checkFabricVersion("0.11.3"));
-    Assertions.assertFalse(
-        Dependencies.getInstance().VERSIONMETA().fabric().checkFabricVersion("0.90.3"));
+    Assertions.assertTrue(versionMeta.fabric().checkFabricVersion("0.11.3"));
+    Assertions.assertFalse(versionMeta.fabric().checkFabricVersion("0.90.3"));
   }
 
   @Test
   void isForgeVersionCorrectTest() {
-    Assertions.assertTrue(
-        Dependencies.getInstance()
-            .VERSIONMETA()
-            .forge()
-            .checkForgeAndMinecraftVersion("1.16.5", "36.1.2"));
-    Assertions.assertFalse(
-        Dependencies.getInstance()
-            .VERSIONMETA()
-            .forge()
-            .checkForgeAndMinecraftVersion("1.16.5", "99.0.0"));
+    Assertions.assertTrue(versionMeta.forge().checkForgeAndMinecraftVersion("1.16.5", "36.1.2"));
+    Assertions.assertFalse(versionMeta.forge().checkForgeAndMinecraftVersion("1.16.5", "99.0.0"));
   }
 
   @Test
   void isQuiltVersionCorrectTest() {
-    Assertions.assertTrue(
-        Dependencies.getInstance().VERSIONMETA().quilt().checkQuiltVersion("0.16.1"));
-    Assertions.assertFalse(
-        Dependencies.getInstance().VERSIONMETA().quilt().checkQuiltVersion("0.90.3"));
+    Assertions.assertTrue(versionMeta.quilt().checkQuiltVersion("0.16.1"));
+    Assertions.assertFalse(versionMeta.quilt().checkQuiltVersion("0.90.3"));
   }
 
   @Test
@@ -328,10 +269,7 @@ class ConfigurationHandlerTest {
     configurationModel.setModLoader("Forge");
     configurationModel.setModLoaderVersion("36.1.2");
     configurationModel.setMinecraftVersion("1.16.5");
-    Assertions.assertFalse(
-        Dependencies.getInstance()
-            .CONFIGURATIONHANDLER()
-            .checkConfiguration(configurationModel, false));
+    Assertions.assertFalse(configurationHandler.checkConfiguration(configurationModel, false));
   }
 
   @Test
@@ -339,38 +277,28 @@ class ConfigurationHandlerTest {
     ConfigurationModel configurationModel = new ConfigurationModel();
     configurationModel.setModpackDir(
         "backend/test/resources/testresources/Survive_Create_Prosper_4_valid.zip");
-    Assertions.assertFalse(
-        Dependencies.getInstance()
-            .CONFIGURATIONHANDLER()
-            .checkConfiguration(configurationModel, true));
+    Assertions.assertFalse(configurationHandler.checkConfiguration(configurationModel, true));
     configurationModel = new ConfigurationModel();
     configurationModel.setModpackDir(
         "backend/test/resources/testresources/Survive_Create_Prosper_4_invalid.zip");
-    Assertions.assertTrue(
-        Dependencies.getInstance()
-            .CONFIGURATIONHANDLER()
-            .checkConfiguration(configurationModel, true));
+    Assertions.assertTrue(configurationHandler.checkConfiguration(configurationModel, true));
   }
 
   @Test
   void checkConfigurationFileTest() {
     Assertions.assertFalse(
-        Dependencies.getInstance()
-            .CONFIGURATIONHANDLER()
-            .checkConfiguration(
-                new File("backend/test/resources/testresources/serverpackcreator.conf"), true));
+        configurationHandler.checkConfiguration(
+            new File("backend/test/resources/testresources/serverpackcreator.conf"), true));
   }
 
   @Test
   void checkConfigurationFileAndModelTest() {
     ConfigurationModel configurationModel = new ConfigurationModel();
     Assertions.assertFalse(
-        Dependencies.getInstance()
-            .CONFIGURATIONHANDLER()
-            .checkConfiguration(
-                new File("backend/test/resources/testresources/serverpackcreator.conf"),
-                configurationModel,
-                true));
+        configurationHandler.checkConfiguration(
+            new File("backend/test/resources/testresources/serverpackcreator.conf"),
+            configurationModel,
+            true));
     Assertions.assertEquals(
         "./backend/test/resources/forge_tests", configurationModel.getModpackDir());
     Assertions.assertEquals("1.16.5", configurationModel.getMinecraftVersion());
@@ -379,13 +307,11 @@ class ConfigurationHandlerTest {
 
     configurationModel = new ConfigurationModel();
     Assertions.assertFalse(
-        Dependencies.getInstance()
-            .CONFIGURATIONHANDLER()
-            .checkConfiguration(
-                new File("backend/test/resources/testresources/serverpackcreator.conf"),
-                configurationModel,
-                new ArrayList<>(),
-                false));
+        configurationHandler.checkConfiguration(
+            new File("backend/test/resources/testresources/serverpackcreator.conf"),
+            configurationModel,
+            new ArrayList<>(),
+            false));
     Assertions.assertEquals(
         "./backend/test/resources/forge_tests", configurationModel.getModpackDir());
     Assertions.assertEquals("1.16.5", configurationModel.getMinecraftVersion());
@@ -436,9 +362,7 @@ class ConfigurationHandlerTest {
     configurationModel.setModLoaderVersion("36.1.2");
     configurationModel.setMinecraftVersion("1.16.5");
     Assertions.assertFalse(
-        Dependencies.getInstance()
-            .CONFIGURATIONHANDLER()
-            .checkConfiguration(configurationModel, new ArrayList<>(), true));
+        configurationHandler.checkConfiguration(configurationModel, new ArrayList<>(), true));
     Assertions.assertEquals(
         "./backend/test/resources/forge_tests", configurationModel.getModpackDir());
     Assertions.assertEquals("1.16.5", configurationModel.getMinecraftVersion());
@@ -448,50 +372,35 @@ class ConfigurationHandlerTest {
     configurationModel.setModLoader("Fabric");
     configurationModel.setModLoaderVersion("0.14.6");
     Assertions.assertFalse(
-        Dependencies.getInstance()
-            .CONFIGURATIONHANDLER()
-            .checkConfiguration(configurationModel, new ArrayList<>(), true));
+        configurationHandler.checkConfiguration(configurationModel, new ArrayList<>(), true));
     Assertions.assertEquals("Fabric", configurationModel.getModLoader());
     Assertions.assertEquals("0.14.6", configurationModel.getModLoaderVersion());
 
     configurationModel.setModLoader("Quilt");
     configurationModel.setModLoaderVersion("0.16.1");
     Assertions.assertFalse(
-        Dependencies.getInstance()
-            .CONFIGURATIONHANDLER()
-            .checkConfiguration(configurationModel, new ArrayList<>(), true));
+        configurationHandler.checkConfiguration(configurationModel, new ArrayList<>(), true));
     Assertions.assertEquals("Quilt", configurationModel.getModLoader());
     Assertions.assertEquals("0.16.1", configurationModel.getModLoaderVersion());
   }
 
   @Test
   void checkIconAndPropertiesTest() {
-    Assertions.assertTrue(
-        Dependencies.getInstance().CONFIGURATIONHANDLER().checkIconAndProperties(""));
-    Assertions.assertFalse(
-        Dependencies.getInstance().CONFIGURATIONHANDLER().checkIconAndProperties("/some/path"));
-    Assertions.assertTrue(
-        Dependencies.getInstance()
-            .CONFIGURATIONHANDLER()
-            .checkIconAndProperties("img/prosper.png"));
+    Assertions.assertTrue(configurationHandler.checkIconAndProperties(""));
+    Assertions.assertFalse(configurationHandler.checkIconAndProperties("/some/path"));
+    Assertions.assertTrue(configurationHandler.checkIconAndProperties("img/prosper.png"));
   }
 
   @Test
   void checkZipArchiveTest() {
     Assertions.assertFalse(
-        Dependencies.getInstance()
-            .CONFIGURATIONHANDLER()
-            .checkZipArchive(
-                Paths.get(
-                    "backend/test/resources/testresources/Survive_Create_Prosper_4_valid.zip"),
-                new ArrayList<>()));
+        configurationHandler.checkZipArchive(
+            Paths.get("backend/test/resources/testresources/Survive_Create_Prosper_4_valid.zip"),
+            new ArrayList<>()));
 
     Assertions.assertTrue(
-        Dependencies.getInstance()
-            .CONFIGURATIONHANDLER()
-            .checkZipArchive(
-                Paths.get(
-                    "backend/test/resources/testresources/Survive_Create_Prosper_4_invalid.zip"),
-                new ArrayList<>()));
+        configurationHandler.checkZipArchive(
+            Paths.get("backend/test/resources/testresources/Survive_Create_Prosper_4_invalid.zip"),
+            new ArrayList<>()));
   }
 }

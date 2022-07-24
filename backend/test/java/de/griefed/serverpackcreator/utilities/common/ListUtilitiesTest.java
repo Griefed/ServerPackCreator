@@ -9,7 +9,11 @@ import org.junit.jupiter.api.Test;
 
 public class ListUtilitiesTest {
 
-  ListUtilitiesTest() {}
+  ListUtilities listUtilities;
+
+  ListUtilitiesTest() {
+    listUtilities = Dependencies.getInstance().UTILITIES().ListUtils();
+  }
 
   @Test
   void encapsulateListElementsTest() {
@@ -39,151 +43,60 @@ public class ListUtilitiesTest {
                 "SpawnerFix",
                 "TipTheScales",
                 "WorldNameRandomizer"));
-    System.out.println(
-        Dependencies.getInstance().UTILITIES().ListUtils().encapsulateListElements(clientMods));
-    Assertions.assertNotNull(
-        Dependencies.getInstance().UTILITIES().ListUtils().encapsulateListElements(clientMods));
+    System.out.println(listUtilities.encapsulateListElements(clientMods));
+    Assertions.assertNotNull(listUtilities.encapsulateListElements(clientMods));
     Assertions.assertTrue(
-        Dependencies.getInstance()
-            .UTILITIES()
-            .ListUtils()
-            .encapsulateListElements(clientMods)
-            .contains("\"A[mbient]Sounds\""));
+        listUtilities.encapsulateListElements(clientMods).contains("\"A[mbient]Sounds\""));
     Assertions.assertTrue(
-        Dependencies.getInstance()
-            .UTILITIES()
-            .ListUtils()
-            .encapsulateListElements(clientMods)
-            .contains("\"Back[Tools\""));
+        listUtilities.encapsulateListElements(clientMods).contains("\"Back[Tools\""));
     Assertions.assertTrue(
-        Dependencies.getInstance()
-            .UTILITIES()
-            .ListUtils()
-            .encapsulateListElements(clientMods)
-            .contains("\"Bett[er[][]Advancement\""));
+        listUtilities.encapsulateListElements(clientMods).contains("\"Bett[er[][]Advancement\""));
     Assertions.assertTrue(
-        Dependencies.getInstance()
-            .UTILITIES()
-            .ListUtils()
-            .encapsulateListElements(clientMods)
-            .contains("\"Bett   erPing\""));
+        listUtilities.encapsulateListElements(clientMods).contains("\"Bett   erPing\""));
     Assertions.assertTrue(
-        Dependencies.getInstance()
-            .UTILITIES()
-            .ListUtils()
-            .encapsulateListElements(clientMods)
-            .contains("\"cheri[ ]shed\""));
+        listUtilities.encapsulateListElements(clientMods).contains("\"cheri[ ]shed\""));
     Assertions.assertTrue(
-        Dependencies.getInstance()
-            .UTILITIES()
-            .ListUtils()
-            .encapsulateListElements(clientMods)
-            .contains("\"ClientT&/$weaks\""));
+        listUtilities.encapsulateListElements(clientMods).contains("\"ClientT&/$weaks\""));
     Assertions.assertTrue(
-        Dependencies.getInstance()
-            .UTILITIES()
-            .ListUtils()
-            .encapsulateListElements(clientMods)
-            .contains("\"Control§!%(?=)ling\""));
+        listUtilities.encapsulateListElements(clientMods).contains("\"Control§!%(?=)ling\""));
     Assertions.assertTrue(
-        Dependencies.getInstance()
-            .UTILITIES()
-            .ListUtils()
-            .encapsulateListElements(clientMods)
-            .contains("\"Defau/()&=?ltOptions\""));
+        listUtilities.encapsulateListElements(clientMods).contains("\"Defau/()&=?ltOptions\""));
     Assertions.assertTrue(
-        Dependencies.getInstance()
-            .UTILITIES()
-            .ListUtils()
-            .encapsulateListElements(clientMods)
-            .contains("\"durabi!§/&?lity\""));
+        listUtilities.encapsulateListElements(clientMods).contains("\"durabi!§/&?lity\""));
     Assertions.assertTrue(
-        Dependencies.getInstance()
-            .UTILITIES()
-            .ListUtils()
-            .encapsulateListElements(clientMods)
-            .contains("\"DynamicS[]urroundings\""));
+        listUtilities.encapsulateListElements(clientMods).contains("\"DynamicS[]urroundings\""));
     Assertions.assertTrue(
-        Dependencies.getInstance()
-            .UTILITIES()
-            .ListUtils()
-            .encapsulateListElements(clientMods)
-            .contains("\"itemz/oom\""));
+        listUtilities.encapsulateListElements(clientMods).contains("\"itemz/oom\""));
     Assertions.assertTrue(
-        Dependencies.getInstance()
-            .UTILITIES()
-            .ListUtils()
-            .encapsulateListElements(clientMods)
-            .contains("\"jei-/($?professions\""));
+        listUtilities.encapsulateListElements(clientMods).contains("\"jei-/($?professions\""));
     Assertions.assertTrue(
-        Dependencies.getInstance()
-            .UTILITIES()
-            .ListUtils()
-            .encapsulateListElements(clientMods)
-            .contains("\"jeiinteg}][ration\""));
+        listUtilities.encapsulateListElements(clientMods).contains("\"jeiinteg}][ration\""));
     Assertions.assertTrue(
-        Dependencies.getInstance()
-            .UTILITIES()
-            .ListUtils()
-            .encapsulateListElements(clientMods)
-            .contains("\"JustEnoughResources\""));
+        listUtilities.encapsulateListElements(clientMods).contains("\"JustEnoughResources\""));
     Assertions.assertTrue(
-        Dependencies.getInstance()
-            .UTILITIES()
-            .ListUtils()
-            .encapsulateListElements(clientMods)
-            .contains("\"MouseTweaks\""));
+        listUtilities.encapsulateListElements(clientMods).contains("\"MouseTweaks\""));
+    Assertions.assertTrue(listUtilities.encapsulateListElements(clientMods).contains("\"Neat\""));
     Assertions.assertTrue(
-        Dependencies.getInstance()
-            .UTILITIES()
-            .ListUtils()
-            .encapsulateListElements(clientMods)
-            .contains("\"Neat\""));
+        listUtilities.encapsulateListElements(clientMods).contains("\"OldJavaWarning\""));
     Assertions.assertTrue(
-        Dependencies.getInstance()
-            .UTILITIES()
-            .ListUtils()
-            .encapsulateListElements(clientMods)
-            .contains("\"OldJavaWarning\""));
+        listUtilities.encapsulateListElements(clientMods).contains("\"PackMenu\""));
     Assertions.assertTrue(
-        Dependencies.getInstance()
-            .UTILITIES()
-            .ListUtils()
-            .encapsulateListElements(clientMods)
-            .contains("\"PackMenu\""));
+        listUtilities.encapsulateListElements(clientMods).contains("\"preciseblockplacing\""));
     Assertions.assertTrue(
-        Dependencies.getInstance()
-            .UTILITIES()
-            .ListUtils()
-            .encapsulateListElements(clientMods)
-            .contains("\"preciseblockplacing\""));
-    Assertions.assertTrue(
-        Dependencies.getInstance()
-            .UTILITIES()
-            .ListUtils()
+        listUtilities
             .encapsulateListElements(clientMods)
             .contains("\"SimpleDiscordRichPresence\""));
     Assertions.assertTrue(
-        Dependencies.getInstance()
-            .UTILITIES()
-            .ListUtils()
-            .encapsulateListElements(clientMods)
-            .contains("\"SpawnerFix\""));
+        listUtilities.encapsulateListElements(clientMods).contains("\"SpawnerFix\""));
     Assertions.assertTrue(
-        Dependencies.getInstance()
-            .UTILITIES()
-            .ListUtils()
-            .encapsulateListElements(clientMods)
-            .contains("\"WorldNameRandomizer\""));
+        listUtilities.encapsulateListElements(clientMods).contains("\"WorldNameRandomizer\""));
   }
 
   @Test
   void cleanListTest() {
     Assertions.assertEquals(
         1,
-        Dependencies.getInstance()
-            .UTILITIES()
-            .ListUtils()
+        listUtilities
             .cleanList(
                 new ArrayList<>(
                     Arrays.asList(

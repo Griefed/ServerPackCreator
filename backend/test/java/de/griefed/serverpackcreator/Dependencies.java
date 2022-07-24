@@ -30,15 +30,6 @@ public final class Dependencies {
   private final ApplicationPlugins APPLICATION_PLUGINS;
   private final ModScanner MODSCANNER;
 
-  private static final class InstanceHolder {
-
-    static final Dependencies instance = new Dependencies();
-  }
-
-  public static Dependencies getInstance() {
-    return InstanceHolder.instance;
-  }
-
   private Dependencies() {
     try {
       FileUtils.copyDirectory(
@@ -116,6 +107,10 @@ public final class Dependencies {
     }
   }
 
+  public static Dependencies getInstance() {
+    return InstanceHolder.instance;
+  }
+
   public ServerPackCreator SERVER_PACK_CREATOR() {
     return SERVER_PACK_CREATOR;
   }
@@ -158,5 +153,10 @@ public final class Dependencies {
 
   public ModScanner MODSCANNER() {
     return MODSCANNER;
+  }
+
+  private static final class InstanceHolder {
+
+    static final Dependencies instance = new Dependencies();
   }
 }

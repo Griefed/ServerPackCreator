@@ -9,37 +9,28 @@ import org.junit.jupiter.api.Test;
 
 public class JarUtilitiesTest {
 
-  JarUtilitiesTest() {}
+  JarUtilities jarUtilities;
+
+  JarUtilitiesTest() {
+    jarUtilities = Dependencies.getInstance().UTILITIES().JarUtils();
+  }
 
   @Test
   void copyFileFromJarTest() {
-    Dependencies.getInstance()
-        .UTILITIES()
-        .JarUtils()
-        .copyFileFromJar(new File("banner.txt"), JarUtilitiesTest.class);
+    jarUtilities.copyFileFromJar(new File("banner.txt"), JarUtilitiesTest.class);
     Assertions.assertTrue(new File("banner.txt").exists());
   }
 
   @Test
   void getApplicationHomeForClassTest() {
-    Assertions.assertNotNull(
-        Dependencies.getInstance()
-            .UTILITIES()
-            .JarUtils()
-            .getApplicationHomeForClass(JarUtilitiesTest.class));
+    Assertions.assertNotNull(jarUtilities.getApplicationHomeForClass(JarUtilitiesTest.class));
   }
 
   @Test
   void systemInformationTest() {
     HashMap<String, String> system =
-        Dependencies.getInstance()
-            .UTILITIES()
-            .JarUtils()
-            .systemInformation(
-                Dependencies.getInstance()
-                    .UTILITIES()
-                    .JarUtils()
-                    .getApplicationHomeForClass(JarUtilitiesTest.class));
+        jarUtilities.systemInformation(
+            jarUtilities.getApplicationHomeForClass(JarUtilitiesTest.class));
     Assertions.assertNotNull(system);
     Assertions.assertNotNull(system.get("jarPath"));
     Assertions.assertTrue(system.get("jarPath").length() > 0);
@@ -59,15 +50,12 @@ public class JarUtilitiesTest {
   void copyFolderFromJarTest() {
     new File("testruns").mkdir();
     try {
-      Dependencies.getInstance()
-          .UTILITIES()
-          .JarUtils()
-          .copyFolderFromJar(
-              JarUtilitiesTest.class,
-              "/de/griefed/resources/lang",
-              "testruns/langTest",
-              "",
-              ".properties");
+      jarUtilities.copyFolderFromJar(
+          JarUtilitiesTest.class,
+          "/de/griefed/resources/lang",
+          "testruns/langTest",
+          "",
+          ".properties");
     } catch (Exception ignored) {
     }
     Assertions.assertTrue(new File("testruns/langTest").isDirectory());

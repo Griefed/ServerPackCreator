@@ -12,6 +12,8 @@ import org.springframework.context.annotation.PropertySources;
 @PropertySources({@PropertySource("classpath:serverpackcreator.properties")})
 public class WebServiceTest {
 
+  ServerPackCreator serverPackCreator;
+
   WebServiceTest() throws IOException {
     try {
       FileUtils.copyFile(
@@ -27,9 +29,9 @@ public class WebServiceTest {
     } catch (IOException e) {
       e.printStackTrace();
     }
-
-    Dependencies.getInstance().SERVER_PACK_CREATOR().run(ServerPackCreator.CommandlineParser.Mode.SETUP);
-    Dependencies.getInstance().SERVER_PACK_CREATOR().checkDatabase();
+    serverPackCreator = Dependencies.getInstance().SERVER_PACK_CREATOR();
+    serverPackCreator.run(ServerPackCreator.CommandlineParser.Mode.SETUP);
+    serverPackCreator.checkDatabase();
   }
 
   @Test

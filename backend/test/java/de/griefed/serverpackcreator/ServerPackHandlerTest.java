@@ -17,6 +17,9 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class ServerPackHandlerTest {
+  private final ConfigurationHandler configurationHandler;
+  private final ServerPackHandler serverPackHandler;
+
   ServerPackHandlerTest() {
     try {
       FileUtils.copyFile(
@@ -25,18 +28,18 @@ class ServerPackHandlerTest {
     } catch (IOException e) {
       e.printStackTrace();
     }
+    configurationHandler = Dependencies.getInstance().CONFIGURATIONHANDLER();
+    serverPackHandler = Dependencies.getInstance().SERVERPACKHANDLER();
   }
 
   @Test
   void runTest() {
     ConfigurationModel configurationModel = new ConfigurationModel();
-    Dependencies.getInstance()
-        .CONFIGURATIONHANDLER()
-        .checkConfiguration(
-            new File("./backend/test/resources/testresources/serverpackcreator.conf"),
-            configurationModel,
-            true);
-    Assertions.assertTrue(Dependencies.getInstance().SERVERPACKHANDLER().run(configurationModel));
+    configurationHandler.checkConfiguration(
+        new File("./backend/test/resources/testresources/serverpackcreator.conf"),
+        configurationModel,
+        true);
+    Assertions.assertTrue(serverPackHandler.run(configurationModel));
     Assertions.assertTrue(new File("server-packs/forge_tests/libraries").isDirectory());
     Assertions.assertTrue(new File("server-packs/forge_tests/config").isDirectory());
     Assertions.assertTrue(new File("server-packs/forge_tests/defaultconfigs").isDirectory());
@@ -115,21 +118,17 @@ class ServerPackHandlerTest {
       throw new RuntimeException(e);
     }
 
-    Dependencies.getInstance()
-        .CONFIGURATIONHANDLER()
-        .checkConfiguration(
-            new File("./backend/test/resources/testresources/serverpackcreator_quilt.conf"),
-            configurationModel,
-            true);
-    Assertions.assertTrue(Dependencies.getInstance().SERVERPACKHANDLER().run(configurationModel));
+    configurationHandler.checkConfiguration(
+        new File("./backend/test/resources/testresources/serverpackcreator_quilt.conf"),
+        configurationModel,
+        true);
+    Assertions.assertTrue(serverPackHandler.run(configurationModel));
 
-    Dependencies.getInstance()
-        .CONFIGURATIONHANDLER()
-        .checkConfiguration(
-            new File("./backend/test/resources/testresources/serverpackcreator_fabric.conf"),
-            configurationModel,
-            true);
-    Assertions.assertTrue(Dependencies.getInstance().SERVERPACKHANDLER().run(configurationModel));
+    configurationHandler.checkConfiguration(
+        new File("./backend/test/resources/testresources/serverpackcreator_fabric.conf"),
+        configurationModel,
+        true);
+    Assertions.assertTrue(serverPackHandler.run(configurationModel));
   }
 
   @Test
@@ -181,8 +180,8 @@ class ServerPackHandlerTest {
     serverPackModel.setModLoaderVersion("0.14.6");
     serverPackModel.setMinecraftVersion("1.18.2");
     serverPackModel.setJavaArgs("");
-    Dependencies.getInstance().CONFIGURATIONHANDLER().checkConfiguration(serverPackModel, false);
-    Assertions.assertNotNull(Dependencies.getInstance().SERVERPACKHANDLER().run(serverPackModel));
+    configurationHandler.checkConfiguration(serverPackModel, false);
+    Assertions.assertNotNull(serverPackHandler.run(serverPackModel));
     Assertions.assertTrue(new File("server-packs/fabric_tests_copy_server_pack.zip").isFile());
 
     try {
@@ -203,8 +202,8 @@ class ServerPackHandlerTest {
     serverPackModel.setModLoaderVersion("0.16.1");
     serverPackModel.setMinecraftVersion("1.18.2");
     serverPackModel.setJavaArgs("");
-    Dependencies.getInstance().CONFIGURATIONHANDLER().checkConfiguration(serverPackModel, false);
-    Assertions.assertNotNull(Dependencies.getInstance().SERVERPACKHANDLER().run(serverPackModel));
+    configurationHandler.checkConfiguration(serverPackModel, false);
+    Assertions.assertNotNull(serverPackHandler.run(serverPackModel));
     Assertions.assertTrue(new File("server-packs/quilt_tests_copy_server_pack.zip").isFile());
 
     serverPackModel = new ServerPackModel();
@@ -226,8 +225,8 @@ class ServerPackHandlerTest {
     serverPackModel.setModLoaderVersion("14.23.5.2855");
     serverPackModel.setMinecraftVersion("1.12.2");
     serverPackModel.setJavaArgs("");
-    Dependencies.getInstance().CONFIGURATIONHANDLER().checkConfiguration(serverPackModel, false);
-    Assertions.assertNotNull(Dependencies.getInstance().SERVERPACKHANDLER().run(serverPackModel));
+    configurationHandler.checkConfiguration(serverPackModel, false);
+    Assertions.assertNotNull(serverPackHandler.run(serverPackModel));
     Assertions.assertTrue(new File("server-packs/forge_tests_copy_server_pack.zip").isFile());
   }
 
@@ -239,9 +238,7 @@ class ServerPackHandlerTest {
     }
     String minecraftVersion = "1.16.5";
     String modpackDir = "./backend/test/resources/fabric_tests";
-    Dependencies.getInstance()
-        .SERVERPACKHANDLER()
-        .zipBuilder(minecraftVersion, true, modpackDir, "Forge", "36.2.25");
+    serverPackHandler.zipBuilder(minecraftVersion, true, modpackDir, "Forge", "36.2.25");
     Assertions.assertTrue(new File(modpackDir + "_server_pack.zip").exists());
     try {
       Files.copy(
@@ -260,9 +257,7 @@ class ServerPackHandlerTest {
     }
     String minecraftVersion = "1.16.5";
     String modpackDir = "./backend/test/resources/forge_tests";
-    Dependencies.getInstance()
-        .SERVERPACKHANDLER()
-        .zipBuilder(minecraftVersion, true, modpackDir, "Forge", "36.2.25");
+    serverPackHandler.zipBuilder(minecraftVersion, true, modpackDir, "Forge", "36.2.25");
     Assertions.assertTrue(new File(modpackDir + "_server_pack.zip").exists());
     try {
       Files.copy(
@@ -281,9 +276,7 @@ class ServerPackHandlerTest {
     }
     String minecraftVersion = "1.16.5";
     String modpackDir = "./backend/test/resources/quilt_tests";
-    Dependencies.getInstance()
-        .SERVERPACKHANDLER()
-        .zipBuilder(minecraftVersion, true, modpackDir, "Forge", "36.2.25");
+    serverPackHandler.zipBuilder(minecraftVersion, true, modpackDir, "Forge", "36.2.25");
     Assertions.assertTrue(new File(modpackDir + "_server_pack.zip").exists());
     try {
       Files.copy(

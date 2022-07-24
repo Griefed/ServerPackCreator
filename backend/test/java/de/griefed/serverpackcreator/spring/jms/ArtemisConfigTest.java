@@ -6,8 +6,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Objects;
-import javax.jms.JMSException;
-import javax.jms.Message;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -18,7 +16,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jms.core.JmsTemplate;
-import org.springframework.jms.core.MessagePostProcessor;
 import org.springframework.jms.support.destination.JmsDestinationAccessor;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
@@ -83,12 +80,9 @@ public class ArtemisConfigTest {
       jmsTemplate.convertAndSend(
           QUEUE_TASKS,
           "message " + i,
-          new MessagePostProcessor() {
-            @Override
-            public Message postProcessMessage(Message message) throws JMSException {
-              message.setStringProperty(QUEUE_UNIQUE_ID, "1");
-              return message;
-            }
+          message -> {
+            message.setStringProperty(QUEUE_UNIQUE_ID, "1");
+            return message;
           });
     }
 

@@ -8,10 +8,11 @@ import org.junit.jupiter.api.Test;
 
 public class ServerPackCreatorTest {
 
+  ServerPackCreator serverPackCreator;
+
   ServerPackCreatorTest() throws IOException {
-    Dependencies.getInstance()
-        .SERVER_PACK_CREATOR()
-        .run(ServerPackCreator.CommandlineParser.Mode.SETUP);
+    serverPackCreator = Dependencies.getInstance().SERVER_PACK_CREATOR();
+    serverPackCreator.run(ServerPackCreator.CommandlineParser.Mode.SETUP);
   }
 
   @Test
@@ -23,9 +24,7 @@ public class ServerPackCreatorTest {
     FileUtils.deleteQuietly(new File("./server_files/server.properties"));
     FileUtils.deleteQuietly(new File("./server_files/server-icon.png"));
     FileUtils.deleteQuietly(new File("./serverpackcreator.conf"));
-    Dependencies.getInstance()
-        .SERVER_PACK_CREATOR()
-        .run(ServerPackCreator.CommandlineParser.Mode.SETUP);
+    serverPackCreator.run(ServerPackCreator.CommandlineParser.Mode.SETUP);
     Assertions.assertTrue(new File("./server_files").isDirectory());
     Assertions.assertTrue(new File("./work").isDirectory());
     Assertions.assertTrue(new File("./work/temp").isDirectory());

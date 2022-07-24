@@ -9,30 +9,26 @@ import org.junit.jupiter.api.Test;
 
 public class WebUtilitiesTest {
 
-  WebUtilitiesTest() {}
+  WebUtilities webUtilities;
+
+  WebUtilitiesTest() {
+    webUtilities = Dependencies.getInstance().UTILITIES().WebUtils();
+  }
 
   @Test
   void downloadFileTest() {
     try {
-      Dependencies.getInstance()
-          .UTILITIES()
-          .WebUtils()
-          .downloadFile(
-              "Fabric-Server-Launcher.jar",
-              new URL(
-                  "https://meta.fabricmc.net/v2/versions/loader/1.18.1/0.12.12/0.10.2/server/jar"));
+      webUtilities.downloadFile(
+          "Fabric-Server-Launcher.jar",
+          new URL("https://meta.fabricmc.net/v2/versions/loader/1.18.1/0.12.12/0.10.2/server/jar"));
     } catch (Exception ignored) {
     }
     Assertions.assertTrue(new File("Fabric-Server-Launcher.jar").exists());
     FileUtils.deleteQuietly(new File("Fabric-Server-Launcher.jar"));
     try {
-      Dependencies.getInstance()
-          .UTILITIES()
-          .WebUtils()
-          .downloadFile(
-              "some_foooooolder/foooobar/Fabric-Server-Launcher.jar",
-              new URL(
-                  "https://meta.fabricmc.net/v2/versions/loader/1.18.1/0.12.12/0.10.2/server/jar"));
+      webUtilities.downloadFile(
+          "some_foooooolder/foooobar/Fabric-Server-Launcher.jar",
+          new URL("https://meta.fabricmc.net/v2/versions/loader/1.18.1/0.12.12/0.10.2/server/jar"));
     } catch (Exception ignored) {
     }
     Assertions.assertTrue(

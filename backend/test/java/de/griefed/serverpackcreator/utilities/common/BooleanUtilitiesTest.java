@@ -6,41 +6,31 @@ import org.junit.jupiter.api.Test;
 
 public class BooleanUtilitiesTest {
 
-  BooleanUtilitiesTest() {}
+  BooleanUtilities booleanUtilities;
+
+  BooleanUtilitiesTest() {
+    booleanUtilities = Dependencies.getInstance().UTILITIES().BooleanUtils();
+  }
 
   @Test
   void convertToBooleanTestTrue() {
-    Assertions.assertTrue(
-        Dependencies.getInstance().UTILITIES().BooleanUtils().convertToBoolean("True"));
-    Assertions.assertTrue(
-        Dependencies.getInstance().UTILITIES().BooleanUtils().convertToBoolean("true"));
-    Assertions.assertTrue(
-        Dependencies.getInstance().UTILITIES().BooleanUtils().convertToBoolean("1"));
-    Assertions.assertTrue(
-        Dependencies.getInstance().UTILITIES().BooleanUtils().convertToBoolean("Yes"));
-    Assertions.assertTrue(
-        Dependencies.getInstance().UTILITIES().BooleanUtils().convertToBoolean("yes"));
-    Assertions.assertTrue(
-        Dependencies.getInstance().UTILITIES().BooleanUtils().convertToBoolean("Y"));
-    Assertions.assertTrue(
-        Dependencies.getInstance().UTILITIES().BooleanUtils().convertToBoolean("y"));
+    Assertions.assertTrue(booleanUtilities.convertToBoolean("True"));
+    Assertions.assertTrue(booleanUtilities.convertToBoolean("true"));
+    Assertions.assertTrue(booleanUtilities.convertToBoolean("1"));
+    Assertions.assertTrue(booleanUtilities.convertToBoolean("Yes"));
+    Assertions.assertTrue(booleanUtilities.convertToBoolean("yes"));
+    Assertions.assertTrue(booleanUtilities.convertToBoolean("Y"));
+    Assertions.assertTrue(booleanUtilities.convertToBoolean("y"));
   }
 
   @Test
   void convertToBooleanTestFalse() {
-    Assertions.assertFalse(
-        Dependencies.getInstance().UTILITIES().BooleanUtils().convertToBoolean("False"));
-    Assertions.assertFalse(
-        Dependencies.getInstance().UTILITIES().BooleanUtils().convertToBoolean("false"));
-    Assertions.assertFalse(
-        Dependencies.getInstance().UTILITIES().BooleanUtils().convertToBoolean("0"));
-    Assertions.assertFalse(
-        Dependencies.getInstance().UTILITIES().BooleanUtils().convertToBoolean("No"));
-    Assertions.assertFalse(
-        Dependencies.getInstance().UTILITIES().BooleanUtils().convertToBoolean("no"));
-    Assertions.assertFalse(
-        Dependencies.getInstance().UTILITIES().BooleanUtils().convertToBoolean("N"));
-    Assertions.assertFalse(
-        Dependencies.getInstance().UTILITIES().BooleanUtils().convertToBoolean("n"));
+    Assertions.assertFalse(booleanUtilities.convertToBoolean("False"));
+    Assertions.assertFalse(booleanUtilities.convertToBoolean("false"));
+    Assertions.assertFalse(booleanUtilities.convertToBoolean("0"));
+    Assertions.assertFalse(booleanUtilities.convertToBoolean("No"));
+    Assertions.assertFalse(booleanUtilities.convertToBoolean("no"));
+    Assertions.assertFalse(booleanUtilities.convertToBoolean("N"));
+    Assertions.assertFalse(booleanUtilities.convertToBoolean("n"));
   }
 }
