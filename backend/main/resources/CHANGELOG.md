@@ -1,3 +1,42 @@
+## [3.10.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.9.0...3.10.0) (2022-07-24)
+
+
+### :scissors: Refactor
+
+* **Application Plugins:** Indent listing of installed addons/plugins and add example plugins for testing ([fbd0c75](https://git.griefed.de/Griefed/ServerPackCreator/commit/fbd0c7550713ba7b7c3351572a577e8dd0f5ffc7))
+* **Housekeeping:** Much needed refactorings, cleanups, documentations etc. ([3237acd](https://git.griefed.de/Griefed/ServerPackCreator/commit/3237acdea9527b4a114487abcd8b195a730f722b))
+* **i18n:** Always create jarResources, preventing unnecessary calls and checks ([5ae4a19](https://git.griefed.de/Griefed/ServerPackCreator/commit/5ae4a19b782a451fa08424c74b73d78cc6f5283c))
+* **Lists:** Replace Lists with TreeSets where sensible ([bc0159f](https://git.griefed.de/Griefed/ServerPackCreator/commit/bc0159f56835537a97a9451b9c07a0c0df4d8e97))
+
+
+### 💎 Improvements
+
+* **Copy-Dir Checks:** Only check copy-directory entries when the modpack-directory is valid. ([d5f0fee](https://git.griefed.de/Griefed/ServerPackCreator/commit/d5f0fee7d6d4b5280a346c6a2c3ebcabcabd2d5a))
+
+
+### 🦊 CI/CD
+
+* **Coverage Report:** Disable coverage job ([f533473](https://git.griefed.de/Griefed/ServerPackCreator/commit/f5334731a03a34c77a7f196d4edf721786009848))
+
+
+### 🧪 Tests
+
+* **Cleanup:** Remove unnecessary tests. ([02ed5f3](https://git.griefed.de/Griefed/ServerPackCreator/commit/02ed5f330d1f5476908fdb8ada2d284a75a286c4))
+
+
+### 🛠 Fixes
+
+* **Illegal Characters Check:** Remove ' from check for illegal characters. It CAN be used in filenames and paths. The more you know, eh? ([c6eaa49](https://git.griefed.de/Griefed/ServerPackCreator/commit/c6eaa4912a0d048e4e8bd53b2a9bc3a35067eaf4))
+* **Toml Sideness Scanning:** Correctly scan mods.toml in newer Forge mods for their sideness, prevent false-positives. ([f85dca3](https://git.griefed.de/Griefed/ServerPackCreator/commit/f85dca3db05a0b6c6e1239c7576f84ce1117379f))
+* **Toml Sideness Scanning:** Correctly scan mods.toml in newer Forge mods for their sideness, prevent false-positives. ([eb7a341](https://git.griefed.de/Griefed/ServerPackCreator/commit/eb7a34125ffb9c2c2b59ab478c8173123d8246a3))
+
+
+### Other
+
+* **Fallback Modslist:** Update fallback modslist with clientside-only mods kindly gathered by BisectHosting and @AzureDoom. ([4b766d7](https://git.griefed.de/Griefed/ServerPackCreator/commit/4b766d71469c27b1fce8908fa23f303b727c010a))
+* **i18n cleanups:** Small cleanup and logging improvement. ([0898495](https://git.griefed.de/Griefed/ServerPackCreator/commit/089849506d45edffad95e1bddf3df68ce60f54c2))
+* **i18n cleanups:** Small cleanup and logging improvement. ([4775ba6](https://git.griefed.de/Griefed/ServerPackCreator/commit/4775ba6b7c40a510b1c9c050023fce7605ab736b))
+
 ## [3.9.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.8.0...3.9.0) (2022-07-16)
 
 

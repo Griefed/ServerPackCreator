@@ -390,7 +390,7 @@ public class ServerPackHandler {
 
       } catch (Exception ex) {
         LOG.error(
-            "Error downloading the improved Fabric server launcher. MAybe it doesn't exist for the specified Minecraft and Fabric version?",
+            "Error downloading the improved Fabric server launcher. Maybe it doesn't exist for the specified Minecraft and Fabric version?",
             ex);
       }
     }
@@ -501,11 +501,11 @@ public class ServerPackHandler {
 
     } else {
 
-      List<String> exclusions = APPLICATIONPROPERTIES.getDirectoriesToExclude();
+      TreeSet<String> exclusions = new TreeSet<>(APPLICATIONPROPERTIES.getDirectoriesToExclude());
       directoriesToCopy.forEach(
           entry -> {
-            if (entry.startsWith("!") && !exclusions.contains(entry.substring(1))) {
-              exclusions.add(entry.substring(1));
+            if (entry.startsWith("!")) {
+              exclusions.add(entry.substring(1).replace("\\","/"));
             }
           });
       directoriesToCopy.removeIf(n -> n.startsWith("!"));
@@ -553,16 +553,9 @@ public class ServerPackHandler {
 
           for (String file : listOfFiles) {
 
-            if (excludeFileOrDirectory(file.replace("\\", "/"), exclusions)) {
-
-              LOG.info("Excluding " + file + " from server pack");
-
-            } else {
-
-              serverPackFiles.add(
-                  new ServerPackFile(
-                      file, String.format("%s/%s", serverDir, new File(file).getName())));
-            }
+            serverPackFiles.add(
+                new ServerPackFile(
+                    file, String.format("%s/%s", serverDir, new File(file).getName())));
           }
 
         } else if (new File(directory).isFile()) {
@@ -580,6 +573,17 @@ public class ServerPackHandler {
           serverPackFiles.addAll(getDirectoryFiles(clientDir, destination));
         }
       }
+
+      LOG.info("Ensuring files and/or directories are properly excluded.");
+      // TODO test this!
+      serverPackFiles.removeIf(serverPackFile -> {
+        if (excludeFileOrDirectory(serverPackFile.SOURCE_PATH.toString().replace("\\","/"),exclusions)) {
+          LOG.debug("Excluding file/directory: " + serverPackFile.SOURCE_PATH);
+          return true;
+        } else {
+          return false;
+        }
+      });
 
       LOG.info("Copying files to the server pack. This may take a while...");
 
@@ -715,16 +719,16 @@ public class ServerPackHandler {
   }
 
   /**
-   * Generates a list of all mods to include in the server pack excluding clientside-only mods.
-   * Automatically detects clientside-only mods for Minecraft 1.13+, if the mods <code>
-   * mods.tomls
-   * </code>-file is correctly set up.
+   * Generates a list of all mods to include in the server pack. If the user specified
+   * clientside-mods to exclude, and/or if the automatic exclusion of clientside-only mods is
+   * active, they will be excluded, too.
    *
-   * @param modsDir String. The mods-directory of the modpack of which to generate a list of all
-   *     it's contents.
+   * @param modsDir String. The mods-directory of the modpack of which to generate a list of all its
+   *     contents.
    * @param userSpecifiedClientMods List String. A list of all clientside-only mods.
-   * @param minecraftVersion String. The Minecraft version the modpack uses. Determines whether mods
-   *     are scanned for sideness.
+   * @param minecraftVersion String. The Minecraft version the modpack uses. When the modloader is
+   *     Forge, this determines whether Annotations or Tomls are scanned.
+   * @param modloader {@link String} The modloader the modpack uses.
    * @return List String. A list of all mods to include in the server pack.
    * @author Griefed
    */
@@ -831,10 +835,10 @@ public class ServerPackHandler {
    *     if not.
    * @author Griefed
    */
-  private boolean excludeFileOrDirectory(String fileToCheckFor, List<String> exclusions) {
+  private boolean excludeFileOrDirectory(String fileToCheckFor, TreeSet<String> exclusions) {
     boolean isPresentInList = false;
     for (String entry : exclusions) {
-      if (fileToCheckFor.contains(entry)) {
+      if (fileToCheckFor.replace("\\","/").contains(entry)) {
         isPresentInList = true;
         break;
       }

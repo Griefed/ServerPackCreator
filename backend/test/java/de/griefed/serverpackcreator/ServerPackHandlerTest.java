@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -98,6 +99,16 @@ class ServerPackHandlerTest {
     Assertions.assertTrue(new File("server-packs/forge_tests/server-icon.png").exists());
     Assertions.assertTrue(new File("server-packs/forge_tests/start.ps1").exists());
     Assertions.assertTrue(new File("server-packs/forge_tests/start.sh").exists());
+    Assertions.assertTrue(new File("server-packs/forge_tests/exclude_me").exists());
+    Assertions.assertTrue(new File("server-packs/forge_tests/exclude_me/exclude_me_some_more/ICANSEEMYHOUSEFROMHEEEEEEEEEEEEERE").exists());
+
+    Assertions.assertFalse(new File("server-packs/forge_tests/exclude_me/I_dont_want_to_be_included.file").exists());
+    Assertions.assertFalse(new File("server-packs/forge_tests/exclude_me/exclude_me_some_more/I_dont_want_to_be_included.file").exists());
+    Assertions.assertFalse(new File("server-packs/forge_tests/exclude_me/exclude_me_some_more/some_more_dirs_to_exclude").exists());
+    Assertions.assertFalse(new File("server-packs/forge_tests/exclude_me/exclude_me_some_more/some_more_dirs_to_exclude/I_dont_want_to_be_included.file").exists());
+    Assertions.assertFalse(new File("server-packs/forge_tests/exclude_me/exclude_me_some_more/dont_include_me_either.ogg").exists());
+
+
     try {
       Files.copy(
           Paths.get("./backend/test/resources/testresources/server_pack.zip"),
@@ -276,56 +287,53 @@ class ServerPackHandlerTest {
   }
 
   @Test
-  void zipBuilderFabricTest() {
+  void zipBuilderTest() {
+    Path path = Paths.get("./backend/test/resources/testresources/server_pack.zip");
+
     try {
       Files.createDirectories(Paths.get("server-packs/fabric_tests"));
     } catch (Exception ignored) {
     }
+
     String minecraftVersion = "1.16.5";
     String modpackDir = "./backend/test/resources/fabric_tests";
     serverPackHandler.zipBuilder(minecraftVersion, true, modpackDir, "Forge", "36.2.25");
     Assertions.assertTrue(new File(modpackDir + "_server_pack.zip").exists());
     try {
       Files.copy(
-          Paths.get("./backend/test/resources/testresources/server_pack.zip"),
+          path,
           Paths.get("./backend/test/resources/fabric_tests/server_pack.zip"),
           REPLACE_EXISTING);
     } catch (Exception ignored) {
     }
-  }
 
-  @Test
-  void zipBuilderForgeTest() {
     try {
       Files.createDirectories(Paths.get("server-packs/forge_tests"));
     } catch (Exception ignored) {
     }
-    String minecraftVersion = "1.16.5";
-    String modpackDir = "./backend/test/resources/forge_tests";
+    minecraftVersion = "1.16.5";
+    modpackDir = "./backend/test/resources/forge_tests";
     serverPackHandler.zipBuilder(minecraftVersion, true, modpackDir, "Forge", "36.2.25");
     Assertions.assertTrue(new File(modpackDir + "_server_pack.zip").exists());
     try {
       Files.copy(
-          Paths.get("./backend/test/resources/testresources/server_pack.zip"),
+          path,
           Paths.get("./backend/test/resources/forge_tests/server_pack.zip"),
           REPLACE_EXISTING);
     } catch (Exception ignored) {
     }
-  }
 
-  @Test
-  void zipBuilderQuiltTest() {
     try {
       Files.createDirectories(Paths.get("server-packs/quilt_tests"));
     } catch (Exception ignored) {
     }
-    String minecraftVersion = "1.16.5";
-    String modpackDir = "./backend/test/resources/quilt_tests";
+    minecraftVersion = "1.16.5";
+    modpackDir = "./backend/test/resources/quilt_tests";
     serverPackHandler.zipBuilder(minecraftVersion, true, modpackDir, "Forge", "36.2.25");
     Assertions.assertTrue(new File(modpackDir + "_server_pack.zip").exists());
     try {
       Files.copy(
-          Paths.get("./backend/test/resources/testresources/server_pack.zip"),
+          path,
           Paths.get("./backend/test/resources/quilt_tests/server_pack.zip"),
           REPLACE_EXISTING);
     } catch (Exception ignored) {
