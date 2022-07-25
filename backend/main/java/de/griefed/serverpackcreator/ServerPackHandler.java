@@ -505,7 +505,7 @@ public class ServerPackHandler {
       directoriesToCopy.forEach(
           entry -> {
             if (entry.startsWith("!")) {
-              exclusions.add(entry.substring(1).replace("\\","/"));
+              exclusions.add(entry.substring(1).replace("\\", "/"));
             }
           });
       directoriesToCopy.removeIf(n -> n.startsWith("!"));
@@ -576,14 +576,16 @@ public class ServerPackHandler {
 
       LOG.info("Ensuring files and/or directories are properly excluded.");
 
-      serverPackFiles.removeIf(serverPackFile -> {
-        if (excludeFileOrDirectory(serverPackFile.SOURCE_PATH.toString().replace("\\","/"),exclusions)) {
-          LOG.debug("Excluding file/directory: " + serverPackFile.SOURCE_PATH);
-          return true;
-        } else {
-          return false;
-        }
-      });
+      serverPackFiles.removeIf(
+          serverPackFile -> {
+            if (excludeFileOrDirectory(
+                serverPackFile.SOURCE_PATH.toString().replace("\\", "/"), exclusions)) {
+              LOG.debug("Excluding file/directory: " + serverPackFile.SOURCE_PATH);
+              return true;
+            } else {
+              return false;
+            }
+          });
 
       LOG.info("Copying files to the server pack. This may take a while...");
 
@@ -740,8 +742,8 @@ public class ServerPackHandler {
 
     LOG.info("Preparing a list of mods to include in server pack...");
 
-    Collection<File> filesInModsDir = new ArrayList<>(
-        FileUtils.listFiles(new File(modsDir), MOD_FILE_ENDINGS, true));
+    Collection<File> filesInModsDir =
+        new ArrayList<>(FileUtils.listFiles(new File(modsDir), MOD_FILE_ENDINGS, true));
 
     TreeSet<String> modsInModpack = new TreeSet<>();
     List<File> autodiscoveredClientMods = new ArrayList<>();
@@ -779,45 +781,58 @@ public class ServerPackHandler {
     }
 
     // Gather a list of all mod-JAR-files.
-    if (filesInModsDir != null) {
 
-      for (File mod : filesInModsDir) {
+    for (File mod : filesInModsDir) {
 
-        if (mod.isFile() && mod.toString().endsWith("jar")) {
-          modsInModpack.add(mod.getAbsolutePath());
-        }
+      if (mod.isFile() && mod.toString().endsWith("jar")) {
+        modsInModpack.add(mod.getAbsolutePath());
       }
     }
 
     // Exclude user-specified mods from copying.
     if (userSpecifiedClientMods.size() > 0) {
-      for (int m = 0; m < userSpecifiedClientMods.size(); m++) {
 
-        int i = m;
+      for (String clientMod : userSpecifiedClientMods) {
 
-        if (modsInModpack.removeIf(n -> (n.contains(userSpecifiedClientMods.get(i))))) {
-          LOG.debug(
-              "Removed user-specified mod from mods list as per input: "
-                  + userSpecifiedClientMods.get(i));
-        }
+        modsInModpack.removeIf(
+            mod -> {
+              if (mod.replace("\\", "/").contains(clientMod.replace("\\", "/"))) {
+                LOG.debug("Removed user-specified mod from mods list as per input: " + clientMod);
+                return true;
+              } else {
+                return false;
+              }
+            });
       }
+
+    } else {
+      LOG.warn("User specified no clientside-only mods.");
     }
 
     // Exclude scanned mods from copying if said functionality is enabled.
-    if (APPLICATIONPROPERTIES.isAutoExcludingModsEnabled() && autodiscoveredClientMods.size() > 0) {
-      for (int m = 0; m < autodiscoveredClientMods.size(); m++) {
+    if (APPLICATIONPROPERTIES.isAutoExcludingModsEnabled()) {
 
-        int i = m;
+      if (autodiscoveredClientMods.size() > 0) {
 
-        if (modsInModpack.removeIf(
-            modInModpack ->
-                (modInModpack
-                    .replace("\\", "/")
-                    .contains(autodiscoveredClientMods.get(i).getName())))) {
+        LOG.info("Automatically detected mods: " + autodiscoveredClientMods.size());
 
-          LOG.warn("Automatically excluding mod: " + autodiscoveredClientMods.get(i));
+        for (File discoveredMod : autodiscoveredClientMods) {
+          modsInModpack.removeIf(
+              mod -> {
+                if (mod.replace("\\", "/").contains(discoveredMod.toString().replace("\\", "/"))) {
+                  LOG.warn("Automatically excluding mod: " + discoveredMod.getName());
+                  return true;
+                } else {
+                  return false;
+                }
+              });
         }
+      } else {
+        LOG.info("No clientside-only mods detected.");
       }
+
+    } else {
+      LOG.info("Automatic clientside-only mod detection disabled.");
     }
 
     autodiscoveredClientMods.clear();
@@ -838,7 +853,7 @@ public class ServerPackHandler {
   private boolean excludeFileOrDirectory(String fileToCheckFor, TreeSet<String> exclusions) {
     boolean isPresentInList = false;
     for (String entry : exclusions) {
-      if (fileToCheckFor.replace("\\","/").contains(entry)) {
+      if (fileToCheckFor.replace("\\", "/").contains(entry)) {
         isPresentInList = true;
         break;
       }
