@@ -54,8 +54,6 @@ public class IconTextArea extends JTextArea {
 
     } else {
 
-      // Border margin = BorderFactory.createEmptyBorder(0, mIcon.getIconWidth() + ICON_SPACING, 0,
-      // 0);
       Border margin = BorderFactory.createEmptyBorder(0, mIcon.getIconWidth() + ICON_SPACING, 0, 0);
       Border compoud = BorderFactory.createCompoundBorder(border, margin);
       super.setBorder(compoud);
