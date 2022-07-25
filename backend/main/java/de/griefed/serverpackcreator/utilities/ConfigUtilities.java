@@ -698,6 +698,7 @@ public class ConfigUtilities {
    *     File)} detect Fabric and the version. Iterating through the mods list is no longer
    *     necessary.
    */
+  @Deprecated
   public boolean checkCurseForgeJsonForFabric(JsonNode modpackJson) {
 
     for (int i = 0; i < modpackJson.get("files").size(); i++) {
