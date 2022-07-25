@@ -1221,13 +1221,13 @@ public class TabCreateServerPack extends JPanel {
       List<String> errorsTEXTFIELD_COPYDIRECTORIES = new ArrayList<>();
       if (!TEXTAREA_COPYDIRECTORIES.getText().matches("^.*,\\s*\\\\*$")
           && CONFIGURATIONHANDLER.checkCopyDirs(
-          UTILITIES.ListUtils()
-              .cleanList(
-                  new ArrayList<>(
-                      Arrays.asList(
-                          TEXTAREA_COPYDIRECTORIES.getText().replace(", ", ",").split(",")))),
-          TEXTFIELD_MODPACKDIRECTORY.getText(),
-          errorsTEXTFIELD_COPYDIRECTORIES)) {
+              UTILITIES.ListUtils()
+                  .cleanList(
+                      new ArrayList<>(
+                          Arrays.asList(
+                              TEXTAREA_COPYDIRECTORIES.getText().replace(", ", ",").split(",")))),
+              TEXTFIELD_MODPACKDIRECTORY.getText(),
+              errorsTEXTFIELD_COPYDIRECTORIES)) {
 
         TEXTAREA_COPYDIRECTORIES.setIcon(null);
         TEXTAREA_COPYDIRECTORIES.setToolTipText(
@@ -1239,7 +1239,8 @@ public class TabCreateServerPack extends JPanel {
 
         TEXTAREA_COPYDIRECTORIES.setForeground(getThemeErrorColor());
         TEXTAREA_COPYDIRECTORIES.setIcon(ERROR_ICON_COPYDIRECTORIES);
-        ERROR_ICON_COPYDIRECTORIES.setDescription(String.join(",", errorsTEXTFIELD_COPYDIRECTORIES));
+        ERROR_ICON_COPYDIRECTORIES.setDescription(
+            String.join(",", errorsTEXTFIELD_COPYDIRECTORIES));
         TEXTAREA_COPYDIRECTORIES.setToolTipText(String.join(",", errorsTEXTFIELD_COPYDIRECTORIES));
       }
     }

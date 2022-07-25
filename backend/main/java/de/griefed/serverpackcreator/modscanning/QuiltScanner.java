@@ -25,9 +25,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.TreeSet;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -100,11 +98,9 @@ public class QuiltScanner implements Scanner<TreeSet<File>, Collection<File>> {
             // Get this mods id/name
             try {
               if (modJson.get("minecraft").get("environment").asText().equalsIgnoreCase("client")) {
-                if (!clientMods.contains(modId)) {
-                  clientMods.add(modId);
 
-                  LOG.debug("Added clientMod: " + modId);
-                }
+                clientMods.add(modId);
+                LOG.debug("Added clientMod: " + modId);
               }
             } catch (NullPointerException ignored) {
 
@@ -116,13 +112,9 @@ public class QuiltScanner implements Scanner<TreeSet<File>, Collection<File>> {
               for (JsonNode dependency : modJson.get("quilt_loader").get("depends")) {
 
                 if (dependency.isContainerNode()) {
-                  if (!modDependencies.contains(dependency.get("id").asText())) {
-                    modDependencies.add(dependency.get("id").asText());
-                  }
+                  modDependencies.add(dependency.get("id").asText());
                 } else {
-                  if (!modDependencies.contains(dependency.asText())) {
-                    modDependencies.add(dependency.asText());
-                  }
+                  modDependencies.add(dependency.asText());
                 }
               }
 

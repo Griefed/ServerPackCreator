@@ -25,9 +25,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.TreeSet;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -100,11 +98,9 @@ public class FabricScanner implements Scanner<TreeSet<File>, Collection<File>> {
             // Get this mods id/name
             try {
               if (modJson.get("environment").asText().equalsIgnoreCase("client")) {
-                if (!clientMods.contains(modId)) {
-                  clientMods.add(modId);
 
-                  LOG.debug("Added clientMod: " + modId);
-                }
+                clientMods.add(modId);
+                LOG.debug("Added clientMod: " + modId);
               }
             } catch (NullPointerException ignored) {
 
@@ -112,15 +108,7 @@ public class FabricScanner implements Scanner<TreeSet<File>, Collection<File>> {
 
             // Get this mods dependencies
             try {
-              modJson
-                  .get("depends")
-                  .fieldNames()
-                  .forEachRemaining(
-                      dependency -> {
-                        if (!modDependencies.contains(dependency)) {
-                          modDependencies.add(dependency);
-                        }
-                      });
+              modJson.get("depends").fieldNames().forEachRemaining(modDependencies::add);
             } catch (NullPointerException ignored) {
 
             }

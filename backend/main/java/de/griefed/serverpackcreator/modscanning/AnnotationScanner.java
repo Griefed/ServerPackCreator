@@ -24,9 +24,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.TreeSet;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -87,7 +85,7 @@ public class AnnotationScanner implements Scanner<TreeSet<File>, Collection<File
         } catch (Exception ex) {
           LOG.error("Can not scan " + mod);
         }
-        //TODO extract method for json acquisition
+        // TODO extract method for json acquisition
 
         try {
 
@@ -119,11 +117,9 @@ public class AnnotationScanner implements Scanner<TreeSet<File>, Collection<File
                           .get("value")
                           .asText()
                           .equalsIgnoreCase("true")) {
-                        if (!clientMods.contains(modId)) {
-                          clientMods.add(modId);
 
-                          LOG.debug("Added clientMod: " + modId);
-                        }
+                        clientMods.add(modId);
+                        LOG.debug("Added clientMod: " + modId);
                       }
                     } catch (NullPointerException ignored) {
 
@@ -148,11 +144,9 @@ public class AnnotationScanner implements Scanner<TreeSet<File>, Collection<File
                                 .get("value")
                                 .asText()
                                 .equalsIgnoreCase("true")) {
-                              if (!clientMods.contains(modId)) {
-                                clientMods.add(modId);
 
-                                LOG.debug("Added clientMod: " + modId);
-                              }
+                              clientMods.add(modId);
+                              LOG.debug("Added clientMod: " + modId);
                             }
                           } catch (NullPointerException ignored) {
 
@@ -200,9 +194,7 @@ public class AnnotationScanner implements Scanner<TreeSet<File>, Collection<File
                                     .substring(dependency.lastIndexOf(":") + 1)
                                     .replaceAll("(@.*|\\[.*)", "");
 
-                            if (!modDependencies.contains(dependency)
-                                && !dependency.equalsIgnoreCase("forge")
-                                && !dependency.equals("*")) {
+                            if (!dependency.equalsIgnoreCase("forge") && !dependency.equals("*")) {
                               modDependencies.add(dependency);
 
                               LOG.debug("Added dependency " + dependency);
@@ -233,9 +225,7 @@ public class AnnotationScanner implements Scanner<TreeSet<File>, Collection<File
                                           + 1)
                                   .replaceAll("(@.*|\\[.*)", "");
 
-                          if (!modDependencies.contains(dependency)
-                              && !dependency.equalsIgnoreCase("forge")
-                              && !dependency.equals("*")) {
+                          if (!dependency.equalsIgnoreCase("forge") && !dependency.equals("*")) {
                             modDependencies.add(dependency);
 
                             LOG.debug("Added dependency " + dependency);
