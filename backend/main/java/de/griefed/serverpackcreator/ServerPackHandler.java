@@ -575,7 +575,7 @@ public class ServerPackHandler {
       }
 
       LOG.info("Ensuring files and/or directories are properly excluded.");
-      // TODO test this!
+
       serverPackFiles.removeIf(serverPackFile -> {
         if (excludeFileOrDirectory(serverPackFile.SOURCE_PATH.toString().replace("\\","/"),exclusions)) {
           LOG.debug("Excluding file/directory: " + serverPackFile.SOURCE_PATH);
@@ -740,8 +740,8 @@ public class ServerPackHandler {
 
     LOG.info("Preparing a list of mods to include in server pack...");
 
-    Collection<File> filesInModsDir =
-        FileUtils.listFiles(new File(modsDir), MOD_FILE_ENDINGS, true);
+    Collection<File> filesInModsDir = new ArrayList<>(
+        FileUtils.listFiles(new File(modsDir), MOD_FILE_ENDINGS, true));
 
     TreeSet<String> modsInModpack = new TreeSet<>();
     List<File> autodiscoveredClientMods = new ArrayList<>();
