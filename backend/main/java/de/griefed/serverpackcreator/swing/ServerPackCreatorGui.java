@@ -94,8 +94,6 @@ public class ServerPackCreatorGui {
 
   private final MainMenuBar MENUBAR;
 
-  private BufferedImage bufferedImage;
-
   /**
    * <strong>Constructor</strong>
    *
@@ -144,16 +142,11 @@ public class ServerPackCreatorGui {
     this.SERVERPACKCREATORSPLASH.update(90);
     this.APPLICATIONPROPERTIES = injectedApplicationProperties;
 
-    try {
-      bufferedImage =
-          ImageIO.read(
-              Objects.requireNonNull(
-                  getClass()
-                      .getResource(
-                          "/de/griefed/resources/gui/tile" + new Random().nextInt(4) + ".jpg")));
-    } catch (IOException ex) {
-      LOG.error("Could not read image for tiling.", ex);
-    }
+    BufferedImage bufferedImage = ImageIO.read(
+        Objects.requireNonNull(
+            getClass()
+                .getResource(
+                    "/de/griefed/resources/gui/tile" + new Random().nextInt(4) + ".jpg")));
 
     this.FRAME_SERVERPACKCREATOR =
         new JFrame(
