@@ -1,3 +1,23 @@
+## [3.10.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.10.0...3.10.1) (2022-07-25)
+
+
+### :scissors: Refactor
+
+* **BufferedImage initialization:** Ensure we have the buffered image, or throw ([9f0b467](https://git.griefed.de/Griefed/ServerPackCreator/commit/9f0b46788e54a4074cdb70ea53a122f04ccaefc4))
+* **Clientside mod exclusion logging:** Improve logging of excluded mods and checks thereof. ([89c37b3](https://git.griefed.de/Griefed/ServerPackCreator/commit/89c37b3ae737abc2290b72ed03d09a19dbfbb5fd))
+* **Mods File List:** Prevent NPE by properly initializing filesInModsDir ([75a0094](https://git.griefed.de/Griefed/ServerPackCreator/commit/75a0094565059f8c63ab11bdef07f747994f32b6))
+* **ModScanning:** Remove unnecessary checks ([c72daee](https://git.griefed.de/Griefed/ServerPackCreator/commit/c72daee2a5f0c0ffc4fc6825570efe7e4fd18bfb))
+
+
+### 📔 Docs
+
+* **ConfigUtilities:** Add missing deprecated annotation ([3083521](https://git.griefed.de/Griefed/ServerPackCreator/commit/3083521712e60afc79a168c3690fc9cd49f98df1))
+
+
+### 🛠 Fixes
+
+* **File and Directory exclusions:** Fix files and/or directories not excluding files and/or directories correctly. ([ed17ad3](https://git.griefed.de/Griefed/ServerPackCreator/commit/ed17ad3bb8714fb9d94d0c0447f0b831c550b035))
+
 ## [3.10.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.9.0...3.10.0) (2022-07-24)
 
 
