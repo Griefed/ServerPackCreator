@@ -99,7 +99,7 @@ dependencies {
   developmentOnly 'org.springframework.boot:spring-boot-devtools:2.7.2'
 
   // Testing
-  testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
+  testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.0'
   testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
   testImplementation 'org.springframework.boot:spring-boot-starter-test:2.7.2'
   testImplementation 'org.junit.platform:junit-platform-commons:1.9.0'
