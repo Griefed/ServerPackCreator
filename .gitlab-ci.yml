@@ -134,7 +134,7 @@ secret_detection:
 
 Gradle Test:
   stage: Tests
-  image:  ghcr.io/griefed/baseimage-ubuntu-jdk-8:2.0.11
+  image:  ghcr.io/griefed/baseimage-ubuntu-jdk-8:2.0.12
   before_script:
     - echo "**** Running in $CI_JOB_ID ****"
     - echo "**** Java location ****"
@@ -201,7 +201,7 @@ Generate Release:
 
 Build Release:
   stage: Build Release
-  image: ghcr.io/griefed/baseimage-ubuntu-jdk-8:2.0.11
+  image: ghcr.io/griefed/baseimage-ubuntu-jdk-8:2.0.12
   needs:
     - job: release_job
       optional: true
@@ -255,7 +255,7 @@ Build Release:
 
 Publish Maven Artifacts:
   stage: Build Release
-  image: ghcr.io/griefed/baseimage-ubuntu-jdk-8:2.0.11
+  image: ghcr.io/griefed/baseimage-ubuntu-jdk-8:2.0.12
   before_script:
     - echo "**** Running in $CI_JOB_ID ****"
     - echo "**** Java location ****"
@@ -393,7 +393,7 @@ Qodana Expose:
 
 pages:
   stage: Documentation
-  image: ghcr.io/griefed/baseimage-ubuntu-jdk-8:2.0.11
+  image: ghcr.io/griefed/baseimage-ubuntu-jdk-8:2.0.12
   allow_failure: true
   before_script:
     - which java
