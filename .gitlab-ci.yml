@@ -365,7 +365,7 @@ Build Docker PreRelease:
 Qodana Expose:
   stage: Documentation
   image:
-    name: jetbrains/qodana-jvm-community:2022.1
+    name: jetbrains/qodana-jvm-community:2022.2
     entrypoint: ['']
   allow_failure: true
   script:
