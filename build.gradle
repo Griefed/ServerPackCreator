@@ -78,7 +78,7 @@ dependencies {
   embed 'org.apache.logging.log4j:log4j-slf4j-impl:2.18.0'
   embed 'org.apache.logging.log4j:log4j-web:2.18.0'
   embed 'org.apache.logging.log4j:log4j-jul:2.18.0'
-  embed 'org.jgroups:jgroups:5.2.2.Final'
+  embed 'org.jgroups:jgroups:5.2.4.Final'
 
   // GUI
   embed 'io.github.vincenzopalazzo:material-ui-swing:1.1.2'
