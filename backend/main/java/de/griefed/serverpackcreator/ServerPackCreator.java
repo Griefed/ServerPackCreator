@@ -80,8 +80,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @SpringBootApplication
 @EnableScheduling
 @PropertySources({
-  @PropertySource("classpath:application.properties"),
-  @PropertySource("classpath:serverpackcreator.properties")
+    @PropertySource("classpath:application.properties"),
+    @PropertySource("classpath:serverpackcreator.properties")
 })
 public class ServerPackCreator {
 
@@ -109,7 +109,7 @@ public class ServerPackCreator {
    * Initialize ServerPackCreator and determine the {@link CommandlineParser.Mode} to run in.
    *
    * @param args Commandline arguments with which ServerPackCreator is run. Determines which mode
-   *     ServerPackCreator will enter and which locale is used.
+   *             ServerPackCreator will enter and which locale is used.
    * @author Griefed
    */
   public ServerPackCreator(String[] args) {
@@ -131,7 +131,7 @@ public class ServerPackCreator {
    * ServerPackCreator.CommandlineParser.Mode}
    *
    * @param args Commandline arguments with which ServerPackCreator is run. Determines which mode
-   *     ServerPackCreator will enter and which locale is used.
+   *             ServerPackCreator will enter and which locale is used.
    * @throws IOException if the {@link VersionMeta} could not be instantiated.
    * @author Griefed
    */
@@ -454,22 +454,28 @@ public class ServerPackCreator {
     FileAlterationListener fileAlterationListener =
         new FileAlterationListener() {
           @Override
-          public void onStart(FileAlterationObserver observer) {}
+          public void onStart(FileAlterationObserver observer) {
+          }
 
           @Override
-          public void onDirectoryCreate(File directory) {}
+          public void onDirectoryCreate(File directory) {
+          }
 
           @Override
-          public void onDirectoryChange(File directory) {}
+          public void onDirectoryChange(File directory) {
+          }
 
           @Override
-          public void onDirectoryDelete(File directory) {}
+          public void onDirectoryDelete(File directory) {
+          }
 
           @Override
-          public void onFileCreate(File file) {}
+          public void onFileCreate(File file) {
+          }
 
           @Override
-          public void onFileChange(File file) {}
+          public void onFileChange(File file) {
+          }
 
           @Override
           public void onFileDelete(File file) {
@@ -506,7 +512,8 @@ public class ServerPackCreator {
           }
 
           @Override
-          public void onStop(FileAlterationObserver observer) {}
+          public void onStop(FileAlterationObserver observer) {
+          }
 
           private boolean check(File watched, File toCreate) {
             return watched
@@ -564,25 +571,25 @@ public class ServerPackCreator {
     }
 
     new ServerPackCreatorGui(
-            I18N,
-            configurationHandler,
-            serverPackHandler,
-            APPLICATIONPROPERTIES,
-            versionMeta,
-            utilities,
-            updateChecker,
-            applicationPlugins,
-            configUtilities,
-            serverPackCreatorSplash)
+        I18N,
+        configurationHandler,
+        serverPackHandler,
+        APPLICATIONPROPERTIES,
+        versionMeta,
+        utilities,
+        updateChecker,
+        applicationPlugins,
+        configUtilities,
+        serverPackCreatorSplash)
         .mainGUI();
   }
 
   /**
    * Offer the user to continue using ServerPackCreator.
    *
-   * @throws IOException if an error occurs trying to run ServerPackCreator in {@link
-   *     CommandlineParser.Mode#GUI}, {@link CommandlineParser.Mode#CLI} or {@link
-   *     CommandlineParser.Mode#WEB}
+   * @throws IOException if an error occurs trying to run ServerPackCreator in
+   *                     {@link CommandlineParser.Mode#GUI}, {@link CommandlineParser.Mode#CLI} or
+   *                     {@link CommandlineParser.Mode#WEB}
    * @author Griefed
    */
   private void continuedRunOptions() throws IOException {
@@ -739,7 +746,7 @@ public class ServerPackCreator {
     ConfigurationModel configurationModel = new ConfigurationModel();
 
     if (configurationHandler.checkConfiguration(
-            APPLICATIONPROPERTIES.DEFAULT_CONFIG(), configurationModel, false)
+        APPLICATIONPROPERTIES.DEFAULT_CONFIG(), configurationModel, false)
         && serverPackHandler.run(configurationModel)) {
       System.exit(0);
     } else {
@@ -750,18 +757,16 @@ public class ServerPackCreator {
   /**
    * Create a new serverpackcreator.conf-file.
    *
-   * @throws IOException if the {@link ConfigurationCreator} could not be instantiated.
    * @author Griefed
    */
-  private void createConfig() throws IOException {
+  private void createConfig() {
 
     new ConfigurationCreator(
-            I18N,
-            configurationHandler,
-            APPLICATIONPROPERTIES,
-            utilities,
-            versionMeta,
-            configUtilities)
+        configurationHandler,
+        APPLICATIONPROPERTIES,
+        utilities,
+        versionMeta,
+        configUtilities)
         .createConfigurationFile();
   }
 
@@ -770,7 +775,7 @@ public class ServerPackCreator {
    * be found, a new config file is generated.
    *
    * @return Boolean. Returns true if the file was generated, so we can inform the user about said
-   *     newly generated file.
+   * newly generated file.
    * @author Griefed
    */
   public boolean checkForConfig() {
@@ -819,9 +824,9 @@ public class ServerPackCreator {
    * Checks for existence of defaults files. If it is not found, it is generated.
    *
    * @param fileToCheckFor The file which is to be checked for whether it exists and if it doesn't,
-   *     should be created.
+   *                       should be created.
    * @return Boolean. Returns true if the file was generated, so we can inform the user about said
-   *     newly generated file.
+   * newly generated file.
    * @author Griefed
    */
   public boolean checkServerFilesFile(File fileToCheckFor) {
@@ -1027,13 +1032,12 @@ public class ServerPackCreator {
     /**
      * Create a new CommandlineParser from the passed commandline-arguments with which
      * ServerPackCreator was started. The mode and language in which ServerPackCreator should run
-     * will thus be determined and available to you via {@link #getModeToRunIn()} and {@link
-     * #getLanguageToUse()}.<br>
-     * {@link #getLanguageToUse()} is wrapped in an {@link Optional} to quickly determine whether a
-     * language was specified.
+     * will thus be determined and available to you via {@link #getModeToRunIn()} and
+     * {@link #getLanguageToUse()}.<br> {@link #getLanguageToUse()} is wrapped in an
+     * {@link Optional} to quickly determine whether a language was specified.
      *
      * @param args {@link String}-array of commandline-arguments with which ServerPackCreator was
-     *     started. Typically passed from {@link ServerPackCreator}.
+     *             started. Typically passed from {@link ServerPackCreator}.
      * @author Griefed
      */
     public CommandlineParser(String[] args) {
@@ -1138,23 +1142,31 @@ public class ServerPackCreator {
      * Get the locale in which ServerPackCreator should be run in, wrapped in an {@link Optional}.
      *
      * @return {@link String} The locale in which ServerPackCreator should be run in, wrapped in an
-     *     {@link Optional}.
+     * {@link Optional}.
      * @author Griefed
      */
     protected Optional<String> getLanguageToUse() {
       return Optional.ofNullable(LANG);
     }
 
-    /** Mode-priorities. Highest to lowest. */
+    /**
+     * Mode-priorities. Highest to lowest.
+     */
     public enum Mode {
 
-      /** Priority 0. Print ServerPackCreators help to commandline. */
+      /**
+       * Priority 0. Print ServerPackCreators help to commandline.
+       */
       HELP("-help"),
 
-      /** Priority 1. Check whether a newer version of ServerPackCreator is available. */
+      /**
+       * Priority 1. Check whether a newer version of ServerPackCreator is available.
+       */
       UPDATE("-update"),
 
-      /** Priority 2. Run ServerPackCreators configuration generation. */
+      /**
+       * Priority 2. Run ServerPackCreators configuration generation.
+       */
       CGEN("-cgen"),
 
       /**
@@ -1164,7 +1176,9 @@ public class ServerPackCreator {
        */
       CLI("-cli"),
 
-      /** Priority 4. Run ServerPackCreator as a webservice. */
+      /**
+       * Priority 4. Run ServerPackCreator as a webservice.
+       */
       WEB("-web"),
 
       /**
@@ -1181,10 +1195,14 @@ public class ServerPackCreator {
        */
       SETUP("--setup"),
 
-      /** Priority 7. Exit ServerPackCreator. */
+      /**
+       * Priority 7. Exit ServerPackCreator.
+       */
       EXIT("exit"),
 
-      /** Used when the user wants to change the language of ServerPackCreator. */
+      /**
+       * Used when the user wants to change the language of ServerPackCreator.
+       */
       LANG("-lang");
 
       private final String ARGUMENT;

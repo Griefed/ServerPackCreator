@@ -30,12 +30,12 @@ import org.springframework.stereotype.Service;
 /**
  * <a
  * href="https://dev.to/gotson/how-to-implement-a-task-queue-using-apache-artemis-and-spring-boot-2mme">How
- * to implement a task queue using Apache Artemis and Spring Boot</a><br>
- * Huge Thank You to <a href="https://github.com/gotson">Gauthier</a> for writing the above guide on
- * how to implement a JMS. Without it this implementation of Artemis would have either taken way
- * longer or never happened at all. I managed to translate their Kotlin-code to Java and make the
- * necessary changes to fully implement it in ServerPackCreator.<br>
- * Class responsible for submitting tasks to our JMS.
+ * to implement a task queue using Apache Artemis and Spring Boot</a><br> Huge Thank You to <a
+ * href="https://github.com/gotson">Gauthier</a> for writing the above guide on how to implement a
+ * JMS. Without it this implementation of Artemis would have either taken way longer or never
+ * happened at all. I managed to translate their Kotlin-code to Java and make the necessary changes
+ * to fully implement it in ServerPackCreator.<br> Class responsible for submitting tasks to our
+ * JMS.
  *
  * @author Griefed
  */
@@ -61,8 +61,9 @@ public class TaskSubmitter {
    * Submit a task for the generation of a server pack from a ZIP-archive.
    *
    * @param zipGenerationProperties {@link String} containing all information required to generate a
-   *     server pack from a ZIP-archive. See {@link ZipController#requestGenerationFromZip(String,
-   *     String, String, String, String)}.
+   *                                server pack from a ZIP-archive. See
+   *                                {@link ZipController#requestGenerationFromZip(String, String,
+   *                                String, String, String)}.
    * @author Griefed
    */
   public void generateZip(String zipGenerationProperties) {
@@ -71,7 +72,8 @@ public class TaskSubmitter {
   }
 
   /**
-   * Convert and send a scan-task to our JMS. Set the <code>type</code> to <code>scan</code> and the
+   * Convert and send a scan-task to our JMS. Set the <code>type</code> to <code>scan</code> and
+   * the
    * <code>unique id</code> to tasks unique id which contains the CurseForge project and file id
    * combination.
    *
@@ -93,7 +95,8 @@ public class TaskSubmitter {
 
   /**
    * Convert and send a generation-task to our JMS. Set the <code>type</code> to <code>generation
-   * </code> and the <code>unique id</code> to tasks unique id which contains the CurseForge project
+   * </code> and the <code>unique id</code> to tasks unique id which contains the CurseForge
+   * project
    * and file id combination.
    *
    * @param task The task to be submitted to the generation-queue.

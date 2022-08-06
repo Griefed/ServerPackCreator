@@ -108,19 +108,20 @@ public class ServerPackCreatorGui {
    * <p>Receives an instance of {@link ServerPackHandler} which is required to generate a server
    * pack.
    *
-   * @param injectedI18n Instance of {@link I18n} required for localized log messages.
-   * @param injectedConfigurationHandler Instance of {@link ConfigurationHandler} required to
-   *     successfully and correctly create the server pack.
-   * @param injectedServerPackHandler Instance of {@link ServerPackHandler} required for the
-   *     generation of server packs.
-   * @param injectedApplicationProperties Instance of {@link Properties} required for various
-   *     different things.
-   * @param injectedVersionMeta Instance of {@link VersionMeta} required for everything version
-   *     related in the GUI.
-   * @param injectedUtilities Instance of {@link Utilities}.
-   * @param injectedUpdateChecker Instance of {@link UpdateChecker}.
-   * @param injectedPluginManager Instance of {@link ApplicationPlugins}.
-   * @param injectedConfigUtilities Instance of {@link ConfigUtilities}.
+   * @param injectedI18n                    Instance of {@link I18n} required for localized log
+   *                                        messages.
+   * @param injectedConfigurationHandler    Instance of {@link ConfigurationHandler} required to
+   *                                        successfully and correctly create the server pack.
+   * @param injectedServerPackHandler       Instance of {@link ServerPackHandler} required for the
+   *                                        generation of server packs.
+   * @param injectedApplicationProperties   Instance of {@link Properties} required for various
+   *                                        different things.
+   * @param injectedVersionMeta             Instance of {@link VersionMeta} required for everything
+   *                                        version related in the GUI.
+   * @param injectedUtilities               Instance of {@link Utilities}.
+   * @param injectedUpdateChecker           Instance of {@link UpdateChecker}.
+   * @param injectedPluginManager           Instance of {@link ApplicationPlugins}.
+   * @param injectedConfigUtilities         Instance of {@link ConfigUtilities}.
    * @param injectedServerPackCreatorSplash Instance of {@link ServerPackCreatorSplash}
    * @throws IOException if the {@link VersionMeta} could not be instantiated.
    * @author Griefed

@@ -29,4 +29,6 @@ import de.griefed.serverpackcreator.utilities.misc.Generated;
  * @author Girefed
  */
 @Generated
-public interface PostGenExtension extends PluginInformation {}
+public interface PostGenExtension extends PluginInformation {
+
+}

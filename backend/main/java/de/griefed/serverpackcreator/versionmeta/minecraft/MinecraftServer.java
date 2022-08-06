@@ -44,10 +44,10 @@ public class MinecraftServer {
   /**
    * Create a new Minecraft Server.
    *
-   * @param mcVersion {@link String} The Minecraft version of this server.
-   * @param mcType {@link Type} The release-type of this server. Either {@link Type#RELEASE} or
-   *     {@link Type#SNAPSHOT}.
-   * @param mcUrl {@link URL} The URL to the download of this servers JAR-file.
+   * @param mcVersion    {@link String} The Minecraft version of this server.
+   * @param mcType       {@link Type} The release-type of this server. Either {@link Type#RELEASE}
+   *                     or {@link Type#SNAPSHOT}.
+   * @param mcUrl        {@link URL} The URL to the download of this servers JAR-file.
    * @param objectMapper {@link ObjectMapper} for parsing.
    * @author Griefed
    */
@@ -82,8 +82,8 @@ public class MinecraftServer {
   }
 
   /**
-   * Get the release-type of this Minecraft-server. Either {@link Type#RELEASE} or {@link
-   * Type#SNAPSHOT}.
+   * Get the release-type of this Minecraft-server. Either {@link Type#RELEASE} or
+   * {@link Type#SNAPSHOT}.
    *
    * @return {@link Type}
    * @author Griefed

@@ -62,11 +62,11 @@ public class ZipController {
   /**
    * Constructor responsible for DI.
    *
-   * @param injectedZipService Instance of {@link ZipService}.
-   * @param injectedConfigurationHandler Instance of {@link ConfigurationHandler}.
-   * @param injectedNotificationResponse Instance of {@link NotificationResponse}.
+   * @param injectedZipService            Instance of {@link ZipService}.
+   * @param injectedConfigurationHandler  Instance of {@link ConfigurationHandler}.
+   * @param injectedNotificationResponse  Instance of {@link NotificationResponse}.
    * @param injectedApplicationProperties Instance of {@link ApplicationProperties}.
-   * @param injectedUtilities Instance of {@link Utilities}.
+   * @param injectedUtilities             Instance of {@link Utilities}.
    * @author Griefed
    */
   @Autowired
@@ -136,14 +136,15 @@ public class ZipController {
    * <code>modLoader</code><br>
    * <code>modLoaderVersion</code><br>
    *
-   * @param zipName {@link String} The name of the previously uploaded ZIP-archive.
-   * @param clientMods {@link String} A comma separated list of clientside-only mods to exclude from
-   *     the server pack.
+   * @param zipName          {@link String} The name of the previously uploaded ZIP-archive.
+   * @param clientMods       {@link String} A comma separated list of clientside-only mods to
+   *                         exclude from the server pack.
    * @param minecraftVersion {@link String} The Minecraft version the modpack, and therefor the
-   *     server pack, uses.
-   * @param modLoader {@link String} The modloader the modpack, and therefor the server pack, uses.
+   *                         server pack, uses.
+   * @param modLoader        {@link String} The modloader the modpack, and therefor the server pack,
+   *                         uses.
    * @param modLoaderVersion {@link String} The modloader version the modpack, and therefor the
-   *     server pack, uses.
+   *                         server pack, uses.
    * @return {@link NotificationResponse} with information about the result.
    * @author Griefed
    */

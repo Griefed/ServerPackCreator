@@ -28,7 +28,8 @@ public class FabricArguments {
 
   private Object[] game;
 
-  private FabricArguments() {}
+  private FabricArguments() {
+  }
 
   /**
    * Object-array of arguments used.

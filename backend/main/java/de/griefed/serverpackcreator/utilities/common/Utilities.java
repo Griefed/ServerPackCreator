@@ -20,7 +20,6 @@
 package de.griefed.serverpackcreator.utilities.common;
 
 import de.griefed.serverpackcreator.ApplicationProperties;
-import de.griefed.serverpackcreator.i18n.I18n;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -81,5 +80,7 @@ public class Utilities {
     return WEB_UTILITIES;
   }
 
-  public JsonUtilities JsonUtilities() {return JSON_UTILITIES;}
+  public JsonUtilities JsonUtilities() {
+    return JSON_UTILITIES;
+  }
 }

@@ -31,7 +31,8 @@ import java.util.Scanner;
  */
 public class ListUtilities {
 
-  public ListUtilities() {}
+  public ListUtilities() {
+  }
 
   /**
    * Encapsulate every element of the passed String List in quotes. Returns the list as <code>
@@ -39,7 +40,7 @@ public class ListUtilities {
    *
    * @param listToEncapsulate The String List of which to encapsulate every element in.
    * @return String. Returns a concatenated String with all elements of the passed list
-   *     encapsulated.
+   * encapsulated.
    * @author Griefed
    */
   public String encapsulateListElements(List<String> listToEncapsulate) {
@@ -98,7 +99,7 @@ public class ListUtilities {
    * </code>.
    *
    * @param listToCleanUp List String. The list from which to delete all entries consisting only of
-   *     whitespace or with a length of zero.
+   *                      whitespace or with a length of zero.
    * @return List String. Returns the cleaned up list.
    * @author Griefed
    */

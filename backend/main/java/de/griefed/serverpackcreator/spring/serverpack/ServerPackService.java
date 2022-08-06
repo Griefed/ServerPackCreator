@@ -64,7 +64,7 @@ public class ServerPackService {
    *
    * @param id Integer. The database id of the server pack to download.
    * @return Returns a curseResponse entity with either the server pack as a downloadable file, or a
-   *     curseResponse entity with a not found body.
+   * curseResponse entity with a not found body.
    * @author Griefed
    */
   public ResponseEntity<Resource> downloadServerPackById(int id) {
@@ -104,9 +104,9 @@ public class ServerPackService {
    * Either upvote or downvote a given server pack.
    *
    * @param voting String. The database id of the server pack and whether it should be up- or
-   *     downvoted.
+   *               downvoted.
    * @return Returns ok if the vote went through, bad request if the passed vote was malformed, or
-   *     not found if the server pack could not be found.
+   * not found if the server pack could not be found.
    * @author Griefed
    */
   public ResponseEntity<Object> voteForServerPack(String voting) {
@@ -161,9 +161,9 @@ public class ServerPackService {
   /**
    * Update a server pack database entry with the given database id.
    *
-   * @param id Integer. The database id of the server pack to initialize.
+   * @param id              Integer. The database id of the server pack to initialize.
    * @param serverPackModel Instance of {@link ServerPackModel} with which to initialize the entry
-   *     in the database.
+   *                        in the database.
    * @author Griefed
    */
   public void updateServerPackByID(int id, ServerPackModel serverPackModel) {
@@ -202,7 +202,7 @@ public class ServerPackService {
    * Either increment or decrement the confirmed working value of a given server pack entry in the
    * database, identified by the database id.
    *
-   * @param id Integer. The database id of the server pack.
+   * @param id   Integer. The database id of the server pack.
    * @param vote Integer. Positive for upvote, negative for downvote
    * @author Griefed
    */

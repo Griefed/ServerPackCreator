@@ -178,9 +178,8 @@ public class QuiltInstaller {
   }
 
   /**
-   * Meta for the Quilt-Version-to-Installer-URL.<br>
-   * key: {@link String} Quilt version.<br>
-   * value: {@link URL} Quilt installer URL.
+   * Meta for the Quilt-Version-to-Installer-URL.<br> key: {@link String} Quilt version.<br> value:
+   * {@link URL} Quilt installer URL.
    *
    * @return {@link HashMap} with the Quilt-Version-to-Installer-URL.
    * @author Griefed

@@ -29,4 +29,6 @@ import de.griefed.serverpackcreator.utilities.misc.Generated;
  * @author Griefed
  */
 @Generated
-public interface PreGenExtension extends PluginInformation {}
+public interface PreGenExtension extends PluginInformation {
+
+}

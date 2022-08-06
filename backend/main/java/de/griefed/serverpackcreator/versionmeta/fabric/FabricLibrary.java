@@ -29,7 +29,8 @@ public class FabricLibrary {
   private String name;
   private String url;
 
-  private FabricLibrary() {}
+  private FabricLibrary() {
+  }
 
   /**
    * The name of this library.

@@ -63,8 +63,8 @@ import javax.swing.Icon;
 import javax.swing.JComponent;
 
 /**
- * Heya, Griefed here. This is yet another miracle by Rob Camick. This man is a godsend.<br>
- * See <a href="https://tips4java.wordpress.com/2009/04/02/text-icon/">Text Icon</a><br>
+ * Heya, Griefed here. This is yet another miracle by Rob Camick. This man is a godsend.<br> See <a
+ * href="https://tips4java.wordpress.com/2009/04/02/text-icon/">Text Icon</a><br>
  *
  * <p>The TextIcon will paint a String of text as an Icon. The Icon can be used by any Swing
  * component that supports icons.
@@ -91,6 +91,7 @@ import javax.swing.JComponent;
  * @author Rob Camick
  */
 public class TextIcon implements Icon, PropertyChangeListener {
+
   private final JComponent component;
   private final Layout layout;
   private String text;
@@ -111,7 +112,7 @@ public class TextIcon implements Icon, PropertyChangeListener {
    * Convenience constructor to create a TextIcon with a HORIZONTAL layout.
    *
    * @param component the component to which the icon will be added
-   * @param text the text to be rendered on the Icon
+   * @param text      the text to be rendered on the Icon
    */
   public TextIcon(JComponent component, String text) {
     this(component, text, Layout.HORIZONTAL);
@@ -121,9 +122,9 @@ public class TextIcon implements Icon, PropertyChangeListener {
    * Create a TextIcon specifying all the properties.
    *
    * @param component the component to which the icon will be added
-   * @param text the text to be rendered on the Icon
-   * @param layout specify the layout of the text. Must be one of the Layout enums: HORIZONTAL or
-   *     VERTICAL
+   * @param text      the text to be rendered on the Icon
+   * @param layout    specify the layout of the text. Must be one of the Layout enums: HORIZONTAL or
+   *                  VERTICAL
    */
   public TextIcon(JComponent component, String text, Layout layout) {
     this.component = component;
@@ -169,8 +170,11 @@ public class TextIcon implements Icon, PropertyChangeListener {
    * @return the Font used to render the text
    */
   public Font getFont() {
-    if (font == null) return component.getFont();
-    else return font;
+    if (font == null) {
+      return component.getFont();
+    } else {
+      return font;
+    }
   }
 
   /**
@@ -192,8 +196,11 @@ public class TextIcon implements Icon, PropertyChangeListener {
    * @return the Color used to render the text
    */
   public Color getForeground() {
-    if (foreground == null) return component.getForeground();
-    else return foreground;
+    if (foreground == null) {
+      return component.getForeground();
+    } else {
+      return foreground;
+    }
   }
 
   /**
@@ -227,7 +234,9 @@ public class TextIcon implements Icon, PropertyChangeListener {
     calculateIconDimensions();
   }
 
-  /** Calculate the size of the Icon using the FontMetrics of the Font. */
+  /**
+   * Calculate the size of the Icon using the FontMetrics of the Font.
+   */
   private void calculateIconDimensions() {
     Font font = getFont();
     FontMetrics fm = component.getFontMetrics(font);

@@ -92,18 +92,15 @@ import org.jetbrains.annotations.Nullable;
 
 /**
  * This class creates the tab which displays the labels, textfields, buttons and functions in order
- * to create a new server pack. Available are:<br>
- * JLabels and JTextFields for modpackDir, clientMods, copyDirs, javaPath, minecraftVersion,
- * modLoader, modLoaderVersion<br>
- * Checkboxes for Include- serverInstallation, serverIcon, serverProperties, startScripts,
- * ZIP-archive<br>
- * Buttons opening the file explorer and choosing: modpackDir, clientMods, copyDirs, javaPath,
- * loadConfigFromFile<br>
- * A button for displaying an information windows which provides detailed explanation of the
- * important parts of the GUI.<br>
- * The button start the generation of a new server pack.<br>
- * The label under the button to start the generation of a new server pack, which displays the
- * latest log entry of the serverpackcreator.log <em>during</em> the creation of a new server pack.
+ * to create a new server pack. Available are:<br> JLabels and JTextFields for modpackDir,
+ * clientMods, copyDirs, javaPath, minecraftVersion, modLoader, modLoaderVersion<br> Checkboxes for
+ * Include- serverInstallation, serverIcon, serverProperties, startScripts, ZIP-archive<br> Buttons
+ * opening the file explorer and choosing: modpackDir, clientMods, copyDirs, javaPath,
+ * loadConfigFromFile<br> A button for displaying an information windows which provides detailed
+ * explanation of the important parts of the GUI.<br> The button start the generation of a new
+ * server pack.<br> The label under the button to start the generation of a new server pack, which
+ * displays the latest log entry of the serverpackcreator.log <em>during</em> the creation of a new
+ * server pack.
  * <br>
  * If a configuration file is found during startup of ServerPackCreator, it is automatically loaded
  * into the GUI.
@@ -171,11 +168,11 @@ public class TabCreateServerPack extends JPanel {
   private final ScannerConfig IDLE_CONFIG =
       new ScannerConfig(
           2,
-          new short[] {25, 50, 75, 100, 150, 200, 255},
+          new short[]{25, 50, 75, 100, 150, 200, 255},
           (short) 50,
           (short) 50,
           (byte) 7,
-          new float[] {0.4f, 1.0f},
+          new float[]{0.4f, 1.0f},
           50.0f,
           5.0D,
           false,
@@ -183,25 +180,25 @@ public class TabCreateServerPack extends JPanel {
           true,
           false,
           false,
-          new Color[] {
-            new Color(50, 83, 88),
-            new Color(50, 83, 88),
-            new Color(50, 83, 88),
-            new Color(50, 83, 88),
-            new Color(50, 83, 88),
-            new Color(50, 83, 88),
-            new Color(50, 83, 88)
+          new Color[]{
+              new Color(50, 83, 88),
+              new Color(50, 83, 88),
+              new Color(50, 83, 88),
+              new Color(50, 83, 88),
+              new Color(50, 83, 88),
+              new Color(50, 83, 88),
+              new Color(50, 83, 88)
           },
           new Color(49, 47, 47),
           new Color(49, 47, 47));
   private final ScannerConfig BUSY_CONFIG =
       new ScannerConfig(
           2,
-          new short[] {25, 50, 75, 100, 150, 200, 255},
+          new short[]{25, 50, 75, 100, 150, 200, 255},
           (short) 100,
           (short) 25,
           (byte) 7,
-          new float[] {0.4f, 1.0f},
+          new float[]{0.4f, 1.0f},
           25.0f,
           5.0D,
           false,
@@ -209,14 +206,14 @@ public class TabCreateServerPack extends JPanel {
           true,
           true,
           false,
-          new Color[] {
-            new Color(192, 255, 238),
-            new Color(192, 255, 238),
-            new Color(192, 255, 238),
-            new Color(192, 255, 238),
-            new Color(192, 255, 238),
-            new Color(192, 255, 238),
-            new Color(192, 255, 238)
+          new Color[]{
+              new Color(192, 255, 238),
+              new Color(192, 255, 238),
+              new Color(192, 255, 238),
+              new Color(192, 255, 238),
+              new Color(192, 255, 238),
+              new Color(192, 255, 238),
+              new Color(192, 255, 238)
           },
           new Color(49, 47, 47),
           new Color(49, 47, 47));
@@ -272,20 +269,22 @@ public class TabCreateServerPack extends JPanel {
    * <p>Receives an instance of {@link ServerPackHandler} which is required to generate a server
    * pack.
    *
-   * @param injectedI18n Instance of {@link I18n} required for localized log messages.
-   * @param injectedConfigurationHandler Instance of {@link ConfigurationHandler} required to
-   *     successfully and correctly create the server pack.
-   * @param injectedServerPackHandler Instance of {@link ServerPackHandler} required for the
-   *     generation of server packs.
-   * @param injectedVersionMeta Instance of {@link VersionMeta} required for setting/changing
-   *     comboboxes.
-   * @param injectedApplicationProperties Instance of {@link Properties} required for various
-   *     different things.
-   * @param injectedServerPackCreatorFrame Our parent frame which contains all of ServerPackCreator.
-   * @param injectedUtilities Instance of {@link Utilities}.
-   * @param injectedConfigUtilities Instance of {@link ConfigUtilities}.
-   * @param injectedDarkTheme Instance of {@link DarkTheme}.
-   * @param injectedLightTheme Instance of {@link LightTheme}.
+   * @param injectedI18n                   Instance of {@link I18n} required for localized log
+   *                                       messages.
+   * @param injectedConfigurationHandler   Instance of {@link ConfigurationHandler} required to
+   *                                       successfully and correctly create the server pack.
+   * @param injectedServerPackHandler      Instance of {@link ServerPackHandler} required for the
+   *                                       generation of server packs.
+   * @param injectedVersionMeta            Instance of {@link VersionMeta} required for
+   *                                       setting/changing comboboxes.
+   * @param injectedApplicationProperties  Instance of {@link Properties} required for various
+   *                                       different things.
+   * @param injectedServerPackCreatorFrame Our parent frame which contains all of
+   *                                       ServerPackCreator.
+   * @param injectedUtilities              Instance of {@link Utilities}.
+   * @param injectedConfigUtilities        Instance of {@link ConfigUtilities}.
+   * @param injectedDarkTheme              Instance of {@link DarkTheme}.
+   * @param injectedLightTheme             Instance of {@link LightTheme}.
    * @throws IOException if the {@link VersionMeta} could not be instantiated.
    * @author Griefed
    */
@@ -352,7 +351,7 @@ public class TabCreateServerPack extends JPanel {
       LOG.error("Error inserting text into aboutDocument.", ex);
     }
 
-    this.NONE = new String[] {I18N.getMessage("createserverpack.gui.createserverpack.forge.none")};
+    this.NONE = new String[]{I18N.getMessage("createserverpack.gui.createserverpack.forge.none")};
 
     this.FABRIC_VERSIONS =
         new DefaultComboBoxModel<>(VERSIONMETA.fabric().loaderVersionsArrayDescending());
@@ -1221,13 +1220,13 @@ public class TabCreateServerPack extends JPanel {
       List<String> errorsTEXTFIELD_COPYDIRECTORIES = new ArrayList<>();
       if (!TEXTAREA_COPYDIRECTORIES.getText().matches("^.*,\\s*\\\\*$")
           && CONFIGURATIONHANDLER.checkCopyDirs(
-              UTILITIES.ListUtils()
-                  .cleanList(
-                      new ArrayList<>(
-                          Arrays.asList(
-                              TEXTAREA_COPYDIRECTORIES.getText().replace(", ", ",").split(",")))),
-              TEXTFIELD_MODPACKDIRECTORY.getText(),
-              errorsTEXTFIELD_COPYDIRECTORIES)) {
+          UTILITIES.ListUtils()
+              .cleanList(
+                  new ArrayList<>(
+                      Arrays.asList(
+                          TEXTAREA_COPYDIRECTORIES.getText().replace(", ", ",").split(",")))),
+          TEXTFIELD_MODPACKDIRECTORY.getText(),
+          errorsTEXTFIELD_COPYDIRECTORIES)) {
 
         TEXTAREA_COPYDIRECTORIES.setIcon(null);
         TEXTAREA_COPYDIRECTORIES.setToolTipText(
@@ -1413,7 +1412,7 @@ public class TabCreateServerPack extends JPanel {
    * version. If the specified Minecraft version is not supported, the DCBM will be set to NONE.
    *
    * @param chosenMinecraftVersion String. The selected Minecraft version which determines the list
-   *     of available Forge versions.
+   *                               of available Forge versions.
    * @author Griefed
    */
   private DefaultComboBoxModel<String> updateForgeComboBoxVersions(
@@ -1421,9 +1420,9 @@ public class TabCreateServerPack extends JPanel {
 
     if (chosenMinecraftVersion != null
         && VERSIONMETA
-            .forge()
-            .availableForgeVersionsArrayDescending(chosenMinecraftVersion)
-            .isPresent()) {
+        .forge()
+        .availableForgeVersionsArrayDescending(chosenMinecraftVersion)
+        .isPresent()) {
 
       return new DefaultComboBoxModel<>(
           VERSIONMETA.forge().availableForgeVersionsArrayDescending(chosenMinecraftVersion).get());
@@ -1439,7 +1438,7 @@ public class TabCreateServerPack extends JPanel {
    * version. If the specified Minecraft version is not supported, the DCBM will be set to NONE.
    *
    * @param chosenMinecraftVersion String. The selected Minecraft version which determines the list
-   *     of available Fabric versions.
+   *                               of available Fabric versions.
    * @author Griefed
    */
   private DefaultComboBoxModel<String> updateFabricComboBoxVersions(
@@ -1461,7 +1460,7 @@ public class TabCreateServerPack extends JPanel {
    * version. If the specified Minecraft version is not supported, the DCBM will be set to NONE.
    *
    * @param chosenMinecraftVersion String. The selected Minecraft version which determines the list
-   *     of available Fabric versions.
+   *                               of available Fabric versions.
    * @author Griefed
    */
   private DefaultComboBoxModel<String> updateQuiltComboBoxVersions(
@@ -1526,7 +1525,7 @@ public class TabCreateServerPack extends JPanel {
   private void updateModloaderGuiComponents(String modloader) {
 
     switch (modloader) {
-        // Fabric
+      // Fabric
       case "Fabric":
         COMBOBOX_MODLOADERS.setSelectedIndex(0);
         //noinspection ConstantConditions
@@ -1535,7 +1534,7 @@ public class TabCreateServerPack extends JPanel {
 
         break;
 
-        // Forge
+      // Forge
       case "Forge":
         COMBOBOX_MODLOADERS.setSelectedIndex(1);
         //noinspection ConstantConditions
@@ -1544,7 +1543,7 @@ public class TabCreateServerPack extends JPanel {
 
         break;
 
-        // Quilt
+      // Quilt
       case "Quilt":
         COMBOBOX_MODLOADERS.setSelectedIndex(2);
         //noinspection ConstantConditions
@@ -1968,11 +1967,11 @@ public class TabCreateServerPack extends JPanel {
               ready();
 
               if (JOptionPane.showConfirmDialog(
-                      FRAME_SERVERPACKCREATOR,
-                      SERVERPACKGENERATEDTEXTPANE,
-                      I18N.getMessage("createserverpack.gui.createserverpack.openfolder.title"),
-                      JOptionPane.YES_NO_OPTION,
-                      JOptionPane.INFORMATION_MESSAGE)
+                  FRAME_SERVERPACKCREATOR,
+                  SERVERPACKGENERATEDTEXTPANE,
+                  I18N.getMessage("createserverpack.gui.createserverpack.openfolder.title"),
+                  JOptionPane.YES_NO_OPTION,
+                  JOptionPane.INFORMATION_MESSAGE)
                   == 0) {
 
                 try {
@@ -2276,8 +2275,8 @@ public class TabCreateServerPack extends JPanel {
   /**
    * Get the current themes error-text colour.
    *
-   * @author Griefed
    * @return {@link Color} The current themes error-text colour.
+   * @author Griefed
    */
   private Color getThemeErrorColor() {
     if (isDark()) {
@@ -2293,8 +2292,8 @@ public class TabCreateServerPack extends JPanel {
   /**
    * The current themes default text colour.
    *
-   * @author Griefed
    * @return {@link Color} The current themes default text colour.
+   * @author Griefed
    */
   private Color getThemeTextColor() {
     if (isDark()) {
@@ -2333,7 +2332,7 @@ public class TabCreateServerPack extends JPanel {
    * Getter for the selected modloader version depending on which modloader is currently selected.
    *
    * @return String. Returns the modloader version depending on which modloader is currently
-   *     selected.
+   * selected.
    * @author Griefed
    */
   private String getSelectedModloaderVersion() {
@@ -2364,7 +2363,7 @@ public class TabCreateServerPack extends JPanel {
    * Getter for the current text from the currently set Javapath in the Javapath textfield.
    *
    * @return String. Returns the current text from the currently set Javapath in the Javapath
-   *     textfield.
+   * textfield.
    * @author Griefed
    */
   public String getJavaPath() {

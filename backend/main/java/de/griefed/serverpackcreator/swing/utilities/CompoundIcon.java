@@ -53,10 +53,11 @@ import java.awt.Graphics;
 import javax.swing.Icon;
 
 /**
- * Heya, Griefed here. This is yet another miracle by Rob Camick. This man is a godsend.<br>
- * See <a href="https://tips4java.wordpress.com/2009/03/29/compound-icon/">Compound Icon</a><br>
+ * Heya, Griefed here. This is yet another miracle by Rob Camick. This man is a godsend.<br> See <a
+ * href="https://tips4java.wordpress.com/2009/03/29/compound-icon/">Compound Icon</a><br>
  *
- * <p>The CompoundIcon will paint two, or more, Icons as a single Icon. The Icons are painted in the
+ * <p>The CompoundIcon will paint two, or more, Icons as a single Icon. The Icons are painted in
+ * the
  * order in which they are added.
  *
  * <p>The Icons are layed out on the specified axis:
@@ -70,6 +71,7 @@ import javax.swing.Icon;
  * @author Rob Camick
  */
 public class CompoundIcon implements Icon {
+
   private final Icon[] icons;
   private final Axis axis;
   private final int gap;
@@ -90,8 +92,8 @@ public class CompoundIcon implements Icon {
    * Convenience constructor for creating a CompoundIcon where the gap is 0 and the X/Y alignments
    * will default to CENTER.
    *
-   * @param axis the axis used to lay out the icons for painting. Must be one of the Axis enums:
-   *     X_AXIS, Y_AXIS, Z_Axis.
+   * @param axis  the axis used to lay out the icons for painting. Must be one of the Axis enums:
+   *              X_AXIS, Y_AXIS, Z_Axis.
    * @param icons the Icons to be painted as part of the CompoundIcon
    */
   public CompoundIcon(Axis axis, Icon... icons) {
@@ -102,9 +104,9 @@ public class CompoundIcon implements Icon {
    * Convenience constructor for creating a CompoundIcon where the X/Y alignments will default to
    * CENTER.
    *
-   * @param axis the axis used to lay out the icons for painting Must be one of the Axis enums:
-   *     X_AXIS, Y_AXIS, Z_Axis.
-   * @param gap the gap between the icons
+   * @param axis  the axis used to lay out the icons for painting Must be one of the Axis enums:
+   *              X_AXIS, Y_AXIS, Z_Axis.
+   * @param gap   the gap between the icons
    * @param icons the Icons to be painted as part of the CompoundIcon
    */
   public CompoundIcon(Axis axis, int gap, Icon... icons) {
@@ -114,14 +116,14 @@ public class CompoundIcon implements Icon {
   /**
    * Create a CompoundIcon specifying all the properties.
    *
-   * @param axis the axis used to lay out the icons for painting Must be one of the Axis enums:
-   *     X_AXIS, Y_AXIS, Z_Axis.
-   * @param gap the gap between the icons
+   * @param axis       the axis used to lay out the icons for painting Must be one of the Axis
+   *                   enums: X_AXIS, Y_AXIS, Z_Axis.
+   * @param gap        the gap between the icons
    * @param alignmentX the X alignment of the icons. Common values are LEFT, CENTER, RIGHT. Can be
-   *     any value between 0.0 and 1.0
+   *                   any value between 0.0 and 1.0
    * @param alignmentY the Y alignment of the icons. Common values are TOP, CENTER, BOTTOM. Can be
-   *     any value between 0.0 and 1.0
-   * @param icons the Icons to be painted as part of the CompoundIcon
+   *                   any value between 0.0 and 1.0
+   * @param icons      the Icons to be painted as part of the CompoundIcon
    */
   public CompoundIcon(Axis axis, int gap, float alignmentX, float alignmentY, Icon... icons) {
     /*

@@ -45,8 +45,8 @@ public class ApplicationPropertiesController {
    * Constructor for DI.
    *
    * @param injectedApplicationProperties Instance of {@link ApplicationProperties} with the
-   *     configuration of this ServerPackCreator instance.
-   * @param injectedUtilities Instance of {@link Utilities}.
+   *                                      configuration of this ServerPackCreator instance.
+   * @param injectedUtilities             Instance of {@link Utilities}.
    * @author Griefed
    */
   @Autowired
@@ -65,14 +65,14 @@ public class ApplicationPropertiesController {
         + ","
         + "\"listDirectoriesExclude\":"
         + UTILITIES.ListUtils()
-            .encapsulateListElements(APPLICATIONPROPERTIES.getDirectoriesToExclude())
+        .encapsulateListElements(APPLICATIONPROPERTIES.getDirectoriesToExclude())
         + ","
         + "\"serverPackCreatorVersion\":\""
         + APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION()
         + "\","
         + "\"supportedModloaders\":"
         + UTILITIES.ListUtils()
-            .encapsulateListElements(Arrays.asList(APPLICATIONPROPERTIES.SUPPORTED_MODLOADERS()))
+        .encapsulateListElements(Arrays.asList(APPLICATIONPROPERTIES.SUPPORTED_MODLOADERS()))
         + "}";
   }
 }

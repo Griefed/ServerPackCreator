@@ -47,16 +47,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
- * This is the localizationManager for ServerPackCreator.<br>
- * To use it, initialize it by calling {@link #initialize()}. Then use {@link #getMessage(String)}
- * to use a language key from the resource bundle corresponding to the specified locale. If no
- * locale is provided during the launch of ServerPackCreator, en_US is used by default.<br>
- * All localization properties-files need to be stored in the <code>de/griefed/resources/lang/
+ * This is the localizationManager for ServerPackCreator.<br> To use it, initialize it by calling
+ * {@link #initialize()}. Then use {@link #getMessage(String)} to use a language key from the
+ * resource bundle corresponding to the specified locale. If no locale is provided during the launch
+ * of ServerPackCreator, en_US is used by default.<br> All localization properties-files need to be
+ * stored in the <code>de/griefed/resources/lang/
  * </code>-directory and be named using following pattern: lang_{language code in
  * lowercase}_{country code in lowercase}. For example: <code>lang_en_us.properties</code>.<br>
- * Currently, only supports Strings to be used in localized fields.<br>
- * By default, ServerPackCreator tries to load language definitions from the local filesystem, in
- * the <code>lang</code>-folder. If no file can be found for the specified locale, ServerPackCreator
+ * Currently, only supports Strings to be used in localized fields.<br> By default,
+ * ServerPackCreator tries to load language definitions from the local filesystem, in the
+ * <code>lang</code>-folder. If no file can be found for the specified locale, ServerPackCreator
  * tries to load language definitions from inside the JAR-file, from the resource bundles. If the
  * specified key can not be retrieved when calling {@link #getMessage(String)}, a default is
  * retrieved from the lang_en_us-bundle inside the JAR-file by default.
@@ -85,12 +85,12 @@ public class I18n {
 
   /**
    * Constructor for our I18n using the locale set in the {@link ApplicationProperties}-instance
-   * passed to this constructor. If initialization with the provided {@link
-   * ApplicationProperties}-instance fails, the I18n is initialized with the default locale <code>
-   * en_us</code>.
+   * passed to this constructor. If initialization with the provided
+   * {@link ApplicationProperties}-instance fails, the I18n is initialized with the default locale
+   * <code> en_us</code>.
    *
    * @param injectedApplicationProperties Instance of {@link ApplicationProperties} required for
-   *     various different things.
+   *                                      various different things.
    * @author Griefed
    */
   @Autowired
@@ -112,8 +112,8 @@ public class I18n {
    * </code> is used.
    *
    * @param injectedApplicationProperties Instance of {@link ApplicationProperties} required for
-   *     various different things.
-   * @param locale String. The locale to initialize with.
+   *                                      various different things.
+   * @param locale                        String. The locale to initialize with.
    * @author Griefed
    */
   public I18n(ApplicationProperties injectedApplicationProperties, String locale) {
@@ -163,7 +163,8 @@ public class I18n {
    *
    * @param propertiesFile Path to the locale properties file which specifies the language to use.
    * @throws IncorrectLanguageException Thrown if the language specified in the properties file is
-   *     not supported by ServerPackCreator or specified in the invalid format.
+   *                                    not supported by ServerPackCreator or specified in the
+   *                                    invalid format.
    * @author whitebear60
    * @author Griefed
    */
@@ -190,9 +191,10 @@ public class I18n {
    * Initializes the I18n with a provided localePropertiesFile.
    *
    * @param applicationProperties Instance of {@link ApplicationProperties} containing the locale to
-   *     use.
+   *                              use.
    * @throws IncorrectLanguageException Thrown if the language specified in the properties file is
-   *     not supported by ServerPackCreator or specified in the invalid format.
+   *                                    not supported by ServerPackCreator or specified in the
+   *                                    invalid format.
    * @author whitebear60
    * @author Griefed
    */
@@ -206,7 +208,8 @@ public class I18n {
    *
    * @param locale Locale to be used by application in this run.
    * @throws IncorrectLanguageException Thrown if the language specified in the properties file is
-   *     not supported by ServerPackCreator or specified in the invalid format.
+   *                                    not supported by ServerPackCreator or specified in the
+   *                                    invalid format.
    * @author whitebear60
    * @author Griefed
    */
@@ -380,11 +383,12 @@ public class I18n {
   /**
    * Writes the specified locale from -lang your_locale to a lang.properties file to ensure every
    * subsequent start of serverpackcreator is executed using said locale. This method should
-   * <strong>not</strong> call {@link #getMessage(String)}, as the initialization of said manager is
+   * <strong>not</strong> call {@link #getMessage(String)}, as the initialization of said manager
+   * is
    * called from here. Therefore, localized strings are not yet available.
    *
    * @param locale The locale the user specified when they ran serverpackcreator with -lang
-   *     -your_locale.
+   *               -your_locale.
    * @author Griefed
    */
   void writeLocaleToFile(String locale) {
@@ -397,6 +401,7 @@ public class I18n {
   }
 
   public static class UTF8Control extends Control {
+
     public ResourceBundle newBundle(
         String baseName, Locale locale, String format, ClassLoader loader, boolean reload)
         throws IOException {

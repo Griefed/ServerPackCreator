@@ -56,10 +56,10 @@ public class FabricMeta {
   /**
    * Create a new Fabric Meta instance.
    *
-   * @param fabricManifest {@link File} Fabric manifest file.
-   * @param fabricInstallerManifest {@link File} Fabric-installer manifest file.
+   * @param fabricManifest             {@link File} Fabric manifest file.
+   * @param fabricInstallerManifest    {@link File} Fabric-installer manifest file.
    * @param fabricIntermediaryManifest {@link File} Fabric Intermediary manifest file.
-   * @param objectMapper {@link ObjectMapper} used for parsing loader details JSON.
+   * @param objectMapper               {@link ObjectMapper} used for parsing loader details JSON.
    * @throws IOException when the Intermediaries manifest could not be parsed.
    * @author Griefed
    */
@@ -139,7 +139,7 @@ public class FabricMeta {
    * Get a list of available Fabric loader versions, in {@link Type#ASCENDING} order.
    *
    * @return {@link String}-list of available Fabric loader versions, in {@link Type#ASCENDING}
-   *     order.
+   * order.
    * @author Griefed
    */
   public List<String> loaderVersionsAscending() {
@@ -150,7 +150,7 @@ public class FabricMeta {
    * Get a list of available Fabric loader versions, in {@link Type#DESCENDING} order.
    *
    * @return {@link String}-list of available Fabric loader versions, in {@link Type#DESCENDING}
-   *     order.
+   * order.
    * @author Griefed
    */
   public List<String> loaderVersionsDescending() {
@@ -161,7 +161,7 @@ public class FabricMeta {
    * Get an array of available Fabric loader versions, in {@link Type#ASCENDING} order.
    *
    * @return {@link String}-array of available Fabric loader versions, in {@link Type#ASCENDING}
-   *     order.
+   * order.
    * @author Griefed
    */
   public String[] loaderVersionsArrayAscending() {
@@ -172,7 +172,7 @@ public class FabricMeta {
    * Get an array of available Fabric loader versions, in {@link Type#DESCENDING} order.
    *
    * @return {@link String}-array of available Fabric loader versions, in {@link Type#DESCENDING}
-   *     order.
+   * order.
    * @author Griefed
    */
   public String[] loaderVersionsArrayDescending() {
@@ -203,7 +203,7 @@ public class FabricMeta {
    * Get the list of available Fabric installer version, in {@link Type#ASCENDING} order.
    *
    * @return {@link String}-list of available Fabric installer version, in {@link Type#ASCENDING}
-   *     order.
+   * order.
    * @author Griefed
    */
   public List<String> installerVersionsAscending() {
@@ -214,7 +214,7 @@ public class FabricMeta {
    * Get the list of available Fabric installer version, in {@link Type#DESCENDING} order.
    *
    * @return {@link String}-list of available Fabric installer version, in {@link Type#DESCENDING}
-   *     order.
+   * order.
    * @author Griefed
    */
   public List<String> installerVersionsDescending() {
@@ -225,7 +225,7 @@ public class FabricMeta {
    * Get the array of available Fabric installer version, in {@link Type#ASCENDING} order.
    *
    * @return {@link String}-array of available Fabric installer version, in {@link Type#ASCENDING}
-   *     order.
+   * order.
    * @author Griefed
    */
   public String[] installerVersionsArrayAscending() {
@@ -236,7 +236,7 @@ public class FabricMeta {
    * Get the array of available Fabric installer version, in {@link Type#DESCENDING} order.
    *
    * @return {@link String}-array of available Fabric installer version, in {@link Type#DESCENDING}
-   *     order.
+   * order.
    * @author Griefed
    */
   public String[] installerVersionsArrayDescending() {
@@ -268,7 +268,7 @@ public class FabricMeta {
    *
    * @param fabricVersion {@link String} Fabric version.
    * @return {@link Boolean} <code>true</code> if a {@link URL} to the specified Fabric installer
-   *     version is available.
+   * version is available.
    * @author Griefed
    */
   public boolean isInstallerUrlAvailable(String fabricVersion) {
@@ -290,7 +290,7 @@ public class FabricMeta {
    * Get the {@link URL} to the Fabric launcher for the specified Minecraft and Fabric version.
    *
    * @param minecraftVersion {@link String} Minecraft version.
-   * @param fabricVersion {@link String} Fabric version.
+   * @param fabricVersion    {@link String} Fabric version.
    * @return {@link URL} to the Fabric launcher for the specified Minecraft and Fabric version.
    * @author Griefed
    */
@@ -313,9 +313,9 @@ public class FabricMeta {
    * Get details for a Fabric loader.
    *
    * @param minecraftVersion {@link String} Minecraft version.
-   * @param fabricVersion {@link String} Fabric version.
+   * @param fabricVersion    {@link String} Fabric version.
    * @return {@link FabricDetails} of a Fabric loader for the given Minecraft and Fabric version,
-   *     wrappen in an {@link Optional}.
+   * wrappen in an {@link Optional}.
    * @author Griefed
    */
   public Optional<FabricDetails> getLoaderDetails(String minecraftVersion, String fabricVersion) {

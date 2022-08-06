@@ -21,7 +21,6 @@ package de.griefed.serverpackcreator.utilities;
 
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.ConfigurationHandler;
-import de.griefed.serverpackcreator.i18n.I18n;
 import de.griefed.serverpackcreator.utilities.common.Utilities;
 import de.griefed.serverpackcreator.utilities.misc.Generated;
 import de.griefed.serverpackcreator.versionmeta.VersionMeta;
@@ -44,7 +43,6 @@ public class ConfigurationCreator {
 
   private static final Logger LOG = LogManager.getLogger(ConfigurationCreator.class);
 
-  private final I18n I18N;
   private final ConfigurationHandler CONFIGURATIONHANDLER;
   private final ApplicationProperties APPLICATIONPROPERTIES;
   private final VersionMeta VERSIONMETA;
@@ -52,7 +50,6 @@ public class ConfigurationCreator {
   private final ConfigUtilities CONFIGUTILITIES;
 
   public ConfigurationCreator(
-      I18n injectedI18n,
       ConfigurationHandler injectedConfigurationHandler,
       ApplicationProperties injectedApplicationProperties,
       Utilities injectedUtilities,
@@ -60,7 +57,6 @@ public class ConfigurationCreator {
       ConfigUtilities injectedConfigUtilities) {
 
     this.APPLICATIONPROPERTIES = injectedApplicationProperties;
-    this.I18N = injectedI18n;
     this.VERSIONMETA = injectedVersionMeta;
     this.UTILITIES = injectedUtilities;
     this.CONFIGUTILITIES = injectedConfigUtilities;
@@ -71,12 +67,11 @@ public class ConfigurationCreator {
    * Walk the user through the generation of a new ServerPackCreator configuration file by asking
    * them for input, step-by-step, regarding their modpack. At the end of this method a fully
    * configured serverpackcreator.conf file is saved and any previously existing configuration file
-   * replaced by the new one.<br>
-   * After every input, said input is displayed to the user, and they're asked whether they are
-   * satisfied with said input. The user can then decide whether they would like to restart the
-   * entry of the field they just configured, or agree and move to the next one.<br>
-   * At the end of this method, the user will have a newly configured and created configuration file
-   * for ServerPackCreator.<br>
+   * replaced by the new one.<br> After every input, said input is displayed to the user, and
+   * they're asked whether they are satisfied with said input. The user can then decide whether they
+   * would like to restart the entry of the field they just configured, or agree and move to the
+   * next one.<br> At the end of this method, the user will have a newly configured and created
+   * configuration file for ServerPackCreator.<br>
    * <br>
    * Most user-input is checked after entry to ensure the configuration is already in
    * working-condition after completion of this method.

@@ -506,7 +506,7 @@ public class AnnotationScanner extends JsonBasedScanner implements
    * @param file       The mod-jar to check.
    * @param clientMods A set of modIds of clientside-only mods already discovered previously..
    * @return <code>true</code> if the modJar can be added to the modsDelta set.
-   * @throws IOException       if the fml_cache_annotation could not be read.
+   * @throws IOException if the fml_cache_annotation could not be read.
    * @author Griefed
    */
   private boolean addToDelta(File file, TreeSet<String> clientMods)

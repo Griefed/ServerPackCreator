@@ -64,34 +64,39 @@ public class ConfigurationModel {
    *
    * @author Griefed
    */
-  public ConfigurationModel() {}
+  public ConfigurationModel() {
+  }
 
   /**
    * Construct a new configuration model with custom values.
    *
-   * @param clientMods String-{@link List} of clientside mods to exclude from the server pack.
-   * @param copyDirs String-{@link List} of directories and/or files to include in the server pack.
-   * @param modpackDir {@link String} The path to the modpack.
-   * @param javaPath {@link String} The path to the java installation used for modloader server
-   *     installation.
-   * @param minecraftVersion {@link String} The Minecraft version the modpack uses.
-   * @param modLoader {@link String} The modloader the modpack uses. Either <code>Forge</code>,
-   *     <code>Fabric</code> or <code>Quilt</code>.
-   * @param modLoaderVersion {@link String} The modloader version the modpack uses.
-   * @param javaArgs {@link String} JVM flags to create the start scripts with.
-   * @param serverPackSuffix {@link String} Suffix to create the server pack with.
-   * @param serverIconPath {@link String} Path to the icon to use in the server pack.
-   * @param serverPropertiesPath {@link String} Path to the server.properties to create the server
-   *     pack with.
+   * @param clientMods                String-{@link List} of clientside mods to exclude from the
+   *                                  server pack.
+   * @param copyDirs                  String-{@link List} of directories and/or files to include in
+   *                                  the server pack.
+   * @param modpackDir                {@link String} The path to the modpack.
+   * @param javaPath                  {@link String} The path to the java installation used for
+   *                                  modloader server installation.
+   * @param minecraftVersion          {@link String} The Minecraft version the modpack uses.
+   * @param modLoader                 {@link String} The modloader the modpack uses. Either
+   *                                  <code>Forge</code>,
+   *                                  <code>Fabric</code> or <code>Quilt</code>.
+   * @param modLoaderVersion          {@link String} The modloader version the modpack uses.
+   * @param javaArgs                  {@link String} JVM flags to create the start scripts with.
+   * @param serverPackSuffix          {@link String} Suffix to create the server pack with.
+   * @param serverIconPath            {@link String} Path to the icon to use in the server pack.
+   * @param serverPropertiesPath      {@link String} Path to the server.properties to create the
+   *                                  server pack with.
    * @param includeServerInstallation {@link Boolean} Whether to install the modloader server in the
-   *     server pack.
-   * @param includeServerIcon {@link Boolean} Whether to include the server-icon.png in the server
-   *     pack.
-   * @param includeServerProperties {@link Boolean} Whether to include the server.properties in the
-   *     server pack.
-   * @param includeZipCreation {@link Boolean} Whether to create a ZIP-archive of the server pack.
-   * @param scriptSettings {@link HashMap} {@link String} {@link String} Map containing key-value
-   *     pairs to be used in start script creation.
+   *                                  server pack.
+   * @param includeServerIcon         {@link Boolean} Whether to include the server-icon.png in the
+   *                                  server pack.
+   * @param includeServerProperties   {@link Boolean} Whether to include the server.properties in
+   *                                  the server pack.
+   * @param includeZipCreation        {@link Boolean} Whether to create a ZIP-archive of the server
+   *                                  pack.
+   * @param scriptSettings            {@link HashMap} {@link String} {@link String} Map containing
+   *                                  key-value pairs to be used in start script creation.
    * @author Griefed
    */
   public ConfigurationModel(
@@ -133,7 +138,7 @@ public class ConfigurationModel {
   /**
    * Create a new configuration model from a config file.
    *
-   * @param utilities {@link Utilities} Instance of our SPC utilities.
+   * @param utilities  {@link Utilities} Instance of our SPC utilities.
    * @param configFile {@link File} Configuration file to load.
    * @throws FileNotFoundException if the specified file can not be found.
    * @author Griefed
@@ -448,7 +453,8 @@ public class ConfigurationModel {
   /**
    * Setter for the Java arguments with which the start-scripts will be generated.
    *
-   * @param javaArgs String. Sets the Java arguments with which the start-scripts will be generated.
+   * @param javaArgs String. Sets the Java arguments with which the start-scripts will be
+   *                 generated.
    * @author Griefed
    */
   public void setJavaArgs(String javaArgs) {
@@ -571,7 +577,7 @@ public class ConfigurationModel {
    * Setter for the path of the server.properties to include in the server pack.
    *
    * @param serverPropertiesPath String. The path to the server.properties to include in the server
-   *     pack.
+   *                             pack.
    * @author Griefed
    */
   public void setServerPropertiesPath(String serverPropertiesPath) {
@@ -593,7 +599,7 @@ public class ConfigurationModel {
    * hashmap are put into this models hashmap.
    *
    * @param scriptSettings {@link HashMap} {@link String}-{@link String} containing key-value pairs
-   *     to be used in script creation.
+   *                       to be used in script creation.
    * @author Griefed
    */
   public void setScriptSettings(HashMap<String, String> scriptSettings) {

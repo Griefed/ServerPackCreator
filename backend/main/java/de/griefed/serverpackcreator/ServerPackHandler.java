@@ -86,7 +86,7 @@ public class ServerPackHandler {
   private final Utilities UTILITIES;
   private final ApplicationPlugins APPLICATIONPLUGINS;
   private final StopWatch STOPWATCH_SCANS = new StopWatch();
-  private final String[] MOD_FILE_ENDINGS = new String[] {"jar"};
+  private final String[] MOD_FILE_ENDINGS = new String[]{"jar"};
 
   /**
    * <strong>Constructor</strong>
@@ -99,13 +99,13 @@ public class ServerPackHandler {
    * <p>
    *
    * @param injectedApplicationProperties Instance of {@link Properties} required for various
-   *     different things.
-   * @param injectedVersionMeta Instance of {@link VersionMeta} required for everything version
-   *     related.
-   * @param injectedUtilities Instance of {@link Utilities}.
-   * @param injectedApplicationPlugins Instance of {@link ApplicationPlugins}.
-   * @param injectedModScanner Instance of {@link ModScanner} required to determine sideness of
-   *     mods.
+   *                                      different things.
+   * @param injectedVersionMeta           Instance of {@link VersionMeta} required for everything
+   *                                      version related.
+   * @param injectedUtilities             Instance of {@link Utilities}.
+   * @param injectedApplicationPlugins    Instance of {@link ApplicationPlugins}.
+   * @param injectedModScanner            Instance of {@link ModScanner} required to determine
+   *                                      sideness of mods.
    * @throws IOException if the {@link VersionMeta} could not be instantiated.
    * @author Griefed
    */
@@ -129,9 +129,9 @@ public class ServerPackHandler {
    * Create a server pack from a given instance of {@link ServerPackModel} via webUI.
    *
    * @param serverPackModel An instance of {@link ServerPackModel} which contains the configuration
-   *     of the modpack.
+   *                        of the modpack.
    * @return Returns the passed {@link ServerPackModel} which got altered during the creation of
-   *     said server pack.
+   * said server pack.
    * @author Griefed
    */
   public ServerPackModel run(@NotNull ServerPackModel serverPackModel) {
@@ -161,23 +161,24 @@ public class ServerPackHandler {
    * as for Powershell scripts. Powershell throws a complete fit if the path contains spaces....
    *
    * @param configurationModel {@link ConfigurationModel} or {@link ServerPackModel} containing the
-   *     modpack directory of the modpack from which the server pack will be generated.
+   *                           modpack directory of the modpack from which the server pack will be
+   *                           generated.
    * @return {@link String} The complete path to the directory in which the server pack will be
-   *     generated.
+   * generated.
    * @author Griefed
    */
   public String getServerPackDestination(ConfigurationModel configurationModel) {
 
     String serverPackToBe =
         configurationModel
-                .getModpackDir()
-                .substring(configurationModel.getModpackDir().lastIndexOf("/") + 1)
+            .getModpackDir()
+            .substring(configurationModel.getModpackDir().lastIndexOf("/") + 1)
             + configurationModel.getServerPackSuffix();
 
     serverPackToBe = serverPackToBe.replace(" ", "_");
 
     return new File(
-            String.format("%s/%s", APPLICATIONPROPERTIES.getDirectoryServerPacks(), serverPackToBe))
+        String.format("%s/%s", APPLICATIONPROPERTIES.getDirectoryServerPacks(), serverPackToBe))
         .getAbsolutePath()
         .replace("\\", "/");
   }
@@ -186,7 +187,8 @@ public class ServerPackHandler {
    * Create a server pack from a given instance of {@link ConfigurationModel}.
    *
    * @param configurationModel An instance of {@link ConfigurationModel} which contains the
-   *     configuration of the modpack from which the server pack is to be created.
+   *                           configuration of the modpack from which the server pack is to be
+   *                           created.
    * @return Boolean. Returns true if the server pack was successfully generated.
    * @author Griefed
    */
@@ -199,8 +201,8 @@ public class ServerPackHandler {
      * If the server pack exists and overwrite is disabled, no new server pack will be generated.
      */
     if (APPLICATIONPROPERTIES
-            .getProperty("de.griefed.serverpackcreator.serverpack.overwrite.enabled")
-            .equals("false")
+        .getProperty("de.griefed.serverpackcreator.serverpack.overwrite.enabled")
+        .equals("false")
         && new File(destination).exists()) {
 
       LOG.info("Server pack already exists and overwrite disabled.");
@@ -348,10 +350,10 @@ public class ServerPackHandler {
    * Minecraft and Fabric version.
    *
    * @param minecraftVersion String. The Minecraft version the modpack uses and the Fabric Server
-   *     Launcher should be downloaded for.
-   * @param fabricVersion String. The modloader version the modpack uses and the Fabric Server
-   *     Launcher should be downloaded for.
-   * @param destination String. The destination of the server pack.
+   *                         Launcher should be downloaded for.
+   * @param fabricVersion    String. The modloader version the modpack uses and the Fabric Server
+   *                         Launcher should be downloaded for.
+   * @param destination      String. The destination of the server pack.
    * @author Griefed
    */
   private void provideImprovedFabricServerLauncher(
@@ -360,9 +362,9 @@ public class ServerPackHandler {
 
     if (VERSIONMETA.fabric().improvedLauncherUrl(minecraftVersion, fabricVersion).isPresent()
         && UTILITIES.WebUtils()
-            .downloadFile(
-                fileDestination,
-                VERSIONMETA.fabric().improvedLauncherUrl(minecraftVersion, fabricVersion).get())) {
+        .downloadFile(
+            fileDestination,
+            VERSIONMETA.fabric().improvedLauncherUrl(minecraftVersion, fabricVersion).get())) {
 
       LOG.info("Successfully provided improved Fabric Server Launcher.");
 
@@ -400,7 +402,7 @@ public class ServerPackHandler {
    * Deletes all files, directories and ZIP-archives of previously generated server packs to ensure
    * newly generated server pack is as clean as possible.
    *
-   * @param deleteZip Boolean. Whether to delete the server pack ZIP-archive.
+   * @param deleteZip   Boolean. Whether to delete the server pack ZIP-archive.
    * @param destination String. The destination at which to clean up in.
    * @author Griefed
    */
@@ -422,8 +424,9 @@ public class ServerPackHandler {
    * Create start-scripts for the generated server pack.
    *
    * @param configurationModel {@link ConfigurationModel} Configuration model containing modpack
-   *     specific values. keys to be replaced with their respective values in the start scripts.
-   * @param destination String. The destination where the scripts should be created in.
+   *                           specific values. keys to be replaced with their respective values in
+   *                           the start scripts.
+   * @param destination        String. The destination where the scripts should be created in.
    * @author Griefed
    */
   private void createStartScripts(ConfigurationModel configurationModel, String destination) {
@@ -455,13 +458,14 @@ public class ServerPackHandler {
    * -combination is provided, the specified source-file is copied to the specified
    * destination-file.
    *
-   * @param modpackDir String. Files and directories are copied into the server_pack directory
-   *     inside the modpack directory.
+   * @param modpackDir        String. Files and directories are copied into the server_pack
+   *                          directory inside the modpack directory.
    * @param directoriesToCopy String List. All directories and files therein to copy to the server
-   *     pack.
-   * @param clientMods String List. List of clientside-only mods to exclude from the server pack.
-   * @param minecraftVersion String. The Minecraft version the modpack uses.
-   * @param destination String. The destination where the files should be copied to.
+   *                          pack.
+   * @param clientMods        String List. List of clientside-only mods to exclude from the server
+   *                          pack.
+   * @param minecraftVersion  String. The Minecraft version the modpack uses.
+   * @param destination       String. The destination where the files should be copied to.
    * @author Griefed
    */
   private void copyFiles(
@@ -608,12 +612,12 @@ public class ServerPackHandler {
 
   /**
    * Gather a list of all files from an explicit source;destination-combination. If the source is a
-   * file, a singular {@link ServerPackFile} is returned. If the source is a directory, then {@link
-   * ServerPackFile}s for all files in said directory are returned.
+   * file, a singular {@link ServerPackFile} is returned. If the source is a directory, then
+   * {@link ServerPackFile}s for all files in said directory are returned.
    *
    * @param combination {@link String}-array containing a
-   *     source-file/directory;destination-file/directory combination.
-   * @param modpackDir {@link String} the modpack-directory.
+   *                    source-file/directory;destination-file/directory combination.
+   * @param modpackDir  {@link String} the modpack-directory.
    * @param destination {@link String} the destination, normally the server pack-directory.
    * @return List of {@link ServerPackFile}.
    * @author Griefed
@@ -650,7 +654,7 @@ public class ServerPackHandler {
   /**
    * Gather {@link ServerPackFile}s for a given directory, recursively.
    *
-   * @param source {@link String} The source-directory.
+   * @param source            {@link String} The source-directory.
    * @param destination{@link String} The server pack-directory.
    * @return {@link ServerPackFile}-list.
    * @author Griefed
@@ -685,9 +689,9 @@ public class ServerPackHandler {
   /**
    * Gather all files in the specified save-directory and create {@link ServerPackFile}s from it.
    *
-   * @param clientDir {@link String} Target directory in the server pack. Usually the name of the
-   *     world.
-   * @param directory {@link String} The save-directory.
+   * @param clientDir   {@link String} Target directory in the server pack. Usually the name of the
+   *                    world.
+   * @param directory   {@link String} The save-directory.
    * @param destination {@link String} The destination of the server pack.
    * @return List of {@link ServerPackFile}.
    * @author Griefed
@@ -725,12 +729,13 @@ public class ServerPackHandler {
    * clientside-mods to exclude, and/or if the automatic exclusion of clientside-only mods is
    * active, they will be excluded, too.
    *
-   * @param modsDir String. The mods-directory of the modpack of which to generate a list of all its
-   *     contents.
+   * @param modsDir                 String. The mods-directory of the modpack of which to generate a
+   *                                list of all its contents.
    * @param userSpecifiedClientMods List String. A list of all clientside-only mods.
-   * @param minecraftVersion String. The Minecraft version the modpack uses. When the modloader is
-   *     Forge, this determines whether Annotations or Tomls are scanned.
-   * @param modloader {@link String} The modloader the modpack uses.
+   * @param minecraftVersion        String. The Minecraft version the modpack uses. When the
+   *                                modloader is Forge, this determines whether Annotations or Tomls
+   *                                are scanned.
+   * @param modloader               {@link String} The modloader the modpack uses.
    * @return List String. A list of all mods to include in the server pack.
    * @author Griefed
    */
@@ -847,7 +852,7 @@ public class ServerPackHandler {
    *
    * @param fileToCheckFor String. The string to check for.
    * @return Boolean. Returns true if the file is found in the list of directories to exclude, false
-   *     if not.
+   * if not.
    * @author Griefed
    */
   private boolean excludeFileOrDirectory(String fileToCheckFor, TreeSet<String> exclusions) {
@@ -864,7 +869,7 @@ public class ServerPackHandler {
   /**
    * Copies the server-icon.png into server_pack.
    *
-   * @param destination String. The destination where the icon should be copied to.
+   * @param destination      String. The destination where the icon should be copied to.
    * @param pathToServerIcon String. The path to the custom server-icon.
    * @author Griefed
    */
@@ -943,7 +948,8 @@ public class ServerPackHandler {
   /**
    * Copies the server.properties into server_pack.
    *
-   * @param destination String. The destination where the properties should be copied to.
+   * @param destination            String. The destination where the properties should be copied
+   *                               to.
    * @param pathToServerProperties String. The path to the custom server.properties.
    * @author Griefed
    */
@@ -990,15 +996,16 @@ public class ServerPackHandler {
    * Installs the modloader server for the specified modloader, modloader version and Minecraft
    * version.
    *
-   * @param modLoader String. The modloader for which to install the server software. Either Forge
-   *     or Fabric.
+   * @param modLoader        String. The modloader for which to install the server software. Either
+   *                         Forge or Fabric.
    * @param minecraftVersion String. The Minecraft version for which to install the modloader and
-   *     Minecraft server.
+   *                         Minecraft server.
    * @param modLoaderVersion String. The modloader version for which to install the modloader and
-   *     Minecraft server.
-   * @param javaPath String. The path to the Java executable/binary which is needed to execute the
-   *     Forge/Fabric installersList.
-   * @param destination String. The destination where the modloader server should be installed into.
+   *                         Minecraft server.
+   * @param javaPath         String. The path to the Java executable/binary which is needed to
+   *                         execute the Forge/Fabric installersList.
+   * @param destination      String. The destination where the modloader server should be installed
+   *                         into.
    * @author Griefed
    */
   private void installServer(
@@ -1049,13 +1056,13 @@ public class ServerPackHandler {
 
         if (VERSIONMETA.forge().getForgeInstance(minecraftVersion, modLoaderVersion).isPresent()
             && UTILITIES.WebUtils()
-                .downloadFile(
-                    fileDestination,
-                    VERSIONMETA
-                        .forge()
-                        .getForgeInstance(minecraftVersion, modLoaderVersion)
-                        .get()
-                        .installerUrl())) {
+            .downloadFile(
+                fileDestination,
+                VERSIONMETA
+                    .forge()
+                    .getForgeInstance(minecraftVersion, modLoaderVersion)
+                    .get()
+                    .installerUrl())) {
 
           LOG.info("Forge installer successfully downloaded.");
           commandArguments.add(javaPath);
@@ -1187,18 +1194,20 @@ public class ServerPackHandler {
   }
 
   /**
-   * Creates a ZIP-archive of the server pack previously generated. Depending on {@link
-   * ApplicationProperties#isZipFileExclusionEnabled()}, files will be excluded. To customize the
-   * files which will be excluded, see {@link
-   * ApplicationProperties#getFilesToExcludeFromZipArchive()}
+   * Creates a ZIP-archive of the server pack previously generated. Depending on
+   * {@link ApplicationProperties#isZipFileExclusionEnabled()}, files will be excluded. To customize
+   * the files which will be excluded, see
+   * {@link ApplicationProperties#getFilesToExcludeFromZipArchive()}
    *
-   * @param minecraftVersion {@link String} Determines the name of the Minecraft server JAR to
-   *     exclude from the ZIP-archive if the modloader is Forge.
+   * @param minecraftVersion          {@link String} Determines the name of the Minecraft server JAR
+   *                                  to exclude from the ZIP-archive if the modloader is Forge.
    * @param includeServerInstallation {@link Boolean} Determines whether the Minecraft server JAR
-   *     info should be printed.
-   * @param destination {@link String} The destination where the ZIP-archive should be created in.
-   * @param modloader {@link String} The modloader the modpack and server pack use.
-   * @param modloaderVersion {@link String} The modloader version the modpack and server pack use.
+   *                                  info should be printed.
+   * @param destination               {@link String} The destination where the ZIP-archive should be
+   *                                  created in.
+   * @param modloader                 {@link String} The modloader the modpack and server pack use.
+   * @param modloaderVersion          {@link String} The modloader version the modpack and server
+   *                                  pack use.
    * @author Griefed
    */
   public void zipBuilder(
@@ -1224,9 +1233,9 @@ public class ServerPackHandler {
                           destination
                               + "/"
                               + entry
-                                  .replace("MINECRAFT_VERSION", minecraftVersion)
-                                  .replace("MODLOADER", modloader)
-                                  .replace("MODLOADER_VERSION", modloaderVersion))));
+                              .replace("MINECRAFT_VERSION", minecraftVersion)
+                              .replace("MODLOADER", modloader)
+                              .replace("MODLOADER_VERSION", modloaderVersion))));
 
       ExcludeFileFilter excludeFileFilter = filesToExclude::contains;
       zipParameters.setExcludeFileFilter(excludeFileFilter);
@@ -1272,10 +1281,10 @@ public class ServerPackHandler {
    * and version checking.
    *
    * @param minecraftVersion String. Needed for renaming the Forge server JAR to work with launch
-   *     scripts provided by ServerPackCreator.
+   *                         scripts provided by ServerPackCreator.
    * @param modLoaderVersion String. Needed for renaming the Forge server JAR to work with launch
-   *     scripts provided by ServerPackCreator.
-   * @param destination String. The destination where we should clean up in.
+   *                         scripts provided by ServerPackCreator.
+   * @param destination      String. The destination where we should clean up in.
    * @author Griefed
    */
   private void cleanUpServerPack(
@@ -1298,7 +1307,7 @@ public class ServerPackHandler {
               String.format(destination + "/forge-%s-%s.jar", minecraftVersion, modLoaderVersion));
 
       if (new File(
-              String.format(destination + "/forge-%s-%s.jar", minecraftVersion, modLoaderVersion))
+          String.format(destination + "/forge-%s-%s.jar", minecraftVersion, modLoaderVersion))
           .exists()) {
 
         Files.copy(path, Paths.get(destination + "/forge.jar"), REPLACE_EXISTING);
@@ -1327,8 +1336,8 @@ public class ServerPackHandler {
     /**
      * Construct a new ServerPackFile from two {@link File}-objects, a source and a destination.
      *
-     * @param sourceFile {@link File} The source file/directory. Usually a file/directory in a
-     *     modpack.
+     * @param sourceFile      {@link File} The source file/directory. Usually a file/directory in a
+     *                        modpack.
      * @param destinationFile {@link File} The destination file/directory in the server pack.
      * @author Griefed
      */
@@ -1342,8 +1351,8 @@ public class ServerPackHandler {
     /**
      * Construct a new ServerPackFile from two {@link String}-objects, a source and a destination.
      *
-     * @param sourceFile {@link String} The source file/directory. Usually a file/directory in a
-     *     modpack.
+     * @param sourceFile      {@link String} The source file/directory. Usually a file/directory in
+     *                        a modpack.
      * @param destinationFile {@link String} The destination file/directory in the server pack.
      * @author Griefed
      */
@@ -1358,8 +1367,8 @@ public class ServerPackHandler {
     /**
      * Construct a new ServerPackFile from two {@link Path}-objects, a source and a destination.
      *
-     * @param sourcePath {@link Path} The source file/directory. Usually a file/directory in a
-     *     modpack.
+     * @param sourcePath      {@link Path} The source file/directory. Usually a file/directory in a
+     *                        modpack.
      * @param destinationPath {@link Path} The destination file/directory in the server pack.
      * @author Griefed
      */
@@ -1421,15 +1430,19 @@ public class ServerPackHandler {
      * This method specifically does NOT copy recursively, because we would potentially copy
      * previously EXCLUDED files, too. We do not want that. At all.
      *
-     * @throws SecurityException In the case of the default provider, and a security manager is
-     *     installed, the {@link SecurityManager#checkRead(String) checkRead} method is invoked to
-     *     check read access to the source file, the {@link SecurityManager#checkWrite(String)
-     *     checkWrite} is invoked to check write access to the target file. If a symbolic link is
-     *     copied the security manager is invoked to check {@link LinkPermission}{@code
-     *     ("symbolic")}.
+     * @throws SecurityException             In the case of the default provider, and a security
+     *                                       manager is installed, the
+     *                                       {@link SecurityManager#checkRead(String) checkRead}
+     *                                       method is invoked to check read access to the source
+     *                                       file, the
+     *                                       {@link SecurityManager#checkWrite(String) checkWrite}
+     *                                       is invoked to check write access to the target file. If
+     *                                       a symbolic link is copied the security manager is
+     *                                       invoked to check
+     *                                       {@link LinkPermission}{@code ("symbolic")}.
      * @throws UnsupportedOperationException if the array contains a copy option that is not
-     *     supported.
-     * @throws IOException if an I/O error occurs
+     *                                       supported.
+     * @throws IOException                   if an I/O error occurs
      * @author Griefed
      */
     public void copy() throws SecurityException, UnsupportedOperationException, IOException {
@@ -1457,8 +1470,8 @@ public class ServerPackHandler {
      * This ServerPackFiles source-file and destination-file as a {@link String}-combination,
      * separated by a <code>;</code>
      *
-     * @return {@link String} This ServerPackFiles source-file and destination-file as a {@link
-     *     String}-combination, separated by a <code>;</code>
+     * @return {@link String} This ServerPackFiles source-file and destination-file as a
+     * {@link String}-combination, separated by a <code>;</code>
      * @author Griefed
      */
     @Override

@@ -29,7 +29,8 @@ import java.util.List;
  */
 public class StringUtilities {
 
-  public StringUtilities() {}
+  public StringUtilities() {
+  }
 
   /**
    * Converts a list of Strings, for example from a list, into a concatenated String.
@@ -130,8 +131,8 @@ public class StringUtilities {
   /**
    * Remove commonly forbidden characters from the passed string, making the resulting String safe
    * to use for files, paths, directories etc. If the passed text ends with a SPACE<code>
-   * (&#32;&#32;)</code> or a DOT<code>(&#32;.&#32;)</code>, they are also removed.<br>
-   * Contraty to {@link #pathSecureText(String)}, this method does <strong>NOT</strong> remove
+   * (&#32;&#32;)</code> or a DOT<code>(&#32;.&#32;)</code>, they are also removed.<br> Contraty to
+   * {@link #pathSecureText(String)}, this method does <strong>NOT</strong> remove
    * <strong>&#47;</strong> or <strong>&#92;</strong>.
    *
    * <p>Replaced/removed are:

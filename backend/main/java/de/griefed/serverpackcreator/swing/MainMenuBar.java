@@ -143,19 +143,25 @@ public class MainMenuBar extends Component {
   /**
    * Constructor for our MainMenuBar. Prepares various Strings, Arrays, Panels and windows.
    *
-   * @param injectedI18n Instance of {@link I18n} required for localized log messages.
-   * @param injectedLightTheme Instance of {@link LightTheme} required for theme switching.
-   * @param injectedDarkTheme Instance of {@link DarkTheme} required for theme switching.
-   * @param injectedJFrame The parent from in which everything ServerPackCreator is displayed in.
-   * @param injectedLAF_Light Instance of {@link MaterialLookAndFeel} with our {@link LightTheme}.
-   * @param injectedLAF_Dark Instance of {@link MaterialLookAndFeel} with our {@link DarkTheme}.
-   * @param injectedTabCreateServerPack Our tab for configuring ServerPackCreator.
-   * @param injectedTabbedPane The tabbed pane which holds all our tabs.
+   * @param injectedI18n                  Instance of {@link I18n} required for localized log
+   *                                      messages.
+   * @param injectedLightTheme            Instance of {@link LightTheme} required for theme
+   *                                      switching.
+   * @param injectedDarkTheme             Instance of {@link DarkTheme} required for theme
+   *                                      switching.
+   * @param injectedJFrame                The parent from in which everything ServerPackCreator is
+   *                                      displayed in.
+   * @param injectedLAF_Light             Instance of {@link MaterialLookAndFeel} with our
+   *                                      {@link LightTheme}.
+   * @param injectedLAF_Dark              Instance of {@link MaterialLookAndFeel} with our
+   *                                      {@link DarkTheme}.
+   * @param injectedTabCreateServerPack   Our tab for configuring ServerPackCreator.
+   * @param injectedTabbedPane            The tabbed pane which holds all our tabs.
    * @param injectedApplicationProperties Instance of {@link Properties} required for various
-   *     different things.
-   * @param injectedUpdateChecker Instance of {@link UpdateChecker} to check for
-   *     update-availability.
-   * @param injectedUtilities Instance of {@link Utilities} for various things.
+   *                                      different things.
+   * @param injectedUpdateChecker         Instance of {@link UpdateChecker} to check for
+   *                                      update-availability.
+   * @param injectedUtilities             Instance of {@link Utilities} for various things.
    * @author Griefed
    */
   public MainMenuBar(
@@ -267,10 +273,11 @@ public class MainMenuBar extends Component {
   }
 
   /**
-   * Create the menubar, add all menus, add all menuitems and add actionlisteners for our menuitems.
+   * Create the menubar, add all menus, add all menuitems and add actionlisteners for our
+   * menuitems.
    *
    * @return JMenuBar. Returns the menubar containing all elements we need to control various
-   *     aspects of our app.
+   * aspects of our app.
    * @author Griefed
    */
   public JMenuBar createMenuBar() {
@@ -695,7 +702,7 @@ public class MainMenuBar extends Component {
   /**
    * Display the given URL in a text pane.
    *
-   * @param urltoHasteBin {@link String} The URL, as a String, to display.
+   * @param urltoHasteBin   {@link String} The URL, as a String, to display.
    * @param displayTextPane {@link JTextPane} The text pane to display the URL in.
    * @author Griefed
    */

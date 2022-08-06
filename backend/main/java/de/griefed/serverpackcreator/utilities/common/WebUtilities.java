@@ -63,9 +63,8 @@ public class WebUtilities {
    * specified file will be created.
    *
    * @param destinationFile File. The file to store the web-resource in. Examples:<br>
-   *     /tmp/some_folder/foo.bar<br>
-   *     C:/temp/some_folder/bar.foo
-   * @param downloadURL URL. The URL to the file you want to download.
+   *                        /tmp/some_folder/foo.bar<br> C:/temp/some_folder/bar.foo
+   * @param downloadURL     URL. The URL to the file you want to download.
    * @return Boolean. Returns true if the file could be found on the hosts filesystem.
    * @author Griefed
    */
@@ -80,9 +79,8 @@ public class WebUtilities {
    * specified file will be created.
    *
    * @param fileDestination String. The file to store the web-resource in. Examples:<br>
-   *     /tmp/some_folder/foo.bar<br>
-   *     C:/temp/some_folder/bar.foo
-   * @param downloadURL URL. The URL to the file you want to download.
+   *                        /tmp/some_folder/foo.bar<br> C:/temp/some_folder/bar.foo
+   * @param downloadURL     URL. The URL to the file you want to download.
    * @return Boolean. Returns true if the file could be found on the hosts filesystem.
    * @author Griefed
    */
@@ -96,9 +94,8 @@ public class WebUtilities {
    * end in a valid filename. Any directories up to the specified file will be created.
    *
    * @param destinationFile File. The file to store the web-resource in. Examples:<br>
-   *     /tmp/some_folder/foo.bar<br>
-   *     C:/temp/some_folder/bar.foo
-   * @param downloadURL URL. The URL to the file you want to download.
+   *                        /tmp/some_folder/foo.bar<br> C:/temp/some_folder/bar.foo
+   * @param downloadURL     URL. The URL to the file you want to download.
    * @return Boolean. Returns true if the file could be found on the hosts filesystem.
    * @author Griefed
    */
@@ -112,10 +109,9 @@ public class WebUtilities {
    * end in a valid filename. Any directories up to the specified file will be created.
    *
    * @param fileDestination String. The destination where the file should be stored. Must include
-   *     the filename as well. Examples:<br>
-   *     /tmp/some_folder/foo.bar<br>
-   *     C:/temp/some_folder/bar.foo
-   * @param downloadURL URL. The URL to the file you want to download.
+   *                        the filename as well. Examples:<br> /tmp/some_folder/foo.bar<br>
+   *                        C:/temp/some_folder/bar.foo
+   * @param downloadURL     URL. The URL to the file you want to download.
    * @return Boolean. Returns true if the file could be found on the hosts filesystem.
    * @author Griefed
    */
@@ -236,15 +232,15 @@ public class WebUtilities {
   /**
    * Create a HasteBin post from a given text file. The text file provided is read into a string and
    * then passed onto <a href="https://haste.zneix.eu">Haste zneix</a> which creates a HasteBin post
-   * out of the passed String and returns the URL to the newly created post.<br>
-   * Created with the help of <a href="https://github.com/kaimu-kun/hastebin.java">kaimu-kun's
-   * hastebin.java (MIT License)</a> and edited to use HasteBin fork <a
+   * out of the passed String and returns the URL to the newly created post.<br> Created with the
+   * help of <a href="https://github.com/kaimu-kun/hastebin.java">kaimu-kun's hastebin.java (MIT
+   * License)</a> and edited to use HasteBin fork <a
    * href="https://github.com/zneix/haste-server">zneix/haste-server</a>. My fork of kaimu-kun's
    * hastebin.java is available at <a
    * href="https://github.com/Griefed/hastebin.java">Griefed/hastebin.java</a>.
    *
    * @param textFile The file which will be read into a String of which then to create a HasteBin
-   *     post of.
+   *                 post of.
    * @return String. Returns a String containing the URL to the newly created HasteBin post.
    * @author <a href="https://github.com/kaimu-kun">kaimu-kun/hastebin.java</a>
    * @author Griefed

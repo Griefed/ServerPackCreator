@@ -52,6 +52,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class ConfigUtilities {
+
   // TODO move class back to configurationhandler...why did I make all this stuff a separate class
   // anyway?
   private static final Logger LOG = LogManager.getLogger(ConfigUtilities.class);
@@ -77,7 +78,7 @@ public class ConfigUtilities {
    * ServerPackCreator will still be able to work with the users input.
    *
    * @param modloader String. The String to check for case-insensitive cases of either Forge or
-   *     Fabric.
+   *                  Fabric.
    * @return String. Returns a normalized String of the specified modloader.
    * @author Griefed
    */
@@ -110,9 +111,9 @@ public class ConfigUtilities {
    * to it. If the given file already exists, it is replaced.
    *
    * @param configurationModel Instance of {@link ConfigurationModel} to write to a file.
-   * @param fileName The file to write to.
+   * @param fileName           The file to write to.
    * @return Boolean. Returns true if the configuration file has been successfully written and old
-   *     ones replaced.
+   * ones replaced.
    * @author Griefed
    */
   public boolean writeConfigToFile(ConfigurationModel configurationModel, File fileName) {
@@ -140,27 +141,29 @@ public class ConfigUtilities {
    * Writes a new configuration file with the parameters passed to it. If the given file already
    * exists, it is replaced.
    *
-   * @param modpackDir String. The path to the modpack.
-   * @param clientMods List, String. List of clientside-only mods.
-   * @param copyDirs List, String. List of directories to include in server pack.
-   * @param serverIconPath String. The path to the custom server-icon.png to include in the server
-   *     pack.
+   * @param modpackDir           String. The path to the modpack.
+   * @param clientMods           List, String. List of clientside-only mods.
+   * @param copyDirs             List, String. List of directories to include in server pack.
+   * @param serverIconPath       String. The path to the custom server-icon.png to include in the
+   *                             server pack.
    * @param serverPropertiesPath String. The path to the custom server.properties to include in the
-   *     server pack.
-   * @param includeServer Boolean. Whether the modloader server software should be installed.
-   * @param javaPath String. Path to the java executable/binary.
-   * @param minecraftVersion String. Minecraft version used by the modpack and server pack.
-   * @param modLoader String. Modloader used by the modpack and server pack. Ether Forge or Fabric.
-   * @param modLoaderVersion String. Modloader version used by the modpack and server pack.
-   * @param includeIcon Boolean. Whether to include a server-icon in the server pack.
-   * @param includeProperties Boolean. Whether to include a properties file in the server pack.
-   * @param includeZip Boolean. Whether to create a ZIP-archive of the server pack, excluding
-   *     Mojang's Minecraft server JAR.
-   * @param javaArgs String. Java arguments to write the start-scripts with.
-   * @param serverPackSuffix String. Suffix to append to the server pack to be generated.
-   * @param fileName The name under which to write the new configuration file.
+   *                             server pack.
+   * @param includeServer        Boolean. Whether the modloader server software should be
+   *                             installed.
+   * @param javaPath             String. Path to the java executable/binary.
+   * @param minecraftVersion     String. Minecraft version used by the modpack and server pack.
+   * @param modLoader            String. Modloader used by the modpack and server pack. Ether Forge
+   *                             or Fabric.
+   * @param modLoaderVersion     String. Modloader version used by the modpack and server pack.
+   * @param includeIcon          Boolean. Whether to include a server-icon in the server pack.
+   * @param includeProperties    Boolean. Whether to include a properties file in the server pack.
+   * @param includeZip           Boolean. Whether to create a ZIP-archive of the server pack,
+   *                             excluding Mojang's Minecraft server JAR.
+   * @param javaArgs             String. Java arguments to write the start-scripts with.
+   * @param serverPackSuffix     String. Suffix to append to the server pack to be generated.
+   * @param fileName             The name under which to write the new configuration file.
    * @return Boolean. Returns true if the configuration file has been successfully written and old
-   *     ones replaced.
+   * ones replaced.
    * @author whitebear60
    * @author Griefed
    */
@@ -256,9 +259,10 @@ public class ConfigUtilities {
   }
 
   /**
-   * Convenience method which passes the important fields from an instance of {@link
-   * ConfigurationModel} to {@link #printConfigurationModel(String, List, List, boolean, String,
-   * String, String, String, boolean, boolean, boolean, String, String, String, String)}
+   * Convenience method which passes the important fields from an instance of
+   * {@link ConfigurationModel} to
+   * {@link #printConfigurationModel(String, List, List, boolean, String, String, String, String,
+   * boolean, boolean, boolean, String, String, String, String)}
    *
    * @param configurationModel Instance of {@link ConfigurationModel} to print to console and logs.
    * @author Griefed
@@ -286,32 +290,37 @@ public class ConfigUtilities {
    * Prints all passed fields to the console and serverpackcreator.log. Used to show the user the
    * configuration before ServerPackCreator starts the generation of the server pack or, if checks
    * failed, to show the user their last configuration, so they can more easily identify problems
-   * with said configuration.<br>
-   * Should a user report an issue on GitHub and include their logs (which I hope they do....), this
-   * would also help me help them. Logging is good. People should use more logging.
+   * with said configuration.<br> Should a user report an issue on GitHub and include their logs
+   * (which I hope they do....), this would also help me help them. Logging is good. People should
+   * use more logging.
    *
-   * @param modpackDirectory String. The used modpackDir field either from a configuration file or
-   *     from configuration setup.
-   * @param clientsideMods String List. List of clientside-only mods to exclude from the server
-   *     pack...
-   * @param copyDirectories String List. List of directories in the modpack which are to be included
-   *     in the server pack.
-   * @param installServer Boolean. Whether to install the modloader server in the server pack.
-   * @param javaInstallPath String. Path to the Java executable/binary needed for installing the
-   *     modloader server in the server pack.
-   * @param minecraftVer String. The Minecraft version the modpack uses.
-   * @param modloader String. The modloader the modpack uses.
-   * @param modloaderVersion String. The version of the modloader the modpack uses.
-   * @param includeIcon Boolean. Whether to include the server-icon.png in the server pack.
-   * @param includeProperties Boolean. Whether to include the server.properties in the server pack.
-   * @param includeZip Boolean. Whether to create a zip-archive of the server pack, excluding the
-   *     Minecraft server JAR according to Mojang's TOS and EULA.
-   * @param javaArgs String. Java arguments to write the start-scripts with.
-   * @param serverPackSuffix String. Suffix to append to name of the server pack to be generated.
-   * @param serverIconPath String. The path to the custom server-icon.png to be used in the server
-   *     pack.
+   * @param modpackDirectory     String. The used modpackDir field either from a configuration file
+   *                             or from configuration setup.
+   * @param clientsideMods       String List. List of clientside-only mods to exclude from the
+   *                             server pack...
+   * @param copyDirectories      String List. List of directories in the modpack which are to be
+   *                             included in the server pack.
+   * @param installServer        Boolean. Whether to install the modloader server in the server
+   *                             pack.
+   * @param javaInstallPath      String. Path to the Java executable/binary needed for installing
+   *                             the modloader server in the server pack.
+   * @param minecraftVer         String. The Minecraft version the modpack uses.
+   * @param modloader            String. The modloader the modpack uses.
+   * @param modloaderVersion     String. The version of the modloader the modpack uses.
+   * @param includeIcon          Boolean. Whether to include the server-icon.png in the server
+   *                             pack.
+   * @param includeProperties    Boolean. Whether to include the server.properties in the server
+   *                             pack.
+   * @param includeZip           Boolean. Whether to create a zip-archive of the server pack,
+   *                             excluding the Minecraft server JAR according to Mojang's TOS and
+   *                             EULA.
+   * @param javaArgs             String. Java arguments to write the start-scripts with.
+   * @param serverPackSuffix     String. Suffix to append to name of the server pack to be
+   *                             generated.
+   * @param serverIconPath       String. The path to the custom server-icon.png to be used in the
+   *                             server pack.
    * @param serverPropertiesPath String. The path to the custom server.properties to be used in the
-   *     server pack.
+   *                             server pack.
    * @author Griefed
    */
   public void printConfigurationModel(
@@ -381,7 +390,7 @@ public class ConfigUtilities {
    * <p>Update the given ConfigurationModel with values gathered from a ATLauncher manifest.
    *
    * @param configurationModel {@link ConfigurationModel} The model to update.
-   * @param manifest {@link File} The manifest file.
+   * @param manifest           {@link File} The manifest file.
    * @throws IOException when the instance.json-file could not be parsed.
    * @author Griefed
    */
@@ -416,7 +425,7 @@ public class ConfigUtilities {
    * modrinth.index.json</code>-manifest.
    *
    * @param configurationModel {@link ConfigurationModel} The model to update.
-   * @param manifest {@link File} The manifest file.
+   * @param manifest           {@link File} The manifest file.
    * @throws IOException when the modrinth.index.json-file could not be parsed.
    * @author Griefed
    */
@@ -429,7 +438,7 @@ public class ConfigUtilities {
         configurationModel.getModpackJson().get("dependencies").get("minecraft").asText());
 
     for (Iterator<Entry<String, JsonNode>> it =
-            configurationModel.getModpackJson().get("dependencies").fields();
+        configurationModel.getModpackJson().get("dependencies").fields();
         it.hasNext(); ) {
       Entry<String, JsonNode> dependencyEntry = it.next();
 
@@ -460,8 +469,8 @@ public class ConfigUtilities {
    * like Overwolf's CurseForge or GDLauncher.
    *
    * @param configurationModel {@link ConfigurationModel}. An instance containing a configuration
-   *     for a modpack from which to create a server pack.
-   * @param manifest File. The CurseForge manifest.json-file of the modpack to read.
+   *                           for a modpack from which to create a server pack.
+   * @param manifest           File. The CurseForge manifest.json-file of the modpack to read.
    * @throws IOException when the manifest.json-file could not be parsed.
    * @author Griefed
    */
@@ -495,8 +504,8 @@ public class ConfigUtilities {
    * the modpack. A minecraftinstance.json is usually created by Overwolf's CurseForge launcher.
    *
    * @param configurationModel {@link ConfigurationModel}. An instance containing a configuration
-   *     for a modpack from which to create a server pack.
-   * @param minecraftInstance File. The minecraftinstance.json-file of the modpack to read.
+   *                           for a modpack from which to create a server pack.
+   * @param minecraftInstance  File. The minecraftinstance.json-file of the modpack to read.
    * @throws IOException when the minecraftinstance.json-file could not be parsed.
    * @author Griefed
    */
@@ -528,8 +537,8 @@ public class ConfigUtilities {
    * config.json is usually created by GDLauncher.
    *
    * @param configurationModel {@link ConfigurationModel}. An instance containing a configuration
-   *     for a modpack from which to create a server pack.
-   * @param config {@link File}. The config.json-file of the modpack to read.
+   *                           for a modpack from which to create a server pack.
+   * @param config             {@link File}. The config.json-file of the modpack to read.
    * @throws IOException when the config.json-file could not be parsed.
    * @author Griefed
    */
@@ -561,8 +570,8 @@ public class ConfigUtilities {
    * mmc-pack.json is usually created by the MultiMC launcher.
    *
    * @param configurationModel {@link ConfigurationModel}. An instance containing a configuration
-   *     for a modpack from which to create a server pack.
-   * @param mmcPack {@link File}. The config.json-file of the modpack to read.
+   *                           for a modpack from which to create a server pack.
+   * @param mmcPack            {@link File}. The config.json-file of the modpack to read.
    * @throws IOException when the mmc-pack.json-file could not be parsed.
    * @author Griefed
    */
@@ -605,7 +614,7 @@ public class ConfigUtilities {
    * @param instanceCfg {@link File}. The config.json-file of the modpack to read.
    * @return {@link String} Returns the instance name.
    * @throws IOException when the file could not be found or the properties not be loaded from the
-   *     file.
+   *                     file.
    * @author Griefed
    */
   public String updateDestinationFromInstanceCfg(File instanceCfg) throws IOException {
@@ -644,9 +653,9 @@ public class ConfigUtilities {
    * href="https://github.com/Griefed/ServerPackCreator/issues/new/choose">GitHub</a>
    *
    * @param modpackDir String. The directory for which to gather a list of directories to copy to
-   *     the server pack.
+   *                   the server pack.
    * @return List, String. Returns a list of directories inside the modpack, excluding well known
-   *     client-side only directories.
+   * client-side only directories.
    * @author Griefed
    */
   public List<String> suggestCopyDirs(String modpackDir) {
@@ -694,9 +703,9 @@ public class ConfigUtilities {
    * @param modpackJson JSonNode. JsonNode containing all information about the CurseForge modpack.
    * @return Boolean. Returns true if Jumploader is found.
    * @author Griefed
-   * @deprecated Regular checks in {@link #updateConfigModelFromCurseManifest(ConfigurationModel,
-   *     File)} detect Fabric and the version. Iterating through the mods list is no longer
-   *     necessary.
+   * @deprecated Regular checks in
+   * {@link #updateConfigModelFromCurseManifest(ConfigurationModel, File)} detect Fabric and the
+   * version. Iterating through the mods list is no longer necessary.
    */
   @Deprecated
   public boolean checkCurseForgeJsonForFabric(JsonNode modpackJson) {
@@ -728,20 +737,23 @@ public class ConfigUtilities {
    *
    * @param zipFile {@link java.nio.file.Path} The ZIP-archive to get the list of files from.
    * @return {@link List} {@link String} A list of all directories in the base-directory of the
-   *     ZIP-file.
-   * @throws IllegalArgumentException if the pre-conditions for the uri parameter are not met, or
-   *     the env parameter does not contain properties required by the provider, or a property value
-   *     is invalid.
+   * ZIP-file.
+   * @throws IllegalArgumentException         if the pre-conditions for the uri parameter are not
+   *                                          met, or the env parameter does not contain properties
+   *                                          required by the provider, or a property value is
+   *                                          invalid.
    * @throws FileSystemAlreadyExistsException if the file system has already been created.
-   * @throws ProviderNotFoundException if a provider supporting the URI scheme is not installed.
-   * @throws IOException if an I/O error occurs creating the file system.
-   * @throws SecurityException if a security manager is installed, and it denies an unspecified
-   *     permission required by the file system provider implementation.
+   * @throws ProviderNotFoundException        if a provider supporting the URI scheme is not
+   *                                          installed.
+   * @throws IOException                      if an I/O error occurs creating the file system.
+   * @throws SecurityException                if a security manager is installed, and it denies an
+   *                                          unspecified permission required by the file system
+   *                                          provider implementation.
    * @author Griefed
    */
   public List<String> getDirectoriesInModpackZipBaseDirectory(ZipFile zipFile)
       throws IllegalArgumentException, FileSystemAlreadyExistsException, ProviderNotFoundException,
-          IOException, SecurityException {
+      IOException, SecurityException {
 
     List<String> baseDirectories = new ArrayList<>(100);
 
@@ -762,19 +774,22 @@ public class ConfigUtilities {
    *
    * @param zipFile {@link java.nio.file.Path} The ZIP-archive to get the list of files from.
    * @return {@link List} {@link String} A list of all files in the ZIP-file.
-   * @throws IllegalArgumentException if the pre-conditions for the uri parameter are not met, or
-   *     the env parameter does not contain properties required by the provider, or a property value
-   *     is invalid.
+   * @throws IllegalArgumentException         if the pre-conditions for the uri parameter are not
+   *                                          met, or the env parameter does not contain properties
+   *                                          required by the provider, or a property value is
+   *                                          invalid.
    * @throws FileSystemAlreadyExistsException if the file system has already been created.
-   * @throws ProviderNotFoundException if a provider supporting the URI scheme is not installed.
-   * @throws IOException if an I/O error occurs creating the file system.
-   * @throws SecurityException if a security manager is installed, and it denies an unspecified
-   *     permission required by the file system provider implementation.
+   * @throws ProviderNotFoundException        if a provider supporting the URI scheme is not
+   *                                          installed.
+   * @throws IOException                      if an I/O error occurs creating the file system.
+   * @throws SecurityException                if a security manager is installed, and it denies an
+   *                                          unspecified permission required by the file system
+   *                                          provider implementation.
    * @author Griefed
    */
   public List<String> getFilesInModpackZip(ZipFile zipFile)
       throws IllegalArgumentException, FileSystemAlreadyExistsException, ProviderNotFoundException,
-          IOException, SecurityException {
+      IOException, SecurityException {
 
     List<String> files = new ArrayList<>(100);
 
@@ -795,19 +810,22 @@ public class ConfigUtilities {
    *
    * @param zipFile {@link java.nio.file.Path} The ZIP-archive to get the list of files from.
    * @return {@link List} {@link String} A list of all directories in the ZIP-file.
-   * @throws IllegalArgumentException if the pre-conditions for the uri parameter are not met, or
-   *     the env parameter does not contain properties required by the provider, or a property value
-   *     is invalid.
+   * @throws IllegalArgumentException         if the pre-conditions for the uri parameter are not
+   *                                          met, or the env parameter does not contain properties
+   *                                          required by the provider, or a property value is
+   *                                          invalid.
    * @throws FileSystemAlreadyExistsException if the file system has already been created.
-   * @throws ProviderNotFoundException if a provider supporting the URI scheme is not installed.
-   * @throws IOException if an I/O error occurs creating the file system.
-   * @throws SecurityException if a security manager is installed, and it denies an unspecified
-   *     permission required by the file system provider implementation.
+   * @throws ProviderNotFoundException        if a provider supporting the URI scheme is not
+   *                                          installed.
+   * @throws IOException                      if an I/O error occurs creating the file system.
+   * @throws SecurityException                if a security manager is installed, and it denies an
+   *                                          unspecified permission required by the file system
+   *                                          provider implementation.
    * @author Griefed
    */
   public List<String> getDirectoriesInModpackZip(ZipFile zipFile)
       throws IllegalArgumentException, FileSystemAlreadyExistsException, ProviderNotFoundException,
-          IOException, SecurityException {
+      IOException, SecurityException {
 
     List<String> directories = new ArrayList<>(100);
 
@@ -828,19 +846,22 @@ public class ConfigUtilities {
    *
    * @param zipFile {@link java.nio.file.Path} The ZIP-archive to get the list of files from.
    * @return {@link List} {@link String} A list of all files and directories in the ZIP-file.
-   * @throws IllegalArgumentException if the pre-conditions for the uri parameter are not met, or
-   *     the env parameter does not contain properties required by the provider, or a property value
-   *     is invalid.
+   * @throws IllegalArgumentException         if the pre-conditions for the uri parameter are not
+   *                                          met, or the env parameter does not contain properties
+   *                                          required by the provider, or a property value is
+   *                                          invalid.
    * @throws FileSystemAlreadyExistsException if the file system has already been created.
-   * @throws ProviderNotFoundException if a provider supporting the URI scheme is not installed.
-   * @throws IOException if an I/O error occurs creating the file system.
-   * @throws SecurityException if a security manager is installed, and it denies an unspecified
-   *     permission required by the file system provider implementation.
+   * @throws ProviderNotFoundException        if a provider supporting the URI scheme is not
+   *                                          installed.
+   * @throws IOException                      if an I/O error occurs creating the file system.
+   * @throws SecurityException                if a security manager is installed, and it denies an
+   *                                          unspecified permission required by the file system
+   *                                          provider implementation.
    * @author Griefed
    */
   public List<String> getAllFilesAndDirectoriesInModpackZip(ZipFile zipFile)
       throws IllegalArgumentException, FileSystemAlreadyExistsException, ProviderNotFoundException,
-          IOException, SecurityException {
+      IOException, SecurityException {
 
     List<String> filesAndDirectories = new ArrayList<>(100);
 

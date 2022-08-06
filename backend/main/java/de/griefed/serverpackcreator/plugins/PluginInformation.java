@@ -25,10 +25,9 @@ import de.griefed.serverpackcreator.utilities.misc.Generated;
 import org.pf4j.ExtensionPoint;
 
 /**
- * Starting point from which all plugin interfaces in ServerPackCreator extend.<br>
- * DO NOT IMPLEMENT THIS CLASS DIRECTLY WHEN WRITING A PLUGIN!<br>
- * Instead, implement any of the interfaces in the sub-packages of <code>
- * de.griefed.serverpackcreator.plugins.*</code>
+ * Starting point from which all plugin interfaces in ServerPackCreator extend.<br> DO NOT IMPLEMENT
+ * THIS CLASS DIRECTLY WHEN WRITING A PLUGIN!<br> Instead, implement any of the interfaces in the
+ * sub-packages of <code> de.griefed.serverpackcreator.plugins.*</code>
  *
  * @author Griefed
  */
@@ -40,9 +39,9 @@ public interface PluginInformation extends ExtensionPoint {
    * server pack <code>destination</code>
    *
    * @param applicationProperties Instance of {@link ApplicationProperties} as ServerPackCreator
-   *     itself uses it.
-   * @param configurationModel Instance of {@link ConfigurationModel} for a given server pack.
-   * @param destination String. The destination of the server pack.
+   *                              itself uses it.
+   * @param configurationModel    Instance of {@link ConfigurationModel} for a given server pack.
+   * @param destination           String. The destination of the server pack.
    * @throws Exception {@link Exception} when an uncaught error occurs in the addon.
    * @author Griefed
    */

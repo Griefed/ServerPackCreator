@@ -32,6 +32,7 @@ import javax.swing.event.DocumentListener;
  * <a href="https://itqna.net/questions/10833/decorating-jtextfield-icon">it_qna</a>
  */
 public class IconTextArea extends JTextArea {
+
   private static final int ICON_SPACING = 4;
   private Border mBorder;
   private Icon mIcon;

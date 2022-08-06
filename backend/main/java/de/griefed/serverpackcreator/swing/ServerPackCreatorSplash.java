@@ -41,7 +41,9 @@ import javax.swing.JWindow;
 import javax.swing.SwingConstants;
 import javax.swing.plaf.basic.BasicProgressBarUI;
 
-/** The ServerPackCreator splashscreen shown when {@link CommandlineParser.Mode#GUI} is used. */
+/**
+ * The ServerPackCreator splashscreen shown when {@link CommandlineParser.Mode#GUI} is used.
+ */
 public class ServerPackCreatorSplash {
 
   private final ReticulatingSplines RETICULATING_SPLINES = new ReticulatingSplines();

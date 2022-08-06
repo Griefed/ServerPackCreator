@@ -28,7 +28,8 @@
  * from a JAR-file and so on and so forth.<br>
  * <br>
  *
- * <p>Basically, whenever a method in any SeverPackCreator class becomes useful to multiple classes,
+ * <p>Basically, whenever a method in any SeverPackCreator class becomes useful to multiple
+ * classes,
  * it is usually moved into any already existing utility-class or a new one is added if no
  * already-fitting one exists.
  *

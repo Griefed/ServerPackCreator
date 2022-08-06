@@ -57,7 +57,7 @@ public class ApplicationProperties extends Properties {
   private final List<String> FALLBACK_CLIENTSIDE_MODS =
       new ArrayList<>(Arrays.asList(FALLBACK_MODS_DEFAULT_ASSTRING.split(",")));
   private final String SERVERPACKCREATOR_VERSION;
-  private final String[] SUPPORTED_MODLOADERS = new String[] {"Fabric", "Forge", "Quilt"};
+  private final String[] SUPPORTED_MODLOADERS = new String[]{"Fabric", "Forge", "Quilt"};
   private final String FALLBACK_DIRECTORIES_INCLUDE_ASSTRING = "mods,config,defaultconfigs,scripts";
   private final List<String> FALLBACK_DIRECTORIES_INCLUDE =
       new ArrayList<>(Arrays.asList(FALLBACK_DIRECTORIES_INCLUDE_ASSTRING.split(",")));
@@ -110,7 +110,9 @@ public class ApplicationProperties extends Properties {
    */
   private String directoryServerPacks;
 
-  /** List of mods which should be excluded from server packs. */
+  /**
+   * List of mods which should be excluded from server packs.
+   */
   private List<String> listFallbackMods;
 
   /**
@@ -151,16 +153,24 @@ public class ApplicationProperties extends Properties {
    */
   private String aikarsFlags;
 
-  /** List of files to be excluded from ZIP-archives. */
+  /**
+   * List of files to be excluded from ZIP-archives.
+   */
   private List<String> filesToExcludeFromZipArchive;
 
-  /** Whether the exclusion of files from the server pack is enabled. */
+  /**
+   * Whether the exclusion of files from the server pack is enabled.
+   */
   private boolean isZipFileExclusionEnabled;
 
-  /** List of templates used for start-script creation. */
+  /**
+   * List of templates used for start-script creation.
+   */
   private List<File> scriptTemplates;
 
-  /** Whether clientside-only mods should automatically be excluded * */
+  /**
+   * Whether clientside-only mods should automatically be excluded *
+   */
   private boolean autoExcludingModsEnabled = true;
 
   /**
@@ -410,7 +420,7 @@ public class ApplicationProperties extends Properties {
               (new File(
                   "server_files/"
                       + this.getProperty(
-                          "de.griefed.serverpackcreator.configuration.fallbackmodslist"))));
+                      "de.griefed.serverpackcreator.configuration.fallbackmodslist"))));
     }
     LOG.debug("Script templates set to: " + this.scriptTemplates);
 
@@ -658,10 +668,10 @@ public class ApplicationProperties extends Properties {
   }
 
   /**
-   * Getter for the version of ServerPackCreator.<br>
-   * If a JAR-file compiled from a release-job from a CI/CD-pipeline is used, it should contain a
-   * VERSION.txt-file which contains the version of said release. If a non-release-version is used,
-   * from a regular pipeline or local dev-build, then this will be set to <code>dev</code>.
+   * Getter for the version of ServerPackCreator.<br> If a JAR-file compiled from a release-job from
+   * a CI/CD-pipeline is used, it should contain a VERSION.txt-file which contains the version of
+   * said release. If a non-release-version is used, from a regular pipeline or local dev-build,
+   * then this will be set to <code>dev</code>.
    *
    * @return String. Returns the version of ServerPackCreator.
    * @author Griefed
@@ -684,8 +694,8 @@ public class ApplicationProperties extends Properties {
    * Directory where server-files are stored in, for example the default server-icon and
    * server.properties.
    *
-   * @author Griefed
    * @return {@link String} server-files directory.
+   * @author Griefed
    */
   public String DIRECTORY_SERVER_FILES() {
     return "server_files";
@@ -694,8 +704,8 @@ public class ApplicationProperties extends Properties {
   /**
    * Directory where plugins are stored in.
    *
-   * @author Griefed
    * @return {@link String} plugins directory.
+   * @author Griefed
    */
   public String DIRECTORY_PLUGINS() {
     return "plugins";
@@ -745,7 +755,7 @@ public class ApplicationProperties extends Properties {
    * Adder for the list of directories to exclude from server packs.
    *
    * @param entry String. The directory to add to the list of directories to exclude from server
-   *     packs.
+   *              packs.
    * @author Griefed
    */
   public void addDirectoryToExclude(String entry) {
@@ -776,8 +786,8 @@ public class ApplicationProperties extends Properties {
   }
 
   /**
-   * Getter for whether the search for available PreReleases is enabled or disabled.<br>
-   * Depending on <code>de.griefed.serverpackcreator.versioncheck.prerelease</code>, returns <code>
+   * Getter for whether the search for available PreReleases is enabled or disabled.<br> Depending
+   * on <code>de.griefed.serverpackcreator.versioncheck.prerelease</code>, returns <code>
    * true</code> if checks for available PreReleases are enabled, <code>false</code> if no checks
    * for available PreReleases should be made.
    *
@@ -807,7 +817,7 @@ public class ApplicationProperties extends Properties {
    *   <li><code>MODLOADER_VERSION</code> - Will be replaced with the modloader version of the
    *       server pack
    * </ul>
-   *
+   * <p>
    * Should you want these filters to be expanded, open an issue on <a
    * href="https://github.com/Griefed/ServerPackCreator/issues">GitHub</a>
    *
@@ -850,7 +860,7 @@ public class ApplicationProperties extends Properties {
 
     try (InputStream github =
         new URL(
-                "https://raw.githubusercontent.com/Griefed/ServerPackCreator/main/backend/main/resources/serverpackcreator.properties")
+            "https://raw.githubusercontent.com/Griefed/ServerPackCreator/main/backend/main/resources/serverpackcreator.properties")
             .openStream()) {
 
       properties = new Properties();
@@ -861,7 +871,7 @@ public class ApplicationProperties extends Properties {
       LOG.debug("GitHub could not be reached. Checking GitLab.", e);
       try (InputStream gitlab =
           new URL(
-                  "https://gitlab.com/Griefed/ServerPackCreator/-/raw/main/backend/main/resources/serverpackcreator.properties")
+              "https://gitlab.com/Griefed/ServerPackCreator/-/raw/main/backend/main/resources/serverpackcreator.properties")
               .openStream()) {
 
         properties = new Properties();
@@ -871,7 +881,7 @@ public class ApplicationProperties extends Properties {
         LOG.debug("GitLab could not be reached. Checking GitGriefed", ex);
         try (InputStream gitgriefed =
             new URL(
-                    "https://git.griefed.de/Griefed/ServerPackCreator/-/raw/main/backend/main/resources/serverpackcreator.properties")
+                "https://git.griefed.de/Griefed/ServerPackCreator/-/raw/main/backend/main/resources/serverpackcreator.properties")
                 .openStream()) {
 
           properties = new Properties();
@@ -886,9 +896,9 @@ public class ApplicationProperties extends Properties {
 
     if (properties != null
         && !getProperty("de.griefed.serverpackcreator.configuration.fallbackmodslist")
-            .equals(
-                properties.getProperty(
-                    "de.griefed.serverpackcreator.configuration.fallbackmodslist"))) {
+        .equals(
+            properties.getProperty(
+                "de.griefed.serverpackcreator.configuration.fallbackmodslist"))) {
 
       setProperty(
           "de.griefed.serverpackcreator.configuration.fallbackmodslist",

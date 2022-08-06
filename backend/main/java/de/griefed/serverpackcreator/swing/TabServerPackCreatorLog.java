@@ -58,6 +58,7 @@ public class TabServerPackCreatorLog extends JComponentTailer {
   @Override
   protected void createTailer() {
     class MyTailerListener extends TailerListenerAdapter {
+
       public void handle(String line) {
         if (line.contains("Checking entered configuration.")) {
           textArea.setText("");
