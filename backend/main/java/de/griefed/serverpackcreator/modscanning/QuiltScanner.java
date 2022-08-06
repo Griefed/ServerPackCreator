@@ -22,6 +22,7 @@ package de.griefed.serverpackcreator.modscanning;
 import com.fasterxml.jackson.core.json.JsonReadFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.griefed.serverpackcreator.utilities.common.Utilities;
 import java.io.File;
 import java.util.Collection;
 import java.util.TreeSet;
@@ -41,11 +42,13 @@ public class QuiltScanner extends JsonBasedScanner implements
 
   private static final Logger LOG = LogManager.getLogger(QuiltScanner.class);
   private final ObjectMapper OBJECT_MAPPER;
+  private final Utilities UTILITIES;
 
   @Autowired
-  public QuiltScanner(ObjectMapper objectMapper) {
+  public QuiltScanner(ObjectMapper objectMapper, Utilities utilities) {
     this.OBJECT_MAPPER = objectMapper.enable(
         JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS.mappedFeature());
+    this.UTILITIES = utilities;
   }
 
   /**
@@ -96,11 +99,11 @@ public class QuiltScanner extends JsonBasedScanner implements
 
           JsonNode modJson = getJarJson(mod, "quilt.mod.json", OBJECT_MAPPER);
 
-          modId = getNestedText(modJson,"quilt_loader","id");
+          modId = UTILITIES.JsonUtilities().getNestedText(modJson,"quilt_loader","id");
 
           // Get this mods' id/name
           try {
-            if (nestedTextEqualsIgnoreCase(modJson,"client","minecraft","environment")) {
+            if (UTILITIES.JsonUtilities().nestedTextEqualsIgnoreCase(modJson,"client","minecraft","environment")) {
 
               clientMods.add(modId);
               LOG.debug("Added clientMod: " + modId);
@@ -112,10 +115,10 @@ public class QuiltScanner extends JsonBasedScanner implements
           // Get this mods dependencies
           try {
 
-            for (JsonNode dependency : getNestedElement(modJson,"quilt_loader","depends")) {
+            for (JsonNode dependency : UTILITIES.JsonUtilities().getNestedElement(modJson,"quilt_loader","depends")) {
 
               if (dependency.isContainerNode()) {
-                modDependencies.add(getNestedText(dependency,"id"));
+                modDependencies.add(UTILITIES.JsonUtilities().getNestedText(dependency,"id"));
               } else {
                 modDependencies.add(dependency.asText());
               }
@@ -151,10 +154,10 @@ public class QuiltScanner extends JsonBasedScanner implements
         JsonNode modJson = getJarJson(mod, "quilt.mod.json", OBJECT_MAPPER);
 
         // Get the modId
-        modIdTocheck = getNestedText(modJson,"quilt_loader","id");
+        modIdTocheck = UTILITIES.JsonUtilities().getNestedText(modJson,"quilt_loader","id");
 
         try {
-          if (nestedTextEqualsIgnoreCase(modJson,"client","minecraft","environment")) {
+          if (UTILITIES.JsonUtilities().nestedTextEqualsIgnoreCase(modJson,"client","minecraft","environment")) {
             if (clientMods.contains(modIdTocheck)) {
               addToDelta = true;
             }

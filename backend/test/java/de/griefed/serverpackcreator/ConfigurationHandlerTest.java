@@ -35,7 +35,7 @@ class ConfigurationHandlerTest {
         new ObjectMapper()
             .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
             .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
-    Utilities utilities = new Utilities(i18N, applicationProperties);
+    Utilities utilities = new Utilities(applicationProperties);
     versionMeta =
         new VersionMeta(
             applicationProperties.MINECRAFT_VERSION_MANIFEST(),

@@ -47,7 +47,7 @@ class ServerPackHandlerTest {
             .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
             .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
     I18n i18N = new I18n();
-    Utilities utilities = new Utilities(i18N, applicationProperties);
+    Utilities utilities = new Utilities(applicationProperties);
     VersionMeta versionMeta =
         new VersionMeta(
             applicationProperties.MINECRAFT_VERSION_MANIFEST(),
@@ -72,9 +72,9 @@ class ServerPackHandlerTest {
             utilities,
             new ApplicationPlugins(),
             new ModScanner(
-                new AnnotationScanner(objectMapper),
-                new FabricScanner(objectMapper),
-                new QuiltScanner(objectMapper),
+                new AnnotationScanner(objectMapper, utilities),
+                new FabricScanner(objectMapper, utilities),
+                new QuiltScanner(objectMapper, utilities),
                 new TomlScanner(new TomlParser())));
   }
 

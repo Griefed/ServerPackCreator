@@ -21,7 +21,7 @@ public class ConfigUtilitiesTest {
 
   ConfigUtilitiesTest() {
     ApplicationProperties applicationProperties = new ApplicationProperties();
-    Utilities utilities = new Utilities(new I18n(), applicationProperties);
+    Utilities utilities = new Utilities(applicationProperties);
     configUtilities = new ConfigUtilities(utilities, applicationProperties, new ObjectMapper()
         .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
         .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY));

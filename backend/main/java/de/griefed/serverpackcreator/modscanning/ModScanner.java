@@ -19,6 +19,7 @@
  */
 package de.griefed.serverpackcreator.modscanning;
 
+import de.griefed.serverpackcreator.utilities.common.Utilities;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -41,7 +42,8 @@ public class ModScanner {
       AnnotationScanner annotationScanner,
       FabricScanner fabricScanner,
       QuiltScanner quiltScanner,
-      TomlScanner tomlScanner) {
+      TomlScanner tomlScanner
+      ) {
     this.ANNOTATION = annotationScanner;
     this.FABRIC = fabricScanner;
     this.QUILT = quiltScanner;

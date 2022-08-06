@@ -33,7 +33,8 @@ public class BooleanUtilities {
 
   private static final Logger LOG = LogManager.getLogger(BooleanUtilities.class);
 
-  public BooleanUtilities() {}
+  public BooleanUtilities() {
+  }
 
   /**
    * Converts various strings to booleans, by using regex, to allow for more variations in input.
@@ -43,36 +44,34 @@ public class BooleanUtilities {
    * <code>1</code><br>
    * <code>[Yy]es</code><br>
    * <code>[Yy]</code><br>
-   * Language Key <code>cli.input.true</code><br>
-   * Language Key <code>cli.input.yes</code><br>
+   * Language Key <code>cli.input.true</code><br> Language Key <code>cli.input.yes</code><br>
    * Language Key <code>cli.input.yes.short</code><br>
    * <strong>Converted to <code>FALSE</code> are:<br>
    * </strong> <code>[Ff]alse</code><br>
    * <code>0</code><br>
    * <code>[Nn]o</code><br>
    * <code>[Nn]</code><br>
-   * Language Key <code>cli.input.false</code><br>
-   * Language Key <code>cli.input.no</code><br>
+   * Language Key <code>cli.input.false</code><br> Language Key <code>cli.input.no</code><br>
    * Language Key <code>cli.input.no.short</code><br>
    *
    * @param stringBoolean String. The string which should be converted to boolean if it matches
-   *     certain patterns.
+   *                      certain patterns.
    * @return Boolean. Returns the corresponding boolean if match with pattern was found. If no match
-   *     is found, assume and return false.
+   * is found, assume and return false.
    * @author Griefed
    */
   public boolean convertToBoolean(String stringBoolean) {
 
-    if (stringBoolean.matches("[Tt]rue")
-        || stringBoolean.matches("1")
+    if (stringBoolean.matches("1")
         || stringBoolean.matches("[Yy]es")
-        || stringBoolean.matches("[Yy]")) {
+        || stringBoolean.matches("[Yy]")
+        || stringBoolean.equalsIgnoreCase("true")) {
       return true;
 
-    } else if (stringBoolean.matches("[Ff]alse")
-        || stringBoolean.matches("0")
+    } else if (stringBoolean.matches("0")
         || stringBoolean.matches("[Nn]o")
-        || stringBoolean.matches("[Nn]")) {
+        || stringBoolean.matches("[Nn]")
+        || stringBoolean.equalsIgnoreCase("false")) {
       return false;
 
     } else {

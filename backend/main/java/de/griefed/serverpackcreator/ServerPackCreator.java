@@ -236,7 +236,7 @@ public class ServerPackCreator {
     System.setProperty("log4j2.formatMsgNoLookups", "true");
     System.setProperty("file.encoding", StandardCharsets.UTF_8.name());
 
-    this.utilities = new Utilities(I18N, APPLICATIONPROPERTIES);
+    this.utilities = new Utilities(APPLICATIONPROPERTIES);
 
     HashMap<String, String> systemInformation =
         utilities.JarUtils()
@@ -423,7 +423,7 @@ public class ServerPackCreator {
    */
   private void stageThree() throws IOException {
     this.applicationPlugins = new ApplicationPlugins();
-
+    // TODO: store all objects in fields in this class
     this.serverPackHandler =
         new ServerPackHandler(
             APPLICATIONPROPERTIES,
@@ -431,9 +431,9 @@ public class ServerPackCreator {
             utilities,
             applicationPlugins,
             new ModScanner(
-                new AnnotationScanner(OBJECT_MAPPER),
-                new FabricScanner(OBJECT_MAPPER),
-                new QuiltScanner(OBJECT_MAPPER),
+                new AnnotationScanner(OBJECT_MAPPER, utilities),
+                new FabricScanner(OBJECT_MAPPER, utilities),
+                new QuiltScanner(OBJECT_MAPPER, utilities),
                 new TomlScanner(new TomlParser())));
 
     if (this.updateChecker == null) {

@@ -33,17 +33,16 @@ import org.springframework.stereotype.Component;
 public class Utilities {
 
   private final BooleanUtilities BOOLEAN_UTILITIES;
-
   private final FileUtilities FILE_UTILITIES;
   private final JarUtilities JAR_UTILITIES;
   private final ListUtilities LIST_UTILITIES;
   private final StringUtilities STRING_UTILITIES;
   private final SystemUtilities SYSTEM_UTILITIES;
   private final WebUtilities WEB_UTILITIES;
+  private final JsonUtilities JSON_UTILITIES;
 
   @Autowired
-  public Utilities(I18n injectedI18n, ApplicationProperties injectedApplicationProperties) {
-
+  public Utilities(ApplicationProperties injectedApplicationProperties) {
     this.BOOLEAN_UTILITIES = new BooleanUtilities();
     this.FILE_UTILITIES = new FileUtilities();
     this.JAR_UTILITIES = new JarUtilities();
@@ -51,6 +50,7 @@ public class Utilities {
     this.STRING_UTILITIES = new StringUtilities();
     this.SYSTEM_UTILITIES = new SystemUtilities();
     this.WEB_UTILITIES = new WebUtilities(injectedApplicationProperties);
+    this.JSON_UTILITIES = new JsonUtilities();
   }
 
   public BooleanUtilities BooleanUtils() {
@@ -80,4 +80,6 @@ public class Utilities {
   public WebUtilities WebUtils() {
     return WEB_UTILITIES;
   }
+
+  public JsonUtilities JsonUtilities() {return JSON_UTILITIES;}
 }

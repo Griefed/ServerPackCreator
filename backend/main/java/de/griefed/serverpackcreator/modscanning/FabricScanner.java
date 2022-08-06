@@ -22,6 +22,7 @@ package de.griefed.serverpackcreator.modscanning;
 import com.fasterxml.jackson.core.json.JsonReadFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.griefed.serverpackcreator.utilities.common.Utilities;
 import java.io.File;
 import java.util.Collection;
 import java.util.TreeSet;
@@ -41,11 +42,13 @@ public class FabricScanner extends JsonBasedScanner implements
 
   private static final Logger LOG = LogManager.getLogger(FabricScanner.class);
   private final ObjectMapper OBJECT_MAPPER;
+  private final Utilities UTILITIES;
 
   @Autowired
-  public FabricScanner(ObjectMapper objectMapper) {
+  public FabricScanner(ObjectMapper objectMapper, Utilities utilities) {
     this.OBJECT_MAPPER = objectMapper.enable(
         JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS.mappedFeature());
+    this.UTILITIES = utilities;
   }
 
   /**
@@ -95,11 +98,11 @@ public class FabricScanner extends JsonBasedScanner implements
 
           JsonNode modJson = getJarJson(mod, "fabric.mod.json", OBJECT_MAPPER);
 
-          modId = getNestedText(modJson, "id");
+          modId = UTILITIES.JsonUtilities().getNestedText(modJson, "id");
 
           // Get this mods' id/name
           try {
-            if (nestedTextEqualsIgnoreCase(modJson, "client", "environment")) {
+            if (UTILITIES.JsonUtilities().nestedTextEqualsIgnoreCase(modJson, "client", "environment")) {
 
               clientMods.add(modId);
               LOG.debug("Added clientMod: " + modId);
@@ -110,7 +113,7 @@ public class FabricScanner extends JsonBasedScanner implements
 
           // Get this mods dependencies
           try {
-            getFieldNames(modJson, "depends").forEachRemaining(modDependencies::add);
+            UTILITIES.JsonUtilities().getFieldNames(modJson, "depends").forEachRemaining(modDependencies::add);
           } catch (NullPointerException ignored) {
 
           }
@@ -138,10 +141,10 @@ public class FabricScanner extends JsonBasedScanner implements
             getJarJson(mod, "fabric.mod.json", OBJECT_MAPPER);
 
         // Get the modId
-        modIdTocheck = getNestedText(modJson, "id");
+        modIdTocheck = UTILITIES.JsonUtilities().getNestedText(modJson, "id");
 
         try {
-          if (nestedTextEqualsIgnoreCase(modJson, "client", "environment")) {
+          if (UTILITIES.JsonUtilities().nestedTextEqualsIgnoreCase(modJson, "client", "environment")) {
             if (clientMods.contains(modIdTocheck)) {
               addToDelta = true;
             }

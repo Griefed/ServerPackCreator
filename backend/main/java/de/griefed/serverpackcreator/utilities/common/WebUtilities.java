@@ -54,7 +54,6 @@ public class WebUtilities {
   private final ApplicationProperties APPLICATIONPROPERTIES;
 
   public WebUtilities(ApplicationProperties injectedApplicationProperties) {
-
     this.APPLICATIONPROPERTIES = injectedApplicationProperties;
   }
 
