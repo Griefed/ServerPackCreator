@@ -1,3 +1,36 @@
+## [3.10.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.10.1...3.10.2) (2022-08-06)
+
+
+### :scissors: Refactor
+
+* **ModScanners:** Improve readability of Json-Scanners ([d70de25](https://git.griefed.de/Griefed/ServerPackCreator/commit/d70de25c6b3ecf21bbbda14ef887dd18da4d1878))
+
+
+### 🦊 CI/CD
+
+* Add scheduled job for automated package updates in Docker container, should I ever decide to use it. ([1ac652b](https://git.griefed.de/Griefed/ServerPackCreator/commit/1ac652bf90ee4b1e0d5ab8201898e277702f5708))
+
+
+### 🛠 Fixes
+
+* **deps:** update dependency io.github.vincenzopalazzo:material-ui-swing to v1.1.3 ([1d1acec](https://git.griefed.de/Griefed/ServerPackCreator/commit/1d1acecfdd68ab03266bd29c5deef64d14a6f503))
+* **deps:** update dependency org.jgroups:jgroups to v5.2.4.final ([99ebc98](https://git.griefed.de/Griefed/ServerPackCreator/commit/99ebc98ed7971520f6d0363b9be0ec4492ccde30))
+* **deps:** update dependency org.xerial:sqlite-jdbc to v3.39.2.0 ([060eb8d](https://git.griefed.de/Griefed/ServerPackCreator/commit/060eb8d869e5331761a42331ac0e8beef91d90ce))
+* **deps:** update junit5 monorepo ([8cd8008](https://git.griefed.de/Griefed/ServerPackCreator/commit/8cd8008773895c414ebf501ba508051ef87cd3a5))
+
+
+### Other
+
+* **Clientside Modslist:** Add Blur- to the list. ([45f3010](https://git.griefed.de/Griefed/ServerPackCreator/commit/45f3010194117b913fd1bb4cd2494b0cda75b490))
+* **deps:** update dependency @quasar/extras to v1.15.1 ([99660d8](https://git.griefed.de/Griefed/ServerPackCreator/commit/99660d84d52aa0a06cfcda6d2aec7236bd8f4f8f))
+* **deps:** update dependency core-js to v3.24.1 ([37a1676](https://git.griefed.de/Griefed/ServerPackCreator/commit/37a16763e53b7ae8c85789969c0c6d779d16cf16))
+* **deps:** update dependency eslint to v8.21.0 ([6509275](https://git.griefed.de/Griefed/ServerPackCreator/commit/650927550f85272e71d88a2d88b8d31f78224e59))
+* **deps:** update dependency ghcr.io/griefed/baseimage-ubuntu-jdk-8 to v2.0.12 ([59b69f3](https://git.griefed.de/Griefed/ServerPackCreator/commit/59b69f3acb54a2df6da85198049936e453b819dd))
+* **deps:** update dependency ghcr.io/griefed/gitlab-ci-cd to v2.0.9 ([843a97d](https://git.griefed.de/Griefed/ServerPackCreator/commit/843a97d27b8f4d9960a798e0b47e7acd55757f53))
+* **deps:** update dependency gradle to v7.5 ([d4eb3c2](https://git.griefed.de/Griefed/ServerPackCreator/commit/d4eb3c2705682682a318033b85f231d9cbf9c77d))
+* **deps:** update dependency jetbrains/qodana-jvm-community to v2022.2 ([6b32e2d](https://git.griefed.de/Griefed/ServerPackCreator/commit/6b32e2d07117f96e0a3f61d20ae6b7455e23cd28))
+* **deps:** update dependency quasar to v2.7.7 ([d377bc3](https://git.griefed.de/Griefed/ServerPackCreator/commit/d377bc3e5f0d8b9bb399075cf9b572a4536e2055))
+
 ## [3.10.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.10.0...3.10.1) (2022-07-25)
 
 
