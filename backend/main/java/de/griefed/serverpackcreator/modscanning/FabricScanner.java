@@ -23,12 +23,8 @@ import com.fasterxml.jackson.core.json.JsonReadFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.Collection;
 import java.util.TreeSet;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,185 +36,128 @@ import org.springframework.stereotype.Component;
  * @author Griefed
  */
 @Component
-public class FabricScanner implements Scanner<TreeSet<File>, Collection<File>> {
+public class FabricScanner extends JsonBasedScanner implements
+    Scanner<TreeSet<File>, Collection<File>> {
 
   private static final Logger LOG = LogManager.getLogger(FabricScanner.class);
   private final ObjectMapper OBJECT_MAPPER;
 
   @Autowired
   public FabricScanner(ObjectMapper objectMapper) {
-    this.OBJECT_MAPPER = objectMapper;
+    this.OBJECT_MAPPER = objectMapper.enable(
+        JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS.mappedFeature());
   }
 
   /**
    * Scan the <code>fabric.mod.json</code>-files in mod JAR-files of a given directory for their
-   * sideness.<br>
-   * If <code>environment</code> specifies <code>client</code>, and is not listed as a dependency
-   * for another mod, it is added and therefore later on excluded from the server pack.
+   * sideness.<br> If <code>environment</code> specifies <code>client</code>, and is not listed as a
+   * dependency for another mod, it is added and therefore later on excluded from the server pack.
    *
-   * @param filesInModsDir A list of files in which to check the <code>fabric.mod.json</code>-files.
+   * @param filesInModsDir A list of files in which to check the
+   *                       <code>fabric.mod.json</code>-files.
    * @return List String. List of mods not to include in server pack based on
-   *     fabric.mod.json-content.
+   * fabric.mod.json-content.
    * @author Griefed
    */
+  @Override
   public TreeSet<File> scan(Collection<File> filesInModsDir) {
     LOG.info("Scanning Fabric mods for sideness...");
 
     TreeSet<String> modDependencies = new TreeSet<>();
     TreeSet<String> clientMods = new TreeSet<>();
 
+    /*
+     * Go through all mods in our list and acquire a list of clientside-only mods as well as any
+     * dependencies of the mods.
+     */
+    checkForClientModsAndDeps(filesInModsDir, clientMods, modDependencies);
+
+    //Remove any dependency from out list of clientside-only mods, so we do not exclude any dependency.
+    cleanupClientMods(modDependencies, clientMods);
+
+    /*
+     * After removing dependencies from the list of potential clientside mods, we can check whether
+     * any of the remaining clientmods is available in our list of files. The resulting set is the
+     * set of mods we can safely exclude from our server pack.
+     */
+    return getModsDelta(filesInModsDir, clientMods);
+  }
+
+  @Override
+  void checkForClientModsAndDeps(Collection<File> filesInModsDir, TreeSet<String> clientMods,
+      TreeSet<String> modDependencies) {
     for (File mod : filesInModsDir) {
       if (mod.toString().endsWith("jar")) {
 
         String modId;
 
-        JarFile jarFile = null;
-        JarEntry jarEntry;
-        InputStream inputStream = null;
-
         try {
-          jarFile = new JarFile(mod);
-          jarEntry = jarFile.getJarEntry("fabric.mod.json");
-          inputStream = jarFile.getInputStream(jarEntry);
+
+          JsonNode modJson = getJarJson(mod, "fabric.mod.json", OBJECT_MAPPER);
+
+          modId = getNestedText(modJson, "id");
+
+          // Get this mods' id/name
+          try {
+            if (nestedTextEqualsIgnoreCase(modJson, "client", "environment")) {
+
+              clientMods.add(modId);
+              LOG.debug("Added clientMod: " + modId);
+            }
+          } catch (NullPointerException ignored) {
+
+          }
+
+          // Get this mods dependencies
+          try {
+            getFieldNames(modJson, "depends").forEachRemaining(modDependencies::add);
+          } catch (NullPointerException ignored) {
+
+          }
+
         } catch (Exception ex) {
-          LOG.error("Can not scan " + mod);
-        }
 
-        try {
-
-          if (inputStream != null) {
-
-            JsonNode modJson =
-                OBJECT_MAPPER
-                    .enable(JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS.mappedFeature())
-                    .readTree(inputStream);
-
-            modId = modJson.get("id").asText();
-
-            // Get this mods id/name
-            try {
-              if (modJson.get("environment").asText().equalsIgnoreCase("client")) {
-
-                clientMods.add(modId);
-                LOG.debug("Added clientMod: " + modId);
-              }
-            } catch (NullPointerException ignored) {
-
-            }
-
-            // Get this mods dependencies
-            try {
-              modJson.get("depends").fieldNames().forEachRemaining(modDependencies::add);
-            } catch (NullPointerException ignored) {
-
-            }
-          }
-
-        } catch (IOException ex) {
-
-          LOG.error("Couldn't acquire sideness for mod " + mod, ex);
-
-        } finally {
-
-          try {
-            //noinspection ConstantConditions
-            jarFile.close();
-          } catch (Exception ignored) {
-
-          }
-
-          try {
-            //noinspection ConstantConditions
-            inputStream.close();
-          } catch (Exception ignored) {
-
-          }
+          LOG.error("Couldn't scan " + mod, ex);
         }
       }
     }
+  }
 
-    // Remove dependencies from list of clientmods to ensure we do not, well, exclude a dependency
-    // of another mod.
-    for (String dependency : modDependencies) {
-
-      clientMods.removeIf(n -> (n.contains(dependency)));
-      LOG.debug(
-          "Removing "
-              + dependency
-              + " from list of clientmods as it is a dependency for another mod.");
-    }
-
+  @Override
+  TreeSet<File> getModsDelta(Collection<File> filesInModsDir, TreeSet<String> clientMods) {
     TreeSet<File> modsDelta = new TreeSet<>();
-
-    // After removing dependencies from the list of potential clientside mods, we can remove any mod
-    // that says it is clientside-only.
     for (File mod : filesInModsDir) {
 
       String modIdTocheck;
 
       boolean addToDelta = false;
 
-      JarFile jarFile = null;
-      JarEntry jarEntry;
-      InputStream inputStream = null;
-
-      try {
-        jarFile = new JarFile(mod);
-        jarEntry = jarFile.getJarEntry("fabric.mod.json");
-        inputStream = jarFile.getInputStream(jarEntry);
-      } catch (Exception ex) {
-        LOG.error("Can not scan " + mod);
-      }
-
       try {
 
-        if (inputStream != null) {
+        JsonNode modJson =
+            getJarJson(mod, "fabric.mod.json", OBJECT_MAPPER);
 
-          JsonNode modJson =
-              OBJECT_MAPPER
-                  .enable(JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS.mappedFeature())
-                  .readTree(inputStream);
+        // Get the modId
+        modIdTocheck = getNestedText(modJson, "id");
 
-          // Get the modId
-          modIdTocheck = modJson.get("id").asText();
-
-          try {
-            if (modJson.get("environment").asText().equalsIgnoreCase("client")) {
-              if (clientMods.contains(modIdTocheck)) {
-                addToDelta = true;
-              }
+        try {
+          if (nestedTextEqualsIgnoreCase(modJson, "client", "environment")) {
+            if (clientMods.contains(modIdTocheck)) {
+              addToDelta = true;
             }
-          } catch (NullPointerException ignored) {
-
           }
-
-          if (addToDelta) {
-            modsDelta.add(mod);
-          }
-        }
-
-      } catch (Exception ex) {
-
-        LOG.error("Couldn't acquire modId for mod " + mod, ex);
-
-      } finally {
-
-        try {
-          //noinspection ConstantConditions
-          jarFile.close();
-        } catch (Exception ignored) {
+        } catch (NullPointerException ignored) {
 
         }
 
-        try {
-          //noinspection ConstantConditions
-          inputStream.close();
-        } catch (Exception ignored) {
-
+        if (addToDelta) {
+          modsDelta.add(mod);
         }
+
+      } catch (Exception ignored) {
+
       }
     }
-
     return modsDelta;
   }
 }

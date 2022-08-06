@@ -49,19 +49,21 @@ public class TomlScanner implements Scanner<TreeSet<File>, Collection<File>> {
   }
 
   /**
-   * Scan the <code>mods.toml</code>-files in mod JAR-files of a given directory for their sideness.
+   * Scan the <code>mods.toml</code>-files in mod JAR-files of a given directory for their
+   * sideness.
    * <br>
-   * If <code>[[mods]]</code> specifies <code>side=BOTH|SERVER</code>, it is added.<br>
-   * If <code>[[dependencies.modId]]</code> for Forge|Minecraft specifies <code>side=BOTH|SERVER
+   * If <code>[[mods]]</code> specifies <code>side=BOTH|SERVER</code>, it is added.<br> If
+   * <code>[[dependencies.modId]]</code> for Forge|Minecraft specifies <code>side=BOTH|SERVER
    * </code>, it is added.<br>
-   * Any modId of a dependency specifying <code>side=BOTH|SERVER</code> is added.<br>
-   * If no sideness can be found for a given mod, it is added to prevent false positives.
+   * Any modId of a dependency specifying <code>side=BOTH|SERVER</code> is added.<br> If no sideness
+   * can be found for a given mod, it is added to prevent false positives.
    *
    * @param filesInModsDir A list of files in which to check the <code>mods.toml</code>-files.
    * @return TreeSet File. List of mods not to include in server pack based on
-   *     mods.toml-configuration.
+   * mods.toml-configuration.
    * @author Griefed
    */
+  @Override
   public TreeSet<File> scan(Collection<File> filesInModsDir) {
 
     TreeSet<File> serverMods = new TreeSet<>();
@@ -118,7 +120,7 @@ public class TomlScanner implements Scanner<TreeSet<File>, Collection<File>> {
    * Get all ids of mods required for running the server.
    *
    * @param config {@link CommentedConfig} Base-config of the toml of the mod which contains all
-   *     information.
+   *               information.
    * @return {@link TreeSet} of ids of mods required.
    * @throws ScanningException if the mod specifies no mods.
    */
@@ -185,13 +187,14 @@ public class TomlScanner implements Scanner<TreeSet<File>, Collection<File>> {
 
   /**
    * Acquire a list of ids of dependencies required by the passed mod in order to run on a modded
-   * server. Only if all dependencies in this mod specify <code>CLIENT</code> for either <code>forge
+   * server. Only if all dependencies in this mod specify <code>CLIENT</code> for either
+   * <code>forge
    * </code> or <code>minecraft</code> is a dependency not added to the list of required
    * dependencies. Otherwise, all modIds mentioned in the dependencies of this mod, which are
    * neither <code>forge</code> nor <code>minecraft</code> get added to the list.
    *
    * @param config {@link CommentedConfig} Base-config of the toml of the mod which contains all
-   *     information.
+   *               information.
    * @return {@link TreeSet} of ids of mods required as dependencies.
    * @throws ScanningException if the mod has invalid dependency declarations or specifies no mods.
    */
@@ -269,7 +272,7 @@ public class TomlScanner implements Scanner<TreeSet<File>, Collection<File>> {
    * Acquire a set of ids of mods required for running the server.
    *
    * @param config {@link CommentedConfig} Base-config of the toml of the mod which contains all
-   *     information.
+   *               information.
    * @return {@link TreeSet} of ids of mods required.
    * @throws ScanningException if the mod specifies no...well...mods.
    */
@@ -311,9 +314,9 @@ public class TomlScanner implements Scanner<TreeSet<File>, Collection<File>> {
    * Acquire a map of all dependencies specified by a mod.
    *
    * @param config {@link CommentedConfig} Base-config of the toml of the mod which contains all *
-   *     information.
+   *               information.
    * @return {@link Map} {@link String}, {@link ArrayList} {@link CommentedConfig} - Map of
-   *     dependencies for the passed mod config.
+   * dependencies for the passed mod config.
    * @throws ScanningException if the mod declares no dependencies.
    */
   private Map<String, ArrayList<CommentedConfig>> getMapOfDependencyLists(CommentedConfig config)
