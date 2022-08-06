@@ -105,16 +105,11 @@ var activeTableTab = "activeTableTab";
 <div class="description">
 <ul class="blockList">
 <li class="blockList">
-<dl>
-<dt>All Implemented Interfaces:</dt>
-<dd><a href="../../../../de/griefed/serverpackcreator/modscanning/Scanner.html" title="interface in de.griefed.serverpackcreator.modscanning">Scanner</a>&lt;java.util.TreeSet&lt;java.io.File&gt;,java.util.Collection&lt;java.io.File&gt;&gt;</dd>
-</dl>
 <hr>
 <br>
 <pre>@Component
 public class <span class="typeNameLabel">TomlScanner</span>
-extends java.lang.Object
-implements <a href="../../../../de/griefed/serverpackcreator/modscanning/Scanner.html" title="interface in de.griefed.serverpackcreator.modscanning">Scanner</a>&lt;java.util.TreeSet&lt;java.io.File&gt;,java.util.Collection&lt;java.io.File&gt;&gt;</pre>
+extends java.lang.Object</pre>
 </li>
 </ul>
 </div>
@@ -153,7 +148,8 @@ implements <a href="../../../../de/griefed/serverpackcreator/modscanning/Scanner
 <tr id="i0" class="altColor">
 <td class="colFirst"><code>java.util.TreeSet&lt;java.io.File&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/modscanning/TomlScanner.html#scan-java.util.Collection-">scan</a></span>(java.util.Collection&lt;java.io.File&gt;&nbsp;filesInModsDir)</code>
-<div class="block">Scan the <code>mods.toml</code>-files in mod JAR-files of a given directory for their sideness.</div>
+<div class="block">Scan the <code>mods.toml</code>-files in mod JAR-files of a given directory for their
+ sideness.</div>
 </td>
 </tr>
 </table>
@@ -203,21 +199,20 @@ public&nbsp;TomlScanner(com.electronwill.nightconfig.toml.TomlParser&nbsp;tomlPa
 <li class="blockList">
 <h4>scan</h4>
 <pre>public&nbsp;java.util.TreeSet&lt;java.io.File&gt;&nbsp;scan(java.util.Collection&lt;java.io.File&gt;&nbsp;filesInModsDir)</pre>
-<div class="block">Scan the <code>mods.toml</code>-files in mod JAR-files of a given directory for their sideness.
+<div class="block">Scan the <code>mods.toml</code>-files in mod JAR-files of a given directory for their
+ sideness.
  <br>
- If <code>[[mods]]</code> specifies <code>side=BOTH|SERVER</code>, it is added.<br>
- If <code>[[dependencies.modId]]</code> for Forge|Minecraft specifies <code>side=BOTH|SERVER
+ If <code>[[mods]]</code> specifies <code>side=BOTH|SERVER</code>, it is added.<br> If
+ <code>[[dependencies.modId]]</code> for Forge|Minecraft specifies <code>side=BOTH|SERVER
  </code>, it is added.<br>
- Any modId of a dependency specifying <code>side=BOTH|SERVER</code> is added.<br>
- If no sideness can be found for a given mod, it is added to prevent false positives.</div>
+ Any modId of a dependency specifying <code>side=BOTH|SERVER</code> is added.<br> If no sideness
+ can be found for a given mod, it is added to prevent false positives.</div>
 <dl>
-<dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
-<dd><code><a href="../../../../de/griefed/serverpackcreator/modscanning/Scanner.html#scan-U-">scan</a></code>&nbsp;in interface&nbsp;<code><a href="../../../../de/griefed/serverpackcreator/modscanning/Scanner.html" title="interface in de.griefed.serverpackcreator.modscanning">Scanner</a>&lt;java.util.TreeSet&lt;java.io.File&gt;,java.util.Collection&lt;java.io.File&gt;&gt;</code></dd>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>filesInModsDir</code> - A list of files in which to check the <code>mods.toml</code>-files.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>TreeSet File. List of mods not to include in server pack based on
-     mods.toml-configuration.</dd>
+ mods.toml-configuration.</dd>
 </dl>
 </li>
 </ul>
