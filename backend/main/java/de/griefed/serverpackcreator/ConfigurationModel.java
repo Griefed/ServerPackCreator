@@ -70,33 +70,27 @@ public class ConfigurationModel {
   /**
    * Construct a new configuration model with custom values.
    *
-   * @param clientMods                String-{@link List} of clientside mods to exclude from the
-   *                                  server pack.
-   * @param copyDirs                  String-{@link List} of directories and/or files to include in
-   *                                  the server pack.
-   * @param modpackDir                {@link String} The path to the modpack.
-   * @param javaPath                  {@link String} The path to the java installation used for
-   *                                  modloader server installation.
-   * @param minecraftVersion          {@link String} The Minecraft version the modpack uses.
-   * @param modLoader                 {@link String} The modloader the modpack uses. Either
+   * @param clientMods                List of clientside mods to exclude from the server pack.
+   * @param copyDirs                  List of directories and/or files to include in the server
+   *                                  pack.
+   * @param modpackDir                The path to the modpack.
+   * @param javaPath                  The path to the java installation used for modloader server
+   *                                  installation.
+   * @param minecraftVersion          The Minecraft version the modpack uses.
+   * @param modLoader                 The modloader the modpack uses. Either
    *                                  <code>Forge</code>,
    *                                  <code>Fabric</code> or <code>Quilt</code>.
-   * @param modLoaderVersion          {@link String} The modloader version the modpack uses.
-   * @param javaArgs                  {@link String} JVM flags to create the start scripts with.
-   * @param serverPackSuffix          {@link String} Suffix to create the server pack with.
-   * @param serverIconPath            {@link String} Path to the icon to use in the server pack.
-   * @param serverPropertiesPath      {@link String} Path to the server.properties to create the
-   *                                  server pack with.
-   * @param includeServerInstallation {@link Boolean} Whether to install the modloader server in the
-   *                                  server pack.
-   * @param includeServerIcon         {@link Boolean} Whether to include the server-icon.png in the
-   *                                  server pack.
-   * @param includeServerProperties   {@link Boolean} Whether to include the server.properties in
-   *                                  the server pack.
-   * @param includeZipCreation        {@link Boolean} Whether to create a ZIP-archive of the server
-   *                                  pack.
-   * @param scriptSettings            {@link HashMap} {@link String} {@link String} Map containing
-   *                                  key-value pairs to be used in start script creation.
+   * @param modLoaderVersion          The modloader version the modpack uses.
+   * @param javaArgs                  JVM flags to create the start scripts with.
+   * @param serverPackSuffix          Suffix to create the server pack with.
+   * @param serverIconPath            Path to the icon to use in the server pack.
+   * @param serverPropertiesPath      Path to the server.properties to create the server pack with.
+   * @param includeServerInstallation Whether to install the modloader server in the server pack.
+   * @param includeServerIcon         Whether to include the server-icon.png in the server pack.
+   * @param includeServerProperties   Whether to include the server.properties in the server pack.
+   * @param includeZipCreation        Whether to create a ZIP-archive of the server pack.
+   * @param scriptSettings            Map containing key-value pairs to be used in start script
+   *                                  creation.
    * @author Griefed
    */
   public ConfigurationModel(

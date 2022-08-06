@@ -163,8 +163,7 @@ public class ServerPackHandler {
    * @param configurationModel {@link ConfigurationModel} or {@link ServerPackModel} containing the
    *                           modpack directory of the modpack from which the server pack will be
    *                           generated.
-   * @return {@link String} The complete path to the directory in which the server pack will be
-   * generated.
+   * @return The complete path to the directory in which the server pack will be generated.
    * @author Griefed
    */
   public String getServerPackDestination(ConfigurationModel configurationModel) {
@@ -423,9 +422,8 @@ public class ServerPackHandler {
   /**
    * Create start-scripts for the generated server pack.
    *
-   * @param configurationModel {@link ConfigurationModel} Configuration model containing modpack
-   *                           specific values. keys to be replaced with their respective values in
-   *                           the start scripts.
+   * @param configurationModel Configuration model containing modpack specific values. keys to be
+   *                           replaced with their respective values in the start scripts.
    * @param destination        String. The destination where the scripts should be created in.
    * @author Griefed
    */
@@ -615,10 +613,10 @@ public class ServerPackHandler {
    * file, a singular {@link ServerPackFile} is returned. If the source is a directory, then
    * {@link ServerPackFile}s for all files in said directory are returned.
    *
-   * @param combination {@link String}-array containing a
-   *                    source-file/directory;destination-file/directory combination.
-   * @param modpackDir  {@link String} the modpack-directory.
-   * @param destination {@link String} the destination, normally the server pack-directory.
+   * @param combination Array containing a source-file/directory;destination-file/directory
+   *                    combination.
+   * @param modpackDir  The modpack-directory.
+   * @param destination The destination, normally the server pack-directory.
    * @return List of {@link ServerPackFile}.
    * @author Griefed
    */

@@ -1093,7 +1093,7 @@ public class TabCreateServerPack extends JPanel {
   /**
    * Update the labels in the status panel.
    *
-   * @param text {@link String} The text to update the status with.
+   * @param text The text to update the status with.
    * @author Griefed
    */
   private void updateStatus(String text) {
@@ -1867,7 +1867,7 @@ public class TabCreateServerPack extends JPanel {
   /**
    * Acquire the current settings in the GUI as a {@link ConfigurationModel}.
    *
-   * @return {@link ConfigurationModel} of the current settings in the GUI.
+   * @return The current settings in the GUI.
    * @author Griefed
    */
   private ConfigurationModel currentConfigAsModel() {
@@ -2275,7 +2275,7 @@ public class TabCreateServerPack extends JPanel {
   /**
    * Get the current themes error-text colour.
    *
-   * @return {@link Color} The current themes error-text colour.
+   * @return The current themes error-text colour.
    * @author Griefed
    */
   private Color getThemeErrorColor() {
@@ -2292,7 +2292,7 @@ public class TabCreateServerPack extends JPanel {
   /**
    * The current themes default text colour.
    *
-   * @return {@link Color} The current themes default text colour.
+   * @return The current themes default text colour.
    * @author Griefed
    */
   private Color getThemeTextColor() {
@@ -2309,7 +2309,7 @@ public class TabCreateServerPack extends JPanel {
   /**
    * Check whether the current theme is Dark mode or Light mode.
    *
-   * @return {@link Boolean} <code>true</code> if Dark.
+   * @return <code>true</code> if Dark.
    * @author Griefed
    */
   private boolean isDark() {

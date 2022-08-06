@@ -96,8 +96,7 @@ public class TaskSubmitter {
   /**
    * Convert and send a generation-task to our JMS. Set the <code>type</code> to <code>generation
    * </code> and the <code>unique id</code> to tasks unique id which contains the CurseForge
-   * project
-   * and file id combination.
+   * project and file id combination.
    *
    * @param task The task to be submitted to the generation-queue.
    * @author Griefed

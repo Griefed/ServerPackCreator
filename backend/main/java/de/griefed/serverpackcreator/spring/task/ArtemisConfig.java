@@ -57,7 +57,8 @@ public class ArtemisConfig implements ArtemisConfigurationCustomizer {
   /**
    * Customize our configuration.<br> Set the default consumer windows size to 0.<br> Set the
    * maximum disk usage from our property <code>
-   * de.griefed.serverpackcreator.spring.artemis.queue.max_disk_usage</code>.<br> Set the address to
+   * de.griefed.serverpackcreator.spring.artemis.queue.max_disk_usage</code>.<br> Set the address
+   * to
    * <code>tasks.background</code>.<br> Set the queue configuration to
    * <code>tasks.background</code>.<br> Set the name to <code>tasks.background</code>.<br> Set the
    * last value key to <code>unique_id</code>.<br> Set the routing type to

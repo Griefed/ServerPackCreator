@@ -35,7 +35,7 @@ public class StringUtilities {
   /**
    * Converts a list of Strings, for example from a list, into a concatenated String.
    *
-   * @param strings {@link List} {@link String} Strings that will be concatenated into one string
+   * @param strings List of strings that will be concatenated into one string
    * @return String. Returns concatenated string that contains all provided values.
    * @author Griefed
    */
@@ -94,8 +94,8 @@ public class StringUtilities {
    *
    * <br>
    *
-   * @param text {@link String} The text which you want to be made safe.
-   * @return {@link String} The passed String safe for use for files, paths, directories etc.
+   * @param text The text which you want to be made safe.
+   * @return The passed String safe for use for files, paths, directories etc.
    * @author Griefed
    */
   public String pathSecureText(String text) {
@@ -161,8 +161,8 @@ public class StringUtilities {
    *
    * <br>
    *
-   * @param text {@link String} The text which you want to be made safe.
-   * @return {@link String} The passed String safe for use for files, paths, directories etc.
+   * @param text The text which you want to be made safe.
+   * @return The passed String safe for use for files, paths, directories etc.
    * @author Griefed
    */
   public String pathSecureTextAlternative(String text) {
@@ -221,7 +221,7 @@ public class StringUtilities {
    *
    * <br>
    *
-   * @param text {@link String} The text you want to check.
+   * @param text The text you want to check.
    * @return <code>true</code> if none of these characters were found.
    * @author Griefed
    */

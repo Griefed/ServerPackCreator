@@ -384,8 +384,7 @@ public class I18n {
    * Writes the specified locale from -lang your_locale to a lang.properties file to ensure every
    * subsequent start of serverpackcreator is executed using said locale. This method should
    * <strong>not</strong> call {@link #getMessage(String)}, as the initialization of said manager
-   * is
-   * called from here. Therefore, localized strings are not yet available.
+   * is called from here. Therefore, localized strings are not yet available.
    *
    * @param locale The locale the user specified when they ran serverpackcreator with -lang
    *               -your_locale.

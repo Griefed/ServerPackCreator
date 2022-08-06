@@ -38,7 +38,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Properties;
 import net.lingala.zip4j.ZipFile;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
@@ -65,17 +64,12 @@ public class ConfigurationHandler {
   private final ConfigUtilities CONFIGUTILITIES;
 
   /**
-   * <strong>Constructor</strong>
-   *
-   * <p>Used for Dependency Injection.
-   *
-   * <p>Receives an instance of {@link I18n} or creates one if the received one is null. Required
-   * for use of localization.
+   * Construct a new ConfigurationHandler giving you access to various config check methods.
    *
    * @param injectedI18n                  Instance of {@link I18n} required for localized log
    *                                      messages.
-   * @param injectedApplicationProperties Instance of {@link Properties} required for various
-   *                                      different things.
+   * @param injectedApplicationProperties Instance of {@link ApplicationProperties} required for
+   *                                      various different things.
    * @param injectedVersionMeta           Instance of {@link VersionMeta} required for everything
    *                                      version-related.
    * @param injectedUtilities             Instance of {@link Utilities}.

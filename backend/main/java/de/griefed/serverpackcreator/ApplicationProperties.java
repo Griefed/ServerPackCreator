@@ -442,7 +442,7 @@ public class ApplicationProperties extends Properties {
    *   <li>default_template.ps1
    * </ul>
    *
-   * @return {@link List} {@link File} Default script templates.
+   * @return Default script templates.
    * @author Griefed
    */
   public List<File> FALLBACK_SCRIPT_TEMPLATES() {
@@ -460,7 +460,7 @@ public class ApplicationProperties extends Properties {
   /**
    * Configured list of script templates.
    *
-   * @return {@link List} {@link File} Configured script templates.
+   * @return Configured script templates.
    * @author Griefed
    */
   public List<File> scriptTemplates() {
@@ -471,7 +471,7 @@ public class ApplicationProperties extends Properties {
    * Properties file used by ServerPackCreator, containing the configuration for this instance of
    * it.
    *
-   * @return {@link File} serverpackcreator.properties-file.
+   * @return serverpackcreator.properties-file.
    * @author Griefed
    */
   public File SERVERPACKCREATOR_PROPERTIES() {
@@ -481,7 +481,7 @@ public class ApplicationProperties extends Properties {
   /**
    * String-list of fallback clientside-only mods.
    *
-   * @return {@link String}-list of fallback clientside-only mods.
+   * @return List of fallback clientside-only mods.
    * @author Griefed
    */
   public List<String> FALLBACK_CLIENTSIDE_MODS() {
@@ -491,7 +491,7 @@ public class ApplicationProperties extends Properties {
   /**
    * Default configuration-file for a server pack generation.
    *
-   * @return {@link File} serverpackcreator.conf-file.
+   * @return serverpackcreator.conf-file.
    * @author Griefed
    */
   public File DEFAULT_CONFIG() {
@@ -501,7 +501,7 @@ public class ApplicationProperties extends Properties {
   /**
    * Old configuration-file used for automated migration in case anyone upgrades from 1.x.
    *
-   * @return {@link File} creator.conf-file.
+   * @return creator.conf-file.
    * @author Griefed
    */
   public File OLD_CONFIG() {
@@ -511,7 +511,7 @@ public class ApplicationProperties extends Properties {
   /**
    * Default server.properties-file used by Minecraft servers.
    *
-   * @return {@link File} server.properties-file.
+   * @return server.properties-file.
    * @author Griefed
    */
   public File DEFAULT_SERVER_PROPERTIES() {
@@ -521,7 +521,7 @@ public class ApplicationProperties extends Properties {
   /**
    * Default server-icon.png-file used by Minecraft servers.
    *
-   * @return {@link File} server-icon.png-file.
+   * @return server-icon.png-file.
    * @author Griefed
    */
   public File DEFAULT_SERVER_ICON() {
@@ -531,7 +531,7 @@ public class ApplicationProperties extends Properties {
   /**
    * Minecraft version manifest-file.
    *
-   * @return {@link File} minecraft-manifest.json-file.
+   * @return minecraft-manifest.json-file.
    * @author Griefed
    */
   public File MINECRAFT_VERSION_MANIFEST() {
@@ -541,7 +541,7 @@ public class ApplicationProperties extends Properties {
   /**
    * Forge version manifest-file.
    *
-   * @return {@link File} forge-manifest.json-file.
+   * @return forge-manifest.json-file.
    * @author Griefed
    */
   public File FORGE_VERSION_MANIFEST() {
@@ -551,7 +551,7 @@ public class ApplicationProperties extends Properties {
   /**
    * Fabric version manifest-file.
    *
-   * @return {@link File} fabric-manifest.xml-file
+   * @return fabric-manifest.xml-file
    * @author Griefed
    */
   public File FABRIC_VERSION_MANIFEST() {
@@ -561,7 +561,7 @@ public class ApplicationProperties extends Properties {
   /**
    * Fabric installer version manifest-file.
    *
-   * @return {@link File} fabric-installer-manifest.xml-file.
+   * @return fabric-installer-manifest.xml-file.
    * @author Griefed
    */
   public File FABRIC_INSTALLER_VERSION_MANIFEST() {
@@ -571,7 +571,7 @@ public class ApplicationProperties extends Properties {
   /**
    * Quilt version manifest-file.
    *
-   * @return {@link File} quilt-manifest.xml-file
+   * @return quilt-manifest.xml-file
    * @author Griefed
    */
   public File QUILT_VERSION_MANIFEST() {
@@ -581,7 +581,7 @@ public class ApplicationProperties extends Properties {
   /**
    * Quilt installer version manifest-file.
    *
-   * @return {@link File} quilt-installer-manifest.xml-file.
+   * @return quilt-installer-manifest.xml-file.
    * @author Griefed
    */
   public File QUILT_INSTALLER_VERSION_MANIFEST() {
@@ -591,7 +591,7 @@ public class ApplicationProperties extends Properties {
   /**
    * ServerPackCreator-database when running as a webservice.
    *
-   * @return {@link File} serverpackcreator.db-file.
+   * @return serverpackcreator.db-file.
    * @author Griefed
    */
   public File SERVERPACKCREATOR_DATABASE() {
@@ -601,7 +601,7 @@ public class ApplicationProperties extends Properties {
   /**
    * Path to the Minecraft version manifest-file, as a file.
    *
-   * @return {@link File} ./work/minecraft-manifest.json
+   * @return ./work/minecraft-manifest.json
    * @author Griefed
    */
   public File MINECRAFT_VERSION_MANIFEST_LOCATION() {
@@ -611,7 +611,7 @@ public class ApplicationProperties extends Properties {
   /**
    * Path to the Forge version manifest-file, as a file.
    *
-   * @return {@link File} ./work/forge-manifest.json
+   * @return ./work/forge-manifest.json
    * @author Griefed
    */
   public File FORGE_VERSION_MANIFEST_LOCATION() {
@@ -621,7 +621,7 @@ public class ApplicationProperties extends Properties {
   /**
    * Path to the Fabric version manifest-file, as a file.
    *
-   * @return {@link File} ./work/fabric-manifest.xml
+   * @return ./work/fabric-manifest.xml
    * @author Griefed
    */
   public File FABRIC_VERSION_MANIFEST_LOCATION() {
@@ -631,7 +631,7 @@ public class ApplicationProperties extends Properties {
   /**
    * Path to the Fabric intermediaries manifest-file, as a file.
    *
-   * @return {@link File} ./work/fabric-intermediaries-manifest.json
+   * @return ./work/fabric-intermediaries-manifest.json
    */
   public File FABRIC_INTERMEDIARIES_MANIFEST_LOCATION() {
     return FABRIC_INTERMEDIARIES_MANIFEST_LOCATION;
@@ -640,7 +640,7 @@ public class ApplicationProperties extends Properties {
   /**
    * Path to the Fabric installer version manifest-file, as a file.
    *
-   * @return {@link File} ./work/fabric-installer-manifest.xml
+   * @return ./work/fabric-installer-manifest.xml
    * @author Griefed
    */
   public File FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION() {
@@ -650,7 +650,7 @@ public class ApplicationProperties extends Properties {
   /**
    * Path to the Quilt version manifest-file, as a file.
    *
-   * @return {@link File} ./work/quilt-manifest.xml
+   * @return ./work/quilt-manifest.xml
    * @author Griefed
    */
   public File QUILT_VERSION_MANIFEST_LOCATION() {
@@ -660,7 +660,7 @@ public class ApplicationProperties extends Properties {
   /**
    * Path to the Quilt installer version manifest-file, as a file.
    *
-   * @return {@link File} ./work/quilt-installer-manifest.xml
+   * @return ./work/quilt-installer-manifest.xml
    * @author Griefed
    */
   public File QUILT_INSTALLER_VERSION_MANIFEST_LOCATION() {
@@ -683,7 +683,7 @@ public class ApplicationProperties extends Properties {
   /**
    * String-array of modloaders supported by ServerPackCreator.
    *
-   * @return {@link String}-array of modloaders supported by ServerPackCreator.
+   * @return Array of modloaders supported by ServerPackCreator.
    * @author Griefed
    */
   public String[] SUPPORTED_MODLOADERS() {
@@ -694,7 +694,7 @@ public class ApplicationProperties extends Properties {
    * Directory where server-files are stored in, for example the default server-icon and
    * server.properties.
    *
-   * @return {@link String} server-files directory.
+   * @return server-files directory.
    * @author Griefed
    */
   public String DIRECTORY_SERVER_FILES() {
@@ -704,7 +704,7 @@ public class ApplicationProperties extends Properties {
   /**
    * Directory where plugins are stored in.
    *
-   * @return {@link String} plugins directory.
+   * @return plugins directory.
    * @author Griefed
    */
   public String DIRECTORY_PLUGINS() {
@@ -734,7 +734,7 @@ public class ApplicationProperties extends Properties {
   /**
    * Getter for the default list of directories to include in a server pack.
    *
-   * @return {@link List} {@link String} containing default directories to include in a server pack.
+   * @return List containing default directories to include in a server pack.
    * @author Griefed
    */
   public List<String> getDirectoriesToInclude() {
@@ -801,7 +801,7 @@ public class ApplicationProperties extends Properties {
   /**
    * Get this configurations AikarsFlags
    *
-   * @return {@link String} Aikars flags.
+   * @return Aikars flags.
    */
   public String getAikarsFlags() {
     return aikarsFlags;

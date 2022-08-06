@@ -57,8 +57,7 @@ import javax.swing.Icon;
  * href="https://tips4java.wordpress.com/2009/03/29/compound-icon/">Compound Icon</a><br>
  *
  * <p>The CompoundIcon will paint two, or more, Icons as a single Icon. The Icons are painted in
- * the
- * order in which they are added.
+ * the order in which they are added.
  *
  * <p>The Icons are layed out on the specified axis:
  *
