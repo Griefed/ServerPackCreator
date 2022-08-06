@@ -23,19 +23,12 @@ package de.griefed.serverpackcreator.modscanning;
  * Small interface for making sure each scanner has a <code>scan</code>-method with a given format.
  *
  * @param <T> The return-type of the implementation. Determines the return-type of the <code>scan
- *     </code>-method, thus allowing you to control what the said method returns.
+ *            </code>-method, thus allowing you to control what the said method returns.
  * @param <U> The parameter-type of the implementation. Determines the parameter-type of the <code>
- *     scan</code>-method, thus allowing you to control what said method receives.
+ *            scan</code>-method, thus allowing you to control what said method receives.
  * @author Grefed
  */
-public interface Scanner<T, U> {
+interface Scanner<T, U> {
 
-  /**
-   * Scan the given files and return a list of files.
-   *
-   * @param jarFiles {@link U}
-   * @return {@link T}
-   * @author Griefed
-   */
   T scan(U jarFiles);
 }
