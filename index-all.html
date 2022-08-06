@@ -104,7 +104,7 @@
 <dd>
 <div class="block"><code>fml-cache-annotation.json</code>-based scanning of Forge-Minecraft mods of older versions.</div>
 </dd>
-<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/modscanning/AnnotationScanner.html#AnnotationScanner-com.fasterxml.jackson.databind.ObjectMapper-">AnnotationScanner(ObjectMapper)</a></span> - Constructor for class de.griefed.serverpackcreator.modscanning.<a href="de/griefed/serverpackcreator/modscanning/AnnotationScanner.html" title="class in de.griefed.serverpackcreator.modscanning">AnnotationScanner</a></dt>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/modscanning/AnnotationScanner.html#AnnotationScanner-com.fasterxml.jackson.databind.ObjectMapper-de.griefed.serverpackcreator.utilities.common.Utilities-">AnnotationScanner(ObjectMapper, Utilities)</a></span> - Constructor for class de.griefed.serverpackcreator.modscanning.<a href="de/griefed/serverpackcreator/modscanning/AnnotationScanner.html" title="class in de.griefed.serverpackcreator.modscanning">AnnotationScanner</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="de/griefed/serverpackcreator/ApplicationPlugins.html" title="class in de.griefed.serverpackcreator"><span class="typeNameLink">ApplicationPlugins</span></a> - Class in <a href="de/griefed/serverpackcreator/package-summary.html">de.griefed.serverpackcreator</a></dt>
 <dd>
@@ -266,9 +266,9 @@
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/ConfigurationHandler.html#checkCopyDirs-java.util.List-java.lang.String-java.util.List-">checkCopyDirs(List&lt;String&gt;, String, List&lt;String&gt;)</a></span> - Method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/ConfigurationHandler.html" title="class in de.griefed.serverpackcreator">ConfigurationHandler</a></dt>
 <dd>
 <div class="block">Checks whether the passed list of directories which are supposed to be in the modpack directory
- is empty and prints a message to the console and serverpackcreator.log if it is.<br>
- Checks whether all directories in the list exist in the modpack directory and prints a message
- to the console and serverpackcreator.log if any one of the directories could not be found.</div>
+ is empty and prints a message to the console and serverpackcreator.log if it is.<br> Checks
+ whether all directories in the list exist in the modpack directory and prints a message to the
+ console and serverpackcreator.log if any one of the directories could not be found.</div>
 </dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/ConfigUtilities.html#checkCurseForgeJsonForFabric-com.fasterxml.jackson.databind.JsonNode-">checkCurseForgeJsonForFabric(JsonNode)</a></span> - Method in class de.griefed.serverpackcreator.utilities.<a href="de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ConfigUtilities</a></dt>
 <dd>
@@ -386,9 +386,9 @@
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/ConfigurationHandler.html#checkModpackDir-java.lang.String-java.util.List-">checkModpackDir(String, List&lt;String&gt;)</a></span> - Method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/ConfigurationHandler.html" title="class in de.griefed.serverpackcreator">ConfigurationHandler</a></dt>
 <dd>
 <div class="block">Checks whether the passed String is empty and if it is empty, prints the corresponding message
- to the console and serverpackcreator.log so the user knows what went wrong.<br>
- Checks whether the passed String is a directory and if it is not, prints the corresponding
- message to the console and serverpackcreator.log so the user knows what went wrong.</div>
+ to the console and serverpackcreator.log so the user knows what went wrong.<br> Checks whether
+ the passed String is a directory and if it is not, prints the corresponding message to the
+ console and serverpackcreator.log so the user knows what went wrong.</div>
 </dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/common/FileUtilities.html#checkPermissions-java.lang.String-">checkPermissions(String)</a></span> - Method in class de.griefed.serverpackcreator.utilities.common.<a href="de/griefed/serverpackcreator/utilities/common/FileUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">FileUtilities</a></dt>
 <dd>
@@ -866,7 +866,7 @@
 <dd>
 <div class="block"><code>fabric.mod.json</code>-based scanning of Fabric-Minecraft mods.</div>
 </dd>
-<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/modscanning/FabricScanner.html#FabricScanner-com.fasterxml.jackson.databind.ObjectMapper-">FabricScanner(ObjectMapper)</a></span> - Constructor for class de.griefed.serverpackcreator.modscanning.<a href="de/griefed/serverpackcreator/modscanning/FabricScanner.html" title="class in de.griefed.serverpackcreator.modscanning">FabricScanner</a></dt>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/modscanning/FabricScanner.html#FabricScanner-com.fasterxml.jackson.databind.ObjectMapper-de.griefed.serverpackcreator.utilities.common.Utilities-">FabricScanner(ObjectMapper, Utilities)</a></span> - Constructor for class de.griefed.serverpackcreator.modscanning.<a href="de/griefed/serverpackcreator/modscanning/FabricScanner.html" title="class in de.griefed.serverpackcreator.modscanning">FabricScanner</a></dt>
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/ApplicationProperties.html#FALLBACK_CLIENTSIDE_MODS--">FALLBACK_CLIENTSIDE_MODS()</a></span> - Method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a></dt>
 <dd>
@@ -1129,6 +1129,11 @@
 <dd>
 <div class="block">Get a specific intermediary, wrapped in an <code>Optional</code>.</div>
 </dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/common/JsonUtilities.html#getFieldNames-com.fasterxml.jackson.databind.JsonNode-java.lang.String...-">getFieldNames(JsonNode, String...)</a></span> - Method in class de.griefed.serverpackcreator.utilities.common.<a href="de/griefed/serverpackcreator/utilities/common/JsonUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">JsonUtilities</a></dt>
+<dd>
+<div class="block">Get a string iterator for the field names of the last specified child node in the specified
+ JsonNode.</div>
+</dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/ConfigurationModel.html#getFileDiskName--">getFileDiskName()</a></span> - Method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a></dt>
 <dd>
 <div class="block">Getter for the disk-name of the CurseForge project file.</div>
@@ -1358,6 +1363,22 @@
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricLibrary.html#getName--">getName()</a></span> - Method in class de.griefed.serverpackcreator.versionmeta.fabric.<a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricLibrary.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric">FabricLibrary</a></dt>
 <dd>
 <div class="block">The name of this library.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/common/JsonUtilities.html#getNestedBoolean-com.fasterxml.jackson.databind.JsonNode-java.lang.String...-">getNestedBoolean(JsonNode, String...)</a></span> - Method in class de.griefed.serverpackcreator.utilities.common.<a href="de/griefed/serverpackcreator/utilities/common/JsonUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">JsonUtilities</a></dt>
+<dd>
+<div class="block">Get the boolean value from the nested child node(s).</div>
+</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/common/JsonUtilities.html#getNestedElement-com.fasterxml.jackson.databind.JsonNode-java.lang.String...-">getNestedElement(JsonNode, String...)</a></span> - Method in class de.griefed.serverpackcreator.utilities.common.<a href="de/griefed/serverpackcreator/utilities/common/JsonUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">JsonUtilities</a></dt>
+<dd>
+<div class="block">Get a nested element from a JsonNode.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/common/JsonUtilities.html#getNestedText-com.fasterxml.jackson.databind.JsonNode-java.lang.String...-">getNestedText(JsonNode, String...)</a></span> - Method in class de.griefed.serverpackcreator.utilities.common.<a href="de/griefed/serverpackcreator/utilities/common/JsonUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">JsonUtilities</a></dt>
+<dd>
+<div class="block">Get the text from nested child node(s).</div>
+</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/common/JsonUtilities.html#getNestedTexts-com.fasterxml.jackson.databind.JsonNode-java.lang.String-java.lang.String...-">getNestedTexts(JsonNode, String, String...)</a></span> - Method in class de.griefed.serverpackcreator.utilities.common.<a href="de/griefed/serverpackcreator/utilities/common/JsonUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">JsonUtilities</a></dt>
+<dd>
+<div class="block">Get the array of texts from the nested child node(s) comma-separated text.</div>
 </dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/swing/utilities/TextIcon.html#getPadding--">getPadding()</a></span> - Method in class de.griefed.serverpackcreator.swing.utilities.<a href="de/griefed/serverpackcreator/swing/utilities/TextIcon.html" title="class in de.griefed.serverpackcreator.swing.utilities">TextIcon</a></dt>
 <dd>
@@ -1774,6 +1795,18 @@
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/swing/utilities/JComponentTailer.html#JComponentTailer-java.lang.String-">JComponentTailer(String)</a></span> - Constructor for class de.griefed.serverpackcreator.swing.utilities.<a href="de/griefed/serverpackcreator/swing/utilities/JComponentTailer.html" title="class in de.griefed.serverpackcreator.swing.utilities">JComponentTailer</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="de/griefed/serverpackcreator/utilities/common/JsonException.html" title="class in de.griefed.serverpackcreator.utilities.common"><span class="typeNameLink">JsonException</span></a> - Exception in <a href="de/griefed/serverpackcreator/utilities/common/package-summary.html">de.griefed.serverpackcreator.utilities.common</a></dt>
+<dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/common/JsonException.html#JsonException-java.lang.String-java.lang.Throwable-">JsonException(String, Throwable)</a></span> - Constructor for exception de.griefed.serverpackcreator.utilities.common.<a href="de/griefed/serverpackcreator/utilities/common/JsonException.html" title="class in de.griefed.serverpackcreator.utilities.common">JsonException</a></dt>
+<dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/common/JsonException.html#JsonException-java.lang.String-">JsonException(String)</a></span> - Constructor for exception de.griefed.serverpackcreator.utilities.common.<a href="de/griefed/serverpackcreator/utilities/common/JsonException.html" title="class in de.griefed.serverpackcreator.utilities.common">JsonException</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="de/griefed/serverpackcreator/utilities/common/JsonUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common"><span class="typeNameLink">JsonUtilities</span></a> - Class in <a href="de/griefed/serverpackcreator/utilities/common/package-summary.html">de.griefed.serverpackcreator.utilities.common</a></dt>
+<dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/common/JsonUtilities.html#JsonUtilities--">JsonUtilities()</a></span> - Constructor for class de.griefed.serverpackcreator.utilities.common.<a href="de/griefed/serverpackcreator/utilities/common/JsonUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">JsonUtilities</a></dt>
+<dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/common/Utilities.html#JsonUtilities--">JsonUtilities()</a></span> - Method in class de.griefed.serverpackcreator.utilities.common.<a href="de/griefed/serverpackcreator/utilities/common/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.common">Utilities</a></dt>
+<dd>&nbsp;</dd>
 </dl>
 <a name="I:L">
 <!--   -->
@@ -2049,6 +2082,23 @@
 </a>
 <h2 class="title">N</h2>
 <dl>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/common/JsonUtilities.html#nestedTextContains-com.fasterxml.jackson.databind.JsonNode-java.lang.String-java.lang.String...-">nestedTextContains(JsonNode, String, String...)</a></span> - Method in class de.griefed.serverpackcreator.utilities.common.<a href="de/griefed/serverpackcreator/utilities/common/JsonUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">JsonUtilities</a></dt>
+<dd>
+<div class="block">Check whether a child node contains the specified text.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/common/JsonUtilities.html#nestedTextEqualsIgnoreCase-com.fasterxml.jackson.databind.JsonNode-java.lang.String-java.lang.String...-">nestedTextEqualsIgnoreCase(JsonNode, String, String...)</a></span> - Method in class de.griefed.serverpackcreator.utilities.common.<a href="de/griefed/serverpackcreator/utilities/common/JsonUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">JsonUtilities</a></dt>
+<dd>
+<div class="block">Check whether the text in specified child node(s) is equal to the specified text,
+ case-insensitive.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/common/JsonUtilities.html#nestedTextIsEmpty-com.fasterxml.jackson.databind.JsonNode-java.lang.String...-">nestedTextIsEmpty(JsonNode, String...)</a></span> - Method in class de.griefed.serverpackcreator.utilities.common.<a href="de/griefed/serverpackcreator/utilities/common/JsonUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">JsonUtilities</a></dt>
+<dd>
+<div class="block">Check whether the text in the specified child node(s) is empty.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/common/JsonUtilities.html#nestedTextMatches-com.fasterxml.jackson.databind.JsonNode-java.lang.String-java.lang.String...-">nestedTextMatches(JsonNode, String, String...)</a></span> - Method in class de.griefed.serverpackcreator.utilities.common.<a href="de/griefed/serverpackcreator/utilities/common/JsonUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">JsonUtilities</a></dt>
+<dd>
+<div class="block">Check whether the text in specified child node(s) matches the specified text.</div>
+</dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/i18n/I18n.UTF8Control.html#newBundle-java.lang.String-java.util.Locale-java.lang.String-java.lang.ClassLoader-boolean-">newBundle(String, Locale, String, ClassLoader, boolean)</a></span> - Method in class de.griefed.serverpackcreator.i18n.<a href="de/griefed/serverpackcreator/i18n/I18n.UTF8Control.html" title="class in de.griefed.serverpackcreator.i18n">I18n.UTF8Control</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="de/griefed/serverpackcreator/spring/NotificationResponse.html" title="class in de.griefed.serverpackcreator.spring"><span class="typeNameLink">NotificationResponse</span></a> - Class in <a href="de/griefed/serverpackcreator/spring/package-summary.html">de.griefed.serverpackcreator.spring</a></dt>
@@ -2247,7 +2297,7 @@
 <dd>
 <div class="block"><code>quilt.mod.json</code>-based scanning of Fabric-Minecraft mods.</div>
 </dd>
-<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/modscanning/QuiltScanner.html#QuiltScanner-com.fasterxml.jackson.databind.ObjectMapper-">QuiltScanner(ObjectMapper)</a></span> - Constructor for class de.griefed.serverpackcreator.modscanning.<a href="de/griefed/serverpackcreator/modscanning/QuiltScanner.html" title="class in de.griefed.serverpackcreator.modscanning">QuiltScanner</a></dt>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/modscanning/QuiltScanner.html#QuiltScanner-com.fasterxml.jackson.databind.ObjectMapper-de.griefed.serverpackcreator.utilities.common.Utilities-">QuiltScanner(ObjectMapper, Utilities)</a></span> - Constructor for class de.griefed.serverpackcreator.modscanning.<a href="de/griefed/serverpackcreator/modscanning/QuiltScanner.html" title="class in de.griefed.serverpackcreator.modscanning">QuiltScanner</a></dt>
 <dd>&nbsp;</dd>
 </dl>
 <a name="I:R">
@@ -3215,7 +3265,7 @@
 <dd>
 <div class="block">Parent-class for all utilities, giving access to any and all utility-classes we may have.</div>
 </dd>
-<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/common/Utilities.html#Utilities-de.griefed.serverpackcreator.i18n.I18n-de.griefed.serverpackcreator.ApplicationProperties-">Utilities(I18n, ApplicationProperties)</a></span> - Constructor for class de.griefed.serverpackcreator.utilities.common.<a href="de/griefed/serverpackcreator/utilities/common/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.common">Utilities</a></dt>
+<dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/common/Utilities.html#Utilities-de.griefed.serverpackcreator.ApplicationProperties-">Utilities(ApplicationProperties)</a></span> - Constructor for class de.griefed.serverpackcreator.utilities.common.<a href="de/griefed/serverpackcreator/utilities/common/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.common">Utilities</a></dt>
 <dd>&nbsp;</dd>
 </dl>
 <a name="I:V">
