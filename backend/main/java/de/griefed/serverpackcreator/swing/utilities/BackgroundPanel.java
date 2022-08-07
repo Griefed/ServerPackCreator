@@ -47,7 +47,6 @@
  */
 package de.griefed.serverpackcreator.swing.utilities;
 
-import de.griefed.serverpackcreator.utilities.misc.Generated;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -79,7 +78,6 @@ import javax.swing.JViewport;
  *
  * @author Rob Camick
  */
-@Generated
 public class BackgroundPanel extends JPanel {
 
   public static final int SCALED = 0;

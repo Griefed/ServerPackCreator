@@ -37,7 +37,6 @@ import de.griefed.serverpackcreator.swing.utilities.TextIcon;
 import de.griefed.serverpackcreator.utilities.ConfigUtilities;
 import de.griefed.serverpackcreator.utilities.ReticulatingSplines;
 import de.griefed.serverpackcreator.utilities.common.Utilities;
-import de.griefed.serverpackcreator.utilities.misc.Generated;
 import de.griefed.serverpackcreator.versionmeta.VersionMeta;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -107,7 +106,6 @@ import org.jetbrains.annotations.Nullable;
  *
  * @author Griefed
  */
-@Generated
 public class TabCreateServerPack extends JPanel {
 
   private static final Logger LOG = LogManager.getLogger(TabCreateServerPack.class);

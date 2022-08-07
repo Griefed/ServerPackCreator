@@ -21,7 +21,6 @@ package de.griefed.serverpackcreator.plugins;
 
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.ConfigurationModel;
-import de.griefed.serverpackcreator.utilities.misc.Generated;
 import org.pf4j.ExtensionPoint;
 
 /**
@@ -31,7 +30,6 @@ import org.pf4j.ExtensionPoint;
  *
  * @author Griefed
  */
-@Generated
 public interface PluginInformation extends ExtensionPoint {
 
   /**

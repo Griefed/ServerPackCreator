@@ -19,7 +19,6 @@
  */
 package de.griefed.serverpackcreator.utilities;
 
-import de.griefed.serverpackcreator.utilities.misc.Generated;
 import de.griefed.versionchecker.GitHubChecker;
 import de.griefed.versionchecker.GitLabChecker;
 import de.griefed.versionchecker.Update;
@@ -37,7 +36,6 @@ import org.springframework.stereotype.Service;
  *
  * @author Griefed
  */
-@Generated
 @Service
 public class UpdateChecker {
 

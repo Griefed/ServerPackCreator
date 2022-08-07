@@ -48,7 +48,6 @@
  */
 package de.griefed.serverpackcreator.swing.utilities;
 
-import de.griefed.serverpackcreator.utilities.misc.Generated;
 import java.awt.Component;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
@@ -96,7 +95,6 @@ import javax.swing.text.JTextComponent;
  *
  * @author Rob Camick
  */
-@Generated
 public class SmartScroller implements AdjustmentListener {
 
   public static final int HORIZONTAL = 0;

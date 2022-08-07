@@ -30,7 +30,6 @@ import de.griefed.serverpackcreator.swing.utilities.BackgroundPanel;
 import de.griefed.serverpackcreator.utilities.ConfigUtilities;
 import de.griefed.serverpackcreator.utilities.UpdateChecker;
 import de.griefed.serverpackcreator.utilities.common.Utilities;
-import de.griefed.serverpackcreator.utilities.misc.Generated;
 import de.griefed.serverpackcreator.versionmeta.VersionMeta;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -59,7 +58,6 @@ import org.apache.logging.log4j.Logger;
  *
  * @author Griefed
  */
-@Generated
 public class ServerPackCreatorGui {
 
   private static final Logger LOG = LogManager.getLogger(ServerPackCreatorGui.class);

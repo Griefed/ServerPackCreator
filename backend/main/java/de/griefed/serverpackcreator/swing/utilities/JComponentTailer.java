@@ -19,7 +19,6 @@
  */
 package de.griefed.serverpackcreator.swing.utilities;
 
-import de.griefed.serverpackcreator.utilities.misc.Generated;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -27,7 +26,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
-@Generated
 public abstract class JComponentTailer extends JPanel {
 
   protected JTextArea textArea;

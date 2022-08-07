@@ -25,7 +25,6 @@ import de.griefed.serverpackcreator.swing.themes.DarkTheme;
 import de.griefed.serverpackcreator.swing.themes.LightTheme;
 import de.griefed.serverpackcreator.utilities.UpdateChecker;
 import de.griefed.serverpackcreator.utilities.common.InvalidFileTypeException;
-import de.griefed.serverpackcreator.utilities.misc.Generated;
 import de.griefed.versionchecker.Update;
 import java.awt.Component;
 import java.awt.Dialog;
@@ -78,7 +77,6 @@ import org.apache.logging.log4j.Logger;
  *
  * @author Griefed
  */
-@Generated
 public class MainMenuBar extends Component {
 
   private static final Logger LOG = LogManager.getLogger(MainMenuBar.class);
