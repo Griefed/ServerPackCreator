@@ -139,6 +139,7 @@ public class ConfigurationModel {
    */
   public ConfigurationModel(Utilities utilities, File configFile)
       throws FileNotFoundException, NoFormatFoundException {
+
     if (!configFile.exists()) {
       throw new FileNotFoundException("Couldn't find file: " + configFile);
     }
@@ -164,18 +165,18 @@ public class ConfigurationModel {
 
     setIncludeServerInstallation(
         utilities.BooleanUtils()
-            .convertToBoolean(
+            .convert(
                 String.valueOf(config.getOrElse("includeServerInstallation", "False"))));
     setIncludeServerIcon(
         utilities.BooleanUtils()
-            .convertToBoolean(String.valueOf(config.getOrElse("includeServerIcon", "False"))));
+            .convert(String.valueOf(config.getOrElse("includeServerIcon", "False"))));
     setIncludeServerProperties(
         utilities.BooleanUtils()
-            .convertToBoolean(
+            .convert(
                 String.valueOf(config.getOrElse("includeServerProperties", "False"))));
     setIncludeZipCreation(
         utilities.BooleanUtils()
-            .convertToBoolean(String.valueOf(config.getOrElse("includeZipCreation", "False"))));
+            .convert(String.valueOf(config.getOrElse("includeZipCreation", "False"))));
   }
 
   /**

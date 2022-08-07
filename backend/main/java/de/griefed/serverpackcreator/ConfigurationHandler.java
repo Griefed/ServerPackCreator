@@ -264,18 +264,18 @@ public class ConfigurationHandler {
 
       configurationModel.setIncludeServerInstallation(
           UTILITIES.BooleanUtils()
-              .convertToBoolean(
+              .convert(
                   String.valueOf(config.getOrElse("includeServerInstallation", "False"))));
       configurationModel.setIncludeServerIcon(
           UTILITIES.BooleanUtils()
-              .convertToBoolean(String.valueOf(config.getOrElse("includeServerIcon", "False"))));
+              .convert(String.valueOf(config.getOrElse("includeServerIcon", "False"))));
       configurationModel.setIncludeServerProperties(
           UTILITIES.BooleanUtils()
-              .convertToBoolean(
+              .convert(
                   String.valueOf(config.getOrElse("includeServerProperties", "False"))));
       configurationModel.setIncludeZipCreation(
           UTILITIES.BooleanUtils()
-              .convertToBoolean(String.valueOf(config.getOrElse("includeZipCreation", "False"))));
+              .convert(String.valueOf(config.getOrElse("includeZipCreation", "False"))));
 
     } else {
 
@@ -1906,6 +1906,4 @@ public class ConfigurationHandler {
         return false;
     }
   }
-
-  // TODO replace String in docs with {@link String}
 }
