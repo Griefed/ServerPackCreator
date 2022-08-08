@@ -81,7 +81,7 @@ dependencies {
   embed 'org.jgroups:jgroups:5.2.4.Final'
 
   // GUI
-  embed 'io.github.vincenzopalazzo:material-ui-swing:1.1.2'
+  embed 'io.github.vincenzopalazzo:material-ui-swing:1.1.3'
   embed 'de.griefed:larsonscanner:1.0.4'
 
   // WEB
