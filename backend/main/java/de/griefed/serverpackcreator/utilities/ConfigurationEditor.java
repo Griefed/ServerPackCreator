@@ -27,10 +27,16 @@ import de.griefed.serverpackcreator.utilities.common.Utilities;
 import de.griefed.serverpackcreator.versionmeta.VersionMeta;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Create and edit a serverpackcreator.conf file via CLI. Allows loading of a custom file for
@@ -40,11 +46,16 @@ import org.apache.commons.io.FileUtils;
  */
 public class ConfigurationEditor {
 
+  private static final Logger LOG = LogManager.getLogger(ConfigurationEditor.class);
+
   private final ConfigurationHandler CONFIGURATIONHANDLER;
   private final ApplicationProperties APPLICATIONPROPERTIES;
   private final VersionMeta VERSIONMETA;
   private final Utilities UTILITIES;
   private final ConfigUtilities CONFIGUTILITIES;
+  private final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern(
+      "yyyy-MM-dd_HH-mm-ss");
+  private File logFile;
 
   public ConfigurationEditor(
       ConfigurationHandler injectedConfigurationHandler,
@@ -66,6 +77,11 @@ public class ConfigurationEditor {
    * @author Griefed
    */
   public void continuedRunOptions() {
+    LocalDateTime currentTime = LocalDateTime.now();
+    logFile = new File(
+        "logs/configurationCreator-" + DATE_TIME_FORMATTER.format(currentTime) + ".log");
+    checkLogFile();
+
     Scanner scanner = new Scanner(System.in);
     int selection;
 
@@ -84,7 +100,7 @@ public class ConfigurationEditor {
           break;
 
         case 0:
-          System.out.println("Exiting Configuration Editor.");
+          printToFileAndConsole("Exiting Configuration Editor.");
           break;
       }
 
@@ -99,13 +115,13 @@ public class ConfigurationEditor {
    * @author Griefed
    */
   private void printMenu() {
-    System.out.println();
-    System.out.println("What would you like to do?");
-    System.out.println("(1) : Create new configuration");
-    System.out.println("(2) : Load and edit configuration");
-    System.out.println("(0) : Exit");
-    System.out.println("-------------------------------------------");
-    System.out.print("Enter the number of your selection: ");
+    printToFileAndConsole();
+    printToFileAndConsole("What would you like to do?");
+    printToFileAndConsole("(1) : Create new configuration");
+    printToFileAndConsole("(2) : Load and edit configuration");
+    printToFileAndConsole("(0) : Exit");
+    printToFileAndConsole("-------------------------------------------");
+    printToFileAndConsole("Enter the number of your selection: ",false);
   }
 
   /**
@@ -123,19 +139,19 @@ public class ConfigurationEditor {
     do {
       try {
 
-        System.out.println("Please enter the path to the configuration file you want to edit:");
-        fileName = scanner.nextLine();
+        printToFileAndConsole("Please enter the path to the configuration file you want to edit:");
+        fileName = getNextLine(scanner);
         configurationModel = new ConfigurationModel(UTILITIES, new File(fileName));
         configLoaded = true;
 
       } catch (FileNotFoundException | NoFormatFoundException e) {
-        System.out.println("The specified file could not be loaded. " + e.getMessage());
+        printToFileAndConsole("The specified file could not be loaded. " + e.getMessage());
       }
 
     } while (!configLoaded);
 
-    System.out.println("Configuration successfully loaded.");
-    System.out.println();
+    printToFileAndConsole("Configuration successfully loaded.");
+    printToFileAndConsole();
 
     int selection;
 
@@ -144,7 +160,7 @@ public class ConfigurationEditor {
       CONFIGUTILITIES.printConfigurationModel(configurationModel);
       printEditMenu();
 
-      selection = getDecision(scanner, 0, 17);
+      selection = getDecision(scanner, 0, 18);
 
       switch (selection) {
         case 1:
@@ -220,12 +236,35 @@ public class ConfigurationEditor {
           CONFIGUTILITIES.printConfigurationModel(configurationModel);
           break;
 
+        case 18:
+          checkConfig(configurationModel);
+          break;
+
         case 0:
-          System.out.println("Exiting Configuration Editor.");
+          printToFileAndConsole("Exiting Configuration Editor.");
           break;
       }
 
     } while (selection != 0);
+  }
+
+  /**
+   * Check the configuration model for errors. If any errors are encountered, they are written to
+   * the console as well as the config-editor log.
+   * @param configurationModel The ConfigurationModel to check.
+   * @author Griefed
+   */
+  private void checkConfig(ConfigurationModel configurationModel) {
+    List<String> errors = new ArrayList<>();
+    CONFIGURATIONHANDLER.checkConfiguration(configurationModel,errors,false);
+    if (!errors.isEmpty()) {
+      printToFileAndConsole("Encountered the following errors:");
+      for (int i = 0; i < errors.size(); i++) {
+        printToFileAndConsole("  (" + i + "): " + errors.get(i));
+      }
+    } else {
+      printToFileAndConsole("No errors encountered.");
+    }
   }
 
   /**
@@ -234,35 +273,36 @@ public class ConfigurationEditor {
    * @author Griefed
    */
   private void printEditMenu() {
-    System.out.println();
-    System.out.println("What would you like to edit?");
-    System.out.println("(1)  : Path to the modpack directory");
-    System.out.println("(2)  : List of clientside-only mods");
-    System.out.println("(3)  : List of files and/or folders to include in the server pack");
-    System.out.println("(4)  : Path to a custom server-icon.png");
-    System.out.println("(5)  : Path to a custom server.properties");
-    System.out.println(
+    printToFileAndConsole();
+    printToFileAndConsole("What would you like to edit?");
+    printToFileAndConsole("(1)  : Path to the modpack directory");
+    printToFileAndConsole("(2)  : List of clientside-only mods");
+    printToFileAndConsole("(3)  : List of files and/or folders to include in the server pack");
+    printToFileAndConsole("(4)  : Path to a custom server-icon.png");
+    printToFileAndConsole("(5)  : Path to a custom server.properties");
+    printToFileAndConsole(
         "(6)  : Whether to install the modloader server during server pack generation");
-    System.out.println("(7)  : Minecraft version");
-    System.out.println("(8)  : Modloader");
-    System.out.println("(9)  : Modloader version");
-    System.out.println("(10) : Path to Java installation for modloader server installation");
-    System.out.println("     - Only relevant if you set (6) to yes/true");
-    System.out.println("(11) : Whether to include a server-icon.png in the server pack");
-    System.out.println("     - Only relevant if you set (4) to a valid path");
-    System.out.println("(12) : Whether to include a server.properties in the server pack");
-    System.out.println("     - Only relevant if you set (5) to a valid path");
-    System.out.println("(13) : Whether to create a ZIP-archive of the generated server pack");
-    System.out.println(
+    printToFileAndConsole("(7)  : Minecraft version");
+    printToFileAndConsole("(8)  : Modloader");
+    printToFileAndConsole("(9)  : Modloader version");
+    printToFileAndConsole("(10) : Path to Java installation for modloader server installation");
+    printToFileAndConsole("     - Only relevant if you set (6) to yes/true");
+    printToFileAndConsole("(11) : Whether to include a server-icon.png in the server pack");
+    printToFileAndConsole("     - Only relevant if you set (4) to a valid path");
+    printToFileAndConsole("(12) : Whether to include a server.properties in the server pack");
+    printToFileAndConsole("     - Only relevant if you set (5) to a valid path");
+    printToFileAndConsole("(13) : Whether to create a ZIP-archive of the generated server pack");
+    printToFileAndConsole(
         "(14) : JVM flags / Java Args to run the server of the generated server pack with");
-    System.out.println("     - These will be used by the start scripts");
-    System.out.println("(15) : Server pack suffix");
-    System.out.println("(16) : Save config to file");
-    System.out.println("(17) : Print current config");
-    System.out.println("(0)  : Exit");
-    System.out.println(
+    printToFileAndConsole("     - These will be used by the start scripts");
+    printToFileAndConsole("(15) : Server pack suffix");
+    printToFileAndConsole("(16) : Save config to file");
+    printToFileAndConsole("(17) : Print current config");
+    printToFileAndConsole("(18) : Check configuration");
+    printToFileAndConsole("(0)  : Exit");
+    printToFileAndConsole(
         "---------------------------------------------------------------------------------");
-    System.out.print("Enter the number of your selection: ");
+    printToFileAndConsole("Enter the number of your selection: ",false);
   }
 
   /**
@@ -284,143 +324,103 @@ public class ConfigurationEditor {
    */
   public void createConfigurationFile(Scanner scanner) {
 
-    List<String> clientMods, copyDirs;
-
-    clientMods = new ArrayList<>(100);
-    copyDirs = new ArrayList<>(100);
-
-    boolean includeServerInstallation,
-        includeServerIcon = false,
-        includeServerProperties = false,
-        includeZipCreation;
-
-    String modpackDir,
-        javaPath = "",
-        minecraftVersion,
-        modLoader,
-        modLoaderVersion,
-        serverIconPath,
-        serverPropertiesPath,
-        javaArgs,
-        serverPackSuffix;
+    ConfigurationModel configurationModel = new ConfigurationModel();
 
     do {
       // -----------------------------------------------------------------MODPACK DIRECTORY---------
 
-      modpackDir = getModpackDirectory(scanner);
+      configurationModel.setModpackDir(getModpackDirectory(scanner));
 
       // --------------------------------------------------------------CLIENTSIDE-ONLY MODS---------
 
-      clientMods.addAll(getClientSideMods(scanner, clientMods));
+      configurationModel.setClientMods(getClientSideMods(scanner, configurationModel.getClientMods()));
 
       // ---------------------------------------DIRECTORIES OR FILES TO COPY TO SERVER PACK---------
 
-      copyDirs.addAll(getDirsAndFilesToCopy(scanner, modpackDir, copyDirs));
+      configurationModel.setCopyDirs(getDirsAndFilesToCopy(scanner, configurationModel.getModpackDir(), configurationModel.getCopyDirs()));
 
       // ------------------------------------------------PATH TO THE CUSTOM SERVER-ICON.PNG---------
 
-      serverIconPath = getServerIcon(scanner);
+      configurationModel.setServerIconPath(getServerIcon(scanner));
 
       // -----------------------------------------------PATH TO THE CUSTOM SERVER.PROPERTIES--------
 
-      serverPropertiesPath = getServerProperties(scanner);
+      configurationModel.setServerPropertiesPath(getServerProperties(scanner));
 
       // ----------------------------------WHETHER TO INCLUDE MODLOADER SERVER INSTALLATION---------
 
-      includeServerInstallation = installModloaderServer(scanner);
+      configurationModel.setIncludeServerInstallation(installModloaderServer(scanner));
 
       // ----------------------------------------------------MINECRAFT VERSION MODPACK USES---------
 
-      minecraftVersion = getMinecraftVersion(scanner);
+      configurationModel.setMinecraftVersion(getMinecraftVersion(scanner));
 
       // ------------------------------------------------------------MODLOADER MODPACK USES---------
 
-      modLoader = getModloader(scanner);
+      configurationModel.setModLoader(getModloader(scanner));
 
       // -------------------------------------------------VERSION OF MODLOADER MODPACK USES---------
 
-      modLoaderVersion = getModloaderVersion(scanner, minecraftVersion, modLoader);
+      configurationModel.setModLoaderVersion(getModloaderVersion(scanner, configurationModel.getMinecraftVersion(), configurationModel.getModLoader()));
 
       // ---------------------------------------------------------PATH TO JAVA INSTALLATION---------
 
-      if (includeServerInstallation) {
-        javaPath = getJavaPath(scanner);
+      if (configurationModel.getIncludeServerInstallation()) {
+        configurationModel.setJavaPath(getJavaPath(scanner));
       } else {
-        System.out.println(
+        printToFileAndConsole(
             "Skipping Java installation path acquisition, as the modloader server installation is deactivated as per your input.");
       }
 
       // ---------------------------------WHETHER TO INCLUDE SERVER-ICON.PNG IN SERVER PACK---------
 
-      if (new File(serverIconPath).isFile()) {
-        includeServerIcon = includeServerIcon(scanner);
+      if (new File(configurationModel.getServerIconPath()).isFile()) {
+        configurationModel.setIncludeServerIcon(includeServerIcon(scanner));
       } else {
-        System.out.println(
+        printToFileAndConsole(
             "You did not specify a server-icon. Setting server-icon inclusion to false.");
       }
 
       // -------------------------------WHETHER TO INCLUDE SERVER.PROPERTIES IN SERVER PACK---------
 
-      if (new File(serverPropertiesPath).isFile()) {
-        includeServerProperties = includeServerProperties(scanner);
+      if (new File(configurationModel.getServerPropertiesPath()).isFile()) {
+        configurationModel.setIncludeServerProperties(includeServerProperties(scanner));
       } else {
-        System.out.println(
+        printToFileAndConsole(
             "You did not specify the server.properties. Setting server.properties inclusion to false.");
       }
 
       // -------------------------WHETHER TO INCLUDE CREATION OF ZIP-ARCHIVE OF SERVER PACK---------
 
-      includeZipCreation = includeZipCreation(scanner);
+      configurationModel.setIncludeZipCreation(includeZipCreation(scanner));
 
       // ----------------------------------------------JAVA ARGS TO EXECUTE THE SERVER WITH---------
 
-      javaArgs = getJavaArgs(scanner);
+      configurationModel.setJavaArgs(getJavaArgs(scanner));
 
       // ---------------------------------------------------SUFFIX TO APPEND TO SERVER PACK---------
 
-      serverPackSuffix = getServerPackSuffix(scanner);
+      configurationModel.setServerPackSuffix(getServerPackSuffix(scanner));
 
       // ---------------------------------------------------PRINT CONFIG TO CONSOLE AND LOG---------
-      CONFIGUTILITIES.printConfigurationModel(
-          modpackDir,
-          clientMods,
-          copyDirs,
-          includeServerInstallation,
-          javaPath,
-          minecraftVersion,
-          modLoader,
-          modLoaderVersion,
-          includeServerIcon,
-          includeServerProperties,
-          includeZipCreation,
-          javaArgs,
-          serverPackSuffix,
-          serverIconPath,
-          serverPropertiesPath);
+      CONFIGUTILITIES.printConfigurationModel(configurationModel);
 
-      System.out.println("Are you satisfied with this config?");
-      System.out.print("Answer: ");
+      printToFileAndConsole("Are you satisfied with this config?");
+      printToFileAndConsole("Answer: ",false);
 
     } while (!UTILITIES.BooleanUtils().readBoolean(scanner));
 
+    // ----------------------------------------------------------------CHECK CONFIGURATION----------
+
+    printToFileAndConsole("Would you like to check your new configuration for errors?");
+    printToFileAndConsole("Answer: ",false);
+    if (UTILITIES.BooleanUtils().readBoolean(scanner)) {
+      checkConfig(configurationModel);
+    }
+
     // ----------------------------------------------------------------WRITE CONFIG TO FILE---------
 
-    saveConfiguration(scanner,
-        modpackDir,
-        clientMods,
-        copyDirs,
-        includeServerInstallation,
-        javaPath,
-        minecraftVersion,
-        modLoader,
-        modLoaderVersion,
-        includeServerIcon,
-        includeServerProperties,
-        includeZipCreation,
-        javaArgs,
-        serverPackSuffix,
-        serverIconPath,
-        serverPropertiesPath);
+    saveConfiguration(scanner,configurationModel);
   }
 
   /**
@@ -433,27 +433,27 @@ public class ConfigurationEditor {
   private String getModpackDirectory(Scanner scanner) {
     String modpackDir;
 
-    System.out.println(
+    printToFileAndConsole(
         "Please enter your modpack path. This path can be relative to ServerPackCreator, or absolute.");
-    System.out.println("Example: \"./Some Modpack\" or \"C:/Minecraft/Some Modpack\"");
+    printToFileAndConsole("Example: \"./Some Modpack\" or \"C:/Minecraft/Some Modpack\"");
 
     do {
 
       do {
-        System.out.print("Path to modpack directory: ");
-        modpackDir = scanner.nextLine();
+        printToFileAndConsole("Path to modpack directory: ",false);
+        modpackDir = getNextLine(scanner);
       } while (!CONFIGURATIONHANDLER.checkModpackDir(modpackDir));
 
-      System.out.println("You entered: " + modpackDir);
-      System.out.println("Are you satisfied with this modpack directory?");
-      System.out.print("Answer: ");
+      printToFileAndConsole("You entered: " + modpackDir);
+      printToFileAndConsole("Are you satisfied with this modpack directory?");
+      printToFileAndConsole("Answer: ",false);
 
     } while (!UTILITIES.BooleanUtils().readBoolean(scanner));
 
     modpackDir = modpackDir.replace("\\", "/");
 
-    System.out.println("You entered: " + modpackDir);
-    System.out.println();
+    printToFileAndConsole("You entered: " + modpackDir);
+    printToFileAndConsole();
 
     return modpackDir;
   }
@@ -472,8 +472,8 @@ public class ConfigurationEditor {
     do {
       if (!clientMods.isEmpty()) {
 
-        System.out.println("You have entries in your list of clientside-only mods.");
-        System.out.println("Would you like to edit (1) that list, or start over (2)?");
+        printToFileAndConsole("You have entries in your list of clientside-only mods.");
+        printToFileAndConsole("Would you like to edit (1) that list, or start over (2)?");
         selection = getDecision(scanner, 1, 2);
 
       }
@@ -489,14 +489,14 @@ public class ConfigurationEditor {
           break;
       }
 
-      System.out.println("Are you satisfied with this list?");
-      System.out.print("Answer: ");
+      printToFileAndConsole("Are you satisfied with this list?");
+      printToFileAndConsole("Answer: ",false);
 
     } while (!UTILITIES.BooleanUtils().readBoolean(scanner));
 
-    System.out.println("Your list:");
+    printToFileAndConsole("Your list:");
     UTILITIES.ListUtils().printListToConsoleChunked(clientMods, 5, "    ", false);
-    System.out.println();
+    printToFileAndConsole();
 
     return clientMods;
   }
@@ -514,9 +514,9 @@ public class ConfigurationEditor {
     int selection;
     do {
       try {
-        selection = Integer.parseInt(scanner.nextLine());
+        selection = Integer.parseInt(getNextLine(scanner));
       } catch (Exception ex) {
-        System.out.println("Not a valid number. Please pick between " + min + " and " + max + ".");
+        printToFileAndConsole("Not a valid number. Please pick between " + min + " and " + max + ".");
         selection = min - 1;
       }
     } while (selection < min && selection > max);
@@ -531,51 +531,51 @@ public class ConfigurationEditor {
    * @author Griefed
    */
   private void editList(Scanner scanner, List<String> list) {
-    System.out.println("Available entries in list:");
+    printToFileAndConsole("Available entries in list:");
     for (int i = 0; i < list.size(); i++) {
-      System.out.println("(" + i + ") : " + list.get(i));
+      printToFileAndConsole("(" + i + ") : " + list.get(i));
     }
 
     int max = list.size() - 1;
 
     do {
 
-      System.out.println("Which entry would you like to edit?");
-      System.out.println("Enter a number between 0 and " + max);
+      printToFileAndConsole("Which entry would you like to edit?");
+      printToFileAndConsole("Enter a number between 0 and " + max);
 
       int selection = getDecision(scanner, 0, max);
 
-      System.out.println("(" + selection + ") of " + max + " = " + list.get(selection));
+      printToFileAndConsole("(" + selection + ") of " + max + " = " + list.get(selection));
 
-      System.out.println("Do you want to edit(1) that entry, or delete(2) it?");
+      printToFileAndConsole("Do you want to edit(1) that entry, or delete(2) it?");
 
       int decision;
       decision = getDecision(scanner, 1, 2);
 
       switch (decision) {
         case 1:
-          System.out.print("Enter the new text for this entry:");
-          list.set(selection, scanner.nextLine());
+          printToFileAndConsole("Enter the new text for this entry:",false);
+          list.set(selection, getNextLine(scanner));
           break;
 
         case 2:
-          System.out.println("Deleted " + list.remove(selection) + " from the list.");
+          printToFileAndConsole("Deleted " + list.remove(selection) + " from the list.");
           break;
       }
 
       for (int i = 0; i < list.size(); i++) {
-        System.out.println("(" + i + ") : " + list.get(i));
+        printToFileAndConsole("(" + i + ") : " + list.get(i));
       }
 
-      System.out.println(
+      printToFileAndConsole(
           "--------------------------------------------------------------------------------");
-      System.out.println("Are you satisfied with this list?");
-      System.out.print("Answer: ");
+      printToFileAndConsole("Are you satisfied with this list?");
+      printToFileAndConsole("Answer: ",false);
 
     } while (!UTILITIES.BooleanUtils().readBoolean(scanner));
 
     UTILITIES.ListUtils().printListToConsoleChunked(list, 5, "    ", false);
-    System.out.println("List successfully edited.");
+    printToFileAndConsole("List successfully edited.");
   }
 
   /**
@@ -586,9 +586,9 @@ public class ConfigurationEditor {
    */
   private List<String> newClientModsList() {
 
-    System.out.println(
+    printToFileAndConsole(
         "Enter filenames of clientside-only mods, one per line. When you are done, simply press enter with empty input.");
-    System.out.println(
+    printToFileAndConsole(
         "If you do not specify any clientside-only mods, a default list will be used.");
 
     List<String> clientMods = newCustomList();
@@ -596,10 +596,10 @@ public class ConfigurationEditor {
     if (clientMods.isEmpty()) {
       clientMods = APPLICATIONPROPERTIES.getListFallbackMods();
 
-      System.out.println("No clientside-only mods specified. Using fallback list.");
+      printToFileAndConsole("No clientside-only mods specified. Using fallback list.");
 
       for (String mod : clientMods) {
-        System.out.println("    " + mod);
+        printToFileAndConsole("    " + mod);
       }
     }
     return clientMods;
@@ -615,9 +615,9 @@ public class ConfigurationEditor {
 
     List<String> custom = new ArrayList<>(UTILITIES.ListUtils().readStringList());
 
-    System.out.println("You entered:");
+    printToFileAndConsole("You entered:");
     for (int i = 0; i < custom.size(); i++) {
-      System.out.println("  " + i + 1 + ". " + custom.get(i));
+      printToFileAndConsole("  " + i + 1 + ". " + custom.get(i));
     }
 
     return custom;
@@ -633,7 +633,7 @@ public class ConfigurationEditor {
   private List<String> getDirsAndFilesToCopy(Scanner scanner, String modpackDir,
       List<String> copyDirs) {
 
-    System.out.println(
+    printToFileAndConsole(
         "Which directories or files should be copied to the server pack? These are folder- or filenames inside your modpack directory or explicit source/file;destination/file-combinations.");
 
     listModpackFilesAndFolders(modpackDir);
@@ -643,12 +643,12 @@ public class ConfigurationEditor {
     do {
       if (!copyDirs.isEmpty()) {
 
-        System.out.println(
+        printToFileAndConsole(
             "You have entries in your list of files/folder to include in the server pack.");
-        System.out.println();
-        UTILITIES.ListUtils().printListToConsoleChunked(copyDirs,1,"    ", true);
-        System.out.println();
-        System.out.println(
+        printToFileAndConsole();
+        UTILITIES.ListUtils().printListToConsoleChunked(copyDirs, 1, "    ", true);
+        printToFileAndConsole();
+        printToFileAndConsole(
             "Would you like to edit (1) that list, start over (2), or list the files in your modpack directory (3) again?");
         selection = getDecision(scanner, 1, 3);
 
@@ -669,17 +669,17 @@ public class ConfigurationEditor {
           break;
       }
 
-      System.out.println("Are you satisfied with this list?");
-      System.out.print("Answer: ");
+      printToFileAndConsole("Are you satisfied with this list?");
+      printToFileAndConsole("Answer: ",false);
 
     } while (!UTILITIES.BooleanUtils().readBoolean(scanner));
 
-    System.out.println("Your list:");
+    printToFileAndConsole("Your list:");
     for (int i = 0; i < copyDirs.size(); i++) {
-      System.out.println("  " + i + 1 + ". " + copyDirs.get(i));
+      printToFileAndConsole("  " + i + 1 + ". " + copyDirs.get(i));
     }
 
-    System.out.println();
+    printToFileAndConsole();
     return copyDirs;
   }
 
@@ -688,13 +688,13 @@ public class ConfigurationEditor {
       List<File> dirList = new ArrayList<>(FileUtils.listFiles(new File(modpackDir), null, false));
 
       if (dirList.size() > 0) {
-        System.out.println(
+        printToFileAndConsole(
             "The modpack directory you specified contains the following directories:");
         for (int i = 0; i < dirList.size(); i++) {
-          System.out.println("  " + (i + 1) + ". " + dirList.get(i));
+          printToFileAndConsole("  " + (i + 1) + ". " + dirList.get(i));
         }
       } else {
-        System.out.println("No files or directories found in " + modpackDir);
+        printToFileAndConsole("No files or directories found in " + modpackDir);
       }
     } catch (Exception ignored) {
 
@@ -710,28 +710,28 @@ public class ConfigurationEditor {
    */
   private String getServerIcon(Scanner scanner) {
     String serverIconPath;
-    System.out.println(
+    printToFileAndConsole(
         "Enter the path to your custom server-icon.png-file, if you want to include one. Leave blank if you are fine with the default.");
 
     do {
 
       do {
-        System.out.print("Path to your server-icon.png: ");
-        serverIconPath = scanner.nextLine();
+        printToFileAndConsole("Path to your server-icon.png: ",false);
+        serverIconPath = getNextLine(scanner);
 
       } while (!CONFIGURATIONHANDLER.checkIconAndProperties(serverIconPath));
 
-      System.out.println("You entered: " + serverIconPath);
+      printToFileAndConsole("You entered: " + serverIconPath);
 
-      System.out.println("Are you satisfied with this setting?");
-      System.out.print("Answer: ");
+      printToFileAndConsole("Are you satisfied with this setting?");
+      printToFileAndConsole("Answer: ",false);
 
     } while (!UTILITIES.BooleanUtils().readBoolean(scanner));
 
     serverIconPath = serverIconPath.replace("\\", "/");
 
-    System.out.println("You entered: " + serverIconPath);
-    System.out.println();
+    printToFileAndConsole("You entered: " + serverIconPath);
+    printToFileAndConsole();
 
     return serverIconPath;
   }
@@ -746,28 +746,28 @@ public class ConfigurationEditor {
    */
   private String getServerProperties(Scanner scanner) {
     String serverPropertiesPath;
-    System.out.println(
+    printToFileAndConsole(
         "Enter the path to your custom server.properties-file, if you want to include one. Leave blank if you are fine with the default.");
 
     do {
 
       do {
 
-        System.out.print("Path to your server.properties: ");
-        serverPropertiesPath = scanner.nextLine();
+        printToFileAndConsole("Path to your server.properties: ",false);
+        serverPropertiesPath = getNextLine(scanner);
       } while (!CONFIGURATIONHANDLER.checkIconAndProperties(serverPropertiesPath));
 
-      System.out.println("You entered: " + serverPropertiesPath);
+      printToFileAndConsole("You entered: " + serverPropertiesPath);
 
-      System.out.println("Are you satisfied with this setting?");
-      System.out.print("Answer: ");
+      printToFileAndConsole("Are you satisfied with this setting?");
+      printToFileAndConsole("Answer: ",false);
 
     } while (!UTILITIES.BooleanUtils().readBoolean(scanner));
 
     serverPropertiesPath = serverPropertiesPath.replace("\\", "/");
 
-    System.out.println("You entered: " + serverPropertiesPath);
-    System.out.println();
+    printToFileAndConsole("You entered: " + serverPropertiesPath);
+    printToFileAndConsole();
 
     return serverPropertiesPath;
   }
@@ -780,13 +780,13 @@ public class ConfigurationEditor {
    */
   private boolean installModloaderServer(Scanner scanner) {
     boolean includeServerInstallation;
-    System.out.println(
+    printToFileAndConsole(
         "Do you want ServerPackCreator to install the modloader server for your server pack? Must be true or false.");
 
-    System.out.print("Include modloader server installation: ");
+    printToFileAndConsole("Include modloader server installation: ",false);
     includeServerInstallation = UTILITIES.BooleanUtils().readBoolean(scanner);
 
-    System.out.println("You entered: " + includeServerInstallation);
+    printToFileAndConsole("You entered: " + includeServerInstallation);
     return includeServerInstallation;
   }
 
@@ -799,16 +799,16 @@ public class ConfigurationEditor {
    */
   private String getMinecraftVersion(Scanner scanner) {
     String minecraftVersion;
-    System.out.println("Which version of Minecraft does your modpack use?");
+    printToFileAndConsole("Which version of Minecraft does your modpack use?");
 
     do {
-      System.out.print("Minecraft version: ");
-      minecraftVersion = scanner.nextLine();
+      printToFileAndConsole("Minecraft version: ",false);
+      minecraftVersion = getNextLine(scanner);
 
     } while (!VERSIONMETA.minecraft().checkMinecraftVersion(minecraftVersion));
 
-    System.out.println("You entered: " + minecraftVersion);
-    System.out.println();
+    printToFileAndConsole("You entered: " + minecraftVersion);
+    printToFileAndConsole();
 
     return minecraftVersion;
   }
@@ -822,18 +822,18 @@ public class ConfigurationEditor {
    */
   private String getModloader(Scanner scanner) {
     String modLoader;
-    System.out.println("What modloader does your modpack use?");
+    printToFileAndConsole("What modloader does your modpack use?");
 
     do {
-      System.out.print("Modloader: ");
-      modLoader = scanner.nextLine();
+      printToFileAndConsole("Modloader: ",false);
+      modLoader = getNextLine(scanner);
 
     } while (!CONFIGURATIONHANDLER.checkModloader(modLoader));
 
     modLoader = CONFIGUTILITIES.getModLoaderCase(modLoader);
 
-    System.out.println("You entered: " + modLoader);
-    System.out.println();
+    printToFileAndConsole("You entered: " + modLoader);
+    printToFileAndConsole();
 
     return modLoader;
   }
@@ -848,17 +848,17 @@ public class ConfigurationEditor {
    */
   private String getModloaderVersion(Scanner scanner, String minecraftVersion, String modLoader) {
     String modLoaderVersion;
-    System.out.println("What version of " + modLoader + " does your modpack use?");
+    printToFileAndConsole("What version of " + modLoader + " does your modpack use?");
 
     do {
-      System.out.print("Modloader version: ");
-      modLoaderVersion = scanner.nextLine();
+      printToFileAndConsole("Modloader version: ",false);
+      modLoaderVersion = getNextLine(scanner);
 
     } while (!CONFIGURATIONHANDLER.checkModloaderVersion(
         modLoader, modLoaderVersion, minecraftVersion));
 
-    System.out.println("You entered: " + modLoaderVersion);
-    System.out.println();
+    printToFileAndConsole("You entered: " + modLoaderVersion);
+    printToFileAndConsole();
 
     return modLoaderVersion;
   }
@@ -873,19 +873,19 @@ public class ConfigurationEditor {
    */
   private String getJavaPath(Scanner scanner) {
     String javaPath;
-    System.out.println(
+    printToFileAndConsole(
         "Specify the path to your Java installation. Must end with \"java\" on Linux, or \"java.exe\" on Windows.");
-    System.out.println(
+    printToFileAndConsole(
         "If you leave this empty, ServerPackCreator will try to determine the path for you.");
-    System.out.println(
+    printToFileAndConsole(
         "Example Linux: /usr/bin/java | Example Windows: C:/Program Files/AdoptOpenJDK/jdk-8.0.275.1-hotspot/jre/bin/java.exe");
 
-    System.out.print("Path to your Java installation: ");
+    printToFileAndConsole("Path to your Java installation: ",false);
 
-    javaPath = CONFIGURATIONHANDLER.getJavaPath(scanner.nextLine());
+    javaPath = CONFIGURATIONHANDLER.getJavaPath(getNextLine(scanner));
 
-    System.out.println("Automatically acquired path to Java installation: " + javaPath);
-    System.out.println();
+    printToFileAndConsole("Automatically acquired path to Java installation: " + javaPath);
+    printToFileAndConsole();
 
     return javaPath;
   }
@@ -898,14 +898,14 @@ public class ConfigurationEditor {
    */
   private boolean includeServerIcon(Scanner scanner) {
     boolean includeServerIcon;
-    System.out.println(
+    printToFileAndConsole(
         "Do you want ServerPackCreator to include a server-icon in your server pack? Must be true or false.");
 
-    System.out.print("Include server-icon.png: ");
+    printToFileAndConsole("Include server-icon.png: ",false);
     includeServerIcon = UTILITIES.BooleanUtils().readBoolean(scanner);
 
-    System.out.println("You entered: " + includeServerIcon);
-    System.out.println();
+    printToFileAndConsole("You entered: " + includeServerIcon);
+    printToFileAndConsole();
 
     return includeServerIcon;
   }
@@ -918,14 +918,14 @@ public class ConfigurationEditor {
    */
   private boolean includeServerProperties(Scanner scanner) {
     boolean includeServerProperties;
-    System.out.println(
+    printToFileAndConsole(
         "Do you want ServerPackCreator to include a server.properties in your server pack? Must be true or false.");
 
-    System.out.print("Include server.properties: ");
+    printToFileAndConsole("Include server.properties: ",false);
     includeServerProperties = UTILITIES.BooleanUtils().readBoolean(scanner);
 
-    System.out.println("You entered: " + includeServerProperties);
-    System.out.println();
+    printToFileAndConsole("You entered: " + includeServerProperties);
+    printToFileAndConsole();
 
     return includeServerProperties;
   }
@@ -939,14 +939,14 @@ public class ConfigurationEditor {
    */
   private boolean includeZipCreation(Scanner scanner) {
     boolean includeZipCreation;
-    System.out.println(
+    printToFileAndConsole(
         "Do you want ServerPackCreator to create a ZIP-archive of your server pack? Must be true or false.");
 
-    System.out.print("Create ZIP-archive: ");
+    printToFileAndConsole("Create ZIP-archive: ",false);
     includeZipCreation = UTILITIES.BooleanUtils().readBoolean(scanner);
 
-    System.out.println("You entered: " + includeZipCreation);
-    System.out.println();
+    printToFileAndConsole("You entered: " + includeZipCreation);
+    printToFileAndConsole();
 
     return includeZipCreation;
   }
@@ -960,18 +960,18 @@ public class ConfigurationEditor {
    */
   private String getJavaArgs(Scanner scanner) {
     String javaArgs;
-    System.out.println(
+    printToFileAndConsole(
         "Specify the Java arguments, if any, to execute the server with. Can be left blank.");
 
-    System.out.print("Java args: ");
-    javaArgs = scanner.nextLine();
+    printToFileAndConsole("Java args: ",false);
+    javaArgs = getNextLine(scanner);
 
     if (javaArgs.isEmpty()) {
       javaArgs = "";
     }
 
-    System.out.println("Java arguments for start-scripts: " + javaArgs);
-    System.out.println();
+    printToFileAndConsole("Java arguments for start-scripts: " + javaArgs);
+    printToFileAndConsole();
 
     return javaArgs;
   }
@@ -984,150 +984,135 @@ public class ConfigurationEditor {
    * @author Griefed
    */
   private String getServerPackSuffix(Scanner scanner) {
-    System.out.println(
+    printToFileAndConsole(
         "Enter the suffix you want to append to your server pack. Can be left empty.");
 
-    System.out.print("Server pack suffix: ");
+    printToFileAndConsole("Server pack suffix: ",false);
 
-    return scanner.nextLine();
+    return getNextLine(scanner);
   }
 
   /**
    * Let the user save the created configuration to a file.
    *
    * @param scanner                   Used for reading the users input.
-   * @param modpackDir                Path to the modpack directory.
-   * @param clientMods                List of clientside-only mods.
-   * @param copyDirs                  List of files and/or folders to include in the server pack.
-   * @param includeServerInstallation Whether to install the modloader server during server pack
-   *                                  generation.
-   * @param javaPath                  The path to the Java installation used for modloader
-   *                                  installation during server pack generation.
-   * @param minecraftVersion          The Minecraft version of the modpack.
-   * @param modLoader                 The modloader used by the modpack.
-   * @param modLoaderVersion          The modloader version used by the modpack.
-   * @param includeServerIcon         Whether to include a server-icon.png in the server pack.
-   * @param includeServerProperties   Whether to include a server-properties in the server pack.
-   * @param includeZipCreation        Whether to create a ZIP-archive of the server pack.
-   * @param javaArgs                  JVM flags / Java Args to start the server with.
-   * @param serverPackSuffix          Suffix to append to the name of the server pack to be
-   *                                  generated.
-   * @param serverIconPath            Path to the custom server-icon.png
-   * @param serverPropertiesPath      Path to the custom server.properties.
+   * @param configurationModel        Configuration to save.
    * @author Griefed
    */
-  private void saveConfiguration(Scanner scanner,
-      String modpackDir,
-      List<String> clientMods,
-      List<String> copyDirs,
-      boolean includeServerInstallation,
-      String javaPath,
-      String minecraftVersion,
-      String modLoader,
-      String modLoaderVersion,
-      boolean includeServerIcon,
-      boolean includeServerProperties,
-      boolean includeZipCreation,
-      String javaArgs,
-      String serverPackSuffix,
-      String serverIconPath,
-      String serverPropertiesPath) {
+  private void saveConfiguration(Scanner scanner, ConfigurationModel configurationModel) {
 
-    System.out.println(
+    printToFileAndConsole(
         "Would you like to save this configuration as an additional, separate, configuration file?");
     if (UTILITIES.BooleanUtils().readBoolean(scanner)) {
 
-      System.out.println(
+      printToFileAndConsole(
           "Enter the name under which you want to additionally store the above configuration:");
-      File customFileName = new File(UTILITIES.StringUtils().pathSecureText(scanner.nextLine()));
+      File customFileName = new File(UTILITIES.StringUtils().pathSecureText(getNextLine(scanner)));
 
       if (CONFIGUTILITIES.writeConfigToFile(
-          modpackDir,
-          clientMods,
-          copyDirs,
-          serverIconPath,
-          serverPropertiesPath,
-          includeServerInstallation,
-          javaPath,
-          minecraftVersion,
-          modLoader,
-          modLoaderVersion,
-          includeServerIcon,
-          includeServerProperties,
-          includeZipCreation,
-          javaArgs,
-          serverPackSuffix,
+          configurationModel,
           customFileName)) {
 
-        System.out.println(
+        printToFileAndConsole(
             "Your configuration has been saved as '" + customFileName + "'.");
-        System.out.println(
+        printToFileAndConsole(
             "Please note that running ServerPackCreator in CLI mode requires a valid 'serverpackcreator.conf'-file to be present.");
-        System.out.println("You may load the previous configuration, saved as '" + customFileName
+        printToFileAndConsole("You may load the previous configuration, saved as '" + customFileName
             + "' and save it as 'serverpackcreator.conf'");
       }
 
     } else {
       if (CONFIGUTILITIES.writeConfigToFile(
-          modpackDir,
-          clientMods,
-          copyDirs,
-          serverIconPath,
-          serverPropertiesPath,
-          includeServerInstallation,
-          javaPath,
-          minecraftVersion,
-          modLoader,
-          modLoaderVersion,
-          includeServerIcon,
-          includeServerProperties,
-          includeZipCreation,
-          javaArgs,
-          serverPackSuffix,
+          configurationModel,
           APPLICATIONPROPERTIES.DEFAULT_CONFIG())) {
 
-        System.out.println(
+        printToFileAndConsole(
             "Your configuration has been saved as 'serverpackcreator.conf'.");
       }
     }
   }
 
   /**
-   * Let the user save the created configuration to a file.
+   * Acquire user input and print that input to our config-editor log.
+   * @param scanner Used for reading the users input.
+   * @return The text the user entered.
+   */
+  private String getNextLine(Scanner scanner) {
+    String text = scanner.nextLine();
+    printToFile(text,true);
+    return text;
+  }
+
+  /**
+   * Write/print an empty line to a file as well as console. The filename is
+   * <code>logs/configurationCreator-CURRENT_DATE_CURRENT_TIME.log</code>.
    *
-   * @param scanner            Used for reading the users input.
-   * @param configurationModel Contains the created/changed/loaded configuration to save.
    * @author Griefed
    */
-  private void saveConfiguration(Scanner scanner, ConfigurationModel configurationModel) {
-    System.out.println(
-        "Would you like to save this configuration under a different file name than 'serverpackcreator.conf'?");
+  private void printToFileAndConsole() {
+    printToFileAndConsole("");
+  }
 
-    if (UTILITIES.BooleanUtils().readBoolean(scanner)) {
+  private void printToFileAndConsole(String text) {
+    printToFileAndConsole(text, true);
+  }
 
-      System.out.println(
-          "Enter the name under which you want to additionally store the above configuration:");
-      File customFileName = new File(UTILITIES.StringUtils().pathSecureText(scanner.nextLine()));
-
-      if (CONFIGUTILITIES.writeConfigToFile(
-          configurationModel,
-          customFileName)) {
-
-        System.out.println(
-            "Your configuration has been saved as '" + customFileName + "'.");
-        System.out.println(
-            "Please note that running ServerPackCreator in CLI mode requires a valid 'serverpackcreator.conf'-file to be present.");
-        System.out.println("You may load the previous configuration, saved as '" + customFileName
-            + "' and save it as 'serverpackcreator.conf'");
-      }
-
+  /**
+   * Write/print text to a file as well as console. The filename is
+   * <code>logs/configurationCreator-CURRENT_DATE_CURRENT_TIME.log</code>.
+   *
+   * @param text The text to write/print
+   * @author Griefed
+   */
+  private void printToFileAndConsole(String text, boolean newLine) {
+    if (newLine) {
+      System.out.println(text);
     } else {
-      if (CONFIGUTILITIES.writeConfigToFile(
-          configurationModel,
-          APPLICATIONPROPERTIES.DEFAULT_CONFIG())) {
+      System.out.print(text);
+    }
+    printToFile(text,newLine);
+  }
 
-        System.out.println(
-            "Your configuration has been saved as 'serverpackcreator.conf'.");
+  /**
+   * Append text to our config-editor log.
+   * @param text The text to append to the log.
+   * @param newLine Whether to include a newline after the text.
+   */
+  private void printToFile(String text, boolean newLine) {
+    if (logFile.exists()) {
+      try {
+        if (newLine) {
+          FileUtils.writeStringToFile(logFile, text + "\n", StandardCharsets.UTF_8, true);
+        } else {
+          FileUtils.writeStringToFile(logFile, text, StandardCharsets.UTF_8, true);
+        }
+      } catch (IOException ex) {
+        LOG.error("Could not write to logfile " + logFile.getName(),ex);
+      }
+    } else {
+      LOG.error("Logfile " + logFile.getName() + " does not exist.");
+    }
+  }
+
+  private void checkLogFile() {
+    List<File> files = new ArrayList<>(FileUtils.listFiles(new File("logs"),null,false));
+
+    for (File file : files) {
+      if (file.getName().contains("configurationCreator")) {
+        try {
+          FileUtils.moveFile(file,new File("logs/archive/" + file.getName()));
+        } catch (IOException ex) {
+          LOG.error("Could not move " + file.getName() + " to archive.",ex);
+        }
+      }
+    }
+
+    if (!logFile.exists()) {
+      try {
+        //noinspection ResultOfMethodCallIgnored
+        logFile.createNewFile();
+      } catch (IOException ex) {
+        LOG.error("Could not create logfile " + logFile.getName(),ex);
       }
     }
   }
