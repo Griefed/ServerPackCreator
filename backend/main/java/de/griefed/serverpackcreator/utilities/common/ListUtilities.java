@@ -126,7 +126,8 @@ public class ListUtilities {
     for (int i = 0; i < list.size(); i++) {
       text.delete(0, text.length());
       int n;
-      for (n = i; n < i + chunkSize; n++) {
+      int m = i + chunkSize;
+      for (n = i; n < m; n++) {
         if (n >= list.size()) {
           break;
         } else if (n == i) {
@@ -136,11 +137,11 @@ public class ListUtilities {
         }
       }
       if (printIndexes) {
-        System.out.println(prefix + "(" + i + " - " + n + ")" + text);
+        System.out.println(prefix + "(" + (i+1) + " to " + n + ")  " + text);
       } else {
         System.out.println(prefix + text);
       }
-      i = n;
+      i = n-1;
     }
   }
 
@@ -160,7 +161,8 @@ public class ListUtilities {
     for (int i = 0; i < list.size(); i++) {
       text.delete(0, text.length());
       int n;
-      for (n = i; n < i + chunkSize; n++) {
+      int m = i + chunkSize;
+      for (n = i; n < m; n++) {
         if (n >= list.size()) {
           break;
         } else if (n == i) {
@@ -170,11 +172,11 @@ public class ListUtilities {
         }
       }
       if (printIndexes) {
-        LOG.info(prefix + "(" + i + " to " + n + ")" + text);
+        LOG.info(prefix + "(" + (i+1) + " to " + n + ")  " + text);
       } else {
         LOG.info(prefix + text);
       }
-      i = n;
+      i = n-1;
     }
   }
 }
