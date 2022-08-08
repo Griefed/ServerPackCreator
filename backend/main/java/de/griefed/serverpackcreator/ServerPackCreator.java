@@ -877,20 +877,27 @@ public class ServerPackCreator {
    * @author Griefed
    */
   private void runHeadless() throws IOException {
-    if (!new File("serverpackcreator.conf").exists()) {
+    if (!APPLICATIONPROPERTIES.DEFAULT_CONFIG().exists()) {
       LOG.info("No serverpackcreator.conf file found. Entering Configuration Editor.");
       runConfigurationEditor();
     }
 
-    ConfigurationModel configurationModel = new ConfigurationModel();
+    if (!APPLICATIONPROPERTIES.DEFAULT_CONFIG().exists()) {
 
-    if (getConfigurationHandler().checkConfiguration(
-        APPLICATIONPROPERTIES.DEFAULT_CONFIG(), configurationModel, false)) {
+      LOG.info("No serverpackcreator.conf file found.");
       System.exit(1);
-    }
 
-    if (!getServerPackHandler().run(configurationModel)) {
-      System.exit(1);
+    } else {
+      ConfigurationModel configurationModel = new ConfigurationModel();
+
+      if (getConfigurationHandler().checkConfiguration(
+          APPLICATIONPROPERTIES.DEFAULT_CONFIG(), configurationModel, false)) {
+        System.exit(1);
+      }
+
+      if (!getServerPackHandler().run(configurationModel)) {
+        System.exit(1);
+      }
     }
   }
 
