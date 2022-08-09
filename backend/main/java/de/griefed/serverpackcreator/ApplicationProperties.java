@@ -25,7 +25,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -174,6 +173,27 @@ public class ApplicationProperties extends Properties {
   private boolean autoExcludingModsEnabled = true;
 
   /**
+   * Whether overwriting of already existing server packs is enabled
+   */
+  private boolean serverPacksOverwriteEnabled = true;
+
+  /**
+   * Whether cleanup procedures of server packs after generation are enabled. See
+   * <code>ServerPackHandler#cleanUpServerPack(...)</code> for details.
+   */
+  private boolean serverPackCleanupEnabled = true;
+
+  /**
+   * The language currently being used.
+   */
+  private String language = "en_us";
+
+  /**
+   * URL to the hastebin server documents endpoint.
+   */
+  private String hasteBinServerUrl = "https://haste.zneix.eu/documents";
+
+  /**
    * Constructor for our properties. Sets a couple of default values for use in ServerPackCreator.
    *
    * @author Griefed
@@ -214,7 +234,7 @@ public class ApplicationProperties extends Properties {
        * on the filesystem should be commented out.
        */
       try (InputStream inputStream =
-          Files.newInputStream(Paths.get("serverpackcreator.properties"))) {
+          Files.newInputStream(SERVERPACKCREATOR_PROPERTIES.toPath())) {
         this.load(inputStream);
       } catch (IOException ex) {
         LOG.error("Couldn't read properties file.", ex);
@@ -247,13 +267,6 @@ public class ApplicationProperties extends Properties {
         this.setProperty(
             "de.griefed.serverpackcreator.configuration.directories.serverpacks", tempDir);
         this.directoryServerPacks = tempDir;
-
-        try (OutputStream outputStream =
-            Files.newOutputStream(this.SERVERPACKCREATOR_PROPERTIES.toPath())) {
-          this.store(outputStream, null);
-        } catch (IOException ex) {
-          LOG.error("Couldn't write properties-file.", ex);
-        }
 
         // Use directory server-packs
       } else {
@@ -424,6 +437,7 @@ public class ApplicationProperties extends Properties {
     }
     LOG.debug("Script templates set to: " + this.scriptTemplates);
 
+    // Whether automatic exclusion of clientside-only mods is enabled or disabled.
     try {
       autoExcludingModsEnabled =
           Boolean.parseBoolean(
@@ -432,6 +446,84 @@ public class ApplicationProperties extends Properties {
       autoExcludingModsEnabled = true;
     }
     LOG.debug("Auto-discovery of clientside-only mods set to: " + autoExcludingModsEnabled);
+
+    // Whether overwriting of server packs is enabled or disabled.
+    try {
+      serverPacksOverwriteEnabled =
+          Boolean.parseBoolean(
+              getProperty("de.griefed.serverpackcreator.serverpack.overwrite.enabled"));
+    } catch (Exception e) {
+      serverPacksOverwriteEnabled = true;
+    }
+    LOG.debug(
+        "Overwriting of already existing server packs set to: " + serverPacksOverwriteEnabled);
+
+    // Whether cleanup procedures after server pack generation are enabled.
+    try {
+      serverPackCleanupEnabled =
+          Boolean.parseBoolean(
+              getProperty("de.griefed.serverpackcreator.serverpack.cleanup.enabled"));
+    } catch (Exception e) {
+      serverPackCleanupEnabled = true;
+    }
+    LOG.debug(
+        "Overwriting of already existing server packs set to: " + serverPackCleanupEnabled);
+
+    // Set the language currently being used by SPC.
+    String lang = null;
+    try {
+
+      // Try to use the directory specified in the
+      // de.griefed.serverpackcreator.configuration.directories.serverpacks property.
+      lang =
+          this.getProperty(
+              "de.griefed.serverpackcreator.language", "en_us");
+
+    } catch (NullPointerException npe) {
+
+      // If setting the directory via property fails, set the property to the default value
+      // server-packs.
+      this.setProperty(
+          "de.griefed.serverpackcreator.language", "en_us");
+      lang = "en_us";
+
+    } finally {
+
+      // Check tempDir for correctness. Set property and directory if it is correct and overwrite
+      // serverpackcreator.properties
+      this.setProperty(
+          "de.griefed.serverpackcreator.language", lang);
+      this.language = lang;
+    }
+
+    // Set the language currently being used by SPC.
+    String haste = null;
+    try {
+
+      // Try to use the directory specified in the
+      // de.griefed.serverpackcreator.configuration.directories.serverpacks property.
+      haste =
+          this.getProperty(
+              "de.griefed.serverpackcreator.configuration.hastebinserver", "https://haste.zneix.eu/documents");
+
+    } catch (NullPointerException npe) {
+
+      // If setting the directory via property fails, set the property to the default value
+      // server-packs.
+      this.setProperty(
+          "de.griefed.serverpackcreator.configuration.hastebinserver", "https://haste.zneix.eu/documents");
+      haste = "https://haste.zneix.eu/documents";
+
+    } finally {
+
+      // Check tempDir for correctness. Set property and directory if it is correct and overwrite
+      // serverpackcreator.properties
+      this.setProperty(
+          "de.griefed.serverpackcreator.configuration.hastebinserver", haste);
+      this.language = haste;
+    }
+
+    saveToDisk();
   }
 
   /**
@@ -904,12 +996,7 @@ public class ApplicationProperties extends Properties {
           "de.griefed.serverpackcreator.configuration.fallbackmodslist",
           properties.getProperty("de.griefed.serverpackcreator.configuration.fallbackmodslist"));
 
-      try (OutputStream outputStream =
-          Files.newOutputStream(this.SERVERPACKCREATOR_PROPERTIES.toPath())) {
-        this.store(outputStream, null);
-      } catch (IOException ex) {
-        LOG.error("Couldn't write properties-file.", ex);
-      }
+      saveToDisk();
 
       this.listFallbackMods =
           new ArrayList<>(
@@ -926,5 +1013,84 @@ public class ApplicationProperties extends Properties {
       LOG.info("No fallback-list updates available.");
       return false;
     }
+  }
+
+  /**
+   * Is the Dark Theme currently active?
+   *
+   * @return <code>true</code> if the Dark Theme is active, otherwise false.
+   * @author Griefed
+   */
+  public boolean isDarkTheme() {
+    return Boolean.parseBoolean(getProperty("de.griefed.serverpackcreator.gui.darkmode"));
+  }
+
+  /**
+   * Set the current theme to Dark Theme or Light Theme.
+   *
+   * @param dark <code>true</code> to activate Dark Theme, <code>false</code> otherwise.
+   * @author Griefed
+   */
+  public void setTheme(boolean dark) {
+    if (dark) {
+      setProperty(
+          "de.griefed.serverpackcreator.gui.darkmode", "true");
+    } else {
+      setProperty(
+          "de.griefed.serverpackcreator.gui.darkmode", "false");
+    }
+  }
+
+  /**
+   * Store the ApplicationProperties to disk, overwriting the existing one.
+   *
+   * @author Griefed
+   */
+  public void saveToDisk() {
+    try (OutputStream outputStream =
+        Files.newOutputStream(SERVERPACKCREATOR_PROPERTIES.toPath())) {
+      store(outputStream, null);
+    } catch (IOException ex) {
+      LOG.error("Couldn't write properties-file.", ex);
+    }
+  }
+
+  /**
+   * Whether overwriting of already existing server packs is enabled.
+   *
+   * @return <code>true</code> if it is enabled.
+   * @author Griefed
+   */
+  public boolean isServerPacksOverwriteEnabled() {
+    return serverPacksOverwriteEnabled;
+  }
+
+  /**
+   * Whether cleanup procedures after server pack generation are enabled.
+   *
+   * @return <code>true</code> if it is enabled.
+   * @author Griefed
+   */
+  public boolean isServerPackCleanupEnabled() {
+    return serverPackCleanupEnabled;
+  }
+
+  /**
+   * Get the currently set language.
+   *
+   * @return The language currently set and used.
+   * @author Griefed
+   */
+  public String getLanguage() {
+    return language;
+  }
+
+  /**
+   * Acquire this instances HasteBin server documents endpoint URL.
+   * @return URL to the HasteBin server documents endpoint.
+   * @author Griefed
+   */
+  public String getHasteBinServerUrl() {
+    return hasteBinServerUrl;
   }
 }

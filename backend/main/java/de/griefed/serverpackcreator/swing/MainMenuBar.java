@@ -132,8 +132,6 @@ public class MainMenuBar extends Component {
 
   private final MaterialTextPaneUI MATERIALTEXTPANEUI = new MaterialTextPaneUI();
 
-  private boolean isDarkTheme;
-
   private JFileChooser configChooser;
 
   private File lastLoadedConfigurationFile = null;
@@ -186,16 +184,6 @@ public class MainMenuBar extends Component {
     this.LAF_DARK = injectedLAF_Dark;
     this.TAB_CREATESERVERPACK = injectedTabCreateServerPack;
     this.TABBEDPANE = injectedTabbedPane;
-
-    try {
-      isDarkTheme =
-          Boolean.parseBoolean(
-              APPLICATIONPROPERTIES.getProperty("de.griefed.serverpackcreator.gui.darkmode"));
-    } catch (NullPointerException ex) {
-      LOG.error("No setting for darkmode found in properties-file. Using true.");
-      isDarkTheme = true;
-      APPLICATIONPROPERTIES.put("de.griefed.serverpackcreator.gui.darkmode", "true");
-    }
 
     CLOSEEVENT = new WindowEvent(FRAME_SERVERPACKCREATOR, WindowEvent.WINDOW_CLOSING);
 
@@ -870,23 +858,12 @@ public class MainMenuBar extends Component {
   private void switchThemeMenuItem(ActionEvent actionEvent) {
     LOG.debug("Clicked Toggle light/dark-mode.");
 
-    if (!isDarkTheme) {
+    if (!APPLICATIONPROPERTIES.isDarkTheme()) {
       try {
         UIManager.setLookAndFeel(LAF_DARK);
         MaterialLookAndFeel.changeTheme(DARKTHEME);
-
-        isDarkTheme = true;
-
-        try (OutputStream outputStream =
-            Files.newOutputStream(APPLICATIONPROPERTIES.SERVERPACKCREATOR_PROPERTIES().toPath())) {
-
-          APPLICATIONPROPERTIES.setProperty(
-              "de.griefed.serverpackcreator.gui.darkmode", String.valueOf(true));
-          APPLICATIONPROPERTIES.store(outputStream, null);
-
-        } catch (IOException ex) {
-          LOG.error("Couldn't write properties-file.", ex);
-        }
+        APPLICATIONPROPERTIES.setTheme(true);
+        APPLICATIONPROPERTIES.saveToDisk();
 
       } catch (UnsupportedLookAndFeelException ex) {
         LOG.error("Couldn't change theme.", ex);
@@ -895,19 +872,8 @@ public class MainMenuBar extends Component {
       try {
         UIManager.setLookAndFeel(LAF_LIGHT);
         MaterialLookAndFeel.changeTheme(LIGHTTHEME);
-
-        isDarkTheme = false;
-
-        try (OutputStream outputStream =
-            Files.newOutputStream(APPLICATIONPROPERTIES.SERVERPACKCREATOR_PROPERTIES().toPath())) {
-
-          APPLICATIONPROPERTIES.setProperty(
-              "de.griefed.serverpackcreator.gui.darkmode", String.valueOf(false));
-          APPLICATIONPROPERTIES.store(outputStream, null);
-
-        } catch (IOException ex) {
-          LOG.error("Couldn't write properties-file.", ex);
-        }
+        APPLICATIONPROPERTIES.setTheme(false);
+        APPLICATIONPROPERTIES.saveToDisk();
 
       } catch (UnsupportedLookAndFeelException ex) {
         LOG.error("Couldn't change theme.", ex);

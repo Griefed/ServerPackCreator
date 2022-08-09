@@ -200,7 +200,7 @@ public class I18n {
    */
   public void initialize(ApplicationProperties applicationProperties)
       throws IncorrectLanguageException {
-    initialize(applicationProperties.getProperty("de.griefed.serverpackcreator.language", "en_us"));
+    initialize(applicationProperties.getLanguage());
   }
 
   /**

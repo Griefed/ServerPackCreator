@@ -2277,7 +2277,7 @@ public class TabCreateServerPack extends JPanel {
    * @author Griefed
    */
   private Color getThemeErrorColor() {
-    if (isDark()) {
+    if (APPLICATIONPROPERTIES.isDarkTheme()) {
 
       return DARKTHEME.getTextErrorColour();
 
@@ -2294,7 +2294,7 @@ public class TabCreateServerPack extends JPanel {
    * @author Griefed
    */
   private Color getThemeTextColor() {
-    if (isDark()) {
+    if (APPLICATIONPROPERTIES.isDarkTheme()) {
 
       return DARKTHEME.getTextColor();
 
@@ -2302,18 +2302,6 @@ public class TabCreateServerPack extends JPanel {
 
       return LIGHTTHEME.getTextColor();
     }
-  }
-
-  /**
-   * Check whether the current theme is Dark mode or Light mode.
-   *
-   * @return <code>true</code> if Dark.
-   * @author Griefed
-   */
-  private boolean isDark() {
-    return APPLICATIONPROPERTIES
-        .getProperty("de.griefed.serverpackcreator.gui.darkmode")
-        .equals("true");
   }
 
   /**

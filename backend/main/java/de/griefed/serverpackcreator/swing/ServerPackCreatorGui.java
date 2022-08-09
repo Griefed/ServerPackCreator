@@ -245,9 +245,7 @@ public class ServerPackCreatorGui {
         () -> {
           try {
 
-            if (APPLICATIONPROPERTIES
-                .getProperty("de.griefed.serverpackcreator.gui.darkmode")
-                .equals("true")) {
+            if (APPLICATIONPROPERTIES.isDarkTheme()) {
 
               UIManager.setLookAndFeel(LAF_DARK);
               MaterialLookAndFeel.changeTheme(DARKTHEME);

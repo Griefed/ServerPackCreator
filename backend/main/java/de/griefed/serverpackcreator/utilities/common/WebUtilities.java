@@ -248,9 +248,7 @@ public class WebUtilities {
   public String createHasteBinFromFile(File textFile) {
     String text = null;
     String requestURL =
-        APPLICATIONPROPERTIES.getProperty(
-            "de.griefed.serverpackcreator.configuration.hastebinserver",
-            "https://haste.zneix.eu/documents");
+        APPLICATIONPROPERTIES.getHasteBinServerUrl();
 
     String response = null;
 
