@@ -20,7 +20,6 @@
 package de.griefed.serverpackcreator.i18n;
 
 import de.griefed.serverpackcreator.ApplicationProperties;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -95,14 +94,7 @@ public class I18n {
    */
   @Autowired
   public I18n(ApplicationProperties injectedApplicationProperties) {
-    this.APPLICATIONPROPERTIES = injectedApplicationProperties;
-
-    try {
-      initialize(APPLICATIONPROPERTIES);
-    } catch (IncorrectLanguageException ex) {
-      LOG.error("Incorrect language specified.", ex);
-      initialize();
-    }
+    this(injectedApplicationProperties, injectedApplicationProperties.getLanguage());
   }
 
   /**
@@ -125,24 +117,9 @@ public class I18n {
       writeLocaleToFile(locale);
 
     } catch (IncorrectLanguageException ex) {
-      LOG.error("Could not initialize i18n with specified locale.", ex);
-      try {
-        initialize(APPLICATIONPROPERTIES);
-      } catch (IncorrectLanguageException e) {
-        initialize();
-      }
+      LOG.error("The specified language is not supported: " + locale, ex);
+      initialize();
     }
-  }
-
-  /**
-   * Constructor for our I18n using the default locale en_us.
-   *
-   * @author Griefed
-   */
-  public I18n() {
-    this.APPLICATIONPROPERTIES = new ApplicationProperties();
-
-    initialize();
   }
 
   /**
@@ -156,51 +133,6 @@ public class I18n {
     } catch (IncorrectLanguageException e) {
       LOG.error("Error during default localization initialization.");
     }
-  }
-
-  /**
-   * Initializes the I18n with a provided localePropertiesFile.
-   *
-   * @param propertiesFile Path to the locale properties file which specifies the language to use.
-   * @throws IncorrectLanguageException Thrown if the language specified in the properties file is
-   *                                    not supported by ServerPackCreator or specified in the
-   *                                    invalid format.
-   * @author whitebear60
-   * @author Griefed
-   */
-  public void initialize(File propertiesFile) throws IncorrectLanguageException {
-
-    ApplicationProperties applicationProperties = new ApplicationProperties();
-
-    try (FileInputStream fileInputStream = new FileInputStream(propertiesFile)) {
-
-      BufferedReader bufferedReader =
-          new BufferedReader(new InputStreamReader(fileInputStream, StandardCharsets.UTF_8));
-      applicationProperties.load(bufferedReader);
-
-      LOG.debug("Properties-file used for i18n: " + applicationProperties);
-
-    } catch (Exception ex) {
-      LOG.error("Couldn't load properties-file for i18n: " + applicationProperties, ex);
-    }
-
-    initialize(applicationProperties);
-  }
-
-  /**
-   * Initializes the I18n with a provided localePropertiesFile.
-   *
-   * @param applicationProperties Instance of {@link ApplicationProperties} containing the locale to
-   *                              use.
-   * @throws IncorrectLanguageException Thrown if the language specified in the properties file is
-   *                                    not supported by ServerPackCreator or specified in the
-   *                                    invalid format.
-   * @author whitebear60
-   * @author Griefed
-   */
-  public void initialize(ApplicationProperties applicationProperties)
-      throws IncorrectLanguageException {
-    initialize(applicationProperties.getLanguage());
   }
 
   /**
@@ -391,15 +323,18 @@ public class I18n {
    * @author Griefed
    */
   void writeLocaleToFile(String locale) {
-    try (OutputStream outputStream = Files.newOutputStream(PROPERTIESFILE.toPath())) {
-      APPLICATIONPROPERTIES.setProperty("de.griefed.serverpackcreator.language", locale);
-      APPLICATIONPROPERTIES.store(outputStream, null);
-    } catch (IOException ex) {
-      LOG.error("Couldn't write properties-file.", ex);
+    if (!APPLICATIONPROPERTIES.getLanguage().equals(locale)) {
+      try (OutputStream outputStream = Files.newOutputStream(PROPERTIESFILE.toPath())) {
+        APPLICATIONPROPERTIES.setProperty("de.griefed.serverpackcreator.language", locale);
+        APPLICATIONPROPERTIES.store(outputStream, null);
+      } catch (IOException ex) {
+        LOG.error("Couldn't write properties-file.", ex);
+      }
     }
   }
 
-  public static class UTF8Control extends Control {
+  @SuppressWarnings("InnerClassMayBeStatic")
+  private class UTF8Control extends Control {
 
     public ResourceBundle newBundle(
         String baseName, Locale locale, String format, ClassLoader loader, boolean reload)
