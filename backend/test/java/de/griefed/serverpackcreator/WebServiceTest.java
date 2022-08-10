@@ -39,7 +39,7 @@ public class WebServiceTest {
       LOG.error("Error copying file", e);
     }
     serverPackCreator = new ServerPackCreator(new String[] {"--setup"});
-    serverPackCreator.run(ServerPackCreator.CommandlineParser.Mode.SETUP);
+    serverPackCreator.run();
     serverPackCreator.checkDatabase();
   }
 

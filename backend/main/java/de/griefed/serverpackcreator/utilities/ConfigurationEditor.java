@@ -121,7 +121,7 @@ public class ConfigurationEditor {
     printToFileAndConsole("(2) : Load and edit configuration");
     printToFileAndConsole("(0) : Exit");
     printToFileAndConsole("-------------------------------------------");
-    printToFileAndConsole("Enter the number of your selection: ",false);
+    printToFileAndConsole("Enter the number of your selection: ", false);
   }
 
   /**
@@ -251,12 +251,13 @@ public class ConfigurationEditor {
   /**
    * Check the configuration model for errors. If any errors are encountered, they are written to
    * the console as well as the config-editor log.
+   *
    * @param configurationModel The ConfigurationModel to check.
    * @author Griefed
    */
   private void checkConfig(ConfigurationModel configurationModel) {
     List<String> errors = new ArrayList<>();
-    CONFIGURATIONHANDLER.checkConfiguration(configurationModel,errors,false);
+    CONFIGURATIONHANDLER.checkConfiguration(configurationModel, errors, false);
     if (!errors.isEmpty()) {
       printToFileAndConsole("Encountered the following errors:");
       for (int i = 0; i < errors.size(); i++) {
@@ -302,7 +303,7 @@ public class ConfigurationEditor {
     printToFileAndConsole("(0)  : Exit");
     printToFileAndConsole(
         "---------------------------------------------------------------------------------");
-    printToFileAndConsole("Enter the number of your selection: ",false);
+    printToFileAndConsole("Enter the number of your selection: ", false);
   }
 
   /**
@@ -333,11 +334,14 @@ public class ConfigurationEditor {
 
       // --------------------------------------------------------------CLIENTSIDE-ONLY MODS---------
 
-      configurationModel.setClientMods(getClientSideMods(scanner, configurationModel.getClientMods()));
+      configurationModel.setClientMods(
+          getClientSideMods(scanner, configurationModel.getClientMods()));
 
       // ---------------------------------------DIRECTORIES OR FILES TO COPY TO SERVER PACK---------
 
-      configurationModel.setCopyDirs(getDirsAndFilesToCopy(scanner, configurationModel.getModpackDir(), configurationModel.getCopyDirs()));
+      configurationModel.setCopyDirs(
+          getDirsAndFilesToCopy(scanner, configurationModel.getModpackDir(),
+              configurationModel.getCopyDirs()));
 
       // ------------------------------------------------PATH TO THE CUSTOM SERVER-ICON.PNG---------
 
@@ -361,7 +365,9 @@ public class ConfigurationEditor {
 
       // -------------------------------------------------VERSION OF MODLOADER MODPACK USES---------
 
-      configurationModel.setModLoaderVersion(getModloaderVersion(scanner, configurationModel.getMinecraftVersion(), configurationModel.getModLoader()));
+      configurationModel.setModLoaderVersion(
+          getModloaderVersion(scanner, configurationModel.getMinecraftVersion(),
+              configurationModel.getModLoader()));
 
       // ---------------------------------------------------------PATH TO JAVA INSTALLATION---------
 
@@ -406,21 +412,21 @@ public class ConfigurationEditor {
       CONFIGUTILITIES.printConfigurationModel(configurationModel);
 
       printToFileAndConsole("Are you satisfied with this config?");
-      printToFileAndConsole("Answer: ",false);
+      printToFileAndConsole("Answer: ", false);
 
     } while (!UTILITIES.BooleanUtils().readBoolean(scanner));
 
     // ----------------------------------------------------------------CHECK CONFIGURATION----------
 
     printToFileAndConsole("Would you like to check your new configuration for errors?");
-    printToFileAndConsole("Answer: ",false);
+    printToFileAndConsole("Answer: ", false);
     if (UTILITIES.BooleanUtils().readBoolean(scanner)) {
       checkConfig(configurationModel);
     }
 
     // ----------------------------------------------------------------WRITE CONFIG TO FILE---------
 
-    saveConfiguration(scanner,configurationModel);
+    saveConfiguration(scanner, configurationModel);
   }
 
   /**
@@ -440,13 +446,13 @@ public class ConfigurationEditor {
     do {
 
       do {
-        printToFileAndConsole("Path to modpack directory: ",false);
+        printToFileAndConsole("Path to modpack directory: ", false);
         modpackDir = getNextLine(scanner);
       } while (!CONFIGURATIONHANDLER.checkModpackDir(modpackDir));
 
       printToFileAndConsole("You entered: " + modpackDir);
       printToFileAndConsole("Are you satisfied with this modpack directory?");
-      printToFileAndConsole("Answer: ",false);
+      printToFileAndConsole("Answer: ", false);
 
     } while (!UTILITIES.BooleanUtils().readBoolean(scanner));
 
@@ -490,7 +496,7 @@ public class ConfigurationEditor {
       }
 
       printToFileAndConsole("Are you satisfied with this list?");
-      printToFileAndConsole("Answer: ",false);
+      printToFileAndConsole("Answer: ", false);
 
     } while (!UTILITIES.BooleanUtils().readBoolean(scanner));
 
@@ -516,7 +522,8 @@ public class ConfigurationEditor {
       try {
         selection = Integer.parseInt(getNextLine(scanner));
       } catch (Exception ex) {
-        printToFileAndConsole("Not a valid number. Please pick between " + min + " and " + max + ".");
+        printToFileAndConsole(
+            "Not a valid number. Please pick between " + min + " and " + max + ".");
         selection = min - 1;
       }
     } while (selection < min && selection > max);
@@ -554,7 +561,7 @@ public class ConfigurationEditor {
 
       switch (decision) {
         case 1:
-          printToFileAndConsole("Enter the new text for this entry:",false);
+          printToFileAndConsole("Enter the new text for this entry:", false);
           list.set(selection, getNextLine(scanner));
           break;
 
@@ -570,7 +577,7 @@ public class ConfigurationEditor {
       printToFileAndConsole(
           "--------------------------------------------------------------------------------");
       printToFileAndConsole("Are you satisfied with this list?");
-      printToFileAndConsole("Answer: ",false);
+      printToFileAndConsole("Answer: ", false);
 
     } while (!UTILITIES.BooleanUtils().readBoolean(scanner));
 
@@ -670,7 +677,7 @@ public class ConfigurationEditor {
       }
 
       printToFileAndConsole("Are you satisfied with this list?");
-      printToFileAndConsole("Answer: ",false);
+      printToFileAndConsole("Answer: ", false);
 
     } while (!UTILITIES.BooleanUtils().readBoolean(scanner));
 
@@ -716,7 +723,7 @@ public class ConfigurationEditor {
     do {
 
       do {
-        printToFileAndConsole("Path to your server-icon.png: ",false);
+        printToFileAndConsole("Path to your server-icon.png: ", false);
         serverIconPath = getNextLine(scanner);
 
       } while (!CONFIGURATIONHANDLER.checkIconAndProperties(serverIconPath));
@@ -724,7 +731,7 @@ public class ConfigurationEditor {
       printToFileAndConsole("You entered: " + serverIconPath);
 
       printToFileAndConsole("Are you satisfied with this setting?");
-      printToFileAndConsole("Answer: ",false);
+      printToFileAndConsole("Answer: ", false);
 
     } while (!UTILITIES.BooleanUtils().readBoolean(scanner));
 
@@ -753,14 +760,14 @@ public class ConfigurationEditor {
 
       do {
 
-        printToFileAndConsole("Path to your server.properties: ",false);
+        printToFileAndConsole("Path to your server.properties: ", false);
         serverPropertiesPath = getNextLine(scanner);
       } while (!CONFIGURATIONHANDLER.checkIconAndProperties(serverPropertiesPath));
 
       printToFileAndConsole("You entered: " + serverPropertiesPath);
 
       printToFileAndConsole("Are you satisfied with this setting?");
-      printToFileAndConsole("Answer: ",false);
+      printToFileAndConsole("Answer: ", false);
 
     } while (!UTILITIES.BooleanUtils().readBoolean(scanner));
 
@@ -783,7 +790,7 @@ public class ConfigurationEditor {
     printToFileAndConsole(
         "Do you want ServerPackCreator to install the modloader server for your server pack? Must be true or false.");
 
-    printToFileAndConsole("Include modloader server installation: ",false);
+    printToFileAndConsole("Include modloader server installation: ", false);
     includeServerInstallation = UTILITIES.BooleanUtils().readBoolean(scanner);
 
     printToFileAndConsole("You entered: " + includeServerInstallation);
@@ -802,7 +809,7 @@ public class ConfigurationEditor {
     printToFileAndConsole("Which version of Minecraft does your modpack use?");
 
     do {
-      printToFileAndConsole("Minecraft version: ",false);
+      printToFileAndConsole("Minecraft version: ", false);
       minecraftVersion = getNextLine(scanner);
 
     } while (!VERSIONMETA.minecraft().checkMinecraftVersion(minecraftVersion));
@@ -825,7 +832,7 @@ public class ConfigurationEditor {
     printToFileAndConsole("What modloader does your modpack use?");
 
     do {
-      printToFileAndConsole("Modloader: ",false);
+      printToFileAndConsole("Modloader: ", false);
       modLoader = getNextLine(scanner);
 
     } while (!CONFIGURATIONHANDLER.checkModloader(modLoader));
@@ -851,7 +858,7 @@ public class ConfigurationEditor {
     printToFileAndConsole("What version of " + modLoader + " does your modpack use?");
 
     do {
-      printToFileAndConsole("Modloader version: ",false);
+      printToFileAndConsole("Modloader version: ", false);
       modLoaderVersion = getNextLine(scanner);
 
     } while (!CONFIGURATIONHANDLER.checkModloaderVersion(
@@ -880,7 +887,7 @@ public class ConfigurationEditor {
     printToFileAndConsole(
         "Example Linux: /usr/bin/java | Example Windows: C:/Program Files/AdoptOpenJDK/jdk-8.0.275.1-hotspot/jre/bin/java.exe");
 
-    printToFileAndConsole("Path to your Java installation: ",false);
+    printToFileAndConsole("Path to your Java installation: ", false);
 
     javaPath = CONFIGURATIONHANDLER.getJavaPath(getNextLine(scanner));
 
@@ -901,7 +908,7 @@ public class ConfigurationEditor {
     printToFileAndConsole(
         "Do you want ServerPackCreator to include a server-icon in your server pack? Must be true or false.");
 
-    printToFileAndConsole("Include server-icon.png: ",false);
+    printToFileAndConsole("Include server-icon.png: ", false);
     includeServerIcon = UTILITIES.BooleanUtils().readBoolean(scanner);
 
     printToFileAndConsole("You entered: " + includeServerIcon);
@@ -921,7 +928,7 @@ public class ConfigurationEditor {
     printToFileAndConsole(
         "Do you want ServerPackCreator to include a server.properties in your server pack? Must be true or false.");
 
-    printToFileAndConsole("Include server.properties: ",false);
+    printToFileAndConsole("Include server.properties: ", false);
     includeServerProperties = UTILITIES.BooleanUtils().readBoolean(scanner);
 
     printToFileAndConsole("You entered: " + includeServerProperties);
@@ -942,7 +949,7 @@ public class ConfigurationEditor {
     printToFileAndConsole(
         "Do you want ServerPackCreator to create a ZIP-archive of your server pack? Must be true or false.");
 
-    printToFileAndConsole("Create ZIP-archive: ",false);
+    printToFileAndConsole("Create ZIP-archive: ", false);
     includeZipCreation = UTILITIES.BooleanUtils().readBoolean(scanner);
 
     printToFileAndConsole("You entered: " + includeZipCreation);
@@ -963,7 +970,7 @@ public class ConfigurationEditor {
     printToFileAndConsole(
         "Specify the Java arguments, if any, to execute the server with. Can be left blank.");
 
-    printToFileAndConsole("Java args: ",false);
+    printToFileAndConsole("Java args: ", false);
     javaArgs = getNextLine(scanner);
 
     if (javaArgs.isEmpty()) {
@@ -987,7 +994,7 @@ public class ConfigurationEditor {
     printToFileAndConsole(
         "Enter the suffix you want to append to your server pack. Can be left empty.");
 
-    printToFileAndConsole("Server pack suffix: ",false);
+    printToFileAndConsole("Server pack suffix: ", false);
 
     return getNextLine(scanner);
   }
@@ -995,8 +1002,8 @@ public class ConfigurationEditor {
   /**
    * Let the user save the created configuration to a file.
    *
-   * @param scanner                   Used for reading the users input.
-   * @param configurationModel        Configuration to save.
+   * @param scanner            Used for reading the users input.
+   * @param configurationModel Configuration to save.
    * @author Griefed
    */
   private void saveConfiguration(Scanner scanner, ConfigurationModel configurationModel) {
@@ -1034,12 +1041,13 @@ public class ConfigurationEditor {
 
   /**
    * Acquire user input and print that input to our config-editor log.
+   *
    * @param scanner Used for reading the users input.
    * @return The text the user entered.
    */
   private String getNextLine(Scanner scanner) {
     String text = scanner.nextLine();
-    printToFile(text,true);
+    printToFile(text, true);
     return text;
   }
 
@@ -1070,12 +1078,13 @@ public class ConfigurationEditor {
     } else {
       System.out.print(text);
     }
-    printToFile(text,newLine);
+    printToFile(text, newLine);
   }
 
   /**
    * Append text to our config-editor log.
-   * @param text The text to append to the log.
+   *
+   * @param text    The text to append to the log.
    * @param newLine Whether to include a newline after the text.
    */
   private void printToFile(String text, boolean newLine) {
@@ -1087,7 +1096,7 @@ public class ConfigurationEditor {
           FileUtils.writeStringToFile(logFile, text, StandardCharsets.UTF_8, true);
         }
       } catch (IOException ex) {
-        LOG.error("Could not write to logfile " + logFile.getName(),ex);
+        LOG.error("Could not write to logfile " + logFile.getName(), ex);
       }
     } else {
       LOG.error("Logfile " + logFile.getName() + " does not exist.");
@@ -1095,14 +1104,14 @@ public class ConfigurationEditor {
   }
 
   private void checkLogFile() {
-    List<File> files = new ArrayList<>(FileUtils.listFiles(new File("logs"),null,false));
+    List<File> files = new ArrayList<>(FileUtils.listFiles(new File("logs"), null, false));
 
     for (File file : files) {
       if (file.getName().contains("configurationCreator")) {
         try {
-          FileUtils.moveFile(file,new File("logs/archive/" + file.getName()));
+          FileUtils.moveFile(file, new File("logs/archive/" + file.getName()));
         } catch (IOException ex) {
-          LOG.error("Could not move " + file.getName() + " to archive.",ex);
+          LOG.error("Could not move " + file.getName() + " to archive.", ex);
         }
       }
     }
@@ -1112,7 +1121,7 @@ public class ConfigurationEditor {
         //noinspection ResultOfMethodCallIgnored
         logFile.createNewFile();
       } catch (IOException ex) {
-        LOG.error("Could not create logfile " + logFile.getName(),ex);
+        LOG.error("Could not create logfile " + logFile.getName(), ex);
       }
     }
   }

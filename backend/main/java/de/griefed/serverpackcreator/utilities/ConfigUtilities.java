@@ -350,7 +350,7 @@ public class ConfigUtilities {
 
       /* This log is meant to be read by the user, therefore we allow translation. */
       LOG.info("Client mods specified. Client mods are:");
-      UTILITIES.ListUtils().printListToLogChunked(clientsideMods,5, "    ",true);
+      UTILITIES.ListUtils().printListToLogChunked(clientsideMods, 5, "    ", true);
     }
 
     /* This log is meant to be read by the user, therefore we allow translation. */

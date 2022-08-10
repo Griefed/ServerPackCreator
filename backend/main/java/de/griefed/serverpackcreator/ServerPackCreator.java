@@ -142,6 +142,33 @@ public class ServerPackCreator {
     return ARGS;
   }
 
+  /**
+   * Initialize ServerPackCreator with the passed commandline-arguments and run.
+   *
+   * <p>For a list of available commandline arguments, check out {@link
+   * ServerPackCreator.CommandlineParser.Mode}
+   *
+   * @param args Commandline arguments with which ServerPackCreator is run. Determines which mode
+   *             ServerPackCreator will enter and which locale is used.
+   * @throws IOException if the {@link VersionMeta} could not be instantiated.
+   * @author Griefed
+   */
+  public static void main(String[] args) throws IOException {
+    ARGS = args;
+    serverPackCreator = getServerPackCreator(ARGS);
+    serverPackCreator.run();
+  }
+
+  /**
+   * Start Spring Boot app, providing our Apache Tomcat and serving our frontend.
+   *
+   * @param args Arguments passed from invocation in {@link #main(String[])}.
+   * @author Griefed
+   */
+  public static void web(String[] args) {
+    SpringApplication.run(ServerPackCreator.class, args);
+  }
+
   public CommandlineParser getCommandlineParser() {
     return COMMANDLINE_PARSER;
   }
@@ -220,7 +247,8 @@ public class ServerPackCreator {
 
   public ServerPackCreatorSplash getServerPackCreatorSplash() {
     if (this.serverPackCreatorSplash == null) {
-      this.serverPackCreatorSplash = new ServerPackCreatorSplash(APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION());
+      this.serverPackCreatorSplash = new ServerPackCreatorSplash(
+          APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION());
     }
     return serverPackCreatorSplash;
   }
@@ -234,7 +262,8 @@ public class ServerPackCreator {
 
   public ModScanner getModScanner() {
     if (this.modScanner == null) {
-      this.modScanner = new ModScanner(getAnnotationScanner(), getFabricScanner(), getQuiltScanner(), getTomlScanner());
+      this.modScanner = new ModScanner(getAnnotationScanner(), getFabricScanner(),
+          getQuiltScanner(), getTomlScanner());
     }
     return modScanner;
   }
@@ -304,33 +333,6 @@ public class ServerPackCreator {
   }
 
   /**
-   * Initialize ServerPackCreator with the passed commandline-arguments and run.
-   *
-   * <p>For a list of available commandline arguments, check out {@link
-   * ServerPackCreator.CommandlineParser.Mode}
-   *
-   * @param args Commandline arguments with which ServerPackCreator is run. Determines which mode
-   *             ServerPackCreator will enter and which locale is used.
-   * @throws IOException if the {@link VersionMeta} could not be instantiated.
-   * @author Griefed
-   */
-  public static void main(String[] args) throws IOException {
-    ARGS = args;
-    serverPackCreator = getServerPackCreator(ARGS);
-    serverPackCreator.run();
-  }
-
-  /**
-   * Start Spring Boot app, providing our Apache Tomcat and serving our frontend.
-   *
-   * @param args Arguments passed from invocation in {@link #main(String[])}.
-   * @author Griefed
-   */
-  public static void web(String[] args) {
-    SpringApplication.run(ServerPackCreator.class, args);
-  }
-
-  /**
    * Run ServerPackCreator with the mode acquired from {@link CommandlineParser}.
    *
    * @throws IOException if the run fails.
@@ -396,6 +398,8 @@ public class ServerPackCreator {
 
       case SETUP:
         stageOne();
+        stageTwo();
+        stageThree();
 
       case EXIT:
       default:
@@ -870,8 +874,8 @@ public class ServerPackCreator {
 
   /**
    * Run ServerPackCreator in headless, CLI, mode. If no serverpackcreator.conf-file exists, it is
-   * created through {@link ConfigurationEditor#continuedRunOptions()} and subsequently used by
-   * a ServerPackCreator headless-run.
+   * created through {@link ConfigurationEditor#continuedRunOptions()} and subsequently used by a
+   * ServerPackCreator headless-run.
    *
    * @throws IOException if the {@link ConfigurationEditor} could not be instantiated.
    * @author Griefed
@@ -936,7 +940,9 @@ public class ServerPackCreator {
           LOG.error("Error renaming creator.conf to serverpackcreator.conf.", ex);
         }
       }
-    } else if (!APPLICATIONPROPERTIES.DEFAULT_CONFIG().exists() && COMMANDLINE_PARSER.getModeToRunIn() != Mode.CLI && COMMANDLINE_PARSER.getModeToRunIn() != Mode.CGEN) {
+    } else if (!APPLICATIONPROPERTIES.DEFAULT_CONFIG().exists()
+        && COMMANDLINE_PARSER.getModeToRunIn() != Mode.CLI
+        && COMMANDLINE_PARSER.getModeToRunIn() != Mode.CGEN) {
       try {
 
         FileUtils.copyInputStreamToFile(

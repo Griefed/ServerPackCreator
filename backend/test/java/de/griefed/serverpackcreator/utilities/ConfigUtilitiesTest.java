@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.ConfigurationModel;
-import de.griefed.serverpackcreator.i18n.I18n;
 import de.griefed.serverpackcreator.utilities.common.Utilities;
 import java.io.File;
 import java.io.IOException;
@@ -480,47 +479,47 @@ public class ConfigUtilitiesTest {
   void filesAndDirsInZipTest() throws IOException {
     Assertions.assertTrue(
         configUtilities
-                .getFilesInModpackZip(
-                    new ZipFile(
-                        "backend/test/resources/testresources/Survive_Create_Prosper_4_invalid.zip"))
-                .size()
+            .getFilesInModpackZip(
+                new ZipFile(
+                    "backend/test/resources/testresources/Survive_Create_Prosper_4_invalid.zip"))
+            .size()
             > 0);
     Assertions.assertTrue(
         configUtilities
-                .getFilesInModpackZip(
-                    new ZipFile(
-                        "backend/test/resources/testresources/Survive_Create_Prosper_4_valid.zip"))
-                .size()
-            > 0);
-
-    Assertions.assertTrue(
-        configUtilities
-                .getDirectoriesInModpackZip(
-                    new ZipFile(
-                        "backend/test/resources/testresources/Survive_Create_Prosper_4_invalid.zip"))
-                .size()
-            > 0);
-    Assertions.assertTrue(
-        configUtilities
-                .getDirectoriesInModpackZip(
-                    new ZipFile(
-                        "backend/test/resources/testresources/Survive_Create_Prosper_4_valid.zip"))
-                .size()
+            .getFilesInModpackZip(
+                new ZipFile(
+                    "backend/test/resources/testresources/Survive_Create_Prosper_4_valid.zip"))
+            .size()
             > 0);
 
     Assertions.assertTrue(
         configUtilities
-                .getAllFilesAndDirectoriesInModpackZip(
-                    new ZipFile(
-                        "backend/test/resources/testresources/Survive_Create_Prosper_4_invalid.zip"))
-                .size()
+            .getDirectoriesInModpackZip(
+                new ZipFile(
+                    "backend/test/resources/testresources/Survive_Create_Prosper_4_invalid.zip"))
+            .size()
             > 0);
     Assertions.assertTrue(
         configUtilities
-                .getAllFilesAndDirectoriesInModpackZip(
-                    new ZipFile(
-                        "backend/test/resources/testresources/Survive_Create_Prosper_4_valid.zip"))
-                .size()
+            .getDirectoriesInModpackZip(
+                new ZipFile(
+                    "backend/test/resources/testresources/Survive_Create_Prosper_4_valid.zip"))
+            .size()
+            > 0);
+
+    Assertions.assertTrue(
+        configUtilities
+            .getAllFilesAndDirectoriesInModpackZip(
+                new ZipFile(
+                    "backend/test/resources/testresources/Survive_Create_Prosper_4_invalid.zip"))
+            .size()
+            > 0);
+    Assertions.assertTrue(
+        configUtilities
+            .getAllFilesAndDirectoriesInModpackZip(
+                new ZipFile(
+                    "backend/test/resources/testresources/Survive_Create_Prosper_4_valid.zip"))
+            .size()
             > 0);
   }
 }
