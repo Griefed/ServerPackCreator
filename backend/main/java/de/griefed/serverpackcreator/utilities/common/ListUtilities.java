@@ -137,11 +137,11 @@ public class ListUtilities {
         }
       }
       if (printIndexes) {
-        System.out.println(prefix + "(" + (i+1) + " to " + n + ")  " + text);
+        System.out.println(prefix + "(" + (i + 1) + " to " + n + ")  " + text);
       } else {
         System.out.println(prefix + text);
       }
-      i = n-1;
+      i = n - 1;
     }
   }
 
@@ -172,11 +172,11 @@ public class ListUtilities {
         }
       }
       if (printIndexes) {
-        LOG.info(prefix + "(" + (i+1) + " to " + n + ")  " + text);
+        LOG.info(prefix + "(" + (i + 1) + " to " + n + ")  " + text);
       } else {
         LOG.info(prefix + text);
       }
-      i = n-1;
+      i = n - 1;
     }
   }
 }
