@@ -199,7 +199,7 @@ public class ServerPackHandler {
      * Check whether the server pack for the specified modpack already exists and whether overwrite is disabled.
      * If the server pack exists and overwrite is disabled, no new server pack will be generated.
      */
-    if (APPLICATIONPROPERTIES.isServerPacksOverwriteEnabled()
+    if (!APPLICATIONPROPERTIES.isServerPacksOverwriteEnabled()
         && new File(destination).exists()) {
 
       LOG.info("Server pack already exists and overwrite disabled.");
