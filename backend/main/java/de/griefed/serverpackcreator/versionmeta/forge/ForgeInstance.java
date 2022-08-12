@@ -42,11 +42,11 @@ public class ForgeInstance {
    * Create a new Forge Instance instance.
    *
    * @param minecraftVersion {@link String} Minecraft version.
-   * @param forgeVersion {@link String} Forge version.
-   * @param minecraftMeta {@link MinecraftMeta} The corresponding Minecraft client for this Forge
-   *     version.
+   * @param forgeVersion     {@link String} Forge version.
+   * @param minecraftMeta    {@link MinecraftMeta} The corresponding Minecraft client for this Forge
+   *                         version.
    * @throws MalformedURLException if the URL to the download of the Forge server installer could
-   *     not be created.
+   *                               not be created.
    * @author Griefed
    */
   public ForgeInstance(String minecraftVersion, String forgeVersion, MinecraftMeta minecraftMeta)
@@ -92,8 +92,8 @@ public class ForgeInstance {
   }
 
   /**
-   * Get this Forge instances corresponding Minecraft client instance, wrapped in an {@link
-   * Optional}
+   * Get this Forge instances corresponding Minecraft client instance, wrapped in an
+   * {@link Optional}
    *
    * @return {@link MinecraftClient} wrapped in an {@link Optional}.
    * @author Griefed

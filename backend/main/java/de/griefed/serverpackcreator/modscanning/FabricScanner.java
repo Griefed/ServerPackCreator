@@ -102,7 +102,8 @@ public class FabricScanner extends JsonBasedScanner implements
 
           // Get this mods' id/name
           try {
-            if (UTILITIES.JsonUtilities().nestedTextEqualsIgnoreCase(modJson, "client", "environment")) {
+            if (UTILITIES.JsonUtilities()
+                .nestedTextEqualsIgnoreCase(modJson, "client", "environment")) {
 
               clientMods.add(modId);
               LOG.debug("Added clientMod: " + modId);
@@ -113,7 +114,8 @@ public class FabricScanner extends JsonBasedScanner implements
 
           // Get this mods dependencies
           try {
-            UTILITIES.JsonUtilities().getFieldNames(modJson, "depends").forEachRemaining(modDependencies::add);
+            UTILITIES.JsonUtilities().getFieldNames(modJson, "depends")
+                .forEachRemaining(modDependencies::add);
           } catch (NullPointerException ignored) {
 
           }
@@ -144,7 +146,8 @@ public class FabricScanner extends JsonBasedScanner implements
         modIdTocheck = UTILITIES.JsonUtilities().getNestedText(modJson, "id");
 
         try {
-          if (UTILITIES.JsonUtilities().nestedTextEqualsIgnoreCase(modJson, "client", "environment")) {
+          if (UTILITIES.JsonUtilities()
+              .nestedTextEqualsIgnoreCase(modJson, "client", "environment")) {
             if (clientMods.contains(modIdTocheck)) {
               addToDelta = true;
             }

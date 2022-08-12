@@ -20,7 +20,6 @@
 package de.griefed.serverpackcreator.plugins.serverpackhandler;
 
 import de.griefed.serverpackcreator.plugins.PluginInformation;
-import de.griefed.serverpackcreator.utilities.misc.Generated;
 
 /**
  * Plugin interface for plugins which are to be executed after server pack, and it's ZIP-archive,
@@ -28,5 +27,6 @@ import de.griefed.serverpackcreator.utilities.misc.Generated;
  *
  * @author Girefed
  */
-@Generated
-public interface PostGenExtension extends PluginInformation {}
+public interface PostGenExtension extends PluginInformation {
+
+}

@@ -43,12 +43,13 @@ public class FileUtilities {
 
   private static final Logger LOG = LogManager.getLogger(FileUtilities.class);
 
-  public FileUtilities() {}
+  public FileUtilities() {
+  }
 
   /**
    * Move a file from source to destination, and replace the destination file if it exists.
    *
-   * @param sourceFile The source file.
+   * @param sourceFile      The source file.
    * @param destinationFile The destination file to be replaced by the source file.
    * @return Boolean. Returns true if the file was sucessfully replaced.
    * @throws IOException Thrown if an error occurs when the file is moved.
@@ -70,7 +71,7 @@ public class FileUtilities {
   /**
    * Unzips the downloaded modpack ZIP-archive to the specified directory.
    *
-   * @param zipFile String. The path to the ZIP-archive which we want to unzip.
+   * @param zipFile              String. The path to the ZIP-archive which we want to unzip.
    * @param destinationDirectory The directory into which the ZIP-archive will be unzipped into.
    * @author Griefed
    */
@@ -92,8 +93,8 @@ public class FileUtilities {
    * symlink.
    *
    * @param file {@link File} The file to check
-   * @return {@link FileType} The type of the given file. Either {@link FileType#FILE}, {@link
-   *     FileType#LINK} or {@link FileType#SYMLINK}
+   * @return {@link FileType} The type of the given file. Either {@link FileType#FILE},
+   * {@link FileType#LINK} or {@link FileType#SYMLINK}
    * @author Griefed
    */
   public FileType checkFileType(String file) {
@@ -108,8 +109,8 @@ public class FileUtilities {
    * symlink.
    *
    * @param file {@link File} The file to check
-   * @return {@link FileType} The type of the given file. Either {@link FileType#FILE}, {@link
-   *     FileType#LINK} or {@link FileType#SYMLINK}
+   * @return {@link FileType} The type of the given file. Either {@link FileType#FILE},
+   * {@link FileType#LINK} or {@link FileType#SYMLINK}
    * @author Griefed
    */
   public FileType checkFileType(File file) {
@@ -163,8 +164,8 @@ public class FileUtilities {
    *
    * @param link {@link String} The link you want to resolve.
    * @return {@link String} Path to the source of the link. If the specified file is not a link, the
-   *     path to the passed file is returned.
-   * @throws IOException if the link could not be parsed.
+   * path to the passed file is returned.
+   * @throws IOException              if the link could not be parsed.
    * @throws InvalidFileTypeException if the specified file is neither a file, lnk nor symlink.
    * @author Griefed
    */
@@ -177,8 +178,8 @@ public class FileUtilities {
    *
    * @param link {@link File} The link you want to resolve.
    * @return {@link String} Path to the source of the link. If the specified file is not a link, the
-   *     path to the passed file is returned.
-   * @throws IOException if the link could not be parsed.
+   * path to the passed file is returned.
+   * @throws IOException              if the link could not be parsed.
    * @throws InvalidFileTypeException if the specified file is neither a file, lnk nor symlink.
    * @author Griefed
    */
@@ -206,20 +207,20 @@ public class FileUtilities {
   }
 
   /**
-   * Resolve a given link/symlink to its source.<br>
-   * This would not exist without the great answers from this StackOverflow question: <a
+   * Resolve a given link/symlink to its source.<br> This would not exist without the great answers
+   * from this StackOverflow question: <a
    * href="https://stackoverflow.com/questions/309495/windows-shortcut-lnk-parser-in-java">Windows
-   * Shortcut lnk parser in Java</a><br>
-   * Huge shoutout to <a href="https://stackoverflow.com/users/675721/codebling">Codebling</a>
+   * Shortcut lnk parser in Java</a><br> Huge shoutout to <a
+   * href="https://stackoverflow.com/users/675721/codebling">Codebling</a>
    *
-   * @param file {@link File} The file of which to acquire the source.
+   * @param file     {@link File} The file of which to acquire the source.
    * @param fileType {@link FileType} The link-type. Either {@link FileType#LINK} for Windows, or
-   *     {@link FileType#SYMLINK} for UNIX systems.
+   *                 {@link FileType#SYMLINK} for UNIX systems.
    * @return {@link String} The path to the source of the given link.
    * @throws InvalidFileTypeException if the specified {@link FileType} is invalid.
-   * @throws InvalidLinkException if the specified file is not a valid Windows link.
-   * @throws ShellLinkException if the specified file could not be parsed as a Windows link.
-   * @throws IOException if the link could not be parsed.
+   * @throws InvalidLinkException     if the specified file is not a valid Windows link.
+   * @throws ShellLinkException       if the specified file could not be parsed as a Windows link.
+   * @throws IOException              if the link could not be parsed.
    * @author Griefed
    */
   private String resolveLink(File file, FileType fileType)
@@ -254,7 +255,8 @@ public class FileUtilities {
    * @param fileOrDirectory {@link File} File or directory.
    * @return {@link Boolean} <code>true</code> if both read- and write-permissions are set.
    * @throws InvalidPathException if a {@code Path} object cannot be constructed from the abstract
-   *     path (see {@link java.nio.file.FileSystem#getPath FileSystem.getPath})
+   *                              path (see
+   *                              {@link java.nio.file.FileSystem#getPath FileSystem.getPath})
    * @author Griefed
    */
   public boolean checkPermissions(File fileOrDirectory) throws InvalidPathException {
@@ -367,8 +369,8 @@ public class FileUtilities {
   /**
    * Open the specified folder in the file explorer.
    *
-   * @author Griefed
    * @param folder {@link String} The folder to open.
+   * @author Griefed
    */
   public void openFolder(String folder) {
     if (GraphicsEnvironment.isHeadless()) {
@@ -385,8 +387,8 @@ public class FileUtilities {
   /**
    * Open the specified file in an editor.
    *
-   * @author Griefed
    * @param fileToOpen {@link String} The file to open.
+   * @author Griefed
    */
   public void openFile(String fileToOpen) {
     if (GraphicsEnvironment.isHeadless()) {
@@ -404,19 +406,29 @@ public class FileUtilities {
 
   public enum FileType {
 
-    /** A regular file. */
+    /**
+     * A regular file.
+     */
     FILE,
 
-    /** A regular directory. */
+    /**
+     * A regular directory.
+     */
     DIRECTORY,
 
-    /** A Windows link. */
+    /**
+     * A Windows link.
+     */
     LINK,
 
-    /** A UNIX symlink. */
+    /**
+     * A UNIX symlink.
+     */
     SYMLINK,
 
-    /** Not a valid file. */
+    /**
+     * Not a valid file.
+     */
     INVALID
   }
 }

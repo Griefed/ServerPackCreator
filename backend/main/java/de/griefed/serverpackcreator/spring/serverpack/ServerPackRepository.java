@@ -28,11 +28,10 @@ import org.springframework.stereotype.Repository;
  * Our JPA repository for storing and retrieving {@link ServerPackModel}s to and from our SQLite
  * database. Provides methods for retrieving, storing, deleting. Calls must always be made from
  * {@link ServerPackService} and not directly to this repository. It may seem strange, but this
- * accomplishes a couple of things:<br>
- * 1. Centralized access to the repository.<br>
- * 2. Complete control over what happens with the data retrieved from the repository.<br>
- * 3. Complete control over what happens with the data passed to the repository.<br>
- * 4. Better management and overview of what we are doing with our repository.
+ * accomplishes a couple of things:<br> 1. Centralized access to the repository.<br> 2. Complete
+ * control over what happens with the data retrieved from the repository.<br> 3. Complete control
+ * over what happens with the data passed to the repository.<br> 4. Better management and overview
+ * of what we are doing with our repository.
  *
  * @author Griefed
  */
@@ -44,8 +43,8 @@ public interface ServerPackRepository extends CrudRepository<ServerPackModel, In
    *
    * @param projectName String. The project name with which to search for server packs.
    * @return Returns a list of all server packs for the passed CurseForge project name wrapped in an
-   *     {@link Optional}. I recommend to make use of {@link Optional#isPresent()} and {@link
-   *     Optional#get()}.
+   * {@link Optional}. I recommend to make use of {@link Optional#isPresent()} and
+   * {@link Optional#get()}.
    * @author Griefed
    */
   Optional<List<ServerPackModel>> findAllByProjectName(String projectName);
@@ -54,9 +53,9 @@ public interface ServerPackRepository extends CrudRepository<ServerPackModel, In
    * Find a server pack by its CurseForge file display name.
    *
    * @param fileName String. The CurseForge file display name with which to search for a server
-   *     pack.
+   *                 pack.
    * @return Returns a server pack for the passed file display name wrapped in an {@link Optional}.
-   *     I recommend to make use of {@link Optional#isPresent()} and {@link Optional#get()}.
+   * I recommend to make use of {@link Optional#isPresent()} and {@link Optional#get()}.
    * @author Griefed
    */
   Optional<ServerPackModel> findByFileName(String fileName);
@@ -66,7 +65,7 @@ public interface ServerPackRepository extends CrudRepository<ServerPackModel, In
    *
    * @param status String. The status with which to search for server packs.
    * @return Returns a list of server packs for the passed status wrapped in an {@link Optional}. I
-   *     recommend to make use of {@link Optional#isPresent()} and {@link Optional#get()}.
+   * recommend to make use of {@link Optional#isPresent()} and {@link Optional#get()}.
    * @author Griefed
    */
   Optional<List<ServerPackModel>> findByStatus(String status);

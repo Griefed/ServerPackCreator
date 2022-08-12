@@ -37,5 +37,6 @@ public interface SimpleDocumentListener extends DocumentListener {
   }
 
   @Override
-  default void changedUpdate(DocumentEvent e) {}
+  default void changedUpdate(DocumentEvent e) {
+  }
 }

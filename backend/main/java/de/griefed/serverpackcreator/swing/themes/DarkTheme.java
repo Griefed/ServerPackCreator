@@ -19,7 +19,6 @@
  */
 package de.griefed.serverpackcreator.swing.themes;
 
-import de.griefed.serverpackcreator.utilities.misc.Generated;
 import java.awt.Color;
 import javax.swing.BorderFactory;
 import javax.swing.plaf.BorderUIResource;
@@ -35,7 +34,6 @@ import mdlaf.utils.MaterialColors;
  *
  * @author Griefed
  */
-@Generated
 public class DarkTheme extends JMarsDarkTheme {
 
   private ColorUIResource selectedBackground = new ColorUIResource(50, 66, 74);

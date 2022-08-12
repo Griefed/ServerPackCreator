@@ -1,90 +1,95 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="WARN">
-    <Properties>
-        <Property name="log-path">logs</Property>
-        <Property name="archive">${log-path}/archive</Property>
-        <Property name="pattern">%d{ISO8601} %5p [%t] (%F:%L) - %m%n</Property>
-        <Property name="console-pattern">%style{%d{ISO8601}}{dim,white} %highlight{%5p} [%style{%t}{bright,blue}] %style{(%F:%L)}{bright,yellow} - %m%n</Property>
-        <Property name="log-level">INFO</Property>
-        <Property name="log-level-spc">INFO</Property>
-        <Property name="charset">UTF-8</Property>
-    </Properties>
+  <Appenders>
+    <Console name="Console" target="SYSTEM_OUT">
+      <PatternLayout>
+        <Pattern>
+          ${console-pattern}
+        </Pattern>
+      </PatternLayout>
+    </Console>
 
-    <Appenders>
-        <Console name="Console" target="SYSTEM_OUT">
-            <PatternLayout>
-                <Pattern>
-                    ${console-pattern}
-                </Pattern>
-            </PatternLayout>
-        </Console>
+    <RollingFile fileName="${log-path}/serverpackcreator.log" filePattern="${archive}/serverpackcreator.log.%i"
+      name="ApplicationLogger">
+      <DefaultRolloverStrategy max="5"/>
+      <PatternLayout>
+        <Charset>
+          ${charset}
+        </Charset>
+        <Pattern>
+          ${pattern}
+        </Pattern>
+      </PatternLayout>
+      <Policies>
+        <OnStartupTriggeringPolicy/>
+        <SizeBasedTriggeringPolicy size="10 MB"/>
+      </Policies>
+    </RollingFile>
 
-        <RollingFile name="ApplicationLogger" fileName="${log-path}/serverpackcreator.log" filePattern="${archive}/serverpackcreator.log.%i">
-            <PatternLayout>
-                <Charset>
-                    ${charset}
-                </Charset>
-                <Pattern>
-                    ${pattern}
-                </Pattern>
-            </PatternLayout>
-            <Policies>
-                <OnStartupTriggeringPolicy />
-                <SizeBasedTriggeringPolicy size="10 MB" />
-            </Policies>
-            <DefaultRolloverStrategy max="5" />
-        </RollingFile>
+    <RollingFile fileName="${log-path}/modloader_installer.log" filePattern="${archive}/modloader_installer.log.%i"
+      name="InstallerLogger">
+      <DefaultRolloverStrategy max="5"/>
+      <PatternLayout>
+        <Charset>
+          ${charset}
+        </Charset>
+        <Pattern>
+          ${pattern}
+        </Pattern>
+      </PatternLayout>
+      <Policies>
+        <OnStartupTriggeringPolicy/>
+        <SizeBasedTriggeringPolicy size="10 MB"/>
+      </Policies>
+    </RollingFile>
 
-        <RollingFile name="InstallerLogger" fileName="${log-path}/modloader_installer.log" filePattern="${archive}/modloader_installer.log.%i">
-            <PatternLayout>
-                <Charset>
-                    ${charset}
-                </Charset>
-                <Pattern>
-                    ${pattern}
-                </Pattern>
-            </PatternLayout>
-            <Policies>
-                <OnStartupTriggeringPolicy />
-                <SizeBasedTriggeringPolicy size="10 MB" />
-            </Policies>
-            <DefaultRolloverStrategy max="5" />
-        </RollingFile>
+    <RollingFile fileName="${log-path}/addons.log" filePattern="${archive}/addons.log.%i"
+      name="AddonsLogger">
+      <DefaultRolloverStrategy max="5"/>
+      <PatternLayout>
+        <Charset>
+          ${charset}
+        </Charset>
+        <Pattern>
+          ${pattern}
+        </Pattern>
+      </PatternLayout>
+      <Policies>
+        <OnStartupTriggeringPolicy/>
+        <SizeBasedTriggeringPolicy size="10 MB"/>
+      </Policies>
+    </RollingFile>
+  </Appenders>
 
-        <RollingFile name="AddonsLogger" fileName="${log-path}/addons.log" filePattern="${archive}/addons.log.%i">
-            <PatternLayout>
-                <Charset>
-                    ${charset}
-                </Charset>
-                <Pattern>
-                    ${pattern}
-                </Pattern>
-            </PatternLayout>
-            <Policies>
-                <OnStartupTriggeringPolicy />
-                <SizeBasedTriggeringPolicy size="10 MB" />
-            </Policies>
-            <DefaultRolloverStrategy max="5" />
-        </RollingFile>
-    </Appenders>
+  <Loggers>
+    <Logger additivity="false" level="ALL" name="de.griefed.serverpackcreator">
+      <AppenderRef level="${log-level-spc}" ref="Console"/>
+      <AppenderRef level="${log-level-spc}" ref="ApplicationLogger"/>
+    </Logger>
 
-    <Loggers>
-        <Root level="ALL">
-            <AppenderRef ref="Console" level="${log-level}"/>
-            <AppenderRef ref="ApplicationLogger" level="${log-level}" />
-        </Root>
+    <Logger additivity="false" level="ALL" name="InstallerLogger">
+      <AppenderRef level="${log-level-spc}" ref="InstallerLogger"/>
+    </Logger>
 
-        <Logger name="de.griefed.serverpackcreator" level="ALL" additivity="false">
-            <AppenderRef ref="Console" level="${log-level-spc}"/>
-            <AppenderRef ref="ApplicationLogger" level="${log-level-spc}" />
-        </Logger>
+    <Logger additivity="false" level="ALL" name="AddonsLogger">
+      <AppenderRef level="${log-level-spc}" ref="AddonsLogger"/>
+    </Logger>
 
-        <Logger name="InstallerLogger" level="ALL" additivity="false">
-            <AppenderRef ref="InstallerLogger" level="${log-level-spc}" />
-        </Logger>
+    <Root level="ALL">
+      <AppenderRef level="${log-level}" ref="Console"/>
+      <AppenderRef level="${log-level}" ref="ApplicationLogger"/>
+    </Root>
+  </Loggers>
 
-        <Logger name="AddonsLogger" level="ALL" additivity="false">
-            <AppenderRef ref="AddonsLogger" level="${log-level-spc}" />
-        </Logger>
-    </Loggers>
+  <Properties>
+    <Property name="log-path">logs</Property>
+    <Property name="archive">${log-path}/archive</Property>
+    <Property name="pattern">%d{ISO8601} %5p [%t] (%F:%L) - %m%n</Property>
+    <Property name="console-pattern">%style{%d{ISO8601}}{dim,white} %highlight{%5p}
+      [%style{%t}{bright,blue}] %style{(%F:%L)}{bright,yellow} - %m%n
+    </Property>
+    <Property name="log-level">INFO</Property>
+    <Property name="log-level-spc">INFO</Property>
+    <Property name="charset">UTF-8</Property>
+  </Properties>
 </Configuration>

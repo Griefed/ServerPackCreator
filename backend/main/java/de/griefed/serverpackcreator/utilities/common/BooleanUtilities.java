@@ -19,7 +19,6 @@
  */
 package de.griefed.serverpackcreator.utilities.common;
 
-import de.griefed.serverpackcreator.utilities.misc.Generated;
 import java.util.Scanner;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -60,22 +59,21 @@ public class BooleanUtilities {
    * is found, assume and return false.
    * @author Griefed
    */
-  public boolean convertToBoolean(String stringBoolean) {
+  public boolean convert(String stringBoolean) {
 
     if (stringBoolean.matches("1")
-        || stringBoolean.matches("[Yy]es")
+        || stringBoolean.matches("[Yy][Ee][Ss]")
         || stringBoolean.matches("[Yy]")
         || stringBoolean.equalsIgnoreCase("true")) {
       return true;
 
     } else if (stringBoolean.matches("0")
-        || stringBoolean.matches("[Nn]o")
+        || stringBoolean.matches("[Nn][Oo]]")
         || stringBoolean.matches("[Nn]")
         || stringBoolean.equalsIgnoreCase("false")) {
       return false;
 
     } else {
-      /* This log is meant to be read by the user, therefore we allow translation. */
       LOG.warn("Warning. Couldn't parse boolean. Assuming false.");
       return false;
     }
@@ -88,18 +86,37 @@ public class BooleanUtilities {
    *
    * @return Boolean. True or False, depending on user input.
    * @author whitebear60
+   * @deprecated Will be removed in Milestone 4. Use {@link #readBoolean(Scanner)} instead.
    */
-  @Generated
+  @Deprecated
   public boolean readBoolean() {
-
     Scanner readerBoolean = new Scanner(System.in);
-
-    String boolRead;
-
-    boolRead = readerBoolean.nextLine();
-
+    boolean read = readBoolean(readerBoolean);
     readerBoolean.close();
+    return read;
+  }
 
-    return convertToBoolean(boolRead);
+  /**
+   * Prompts the user to enter values which will then be converted to booleans, either <code>TRUE
+   * </code> or <code>FALSE</code>. This prevents any non-boolean values from being written to the
+   * new configuration file.
+   *
+   * @param scanner Used for reading the users input.
+   * @return Boolean. True or False, depending on user input.
+   * @author Griefed
+   */
+  public boolean readBoolean(Scanner scanner) {
+    printBoolMenu();
+    return convert(scanner.nextLine());
+  }
+
+  /**
+   * Print a small help text to tell the user which values are accepted as <code>true</code> and
+   * which values are accepted as <code>false</code>.
+   *
+   * @author Griefed
+   */
+  private void printBoolMenu() {
+    System.out.println("True: 1, Yes, Y, true -|- False: 0, No, N, false");
   }
 }

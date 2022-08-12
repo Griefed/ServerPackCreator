@@ -26,37 +26,63 @@ package de.griefed.serverpackcreator.versionmeta;
  */
 public enum Type {
 
-  /** Indicates that an object is a full release, meaning no snapshot, alpha, or beta. */
+  /**
+   * Indicates that an object is a full release, meaning no snapshot, alpha, or beta.
+   */
   RELEASE,
-  /** Indicates that an object is a pre-release, so either a snapshot (duh..), alpha, beta etc. */
+  /**
+   * Indicates that an object is a pre-release, so either a snapshot (duh..), alpha, beta etc.
+   */
   SNAPSHOT,
-  /** Minecraft client, so that which a users runs on their gaming machine. */
+  /**
+   * Minecraft client, so that which a users runs on their gaming machine.
+   */
   CLIENT,
-  /** Minecraft server, usually run on a dedicated server. */
+  /**
+   * Minecraft server, usually run on a dedicated server.
+   */
   SERVER,
-  /** Sort ascending, small to large. */
+  /**
+   * Sort ascending, small to large.
+   */
   ASCENDING,
-  /** Sort descending, large to small. */
+  /**
+   * Sort descending, large to small.
+   */
   DESCENDING,
 
-  /** Indicates this operation concerns Minecraft. */
+  /**
+   * Indicates this operation concerns Minecraft.
+   */
   MINECRAFT,
 
-  /** Indicates this operation concerns Forge. */
+  /**
+   * Indicates this operation concerns Forge.
+   */
   FORGE,
 
-  /** Indicates this operation concerns Fabric. */
+  /**
+   * Indicates this operation concerns Fabric.
+   */
   FABRIC,
 
-  /** Indicates this operation concerns Fabric Installer. */
+  /**
+   * Indicates this operation concerns Fabric Installer.
+   */
   FABRIC_INSTALLER,
 
-  /** Indicates this operation concerns Quilt. */
+  /**
+   * Indicates this operation concerns Quilt.
+   */
   QUILT,
 
-  /** Indicates this operation concerns Fabric Intermediaries. */
+  /**
+   * Indicates this operation concerns Fabric Intermediaries.
+   */
   FABRIC_INTERMEDIARIES,
 
-  /** Indicates this operation concerns Quilt Installer. */
+  /**
+   * Indicates this operation concerns Quilt Installer.
+   */
   QUILT_INSTALLER
 }

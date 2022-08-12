@@ -42,7 +42,7 @@ public class FabricIntermediaries {
    * Instantiate Fabric intermediaries.
    *
    * @param intermediaryManifest {@link File} Fabric Intermediary manifest-file.
-   * @param objectMapper {@link ObjectMapper} to parse JSON.
+   * @param objectMapper         {@link ObjectMapper} to parse JSON.
    * @throws IOException when the manifest could not be read.
    * @author Griefed
    */
@@ -74,7 +74,8 @@ public class FabricIntermediaries {
    */
   private List<FabricIntermediary> listIntermediariesFromManifest() throws IOException {
     return OBJECT_MAPPER.readValue(
-        INTERMEDIARY_MANIFEST, new TypeReference<List<FabricIntermediary>>() {});
+        INTERMEDIARY_MANIFEST, new TypeReference<List<FabricIntermediary>>() {
+        });
   }
 
   /**

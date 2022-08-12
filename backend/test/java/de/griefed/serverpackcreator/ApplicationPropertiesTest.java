@@ -8,18 +8,14 @@ import org.junit.jupiter.api.Test;
 
 public class ApplicationPropertiesTest {
 
-  ApplicationProperties applicationProperties;
-
   ApplicationPropertiesTest() {
-    applicationProperties = new ApplicationProperties();
+
   }
 
   @Test
-  void finalsTest() {
-    Assertions.assertNotNull(applicationProperties.SERVERPACKCREATOR_PROPERTIES());
-    Assertions.assertEquals(
-        applicationProperties.SERVERPACKCREATOR_PROPERTIES(),
-        new File("serverpackcreator.properties"));
+  void test() {
+    ApplicationProperties applicationProperties = new ApplicationProperties(
+        new File("backend/test/resources/serverpackcreator.properties"));
 
     Assertions.assertNotNull(applicationProperties.FALLBACK_CLIENTSIDE_MODS());
     Assertions.assertEquals(
@@ -111,33 +107,18 @@ public class ApplicationPropertiesTest {
     Assertions.assertEquals(
         applicationProperties.QUILT_INSTALLER_VERSION_MANIFEST_LOCATION(),
         new File("./work/quilt-installer-manifest.xml"));
-  }
 
-  @Test
-  void getDirectoryServerPacksTest() {
     Assertions.assertNotNull(applicationProperties.getDirectoryServerPacks());
-  }
 
-  @Test
-  void getListOfDirectoriesToExcludeTest() {
     Assertions.assertNotNull(applicationProperties.getDirectoriesToExclude());
     applicationProperties.addDirectoryToExclude("test");
     Assertions.assertTrue(applicationProperties.getDirectoriesToExclude().contains("test"));
-  }
 
-  @Test
-  void booleanTests() {
     Assertions.assertFalse(applicationProperties.getSaveLoadedConfiguration());
     Assertions.assertFalse(applicationProperties.checkForAvailablePreReleases());
-  }
 
-  @Test
-  void queueMaxUsageTest() {
     Assertions.assertEquals(90, applicationProperties.getQueueMaxDiskUsage());
-  }
 
-  @Test
-  void getServerPackCreatorVersionTest() {
     Assertions.assertEquals("dev", applicationProperties.SERVERPACKCREATOR_VERSION());
   }
 }

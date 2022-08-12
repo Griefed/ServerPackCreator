@@ -46,7 +46,7 @@ public class ForgeMeta {
    * Create a new Forge Meta, using a manifest file.
    *
    * @param forgeManifest {@link File} The manifest from which to acquire version information.
-   * @param objectMapper {@link ObjectMapper} for parsing.
+   * @param objectMapper  {@link ObjectMapper} for parsing.
    * @author Griefed
    */
   public ForgeMeta(File forgeManifest, ObjectMapper objectMapper) {
@@ -59,8 +59,8 @@ public class ForgeMeta {
    * manifest has been refreshed.
    *
    * @param injectedMinecraftMeta {@link File} Minecraft manifest file.
-   * @throws IOException if the manifest could not be parsed into a {@link
-   *     com.fasterxml.jackson.databind.JsonNode}.
+   * @throws IOException if the manifest could not be parsed into a
+   *                     {@link com.fasterxml.jackson.databind.JsonNode}.
    * @author Griefed
    */
   public void initialize(MinecraftMeta injectedMinecraftMeta) throws IOException {
@@ -74,8 +74,8 @@ public class ForgeMeta {
    * Update this instances {@link ForgeLoader} with new information. Usually called after the Forge
    * manifest has been refreshed.
    *
-   * @throws IOException if the manifest could not be parsed into a {@link
-   *     com.fasterxml.jackson.databind.JsonNode}.
+   * @throws IOException if the manifest could not be parsed into a
+   *                     {@link com.fasterxml.jackson.databind.JsonNode}.
    * @author Griefed
    */
   public void update() throws IOException {
@@ -87,9 +87,9 @@ public class ForgeMeta {
    * {@link Type#DESCENDING} order.
    *
    * @param order {@link Type} The order of the resulting list. Either {@link Type#ASCENDING} or
-   *     {@link Type#DESCENDING}.
-   * @return {@link String}-list Forge supported Minecraft versions, in either {@link
-   *     Type#ASCENDING} or {@link Type#DESCENDING} order.
+   *              {@link Type#DESCENDING}.
+   * @return {@link String}-list Forge supported Minecraft versions, in either
+   * {@link Type#ASCENDING} or {@link Type#DESCENDING} order.
    * @author Griefed
    */
   private List<String> supportedMinecraftVersionsList(Type order) {
@@ -101,13 +101,13 @@ public class ForgeMeta {
   }
 
   /**
-   * Get the list of available Forge versions, with either {@link Type#ASCENDING} or {@link
-   * Type#DESCENDING} order.
+   * Get the list of available Forge versions, with either {@link Type#ASCENDING} or
+   * {@link Type#DESCENDING} order.
    *
    * @param order {@link Type} The order of the resulting list. Either {@link Type#ASCENDING} or
-   *     {@link Type#DESCENDING}.
-   * @return {@link String}-list Forge versions, in either {@link Type#ASCENDING} or {@link
-   *     Type#DESCENDING} order.
+   *              {@link Type#DESCENDING}.
+   * @return {@link String}-list Forge versions, in either {@link Type#ASCENDING} or
+   * {@link Type#DESCENDING} order.
    * @author Griefed
    */
   private List<String> supportedForgeVersionsList(Type order) {
@@ -119,13 +119,14 @@ public class ForgeMeta {
   }
 
   /**
-   * Get an array of available Forge version for a given Minecraft version, either {@link
-   * Type#ASCENDING} or {@link Type#DESCENDING}, wrapped in an {@link Optional}.
+   * Get an array of available Forge version for a given Minecraft version, either
+   * {@link Type#ASCENDING} or {@link Type#DESCENDING}, wrapped in an {@link Optional}.
    *
    * @param minecraftVersion {@link String} Minecraft version.
-   * @param order {@link Type} Either {@link Type#DESCENDING}, wrapped in an {@link Optional}.
+   * @param order            {@link Type} Either {@link Type#DESCENDING}, wrapped in an
+   *                         {@link Optional}.
    * @return {@link String}-array of available Forge versions for the given Minecraft version,
-   *     either {@link Type#ASCENDING} or {@link Type#DESCENDING}, wrapped in an {@link Optional}.
+   * either {@link Type#ASCENDING} or {@link Type#DESCENDING}, wrapped in an {@link Optional}.
    * @author Griefed
    */
   private Optional<String[]> getForgeVersionsArray(String minecraftVersion, Type order) {
@@ -141,14 +142,14 @@ public class ForgeMeta {
   }
 
   /**
-   * Get a list of available Forge version for a given Minecraft version, with either {@link
-   * Type#ASCENDING} or {@link Type#DESCENDING} order.
+   * Get a list of available Forge version for a given Minecraft version, with either
+   * {@link Type#ASCENDING} or {@link Type#DESCENDING} order.
    *
    * @param minecraftVersion {@link String} Minecraft version.
-   * @param order {@link Type} The order of the resulting list. Either {@link Type#ASCENDING} or
-   *     {@link Type#DESCENDING}.
+   * @param order            {@link Type} The order of the resulting list. Either
+   *                         {@link Type#ASCENDING} or {@link Type#DESCENDING}.
    * @return {@link String}-list of available Forge versions for the given Minecraft version, with
-   *     either {@link Type#ASCENDING} or {@link Type#DESCENDING} order.
+   * either {@link Type#ASCENDING} or {@link Type#DESCENDING} order.
    * @author Griefed
    */
   private Optional<List<String>> getForgeVersions(String minecraftVersion, Type order) {
@@ -167,7 +168,7 @@ public class ForgeMeta {
    *
    * @param forgeVersion {@link String} Forge version.
    * @return {@link Boolean} <code>true</code> if the given Forge version is
-   *     valid/supported/available.
+   * valid/supported/available.
    * @author Griefed
    */
   public boolean checkForgeVersion(String forgeVersion) {
@@ -179,7 +180,7 @@ public class ForgeMeta {
    *
    * @param minecraftVersion {@link String} Minecraft version.
    * @return {@link Boolean} <code>true</code> if the given Minecraft version is
-   *     valid/supported/available.
+   * valid/supported/available.
    * @author Griefed
    */
   public boolean checkMinecraftVersion(String minecraftVersion) {
@@ -190,9 +191,9 @@ public class ForgeMeta {
    * Check whether the given Minecraft and Forge versions are valid/supported/available.
    *
    * @param minecraftVersion {@link String} Minecraft version.
-   * @param forgeVersion {@link String} Forge version.
+   * @param forgeVersion     {@link String} Forge version.
    * @return {@link Boolean} <code>true</code> if the given Minecraft and Forge versions are
-   *     valid/supported/available.
+   * valid/supported/available.
    * @author Griefed
    */
   public boolean checkForgeAndMinecraftVersion(String minecraftVersion, String forgeVersion) {
@@ -203,9 +204,9 @@ public class ForgeMeta {
    * Check whether Forge is available for a given Forge- and Minecraft version.
    *
    * @param minecraftVersion {@link String} Minecraft version.
-   * @param forgeVersion {@link String} Forge version.
+   * @param forgeVersion     {@link String} Forge version.
    * @return {@link Boolean} <code>true</code> if Forge is available for the given Forge- and
-   *     Minecraft version.
+   * Minecraft version.
    * @author Griefed
    */
   public boolean isForgeInstanceAvailable(String minecraftVersion, String forgeVersion) {
@@ -227,8 +228,8 @@ public class ForgeMeta {
    * Get the Minecraft version for a given Forge version, wrapped in an {@link Optional}.
    *
    * @param forgeVersion {@link String} Forge version.
-   * @return {@link String} Minecraft version for the given Forge version, wrapped in an {@link
-   *     Optional}.
+   * @return {@link String} Minecraft version for the given Forge version, wrapped in an
+   * {@link Optional}.
    * @author Griefed
    */
   public Optional<String> supportedMinecraftVersion(String forgeVersion) {
@@ -236,13 +237,13 @@ public class ForgeMeta {
   }
 
   /**
-   * Get a {@link ForgeInstance} for a given Minecraft and Forge version, wrapped in an {@link
-   * Optional}.
+   * Get a {@link ForgeInstance} for a given Minecraft and Forge version, wrapped in an
+   * {@link Optional}.
    *
    * @param minecraftVersion {@link String} Minecraft version.
-   * @param forgeVersion {@link String} Forge version.
-   * @return {@link ForgeInstance} for the given Minecraft and Forge version, wrapped in an {@link
-   *     Optional}
+   * @param forgeVersion     {@link String} Forge version.
+   * @return {@link ForgeInstance} for the given Minecraft and Forge version, wrapped in an
+   * {@link Optional}
    * @author Griefed
    */
   public Optional<ForgeInstance> getForgeInstance(String minecraftVersion, String forgeVersion) {
@@ -306,7 +307,7 @@ public class ForgeMeta {
    *
    * @param minecraftVersion {@link String} Minecraft version.
    * @return {@link String} Latest Forge version for the given Minecraft version, wrapped in an
-   *     {@link Optional}
+   * {@link Optional}
    * @author Griefed
    */
   public Optional<String> latestForgeVersion(String minecraftVersion) {
@@ -331,8 +332,8 @@ public class ForgeMeta {
    * Oldest Forge version for a given Minecraft version, wrapped in {@link Optional}
    *
    * @param minecraftVersion {@link String} Minecraft version.
-   * @return {@link String} Oldest Forge version for the given Minecraft version, wrapped in {@link
-   *     Optional}
+   * @return {@link String} Oldest Forge version for the given Minecraft version, wrapped in
+   * {@link Optional}
    * @author Griefed
    */
   public Optional<String> oldestForgeVersion(String minecraftVersion) {
@@ -435,7 +436,7 @@ public class ForgeMeta {
    *
    * @param minecraftVersion {@link String} Minecraft version.
    * @return {@link String}-list of available Forge versions for the given Minecraft version, in
-   *     ascending order, wrapped in an {@link Optional}
+   * ascending order, wrapped in an {@link Optional}
    * @author Griefed
    */
   public Optional<List<String>> availableForgeVersionsAscending(String minecraftVersion) {
@@ -448,7 +449,7 @@ public class ForgeMeta {
    *
    * @param minecraftVersion {@link String} Minecraft version.
    * @return {@link String}-list of available Forge versions for the given Minecraft version, in
-   *     descending order, wrapped in an {@link Optional}
+   * descending order, wrapped in an {@link Optional}
    * @author Griefed
    */
   public Optional<List<String>> availableForgeVersionsDescending(String minecraftVersion) {
@@ -456,12 +457,12 @@ public class ForgeMeta {
   }
 
   /**
-   * Get an array of available Forge version for a given Minecraft version, in {@link
-   * Type#ASCENDING} order, wrapped in an {@link Optional}.
+   * Get an array of available Forge version for a given Minecraft version, in
+   * {@link Type#ASCENDING} order, wrapped in an {@link Optional}.
    *
    * @param minecraftVersion {@link String} Minecraft version.
    * @return {@link String}-array of available Forge versions for the given Minecraft version, in
-   *     ascending order, wrapped in an {@link Optional}
+   * ascending order, wrapped in an {@link Optional}
    * @author Griefed
    */
   public Optional<String[]> availableForgeVersionsArrayAscending(String minecraftVersion) {
@@ -469,12 +470,12 @@ public class ForgeMeta {
   }
 
   /**
-   * Get an array of available Forge version for a given Minecraft version, in {@link
-   * Type#DESCENDING} order, wrapped in an {@link Optional}.
+   * Get an array of available Forge version for a given Minecraft version, in
+   * {@link Type#DESCENDING} order, wrapped in an {@link Optional}.
    *
    * @param minecraftVersion {@link String} Minecraft version.
    * @return {@link String}-array of available Forge versions for the given Minecraft version, in
-   *     descending order, wrapped in an {@link Optional}
+   * descending order, wrapped in an {@link Optional}
    * @author Griefed
    */
   public Optional<String[]> availableForgeVersionsArrayDescending(String minecraftVersion) {
@@ -486,7 +487,7 @@ public class ForgeMeta {
    *
    * @param forgeVersion {@link String} Forge version.
    * @return {@link URL} Forge server installer URL for the given Forge version, wrapped in an
-   *     {@link Optional}.
+   * {@link Optional}.
    * @author Griefed
    */
   public Optional<URL> installerUrl(String forgeVersion) {

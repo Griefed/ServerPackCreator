@@ -22,6 +22,7 @@ package de.griefed.serverpackcreator;
 import com.electronwill.nightconfig.toml.TomlParser;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.griefed.serverpackcreator.ServerPackCreator.CommandlineParser.Mode;
 import de.griefed.serverpackcreator.i18n.I18n;
 import de.griefed.serverpackcreator.i18n.IncorrectLanguageException;
 import de.griefed.serverpackcreator.modscanning.AnnotationScanner;
@@ -32,10 +33,9 @@ import de.griefed.serverpackcreator.modscanning.TomlScanner;
 import de.griefed.serverpackcreator.swing.ServerPackCreatorGui;
 import de.griefed.serverpackcreator.swing.ServerPackCreatorSplash;
 import de.griefed.serverpackcreator.utilities.ConfigUtilities;
-import de.griefed.serverpackcreator.utilities.ConfigurationCreator;
+import de.griefed.serverpackcreator.utilities.ConfigurationEditor;
 import de.griefed.serverpackcreator.utilities.UpdateChecker;
 import de.griefed.serverpackcreator.utilities.common.Utilities;
-import de.griefed.serverpackcreator.utilities.misc.Generated;
 import de.griefed.serverpackcreator.versionmeta.VersionMeta;
 import de.griefed.versionchecker.Update;
 import java.awt.GraphicsEnvironment;
@@ -76,20 +76,20 @@ import org.springframework.scheduling.annotation.EnableScheduling;
  *
  * @author Griefed
  */
-@Generated
 @SpringBootApplication
 @EnableScheduling
 @PropertySources({
-  @PropertySource("classpath:application.properties"),
-  @PropertySource("classpath:serverpackcreator.properties")
+    @PropertySource("classpath:application.properties"),
+    @PropertySource("classpath:serverpackcreator.properties")
 })
 public class ServerPackCreator {
 
   private static final Logger LOG = LogManager.getLogger(ServerPackCreator.class);
+  private static ServerPackCreator serverPackCreator = null;
+  private static String[] ARGS;
   private final CommandlineParser COMMANDLINE_PARSER;
   private final ApplicationProperties APPLICATIONPROPERTIES;
   private final I18n I18N;
-  private final String[] ARGS;
   private final File LOG4J2XML = new File("log4j2.xml");
   private final File SERVERPACKCREATOR_PROPERTIES = new File("serverpackcreator.properties");
   private final ObjectMapper OBJECT_MAPPER =
@@ -104,17 +104,24 @@ public class ServerPackCreator {
   private ServerPackHandler serverPackHandler = null;
   private ServerPackCreatorSplash serverPackCreatorSplash = null;
   private UpdateChecker updateChecker = null;
+  private ModScanner modScanner = null;
+  private AnnotationScanner annotationScanner = null;
+  private FabricScanner fabricScanner = null;
+  private QuiltScanner quiltScanner = null;
+  private TomlParser tomlParser = null;
+  private TomlScanner tomlScanner = null;
+  private ConfigurationEditor configurationEditor = null;
+  private ServerPackCreatorGui serverPackCreatorGui = null;
 
   /**
    * Initialize ServerPackCreator and determine the {@link CommandlineParser.Mode} to run in.
    *
    * @param args Commandline arguments with which ServerPackCreator is run. Determines which mode
-   *     ServerPackCreator will enter and which locale is used.
+   *             ServerPackCreator will enter and which locale is used.
    * @author Griefed
    */
   public ServerPackCreator(String[] args) {
-    this.ARGS = args;
-    this.COMMANDLINE_PARSER = new CommandlineParser(ARGS);
+    this.COMMANDLINE_PARSER = new CommandlineParser(args);
     this.APPLICATIONPROPERTIES = new ApplicationProperties();
 
     if (COMMANDLINE_PARSER.getLanguageToUse().isPresent()) {
@@ -124,6 +131,17 @@ public class ServerPackCreator {
     }
   }
 
+  public static ServerPackCreator getServerPackCreator(String[] args) {
+    if (serverPackCreator == null) {
+      serverPackCreator = new ServerPackCreator(args);
+    }
+    return serverPackCreator;
+  }
+
+  public static String[] getArgs() {
+    return ARGS;
+  }
+
   /**
    * Initialize ServerPackCreator with the passed commandline-arguments and run.
    *
@@ -131,14 +149,13 @@ public class ServerPackCreator {
    * ServerPackCreator.CommandlineParser.Mode}
    *
    * @param args Commandline arguments with which ServerPackCreator is run. Determines which mode
-   *     ServerPackCreator will enter and which locale is used.
+   *             ServerPackCreator will enter and which locale is used.
    * @throws IOException if the {@link VersionMeta} could not be instantiated.
    * @author Griefed
    */
   public static void main(String[] args) throws IOException {
-
-    ServerPackCreator serverPackCreator = new ServerPackCreator(args);
-
+    ARGS = args;
+    serverPackCreator = getServerPackCreator(ARGS);
     serverPackCreator.run();
   }
 
@@ -150,6 +167,169 @@ public class ServerPackCreator {
    */
   public static void web(String[] args) {
     SpringApplication.run(ServerPackCreator.class, args);
+  }
+
+  public CommandlineParser getCommandlineParser() {
+    return COMMANDLINE_PARSER;
+  }
+
+  public I18n getI18n() {
+    return I18N;
+  }
+
+  public ObjectMapper getObjectMapper() {
+    return OBJECT_MAPPER;
+  }
+
+  public ApplicationProperties getApplicationProperties() {
+    return APPLICATIONPROPERTIES;
+  }
+
+  public Utilities getUtilities() {
+    if (this.utilities == null) {
+      this.utilities = new Utilities(APPLICATIONPROPERTIES);
+    }
+    return utilities;
+  }
+
+  public VersionMeta getVersionMeta() throws IOException {
+    if (this.versionMeta == null) {
+      this.versionMeta =
+          new VersionMeta(
+              APPLICATIONPROPERTIES.MINECRAFT_VERSION_MANIFEST_LOCATION(),
+              APPLICATIONPROPERTIES.FORGE_VERSION_MANIFEST_LOCATION(),
+              APPLICATIONPROPERTIES.FABRIC_VERSION_MANIFEST_LOCATION(),
+              APPLICATIONPROPERTIES.FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION(),
+              APPLICATIONPROPERTIES.FABRIC_INTERMEDIARIES_MANIFEST_LOCATION(),
+              APPLICATIONPROPERTIES.QUILT_VERSION_MANIFEST_LOCATION(),
+              APPLICATIONPROPERTIES.QUILT_INSTALLER_VERSION_MANIFEST_LOCATION(),
+              OBJECT_MAPPER);
+    }
+    return versionMeta;
+  }
+
+  public ConfigUtilities getConfigUtilities() {
+    if (this.configUtilities == null) {
+      this.configUtilities = new ConfigUtilities(getUtilities(), APPLICATIONPROPERTIES,
+          OBJECT_MAPPER);
+    }
+    return configUtilities;
+  }
+
+  public ConfigurationHandler getConfigurationHandler() throws IOException {
+    if (this.configurationHandler == null) {
+      this.configurationHandler =
+          new ConfigurationHandler(
+              I18N, getVersionMeta(), APPLICATIONPROPERTIES, getUtilities(), getConfigUtilities());
+    }
+    return configurationHandler;
+  }
+
+  public ApplicationPlugins getApplicationPlugins() {
+    if (this.applicationPlugins == null) {
+      this.applicationPlugins = new ApplicationPlugins();
+    }
+    return applicationPlugins;
+  }
+
+  public ServerPackHandler getServerPackHandler() throws IOException {
+    if (this.serverPackHandler == null) {
+      this.serverPackHandler =
+          new ServerPackHandler(
+              APPLICATIONPROPERTIES,
+              getVersionMeta(),
+              getUtilities(),
+              getApplicationPlugins(),
+              getModScanner());
+    }
+    return serverPackHandler;
+  }
+
+  public ServerPackCreatorSplash getServerPackCreatorSplash() {
+    if (this.serverPackCreatorSplash == null) {
+      this.serverPackCreatorSplash = new ServerPackCreatorSplash(
+          APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION());
+    }
+    return serverPackCreatorSplash;
+  }
+
+  public UpdateChecker getUpdateChecker() {
+    if (this.updateChecker == null) {
+      this.updateChecker = new UpdateChecker();
+    }
+    return updateChecker;
+  }
+
+  public ModScanner getModScanner() {
+    if (this.modScanner == null) {
+      this.modScanner = new ModScanner(getAnnotationScanner(), getFabricScanner(),
+          getQuiltScanner(), getTomlScanner());
+    }
+    return modScanner;
+  }
+
+  public AnnotationScanner getAnnotationScanner() {
+    if (this.annotationScanner == null) {
+      this.annotationScanner = new AnnotationScanner(OBJECT_MAPPER, getUtilities());
+    }
+    return annotationScanner;
+  }
+
+  public FabricScanner getFabricScanner() {
+    if (this.fabricScanner == null) {
+      this.fabricScanner = new FabricScanner(OBJECT_MAPPER, getUtilities());
+    }
+    return fabricScanner;
+  }
+
+  public QuiltScanner getQuiltScanner() {
+    if (this.quiltScanner == null) {
+      this.quiltScanner = new QuiltScanner(OBJECT_MAPPER, getUtilities());
+    }
+    return quiltScanner;
+  }
+
+  public TomlParser getTomlParser() {
+    if (this.tomlParser == null) {
+      this.tomlParser = new TomlParser();
+    }
+    return tomlParser;
+  }
+
+  public TomlScanner getTomlScanner() {
+    if (this.tomlScanner == null) {
+      this.tomlScanner = new TomlScanner(getTomlParser());
+    }
+    return tomlScanner;
+  }
+
+  public ConfigurationEditor getConfigurationEditor() throws IOException {
+    if (this.configurationEditor == null) {
+      this.configurationEditor = new ConfigurationEditor(
+          getConfigurationHandler(),
+          APPLICATIONPROPERTIES,
+          getUtilities(),
+          getVersionMeta(),
+          getConfigUtilities());
+    }
+    return configurationEditor;
+  }
+
+  public ServerPackCreatorGui getServerPackCreatorGui() throws IOException {
+    if (this.serverPackCreatorGui == null) {
+      this.serverPackCreatorGui = new ServerPackCreatorGui(
+          I18N,
+          getConfigurationHandler(),
+          getServerPackHandler(),
+          APPLICATIONPROPERTIES,
+          getVersionMeta(),
+          getUtilities(),
+          getUpdateChecker(),
+          getApplicationPlugins(),
+          getConfigUtilities(),
+          getServerPackCreatorSplash());
+    }
+    return serverPackCreatorGui;
   }
 
   /**
@@ -169,7 +349,7 @@ public class ServerPackCreator {
    * @throws IOException if the run fails.
    * @author Griefed
    */
-  public void run(CommandlineParser.Mode modeToRunIn) throws IOException {
+  public void run(Mode modeToRunIn) throws IOException {
 
     switch (modeToRunIn) {
       case HELP:
@@ -192,7 +372,7 @@ public class ServerPackCreator {
       case CGEN:
         stageOne();
         stageTwo();
-        createConfig();
+        runConfigurationEditor();
         continuedRunOptions();
         break;
 
@@ -206,22 +386,25 @@ public class ServerPackCreator {
       case GUI:
         showSplashScreen();
         stageOne();
-        serverPackCreatorSplash.update(20);
+        getServerPackCreatorSplash().update(20);
         stageTwo();
-        serverPackCreatorSplash.update(40);
+        getServerPackCreatorSplash().update(40);
         stageThree();
-        serverPackCreatorSplash.update(60);
+        getServerPackCreatorSplash().update(60);
         Executors.newSingleThreadExecutor().execute(this::stageFour);
-        serverPackCreatorSplash.update(80);
+        getServerPackCreatorSplash().update(80);
         runGui();
         break;
 
       case SETUP:
         stageOne();
+        stageTwo();
+        stageThree();
+        LOG.info("Setup completed.");
 
       case EXIT:
       default:
-        LOG.debug("Exit specified or invalid mode chosen. Exiting...");
+        LOG.debug("Exiting...");
     }
   }
 
@@ -236,24 +419,22 @@ public class ServerPackCreator {
     System.setProperty("log4j2.formatMsgNoLookups", "true");
     System.setProperty("file.encoding", StandardCharsets.UTF_8.name());
 
-    this.utilities = new Utilities(APPLICATIONPROPERTIES);
-
     HashMap<String, String> systemInformation =
-        utilities.JarUtils()
+        getUtilities().JarUtils()
             .systemInformation(
-                utilities.JarUtils().getApplicationHomeForClass(ServerPackCreator.class));
+                getUtilities().JarUtils().getApplicationHomeForClass(ServerPackCreator.class));
 
     LOG.debug("System information jarPath: " + systemInformation.get("jarPath"));
     LOG.debug("System information jarName: " + systemInformation.get("jarName"));
 
-    if (!utilities.FileUtils()
+    if (!getUtilities().FileUtils()
         .checkPermissions(new File(systemInformation.get("jarPath")).getParentFile())) {
 
       LOG.error(
           "One or more file or directory has no read- or write-permission. This may lead to corrupted server packs! Check the permissions of the ServerPackCreator base directory!");
     }
 
-    utilities.JarUtils().copyFileFromJar(LOG4J2XML, ServerPackCreator.class);
+    getUtilities().JarUtils().copyFileFromJar(LOG4J2XML, ServerPackCreator.class);
 
     if (!SERVERPACKCREATOR_PROPERTIES.exists()) {
       try {
@@ -274,7 +455,7 @@ public class ServerPackCreator {
         langSource = "de/griefed/resources/lang";
       }
 
-      utilities.JarUtils()
+      getUtilities().JarUtils()
           .copyFolderFromJar(ServerPackCreator.class, langSource, "lang", prefix, ".properties");
 
     } catch (IOException ex) {
@@ -396,22 +577,9 @@ public class ServerPackCreator {
    * @author Griefed
    */
   private void stageTwo() throws IOException {
-    this.versionMeta =
-        new VersionMeta(
-            APPLICATIONPROPERTIES.MINECRAFT_VERSION_MANIFEST_LOCATION(),
-            APPLICATIONPROPERTIES.FORGE_VERSION_MANIFEST_LOCATION(),
-            APPLICATIONPROPERTIES.FABRIC_VERSION_MANIFEST_LOCATION(),
-            APPLICATIONPROPERTIES.FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION(),
-            APPLICATIONPROPERTIES.FABRIC_INTERMEDIARIES_MANIFEST_LOCATION(),
-            APPLICATIONPROPERTIES.QUILT_VERSION_MANIFEST_LOCATION(),
-            APPLICATIONPROPERTIES.QUILT_INSTALLER_VERSION_MANIFEST_LOCATION(),
-            OBJECT_MAPPER);
-
-    this.configUtilities = new ConfigUtilities(utilities, APPLICATIONPROPERTIES, OBJECT_MAPPER);
-
-    this.configurationHandler =
-        new ConfigurationHandler(
-            I18N, versionMeta, APPLICATIONPROPERTIES, utilities, configUtilities);
+    getVersionMeta();
+    getConfigUtilities();
+    getConfigurationHandler();
   }
 
   /**
@@ -422,23 +590,15 @@ public class ServerPackCreator {
    * @author Griefed
    */
   private void stageThree() throws IOException {
-    this.applicationPlugins = new ApplicationPlugins();
-    // TODO: store all objects in fields in this class
-    this.serverPackHandler =
-        new ServerPackHandler(
-            APPLICATIONPROPERTIES,
-            versionMeta,
-            utilities,
-            applicationPlugins,
-            new ModScanner(
-                new AnnotationScanner(OBJECT_MAPPER, utilities),
-                new FabricScanner(OBJECT_MAPPER, utilities),
-                new QuiltScanner(OBJECT_MAPPER, utilities),
-                new TomlScanner(new TomlParser())));
-
-    if (this.updateChecker == null) {
-      this.updateChecker = new UpdateChecker();
-    }
+    getApplicationPlugins();
+    getAnnotationScanner();
+    getFabricScanner();
+    getQuiltScanner();
+    getTomlParser();
+    getTomlScanner();
+    getModScanner();
+    getServerPackHandler();
+    getUpdateChecker();
   }
 
   /**
@@ -454,22 +614,28 @@ public class ServerPackCreator {
     FileAlterationListener fileAlterationListener =
         new FileAlterationListener() {
           @Override
-          public void onStart(FileAlterationObserver observer) {}
+          public void onStart(FileAlterationObserver observer) {
+          }
 
           @Override
-          public void onDirectoryCreate(File directory) {}
+          public void onDirectoryCreate(File directory) {
+          }
 
           @Override
-          public void onDirectoryChange(File directory) {}
+          public void onDirectoryChange(File directory) {
+          }
 
           @Override
-          public void onDirectoryDelete(File directory) {}
+          public void onDirectoryDelete(File directory) {
+          }
 
           @Override
-          public void onFileCreate(File file) {}
+          public void onFileCreate(File file) {
+          }
 
           @Override
-          public void onFileChange(File file) {}
+          public void onFileChange(File file) {
+          }
 
           @Override
           public void onFileDelete(File file) {
@@ -506,7 +672,8 @@ public class ServerPackCreator {
           }
 
           @Override
-          public void onStop(FileAlterationObserver observer) {}
+          public void onStop(FileAlterationObserver observer) {
+          }
 
           private boolean check(File watched, File toCreate) {
             return watched
@@ -548,8 +715,7 @@ public class ServerPackCreator {
    * @author Griefed
    */
   private void showSplashScreen() {
-    this.serverPackCreatorSplash =
-        new ServerPackCreatorSplash(APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION());
+    getServerPackCreatorSplash();
   }
 
   /**
@@ -559,30 +725,15 @@ public class ServerPackCreator {
    * @author Griefed
    */
   private void runGui() throws IOException {
-    if (updateChecker == null) {
-      updateChecker = new UpdateChecker();
-    }
-
-    new ServerPackCreatorGui(
-            I18N,
-            configurationHandler,
-            serverPackHandler,
-            APPLICATIONPROPERTIES,
-            versionMeta,
-            utilities,
-            updateChecker,
-            applicationPlugins,
-            configUtilities,
-            serverPackCreatorSplash)
-        .mainGUI();
+    getServerPackCreatorGui().mainGUI();
   }
 
   /**
    * Offer the user to continue using ServerPackCreator.
    *
-   * @throws IOException if an error occurs trying to run ServerPackCreator in {@link
-   *     CommandlineParser.Mode#GUI}, {@link CommandlineParser.Mode#CLI} or {@link
-   *     CommandlineParser.Mode#WEB}
+   * @throws IOException if an error occurs trying to run ServerPackCreator in
+   *                     {@link CommandlineParser.Mode#GUI}, {@link CommandlineParser.Mode#CLI} or
+   *                     {@link CommandlineParser.Mode#WEB}
    * @author Griefed
    */
   private void continuedRunOptions() throws IOException {
@@ -623,7 +774,7 @@ public class ServerPackCreator {
             break;
 
           case 4:
-            createConfig();
+            runConfigurationEditor();
             printMenu();
             selection = 100;
             break;
@@ -660,7 +811,6 @@ public class ServerPackCreator {
       case 0:
       default:
         System.out.println("Exiting...");
-        System.exit(0);
     }
   }
 
@@ -717,7 +867,7 @@ public class ServerPackCreator {
     System.out.println("(4) : Generate a new configuration");
     System.out.println("(5) : Run ServerPackCreator in CLI-mode");
     System.out.println("(6) : Run ServerPackCreator as a webservice");
-    System.out.println("(7) : Run ServerPackCraator with a GUI");
+    System.out.println("(7) : Run ServerPackCreator with a GUI");
     System.out.println("(0) : Exit");
     System.out.println("-------------------------------------------");
     System.out.print("Enter the number of your selection: ");
@@ -725,44 +875,41 @@ public class ServerPackCreator {
 
   /**
    * Run ServerPackCreator in headless, CLI, mode. If no serverpackcreator.conf-file exists, it is
-   * created through {@link ConfigurationCreator#createConfigurationFile()} and subsequently used by
-   * a ServerPackCreator headless-run.
+   * created through {@link ConfigurationEditor#continuedRunOptions()} and subsequently used by a
+   * ServerPackCreator headless-run.
    *
-   * @throws IOException if the {@link ConfigurationCreator} could not be instantiated.
+   * @throws IOException if the {@link ConfigurationEditor} could not be instantiated.
    * @author Griefed
    */
   private void runHeadless() throws IOException {
-    if (!new File("serverpackcreator.conf").exists()) {
-      createConfig();
-    }
+    if (!APPLICATIONPROPERTIES.DEFAULT_CONFIG().exists()) {
 
-    ConfigurationModel configurationModel = new ConfigurationModel();
-
-    if (configurationHandler.checkConfiguration(
-            APPLICATIONPROPERTIES.DEFAULT_CONFIG(), configurationModel, false)
-        && serverPackHandler.run(configurationModel)) {
-      System.exit(0);
-    } else {
+      LOG.warn("No serverpackcreator.conf found...");
+      LOG.info("If you want to run ServerPackCreator in CLI-mode, a serverpackcreator.conf is required.");
+      LOG.info("Either copy an existing config, or run ServerPackCreator with the '-cgen'-argument to generate one via commandline.");
       System.exit(1);
+
+    } else {
+      ConfigurationModel configurationModel = new ConfigurationModel();
+
+      if (getConfigurationHandler().checkConfiguration(
+          APPLICATIONPROPERTIES.DEFAULT_CONFIG(), configurationModel, false)) {
+        System.exit(1);
+      }
+
+      if (!getServerPackHandler().run(configurationModel)) {
+        System.exit(1);
+      }
     }
   }
 
   /**
    * Create a new serverpackcreator.conf-file.
    *
-   * @throws IOException if the {@link ConfigurationCreator} could not be instantiated.
    * @author Griefed
    */
-  private void createConfig() throws IOException {
-
-    new ConfigurationCreator(
-            I18N,
-            configurationHandler,
-            APPLICATIONPROPERTIES,
-            utilities,
-            versionMeta,
-            configUtilities)
-        .createConfigurationFile();
+  private void runConfigurationEditor() throws IOException {
+    getConfigurationEditor().continuedRunOptions();
   }
 
   /**
@@ -770,7 +917,7 @@ public class ServerPackCreator {
    * be found, a new config file is generated.
    *
    * @return Boolean. Returns true if the file was generated, so we can inform the user about said
-   *     newly generated file.
+   * newly generated file.
    * @author Griefed
    */
   public boolean checkForConfig() {
@@ -791,7 +938,9 @@ public class ServerPackCreator {
           LOG.error("Error renaming creator.conf to serverpackcreator.conf.", ex);
         }
       }
-    } else if (!APPLICATIONPROPERTIES.DEFAULT_CONFIG().exists()) {
+    } else if (!APPLICATIONPROPERTIES.DEFAULT_CONFIG().exists()
+        && COMMANDLINE_PARSER.getModeToRunIn() != Mode.CLI
+        && COMMANDLINE_PARSER.getModeToRunIn() != Mode.CGEN) {
       try {
 
         FileUtils.copyInputStreamToFile(
@@ -819,9 +968,9 @@ public class ServerPackCreator {
    * Checks for existence of defaults files. If it is not found, it is generated.
    *
    * @param fileToCheckFor The file which is to be checked for whether it exists and if it doesn't,
-   *     should be created.
+   *                       should be created.
    * @return Boolean. Returns true if the file was generated, so we can inform the user about said
-   *     newly generated file.
+   * newly generated file.
    * @author Griefed
    */
   public boolean checkServerFilesFile(File fileToCheckFor) {
@@ -890,11 +1039,7 @@ public class ServerPackCreator {
    * @author Griefed
    */
   public void updateCheck() {
-    if (this.updateChecker == null) {
-      this.updateChecker = new UpdateChecker();
-    } else {
-      this.updateChecker.refresh();
-    }
+    getUpdateChecker().refresh();
 
     Optional<Update> update =
         updateChecker.checkForUpdate(
@@ -1027,13 +1172,12 @@ public class ServerPackCreator {
     /**
      * Create a new CommandlineParser from the passed commandline-arguments with which
      * ServerPackCreator was started. The mode and language in which ServerPackCreator should run
-     * will thus be determined and available to you via {@link #getModeToRunIn()} and {@link
-     * #getLanguageToUse()}.<br>
-     * {@link #getLanguageToUse()} is wrapped in an {@link Optional} to quickly determine whether a
-     * language was specified.
+     * will thus be determined and available to you via {@link #getModeToRunIn()} and
+     * {@link #getLanguageToUse()}.<br> {@link #getLanguageToUse()} is wrapped in an
+     * {@link Optional} to quickly determine whether a language was specified.
      *
      * @param args {@link String}-array of commandline-arguments with which ServerPackCreator was
-     *     started. Typically passed from {@link ServerPackCreator}.
+     *             started. Typically passed from {@link ServerPackCreator}.
      * @author Griefed
      */
     public CommandlineParser(String[] args) {
@@ -1138,23 +1282,31 @@ public class ServerPackCreator {
      * Get the locale in which ServerPackCreator should be run in, wrapped in an {@link Optional}.
      *
      * @return {@link String} The locale in which ServerPackCreator should be run in, wrapped in an
-     *     {@link Optional}.
+     * {@link Optional}.
      * @author Griefed
      */
     protected Optional<String> getLanguageToUse() {
       return Optional.ofNullable(LANG);
     }
 
-    /** Mode-priorities. Highest to lowest. */
+    /**
+     * Mode-priorities. Highest to lowest.
+     */
     public enum Mode {
 
-      /** Priority 0. Print ServerPackCreators help to commandline. */
+      /**
+       * Priority 0. Print ServerPackCreators help to commandline.
+       */
       HELP("-help"),
 
-      /** Priority 1. Check whether a newer version of ServerPackCreator is available. */
+      /**
+       * Priority 1. Check whether a newer version of ServerPackCreator is available.
+       */
       UPDATE("-update"),
 
-      /** Priority 2. Run ServerPackCreators configuration generation. */
+      /**
+       * Priority 2. Run ServerPackCreators configuration generation.
+       */
       CGEN("-cgen"),
 
       /**
@@ -1164,7 +1316,9 @@ public class ServerPackCreator {
        */
       CLI("-cli"),
 
-      /** Priority 4. Run ServerPackCreator as a webservice. */
+      /**
+       * Priority 4. Run ServerPackCreator as a webservice.
+       */
       WEB("-web"),
 
       /**
@@ -1181,10 +1335,14 @@ public class ServerPackCreator {
        */
       SETUP("--setup"),
 
-      /** Priority 7. Exit ServerPackCreator. */
+      /**
+       * Priority 7. Exit ServerPackCreator.
+       */
       EXIT("exit"),
 
-      /** Used when the user wants to change the language of ServerPackCreator. */
+      /**
+       * Used when the user wants to change the language of ServerPackCreator.
+       */
       LANG("-lang");
 
       private final String ARGUMENT;

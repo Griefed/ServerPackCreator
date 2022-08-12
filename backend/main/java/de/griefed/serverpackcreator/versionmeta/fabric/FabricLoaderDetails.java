@@ -47,7 +47,7 @@ public class FabricLoaderDetails {
    * @param minecraftVersion {@link String} Minecraft version.
    * @param modloaderVersion {@link String} Fabric version,
    * @return {@link FabricDetails} for a given Minecraft and Fabric version combination, wrappen in
-   *     an {@link Optional}.
+   * an {@link Optional}.
    * @author Griefed
    */
   public Optional<FabricDetails> getDetails(String minecraftVersion, String modloaderVersion) {

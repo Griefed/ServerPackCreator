@@ -43,9 +43,9 @@ public class MinecraftMeta {
    * Create a new Minecraft Meta instance.
    *
    * @param minecraftManifest {@link File} Minecraft manifest file.
-   * @param injectedForgeMeta {@link ForgeMeta} to acquire Forge instances for this {@link
-   *     MinecraftClient} version.
-   * @param objectMapper {@link ObjectMapper} for parsing.
+   * @param injectedForgeMeta {@link ForgeMeta} to acquire Forge instances for this
+   *                          {@link MinecraftClient} version.
+   * @param objectMapper      {@link ObjectMapper} for parsing.
    * @author Griefed
    */
   public MinecraftMeta(
@@ -87,11 +87,11 @@ public class MinecraftMeta {
   }
 
   /**
-   * Get the list of available Minecraft version of the {@link Type#RELEASE} in {@link
-   * Type#DESCENDING} order.
+   * Get the list of available Minecraft version of the {@link Type#RELEASE} in
+   * {@link Type#DESCENDING} order.
    *
-   * @return {@link String}-list of all available Minecraft {@link Type#RELEASE} versions in {@link
-   *     Type#DESCENDING} order.
+   * @return {@link String}-list of all available Minecraft {@link Type#RELEASE} versions in
+   * {@link Type#DESCENDING} order.
    * @author Griefed
    */
   public List<String> releaseVersionsDescending() {
@@ -101,11 +101,11 @@ public class MinecraftMeta {
   }
 
   /**
-   * Get the list of available Minecraft version of the {@link Type#RELEASE} in {@link
-   * Type#ASCENDING} order.
+   * Get the list of available Minecraft version of the {@link Type#RELEASE} in
+   * {@link Type#ASCENDING} order.
    *
-   * @return {@link String}-list of all available Minecraft {@link Type#RELEASE} versions in {@link
-   *     Type#ASCENDING} order.
+   * @return {@link String}-list of all available Minecraft {@link Type#RELEASE} versions in
+   * {@link Type#ASCENDING} order.
    * @author Griefed
    */
   public List<String> releaseVersionsAscending() {
@@ -115,11 +115,11 @@ public class MinecraftMeta {
   }
 
   /**
-   * Get the array of available Minecraft version of the {@link Type#RELEASE} in {@link
-   * Type#DESCENDING} order.
+   * Get the array of available Minecraft version of the {@link Type#RELEASE} in
+   * {@link Type#DESCENDING} order.
    *
-   * @return {@link String}-array of all available Minecraft {@link Type#RELEASE} versions in {@link
-   *     Type#DESCENDING} order.
+   * @return {@link String}-array of all available Minecraft {@link Type#RELEASE} versions in
+   * {@link Type#DESCENDING} order.
    * @author Griefed
    */
   public String[] releaseVersionsArrayDescending() {
@@ -127,11 +127,11 @@ public class MinecraftMeta {
   }
 
   /**
-   * Get the array of available Minecraft version of the {@link Type#RELEASE} in {@link
-   * Type#ASCENDING} order.
+   * Get the array of available Minecraft version of the {@link Type#RELEASE} in
+   * {@link Type#ASCENDING} order.
    *
-   * @return {@link String}-array of all available Minecraft {@link Type#RELEASE} versions in {@link
-   *     Type#ASCENDING} order.
+   * @return {@link String}-array of all available Minecraft {@link Type#RELEASE} versions in
+   * {@link Type#ASCENDING} order.
    * @author Griefed
    */
   public String[] releaseVersionsArrayAscending() {
@@ -139,11 +139,11 @@ public class MinecraftMeta {
   }
 
   /**
-   * Get the list of available Minecraft version of the {@link Type#SNAPSHOT} in {@link
-   * Type#DESCENDING} order.
+   * Get the list of available Minecraft version of the {@link Type#SNAPSHOT} in
+   * {@link Type#DESCENDING} order.
    *
-   * @return {@link String}-list of all available Minecraft {@link Type#SNAPSHOT} versions in {@link
-   *     Type#DESCENDING} order.
+   * @return {@link String}-list of all available Minecraft {@link Type#SNAPSHOT} versions in
+   * {@link Type#DESCENDING} order.
    * @author Griefed
    */
   public List<String> snapshotsVersionsDescending() {
@@ -153,11 +153,11 @@ public class MinecraftMeta {
   }
 
   /**
-   * Get the list of available Minecraft version of the {@link Type#SNAPSHOT} in {@link
-   * Type#ASCENDING} order.
+   * Get the list of available Minecraft version of the {@link Type#SNAPSHOT} in
+   * {@link Type#ASCENDING} order.
    *
-   * @return {@link String}-list of all available Minecraft {@link Type#SNAPSHOT} versions in {@link
-   *     Type#ASCENDING} order.
+   * @return {@link String}-list of all available Minecraft {@link Type#SNAPSHOT} versions in
+   * {@link Type#ASCENDING} order.
    * @author Griefed
    */
   public List<String> snapshotVersionsAscending() {
@@ -167,11 +167,11 @@ public class MinecraftMeta {
   }
 
   /**
-   * Get the array of available Minecraft version of the {@link Type#SNAPSHOT} in {@link
-   * Type#DESCENDING} order.
+   * Get the array of available Minecraft version of the {@link Type#SNAPSHOT} in
+   * {@link Type#DESCENDING} order.
    *
    * @return {@link String}-array of all available Minecraft {@link Type#SNAPSHOT} versions in
-   *     {@link Type#DESCENDING} order.
+   * {@link Type#DESCENDING} order.
    * @author Griefed
    */
   public String[] snapshotVersionsArrayDescending() {
@@ -179,11 +179,11 @@ public class MinecraftMeta {
   }
 
   /**
-   * Get the array of available Minecraft version of the {@link Type#SNAPSHOT} in {@link
-   * Type#ASCENDING} order.
+   * Get the array of available Minecraft version of the {@link Type#SNAPSHOT} in
+   * {@link Type#ASCENDING} order.
    *
    * @return {@link String}-array of all available Minecraft {@link Type#SNAPSHOT} versions in
-   *     {@link Type#ASCENDING} order.
+   * {@link Type#ASCENDING} order.
    * @author Griefed
    */
   public String[] snapshotVersionsArrayAscending() {
@@ -359,8 +359,8 @@ public class MinecraftMeta {
   }
 
   /**
-   * Get the latest {@link MinecraftServer} of the {@link Type#RELEASE}, wrapped in an {@link
-   * Optional}.
+   * Get the latest {@link MinecraftServer} of the {@link Type#RELEASE}, wrapped in an
+   * {@link Optional}.
    *
    * @return {@link MinecraftServer} wrapped in an {@link Optional}
    * @author Griefed
@@ -370,8 +370,8 @@ public class MinecraftMeta {
   }
 
   /**
-   * Get the latest {@link MinecraftServer} of the {@link Type#SNAPSHOT}, wrapped in an {@link
-   * Optional}.
+   * Get the latest {@link MinecraftServer} of the {@link Type#SNAPSHOT}, wrapped in an
+   * {@link Optional}.
    *
    * @return {@link MinecraftServer} wrapped in an {@link Optional}
    * @author Griefed
@@ -381,8 +381,8 @@ public class MinecraftMeta {
   }
 
   /**
-   * Get a list of all available {@link MinecraftServer} of the {@link Type#RELEASE}, in {@link
-   * Type#DESCENDING} order.
+   * Get a list of all available {@link MinecraftServer} of the {@link Type#RELEASE}, in
+   * {@link Type#DESCENDING} order.
    *
    * @return {@link MinecraftServer}-list
    * @author Griefed
@@ -392,8 +392,8 @@ public class MinecraftMeta {
   }
 
   /**
-   * Get a list of all available {@link MinecraftServer} of the {@link Type#RELEASE}, in {@link
-   * Type#ASCENDING} order.
+   * Get a list of all available {@link MinecraftServer} of the {@link Type#RELEASE}, in
+   * {@link Type#ASCENDING} order.
    *
    * @return {@link MinecraftServer}-list
    * @author Griefed
@@ -403,8 +403,8 @@ public class MinecraftMeta {
   }
 
   /**
-   * Get an array of all available {@link MinecraftServer} of the {@link Type#RELEASE}, in {@link
-   * Type#DESCENDING} order.
+   * Get an array of all available {@link MinecraftServer} of the {@link Type#RELEASE}, in
+   * {@link Type#DESCENDING} order.
    *
    * @return {@link MinecraftServer}-array
    * @author Griefed
@@ -414,8 +414,8 @@ public class MinecraftMeta {
   }
 
   /**
-   * Get an array of all available {@link MinecraftServer} of the {@link Type#RELEASE}, in {@link
-   * Type#ASCENDING} order.
+   * Get an array of all available {@link MinecraftServer} of the {@link Type#RELEASE}, in
+   * {@link Type#ASCENDING} order.
    *
    * @return {@link MinecraftServer}-array
    * @author Griefed
@@ -425,8 +425,8 @@ public class MinecraftMeta {
   }
 
   /**
-   * Get a list of all available {@link MinecraftServer} of the {@link Type#SNAPSHOT}, in {@link
-   * Type#DESCENDING} order.
+   * Get a list of all available {@link MinecraftServer} of the {@link Type#SNAPSHOT}, in
+   * {@link Type#DESCENDING} order.
    *
    * @return {@link MinecraftServer}-list
    * @author Griefed

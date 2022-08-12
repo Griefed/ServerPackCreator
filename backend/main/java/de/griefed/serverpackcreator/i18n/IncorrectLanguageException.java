@@ -21,8 +21,7 @@ package de.griefed.serverpackcreator.i18n;
 
 /**
  * <strong>Table of Exceptions</strong><br>
- * {@link #IncorrectLanguageException()}<br>
- * {@link #IncorrectLanguageException(String)}<br>
+ * {@link #IncorrectLanguageException()}<br> {@link #IncorrectLanguageException(String)}<br>
  * {@link #IncorrectLanguageException(Throwable)}<br>
  * {@link #IncorrectLanguageException(String, Throwable)}
  *
@@ -49,7 +48,7 @@ public class IncorrectLanguageException extends Exception {
 
   /**
    * @param message The exception message.
-   * @param cause The cause of the exception.
+   * @param cause   The cause of the exception.
    * @author whitebear60
    */
   public IncorrectLanguageException(String message, Throwable cause) {

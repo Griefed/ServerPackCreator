@@ -30,7 +30,8 @@ public class FabricIntermediary {
   private String version;
   private boolean stable;
 
-  private FabricIntermediary() {}
+  private FabricIntermediary() {
+  }
 
   /**
    * The maven mapping of this intermediary.

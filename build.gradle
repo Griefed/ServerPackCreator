@@ -8,7 +8,6 @@ plugins {
   id 'java'
   id 'idea'
 
-  //id 'jacoco'
   id 'signing'
   id 'maven-publish'
   id 'java-library'
@@ -185,9 +184,14 @@ launch4j {
 }
 
 task cleanUp(type: Delete) {
-  //dependsOn task.named('test')
-
-  delete 'logs',
+  delete 'lang',
+      'fabric-installer-manifest.xml',
+      'fabric-manifest.xml',
+      'forge-manifest.json',
+      'log4j2.xml',
+      'minecraft-manifest.json',
+      'quilt-installer-manifest.xml',
+      'quit-manifest.xml',
       'plugins',
       'server-packs',
       'server_files',
@@ -202,30 +206,14 @@ task cleanUp(type: Delete) {
 test {
   useJUnitPlatform()
 
-  // Mention test result in logs
   testLogging {
     events "passed",
         "skipped",
         "failed"
   }
 
-  //finalizedBy jacocoTestReport, cleanUp
+  finalizedBy cleanUp
 }
-
-/*jacocoTestReport {
-  dependsOn test // tests are required to run before generating the report
-
-  reports {
-    xml.required = true
-    //csv.required = false
-    //html.outputLocation = layout.buildDirectory.dir('jacocoHtml')
-  }
-}
-
-jacoco {
-  toolVersion = "0.8.7"
-  reportsDirectory = layout.buildDirectory.dir('reports/jacoco')
-}*/
 
 javadoc {
   if (JavaVersion.current().isJava9Compatible()) {

@@ -21,7 +21,6 @@ package de.griefed.serverpackcreator.swing;
 
 import de.griefed.serverpackcreator.i18n.I18n;
 import de.griefed.serverpackcreator.swing.utilities.JComponentTailer;
-import de.griefed.serverpackcreator.utilities.misc.Generated;
 import java.io.File;
 import org.apache.commons.io.input.Tailer;
 import org.apache.commons.io.input.TailerListener;
@@ -32,7 +31,6 @@ import org.apache.commons.io.input.TailerListenerAdapter;
  *
  * @author Griefed
  */
-@Generated
 public class TabServerPackCreatorLog extends JComponentTailer {
 
   /**
@@ -58,6 +56,7 @@ public class TabServerPackCreatorLog extends JComponentTailer {
   @Override
   protected void createTailer() {
     class MyTailerListener extends TailerListenerAdapter {
+
       public void handle(String line) {
         if (line.contains("Checking entered configuration.")) {
           textArea.setText("");

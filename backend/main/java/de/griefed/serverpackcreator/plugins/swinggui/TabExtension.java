@@ -20,7 +20,6 @@
 package de.griefed.serverpackcreator.plugins.swinggui;
 
 import de.griefed.serverpackcreator.plugins.PluginInformation;
-import de.griefed.serverpackcreator.utilities.misc.Generated;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JTabbedPane;
@@ -32,7 +31,6 @@ import javax.swing.JTabbedPane;
  *
  * @author Griefed
  */
-@Generated
 public interface TabExtension extends PluginInformation {
 
   /**

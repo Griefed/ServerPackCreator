@@ -30,6 +30,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class ServerPackHandlerTest {
+
   private final ConfigurationHandler configurationHandler;
   private final ServerPackHandler serverPackHandler;
 
@@ -46,7 +47,7 @@ class ServerPackHandlerTest {
         new ObjectMapper()
             .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
             .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
-    I18n i18N = new I18n();
+    I18n i18N = new I18n(applicationProperties);
     Utilities utilities = new Utilities(applicationProperties);
     VersionMeta versionMeta =
         new VersionMeta(
@@ -100,14 +101,19 @@ class ServerPackHandlerTest {
     Assertions.assertTrue(new File("server-packs/forge_tests/start.ps1").exists());
     Assertions.assertTrue(new File("server-packs/forge_tests/start.sh").exists());
     Assertions.assertTrue(new File("server-packs/forge_tests/exclude_me").exists());
-    Assertions.assertTrue(new File("server-packs/forge_tests/exclude_me/exclude_me_some_more/ICANSEEMYHOUSEFROMHEEEEEEEEEEEEERE").exists());
+    Assertions.assertTrue(new File(
+        "server-packs/forge_tests/exclude_me/exclude_me_some_more/ICANSEEMYHOUSEFROMHEEEEEEEEEEEEERE").exists());
 
-    Assertions.assertFalse(new File("server-packs/forge_tests/exclude_me/I_dont_want_to_be_included.file").exists());
-    Assertions.assertFalse(new File("server-packs/forge_tests/exclude_me/exclude_me_some_more/I_dont_want_to_be_included.file").exists());
-    Assertions.assertFalse(new File("server-packs/forge_tests/exclude_me/exclude_me_some_more/some_more_dirs_to_exclude").exists());
-    Assertions.assertFalse(new File("server-packs/forge_tests/exclude_me/exclude_me_some_more/some_more_dirs_to_exclude/I_dont_want_to_be_included.file").exists());
-    Assertions.assertFalse(new File("server-packs/forge_tests/exclude_me/exclude_me_some_more/dont_include_me_either.ogg").exists());
-
+    Assertions.assertFalse(
+        new File("server-packs/forge_tests/exclude_me/I_dont_want_to_be_included.file").exists());
+    Assertions.assertFalse(new File(
+        "server-packs/forge_tests/exclude_me/exclude_me_some_more/I_dont_want_to_be_included.file").exists());
+    Assertions.assertFalse(new File(
+        "server-packs/forge_tests/exclude_me/exclude_me_some_more/some_more_dirs_to_exclude").exists());
+    Assertions.assertFalse(new File(
+        "server-packs/forge_tests/exclude_me/exclude_me_some_more/some_more_dirs_to_exclude/I_dont_want_to_be_included.file").exists());
+    Assertions.assertFalse(new File(
+        "server-packs/forge_tests/exclude_me/exclude_me_some_more/dont_include_me_either.ogg").exists());
 
     try {
       Files.copy(

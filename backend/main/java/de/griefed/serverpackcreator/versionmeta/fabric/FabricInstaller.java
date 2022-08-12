@@ -179,8 +179,7 @@ public class FabricInstaller {
   }
 
   /**
-   * Meta for the Fabric-Version-to-Installer-URL.<br>
-   * key: {@link String} Fabric version.<br>
+   * Meta for the Fabric-Version-to-Installer-URL.<br> key: {@link String} Fabric version.<br>
    * value: {@link URL} Fabric installer URL.
    *
    * @return {@link HashMap} with the Fabric-Version-to-Installer-URL.
@@ -235,7 +234,7 @@ public class FabricInstaller {
    * versions.
    *
    * @param minecraftVersion {@link String} Minecraft version.
-   * @param fabricVersion {@link String} Fabric version.
+   * @param fabricVersion    {@link String} Fabric version.
    * @return {@link URL} to the improved Fabric launcher, wrapped in an {@link Optional}.
    * @author Griefed
    */

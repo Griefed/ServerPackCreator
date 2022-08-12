@@ -29,12 +29,13 @@ import java.util.List;
  */
 public class StringUtilities {
 
-  public StringUtilities() {}
+  public StringUtilities() {
+  }
 
   /**
    * Converts a list of Strings, for example from a list, into a concatenated String.
    *
-   * @param strings {@link List} {@link String} Strings that will be concatenated into one string
+   * @param strings List of strings that will be concatenated into one string
    * @return String. Returns concatenated string that contains all provided values.
    * @author Griefed
    */
@@ -93,8 +94,8 @@ public class StringUtilities {
    *
    * <br>
    *
-   * @param text {@link String} The text which you want to be made safe.
-   * @return {@link String} The passed String safe for use for files, paths, directories etc.
+   * @param text The text which you want to be made safe.
+   * @return The passed String safe for use for files, paths, directories etc.
    * @author Griefed
    */
   public String pathSecureText(String text) {
@@ -130,8 +131,8 @@ public class StringUtilities {
   /**
    * Remove commonly forbidden characters from the passed string, making the resulting String safe
    * to use for files, paths, directories etc. If the passed text ends with a SPACE<code>
-   * (&#32;&#32;)</code> or a DOT<code>(&#32;.&#32;)</code>, they are also removed.<br>
-   * Contraty to {@link #pathSecureText(String)}, this method does <strong>NOT</strong> remove
+   * (&#32;&#32;)</code> or a DOT<code>(&#32;.&#32;)</code>, they are also removed.<br> Contraty to
+   * {@link #pathSecureText(String)}, this method does <strong>NOT</strong> remove
    * <strong>&#47;</strong> or <strong>&#92;</strong>.
    *
    * <p>Replaced/removed are:
@@ -160,8 +161,8 @@ public class StringUtilities {
    *
    * <br>
    *
-   * @param text {@link String} The text which you want to be made safe.
-   * @return {@link String} The passed String safe for use for files, paths, directories etc.
+   * @param text The text which you want to be made safe.
+   * @return The passed String safe for use for files, paths, directories etc.
    * @author Griefed
    */
   public String pathSecureTextAlternative(String text) {
@@ -220,7 +221,7 @@ public class StringUtilities {
    *
    * <br>
    *
-   * @param text {@link String} The text you want to check.
+   * @param text The text you want to check.
    * @return <code>true</code> if none of these characters were found.
    * @author Griefed
    */

@@ -47,7 +47,6 @@
  */
 package de.griefed.serverpackcreator.swing.utilities;
 
-import de.griefed.serverpackcreator.utilities.misc.Generated;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -68,21 +67,19 @@ import javax.swing.JViewport;
  * window. I wanted to set the background to a tiled image, because simply setting a colour seemed
  * too boring, and I needed <em>something</em> in the background so the banner icon would be more
  * clear to the eye. So, I activated my Google-Fu and encountered this holy grail of tiling images
- * for Swing.<br>
- * Links:<br>
+ * for Swing.<br> Links:<br>
  * <a href="https://tips4java.wordpress.com/2008/10/12/background-panel/">Background Panel by Rob
  * Camick from October 12, 2008</a><br>
  * <a href="https://www.camick.com/java/source/BackgroundPanel.java">BackgroundPanel.java</a><br>
  * Seriously, give this man an award, because this class is a <strong>BEAST</strong>.
  *
  * <p>Rob, if you somehow ever get wind of your class being used here: Thank you, thank you, thank
- * you, thank you, thank you so very much! You seriously made my day here.<br>
- * Rob, you rule.
+ * you, thank you, thank you so very much! You seriously made my day here.<br> Rob, you rule.
  *
  * @author Rob Camick
  */
-@Generated
 public class BackgroundPanel extends JPanel {
+
   public static final int SCALED = 0;
   public static final int TILED = 1;
   public static final int ACTUAL = 2;
@@ -114,8 +111,8 @@ public class BackgroundPanel extends JPanel {
    * Set image as the background with the specified style.
    *
    * @param image Pass an image to the constructor to be used in the new JPanel.
-   * @param style The style with which the image should be painted. See {@link #SCALED}, {@link
-   *     #TILED}, {@link #ACTUAL}
+   * @param style The style with which the image should be painted. See {@link #SCALED},
+   *              {@link #TILED}, {@link #ACTUAL}
    * @author Rob Camick
    */
   public BackgroundPanel(Image image, int style) {
@@ -128,9 +125,9 @@ public class BackgroundPanel extends JPanel {
    * <strong>Constructor</strong><br>
    * Set image as the background with the specified style and alignment.
    *
-   * @param image Pass an image to the constructor to be used in the new JPanel.
-   * @param style The style with which the image should be painted. See {@link #SCALED}, {@link
-   *     #TILED}, {@link #ACTUAL}
+   * @param image      Pass an image to the constructor to be used in the new JPanel.
+   * @param style      The style with which the image should be painted. See {@link #SCALED},
+   *                   {@link #TILED}, {@link #ACTUAL}
    * @param alignmentX Alignment along the x-axis.
    * @param alignmentY Alignment along the y-axis.
    * @author Rob Camick
@@ -238,7 +235,7 @@ public class BackgroundPanel extends JPanel {
   /**
    * Override method so we can make the component transparent.
    *
-   * @param component JComponent to add to the panel.
+   * @param component   JComponent to add to the panel.
    * @param constraints Constraints with which the panel should be added.
    * @author Rob Camick
    */

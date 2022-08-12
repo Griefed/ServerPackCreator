@@ -27,8 +27,11 @@ import javax.swing.JTextField;
 import javax.swing.border.Border;
 import javax.swing.event.DocumentListener;
 
-/** <a href="https://itqna.net/questions/10833/decorating-jtextfield-icon">it_qna</a> */
+/**
+ * <a href="https://itqna.net/questions/10833/decorating-jtextfield-icon">it_qna</a>
+ */
 public class IconTextField extends JTextField {
+
   private static final int ICON_SPACING = 4;
   private Border mBorder;
   private Icon mIcon;

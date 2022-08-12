@@ -1,5 +1,6 @@
 package de.griefed.serverpackcreator;
 
+import de.griefed.serverpackcreator.ServerPackCreator.CommandlineParser.Mode;
 import java.io.File;
 import java.io.IOException;
 import org.apache.commons.io.FileUtils;
@@ -13,9 +14,8 @@ import org.springframework.context.annotation.PropertySources;
 @SpringBootTest(classes = WebServiceTest.class)
 @PropertySources({@PropertySource("classpath:serverpackcreator.properties")})
 public class WebServiceTest {
-  private static final Logger LOG = LogManager.getLogger(WebServiceTest.class);
 
-  ServerPackCreator serverPackCreator;
+  private static final Logger LOG = LogManager.getLogger(WebServiceTest.class);
 
   WebServiceTest() throws IOException {
     try {
@@ -38,11 +38,13 @@ public class WebServiceTest {
     } catch (IOException e) {
       LOG.error("Error copying file", e);
     }
-    serverPackCreator = new ServerPackCreator(new String[] {"--setup"});
-    serverPackCreator.run(ServerPackCreator.CommandlineParser.Mode.SETUP);
+    String[] setup = new String[]{"--setup"};
+    ServerPackCreator serverPackCreator = new ServerPackCreator(setup);
+    serverPackCreator.run(Mode.SETUP);
     serverPackCreator.checkDatabase();
   }
 
   @Test
-  void contextLoads() {}
+  void contextLoads() {
+  }
 }

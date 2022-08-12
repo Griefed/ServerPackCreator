@@ -59,16 +59,18 @@ public class ForgeLoader {
   /**
    * 1-1 Minecraft + Forge version combination to {@link ForgeInstance}<br>
    * <code>key</code>: Minecraft version + Forge version. Example: <code>1.18.2-40.0.44</code><br>
-   * <code>value</code>: The {@link ForgeInstance} for said Minecraft and Forge version combination.
+   * <code>value</code>: The {@link ForgeInstance} for said Minecraft and Forge version
+   * combination.
    */
   private HashMap<String, ForgeInstance> instanceMeta;
 
   /**
    * Create a new instance of the Forge Loader.
    *
-   * @param forgemanifest {@link JsonNode} containing information about available Forge versions.
+   * @param forgemanifest         {@link JsonNode} containing information about available Forge
+   *                              versions.
    * @param injectedMinecraftMeta {@link MinecraftMeta} for retroactively updating the previously
-   *     passed meta.
+   *                              passed meta.
    * @author Griefed
    */
   protected ForgeLoader(JsonNode forgemanifest, MinecraftMeta injectedMinecraftMeta) {
@@ -181,9 +183,8 @@ public class ForgeLoader {
   }
 
   /**
-   * Get the {@link ForgeLoader} version-meta.<br>
-   * key: {@link String} Minecraft version<br>
-   * value: {@link String}-list of Forge versions available for the given Minecraft version.
+   * Get the {@link ForgeLoader} version-meta.<br> key: {@link String} Minecraft version<br> value:
+   * {@link String}-list of Forge versions available for the given Minecraft version.
    *
    * @return {@link HashMap} containing the version meta.
    * @author Griefed
@@ -193,8 +194,7 @@ public class ForgeLoader {
   }
 
   /**
-   * Get the Forge version to Minecraft version meta.<br>
-   * key: {@link String} Forge version.<br>
+   * Get the Forge version to Minecraft version meta.<br> key: {@link String} Forge version.<br>
    * version: {@link String} Minecraft version for the given Forge version.
    *
    * @return {@link HashMap} with Forge-to-Minecraft-version mappings.
@@ -205,9 +205,9 @@ public class ForgeLoader {
   }
 
   /**
-   * Get the Minecraft-Forge-version meta.<br>
-   * key: {@link String} Minecraft version + Forge version concatenation.<br>
-   * value: {@link ForgeInstance} for the given Minecraft version + Forge version concatenation.
+   * Get the Minecraft-Forge-version meta.<br> key: {@link String} Minecraft version + Forge version
+   * concatenation.<br> value: {@link ForgeInstance} for the given Minecraft version + Forge version
+   * concatenation.
    *
    * @return {@link HashMap} with Minecraft-Forge-version-to-ForgeInstance mapping.
    * @author Griefed

@@ -36,8 +36,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
- * Service class for backend tasks related to storing ZIP-archives uploaded through {@link
- * ZipController}.
+ * Service class for backend tasks related to storing ZIP-archives uploaded through
+ * {@link ZipController}.
  *
  * @author Griefed
  */
@@ -55,11 +55,11 @@ public class ZipService {
   /**
    * Constructor responsible for DI.
    *
-   * @param injectedTaskSubmitter Instance of {@link TaskSubmitter}.
+   * @param injectedTaskSubmitter        Instance of {@link TaskSubmitter}.
    * @param injectedConfigurationHandler Instance of {@link ConfigurationHandler}.
    * @param injectedNotificationResponse Instance of {@link NotificationResponse}.
-   * @param injectedVersionMeta Instance of {@link VersionMeta}.
-   * @param injectedConfigUtilities Instance of {@link ConfigUtilities}.
+   * @param injectedVersionMeta          Instance of {@link VersionMeta}.
+   * @param injectedConfigUtilities      Instance of {@link ConfigUtilities}.
    * @author Griefed
    */
   @Autowired
@@ -117,8 +117,9 @@ public class ZipService {
    * Submit a task for the generation of a server pack from a ZIP-archive.
    *
    * @param zipGenerationProperties {@link String} containing all information required to generate a
-   *     server pack from a ZIP-archive. See {@link ZipController#requestGenerationFromZip(String,
-   *     String, String, String, String)}.
+   *                                server pack from a ZIP-archive. See
+   *                                {@link ZipController#requestGenerationFromZip(String, String,
+   *                                String, String, String)}.
    * @return {@link Boolean} Returns true if the task was submitted.
    * @author Griefed
    */

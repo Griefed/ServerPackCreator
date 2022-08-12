@@ -38,7 +38,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Properties;
 import net.lingala.zip4j.ZipFile;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
@@ -65,17 +64,12 @@ public class ConfigurationHandler {
   private final ConfigUtilities CONFIGUTILITIES;
 
   /**
-   * <strong>Constructor</strong>
-   *
-   * <p>Used for Dependency Injection.
-   *
-   * <p>Receives an instance of {@link I18n} or creates one if the received one is null. Required
-   * for use of localization.
+   * Construct a new ConfigurationHandler giving you access to various config check methods.
    *
    * @param injectedI18n                  Instance of {@link I18n} required for localized log
    *                                      messages.
-   * @param injectedApplicationProperties Instance of {@link Properties} required for various
-   *                                      different things.
+   * @param injectedApplicationProperties Instance of {@link ApplicationProperties} required for
+   *                                      various different things.
    * @param injectedVersionMeta           Instance of {@link VersionMeta} required for everything
    *                                      version-related.
    * @param injectedUtilities             Instance of {@link Utilities}.
@@ -105,18 +99,18 @@ public class ConfigurationHandler {
    * serverpackcreator.log in the logs-directory.<br> Does not create a modpack if a CurseForge
    * project and file is specified.
    *
-   * @param configFile        File. The configuration file to check. Must either be an existing file
-   *                          to load a configuration from or null if you want to use the passed
+   * @param configFile        The configuration file to check. Must either be an existing file to
+   *                          load a configuration from or null if you want to use the passed
    *                          configuration model.
-   * @param encounteredErrors List String. A list of errors encountered during configuration checks
-   *                          which gets printed to the console and log after all checks have run.
-   *                          Gives the user more detail on what went wrong at which part of their
+   * @param encounteredErrors A list of errors encountered during configuration checks which gets
+   *                          printed to the console and log after all checks have run. Gives the
+   *                          user more detail on what went wrong at which part of their
    *                          configuration. Can be used to display the errors, if any were
    *                          encountered, in a UI or be printed into the console or whatever have
    *                          you.
-   * @param quietCheck        Boolean. Whether the configuration should be printed to the console
-   *                          and logs. Pass false to quietly check the configuration.
-   * @return Boolean. Returns <code>false</code> if the configuration has passed all tests.
+   * @param quietCheck        Whether the configuration should be printed to the console and logs.
+   *                          Pass false to quietly check the configuration.
+   * @return <code>false</code> if the configuration has passed all tests.
    * @author Griefed
    */
   public boolean checkConfiguration(
@@ -132,12 +126,12 @@ public class ConfigurationHandler {
    * pack will not be created. In order to find out which check failed, the user has to check their
    * serverpackcreator.log in the logs-directory.
    *
-   * @param configFile File. The configuration file to check. Must either be an existing file to
-   *                   load a configuration from or null if you want to use the passed configuration
+   * @param configFile The configuration file to check. Must either be an existing file to load a
+   *                   configuration from or null if you want to use the passed configuration
    *                   model.
-   * @param quietCheck Boolean. Whether the configuration should be printed to the console and logs.
-   *                   Pass false to quietly check the configuration.
-   * @return Boolean. Returns <code>false</code> if the configuration has passed all tests.
+   * @param quietCheck Whether the configuration should be printed to the console and logs. Pass
+   *                   false to quietly check the configuration.
+   * @return <code>false</code> if the configuration has passed all tests.
    * @author Griefed
    */
   public boolean checkConfiguration(@NotNull File configFile, boolean quietCheck) {
@@ -154,15 +148,15 @@ public class ConfigurationHandler {
    * pack will not be created. In order to find out which check failed, the user has to check their
    * serverpackcreator.log in the logs-directory.
    *
-   * @param configFile         File. The configuration file to check. Must either be an existing
-   *                           file to load a configuration from or null if you want to use the
-   *                           passed configuration model.
-   * @param configurationModel ConfigurationModel. Instance of a configuration of a modpack. Can be
-   *                           used to further display or use any information within, as it may be
-   *                           changed or otherwise altered by this method.
-   * @param quietCheck         Boolean. Whether the configuration should be printed to the console
-   *                           and logs. Pass false to quietly check the configuration.
-   * @return Boolean. Returns <code>false</code> if the configuration has passed all tests.
+   * @param configFile         The configuration file to check. Must either be an existing file to
+   *                           load a configuration from or null if you want to use the passed
+   *                           configuration model.
+   * @param configurationModel Instance of a configuration of a modpack. Can be used to further
+   *                           display or use any information within, as it may be changed or
+   *                           otherwise altered by this method.
+   * @param quietCheck         Whether the configuration should be printed to the console and logs.
+   *                           Pass false to quietly check the configuration.
+   * @return <code>false</code> if the configuration has passed all tests.
    * @author Griefed
    */
   public boolean checkConfiguration(
@@ -180,12 +174,12 @@ public class ConfigurationHandler {
    * server pack will not be created. In order to find out which check failed, the user has to check
    * their serverpackcreator.log in the logs-directory.
    *
-   * @param configurationModel ConfigurationModel. Instance of a configuration of a modpack. Can be
-   *                           used to further display or use any information within, as it may be
-   *                           changed or otherwise altered by this method.
-   * @param quietCheck         Boolean. Whether the configuration should be printed to the console
-   *                           and logs. Pass false to quietly check the configuration.
-   * @return Boolean. Returns <code>false</code> if the configuration has passed all tests.
+   * @param configurationModel Instance of a configuration of a modpack. Can be used to further
+   *                           display or use any information within, as it may be changed or
+   *                           otherwise altered by this method.
+   * @param quietCheck         Whether the configuration should be printed to the console and logs.
+   *                           Pass false to quietly check the configuration.
+   * @return <code>false</code> if the configuration has passed all tests.
    * @author Griefed
    */
   public boolean checkConfiguration(
@@ -201,21 +195,21 @@ public class ConfigurationHandler {
    * pack will not be created. In order to find out which check failed, the user has to check their
    * serverpackcreator.log in the logs-directory.
    *
-   * @param configFile         File. The configuration file to check. Must either be an existing
-   *                           file to load a configuration from or null if you want to use the
-   *                           passed configuration model.
-   * @param configurationModel ConfigurationModel. Instance of a configuration of a modpack. Can be
-   *                           used to further display or use any information within, as it may be
-   *                           changed or otherwise altered by this method.
-   * @param encounteredErrors  List String. A list of errors encountered during configuration checks
-   *                           which gets printed to the console and log after all checks have run.
-   *                           Gives the user more detail on what went wrong at which part of their
+   * @param configFile         The configuration file to check. Must either be an existing file to
+   *                           load a configuration from or null if you want to use the passed
+   *                           configuration model.
+   * @param configurationModel Instance of a configuration of a modpack. Can be used to further
+   *                           display or use any information within, as it may be changed or
+   *                           otherwise altered by this method.
+   * @param encounteredErrors  A list of errors encountered during configuration checks which gets
+   *                           printed to the console and log after all checks have run. Gives the
+   *                           user more detail on what went wrong at which part of their
    *                           configuration. Can be used to display the errors, if any were
    *                           encountered, in a UI or be printed into the console or whatever have
    *                           you.
-   * @param quietCheck         Boolean. Whether the configuration should be printed to the console
-   *                           and logs. Pass false to quietly check the configuration.
-   * @return Boolean. Returns <code>false</code> if the configuration has passed all tests.
+   * @param quietCheck         Whether the configuration should be printed to the console and logs.
+   *                           Pass false to quietly check the configuration.
+   * @return <code>false</code> if the configuration has passed all tests.
    * @author Griefed
    */
   public boolean checkConfiguration(
@@ -270,18 +264,18 @@ public class ConfigurationHandler {
 
       configurationModel.setIncludeServerInstallation(
           UTILITIES.BooleanUtils()
-              .convertToBoolean(
+              .convert(
                   String.valueOf(config.getOrElse("includeServerInstallation", "False"))));
       configurationModel.setIncludeServerIcon(
           UTILITIES.BooleanUtils()
-              .convertToBoolean(String.valueOf(config.getOrElse("includeServerIcon", "False"))));
+              .convert(String.valueOf(config.getOrElse("includeServerIcon", "False"))));
       configurationModel.setIncludeServerProperties(
           UTILITIES.BooleanUtils()
-              .convertToBoolean(
+              .convert(
                   String.valueOf(config.getOrElse("includeServerProperties", "False"))));
       configurationModel.setIncludeZipCreation(
           UTILITIES.BooleanUtils()
-              .convertToBoolean(String.valueOf(config.getOrElse("includeZipCreation", "False"))));
+              .convert(String.valueOf(config.getOrElse("includeZipCreation", "False"))));
 
     } else {
 
@@ -304,18 +298,18 @@ public class ConfigurationHandler {
    * {@link ConfigurationModel} can be used to further display or use any information within, as it
    * may be changed or otherwise altered by this method.
    *
-   * @param configurationModel ConfigurationModel. Instance of a configuration of a modpack. Can be
-   *                           used to further display or use any information within, as it may be
-   *                           changed or otherwise altered by this method.
-   * @param encounteredErrors  List String. A list of errors encountered during configuration checks
-   *                           which gets printed to the console and log after all checks have run.
-   *                           Gives the user more detail on what went wrong at which part of their
+   * @param configurationModel Instance of a configuration of a modpack. Can be used to further
+   *                           display or use any information within, as it may be changed or
+   *                           otherwise altered by this method.
+   * @param encounteredErrors  A list of errors encountered during configuration checks which gets
+   *                           printed to the console and log after all checks have run. Gives the
+   *                           user more detail on what went wrong at which part of their
    *                           configuration. Can be used to display the errors, if any were
    *                           encountered, in a UI or be printed into the console or whatever have
    *                           you.
-   * @param quietCheck         Boolean. Whether the configuration should be printed to the console
-   *                           and logs. Pass false to quietly check the configuration.
-   * @return Boolean. Returns <code>false</code> if all checks are passed.
+   * @param quietCheck         Whether the configuration should be printed to the console and logs.
+   *                           Pass false to quietly check the configuration.
+   * @return <code>false</code> if all checks are passed.
    * @author Griefed
    */
   public boolean checkConfiguration(
@@ -506,8 +500,8 @@ public class ConfigurationHandler {
    *
    * @param configurationModel An instance of {@link ConfigurationModel} which contains the
    *                           configuration of the modpack.
-   * @param encounteredErrors  List String. A list to which all encountered errors are saved to.
-   * @return Boolean. Returns true if an error is found during configuration check.
+   * @param encounteredErrors  A list to which all encountered errors are saved to.
+   * @return <code>true</code> if an error is found during configuration check.
    * @author Griefed
    */
   private boolean isDir(ConfigurationModel configurationModel, List<String> encounteredErrors) {
@@ -539,9 +533,8 @@ public class ConfigurationHandler {
    *
    * @param configurationModel Instance of {@link ConfigurationModel} with a server pack
    *                           configuration.
-   * @param encounteredErrors  String List. A list of errors encountered during configuration
-   *                           checks.
-   * @return Boolean. Returns false when no errors were encountered.
+   * @param encounteredErrors  A list of errors encountered during configuration checks.
+   * @return <code>false</code> when no errors were encountered.
    * @author Griefed
    */
   private boolean isZip(ConfigurationModel configurationModel, List<String> encounteredErrors)
@@ -1912,6 +1905,4 @@ public class ConfigurationHandler {
         return false;
     }
   }
-
-  // TODO replace String in docs with {@link String}
 }
