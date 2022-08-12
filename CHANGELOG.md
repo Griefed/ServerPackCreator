@@ -1,3 +1,15 @@
+## [3.11.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.10.2...3.11.0) (2022-08-12)
+
+
+### :scissors: Refactor
+
+* **ConfigurationHandler:** Refactor isZip to improve readibility. Move Json util methods to own utilities class. ([a31376c](https://git.griefed.de/Griefed/ServerPackCreator/commit/a31376c114caddb1a545841d2904a4d4a5107189))
+
+
+### 💎 Improvements
+
+* **CLI Configuration Editor:** Create, load, edit, check configurations in CLI mode `-cli` or `-cgen` ([cff423c](https://git.griefed.de/Griefed/ServerPackCreator/commit/cff423c7bdfef1e88eacceed049b6b9e29377123))
+
 ## [3.10.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.10.1...3.10.2) (2022-08-06)
 
 
