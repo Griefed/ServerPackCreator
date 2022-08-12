@@ -127,8 +127,7 @@ public class BeanConfiguration {
    * <strong>public-static-void-main-string-args-public-static-void-main-string-args-public-static-void-main-string-args</strong>
    * <br>
    * <br>
-   * ehem...<br>
-   * Sorry 'bout that.
+   * ehem...<br> Sorry 'bout that.
    *
    * @return empty String array.
    * @author Griefed

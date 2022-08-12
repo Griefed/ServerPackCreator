@@ -30,7 +30,6 @@ import de.griefed.serverpackcreator.swing.utilities.BackgroundPanel;
 import de.griefed.serverpackcreator.utilities.ConfigUtilities;
 import de.griefed.serverpackcreator.utilities.UpdateChecker;
 import de.griefed.serverpackcreator.utilities.common.Utilities;
-import de.griefed.serverpackcreator.utilities.misc.Generated;
 import de.griefed.serverpackcreator.versionmeta.VersionMeta;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -59,7 +58,6 @@ import org.apache.logging.log4j.Logger;
  *
  * @author Griefed
  */
-@Generated
 public class ServerPackCreatorGui {
 
   private static final Logger LOG = LogManager.getLogger(ServerPackCreatorGui.class);
@@ -108,19 +106,20 @@ public class ServerPackCreatorGui {
    * <p>Receives an instance of {@link ServerPackHandler} which is required to generate a server
    * pack.
    *
-   * @param injectedI18n Instance of {@link I18n} required for localized log messages.
-   * @param injectedConfigurationHandler Instance of {@link ConfigurationHandler} required to
-   *     successfully and correctly create the server pack.
-   * @param injectedServerPackHandler Instance of {@link ServerPackHandler} required for the
-   *     generation of server packs.
-   * @param injectedApplicationProperties Instance of {@link Properties} required for various
-   *     different things.
-   * @param injectedVersionMeta Instance of {@link VersionMeta} required for everything version
-   *     related in the GUI.
-   * @param injectedUtilities Instance of {@link Utilities}.
-   * @param injectedUpdateChecker Instance of {@link UpdateChecker}.
-   * @param injectedPluginManager Instance of {@link ApplicationPlugins}.
-   * @param injectedConfigUtilities Instance of {@link ConfigUtilities}.
+   * @param injectedI18n                    Instance of {@link I18n} required for localized log
+   *                                        messages.
+   * @param injectedConfigurationHandler    Instance of {@link ConfigurationHandler} required to
+   *                                        successfully and correctly create the server pack.
+   * @param injectedServerPackHandler       Instance of {@link ServerPackHandler} required for the
+   *                                        generation of server packs.
+   * @param injectedApplicationProperties   Instance of {@link Properties} required for various
+   *                                        different things.
+   * @param injectedVersionMeta             Instance of {@link VersionMeta} required for everything
+   *                                        version related in the GUI.
+   * @param injectedUtilities               Instance of {@link Utilities}.
+   * @param injectedUpdateChecker           Instance of {@link UpdateChecker}.
+   * @param injectedPluginManager           Instance of {@link ApplicationPlugins}.
+   * @param injectedConfigUtilities         Instance of {@link ConfigUtilities}.
    * @param injectedServerPackCreatorSplash Instance of {@link ServerPackCreatorSplash}
    * @throws IOException if the {@link VersionMeta} could not be instantiated.
    * @author Griefed
@@ -246,9 +245,7 @@ public class ServerPackCreatorGui {
         () -> {
           try {
 
-            if (APPLICATIONPROPERTIES
-                .getProperty("de.griefed.serverpackcreator.gui.darkmode")
-                .equals("true")) {
+            if (APPLICATIONPROPERTIES.isDarkTheme()) {
 
               UIManager.setLookAndFeel(LAF_DARK);
               MaterialLookAndFeel.changeTheme(DARKTHEME);

@@ -1,5 +1,6 @@
 package de.griefed.serverpackcreator;
 
+import de.griefed.serverpackcreator.ServerPackCreator.CommandlineParser.Mode;
 import java.io.File;
 import java.io.IOException;
 import org.apache.commons.io.FileUtils;
@@ -10,9 +11,9 @@ public class ServerPackCreatorTest {
 
   ServerPackCreator serverPackCreator;
 
-  ServerPackCreatorTest() throws IOException {
-    serverPackCreator = new ServerPackCreator(new String[] {"--setup"});
-    serverPackCreator.run(ServerPackCreator.CommandlineParser.Mode.SETUP);
+  ServerPackCreatorTest() {
+    String[] setup = new String[]{"--setup"};
+    serverPackCreator = new ServerPackCreator(setup);
   }
 
   @Test
@@ -23,8 +24,7 @@ public class ServerPackCreatorTest {
     FileUtils.deleteQuietly(new File("./server-packs"));
     FileUtils.deleteQuietly(new File("./server_files/server.properties"));
     FileUtils.deleteQuietly(new File("./server_files/server-icon.png"));
-    FileUtils.deleteQuietly(new File("./serverpackcreator.conf"));
-    serverPackCreator.run(ServerPackCreator.CommandlineParser.Mode.SETUP);
+    serverPackCreator.run(Mode.SETUP);
     Assertions.assertTrue(new File("./server_files").isDirectory());
     Assertions.assertTrue(new File("./work").isDirectory());
     Assertions.assertTrue(new File("./work/temp").isDirectory());
@@ -33,6 +33,5 @@ public class ServerPackCreatorTest {
     Assertions.assertTrue(new File("./server_files/server-icon.png").exists());
     Assertions.assertTrue(new File("./server_files/default_template.ps1").exists());
     Assertions.assertTrue(new File("./server_files/default_template.sh").exists());
-    Assertions.assertTrue(new File("./serverpackcreator.conf").exists());
   }
 }

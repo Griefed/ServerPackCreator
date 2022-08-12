@@ -39,13 +39,12 @@ import org.springframework.stereotype.Service;
 /**
  * <a
  * href="https://dev.to/gotson/how-to-implement-a-task-queue-using-apache-artemis-and-spring-boot-2mme">How
- * to implement a task queue using Apache Artemis and Spring Boot</a><br>
- * Huge Thank You to <a href="https://github.com/gotson">Gauthier</a> for writing the above guide on
- * how to implement a JMS. Without it this implementation of Artemis would have either taken way
- * longer or never happened at all. I managed to translate their Kotlin-code to Java and make the
- * necessary changes to fully implement it in ServerPackCreator.<br>
- * TaskHandler class which determines what to do with all message in our JMS, depending on their
- * task type and content of the message.
+ * to implement a task queue using Apache Artemis and Spring Boot</a><br> Huge Thank You to <a
+ * href="https://github.com/gotson">Gauthier</a> for writing the above guide on how to implement a
+ * JMS. Without it this implementation of Artemis would have either taken way longer or never
+ * happened at all. I managed to translate their Kotlin-code to Java and make the necessary changes
+ * to fully implement it in ServerPackCreator.<br> TaskHandler class which determines what to do
+ * with all message in our JMS, depending on their task type and content of the message.
  *
  * @author Griefed
  */
@@ -63,8 +62,8 @@ public class TaskHandler {
    * Constructor responsible for our DI.
    *
    * @param injectedConfigurationHandler Instance of {@link ConfigurationHandler}.
-   * @param injectedServerPackHandler Instance of {@link ServerPackHandler}.
-   * @param injectedServerPackService Instance of {@link ServerPackService}.
+   * @param injectedServerPackHandler    Instance of {@link ServerPackHandler}.
+   * @param injectedServerPackService    Instance of {@link ServerPackService}.
    * @author Griefed
    */
   @Autowired
@@ -81,11 +80,10 @@ public class TaskHandler {
   /**
    * {@link JmsListener} listening to the destination <code>tasks.background</code> and selector
    * <code>type = 'scan'</code>, so only task that match the <code>scan</code>-type are worked with
-   * in this method.<br>
-   * If a task is received that matches this type, the CurseForge project and file ID of said task
-   * is checked for validity. If the combination is found valid, either a new entry is saved to the
-   * database or an already existing one updated, if the existing one has the status <code>
-   * Generating</code> and <code>lastModified</code> is bigger than 30 minutes.
+   * in this method.<br> If a task is received that matches this type, the CurseForge project and
+   * file ID of said task is checked for validity. If the combination is found valid, either a new
+   * entry is saved to the database or an already existing one updated, if the existing one has the
+   * status <code> Generating</code> and <code>lastModified</code> is bigger than 30 minutes.
    *
    * @param task The task for which to check the CurseForge project and file ID, as well as status.
    * @author Griefed
@@ -98,11 +96,11 @@ public class TaskHandler {
   /**
    * {@link JmsListener} listening to the destination <code>tasks.background</code> and selector
    * <code>type = 'generation'</code>, so only task that match the <code>generation</code>-type are
-   * worked with in this method.<br>
-   * If a task is received that matches this type, the generation of a new server pack is started.
+   * worked with in this method.<br> If a task is received that matches this type, the generation of
+   * a new server pack is started.
    *
    * @param task The task with which to generate a server pack from a CurseForge project and file
-   *     ID.
+   *             ID.
    * @author Griefed
    */
   @JmsListener(destination = "tasks.background", selector = "type = 'generation'")
@@ -151,7 +149,9 @@ public class TaskHandler {
 
           pack = SERVERPACKHANDLER.run(serverPackModel);
 
-          if (pack != null) SERVERPACKSERVICE.updateServerPackByID(serverPackModel.getId(), pack);
+          if (pack != null) {
+            SERVERPACKSERVICE.updateServerPackByID(serverPackModel.getId(), pack);
+          }
 
         } else {
 
@@ -159,7 +159,9 @@ public class TaskHandler {
 
           if (!encounteredErrors.isEmpty()) {
             LOG.error("Encountered errors: ");
-            for (String error : encounteredErrors) LOG.error(error);
+            for (String error : encounteredErrors) {
+              LOG.error(error);
+            }
           }
         }
 
@@ -172,7 +174,9 @@ public class TaskHandler {
 
         if (!encounteredErrors.isEmpty()) {
           LOG.error("Encountered errors: ");
-          for (String error : encounteredErrors) LOG.error(error);
+          for (String error : encounteredErrors) {
+            LOG.error(error);
+          }
         }
 
       } finally {

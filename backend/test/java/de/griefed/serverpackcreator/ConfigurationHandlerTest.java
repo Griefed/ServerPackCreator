@@ -29,8 +29,8 @@ class ConfigurationHandlerTest {
     } catch (IOException e) {
       e.printStackTrace();
     }
-    I18n i18N = new I18n();
     ApplicationProperties applicationProperties = new ApplicationProperties();
+    I18n i18N = new I18n(applicationProperties);
     ObjectMapper objectMapper =
         new ObjectMapper()
             .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
@@ -53,6 +53,7 @@ class ConfigurationHandlerTest {
             applicationProperties,
             utilities,
             new ConfigUtilities(utilities, applicationProperties, objectMapper));
+
   }
 
   @Test

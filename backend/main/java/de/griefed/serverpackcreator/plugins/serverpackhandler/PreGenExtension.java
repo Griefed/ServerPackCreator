@@ -20,7 +20,6 @@
 package de.griefed.serverpackcreator.plugins.serverpackhandler;
 
 import de.griefed.serverpackcreator.plugins.PluginInformation;
-import de.griefed.serverpackcreator.utilities.misc.Generated;
 
 /**
  * Plugin interface for plugins which are to be executed before the generation of a server pack is
@@ -28,5 +27,6 @@ import de.griefed.serverpackcreator.utilities.misc.Generated;
  *
  * @author Griefed
  */
-@Generated
-public interface PreGenExtension extends PluginInformation {}
+public interface PreGenExtension extends PluginInformation {
+
+}

@@ -99,11 +99,12 @@ public class QuiltScanner extends JsonBasedScanner implements
 
           JsonNode modJson = getJarJson(mod, "quilt.mod.json", OBJECT_MAPPER);
 
-          modId = UTILITIES.JsonUtilities().getNestedText(modJson,"quilt_loader","id");
+          modId = UTILITIES.JsonUtilities().getNestedText(modJson, "quilt_loader", "id");
 
           // Get this mods' id/name
           try {
-            if (UTILITIES.JsonUtilities().nestedTextEqualsIgnoreCase(modJson,"client","minecraft","environment")) {
+            if (UTILITIES.JsonUtilities()
+                .nestedTextEqualsIgnoreCase(modJson, "client", "minecraft", "environment")) {
 
               clientMods.add(modId);
               LOG.debug("Added clientMod: " + modId);
@@ -115,10 +116,11 @@ public class QuiltScanner extends JsonBasedScanner implements
           // Get this mods dependencies
           try {
 
-            for (JsonNode dependency : UTILITIES.JsonUtilities().getNestedElement(modJson,"quilt_loader","depends")) {
+            for (JsonNode dependency : UTILITIES.JsonUtilities()
+                .getNestedElement(modJson, "quilt_loader", "depends")) {
 
               if (dependency.isContainerNode()) {
-                modDependencies.add(UTILITIES.JsonUtilities().getNestedText(dependency,"id"));
+                modDependencies.add(UTILITIES.JsonUtilities().getNestedText(dependency, "id"));
               } else {
                 modDependencies.add(dependency.asText());
               }
@@ -154,10 +156,11 @@ public class QuiltScanner extends JsonBasedScanner implements
         JsonNode modJson = getJarJson(mod, "quilt.mod.json", OBJECT_MAPPER);
 
         // Get the modId
-        modIdTocheck = UTILITIES.JsonUtilities().getNestedText(modJson,"quilt_loader","id");
+        modIdTocheck = UTILITIES.JsonUtilities().getNestedText(modJson, "quilt_loader", "id");
 
         try {
-          if (UTILITIES.JsonUtilities().nestedTextEqualsIgnoreCase(modJson,"client","minecraft","environment")) {
+          if (UTILITIES.JsonUtilities()
+              .nestedTextEqualsIgnoreCase(modJson, "client", "minecraft", "environment")) {
             if (clientMods.contains(modIdTocheck)) {
               addToDelta = true;
             }

@@ -50,7 +50,7 @@ public class Schedules {
    * Constructor for DI.
    *
    * @param injectedServerPackService Instance of {@link ServerPackService}.
-   * @param injectedVersionMeta Instance of {@link VersionMeta}.
+   * @param injectedVersionMeta       Instance of {@link VersionMeta}.
    * @author Griefed
    */
   @Autowired
@@ -91,7 +91,7 @@ public class Schedules {
       for (ServerPackModel pack : SERVERPACKSERVICE.getServerPacks()) {
 
         if ((new Timestamp(new Date().getTime()).getTime() - pack.getLastModified().getTime())
-                >= 604800000
+            >= 604800000
             && pack.getDownloads() == 0) {
 
           deletePack(pack);
@@ -102,7 +102,7 @@ public class Schedules {
 
         } else if (pack.getStatus().equals("Generating")
             && (new Timestamp(new Date().getTime()).getTime() - pack.getLastModified().getTime())
-                >= 86400000) {
+            >= 86400000) {
 
           deletePack(pack);
 

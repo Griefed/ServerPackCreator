@@ -48,7 +48,6 @@
  */
 package de.griefed.serverpackcreator.swing.utilities;
 
-import de.griefed.serverpackcreator.utilities.misc.Generated;
 import java.awt.Component;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
@@ -68,41 +67,36 @@ import javax.swing.text.JTextComponent;
  * scrolling business, I came across this beauty here. Add your scrollpane to this SmartScroller and
  * BAM! You've got yourself a smartscrolling scroll pane which stops going to the end of the pane
  * after you've scrolled up, and resumes autoscrolling when you've scrolled to the bottom again.
- * It's beautiful!<br>
- * Rob, you absolute madlad. You did it again.<br>
- * Links:<br>
- * See <a href="https://tips4java.wordpress.com/2013/03/03/smart-scrolling/">Smart Scrolling</a><br>
- * And <a href="https://www.camick.com/java/source/SmartScroller.java">SmartScroller.java</a>
- * Seriously, give this man an award, because this class is a <strong>BEAST</strong>.
+ * It's beautiful!<br> Rob, you absolute madlad. You did it again.<br> Links:<br> See <a
+ * href="https://tips4java.wordpress.com/2013/03/03/smart-scrolling/">Smart Scrolling</a><br> And <a
+ * href="https://www.camick.com/java/source/SmartScroller.java">SmartScroller.java</a> Seriously,
+ * give this man an award, because this class is a <strong>BEAST</strong>.
  *
  * <p>Rob, if you somehow ever get wind of your class being used here: Thank you, thank you, thank
- * you, thank you, thank you so very much! You seriously made my day here.<br>
- * Rob, you rule.<br>
+ * you, thank you, thank you so very much! You seriously made my day here.<br> Rob, you rule.<br>
  * <br>
- * The SmartScroller will attempt to keep the viewport positioned based on<br>
- * the users interaction with the scrollbar. The normal behaviour is to keep<br>
- * the viewport positioned to see new data as it is dynamically added.<br>
+ * The SmartScroller will attempt to keep the viewport positioned based on<br> the users interaction
+ * with the scrollbar. The normal behaviour is to keep<br> the viewport positioned to see new data
+ * as it is dynamically added.<br>
  * <br>
  * Assuming vertical scrolling and data is added to the bottom:<br>
  * <br>
- * - when the viewport is at the bottom and new data is added,<br>
- * then automatically scroll the viewport to the bottom<br>
- * - when the viewport is not at the bottom and new data is added,<br>
+ * - when the viewport is at the bottom and new data is added,<br> then automatically scroll the
+ * viewport to the bottom<br> - when the viewport is not at the bottom and new data is added,<br>
  * then do nothing with the viewport<br>
  * <br>
  * Assuming vertical scrolling and data is added to the top:<br>
  * <br>
- * - when the viewport is at the top and new data is added,<br>
- * then do nothing with the viewport<br>
- * - when the viewport is not at the top and new data is added, then adjust<br>
- * the viewport to the relative position it was at before the data was added<br>
+ * - when the viewport is at the top and new data is added,<br> then do nothing with the
+ * viewport<br> - when the viewport is not at the top and new data is added, then adjust<br> the
+ * viewport to the relative position it was at before the data was added<br>
  * <br>
  * Similar logic would apply for horizontal scrolling.
  *
  * @author Rob Camick
  */
-@Generated
 public class SmartScroller implements AdjustmentListener {
+
   public static final int HORIZONTAL = 0;
   public static final int VERTICAL = 1;
 
@@ -117,8 +111,7 @@ public class SmartScroller implements AdjustmentListener {
   private int previousMaximum = -1;
 
   /**
-   * Convenience constructor.<br>
-   * Scroll direction is VERTICAL and viewport position is at the END.
+   * Convenience constructor.<br> Scroll direction is VERTICAL and viewport position is at the END.
    *
    * @param scrollPane the scroll pane to monitor
    * @author Rob Camick
@@ -128,10 +121,9 @@ public class SmartScroller implements AdjustmentListener {
   }
 
   /**
-   * Convenience constructor.<br>
-   * Scroll direction is VERTICAL.
+   * Convenience constructor.<br> Scroll direction is VERTICAL.
    *
-   * @param scrollPane the scroll pane to monitor
+   * @param scrollPane       the scroll pane to monitor
    * @param viewportPosition valid values are START and END
    * @author Rob Camick
    */
@@ -142,11 +134,11 @@ public class SmartScroller implements AdjustmentListener {
   /**
    * Specify how the SmartScroller will function.
    *
-   * @param scrollPane the scroll pane to monitor
-   * @param scrollDirection indicates which JScrollBar to monitor. Valid values are HORIZONTAL and
-   *     VERTICAL.
+   * @param scrollPane       the scroll pane to monitor
+   * @param scrollDirection  indicates which JScrollBar to monitor. Valid values are HORIZONTAL and
+   *                         VERTICAL.
    * @param viewportPosition indicates where the viewport will normally be positioned as data is
-   *     added. Valid values are START and END
+   *                         added. Valid values are START and END
    * @author Rob Camick
    */
   public SmartScroller(JScrollPane scrollPane, int scrollDirection, int viewportPosition) {
@@ -209,8 +201,11 @@ public class SmartScroller implements AdjustmentListener {
     //  Check if the user has manually repositioned the scrollbar
 
     if (valueChanged && !maximumChanged) {
-      if (viewportPosition == START) adjustScrollBar = value != 0;
-      else adjustScrollBar = value + extent >= maximum;
+      if (viewportPosition == START) {
+        adjustScrollBar = value != 0;
+      } else {
+        adjustScrollBar = value + extent >= maximum;
+      }
     }
 
     /*

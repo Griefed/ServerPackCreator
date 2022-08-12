@@ -43,11 +43,11 @@ public class MinecraftClient {
   /**
    * Constructor using version, type and url.
    *
-   * @param version {@link String} The Minecraft version.
-   * @param type {@link Type} Either {@link Type#RELEASE} or {@link Type#SNAPSHOT}.
-   * @param url {@link URL} Url to this versions manifest.
-   * @param forgeMeta {@link ForgeMeta} to acquire Forge instances for this {@link MinecraftClient}
-   *     version.
+   * @param version      {@link String} The Minecraft version.
+   * @param type         {@link Type} Either {@link Type#RELEASE} or {@link Type#SNAPSHOT}.
+   * @param url          {@link URL} Url to this versions manifest.
+   * @param forgeMeta    {@link ForgeMeta} to acquire Forge instances for this
+   *                     {@link MinecraftClient} version.
    * @param objectMapper {@link ObjectMapper} for parsing.
    * @author Griefed
    */
@@ -63,12 +63,12 @@ public class MinecraftClient {
   /**
    * Constructor using version, type, url and a {@link MinecraftServer}.
    *
-   * @param version {@link String} The Minecraft version.
-   * @param type {@link Type} Either {@link Type#RELEASE} or {@link Type#SNAPSHOT}.
-   * @param url {@link URL} Url to this versions manifest.
-   * @param server Instance of {@link MinecraftServer}
+   * @param version   {@link String} The Minecraft version.
+   * @param type      {@link Type} Either {@link Type#RELEASE} or {@link Type#SNAPSHOT}.
+   * @param url       {@link URL} Url to this versions manifest.
+   * @param server    Instance of {@link MinecraftServer}
    * @param forgeMeta {@link ForgeMeta} to acquire Forge instances for this {@link MinecraftClient}
-   *     version.
+   *                  version.
    * @author Griefed
    */
   protected MinecraftClient(

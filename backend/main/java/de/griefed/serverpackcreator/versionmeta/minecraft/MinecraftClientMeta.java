@@ -54,10 +54,10 @@ public class MinecraftClientMeta {
   /**
    * Create a new Minecraft Client Meta.
    *
-   * @param injectedForgeMeta {@link ForgeMeta} to acquire Forge instances for this {@link
-   *     MinecraftClient} version.
+   * @param injectedForgeMeta {@link ForgeMeta} to acquire Forge instances for this
+   *                          {@link MinecraftClient} version.
    * @param minecraftManifest {@link File} Minecraft manifest file.
-   * @param objectMapper {@link ObjectMapper} for parsing.
+   * @param objectMapper      {@link ObjectMapper} for parsing.
    * @author Griefed
    */
   protected MinecraftClientMeta(
@@ -181,9 +181,8 @@ public class MinecraftClientMeta {
   }
 
   /**
-   * Get the {@link MinecraftClient} meta.<br>
-   * key: {@link String} Minecraft version<br>
-   * value: {@link MinecraftClient} for said Minecraft version
+   * Get the {@link MinecraftClient} meta.<br> key: {@link String} Minecraft version<br> value:
+   * {@link MinecraftClient} for said Minecraft version
    *
    * @return {@link HashMap} containing the {@link MinecraftClientMeta}.
    * @author Griefed

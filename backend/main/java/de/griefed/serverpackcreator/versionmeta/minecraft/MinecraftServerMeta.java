@@ -89,9 +89,8 @@ class MinecraftServerMeta {
   }
 
   /**
-   * Get the {@link MinecraftServer} meta.<br>
-   * key: {@link String} Minecraft version<br>
-   * value: {@link MinecraftServer} for said Minecraft version
+   * Get the {@link MinecraftServer} meta.<br> key: {@link String} Minecraft version<br> value:
+   * {@link MinecraftServer} for said Minecraft version
    *
    * @return {@link HashMap} containing the {@link MinecraftServerMeta}.
    * @author Griefed

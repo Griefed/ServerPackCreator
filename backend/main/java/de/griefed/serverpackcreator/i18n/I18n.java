@@ -20,7 +20,6 @@
 package de.griefed.serverpackcreator.i18n;
 
 import de.griefed.serverpackcreator.ApplicationProperties;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -47,16 +46,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
- * This is the localizationManager for ServerPackCreator.<br>
- * To use it, initialize it by calling {@link #initialize()}. Then use {@link #getMessage(String)}
- * to use a language key from the resource bundle corresponding to the specified locale. If no
- * locale is provided during the launch of ServerPackCreator, en_US is used by default.<br>
- * All localization properties-files need to be stored in the <code>de/griefed/resources/lang/
+ * This is the localizationManager for ServerPackCreator.<br> To use it, initialize it by calling
+ * {@link #initialize()}. Then use {@link #getMessage(String)} to use a language key from the
+ * resource bundle corresponding to the specified locale. If no locale is provided during the launch
+ * of ServerPackCreator, en_US is used by default.<br> All localization properties-files need to be
+ * stored in the <code>de/griefed/resources/lang/
  * </code>-directory and be named using following pattern: lang_{language code in
  * lowercase}_{country code in lowercase}. For example: <code>lang_en_us.properties</code>.<br>
- * Currently, only supports Strings to be used in localized fields.<br>
- * By default, ServerPackCreator tries to load language definitions from the local filesystem, in
- * the <code>lang</code>-folder. If no file can be found for the specified locale, ServerPackCreator
+ * Currently, only supports Strings to be used in localized fields.<br> By default,
+ * ServerPackCreator tries to load language definitions from the local filesystem, in the
+ * <code>lang</code>-folder. If no file can be found for the specified locale, ServerPackCreator
  * tries to load language definitions from inside the JAR-file, from the resource bundles. If the
  * specified key can not be retrieved when calling {@link #getMessage(String)}, a default is
  * retrieved from the lang_en_us-bundle inside the JAR-file by default.
@@ -85,24 +84,17 @@ public class I18n {
 
   /**
    * Constructor for our I18n using the locale set in the {@link ApplicationProperties}-instance
-   * passed to this constructor. If initialization with the provided {@link
-   * ApplicationProperties}-instance fails, the I18n is initialized with the default locale <code>
-   * en_us</code>.
+   * passed to this constructor. If initialization with the provided
+   * {@link ApplicationProperties}-instance fails, the I18n is initialized with the default locale
+   * <code> en_us</code>.
    *
    * @param injectedApplicationProperties Instance of {@link ApplicationProperties} required for
-   *     various different things.
+   *                                      various different things.
    * @author Griefed
    */
   @Autowired
   public I18n(ApplicationProperties injectedApplicationProperties) {
-    this.APPLICATIONPROPERTIES = injectedApplicationProperties;
-
-    try {
-      initialize(APPLICATIONPROPERTIES);
-    } catch (IncorrectLanguageException ex) {
-      LOG.error("Incorrect language specified.", ex);
-      initialize();
-    }
+    this(injectedApplicationProperties, injectedApplicationProperties.getLanguage());
   }
 
   /**
@@ -112,8 +104,8 @@ public class I18n {
    * </code> is used.
    *
    * @param injectedApplicationProperties Instance of {@link ApplicationProperties} required for
-   *     various different things.
-   * @param locale String. The locale to initialize with.
+   *                                      various different things.
+   * @param locale                        String. The locale to initialize with.
    * @author Griefed
    */
   public I18n(ApplicationProperties injectedApplicationProperties, String locale) {
@@ -125,24 +117,9 @@ public class I18n {
       writeLocaleToFile(locale);
 
     } catch (IncorrectLanguageException ex) {
-      LOG.error("Could not initialize i18n with specified locale.", ex);
-      try {
-        initialize(APPLICATIONPROPERTIES);
-      } catch (IncorrectLanguageException e) {
-        initialize();
-      }
+      LOG.error("The specified language is not supported: " + locale, ex);
+      initialize();
     }
-  }
-
-  /**
-   * Constructor for our I18n using the default locale en_us.
-   *
-   * @author Griefed
-   */
-  public I18n() {
-    this.APPLICATIONPROPERTIES = new ApplicationProperties();
-
-    initialize();
   }
 
   /**
@@ -159,54 +136,12 @@ public class I18n {
   }
 
   /**
-   * Initializes the I18n with a provided localePropertiesFile.
-   *
-   * @param propertiesFile Path to the locale properties file which specifies the language to use.
-   * @throws IncorrectLanguageException Thrown if the language specified in the properties file is
-   *     not supported by ServerPackCreator or specified in the invalid format.
-   * @author whitebear60
-   * @author Griefed
-   */
-  public void initialize(File propertiesFile) throws IncorrectLanguageException {
-
-    ApplicationProperties applicationProperties = new ApplicationProperties();
-
-    try (FileInputStream fileInputStream = new FileInputStream(propertiesFile)) {
-
-      BufferedReader bufferedReader =
-          new BufferedReader(new InputStreamReader(fileInputStream, StandardCharsets.UTF_8));
-      applicationProperties.load(bufferedReader);
-
-      LOG.debug("Properties-file used for i18n: " + applicationProperties);
-
-    } catch (Exception ex) {
-      LOG.error("Couldn't load properties-file for i18n: " + applicationProperties, ex);
-    }
-
-    initialize(applicationProperties);
-  }
-
-  /**
-   * Initializes the I18n with a provided localePropertiesFile.
-   *
-   * @param applicationProperties Instance of {@link ApplicationProperties} containing the locale to
-   *     use.
-   * @throws IncorrectLanguageException Thrown if the language specified in the properties file is
-   *     not supported by ServerPackCreator or specified in the invalid format.
-   * @author whitebear60
-   * @author Griefed
-   */
-  public void initialize(ApplicationProperties applicationProperties)
-      throws IncorrectLanguageException {
-    initialize(applicationProperties.getProperty("de.griefed.serverpackcreator.language", "en_us"));
-  }
-
-  /**
    * Initializes the I18n with a provided locale.
    *
    * @param locale Locale to be used by application in this run.
    * @throws IncorrectLanguageException Thrown if the language specified in the properties file is
-   *     not supported by ServerPackCreator or specified in the invalid format.
+   *                                    not supported by ServerPackCreator or specified in the
+   *                                    invalid format.
    * @author whitebear60
    * @author Griefed
    */
@@ -236,7 +171,7 @@ public class I18n {
 
       LOG.error("Locales must be formatted like this: \"en_us\",\"uk_ua\",\"de_de\"");
 
-      throw new IncorrectLanguageException();
+      throw new IncorrectLanguageException(locale);
     }
 
     try (FileInputStream fileInputStream =
@@ -251,7 +186,8 @@ public class I18n {
     } catch (IOException ex) {
 
       LOG.error(
-          "Local language-definitions corrupted, not present or otherwise unreadable. Using definitions from JAR-file.");
+          "Local language-definitions corrupted, not present or otherwise unreadable. Using definitions from JAR-file. "
+              + ex.getMessage());
 
       try {
 
@@ -266,8 +202,8 @@ public class I18n {
       } catch (Exception ex2) {
 
         LOG.error(
-            "Locale resource for " + locale + " not found in JAR-file. Falling back to en_us.",
-            ex2);
+            "Locale resource for " + locale + " not found in JAR-file. Falling back to en_us. " +
+                ex2.getMessage());
 
         filesystemResources =
             ResourceBundle.getBundle(
@@ -290,7 +226,8 @@ public class I18n {
     } catch (Exception ex) {
 
       LOG.error(
-          "Locale resource for " + locale + " not found in JAR-file. Falling back to en_us.", ex);
+          "Locale resource for " + locale + " not found in JAR-file. Falling back to en_us. "
+              + ex.getMessage());
       jarResources = FALLBACKRESOURCES;
     }
 
@@ -380,23 +317,27 @@ public class I18n {
   /**
    * Writes the specified locale from -lang your_locale to a lang.properties file to ensure every
    * subsequent start of serverpackcreator is executed using said locale. This method should
-   * <strong>not</strong> call {@link #getMessage(String)}, as the initialization of said manager is
-   * called from here. Therefore, localized strings are not yet available.
+   * <strong>not</strong> call {@link #getMessage(String)}, as the initialization of said manager
+   * is called from here. Therefore, localized strings are not yet available.
    *
    * @param locale The locale the user specified when they ran serverpackcreator with -lang
-   *     -your_locale.
+   *               -your_locale.
    * @author Griefed
    */
   void writeLocaleToFile(String locale) {
-    try (OutputStream outputStream = Files.newOutputStream(PROPERTIESFILE.toPath())) {
-      APPLICATIONPROPERTIES.setProperty("de.griefed.serverpackcreator.language", locale);
-      APPLICATIONPROPERTIES.store(outputStream, null);
-    } catch (IOException ex) {
-      LOG.error("Couldn't write properties-file.", ex);
+    if (!APPLICATIONPROPERTIES.getLanguage().equals(locale)) {
+      try (OutputStream outputStream = Files.newOutputStream(PROPERTIESFILE.toPath())) {
+        APPLICATIONPROPERTIES.setProperty("de.griefed.serverpackcreator.language", locale);
+        APPLICATIONPROPERTIES.store(outputStream, null);
+      } catch (IOException ex) {
+        LOG.error("Couldn't write properties-file.", ex);
+      }
     }
   }
 
-  public static class UTF8Control extends Control {
+  @SuppressWarnings("InnerClassMayBeStatic")
+  private class UTF8Control extends Control {
+
     public ResourceBundle newBundle(
         String baseName, Locale locale, String format, ClassLoader loader, boolean reload)
         throws IOException {

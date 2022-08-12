@@ -87,14 +87,14 @@ public class VersionMeta {
   /**
    * Constructor.
    *
-   * @param minecraftManifest {@link File} Minecraft manifest file.
-   * @param forgeManifest {@link File} Forge manifest file.
-   * @param fabricManifest {@link File} Fabric manifest file.
+   * @param minecraftManifest            {@link File} Minecraft manifest file.
+   * @param forgeManifest                {@link File} Forge manifest file.
+   * @param fabricManifest               {@link File} Fabric manifest file.
    * @param fabricIntermediariesManifest {@link File} Fabric Intermediary manifest-file.
-   * @param fabricInstallerManifest {@link File} Fabric-installer manifest file.
-   * @param quiltManifest {@link File} Quilt manifest file.
-   * @param quiltInstallerManifest {@link File} Quilt-installer manifest file.
-   * @param injectedObjectMapper {@link ObjectMapper}-instance.
+   * @param fabricInstallerManifest      {@link File} Fabric-installer manifest file.
+   * @param quiltManifest                {@link File} Quilt manifest file.
+   * @param quiltInstallerManifest       {@link File} Quilt-installer manifest file.
+   * @param injectedObjectMapper         {@link ObjectMapper}-instance.
    * @throws IOException if one of the metas could not be initialized.
    * @author Griefed
    */
@@ -157,16 +157,15 @@ public class VersionMeta {
   }
 
   /**
-   * Check a given manifest for updates.<br>
-   * If it does not exist, it is downloaded and stored.<br>
-   * If it exists, it is compared to the online manifest.<br>
-   * If the online version contains more versions, the local manifests are replaced by the online
-   * ones.
+   * Check a given manifest for updates.<br> If it does not exist, it is downloaded and stored.<br>
+   * If it exists, it is compared to the online manifest.<br> If the online version contains more
+   * versions, the local manifests are replaced by the online ones.
    *
    * @param manifestToCheck {@link File} The manifest to check.
-   * @param urlToManifest {@link URL} The URL to the manifest.
-   * @param manifestType {@link Type} The type of the manifest, either {@link Type#MINECRAFT},
-   *     {@link Type#FORGE}, {@link Type#FABRIC} or {@link Type#FABRIC_INSTALLER}.
+   * @param urlToManifest   {@link URL} The URL to the manifest.
+   * @param manifestType    {@link Type} The type of the manifest, either {@link Type#MINECRAFT},
+   *                        {@link Type#FORGE}, {@link Type#FABRIC} or
+   *                        {@link Type#FABRIC_INSTALLER}.
    * @author Griefed
    */
   private void checkManifest(File manifestToCheck, URL urlToManifest, Type manifestType) {
@@ -246,7 +245,7 @@ public class VersionMeta {
    * again. Ensures we always have the latest manifest for version validation available.
    *
    * @param manifestToRefresh The manifest file to delete and then download, updating it.
-   * @param urlToManifest The URL to the file which is to be downloaded.
+   * @param urlToManifest     The URL to the file which is to be downloaded.
    * @author whitebear60
    * @author Griefed
    */

@@ -34,12 +34,12 @@ public class NotificationResponse {
    * Construct a zipResponse for replying to a file-upload and display in a quasar notification.
    *
    * @param messages {@link List} A list of messages.
-   * @param timeout {@link Integer} The timeout in ms until the message gets automatically
-   *     discarded.
-   * @param icon {@link String} The icon to be displayed in the message.
-   * @param colour {@link String} The colour of the message.
-   * @param file {@link String} The file name, if available.
-   * @param success {@link Boolean} To indicate a successfull event or not.
+   * @param timeout  {@link Integer} The timeout in ms until the message gets automatically
+   *                 discarded.
+   * @param icon     {@link String} The icon to be displayed in the message.
+   * @param colour   {@link String} The colour of the message.
+   * @param file     {@link String} The file name, if available.
+   * @param success  {@link Boolean} To indicate a successfull event or not.
    * @return {@link String} The message formatted in JSON.
    * @author Griefed
    */
@@ -64,10 +64,10 @@ public class NotificationResponse {
    *
    * @param message {@link String} The message itself.
    * @param timeout {@link Integer} The timeout in ms until the message gets automatically
-   *     discarded.
-   * @param icon {@link String} The icon to be displayed in the message.
-   * @param colour {@link String} The colour of the message.
-   * @param file {@link String} The file name, if available.
+   *                discarded.
+   * @param icon    {@link String} The icon to be displayed in the message.
+   * @param colour  {@link String} The colour of the message.
+   * @param file    {@link String} The file name, if available.
    * @param success {@link Boolean} To indicate a successfull event or not.
    * @return {@link String} The message formatted in JSON.
    * @author Griefed

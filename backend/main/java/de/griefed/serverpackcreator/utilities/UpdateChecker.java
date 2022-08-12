@@ -19,7 +19,6 @@
  */
 package de.griefed.serverpackcreator.utilities;
 
-import de.griefed.serverpackcreator.utilities.misc.Generated;
 import de.griefed.versionchecker.GitHubChecker;
 import de.griefed.versionchecker.GitLabChecker;
 import de.griefed.versionchecker.Update;
@@ -37,7 +36,6 @@ import org.springframework.stereotype.Service;
  *
  * @author Griefed
  */
-@Generated
 @Service
 public class UpdateChecker {
 
@@ -138,10 +136,11 @@ public class UpdateChecker {
    * Check our GitLab, GitGriefed and GitHub instances for updates, sequentially, and then return
    * the update.
    *
-   * @param version {@link String} The version for which to check for updates.
+   * @param version         {@link String} The version for which to check for updates.
    * @param preReleaseCheck {@link Boolean} Whether to check pre-releasesDescending as well. Use
-   *     <code>true</code> to check pre-releasesDescending as well, <Code>false</Code> to only check
-   *     with regular releases.
+   *                        <code>true</code> to check pre-releasesDescending as well,
+   *                        <Code>false</Code> to only check
+   *                        with regular releases.
    * @return {@link String} The update, if available, as well as the download URL.
    * @author Griefed
    */

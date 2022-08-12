@@ -1,6 +1,6 @@
 /**
- * Addon/plugin annotations which hook into the {@link
- * de.griefed.serverpackcreator.ServerPackHandler}-class.
+ * Addon/plugin annotations which hook into the
+ * {@link de.griefed.serverpackcreator.ServerPackHandler}-class.
  *
  * @author Griefed
  */

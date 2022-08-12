@@ -38,7 +38,8 @@ public class FabricDetails {
   private FabricArguments arguments;
   private List<FabricLibrary> libraries;
 
-  private FabricDetails() {}
+  private FabricDetails() {
+  }
 
   /**
    * Fabric loader ID, in the format of <code>fabric-loader-FABRIC_VERSION-MINECRAFT_VERSION

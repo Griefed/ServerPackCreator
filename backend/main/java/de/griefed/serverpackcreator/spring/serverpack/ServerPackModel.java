@@ -32,9 +32,8 @@ import org.hibernate.annotations.UpdateTimestamp;
  * Class containing all fields and therefore all information gathered from a submitted CurseForge
  * project and fileID, or modpack export. By extending {@link ConfigurationModel} we inherit all
  * basic fields required for the generation of a server pack and can add only those we require in
- * the REST API portion of ServerPackCreator.<br>
- * We mark this class with {@link Entity} because we also use this class for storing information in
- * our database.
+ * the REST API portion of ServerPackCreator.<br> We mark this class with {@link Entity} because we
+ * also use this class for storing information in our database.
  *
  * @author Griefed
  */
@@ -46,20 +45,29 @@ public class ServerPackModel extends ConfigurationModel {
   @Column(updatable = false, nullable = false)
   int id;
 
-  @Column String projectName;
-  @Column String fileName;
-  @Column String fileDiskName;
-  @Column double size;
-  @Column int downloads;
-  @Column int confirmedWorking;
-  @Column String status;
-  @Column String path;
+  @Column
+  String projectName;
+  @Column
+  String fileName;
+  @Column
+  String fileDiskName;
+  @Column
+  double size;
+  @Column
+  int downloads;
+  @Column
+  int confirmedWorking;
+  @Column
+  String status;
+  @Column
+  String path;
 
   @CreationTimestamp
   @Column(updatable = false)
   Timestamp dateCreated;
 
-  @UpdateTimestamp Timestamp lastModified;
+  @UpdateTimestamp
+  Timestamp lastModified;
 
   /**
    * Constructor for our ServerPackModel.
@@ -80,17 +88,19 @@ public class ServerPackModel extends ConfigurationModel {
    * Constructor for our ServerPackModel, setting id, projectID, fileID, fileName, displayName,
    * size, downloads, confirmedWorking, status, dateCreated, lastModified manually.
    *
-   * @param id The ID of the server pack in our database.
-   * @param fileName The disk name of the CurseForge project file.
-   * @param displayName The display name of the CurseForge project file.
-   * @param size The size of the generated server pack, in MB.
-   * @param downloads The amount of times this server pack was downloaded.
+   * @param id               The ID of the server pack in our database.
+   * @param fileName         The disk name of the CurseForge project file.
+   * @param displayName      The display name of the CurseForge project file.
+   * @param size             The size of the generated server pack, in MB.
+   * @param downloads        The amount of times this server pack was downloaded.
    * @param confirmedWorking The amount of votes indicating whether this server pack works.
-   * @param status The status of this server pack. Either <code>Queued</code>, <code>Generating
-   *     </code>, <code>Available</code>.
-   * @param dateCreated The date and time at which this server pack was requested for generation.
-   * @param lastModified The date and time this server pack was last modified. Be it either due to
-   *     regeneration or something else.
+   * @param status           The status of this server pack. Either <code>Queued</code>,
+   *                         <code>Generating
+   *                         </code>, <code>Available</code>.
+   * @param dateCreated      The date and time at which this server pack was requested for
+   *                         generation.
+   * @param lastModified     The date and time this server pack was last modified. Be it either due
+   *                         to regeneration or something else.
    * @author Griefed
    */
   public ServerPackModel(
@@ -160,7 +170,7 @@ public class ServerPackModel extends ConfigurationModel {
    * Getter for the file display name of the project file from which the server pack was generated.
    *
    * @return String. Returns the file display name of the project file from which the server pack
-   *     was generated.
+   * was generated.
    * @author Griefed
    */
   @Override
@@ -172,7 +182,7 @@ public class ServerPackModel extends ConfigurationModel {
    * Setter for the file display name of the project file from which the server pack was generated.
    *
    * @param fileName String. The file display name of the project file from which the server pack
-   *     was generated.
+   *                 was generated.
    * @author Griefed
    */
   @Override
@@ -184,7 +194,7 @@ public class ServerPackModel extends ConfigurationModel {
    * Getter for the file disk name of the project file from which the server pack was generated.
    *
    * @return String. The file disk name of the project file from which the server pack was
-   *     generated.
+   * generated.
    * @author Griefed
    */
   @Override
@@ -196,7 +206,7 @@ public class ServerPackModel extends ConfigurationModel {
    * Setter for the file disk name of the project file from which the server pack was generated.
    *
    * @param fileDiskName String. The file disk name of the project file from which the server pack
-   *     was generated.
+   *                     was generated.
    * @author Griefed
    */
   @Override
@@ -259,7 +269,8 @@ public class ServerPackModel extends ConfigurationModel {
    * Setter for the amount of votes indicating whether this server pack works. Positive values
    * indicate a working server pack. Negative values indicate the server pack is not working.
    *
-   * @param confirmedWorking Integer. The amount of votes indicating whether this server pack works.
+   * @param confirmedWorking Integer. The amount of votes indicating whether this server pack
+   *                         works.
    * @author Griefed
    */
   public void setConfirmedWorking(int confirmedWorking) {
@@ -309,11 +320,11 @@ public class ServerPackModel extends ConfigurationModel {
   }
 
   /**
-   * Getter for the date and time at which this server pack entry was created as a {@link
-   * Timestamp}.
+   * Getter for the date and time at which this server pack entry was created as a
+   * {@link Timestamp}.
    *
    * @return {@link Timestamp}. Returns the date and time at which this server pack entry was
-   *     created as a {@link Timestamp}.
+   * created as a {@link Timestamp}.
    * @author Griefed
    */
   public Timestamp getDateCreated() {
@@ -321,11 +332,11 @@ public class ServerPackModel extends ConfigurationModel {
   }
 
   /**
-   * Setter for the date and time at which this server pack entry was created as a {@link
-   * Timestamp}.
+   * Setter for the date and time at which this server pack entry was created as a
+   * {@link Timestamp}.
    *
    * @param dateCreated {@link Timestamp}. The date and time at which this server pack was created
-   *     as a {@link Timestamp}.
+   *                    as a {@link Timestamp}.
    * @author Griefed
    */
   public void setDateCreated(Timestamp dateCreated) {
@@ -333,11 +344,11 @@ public class ServerPackModel extends ConfigurationModel {
   }
 
   /**
-   * Getter for the date and time at which this server pack entry was last modified as a {@link
-   * Timestamp}.
+   * Getter for the date and time at which this server pack entry was last modified as a
+   * {@link Timestamp}.
    *
    * @return {@link Timestamp}. Returns the date and time at which this server pack entry was last
-   *     modified as a {@link Timestamp}.
+   * modified as a {@link Timestamp}.
    * @author Griefed
    */
   public Timestamp getLastModified() {
@@ -345,11 +356,11 @@ public class ServerPackModel extends ConfigurationModel {
   }
 
   /**
-   * Setter for the date and time at which this server pack entry was last modified as a {@link
-   * Timestamp}.
+   * Setter for the date and time at which this server pack entry was last modified as a
+   * {@link Timestamp}.
    *
    * @param lastModified {@link Timestamp}. The date and time at which this server pack entry was
-   *     last modified as a {@link Timestamp}.
+   *                     last modified as a {@link Timestamp}.
    * @author Griefed
    */
   public void setLastModified(Timestamp lastModified) {
@@ -360,7 +371,7 @@ public class ServerPackModel extends ConfigurationModel {
    * String concatenation of all important values of our server pack entry.
    *
    * @return String. Returns all important information of a server pack entry as a concatenated
-   *     string.
+   * string.
    * @author Griefed
    */
   public String repositoryToString() {

@@ -47,7 +47,7 @@ public class VersionsController {
    * Constructor for DI.
    *
    * @param injectedVersionMeta Instance of {@link VersionMeta} for version acquisition.
-   * @param injectedUtilities Instance of {@link Utilities}.
+   * @param injectedUtilities   Instance of {@link Utilities}.
    * @author Griefed
    */
   @Autowired
@@ -70,7 +70,7 @@ public class VersionsController {
         .body(
             "{\"minecraft\":"
                 + UTILITIES.ListUtils()
-                    .encapsulateListElements(VERSIONMETA.minecraft().releaseVersionsDescending())
+                .encapsulateListElements(VERSIONMETA.minecraft().releaseVersionsDescending())
                 + "}");
   }
 
@@ -78,9 +78,9 @@ public class VersionsController {
    * Get a list of all available Forge versions for a specific Minecraft version.
    *
    * @param minecraftVersion String. The Minecraft version you want to get a list of Forge versions
-   *     for.
+   *                         for.
    * @return String List. Returns a list of all available Forge versions for the specified Minecraft
-   *     version.
+   * version.
    * @author Griefed
    */
   @GetMapping(value = "/forge/{minecraftversion}")
@@ -94,11 +94,11 @@ public class VersionsController {
           .body(
               "{\"forge\":"
                   + UTILITIES.ListUtils()
-                      .encapsulateListElements(
-                          VERSIONMETA
-                              .forge()
-                              .availableForgeVersionsDescending(minecraftVersion)
-                              .get())
+                  .encapsulateListElements(
+                      VERSIONMETA
+                          .forge()
+                          .availableForgeVersionsDescending(minecraftVersion)
+                          .get())
                   + "}");
 
     } else {
@@ -121,7 +121,7 @@ public class VersionsController {
         .body(
             "{\"fabric\":"
                 + UTILITIES.ListUtils()
-                    .encapsulateListElements(VERSIONMETA.fabric().loaderVersionsDescending())
+                .encapsulateListElements(VERSIONMETA.fabric().loaderVersionsDescending())
                 + "}");
   }
 
@@ -129,7 +129,7 @@ public class VersionsController {
    * Get the Latest Fabric Installer and Release Fabric installer versions as a JSON object.
    *
    * @return String, JSON. Returns the Latest Fabric Installer and Release Fabric Installer as a
-   *     JSON object.
+   * JSON object.
    * @author Griefed
    */
   @GetMapping(value = "/fabric/installer", produces = "application/json")
@@ -162,7 +162,7 @@ public class VersionsController {
         .body(
             "{\"quilt\":"
                 + UTILITIES.ListUtils()
-                    .encapsulateListElements(VERSIONMETA.quilt().loaderVersionsDescending())
+                .encapsulateListElements(VERSIONMETA.quilt().loaderVersionsDescending())
                 + "}");
   }
 
@@ -170,7 +170,7 @@ public class VersionsController {
    * Get the Latest Fabric Installer and Release Fabric installer versions as a JSON object.
    *
    * @return String, JSON. Returns the Latest Fabric Installer and Release Fabric Installer as a
-   *     JSON object.
+   * JSON object.
    * @author Griefed
    */
   @GetMapping(value = "/quilt/installer", produces = "application/json")

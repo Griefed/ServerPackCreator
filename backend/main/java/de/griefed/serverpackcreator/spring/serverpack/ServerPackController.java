@@ -30,8 +30,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * RestController for everything server pack related, like downloads.<br>
- * All requests are in <code>/api/v1/packs</code>.
+ * RestController for everything server pack related, like downloads.<br> All requests are in
+ * <code>/api/v1/packs</code>.
  *
  * @author Griefed
  */
@@ -58,7 +58,7 @@ public class ServerPackController {
    *
    * @param id Integer. The id of the server pack in the database.
    * @return ResponseEntity Resource. Gives the requester the requested file as a download, if it
-   *     was found.
+   * was found.
    * @author Griefed
    */
   @GetMapping(value = "/download/{id}", produces = "application/zip")
@@ -90,7 +90,8 @@ public class ServerPackController {
    * GET request for voting whether a server pack works or not.
    *
    * @param voting String. The vote, consisting of the id of the server pack and whether the vote
-   *     should be incremented or decremented. Example <code>42,up</code> or <code>23,down</code>.
+   *               should be incremented or decremented. Example <code>42,up</code> or
+   *               <code>23,down</code>.
    * @return ResponseEntity OK/BadRequest/NotFound
    * @author Griefed
    */

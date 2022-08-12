@@ -34,8 +34,9 @@ public class GenerateZip extends Task {
    * Create a message with a task for a Zip generation.
    *
    * @param zipGenerationProperties {@link String} The concatenated String which contains all
-   *     information with which a server pack will be generated from. See {@link
-   *     ZipController#requestGenerationFromZip(String, String, String, String, String)}.
+   *                                information with which a server pack will be generated from. See
+   *                                {@link ZipController#requestGenerationFromZip(String, String,
+   *                                String, String, String)}.
    * @author Griefed
    */
   public GenerateZip(String zipGenerationProperties) {
@@ -44,8 +45,8 @@ public class GenerateZip extends Task {
 
   /**
    * Getter for the concatenated String which contains all information with which a server pack will
-   * be generated from. See {@link ZipController#requestGenerationFromZip(String, String, String,
-   * String, String)}.
+   * be generated from. See
+   * {@link ZipController#requestGenerationFromZip(String, String, String, String, String)}.
    *
    * @return {@link String}. The String from which to generate a server pack.
    * @author Griefed

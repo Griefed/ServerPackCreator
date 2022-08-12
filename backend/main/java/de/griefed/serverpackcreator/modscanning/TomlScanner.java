@@ -119,9 +119,8 @@ public class TomlScanner implements Scanner<TreeSet<File>, Collection<File>> {
   /**
    * Get all ids of mods required for running the server.
    *
-   * @param config {@link CommentedConfig} Base-config of the toml of the mod which contains all
-   *               information.
-   * @return {@link TreeSet} of ids of mods required.
+   * @param config Base-config of the toml of the mod which contains all information.
+   * @return Set of ids of mods required.
    * @throws ScanningException if the mod specifies no mods.
    */
   private TreeSet<String> getModIdsRequiredOnServer(CommentedConfig config)
@@ -193,9 +192,8 @@ public class TomlScanner implements Scanner<TreeSet<File>, Collection<File>> {
    * dependencies. Otherwise, all modIds mentioned in the dependencies of this mod, which are
    * neither <code>forge</code> nor <code>minecraft</code> get added to the list.
    *
-   * @param config {@link CommentedConfig} Base-config of the toml of the mod which contains all
-   *               information.
-   * @return {@link TreeSet} of ids of mods required as dependencies.
+   * @param config Base-config of the toml of the mod which contains all information.
+   * @return Set of ids of mods required as dependencies.
    * @throws ScanningException if the mod has invalid dependency declarations or specifies no mods.
    */
   private TreeSet<String> getModDependencyIdsRequiredOnServer(CommentedConfig config)
@@ -271,9 +269,8 @@ public class TomlScanner implements Scanner<TreeSet<File>, Collection<File>> {
   /**
    * Acquire a set of ids of mods required for running the server.
    *
-   * @param config {@link CommentedConfig} Base-config of the toml of the mod which contains all
-   *               information.
-   * @return {@link TreeSet} of ids of mods required.
+   * @param config Base-config of the toml of the mod which contains all information.
+   * @return Set of ids of mods required.
    * @throws ScanningException if the mod specifies no...well...mods.
    */
   private TreeSet<String> getModIdsInJar(CommentedConfig config) throws ScanningException {
@@ -297,8 +294,8 @@ public class TomlScanner implements Scanner<TreeSet<File>, Collection<File>> {
   /**
    * Acquire the base toml-config of a mod.
    *
-   * @param file {@link File} The file from which to acquire the toml config.
-   * @return {@link CommentedConfig} config read from the toml in the mod.
+   * @param file The file from which to acquire the toml config.
+   * @return Config read from the toml in the mod.
    * @throws IOException if the mods.toml file could not be read/found.
    */
   private CommentedConfig getConfig(File file) throws IOException {
@@ -313,10 +310,9 @@ public class TomlScanner implements Scanner<TreeSet<File>, Collection<File>> {
   /**
    * Acquire a map of all dependencies specified by a mod.
    *
-   * @param config {@link CommentedConfig} Base-config of the toml of the mod which contains all *
-   *               information.
-   * @return {@link Map} {@link String}, {@link ArrayList} {@link CommentedConfig} - Map of
-   * dependencies for the passed mod config.
+   * @param config Base-config of the toml of the mod which contains all * information.
+   * @return Map of dependencies for the passed mod config, String keys are mapped to ArrayLists of
+   * CommentedConfigs.
    * @throws ScanningException if the mod declares no dependencies.
    */
   private Map<String, ArrayList<CommentedConfig>> getMapOfDependencyLists(CommentedConfig config)
@@ -350,8 +346,8 @@ public class TomlScanner implements Scanner<TreeSet<File>, Collection<File>> {
   /**
    * Acquire the modId from the passed config.
    *
-   * @param config {@link CommentedConfig} Mod- or dependency-config which contains the modId.
-   * @return {@link String} <code>modId</code> from the passed config, in lower-case letters.
+   * @param config Mod- or dependency-config which contains the modId.
+   * @return <code>modId</code> from the passed config, in lower-case letters.
    */
   private String getModId(CommentedConfig config) {
     return config.valueMap().get("modId").toString().toLowerCase();
@@ -360,8 +356,8 @@ public class TomlScanner implements Scanner<TreeSet<File>, Collection<File>> {
   /**
    * Acquire the side of the config of the passed dependency.
    *
-   * @param config {@link CommentedConfig} Mod- or dependency-config which contains the modId.
-   * @return {@link String} <code>side</code> from the passed config, in upper-case letters.
+   * @param config Mod- or dependency-config which contains the modId.
+   * @return <code>side</code> from the passed config, in upper-case letters.
    */
   private String getSide(CommentedConfig config) {
     return config.valueMap().get("side").toString().toUpperCase();
