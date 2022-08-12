@@ -118,9 +118,8 @@ extends <a href="../../../../../de/griefed/serverpackcreator/ConfigurationModel.
 <div class="block">Class containing all fields and therefore all information gathered from a submitted CurseForge
  project and fileID, or modpack export. By extending <a href="../../../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a> we inherit all
  basic fields required for the generation of a server pack and can add only those we require in
- the REST API portion of ServerPackCreator.<br>
- We mark this class with <code>Entity</code> because we also use this class for storing information in
- our database.</div>
+ the REST API portion of ServerPackCreator.<br> We mark this class with <code>Entity</code> because we
+ also use this class for storing information in our database.</div>
 </li>
 </ul>
 </div>
@@ -181,7 +180,8 @@ extends <a href="../../../../../de/griefed/serverpackcreator/ConfigurationModel.
 <tr id="i1" class="rowColor">
 <td class="colFirst"><code>java.sql.Timestamp</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackModel.html#getDateCreated--">getDateCreated</a></span>()</code>
-<div class="block">Getter for the date and time at which this server pack entry was created as a <code>Timestamp</code>.</div>
+<div class="block">Getter for the date and time at which this server pack entry was created as a
+ <code>Timestamp</code>.</div>
 </td>
 </tr>
 <tr id="i2" class="altColor">
@@ -211,7 +211,8 @@ extends <a href="../../../../../de/griefed/serverpackcreator/ConfigurationModel.
 <tr id="i6" class="altColor">
 <td class="colFirst"><code>java.sql.Timestamp</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackModel.html#getLastModified--">getLastModified</a></span>()</code>
-<div class="block">Getter for the date and time at which this server pack entry was last modified as a <code>Timestamp</code>.</div>
+<div class="block">Getter for the date and time at which this server pack entry was last modified as a
+ <code>Timestamp</code>.</div>
 </td>
 </tr>
 <tr id="i7" class="rowColor">
@@ -253,7 +254,8 @@ extends <a href="../../../../../de/griefed/serverpackcreator/ConfigurationModel.
 <tr id="i13" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackModel.html#setDateCreated-java.sql.Timestamp-">setDateCreated</a></span>(java.sql.Timestamp&nbsp;dateCreated)</code>
-<div class="block">Setter for the date and time at which this server pack entry was created as a <code>Timestamp</code>.</div>
+<div class="block">Setter for the date and time at which this server pack entry was created as a
+ <code>Timestamp</code>.</div>
 </td>
 </tr>
 <tr id="i14" class="altColor">
@@ -283,7 +285,8 @@ extends <a href="../../../../../de/griefed/serverpackcreator/ConfigurationModel.
 <tr id="i18" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackModel.html#setLastModified-java.sql.Timestamp-">setLastModified</a></span>(java.sql.Timestamp&nbsp;lastModified)</code>
-<div class="block">Setter for the date and time at which this server pack entry was last modified as a <code>Timestamp</code>.</div>
+<div class="block">Setter for the date and time at which this server pack entry was last modified as a
+ <code>Timestamp</code>.</div>
 </td>
 </tr>
 <tr id="i19" class="rowColor">
@@ -374,11 +377,13 @@ extends <a href="../../../../../de/griefed/serverpackcreator/ConfigurationModel.
 <dd><code>size</code> - The size of the generated server pack, in MB.</dd>
 <dd><code>downloads</code> - The amount of times this server pack was downloaded.</dd>
 <dd><code>confirmedWorking</code> - The amount of votes indicating whether this server pack works.</dd>
-<dd><code>status</code> - The status of this server pack. Either <code>Queued</code>, <code>Generating
-     </code>, <code>Available</code>.</dd>
-<dd><code>dateCreated</code> - The date and time at which this server pack was requested for generation.</dd>
-<dd><code>lastModified</code> - The date and time this server pack was last modified. Be it either due to
-     regeneration or something else.</dd>
+<dd><code>status</code> - The status of this server pack. Either <code>Queued</code>,
+                         <code>Generating
+                         </code>, <code>Available</code>.</dd>
+<dd><code>dateCreated</code> - The date and time at which this server pack was requested for
+                         generation.</dd>
+<dd><code>lastModified</code> - The date and time this server pack was last modified. Be it either due
+                         to regeneration or something else.</dd>
 </dl>
 </li>
 </ul>
@@ -463,7 +468,7 @@ extends <a href="../../../../../de/griefed/serverpackcreator/ConfigurationModel.
 <dd><code><a href="../../../../../de/griefed/serverpackcreator/ConfigurationModel.html#getFileName--">getFileName</a></code>&nbsp;in class&nbsp;<code><a href="../../../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a></code></dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>String. Returns the file display name of the project file from which the server pack
-     was generated.</dd>
+ was generated.</dd>
 </dl>
 </li>
 </ul>
@@ -480,7 +485,7 @@ extends <a href="../../../../../de/griefed/serverpackcreator/ConfigurationModel.
 <dd><code><a href="../../../../../de/griefed/serverpackcreator/ConfigurationModel.html#setFileName-java.lang.String-">setFileName</a></code>&nbsp;in class&nbsp;<code><a href="../../../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a></code></dd>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>fileName</code> - String. The file display name of the project file from which the server pack
-     was generated.</dd>
+                 was generated.</dd>
 </dl>
 </li>
 </ul>
@@ -497,7 +502,7 @@ extends <a href="../../../../../de/griefed/serverpackcreator/ConfigurationModel.
 <dd><code><a href="../../../../../de/griefed/serverpackcreator/ConfigurationModel.html#getFileDiskName--">getFileDiskName</a></code>&nbsp;in class&nbsp;<code><a href="../../../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a></code></dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>String. The file disk name of the project file from which the server pack was
-     generated.</dd>
+ generated.</dd>
 </dl>
 </li>
 </ul>
@@ -514,7 +519,7 @@ extends <a href="../../../../../de/griefed/serverpackcreator/ConfigurationModel.
 <dd><code><a href="../../../../../de/griefed/serverpackcreator/ConfigurationModel.html#setFileDiskName-java.lang.String-">setFileDiskName</a></code>&nbsp;in class&nbsp;<code><a href="../../../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a></code></dd>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>fileDiskName</code> - String. The file disk name of the project file from which the server pack
-     was generated.</dd>
+                     was generated.</dd>
 </dl>
 </li>
 </ul>
@@ -600,7 +605,8 @@ extends <a href="../../../../../de/griefed/serverpackcreator/ConfigurationModel.
  indicate a working server pack. Negative values indicate the server pack is not working.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>confirmedWorking</code> - Integer. The amount of votes indicating whether this server pack works.</dd>
+<dd><code>confirmedWorking</code> - Integer. The amount of votes indicating whether this server pack
+                         works.</dd>
 </dl>
 </li>
 </ul>
@@ -669,11 +675,12 @@ extends <a href="../../../../../de/griefed/serverpackcreator/ConfigurationModel.
 <li class="blockList">
 <h4>getDateCreated</h4>
 <pre>public&nbsp;java.sql.Timestamp&nbsp;getDateCreated()</pre>
-<div class="block">Getter for the date and time at which this server pack entry was created as a <code>Timestamp</code>.</div>
+<div class="block">Getter for the date and time at which this server pack entry was created as a
+ <code>Timestamp</code>.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd><code>Timestamp</code>. Returns the date and time at which this server pack entry was
-     created as a <code>Timestamp</code>.</dd>
+ created as a <code>Timestamp</code>.</dd>
 </dl>
 </li>
 </ul>
@@ -684,11 +691,12 @@ extends <a href="../../../../../de/griefed/serverpackcreator/ConfigurationModel.
 <li class="blockList">
 <h4>setDateCreated</h4>
 <pre>public&nbsp;void&nbsp;setDateCreated(java.sql.Timestamp&nbsp;dateCreated)</pre>
-<div class="block">Setter for the date and time at which this server pack entry was created as a <code>Timestamp</code>.</div>
+<div class="block">Setter for the date and time at which this server pack entry was created as a
+ <code>Timestamp</code>.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>dateCreated</code> - <code>Timestamp</code>. The date and time at which this server pack was created
-     as a <code>Timestamp</code>.</dd>
+                    as a <code>Timestamp</code>.</dd>
 </dl>
 </li>
 </ul>
@@ -699,11 +707,12 @@ extends <a href="../../../../../de/griefed/serverpackcreator/ConfigurationModel.
 <li class="blockList">
 <h4>getLastModified</h4>
 <pre>public&nbsp;java.sql.Timestamp&nbsp;getLastModified()</pre>
-<div class="block">Getter for the date and time at which this server pack entry was last modified as a <code>Timestamp</code>.</div>
+<div class="block">Getter for the date and time at which this server pack entry was last modified as a
+ <code>Timestamp</code>.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd><code>Timestamp</code>. Returns the date and time at which this server pack entry was last
-     modified as a <code>Timestamp</code>.</dd>
+ modified as a <code>Timestamp</code>.</dd>
 </dl>
 </li>
 </ul>
@@ -714,11 +723,12 @@ extends <a href="../../../../../de/griefed/serverpackcreator/ConfigurationModel.
 <li class="blockList">
 <h4>setLastModified</h4>
 <pre>public&nbsp;void&nbsp;setLastModified(java.sql.Timestamp&nbsp;lastModified)</pre>
-<div class="block">Setter for the date and time at which this server pack entry was last modified as a <code>Timestamp</code>.</div>
+<div class="block">Setter for the date and time at which this server pack entry was last modified as a
+ <code>Timestamp</code>.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>lastModified</code> - <code>Timestamp</code>. The date and time at which this server pack entry was
-     last modified as a <code>Timestamp</code>.</dd>
+                     last modified as a <code>Timestamp</code>.</dd>
 </dl>
 </li>
 </ul>
@@ -733,7 +743,7 @@ extends <a href="../../../../../de/griefed/serverpackcreator/ConfigurationModel.
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>String. Returns all important information of a server pack entry as a concatenated
-     string.</dd>
+ string.</dd>
 </dl>
 </li>
 </ul>

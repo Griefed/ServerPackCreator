@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -159,8 +159,26 @@ extends java.lang.Object</pre>
 </td>
 </tr>
 <tr id="i2" class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/ListUtilities.html#printListToConsoleChunked-java.util.List-int-java.lang.String-boolean-">printListToConsoleChunked</a></span>(java.util.List&lt;java.lang.String&gt;&nbsp;list,
+                         int&nbsp;chunkSize,
+                         java.lang.String&nbsp;prefix,
+                         boolean&nbsp;printIndexes)</code>
+<div class="block">Print a list to console in chunks.</div>
+</td>
+</tr>
+<tr id="i3" class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/ListUtilities.html#printListToLogChunked-java.util.List-int-java.lang.String-boolean-">printListToLogChunked</a></span>(java.util.List&lt;java.lang.String&gt;&nbsp;list,
+                     int&nbsp;chunkSize,
+                     java.lang.String&nbsp;prefix,
+                     boolean&nbsp;printIndexes)</code>
+<div class="block">Print a list to our log at info level, in chunks.</div>
+</td>
+</tr>
+<tr id="i4" class="altColor">
 <td class="colFirst"><code>java.util.List&lt;java.lang.String&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/ListUtilities.html#readStringArray--">readStringArray</a></span>()</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/ListUtilities.html#readStringList--">readStringList</a></span>()</code>
 <div class="block">Prompts the user to enter the values which will make up a String List in the new configuration
  file.</div>
 </td>
@@ -218,18 +236,17 @@ extends java.lang.Object</pre>
 <dd><code>listToEncapsulate</code> - The String List of which to encapsulate every element in.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>String. Returns a concatenated String with all elements of the passed list
-     encapsulated.</dd>
+ encapsulated.</dd>
 </dl>
 </li>
 </ul>
-<a name="readStringArray--">
+<a name="readStringList--">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>readStringArray</h4>
-<pre><a href="../../../../../de/griefed/serverpackcreator/utilities/misc/Generated.html" title="annotation in de.griefed.serverpackcreator.utilities.misc">@Generated</a>
-public&nbsp;java.util.List&lt;java.lang.String&gt;&nbsp;readStringArray()</pre>
+<h4>readStringList</h4>
+<pre>public&nbsp;java.util.List&lt;java.lang.String&gt;&nbsp;readStringList()</pre>
 <div class="block">Prompts the user to enter the values which will make up a String List in the new configuration
  file. If the user enters an empty line, the method is exited and the String List returned.</div>
 <dl>
@@ -241,7 +258,7 @@ public&nbsp;java.util.List&lt;java.lang.String&gt;&nbsp;readStringArray()</pre>
 <a name="cleanList-java.util.List-">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>cleanList</h4>
 <pre>public&nbsp;java.util.List&lt;java.lang.String&gt;&nbsp;cleanList(java.util.List&lt;java.lang.String&gt;&nbsp;listToCleanUp)</pre>
@@ -250,9 +267,51 @@ public&nbsp;java.util.List&lt;java.lang.String&gt;&nbsp;readStringArray()</pre>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>listToCleanUp</code> - List String. The list from which to delete all entries consisting only of
-     whitespace or with a length of zero.</dd>
+                      whitespace or with a length of zero.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>List String. Returns the cleaned up list.</dd>
+</dl>
+</li>
+</ul>
+<a name="printListToConsoleChunked-java.util.List-int-java.lang.String-boolean-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>printListToConsoleChunked</h4>
+<pre>public&nbsp;void&nbsp;printListToConsoleChunked(java.util.List&lt;java.lang.String&gt;&nbsp;list,
+                                      int&nbsp;chunkSize,
+                                      java.lang.String&nbsp;prefix,
+                                      boolean&nbsp;printIndexes)</pre>
+<div class="block">Print a list to console in chunks. If a chunk size of 5 is set for a list with 20 entries, the
+ result would be 4 lines printed, with 5 entries each.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>list</code> - The list to print to the console.</dd>
+<dd><code>chunkSize</code> - The chunk size to print the list with.</dd>
+<dd><code>prefix</code> - A prefix to add to each line printed to the console.</dd>
+<dd><code>printIndexes</code> - Whether to print the indexes of the entries.</dd>
+</dl>
+</li>
+</ul>
+<a name="printListToLogChunked-java.util.List-int-java.lang.String-boolean-">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>printListToLogChunked</h4>
+<pre>public&nbsp;void&nbsp;printListToLogChunked(java.util.List&lt;java.lang.String&gt;&nbsp;list,
+                                  int&nbsp;chunkSize,
+                                  java.lang.String&nbsp;prefix,
+                                  boolean&nbsp;printIndexes)</pre>
+<div class="block">Print a list to our log at info level, in chunks. If a chunk size of 5 is set for a list with
+ 20 entries, the result would be 4 lines printed, with 5 entries each.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>list</code> - The list to print to the console.</dd>
+<dd><code>chunkSize</code> - The chunk size to print the list with.</dd>
+<dd><code>prefix</code> - A prefix to add to each line printed to the console.</dd>
+<dd><code>printIndexes</code> - Whether to print the indexes of the entries.</dd>
 </dl>
 </li>
 </ul>

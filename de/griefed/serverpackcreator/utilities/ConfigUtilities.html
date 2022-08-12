@@ -47,7 +47,7 @@ var activeTableTab = "activeTableTab";
 </div>
 <div class="subNav">
 <ul class="navList">
-<li><a href="../../../../de/griefed/serverpackcreator/utilities/ConfigurationCreator.html" title="class in de.griefed.serverpackcreator.utilities"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
+<li><a href="../../../../de/griefed/serverpackcreator/utilities/ConfigurationEditor.html" title="class in de.griefed.serverpackcreator.utilities"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
 <li><a href="../../../../de/griefed/serverpackcreator/utilities/ReticulatingSplines.html" title="class in de.griefed.serverpackcreator.utilities"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
 </ul>
 <ul class="navList">
@@ -152,9 +152,9 @@ extends java.lang.Object</pre>
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html#checkCurseForgeJsonForFabric-com.fasterxml.jackson.databind.JsonNode-">checkCurseForgeJsonForFabric</a></span>(com.fasterxml.jackson.databind.JsonNode&nbsp;modpackJson)</code>
 <div class="block"><span class="deprecatedLabel">Deprecated.</span>&nbsp;
-<div class="block"><span class="deprecationComment">Regular checks in <a href="../../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html#updateConfigModelFromCurseManifest-de.griefed.serverpackcreator.ConfigurationModel-java.io.File-"><code>updateConfigModelFromCurseManifest(ConfigurationModel,
-     File)</code></a> detect Fabric and the version. Iterating through the mods list is no longer
-     necessary.</span></div>
+<div class="block"><span class="deprecationComment">Regular checks in
+ <a href="../../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html#updateConfigModelFromCurseManifest-de.griefed.serverpackcreator.ConfigurationModel-java.io.File-"><code>updateConfigModelFromCurseManifest(ConfigurationModel, File)</code></a> detect Fabric and the
+ version. Iterating through the mods list is no longer necessary.</span></div>
 </div>
 </td>
 </tr>
@@ -191,8 +191,10 @@ extends java.lang.Object</pre>
 <tr id="i6" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html#printConfigurationModel-de.griefed.serverpackcreator.ConfigurationModel-">printConfigurationModel</a></span>(<a href="../../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel)</code>
-<div class="block">Convenience method which passes the important fields from an instance of <a href="../../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a> to <a href="../../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html#printConfigurationModel-java.lang.String-java.util.List-java.util.List-boolean-java.lang.String-java.lang.String-java.lang.String-java.lang.String-boolean-boolean-boolean-java.lang.String-java.lang.String-java.lang.String-java.lang.String-"><code>printConfigurationModel(String, List, List, boolean, String,
- String, String, String, boolean, boolean, boolean, String, String, String, String)</code></a></div>
+<div class="block">Convenience method which passes the important fields from an instance of
+ <a href="../../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a> to
+ <a href="../../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html#printConfigurationModel-java.lang.String-java.util.List-java.util.List-boolean-java.lang.String-java.lang.String-java.lang.String-java.lang.String-boolean-boolean-boolean-java.lang.String-java.lang.String-java.lang.String-java.lang.String-"><code>printConfigurationModel(String, List, List, boolean, String, String, String, String,
+ boolean, boolean, boolean, String, String, String, String)</code></a></div>
 </td>
 </tr>
 <tr id="i7" class="rowColor">
@@ -354,7 +356,7 @@ public&nbsp;ConfigUtilities(<a href="../../../../de/griefed/serverpackcreator/ut
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>modloader</code> - String. The String to check for case-insensitive cases of either Forge or
-     Fabric.</dd>
+                  Fabric.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>String. Returns a normalized String of the specified modloader.</dd>
 </dl>
@@ -376,7 +378,7 @@ public&nbsp;ConfigUtilities(<a href="../../../../de/griefed/serverpackcreator/ut
 <dd><code>fileName</code> - The file to write to.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>Boolean. Returns true if the configuration file has been successfully written and old
-     ones replaced.</dd>
+ ones replaced.</dd>
 </dl>
 </li>
 </ul>
@@ -409,25 +411,27 @@ public&nbsp;ConfigUtilities(<a href="../../../../de/griefed/serverpackcreator/ut
 <dd><code>modpackDir</code> - String. The path to the modpack.</dd>
 <dd><code>clientMods</code> - List, String. List of clientside-only mods.</dd>
 <dd><code>copyDirs</code> - List, String. List of directories to include in server pack.</dd>
-<dd><code>serverIconPath</code> - String. The path to the custom server-icon.png to include in the server
-     pack.</dd>
+<dd><code>serverIconPath</code> - String. The path to the custom server-icon.png to include in the
+                             server pack.</dd>
 <dd><code>serverPropertiesPath</code> - String. The path to the custom server.properties to include in the
-     server pack.</dd>
-<dd><code>includeServer</code> - Boolean. Whether the modloader server software should be installed.</dd>
+                             server pack.</dd>
+<dd><code>includeServer</code> - Boolean. Whether the modloader server software should be
+                             installed.</dd>
 <dd><code>javaPath</code> - String. Path to the java executable/binary.</dd>
 <dd><code>minecraftVersion</code> - String. Minecraft version used by the modpack and server pack.</dd>
-<dd><code>modLoader</code> - String. Modloader used by the modpack and server pack. Ether Forge or Fabric.</dd>
+<dd><code>modLoader</code> - String. Modloader used by the modpack and server pack. Ether Forge
+                             or Fabric.</dd>
 <dd><code>modLoaderVersion</code> - String. Modloader version used by the modpack and server pack.</dd>
 <dd><code>includeIcon</code> - Boolean. Whether to include a server-icon in the server pack.</dd>
 <dd><code>includeProperties</code> - Boolean. Whether to include a properties file in the server pack.</dd>
-<dd><code>includeZip</code> - Boolean. Whether to create a ZIP-archive of the server pack, excluding
-     Mojang's Minecraft server JAR.</dd>
+<dd><code>includeZip</code> - Boolean. Whether to create a ZIP-archive of the server pack,
+                             excluding Mojang's Minecraft server JAR.</dd>
 <dd><code>javaArgs</code> - String. Java arguments to write the start-scripts with.</dd>
 <dd><code>serverPackSuffix</code> - String. Suffix to append to the server pack to be generated.</dd>
 <dd><code>fileName</code> - The name under which to write the new configuration file.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>Boolean. Returns true if the configuration file has been successfully written and old
-     ones replaced.</dd>
+ ones replaced.</dd>
 </dl>
 </li>
 </ul>
@@ -438,8 +442,10 @@ public&nbsp;ConfigUtilities(<a href="../../../../de/griefed/serverpackcreator/ut
 <li class="blockList">
 <h4>printConfigurationModel</h4>
 <pre>public&nbsp;void&nbsp;printConfigurationModel(<a href="../../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel)</pre>
-<div class="block">Convenience method which passes the important fields from an instance of <a href="../../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a> to <a href="../../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html#printConfigurationModel-java.lang.String-java.util.List-java.util.List-boolean-java.lang.String-java.lang.String-java.lang.String-java.lang.String-boolean-boolean-boolean-java.lang.String-java.lang.String-java.lang.String-java.lang.String-"><code>printConfigurationModel(String, List, List, boolean, String,
- String, String, String, boolean, boolean, boolean, String, String, String, String)</code></a></div>
+<div class="block">Convenience method which passes the important fields from an instance of
+ <a href="../../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a> to
+ <a href="../../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html#printConfigurationModel-java.lang.String-java.util.List-java.util.List-boolean-java.lang.String-java.lang.String-java.lang.String-java.lang.String-boolean-boolean-boolean-java.lang.String-java.lang.String-java.lang.String-java.lang.String-"><code>printConfigurationModel(String, List, List, boolean, String, String, String, String,
+ boolean, boolean, boolean, String, String, String, String)</code></a></div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>configurationModel</code> - Instance of <a href="../../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a> to print to console and logs.</dd>
@@ -470,33 +476,38 @@ public&nbsp;ConfigUtilities(<a href="../../../../de/griefed/serverpackcreator/ut
 <div class="block">Prints all passed fields to the console and serverpackcreator.log. Used to show the user the
  configuration before ServerPackCreator starts the generation of the server pack or, if checks
  failed, to show the user their last configuration, so they can more easily identify problems
- with said configuration.<br>
- Should a user report an issue on GitHub and include their logs (which I hope they do....), this
- would also help me help them. Logging is good. People should use more logging.</div>
+ with said configuration.<br> Should a user report an issue on GitHub and include their logs
+ (which I hope they do....), this would also help me help them. Logging is good. People should
+ use more logging.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>modpackDirectory</code> - String. The used modpackDir field either from a configuration file or
-     from configuration setup.</dd>
-<dd><code>clientsideMods</code> - String List. List of clientside-only mods to exclude from the server
-     pack...</dd>
-<dd><code>copyDirectories</code> - String List. List of directories in the modpack which are to be included
-     in the server pack.</dd>
-<dd><code>installServer</code> - Boolean. Whether to install the modloader server in the server pack.</dd>
-<dd><code>javaInstallPath</code> - String. Path to the Java executable/binary needed for installing the
-     modloader server in the server pack.</dd>
+<dd><code>modpackDirectory</code> - String. The used modpackDir field either from a configuration file
+                             or from configuration setup.</dd>
+<dd><code>clientsideMods</code> - String List. List of clientside-only mods to exclude from the
+                             server pack...</dd>
+<dd><code>copyDirectories</code> - String List. List of directories in the modpack which are to be
+                             included in the server pack.</dd>
+<dd><code>installServer</code> - Boolean. Whether to install the modloader server in the server
+                             pack.</dd>
+<dd><code>javaInstallPath</code> - String. Path to the Java executable/binary needed for installing
+                             the modloader server in the server pack.</dd>
 <dd><code>minecraftVer</code> - String. The Minecraft version the modpack uses.</dd>
 <dd><code>modloader</code> - String. The modloader the modpack uses.</dd>
 <dd><code>modloaderVersion</code> - String. The version of the modloader the modpack uses.</dd>
-<dd><code>includeIcon</code> - Boolean. Whether to include the server-icon.png in the server pack.</dd>
-<dd><code>includeProperties</code> - Boolean. Whether to include the server.properties in the server pack.</dd>
-<dd><code>includeZip</code> - Boolean. Whether to create a zip-archive of the server pack, excluding the
-     Minecraft server JAR according to Mojang's TOS and EULA.</dd>
+<dd><code>includeIcon</code> - Boolean. Whether to include the server-icon.png in the server
+                             pack.</dd>
+<dd><code>includeProperties</code> - Boolean. Whether to include the server.properties in the server
+                             pack.</dd>
+<dd><code>includeZip</code> - Boolean. Whether to create a zip-archive of the server pack,
+                             excluding the Minecraft server JAR according to Mojang's TOS and
+                             EULA.</dd>
 <dd><code>javaArgs</code> - String. Java arguments to write the start-scripts with.</dd>
-<dd><code>serverPackSuffix</code> - String. Suffix to append to name of the server pack to be generated.</dd>
-<dd><code>serverIconPath</code> - String. The path to the custom server-icon.png to be used in the server
-     pack.</dd>
+<dd><code>serverPackSuffix</code> - String. Suffix to append to name of the server pack to be
+                             generated.</dd>
+<dd><code>serverIconPath</code> - String. The path to the custom server-icon.png to be used in the
+                             server pack.</dd>
 <dd><code>serverPropertiesPath</code> - String. The path to the custom server.properties to be used in the
-     server pack.</dd>
+                             server pack.</dd>
 </dl>
 </li>
 </ul>
@@ -560,7 +571,7 @@ public&nbsp;ConfigUtilities(<a href="../../../../de/griefed/serverpackcreator/ut
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>configurationModel</code> - <a href="../../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a>. An instance containing a configuration
-     for a modpack from which to create a server pack.</dd>
+                           for a modpack from which to create a server pack.</dd>
 <dd><code>manifest</code> - File. The CurseForge manifest.json-file of the modpack to read.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code>java.io.IOException</code> - when the manifest.json-file could not be parsed.</dd>
@@ -583,7 +594,7 @@ public&nbsp;ConfigUtilities(<a href="../../../../de/griefed/serverpackcreator/ut
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>configurationModel</code> - <a href="../../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a>. An instance containing a configuration
-     for a modpack from which to create a server pack.</dd>
+                           for a modpack from which to create a server pack.</dd>
 <dd><code>minecraftInstance</code> - File. The minecraftinstance.json-file of the modpack to read.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code>java.io.IOException</code> - when the minecraftinstance.json-file could not be parsed.</dd>
@@ -606,7 +617,7 @@ public&nbsp;ConfigUtilities(<a href="../../../../de/griefed/serverpackcreator/ut
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>configurationModel</code> - <a href="../../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a>. An instance containing a configuration
-     for a modpack from which to create a server pack.</dd>
+                           for a modpack from which to create a server pack.</dd>
 <dd><code>config</code> - <code>File</code>. The config.json-file of the modpack to read.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code>java.io.IOException</code> - when the config.json-file could not be parsed.</dd>
@@ -629,7 +640,7 @@ public&nbsp;ConfigUtilities(<a href="../../../../de/griefed/serverpackcreator/ut
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>configurationModel</code> - <a href="../../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a>. An instance containing a configuration
-     for a modpack from which to create a server pack.</dd>
+                           for a modpack from which to create a server pack.</dd>
 <dd><code>mmcPack</code> - <code>File</code>. The config.json-file of the modpack to read.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code>java.io.IOException</code> - when the mmc-pack.json-file could not be parsed.</dd>
@@ -655,7 +666,7 @@ public&nbsp;ConfigUtilities(<a href="../../../../de/griefed/serverpackcreator/ut
 <dd><code>String</code> Returns the instance name.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code>java.io.IOException</code> - when the file could not be found or the properties not be loaded from the
-     file.</dd>
+                     file.</dd>
 </dl>
 </li>
 </ul>
@@ -674,10 +685,10 @@ public&nbsp;ConfigUtilities(<a href="../../../../de/griefed/serverpackcreator/ut
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>modpackDir</code> - String. The directory for which to gather a list of directories to copy to
-     the server pack.</dd>
+                   the server pack.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>List, String. Returns a list of directories inside the modpack, excluding well known
-     client-side only directories.</dd>
+ client-side only directories.</dd>
 </dl>
 </li>
 </ul>
@@ -689,9 +700,9 @@ public&nbsp;ConfigUtilities(<a href="../../../../de/griefed/serverpackcreator/ut
 <h4>checkCurseForgeJsonForFabric</h4>
 <pre>@Deprecated
 public&nbsp;boolean&nbsp;checkCurseForgeJsonForFabric(com.fasterxml.jackson.databind.JsonNode&nbsp;modpackJson)</pre>
-<div class="block"><span class="deprecatedLabel">Deprecated.</span>&nbsp;<span class="deprecationComment">Regular checks in <a href="../../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html#updateConfigModelFromCurseManifest-de.griefed.serverpackcreator.ConfigurationModel-java.io.File-"><code>updateConfigModelFromCurseManifest(ConfigurationModel,
-     File)</code></a> detect Fabric and the version. Iterating through the mods list is no longer
-     necessary.</span></div>
+<div class="block"><span class="deprecatedLabel">Deprecated.</span>&nbsp;<span class="deprecationComment">Regular checks in
+ <a href="../../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html#updateConfigModelFromCurseManifest-de.griefed.serverpackcreator.ConfigurationModel-java.io.File-"><code>updateConfigModelFromCurseManifest(ConfigurationModel, File)</code></a> detect Fabric and the
+ version. Iterating through the mods list is no longer necessary.</span></div>
 <div class="block">Checks whether the projectID for the Jumploader mod is present in the list of mods required by
  the CurseForge modpack. If Jumploader is found, the modloader for the new configuration-file
  will be set to Fabric. If <code>modLoaders</code> in the manifest specifies Fabric, use that to
@@ -722,16 +733,19 @@ public&nbsp;boolean&nbsp;checkCurseForgeJsonForFabric(com.fasterxml.jackson.data
 <dd><code>zipFile</code> - <code>Path</code> The ZIP-archive to get the list of files from.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd><code>List</code> <code>String</code> A list of all directories in the base-directory of the
-     ZIP-file.</dd>
+ ZIP-file.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.IllegalArgumentException</code> - if the pre-conditions for the uri parameter are not met, or
-     the env parameter does not contain properties required by the provider, or a property value
-     is invalid.</dd>
+<dd><code>java.lang.IllegalArgumentException</code> - if the pre-conditions for the uri parameter are not
+                                          met, or the env parameter does not contain properties
+                                          required by the provider, or a property value is
+                                          invalid.</dd>
 <dd><code>java.nio.file.FileSystemAlreadyExistsException</code> - if the file system has already been created.</dd>
-<dd><code>java.nio.file.ProviderNotFoundException</code> - if a provider supporting the URI scheme is not installed.</dd>
+<dd><code>java.nio.file.ProviderNotFoundException</code> - if a provider supporting the URI scheme is not
+                                          installed.</dd>
 <dd><code>java.io.IOException</code> - if an I/O error occurs creating the file system.</dd>
-<dd><code>java.lang.SecurityException</code> - if a security manager is installed, and it denies an unspecified
-     permission required by the file system provider implementation.</dd>
+<dd><code>java.lang.SecurityException</code> - if a security manager is installed, and it denies an
+                                          unspecified permission required by the file system
+                                          provider implementation.</dd>
 </dl>
 </li>
 </ul>
@@ -754,14 +768,17 @@ public&nbsp;boolean&nbsp;checkCurseForgeJsonForFabric(com.fasterxml.jackson.data
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd><code>List</code> <code>String</code> A list of all files in the ZIP-file.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.IllegalArgumentException</code> - if the pre-conditions for the uri parameter are not met, or
-     the env parameter does not contain properties required by the provider, or a property value
-     is invalid.</dd>
+<dd><code>java.lang.IllegalArgumentException</code> - if the pre-conditions for the uri parameter are not
+                                          met, or the env parameter does not contain properties
+                                          required by the provider, or a property value is
+                                          invalid.</dd>
 <dd><code>java.nio.file.FileSystemAlreadyExistsException</code> - if the file system has already been created.</dd>
-<dd><code>java.nio.file.ProviderNotFoundException</code> - if a provider supporting the URI scheme is not installed.</dd>
+<dd><code>java.nio.file.ProviderNotFoundException</code> - if a provider supporting the URI scheme is not
+                                          installed.</dd>
 <dd><code>java.io.IOException</code> - if an I/O error occurs creating the file system.</dd>
-<dd><code>java.lang.SecurityException</code> - if a security manager is installed, and it denies an unspecified
-     permission required by the file system provider implementation.</dd>
+<dd><code>java.lang.SecurityException</code> - if a security manager is installed, and it denies an
+                                          unspecified permission required by the file system
+                                          provider implementation.</dd>
 </dl>
 </li>
 </ul>
@@ -784,14 +801,17 @@ public&nbsp;boolean&nbsp;checkCurseForgeJsonForFabric(com.fasterxml.jackson.data
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd><code>List</code> <code>String</code> A list of all directories in the ZIP-file.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.IllegalArgumentException</code> - if the pre-conditions for the uri parameter are not met, or
-     the env parameter does not contain properties required by the provider, or a property value
-     is invalid.</dd>
+<dd><code>java.lang.IllegalArgumentException</code> - if the pre-conditions for the uri parameter are not
+                                          met, or the env parameter does not contain properties
+                                          required by the provider, or a property value is
+                                          invalid.</dd>
 <dd><code>java.nio.file.FileSystemAlreadyExistsException</code> - if the file system has already been created.</dd>
-<dd><code>java.nio.file.ProviderNotFoundException</code> - if a provider supporting the URI scheme is not installed.</dd>
+<dd><code>java.nio.file.ProviderNotFoundException</code> - if a provider supporting the URI scheme is not
+                                          installed.</dd>
 <dd><code>java.io.IOException</code> - if an I/O error occurs creating the file system.</dd>
-<dd><code>java.lang.SecurityException</code> - if a security manager is installed, and it denies an unspecified
-     permission required by the file system provider implementation.</dd>
+<dd><code>java.lang.SecurityException</code> - if a security manager is installed, and it denies an
+                                          unspecified permission required by the file system
+                                          provider implementation.</dd>
 </dl>
 </li>
 </ul>
@@ -814,14 +834,17 @@ public&nbsp;boolean&nbsp;checkCurseForgeJsonForFabric(com.fasterxml.jackson.data
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd><code>List</code> <code>String</code> A list of all files and directories in the ZIP-file.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.IllegalArgumentException</code> - if the pre-conditions for the uri parameter are not met, or
-     the env parameter does not contain properties required by the provider, or a property value
-     is invalid.</dd>
+<dd><code>java.lang.IllegalArgumentException</code> - if the pre-conditions for the uri parameter are not
+                                          met, or the env parameter does not contain properties
+                                          required by the provider, or a property value is
+                                          invalid.</dd>
 <dd><code>java.nio.file.FileSystemAlreadyExistsException</code> - if the file system has already been created.</dd>
-<dd><code>java.nio.file.ProviderNotFoundException</code> - if a provider supporting the URI scheme is not installed.</dd>
+<dd><code>java.nio.file.ProviderNotFoundException</code> - if a provider supporting the URI scheme is not
+                                          installed.</dd>
 <dd><code>java.io.IOException</code> - if an I/O error occurs creating the file system.</dd>
-<dd><code>java.lang.SecurityException</code> - if a security manager is installed, and it denies an unspecified
-     permission required by the file system provider implementation.</dd>
+<dd><code>java.lang.SecurityException</code> - if a security manager is installed, and it denies an
+                                          unspecified permission required by the file system
+                                          provider implementation.</dd>
 </dl>
 </li>
 </ul>
@@ -852,7 +875,7 @@ public&nbsp;boolean&nbsp;checkCurseForgeJsonForFabric(com.fasterxml.jackson.data
 </div>
 <div class="subNav">
 <ul class="navList">
-<li><a href="../../../../de/griefed/serverpackcreator/utilities/ConfigurationCreator.html" title="class in de.griefed.serverpackcreator.utilities"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
+<li><a href="../../../../de/griefed/serverpackcreator/utilities/ConfigurationEditor.html" title="class in de.griefed.serverpackcreator.utilities"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
 <li><a href="../../../../de/griefed/serverpackcreator/utilities/ReticulatingSplines.html" title="class in de.griefed.serverpackcreator.utilities"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
 </ul>
 <ul class="navList">

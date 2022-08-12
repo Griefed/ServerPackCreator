@@ -109,11 +109,10 @@ extends org.springframework.data.repository.CrudRepository&lt;<a href="../../../
 <div class="block">Our JPA repository for storing and retrieving <a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackModel.html" title="class in de.griefed.serverpackcreator.spring.serverpack"><code>ServerPackModel</code></a>s to and from our SQLite
  database. Provides methods for retrieving, storing, deleting. Calls must always be made from
  <a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackService.html" title="class in de.griefed.serverpackcreator.spring.serverpack"><code>ServerPackService</code></a> and not directly to this repository. It may seem strange, but this
- accomplishes a couple of things:<br>
- 1. Centralized access to the repository.<br>
- 2. Complete control over what happens with the data retrieved from the repository.<br>
- 3. Complete control over what happens with the data passed to the repository.<br>
- 4. Better management and overview of what we are doing with our repository.</div>
+ accomplishes a couple of things:<br> 1. Centralized access to the repository.<br> 2. Complete
+ control over what happens with the data retrieved from the repository.<br> 3. Complete control
+ over what happens with the data passed to the repository.<br> 4. Better management and overview
+ of what we are doing with our repository.</div>
 </li>
 </ul>
 </div>
@@ -191,7 +190,8 @@ extends org.springframework.data.repository.CrudRepository&lt;<a href="../../../
 <dd><code>projectName</code> - String. The project name with which to search for server packs.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>Returns a list of all server packs for the passed CurseForge project name wrapped in an
-     <code>Optional</code>. I recommend to make use of <code>Optional.isPresent()</code> and <code>Optional.get()</code>.</dd>
+ <code>Optional</code>. I recommend to make use of <code>Optional.isPresent()</code> and
+ <code>Optional.get()</code>.</dd>
 </dl>
 </li>
 </ul>
@@ -206,10 +206,10 @@ extends org.springframework.data.repository.CrudRepository&lt;<a href="../../../
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>fileName</code> - String. The CurseForge file display name with which to search for a server
-     pack.</dd>
+                 pack.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>Returns a server pack for the passed file display name wrapped in an <code>Optional</code>.
-     I recommend to make use of <code>Optional.isPresent()</code> and <code>Optional.get()</code>.</dd>
+ I recommend to make use of <code>Optional.isPresent()</code> and <code>Optional.get()</code>.</dd>
 </dl>
 </li>
 </ul>
@@ -226,7 +226,7 @@ extends org.springframework.data.repository.CrudRepository&lt;<a href="../../../
 <dd><code>status</code> - String. The status with which to search for server packs.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>Returns a list of server packs for the passed status wrapped in an <code>Optional</code>. I
-     recommend to make use of <code>Optional.isPresent()</code> and <code>Optional.get()</code>.</dd>
+ recommend to make use of <code>Optional.isPresent()</code> and <code>Optional.get()</code>.</dd>
 </dl>
 </li>
 </ul>

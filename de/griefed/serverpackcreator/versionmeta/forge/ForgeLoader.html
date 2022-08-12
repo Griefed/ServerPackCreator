@@ -153,8 +153,7 @@ extends java.lang.Object</pre>
 <tr id="i0" class="altColor">
 <td class="colFirst"><code>protected java.util.HashMap&lt;java.lang.String,java.lang.String&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeLoader.html#forgeToMinecraftMeta--">forgeToMinecraftMeta</a></span>()</code>
-<div class="block">Get the Forge version to Minecraft version meta.<br>
- key: <code>String</code> Forge version.<br>
+<div class="block">Get the Forge version to Minecraft version meta.<br> key: <code>String</code> Forge version.<br>
  version: <code>String</code> Minecraft version for the given Forge version.</div>
 </td>
 </tr>
@@ -167,9 +166,9 @@ extends java.lang.Object</pre>
 <tr id="i2" class="altColor">
 <td class="colFirst"><code>protected java.util.HashMap&lt;java.lang.String,<a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeInstance.html" title="class in de.griefed.serverpackcreator.versionmeta.forge">ForgeInstance</a>&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeLoader.html#instanceMeta--">instanceMeta</a></span>()</code>
-<div class="block">Get the Minecraft-Forge-version meta.<br>
- key: <code>String</code> Minecraft version + Forge version concatenation.<br>
- value: <a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeInstance.html" title="class in de.griefed.serverpackcreator.versionmeta.forge"><code>ForgeInstance</code></a> for the given Minecraft version + Forge version concatenation.</div>
+<div class="block">Get the Minecraft-Forge-version meta.<br> key: <code>String</code> Minecraft version + Forge version
+ concatenation.<br> value: <a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeInstance.html" title="class in de.griefed.serverpackcreator.versionmeta.forge"><code>ForgeInstance</code></a> for the given Minecraft version + Forge version
+ concatenation.</div>
 </td>
 </tr>
 <tr id="i3" class="rowColor">
@@ -187,9 +186,8 @@ extends java.lang.Object</pre>
 <tr id="i5" class="rowColor">
 <td class="colFirst"><code>protected java.util.HashMap&lt;java.lang.String,java.util.List&lt;java.lang.String&gt;&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeLoader.html#versionMeta--">versionMeta</a></span>()</code>
-<div class="block">Get the <a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeLoader.html" title="class in de.griefed.serverpackcreator.versionmeta.forge"><code>ForgeLoader</code></a> version-meta.<br>
- key: <code>String</code> Minecraft version<br>
- value: <code>String</code>-list of Forge versions available for the given Minecraft version.</div>
+<div class="block">Get the <a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeLoader.html" title="class in de.griefed.serverpackcreator.versionmeta.forge"><code>ForgeLoader</code></a> version-meta.<br> key: <code>String</code> Minecraft version<br> value:
+ <code>String</code>-list of Forge versions available for the given Minecraft version.</div>
 </td>
 </tr>
 </table>
@@ -225,9 +223,10 @@ extends java.lang.Object</pre>
 <div class="block">Create a new instance of the Forge Loader.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>forgemanifest</code> - <code>JsonNode</code> containing information about available Forge versions.</dd>
+<dd><code>forgemanifest</code> - <code>JsonNode</code> containing information about available Forge
+                              versions.</dd>
 <dd><code>injectedMinecraftMeta</code> - <a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftMeta</code></a> for retroactively updating the previously
-     passed meta.</dd>
+                              passed meta.</dd>
 </dl>
 </li>
 </ul>
@@ -288,9 +287,8 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>versionMeta</h4>
 <pre>protected&nbsp;java.util.HashMap&lt;java.lang.String,java.util.List&lt;java.lang.String&gt;&gt;&nbsp;versionMeta()</pre>
-<div class="block">Get the <a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeLoader.html" title="class in de.griefed.serverpackcreator.versionmeta.forge"><code>ForgeLoader</code></a> version-meta.<br>
- key: <code>String</code> Minecraft version<br>
- value: <code>String</code>-list of Forge versions available for the given Minecraft version.</div>
+<div class="block">Get the <a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeLoader.html" title="class in de.griefed.serverpackcreator.versionmeta.forge"><code>ForgeLoader</code></a> version-meta.<br> key: <code>String</code> Minecraft version<br> value:
+ <code>String</code>-list of Forge versions available for the given Minecraft version.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd><code>HashMap</code> containing the version meta.</dd>
@@ -304,8 +302,7 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>forgeToMinecraftMeta</h4>
 <pre>protected&nbsp;java.util.HashMap&lt;java.lang.String,java.lang.String&gt;&nbsp;forgeToMinecraftMeta()</pre>
-<div class="block">Get the Forge version to Minecraft version meta.<br>
- key: <code>String</code> Forge version.<br>
+<div class="block">Get the Forge version to Minecraft version meta.<br> key: <code>String</code> Forge version.<br>
  version: <code>String</code> Minecraft version for the given Forge version.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
@@ -320,9 +317,9 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>instanceMeta</h4>
 <pre>protected&nbsp;java.util.HashMap&lt;java.lang.String,<a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeInstance.html" title="class in de.griefed.serverpackcreator.versionmeta.forge">ForgeInstance</a>&gt;&nbsp;instanceMeta()</pre>
-<div class="block">Get the Minecraft-Forge-version meta.<br>
- key: <code>String</code> Minecraft version + Forge version concatenation.<br>
- value: <a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeInstance.html" title="class in de.griefed.serverpackcreator.versionmeta.forge"><code>ForgeInstance</code></a> for the given Minecraft version + Forge version concatenation.</div>
+<div class="block">Get the Minecraft-Forge-version meta.<br> key: <code>String</code> Minecraft version + Forge version
+ concatenation.<br> value: <a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeInstance.html" title="class in de.griefed.serverpackcreator.versionmeta.forge"><code>ForgeInstance</code></a> for the given Minecraft version + Forge version
+ concatenation.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd><code>HashMap</code> with Minecraft-Forge-version-to-ForgeInstance mapping.</dd>

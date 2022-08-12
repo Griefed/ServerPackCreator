@@ -117,12 +117,11 @@ extends java.lang.Object
 implements org.springframework.boot.autoconfigure.jms.artemis.ArtemisConfigurationCustomizer</pre>
 <div class="block"><a
  href="https://dev.to/gotson/how-to-implement-a-task-queue-using-apache-artemis-and-spring-boot-2mme">How
- to implement a task queue using Apache Artemis and Spring Boot</a><br>
- Huge Thank You to <a href="https://github.com/gotson">Gauthier</a> for writing the above guide on
- how to implement a JMS. Without it this implementation of Artemis would have either taken way
- longer or never happened at all. I managed to translate their Kotlin-code to Java and make the
- necessary changes to fully implement it in ServerPackCreator.<br>
- Configuration for our Artemis JMS.</div>
+ to implement a task queue using Apache Artemis and Spring Boot</a><br> Huge Thank You to <a
+ href="https://github.com/gotson">Gauthier</a> for writing the above guide on how to implement a
+ JMS. Without it this implementation of Artemis would have either taken way longer or never
+ happened at all. I managed to translate their Kotlin-code to Java and make the necessary changes
+ to fully implement it in ServerPackCreator.<br> Configuration for our Artemis JMS.</div>
 </li>
 </ul>
 </div>
@@ -163,17 +162,15 @@ implements org.springframework.boot.autoconfigure.jms.artemis.ArtemisConfigurati
 <tr id="i0" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/spring/task/ArtemisConfig.html#customize-org.apache.activemq.artemis.core.config.Configuration-">customize</a></span>(org.apache.activemq.artemis.core.config.Configuration&nbsp;configuration)</code>
-<div class="block">Customize our configuration.<br>
- Set the default consumer windows size to 0.<br>
- Set the maximum disk usage from our property <code>
- de.griefed.serverpackcreator.spring.artemis.queue.max_disk_usage</code>.<br>
- Set the address to <code>tasks.background</code>.<br>
- Set the queue configuration to <code>tasks.background</code>.<br>
- Set the name to <code>tasks.background</code>.<br>
- Set the last value key to <code>unique_id</code>.<br>
- Set the routing type to <code>RoutingType.ANYCAST</code>.<br>
- Add our queue configuration..<br>
- All of this ensures that any message added will be deduplicated and worked on one by one.</div>
+<div class="block">Customize our configuration.<br> Set the default consumer windows size to 0.<br> Set the
+ maximum disk usage from our property <code>
+ de.griefed.serverpackcreator.spring.artemis.queue.max_disk_usage</code>.<br> Set the address
+ to
+ <code>tasks.background</code>.<br> Set the queue configuration to
+ <code>tasks.background</code>.<br> Set the name to <code>tasks.background</code>.<br> Set the
+ last value key to <code>unique_id</code>.<br> Set the routing type to
+ <code>RoutingType.ANYCAST</code>.<br> Add our queue configuration..<br> All of this ensures that any
+ message added will be deduplicated and worked on one by one.</div>
 </td>
 </tr>
 </table>
@@ -228,22 +225,19 @@ public&nbsp;ArtemisConfig(<a href="../../../../../de/griefed/serverpackcreator/A
 <li class="blockList">
 <h4>customize</h4>
 <pre>public&nbsp;void&nbsp;customize(org.apache.activemq.artemis.core.config.Configuration&nbsp;configuration)</pre>
-<div class="block">Customize our configuration.<br>
- Set the default consumer windows size to 0.<br>
- Set the maximum disk usage from our property <code>
- de.griefed.serverpackcreator.spring.artemis.queue.max_disk_usage</code>.<br>
- Set the address to <code>tasks.background</code>.<br>
- Set the queue configuration to <code>tasks.background</code>.<br>
- Set the name to <code>tasks.background</code>.<br>
- Set the last value key to <code>unique_id</code>.<br>
- Set the routing type to <code>RoutingType.ANYCAST</code>.<br>
- Add our queue configuration..<br>
- All of this ensures that any message added will be deduplicated and worked on one by one. No
- messages should, at any time, be processed in parallel. Whilst working on them in parallel
- would increase the speed at which multiple serer packs are generated, we want to make sure
- neither the CurseForge API, nor the system our webservice is running on receives a heavy load.
- Economically speaking, we are trying to be nice neighbours and not claim too many resources for
- ourselves.</div>
+<div class="block">Customize our configuration.<br> Set the default consumer windows size to 0.<br> Set the
+ maximum disk usage from our property <code>
+ de.griefed.serverpackcreator.spring.artemis.queue.max_disk_usage</code>.<br> Set the address
+ to
+ <code>tasks.background</code>.<br> Set the queue configuration to
+ <code>tasks.background</code>.<br> Set the name to <code>tasks.background</code>.<br> Set the
+ last value key to <code>unique_id</code>.<br> Set the routing type to
+ <code>RoutingType.ANYCAST</code>.<br> Add our queue configuration..<br> All of this ensures that any
+ message added will be deduplicated and worked on one by one. No messages should, at any time,
+ be processed in parallel. Whilst working on them in parallel would increase the speed at which
+ multiple serer packs are generated, we want to make sure neither the CurseForge API, nor the
+ system our webservice is running on receives a heavy load. Economically speaking, we are trying
+ to be nice neighbours and not claim too many resources for ourselves.</div>
 <dl>
 <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
 <dd><code>customize</code>&nbsp;in interface&nbsp;<code>org.springframework.boot.autoconfigure.jms.artemis.ArtemisConfigurationCustomizer</code></dd>

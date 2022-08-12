@@ -112,12 +112,12 @@ public class <span class="typeNameLabel">TaskSubmitter</span>
 extends java.lang.Object</pre>
 <div class="block"><a
  href="https://dev.to/gotson/how-to-implement-a-task-queue-using-apache-artemis-and-spring-boot-2mme">How
- to implement a task queue using Apache Artemis and Spring Boot</a><br>
- Huge Thank You to <a href="https://github.com/gotson">Gauthier</a> for writing the above guide on
- how to implement a JMS. Without it this implementation of Artemis would have either taken way
- longer or never happened at all. I managed to translate their Kotlin-code to Java and make the
- necessary changes to fully implement it in ServerPackCreator.<br>
- Class responsible for submitting tasks to our JMS.</div>
+ to implement a task queue using Apache Artemis and Spring Boot</a><br> Huge Thank You to <a
+ href="https://github.com/gotson">Gauthier</a> for writing the above guide on how to implement a
+ JMS. Without it this implementation of Artemis would have either taken way longer or never
+ happened at all. I managed to translate their Kotlin-code to Java and make the necessary changes
+ to fully implement it in ServerPackCreator.<br> Class responsible for submitting tasks to our
+ JMS.</div>
 </li>
 </ul>
 </div>
@@ -217,8 +217,9 @@ public&nbsp;TaskSubmitter(org.springframework.jms.core.JmsTemplate&nbsp;injected
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>zipGenerationProperties</code> - <code>String</code> containing all information required to generate a
-     server pack from a ZIP-archive. See <a href="../../../../../de/griefed/serverpackcreator/spring/zip/ZipController.html#requestGenerationFromZip-java.lang.String-java.lang.String-java.lang.String-java.lang.String-java.lang.String-"><code>ZipController.requestGenerationFromZip(String,
-     String, String, String, String)</code></a>.</dd>
+                                server pack from a ZIP-archive. See
+                                <a href="../../../../../de/griefed/serverpackcreator/spring/zip/ZipController.html#requestGenerationFromZip-java.lang.String-java.lang.String-java.lang.String-java.lang.String-java.lang.String-"><code>ZipController.requestGenerationFromZip(String, String,
+                                String, String, String)</code></a>.</dd>
 </dl>
 </li>
 </ul>

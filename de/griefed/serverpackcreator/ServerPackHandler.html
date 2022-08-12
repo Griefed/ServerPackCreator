@@ -229,13 +229,13 @@ public&nbsp;ServerPackHandler(<a href="../../../de/griefed/serverpackcreator/App
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>injectedApplicationProperties</code> - Instance of <code>Properties</code> required for various
-     different things.</dd>
-<dd><code>injectedVersionMeta</code> - Instance of <a href="../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta"><code>VersionMeta</code></a> required for everything version
-     related.</dd>
+                                      different things.</dd>
+<dd><code>injectedVersionMeta</code> - Instance of <a href="../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta"><code>VersionMeta</code></a> required for everything
+                                      version related.</dd>
 <dd><code>injectedUtilities</code> - Instance of <a href="../../../de/griefed/serverpackcreator/utilities/common/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.common"><code>Utilities</code></a>.</dd>
 <dd><code>injectedApplicationPlugins</code> - Instance of <a href="../../../de/griefed/serverpackcreator/ApplicationPlugins.html" title="class in de.griefed.serverpackcreator"><code>ApplicationPlugins</code></a>.</dd>
-<dd><code>injectedModScanner</code> - Instance of <a href="../../../de/griefed/serverpackcreator/modscanning/ModScanner.html" title="class in de.griefed.serverpackcreator.modscanning"><code>ModScanner</code></a> required to determine sideness of
-     mods.</dd>
+<dd><code>injectedModScanner</code> - Instance of <a href="../../../de/griefed/serverpackcreator/modscanning/ModScanner.html" title="class in de.griefed.serverpackcreator.modscanning"><code>ModScanner</code></a> required to determine
+                                      sideness of mods.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code>java.io.IOException</code> - if the <a href="../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta"><code>VersionMeta</code></a> could not be instantiated.</dd>
 </dl>
@@ -261,10 +261,10 @@ public&nbsp;ServerPackHandler(<a href="../../../de/griefed/serverpackcreator/App
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>serverPackModel</code> - An instance of <a href="../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackModel.html" title="class in de.griefed.serverpackcreator.spring.serverpack"><code>ServerPackModel</code></a> which contains the configuration
-     of the modpack.</dd>
+                        of the modpack.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>Returns the passed <a href="../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackModel.html" title="class in de.griefed.serverpackcreator.spring.serverpack"><code>ServerPackModel</code></a> which got altered during the creation of
-     said server pack.</dd>
+ said server pack.</dd>
 </dl>
 </li>
 </ul>
@@ -283,10 +283,10 @@ public&nbsp;ServerPackHandler(<a href="../../../de/griefed/serverpackcreator/App
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>configurationModel</code> - <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a> or <a href="../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackModel.html" title="class in de.griefed.serverpackcreator.spring.serverpack"><code>ServerPackModel</code></a> containing the
-     modpack directory of the modpack from which the server pack will be generated.</dd>
+                           modpack directory of the modpack from which the server pack will be
+                           generated.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>String</code> The complete path to the directory in which the server pack will be
-     generated.</dd>
+<dd>The complete path to the directory in which the server pack will be generated.</dd>
 </dl>
 </li>
 </ul>
@@ -302,7 +302,8 @@ public&nbsp;ServerPackHandler(<a href="../../../de/griefed/serverpackcreator/App
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>configurationModel</code> - An instance of <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a> which contains the
-     configuration of the modpack from which the server pack is to be created.</dd>
+                           configuration of the modpack from which the server pack is to be
+                           created.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>Boolean. Returns true if the server pack was successfully generated.</dd>
 </dl>
@@ -319,17 +320,21 @@ public&nbsp;ServerPackHandler(<a href="../../../de/griefed/serverpackcreator/App
                        java.lang.String&nbsp;destination,
                        java.lang.String&nbsp;modloader,
                        java.lang.String&nbsp;modloaderVersion)</pre>
-<div class="block">Creates a ZIP-archive of the server pack previously generated. Depending on <a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#isZipFileExclusionEnabled--"><code>ApplicationProperties.isZipFileExclusionEnabled()</code></a>, files will be excluded. To customize the
- files which will be excluded, see <a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#getFilesToExcludeFromZipArchive--"><code>ApplicationProperties.getFilesToExcludeFromZipArchive()</code></a></div>
+<div class="block">Creates a ZIP-archive of the server pack previously generated. Depending on
+ <a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#isZipFileExclusionEnabled--"><code>ApplicationProperties.isZipFileExclusionEnabled()</code></a>, files will be excluded. To customize
+ the files which will be excluded, see
+ <a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#getFilesToExcludeFromZipArchive--"><code>ApplicationProperties.getFilesToExcludeFromZipArchive()</code></a></div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>minecraftVersion</code> - <code>String</code> Determines the name of the Minecraft server JAR to
-     exclude from the ZIP-archive if the modloader is Forge.</dd>
+<dd><code>minecraftVersion</code> - <code>String</code> Determines the name of the Minecraft server JAR
+                                  to exclude from the ZIP-archive if the modloader is Forge.</dd>
 <dd><code>includeServerInstallation</code> - <code>Boolean</code> Determines whether the Minecraft server JAR
-     info should be printed.</dd>
-<dd><code>destination</code> - <code>String</code> The destination where the ZIP-archive should be created in.</dd>
+                                  info should be printed.</dd>
+<dd><code>destination</code> - <code>String</code> The destination where the ZIP-archive should be
+                                  created in.</dd>
 <dd><code>modloader</code> - <code>String</code> The modloader the modpack and server pack use.</dd>
-<dd><code>modloaderVersion</code> - <code>String</code> The modloader version the modpack and server pack use.</dd>
+<dd><code>modloaderVersion</code> - <code>String</code> The modloader version the modpack and server
+                                  pack use.</dd>
 </dl>
 </li>
 </ul>

@@ -85,7 +85,11 @@
 <ul class="blockList">
 <li class="blockList">
 <h4>SERVERPACKCREATOR_PROPERTIES</h4>
-<pre>java.io.File SERVERPACKCREATOR_PROPERTIES</pre>
+<pre>java.lang.String SERVERPACKCREATOR_PROPERTIES</pre>
+</li>
+<li class="blockList">
+<h4>SERVERPACKCREATOR_PROPERTIES_FILE</h4>
+<pre>java.io.File SERVERPACKCREATOR_PROPERTIES_FILE</pre>
 </li>
 <li class="blockList">
 <h4>FALLBACK_MODS_DEFAULT_ASSTRING</h4>
@@ -248,8 +252,8 @@
  serverpackcreator.conf as well as the last loaded configuration-file. Default is false.</div>
 </li>
 <li class="blockList">
-<h4>versioncheck_prerelease</h4>
-<pre>boolean versioncheck_prerelease</pre>
+<h4>checkForPreReleases</h4>
+<pre>boolean checkForPreReleases</pre>
 <div class="block">Whether ServerPackCreator should check for available PreReleases. Set to <code>true</code> to
  get notified about available PreReleases. Set to <code>false</code> if you only want stable
  releases.</div>
@@ -275,10 +279,31 @@
 <pre>java.util.List&lt;E&gt; scriptTemplates</pre>
 <div class="block">List of templates used for start-script creation.</div>
 </li>
-<li class="blockListLast">
+<li class="blockList">
 <h4>autoExcludingModsEnabled</h4>
 <pre>boolean autoExcludingModsEnabled</pre>
 <div class="block">Whether clientside-only mods should automatically be excluded *</div>
+</li>
+<li class="blockList">
+<h4>serverPacksOverwriteEnabled</h4>
+<pre>boolean serverPacksOverwriteEnabled</pre>
+<div class="block">Whether overwriting of already existing server packs is enabled</div>
+</li>
+<li class="blockList">
+<h4>serverPackCleanupEnabled</h4>
+<pre>boolean serverPackCleanupEnabled</pre>
+<div class="block">Whether cleanup procedures of server packs after generation are enabled. See
+ <code>ServerPackHandler#cleanUpServerPack(...)</code> for details.</div>
+</li>
+<li class="blockList">
+<h4>language</h4>
+<pre>java.lang.String language</pre>
+<div class="block">The language currently being used.</div>
+</li>
+<li class="blockListLast">
+<h4>hasteBinServerUrl</h4>
+<pre>java.lang.String hasteBinServerUrl</pre>
+<div class="block">URL to the hastebin server documents endpoint.</div>
 </li>
 </ul>
 </li>
@@ -463,10 +488,6 @@
 <li class="blockList">
 <h4>MATERIALTEXTPANEUI</h4>
 <pre>mdlaf.components.textpane.MaterialTextPaneUI MATERIALTEXTPANEUI</pre>
-</li>
-<li class="blockList">
-<h4>isDarkTheme</h4>
-<pre>boolean isDarkTheme</pre>
 </li>
 <li class="blockList">
 <h4>configChooser</h4>

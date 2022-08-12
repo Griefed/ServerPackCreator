@@ -135,7 +135,7 @@ extends java.lang.Object</pre>
                     <a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;injectedApplicationProperties,
                     <a href="../../../de/griefed/serverpackcreator/utilities/common/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.common">Utilities</a>&nbsp;injectedUtilities,
                     <a href="../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ConfigUtilities</a>&nbsp;injectedConfigUtilities)</code>
-<div class="block"><strong>Constructor</strong></div>
+<div class="block">Construct a new ConfigurationHandler giving you access to various config check methods.</div>
 </td>
 </tr>
 </table>
@@ -325,18 +325,13 @@ public&nbsp;ConfigurationHandler(<a href="../../../de/griefed/serverpackcreator/
                                        <a href="../../../de/griefed/serverpackcreator/utilities/common/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.common">Utilities</a>&nbsp;injectedUtilities,
                                        <a href="../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ConfigUtilities</a>&nbsp;injectedConfigUtilities)
                                 throws java.io.IOException</pre>
-<div class="block"><strong>Constructor</strong>
-
- <p>Used for Dependency Injection.
-
- <p>Receives an instance of <a href="../../../de/griefed/serverpackcreator/i18n/I18n.html" title="class in de.griefed.serverpackcreator.i18n"><code>I18n</code></a> or creates one if the received one is null. Required
- for use of localization.</div>
+<div class="block">Construct a new ConfigurationHandler giving you access to various config check methods.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>injectedI18n</code> - Instance of <a href="../../../de/griefed/serverpackcreator/i18n/I18n.html" title="class in de.griefed.serverpackcreator.i18n"><code>I18n</code></a> required for localized log
                                       messages.</dd>
-<dd><code>injectedApplicationProperties</code> - Instance of <code>Properties</code> required for various
-                                      different things.</dd>
+<dd><code>injectedApplicationProperties</code> - Instance of <a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator"><code>ApplicationProperties</code></a> required for
+                                      various different things.</dd>
 <dd><code>injectedVersionMeta</code> - Instance of <a href="../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta"><code>VersionMeta</code></a> required for everything
                                       version-related.</dd>
 <dd><code>injectedUtilities</code> - Instance of <a href="../../../de/griefed/serverpackcreator/utilities/common/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.common"><code>Utilities</code></a>.</dd>
@@ -371,19 +366,19 @@ public&nbsp;ConfigurationHandler(<a href="../../../de/griefed/serverpackcreator/
  project and file is specified.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>configFile</code> - File. The configuration file to check. Must either be an existing file
-                          to load a configuration from or null if you want to use the passed
+<dd><code>configFile</code> - The configuration file to check. Must either be an existing file to
+                          load a configuration from or null if you want to use the passed
                           configuration model.</dd>
-<dd><code>encounteredErrors</code> - List String. A list of errors encountered during configuration checks
-                          which gets printed to the console and log after all checks have run.
-                          Gives the user more detail on what went wrong at which part of their
+<dd><code>encounteredErrors</code> - A list of errors encountered during configuration checks which gets
+                          printed to the console and log after all checks have run. Gives the
+                          user more detail on what went wrong at which part of their
                           configuration. Can be used to display the errors, if any were
                           encountered, in a UI or be printed into the console or whatever have
                           you.</dd>
-<dd><code>quietCheck</code> - Boolean. Whether the configuration should be printed to the console
-                          and logs. Pass false to quietly check the configuration.</dd>
+<dd><code>quietCheck</code> - Whether the configuration should be printed to the console and logs.
+                          Pass false to quietly check the configuration.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>Boolean. Returns <code>false</code> if the configuration has passed all tests.</dd>
+<dd><code>false</code> if the configuration has passed all tests.</dd>
 </dl>
 </li>
 </ul>
@@ -401,13 +396,13 @@ public&nbsp;ConfigurationHandler(<a href="../../../de/griefed/serverpackcreator/
  serverpackcreator.log in the logs-directory.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>configFile</code> - File. The configuration file to check. Must either be an existing file to
-                   load a configuration from or null if you want to use the passed configuration
+<dd><code>configFile</code> - The configuration file to check. Must either be an existing file to load a
+                   configuration from or null if you want to use the passed configuration
                    model.</dd>
-<dd><code>quietCheck</code> - Boolean. Whether the configuration should be printed to the console and logs.
-                   Pass false to quietly check the configuration.</dd>
+<dd><code>quietCheck</code> - Whether the configuration should be printed to the console and logs. Pass
+                   false to quietly check the configuration.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>Boolean. Returns <code>false</code> if the configuration has passed all tests.</dd>
+<dd><code>false</code> if the configuration has passed all tests.</dd>
 </dl>
 </li>
 </ul>
@@ -427,16 +422,16 @@ public&nbsp;ConfigurationHandler(<a href="../../../de/griefed/serverpackcreator/
  serverpackcreator.log in the logs-directory.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>configFile</code> - File. The configuration file to check. Must either be an existing
-                           file to load a configuration from or null if you want to use the
-                           passed configuration model.</dd>
-<dd><code>configurationModel</code> - ConfigurationModel. Instance of a configuration of a modpack. Can be
-                           used to further display or use any information within, as it may be
-                           changed or otherwise altered by this method.</dd>
-<dd><code>quietCheck</code> - Boolean. Whether the configuration should be printed to the console
-                           and logs. Pass false to quietly check the configuration.</dd>
+<dd><code>configFile</code> - The configuration file to check. Must either be an existing file to
+                           load a configuration from or null if you want to use the passed
+                           configuration model.</dd>
+<dd><code>configurationModel</code> - Instance of a configuration of a modpack. Can be used to further
+                           display or use any information within, as it may be changed or
+                           otherwise altered by this method.</dd>
+<dd><code>quietCheck</code> - Whether the configuration should be printed to the console and logs.
+                           Pass false to quietly check the configuration.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>Boolean. Returns <code>false</code> if the configuration has passed all tests.</dd>
+<dd><code>false</code> if the configuration has passed all tests.</dd>
 </dl>
 </li>
 </ul>
@@ -454,13 +449,13 @@ public&nbsp;ConfigurationHandler(<a href="../../../de/griefed/serverpackcreator/
  their serverpackcreator.log in the logs-directory.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>configurationModel</code> - ConfigurationModel. Instance of a configuration of a modpack. Can be
-                           used to further display or use any information within, as it may be
-                           changed or otherwise altered by this method.</dd>
-<dd><code>quietCheck</code> - Boolean. Whether the configuration should be printed to the console
-                           and logs. Pass false to quietly check the configuration.</dd>
+<dd><code>configurationModel</code> - Instance of a configuration of a modpack. Can be used to further
+                           display or use any information within, as it may be changed or
+                           otherwise altered by this method.</dd>
+<dd><code>quietCheck</code> - Whether the configuration should be printed to the console and logs.
+                           Pass false to quietly check the configuration.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>Boolean. Returns <code>false</code> if the configuration has passed all tests.</dd>
+<dd><code>false</code> if the configuration has passed all tests.</dd>
 </dl>
 </li>
 </ul>
@@ -482,22 +477,22 @@ public&nbsp;ConfigurationHandler(<a href="../../../de/griefed/serverpackcreator/
  serverpackcreator.log in the logs-directory.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>configFile</code> - File. The configuration file to check. Must either be an existing
-                           file to load a configuration from or null if you want to use the
-                           passed configuration model.</dd>
-<dd><code>configurationModel</code> - ConfigurationModel. Instance of a configuration of a modpack. Can be
-                           used to further display or use any information within, as it may be
-                           changed or otherwise altered by this method.</dd>
-<dd><code>encounteredErrors</code> - List String. A list of errors encountered during configuration checks
-                           which gets printed to the console and log after all checks have run.
-                           Gives the user more detail on what went wrong at which part of their
+<dd><code>configFile</code> - The configuration file to check. Must either be an existing file to
+                           load a configuration from or null if you want to use the passed
+                           configuration model.</dd>
+<dd><code>configurationModel</code> - Instance of a configuration of a modpack. Can be used to further
+                           display or use any information within, as it may be changed or
+                           otherwise altered by this method.</dd>
+<dd><code>encounteredErrors</code> - A list of errors encountered during configuration checks which gets
+                           printed to the console and log after all checks have run. Gives the
+                           user more detail on what went wrong at which part of their
                            configuration. Can be used to display the errors, if any were
                            encountered, in a UI or be printed into the console or whatever have
                            you.</dd>
-<dd><code>quietCheck</code> - Boolean. Whether the configuration should be printed to the console
-                           and logs. Pass false to quietly check the configuration.</dd>
+<dd><code>quietCheck</code> - Whether the configuration should be printed to the console and logs.
+                           Pass false to quietly check the configuration.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>Boolean. Returns <code>false</code> if the configuration has passed all tests.</dd>
+<dd><code>false</code> if the configuration has passed all tests.</dd>
 </dl>
 </li>
 </ul>
@@ -521,19 +516,19 @@ public&nbsp;ConfigurationHandler(<a href="../../../de/griefed/serverpackcreator/
  may be changed or otherwise altered by this method.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>configurationModel</code> - ConfigurationModel. Instance of a configuration of a modpack. Can be
-                           used to further display or use any information within, as it may be
-                           changed or otherwise altered by this method.</dd>
-<dd><code>encounteredErrors</code> - List String. A list of errors encountered during configuration checks
-                           which gets printed to the console and log after all checks have run.
-                           Gives the user more detail on what went wrong at which part of their
+<dd><code>configurationModel</code> - Instance of a configuration of a modpack. Can be used to further
+                           display or use any information within, as it may be changed or
+                           otherwise altered by this method.</dd>
+<dd><code>encounteredErrors</code> - A list of errors encountered during configuration checks which gets
+                           printed to the console and log after all checks have run. Gives the
+                           user more detail on what went wrong at which part of their
                            configuration. Can be used to display the errors, if any were
                            encountered, in a UI or be printed into the console or whatever have
                            you.</dd>
-<dd><code>quietCheck</code> - Boolean. Whether the configuration should be printed to the console
-                           and logs. Pass false to quietly check the configuration.</dd>
+<dd><code>quietCheck</code> - Whether the configuration should be printed to the console and logs.
+                           Pass false to quietly check the configuration.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>Boolean. Returns <code>false</code> if all checks are passed.</dd>
+<dd><code>false</code> if all checks are passed.</dd>
 </dl>
 </li>
 </ul>

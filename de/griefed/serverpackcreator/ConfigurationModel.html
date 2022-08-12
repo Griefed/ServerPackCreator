@@ -479,29 +479,27 @@ extends java.lang.Object</pre>
 <div class="block">Construct a new configuration model with custom values.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>clientMods</code> - String-<code>List</code> of clientside mods to exclude from the server pack.</dd>
-<dd><code>copyDirs</code> - String-<code>List</code> of directories and/or files to include in the server pack.</dd>
-<dd><code>modpackDir</code> - <code>String</code> The path to the modpack.</dd>
-<dd><code>javaPath</code> - <code>String</code> The path to the java installation used for modloader server
-     installation.</dd>
-<dd><code>minecraftVersion</code> - <code>String</code> The Minecraft version the modpack uses.</dd>
-<dd><code>modLoader</code> - <code>String</code> The modloader the modpack uses. Either <code>Forge</code>,
-     <code>Fabric</code> or <code>Quilt</code>.</dd>
-<dd><code>modLoaderVersion</code> - <code>String</code> The modloader version the modpack uses.</dd>
-<dd><code>javaArgs</code> - <code>String</code> JVM flags to create the start scripts with.</dd>
-<dd><code>serverPackSuffix</code> - <code>String</code> Suffix to create the server pack with.</dd>
-<dd><code>serverIconPath</code> - <code>String</code> Path to the icon to use in the server pack.</dd>
-<dd><code>serverPropertiesPath</code> - <code>String</code> Path to the server.properties to create the server
-     pack with.</dd>
-<dd><code>includeServerInstallation</code> - <code>Boolean</code> Whether to install the modloader server in the
-     server pack.</dd>
-<dd><code>includeServerIcon</code> - <code>Boolean</code> Whether to include the server-icon.png in the server
-     pack.</dd>
-<dd><code>includeServerProperties</code> - <code>Boolean</code> Whether to include the server.properties in the
-     server pack.</dd>
-<dd><code>includeZipCreation</code> - <code>Boolean</code> Whether to create a ZIP-archive of the server pack.</dd>
-<dd><code>scriptSettings</code> - <code>HashMap</code> <code>String</code> <code>String</code> Map containing key-value
-     pairs to be used in start script creation.</dd>
+<dd><code>clientMods</code> - List of clientside mods to exclude from the server pack.</dd>
+<dd><code>copyDirs</code> - List of directories and/or files to include in the server
+                                  pack.</dd>
+<dd><code>modpackDir</code> - The path to the modpack.</dd>
+<dd><code>javaPath</code> - The path to the java installation used for modloader server
+                                  installation.</dd>
+<dd><code>minecraftVersion</code> - The Minecraft version the modpack uses.</dd>
+<dd><code>modLoader</code> - The modloader the modpack uses. Either
+                                  <code>Forge</code>,
+                                  <code>Fabric</code> or <code>Quilt</code>.</dd>
+<dd><code>modLoaderVersion</code> - The modloader version the modpack uses.</dd>
+<dd><code>javaArgs</code> - JVM flags to create the start scripts with.</dd>
+<dd><code>serverPackSuffix</code> - Suffix to create the server pack with.</dd>
+<dd><code>serverIconPath</code> - Path to the icon to use in the server pack.</dd>
+<dd><code>serverPropertiesPath</code> - Path to the server.properties to create the server pack with.</dd>
+<dd><code>includeServerInstallation</code> - Whether to install the modloader server in the server pack.</dd>
+<dd><code>includeServerIcon</code> - Whether to include the server-icon.png in the server pack.</dd>
+<dd><code>includeServerProperties</code> - Whether to include the server.properties in the server pack.</dd>
+<dd><code>includeZipCreation</code> - Whether to create a ZIP-archive of the server pack.</dd>
+<dd><code>scriptSettings</code> - Map containing key-value pairs to be used in start script
+                                  creation.</dd>
 </dl>
 </li>
 </ul>
@@ -894,7 +892,8 @@ extends java.lang.Object</pre>
 <div class="block">Setter for the Java arguments with which the start-scripts will be generated.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>javaArgs</code> - String. Sets the Java arguments with which the start-scripts will be generated.</dd>
+<dd><code>javaArgs</code> - String. Sets the Java arguments with which the start-scripts will be
+                 generated.</dd>
 </dl>
 </li>
 </ul>
@@ -1065,7 +1064,7 @@ extends java.lang.Object</pre>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>serverPropertiesPath</code> - String. The path to the server.properties to include in the server
-     pack.</dd>
+                             pack.</dd>
 </dl>
 </li>
 </ul>
@@ -1095,7 +1094,7 @@ extends java.lang.Object</pre>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>scriptSettings</code> - <code>HashMap</code> <code>String</code>-<code>String</code> containing key-value pairs
-     to be used in script creation.</dd>
+                       to be used in script creation.</dd>
 </dl>
 </li>
 </ul>

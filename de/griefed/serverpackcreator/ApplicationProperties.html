@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10,"i17":10,"i18":10,"i19":10,"i20":10,"i21":10,"i22":10,"i23":10,"i24":10,"i25":10,"i26":10,"i27":10,"i28":10,"i29":10,"i30":10,"i31":10,"i32":10,"i33":10,"i34":10,"i35":10,"i36":10,"i37":10,"i38":10,"i39":10,"i40":10,"i41":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10,"i17":10,"i18":10,"i19":10,"i20":10,"i21":10,"i22":10,"i23":10,"i24":10,"i25":10,"i26":10,"i27":10,"i28":10,"i29":10,"i30":10,"i31":10,"i32":10,"i33":10,"i34":10,"i35":10,"i36":10,"i37":10,"i38":10,"i39":10,"i40":10,"i41":10,"i42":10,"i43":10,"i44":10,"i45":10,"i46":10,"i47":10,"i48":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -170,7 +170,13 @@ extends java.util.Properties</pre>
 </tr>
 <tr class="altColor">
 <td class="colOne"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#ApplicationProperties--">ApplicationProperties</a></span>()</code>
-<div class="block">Constructor for our properties.</div>
+<div class="block">Initialize an instance of our application properties using the default
+ <code>serverpackcreator.properties</code>.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#ApplicationProperties-java.io.File-">ApplicationProperties</a></span>(java.io.File&nbsp;propertiesFile)</code>
+<div class="block">Initialize an instance of our application properties using a custom properties-file.</div>
 </td>
 </tr>
 </table>
@@ -197,8 +203,8 @@ extends java.util.Properties</pre>
 <tr id="i1" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#checkForAvailablePreReleases--">checkForAvailablePreReleases</a></span>()</code>
-<div class="block">Getter for whether the search for available PreReleases is enabled or disabled.<br>
- Depending on <code>de.griefed.serverpackcreator.versioncheck.prerelease</code>, returns <code>
+<div class="block">Getter for whether the search for available PreReleases is enabled or disabled.<br> Depending
+ on <code>de.griefed.serverpackcreator.versioncheck.prerelease</code>, returns <code>
  true</code> if checks for available PreReleases are enabled, <code>false</code> if no checks
  for available PreReleases should be made.</div>
 </td>
@@ -327,117 +333,159 @@ extends java.util.Properties</pre>
 </td>
 </tr>
 <tr id="i23" class="rowColor">
+<td class="colFirst"><code>java.lang.String</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#getHasteBinServerUrl--">getHasteBinServerUrl</a></span>()</code>
+<div class="block">Acquire this instances HasteBin server documents endpoint URL.</div>
+</td>
+</tr>
+<tr id="i24" class="altColor">
+<td class="colFirst"><code>java.lang.String</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#getLanguage--">getLanguage</a></span>()</code>
+<div class="block">Get the currently set language.</div>
+</td>
+</tr>
+<tr id="i25" class="rowColor">
 <td class="colFirst"><code>java.util.List&lt;java.lang.String&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#getListFallbackMods--">getListFallbackMods</a></span>()</code>
 <div class="block">Getter for the fallback list of clientside-only mods.</div>
 </td>
 </tr>
-<tr id="i24" class="altColor">
+<tr id="i26" class="altColor">
 <td class="colFirst"><code>int</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#getQueueMaxDiskUsage--">getQueueMaxDiskUsage</a></span>()</code>
 <div class="block">Getter for the maximum disk usage at which JMS/Artemis will stop storing queues on disk.</div>
 </td>
 </tr>
-<tr id="i25" class="rowColor">
+<tr id="i27" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#getSaveLoadedConfiguration--">getSaveLoadedConfiguration</a></span>()</code>
 <div class="block">Getter for whether the last loaded configuration file should be saved to as well.</div>
 </td>
 </tr>
-<tr id="i26" class="altColor">
+<tr id="i28" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#isAutoExcludingModsEnabled--">isAutoExcludingModsEnabled</a></span>()</code>
 <div class="block">Is auto excluding of clientside-only mods enabled.</div>
 </td>
 </tr>
-<tr id="i27" class="rowColor">
+<tr id="i29" class="rowColor">
+<td class="colFirst"><code>boolean</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#isDarkTheme--">isDarkTheme</a></span>()</code>
+<div class="block">Is the Dark Theme currently active?</div>
+</td>
+</tr>
+<tr id="i30" class="altColor">
+<td class="colFirst"><code>boolean</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#isServerPackCleanupEnabled--">isServerPackCleanupEnabled</a></span>()</code>
+<div class="block">Whether cleanup procedures after server pack generation are enabled.</div>
+</td>
+</tr>
+<tr id="i31" class="rowColor">
+<td class="colFirst"><code>boolean</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#isServerPacksOverwriteEnabled--">isServerPacksOverwriteEnabled</a></span>()</code>
+<div class="block">Whether overwriting of already existing server packs is enabled.</div>
+</td>
+</tr>
+<tr id="i32" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#isZipFileExclusionEnabled--">isZipFileExclusionEnabled</a></span>()</code>
 <div class="block">Whether the exclusion of files from the ZIP-archive of the server pack is enabled.</div>
 </td>
 </tr>
-<tr id="i28" class="altColor">
+<tr id="i33" class="rowColor">
 <td class="colFirst"><code>java.io.File</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#MINECRAFT_VERSION_MANIFEST_LOCATION--">MINECRAFT_VERSION_MANIFEST_LOCATION</a></span>()</code>
 <div class="block">Path to the Minecraft version manifest-file, as a file.</div>
 </td>
 </tr>
-<tr id="i29" class="rowColor">
+<tr id="i34" class="altColor">
 <td class="colFirst"><code>java.io.File</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#MINECRAFT_VERSION_MANIFEST--">MINECRAFT_VERSION_MANIFEST</a></span>()</code>
 <div class="block">Minecraft version manifest-file.</div>
 </td>
 </tr>
-<tr id="i30" class="altColor">
+<tr id="i35" class="rowColor">
 <td class="colFirst"><code>java.io.File</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#OLD_CONFIG--">OLD_CONFIG</a></span>()</code>
 <div class="block">Old configuration-file used for automated migration in case anyone upgrades from 1.x.</div>
 </td>
 </tr>
-<tr id="i31" class="rowColor">
+<tr id="i36" class="altColor">
 <td class="colFirst"><code>java.io.File</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#QUILT_INSTALLER_VERSION_MANIFEST_LOCATION--">QUILT_INSTALLER_VERSION_MANIFEST_LOCATION</a></span>()</code>
 <div class="block">Path to the Quilt installer version manifest-file, as a file.</div>
 </td>
 </tr>
-<tr id="i32" class="altColor">
+<tr id="i37" class="rowColor">
 <td class="colFirst"><code>java.io.File</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#QUILT_INSTALLER_VERSION_MANIFEST--">QUILT_INSTALLER_VERSION_MANIFEST</a></span>()</code>
 <div class="block">Quilt installer version manifest-file.</div>
 </td>
 </tr>
-<tr id="i33" class="rowColor">
+<tr id="i38" class="altColor">
 <td class="colFirst"><code>java.io.File</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#QUILT_VERSION_MANIFEST_LOCATION--">QUILT_VERSION_MANIFEST_LOCATION</a></span>()</code>
 <div class="block">Path to the Quilt version manifest-file, as a file.</div>
 </td>
 </tr>
-<tr id="i34" class="altColor">
+<tr id="i39" class="rowColor">
 <td class="colFirst"><code>java.io.File</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#QUILT_VERSION_MANIFEST--">QUILT_VERSION_MANIFEST</a></span>()</code>
 <div class="block">Quilt version manifest-file.</div>
 </td>
 </tr>
-<tr id="i35" class="rowColor">
+<tr id="i40" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#reload--">reload</a></span>()</code>
 <div class="block">Reload serverpackcreator.properties.</div>
 </td>
 </tr>
-<tr id="i36" class="altColor">
+<tr id="i41" class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#saveToDisk--">saveToDisk</a></span>()</code>
+<div class="block">Store the ApplicationProperties to disk, overwriting the existing one.</div>
+</td>
+</tr>
+<tr id="i42" class="altColor">
 <td class="colFirst"><code>java.util.List&lt;java.io.File&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#scriptTemplates--">scriptTemplates</a></span>()</code>
 <div class="block">Configured list of script templates.</div>
 </td>
 </tr>
-<tr id="i37" class="rowColor">
+<tr id="i43" class="rowColor">
 <td class="colFirst"><code>java.io.File</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#SERVERPACKCREATOR_DATABASE--">SERVERPACKCREATOR_DATABASE</a></span>()</code>
 <div class="block">ServerPackCreator-database when running as a webservice.</div>
 </td>
 </tr>
-<tr id="i38" class="altColor">
+<tr id="i44" class="altColor">
 <td class="colFirst"><code>java.io.File</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#SERVERPACKCREATOR_PROPERTIES--">SERVERPACKCREATOR_PROPERTIES</a></span>()</code>
 <div class="block">Properties file used by ServerPackCreator, containing the configuration for this instance of
  it.</div>
 </td>
 </tr>
-<tr id="i39" class="rowColor">
+<tr id="i45" class="rowColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#SERVERPACKCREATOR_VERSION--">SERVERPACKCREATOR_VERSION</a></span>()</code>
-<div class="block">Getter for the version of ServerPackCreator.<br>
- If a JAR-file compiled from a release-job from a CI/CD-pipeline is used, it should contain a
- VERSION.txt-file which contains the version of said release.</div>
+<div class="block">Getter for the version of ServerPackCreator.<br> If a JAR-file compiled from a release-job from
+ a CI/CD-pipeline is used, it should contain a VERSION.txt-file which contains the version of
+ said release.</div>
 </td>
 </tr>
-<tr id="i40" class="altColor">
+<tr id="i46" class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#setTheme-boolean-">setTheme</a></span>(boolean&nbsp;dark)</code>
+<div class="block">Set the current theme to Dark Theme or Light Theme.</div>
+</td>
+</tr>
+<tr id="i47" class="rowColor">
 <td class="colFirst"><code>java.lang.String[]</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#SUPPORTED_MODLOADERS--">SUPPORTED_MODLOADERS</a></span>()</code>
 <div class="block">String-array of modloaders supported by ServerPackCreator.</div>
 </td>
 </tr>
-<tr id="i41" class="rowColor">
+<tr id="i48" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#updateFallback--">updateFallback</a></span>()</code>
 <div class="block">Update the fallback clientside-only modlist of our <code>serverpackcreator.properties</code>
@@ -483,12 +531,27 @@ extends java.util.Properties</pre>
 <a name="ApplicationProperties--">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>ApplicationProperties</h4>
 <pre>@Autowired
 public&nbsp;ApplicationProperties()</pre>
-<div class="block">Constructor for our properties. Sets a couple of default values for use in ServerPackCreator.</div>
+<div class="block">Initialize an instance of our application properties using the default
+ <code>serverpackcreator.properties</code>.</div>
+</li>
+</ul>
+<a name="ApplicationProperties-java.io.File-">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>ApplicationProperties</h4>
+<pre>public&nbsp;ApplicationProperties(java.io.File&nbsp;propertiesFile)</pre>
+<div class="block">Initialize an instance of our application properties using a custom properties-file.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>propertiesFile</code> - The properties file from which to load the settings and configuration.</dd>
+</dl>
 </li>
 </ul>
 </li>
@@ -524,7 +587,7 @@ public&nbsp;ApplicationProperties()</pre>
  </ul></div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>List</code> <code>File</code> Default script templates.</dd>
+<dd>Default script templates.</dd>
 </dl>
 </li>
 </ul>
@@ -556,7 +619,7 @@ public&nbsp;ApplicationProperties()</pre>
 <div class="block">Configured list of script templates.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>List</code> <code>File</code> Configured script templates.</dd>
+<dd>Configured script templates.</dd>
 </dl>
 </li>
 </ul>
@@ -571,7 +634,7 @@ public&nbsp;ApplicationProperties()</pre>
  it.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>File</code> serverpackcreator.properties-file.</dd>
+<dd>serverpackcreator.properties-file.</dd>
 </dl>
 </li>
 </ul>
@@ -585,7 +648,7 @@ public&nbsp;ApplicationProperties()</pre>
 <div class="block">String-list of fallback clientside-only mods.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>String</code>-list of fallback clientside-only mods.</dd>
+<dd>List of fallback clientside-only mods.</dd>
 </dl>
 </li>
 </ul>
@@ -599,7 +662,7 @@ public&nbsp;ApplicationProperties()</pre>
 <div class="block">Default configuration-file for a server pack generation.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>File</code> serverpackcreator.conf-file.</dd>
+<dd>serverpackcreator.conf-file.</dd>
 </dl>
 </li>
 </ul>
@@ -613,7 +676,7 @@ public&nbsp;ApplicationProperties()</pre>
 <div class="block">Old configuration-file used for automated migration in case anyone upgrades from 1.x.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>File</code> creator.conf-file.</dd>
+<dd>creator.conf-file.</dd>
 </dl>
 </li>
 </ul>
@@ -627,7 +690,7 @@ public&nbsp;ApplicationProperties()</pre>
 <div class="block">Default server.properties-file used by Minecraft servers.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>File</code> server.properties-file.</dd>
+<dd>server.properties-file.</dd>
 </dl>
 </li>
 </ul>
@@ -641,7 +704,7 @@ public&nbsp;ApplicationProperties()</pre>
 <div class="block">Default server-icon.png-file used by Minecraft servers.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>File</code> server-icon.png-file.</dd>
+<dd>server-icon.png-file.</dd>
 </dl>
 </li>
 </ul>
@@ -655,7 +718,7 @@ public&nbsp;ApplicationProperties()</pre>
 <div class="block">Minecraft version manifest-file.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>File</code> minecraft-manifest.json-file.</dd>
+<dd>minecraft-manifest.json-file.</dd>
 </dl>
 </li>
 </ul>
@@ -669,7 +732,7 @@ public&nbsp;ApplicationProperties()</pre>
 <div class="block">Forge version manifest-file.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>File</code> forge-manifest.json-file.</dd>
+<dd>forge-manifest.json-file.</dd>
 </dl>
 </li>
 </ul>
@@ -683,7 +746,7 @@ public&nbsp;ApplicationProperties()</pre>
 <div class="block">Fabric version manifest-file.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>File</code> fabric-manifest.xml-file</dd>
+<dd>fabric-manifest.xml-file</dd>
 </dl>
 </li>
 </ul>
@@ -697,7 +760,7 @@ public&nbsp;ApplicationProperties()</pre>
 <div class="block">Fabric installer version manifest-file.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>File</code> fabric-installer-manifest.xml-file.</dd>
+<dd>fabric-installer-manifest.xml-file.</dd>
 </dl>
 </li>
 </ul>
@@ -711,7 +774,7 @@ public&nbsp;ApplicationProperties()</pre>
 <div class="block">Quilt version manifest-file.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>File</code> quilt-manifest.xml-file</dd>
+<dd>quilt-manifest.xml-file</dd>
 </dl>
 </li>
 </ul>
@@ -725,7 +788,7 @@ public&nbsp;ApplicationProperties()</pre>
 <div class="block">Quilt installer version manifest-file.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>File</code> quilt-installer-manifest.xml-file.</dd>
+<dd>quilt-installer-manifest.xml-file.</dd>
 </dl>
 </li>
 </ul>
@@ -739,7 +802,7 @@ public&nbsp;ApplicationProperties()</pre>
 <div class="block">ServerPackCreator-database when running as a webservice.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>File</code> serverpackcreator.db-file.</dd>
+<dd>serverpackcreator.db-file.</dd>
 </dl>
 </li>
 </ul>
@@ -753,7 +816,7 @@ public&nbsp;ApplicationProperties()</pre>
 <div class="block">Path to the Minecraft version manifest-file, as a file.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>File</code> ./work/minecraft-manifest.json</dd>
+<dd>./work/minecraft-manifest.json</dd>
 </dl>
 </li>
 </ul>
@@ -767,7 +830,7 @@ public&nbsp;ApplicationProperties()</pre>
 <div class="block">Path to the Forge version manifest-file, as a file.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>File</code> ./work/forge-manifest.json</dd>
+<dd>./work/forge-manifest.json</dd>
 </dl>
 </li>
 </ul>
@@ -781,7 +844,7 @@ public&nbsp;ApplicationProperties()</pre>
 <div class="block">Path to the Fabric version manifest-file, as a file.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>File</code> ./work/fabric-manifest.xml</dd>
+<dd>./work/fabric-manifest.xml</dd>
 </dl>
 </li>
 </ul>
@@ -795,7 +858,7 @@ public&nbsp;ApplicationProperties()</pre>
 <div class="block">Path to the Fabric intermediaries manifest-file, as a file.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>File</code> ./work/fabric-intermediaries-manifest.json</dd>
+<dd>./work/fabric-intermediaries-manifest.json</dd>
 </dl>
 </li>
 </ul>
@@ -809,7 +872,7 @@ public&nbsp;ApplicationProperties()</pre>
 <div class="block">Path to the Fabric installer version manifest-file, as a file.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>File</code> ./work/fabric-installer-manifest.xml</dd>
+<dd>./work/fabric-installer-manifest.xml</dd>
 </dl>
 </li>
 </ul>
@@ -823,7 +886,7 @@ public&nbsp;ApplicationProperties()</pre>
 <div class="block">Path to the Quilt version manifest-file, as a file.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>File</code> ./work/quilt-manifest.xml</dd>
+<dd>./work/quilt-manifest.xml</dd>
 </dl>
 </li>
 </ul>
@@ -837,7 +900,7 @@ public&nbsp;ApplicationProperties()</pre>
 <div class="block">Path to the Quilt installer version manifest-file, as a file.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>File</code> ./work/quilt-installer-manifest.xml</dd>
+<dd>./work/quilt-installer-manifest.xml</dd>
 </dl>
 </li>
 </ul>
@@ -848,10 +911,10 @@ public&nbsp;ApplicationProperties()</pre>
 <li class="blockList">
 <h4>SERVERPACKCREATOR_VERSION</h4>
 <pre>public&nbsp;java.lang.String&nbsp;SERVERPACKCREATOR_VERSION()</pre>
-<div class="block">Getter for the version of ServerPackCreator.<br>
- If a JAR-file compiled from a release-job from a CI/CD-pipeline is used, it should contain a
- VERSION.txt-file which contains the version of said release. If a non-release-version is used,
- from a regular pipeline or local dev-build, then this will be set to <code>dev</code>.</div>
+<div class="block">Getter for the version of ServerPackCreator.<br> If a JAR-file compiled from a release-job from
+ a CI/CD-pipeline is used, it should contain a VERSION.txt-file which contains the version of
+ said release. If a non-release-version is used, from a regular pipeline or local dev-build,
+ then this will be set to <code>dev</code>.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>String. Returns the version of ServerPackCreator.</dd>
@@ -868,7 +931,7 @@ public&nbsp;ApplicationProperties()</pre>
 <div class="block">String-array of modloaders supported by ServerPackCreator.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>String</code>-array of modloaders supported by ServerPackCreator.</dd>
+<dd>Array of modloaders supported by ServerPackCreator.</dd>
 </dl>
 </li>
 </ul>
@@ -883,7 +946,7 @@ public&nbsp;ApplicationProperties()</pre>
  server.properties.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>String</code> server-files directory.</dd>
+<dd>server-files directory.</dd>
 </dl>
 </li>
 </ul>
@@ -897,7 +960,7 @@ public&nbsp;ApplicationProperties()</pre>
 <div class="block">Directory where plugins are stored in.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>String</code> plugins directory.</dd>
+<dd>plugins directory.</dd>
 </dl>
 </li>
 </ul>
@@ -939,7 +1002,7 @@ public&nbsp;ApplicationProperties()</pre>
 <div class="block">Getter for the default list of directories to include in a server pack.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>List</code> <code>String</code> containing default directories to include in a server pack.</dd>
+<dd>List containing default directories to include in a server pack.</dd>
 </dl>
 </li>
 </ul>
@@ -968,7 +1031,7 @@ public&nbsp;ApplicationProperties()</pre>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>entry</code> - String. The directory to add to the list of directories to exclude from server
-     packs.</dd>
+              packs.</dd>
 </dl>
 </li>
 </ul>
@@ -1007,8 +1070,8 @@ public&nbsp;ApplicationProperties()</pre>
 <li class="blockList">
 <h4>checkForAvailablePreReleases</h4>
 <pre>public&nbsp;boolean&nbsp;checkForAvailablePreReleases()</pre>
-<div class="block">Getter for whether the search for available PreReleases is enabled or disabled.<br>
- Depending on <code>de.griefed.serverpackcreator.versioncheck.prerelease</code>, returns <code>
+<div class="block">Getter for whether the search for available PreReleases is enabled or disabled.<br> Depending
+ on <code>de.griefed.serverpackcreator.versioncheck.prerelease</code>, returns <code>
  true</code> if checks for available PreReleases are enabled, <code>false</code> if no checks
  for available PreReleases should be made.</div>
 <dl>
@@ -1027,7 +1090,7 @@ public&nbsp;ApplicationProperties()</pre>
 <div class="block">Get this configurations AikarsFlags</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>String</code> Aikars flags.</dd>
+<dd>Aikars flags.</dd>
 </dl>
 </li>
 </ul>
@@ -1047,7 +1110,7 @@ public&nbsp;ApplicationProperties()</pre>
    <li><code>MODLOADER_VERSION</code> - Will be replaced with the modloader version of the
        server pack
  </ul>
-
+ <p>
  Should you want these filters to be expanded, open an issue on <a
  href="https://github.com/Griefed/ServerPackCreator/issues">GitHub</a></div>
 <dl>
@@ -1087,7 +1150,7 @@ public&nbsp;ApplicationProperties()</pre>
 <a name="updateFallback--">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>updateFallback</h4>
 <pre>public&nbsp;boolean&nbsp;updateFallback()</pre>
@@ -1096,6 +1159,100 @@ public&nbsp;ApplicationProperties()</pre>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd><code>true</code> if the fallback-property was updated.</dd>
+</dl>
+</li>
+</ul>
+<a name="isDarkTheme--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>isDarkTheme</h4>
+<pre>public&nbsp;boolean&nbsp;isDarkTheme()</pre>
+<div class="block">Is the Dark Theme currently active?</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd><code>true</code> if the Dark Theme is active, otherwise false.</dd>
+</dl>
+</li>
+</ul>
+<a name="setTheme-boolean-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>setTheme</h4>
+<pre>public&nbsp;void&nbsp;setTheme(boolean&nbsp;dark)</pre>
+<div class="block">Set the current theme to Dark Theme or Light Theme.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>dark</code> - <code>true</code> to activate Dark Theme, <code>false</code> otherwise.</dd>
+</dl>
+</li>
+</ul>
+<a name="saveToDisk--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>saveToDisk</h4>
+<pre>public&nbsp;void&nbsp;saveToDisk()</pre>
+<div class="block">Store the ApplicationProperties to disk, overwriting the existing one.</div>
+</li>
+</ul>
+<a name="isServerPacksOverwriteEnabled--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>isServerPacksOverwriteEnabled</h4>
+<pre>public&nbsp;boolean&nbsp;isServerPacksOverwriteEnabled()</pre>
+<div class="block">Whether overwriting of already existing server packs is enabled.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd><code>true</code> if it is enabled.</dd>
+</dl>
+</li>
+</ul>
+<a name="isServerPackCleanupEnabled--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>isServerPackCleanupEnabled</h4>
+<pre>public&nbsp;boolean&nbsp;isServerPackCleanupEnabled()</pre>
+<div class="block">Whether cleanup procedures after server pack generation are enabled.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd><code>true</code> if it is enabled.</dd>
+</dl>
+</li>
+</ul>
+<a name="getLanguage--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getLanguage</h4>
+<pre>public&nbsp;java.lang.String&nbsp;getLanguage()</pre>
+<div class="block">Get the currently set language.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>The language currently set and used.</dd>
+</dl>
+</li>
+</ul>
+<a name="getHasteBinServerUrl--">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>getHasteBinServerUrl</h4>
+<pre>public&nbsp;java.lang.String&nbsp;getHasteBinServerUrl()</pre>
+<div class="block">Acquire this instances HasteBin server documents endpoint URL.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>URL to the HasteBin server documents endpoint.</dd>
 </dl>
 </li>
 </ul>

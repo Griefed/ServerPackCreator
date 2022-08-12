@@ -264,8 +264,7 @@ extends java.lang.Object</pre>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>destinationFile</code> - File. The file to store the web-resource in. Examples:<br>
-     /tmp/some_folder/foo.bar<br>
-     C:/temp/some_folder/bar.foo</dd>
+                        /tmp/some_folder/foo.bar<br> C:/temp/some_folder/bar.foo</dd>
 <dd><code>downloadURL</code> - URL. The URL to the file you want to download.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>Boolean. Returns true if the file could be found on the hosts filesystem.</dd>
@@ -286,8 +285,7 @@ extends java.lang.Object</pre>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>fileDestination</code> - String. The file to store the web-resource in. Examples:<br>
-     /tmp/some_folder/foo.bar<br>
-     C:/temp/some_folder/bar.foo</dd>
+                        /tmp/some_folder/foo.bar<br> C:/temp/some_folder/bar.foo</dd>
 <dd><code>downloadURL</code> - URL. The URL to the file you want to download.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>Boolean. Returns true if the file could be found on the hosts filesystem.</dd>
@@ -307,8 +305,7 @@ extends java.lang.Object</pre>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>destinationFile</code> - File. The file to store the web-resource in. Examples:<br>
-     /tmp/some_folder/foo.bar<br>
-     C:/temp/some_folder/bar.foo</dd>
+                        /tmp/some_folder/foo.bar<br> C:/temp/some_folder/bar.foo</dd>
 <dd><code>downloadURL</code> - URL. The URL to the file you want to download.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>Boolean. Returns true if the file could be found on the hosts filesystem.</dd>
@@ -328,9 +325,8 @@ extends java.lang.Object</pre>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>fileDestination</code> - String. The destination where the file should be stored. Must include
-     the filename as well. Examples:<br>
-     /tmp/some_folder/foo.bar<br>
-     C:/temp/some_folder/bar.foo</dd>
+                        the filename as well. Examples:<br> /tmp/some_folder/foo.bar<br>
+                        C:/temp/some_folder/bar.foo</dd>
 <dd><code>downloadURL</code> - URL. The URL to the file you want to download.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>Boolean. Returns true if the file could be found on the hosts filesystem.</dd>
@@ -390,16 +386,16 @@ extends java.lang.Object</pre>
 <pre>public&nbsp;java.lang.String&nbsp;createHasteBinFromFile(java.io.File&nbsp;textFile)</pre>
 <div class="block">Create a HasteBin post from a given text file. The text file provided is read into a string and
  then passed onto <a href="https://haste.zneix.eu">Haste zneix</a> which creates a HasteBin post
- out of the passed String and returns the URL to the newly created post.<br>
- Created with the help of <a href="https://github.com/kaimu-kun/hastebin.java">kaimu-kun's
- hastebin.java (MIT License)</a> and edited to use HasteBin fork <a
+ out of the passed String and returns the URL to the newly created post.<br> Created with the
+ help of <a href="https://github.com/kaimu-kun/hastebin.java">kaimu-kun's hastebin.java (MIT
+ License)</a> and edited to use HasteBin fork <a
  href="https://github.com/zneix/haste-server">zneix/haste-server</a>. My fork of kaimu-kun's
  hastebin.java is available at <a
  href="https://github.com/Griefed/hastebin.java">Griefed/hastebin.java</a>.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>textFile</code> - The file which will be read into a String of which then to create a HasteBin
-     post of.</dd>
+                 post of.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>String. Returns a String containing the URL to the newly created HasteBin post.</dd>
 </dl>

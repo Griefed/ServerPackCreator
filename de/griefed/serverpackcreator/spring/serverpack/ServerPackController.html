@@ -112,8 +112,8 @@ var activeTableTab = "activeTableTab";
  @RequestMapping(value="/api/v1/packs")
 public class <span class="typeNameLabel">ServerPackController</span>
 extends java.lang.Object</pre>
-<div class="block">RestController for everything server pack related, like downloads.<br>
- All requests are in <code>/api/v1/packs</code>.</div>
+<div class="block">RestController for everything server pack related, like downloads.<br> All requests are in
+ <code>/api/v1/packs</code>.</div>
 </li>
 </ul>
 </div>
@@ -230,7 +230,7 @@ public&nbsp;org.springframework.http.ResponseEntity&lt;org.springframework.core.
 <dd><code>id</code> - Integer. The id of the server pack in the database.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>ResponseEntity Resource. Gives the requester the requested file as a download, if it
-     was found.</dd>
+ was found.</dd>
 </dl>
 </li>
 </ul>
@@ -262,7 +262,8 @@ public&nbsp;org.springframework.http.ResponseEntity&lt;java.lang.Object&gt;&nbsp
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>voting</code> - String. The vote, consisting of the id of the server pack and whether the vote
-     should be incremented or decremented. Example <code>42,up</code> or <code>23,down</code>.</dd>
+               should be incremented or decremented. Example <code>42,up</code> or
+               <code>23,down</code>.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>ResponseEntity OK/BadRequest/NotFound</dd>
 </dl>
