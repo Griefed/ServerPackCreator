@@ -368,21 +368,21 @@ publishing {
     }
 
     maven {
-      url = "https://gitlab.com/api/v4/projects/32677538/packages/maven"
+      url = "https://git.griefed.de/api/v4/projects/63/packages/maven"
       credentials(HttpHeaderCredentials) {
         name = "Private-Token"
-        value = System.getenv("GITLABCOM_TOKEN")
+        value = System.getenv("GITLAB_TOKEN")
       }
       authentication {
         header(HttpHeaderAuthentication)
       }
     }
-
+    
     maven {
-      url = "https://git.griefed.de/api/v4/projects/63/packages/maven"
+      url = "https://gitlab.com/api/v4/projects/32677538/packages/maven"
       credentials(HttpHeaderCredentials) {
         name = "Private-Token"
-        value = System.getenv("GITLAB_TOKEN")
+        value = System.getenv("GITLABCOM_TOKEN")
       }
       authentication {
         header(HttpHeaderAuthentication)
