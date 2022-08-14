@@ -154,7 +154,7 @@ public class ZipController {
       @PathVariable("modLoaderVersion") String modLoaderVersion) {
 
     if (clientMods.length() == 0) {
-      clientMods = UTILITIES.StringUtils().buildString(APPLICATIONPROPERTIES.getListFallbackMods());
+      clientMods = UTILITIES.StringUtils().buildString(APPLICATIONPROPERTIES.getDefaultListFallbackMods());
     }
 
     return ResponseEntity.ok()

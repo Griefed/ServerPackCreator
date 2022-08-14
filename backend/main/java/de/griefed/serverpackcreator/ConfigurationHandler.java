@@ -21,6 +21,7 @@ package de.griefed.serverpackcreator;
 
 import com.electronwill.nightconfig.core.file.FileConfig;
 import com.typesafe.config.ConfigException;
+import de.griefed.serverpackcreator.ApplicationProperties.ExclusionFilter;
 import de.griefed.serverpackcreator.i18n.I18n;
 import de.griefed.serverpackcreator.utilities.ConfigUtilities;
 import de.griefed.serverpackcreator.utilities.common.FileUtilities;
@@ -316,6 +317,7 @@ public class ConfigurationHandler {
       @NotNull ConfigurationModel configurationModel,
       @NotNull List<String> encounteredErrors,
       boolean quietCheck) {
+
     boolean configHasError;
 
     sanitizeLinks(configurationModel);

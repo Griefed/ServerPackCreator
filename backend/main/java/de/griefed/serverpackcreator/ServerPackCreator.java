@@ -924,23 +924,8 @@ public class ServerPackCreator {
    */
   public boolean checkForConfig() {
     boolean firstRun = false;
-    if (APPLICATIONPROPERTIES.OLD_CONFIG().exists()) {
-      try {
-        Files.copy(
-            APPLICATIONPROPERTIES.OLD_CONFIG().getAbsoluteFile().toPath(),
-            APPLICATIONPROPERTIES.DEFAULT_CONFIG().getAbsoluteFile().toPath());
 
-        if (APPLICATIONPROPERTIES.OLD_CONFIG().delete()) {
-
-          LOG.info("creator.conf migrated to serverpackcreator.conf.");
-        }
-
-      } catch (IOException ex) {
-        if (!ex.toString().startsWith("java.nio.file.FileAlreadyExistsException")) {
-          LOG.error("Error renaming creator.conf to serverpackcreator.conf.", ex);
-        }
-      }
-    } else if (!APPLICATIONPROPERTIES.DEFAULT_CONFIG().exists()
+    if (!APPLICATIONPROPERTIES.DEFAULT_CONFIG().exists()
         && COMMANDLINE_PARSER.getModeToRunIn() != Mode.CLI
         && COMMANDLINE_PARSER.getModeToRunIn() != Mode.CGEN) {
       try {

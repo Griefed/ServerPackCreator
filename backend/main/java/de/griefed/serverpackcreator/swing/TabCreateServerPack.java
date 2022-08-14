@@ -2093,7 +2093,7 @@ public class TabCreateServerPack extends JPanel {
       if (configurationModel.getClientMods().isEmpty()) {
 
         TEXTAREA_CLIENTSIDEMODS.setText(
-            UTILITIES.StringUtils().buildString(APPLICATIONPROPERTIES.getListFallbackMods()));
+            UTILITIES.StringUtils().buildString(APPLICATIONPROPERTIES.getDefaultListFallbackMods()));
         LOG.debug("Set clientMods with fallback list.");
 
       } else {
@@ -2245,7 +2245,7 @@ public class TabCreateServerPack extends JPanel {
     TEXTFIELD_MODPACKDIRECTORY.setText("");
     TEXTFIELD_SERVERPACKSUFFIX.setText("");
     TEXTAREA_CLIENTSIDEMODS.setText(
-        UTILITIES.StringUtils().buildString(APPLICATIONPROPERTIES.getListFallbackMods()));
+        UTILITIES.StringUtils().buildString(APPLICATIONPROPERTIES.getDefaultListFallbackMods()));
     TEXTAREA_COPYDIRECTORIES.setText(
         UTILITIES.StringUtils().buildString(APPLICATIONPROPERTIES.getDirectoriesToInclude()));
     TEXTFIELD_SERVERICONPATH.setText("");
