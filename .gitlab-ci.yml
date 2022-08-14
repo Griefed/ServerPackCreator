@@ -329,26 +329,6 @@ Publish OSSRH:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-beta\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
 
-Publish Maven Artifacts:
-  stage: Build Release
-  image: ghcr.io/griefed/baseimage-ubuntu-jdk-8:2.0.12
-  before_script:
-    - echo "**** Running in $CI_JOB_ID ****"
-    - echo "**** Java location ****"
-    - which java
-    - echo "**** Java version ****"
-    - java -version
-    - echo "**** Allowing execution of gradlew ****"
-    - chmod +x gradlew
-    - echo "**** Ensure clean environment ****"
-    - "./gradlew clean"
-  script:
-    - echo "**** Publishing Maven Artifacts ****"
-    - "./gradlew publish -Pversion=${CI_COMMIT_TAG} -x test --info --stacktrace"
-  rules:
-    - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-beta\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
-    - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
-
 Build Docker Release:
   stage: Build Release
   image: ghcr.io/griefed/gitlab-ci-cd:2.0.9
