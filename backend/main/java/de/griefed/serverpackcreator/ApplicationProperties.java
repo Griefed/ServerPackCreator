@@ -323,11 +323,6 @@ public class ApplicationProperties extends Properties {
   private ExclusionFilter exclusionFilter = ExclusionFilter.START;
 
   /**
-   * Whether pre-releases and snapshots should be available to the user.
-   */
-  private boolean minecraftPreReleases = false;
-
-  /**
    * Initialize an instance of our application properties using the default
    * <code>serverpackcreator.properties</code>.
    *
