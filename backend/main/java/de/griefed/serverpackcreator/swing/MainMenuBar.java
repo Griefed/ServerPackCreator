@@ -450,7 +450,7 @@ public class MainMenuBar extends Component {
   /**
    * If an initialize is available for ServerPackCreator, display a dialog asking the user whether
    *
-   * @return {@link Boolean} <code>true</code> if an update was found and the dialog displayed.
+   * @return <code>true</code> if an update was found and the dialog displayed.
    * @author Griefed
    */
   protected boolean displayUpdateDialog() {
@@ -686,8 +686,8 @@ public class MainMenuBar extends Component {
   /**
    * Display the given URL in a text pane.
    *
-   * @param urltoHasteBin   {@link String} The URL, as a String, to display.
-   * @param displayTextPane {@link JTextPane} The text pane to display the URL in.
+   * @param urltoHasteBin   The URL, as a String, to display.
+   * @param displayTextPane The text pane to display the URL in.
    * @author Griefed
    */
   private void displayUploadUrl(String urltoHasteBin, JTextPane displayTextPane) {

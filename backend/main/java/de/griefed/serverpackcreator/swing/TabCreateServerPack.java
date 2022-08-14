@@ -605,8 +605,13 @@ public class TabCreateServerPack extends JPanel {
 
     CREATESERVERPACKPANEL.add(labelMinecraftVersion, GRIDBAGCONSTRAINTS);
 
-    COMBOBOX_MINECRAFTVERSIONS.setModel(
-        new DefaultComboBoxModel<>(VERSIONMETA.minecraft().releaseVersionsArrayDescending()));
+    if (APPLICATIONPROPERTIES.enableMinecraftPreReleases()) {
+      COMBOBOX_MINECRAFTVERSIONS.setModel(
+          new DefaultComboBoxModel<>(VERSIONMETA.minecraft().allVersionsArrayDescending()));
+    } else {
+      COMBOBOX_MINECRAFTVERSIONS.setModel(
+          new DefaultComboBoxModel<>(VERSIONMETA.minecraft().releaseVersionsArrayDescending()));
+    }
     if (COMBOBOX_MINECRAFTVERSIONS.getSelectedItem() == null) {
       COMBOBOX_MINECRAFTVERSIONS.setSelectedIndex(0);
     }
@@ -1409,8 +1414,8 @@ public class TabCreateServerPack extends JPanel {
    * Get the DefaultComboboxModel of available Forge versions depending on the passed Minecraft
    * version. If the specified Minecraft version is not supported, the DCBM will be set to NONE.
    *
-   * @param chosenMinecraftVersion String. The selected Minecraft version which determines the list
-   *                               of available Forge versions.
+   * @param chosenMinecraftVersion The selected Minecraft version which determines the list of
+   *                               available Forge versions.
    * @author Griefed
    */
   private DefaultComboBoxModel<String> updateForgeComboBoxVersions(
@@ -1435,8 +1440,8 @@ public class TabCreateServerPack extends JPanel {
    * Get the DefaultComboboxModel of available Fabric versions depending on the passed Minecraft
    * version. If the specified Minecraft version is not supported, the DCBM will be set to NONE.
    *
-   * @param chosenMinecraftVersion String. The selected Minecraft version which determines the list
-   *                               of available Fabric versions.
+   * @param chosenMinecraftVersion The selected Minecraft version which determines the list of
+   *                               available Fabric versions.
    * @author Griefed
    */
   private DefaultComboBoxModel<String> updateFabricComboBoxVersions(
@@ -1457,8 +1462,8 @@ public class TabCreateServerPack extends JPanel {
    * Get the DefaultComboboxModel of available Quilt versions depending on the passed Minecraft
    * version. If the specified Minecraft version is not supported, the DCBM will be set to NONE.
    *
-   * @param chosenMinecraftVersion String. The selected Minecraft version which determines the list
-   *                               of available Fabric versions.
+   * @param chosenMinecraftVersion The selected Minecraft version which determines the list of
+   *                               available Fabric versions.
    * @author Griefed
    */
   private DefaultComboBoxModel<String> updateQuiltComboBoxVersions(
@@ -1517,7 +1522,7 @@ public class TabCreateServerPack extends JPanel {
   /**
    * Helper method which changes various states of GUI components.
    *
-   * @param modloader String. The modloader to set.
+   * @param modloader The modloader to set.
    * @author Griefed
    */
   private void updateModloaderGuiComponents(String modloader) {
@@ -2036,7 +2041,7 @@ public class TabCreateServerPack extends JPanel {
   /**
    * Save the current configuration to a specified file.
    *
-   * @param configFile File. The file to store the configuration under.
+   * @param configFile The file to store the configuration under.
    * @author Griefed
    */
   void saveConfig(File configFile) {
@@ -2076,7 +2081,7 @@ public class TabCreateServerPack extends JPanel {
    * When the GUI has finished loading, try and load the existing serverpackcreator.conf-file into
    * ServerPackCreator.
    *
-   * @param configFile File. The configuration file to parse and load into the GUI.
+   * @param configFile The configuration file to parse and load into the GUI.
    * @author Griefed
    */
   protected void loadConfig(File configFile) {
@@ -2338,7 +2343,7 @@ public class TabCreateServerPack extends JPanel {
   /**
    * Setter for the JVM flags / Java args.
    *
-   * @param javaArgs String. The javaargs to set.
+   * @param javaArgs The javaargs to set.
    * @author Griefed
    */
   public void setJavaArgs(String javaArgs) {

@@ -61,8 +61,7 @@ public class AnnotationScanner extends JsonBasedScanner implements
    *
    * @param filesInModsDir A list of files in which to check the <code>fml-cache-annotation.json
    *                       </code>-files.
-   * @return List String. List of mods not to include in server pack based on
-   * fml-cache-annotation.json-content.
+   * @return List of mods not to include in server pack based on fml-cache-annotation.json-content.
    * @author Griefed
    */
   @Override

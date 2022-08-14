@@ -87,8 +87,8 @@ public class ZipController {
   /**
    * Upload a file and check whether it is a ServerPackCreator valid ZIP-archive.
    *
-   * @param file {@link MultipartFile} The file uploaded to ServerPackCreator.
-   * @return String List. A list on encountered errors, if any.
+   * @param file The file uploaded to ServerPackCreator.
+   * @return A list on encountered errors, if any.
    * @throws IOException if an errors occurred saving or reading the file.
    * @author Griefed
    */
@@ -136,16 +136,13 @@ public class ZipController {
    * <code>modLoader</code><br>
    * <code>modLoaderVersion</code><br>
    *
-   * @param zipName          {@link String} The name of the previously uploaded ZIP-archive.
-   * @param clientMods       {@link String} A comma separated list of clientside-only mods to
-   *                         exclude from the server pack.
-   * @param minecraftVersion {@link String} The Minecraft version the modpack, and therefor the
-   *                         server pack, uses.
-   * @param modLoader        {@link String} The modloader the modpack, and therefor the server pack,
-   *                         uses.
-   * @param modLoaderVersion {@link String} The modloader version the modpack, and therefor the
-   *                         server pack, uses.
-   * @return {@link NotificationResponse} with information about the result.
+   * @param zipName          The name of the previously uploaded ZIP-archive.
+   * @param clientMods       A comma separated list of clientside-only mods to exclude from the
+   *                         server pack.
+   * @param minecraftVersion The Minecraft version the modpack, and therefor the server pack, uses.
+   * @param modLoader        The modloader the modpack, and therefor the server pack, uses.
+   * @param modLoaderVersion The modloader version the modpack, and therefor the server pack, uses.
+   * @return Notification message with information about the result.
    * @author Griefed
    */
   @GetMapping("/{zipName}&{clientMods}&{minecraftVersion}&{modLoader}&{modLoaderVersion}")

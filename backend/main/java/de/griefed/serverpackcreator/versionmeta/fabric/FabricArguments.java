@@ -34,7 +34,7 @@ public class FabricArguments {
   /**
    * Object-array of arguments used.
    *
-   * @return {@link Object} Object-array of arguments used.
+   * @return Object-array of arguments used.
    * @author Griefed
    */
   public Object[] getGame() {

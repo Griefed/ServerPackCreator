@@ -62,7 +62,7 @@ public class ServerPackService {
   /**
    * Download a server pack with the given database id.
    *
-   * @param id Integer. The database id of the server pack to download.
+   * @param id The database id of the server pack to download.
    * @return Returns a curseResponse entity with either the server pack as a downloadable file, or a
    * curseResponse entity with a not found body.
    * @author Griefed
@@ -103,8 +103,7 @@ public class ServerPackService {
   /**
    * Either upvote or downvote a given server pack.
    *
-   * @param voting String. The database id of the server pack and whether it should be up- or
-   *               downvoted.
+   * @param voting The database id of the server pack and whether it should be up- or downvoted.
    * @return Returns ok if the vote went through, bad request if the passed vote was malformed, or
    * not found if the server pack could not be found.
    * @author Griefed
@@ -187,7 +186,7 @@ public class ServerPackService {
    * Increment the download counter for a given server pack entry in the database identified by the
    * database id.
    *
-   * @param id Integer. The database id of the server pack.
+   * @param id The database id of the server pack.
    * @author Griefed
    */
   public void updateDownloadCounter(int id) {
@@ -202,8 +201,8 @@ public class ServerPackService {
    * Either increment or decrement the confirmed working value of a given server pack entry in the
    * database, identified by the database id.
    *
-   * @param id   Integer. The database id of the server pack.
-   * @param vote Integer. Positive for upvote, negative for downvote
+   * @param id   The database id of the server pack.
+   * @param vote Positive for upvote, negative for downvote
    * @author Griefed
    */
   public void updateConfirmedCounter(int id, int vote) {
@@ -217,7 +216,7 @@ public class ServerPackService {
   /**
    * Deletes a server pack with the given id.
    *
-   * @param id Integer. The database id of the server pack to delete.
+   * @param id The database id of the server pack to delete.
    * @author Griefed
    */
   public void deleteServerPack(int id) {

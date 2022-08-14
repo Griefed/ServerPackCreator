@@ -43,12 +43,11 @@ public class MinecraftClient {
   /**
    * Constructor using version, type and url.
    *
-   * @param version      {@link String} The Minecraft version.
-   * @param type         {@link Type} Either {@link Type#RELEASE} or {@link Type#SNAPSHOT}.
-   * @param url          {@link URL} Url to this versions manifest.
-   * @param forgeMeta    {@link ForgeMeta} to acquire Forge instances for this
-   *                     {@link MinecraftClient} version.
-   * @param objectMapper {@link ObjectMapper} for parsing.
+   * @param version      The Minecraft version.
+   * @param type         Either {@link Type#RELEASE} or {@link Type#SNAPSHOT}.
+   * @param url          Url to this versions manifest.
+   * @param forgeMeta    To acquire Forge instances for this {@link MinecraftClient} version.
+   * @param objectMapper Object mapper for JSON parsing.
    * @author Griefed
    */
   protected MinecraftClient(
@@ -63,12 +62,11 @@ public class MinecraftClient {
   /**
    * Constructor using version, type, url and a {@link MinecraftServer}.
    *
-   * @param version   {@link String} The Minecraft version.
-   * @param type      {@link Type} Either {@link Type#RELEASE} or {@link Type#SNAPSHOT}.
-   * @param url       {@link URL} Url to this versions manifest.
+   * @param version   The Minecraft version.
+   * @param type      Either {@link Type#RELEASE} or {@link Type#SNAPSHOT}.
+   * @param url       Url to this versions manifest.
    * @param server    Instance of {@link MinecraftServer}
-   * @param forgeMeta {@link ForgeMeta} to acquire Forge instances for this {@link MinecraftClient}
-   *                  version.
+   * @param forgeMeta To acquire Forge instances for this {@link MinecraftClient} version.
    * @author Griefed
    */
   protected MinecraftClient(
@@ -83,7 +81,7 @@ public class MinecraftClient {
   /**
    * The Minecraft version of this {@link MinecraftClient} instance.
    *
-   * @return {@link String} Minecraft version.
+   * @return Minecraft version.
    * @author Griefed
    */
   public String version() {
@@ -93,7 +91,7 @@ public class MinecraftClient {
   /**
    * Release-type. Either {@link Type#RELEASE} or {@link Type#SNAPSHOT}.
    *
-   * @return {@link Type} Either {@link Type#RELEASE} or {@link Type#SNAPSHOT}.
+   * @return Either {@link Type#RELEASE} or {@link Type#SNAPSHOT}.
    * @author Griefed
    */
   public Type type() {
@@ -103,7 +101,7 @@ public class MinecraftClient {
   /**
    * The {@link URL} to this versions manifest.
    *
-   * @return {@link URL}
+   * @return URL
    * @author Griefed
    */
   public URL url() {
@@ -113,7 +111,7 @@ public class MinecraftClient {
   /**
    * The {@link MinecraftServer} for this Minecraft version, wrapped in an {@link Optional}.
    *
-   * @return {@link MinecraftServer} wrapped in an {@link Optional}
+   * @return Server wrapped in an {@link Optional}
    * @author Griefed
    */
   public MinecraftServer server() {
@@ -123,7 +121,7 @@ public class MinecraftClient {
   /**
    * Get the {@link ForgeInstance} for this client, wrapped in an {@link Optional}.
    *
-   * @return {@link ForgeInstance} for this client, wrapped in an {@link Optional}.
+   * @return Forge instance for this client, wrapped in an {@link Optional}.
    * @author Griefed
    */
   public Optional<List<ForgeInstance>> forge() {

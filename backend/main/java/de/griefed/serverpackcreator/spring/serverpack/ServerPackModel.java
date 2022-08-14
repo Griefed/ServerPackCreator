@@ -137,7 +137,7 @@ public class ServerPackModel extends ConfigurationModel {
   /**
    * Setter for the database id of a server pack.
    *
-   * @param id Integer. The database id of the server pack.
+   * @param id The database id of the server pack.
    * @author Griefed
    */
   public void setId(int id) {
@@ -158,7 +158,7 @@ public class ServerPackModel extends ConfigurationModel {
   /**
    * Setter for the project name of the project of the server pack.
    *
-   * @param projectName String. The project name of the server pack.
+   * @param projectName The project name of the server pack.
    * @author Griefed
    */
   @Override
@@ -181,8 +181,8 @@ public class ServerPackModel extends ConfigurationModel {
   /**
    * Setter for the file display name of the project file from which the server pack was generated.
    *
-   * @param fileName String. The file display name of the project file from which the server pack
-   *                 was generated.
+   * @param fileName The file display name of the project file from which the server pack was
+   *                 generated.
    * @author Griefed
    */
   @Override
@@ -205,8 +205,8 @@ public class ServerPackModel extends ConfigurationModel {
   /**
    * Setter for the file disk name of the project file from which the server pack was generated.
    *
-   * @param fileDiskName String. The file disk name of the project file from which the server pack
-   *                     was generated.
+   * @param fileDiskName The file disk name of the project file from which the server pack was
+   *                     generated.
    * @author Griefed
    */
   @Override
@@ -247,7 +247,7 @@ public class ServerPackModel extends ConfigurationModel {
   /**
    * Setter for the amount of downloads this server pack has received.
    *
-   * @param downloads Integer. The amount of downloads this server pack has received.
+   * @param downloads The amount of downloads this server pack has received.
    * @author Griefed
    */
   public void setDownloads(int downloads) {
@@ -269,8 +269,7 @@ public class ServerPackModel extends ConfigurationModel {
    * Setter for the amount of votes indicating whether this server pack works. Positive values
    * indicate a working server pack. Negative values indicate the server pack is not working.
    *
-   * @param confirmedWorking Integer. The amount of votes indicating whether this server pack
-   *                         works.
+   * @param confirmedWorking The amount of votes indicating whether this server pack works.
    * @author Griefed
    */
   public void setConfirmedWorking(int confirmedWorking) {
@@ -292,7 +291,7 @@ public class ServerPackModel extends ConfigurationModel {
    * Setter for the status of a server pack. Either <code>Queued</code>, <code>Generating</code>,
    * <code>Available</code>.
    *
-   * @param status String. The status of a server pack.
+   * @param status The status of a server pack.
    * @author Griefed
    */
   public void setStatus(String status) {
@@ -312,7 +311,7 @@ public class ServerPackModel extends ConfigurationModel {
   /**
    * Setter for the path to the generated server pack.
    *
-   * @param path String. The path to the generated server pack.
+   * @param path The path to the generated server pack.
    * @author Griefed
    */
   public void setPath(String path) {
@@ -323,8 +322,7 @@ public class ServerPackModel extends ConfigurationModel {
    * Getter for the date and time at which this server pack entry was created as a
    * {@link Timestamp}.
    *
-   * @return {@link Timestamp}. Returns the date and time at which this server pack entry was
-   * created as a {@link Timestamp}.
+   * @return The date and time at which this server pack entry was created as a {@link Timestamp}.
    * @author Griefed
    */
   public Timestamp getDateCreated() {
@@ -335,8 +333,8 @@ public class ServerPackModel extends ConfigurationModel {
    * Setter for the date and time at which this server pack entry was created as a
    * {@link Timestamp}.
    *
-   * @param dateCreated {@link Timestamp}. The date and time at which this server pack was created
-   *                    as a {@link Timestamp}.
+   * @param dateCreated The date and time at which this server pack was created as a
+   *                    {@link Timestamp}.
    * @author Griefed
    */
   public void setDateCreated(Timestamp dateCreated) {
@@ -347,8 +345,8 @@ public class ServerPackModel extends ConfigurationModel {
    * Getter for the date and time at which this server pack entry was last modified as a
    * {@link Timestamp}.
    *
-   * @return {@link Timestamp}. Returns the date and time at which this server pack entry was last
-   * modified as a {@link Timestamp}.
+   * @return The date and time at which this server pack entry was last modified as a
+   * {@link Timestamp}.
    * @author Griefed
    */
   public Timestamp getLastModified() {
@@ -359,8 +357,8 @@ public class ServerPackModel extends ConfigurationModel {
    * Setter for the date and time at which this server pack entry was last modified as a
    * {@link Timestamp}.
    *
-   * @param lastModified {@link Timestamp}. The date and time at which this server pack entry was
-   *                     last modified as a {@link Timestamp}.
+   * @param lastModified The date and time at which this server pack entry was last modified as a
+   *                     {@link Timestamp}.
    * @author Griefed
    */
   public void setLastModified(Timestamp lastModified) {

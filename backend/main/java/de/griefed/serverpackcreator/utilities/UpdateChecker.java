@@ -105,7 +105,7 @@ public class UpdateChecker {
   /**
    * Getter for the instance of our {@link GitHubChecker}.
    *
-   * @return {@link GitHubChecker}.
+   * @return A GitHub checker for the specified repo.
    * @author Griefed
    */
   public GitHubChecker getGitHub() {
@@ -115,7 +115,7 @@ public class UpdateChecker {
   /**
    * Getter for the instance of our {@link GitLabChecker} for GitLab.
    *
-   * @return {@link GitLabChecker}.
+   * @return A GitLab checker for the specified repo.
    * @author Griefed
    */
   public GitLabChecker getGitLab() {
@@ -125,7 +125,7 @@ public class UpdateChecker {
   /**
    * Getter for the instance of our {@link GitLabChecker} for GitGriefed.
    *
-   * @return {@link GitLabChecker}.
+   * @return A GitLab Checker for the specified repo.
    * @author Griefed
    */
   public GitLabChecker getGitGriefed() {
@@ -136,12 +136,12 @@ public class UpdateChecker {
    * Check our GitLab, GitGriefed and GitHub instances for updates, sequentially, and then return
    * the update.
    *
-   * @param version         {@link String} The version for which to check for updates.
-   * @param preReleaseCheck {@link Boolean} Whether to check pre-releasesDescending as well. Use
+   * @param version         The version for which to check for updates.
+   * @param preReleaseCheck Whether to check pre-releasesDescending as well. Use
    *                        <code>true</code> to check pre-releasesDescending as well,
    *                        <Code>false</Code> to only check
    *                        with regular releases.
-   * @return {@link String} The update, if available, as well as the download URL.
+   * @return The update, if available, as well as the download URL.
    * @author Griefed
    */
   public Optional<Update> checkForUpdate(@NotNull String version, Boolean preReleaseCheck) {

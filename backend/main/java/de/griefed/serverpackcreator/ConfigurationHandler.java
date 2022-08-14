@@ -923,8 +923,8 @@ public class ConfigurationHandler {
    * contains neither the mods nor the config directories, consider it invalid.
    *
    * @param pathToZip         Path to the ZIP-file to check.
-   * @param encounteredErrors String List. List of encountered errors for further processing, like
-   *                          printing to logs or display in GUI or whatever you want, really.
+   * @param encounteredErrors List of encountered errors for further processing, like printing to
+   *                          logs or display in GUI or whatever you want, really.
    * @return Boolean. <code>false</code> if the ZIP-archive is considered valid.
    * @author Griefed
    */
@@ -1017,8 +1017,7 @@ public class ConfigurationHandler {
    *       Most recent version of the Quilt installer at the time of creating the scripts</code>
    * </ol>
    *
-   * @param configurationModel {@link ConfigurationModel} in which to ensure the default key-value
-   *                           pairs are present.
+   * @param configurationModel Model in which to ensure the default key-value pairs are present.
    * @author Griefed
    */
   private void ensureScriptSettingsDefaults(ConfigurationModel configurationModel) {
@@ -1270,7 +1269,7 @@ public class ConfigurationHandler {
   /**
    * Check the passed directory for existence and whether it is a directory, rather than a file.
    *
-   * @param modpackDir {@link String} The modpack directory.
+   * @param modpackDir The modpack directory.
    * @return Boolean. Returns true if the directory exists.
    * @author Griefed
    */
@@ -1632,8 +1631,8 @@ public class ConfigurationHandler {
    * ServerPackCreator will treat it as the user being fine with the default files and return the
    * corresponding boolean.
    *
-   * @param iconOrPropertiesPath String. The path to the custom server-icon.png or server.properties
-   *                             file to check.
+   * @param iconOrPropertiesPath The path to the custom server-icon.png or server.properties file to
+   *                             check.
    * @return Boolean. True if the file exists or an empty String was passed, false if a file was
    * specified, but the file was not found.
    * @author Griefed
@@ -1653,7 +1652,7 @@ public class ConfigurationHandler {
   /**
    * Check whether the given path is a valid Java specification.
    *
-   * @param pathToJava {@link String} Path to the Java executable
+   * @param pathToJava Path to the Java executable
    * @return Boolean. Returns <code>true</code> if the path is valid.
    * @author Griefed
    */
@@ -1694,8 +1693,8 @@ public class ConfigurationHandler {
    * Test for a valid Java specification by trying to run <code>java -version</code>. If the command
    * goes through without errors, it is considered a correct specification.
    *
-   * @param pathToJava {@link String} Path to the java executable/binary.
-   * @return {@link Boolean} <code>true</code> if the specified file is a valid Java
+   * @param pathToJava Path to the java executable/binary.
+   * @return <code>true</code> if the specified file is a valid Java
    * executable/binary.
    * @author Griefed
    */
@@ -1734,7 +1733,7 @@ public class ConfigurationHandler {
    * passed path is a UNIX symlink or Windows lnk, it is resolved, then returned. If the passed path
    * is considered invalid, the system default is acquired and returned.
    *
-   * @param pathToJava String. The path to check for whether it is a valid Java installation.
+   * @param pathToJava The path to check for whether it is a valid Java installation.
    * @return String. Returns the path to the Java installation. If user input was incorrect, SPC
    * will try to acquire the path automatically.
    * @author Griefed
@@ -1783,7 +1782,7 @@ public class ConfigurationHandler {
   /**
    * Checks whether either Forge or Fabric were specified as the modloader.
    *
-   * @param modloader String. Check as case-insensitive for Forge or Fabric.
+   * @param modloader Check as case-insensitive for Forge or Fabric.
    * @return Boolean. Returns true if the specified modloader is either Forge or Fabric. False if
    * neither.
    * @author Griefed
@@ -1807,12 +1806,12 @@ public class ConfigurationHandler {
   /**
    * Check the given Minecraft and modloader versions for the specified modloader.
    *
-   * @param modloader        String. The passed modloader which determines whether the check for
-   *                         Forge or Fabric is called.
-   * @param modloaderVersion String. The version of the modloader which is checked against the
-   *                         corresponding modloaders manifest.
-   * @param minecraftVersion String. The version of Minecraft used for checking the Forge version.
-   * @return Boolean. Returns true if the specified modloader version was found in the corresponding
+   * @param modloader        The passed modloader which determines whether the check for Forge or
+   *                         Fabric is called.
+   * @param modloaderVersion The version of the modloader which is checked against the corresponding
+   *                         modloaders manifest.
+   * @param minecraftVersion The version of Minecraft used for checking the Forge version.
+   * @return Returns true if the specified modloader version was found in the corresponding
    * manifest.
    * @author Griefed
    */
@@ -1831,8 +1830,7 @@ public class ConfigurationHandler {
    * @param modloaderVersion  String. The version of the modloader which is checked against the
    *                          corresponding modloaders manifest.
    * @param minecraftVersion  String. The version of Minecraft used for checking the Forge version.
-   * @param encounteredErrors {@link String}-list of encountered errors to add to in case of
-   *                          errors.
+   * @param encounteredErrors List of encountered errors to add to in case of errors.
    * @return Boolean. Returns true if the specified modloader version was found in the corresponding
    * manifest.
    * @author Griefed

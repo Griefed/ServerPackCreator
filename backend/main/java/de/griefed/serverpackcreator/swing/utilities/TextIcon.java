@@ -111,8 +111,8 @@ public class TextIcon implements Icon, PropertyChangeListener {
   /**
    * Convenience constructor to create a TextIcon with a HORIZONTAL layout.
    *
-   * @param component the component to which the icon will be added
-   * @param text      the text to be rendered on the Icon
+   * @param component The component to which the icon will be added
+   * @param text      The text to be rendered on the Icon
    */
   public TextIcon(JComponent component, String text) {
     this(component, text, Layout.HORIZONTAL);
@@ -121,9 +121,9 @@ public class TextIcon implements Icon, PropertyChangeListener {
   /**
    * Create a TextIcon specifying all the properties.
    *
-   * @param component the component to which the icon will be added
-   * @param text      the text to be rendered on the Icon
-   * @param layout    specify the layout of the text. Must be one of the Layout enums: HORIZONTAL or
+   * @param component The component to which the icon will be added
+   * @param text      The text to be rendered on the Icon
+   * @param layout    Specify the layout of the text. Must be one of the Layout enums: HORIZONTAL or
    *                  VERTICAL
    */
   public TextIcon(JComponent component, String text, Layout layout) {
@@ -155,7 +155,7 @@ public class TextIcon implements Icon, PropertyChangeListener {
   /**
    * Set the text to be rendered on the Icon
    *
-   * @param text the text to be rendered on the Icon
+   * @param text The text to be rendered on the Icon
    */
   public void setText(String text) {
     this.text = text;
@@ -167,7 +167,7 @@ public class TextIcon implements Icon, PropertyChangeListener {
    * Get the Font used to render the text. This will default to the Font of the component unless the
    * Font has been overridden by using the setFont() method.
    *
-   * @return the Font used to render the text
+   * @return The Font used to render the text
    */
   public Font getFont() {
     if (font == null) {
@@ -180,7 +180,7 @@ public class TextIcon implements Icon, PropertyChangeListener {
   /**
    * Set the Font to be used for rendering the text
    *
-   * @param font the Font to be used for rendering the text
+   * @param font The Font to be used for rendering the text
    */
   public void setFont(Font font) {
     this.font = font;
@@ -193,7 +193,7 @@ public class TextIcon implements Icon, PropertyChangeListener {
    * the component unless the foreground Color has been overridden by using the setForeground()
    * method.
    *
-   * @return the Color used to render the text
+   * @return The Color used to render the text
    */
   public Color getForeground() {
     if (foreground == null) {
@@ -206,7 +206,7 @@ public class TextIcon implements Icon, PropertyChangeListener {
   /**
    * Set the foreground Color to be used for rendering the text
    *
-   * @param foreground the foreground Color to be used for rendering the text
+   * @param foreground The foreground Color to be used for rendering the text
    */
   public void setForeground(Color foreground) {
     this.foreground = foreground;
@@ -216,7 +216,7 @@ public class TextIcon implements Icon, PropertyChangeListener {
   /**
    * Get the padding used when rendering the text
    *
-   * @return the padding specified in pixels
+   * @return The padding specified in pixels
    */
   public int getPadding() {
     return padding;
@@ -226,7 +226,7 @@ public class TextIcon implements Icon, PropertyChangeListener {
    * By default, the size of the Icon is based on the size of the rendered text. You can specify
    * some padding to be added to the start and end of the text when it is rendered.
    *
-   * @param padding the padding amount in pixels
+   * @param padding The padding amount in pixels
    */
   public void setPadding(int padding) {
     this.padding = padding;

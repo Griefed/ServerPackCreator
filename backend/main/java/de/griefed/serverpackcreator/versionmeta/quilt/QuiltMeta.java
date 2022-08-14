@@ -52,8 +52,8 @@ public class QuiltMeta {
   /**
    * Create a new Quilt Meta instance.
    *
-   * @param quiltManifest          {@link File} Quilt manifest file..
-   * @param quiltInstallerManifest {@link File} Quilt-installer manifest file..
+   * @param quiltManifest          Quilt manifest file..
+   * @param quiltInstallerManifest Quilt-installer manifest file..
    * @author Griefed
    */
   public QuiltMeta(File quiltManifest, File quiltInstallerManifest) {
@@ -104,7 +104,7 @@ public class QuiltMeta {
   /**
    * Get the latest Quilt loader version.
    *
-   * @return {@link String} The latest version of the Quilt loader.
+   * @return The latest version of the Quilt loader.
    * @author Griefed
    */
   public String latestLoaderVersion() {
@@ -114,7 +114,7 @@ public class QuiltMeta {
   /**
    * Get the release Quilt loader version.
    *
-   * @return {@link String} The release version of the Quilt loader.
+   * @return The release version of the Quilt loader.
    * @author Griefed
    */
   public String releaseLoaderVersion() {
@@ -124,8 +124,7 @@ public class QuiltMeta {
   /**
    * Get a list of available Quilt loader versions, in {@link Type#ASCENDING} order.
    *
-   * @return {@link String}-list of available Quilt loader versions, in {@link Type#ASCENDING}
-   * order.
+   * @return List of available Quilt loader versions, in {@link Type#ASCENDING} order.
    * @author Griefed
    */
   public List<String> loaderVersionsAscending() {
@@ -135,8 +134,7 @@ public class QuiltMeta {
   /**
    * Get a list of available Quilt loader versions, in {@link Type#DESCENDING} order.
    *
-   * @return {@link String}-list of available Quilt loader versions, in {@link Type#DESCENDING}
-   * order.
+   * @return List of available Quilt loader versions, in {@link Type#DESCENDING} order.
    * @author Griefed
    */
   public List<String> loaderVersionsDescending() {
@@ -146,8 +144,7 @@ public class QuiltMeta {
   /**
    * Get an array of available Quilt loader versions, in {@link Type#ASCENDING} order.
    *
-   * @return {@link String}-array of available Quilt loader versions, in {@link Type#ASCENDING}
-   * order.
+   * @return Array of available Quilt loader versions, in {@link Type#ASCENDING} order.
    * @author Griefed
    */
   public String[] loaderVersionsArrayAscending() {
@@ -157,8 +154,7 @@ public class QuiltMeta {
   /**
    * Get an array of available Quilt loader versions, in {@link Type#DESCENDING} order.
    *
-   * @return {@link String}-array of available Quilt loader versions, in {@link Type#DESCENDING}
-   * order.
+   * @return Array of available Quilt loader versions, in {@link Type#DESCENDING} order.
    * @author Griefed
    */
   public String[] loaderVersionsArrayDescending() {
@@ -168,7 +164,7 @@ public class QuiltMeta {
   /**
    * Get the latest Quilt installer version.
    *
-   * @return {@link String} The latest Quilt installer version.
+   * @return The latest Quilt installer version.
    * @author Griefed
    */
   public String latestInstallerVersion() {
@@ -178,7 +174,7 @@ public class QuiltMeta {
   /**
    * Get the release Quilt installer version.
    *
-   * @return {@link String} The release Quilt installer version.
+   * @return The release Quilt installer version.
    * @author Griefed
    */
   public String releaseInstallerVersion() {
@@ -188,8 +184,7 @@ public class QuiltMeta {
   /**
    * Get the list of available Quilt installer version, in {@link Type#ASCENDING} order.
    *
-   * @return {@link String}-list of available Quilt installer version, in {@link Type#ASCENDING}
-   * order.
+   * @return List of available Quilt installer version, in {@link Type#ASCENDING} order.
    * @author Griefed
    */
   public List<String> installerVersionsAscending() {
@@ -199,8 +194,7 @@ public class QuiltMeta {
   /**
    * Get the list of available Quilt installer version, in {@link Type#DESCENDING} order.
    *
-   * @return {@link String}-list of available Quilt installer version, in {@link Type#DESCENDING}
-   * order.
+   * @return List of available Quilt installer version, in {@link Type#DESCENDING} order.
    * @author Griefed
    */
   public List<String> installerVersionsDescending() {
@@ -210,8 +204,7 @@ public class QuiltMeta {
   /**
    * Get the array of available Quilt installer version, in {@link Type#ASCENDING} order.
    *
-   * @return {@link String}-array of available Quilt installer version, in {@link Type#ASCENDING}
-   * order.
+   * @return Array of available Quilt installer version, in {@link Type#ASCENDING} order.
    * @author Griefed
    */
   public String[] installerVersionsArrayAscending() {
@@ -221,8 +214,7 @@ public class QuiltMeta {
   /**
    * Get the array of available Quilt installer version, in {@link Type#DESCENDING} order.
    *
-   * @return {@link String}-array of available Quilt installer version, in {@link Type#DESCENDING}
-   * order.
+   * @return Array of available Quilt installer version, in {@link Type#DESCENDING} order.
    * @author Griefed
    */
   public String[] installerVersionsArrayDescending() {
@@ -232,7 +224,7 @@ public class QuiltMeta {
   /**
    * Get the {@link URL} to the latest Quilt installer.
    *
-   * @return {@link URL} to the latest Quilt installer.
+   * @return URL to the latest Quilt installer.
    * @author Griefed
    */
   public URL latestInstallerUrl() {
@@ -242,7 +234,7 @@ public class QuiltMeta {
   /**
    * Get the {@link URL} to the release Quilt installer.
    *
-   * @return {@link URL} to the release Quilt installer.
+   * @return URL to the release Quilt installer.
    * @author Griefed
    */
   public URL releaseInstallerUrl() {
@@ -252,8 +244,8 @@ public class QuiltMeta {
   /**
    * Check whether a {@link URL} to the specified Quilt installer version is available.
    *
-   * @param quiltVersion {@link String} Quilt version.
-   * @return {@link Boolean} <code>true</code> if a {@link URL} to the specified Quilt installer
+   * @param quiltVersion Quilt version.
+   * @return <code>true</code> if a {@link URL} to the specified Quilt installer
    * version is available.
    * @author Griefed
    */
@@ -264,8 +256,8 @@ public class QuiltMeta {
   /**
    * Get the {@link URL} to the Quilt installer for the specified version.
    *
-   * @param quiltVersion {@link String} Quilt version.
-   * @return {@link URL} to the Quilt installer for the specified version.
+   * @param quiltVersion Quilt version.
+   * @return URL to the Quilt installer for the specified version.
    * @author Griefed
    */
   public Optional<URL> installerUrl(String quiltVersion) {
@@ -275,8 +267,8 @@ public class QuiltMeta {
   /**
    * Check whether the specified Quilt version is available/correct/valid.
    *
-   * @param quiltVersion {@link String} Quilt version.
-   * @return {@link Boolean} <code>true</code> if the specified version is available/correct/valid.
+   * @param quiltVersion Quilt version.
+   * @return <code>true</code> if the specified version is available/correct/valid.
    * @author Griefed
    */
   public boolean checkQuiltVersion(String quiltVersion) {

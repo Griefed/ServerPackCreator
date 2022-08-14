@@ -125,7 +125,7 @@ public class RotatedIcon implements Icon {
   /**
    * Gets the Icon to be rotated
    *
-   * @return the Icon to be rotated
+   * @return The Icon to be rotated
    */
   public Icon getIcon() {
     return icon;
@@ -134,7 +134,7 @@ public class RotatedIcon implements Icon {
   /**
    * Gets the Rotate enum which indicates the direction of rotation
    *
-   * @return the Rotate enum
+   * @return The Rotate enum
    */
   public Rotate getRotate() {
     return rotate;
@@ -143,7 +143,7 @@ public class RotatedIcon implements Icon {
   /**
    * Gets the degrees of rotation. Only used for Rotate.ABOUT_CENTER.
    *
-   * @return the degrees of rotation
+   * @return The degrees of rotation
    */
   public double getDegrees() {
     return degrees;
@@ -154,7 +154,7 @@ public class RotatedIcon implements Icon {
    * degress of rotation, it will not cause the Icon to be repainted. You must invoke repaint() on
    * any component using this icon for it to be repainted.
    *
-   * @param degrees the degrees of rotation
+   * @param degrees The degrees of rotation
    */
   public void setDegrees(double degrees) {
     this.degrees = degrees;
@@ -183,7 +183,7 @@ public class RotatedIcon implements Icon {
   /**
    * Gets the width of this icon.
    *
-   * @return the width of the icon in pixels.
+   * @return The width of the icon in pixels.
    */
   @Override
   public int getIconWidth() {
@@ -210,7 +210,7 @@ public class RotatedIcon implements Icon {
   /**
    * Gets the height of this icon.
    *
-   * @return the height of the icon in pixels.
+   * @return The height of the icon in pixels.
    */
   @Override
   public int getIconHeight() {
@@ -234,9 +234,9 @@ public class RotatedIcon implements Icon {
    * Paint the icons of this compound icon at the specified location
    *
    * @param c The component on which the icon is painted
-   * @param g the graphics context
-   * @param x the X coordinate of the icon's top-left corner
-   * @param y the Y coordinate of the icon's top-left corner
+   * @param g The graphics context
+   * @param x The X coordinate of the icon's top-left corner
+   * @param y The Y coordinate of the icon's top-left corner
    */
   @Override
   public void paintIcon(Component c, Graphics g, int x, int y) {

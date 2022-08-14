@@ -53,8 +53,8 @@ public class BooleanUtilities {
    * Language Key <code>cli.input.false</code><br> Language Key <code>cli.input.no</code><br>
    * Language Key <code>cli.input.no.short</code><br>
    *
-   * @param stringBoolean String. The string which should be converted to boolean if it matches
-   *                      certain patterns.
+   * @param stringBoolean The string which should be converted to boolean if it matches certain
+   *                      patterns.
    * @return Boolean. Returns the corresponding boolean if match with pattern was found. If no match
    * is found, assume and return false.
    * @author Griefed

@@ -59,8 +59,7 @@ public class QuiltScanner extends JsonBasedScanner implements
    *
    * @param filesInModsDir A list of files in which to check the
    *                       <code>fabric.mod.json</code>-files.
-   * @return List String. List of mods not to include in server pack based on
-   * fabric.mod.json-content.
+   * @return List of mods not to include in server pack based on fabric.mod.json-content.
    * @author Griefed
    */
   @Override

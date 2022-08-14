@@ -160,9 +160,8 @@ public class ServerPackHandler {
    * </code> Even though it is the year 2022, spaces in paths can and do still cause trouble. Such
    * as for Powershell scripts. Powershell throws a complete fit if the path contains spaces....
    *
-   * @param configurationModel {@link ConfigurationModel} or {@link ServerPackModel} containing the
-   *                           modpack directory of the modpack from which the server pack will be
-   *                           generated.
+   * @param configurationModel Model containing the modpack directory of the modpack from which the
+   *                           server pack will be generated.
    * @return The complete path to the directory in which the server pack will be generated.
    * @author Griefed
    */
@@ -346,11 +345,11 @@ public class ServerPackHandler {
    * Download and provide the improved Fabric Server Launcher, if it is available for the given
    * Minecraft and Fabric version.
    *
-   * @param minecraftVersion String. The Minecraft version the modpack uses and the Fabric Server
-   *                         Launcher should be downloaded for.
-   * @param fabricVersion    String. The modloader version the modpack uses and the Fabric Server
-   *                         Launcher should be downloaded for.
-   * @param destination      String. The destination of the server pack.
+   * @param minecraftVersion The Minecraft version the modpack uses and the Fabric Server Launcher
+   *                         should be downloaded for.
+   * @param fabricVersion    The modloader version the modpack uses and the Fabric Server Launcher
+   *                         should be downloaded for.
+   * @param destination      The destination of the server pack.
    * @author Griefed
    */
   private void provideImprovedFabricServerLauncher(
@@ -399,8 +398,8 @@ public class ServerPackHandler {
    * Deletes all files, directories and ZIP-archives of previously generated server packs to ensure
    * newly generated server pack is as clean as possible.
    *
-   * @param deleteZip   Boolean. Whether to delete the server pack ZIP-archive.
-   * @param destination String. The destination at which to clean up in.
+   * @param deleteZip   Whether to delete the server pack ZIP-archive.
+   * @param destination The destination at which to clean up in.
    * @author Griefed
    */
   private void cleanupEnvironment(boolean deleteZip, String destination) {
@@ -454,14 +453,12 @@ public class ServerPackHandler {
    * -combination is provided, the specified source-file is copied to the specified
    * destination-file.
    *
-   * @param modpackDir        String. Files and directories are copied into the server_pack
-   *                          directory inside the modpack directory.
-   * @param directoriesToCopy String List. All directories and files therein to copy to the server
-   *                          pack.
-   * @param clientMods        String List. List of clientside-only mods to exclude from the server
-   *                          pack.
-   * @param minecraftVersion  String. The Minecraft version the modpack uses.
-   * @param destination       String. The destination where the files should be copied to.
+   * @param modpackDir        Files and directories are copied into the server_pack directory inside
+   *                          the modpack directory.
+   * @param directoriesToCopy All directories and files therein to copy to the server pack.
+   * @param clientMods        List of clientside-only mods to exclude from the server pack.
+   * @param minecraftVersion  The Minecraft version the modpack uses.
+   * @param destination       The destination where the files should be copied to.
    * @author Griefed
    */
   private void copyFiles(
@@ -652,7 +649,7 @@ public class ServerPackHandler {
    *
    * @param source            {@link String} The source-directory.
    * @param destination{@link String} The server pack-directory.
-   * @return {@link ServerPackFile}-list.
+   * @return List of files and folders of the server pack.
    * @author Griefed
    */
   private List<ServerPackFile> getDirectoryFiles(String source, String destination) {
@@ -685,10 +682,9 @@ public class ServerPackHandler {
   /**
    * Gather all files in the specified save-directory and create {@link ServerPackFile}s from it.
    *
-   * @param clientDir   {@link String} Target directory in the server pack. Usually the name of the
-   *                    world.
-   * @param directory   {@link String} The save-directory.
-   * @param destination {@link String} The destination of the server pack.
+   * @param clientDir   Target directory in the server pack. Usually the name of the world.
+   * @param directory   The save-directory.
+   * @param destination The destination of the server pack.
    * @return List of {@link ServerPackFile}.
    * @author Griefed
    */
@@ -732,7 +728,7 @@ public class ServerPackHandler {
    *                                modloader is Forge, this determines whether Annotations or Tomls
    *                                are scanned.
    * @param modloader               {@link String} The modloader the modpack uses.
-   * @return List String. A list of all mods to include in the server pack.
+   * @return A list of all mods to include in the server pack.
    * @author Griefed
    */
   private List<String> excludeClientMods(
@@ -846,7 +842,7 @@ public class ServerPackHandler {
    * Check whether the given file is present in the list of directories to exclude from the server
    * pack.
    *
-   * @param fileToCheckFor String. The string to check for.
+   * @param fileToCheckFor The string to check for.
    * @return Boolean. Returns true if the file is found in the list of directories to exclude, false
    * if not.
    * @author Griefed
@@ -865,8 +861,8 @@ public class ServerPackHandler {
   /**
    * Copies the server-icon.png into server_pack.
    *
-   * @param destination      String. The destination where the icon should be copied to.
-   * @param pathToServerIcon String. The path to the custom server-icon.
+   * @param destination      The destination where the icon should be copied to.
+   * @param pathToServerIcon The path to the custom server-icon.
    * @author Griefed
    */
   private void copyIcon(String destination, String pathToServerIcon) {
@@ -944,9 +940,8 @@ public class ServerPackHandler {
   /**
    * Copies the server.properties into server_pack.
    *
-   * @param destination            String. The destination where the properties should be copied
-   *                               to.
-   * @param pathToServerProperties String. The path to the custom server.properties.
+   * @param destination            The destination where the properties should be copied to.
+   * @param pathToServerProperties The path to the custom server.properties.
    * @author Griefed
    */
   private void copyProperties(String destination, String pathToServerProperties) {
@@ -992,16 +987,15 @@ public class ServerPackHandler {
    * Installs the modloader server for the specified modloader, modloader version and Minecraft
    * version.
    *
-   * @param modLoader        String. The modloader for which to install the server software. Either
-   *                         Forge or Fabric.
-   * @param minecraftVersion String. The Minecraft version for which to install the modloader and
-   *                         Minecraft server.
-   * @param modLoaderVersion String. The modloader version for which to install the modloader and
-   *                         Minecraft server.
-   * @param javaPath         String. The path to the Java executable/binary which is needed to
-   *                         execute the Forge/Fabric installersList.
-   * @param destination      String. The destination where the modloader server should be installed
-   *                         into.
+   * @param modLoader        The modloader for which to install the server software. Either Forge or
+   *                         Fabric.
+   * @param minecraftVersion The Minecraft version for which to install the modloader and Minecraft
+   *                         server.
+   * @param modLoaderVersion The modloader version for which to install the modloader and Minecraft
+   *                         server.
+   * @param javaPath         The path to the Java executable/binary which is needed to execute the
+   *                         Forge/Fabric installersList.
+   * @param destination      The destination where the modloader server should be installed into.
    * @author Griefed
    */
   private void installServer(
@@ -1193,15 +1187,13 @@ public class ServerPackHandler {
    * the files which will be excluded, see
    * {@link ApplicationProperties#getFilesToExcludeFromZipArchive()}
    *
-   * @param minecraftVersion          {@link String} Determines the name of the Minecraft server JAR
-   *                                  to exclude from the ZIP-archive if the modloader is Forge.
-   * @param includeServerInstallation {@link Boolean} Determines whether the Minecraft server JAR
-   *                                  info should be printed.
-   * @param destination               {@link String} The destination where the ZIP-archive should be
-   *                                  created in.
-   * @param modloader                 {@link String} The modloader the modpack and server pack use.
-   * @param modloaderVersion          {@link String} The modloader version the modpack and server
-   *                                  pack use.
+   * @param minecraftVersion          Determines the name of the Minecraft server JAR to exclude
+   *                                  from the ZIP-archive if the modloader is Forge.
+   * @param includeServerInstallation Determines whether the Minecraft server JAR info should be
+   *                                  printed.
+   * @param destination               The destination where the ZIP-archive should be created in.
+   * @param modloader                 The modloader the modpack and server pack use.
+   * @param modloaderVersion          The modloader version the modpack and server pack use.
    * @author Griefed
    */
   public void zipBuilder(
@@ -1274,11 +1266,11 @@ public class ServerPackHandler {
    * Cleans up the server_pack directory by deleting left-over files from modloader installations
    * and version checking.
    *
-   * @param minecraftVersion String. Needed for renaming the Forge server JAR to work with launch
-   *                         scripts provided by ServerPackCreator.
-   * @param modLoaderVersion String. Needed for renaming the Forge server JAR to work with launch
-   *                         scripts provided by ServerPackCreator.
-   * @param destination      String. The destination where we should clean up in.
+   * @param minecraftVersion Needed for renaming the Forge server JAR to work with launch scripts
+   *                         provided by ServerPackCreator.
+   * @param modLoaderVersion Needed for renaming the Forge server JAR to work with launch scripts
+   *                         provided by ServerPackCreator.
+   * @param destination      The destination where we should clean up in.
    * @author Griefed
    */
   private void cleanUpServerPack(
@@ -1330,9 +1322,8 @@ public class ServerPackHandler {
     /**
      * Construct a new ServerPackFile from two {@link File}-objects, a source and a destination.
      *
-     * @param sourceFile      {@link File} The source file/directory. Usually a file/directory in a
-     *                        modpack.
-     * @param destinationFile {@link File} The destination file/directory in the server pack.
+     * @param sourceFile      The source file/directory. Usually a file/directory in a modpack.
+     * @param destinationFile The destination file/directory in the server pack.
      * @author Griefed
      */
     public ServerPackFile(File sourceFile, File destinationFile) throws InvalidPathException {
@@ -1345,9 +1336,8 @@ public class ServerPackHandler {
     /**
      * Construct a new ServerPackFile from two {@link String}-objects, a source and a destination.
      *
-     * @param sourceFile      {@link String} The source file/directory. Usually a file/directory in
-     *                        a modpack.
-     * @param destinationFile {@link String} The destination file/directory in the server pack.
+     * @param sourceFile      The source file/directory. Usually a file/directory in a modpack.
+     * @param destinationFile The destination file/directory in the server pack.
      * @author Griefed
      */
     public ServerPackFile(String sourceFile, String destinationFile)
@@ -1361,9 +1351,8 @@ public class ServerPackHandler {
     /**
      * Construct a new ServerPackFile from two {@link Path}-objects, a source and a destination.
      *
-     * @param sourcePath      {@link Path} The source file/directory. Usually a file/directory in a
-     *                        modpack.
-     * @param destinationPath {@link Path} The destination file/directory in the server pack.
+     * @param sourcePath      The source file/directory. Usually a file/directory in a modpack.
+     * @param destinationPath The destination file/directory in the server pack.
      * @author Griefed
      */
     public ServerPackFile(Path sourcePath, Path destinationPath)
@@ -1377,7 +1366,7 @@ public class ServerPackHandler {
     /**
      * The source-file.
      *
-     * @return {@link File} The source-file.
+     * @return The source-file.
      * @author Griefed
      */
     public File source() {
@@ -1387,7 +1376,7 @@ public class ServerPackHandler {
     /**
      * The destination-file.
      *
-     * @return {@link File} The destination-file.
+     * @return The destination-file.
      * @author Griefed
      */
     public File destination() {
@@ -1397,7 +1386,7 @@ public class ServerPackHandler {
     /**
      * The path to the source-file.
      *
-     * @return {@link Path} The path to the source-file.
+     * @return The path to the source-file.
      * @author Griefed
      */
     public Path sourcePath() {
@@ -1407,7 +1396,7 @@ public class ServerPackHandler {
     /**
      * The path to the destination-file.
      *
-     * @return {@link Path} The path to the destination-file.
+     * @return The path to the destination-file.
      * @author Griefed
      */
     public Path destinationPath() {
@@ -1464,7 +1453,7 @@ public class ServerPackHandler {
      * This ServerPackFiles source-file and destination-file as a {@link String}-combination,
      * separated by a <code>;</code>
      *
-     * @return {@link String} This ServerPackFiles source-file and destination-file as a
+     * @return This ServerPackFiles source-file and destination-file as a
      * {@link String}-combination, separated by a <code>;</code>
      * @author Griefed
      */
