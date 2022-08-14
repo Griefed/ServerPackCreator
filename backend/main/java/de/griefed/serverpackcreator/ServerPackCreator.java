@@ -80,7 +80,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableScheduling
 @PropertySources({
     @PropertySource("classpath:application.properties"),
-    @PropertySource("classpath:serverpackcreator.properties")
+    @PropertySource("classpath:serverpackcreator.properties"),
+    @PropertySource("file:./serverpackcreator.properties")
 })
 public class ServerPackCreator {
 
@@ -121,13 +122,14 @@ public class ServerPackCreator {
    * @author Griefed
    */
   public ServerPackCreator(String[] args) {
-    this.COMMANDLINE_PARSER = new CommandlineParser(args);
-    this.APPLICATIONPROPERTIES = new ApplicationProperties();
+    ARGS = args;
+    COMMANDLINE_PARSER = new CommandlineParser(args);
+    APPLICATIONPROPERTIES = new ApplicationProperties();
 
     if (COMMANDLINE_PARSER.getLanguageToUse().isPresent()) {
-      this.I18N = new I18n(APPLICATIONPROPERTIES, COMMANDLINE_PARSER.getLanguageToUse().get());
+      I18N = new I18n(APPLICATIONPROPERTIES, COMMANDLINE_PARSER.getLanguageToUse().get());
     } else {
-      this.I18N = new I18n(APPLICATIONPROPERTIES);
+      I18N = new I18n(APPLICATIONPROPERTIES);
     }
   }
 
@@ -136,10 +138,6 @@ public class ServerPackCreator {
       serverPackCreator = new ServerPackCreator(args);
     }
     return serverPackCreator;
-  }
-
-  public static String[] getArgs() {
-    return ARGS;
   }
 
   /**
@@ -154,9 +152,18 @@ public class ServerPackCreator {
    * @author Griefed
    */
   public static void main(String[] args) throws IOException {
-    ARGS = args;
-    serverPackCreator = getServerPackCreator(ARGS);
+    serverPackCreator = getServerPackCreator(args);
     serverPackCreator.run();
+  }
+
+  /**
+   * The arguments with which ServerPackCreator was started.
+   *
+   * @return All arguments with which ServerPackCreator was started.
+   * @author Griefed
+   */
+  public static String[] getArgs() {
+    return ARGS;
   }
 
   /**
