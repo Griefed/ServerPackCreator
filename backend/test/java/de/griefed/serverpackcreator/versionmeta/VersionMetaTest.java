@@ -74,12 +74,12 @@ public class VersionMetaTest {
     Assertions.assertNotNull(versionMeta.minecraft().latestSnapshot().version());
     Assertions.assertNotNull(versionMeta.minecraft().latestSnapshot().url());
     Assertions.assertEquals(versionMeta.minecraft().latestSnapshot().type(), Type.SNAPSHOT);
-    Assertions.assertNotNull(versionMeta.minecraft().snapshotsVersionsDescending());
+    Assertions.assertNotNull(versionMeta.minecraft().snapshotVersionsDescending());
     Assertions.assertNotNull(versionMeta.minecraft().snapshotVersionsAscending());
     Assertions.assertNotNull(versionMeta.minecraft().snapshotVersionsArrayDescending());
     Assertions.assertEquals(
         versionMeta.minecraft().snapshotVersionsArrayDescending().length,
-        versionMeta.minecraft().snapshotsVersionsDescending().size());
+        versionMeta.minecraft().snapshotVersionsDescending().size());
     Assertions.assertEquals(
         versionMeta.minecraft().snapshotVersionsArrayDescending()[0],
         versionMeta.minecraft()

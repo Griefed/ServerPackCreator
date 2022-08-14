@@ -71,7 +71,7 @@ class MinecraftServerMeta {
   /**
    * Get a list of {@link MinecraftServer} of the {@link Type#RELEASE}.
    *
-   * @return {@link MinecraftServer}-list of the {@link Type#RELEASE}.
+   * @return Release server-list of the {@link Type#RELEASE}.
    * @author Griefed
    */
   protected List<MinecraftServer> releases() {
@@ -81,7 +81,7 @@ class MinecraftServerMeta {
   /**
    * Get a list of {@link MinecraftServer} of the {@link Type#SNAPSHOT}.
    *
-   * @return {@link MinecraftServer}-list of the {@link Type#SNAPSHOT}.
+   * @return Snapshot server-list of the {@link Type#SNAPSHOT}.
    * @author Griefed
    */
   protected List<MinecraftServer> snapshots() {
@@ -92,7 +92,7 @@ class MinecraftServerMeta {
    * Get the {@link MinecraftServer} meta.<br> key: {@link String} Minecraft version<br> value:
    * {@link MinecraftServer} for said Minecraft version
    *
-   * @return {@link HashMap} containing the {@link MinecraftServerMeta}.
+   * @return Map containing the {@link MinecraftServerMeta}.
    * @author Griefed
    */
   protected HashMap<String, MinecraftServer> meta() {

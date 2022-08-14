@@ -156,10 +156,7 @@ Gradle Test:
 #  coverage: '/Total.*?([0-9]{1,3})%/'
   artifacts:
     paths:
-      - build/libs/${CI_PROJECT_NAME}-$CI_COMMIT_REF_NAME.exe
-      - build/libs/${CI_PROJECT_NAME}-$CI_COMMIT_REF_NAME.jar
-#      - build/reports/jacoco/test/jacocoTestReport.xml
-#      - build/reports/
+      - build
     expire_in: 1 week
 
 Docker Test:
@@ -252,6 +249,85 @@ Build Release:
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-(alpha|beta)\.\d+$/'
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/'
+
+Sign Java Publication:
+  stage: Build Release
+  image: ghcr.io/griefed/baseimage-ubuntu-jdk-8:2.0.12
+  before_script:
+    - echo "**** Running in $CI_JOB_ID ****"
+    - echo "**** Java location ****"
+    - which java
+    - echo "**** Java version ****"
+    - java -version
+    - echo "**** Allowing execution of gradlew ****"
+    - chmod +x gradlew
+    - echo "**** Ensure clean environment ****"
+    - "./gradlew clean"
+  script:
+    - echo "**** Publishing Maven Artifacts ****"
+    - "./gradlew signMavenJavaPublication -Pversion=${CI_COMMIT_TAG} -x test --info --stacktrace"
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-beta\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
+    - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
+  artifacts:
+    paths:
+      - build
+
+Publish GitHub:
+  stage: Build Release
+  image: ghcr.io/griefed/baseimage-ubuntu-jdk-8:2.0.12
+  needs:
+    - job: Sign Java Publication
+      optional: false
+      artifacts: true
+  script:
+    - echo "**** Publishing Maven Artifacts to GitHub ****"
+    - "./gradlew publishMavenJavaPublicationToGitHubPackagesRepository -Pversion=${CI_COMMIT_TAG} -x test --info --stacktrace"
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-beta\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
+    - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
+
+Publish GitLab:
+  stage: Build Release
+  image: ghcr.io/griefed/baseimage-ubuntu-jdk-8:2.0.12
+  needs:
+    - job: Sign Java Publication
+      optional: false
+      artifacts: true
+  script:
+    - echo "**** Publishing Maven Artifacts to GitLab ****"
+    - "./gradlew publishMavenJavaPublicationToMaven2Repository -Pversion=${CI_COMMIT_TAG} -x test --info --stacktrace"
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-beta\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
+    - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
+
+Publish GitGriefed:
+  stage: Build Release
+  image: ghcr.io/griefed/baseimage-ubuntu-jdk-8:2.0.12
+  needs:
+    - job: Sign Java Publication
+      optional: false
+      artifacts: true
+  script:
+    - echo "**** Publishing Maven Artifacts GitGriefed ****"
+    - "./gradlew publishMavenJavaPublicationToMavenRepository -Pversion=${CI_COMMIT_TAG} -x test --info --stacktrace"
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-beta\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
+    - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
+
+Publish OSSRH:
+  stage: Build Release
+  image: ghcr.io/griefed/baseimage-ubuntu-jdk-8:2.0.12
+  needs:
+    - job: Sign Java Publication
+      optional: false
+      artifacts: true
+  script:
+    - echo "**** Publishing Maven Artifacts to OSSRH ****"
+    - "./gradlew publishMavenJavaPublicationToOSSRHRepository -Pversion=${CI_COMMIT_TAG} -x test --info --stacktrace"
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-beta\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
+    - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
 
 Publish Maven Artifacts:
   stage: Build Release

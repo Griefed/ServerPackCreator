@@ -195,6 +195,11 @@ public class ApplicationProperties extends Properties {
   private String hasteBinServerUrl = "https://haste.zneix.eu/documents";
 
   /**
+   * Whether pre-releases and snapshots should be available to the user.
+   */
+  private boolean minecraftPreReleases = false;
+
+  /**
    * Initialize an instance of our application properties using the default
    * <code>serverpackcreator.properties</code>.
    *
@@ -303,6 +308,8 @@ public class ApplicationProperties extends Properties {
     setLanguage();
 
     setHasteBinServerUrl();
+
+    setMinecraftPreReleases();
 
     saveToDisk();
   }
@@ -711,6 +718,32 @@ public class ApplicationProperties extends Properties {
   }
 
   /**
+   * Whether Minecraft pre-releases and snapshots should be made available to the user.
+   *
+   * @author Griefed
+   */
+  private void setMinecraftPreReleases() {
+
+    boolean pre = false;
+
+    try {
+      pre = Boolean.parseBoolean(
+          getProperty("de.griefed.serverpackcreator.minecraft.snapshots", "false"));
+
+    } catch (NullPointerException npe) {
+
+      setProperty("de.griefed.serverpackcreator.minecraft.snapshots", "false");
+
+    } finally {
+
+      setProperty("de.griefed.serverpackcreator.minecraft.snapshots", String.valueOf(pre));
+      minecraftPreReleases = pre;
+
+    }
+    LOG.debug("Minecraft pre-releases and snapshots available set to: " + minecraftPreReleases);
+  }
+
+  /**
    * Default list of script templates, used in case not a single one was configured.
    *
    * <ul>
@@ -1000,7 +1033,7 @@ public class ApplicationProperties extends Properties {
   /**
    * Getter for the fallback list of clientside-only mods.
    *
-   * @return List String. Returns the fallback list of clientside-only mods.
+   * @return Returns the fallback list of clientside-only mods.
    * @author Griefed
    */
   public List<String> getListFallbackMods() {
@@ -1020,7 +1053,7 @@ public class ApplicationProperties extends Properties {
   /**
    * Getter for the list of directories to exclude from server packs.
    *
-   * @return List String. Returns the list of directories to exclude from server packs.
+   * @return Returns the list of directories to exclude from server packs.
    * @author Griefed
    */
   public List<String> getDirectoriesToExclude() {
@@ -1030,8 +1063,7 @@ public class ApplicationProperties extends Properties {
   /**
    * Adder for the list of directories to exclude from server packs.
    *
-   * @param entry String. The directory to add to the list of directories to exclude from server
-   *              packs.
+   * @param entry The directory to add to the list of directories to exclude from server packs.
    * @author Griefed
    */
   public void addDirectoryToExclude(String entry) {
@@ -1097,7 +1129,7 @@ public class ApplicationProperties extends Properties {
    * Should you want these filters to be expanded, open an issue on <a
    * href="https://github.com/Griefed/ServerPackCreator/issues">GitHub</a>
    *
-   * @return {@link List} {@link String} of files to exclude from the ZIP archive of a server pack.
+   * @return Files and folders to exclude from the ZIP archive of a server pack.
    * @author Griefed
    */
   public List<String> getFilesToExcludeFromZipArchive() {
@@ -1107,7 +1139,7 @@ public class ApplicationProperties extends Properties {
   /**
    * Whether the exclusion of files from the ZIP-archive of the server pack is enabled.
    *
-   * @return {@link Boolean} <code>true</code> if the exclusion is enabled.
+   * @return <code>true</code> if the exclusion is enabled.
    * @author Griefed
    */
   public boolean isZipFileExclusionEnabled() {
@@ -1117,7 +1149,7 @@ public class ApplicationProperties extends Properties {
   /**
    * Is auto excluding of clientside-only mods enabled.
    *
-   * @return {@link Boolean} <code>true</code> if autodiscovery is enabled.
+   * @return <code>true</code> if autodiscovery is enabled.
    */
   public boolean isAutoExcludingModsEnabled() {
     return autoExcludingModsEnabled;
@@ -1277,5 +1309,16 @@ public class ApplicationProperties extends Properties {
    */
   public String getHasteBinServerUrl() {
     return hasteBinServerUrl;
+  }
+
+  /**
+   * Whether Minecraft pre-releases and snapshots are available to the user in, for example, the
+   * GUI.
+   *
+   * @return <code>true</code> if they are available.
+   * @author Griefed
+   */
+  public boolean enableMinecraftPreReleases() {
+    return minecraftPreReleases;
   }
 }

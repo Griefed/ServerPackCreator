@@ -45,7 +45,7 @@ public class FabricDetails {
    * Fabric loader ID, in the format of <code>fabric-loader-FABRIC_VERSION-MINECRAFT_VERSION
    * </code>.
    *
-   * @return {@link String} The Fabric loader ID for the requested Minecraft and Fabric versions.
+   * @return The Fabric loader ID for the requested Minecraft and Fabric versions.
    * @author Griefed
    */
   public String getId() {
@@ -55,7 +55,7 @@ public class FabricDetails {
   /**
    * The Minecraft version from which this Fabric loader version inherits from.
    *
-   * @return {@link String} The Minecrat version of this Fabric loader.
+   * @return The Minecrat version of this Fabric loader.
    * @author Griefed
    */
   public String getInheritsFrom() {
@@ -65,7 +65,7 @@ public class FabricDetails {
   /**
    * The date at which this loader was released.
    *
-   * @return {@link Date} The release date of this Fabric loader.
+   * @return The release date of this Fabric loader.
    * @author Griefed
    */
   public Date getReleaseTime() {
@@ -76,7 +76,7 @@ public class FabricDetails {
    * Probably the same as {@link #getReleaseTime()}. Not sure. It's a field in the JSON you receive
    * from Fabric. - Griefed.
    *
-   * @return {@link Date} The date of this Fabric loader.
+   * @return The date of this Fabric loader.
    * @author Griefed
    */
   public Date getTime() {
@@ -86,7 +86,7 @@ public class FabricDetails {
   /**
    * The release type of this Fabric loader.
    *
-   * @return {@link String} Release type of this Fabric loader.
+   * @return Release type of this Fabric loader.
    * @author Griefed
    */
   public String getType() {
@@ -96,7 +96,7 @@ public class FabricDetails {
   /**
    * The Main class of this Fabric loader.
    *
-   * @return {@link String} Main class.
+   * @return Main class.
    * @author Griefed
    */
   public String getMainClass() {
@@ -106,7 +106,7 @@ public class FabricDetails {
   /**
    * {@link FabricArguments} used by this Fabric loader.
    *
-   * @return {@link FabricArguments} of this Fabric loader.
+   * @return Arguments of this Fabric loader.
    * @author Griefed
    */
   public FabricArguments getArguments() {
@@ -116,7 +116,7 @@ public class FabricDetails {
   /**
    * {@link FabricLibrary}-list used by this Fabric loader.
    *
-   * @return {@link FabricLibrary}-list used by this Fabric loader.
+   * @return Library-list used by this Fabric loader.
    * @author Griefed
    */
   public List<FabricLibrary> getLibraries() {

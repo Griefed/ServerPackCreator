@@ -87,14 +87,14 @@ public class VersionMeta {
   /**
    * Constructor.
    *
-   * @param minecraftManifest            {@link File} Minecraft manifest file.
-   * @param forgeManifest                {@link File} Forge manifest file.
-   * @param fabricManifest               {@link File} Fabric manifest file.
-   * @param fabricIntermediariesManifest {@link File} Fabric Intermediary manifest-file.
-   * @param fabricInstallerManifest      {@link File} Fabric-installer manifest file.
-   * @param quiltManifest                {@link File} Quilt manifest file.
-   * @param quiltInstallerManifest       {@link File} Quilt-installer manifest file.
-   * @param injectedObjectMapper         {@link ObjectMapper}-instance.
+   * @param minecraftManifest            Minecraft manifest file.
+   * @param forgeManifest                Forge manifest file.
+   * @param fabricManifest               Fabric manifest file.
+   * @param fabricIntermediariesManifest Fabric Intermediary manifest-file.
+   * @param fabricInstallerManifest      Fabric-installer manifest file.
+   * @param quiltManifest                Quilt manifest file.
+   * @param quiltInstallerManifest       Quilt-installer manifest file.
+   * @param injectedObjectMapper         Object mapper-instance for JSON parsing.
    * @throws IOException if one of the metas could not be initialized.
    * @author Griefed
    */
@@ -161,9 +161,9 @@ public class VersionMeta {
    * If it exists, it is compared to the online manifest.<br> If the online version contains more
    * versions, the local manifests are replaced by the online ones.
    *
-   * @param manifestToCheck {@link File} The manifest to check.
-   * @param urlToManifest   {@link URL} The URL to the manifest.
-   * @param manifestType    {@link Type} The type of the manifest, either {@link Type#MINECRAFT},
+   * @param manifestToCheck The manifest to check.
+   * @param urlToManifest   The URL to the manifest.
+   * @param manifestType    The type of the manifest, either {@link Type#MINECRAFT},
    *                        {@link Type#FORGE}, {@link Type#FABRIC} or
    *                        {@link Type#FABRIC_INSTALLER}.
    * @author Griefed
@@ -311,8 +311,8 @@ public class VersionMeta {
   /**
    * Acquire a {@link JsonNode} from the given json file.
    *
-   * @param inputStream {@link InputStream}. The file to read.
-   * @return {@link JsonNode} containing the files json data.
+   * @param inputStream The file to read.
+   * @return JSON data from the specified file.
    * @throws IOException when the file could not be parsed/read into a {@link JsonNode}.
    * @author Griefed
    */

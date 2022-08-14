@@ -37,7 +37,7 @@ public class QuiltLoader {
   /**
    * Create a new Quilt Loader instance.
    *
-   * @param loaderManifest {@link Document} containing Quilts manifest.
+   * @param loaderManifest Quilts manifest.
    * @author Griefed
    */
   protected QuiltLoader(Document loaderManifest) {
@@ -71,7 +71,7 @@ public class QuiltLoader {
   /**
    * Update the latest, release and releases information.
    *
-   * @param loaderManifest {@link Document} containing Quilts manifest.
+   * @param loaderManifest Quilts manifest.
    * @author Griefed
    */
   protected void update(Document loaderManifest) {
@@ -104,7 +104,7 @@ public class QuiltLoader {
   /**
    * Get the latest Quilt loader version.
    *
-   * @return {@link String} The latest Quilt loader version.
+   * @return The latest Quilt loader version.
    * @author Griefed
    */
   protected String latestLoaderVersion() {
@@ -114,7 +114,7 @@ public class QuiltLoader {
   /**
    * Get the release Quilt loader version.
    *
-   * @return {@link String} The release Quilt loader version.
+   * @return The release Quilt loader version.
    * @author Griefed
    */
   protected String releaseLoaderVersion() {
@@ -124,7 +124,7 @@ public class QuiltLoader {
   /**
    * Get the list of available Quilt loader versions.
    *
-   * @return {@link String}-list of the available Quilt loader versions.
+   * @return List of the available Quilt loader versions.
    * @author Griefed
    */
   protected List<String> loaders() {

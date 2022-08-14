@@ -345,7 +345,7 @@ public class ServerPackCreator {
   /**
    * Run ServerPackCreator in a specific {@link CommandlineParser.Mode}.
    *
-   * @param modeToRunIn {@link CommandlineParser.Mode} to run in.
+   * @param modeToRunIn Mode to run in.
    * @throws IOException if the run fails.
    * @author Griefed
    */
@@ -885,8 +885,10 @@ public class ServerPackCreator {
     if (!APPLICATIONPROPERTIES.DEFAULT_CONFIG().exists()) {
 
       LOG.warn("No serverpackcreator.conf found...");
-      LOG.info("If you want to run ServerPackCreator in CLI-mode, a serverpackcreator.conf is required.");
-      LOG.info("Either copy an existing config, or run ServerPackCreator with the '-cgen'-argument to generate one via commandline.");
+      LOG.info(
+          "If you want to run ServerPackCreator in CLI-mode, a serverpackcreator.conf is required.");
+      LOG.info(
+          "Either copy an existing config, or run ServerPackCreator with the '-cgen'-argument to generate one via commandline.");
       System.exit(1);
 
     } else {
@@ -1176,8 +1178,8 @@ public class ServerPackCreator {
      * {@link #getLanguageToUse()}.<br> {@link #getLanguageToUse()} is wrapped in an
      * {@link Optional} to quickly determine whether a language was specified.
      *
-     * @param args {@link String}-array of commandline-arguments with which ServerPackCreator was
-     *             started. Typically passed from {@link ServerPackCreator}.
+     * @param args Array of commandline-arguments with which ServerPackCreator was started.
+     *             Typically passed from {@link ServerPackCreator}.
      * @author Griefed
      */
     public CommandlineParser(String[] args) {
@@ -1271,7 +1273,7 @@ public class ServerPackCreator {
     /**
      * Get the mode in which ServerPackCreator should be run in.
      *
-     * @return {@link Mode} in which ServerPackCreator should be run in.
+     * @return Mode in which ServerPackCreator should be run in.
      * @author Griefed
      */
     protected Mode getModeToRunIn() {
@@ -1281,7 +1283,7 @@ public class ServerPackCreator {
     /**
      * Get the locale in which ServerPackCreator should be run in, wrapped in an {@link Optional}.
      *
-     * @return {@link String} The locale in which ServerPackCreator should be run in, wrapped in an
+     * @return The locale in which ServerPackCreator should be run in, wrapped in an
      * {@link Optional}.
      * @author Griefed
      */
@@ -1354,7 +1356,7 @@ public class ServerPackCreator {
       /**
        * Textual representation of this mode.
        *
-       * @return {@link String} Textual representation of this mode.
+       * @return Textual representation of this mode.
        * @author Griefed
        */
       public String argument() {

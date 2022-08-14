@@ -59,8 +59,7 @@ public class TomlScanner implements Scanner<TreeSet<File>, Collection<File>> {
    * can be found for a given mod, it is added to prevent false positives.
    *
    * @param filesInModsDir A list of files in which to check the <code>mods.toml</code>-files.
-   * @return TreeSet File. List of mods not to include in server pack based on
-   * mods.toml-configuration.
+   * @return Mods not to include in server pack based on mods.toml-configuration.
    * @author Griefed
    */
   @Override

@@ -60,8 +60,8 @@ public class TaskSubmitter {
   /**
    * Submit a task for the generation of a server pack from a ZIP-archive.
    *
-   * @param zipGenerationProperties {@link String} containing all information required to generate a
-   *                                server pack from a ZIP-archive. See
+   * @param zipGenerationProperties containing all information required to generate a server pack
+   *                                from a ZIP-archive. See
    *                                {@link ZipController#requestGenerationFromZip(String, String,
    *                                String, String, String)}.
    * @author Griefed

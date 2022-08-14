@@ -37,7 +37,7 @@ public class FabricLoader {
   /**
    * Create a new instance of the Fabric Loader.
    *
-   * @param loaderManifest {@link Document} containing Fabrics manifest.
+   * @param loaderManifest Fabrics manifest.
    * @author Griefed
    */
   protected FabricLoader(Document loaderManifest) {
@@ -47,7 +47,7 @@ public class FabricLoader {
   /**
    * Update the latest, release and releases information.
    *
-   * @param loaderManifest {@link Document} containing Fabrics manifest.
+   * @param loaderManifest Fabrics manifest.
    * @author Griefed
    */
   protected void update(Document loaderManifest) {
@@ -80,7 +80,7 @@ public class FabricLoader {
   /**
    * Get the latest Fabric loader version.
    *
-   * @return {@link String} The latest Fabric loader version.
+   * @return The latest Fabric loader version.
    * @author Griefed
    */
   protected String latestLoaderVersion() {
@@ -90,7 +90,7 @@ public class FabricLoader {
   /**
    * Get the release Fabric loader version.
    *
-   * @return {@link String} The release Fabric loader version.
+   * @return The release Fabric loader version.
    * @author Griefed
    */
   protected String releaseLoaderVersion() {
@@ -100,7 +100,7 @@ public class FabricLoader {
   /**
    * Get the list of available Fabric loader versions.
    *
-   * @return {@link String}-list of the available Fabric loader versions.
+   * @return List of the available Fabric loader versions.
    * @author Griefed
    */
   protected List<String> loaders() {

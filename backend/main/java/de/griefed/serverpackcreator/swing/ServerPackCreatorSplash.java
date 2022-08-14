@@ -54,7 +54,7 @@ public class ServerPackCreatorSplash {
   /**
    * Create and show our splashscreen.
    *
-   * @param version {@link String} The version of ServerPackCreator being run.
+   * @param version The version of ServerPackCreator being run.
    * @author Griefed
    */
   public ServerPackCreatorSplash(String version) {
