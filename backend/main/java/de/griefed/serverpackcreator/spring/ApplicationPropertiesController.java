@@ -61,7 +61,7 @@ public class ApplicationPropertiesController {
   public String getConfiguration() {
     return "{"
         + "\"listFallbackMods\":"
-        + UTILITIES.ListUtils().encapsulateListElements(APPLICATIONPROPERTIES.getListFallbackMods())
+        + UTILITIES.ListUtils().encapsulateListElements(APPLICATIONPROPERTIES.getDefaultListFallbackMods())
         + ","
         + "\"listDirectoriesExclude\":"
         + UTILITIES.ListUtils()

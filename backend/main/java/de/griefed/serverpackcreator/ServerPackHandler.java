@@ -86,7 +86,7 @@ public class ServerPackHandler {
   private final Utilities UTILITIES;
   private final ApplicationPlugins APPLICATIONPLUGINS;
   private final StopWatch STOPWATCH_SCANS = new StopWatch();
-  private final String[] MOD_FILE_ENDINGS = new String[]{"jar"};
+  private final String[] MOD_FILE_ENDINGS = new String[]{"jar", "disabled"};
 
   /**
    * <strong>Constructor</strong>
@@ -499,13 +499,18 @@ public class ServerPackHandler {
     } else {
 
       TreeSet<String> exclusions = new TreeSet<>(APPLICATIONPROPERTIES.getDirectoriesToExclude());
-      directoriesToCopy.forEach(
-          entry -> {
-            if (entry.startsWith("!")) {
-              exclusions.add(entry.substring(1).replace("\\", "/"));
-            }
-          });
-      directoriesToCopy.removeIf(n -> n.startsWith("!"));
+
+      directoriesToCopy.removeIf(exclude -> {
+
+        if (exclude.startsWith("!")) {
+
+          exclusions.add(exclude.substring(1).replace("\\", "/"));
+          return true;
+
+        } else {
+          return false;
+        }
+      });
 
       List<ServerPackFile> serverPackFiles = new ArrayList<>(100000);
 
@@ -787,24 +792,7 @@ public class ServerPackHandler {
     }
 
     // Exclude user-specified mods from copying.
-    if (userSpecifiedClientMods.size() > 0) {
-
-      for (String clientMod : userSpecifiedClientMods) {
-
-        modsInModpack.removeIf(
-            mod -> {
-              if (mod.replace("\\", "/").contains(clientMod.replace("\\", "/"))) {
-                LOG.debug("Removed user-specified mod from mods list as per input: " + clientMod);
-                return true;
-              } else {
-                return false;
-              }
-            });
-      }
-
-    } else {
-      LOG.warn("User specified no clientside-only mods.");
-    }
+    excludeUserSpecifiedMod(userSpecifiedClientMods, modsInModpack);
 
     // Exclude scanned mods from copying if said functionality is enabled.
     if (APPLICATIONPROPERTIES.isAutoExcludingModsEnabled()) {
@@ -836,6 +824,69 @@ public class ServerPackHandler {
     filesInModsDir.clear();
 
     return new ArrayList<>(modsInModpack);
+  }
+
+  /**
+   * Exclude user-specified mods from the server pack.
+   *
+   * @param userSpecifiedClientMods User-specified clientside-only mods to exclude from the server
+   *                                pack.
+   * @param modsInModpack           Every mod ending with <code>jar</code> or <code>disabled</code>
+   *                                in the modpack.
+   * @author Griefed
+   */
+  private void excludeUserSpecifiedMod(List<String> userSpecifiedClientMods,
+      TreeSet<String> modsInModpack) {
+
+    if (userSpecifiedClientMods.size() > 0) {
+
+      for (String clientMod : userSpecifiedClientMods) {
+
+        if (exclude(clientMod, modsInModpack)) {
+          LOG.debug("Removed user-specified mod from mods list as per input: " + clientMod);
+        }
+      }
+
+    } else {
+      LOG.warn("User specified no clientside-only mods.");
+    }
+  }
+
+  /**
+   * Go through the mods in the modpack and exclude any of the user-specified clientside-only mods
+   * according to the filter method set in the serverpackcreator.properties.
+   *
+   * @param clientMod     The client mod to check whether it needs to be excluded.
+   * @param modsInModpack All mods in the modpack.
+   * @return <code>true</code> if an element was removed from the set of mods in the server pack.
+   */
+  private boolean exclude(String clientMod, TreeSet<String> modsInModpack) {
+    return modsInModpack.removeIf(
+        mod -> {
+
+          String check = mod.replace("\\", "/");
+          String checkAgainst = clientMod.replace("\\", "/");
+
+          switch (APPLICATIONPROPERTIES.exclusionFilter()) {
+
+            case END:
+              return check.endsWith(checkAgainst);
+
+            case CONTAIN:
+              return check.contains(checkAgainst);
+
+            case REGEX:
+              return check.matches(checkAgainst);
+
+            case EITHER:
+              return check.startsWith(checkAgainst) || check.endsWith(checkAgainst)
+                  || check.contains(checkAgainst) || check.matches(checkAgainst);
+
+            default:
+            case START:
+              return check.startsWith(checkAgainst);
+          }
+        });
   }
 
   /**
@@ -1312,7 +1363,8 @@ public class ServerPackHandler {
    *
    * @author Griefed
    */
-  private static class ServerPackFile {
+  @SuppressWarnings("InnerClassMayBeStatic")
+  private class ServerPackFile {
 
     private final File SOURCE_FILE;
     private final Path SOURCE_PATH;

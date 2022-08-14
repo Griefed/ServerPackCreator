@@ -38,9 +38,9 @@ import java.util.List;
  */
 public class ConfigurationModel {
 
-  private List<String> clientMods = new ArrayList<>();
-  private List<String> copyDirs = new ArrayList<>();
-  private HashMap<String, String> scriptSettings = new HashMap<>();
+  private final List<String> clientMods = new ArrayList<>();
+  private final List<String> copyDirs = new ArrayList<>();
+  private final HashMap<String, String> scriptSettings = new HashMap<>();
   private String modpackDir = "";
   private String javaPath = "";
   private String minecraftVersion = "";
@@ -111,8 +111,8 @@ public class ConfigurationModel {
       boolean includeZipCreation,
       HashMap<String, String> scriptSettings) {
 
-    this.clientMods = clientMods;
-    this.copyDirs = copyDirs;
+    this.clientMods.addAll(clientMods);
+    this.copyDirs.addAll(copyDirs);
     this.modpackDir = modpackDir;
     this.javaPath = javaPath;
     this.minecraftVersion = minecraftVersion;
@@ -217,7 +217,8 @@ public class ConfigurationModel {
    */
   public void setClientMods(List<String> newClientMods) {
     newClientMods.removeIf(entry -> entry.matches("\\s+") || entry.length() == 0);
-    this.clientMods = newClientMods;
+    this.clientMods.clear();
+    this.clientMods.addAll(newClientMods);
   }
 
   /**
@@ -241,7 +242,8 @@ public class ConfigurationModel {
         entry ->
             entry.equalsIgnoreCase("server_pack") || entry.matches("\\s+") || entry.length() == 0);
     newCopyDirs.replaceAll(entry -> entry.replace("\\", "/"));
-    this.copyDirs = newCopyDirs;
+    this.copyDirs.clear();
+    this.copyDirs.addAll(newCopyDirs);
   }
 
   /**
@@ -595,62 +597,33 @@ public class ConfigurationModel {
    * @author Griefed
    */
   public void setScriptSettings(HashMap<String, String> scriptSettings) {
+    this.scriptSettings.clear();
     this.scriptSettings.putAll(scriptSettings);
   }
 
   @Override
   public String toString() {
-    return "ConfigurationModel{"
-        + "clientMods="
-        + clientMods
-        + ", copyDirs="
-        + copyDirs
-        + ", modpackDir='"
-        + modpackDir
-        + '\''
-        + ", javaPath='"
-        + javaPath
-        + '\''
-        + ", minecraftVersion='"
-        + minecraftVersion
-        + '\''
-        + ", modLoader='"
-        + modLoader
-        + '\''
-        + ", modLoaderVersion='"
-        + modLoaderVersion
-        + '\''
-        + ", javaArgs='"
-        + javaArgs
-        + '\''
-        + ", serverPackSuffix='"
-        + serverPackSuffix
-        + '\''
-        + ", serverIconPath='"
-        + serverIconPath
-        + '\''
-        + ", serverPropertiesPath='"
-        + serverPropertiesPath
-        + '\''
-        + ", includeServerInstallation="
-        + includeServerInstallation
-        + ", includeServerIcon="
-        + includeServerIcon
-        + ", includeServerProperties="
-        + includeServerProperties
-        + ", includeZipCreation="
-        + includeZipCreation
-        + ", curseModpack="
-        + modpackJson
-        + ", projectName='"
-        + projectName
-        + '\''
-        + ", fileName='"
-        + fileName
-        + '\''
-        + ", fileDiskName='"
-        + fileDiskName
-        + '\''
-        + '}';
+    return "ConfigurationModel{" +
+        "clientMods=" + clientMods +
+        ", copyDirs=" + copyDirs +
+        ", scriptSettings=" + scriptSettings +
+        ", modpackDir='" + modpackDir + '\'' +
+        ", javaPath='" + javaPath + '\'' +
+        ", minecraftVersion='" + minecraftVersion + '\'' +
+        ", modLoader='" + modLoader + '\'' +
+        ", modLoaderVersion='" + modLoaderVersion + '\'' +
+        ", javaArgs='" + javaArgs + '\'' +
+        ", serverPackSuffix='" + serverPackSuffix + '\'' +
+        ", serverIconPath='" + serverIconPath + '\'' +
+        ", serverPropertiesPath='" + serverPropertiesPath + '\'' +
+        ", includeServerInstallation=" + includeServerInstallation +
+        ", includeServerIcon=" + includeServerIcon +
+        ", includeServerProperties=" + includeServerProperties +
+        ", includeZipCreation=" + includeZipCreation +
+        ", modpackJson=" + modpackJson +
+        ", projectName='" + projectName + '\'' +
+        ", fileName='" + fileName + '\'' +
+        ", fileDiskName='" + fileDiskName + '\'' +
+        '}';
   }
 }
