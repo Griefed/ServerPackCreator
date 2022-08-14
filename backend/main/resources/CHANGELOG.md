@@ -1,3 +1,15 @@
+## [3.11.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.11.0...3.11.1) (2022-08-12)
+
+
+### 🦊 CI/CD
+
+* **GitLab:** Move maven package upload to GitLab to last position ([7c12da6](https://git.griefed.de/Griefed/ServerPackCreator/commit/7c12da654042908c8825aae98d289e16bd92d06d))
+
+
+### 🛠 Fixes
+
+* **Logging:** Code formatting broke the log4j2.xml. ([01b5d62](https://git.griefed.de/Griefed/ServerPackCreator/commit/01b5d625a0ed89d9149d40a0747b9f7b44e62fa1))
+
 ## [3.11.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.10.2...3.11.0) (2022-08-12)
 
 
