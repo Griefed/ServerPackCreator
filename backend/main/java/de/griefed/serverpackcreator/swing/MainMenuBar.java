@@ -861,7 +861,7 @@ public class MainMenuBar extends Component {
         UIManager.setLookAndFeel(LAF_DARK);
         MaterialLookAndFeel.changeTheme(DARKTHEME);
         APPLICATIONPROPERTIES.setTheme(true);
-        APPLICATIONPROPERTIES.saveToDisk();
+        APPLICATIONPROPERTIES.saveToDisk(APPLICATIONPROPERTIES.SERVERPACKCREATOR_PROPERTIES());
 
       } catch (UnsupportedLookAndFeelException ex) {
         LOG.error("Couldn't change theme.", ex);
@@ -871,7 +871,7 @@ public class MainMenuBar extends Component {
         UIManager.setLookAndFeel(LAF_LIGHT);
         MaterialLookAndFeel.changeTheme(LIGHTTHEME);
         APPLICATIONPROPERTIES.setTheme(false);
-        APPLICATIONPROPERTIES.saveToDisk();
+        APPLICATIONPROPERTIES.saveToDisk(APPLICATIONPROPERTIES.SERVERPACKCREATOR_PROPERTIES());
 
       } catch (UnsupportedLookAndFeelException ex) {
         LOG.error("Couldn't change theme.", ex);

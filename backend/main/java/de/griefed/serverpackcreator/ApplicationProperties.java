@@ -144,6 +144,11 @@ public class ApplicationProperties extends Properties {
    */
   private final String DEFAULT_POWERSHELL_TEMPLATE = "default_template.ps1";
   /**
+   * Default script templates list as string.
+   */
+  private final String FALLBACK_SCRIPT_TEMPLATES_ASSTRING =
+      DEFAULT_SHELL_TEMPLATE + "," + DEFAULT_POWERSHELL_TEMPLATE;
+  /**
    * Default list of script templates in the server_files-directory.
    */
   private final List<File> FALLBACK_SCRIPT_TEMPLATES =
@@ -436,7 +441,99 @@ public class ApplicationProperties extends Properties {
 
     setModExclusionFilterMethod();
 
-    saveToDisk();
+    saveToDisk(propertiesFile);
+  }
+
+  /**
+   * Set a property in our ApplicationProperties.
+   *
+   * @param key   The key in which to store the property.
+   * @param value The value to store in the specified key.
+   * @author Griefed
+   */
+  private String defineProperty(String key, String value) {
+    setProperty(key, value);
+    return value;
+  }
+
+  /**
+   * Get a property from our ApplicationProperties. If the property is not available, it is created
+   * with the specified value, thus allowing subsequent calls.
+   *
+   * @param key          The key of the property to acquire.
+   * @param defaultValue The default value for the specified key in case the key is not present or
+   *                     empty.
+   * @return The value stored in the specified key.
+   * @author Griefed
+   */
+  private String acquireProperty(String key, String defaultValue) {
+    if (getProperty(key) == null) {
+      return defineProperty(key, defaultValue);
+    } else {
+      return getProperty(key, defaultValue);
+    }
+  }
+
+  /**
+   * Get a list from our properties.
+   *
+   * @param key          The key of the property which holds the comma-separated list.
+   * @param defaultValue The default value to set the property to in case it is undefined.
+   * @return The requested list.
+   * @author Griefed
+   */
+  private List<String> getListProperty(String key, String defaultValue) {
+    if (acquireProperty(key, defaultValue).contains(",")) {
+      return new ArrayList<>(Arrays.asList(acquireProperty(key, defaultValue).split(",")));
+    } else {
+      return Collections.singletonList(acquireProperty(key, defaultValue));
+    }
+  }
+
+  /**
+   * Get an integer from our properties.
+   *
+   * @param key          The key of the property which holds the comma-separated list.
+   * @param defaultValue The default value to set the property to in case it is undefined.
+   * @return The requested integer.
+   * @author Griefed
+   */
+  private int getIntProperty(String key, int defaultValue) {
+    try {
+      return Integer.parseInt(acquireProperty(key, String.valueOf(defaultValue)));
+    } catch (NumberFormatException ex) {
+      defineProperty(key, String.valueOf(defaultValue));
+      return defaultValue;
+    }
+  }
+
+  /**
+   * Get a list of files from our properties, with each file having a specific prefix.
+   *
+   * @param key          The key of the property which holds the comma-separated list.
+   * @param defaultValue The default value to set the property to in case it is undefined.
+   * @param filePrefix   The prefix every file should receive.
+   * @return The requested list of files.
+   * @author Griefed
+   */
+  private List<File> getFileListProperty(String key, String defaultValue, String filePrefix) {
+    List<File> files = new ArrayList<>();
+    for (String entry : getListProperty(key, defaultValue)) {
+      files.add(new File(filePrefix + entry));
+    }
+    return files;
+  }
+
+  /**
+   * Get a boolean from our properties.
+   *
+   * @param key          The key of the property which holds the comma-separated list.
+   * @param defaultValue The default value to set the property to in case it is undefined.
+   * @return The requested integer.
+   * @author Griefed
+   */
+  private boolean getBoolProperty(String key, boolean defaultValue) {
+    return Boolean.parseBoolean(acquireProperty(key, String.valueOf(defaultValue)));
   }
 
   /**
@@ -445,29 +542,13 @@ public class ApplicationProperties extends Properties {
    * @author Griefed
    */
   private void setServerPacksDir() {
-    String tempDir = null;
-    try {
-
-      tempDir =
-          getProperty(
-              PROPERTY_CONFIGURATION_DIRECTORIES_SERVERPACKS, "server-packs");
-
-    } catch (NullPointerException npe) {
-
-      setProperty(
-          PROPERTY_CONFIGURATION_DIRECTORIES_SERVERPACKS, "server-packs");
-      tempDir = "server-packs";
-
-    } finally {
-
-      if (tempDir != null && !tempDir.isEmpty() && new File(tempDir).isDirectory()) {
-        setProperty(
-            PROPERTY_CONFIGURATION_DIRECTORIES_SERVERPACKS, tempDir);
-        directoryServerPacks = tempDir;
-
-      } else {
-        directoryServerPacks = "server-packs";
-      }
+    if (new File(acquireProperty(PROPERTY_CONFIGURATION_DIRECTORIES_SERVERPACKS,
+        "server-packs")).exists()) {
+      directoryServerPacks = acquireProperty(PROPERTY_CONFIGURATION_DIRECTORIES_SERVERPACKS,
+          "server-packs");
+    } else {
+      LOG.error("Invalid server-packs directory specified. Defaulting to 'server-packs'.");
+      directoryServerPacks = "server-packs";
     }
     LOG.debug("Server packs directory set to: " + directoryServerPacks);
   }
@@ -478,52 +559,12 @@ public class ApplicationProperties extends Properties {
    * @author Griefed
    */
   private void setFallbackModsList() {
-    if (getProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST) == null) {
-
-      listFallbackMods = FALLBACK_CLIENTSIDE_MODS;
-      LOG.debug(PROPERTY_CONFIGURATION_FALLBACKMODSLIST + "-property null. Using fallback.");
-
-    } else if (getProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST)
-        .contains(",")) {
-
-      listFallbackMods =
-          new ArrayList<>(
-              Arrays.asList(
-                  getProperty(
-                      PROPERTY_CONFIGURATION_FALLBACKMODSLIST,
-                      FALLBACK_MODS_DEFAULT_ASSTRING)
-                      .split(",")));
-
-    } else {
-
-      listFallbackMods =
-          Collections.singletonList(
-              (getProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST)));
-    }
+    listFallbackMods = getListProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST,
+        FALLBACK_MODS_DEFAULT_ASSTRING);
     LOG.debug("Fallback modslist set to: " + listFallbackMods);
 
-    if (getProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST_REGEX) == null) {
-
-      listFallbackModsRegex = FALLBACK_REGEX_CLIENTSIDE_MODS;
-      LOG.debug(PROPERTY_CONFIGURATION_FALLBACKMODSLIST_REGEX + "-property null. Using fallback.");
-
-    } else if (getProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST_REGEX)
-        .contains(",")) {
-
-      listFallbackModsRegex =
-          new ArrayList<>(
-              Arrays.asList(
-                  getProperty(
-                      PROPERTY_CONFIGURATION_FALLBACKMODSLIST_REGEX,
-                      FALLBACK_MODS_DEFAULT_REGEX_ASSTRING)
-                      .split(",")));
-
-    } else {
-
-      listFallbackModsRegex =
-          Collections.singletonList(
-              (getProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST_REGEX)));
-    }
+    listFallbackModsRegex = getListProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST_REGEX,
+        FALLBACK_MODS_DEFAULT_REGEX_ASSTRING);
     LOG.debug("Fallback regex modslist set to: " + listFallbackModsRegex);
   }
 
@@ -533,32 +574,8 @@ public class ApplicationProperties extends Properties {
    * @author Griefed
    */
   private void setDirsToExcludeList() {
-    if (getProperty(PROPERTY_CONFIGURATION_DIRECTORIES_SHOULDEXCLUDE)
-        == null) {
-
-      directoriesToExclude = FALLBACK_DIRECTORIES_EXCLUDE;
-      LOG.debug(
-          PROPERTY_CONFIGURATION_DIRECTORIES_SHOULDEXCLUDE + "-property null. Using fallback.");
-
-    } else if (getProperty(
-        PROPERTY_CONFIGURATION_DIRECTORIES_SHOULDEXCLUDE)
-        .contains(",")) {
-
-      directoriesToExclude =
-          new ArrayList<>(
-              Arrays.asList(
-                  getProperty(
-                      PROPERTY_CONFIGURATION_DIRECTORIES_SHOULDEXCLUDE,
-                      FALLBACK_DIRECTORIES_EXCLUDE_ASSTRING)
-                      .split(",")));
-
-    } else {
-
-      directoriesToExclude =
-          Collections.singletonList(
-              getProperty(
-                  PROPERTY_CONFIGURATION_DIRECTORIES_SHOULDEXCLUDE));
-    }
+    directoriesToExclude = getListProperty(PROPERTY_CONFIGURATION_DIRECTORIES_SHOULDEXCLUDE,
+        FALLBACK_DIRECTORIES_EXCLUDE_ASSTRING);
     LOG.debug("Directories to exclude set to: " + directoriesToExclude);
   }
 
@@ -569,31 +586,8 @@ public class ApplicationProperties extends Properties {
    * @author Griefed
    */
   private void setDirsToIncludeList() {
-    if (getProperty(PROPERTY_CONFIGURATION_DIRECTORIES_MUSTINCLUDE)
-        == null) {
-
-      directoriesToInclude = FALLBACK_DIRECTORIES_INCLUDE;
-      LOG.debug(PROPERTY_CONFIGURATION_DIRECTORIES_MUSTINCLUDE + "-property null. Using fallback.");
-
-    } else if (getProperty(
-        PROPERTY_CONFIGURATION_DIRECTORIES_MUSTINCLUDE)
-        .contains(",")) {
-
-      directoriesToInclude =
-          new ArrayList<>(
-              Arrays.asList(
-                  getProperty(
-                      PROPERTY_CONFIGURATION_DIRECTORIES_MUSTINCLUDE,
-                      FALLBACK_DIRECTORIES_INCLUDE_ASSTRING)
-                      .split(",")));
-
-    } else {
-
-      directoriesToInclude =
-          Collections.singletonList(
-              getProperty(
-                  PROPERTY_CONFIGURATION_DIRECTORIES_MUSTINCLUDE));
-    }
+    directoriesToInclude = getListProperty(PROPERTY_CONFIGURATION_DIRECTORIES_MUSTINCLUDE,
+        FALLBACK_DIRECTORIES_INCLUDE_ASSTRING);
     LOG.debug("Directories which must always be included set to: " + directoriesToInclude);
   }
 
@@ -603,9 +597,13 @@ public class ApplicationProperties extends Properties {
    * @author Griefed
    */
   private void setQueueMaxDiskUsage() {
-    queueMaxDiskUsage =
-        Integer.parseInt(
-            getProperty(PROPERTY_SPRING_ARTEMIS_QUEUE_MAX_DISK_USAGE, "90"));
+    int usage = getIntProperty(PROPERTY_SPRING_ARTEMIS_QUEUE_MAX_DISK_USAGE, 90);
+    if (usage >= 0 && usage <= 100) {
+      queueMaxDiskUsage = getIntProperty(PROPERTY_SPRING_ARTEMIS_QUEUE_MAX_DISK_USAGE, 90);
+    } else {
+      LOG.error("Invalid max disk usage set. Defaulting to 90");
+      queueMaxDiskUsage = 90;
+    }
     LOG.debug("Queue max disk usage set to: " + queueMaxDiskUsage);
   }
 
@@ -615,22 +613,18 @@ public class ApplicationProperties extends Properties {
    * @author Griefed
    */
   private void setSaveLoadedConfiguration() {
-    saveLoadedConfiguration =
-        Boolean.parseBoolean(
-            getProperty(PROPERTY_CONFIGURATION_SAVELOADEDCONFIG, "false"));
+    saveLoadedConfiguration = getBoolProperty(PROPERTY_CONFIGURATION_SAVELOADEDCONFIG, false);
     LOG.debug("Save last loaded config set to: " + saveLoadedConfiguration);
   }
 
   /**
-   * Whether to check for prereleases as well.
+   * Whether to check for pre-releases as well.
    *
    * @author Griefed
    */
   private void setCheckForPreReleases() {
-    checkForPreReleases =
-        Boolean.parseBoolean(
-            getProperty(PROPERTY_VERSIONCHECK_PRERELEASE, "false"));
-    LOG.debug("Set check for prereleases to: " + checkForPreReleases);
+    checkForPreReleases = getBoolProperty(PROPERTY_VERSIONCHECK_PRERELEASE, false);
+    LOG.debug("Set check for pre-releases to: " + checkForPreReleases);
   }
 
   /**
@@ -639,10 +633,7 @@ public class ApplicationProperties extends Properties {
    * @author Griefed
    */
   private void setAikarsFlags() {
-    aikarsFlags =
-        getProperty(
-            PROPERTY_CONFIGURATION_AIKAR,
-            AIKARS_FLAGS);
+    aikarsFlags = acquireProperty(PROPERTY_CONFIGURATION_AIKAR, AIKARS_FLAGS);
     LOG.debug("Aikars flags set to: " + aikarsFlags);
   }
 
@@ -652,33 +643,10 @@ public class ApplicationProperties extends Properties {
    * @author Griefed
    */
   private void setFilesToExcludeFromZip() {
-    if (getProperty(PROPERTY_SERVERPACK_ZIP_EXCLUDE) == null) {
-
-      filesToExcludeFromZipArchive = FALLBACK_FILES_EXCLUDE_ZIP;
-      LOG.debug(PROPERTY_SERVERPACK_ZIP_EXCLUDE + "-property null. Using fallback.");
-
-    } else if (getProperty(PROPERTY_SERVERPACK_ZIP_EXCLUDE)
-        .contains(",")) {
-
-      filesToExcludeFromZipArchive =
-          new ArrayList<>(
-              Arrays.asList(
-                  getProperty(
-                      PROPERTY_SERVERPACK_ZIP_EXCLUDE,
-                      FALLBACK_FILES_EXCLUDE_ZIP_ASSTRING)
-                      .split(",")));
-
-    } else {
-
-      filesToExcludeFromZipArchive =
-          Collections.singletonList(
-              getProperty(
-                  PROPERTY_SERVERPACK_ZIP_EXCLUDE,
-                  FALLBACK_FILES_EXCLUDE_ZIP_ASSTRING));
-    }
+    filesToExcludeFromZipArchive = getListProperty(PROPERTY_SERVERPACK_ZIP_EXCLUDE,
+        FALLBACK_FILES_EXCLUDE_ZIP_ASSTRING);
     LOG.debug(
-        "Files which must be excluded from ZIP-archives set to: "
-            + filesToExcludeFromZipArchive);
+        "Files which must be excluded from ZIP-archives set to: " + filesToExcludeFromZipArchive);
   }
 
   /**
@@ -687,9 +655,7 @@ public class ApplicationProperties extends Properties {
    * @author Griefed
    */
   private void setZipFileExclusionEnabled() {
-    isZipFileExclusionEnabled =
-        Boolean.parseBoolean(
-            getProperty(PROPERTY_SERVERPACK_ZIP_EXCLUDE_ENABLED, "true"));
+    isZipFileExclusionEnabled = getBoolProperty(PROPERTY_SERVERPACK_ZIP_EXCLUDE_ENABLED, true);
     LOG.debug("Zip file exclusion enabled set to: " + isZipFileExclusionEnabled);
   }
 
@@ -699,30 +665,8 @@ public class ApplicationProperties extends Properties {
    * @author Griefed
    */
   private void setScriptTemplates() {
-    if (getProperty(PROPERTY_SERVERPACK_SCRIPT_TEMPLATE) == null) {
-
-      scriptTemplates = FALLBACK_SCRIPT_TEMPLATES;
-      LOG.debug("Script template property null. Using fallback.");
-
-    } else if (getProperty(PROPERTY_SERVERPACK_SCRIPT_TEMPLATE)
-        .contains(",")) {
-
-      scriptTemplates = new ArrayList<>(10);
-
-      for (String template :
-          getProperty(PROPERTY_SERVERPACK_SCRIPT_TEMPLATE).split(",")) {
-        scriptTemplates.add(new File("server_files/" + template));
-      }
-
-    } else {
-
-      scriptTemplates =
-          Collections.singletonList(
-              (new File(
-                  "server_files/"
-                      + getProperty(
-                      PROPERTY_SERVERPACK_SCRIPT_TEMPLATE))));
-    }
+    scriptTemplates = getFileListProperty(PROPERTY_SERVERPACK_SCRIPT_TEMPLATE,
+        FALLBACK_SCRIPT_TEMPLATES_ASSTRING, "server_files/");
     LOG.debug("Script templates set to: " + scriptTemplates);
   }
 
@@ -732,14 +676,7 @@ public class ApplicationProperties extends Properties {
    * @author Griefed
    */
   private void setAutoExclusionOfMods() {
-    try {
-      autoExcludingModsEnabled =
-          Boolean.parseBoolean(
-              getProperty(PROPERTY_SERVERPACK_AUTODISCOVERY_ENABLED));
-    } catch (Exception e) {
-      autoExcludingModsEnabled = true;
-      setProperty(PROPERTY_SERVERPACK_AUTODISCOVERY_ENABLED, "true");
-    }
+    autoExcludingModsEnabled = getBoolProperty(PROPERTY_SERVERPACK_AUTODISCOVERY_ENABLED, true);
 
     // Legacy declaration which may still be present in some serverpackcreator.properties-files.
     try {
@@ -748,7 +685,7 @@ public class ApplicationProperties extends Properties {
               getProperty(PROPERTY_SERVERPACK_AUTODISCOVERY_ENABLED_LEGACY));
 
       setProperty(PROPERTY_SERVERPACK_AUTODISCOVERY_ENABLED,
-          getProperty(PROPERTY_SERVERPACK_AUTODISCOVERY_ENABLED_LEGACY));
+          String.valueOf(autoExcludingModsEnabled));
 
       remove(PROPERTY_SERVERPACK_AUTODISCOVERY_ENABLED_LEGACY);
 
@@ -769,14 +706,7 @@ public class ApplicationProperties extends Properties {
    * @author Griefed
    */
   private void setServerPackOverwrite() {
-    try {
-      serverPacksOverwriteEnabled =
-          Boolean.parseBoolean(
-              getProperty(PROPERTY_SERVERPACK_OVERWRITE_ENABLED));
-    } catch (Exception e) {
-      serverPacksOverwriteEnabled = true;
-      setProperty(PROPERTY_SERVERPACK_OVERWRITE_ENABLED, "true");
-    }
+    serverPacksOverwriteEnabled = getBoolProperty(PROPERTY_SERVERPACK_OVERWRITE_ENABLED, true);
     LOG.debug(
         "Overwriting of already existing server packs set to: " + serverPacksOverwriteEnabled);
   }
@@ -787,14 +717,7 @@ public class ApplicationProperties extends Properties {
    * @author Griefed
    */
   private void setServerPackCleanup() {
-    try {
-      serverPackCleanupEnabled =
-          Boolean.parseBoolean(
-              getProperty(PROPERTY_SERVERPACK_CLEANUP_ENABLED));
-    } catch (Exception e) {
-      serverPackCleanupEnabled = true;
-      setProperty(PROPERTY_SERVERPACK_CLEANUP_ENABLED, "true");
-    }
+    serverPackCleanupEnabled = getBoolProperty(PROPERTY_SERVERPACK_CLEANUP_ENABLED, true);
     LOG.debug(
         "Overwriting of already existing server packs set to: " + serverPackCleanupEnabled);
   }
@@ -805,21 +728,7 @@ public class ApplicationProperties extends Properties {
    * @author Griefed
    */
   private void setLanguage() {
-    String lang = null;
-    try {
-
-      lang = getProperty(PROPERTY_LANGUAGE, "en_us");
-
-    } catch (NullPointerException npe) {
-
-      setProperty(PROPERTY_LANGUAGE, "en_us");
-      lang = "en_us";
-
-    } finally {
-
-      setProperty(PROPERTY_LANGUAGE, lang);
-      language = lang;
-    }
+    language = acquireProperty(PROPERTY_LANGUAGE, "en_us");
     LOG.debug("Language set to: " + language);
   }
 
@@ -829,22 +738,8 @@ public class ApplicationProperties extends Properties {
    * @author Griefed
    */
   private void setHasteBinServerUrl() {
-    String haste = null;
-    try {
-
-      haste = getProperty(PROPERTY_CONFIGURATION_HASTEBINSERVER,
-          "https://haste.zneix.eu/documents");
-
-    } catch (NullPointerException npe) {
-
-      setProperty(PROPERTY_CONFIGURATION_HASTEBINSERVER, "https://haste.zneix.eu/documents");
-      haste = "https://haste.zneix.eu/documents";
-
-    } finally {
-
-      setProperty(PROPERTY_CONFIGURATION_HASTEBINSERVER, haste);
-      hasteBinServerUrl = haste;
-    }
+    hasteBinServerUrl = acquireProperty(PROPERTY_CONFIGURATION_HASTEBINSERVER,
+        "https://haste.zneix.eu/documents");
     LOG.debug("HasteBin documents endpoint set to: " + hasteBinServerUrl);
   }
 
@@ -854,21 +749,7 @@ public class ApplicationProperties extends Properties {
    * @author Griefed
    */
   private void setMinecraftPreReleases() {
-    boolean pre = false;
-
-    try {
-      pre = Boolean.parseBoolean(getProperty(PROPERTY_MINECRAFT_SNAPSHOTS, "false"));
-
-    } catch (NullPointerException npe) {
-
-      setProperty(PROPERTY_MINECRAFT_SNAPSHOTS, "false");
-
-    } finally {
-
-      setProperty(PROPERTY_MINECRAFT_SNAPSHOTS, String.valueOf(pre));
-      minecraftPreReleases = pre;
-
-    }
+    minecraftPreReleases = getBoolProperty(PROPERTY_MINECRAFT_SNAPSHOTS,false);
     LOG.debug("Minecraft pre-releases and snapshots available set to: " + minecraftPreReleases);
   }
 
@@ -881,7 +762,7 @@ public class ApplicationProperties extends Properties {
     ExclusionFilter filter = ExclusionFilter.START;
 
     try {
-      String filterText = getProperty(PROPERTY_SERVERPACK_AUTODISCOVERY_FILTER, "START");
+      String filterText = acquireProperty(PROPERTY_SERVERPACK_AUTODISCOVERY_FILTER, "START");
       switch (filterText) {
         case "END":
           filter = ExclusionFilter.END;
@@ -900,13 +781,12 @@ public class ApplicationProperties extends Properties {
           break;
 
         default:
+          LOG.error("Invalid filter specified. Defaulting to START.");
         case "START":
           filter = ExclusionFilter.START;
           break;
       }
-    } catch (NullPointerException npe) {
-
-      filter = ExclusionFilter.START;
+    } catch (NullPointerException ignored) {
 
     } finally {
       this.exclusionFilter = filter;
@@ -1430,7 +1310,7 @@ public class ApplicationProperties extends Properties {
     }
 
     if (updated) {
-      saveToDisk();
+      saveToDisk(SERVERPACKCREATOR_PROPERTIES_FILE);
     }
 
     return updated;
@@ -1443,7 +1323,7 @@ public class ApplicationProperties extends Properties {
    * @author Griefed
    */
   public boolean isDarkTheme() {
-    return Boolean.parseBoolean(getProperty("de.griefed.serverpackcreator.gui.darkmode"));
+    return Boolean.parseBoolean(acquireProperty("de.griefed.serverpackcreator.gui.darkmode","true"));
   }
 
   /**
@@ -1454,7 +1334,7 @@ public class ApplicationProperties extends Properties {
    */
   public void setTheme(boolean dark) {
     if (dark) {
-      setProperty(
+      defineProperty(
           "de.griefed.serverpackcreator.gui.darkmode", "true");
     } else {
       setProperty(
@@ -1465,11 +1345,12 @@ public class ApplicationProperties extends Properties {
   /**
    * Store the ApplicationProperties to disk, overwriting the existing one.
    *
+   * @param propertiesFile The file to store the properties to.
    * @author Griefed
    */
-  public void saveToDisk() {
+  public void saveToDisk(File propertiesFile) {
     try (OutputStream outputStream =
-        Files.newOutputStream(SERVERPACKCREATOR_PROPERTIES_FILE.toPath())) {
+        Files.newOutputStream(propertiesFile.toPath())) {
       store(outputStream, null);
     } catch (IOException ex) {
       LOG.error("Couldn't write properties-file.", ex);
