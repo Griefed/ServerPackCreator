@@ -1,3 +1,21 @@
+## [3.12.0-beta.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.11.1...3.12.0-beta.1) (2022-08-14)
+
+
+### :scissors: Refactor
+
+* **Start:** When running as webservice, read serverpackcreator.properties, too. Re-order assignment for ARGS. ([6052855](https://git.griefed.de/Griefed/ServerPackCreator/commit/6052855a3cff5165ce3369bffa3a6e032f1b3f88))
+
+
+### 💎 Improvements
+
+* **Minecraft snapshot and pre-release versions:** Opt-in for listing Minecraft pre-release and snapshot versions via `de.griefed.serverpackcreator.minecraft.snapshots` ([9858322](https://git.griefed.de/Griefed/ServerPackCreator/commit/9858322b5030d18073e361ac51dccc29eb5fd7dd))
+* **User-specified clientside-only mod exclusion filters:** Allow users to change the way SPC filters user-specified clientside-only mods by introducting an additional property de.griefed.serverpackcreator.serverpack.autodiscovery.filter ([eb024f4](https://git.griefed.de/Griefed/ServerPackCreator/commit/eb024f45dedcad431868a12c31d690408975fc52))
+
+
+### 🛠 Fixes
+
+* **ApplicationProperties:** Remove unnecessary and conflicting declaration ([3b16aa4](https://git.griefed.de/Griefed/ServerPackCreator/commit/3b16aa4eb0044b259ff1e14c030ca67eb366777b))
+
 ## [3.11.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.11.0...3.11.1) (2022-08-12)
 
 
