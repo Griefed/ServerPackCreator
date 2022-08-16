@@ -16,5 +16,8 @@ include:
   - name: StringEqualsEmptyString
   - name: UseOfObsoleteDateTimeApi
 exclude:
+  - name: All
+    paths:
+      - frontend
   - name: FieldMayBeStatic
   - name: SystemOutErr
