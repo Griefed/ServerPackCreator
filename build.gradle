@@ -132,8 +132,6 @@ frontend {
 
 // Include specific files in resources folder, like the license and readme.
 tasks.register('about', Copy) {
-  dependsOn tasks.named('clean')
-
   from layout.projectDirectory.file("LICENSE") into layout.projectDirectory.dir("backend/main/resources")
   from layout.projectDirectory.file("README.md") into layout.projectDirectory.dir("backend/main/resources")
   from layout.projectDirectory.file("CHANGELOG.md") into layout.projectDirectory.dir("backend/main/resources")
@@ -192,7 +190,7 @@ task cleanUp(type: Delete) {
       'log4j2.xml',
       'minecraft-manifest.json',
       'quilt-installer-manifest.xml',
-      'quit-manifest.xml',
+      'quilt-manifest.xml',
       'plugins',
       'server-packs',
       'server_files',
