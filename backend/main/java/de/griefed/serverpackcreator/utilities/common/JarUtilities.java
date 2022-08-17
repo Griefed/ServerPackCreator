@@ -40,13 +40,15 @@ import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.boot.system.ApplicationHome;
+import org.springframework.stereotype.Component;
 
 /**
  * Some utilities used across ServerPackCreator, revolving around interacting with JAR-files.
  *
  * @author Griefed
  */
-public class JarUtilities {
+@Component
+public final class JarUtilities {
 
   private static final Logger LOG = LogManager.getLogger(JarUtilities.class);
 

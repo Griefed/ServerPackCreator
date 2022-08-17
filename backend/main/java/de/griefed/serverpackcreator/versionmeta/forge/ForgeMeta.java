@@ -35,7 +35,7 @@ import java.util.Optional;
  *
  * @author Griefed
  */
-public class ForgeMeta {
+public final class ForgeMeta {
 
   private final File FORGE_MANIFEST;
   private final ObjectMapper OBJECTMAPPER;

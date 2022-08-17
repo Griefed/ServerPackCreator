@@ -37,7 +37,7 @@ import org.springframework.stereotype.Service;
  * @author Griefed
  */
 @Service
-public class UpdateChecker {
+public final class UpdateChecker {
 
   private static final Logger LOG = LogManager.getLogger(UpdateChecker.class);
 

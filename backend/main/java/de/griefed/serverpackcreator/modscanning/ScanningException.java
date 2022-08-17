@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.modscanning;
 
-public class ScanningException extends Exception {
+final class ScanningException extends Exception {
 
   public ScanningException(String errorMessage, Throwable error) {
     super(errorMessage, error);

@@ -51,7 +51,7 @@ import org.springframework.stereotype.Component;
  * @author Griefed
  */
 @Component
-public class ConfigUtilities {
+public final class ConfigUtilities {
 
   // TODO move class back to configurationhandler...why did I make all this stuff a separate class
   // anyway?

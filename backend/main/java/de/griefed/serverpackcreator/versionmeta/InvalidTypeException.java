@@ -24,7 +24,7 @@ package de.griefed.serverpackcreator.versionmeta;
  *
  * @author Griefed
  */
-public class InvalidTypeException extends Exception {
+public final class InvalidTypeException extends Exception {
 
   public InvalidTypeException(String message) {
     super(message);

@@ -24,12 +24,12 @@ package de.griefed.serverpackcreator.versionmeta.fabric;
  *
  * @author Griefed
  */
-public class FabricLibrary {
+public final class FabricLibrary {
 
   private String name;
   private String url;
 
-  private FabricLibrary() {
+  FabricLibrary() {
   }
 
   /**

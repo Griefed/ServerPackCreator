@@ -44,7 +44,7 @@ import org.springframework.stereotype.Component;
  * @author Griefed
  */
 @Component
-public class ApplicationProperties extends Properties {
+public final class ApplicationProperties extends Properties {
 
   private static final Logger LOG = LogManager.getLogger(ApplicationProperties.class);
 

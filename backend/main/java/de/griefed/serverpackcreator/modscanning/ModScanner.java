@@ -29,7 +29,7 @@ import org.springframework.stereotype.Service;
  * @author Griefed
  */
 @Service
-public class ModScanner {
+public final class ModScanner {
 
   private final AnnotationScanner ANNOTATION;
   private final FabricScanner FABRIC;

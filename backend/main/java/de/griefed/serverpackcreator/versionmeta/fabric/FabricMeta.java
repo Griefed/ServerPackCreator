@@ -41,7 +41,7 @@ import org.xml.sax.SAXException;
  *
  * @author Griefed
  */
-public class FabricMeta {
+public final class FabricMeta {
 
   private static final Logger LOG = LogManager.getLogger(FabricMeta.class);
 

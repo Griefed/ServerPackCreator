@@ -29,7 +29,7 @@ import java.util.Random;
  *
  * @author Griefed
  */
-public class ReticulatingSplines {
+public final class ReticulatingSplines {
 
   /**
    * The list of messages as they were available in SimCity, plus Reticulating Splines added by

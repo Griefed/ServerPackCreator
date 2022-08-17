@@ -40,7 +40,7 @@ import org.springframework.stereotype.Component;
  * @author Griefed
  */
 @Component
-public class ApplicationPlugins extends JarPluginManager {
+public final class ApplicationPlugins extends JarPluginManager {
 
   private static final Logger LOG = LogManager.getLogger(ApplicationPlugins.class);
 

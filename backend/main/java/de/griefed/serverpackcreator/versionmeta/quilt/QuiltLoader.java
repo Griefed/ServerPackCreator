@@ -28,7 +28,7 @@ import org.w3c.dom.Document;
  *
  * @author Griefed
  */
-public class QuiltLoader {
+final class QuiltLoader {
 
   private final List<String> loaders = new ArrayList<>();
   private String latest;
@@ -40,7 +40,7 @@ public class QuiltLoader {
    * @param loaderManifest Quilts manifest.
    * @author Griefed
    */
-  protected QuiltLoader(Document loaderManifest) {
+  QuiltLoader(Document loaderManifest) {
 
     this.latest =
         loaderManifest
@@ -74,7 +74,7 @@ public class QuiltLoader {
    * @param loaderManifest Quilts manifest.
    * @author Griefed
    */
-  protected void update(Document loaderManifest) {
+  void update(Document loaderManifest) {
     this.latest =
         loaderManifest
             .getElementsByTagName("latest")
@@ -107,7 +107,7 @@ public class QuiltLoader {
    * @return The latest Quilt loader version.
    * @author Griefed
    */
-  protected String latestLoaderVersion() {
+  String latestLoaderVersion() {
     return latest;
   }
 
@@ -117,7 +117,7 @@ public class QuiltLoader {
    * @return The release Quilt loader version.
    * @author Griefed
    */
-  protected String releaseLoaderVersion() {
+  String releaseLoaderVersion() {
     return release;
   }
 
@@ -127,7 +127,7 @@ public class QuiltLoader {
    * @return List of the available Quilt loader versions.
    * @author Griefed
    */
-  protected List<String> loaders() {
+  List<String> loaders() {
     return loaders;
   }
 }

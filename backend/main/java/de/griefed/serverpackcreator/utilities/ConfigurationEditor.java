@@ -44,7 +44,7 @@ import org.apache.logging.log4j.Logger;
  *
  * @author Griefed
  */
-public class ConfigurationEditor {
+public final class ConfigurationEditor {
 
   private static final Logger LOG = LogManager.getLogger(ConfigurationEditor.class);
 

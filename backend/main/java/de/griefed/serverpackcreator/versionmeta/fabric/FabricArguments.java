@@ -24,11 +24,11 @@ package de.griefed.serverpackcreator.versionmeta.fabric;
  *
  * @author Griefed
  */
-public class FabricArguments {
+public final class FabricArguments {
 
   private Object[] game;
 
-  private FabricArguments() {
+  FabricArguments() {
   }
 
   /**

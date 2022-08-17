@@ -37,7 +37,7 @@ import org.apache.logging.log4j.Logger;
  *
  * @author Griefed
  */
-public class MinecraftClientMeta {
+final class MinecraftClientMeta {
 
   private static final Logger LOG = LogManager.getLogger(MinecraftClientMeta.class);
   private final ObjectMapper OBJECTMAPPER;
@@ -60,7 +60,7 @@ public class MinecraftClientMeta {
    * @param objectMapper      Object mapper for JSON parsing.
    * @author Griefed
    */
-  protected MinecraftClientMeta(
+  MinecraftClientMeta(
       File minecraftManifest, ForgeMeta injectedForgeMeta, ObjectMapper objectMapper) {
     this.MINECRAFT_MANIFEST = minecraftManifest;
     this.FORGE_META = injectedForgeMeta;
@@ -73,7 +73,7 @@ public class MinecraftClientMeta {
    * @throws IOException if the manifest could not be read.
    * @author Griefed
    */
-  protected void update() throws IOException {
+  void update() throws IOException {
 
     RELEASES.clear();
     SNAPSHOTS.clear();
@@ -154,7 +154,7 @@ public class MinecraftClientMeta {
    * @return All available Minecraft releases.
    * @author Griefed
    */
-  protected List<MinecraftClient> all() {
+  List<MinecraftClient> all() {
     return ALL;
   }
 
@@ -164,7 +164,7 @@ public class MinecraftClientMeta {
    * @return Client-list of the {@link Type#RELEASE}.
    * @author Griefed
    */
-  protected List<MinecraftClient> releases() {
+  List<MinecraftClient> releases() {
     return RELEASES;
   }
 
@@ -174,7 +174,7 @@ public class MinecraftClientMeta {
    * @return Client-list of the {@link Type#SNAPSHOT}.
    * @author Griefed
    */
-  protected List<MinecraftClient> snapshots() {
+  List<MinecraftClient> snapshots() {
     return SNAPSHOTS;
   }
 
@@ -184,7 +184,7 @@ public class MinecraftClientMeta {
    * @return Latest release as a {@link MinecraftClient}
    * @author Griefed
    */
-  protected MinecraftClient latestRelease() {
+  MinecraftClient latestRelease() {
     return latestRelease;
   }
 
@@ -194,7 +194,7 @@ public class MinecraftClientMeta {
    * @return Latest snapshot as a {@link MinecraftClient}
    * @author Griefed
    */
-  protected MinecraftClient latestSnapshot() {
+  MinecraftClient latestSnapshot() {
     return latestSnapshot;
   }
 
@@ -205,7 +205,7 @@ public class MinecraftClientMeta {
    * @return Map containing the {@link MinecraftClientMeta}.
    * @author Griefed
    */
-  protected HashMap<String, MinecraftClient> meta() {
+  HashMap<String, MinecraftClient> meta() {
     return meta;
   }
 }

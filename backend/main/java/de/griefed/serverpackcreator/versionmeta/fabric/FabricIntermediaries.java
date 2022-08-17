@@ -32,7 +32,7 @@ import java.util.Optional;
  *
  * @author Griefed
  */
-public class FabricIntermediaries {
+final class FabricIntermediaries {
 
   private final ObjectMapper OBJECT_MAPPER;
   private final File INTERMEDIARY_MANIFEST;
@@ -46,7 +46,7 @@ public class FabricIntermediaries {
    * @throws IOException when the manifest could not be read.
    * @author Griefed
    */
-  public FabricIntermediaries(File intermediaryManifest, ObjectMapper objectMapper)
+  FabricIntermediaries(File intermediaryManifest, ObjectMapper objectMapper)
       throws IOException {
 
     this.INTERMEDIARY_MANIFEST = intermediaryManifest;
@@ -59,7 +59,7 @@ public class FabricIntermediaries {
    *
    * @throws IOException when the manifest could not be read.
    */
-  protected void update() throws IOException {
+  void update() throws IOException {
     for (FabricIntermediary intermediary : listIntermediariesFromManifest()) {
       INTERMEDIARIES.put(intermediary.getVersion(), intermediary);
     }
@@ -84,7 +84,7 @@ public class FabricIntermediaries {
    * @return Map of available intermediaries.
    * @author Griefed
    */
-  protected HashMap<String, FabricIntermediary> getIntermediaries() {
+  HashMap<String, FabricIntermediary> getIntermediaries() {
     return INTERMEDIARIES;
   }
 
@@ -95,7 +95,7 @@ public class FabricIntermediaries {
    * @return A specific intermediary, wrapped in an {@link Optional}.
    * @author Griefed
    */
-  protected Optional<FabricIntermediary> getIntermediary(String minecraftVersion) {
+  Optional<FabricIntermediary> getIntermediary(String minecraftVersion) {
     return Optional.ofNullable(INTERMEDIARIES.get(minecraftVersion));
   }
 }

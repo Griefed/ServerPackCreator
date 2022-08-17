@@ -29,7 +29,7 @@ package de.griefed.serverpackcreator.i18n;
  *
  * @author whitebear60
  */
-public class IncorrectLanguageException extends Exception {
+public final class IncorrectLanguageException extends Exception {
 
   /**
    * @author whitebear60

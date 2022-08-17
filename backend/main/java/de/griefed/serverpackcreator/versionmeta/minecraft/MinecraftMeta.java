@@ -34,7 +34,7 @@ import java.util.Optional;
  *
  * @author Griefed
  */
-public class MinecraftMeta {
+public final class MinecraftMeta {
 
   private final MinecraftClientMeta MINECRAFT_CLIENT_META;
   private final MinecraftServerMeta MINECRAFT_SERVER_META;
