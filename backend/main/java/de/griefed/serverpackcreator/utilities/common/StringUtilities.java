@@ -21,13 +21,15 @@ package de.griefed.serverpackcreator.utilities.common;
 
 import java.util.Arrays;
 import java.util.List;
+import org.springframework.stereotype.Component;
 
 /**
  * Utility-class revolving around Strings.
  *
  * @author Griefed
  */
-public class StringUtilities {
+@Component
+public final class StringUtilities {
 
   public StringUtilities() {
   }

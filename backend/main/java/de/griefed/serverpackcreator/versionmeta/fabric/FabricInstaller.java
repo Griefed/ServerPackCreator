@@ -32,7 +32,7 @@ import org.w3c.dom.Document;
  *
  * @author Griefed
  */
-public class FabricInstaller {
+final class FabricInstaller {
 
   private final String URL_TEMPLATE_INSTALLER =
       "https://maven.fabricmc.net/net/fabricmc/fabric-installer/%s/fabric-installer-%s.jar";
@@ -49,7 +49,7 @@ public class FabricInstaller {
    * @param installerManifest Fabric installer information
    * @author Griefed
    */
-  protected FabricInstaller(Document installerManifest) {
+  FabricInstaller(Document installerManifest) {
     this.latestInstaller =
         installerManifest
             .getElementsByTagName("latest")
@@ -105,7 +105,7 @@ public class FabricInstaller {
    * @param installerManifest Installer information.
    * @author Griefed
    */
-  protected void update(Document installerManifest) {
+  void update(Document installerManifest) {
     this.latestInstaller =
         installerManifest
             .getElementsByTagName("latest")
@@ -174,7 +174,7 @@ public class FabricInstaller {
    * @return List of available Fabric installer versions.
    * @author Griefed
    */
-  protected List<String> installers() {
+  List<String> installers() {
     return installers;
   }
 
@@ -185,7 +185,7 @@ public class FabricInstaller {
    * @return Map with the Fabric-Version-to-Installer-URL.
    * @author Griefed
    */
-  protected HashMap<String, URL> meta() {
+  HashMap<String, URL> meta() {
     return installerUrlMeta;
   }
 
@@ -195,7 +195,7 @@ public class FabricInstaller {
    * @return The latest Fabric installer version.
    * @author Griefed
    */
-  protected String latestInstallerVersion() {
+  String latestInstallerVersion() {
     return latestInstaller;
   }
 
@@ -205,7 +205,7 @@ public class FabricInstaller {
    * @return The release Fabric installer version.
    * @author Griefed
    */
-  protected String releaseInstallerVersion() {
+  String releaseInstallerVersion() {
     return releaseInstaller;
   }
 
@@ -215,7 +215,7 @@ public class FabricInstaller {
    * @return URL to the latest Fabric installer.
    * @author Griefed
    */
-  protected URL latestInstallerUrl() {
+  URL latestInstallerUrl() {
     return latestInstallerUrl;
   }
 
@@ -225,7 +225,7 @@ public class FabricInstaller {
    * @return URL to the release Fabric installer.
    * @author Griefed
    */
-  protected URL releaseInstallerUrl() {
+  URL releaseInstallerUrl() {
     return releaseInstallerUrl;
   }
 
@@ -238,7 +238,7 @@ public class FabricInstaller {
    * @return URL to the improved Fabric launcher, wrapped in an {@link Optional}.
    * @author Griefed
    */
-  protected Optional<URL> improvedLauncherUrl(String minecraftVersion, String fabricVersion) {
+  Optional<URL> improvedLauncherUrl(String minecraftVersion, String fabricVersion) {
     try {
       return Optional.of(
           new URL(

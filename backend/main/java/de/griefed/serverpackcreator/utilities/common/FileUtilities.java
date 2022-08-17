@@ -33,13 +33,15 @@ import net.lingala.zip4j.ZipFile;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.stereotype.Component;
 
 /**
  * Utility-class revolving around various file-interactions.
  *
  * @author Griefed
  */
-public class FileUtilities {
+@Component
+public final class FileUtilities {
 
   private static final Logger LOG = LogManager.getLogger(FileUtilities.class);
 

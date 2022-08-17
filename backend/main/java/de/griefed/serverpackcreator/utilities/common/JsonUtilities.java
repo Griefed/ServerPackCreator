@@ -24,7 +24,7 @@ import java.util.Iterator;
 import org.springframework.stereotype.Component;
 
 @Component
-public class JsonUtilities {
+public final class JsonUtilities {
 
   public JsonUtilities() {
 

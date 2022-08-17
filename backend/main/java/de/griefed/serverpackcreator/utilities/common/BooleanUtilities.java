@@ -22,13 +22,15 @@ package de.griefed.serverpackcreator.utilities.common;
 import java.util.Scanner;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.stereotype.Component;
 
 /**
  * Utility-class revolving around Booleans.
  *
  * @author Griefed
  */
-public class BooleanUtilities {
+@Component
+public final class BooleanUtilities {
 
   private static final Logger LOG = LogManager.getLogger(BooleanUtilities.class);
 

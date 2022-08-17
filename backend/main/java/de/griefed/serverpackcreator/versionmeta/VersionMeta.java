@@ -51,7 +51,7 @@ import org.xml.sax.SAXException;
  * @author Griefed
  */
 @Service
-public class VersionMeta {
+public final class VersionMeta {
 
   private static final Logger LOG = LogManager.getLogger(VersionMeta.class);
 

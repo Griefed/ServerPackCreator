@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.utilities.common;
 
-public class JsonException extends Exception {
+public final class JsonException extends Exception {
 
   public JsonException(String errorMessage, Throwable error) {
     super(errorMessage, error);

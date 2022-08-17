@@ -31,7 +31,7 @@ import org.w3c.dom.Document;
  *
  * @author Griefed
  */
-public class QuiltInstaller {
+final class QuiltInstaller {
 
   private final String URL_TEMPLATE_INSTALLER =
       "https://maven.quiltmc.org/repository/release/org/quiltmc/quilt-installer/%s/quilt-installer-%s.jar";
@@ -48,7 +48,7 @@ public class QuiltInstaller {
    * @param installerManifest Quilt installer information.
    * @author Griefed
    */
-  protected QuiltInstaller(Document installerManifest) {
+  QuiltInstaller(Document installerManifest) {
     this.latestInstaller =
         installerManifest
             .getElementsByTagName("latest")
@@ -104,7 +104,7 @@ public class QuiltInstaller {
    * @param installerManifest New installer information.
    * @author Griefed
    */
-  protected void update(Document installerManifest) {
+  void update(Document installerManifest) {
     this.latestInstaller =
         installerManifest
             .getElementsByTagName("latest")
@@ -173,7 +173,7 @@ public class QuiltInstaller {
    * @return List of available Quilt installer versions.
    * @author Griefed
    */
-  protected List<String> installers() {
+  List<String> installers() {
     return installers;
   }
 
@@ -184,7 +184,7 @@ public class QuiltInstaller {
    * @return Map with the Quilt-Version-to-Installer-URL.
    * @author Griefed
    */
-  protected HashMap<String, URL> meta() {
+  HashMap<String, URL> meta() {
     return installerUrlMeta;
   }
 
@@ -194,7 +194,7 @@ public class QuiltInstaller {
    * @return The latest Quilt installer version.
    * @author Griefed
    */
-  protected String latestInstallerVersion() {
+  String latestInstallerVersion() {
     return latestInstaller;
   }
 
@@ -204,7 +204,7 @@ public class QuiltInstaller {
    * @return The release Quilt installer version.
    * @author Griefed
    */
-  protected String releaseInstallerVersion() {
+  String releaseInstallerVersion() {
     return releaseInstaller;
   }
 
@@ -214,7 +214,7 @@ public class QuiltInstaller {
    * @return URL to the latest Quilt installer.
    * @author Griefed
    */
-  protected URL latestInstallerUrl() {
+  URL latestInstallerUrl() {
     return latestInstallerUrl;
   }
 
@@ -224,7 +224,7 @@ public class QuiltInstaller {
    * @return URL to the release Quilt installer.
    * @author Griefed
    */
-  protected URL releaseInstallerUrl() {
+  URL releaseInstallerUrl() {
     return releaseInstallerUrl;
   }
 }

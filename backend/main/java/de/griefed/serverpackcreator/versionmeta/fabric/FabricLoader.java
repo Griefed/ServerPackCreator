@@ -28,7 +28,7 @@ import org.w3c.dom.Document;
  *
  * @author Griefed
  */
-public class FabricLoader {
+final class FabricLoader {
 
   private final List<String> loaders = new ArrayList<>();
   private String latest;
@@ -40,7 +40,7 @@ public class FabricLoader {
    * @param loaderManifest Fabrics manifest.
    * @author Griefed
    */
-  protected FabricLoader(Document loaderManifest) {
+  FabricLoader(Document loaderManifest) {
     update(loaderManifest);
   }
 
@@ -50,7 +50,7 @@ public class FabricLoader {
    * @param loaderManifest Fabrics manifest.
    * @author Griefed
    */
-  protected void update(Document loaderManifest) {
+  void update(Document loaderManifest) {
     this.latest =
         loaderManifest
             .getElementsByTagName("latest")
@@ -83,7 +83,7 @@ public class FabricLoader {
    * @return The latest Fabric loader version.
    * @author Griefed
    */
-  protected String latestLoaderVersion() {
+  String latestLoaderVersion() {
     return latest;
   }
 
@@ -93,7 +93,7 @@ public class FabricLoader {
    * @return The release Fabric loader version.
    * @author Griefed
    */
-  protected String releaseLoaderVersion() {
+  String releaseLoaderVersion() {
     return release;
   }
 
@@ -103,7 +103,7 @@ public class FabricLoader {
    * @return List of the available Fabric loader versions.
    * @author Griefed
    */
-  protected List<String> loaders() {
+  List<String> loaders() {
     return loaders;
   }
 }

@@ -74,7 +74,7 @@ import org.springframework.stereotype.Component;
  * @author Griefed
  */
 @Component
-public class ServerPackHandler {
+public final class ServerPackHandler {
 
   private static final Logger LOG = LogManager.getLogger(ServerPackHandler.class);
   private static final Logger LOG_ADDONS = LogManager.getLogger("AddonsLogger");

@@ -32,7 +32,7 @@ import java.util.Optional;
  *
  * @author Griefed
  */
-public class MinecraftServer {
+public final class MinecraftServer {
 
   private final ObjectMapper OBJECT_MAPPER;
   private final URL MANIFEST_URL;
@@ -51,7 +51,7 @@ public class MinecraftServer {
    * @param objectMapper Object mapper for JSON parsing.
    * @author Griefed
    */
-  protected MinecraftServer(String mcVersion, Type mcType, URL mcUrl, ObjectMapper objectMapper) {
+  MinecraftServer(String mcVersion, Type mcType, URL mcUrl, ObjectMapper objectMapper) {
     this.MANIFEST_URL = mcUrl;
     this.VERSION = mcVersion;
     this.TYPE = mcType;
@@ -63,7 +63,7 @@ public class MinecraftServer {
    *
    * @author Griefed
    */
-  protected void setServerJson() {
+  private void setServerJson() {
     try {
       this.serverJson = OBJECT_MAPPER.readTree(MANIFEST_URL.openStream());
     } catch (IOException e) {

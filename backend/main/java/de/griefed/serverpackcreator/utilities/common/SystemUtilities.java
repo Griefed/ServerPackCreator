@@ -25,13 +25,15 @@ import java.util.Arrays;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.stereotype.Component;
 
 /**
  * Utility-class revolving around the system we are running on.
  *
  * @author Griefed
  */
-public class SystemUtilities {
+@Component
+public final class SystemUtilities {
 
   private static final Logger LOG = LogManager.getLogger(SystemUtilities.class);
 

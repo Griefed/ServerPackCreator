@@ -29,7 +29,7 @@ import org.springframework.stereotype.Component;
  * @author Griefed
  */
 @Component
-public class Utilities {
+public final class Utilities {
 
   private final BooleanUtilities BOOLEAN_UTILITIES;
   private final FileUtilities FILE_UTILITIES;

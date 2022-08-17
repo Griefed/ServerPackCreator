@@ -40,7 +40,7 @@ import org.xml.sax.SAXException;
  *
  * @author Griefed
  */
-public class QuiltMeta {
+public final class QuiltMeta {
 
   private static final Logger LOG = LogManager.getLogger(QuiltMeta.class);
 

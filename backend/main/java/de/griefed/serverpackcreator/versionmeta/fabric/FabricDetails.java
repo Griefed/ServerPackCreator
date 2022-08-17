@@ -27,7 +27,7 @@ import java.util.List;
  *
  * @author Griefed
  */
-public class FabricDetails {
+public final class FabricDetails {
 
   private String id;
   private String inheritsFrom;
@@ -38,7 +38,7 @@ public class FabricDetails {
   private FabricArguments arguments;
   private List<FabricLibrary> libraries;
 
-  private FabricDetails() {
+  FabricDetails() {
   }
 
   /**

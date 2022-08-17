@@ -54,7 +54,7 @@ import org.springframework.stereotype.Component;
  * @author Griefed
  */
 @Component
-public class ConfigurationHandler {
+public final class ConfigurationHandler {
 
   private static final Logger LOG = LogManager.getLogger(ConfigurationHandler.class);
 

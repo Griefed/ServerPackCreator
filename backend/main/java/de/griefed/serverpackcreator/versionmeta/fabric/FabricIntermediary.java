@@ -24,13 +24,13 @@ package de.griefed.serverpackcreator.versionmeta.fabric;
  *
  * @author Griefed
  */
-public class FabricIntermediary {
+public final class FabricIntermediary {
 
   private String maven;
   private String version;
   private boolean stable;
 
-  private FabricIntermediary() {
+  FabricIntermediary() {
   }
 
   /**

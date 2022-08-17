@@ -38,7 +38,7 @@ import org.springframework.stereotype.Component;
  * @author Griefed
  */
 @Component
-public class AnnotationScanner extends JsonBasedScanner implements
+public final class AnnotationScanner extends JsonBasedScanner implements
     Scanner<TreeSet<File>, Collection<File>> {
 
   private static final Logger LOG = LogManager.getLogger(AnnotationScanner.class);

@@ -24,13 +24,15 @@ import java.util.List;
 import java.util.Scanner;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.stereotype.Component;
 
 /**
  * Utility-class revolving around Lists.
  *
  * @author Griefed
  */
-public class ListUtilities {
+@Component
+public final class ListUtilities {
 
   private static final Logger LOG = LogManager.getLogger(ListUtilities.class);
 

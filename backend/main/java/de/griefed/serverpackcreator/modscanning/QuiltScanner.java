@@ -37,7 +37,7 @@ import org.springframework.stereotype.Component;
  * @author Griefed
  */
 @Component
-public class QuiltScanner extends JsonBasedScanner implements
+public final class QuiltScanner extends JsonBasedScanner implements
     Scanner<TreeSet<File>, Collection<File>> {
 
   private static final Logger LOG = LogManager.getLogger(QuiltScanner.class);

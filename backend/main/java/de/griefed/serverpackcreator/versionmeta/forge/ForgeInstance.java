@@ -31,7 +31,7 @@ import java.util.Optional;
  *
  * @author Griefed
  */
-public class ForgeInstance {
+public final class ForgeInstance {
 
   private final String MINECRAFT_VERSION;
   private final String FORGE_VERSION;

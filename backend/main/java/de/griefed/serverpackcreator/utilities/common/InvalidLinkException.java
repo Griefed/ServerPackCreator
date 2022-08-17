@@ -24,7 +24,7 @@ package de.griefed.serverpackcreator.utilities.common;
  *
  * @author Griefed
  */
-public class InvalidLinkException extends Exception {
+public final class InvalidLinkException extends Exception {
 
   public InvalidLinkException(String message) {
     super(message);

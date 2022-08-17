@@ -36,7 +36,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-public class TomlScanner implements Scanner<TreeSet<File>, Collection<File>> {
+public final class TomlScanner implements Scanner<TreeSet<File>, Collection<File>> {
 
   private static final Logger LOG = LogManager.getLogger(TomlScanner.class);
   private final TomlParser PARSER;

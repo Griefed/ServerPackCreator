@@ -32,7 +32,7 @@ import java.util.Optional;
  *
  * @author Griefed
  */
-public class MinecraftClient {
+public final class MinecraftClient {
 
   private final String VERSION;
   private final Type TYPE;
@@ -50,7 +50,7 @@ public class MinecraftClient {
    * @param objectMapper Object mapper for JSON parsing.
    * @author Griefed
    */
-  protected MinecraftClient(
+  MinecraftClient(
       String version, Type type, URL url, ForgeMeta forgeMeta, ObjectMapper objectMapper) {
     this.VERSION = version;
     this.TYPE = type;
@@ -69,7 +69,7 @@ public class MinecraftClient {
    * @param forgeMeta To acquire Forge instances for this {@link MinecraftClient} version.
    * @author Griefed
    */
-  protected MinecraftClient(
+  MinecraftClient(
       String version, Type type, URL url, MinecraftServer server, ForgeMeta forgeMeta) {
     this.VERSION = version;
     this.TYPE = type;

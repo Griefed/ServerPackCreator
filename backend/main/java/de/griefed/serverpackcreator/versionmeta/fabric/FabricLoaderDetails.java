@@ -29,7 +29,7 @@ import java.util.Optional;
  *
  * @author Griefed
  */
-public class FabricLoaderDetails {
+final class FabricLoaderDetails {
 
   private final ObjectMapper OBJECT_MAPPER;
 
@@ -37,7 +37,7 @@ public class FabricLoaderDetails {
    * @param objectMapper Object mapper for JSON parsing.
    * @author Griefed
    */
-  public FabricLoaderDetails(ObjectMapper objectMapper) {
+  FabricLoaderDetails(ObjectMapper objectMapper) {
     this.OBJECT_MAPPER = objectMapper;
   }
 
@@ -50,7 +50,7 @@ public class FabricLoaderDetails {
    * {@link Optional}.
    * @author Griefed
    */
-  public Optional<FabricDetails> getDetails(String minecraftVersion, String modloaderVersion) {
+  Optional<FabricDetails> getDetails(String minecraftVersion, String modloaderVersion) {
     try {
       return Optional.of(
           OBJECT_MAPPER.readValue(
