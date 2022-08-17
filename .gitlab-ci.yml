@@ -29,13 +29,6 @@ workflow:
       when: never
     - when: always
 
-cache:
-  paths:
-    - frontend/node_modules
-    - frontend/node
-    - build
-    - .gradle
-
 sast:
   stage: Tests
   artifacts:
@@ -164,9 +157,27 @@ Gradle Test:
 #    - cat build/reports/jacoco/test/html/index.html | grep -o 'Total[^%]*%'
 #  coverage: '/Total.*?([0-9]{1,3})%/'
   artifacts:
+    when: always
+    name: "$CI_COMMIT_BRANCH-$CI_COMMIT_SHORT_SHA-$CI_JOB_NAME"
+    untracked: true
     paths:
       - build
+      - frontend/dist
     expire_in: 1 week
+  cache:
+    - key:
+        files:
+          - build.gradle
+          - gradle/gradle-wrapper.properties
+      paths:
+        - .gradle
+    - key:
+        files:
+          - frontend/package.json
+      paths:
+        - frontend/.quasar
+        - frontend/node_modules
+        - frontend/node
 
 Docker Test:
   stage: Tests
@@ -258,6 +269,30 @@ Build Release:
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-(alpha|beta)\.\d+$/'
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/'
+  artifacts:
+    when: always
+    name: "$CI_COMMIT_BRANCH-$CI_COMMIT_SHORT_SHA-$CI_JOB_NAME"
+    untracked: true
+    paths:
+      - build
+      - frontend/dist
+    expire_in: 1 week
+  cache:
+    - key:
+        files:
+          - build.gradle
+          - gradle/gradle-wrapper.properties
+      paths:
+        - .gradle
+      policy: pull
+    - key:
+        files:
+          - frontend/package.json
+      paths:
+        - frontend/.quasar
+        - frontend/node_modules
+        - frontend/node
+      policy: pull
 
 Sign Java Publication:
   stage: Build Release
@@ -277,8 +312,28 @@ Sign Java Publication:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-beta\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
   artifacts:
+    when: always
+    name: "$CI_COMMIT_BRANCH-$CI_COMMIT_SHORT_SHA-$CI_JOB_NAME"
+    untracked: true
     paths:
       - build
+    expire_in: 1 week
+  cache:
+    - key:
+        files:
+          - build.gradle
+          - gradle/gradle-wrapper.properties
+      paths:
+        - .gradle
+      policy: pull
+    - key:
+        files:
+          - frontend/package.json
+      paths:
+        - frontend/.quasar
+        - frontend/node_modules
+        - frontend/node
+      policy: pull
 
 Publish GitHub:
   stage: Build Release
@@ -293,6 +348,22 @@ Publish GitHub:
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-beta\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
+  cache:
+    - key:
+        files:
+          - build.gradle
+          - gradle/gradle-wrapper.properties
+      paths:
+        - .gradle
+      policy: pull
+    - key:
+        files:
+          - frontend/package.json
+      paths:
+        - frontend/.quasar
+        - frontend/node_modules
+        - frontend/node
+      policy: pull
 
 Publish GitLab:
   stage: Build Release
@@ -307,6 +378,22 @@ Publish GitLab:
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-beta\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
+  cache:
+    - key:
+        files:
+          - build.gradle
+          - gradle/gradle-wrapper.properties
+      paths:
+        - .gradle
+      policy: pull
+    - key:
+        files:
+          - frontend/package.json
+      paths:
+        - frontend/.quasar
+        - frontend/node_modules
+        - frontend/node
+      policy: pull
 
 Publish GitGriefed:
   stage: Build Release
@@ -321,6 +408,22 @@ Publish GitGriefed:
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-beta\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
+  cache:
+    - key:
+        files:
+          - build.gradle
+          - gradle/gradle-wrapper.properties
+      paths:
+        - .gradle
+      policy: pull
+    - key:
+        files:
+          - frontend/package.json
+      paths:
+        - frontend/.quasar
+        - frontend/node_modules
+        - frontend/node
+      policy: pull
 
 Publish OSSRH:
   stage: Build Release
@@ -335,6 +438,22 @@ Publish OSSRH:
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-beta\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
+  cache:
+    - key:
+        files:
+          - build.gradle
+          - gradle/gradle-wrapper.properties
+      paths:
+        - .gradle
+      policy: pull
+    - key:
+        files:
+          - frontend/package.json
+      paths:
+        - frontend/.quasar
+        - frontend/node_modules
+        - frontend/node
+      policy: pull
 
 Build Docker Release:
   stage: Build Release
