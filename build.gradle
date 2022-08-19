@@ -16,7 +16,7 @@ plugins {
   id 'edu.sc.seis.launch4j' version '2.5.3'
   id 'org.siouan.frontend-jdk8' version '6.0.0'
   id 'org.springframework.boot' version '2.7.2'
-  id 'io.spring.dependency-management' version '1.0.12.RELEASE'
+  id 'io.spring.dependency-management' version '1.0.13.RELEASE'
 }
 
 sourceCompatibility = targetCompatibility = '1.8'
@@ -78,7 +78,7 @@ dependencies {
   embed 'org.apache.logging.log4j:log4j-slf4j-impl:2.18.0'
   embed 'org.apache.logging.log4j:log4j-web:2.18.0'
   embed 'org.apache.logging.log4j:log4j-jul:2.18.0'
-  embed 'org.jgroups:jgroups:5.2.4.Final'
+  embed 'org.jgroups:jgroups:5.2.5.Final'
 
   // GUI
   embed 'io.github.vincenzopalazzo:material-ui-swing:1.1.3'
