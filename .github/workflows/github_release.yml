@@ -22,14 +22,25 @@ jobs:
       - name: Use tag
         run: echo ${{steps.tag.outputs.tag}}
 
-      # GENERATE CHANGELOG
-      - name: Get Changelog Entry
-        id: changelog_reader
-        uses: mindsers/changelog-reader-action@v2
+      # GET RELEASE INFO
+      - name: Get Release Info
+        run: |
+          curl --header \
+          'PRIVATE-TOKEN: ${{ secrets.GITLAB_TOKEN }}' \
+          'https://git.griefed.de/api/v4/projects/63/releases/${{steps.tag.outputs.tag}}' >> ./version.json
+
+      # GET DESCRIPTION
+      - name: Extract version from package.json
+        uses: sergeysova/jq-action@v2
+        id: description
         with:
-          validation_level: warn
-          version: ${{steps.tag.outputs.tag}}
-          path: ./CHANGELOG.md
+          cmd: 'jq .description version.json -r'
+          multiline: true
+
+      # DELETE VERSION.JSON
+      - name: Delte version.json
+        run: |
+          rm ./version.json || echo "No version.json found."
 
       # GENERATE RELEASE
       - name: Create Release
@@ -40,7 +51,7 @@ jobs:
         with:
           tag_name: ${{ github.ref }}
           release_name: Release ${{steps.tag.outputs.tag}}
-          body: ${{ steps.changelog_reader.outputs.changes }}
+          body: ${{ steps.description.outputs.value }}
           draft: false
           prerelease: false
 
