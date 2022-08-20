@@ -1,3 +1,15 @@
+## [3.12.0-beta.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.12.0-beta.2...3.12.0-beta.3) (2022-08-20)
+
+
+### 🛠 Fixes
+
+* **GitHub CI:** Acquire the release notes from GitLab via GitLab API ([1517c19](https://git.griefed.de/Griefed/ServerPackCreator/commit/1517c19088fbb5ecbae52c5d26c2dfc171bc31a9))
+
+
+### Other
+
+* Remove duplicate entry from CHANGELOG.md ([91de213](https://git.griefed.de/Griefed/ServerPackCreator/commit/91de213da7d0019966553f335b1d82e69a8456e5))
+
 ## [3.12.0-beta.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.12.0-beta.1...3.12.0-beta.2) (2022-08-20)
 
 
