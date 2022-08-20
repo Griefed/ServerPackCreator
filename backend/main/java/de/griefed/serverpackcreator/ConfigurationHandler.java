@@ -328,8 +328,6 @@ public final class ConfigurationHandler {
 
       LOG.warn("No clientside-only mods specified. Using fallback list.");
       configurationModel.setClientMods(APPLICATIONPROPERTIES.getListFallbackMods());
-    } else {
-      configurationModel.setClientMods(configurationModel.getClientMods());
     }
 
     configurationModel.setJavaPath(
@@ -1133,7 +1131,7 @@ public final class ConfigurationHandler {
     }
 
     if (!configurationModel.getCopyDirs().isEmpty()) {
-      List<String> copyDirs = configurationModel.getCopyDirs();
+      List<String> copyDirs = new ArrayList<>(configurationModel.getCopyDirs());
       boolean copyDirChanges = false;
 
       for (int i = 0; i < copyDirs.size(); i++) {

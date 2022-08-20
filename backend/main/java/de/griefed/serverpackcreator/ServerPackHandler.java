@@ -544,8 +544,6 @@ public final class ServerPackHandler {
            * If the entry starts with mods, we need to run our checks for clientside-only mods as well as exclude any
            * user-specified clientside-only mods from the list of mods in the mods-directory.
            */
-          List<String> listOfFiles =
-              excludeClientMods(clientDir, clientMods, minecraftVersion, modloader);
 
           try {
             Files.createDirectories(Paths.get(serverDir));
@@ -553,11 +551,11 @@ public final class ServerPackHandler {
 
           }
 
-          for (String file : listOfFiles) {
+          for (File mod : excludeClientMods(clientDir, clientMods, minecraftVersion, modloader)) {
 
             serverPackFiles.add(
                 new ServerPackFile(
-                    file, String.format("%s/%s", serverDir, new File(file).getName())));
+                    mod.getAbsolutePath(), String.format("%s/%s", serverDir, mod.getName())));
           }
 
         } else if (new File(directory).isFile()) {
@@ -736,7 +734,7 @@ public final class ServerPackHandler {
    * @return A list of all mods to include in the server pack.
    * @author Griefed
    */
-  private List<String> excludeClientMods(
+  private List<File> excludeClientMods(
       String modsDir,
       List<String> userSpecifiedClientMods,
       String minecraftVersion,
@@ -746,8 +744,7 @@ public final class ServerPackHandler {
 
     Collection<File> filesInModsDir =
         new ArrayList<>(FileUtils.listFiles(new File(modsDir), MOD_FILE_ENDINGS, true));
-
-    TreeSet<String> modsInModpack = new TreeSet<>();
+    TreeSet<File> modsInModpack = new TreeSet<>(filesInModsDir);
     List<File> autodiscoveredClientMods = new ArrayList<>();
 
     // Check whether scanning mods for sideness is activated.
@@ -777,74 +774,72 @@ public final class ServerPackHandler {
           discoMods.clear();
       }
 
+      // Exclude scanned mods from copying if said functionality is enabled.
+      excludeAutoDiscoveredMods(autodiscoveredClientMods, modsInModpack);
+
       STOPWATCH_SCANS.stop();
-      LOG.debug("Scanning of " + filesInModsDir.size() + " mods took " + STOPWATCH_SCANS);
+      LOG.debug(
+          "Scanning and excluding of " + filesInModsDir.size() + " mods took " + STOPWATCH_SCANS);
       STOPWATCH_SCANS.reset();
-    }
-
-    // Gather a list of all mod-JAR-files.
-
-    for (File mod : filesInModsDir) {
-
-      if (mod.isFile() && mod.toString().endsWith("jar")) {
-        modsInModpack.add(mod.getAbsolutePath());
-      }
-    }
-
-    // Exclude user-specified mods from copying.
-    excludeUserSpecifiedMod(userSpecifiedClientMods, modsInModpack);
-
-    // Exclude scanned mods from copying if said functionality is enabled.
-    if (APPLICATIONPROPERTIES.isAutoExcludingModsEnabled()) {
-
-      if (autodiscoveredClientMods.size() > 0) {
-
-        LOG.info("Automatically detected mods: " + autodiscoveredClientMods.size());
-
-        for (File discoveredMod : autodiscoveredClientMods) {
-          modsInModpack.removeIf(
-              mod -> {
-                if (mod.replace("\\", "/").contains(discoveredMod.toString().replace("\\", "/"))) {
-                  LOG.warn("Automatically excluding mod: " + discoveredMod.getName());
-                  return true;
-                } else {
-                  return false;
-                }
-              });
-        }
-      } else {
-        LOG.info("No clientside-only mods detected.");
-      }
 
     } else {
       LOG.info("Automatic clientside-only mod detection disabled.");
     }
 
-    autodiscoveredClientMods.clear();
-    filesInModsDir.clear();
+    // Exclude user-specified mods from copying.
+    excludeUserSpecifiedMod(userSpecifiedClientMods, modsInModpack);
 
     return new ArrayList<>(modsInModpack);
   }
 
   /**
+   * Exclude every automatically discovered clientside-only mod from the list of mods in the
+   * modpack.
+   *
+   * @param autodiscoveredClientMods Automatically discovered clientside-only mods in the modpack.
+   * @param modsInModpack            All mods in the modpack.
+   * @author Griefed
+   */
+  private void excludeAutoDiscoveredMods(List<File> autodiscoveredClientMods,
+      TreeSet<File> modsInModpack) {
+
+    if (autodiscoveredClientMods.size() > 0) {
+
+      LOG.info("Automatically detected mods: " + autodiscoveredClientMods.size());
+
+      for (File discoveredMod : autodiscoveredClientMods) {
+        modsInModpack.removeIf(
+            mod -> {
+              if (mod.getName().contains(discoveredMod.getName())) {
+                LOG.warn("Automatically excluding mod: " + discoveredMod.getName());
+                return true;
+              } else {
+                return false;
+              }
+            });
+      }
+    } else {
+      LOG.info("No clientside-only mods detected.");
+    }
+  }
+
+  /**
    * Exclude user-specified mods from the server pack.
    *
-   * @param userSpecifiedClientMods User-specified clientside-only mods to exclude from the server
+   * @param userSpecifiedExclusions User-specified clientside-only mods to exclude from the server
    *                                pack.
    * @param modsInModpack           Every mod ending with <code>jar</code> or <code>disabled</code>
    *                                in the modpack.
    * @author Griefed
    */
-  private void excludeUserSpecifiedMod(List<String> userSpecifiedClientMods,
-      TreeSet<String> modsInModpack) {
+  private void excludeUserSpecifiedMod(List<String> userSpecifiedExclusions,
+      TreeSet<File> modsInModpack) {
 
-    if (userSpecifiedClientMods.size() > 0) {
+    if (userSpecifiedExclusions.size() > 0) {
 
-      for (String clientMod : userSpecifiedClientMods) {
-
-        if (exclude(clientMod, modsInModpack)) {
-          LOG.debug("Removed user-specified mod from mods list as per input: " + clientMod);
-        }
+      LOG.info("Performing " + APPLICATIONPROPERTIES.exclusionFilter() + "-type checks for user-specified clientside-only mod exclusion.");
+      for (String userSpecifiedExclusion : userSpecifiedExclusions) {
+        exclude(userSpecifiedExclusion, modsInModpack);
       }
 
     } else {
@@ -856,36 +851,47 @@ public final class ServerPackHandler {
    * Go through the mods in the modpack and exclude any of the user-specified clientside-only mods
    * according to the filter method set in the serverpackcreator.properties.
    *
-   * @param clientMod     The client mod to check whether it needs to be excluded.
-   * @param modsInModpack All mods in the modpack.
-   * @return <code>true</code> if an element was removed from the set of mods in the server pack.
+   * @param userSpecifiedExclusion The client mod to check whether it needs to be excluded.
+   * @param modsInModpack          All mods in the modpack.
    */
-  private boolean exclude(String clientMod, TreeSet<String> modsInModpack) {
-    return modsInModpack.removeIf(
+  private void exclude(String userSpecifiedExclusion, TreeSet<File> modsInModpack) {
+    modsInModpack.removeIf(
         mod -> {
-
-          String check = mod.replace("\\", "/");
-          String checkAgainst = clientMod.replace("\\", "/");
+          boolean excluded;
+          String check = mod.getName();
 
           switch (APPLICATIONPROPERTIES.exclusionFilter()) {
 
             case END:
-              return check.endsWith(checkAgainst);
+              excluded = check.endsWith(userSpecifiedExclusion);
+              break;
 
             case CONTAIN:
-              return check.contains(checkAgainst);
+              excluded = check.contains(userSpecifiedExclusion);
+              break;
 
             case REGEX:
-              return check.matches(checkAgainst);
+              excluded = check.matches(userSpecifiedExclusion);
+              break;
 
             case EITHER:
-              return check.startsWith(checkAgainst) || check.endsWith(checkAgainst)
-                  || check.contains(checkAgainst) || check.matches(checkAgainst);
+              excluded = check.startsWith(userSpecifiedExclusion) || check.endsWith(
+                  userSpecifiedExclusion)
+                  || check.contains(userSpecifiedExclusion) || check.matches(
+                  userSpecifiedExclusion);
+              break;
 
-            default:
             case START:
-              return check.startsWith(checkAgainst);
+            default:
+              excluded = check.startsWith(userSpecifiedExclusion);
           }
+
+          if (excluded) {
+            LOG.debug(
+                "Removed " + mod.getName() + " as per user-specified check: "
+                    + userSpecifiedExclusion);
+          }
+          return excluded;
         });
   }
 

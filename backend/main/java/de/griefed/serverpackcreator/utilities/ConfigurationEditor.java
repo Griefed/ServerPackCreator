@@ -168,14 +168,13 @@ public final class ConfigurationEditor {
           break;
 
         case 2:
-          configurationModel.setClientMods(
-              getClientSideMods(scanner, configurationModel.getClientMods()));
+          getClientSideMods(scanner, configurationModel.getClientMods());
           break;
 
         case 3:
-          configurationModel.setCopyDirs(
-              getDirsAndFilesToCopy(scanner, configurationModel.getModpackDir(),
-                  configurationModel.getCopyDirs()));
+
+          getDirsAndFilesToCopy(scanner, configurationModel.getModpackDir(),
+              configurationModel.getCopyDirs());
           break;
 
         case 4:
@@ -334,14 +333,12 @@ public final class ConfigurationEditor {
 
       // --------------------------------------------------------------CLIENTSIDE-ONLY MODS---------
 
-      configurationModel.setClientMods(
-          getClientSideMods(scanner, configurationModel.getClientMods()));
+      getClientSideMods(scanner, configurationModel.getClientMods());
 
       // ---------------------------------------DIRECTORIES OR FILES TO COPY TO SERVER PACK---------
 
-      configurationModel.setCopyDirs(
-          getDirsAndFilesToCopy(scanner, configurationModel.getModpackDir(),
-              configurationModel.getCopyDirs()));
+      getDirsAndFilesToCopy(scanner, configurationModel.getModpackDir(),
+          configurationModel.getCopyDirs());
 
       // ------------------------------------------------PATH TO THE CUSTOM SERVER-ICON.PNG---------
 
@@ -468,10 +465,9 @@ public final class ConfigurationEditor {
    * Acquire a list of clientside-only modslist from the user.
    *
    * @param clientMods List of clientside-only mods to either overwrite or edit.
-   * @return A list of clientside-only mods as per the users input.
    * @author Griefed
    */
-  private List<String> getClientSideMods(Scanner scanner, List<String> clientMods) {
+  private void getClientSideMods(Scanner scanner, List<String> clientMods) {
 
     int selection = 2;
 
@@ -504,7 +500,6 @@ public final class ConfigurationEditor {
     UTILITIES.ListUtils().printListToConsoleChunked(clientMods, 5, "    ", false);
     printToFileAndConsole();
 
-    return clientMods;
   }
 
   /**
@@ -634,10 +629,9 @@ public final class ConfigurationEditor {
    * Acquire a list of files and directories to include in the server pack from the user.
    *
    * @param modpackDir The path to the modpack directory.
-   * @return A list of files and directories to include in the server pack as per the users input.
    * @author Griefed
    */
-  private List<String> getDirsAndFilesToCopy(Scanner scanner, String modpackDir,
+  private void getDirsAndFilesToCopy(Scanner scanner, String modpackDir,
       List<String> copyDirs) {
 
     printToFileAndConsole(
@@ -687,7 +681,6 @@ public final class ConfigurationEditor {
     }
 
     printToFileAndConsole();
-    return copyDirs;
   }
 
   private void listModpackFilesAndFolders(String modpackDir) {

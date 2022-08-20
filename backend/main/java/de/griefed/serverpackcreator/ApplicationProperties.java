@@ -1089,7 +1089,7 @@ public final class ApplicationProperties extends Properties {
    * @author Griefed
    */
   public List<String> getDefaultListFallbackMods() {
-    return listFallbackModsRegex;
+    return listFallbackMods;
   }
 
   /**

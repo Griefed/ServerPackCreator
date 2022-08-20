@@ -216,8 +216,10 @@ public class ConfigurationModel {
    * @author Griefed
    */
   public void setClientMods(List<String> newClientMods) {
-    newClientMods.removeIf(entry -> entry.matches("\\s+") || entry.length() == 0);
     this.clientMods.clear();
+    newClientMods.removeIf(entry ->
+        entry.matches("\\s+") || entry.length() == 0
+    );
     this.clientMods.addAll(newClientMods);
   }
 
@@ -238,11 +240,11 @@ public class ConfigurationModel {
    * @author Griefed
    */
   public void setCopyDirs(List<String> newCopyDirs) {
+    this.copyDirs.clear();
     newCopyDirs.removeIf(
         entry ->
             entry.equalsIgnoreCase("server_pack") || entry.matches("\\s+") || entry.length() == 0);
     newCopyDirs.replaceAll(entry -> entry.replace("\\", "/"));
-    this.copyDirs.clear();
     this.copyDirs.addAll(newCopyDirs);
   }
 

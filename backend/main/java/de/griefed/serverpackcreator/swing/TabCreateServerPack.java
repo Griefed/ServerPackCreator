@@ -63,6 +63,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import javax.imageio.ImageIO;
 import javax.swing.BoxLayout;
+import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -1196,8 +1197,7 @@ public class TabCreateServerPack extends JPanel {
    * @author Griefed
    */
   private void validateClientMods() {
-    if (!TEXTAREA_CLIENTSIDEMODS.getText().matches("^.*,\\s*\\\\*$")
-        && UTILITIES.StringUtils().checkForIllegalCharacters(TEXTAREA_CLIENTSIDEMODS.getText())) {
+    if (!TEXTAREA_CLIENTSIDEMODS.getText().matches("^.*,\\s*\\\\*$")) {
 
       TEXTAREA_CLIENTSIDEMODS.setIcon(null);
       TEXTAREA_CLIENTSIDEMODS.setToolTipText(
@@ -2093,7 +2093,7 @@ public class TabCreateServerPack extends JPanel {
       if (configurationModel.getClientMods().isEmpty()) {
 
         TEXTAREA_CLIENTSIDEMODS.setText(
-            UTILITIES.StringUtils().buildString(APPLICATIONPROPERTIES.getDefaultListFallbackMods()));
+            UTILITIES.StringUtils().buildString(APPLICATIONPROPERTIES.getListFallbackMods()));
         LOG.debug("Set clientMods with fallback list.");
 
       } else {
@@ -2127,13 +2127,8 @@ public class TabCreateServerPack extends JPanel {
         chosenMinecraftVersion = configurationModel.getMinecraftVersion();
       }
 
-      for (int i = 0; i < VERSIONMETA.minecraft().releaseVersionsArrayDescending().length; i++) {
-
-        if (VERSIONMETA
-            .minecraft()
-            .releaseVersionsArrayDescending()[i]
-            .equals(chosenMinecraftVersion)) {
-
+      for (int i = 0; i < COMBOBOX_MINECRAFTVERSIONS.getModel().getSize(); i++) {
+        if (COMBOBOX_MINECRAFTVERSIONS.getModel().getElementAt(i).equals(chosenMinecraftVersion)) {
           COMBOBOX_MINECRAFTVERSIONS.setSelectedIndex(i);
           break;
         }
