@@ -1,3 +1,33 @@
+## [3.12.0-beta.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.12.0-beta.1...3.12.0-beta.2) (2022-08-20)
+
+
+### :scissors: Refactor
+
+* Mark appropriate classes as final ([4d2b91a](https://git.griefed.de/Griefed/ServerPackCreator/commit/4d2b91aaea4bf750fb190cdac6770c9c05b4c018))
+* **ApplicationProperties:** Custom getter and setter to make property handling easier and more reliable. ([f7e21f4](https://git.griefed.de/Griefed/ServerPackCreator/commit/f7e21f46dbf4760057a00c341ebd13d33eb916bf))
+
+
+### 🦊 CI/CD
+
+* **Node and Frontend:** Skip node and quasar installation if the corresponding folders are already present ([46c83db](https://git.griefed.de/Griefed/ServerPackCreator/commit/46c83dbc168732444c7e64c5e7fafe1dfd1ce98a))
+* **Caching:** Cache gradle and node dependencies to improve build and test speeds ([05225f3](https://git.griefed.de/Griefed/ServerPackCreator/commit/05225f3ae7942234848145346c0a53db66865bb8))
+* **Caching:** Move caches to appropriate jobs and introduce pull-push accordingly. Give artifacts an appropriate name depending on branch, commit short sha and the ci job name. ([4365451](https://git.griefed.de/Griefed/ServerPackCreator/commit/436545122357841d8fc86db89363e7c09fe3954a))
+* **GitHub:** Migrate to Zulu JDK 8. Cache gradle dependencies. Acquire changelog from CHANGELOG.md and create release and pre-release with it. ([e8ee712](https://git.griefed.de/Griefed/ServerPackCreator/commit/e8ee7128f117a871c277bdf3c4fbf12539485fd8))
+* **Maven Publish:** Add and configure Nexus Staging plugin to automate stage,close and release on OSSRH ([4d991be](https://git.griefed.de/Griefed/ServerPackCreator/commit/4d991bea0e371fc719f53a94bb26aee604a7fd22))
+* **Maven Publish:** Delete old maven publish job which is no longer needed. ([f68ae85](https://git.griefed.de/Griefed/ServerPackCreator/commit/f68ae85e92cac6cfb3ad923982b6cd0d5844c063))
+* **Qodana:** Exclude the frontend from the Qodana checks and reports ([972fe32](https://git.griefed.de/Griefed/ServerPackCreator/commit/972fe329e003a4d160dc36092824167eaf9c2018))
+
+
+### 🛠 Fixes
+
+* **User-specified clientside-only mod exclusion:** Correctly scan with user-specified values and excluded based on the currently set filter. ([92fcf06](https://git.griefed.de/Griefed/ServerPackCreator/commit/92fcf061ce3897b100d547612394a67303e557c1))
+
+
+### Other
+
+* Latest Changelog ([2906f63](https://git.griefed.de/Griefed/ServerPackCreator/commit/2906f63e083a111c29defa1b50ca110fa6c1e99e))
+* **Dependencies:** Update dependencies ([ca946a4](https://git.griefed.de/Griefed/ServerPackCreator/commit/ca946a47c897875bd4172d3319f1f0686b653865))
+
 ## [3.12.0-beta.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.11.1...3.12.0-beta.1) (2022-08-14)
 
 
