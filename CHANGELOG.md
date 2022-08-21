@@ -1,3 +1,10 @@
+## [3.12.0-beta.5](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.12.0-beta.4...3.12.0-beta.5) (2022-08-21)
+
+
+### 🛠 Fixes
+
+* **GitLab CI:** Run workflow for tag pipelines when a release was published. ([696e387](https://git.griefed.de/Griefed/ServerPackCreator/commit/696e3879e91fa789509d9d4ae63353d2cc5cf4ee))
+
 ## [3.12.0-beta.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.12.0-beta.3...3.12.0-beta.4) (2022-08-21)
 
 
