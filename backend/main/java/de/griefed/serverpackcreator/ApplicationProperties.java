@@ -550,7 +550,7 @@ public final class ApplicationProperties extends Properties {
       LOG.error("Invalid server-packs directory specified. Defaulting to 'server-packs'.");
       directoryServerPacks = "server-packs";
     }
-    LOG.debug("Server packs directory set to: " + directoryServerPacks);
+    LOG.info("Server packs directory set to: " + directoryServerPacks);
   }
 
   /**
@@ -561,11 +561,11 @@ public final class ApplicationProperties extends Properties {
   private void setFallbackModsList() {
     listFallbackMods = getListProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST,
         FALLBACK_MODS_DEFAULT_ASSTRING);
-    LOG.debug("Fallback modslist set to: " + listFallbackMods);
+    LOG.info("Fallback modslist set to: " + listFallbackMods);
 
     listFallbackModsRegex = getListProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST_REGEX,
         FALLBACK_MODS_DEFAULT_REGEX_ASSTRING);
-    LOG.debug("Fallback regex modslist set to: " + listFallbackModsRegex);
+    LOG.info("Fallback regex modslist set to: " + listFallbackModsRegex);
   }
 
   /**
@@ -576,7 +576,7 @@ public final class ApplicationProperties extends Properties {
   private void setDirsToExcludeList() {
     directoriesToExclude = getListProperty(PROPERTY_CONFIGURATION_DIRECTORIES_SHOULDEXCLUDE,
         FALLBACK_DIRECTORIES_EXCLUDE_ASSTRING);
-    LOG.debug("Directories to exclude set to: " + directoriesToExclude);
+    LOG.info("Directories to exclude set to: " + directoriesToExclude);
   }
 
   /**
@@ -588,7 +588,7 @@ public final class ApplicationProperties extends Properties {
   private void setDirsToIncludeList() {
     directoriesToInclude = getListProperty(PROPERTY_CONFIGURATION_DIRECTORIES_MUSTINCLUDE,
         FALLBACK_DIRECTORIES_INCLUDE_ASSTRING);
-    LOG.debug("Directories which must always be included set to: " + directoriesToInclude);
+    LOG.info("Directories which must always be included set to: " + directoriesToInclude);
   }
 
   /**
@@ -604,7 +604,7 @@ public final class ApplicationProperties extends Properties {
       LOG.error("Invalid max disk usage set. Defaulting to 90");
       queueMaxDiskUsage = 90;
     }
-    LOG.debug("Queue max disk usage set to: " + queueMaxDiskUsage);
+    LOG.info("Queue max disk usage set to: " + queueMaxDiskUsage);
   }
 
   /**
@@ -614,7 +614,7 @@ public final class ApplicationProperties extends Properties {
    */
   private void setSaveLoadedConfiguration() {
     saveLoadedConfiguration = getBoolProperty(PROPERTY_CONFIGURATION_SAVELOADEDCONFIG, false);
-    LOG.debug("Save last loaded config set to: " + saveLoadedConfiguration);
+    LOG.info("Save last loaded config set to: " + saveLoadedConfiguration);
   }
 
   /**
@@ -624,7 +624,7 @@ public final class ApplicationProperties extends Properties {
    */
   private void setCheckForPreReleases() {
     checkForPreReleases = getBoolProperty(PROPERTY_VERSIONCHECK_PRERELEASE, false);
-    LOG.debug("Set check for pre-releases to: " + checkForPreReleases);
+    LOG.info("Set check for pre-releases to: " + checkForPreReleases);
   }
 
   /**
@@ -634,7 +634,7 @@ public final class ApplicationProperties extends Properties {
    */
   private void setAikarsFlags() {
     aikarsFlags = acquireProperty(PROPERTY_CONFIGURATION_AIKAR, AIKARS_FLAGS);
-    LOG.debug("Aikars flags set to: " + aikarsFlags);
+    LOG.info("Aikars flags set to: " + aikarsFlags);
   }
 
   /**
@@ -645,7 +645,7 @@ public final class ApplicationProperties extends Properties {
   private void setFilesToExcludeFromZip() {
     filesToExcludeFromZipArchive = getListProperty(PROPERTY_SERVERPACK_ZIP_EXCLUDE,
         FALLBACK_FILES_EXCLUDE_ZIP_ASSTRING);
-    LOG.debug(
+    LOG.info(
         "Files which must be excluded from ZIP-archives set to: " + filesToExcludeFromZipArchive);
   }
 
@@ -656,7 +656,7 @@ public final class ApplicationProperties extends Properties {
    */
   private void setZipFileExclusionEnabled() {
     isZipFileExclusionEnabled = getBoolProperty(PROPERTY_SERVERPACK_ZIP_EXCLUDE_ENABLED, true);
-    LOG.debug("Zip file exclusion enabled set to: " + isZipFileExclusionEnabled);
+    LOG.info("Zip file exclusion enabled set to: " + isZipFileExclusionEnabled);
   }
 
   /**
@@ -667,7 +667,7 @@ public final class ApplicationProperties extends Properties {
   private void setScriptTemplates() {
     scriptTemplates = getFileListProperty(PROPERTY_SERVERPACK_SCRIPT_TEMPLATE,
         FALLBACK_SCRIPT_TEMPLATES_ASSTRING, "server_files/");
-    LOG.debug("Script templates set to: " + scriptTemplates);
+    LOG.info("Script templates set to: " + scriptTemplates);
   }
 
   /**
@@ -680,24 +680,26 @@ public final class ApplicationProperties extends Properties {
 
     // Legacy declaration which may still be present in some serverpackcreator.properties-files.
     try {
-      autoExcludingModsEnabled =
-          Boolean.parseBoolean(
-              getProperty(PROPERTY_SERVERPACK_AUTODISCOVERY_ENABLED_LEGACY));
+      if (getProperty(PROPERTY_SERVERPACK_AUTODISCOVERY_ENABLED_LEGACY).matches("(true|false)")) {
+        autoExcludingModsEnabled =
+            Boolean.parseBoolean(
+                getProperty(PROPERTY_SERVERPACK_AUTODISCOVERY_ENABLED_LEGACY));
 
-      setProperty(PROPERTY_SERVERPACK_AUTODISCOVERY_ENABLED,
-          String.valueOf(autoExcludingModsEnabled));
+        setProperty(PROPERTY_SERVERPACK_AUTODISCOVERY_ENABLED,
+            String.valueOf(autoExcludingModsEnabled));
 
-      remove(PROPERTY_SERVERPACK_AUTODISCOVERY_ENABLED_LEGACY);
+        remove(PROPERTY_SERVERPACK_AUTODISCOVERY_ENABLED_LEGACY);
 
-      LOG.info(
-          "Migrated '" + PROPERTY_SERVERPACK_AUTODISCOVERY_ENABLED_LEGACY + "' to '"
-              + PROPERTY_SERVERPACK_AUTODISCOVERY_ENABLED + "'.");
+        LOG.info(
+            "Migrated '" + PROPERTY_SERVERPACK_AUTODISCOVERY_ENABLED_LEGACY + "' to '"
+                + PROPERTY_SERVERPACK_AUTODISCOVERY_ENABLED + "'.");
+      }
 
     } catch (Exception ignored) {
       // No legacy declaration present, so we can safely ignore any exception.
     }
 
-    LOG.debug("Auto-discovery of clientside-only mods set to: " + autoExcludingModsEnabled);
+    LOG.info("Auto-discovery of clientside-only mods set to: " + autoExcludingModsEnabled);
   }
 
   /**
@@ -707,7 +709,7 @@ public final class ApplicationProperties extends Properties {
    */
   private void setServerPackOverwrite() {
     serverPacksOverwriteEnabled = getBoolProperty(PROPERTY_SERVERPACK_OVERWRITE_ENABLED, true);
-    LOG.debug(
+    LOG.info(
         "Overwriting of already existing server packs set to: " + serverPacksOverwriteEnabled);
   }
 
@@ -718,8 +720,8 @@ public final class ApplicationProperties extends Properties {
    */
   private void setServerPackCleanup() {
     serverPackCleanupEnabled = getBoolProperty(PROPERTY_SERVERPACK_CLEANUP_ENABLED, true);
-    LOG.debug(
-        "Overwriting of already existing server packs set to: " + serverPackCleanupEnabled);
+    LOG.info(
+        "Cleanup of already existing server packs set to: " + serverPackCleanupEnabled);
   }
 
   /**
@@ -729,7 +731,7 @@ public final class ApplicationProperties extends Properties {
    */
   private void setLanguage() {
     language = acquireProperty(PROPERTY_LANGUAGE, "en_us");
-    LOG.debug("Language set to: " + language);
+    LOG.info("Language set to: " + language);
   }
 
   /**
@@ -740,7 +742,7 @@ public final class ApplicationProperties extends Properties {
   private void setHasteBinServerUrl() {
     hasteBinServerUrl = acquireProperty(PROPERTY_CONFIGURATION_HASTEBINSERVER,
         "https://haste.zneix.eu/documents");
-    LOG.debug("HasteBin documents endpoint set to: " + hasteBinServerUrl);
+    LOG.info("HasteBin documents endpoint set to: " + hasteBinServerUrl);
   }
 
   /**
@@ -750,7 +752,7 @@ public final class ApplicationProperties extends Properties {
    */
   private void setMinecraftPreReleases() {
     minecraftPreReleases = getBoolProperty(PROPERTY_MINECRAFT_SNAPSHOTS,false);
-    LOG.debug("Minecraft pre-releases and snapshots available set to: " + minecraftPreReleases);
+    LOG.info("Minecraft pre-releases and snapshots available set to: " + minecraftPreReleases);
   }
 
   /**
@@ -792,7 +794,7 @@ public final class ApplicationProperties extends Properties {
       this.exclusionFilter = filter;
       setProperty(PROPERTY_SERVERPACK_AUTODISCOVERY_FILTER, filter.toString());
     }
-    LOG.debug("User specified clientside-only mod exclusion filter set to: " + exclusionFilter);
+    LOG.info("User specified clientside-only mod exclusion filter set to: " + exclusionFilter);
   }
 
   /**
@@ -1292,7 +1294,7 @@ public final class ApplicationProperties extends Properties {
         setProperty(fallback, properties.getProperty(fallback));
         listFallbackMods = new ArrayList<>(Arrays.asList(getProperty(fallback).split(",")));
 
-        LOG.info("The fallback-list for clientside only mods has been updated.");
+        LOG.info("The fallback-list for clientside only mods has been updated to: " + listFallbackMods);
         updated = true;
       }
 
@@ -1303,7 +1305,7 @@ public final class ApplicationProperties extends Properties {
         listFallbackModsRegex = new ArrayList<>(
             Arrays.asList(getProperty(fallbackRegex).split(",")));
 
-        LOG.info("The fallback regex-list for clientside only mods has been updated.");
+        LOG.info("The fallback regex-list for clientside only mods has been updated to: " + listFallbackModsRegex);
         updated = true;
       }
 
