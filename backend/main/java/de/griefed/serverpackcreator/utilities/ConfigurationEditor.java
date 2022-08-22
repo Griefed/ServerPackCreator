@@ -596,7 +596,7 @@ public final class ConfigurationEditor {
     List<String> clientMods = newCustomList();
 
     if (clientMods.isEmpty()) {
-      clientMods = APPLICATIONPROPERTIES.getDefaultListFallbackMods();
+      clientMods = APPLICATIONPROPERTIES.getListFallbackMods();
 
       printToFileAndConsole("No clientside-only mods specified. Using fallback list.");
 
