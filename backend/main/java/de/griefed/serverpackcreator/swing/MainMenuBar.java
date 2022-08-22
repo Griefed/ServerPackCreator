@@ -273,7 +273,8 @@ public class MainMenuBar extends Component {
     JMenu aboutMenu = new JMenu(I18N.getMessage("menubar.gui.menu.about"));
 
     // create menu items
-    JMenuItem file_NewConfigurationMenuItem = new JMenuItem("New configuration");
+    JMenuItem file_NewConfigurationMenuItem = new JMenuItem(
+        I18N.getMessage("menubar.gui.menuitem.newconfig"));
     JMenuItem file_LoadConfigMenuItem =
         new JMenuItem(I18N.getMessage("menubar.gui.menuitem.loadconfig"));
     JMenuItem file_SaveConfigMenuItem =
