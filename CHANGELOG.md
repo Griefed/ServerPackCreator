@@ -1,3 +1,39 @@
+## [3.12.0-beta.6](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.12.0-beta.5...3.12.0-beta.6) (2022-08-22)
+
+
+### :scissors: Refactor
+
+* **Mod scanning:** Improve logging of exclusions, dependencies etc. ([d04f100](https://git.griefed.de/Griefed/ServerPackCreator/commit/d04f100c39db69b665a7895cdcf8ce495ef5acf1))
+
+
+### 💎 Improvements
+
+* **Menubar i18n:** Replace 'New configuration' in File-menu with language key, allowing for translation ([b20a1d4](https://git.griefed.de/Griefed/ServerPackCreator/commit/b20a1d4c6a0eef7b0d6f1157768db429b9e6b32b))
+
+
+### 🦊 CI/CD
+
+* **GitLab:** Switch newline to line break in release job for gitlab.com ([9f264db](https://git.griefed.de/Griefed/ServerPackCreator/commit/9f264dbe6a8f753b0277206c5325f748ec3281df))
+
+
+### 🛠 Fixes
+
+* **Fallback Mods:** Acquire correct fallback clientside-only mods list depending on the currently set filter method. ([54dd1b7](https://git.griefed.de/Griefed/ServerPackCreator/commit/54dd1b75b78a5b77fd828968c6acd408bdc89074))
+* **GUI Config Loading:** Correctly set modloader versions when loading from a config. ([8edb5fb](https://git.griefed.de/Griefed/ServerPackCreator/commit/8edb5fb69437cc0d9329d8af7f5bcd6e878767a7))
+
+
+### Other
+
+* **deps-dev:** bump @types/node from 18.7.6 to 18.7.9 in /frontend ([bb868ef](https://git.griefed.de/Griefed/ServerPackCreator/commit/bb868ef9a9d5dc38aaf5494b6f1ce80025f34b42))
+* **deps:** bump jgroups from 5.2.5.Final to 5.2.6.Final ([3f6c09f](https://git.griefed.de/Griefed/ServerPackCreator/commit/3f6c09f5e9144350da26fc99c3af92ede83dacbb))
+* **deps:** bump org.springframework.boot from 2.7.2 to 2.7.3 ([e51b933](https://git.griefed.de/Griefed/ServerPackCreator/commit/e51b933739600aca76e4bc34a0859636b3fd7e0b))
+* **deps:** bump spring-boot-devtools from 2.7.2 to 2.7.3 ([5e2efcf](https://git.griefed.de/Griefed/ServerPackCreator/commit/5e2efcff9900daaa885be6857b26fb8a587a2b3d))
+* **deps:** bump spring-boot-starter-artemis from 2.7.2 to 2.7.3 ([1bd1486](https://git.griefed.de/Griefed/ServerPackCreator/commit/1bd1486f9c19408362523f4feea003d23f9397fc))
+* **deps:** bump spring-boot-starter-data-jpa from 2.7.2 to 2.7.3 ([a0672bb](https://git.griefed.de/Griefed/ServerPackCreator/commit/a0672bb67aae3df6e3141f5b6f961250c1556476))
+* **deps:** bump spring-boot-starter-log4j2 from 2.7.2 to 2.7.3 ([c7eb1aa](https://git.griefed.de/Griefed/ServerPackCreator/commit/c7eb1aad62d42a179e0199f55203b9f302e2bffc))
+* **deps:** bump spring-boot-starter-test from 2.7.2 to 2.7.3 ([5b3a7c4](https://git.griefed.de/Griefed/ServerPackCreator/commit/5b3a7c48ed7b46002fd740bd353d9c73fe936661))
+* **deps:** bump spring-boot-starter-web from 2.7.2 to 2.7.3 ([cc79cbc](https://git.griefed.de/Griefed/ServerPackCreator/commit/cc79cbcc8fa4fc41dc14b8fbbbe0c15726f0c3c4))
+
 ## [3.12.0-beta.5](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.12.0-beta.4...3.12.0-beta.5) (2022-08-21)
 
 
