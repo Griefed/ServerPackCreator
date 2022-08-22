@@ -96,7 +96,7 @@ dependencies {
   embed 'com.github.gwenn:sqlite-dialect:0.1.2'
 
   // Dev tools
-  developmentOnly 'org.springframework.boot:spring-boot-devtools:2.7.2'
+  developmentOnly 'org.springframework.boot:spring-boot-devtools:2.7.3'
 
   // Testing
   testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.0'
