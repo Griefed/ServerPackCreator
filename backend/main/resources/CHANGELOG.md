@@ -1,3 +1,23 @@
+## [3.12.0-beta.5](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.12.0-beta.4...3.12.0-beta.5) (2022-08-21)
+
+
+### 🛠 Fixes
+
+* **GitLab CI:** Run workflow for tag pipelines when a release was published. ([696e387](https://git.griefed.de/Griefed/ServerPackCreator/commit/696e3879e91fa789509d9d4ae63353d2cc5cf4ee))
+
+## [3.12.0-beta.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.12.0-beta.3...3.12.0-beta.4) (2022-08-21)
+
+
+### 🦊 CI/CD
+
+* **GitLab:** Point in the right directions for changelogs in GitLab.com releases. ([0207b67](https://git.griefed.de/Griefed/ServerPackCreator/commit/0207b6794fa6d86f2e7b2cbba52b890969f47f90))
+* **GitLab:** Prevent workflow from running when the branch variable is null, a commit tag variable is available and the commit title is that of a release. ([6968424](https://git.griefed.de/Griefed/ServerPackCreator/commit/696842423f4cb55d60ec5182c68796f276f8954f))
+
+
+### 🛠 Fixes
+
+* **Properties:** Only overwrite autodiscovery-property when legacy value is present. ([59ab398](https://git.griefed.de/Griefed/ServerPackCreator/commit/59ab3989cec8c00ed2f75ffa5f9b4ab00dbf6891))
+
 ## [3.12.0-beta.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.12.0-beta.2...3.12.0-beta.3) (2022-08-20)
 
 
