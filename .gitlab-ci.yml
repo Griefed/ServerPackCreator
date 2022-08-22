@@ -601,7 +601,7 @@ release_job:
   release:
     tag_name: $CI_COMMIT_TAG
     name: 'Release $CI_COMMIT_TAG'
-    description: '## Changelogs for this release available at:\n\n1. **[GitHub](https://github.com/Griefed/ServerPackCreator/releases/tag/$CI_COMMIT_TAG)**\n2. **[GitGriefed](https://git.griefed.de/Griefed/ServerPackCreator/-/releases/$CI_COMMIT_TAG)**\n3. **[CHANGELOG.md](https://gitlab.com/Griefed/ServerPackCreator/-/blob/$CI_COMMIT_TAG/CHANGELOG.md)**\n'
+    description: '## Changelogs for this release available at:<br><br>1. **[GitHub](https://github.com/Griefed/ServerPackCreator/releases/tag/$CI_COMMIT_TAG)**<br>2. **[GitGriefed](https://git.griefed.de/Griefed/ServerPackCreator/-/releases/$CI_COMMIT_TAG)**<br>3. **[CHANGELOG.md](https://gitlab.com/Griefed/ServerPackCreator/-/blob/$CI_COMMIT_TAG/CHANGELOG.md)**<br>'
   rules:
     - if: '$CI_COMMIT_TAG && $CI_SERVER_HOST == "gitlab.com"'
 
