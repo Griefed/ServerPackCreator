@@ -63,7 +63,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import javax.imageio.ImageIO;
 import javax.swing.BoxLayout;
-import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -2137,79 +2136,79 @@ public class TabCreateServerPack extends JPanel {
       // Set modloader and modloader version
       switch (configurationModel.getModLoader().toLowerCase()) {
         case "fabric":
-          if (!configurationModel.getModLoaderVersion().isEmpty()) {
+          if (configurationModel.getModLoaderVersion().isEmpty()) {
+            configurationModel.setModLoaderVersion(VERSIONMETA.fabric().releaseLoaderVersion());
+          }
 
-            // Go through all Fabric versions and check if specified version matches official
-            // version list
-            for (int i = 0; i < VERSIONMETA.fabric().loaderVersionsArrayDescending().length; i++) {
+          COMBOBOX_MODLOADERS.setSelectedIndex(0);
+          COMBOBOX_MODLOADER_VERSIONS.setModel(
+              updateFabricComboBoxVersions(
+                  COMBOBOX_MINECRAFTVERSIONS.getSelectedItem().toString()));
 
-              // If match is found, set selected version
-              if (VERSIONMETA
-                  .fabric()
-                  .loaderVersionsArrayDescending()[i]
-                  .equals(configurationModel.getModLoaderVersion())) {
+          // Go through all Fabric versions and check if specified version matches official
+          // version list
+          for (int i = 0; i < COMBOBOX_MODLOADER_VERSIONS.getModel().getSize(); i++) {
 
-                COMBOBOX_MODLOADER_VERSIONS.setSelectedIndex(i);
-                chosenModloaderVersion = configurationModel.getModLoaderVersion();
-                break;
-              }
+            // If match is found, set selected version
+            if (COMBOBOX_MODLOADER_VERSIONS.getModel().getElementAt(i)
+                .equals(configurationModel.getModLoaderVersion())) {
+
+              COMBOBOX_MODLOADER_VERSIONS.setSelectedIndex(i);
+              chosenModloaderVersion = configurationModel.getModLoaderVersion();
+              break;
             }
           }
-          updateModloaderGuiComponents("Fabric");
+
           break;
 
         case "forge":
-          String[] forgever;
-          if (VERSIONMETA
-              .forge()
-              .availableForgeVersionsArrayDescending(chosenMinecraftVersion)
-              .isPresent()) {
 
-            forgever =
-                VERSIONMETA
-                    .forge()
-                    .availableForgeVersionsArrayDescending(chosenMinecraftVersion)
-                    .get();
+          if (configurationModel.getModLoaderVersion().isEmpty() && VERSIONMETA.forge()
+              .latestForgeVersion(configurationModel.getMinecraftVersion()).isPresent()) {
 
-          } else {
-            forgever = NONE;
+            configurationModel.setModLoaderVersion(
+                VERSIONMETA.forge().latestForgeVersion(configurationModel.getMinecraftVersion())
+                    .get());
           }
 
-          if (!configurationModel.getModLoaderVersion().isEmpty()) {
+          COMBOBOX_MODLOADERS.setSelectedIndex(1);
+          COMBOBOX_MODLOADER_VERSIONS.setModel(
+              updateForgeComboBoxVersions(COMBOBOX_MINECRAFTVERSIONS.getSelectedItem().toString()));
 
-            for (int i = 0; i < forgever.length; i++) {
+          for (int i = 0; i < COMBOBOX_MODLOADER_VERSIONS.getModel().getSize(); i++) {
 
-              if (forgever[i].equals(configurationModel.getModLoaderVersion())) {
+            if (COMBOBOX_MODLOADER_VERSIONS.getModel().getElementAt(i)
+                .equals(configurationModel.getModLoaderVersion())) {
 
-                COMBOBOX_MODLOADER_VERSIONS.setSelectedIndex(i);
-                chosenModloaderVersion = configurationModel.getModLoaderVersion();
-                break;
-              }
+              COMBOBOX_MODLOADER_VERSIONS.setSelectedIndex(i);
+              chosenModloaderVersion = configurationModel.getModLoaderVersion();
+              break;
             }
           }
-          updateModloaderGuiComponents("Forge");
           break;
 
         case "quilt":
           if (!configurationModel.getModLoaderVersion().isEmpty()) {
+            configurationModel.setModLoaderVersion(VERSIONMETA.quilt().releaseLoaderVersion());
+          }
 
-            // Go through all Fabric versions and check if specified version matches official
-            // version list
-            for (int i = 0; i < VERSIONMETA.quilt().loaderVersionsArrayDescending().length; i++) {
+          COMBOBOX_MODLOADERS.setSelectedIndex(2);
+          COMBOBOX_MODLOADER_VERSIONS.setModel(
+              updateQuiltComboBoxVersions(COMBOBOX_MINECRAFTVERSIONS.getSelectedItem().toString()));
 
-              // If match is found, set selected version
-              if (VERSIONMETA
-                  .quilt()
-                  .loaderVersionsArrayDescending()[i]
-                  .equals(configurationModel.getModLoaderVersion())) {
+          // Go through all Fabric versions and check if specified version matches official
+          // version list
+          for (int i = 0; i < COMBOBOX_MODLOADER_VERSIONS.getModel().getSize(); i++) {
 
-                COMBOBOX_MODLOADER_VERSIONS.setSelectedIndex(i);
-                chosenModloaderVersion = configurationModel.getModLoaderVersion();
-                break;
-              }
+            // If match is found, set selected version
+            if (COMBOBOX_MODLOADER_VERSIONS.getModel().getElementAt(i)
+                .equals(configurationModel.getModLoaderVersion())) {
+
+              COMBOBOX_MODLOADER_VERSIONS.setSelectedIndex(i);
+              chosenModloaderVersion = configurationModel.getModLoaderVersion();
+              break;
             }
           }
-          updateModloaderGuiComponents("Quilt");
           break;
       }
 
@@ -2240,7 +2239,7 @@ public class TabCreateServerPack extends JPanel {
     TEXTFIELD_MODPACKDIRECTORY.setText("");
     TEXTFIELD_SERVERPACKSUFFIX.setText("");
     TEXTAREA_CLIENTSIDEMODS.setText(
-        UTILITIES.StringUtils().buildString(APPLICATIONPROPERTIES.getDefaultListFallbackMods()));
+        UTILITIES.StringUtils().buildString(APPLICATIONPROPERTIES.getListFallbackMods()));
     TEXTAREA_COPYDIRECTORIES.setText(
         UTILITIES.StringUtils().buildString(APPLICATIONPROPERTIES.getDirectoriesToInclude()));
     TEXTFIELD_SERVERICONPATH.setText("");
