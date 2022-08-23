@@ -37,11 +37,6 @@ jobs:
           cmd: 'jq .description version.json -r'
           multiline: true
 
-      # DELETE VERSION.JSON
-      - name: Delte version.json
-        run: |
-          rm ./version.json || echo "No version.json found."
-
       # GENERATE RELEASE
       - name: Create Release
         id: create_release
@@ -75,6 +70,13 @@ jobs:
           ./gradlew -Pversion=${{steps.tag.outputs.tag}} installQuasar cleanFrontend assembleFrontend copyDist build createExe --info --stacktrace  -x test
       - name: List files
         run: ls -ahl build/libs
+      - uses: actions/upload-artifact@v3
+        with:
+          name: build-artifacts-gradle
+          path: |
+            build
+            frontend/dist
+          if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
 
       - name: Rename files
         run: |

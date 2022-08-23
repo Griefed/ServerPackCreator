@@ -29,15 +29,8 @@ jobs:
         with:
           name: build-artifacts-gradle
           path: |
-            build/libs/
-            !build/libs/libraries/
-            frontend/dist/spa
-          if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
-      - uses: actions/upload-artifact@v3
-        if: failure()
-        with:
-          name: report
-          path: build/reports/tests/test/
+            build
+            frontend/dist
           if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
 
   docker:
