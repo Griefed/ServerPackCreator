@@ -5,6 +5,7 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import com.electronwill.nightconfig.toml.TomlParser;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.griefed.serverpackcreator.ServerPackCreator.CommandlineParser.Mode;
 import de.griefed.serverpackcreator.i18n.I18n;
 import de.griefed.serverpackcreator.modscanning.AnnotationScanner;
 import de.griefed.serverpackcreator.modscanning.FabricScanner;
@@ -43,41 +44,12 @@ class ServerPackHandlerTest {
     } catch (IOException e) {
       e.printStackTrace();
     }
-    ApplicationProperties applicationProperties = new ApplicationProperties();
-    ObjectMapper objectMapper =
-        new ObjectMapper()
-            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-            .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
-    I18n i18N = new I18n(applicationProperties);
-    Utilities utilities = new Utilities(applicationProperties);
-    VersionMeta versionMeta =
-        new VersionMeta(
-            applicationProperties.MINECRAFT_VERSION_MANIFEST(),
-            applicationProperties.FORGE_VERSION_MANIFEST(),
-            applicationProperties.FABRIC_VERSION_MANIFEST(),
-            applicationProperties.FABRIC_INSTALLER_VERSION_MANIFEST(),
-            applicationProperties.FABRIC_INTERMEDIARIES_MANIFEST_LOCATION(),
-            applicationProperties.QUILT_VERSION_MANIFEST(),
-            applicationProperties.QUILT_INSTALLER_VERSION_MANIFEST(),
-            objectMapper);
-    configurationHandler =
-        new ConfigurationHandler(
-            i18N,
-            versionMeta,
-            applicationProperties,
-            utilities,
-            new ConfigUtilities(utilities, applicationProperties, objectMapper));
-    serverPackHandler =
-        new ServerPackHandler(
-            applicationProperties,
-            versionMeta,
-            utilities,
-            new ApplicationPlugins(),
-            new ModScanner(
-                new AnnotationScanner(objectMapper, utilities),
-                new FabricScanner(objectMapper, utilities),
-                new QuiltScanner(objectMapper, utilities),
-                new TomlScanner(new TomlParser())));
+    String[] setup = new String[]{"--setup"};
+    ServerPackCreator serverPackCreator = new ServerPackCreator(setup);
+    serverPackCreator.run(Mode.SETUP);
+
+    configurationHandler = serverPackCreator.getConfigurationHandler();
+    serverPackHandler = serverPackCreator.getServerPackHandler();
   }
 
   @Test
@@ -105,13 +77,13 @@ class ServerPackHandlerTest {
     Assertions.assertTrue(new File(
         "server-packs/forge_tests/exclude_me/exclude_me_some_more/ICANSEEMYHOUSEFROMHEEEEEEEEEEEEERE").exists());
 
-    String ps1 = FileUtils.readFileToString(new File("backend/main/resources/de/griefed/resources/server_files/default_template.ps1"), StandardCharsets.UTF_8);
+    String ps1 = FileUtils.readFileToString(new File("server-packs/forge_tests/start.ps1"), StandardCharsets.UTF_8);
     Assertions.assertTrue(ps1.contains("$Args = \"" + configurationModel.getJavaArgs()));
     Assertions.assertTrue(ps1.contains("$MinecraftVersion = \"" + configurationModel.getMinecraftVersion()));
     Assertions.assertTrue(ps1.contains("$ModLoader = \"" + configurationModel.getModLoader()));
     Assertions.assertTrue(ps1.contains("$ModLoaderVersion = \"" + configurationModel.getModLoaderVersion()));
 
-    String shell = FileUtils.readFileToString(new File("backend/main/resources/de/griefed/resources/server_files/default_template.sh"), StandardCharsets.UTF_8);
+    String shell = FileUtils.readFileToString(new File("server-packs/forge_tests/start.sh"), StandardCharsets.UTF_8);
     Assertions.assertTrue(shell.contains("ARGS=\"" + configurationModel.getJavaArgs()));
     Assertions.assertTrue(shell.contains("MINECRAFT_VERSION=\"" + configurationModel.getMinecraftVersion()));
     Assertions.assertTrue(shell.contains("MODLOADER=\"" + configurationModel.getModLoader()));
