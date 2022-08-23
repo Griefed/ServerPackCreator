@@ -18,8 +18,9 @@ import org.junit.jupiter.api.Test;
 
 class ConfigurationHandlerTest {
 
-  ConfigurationHandler configurationHandler;
-  VersionMeta versionMeta;
+  private final ApplicationProperties applicationProperties;
+  private final ConfigurationHandler configurationHandler;
+  private final VersionMeta versionMeta;
 
   ConfigurationHandlerTest() throws IOException {
     try {
@@ -29,7 +30,7 @@ class ConfigurationHandlerTest {
     } catch (IOException e) {
       e.printStackTrace();
     }
-    ApplicationProperties applicationProperties = new ApplicationProperties();
+    applicationProperties = new ApplicationProperties();
     I18n i18N = new I18n(applicationProperties);
     ObjectMapper objectMapper =
         new ObjectMapper()
@@ -298,6 +299,26 @@ class ConfigurationHandlerTest {
     configurationModel.setModLoaderVersion("36.1.2");
     configurationModel.setMinecraftVersion("1.16.5");
     Assertions.assertFalse(configurationHandler.checkConfiguration(configurationModel, false));
+
+    Assertions.assertTrue(configurationModel.getScriptSettings().containsKey("SPC_MINECRAFT_SERVER_URL_SPC"));
+    Assertions.assertTrue(configurationModel.getScriptSettings().containsKey("SPC_SERVERPACKCREATOR_VERSION_SPC"));
+    Assertions.assertTrue(configurationModel.getScriptSettings().containsKey("SPC_MINECRAFT_VERSION_SPC"));
+    Assertions.assertTrue(configurationModel.getScriptSettings().containsKey("SPC_MODLOADER_SPC"));
+    Assertions.assertTrue(configurationModel.getScriptSettings().containsKey("SPC_MODLOADER_VERSION_SPC"));
+    Assertions.assertTrue(configurationModel.getScriptSettings().containsKey("SPC_JAVA_ARGS_SPC"));
+    Assertions.assertTrue(configurationModel.getScriptSettings().containsKey("SPC_JAVA_SPC"));
+    Assertions.assertTrue(configurationModel.getScriptSettings().containsKey("SPC_FABRIC_INSTALLER_VERSION_SPC"));
+    Assertions.assertTrue(configurationModel.getScriptSettings().containsKey("SPC_QUILT_INSTALLER_VERSION_SPC"));
+
+    Assertions.assertEquals(configurationModel.getMinecraftVersion(),configurationModel.getScriptSettings().get("SPC_MINECRAFT_VERSION_SPC"));
+    Assertions.assertEquals(configurationModel.getModLoader(),configurationModel.getScriptSettings().get("SPC_MODLOADER_SPC"));
+    Assertions.assertEquals(configurationModel.getModLoaderVersion(),configurationModel.getScriptSettings().get("SPC_MODLOADER_VERSION_SPC"));
+    Assertions.assertEquals(configurationModel.getJavaArgs(),configurationModel.getScriptSettings().get("SPC_JAVA_ARGS_SPC"));
+    Assertions.assertEquals("java",configurationModel.getScriptSettings().get("SPC_JAVA_SPC"));
+    Assertions.assertEquals(versionMeta.minecraft().getServer(configurationModel.getMinecraftVersion()).get().url().get().toString(),configurationModel.getScriptSettings().get("SPC_MINECRAFT_SERVER_URL_SPC"));
+    Assertions.assertEquals(applicationProperties.SERVERPACKCREATOR_VERSION(),configurationModel.getScriptSettings().get("SPC_SERVERPACKCREATOR_VERSION_SPC"));
+    Assertions.assertEquals(versionMeta.fabric().releaseInstallerVersion(),configurationModel.getScriptSettings().get("SPC_FABRIC_INSTALLER_VERSION_SPC"));
+    Assertions.assertEquals(versionMeta.quilt().releaseInstallerVersion(),configurationModel.getScriptSettings().get("SPC_QUILT_INSTALLER_VERSION_SPC"));
   }
 
   @Test

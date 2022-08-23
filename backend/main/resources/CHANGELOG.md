@@ -1,3 +1,15 @@
+## [3.12.0-beta.7](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.12.0-beta.6...3.12.0-beta.7) (2022-08-23)
+
+
+### 🧪 Tests
+
+* Read correct script for contains-assertion. ([9a4f71e](https://git.griefed.de/Griefed/ServerPackCreator/commit/9a4f71e8bd99610134c5ec4b54056e166abe3fef))
+
+
+### 🛠 Fixes
+
+* **Scripts:** Set and write default values in start scripts ([fb621be](https://git.griefed.de/Griefed/ServerPackCreator/commit/fb621bee7f347b3c87eb3def09385d314ff31e9b))
+
 ## [3.12.0-beta.6](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.12.0-beta.5...3.12.0-beta.6) (2022-08-22)
 
 
