@@ -18,6 +18,7 @@ import de.griefed.serverpackcreator.versionmeta.VersionMeta;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -80,7 +81,7 @@ class ServerPackHandlerTest {
   }
 
   @Test
-  void runTest() {
+  void runTest() throws IOException {
     ConfigurationModel configurationModel = new ConfigurationModel();
     configurationHandler.checkConfiguration(
         new File("./backend/test/resources/testresources/serverpackcreator.conf"),
@@ -103,6 +104,19 @@ class ServerPackHandlerTest {
     Assertions.assertTrue(new File("server-packs/forge_tests/exclude_me").exists());
     Assertions.assertTrue(new File(
         "server-packs/forge_tests/exclude_me/exclude_me_some_more/ICANSEEMYHOUSEFROMHEEEEEEEEEEEEERE").exists());
+
+    String ps1 = FileUtils.readFileToString(new File("backend/main/resources/de/griefed/resources/server_files/default_template.ps1"), StandardCharsets.UTF_8);
+    Assertions.assertTrue(ps1.contains("$Args = \"" + configurationModel.getJavaArgs()));
+    Assertions.assertTrue(ps1.contains("$MinecraftVersion = \"" + configurationModel.getMinecraftVersion()));
+    Assertions.assertTrue(ps1.contains("$ModLoader = \"" + configurationModel.getModLoader()));
+    Assertions.assertTrue(ps1.contains("$ModLoaderVersion = \"" + configurationModel.getModLoaderVersion()));
+
+    String shell = FileUtils.readFileToString(new File("backend/main/resources/de/griefed/resources/server_files/default_template.sh"), StandardCharsets.UTF_8);
+    Assertions.assertTrue(shell.contains("ARGS=\"" + configurationModel.getJavaArgs()));
+    Assertions.assertTrue(shell.contains("MINECRAFT_VERSION=\"" + configurationModel.getMinecraftVersion()));
+    Assertions.assertTrue(shell.contains("MODLOADER=\"" + configurationModel.getModLoader()));
+    Assertions.assertTrue(shell.contains("MODLOADER_VERSION=\"" + configurationModel.getModLoaderVersion()));
+
 
     Assertions.assertFalse(
         new File("server-packs/forge_tests/exclude_me/I_dont_want_to_be_included.file").exists());

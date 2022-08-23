@@ -47,7 +47,6 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -426,8 +425,6 @@ public final class ServerPackHandler {
    */
   private void createStartScripts(ConfigurationModel configurationModel, String destination) {
 
-    HashMap<String, String> scriptSettings = configurationModel.getScriptSettings();
-
     for (File template : APPLICATIONPROPERTIES.scriptTemplates()) {
 
       try {
@@ -436,7 +433,7 @@ public final class ServerPackHandler {
 
         String scriptContent = FileUtils.readFileToString(template, StandardCharsets.UTF_8);
 
-        for (Map.Entry<String, String> entry : scriptSettings.entrySet()) {
+        for (Map.Entry<String, String> entry : configurationModel.getScriptSettings().entrySet()) {
           scriptContent = scriptContent.replace(entry.getKey(), entry.getValue());
         }
 
@@ -837,7 +834,8 @@ public final class ServerPackHandler {
 
     if (userSpecifiedExclusions.size() > 0) {
 
-      LOG.info("Performing " + APPLICATIONPROPERTIES.exclusionFilter() + "-type checks for user-specified clientside-only mod exclusion.");
+      LOG.info("Performing " + APPLICATIONPROPERTIES.exclusionFilter()
+          + "-type checks for user-specified clientside-only mod exclusion.");
       for (String userSpecifiedExclusion : userSpecifiedExclusions) {
         exclude(userSpecifiedExclusion, modsInModpack);
       }

@@ -141,13 +141,9 @@ tasks.register('about', Copy) {
 
 // Make sure quasar is installed
 tasks.register('installQuasar', RunNpm) {
-  if (!new File("frontend/node").isDirectory() || !new File("frontend/node/node_modules/@quasar").isDirectory()) {
-    dependsOn tasks.named('installNode')
-    script = 'install -g @quasar/cli'
-  } else {
-    println "Node and Quasar already installed."
-    script = 'll'
-  }
+  dependsOn tasks.named('installNode')
+  script = 'install -g @quasar/cli'
+
 }
 
 // Custom task to build and copy an up-to-date version of our frontend to SpringBoot.
@@ -383,7 +379,7 @@ publishing {
         header(HttpHeaderAuthentication)
       }
     }
-    
+
     maven {
       url = "https://gitlab.com/api/v4/projects/32677538/packages/maven"
       credentials(HttpHeaderCredentials) {

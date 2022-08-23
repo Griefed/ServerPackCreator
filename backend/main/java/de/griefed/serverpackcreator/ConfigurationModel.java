@@ -156,7 +156,7 @@ public class ConfigurationModel {
     setMinecraftVersion(config.getOrElse("minecraftVersion", ""));
     setModLoader(config.getOrElse("modLoader", ""));
     setModLoaderVersion(config.getOrElse("modLoaderVersion", ""));
-    setJavaArgs(config.getOrElse("javaArgs", "empty"));
+    setJavaArgs(config.getOrElse("javaArgs", ""));
 
     setServerPackSuffix(
         utilities.StringUtils().pathSecureText(config.getOrElse("serverPackSuffix", "")));
@@ -177,6 +177,8 @@ public class ConfigurationModel {
     setIncludeZipCreation(
         utilities.BooleanUtils()
             .convert(String.valueOf(config.getOrElse("includeZipCreation", "False"))));
+
+    config.close();
   }
 
   /**
@@ -595,12 +597,12 @@ public class ConfigurationModel {
    * Putter for the script settings used during script creation. All key-value pairs from the passed
    * hashmap are put into this models hashmap.
    *
-   * @param scriptSettings Key-value pairs to be used in script creation.
+   * @param settings Key-value pairs to be used in script creation.
    * @author Griefed
    */
-  public void setScriptSettings(HashMap<String, String> scriptSettings) {
+  public void setScriptSettings(HashMap<String, String> settings) {
     this.scriptSettings.clear();
-    this.scriptSettings.putAll(scriptSettings);
+    this.scriptSettings.putAll(settings);
   }
 
   @Override

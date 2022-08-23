@@ -1061,8 +1061,6 @@ public final class ConfigurationHandler {
         "SPC_FABRIC_INSTALLER_VERSION_SPC", VERSIONMETA.fabric().releaseInstallerVersion());
     scriptSettings.put(
         "SPC_QUILT_INSTALLER_VERSION_SPC", VERSIONMETA.quilt().releaseInstallerVersion());
-
-    configurationModel.setScriptSettings(scriptSettings);
   }
 
   /**
