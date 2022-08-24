@@ -48,7 +48,7 @@ var activeTableTab = "activeTableTab";
 <div class="subNav">
 <ul class="navList">
 <li>Prev&nbsp;Class</li>
-<li><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClientMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
+<li><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
 </ul>
 <ul class="navList">
 <li><a href="../../../../../index.html?de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" target="_top">Frames</a></li>
@@ -74,13 +74,13 @@ var activeTableTab = "activeTableTab";
 <li>Summary:&nbsp;</li>
 <li>Nested&nbsp;|&nbsp;</li>
 <li>Field&nbsp;|&nbsp;</li>
-<li><a href="#constructor.summary">Constr</a>&nbsp;|&nbsp;</li>
+<li>Constr&nbsp;|&nbsp;</li>
 <li><a href="#method.summary">Method</a></li>
 </ul>
 <ul class="subNavList">
 <li>Detail:&nbsp;</li>
 <li>Field&nbsp;|&nbsp;</li>
-<li><a href="#constructor.detail">Constr</a>&nbsp;|&nbsp;</li>
+<li>Constr&nbsp;|&nbsp;</li>
 <li><a href="#method.detail">Method</a></li>
 </ul>
 </div>
@@ -107,7 +107,7 @@ var activeTableTab = "activeTableTab";
 <li class="blockList">
 <hr>
 <br>
-<pre>public class <span class="typeNameLabel">MinecraftClient</span>
+<pre>public final class <span class="typeNameLabel">MinecraftClient</span>
 extends java.lang.Object</pre>
 <div class="block">Relevant information about a given Minecraft client.</div>
 </li>
@@ -116,41 +116,6 @@ extends java.lang.Object</pre>
 <div class="summary">
 <ul class="blockList">
 <li class="blockList">
-<!-- ======== CONSTRUCTOR SUMMARY ======== -->
-<ul class="blockList">
-<li class="blockList"><a name="constructor.summary">
-<!--   -->
-</a>
-<h3>Constructor Summary</h3>
-<table class="memberSummary" border="0" cellpadding="3" cellspacing="0" summary="Constructor Summary table, listing constructors, and an explanation">
-<caption><span>Constructors</span><span class="tabEnd">&nbsp;</span></caption>
-<tr>
-<th class="colFirst" scope="col">Modifier</th>
-<th class="colLast" scope="col">Constructor and Description</th>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>protected </code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html#MinecraftClient-java.lang.String-de.griefed.serverpackcreator.versionmeta.Type-java.net.URL-de.griefed.serverpackcreator.versionmeta.forge.ForgeMeta-com.fasterxml.jackson.databind.ObjectMapper-">MinecraftClient</a></span>(java.lang.String&nbsp;version,
-               <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html" title="enum in de.griefed.serverpackcreator.versionmeta">Type</a>&nbsp;type,
-               java.net.URL&nbsp;url,
-               <a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.forge">ForgeMeta</a>&nbsp;forgeMeta,
-               com.fasterxml.jackson.databind.ObjectMapper&nbsp;objectMapper)</code>
-<div class="block">Constructor using version, type and url.</div>
-</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>protected </code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html#MinecraftClient-java.lang.String-de.griefed.serverpackcreator.versionmeta.Type-java.net.URL-de.griefed.serverpackcreator.versionmeta.minecraft.MinecraftServer-de.griefed.serverpackcreator.versionmeta.forge.ForgeMeta-">MinecraftClient</a></span>(java.lang.String&nbsp;version,
-               <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html" title="enum in de.griefed.serverpackcreator.versionmeta">Type</a>&nbsp;type,
-               java.net.URL&nbsp;url,
-               <a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft">MinecraftServer</a>&nbsp;server,
-               <a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.forge">ForgeMeta</a>&nbsp;forgeMeta)</code>
-<div class="block">Constructor using version, type, url and a <a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftServer</code></a>.</div>
-</td>
-</tr>
-</table>
-</li>
-</ul>
 <!-- ========== METHOD SUMMARY =========== -->
 <ul class="blockList">
 <li class="blockList"><a name="method.summary">
@@ -209,60 +174,6 @@ extends java.lang.Object</pre>
 <div class="details">
 <ul class="blockList">
 <li class="blockList">
-<!-- ========= CONSTRUCTOR DETAIL ======== -->
-<ul class="blockList">
-<li class="blockList"><a name="constructor.detail">
-<!--   -->
-</a>
-<h3>Constructor Detail</h3>
-<a name="MinecraftClient-java.lang.String-de.griefed.serverpackcreator.versionmeta.Type-java.net.URL-de.griefed.serverpackcreator.versionmeta.forge.ForgeMeta-com.fasterxml.jackson.databind.ObjectMapper-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>MinecraftClient</h4>
-<pre>protected&nbsp;MinecraftClient(java.lang.String&nbsp;version,
-                          <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html" title="enum in de.griefed.serverpackcreator.versionmeta">Type</a>&nbsp;type,
-                          java.net.URL&nbsp;url,
-                          <a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.forge">ForgeMeta</a>&nbsp;forgeMeta,
-                          com.fasterxml.jackson.databind.ObjectMapper&nbsp;objectMapper)</pre>
-<div class="block">Constructor using version, type and url.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>version</code> - <code>String</code> The Minecraft version.</dd>
-<dd><code>type</code> - <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html" title="enum in de.griefed.serverpackcreator.versionmeta"><code>Type</code></a> Either <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#RELEASE"><code>Type.RELEASE</code></a> or <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#SNAPSHOT"><code>Type.SNAPSHOT</code></a>.</dd>
-<dd><code>url</code> - <code>URL</code> Url to this versions manifest.</dd>
-<dd><code>forgeMeta</code> - <a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.forge"><code>ForgeMeta</code></a> to acquire Forge instances for this
-                     <a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftClient</code></a> version.</dd>
-<dd><code>objectMapper</code> - <code>ObjectMapper</code> for parsing.</dd>
-</dl>
-</li>
-</ul>
-<a name="MinecraftClient-java.lang.String-de.griefed.serverpackcreator.versionmeta.Type-java.net.URL-de.griefed.serverpackcreator.versionmeta.minecraft.MinecraftServer-de.griefed.serverpackcreator.versionmeta.forge.ForgeMeta-">
-<!--   -->
-</a>
-<ul class="blockListLast">
-<li class="blockList">
-<h4>MinecraftClient</h4>
-<pre>protected&nbsp;MinecraftClient(java.lang.String&nbsp;version,
-                          <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html" title="enum in de.griefed.serverpackcreator.versionmeta">Type</a>&nbsp;type,
-                          java.net.URL&nbsp;url,
-                          <a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft">MinecraftServer</a>&nbsp;server,
-                          <a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.forge">ForgeMeta</a>&nbsp;forgeMeta)</pre>
-<div class="block">Constructor using version, type, url and a <a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftServer</code></a>.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>version</code> - <code>String</code> The Minecraft version.</dd>
-<dd><code>type</code> - <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html" title="enum in de.griefed.serverpackcreator.versionmeta"><code>Type</code></a> Either <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#RELEASE"><code>Type.RELEASE</code></a> or <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#SNAPSHOT"><code>Type.SNAPSHOT</code></a>.</dd>
-<dd><code>url</code> - <code>URL</code> Url to this versions manifest.</dd>
-<dd><code>server</code> - Instance of <a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftServer</code></a></dd>
-<dd><code>forgeMeta</code> - <a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.forge"><code>ForgeMeta</code></a> to acquire Forge instances for this <a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftClient</code></a>
-                  version.</dd>
-</dl>
-</li>
-</ul>
-</li>
-</ul>
 <!-- ============ METHOD DETAIL ========== -->
 <ul class="blockList">
 <li class="blockList"><a name="method.detail">
@@ -279,7 +190,7 @@ extends java.lang.Object</pre>
 <div class="block">The Minecraft version of this <a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftClient</code></a> instance.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>String</code> Minecraft version.</dd>
+<dd>Minecraft version.</dd>
 </dl>
 </li>
 </ul>
@@ -293,7 +204,7 @@ extends java.lang.Object</pre>
 <div class="block">Release-type. Either <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#RELEASE"><code>Type.RELEASE</code></a> or <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#SNAPSHOT"><code>Type.SNAPSHOT</code></a>.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html" title="enum in de.griefed.serverpackcreator.versionmeta"><code>Type</code></a> Either <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#RELEASE"><code>Type.RELEASE</code></a> or <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#SNAPSHOT"><code>Type.SNAPSHOT</code></a>.</dd>
+<dd>Either <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#RELEASE"><code>Type.RELEASE</code></a> or <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#SNAPSHOT"><code>Type.SNAPSHOT</code></a>.</dd>
 </dl>
 </li>
 </ul>
@@ -307,7 +218,7 @@ extends java.lang.Object</pre>
 <div class="block">The <code>URL</code> to this versions manifest.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>URL</code></dd>
+<dd>URL</dd>
 </dl>
 </li>
 </ul>
@@ -321,7 +232,7 @@ extends java.lang.Object</pre>
 <div class="block">The <a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftServer</code></a> for this Minecraft version, wrapped in an <code>Optional</code>.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftServer</code></a> wrapped in an <code>Optional</code></dd>
+<dd>Server wrapped in an <code>Optional</code></dd>
 </dl>
 </li>
 </ul>
@@ -335,7 +246,7 @@ extends java.lang.Object</pre>
 <div class="block">Get the <a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeInstance.html" title="class in de.griefed.serverpackcreator.versionmeta.forge"><code>ForgeInstance</code></a> for this client, wrapped in an <code>Optional</code>.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeInstance.html" title="class in de.griefed.serverpackcreator.versionmeta.forge"><code>ForgeInstance</code></a> for this client, wrapped in an <code>Optional</code>.</dd>
+<dd>Forge instance for this client, wrapped in an <code>Optional</code>.</dd>
 </dl>
 </li>
 </ul>
@@ -367,7 +278,7 @@ extends java.lang.Object</pre>
 <div class="subNav">
 <ul class="navList">
 <li>Prev&nbsp;Class</li>
-<li><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClientMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
+<li><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
 </ul>
 <ul class="navList">
 <li><a href="../../../../../index.html?de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" target="_top">Frames</a></li>
@@ -393,13 +304,13 @@ extends java.lang.Object</pre>
 <li>Summary:&nbsp;</li>
 <li>Nested&nbsp;|&nbsp;</li>
 <li>Field&nbsp;|&nbsp;</li>
-<li><a href="#constructor.summary">Constr</a>&nbsp;|&nbsp;</li>
+<li>Constr&nbsp;|&nbsp;</li>
 <li><a href="#method.summary">Method</a></li>
 </ul>
 <ul class="subNavList">
 <li>Detail:&nbsp;</li>
 <li>Field&nbsp;|&nbsp;</li>
-<li><a href="#constructor.detail">Constr</a>&nbsp;|&nbsp;</li>
+<li>Constr&nbsp;|&nbsp;</li>
 <li><a href="#method.detail">Method</a></li>
 </ul>
 </div>

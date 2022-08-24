@@ -109,7 +109,7 @@ var activeTableTab = "activeTableTab";
 <br>
 <pre>@SpringBootApplication
  @EnableScheduling
- @PropertySource(value="classpath:application.properties") @PropertySource(value="classpath:serverpackcreator.properties")
+ @PropertySource(value="classpath:application.properties") @PropertySource(value="classpath:serverpackcreator.properties") @PropertySource(value="file:./serverpackcreator.properties")
 public class <span class="typeNameLabel">ServerPackCreator</span>
 extends java.lang.Object</pre>
 <div class="block">Launch-class of ServerPackCreator which determines the mode to run in, takes care of
@@ -205,7 +205,9 @@ extends java.lang.Object</pre>
 </tr>
 <tr id="i6" class="altColor">
 <td class="colFirst"><code>static java.lang.String[]</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getArgs--">getArgs</a></span>()</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getArgs--">getArgs</a></span>()</code>
+<div class="block">The arguments with which ServerPackCreator was started.</div>
+</td>
 </tr>
 <tr id="i7" class="rowColor">
 <td class="colFirst"><code><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.CommandlineParser.html" title="class in de.griefed.serverpackcreator">ServerPackCreator.CommandlineParser</a></code></td>
@@ -363,15 +365,6 @@ extends java.lang.Object</pre>
 <pre>public static&nbsp;<a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html" title="class in de.griefed.serverpackcreator">ServerPackCreator</a>&nbsp;getServerPackCreator(java.lang.String[]&nbsp;args)</pre>
 </li>
 </ul>
-<a name="getArgs--">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>getArgs</h4>
-<pre>public static&nbsp;java.lang.String[]&nbsp;getArgs()</pre>
-</li>
-</ul>
 <a name="main-java.lang.String:A-">
 <!--   -->
 </a>
@@ -389,6 +382,20 @@ extends java.lang.Object</pre>
              ServerPackCreator will enter and which locale is used.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code>java.io.IOException</code> - if the <a href="../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta"><code>VersionMeta</code></a> could not be instantiated.</dd>
+</dl>
+</li>
+</ul>
+<a name="getArgs--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getArgs</h4>
+<pre>public static&nbsp;java.lang.String[]&nbsp;getArgs()</pre>
+<div class="block">The arguments with which ServerPackCreator was started.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>All arguments with which ServerPackCreator was started.</dd>
 </dl>
 </li>
 </ul>
@@ -637,7 +644,7 @@ extends java.lang.Object</pre>
 <div class="block">Run ServerPackCreator in a specific <a href="../../../de/griefed/serverpackcreator/ServerPackCreator.CommandlineParser.Mode.html" title="enum in de.griefed.serverpackcreator"><code>ServerPackCreator.CommandlineParser.Mode</code></a>.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>modeToRunIn</code> - <a href="../../../de/griefed/serverpackcreator/ServerPackCreator.CommandlineParser.Mode.html" title="enum in de.griefed.serverpackcreator"><code>ServerPackCreator.CommandlineParser.Mode</code></a> to run in.</dd>
+<dd><code>modeToRunIn</code> - Mode to run in.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code>java.io.IOException</code> - if the run fails.</dd>
 </dl>

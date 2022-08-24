@@ -255,7 +255,7 @@ public&nbsp;ServerPackService(<a href="../../../../../de/griefed/serverpackcreat
 <div class="block">Download a server pack with the given database id.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>id</code> - Integer. The database id of the server pack to download.</dd>
+<dd><code>id</code> - The database id of the server pack to download.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>Returns a curseResponse entity with either the server pack as a downloadable file, or a
  curseResponse entity with a not found body.</dd>
@@ -272,8 +272,7 @@ public&nbsp;ServerPackService(<a href="../../../../../de/griefed/serverpackcreat
 <div class="block">Either upvote or downvote a given server pack.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>voting</code> - String. The database id of the server pack and whether it should be up- or
-               downvoted.</dd>
+<dd><code>voting</code> - The database id of the server pack and whether it should be up- or downvoted.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>Returns ok if the vote went through, bad request if the passed vote was malformed, or
  not found if the server pack could not be found.</dd>
@@ -336,7 +335,7 @@ public&nbsp;ServerPackService(<a href="../../../../../de/griefed/serverpackcreat
  database id.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>id</code> - Integer. The database id of the server pack.</dd>
+<dd><code>id</code> - The database id of the server pack.</dd>
 </dl>
 </li>
 </ul>
@@ -352,8 +351,8 @@ public&nbsp;ServerPackService(<a href="../../../../../de/griefed/serverpackcreat
  database, identified by the database id.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>id</code> - Integer. The database id of the server pack.</dd>
-<dd><code>vote</code> - Integer. Positive for upvote, negative for downvote</dd>
+<dd><code>id</code> - The database id of the server pack.</dd>
+<dd><code>vote</code> - Positive for upvote, negative for downvote</dd>
 </dl>
 </li>
 </ul>
@@ -367,7 +366,7 @@ public&nbsp;ServerPackService(<a href="../../../../../de/griefed/serverpackcreat
 <div class="block">Deletes a server pack with the given id.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>id</code> - Integer. The database id of the server pack to delete.</dd>
+<dd><code>id</code> - The database id of the server pack to delete.</dd>
 </dl>
 </li>
 </ul>

@@ -108,7 +108,7 @@ var activeTableTab = "activeTableTab";
 <hr>
 <br>
 <pre>@Component
-public class <span class="typeNameLabel">FabricScanner</span>
+public final class <span class="typeNameLabel">FabricScanner</span>
 extends java.lang.Object</pre>
 <div class="block"><code>fabric.mod.json</code>-based scanning of Fabric-Minecraft mods.</div>
 </li>
@@ -211,8 +211,7 @@ public&nbsp;FabricScanner(com.fasterxml.jackson.databind.ObjectMapper&nbsp;objec
 <dd><code>filesInModsDir</code> - A list of files in which to check the
                        <code>fabric.mod.json</code>-files.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>List String. List of mods not to include in server pack based on
- fabric.mod.json-content.</dd>
+<dd>List of mods not to include in server pack based on fabric.mod.json-content.</dd>
 </dl>
 </li>
 </ul>

@@ -108,7 +108,7 @@ var activeTableTab = "activeTableTab";
 <hr>
 <br>
 <pre>@Component
-public class <span class="typeNameLabel">ServerPackHandler</span>
+public final class <span class="typeNameLabel">ServerPackHandler</span>
 extends java.lang.Object</pre>
 <div class="block">Create a server pack from a modpack by copying all specified or required files from the modpack
  to the server pack as well as installing the modloader server for the specified modloader,
@@ -282,9 +282,8 @@ public&nbsp;ServerPackHandler(<a href="../../../de/griefed/serverpackcreator/App
  as for Powershell scripts. Powershell throws a complete fit if the path contains spaces....</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>configurationModel</code> - <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a> or <a href="../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackModel.html" title="class in de.griefed.serverpackcreator.spring.serverpack"><code>ServerPackModel</code></a> containing the
-                           modpack directory of the modpack from which the server pack will be
-                           generated.</dd>
+<dd><code>configurationModel</code> - Model containing the modpack directory of the modpack from which the
+                           server pack will be generated.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>The complete path to the directory in which the server pack will be generated.</dd>
 </dl>
@@ -326,15 +325,13 @@ public&nbsp;ServerPackHandler(<a href="../../../de/griefed/serverpackcreator/App
  <a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#getFilesToExcludeFromZipArchive--"><code>ApplicationProperties.getFilesToExcludeFromZipArchive()</code></a></div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>minecraftVersion</code> - <code>String</code> Determines the name of the Minecraft server JAR
-                                  to exclude from the ZIP-archive if the modloader is Forge.</dd>
-<dd><code>includeServerInstallation</code> - <code>Boolean</code> Determines whether the Minecraft server JAR
-                                  info should be printed.</dd>
-<dd><code>destination</code> - <code>String</code> The destination where the ZIP-archive should be
-                                  created in.</dd>
-<dd><code>modloader</code> - <code>String</code> The modloader the modpack and server pack use.</dd>
-<dd><code>modloaderVersion</code> - <code>String</code> The modloader version the modpack and server
-                                  pack use.</dd>
+<dd><code>minecraftVersion</code> - Determines the name of the Minecraft server JAR to exclude
+                                  from the ZIP-archive if the modloader is Forge.</dd>
+<dd><code>includeServerInstallation</code> - Determines whether the Minecraft server JAR info should be
+                                  printed.</dd>
+<dd><code>destination</code> - The destination where the ZIP-archive should be created in.</dd>
+<dd><code>modloader</code> - The modloader the modpack and server pack use.</dd>
+<dd><code>modloaderVersion</code> - The modloader version the modpack and server pack use.</dd>
 </dl>
 </li>
 </ul>

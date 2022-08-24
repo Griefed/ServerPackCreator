@@ -227,7 +227,7 @@ public&nbsp;org.springframework.http.ResponseEntity&lt;org.springframework.core.
 <div class="block">GET request for downloading a server pack by the id in the database.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>id</code> - Integer. The id of the server pack in the database.</dd>
+<dd><code>id</code> - The id of the server pack in the database.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>ResponseEntity Resource. Gives the requester the requested file as a download, if it
  was found.</dd>
@@ -245,7 +245,7 @@ public&nbsp;org.springframework.http.ResponseEntity&lt;java.util.List&lt;<a href
 <div class="block">GET request for retrieving a list of all available server packs.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>List <a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackModel.html" title="class in de.griefed.serverpackcreator.spring.serverpack"><code>ServerPackModel</code></a>. A list of all available server packs on this instance.</dd>
+<dd>A list of all available server packs on this instance.</dd>
 </dl>
 </li>
 </ul>
@@ -261,8 +261,8 @@ public&nbsp;org.springframework.http.ResponseEntity&lt;java.lang.Object&gt;&nbsp
 <div class="block">GET request for voting whether a server pack works or not.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>voting</code> - String. The vote, consisting of the id of the server pack and whether the vote
-               should be incremented or decremented. Example <code>42,up</code> or
+<dd><code>voting</code> - The vote, consisting of the id of the server pack and whether the vote should be
+               incremented or decremented. Example <code>42,up</code> or
                <code>23,down</code>.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>ResponseEntity OK/BadRequest/NotFound</dd>

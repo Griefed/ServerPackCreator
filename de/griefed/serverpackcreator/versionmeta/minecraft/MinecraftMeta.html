@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10,"i17":10,"i18":10,"i19":10,"i20":10,"i21":10,"i22":10,"i23":10,"i24":10,"i25":10,"i26":10,"i27":10,"i28":10,"i29":10,"i30":10,"i31":10,"i32":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10,"i17":10,"i18":10,"i19":10,"i20":10,"i21":10,"i22":10,"i23":10,"i24":10,"i25":10,"i26":10,"i27":10,"i28":10,"i29":10,"i30":10,"i31":10,"i32":10,"i33":10,"i34":10,"i35":10,"i36":10,"i37":10,"i38":10,"i39":10,"i40":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -47,7 +47,7 @@ var activeTableTab = "activeTableTab";
 </div>
 <div class="subNav">
 <ul class="navList">
-<li><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClientMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
+<li><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
 <li><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
 </ul>
 <ul class="navList">
@@ -107,7 +107,7 @@ var activeTableTab = "activeTableTab";
 <li class="blockList">
 <hr>
 <br>
-<pre>public class <span class="typeNameLabel">MinecraftMeta</span>
+<pre>public final class <span class="typeNameLabel">MinecraftMeta</span>
 extends java.lang.Object</pre>
 <div class="block">Minecraft meta containing information about available client- and server releases.</div>
 </li>
@@ -150,228 +150,284 @@ extends java.lang.Object</pre>
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr id="i0" class="altColor">
+<td class="colFirst"><code>java.util.List&lt;<a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft">MinecraftClient</a>&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftMeta.html#allAscending--">allAscending</a></span>()</code>
+<div class="block">Get all available Minecraft releases, both releases and pre-releases or snapshots, in
+ <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#ASCENDING"><code>Type.ASCENDING</code></a> order.</div>
+</td>
+</tr>
+<tr id="i1" class="rowColor">
+<td class="colFirst"><code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft">MinecraftClient</a>[]</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftMeta.html#allAscendingArray--">allAscendingArray</a></span>()</code>
+<div class="block">Get all available Minecraft releases, both releases and pre-releases or snapshots, in
+ <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#ASCENDING"><code>Type.ASCENDING</code></a> order.</div>
+</td>
+</tr>
+<tr id="i2" class="altColor">
+<td class="colFirst"><code>java.util.List&lt;<a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft">MinecraftClient</a>&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftMeta.html#allDescending--">allDescending</a></span>()</code>
+<div class="block">Get all available Minecraft releases, both releases and pre-releases or snapshots, in
+ <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#DESCENDING"><code>Type.DESCENDING</code></a> order.</div>
+</td>
+</tr>
+<tr id="i3" class="rowColor">
+<td class="colFirst"><code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft">MinecraftClient</a>[]</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftMeta.html#allDescendingArray--">allDescendingArray</a></span>()</code>
+<div class="block">Get all available Minecraft releases, both releases and pre-releases or snapshots, in
+ <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#DESCENDING"><code>Type.DESCENDING</code></a> order.</div>
+</td>
+</tr>
+<tr id="i4" class="altColor">
+<td class="colFirst"><code>java.lang.String[]</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftMeta.html#allVersionsArrayAscending--">allVersionsArrayAscending</a></span>()</code>
+<div class="block">Get an array of all available Minecraft versions of the <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#RELEASE"><code>Type.RELEASE</code></a> and
+ <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#SNAPSHOT"><code>Type.SNAPSHOT</code></a> in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#ASCENDING"><code>Type.ASCENDING</code></a> order.</div>
+</td>
+</tr>
+<tr id="i5" class="rowColor">
+<td class="colFirst"><code>java.lang.String[]</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftMeta.html#allVersionsArrayDescending--">allVersionsArrayDescending</a></span>()</code>
+<div class="block">Get an array of all available Minecraft versions of the <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#RELEASE"><code>Type.RELEASE</code></a> and
+ <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#SNAPSHOT"><code>Type.SNAPSHOT</code></a> in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#DESCENDING"><code>Type.DESCENDING</code></a> order.</div>
+</td>
+</tr>
+<tr id="i6" class="altColor">
+<td class="colFirst"><code>java.util.List&lt;java.lang.String&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftMeta.html#allVersionsAscending--">allVersionsAscending</a></span>()</code>
+<div class="block">Get a list of all available Minecraft versions of the <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#RELEASE"><code>Type.RELEASE</code></a> and
+ <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#SNAPSHOT"><code>Type.SNAPSHOT</code></a> in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#ASCENDING"><code>Type.ASCENDING</code></a> order.</div>
+</td>
+</tr>
+<tr id="i7" class="rowColor">
+<td class="colFirst"><code>java.util.List&lt;java.lang.String&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftMeta.html#allVersionsDescending--">allVersionsDescending</a></span>()</code>
+<div class="block">Get a list of all available Minecraft versions of the <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#RELEASE"><code>Type.RELEASE</code></a> and
+ <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#SNAPSHOT"><code>Type.SNAPSHOT</code></a> in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#DESCENDING"><code>Type.DESCENDING</code></a> order.</div>
+</td>
+</tr>
+<tr id="i8" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftMeta.html#checkMinecraftVersion-java.lang.String-">checkMinecraftVersion</a></span>(java.lang.String&nbsp;minecraftVersion)</code>
 <div class="block">Check whether a <a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftClient</code></a> is available for the specified Minecraft-version.</div>
 </td>
 </tr>
-<tr id="i1" class="rowColor">
+<tr id="i9" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftMeta.html#checkServerAvailability-java.lang.String-">checkServerAvailability</a></span>(java.lang.String&nbsp;minecraftVersion)</code>
 <div class="block">Check whether a <a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftServer</code></a> is available for the specified Minecraft-version.</div>
 </td>
 </tr>
-<tr id="i2" class="altColor">
+<tr id="i10" class="altColor">
 <td class="colFirst"><code>java.util.Optional&lt;<a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft">MinecraftClient</a>&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftMeta.html#getClient-java.lang.String-">getClient</a></span>(java.lang.String&nbsp;minecraftVersion)</code>
 <div class="block">Get a specific Minecraft client as a <a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftClient</code></a> wrapped in an <code>Optional</code>.</div>
 </td>
 </tr>
-<tr id="i3" class="rowColor">
+<tr id="i11" class="rowColor">
 <td class="colFirst"><code>java.util.Optional&lt;<a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft">MinecraftServer</a>&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftMeta.html#getServer-java.lang.String-">getServer</a></span>(java.lang.String&nbsp;minecraftVersion)</code>
 <div class="block">Get a specific <a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftServer</code></a> for the specified Minecraft-version, wrapped in an
  <code>Optional</code>.</div>
 </td>
 </tr>
-<tr id="i4" class="altColor">
+<tr id="i12" class="altColor">
 <td class="colFirst"><code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft">MinecraftClient</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftMeta.html#latestRelease--">latestRelease</a></span>()</code>
 <div class="block">Get the latest Minecraft release as a <a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftClient</code></a>.</div>
 </td>
 </tr>
-<tr id="i5" class="rowColor">
+<tr id="i13" class="rowColor">
 <td class="colFirst"><code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft">MinecraftServer</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftMeta.html#latestReleaseServer--">latestReleaseServer</a></span>()</code>
 <div class="block">Get the latest <a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftServer</code></a> of the <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#RELEASE"><code>Type.RELEASE</code></a>, wrapped in an
  <code>Optional</code>.</div>
 </td>
 </tr>
-<tr id="i6" class="altColor">
+<tr id="i14" class="altColor">
 <td class="colFirst"><code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft">MinecraftClient</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftMeta.html#latestSnapshot--">latestSnapshot</a></span>()</code>
 <div class="block">Get the latest Minecraft snapshot as a <a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftClient</code></a>.</div>
 </td>
 </tr>
-<tr id="i7" class="rowColor">
+<tr id="i15" class="rowColor">
 <td class="colFirst"><code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft">MinecraftServer</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftMeta.html#latestSnapshotServer--">latestSnapshotServer</a></span>()</code>
 <div class="block">Get the latest <a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftServer</code></a> of the <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#SNAPSHOT"><code>Type.SNAPSHOT</code></a>, wrapped in an
  <code>Optional</code>.</div>
 </td>
 </tr>
-<tr id="i8" class="altColor">
+<tr id="i16" class="altColor">
 <td class="colFirst"><code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft">MinecraftClient</a>[]</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftMeta.html#releasesArrayAscending--">releasesArrayAscending</a></span>()</code>
 <div class="block">Get an array of all available <a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftClient</code></a> of the <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#RELEASE"><code>Type.RELEASE</code></a>, in
  descending order.</div>
 </td>
 </tr>
-<tr id="i9" class="rowColor">
+<tr id="i17" class="rowColor">
 <td class="colFirst"><code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft">MinecraftClient</a>[]</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftMeta.html#releasesArrayDescending--">releasesArrayDescending</a></span>()</code>
 <div class="block">Get an array of all available <a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftClient</code></a> of the <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#RELEASE"><code>Type.RELEASE</code></a>, in ascending
  order.</div>
 </td>
 </tr>
-<tr id="i10" class="altColor">
+<tr id="i18" class="altColor">
 <td class="colFirst"><code>java.util.List&lt;<a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft">MinecraftClient</a>&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftMeta.html#releasesAscending--">releasesAscending</a></span>()</code>
 <div class="block">Get a list of all available <a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftClient</code></a> of the <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#RELEASE"><code>Type.RELEASE</code></a>, in descending
  order.</div>
 </td>
 </tr>
-<tr id="i11" class="rowColor">
+<tr id="i19" class="rowColor">
 <td class="colFirst"><code>java.util.List&lt;<a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft">MinecraftClient</a>&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftMeta.html#releasesDescending--">releasesDescending</a></span>()</code>
 <div class="block">Get a list of all available <a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftClient</code></a> of the <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#RELEASE"><code>Type.RELEASE</code></a>, in ascending
  order.</div>
 </td>
 </tr>
-<tr id="i12" class="altColor">
+<tr id="i20" class="altColor">
 <td class="colFirst"><code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft">MinecraftServer</a>[]</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftMeta.html#releasesServersArrayAscending--">releasesServersArrayAscending</a></span>()</code>
 <div class="block">Get an array of all available <a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftServer</code></a> of the <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#RELEASE"><code>Type.RELEASE</code></a>, in
  <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#ASCENDING"><code>Type.ASCENDING</code></a> order.</div>
 </td>
 </tr>
-<tr id="i13" class="rowColor">
+<tr id="i21" class="rowColor">
 <td class="colFirst"><code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft">MinecraftServer</a>[]</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftMeta.html#releasesServersArrayDescending--">releasesServersArrayDescending</a></span>()</code>
 <div class="block">Get an array of all available <a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftServer</code></a> of the <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#RELEASE"><code>Type.RELEASE</code></a>, in
  <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#DESCENDING"><code>Type.DESCENDING</code></a> order.</div>
 </td>
 </tr>
-<tr id="i14" class="altColor">
+<tr id="i22" class="altColor">
 <td class="colFirst"><code>java.util.List&lt;<a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft">MinecraftServer</a>&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftMeta.html#releasesServersAscending--">releasesServersAscending</a></span>()</code>
 <div class="block">Get a list of all available <a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftServer</code></a> of the <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#RELEASE"><code>Type.RELEASE</code></a>, in
  <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#ASCENDING"><code>Type.ASCENDING</code></a> order.</div>
 </td>
 </tr>
-<tr id="i15" class="rowColor">
+<tr id="i23" class="rowColor">
 <td class="colFirst"><code>java.util.List&lt;<a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft">MinecraftServer</a>&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftMeta.html#releasesServersDescending--">releasesServersDescending</a></span>()</code>
 <div class="block">Get a list of all available <a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftServer</code></a> of the <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#RELEASE"><code>Type.RELEASE</code></a>, in
  <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#DESCENDING"><code>Type.DESCENDING</code></a> order.</div>
 </td>
 </tr>
-<tr id="i16" class="altColor">
+<tr id="i24" class="altColor">
 <td class="colFirst"><code>java.lang.String[]</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftMeta.html#releaseVersionsArrayAscending--">releaseVersionsArrayAscending</a></span>()</code>
 <div class="block">Get the array of available Minecraft version of the <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#RELEASE"><code>Type.RELEASE</code></a> in
  <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#ASCENDING"><code>Type.ASCENDING</code></a> order.</div>
 </td>
 </tr>
-<tr id="i17" class="rowColor">
+<tr id="i25" class="rowColor">
 <td class="colFirst"><code>java.lang.String[]</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftMeta.html#releaseVersionsArrayDescending--">releaseVersionsArrayDescending</a></span>()</code>
 <div class="block">Get the array of available Minecraft version of the <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#RELEASE"><code>Type.RELEASE</code></a> in
  <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#DESCENDING"><code>Type.DESCENDING</code></a> order.</div>
 </td>
 </tr>
-<tr id="i18" class="altColor">
+<tr id="i26" class="altColor">
 <td class="colFirst"><code>java.util.List&lt;java.lang.String&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftMeta.html#releaseVersionsAscending--">releaseVersionsAscending</a></span>()</code>
 <div class="block">Get the list of available Minecraft version of the <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#RELEASE"><code>Type.RELEASE</code></a> in
  <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#ASCENDING"><code>Type.ASCENDING</code></a> order.</div>
 </td>
 </tr>
-<tr id="i19" class="rowColor">
+<tr id="i27" class="rowColor">
 <td class="colFirst"><code>java.util.List&lt;java.lang.String&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftMeta.html#releaseVersionsDescending--">releaseVersionsDescending</a></span>()</code>
 <div class="block">Get the list of available Minecraft version of the <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#RELEASE"><code>Type.RELEASE</code></a> in
  <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#DESCENDING"><code>Type.DESCENDING</code></a> order.</div>
 </td>
 </tr>
-<tr id="i20" class="altColor">
+<tr id="i28" class="altColor">
 <td class="colFirst"><code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft">MinecraftClient</a>[]</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftMeta.html#snapshotsArrayAscending--">snapshotsArrayAscending</a></span>()</code>
 <div class="block">Get an array of all available <a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftClient</code></a> of the <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#SNAPSHOT"><code>Type.SNAPSHOT</code></a>, in
  descending order.</div>
 </td>
 </tr>
-<tr id="i21" class="rowColor">
+<tr id="i29" class="rowColor">
 <td class="colFirst"><code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft">MinecraftClient</a>[]</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftMeta.html#snapshotsArrayDescending--">snapshotsArrayDescending</a></span>()</code>
 <div class="block">Get an array of all available <a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftClient</code></a> of the <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#SNAPSHOT"><code>Type.SNAPSHOT</code></a>, in
  ascending order.</div>
 </td>
 </tr>
-<tr id="i22" class="altColor">
+<tr id="i30" class="altColor">
 <td class="colFirst"><code>java.util.List&lt;<a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft">MinecraftClient</a>&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftMeta.html#snapshotsAscending--">snapshotsAscending</a></span>()</code>
 <div class="block">Get a list of all available <a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftClient</code></a> of the <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#SNAPSHOT"><code>Type.SNAPSHOT</code></a>, in descending
  order.</div>
 </td>
 </tr>
-<tr id="i23" class="rowColor">
+<tr id="i31" class="rowColor">
 <td class="colFirst"><code>java.util.List&lt;<a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft">MinecraftClient</a>&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftMeta.html#snapshotsDescending--">snapshotsDescending</a></span>()</code>
 <div class="block">Get a list of all available <a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftClient</code></a> of the <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#SNAPSHOT"><code>Type.SNAPSHOT</code></a>, in ascending
  order.</div>
 </td>
 </tr>
-<tr id="i24" class="altColor">
+<tr id="i32" class="altColor">
 <td class="colFirst"><code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft">MinecraftServer</a>[]</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftMeta.html#snapshotsServersArrayAscending--">snapshotsServersArrayAscending</a></span>()</code>
 <div class="block">Get an array of all available <a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftServer</code></a> of the <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#SNAPSHOT"><code>Type.SNAPSHOT</code></a>, in
  descending order.</div>
 </td>
 </tr>
-<tr id="i25" class="rowColor">
+<tr id="i33" class="rowColor">
 <td class="colFirst"><code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft">MinecraftServer</a>[]</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftMeta.html#snapshotsServersArrayDescending--">snapshotsServersArrayDescending</a></span>()</code>
 <div class="block">Get an array of all available <a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftServer</code></a> of the <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#SNAPSHOT"><code>Type.SNAPSHOT</code></a>, in
  ascending order.</div>
 </td>
 </tr>
-<tr id="i26" class="altColor">
+<tr id="i34" class="altColor">
 <td class="colFirst"><code>java.util.List&lt;<a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft">MinecraftServer</a>&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftMeta.html#snapshotsServersAscending--">snapshotsServersAscending</a></span>()</code>
 <div class="block">Get a list of all available <a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftServer</code></a> of the <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#SNAPSHOT"><code>Type.SNAPSHOT</code></a>, in descending
  order.</div>
 </td>
 </tr>
-<tr id="i27" class="rowColor">
+<tr id="i35" class="rowColor">
 <td class="colFirst"><code>java.util.List&lt;<a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft">MinecraftServer</a>&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftMeta.html#snapshotsServersDescending--">snapshotsServersDescending</a></span>()</code>
 <div class="block">Get a list of all available <a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftServer</code></a> of the <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#SNAPSHOT"><code>Type.SNAPSHOT</code></a>, in
  <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#DESCENDING"><code>Type.DESCENDING</code></a> order.</div>
 </td>
 </tr>
-<tr id="i28" class="altColor">
-<td class="colFirst"><code>java.util.List&lt;java.lang.String&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftMeta.html#snapshotsVersionsDescending--">snapshotsVersionsDescending</a></span>()</code>
-<div class="block">Get the list of available Minecraft version of the <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#SNAPSHOT"><code>Type.SNAPSHOT</code></a> in
- <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#DESCENDING"><code>Type.DESCENDING</code></a> order.</div>
-</td>
-</tr>
-<tr id="i29" class="rowColor">
+<tr id="i36" class="altColor">
 <td class="colFirst"><code>java.lang.String[]</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftMeta.html#snapshotVersionsArrayAscending--">snapshotVersionsArrayAscending</a></span>()</code>
 <div class="block">Get the array of available Minecraft version of the <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#SNAPSHOT"><code>Type.SNAPSHOT</code></a> in
  <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#ASCENDING"><code>Type.ASCENDING</code></a> order.</div>
 </td>
 </tr>
-<tr id="i30" class="altColor">
+<tr id="i37" class="rowColor">
 <td class="colFirst"><code>java.lang.String[]</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftMeta.html#snapshotVersionsArrayDescending--">snapshotVersionsArrayDescending</a></span>()</code>
 <div class="block">Get the array of available Minecraft version of the <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#SNAPSHOT"><code>Type.SNAPSHOT</code></a> in
  <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#DESCENDING"><code>Type.DESCENDING</code></a> order.</div>
 </td>
 </tr>
-<tr id="i31" class="rowColor">
+<tr id="i38" class="altColor">
 <td class="colFirst"><code>java.util.List&lt;java.lang.String&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftMeta.html#snapshotVersionsAscending--">snapshotVersionsAscending</a></span>()</code>
 <div class="block">Get the list of available Minecraft version of the <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#SNAPSHOT"><code>Type.SNAPSHOT</code></a> in
  <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#ASCENDING"><code>Type.ASCENDING</code></a> order.</div>
 </td>
 </tr>
-<tr id="i32" class="altColor">
+<tr id="i39" class="rowColor">
+<td class="colFirst"><code>java.util.List&lt;java.lang.String&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftMeta.html#snapshotVersionsDescending--">snapshotVersionsDescending</a></span>()</code>
+<div class="block">Get the list of available Minecraft version of the <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#SNAPSHOT"><code>Type.SNAPSHOT</code></a> in
+ <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#DESCENDING"><code>Type.DESCENDING</code></a> order.</div>
+</td>
+</tr>
+<tr id="i40" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftMeta.html#update--">update</a></span>()</code>
-<div class="block">Update the <a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClientMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftClientMeta</code></a> and <code>MinecraftServerMeta</code>.</div>
+<div class="block">Update the <code>MinecraftClientMeta</code> and <code>MinecraftServerMeta</code>.</div>
 </td>
 </tr>
 </table>
@@ -408,10 +464,9 @@ extends java.lang.Object</pre>
 <div class="block">Create a new Minecraft Meta instance.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>minecraftManifest</code> - <code>File</code> Minecraft manifest file.</dd>
-<dd><code>injectedForgeMeta</code> - <a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.forge"><code>ForgeMeta</code></a> to acquire Forge instances for this
-                          <a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftClient</code></a> version.</dd>
-<dd><code>objectMapper</code> - <code>ObjectMapper</code> for parsing.</dd>
+<dd><code>minecraftManifest</code> - Minecraft manifest file.</dd>
+<dd><code>injectedForgeMeta</code> - To acquire Forge instances for this <a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftClient</code></a> version.</dd>
+<dd><code>objectMapper</code> - Object mapper for JSON parsing.</dd>
 </dl>
 </li>
 </ul>
@@ -431,11 +486,11 @@ extends java.lang.Object</pre>
 <h4>update</h4>
 <pre>public&nbsp;void&nbsp;update()
             throws java.io.IOException</pre>
-<div class="block">Update the <a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClientMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftClientMeta</code></a> and <code>MinecraftServerMeta</code>. Usually called after
+<div class="block">Update the <code>MinecraftClientMeta</code> and <code>MinecraftServerMeta</code>. Usually called after
  the manifest-files have been refreshed.</div>
 <dl>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.io.IOException</code> - if the <a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClientMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftClientMeta</code></a> could not be initialized.</dd>
+<dd><code>java.io.IOException</code> - if the <code>MinecraftClientMeta</code> could not be initialized.</dd>
 </dl>
 </li>
 </ul>
@@ -449,9 +504,9 @@ extends java.lang.Object</pre>
 <div class="block">Check whether a <a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftClient</code></a> is available for the specified Minecraft-version.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>minecraftVersion</code> - <code>String</code> The Minecraft-version.</dd>
+<dd><code>minecraftVersion</code> - The Minecraft-version.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>Boolean</code> <code>true</code> if a <a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftClient</code></a> is available.</dd>
+<dd><code>true</code> if a <a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftClient</code></a> is available.</dd>
 </dl>
 </li>
 </ul>
@@ -466,7 +521,7 @@ extends java.lang.Object</pre>
  <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#DESCENDING"><code>Type.DESCENDING</code></a> order.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>String</code>-list of all available Minecraft <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#RELEASE"><code>Type.RELEASE</code></a> versions in
+<dd>List of all available Minecraft <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#RELEASE"><code>Type.RELEASE</code></a> versions in
  <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#DESCENDING"><code>Type.DESCENDING</code></a> order.</dd>
 </dl>
 </li>
@@ -482,8 +537,8 @@ extends java.lang.Object</pre>
  <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#ASCENDING"><code>Type.ASCENDING</code></a> order.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>String</code>-list of all available Minecraft <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#RELEASE"><code>Type.RELEASE</code></a> versions in
- <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#ASCENDING"><code>Type.ASCENDING</code></a> order.</dd>
+<dd>List of all available Minecraft <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#RELEASE"><code>Type.RELEASE</code></a> versions in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#ASCENDING"><code>Type.ASCENDING</code></a>
+ order.</dd>
 </dl>
 </li>
 </ul>
@@ -498,7 +553,7 @@ extends java.lang.Object</pre>
  <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#DESCENDING"><code>Type.DESCENDING</code></a> order.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>String</code>-array of all available Minecraft <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#RELEASE"><code>Type.RELEASE</code></a> versions in
+<dd>Array of all available Minecraft <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#RELEASE"><code>Type.RELEASE</code></a> versions in
  <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#DESCENDING"><code>Type.DESCENDING</code></a> order.</dd>
 </dl>
 </li>
@@ -514,23 +569,23 @@ extends java.lang.Object</pre>
  <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#ASCENDING"><code>Type.ASCENDING</code></a> order.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>String</code>-array of all available Minecraft <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#RELEASE"><code>Type.RELEASE</code></a> versions in
+<dd>Array of all available Minecraft <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#RELEASE"><code>Type.RELEASE</code></a> versions in
  <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#ASCENDING"><code>Type.ASCENDING</code></a> order.</dd>
 </dl>
 </li>
 </ul>
-<a name="snapshotsVersionsDescending--">
+<a name="snapshotVersionsDescending--">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>snapshotsVersionsDescending</h4>
-<pre>public&nbsp;java.util.List&lt;java.lang.String&gt;&nbsp;snapshotsVersionsDescending()</pre>
+<h4>snapshotVersionsDescending</h4>
+<pre>public&nbsp;java.util.List&lt;java.lang.String&gt;&nbsp;snapshotVersionsDescending()</pre>
 <div class="block">Get the list of available Minecraft version of the <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#SNAPSHOT"><code>Type.SNAPSHOT</code></a> in
  <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#DESCENDING"><code>Type.DESCENDING</code></a> order.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>String</code>-list of all available Minecraft <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#SNAPSHOT"><code>Type.SNAPSHOT</code></a> versions in
+<dd>List of all available Minecraft <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#SNAPSHOT"><code>Type.SNAPSHOT</code></a> versions in
  <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#DESCENDING"><code>Type.DESCENDING</code></a> order.</dd>
 </dl>
 </li>
@@ -546,7 +601,7 @@ extends java.lang.Object</pre>
  <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#ASCENDING"><code>Type.ASCENDING</code></a> order.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>String</code>-list of all available Minecraft <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#SNAPSHOT"><code>Type.SNAPSHOT</code></a> versions in
+<dd>List of all available Minecraft <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#SNAPSHOT"><code>Type.SNAPSHOT</code></a> versions in
  <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#ASCENDING"><code>Type.ASCENDING</code></a> order.</dd>
 </dl>
 </li>
@@ -562,7 +617,7 @@ extends java.lang.Object</pre>
  <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#DESCENDING"><code>Type.DESCENDING</code></a> order.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>String</code>-array of all available Minecraft <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#SNAPSHOT"><code>Type.SNAPSHOT</code></a> versions in
+<dd>Array of all available Minecraft <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#SNAPSHOT"><code>Type.SNAPSHOT</code></a> versions in
  <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#DESCENDING"><code>Type.DESCENDING</code></a> order.</dd>
 </dl>
 </li>
@@ -578,8 +633,68 @@ extends java.lang.Object</pre>
  <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#ASCENDING"><code>Type.ASCENDING</code></a> order.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>String</code>-array of all available Minecraft <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#SNAPSHOT"><code>Type.SNAPSHOT</code></a> versions in
+<dd>Array of all available Minecraft <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#SNAPSHOT"><code>Type.SNAPSHOT</code></a> versions in
  <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#ASCENDING"><code>Type.ASCENDING</code></a> order.</dd>
+</dl>
+</li>
+</ul>
+<a name="allVersionsArrayDescending--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>allVersionsArrayDescending</h4>
+<pre>public&nbsp;java.lang.String[]&nbsp;allVersionsArrayDescending()</pre>
+<div class="block">Get an array of all available Minecraft versions of the <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#RELEASE"><code>Type.RELEASE</code></a> and
+ <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#SNAPSHOT"><code>Type.SNAPSHOT</code></a> in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#DESCENDING"><code>Type.DESCENDING</code></a> order.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>All available Minecraft versions in descending order.</dd>
+</dl>
+</li>
+</ul>
+<a name="allVersionsArrayAscending--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>allVersionsArrayAscending</h4>
+<pre>public&nbsp;java.lang.String[]&nbsp;allVersionsArrayAscending()</pre>
+<div class="block">Get an array of all available Minecraft versions of the <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#RELEASE"><code>Type.RELEASE</code></a> and
+ <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#SNAPSHOT"><code>Type.SNAPSHOT</code></a> in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#ASCENDING"><code>Type.ASCENDING</code></a> order.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>All available Minecraft versions in ascending order.</dd>
+</dl>
+</li>
+</ul>
+<a name="allVersionsDescending--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>allVersionsDescending</h4>
+<pre>public&nbsp;java.util.List&lt;java.lang.String&gt;&nbsp;allVersionsDescending()</pre>
+<div class="block">Get a list of all available Minecraft versions of the <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#RELEASE"><code>Type.RELEASE</code></a> and
+ <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#SNAPSHOT"><code>Type.SNAPSHOT</code></a> in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#DESCENDING"><code>Type.DESCENDING</code></a> order.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>All available Minecraft versions in descending order.</dd>
+</dl>
+</li>
+</ul>
+<a name="allVersionsAscending--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>allVersionsAscending</h4>
+<pre>public&nbsp;java.util.List&lt;java.lang.String&gt;&nbsp;allVersionsAscending()</pre>
+<div class="block">Get a list of all available Minecraft versions of the <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#RELEASE"><code>Type.RELEASE</code></a> and
+ <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#SNAPSHOT"><code>Type.SNAPSHOT</code></a> in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#ASCENDING"><code>Type.ASCENDING</code></a> order.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>All available Minecraft versions in ascending order.</dd>
 </dl>
 </li>
 </ul>
@@ -593,7 +708,7 @@ extends java.lang.Object</pre>
 <div class="block">Get the latest Minecraft release as a <a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftClient</code></a>.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftClient</code></a></dd>
+<dd>Latest Minecraft release.</dd>
 </dl>
 </li>
 </ul>
@@ -607,7 +722,7 @@ extends java.lang.Object</pre>
 <div class="block">Get the latest Minecraft snapshot as a <a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftClient</code></a>.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftClient</code></a></dd>
+<dd>Latest Minecraft snapshot.</dd>
 </dl>
 </li>
 </ul>
@@ -621,9 +736,9 @@ extends java.lang.Object</pre>
 <div class="block">Get a specific Minecraft client as a <a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftClient</code></a> wrapped in an <code>Optional</code>.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>minecraftVersion</code> - <code>String</code> Minecraft version.</dd>
+<dd><code>minecraftVersion</code> - Minecraft version.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftClient</code></a> wrapped in an <code>Optional</code></dd>
+<dd>Client wrapped in an <code>Optional</code></dd>
 </dl>
 </li>
 </ul>
@@ -638,7 +753,7 @@ extends java.lang.Object</pre>
  order.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftClient</code></a>-list</dd>
+<dd>Release client-list</dd>
 </dl>
 </li>
 </ul>
@@ -653,7 +768,7 @@ extends java.lang.Object</pre>
  order.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftClient</code></a>-list</dd>
+<dd>Release client-list</dd>
 </dl>
 </li>
 </ul>
@@ -668,7 +783,7 @@ extends java.lang.Object</pre>
  order.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftClient</code></a>-array</dd>
+<dd>Release client-array</dd>
 </dl>
 </li>
 </ul>
@@ -683,7 +798,7 @@ extends java.lang.Object</pre>
  descending order.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftClient</code></a>-array</dd>
+<dd>Release client-array</dd>
 </dl>
 </li>
 </ul>
@@ -698,7 +813,7 @@ extends java.lang.Object</pre>
  order.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftClient</code></a>-list</dd>
+<dd>Snapshot client-list</dd>
 </dl>
 </li>
 </ul>
@@ -713,7 +828,7 @@ extends java.lang.Object</pre>
  order.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftClient</code></a>-list</dd>
+<dd>Snapshot client-list</dd>
 </dl>
 </li>
 </ul>
@@ -728,7 +843,7 @@ extends java.lang.Object</pre>
  ascending order.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftClient</code></a>-array</dd>
+<dd>Snapshot client-array</dd>
 </dl>
 </li>
 </ul>
@@ -743,7 +858,67 @@ extends java.lang.Object</pre>
  descending order.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftClient</code></a>-array</dd>
+<dd>Snapshot client-array</dd>
+</dl>
+</li>
+</ul>
+<a name="allDescending--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>allDescending</h4>
+<pre>public&nbsp;java.util.List&lt;<a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft">MinecraftClient</a>&gt;&nbsp;allDescending()</pre>
+<div class="block">Get all available Minecraft releases, both releases and pre-releases or snapshots, in
+ <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#DESCENDING"><code>Type.DESCENDING</code></a> order.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>All available Minecraft releases in descending order.</dd>
+</dl>
+</li>
+</ul>
+<a name="allAscending--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>allAscending</h4>
+<pre>public&nbsp;java.util.List&lt;<a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft">MinecraftClient</a>&gt;&nbsp;allAscending()</pre>
+<div class="block">Get all available Minecraft releases, both releases and pre-releases or snapshots, in
+ <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#ASCENDING"><code>Type.ASCENDING</code></a> order.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>All available Minecraft releases in ascending order.</dd>
+</dl>
+</li>
+</ul>
+<a name="allDescendingArray--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>allDescendingArray</h4>
+<pre>public&nbsp;<a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft">MinecraftClient</a>[]&nbsp;allDescendingArray()</pre>
+<div class="block">Get all available Minecraft releases, both releases and pre-releases or snapshots, in
+ <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#DESCENDING"><code>Type.DESCENDING</code></a> order.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>All available Minecraft releases in descending order.</dd>
+</dl>
+</li>
+</ul>
+<a name="allAscendingArray--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>allAscendingArray</h4>
+<pre>public&nbsp;<a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft">MinecraftClient</a>[]&nbsp;allAscendingArray()</pre>
+<div class="block">Get all available Minecraft releases, both releases and pre-releases or snapshots, in
+ <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#ASCENDING"><code>Type.ASCENDING</code></a> order.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>All available Minecraft releases in ascending order.</dd>
 </dl>
 </li>
 </ul>
@@ -758,9 +933,9 @@ extends java.lang.Object</pre>
  <code>Optional</code>.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>minecraftVersion</code> - <code>String</code> The Minecraft-version.</dd>
+<dd><code>minecraftVersion</code> - The Minecraft-version.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftServer</code></a> wrapped in an <code>Optional</code></dd>
+<dd>Server wrapped in an <code>Optional</code></dd>
 </dl>
 </li>
 </ul>
@@ -774,9 +949,9 @@ extends java.lang.Object</pre>
 <div class="block">Check whether a <a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftServer</code></a> is available for the specified Minecraft-version.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>minecraftVersion</code> - <code>String</code> The Minecraft-version.</dd>
+<dd><code>minecraftVersion</code> - The Minecraft-version.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>Boolean</code> <code>true</code> if a <a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftServer</code></a> is available.</dd>
+<dd><code>true</code> if a <a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftServer</code></a> is available.</dd>
 </dl>
 </li>
 </ul>
@@ -791,7 +966,7 @@ extends java.lang.Object</pre>
  <code>Optional</code>.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftServer</code></a> wrapped in an <code>Optional</code></dd>
+<dd>Server wrapped in an <code>Optional</code></dd>
 </dl>
 </li>
 </ul>
@@ -806,7 +981,7 @@ extends java.lang.Object</pre>
  <code>Optional</code>.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftServer</code></a> wrapped in an <code>Optional</code></dd>
+<dd>Server wrapped in an <code>Optional</code></dd>
 </dl>
 </li>
 </ul>
@@ -821,7 +996,7 @@ extends java.lang.Object</pre>
  <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#DESCENDING"><code>Type.DESCENDING</code></a> order.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftServer</code></a>-list</dd>
+<dd>Server-list</dd>
 </dl>
 </li>
 </ul>
@@ -836,7 +1011,7 @@ extends java.lang.Object</pre>
  <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#ASCENDING"><code>Type.ASCENDING</code></a> order.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftServer</code></a>-list</dd>
+<dd>Server-list</dd>
 </dl>
 </li>
 </ul>
@@ -851,7 +1026,7 @@ extends java.lang.Object</pre>
  <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#DESCENDING"><code>Type.DESCENDING</code></a> order.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftServer</code></a>-array</dd>
+<dd>Server-array</dd>
 </dl>
 </li>
 </ul>
@@ -866,7 +1041,7 @@ extends java.lang.Object</pre>
  <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#ASCENDING"><code>Type.ASCENDING</code></a> order.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftServer</code></a>-array</dd>
+<dd>Server-array</dd>
 </dl>
 </li>
 </ul>
@@ -881,7 +1056,7 @@ extends java.lang.Object</pre>
  <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#DESCENDING"><code>Type.DESCENDING</code></a> order.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftServer</code></a>-list</dd>
+<dd>Server-list</dd>
 </dl>
 </li>
 </ul>
@@ -896,7 +1071,7 @@ extends java.lang.Object</pre>
  order.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftServer</code></a>-list</dd>
+<dd>Server-list</dd>
 </dl>
 </li>
 </ul>
@@ -911,7 +1086,7 @@ extends java.lang.Object</pre>
  ascending order.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftServer</code></a>-array</dd>
+<dd>Server-array</dd>
 </dl>
 </li>
 </ul>
@@ -926,7 +1101,7 @@ extends java.lang.Object</pre>
  descending order.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftServer</code></a>-array</dd>
+<dd>Server-array</dd>
 </dl>
 </li>
 </ul>
@@ -957,7 +1132,7 @@ extends java.lang.Object</pre>
 </div>
 <div class="subNav">
 <ul class="navList">
-<li><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClientMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
+<li><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
 <li><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
 </ul>
 <ul class="navList">

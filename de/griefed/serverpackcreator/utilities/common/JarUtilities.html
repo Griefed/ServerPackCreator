@@ -107,7 +107,8 @@ var activeTableTab = "activeTableTab";
 <li class="blockList">
 <hr>
 <br>
-<pre>public class <span class="typeNameLabel">JarUtilities</span>
+<pre>@Component
+public final class <span class="typeNameLabel">JarUtilities</span>
 extends java.lang.Object</pre>
 <div class="block">Some utilities used across ServerPackCreator, revolving around interacting with JAR-files.</div>
 </li>
@@ -319,9 +320,9 @@ extends java.lang.Object</pre>
  copied, along with all resources inside it, recursively, to the specified destination.<br></div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>classToRetrieveHomeFor</code> - String. Path to either the JAR-file from which to copy a folder
-                               from, or to the class when running in a dev-environment. This
-                               parameter decides whether
+<dd><code>classToRetrieveHomeFor</code> - Path to either the JAR-file from which to copy a folder from, or
+                               to the class when running in a dev-environment. This parameter
+                               decides whether
                                <a href="../../../../../de/griefed/serverpackcreator/utilities/common/JarUtilities.html#copyFolderFromJar-java.lang.Class-java.lang.String-java.lang.String-java.lang.String-"><code>copyFolderFromJar(Class, String, String, String)</code></a> or
                                <a href="../../../../../de/griefed/serverpackcreator/utilities/common/JarUtilities.html#copyFolderFromJar-java.util.jar.JarFile-java.lang.String-java.lang.String-java.lang.String-java.lang.String-"><code>copyFolderFromJar(JarFile, String, String, String,
                                String)</code></a> is called.<br> Example for JAR-file:
@@ -332,17 +333,15 @@ extends java.lang.Object</pre>
                                </code><br>
                                See <a href="../../../../../de/griefed/serverpackcreator/ServerPackCreator.html#main-java.lang.String:A-"><code>ServerPackCreator.main(String[])</code></a> source code for an
                                example on how this is acquired automatically.</dd>
-<dd><code>directoryToCopy</code> - String. Path to the directory inside the JAR-file you want to
-                               copy.</dd>
-<dd><code>destinationDirectory</code> - String. Path to the destination directory you want to copy source
-                               to.</dd>
-<dd><code>jarDirectoryPrefix</code> - String. A prefix to remove when checking for existence of source
-                               inside the JAR-file. For example, the ServerPackCreator files
-                               inside it's JAR-File are located in <code>BOOT-INF/classes</code>
-                               due to SpringBoot. In order to correctly scan for source, we need
-                               to remove that prefix, so we receive a path that looks like a
+<dd><code>directoryToCopy</code> - Path to the directory inside the JAR-file you want to copy.</dd>
+<dd><code>destinationDirectory</code> - Path to the destination directory you want to copy source to.</dd>
+<dd><code>jarDirectoryPrefix</code> - A prefix to remove when checking for existence of source inside
+                               the JAR-file. For example, the ServerPackCreator files inside
+                               it's JAR-File are located in <code>BOOT-INF/classes</code> due to
+                               SpringBoot. In order to correctly scan for source, we need to
+                               remove that prefix, so we receive a path that looks like a
                                regular path inside a JAR-file.</dd>
-<dd><code>fileEnding</code> - String. The file-ending to filter for.</dd>
+<dd><code>fileEnding</code> - The file-ending to filter for.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code>java.io.IOException</code> - Exception thrown if a file can not be accessed, found or otherwise worked
                      with.</dd>

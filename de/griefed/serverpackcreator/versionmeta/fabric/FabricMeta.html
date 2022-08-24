@@ -47,7 +47,7 @@ var activeTableTab = "activeTableTab";
 </div>
 <div class="subNav">
 <ul class="navList">
-<li><a href="../../../../../de/griefed/serverpackcreator/versionmeta/fabric/FabricLoaderDetails.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
+<li><a href="../../../../../de/griefed/serverpackcreator/versionmeta/fabric/FabricLibrary.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
 <li>Next&nbsp;Class</li>
 </ul>
 <ul class="navList">
@@ -107,7 +107,7 @@ var activeTableTab = "activeTableTab";
 <li class="blockList">
 <hr>
 <br>
-<pre>public class <span class="typeNameLabel">FabricMeta</span>
+<pre>public final class <span class="typeNameLabel">FabricMeta</span>
 extends java.lang.Object</pre>
 <div class="block">Fabric meta containing information about available Fabric releases and installers.</div>
 </li>
@@ -281,7 +281,7 @@ extends java.lang.Object</pre>
 <tr id="i21" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/fabric/FabricMeta.html#update--">update</a></span>()</code>
-<div class="block">Update the <a href="../../../../../de/griefed/serverpackcreator/versionmeta/fabric/FabricLoader.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric"><code>FabricLoader</code></a> and <a href="../../../../../de/griefed/serverpackcreator/versionmeta/fabric/FabricInstaller.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric"><code>FabricInstaller</code></a> information.</div>
+<div class="block">Update the <code>FabricLoader</code> and <code>FabricInstaller</code> information.</div>
 </td>
 </tr>
 </table>
@@ -320,10 +320,10 @@ extends java.lang.Object</pre>
 <div class="block">Create a new Fabric Meta instance.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>fabricManifest</code> - <code>File</code> Fabric manifest file.</dd>
-<dd><code>fabricInstallerManifest</code> - <code>File</code> Fabric-installer manifest file.</dd>
-<dd><code>fabricIntermediaryManifest</code> - <code>File</code> Fabric Intermediary manifest file.</dd>
-<dd><code>objectMapper</code> - <code>ObjectMapper</code> used for parsing loader details JSON.</dd>
+<dd><code>fabricManifest</code> - Fabric manifest file.</dd>
+<dd><code>fabricInstallerManifest</code> - Fabric-installer manifest file.</dd>
+<dd><code>fabricIntermediaryManifest</code> - Fabric Intermediary manifest file.</dd>
+<dd><code>objectMapper</code> - Object mapper for JSON parsing.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code>java.io.IOException</code> - when the Intermediaries manifest could not be parsed.</dd>
 </dl>
@@ -344,7 +344,7 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>update</h4>
 <pre>public&nbsp;void&nbsp;update()</pre>
-<div class="block">Update the <a href="../../../../../de/griefed/serverpackcreator/versionmeta/fabric/FabricLoader.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric"><code>FabricLoader</code></a> and <a href="../../../../../de/griefed/serverpackcreator/versionmeta/fabric/FabricInstaller.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric"><code>FabricInstaller</code></a> information.</div>
+<div class="block">Update the <code>FabricLoader</code> and <code>FabricInstaller</code> information.</div>
 </li>
 </ul>
 <a name="latestLoaderVersion--">
@@ -357,7 +357,7 @@ extends java.lang.Object</pre>
 <div class="block">Get the latest Fabric loader version.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>String</code> The latest version of the Fabric loader.</dd>
+<dd>The latest version of the Fabric loader.</dd>
 </dl>
 </li>
 </ul>
@@ -371,7 +371,7 @@ extends java.lang.Object</pre>
 <div class="block">Get the release Fabric loader version.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>String</code> The release version of the Fabric loader.</dd>
+<dd>The release version of the Fabric loader.</dd>
 </dl>
 </li>
 </ul>
@@ -385,8 +385,7 @@ extends java.lang.Object</pre>
 <div class="block">Get a list of available Fabric loader versions, in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#ASCENDING"><code>Type.ASCENDING</code></a> order.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>String</code>-list of available Fabric loader versions, in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#ASCENDING"><code>Type.ASCENDING</code></a>
- order.</dd>
+<dd>List of available Fabric loader versions, in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#ASCENDING"><code>Type.ASCENDING</code></a> order.</dd>
 </dl>
 </li>
 </ul>
@@ -400,8 +399,7 @@ extends java.lang.Object</pre>
 <div class="block">Get a list of available Fabric loader versions, in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#DESCENDING"><code>Type.DESCENDING</code></a> order.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>String</code>-list of available Fabric loader versions, in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#DESCENDING"><code>Type.DESCENDING</code></a>
- order.</dd>
+<dd>List of available Fabric loader versions, in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#DESCENDING"><code>Type.DESCENDING</code></a> order.</dd>
 </dl>
 </li>
 </ul>
@@ -415,8 +413,7 @@ extends java.lang.Object</pre>
 <div class="block">Get an array of available Fabric loader versions, in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#ASCENDING"><code>Type.ASCENDING</code></a> order.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>String</code>-array of available Fabric loader versions, in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#ASCENDING"><code>Type.ASCENDING</code></a>
- order.</dd>
+<dd>Array of available Fabric loader versions, in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#ASCENDING"><code>Type.ASCENDING</code></a> order.</dd>
 </dl>
 </li>
 </ul>
@@ -430,8 +427,7 @@ extends java.lang.Object</pre>
 <div class="block">Get an array of available Fabric loader versions, in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#DESCENDING"><code>Type.DESCENDING</code></a> order.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>String</code>-array of available Fabric loader versions, in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#DESCENDING"><code>Type.DESCENDING</code></a>
- order.</dd>
+<dd>Array of available Fabric loader versions, in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#DESCENDING"><code>Type.DESCENDING</code></a> order.</dd>
 </dl>
 </li>
 </ul>
@@ -445,7 +441,7 @@ extends java.lang.Object</pre>
 <div class="block">Get the latest Fabric installer version.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>String</code> The latest Fabric installer version.</dd>
+<dd>The latest Fabric installer version.</dd>
 </dl>
 </li>
 </ul>
@@ -459,7 +455,7 @@ extends java.lang.Object</pre>
 <div class="block">Get the release Fabric installer version.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>String</code> The release Fabric installer version.</dd>
+<dd>The release Fabric installer version.</dd>
 </dl>
 </li>
 </ul>
@@ -473,8 +469,7 @@ extends java.lang.Object</pre>
 <div class="block">Get the list of available Fabric installer version, in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#ASCENDING"><code>Type.ASCENDING</code></a> order.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>String</code>-list of available Fabric installer version, in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#ASCENDING"><code>Type.ASCENDING</code></a>
- order.</dd>
+<dd>List of available Fabric installer version, in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#ASCENDING"><code>Type.ASCENDING</code></a> order.</dd>
 </dl>
 </li>
 </ul>
@@ -488,8 +483,7 @@ extends java.lang.Object</pre>
 <div class="block">Get the list of available Fabric installer version, in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#DESCENDING"><code>Type.DESCENDING</code></a> order.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>String</code>-list of available Fabric installer version, in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#DESCENDING"><code>Type.DESCENDING</code></a>
- order.</dd>
+<dd>List of available Fabric installer version, in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#DESCENDING"><code>Type.DESCENDING</code></a> order.</dd>
 </dl>
 </li>
 </ul>
@@ -503,8 +497,7 @@ extends java.lang.Object</pre>
 <div class="block">Get the array of available Fabric installer version, in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#ASCENDING"><code>Type.ASCENDING</code></a> order.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>String</code>-array of available Fabric installer version, in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#ASCENDING"><code>Type.ASCENDING</code></a>
- order.</dd>
+<dd>Array of available Fabric installer version, in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#ASCENDING"><code>Type.ASCENDING</code></a> order.</dd>
 </dl>
 </li>
 </ul>
@@ -518,8 +511,7 @@ extends java.lang.Object</pre>
 <div class="block">Get the array of available Fabric installer version, in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#DESCENDING"><code>Type.DESCENDING</code></a> order.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>String</code>-array of available Fabric installer version, in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#DESCENDING"><code>Type.DESCENDING</code></a>
- order.</dd>
+<dd>Array of available Fabric installer version, in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#DESCENDING"><code>Type.DESCENDING</code></a> order.</dd>
 </dl>
 </li>
 </ul>
@@ -533,7 +525,7 @@ extends java.lang.Object</pre>
 <div class="block">Get the <code>URL</code> to the latest Fabric installer.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>URL</code> to the latest Fabric installer.</dd>
+<dd>URL to the latest Fabric installer.</dd>
 </dl>
 </li>
 </ul>
@@ -547,7 +539,7 @@ extends java.lang.Object</pre>
 <div class="block">Get the <code>URL</code> to the release Fabric installer.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>URL</code> to the release Fabric installer.</dd>
+<dd>URL to the release Fabric installer.</dd>
 </dl>
 </li>
 </ul>
@@ -561,9 +553,9 @@ extends java.lang.Object</pre>
 <div class="block">Check whether a <code>URL</code> to the specified Fabric installer version is available.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>fabricVersion</code> - <code>String</code> Fabric version.</dd>
+<dd><code>fabricVersion</code> - Fabric version.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>Boolean</code> <code>true</code> if a <code>URL</code> to the specified Fabric installer
+<dd><code>true</code> if a <code>URL</code> to the specified Fabric installer
  version is available.</dd>
 </dl>
 </li>
@@ -578,9 +570,9 @@ extends java.lang.Object</pre>
 <div class="block">Get the <code>URL</code> to the Fabric installer for the specified version.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>fabricVersion</code> - <code>String</code> Fabric version.</dd>
+<dd><code>fabricVersion</code> - Fabric version.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>URL</code> to the Fabric installer for the specified version.</dd>
+<dd>URL to the Fabric installer for the specified version.</dd>
 </dl>
 </li>
 </ul>
@@ -595,10 +587,10 @@ extends java.lang.Object</pre>
 <div class="block">Get the <code>URL</code> to the Fabric launcher for the specified Minecraft and Fabric version.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>minecraftVersion</code> - <code>String</code> Minecraft version.</dd>
-<dd><code>fabricVersion</code> - <code>String</code> Fabric version.</dd>
+<dd><code>minecraftVersion</code> - Minecraft version.</dd>
+<dd><code>fabricVersion</code> - Fabric version.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>URL</code> to the Fabric launcher for the specified Minecraft and Fabric version.</dd>
+<dd>URL to the Fabric launcher for the specified Minecraft and Fabric version.</dd>
 </dl>
 </li>
 </ul>
@@ -612,9 +604,9 @@ extends java.lang.Object</pre>
 <div class="block">Check whether the specified Fabric version is available/correct/valid.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>fabricVersion</code> - <code>String</code> Fabric version.</dd>
+<dd><code>fabricVersion</code> - Fabric version.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>Boolean</code> <code>true</code> if the specified version is available/correct/valid.</dd>
+<dd><code>true</code> if the specified version is available/correct/valid.</dd>
 </dl>
 </li>
 </ul>
@@ -629,11 +621,11 @@ extends java.lang.Object</pre>
 <div class="block">Get details for a Fabric loader.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>minecraftVersion</code> - <code>String</code> Minecraft version.</dd>
-<dd><code>fabricVersion</code> - <code>String</code> Fabric version.</dd>
+<dd><code>minecraftVersion</code> - Minecraft version.</dd>
+<dd><code>fabricVersion</code> - Fabric version.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><a href="../../../../../de/griefed/serverpackcreator/versionmeta/fabric/FabricDetails.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric"><code>FabricDetails</code></a> of a Fabric loader for the given Minecraft and Fabric version,
- wrappen in an <code>Optional</code>.</dd>
+<dd>Details of a Fabric loader for the given Minecraft and Fabric version, wrapped in an
+ <code>Optional</code>.</dd>
 </dl>
 </li>
 </ul>
@@ -647,7 +639,7 @@ extends java.lang.Object</pre>
 <div class="block">HashMap of available intermediaries.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>HashMap</code> of available intermediaries.</dd>
+<dd>Map of available intermediaries.</dd>
 </dl>
 </li>
 </ul>
@@ -661,7 +653,7 @@ extends java.lang.Object</pre>
 <div class="block">Get a specific intermediary, wrapped in an <code>Optional</code>.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>minecraftVersion</code> - <code>String</code> Minecraft version.</dd>
+<dd><code>minecraftVersion</code> - Minecraft version.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>A specific intermediary, wrapped in an <code>Optional</code>.</dd>
 </dl>
@@ -694,7 +686,7 @@ extends java.lang.Object</pre>
 </div>
 <div class="subNav">
 <ul class="navList">
-<li><a href="../../../../../de/griefed/serverpackcreator/versionmeta/fabric/FabricLoaderDetails.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
+<li><a href="../../../../../de/griefed/serverpackcreator/versionmeta/fabric/FabricLibrary.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
 <li>Next&nbsp;Class</li>
 </ul>
 <ul class="navList">

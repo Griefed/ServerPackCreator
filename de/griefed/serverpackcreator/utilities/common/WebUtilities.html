@@ -107,7 +107,8 @@ var activeTableTab = "activeTableTab";
 <li class="blockList">
 <hr>
 <br>
-<pre>public class <span class="typeNameLabel">WebUtilities</span>
+<pre>@Component
+public final class <span class="typeNameLabel">WebUtilities</span>
 extends java.lang.Object</pre>
 <div class="block">Utility-class revolving around interactions with web-resources.</div>
 </li>
@@ -263,9 +264,9 @@ extends java.lang.Object</pre>
  specified file will be created.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>destinationFile</code> - File. The file to store the web-resource in. Examples:<br>
+<dd><code>destinationFile</code> - The file to store the web-resource in. Examples:<br>
                         /tmp/some_folder/foo.bar<br> C:/temp/some_folder/bar.foo</dd>
-<dd><code>downloadURL</code> - URL. The URL to the file you want to download.</dd>
+<dd><code>downloadURL</code> - The URL to the file you want to download.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>Boolean. Returns true if the file could be found on the hosts filesystem.</dd>
 </dl>
@@ -284,9 +285,9 @@ extends java.lang.Object</pre>
  specified file will be created.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>fileDestination</code> - String. The file to store the web-resource in. Examples:<br>
+<dd><code>fileDestination</code> - The file to store the web-resource in. Examples:<br>
                         /tmp/some_folder/foo.bar<br> C:/temp/some_folder/bar.foo</dd>
-<dd><code>downloadURL</code> - URL. The URL to the file you want to download.</dd>
+<dd><code>downloadURL</code> - The URL to the file you want to download.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>Boolean. Returns true if the file could be found on the hosts filesystem.</dd>
 </dl>
@@ -324,10 +325,10 @@ extends java.lang.Object</pre>
  end in a valid filename. Any directories up to the specified file will be created.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>fileDestination</code> - String. The destination where the file should be stored. Must include
-                        the filename as well. Examples:<br> /tmp/some_folder/foo.bar<br>
+<dd><code>fileDestination</code> - The destination where the file should be stored. Must include the
+                        filename as well. Examples:<br> /tmp/some_folder/foo.bar<br>
                         C:/temp/some_folder/bar.foo</dd>
-<dd><code>downloadURL</code> - URL. The URL to the file you want to download.</dd>
+<dd><code>downloadURL</code> - The URL to the file you want to download.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>Boolean. Returns true if the file could be found on the hosts filesystem.</dd>
 </dl>
@@ -343,7 +344,7 @@ extends java.lang.Object</pre>
 <div class="block">Open the given url in a browser.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>url</code> - <code>URL</code> the URI to the website you want to open.</dd>
+<dd><code>url</code> - The URI to the website you want to open.</dd>
 </dl>
 </li>
 </ul>
@@ -357,7 +358,7 @@ extends java.lang.Object</pre>
 <div class="block">Open the given uri in a browser.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>uri</code> - <code>URI</code> the URI to the website you want to open.</dd>
+<dd><code>uri</code> - The URI to the website you want to open.</dd>
 </dl>
 </li>
 </ul>
@@ -412,9 +413,9 @@ extends java.lang.Object</pre>
 <div class="block">Get the reponse of a call to a URL as a string.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>url</code> - <code>URL</code> The URL you want to get the response from</dd>
+<dd><code>url</code> - The URL you want to get the response from</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>String</code> The response.</dd>
+<dd>The response.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code>java.io.IOException</code> - if the URL could not be called or a communication error occurred.</dd>
 </dl>
@@ -431,9 +432,9 @@ extends java.lang.Object</pre>
 <div class="block">Get the response-code of a call to a URL as an integer.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>url</code> - <code>URL</code> The URL you want to get the response from</dd>
+<dd><code>url</code> - The URL you want to get the response from</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>String</code> The response.</dd>
+<dd>The response.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code>java.io.IOException</code> - if the URL could not be called or a communication error occurred.</dd>
 </dl>

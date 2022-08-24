@@ -108,7 +108,7 @@ var activeTableTab = "activeTableTab";
 <hr>
 <br>
 <pre>@Component
-public class <span class="typeNameLabel">AnnotationScanner</span>
+public final class <span class="typeNameLabel">AnnotationScanner</span>
 extends java.lang.Object</pre>
 <div class="block"><code>fml-cache-annotation.json</code>-based scanning of Forge-Minecraft mods of older versions.</div>
 </li>
@@ -213,8 +213,7 @@ public&nbsp;AnnotationScanner(com.fasterxml.jackson.databind.ObjectMapper&nbsp;o
 <dd><code>filesInModsDir</code> - A list of files in which to check the <code>fml-cache-annotation.json
                        </code>-files.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>List String. List of mods not to include in server pack based on
- fml-cache-annotation.json-content.</dd>
+<dd>List of mods not to include in server pack based on fml-cache-annotation.json-content.</dd>
 </dl>
 </li>
 </ul>

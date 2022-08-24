@@ -187,7 +187,7 @@ extends org.springframework.data.repository.CrudRepository&lt;<a href="../../../
 <div class="block">Find all server packs using a CurseForge project name.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>projectName</code> - String. The project name with which to search for server packs.</dd>
+<dd><code>projectName</code> - The project name with which to search for server packs.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>Returns a list of all server packs for the passed CurseForge project name wrapped in an
  <code>Optional</code>. I recommend to make use of <code>Optional.isPresent()</code> and
@@ -205,8 +205,7 @@ extends org.springframework.data.repository.CrudRepository&lt;<a href="../../../
 <div class="block">Find a server pack by its CurseForge file display name.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>fileName</code> - String. The CurseForge file display name with which to search for a server
-                 pack.</dd>
+<dd><code>fileName</code> - The CurseForge file display name with which to search for a server pack.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>Returns a server pack for the passed file display name wrapped in an <code>Optional</code>.
  I recommend to make use of <code>Optional.isPresent()</code> and <code>Optional.get()</code>.</dd>
@@ -223,7 +222,7 @@ extends org.springframework.data.repository.CrudRepository&lt;<a href="../../../
 <div class="block">Find all server packs by their status.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>status</code> - String. The status with which to search for server packs.</dd>
+<dd><code>status</code> - The status with which to search for server packs.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>Returns a list of server packs for the passed status wrapped in an <code>Optional</code>. I
  recommend to make use of <code>Optional.isPresent()</code> and <code>Optional.get()</code>.</dd>
@@ -240,7 +239,7 @@ extends org.springframework.data.repository.CrudRepository&lt;<a href="../../../
 <div class="block">Count all server packs by a CurseForge project name.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>projectName</code> - String. The CurseForge project name with which to count all server packs.</dd>
+<dd><code>projectName</code> - The CurseForge project name with which to count all server packs.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>Integer. Returns the amount of server packs for the passed CurseForge project name.</dd>
 </dl>

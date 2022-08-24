@@ -108,7 +108,7 @@ var activeTableTab = "activeTableTab";
 <hr>
 <br>
 <pre>@Service
-public class <span class="typeNameLabel">VersionMeta</span>
+public final class <span class="typeNameLabel">VersionMeta</span>
 extends java.lang.Object</pre>
 <div class="block">VersionMeta containing available versions and important details for Minecraft, Fabric and Forge.</div>
 </li>
@@ -226,14 +226,14 @@ public&nbsp;VersionMeta(java.io.File&nbsp;minecraftManifest,
 <div class="block">Constructor.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>minecraftManifest</code> - <code>File</code> Minecraft manifest file.</dd>
-<dd><code>forgeManifest</code> - <code>File</code> Forge manifest file.</dd>
-<dd><code>fabricManifest</code> - <code>File</code> Fabric manifest file.</dd>
-<dd><code>fabricIntermediariesManifest</code> - <code>File</code> Fabric Intermediary manifest-file.</dd>
-<dd><code>fabricInstallerManifest</code> - <code>File</code> Fabric-installer manifest file.</dd>
-<dd><code>quiltManifest</code> - <code>File</code> Quilt manifest file.</dd>
-<dd><code>quiltInstallerManifest</code> - <code>File</code> Quilt-installer manifest file.</dd>
-<dd><code>injectedObjectMapper</code> - <code>ObjectMapper</code>-instance.</dd>
+<dd><code>minecraftManifest</code> - Minecraft manifest file.</dd>
+<dd><code>forgeManifest</code> - Forge manifest file.</dd>
+<dd><code>fabricManifest</code> - Fabric manifest file.</dd>
+<dd><code>fabricIntermediariesManifest</code> - Fabric Intermediary manifest-file.</dd>
+<dd><code>fabricInstallerManifest</code> - Fabric-installer manifest file.</dd>
+<dd><code>quiltManifest</code> - Quilt manifest file.</dd>
+<dd><code>quiltInstallerManifest</code> - Quilt-installer manifest file.</dd>
+<dd><code>injectedObjectMapper</code> - Object mapper-instance for JSON parsing.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code>java.io.IOException</code> - if one of the metas could not be initialized.</dd>
 </dl>

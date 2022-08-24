@@ -108,7 +108,7 @@ var activeTableTab = "activeTableTab";
 <hr>
 <br>
 <pre>@Service
-public class <span class="typeNameLabel">UpdateChecker</span>
+public final class <span class="typeNameLabel">UpdateChecker</span>
 extends java.lang.Object</pre>
 <div class="block">Initialize our GitHub and GitLab instances with the corresponding repository addresses, so we can
  then run our update checks later on.</div>
@@ -242,7 +242,7 @@ public&nbsp;UpdateChecker()</pre>
 <div class="block">Getter for the instance of our <code>GitHubChecker</code>.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>GitHubChecker</code>.</dd>
+<dd>A GitHub checker for the specified repo.</dd>
 </dl>
 </li>
 </ul>
@@ -256,7 +256,7 @@ public&nbsp;UpdateChecker()</pre>
 <div class="block">Getter for the instance of our <code>GitLabChecker</code> for GitLab.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>GitLabChecker</code>.</dd>
+<dd>A GitLab checker for the specified repo.</dd>
 </dl>
 </li>
 </ul>
@@ -270,7 +270,7 @@ public&nbsp;UpdateChecker()</pre>
 <div class="block">Getter for the instance of our <code>GitLabChecker</code> for GitGriefed.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>GitLabChecker</code>.</dd>
+<dd>A GitLab Checker for the specified repo.</dd>
 </dl>
 </li>
 </ul>
@@ -287,13 +287,13 @@ public&nbsp;UpdateChecker()</pre>
  the update.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>version</code> - <code>String</code> The version for which to check for updates.</dd>
-<dd><code>preReleaseCheck</code> - <code>Boolean</code> Whether to check pre-releasesDescending as well. Use
+<dd><code>version</code> - The version for which to check for updates.</dd>
+<dd><code>preReleaseCheck</code> - Whether to check pre-releasesDescending as well. Use
                         <code>true</code> to check pre-releasesDescending as well,
                         <Code>false</Code> to only check
                         with regular releases.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>String</code> The update, if available, as well as the download URL.</dd>
+<dd>The update, if available, as well as the download URL.</dd>
 </dl>
 </li>
 </ul>

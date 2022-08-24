@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10,"i17":10,"i18":10,"i19":10,"i20":10,"i21":10,"i22":10,"i23":10,"i24":10,"i25":10,"i26":10,"i27":10,"i28":10,"i29":10,"i30":10,"i31":10,"i32":10,"i33":10,"i34":10,"i35":10,"i36":10,"i37":10,"i38":10,"i39":10,"i40":10,"i41":10,"i42":10,"i43":10,"i44":10,"i45":10,"i46":10,"i47":10,"i48":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10,"i17":10,"i18":10,"i19":10,"i20":10,"i21":10,"i22":10,"i23":10,"i24":10,"i25":10,"i26":10,"i27":10,"i28":10,"i29":10,"i30":10,"i31":10,"i32":10,"i33":10,"i34":10,"i35":10,"i36":10,"i37":10,"i38":10,"i39":10,"i40":10,"i41":10,"i42":10,"i43":10,"i44":10,"i45":10,"i46":10,"i47":10,"i48":10,"i49":10,"i50":10,"i51":10,"i52":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -48,7 +48,7 @@ var activeTableTab = "activeTableTab";
 <div class="subNav">
 <ul class="navList">
 <li><a href="../../../de/griefed/serverpackcreator/ApplicationPlugins.html" title="class in de.griefed.serverpackcreator"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
-<li><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html" title="class in de.griefed.serverpackcreator"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
+<li><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.ExclusionFilter.html" title="enum in de.griefed.serverpackcreator"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
 </ul>
 <ul class="navList">
 <li><a href="../../../index.html?de/griefed/serverpackcreator/ApplicationProperties.html" target="_top">Frames</a></li>
@@ -72,7 +72,7 @@ var activeTableTab = "activeTableTab";
 <div>
 <ul class="subNavList">
 <li>Summary:&nbsp;</li>
-<li>Nested&nbsp;|&nbsp;</li>
+<li><a href="#nested.class.summary">Nested</a>&nbsp;|&nbsp;</li>
 <li><a href="#fields.inherited.from.class.java.util.Properties">Field</a>&nbsp;|&nbsp;</li>
 <li><a href="#constructor.summary">Constr</a>&nbsp;|&nbsp;</li>
 <li><a href="#method.summary">Method</a></li>
@@ -127,7 +127,7 @@ var activeTableTab = "activeTableTab";
 <hr>
 <br>
 <pre>@Component
-public class <span class="typeNameLabel">ApplicationProperties</span>
+public final class <span class="typeNameLabel">ApplicationProperties</span>
 extends java.util.Properties</pre>
 <div class="block">Our properties-class. Extends <code>Properties</code>. Sets up default properties loaded
  from the local serverpackcreator.properties and allows reloading of said properties if the file
@@ -142,6 +142,25 @@ extends java.util.Properties</pre>
 <div class="summary">
 <ul class="blockList">
 <li class="blockList">
+<!-- ======== NESTED CLASS SUMMARY ======== -->
+<ul class="blockList">
+<li class="blockList"><a name="nested.class.summary">
+<!--   -->
+</a>
+<h3>Nested Class Summary</h3>
+<table class="memberSummary" border="0" cellpadding="3" cellspacing="0" summary="Nested Class Summary table, listing nested classes, and an explanation">
+<caption><span>Nested Classes</span><span class="tabEnd">&nbsp;</span></caption>
+<tr>
+<th class="colFirst" scope="col">Modifier and Type</th>
+<th class="colLast" scope="col">Class and Description</th>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>static class&nbsp;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.ExclusionFilter.html" title="enum in de.griefed.serverpackcreator">ApplicationProperties.ExclusionFilter</a></span></code>&nbsp;</td>
+</tr>
+</table>
+</li>
+</ul>
 <!-- =========== FIELD SUMMARY =========== -->
 <ul class="blockList">
 <li class="blockList"><a name="field.summary">
@@ -249,223 +268,249 @@ extends java.util.Properties</pre>
 </td>
 </tr>
 <tr id="i9" class="rowColor">
+<td class="colFirst"><code>boolean</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#enableMinecraftPreReleases--">enableMinecraftPreReleases</a></span>()</code>
+<div class="block">Whether Minecraft pre-releases and snapshots are available to the user in, for example, the
+ GUI.</div>
+</td>
+</tr>
+<tr id="i10" class="altColor">
+<td class="colFirst"><code><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.ExclusionFilter.html" title="enum in de.griefed.serverpackcreator">ApplicationProperties.ExclusionFilter</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#exclusionFilter--">exclusionFilter</a></span>()</code>
+<div class="block">The filter method with which to determine whether a user-specified clientside-only mod should
+ be excluded from the server pack.</div>
+</td>
+</tr>
+<tr id="i11" class="rowColor">
 <td class="colFirst"><code>java.io.File</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION--">FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION</a></span>()</code>
 <div class="block">Path to the Fabric installer version manifest-file, as a file.</div>
 </td>
 </tr>
-<tr id="i10" class="altColor">
+<tr id="i12" class="altColor">
 <td class="colFirst"><code>java.io.File</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#FABRIC_INSTALLER_VERSION_MANIFEST--">FABRIC_INSTALLER_VERSION_MANIFEST</a></span>()</code>
 <div class="block">Fabric installer version manifest-file.</div>
 </td>
 </tr>
-<tr id="i11" class="rowColor">
+<tr id="i13" class="rowColor">
 <td class="colFirst"><code>java.io.File</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#FABRIC_INTERMEDIARIES_MANIFEST_LOCATION--">FABRIC_INTERMEDIARIES_MANIFEST_LOCATION</a></span>()</code>
 <div class="block">Path to the Fabric intermediaries manifest-file, as a file.</div>
 </td>
 </tr>
-<tr id="i12" class="altColor">
+<tr id="i14" class="altColor">
 <td class="colFirst"><code>java.io.File</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#FABRIC_VERSION_MANIFEST_LOCATION--">FABRIC_VERSION_MANIFEST_LOCATION</a></span>()</code>
 <div class="block">Path to the Fabric version manifest-file, as a file.</div>
 </td>
 </tr>
-<tr id="i13" class="rowColor">
+<tr id="i15" class="rowColor">
 <td class="colFirst"><code>java.io.File</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#FABRIC_VERSION_MANIFEST--">FABRIC_VERSION_MANIFEST</a></span>()</code>
 <div class="block">Fabric version manifest-file.</div>
 </td>
 </tr>
-<tr id="i14" class="altColor">
+<tr id="i16" class="altColor">
 <td class="colFirst"><code>java.util.List&lt;java.lang.String&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#FALLBACK_CLIENTSIDE_MODS--">FALLBACK_CLIENTSIDE_MODS</a></span>()</code>
-<div class="block">String-list of fallback clientside-only mods.</div>
+<div class="block">List of fallback clientside-only mods.</div>
 </td>
 </tr>
-<tr id="i15" class="rowColor">
+<tr id="i17" class="rowColor">
+<td class="colFirst"><code>java.util.List&lt;java.lang.String&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#FALLBACK_REGEX_CLIENTSIDE_MODS--">FALLBACK_REGEX_CLIENTSIDE_MODS</a></span>()</code>
+<div class="block">Regex-list of fallback clientside-only mods.</div>
+</td>
+</tr>
+<tr id="i18" class="altColor">
 <td class="colFirst"><code>java.util.List&lt;java.io.File&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#FALLBACK_SCRIPT_TEMPLATES--">FALLBACK_SCRIPT_TEMPLATES</a></span>()</code>
 <div class="block">Default list of script templates, used in case not a single one was configured.</div>
 </td>
 </tr>
-<tr id="i16" class="altColor">
+<tr id="i19" class="rowColor">
 <td class="colFirst"><code>java.io.File</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#FORGE_VERSION_MANIFEST_LOCATION--">FORGE_VERSION_MANIFEST_LOCATION</a></span>()</code>
 <div class="block">Path to the Forge version manifest-file, as a file.</div>
 </td>
 </tr>
-<tr id="i17" class="rowColor">
+<tr id="i20" class="altColor">
 <td class="colFirst"><code>java.io.File</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#FORGE_VERSION_MANIFEST--">FORGE_VERSION_MANIFEST</a></span>()</code>
 <div class="block">Forge version manifest-file.</div>
 </td>
 </tr>
-<tr id="i18" class="altColor">
+<tr id="i21" class="rowColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#getAikarsFlags--">getAikarsFlags</a></span>()</code>
 <div class="block">Get this configurations AikarsFlags</div>
 </td>
 </tr>
-<tr id="i19" class="rowColor">
+<tr id="i22" class="altColor">
+<td class="colFirst"><code>java.util.List&lt;java.lang.String&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#getDefaultListFallbackMods--">getDefaultListFallbackMods</a></span>()</code>
+<div class="block">Acquire the default fallback list of clientside-only mods.</div>
+</td>
+</tr>
+<tr id="i23" class="rowColor">
 <td class="colFirst"><code>java.util.List&lt;java.lang.String&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#getDirectoriesToExclude--">getDirectoriesToExclude</a></span>()</code>
 <div class="block">Getter for the list of directories to exclude from server packs.</div>
 </td>
 </tr>
-<tr id="i20" class="altColor">
+<tr id="i24" class="altColor">
 <td class="colFirst"><code>java.util.List&lt;java.lang.String&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#getDirectoriesToInclude--">getDirectoriesToInclude</a></span>()</code>
 <div class="block">Getter for the default list of directories to include in a server pack.</div>
 </td>
 </tr>
-<tr id="i21" class="rowColor">
+<tr id="i25" class="rowColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#getDirectoryServerPacks--">getDirectoryServerPacks</a></span>()</code>
 <div class="block">Getter for the directory in which the server packs are stored/generated in.</div>
 </td>
 </tr>
-<tr id="i22" class="altColor">
+<tr id="i26" class="altColor">
 <td class="colFirst"><code>java.util.List&lt;java.lang.String&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#getFilesToExcludeFromZipArchive--">getFilesToExcludeFromZipArchive</a></span>()</code>
 <div class="block">List of files to be excluded from ZIP-archives.</div>
 </td>
 </tr>
-<tr id="i23" class="rowColor">
+<tr id="i27" class="rowColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#getHasteBinServerUrl--">getHasteBinServerUrl</a></span>()</code>
 <div class="block">Acquire this instances HasteBin server documents endpoint URL.</div>
 </td>
 </tr>
-<tr id="i24" class="altColor">
+<tr id="i28" class="altColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#getLanguage--">getLanguage</a></span>()</code>
 <div class="block">Get the currently set language.</div>
 </td>
 </tr>
-<tr id="i25" class="rowColor">
+<tr id="i29" class="rowColor">
 <td class="colFirst"><code>java.util.List&lt;java.lang.String&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#getListFallbackMods--">getListFallbackMods</a></span>()</code>
-<div class="block">Getter for the fallback list of clientside-only mods.</div>
+<div class="block">Acquire the default fallback list of clientside-only mods.</div>
 </td>
 </tr>
-<tr id="i26" class="altColor">
+<tr id="i30" class="altColor">
+<td class="colFirst"><code>java.util.List&lt;java.lang.String&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#getListFallbackModsRegex--">getListFallbackModsRegex</a></span>()</code>
+<div class="block">Getter for the regex fallback list of clientside-only mods.</div>
+</td>
+</tr>
+<tr id="i31" class="rowColor">
 <td class="colFirst"><code>int</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#getQueueMaxDiskUsage--">getQueueMaxDiskUsage</a></span>()</code>
 <div class="block">Getter for the maximum disk usage at which JMS/Artemis will stop storing queues on disk.</div>
 </td>
 </tr>
-<tr id="i27" class="rowColor">
+<tr id="i32" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#getSaveLoadedConfiguration--">getSaveLoadedConfiguration</a></span>()</code>
 <div class="block">Getter for whether the last loaded configuration file should be saved to as well.</div>
 </td>
 </tr>
-<tr id="i28" class="altColor">
+<tr id="i33" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#isAutoExcludingModsEnabled--">isAutoExcludingModsEnabled</a></span>()</code>
 <div class="block">Is auto excluding of clientside-only mods enabled.</div>
 </td>
 </tr>
-<tr id="i29" class="rowColor">
+<tr id="i34" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#isDarkTheme--">isDarkTheme</a></span>()</code>
 <div class="block">Is the Dark Theme currently active?</div>
 </td>
 </tr>
-<tr id="i30" class="altColor">
+<tr id="i35" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#isServerPackCleanupEnabled--">isServerPackCleanupEnabled</a></span>()</code>
 <div class="block">Whether cleanup procedures after server pack generation are enabled.</div>
 </td>
 </tr>
-<tr id="i31" class="rowColor">
+<tr id="i36" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#isServerPacksOverwriteEnabled--">isServerPacksOverwriteEnabled</a></span>()</code>
 <div class="block">Whether overwriting of already existing server packs is enabled.</div>
 </td>
 </tr>
-<tr id="i32" class="altColor">
+<tr id="i37" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#isZipFileExclusionEnabled--">isZipFileExclusionEnabled</a></span>()</code>
 <div class="block">Whether the exclusion of files from the ZIP-archive of the server pack is enabled.</div>
 </td>
 </tr>
-<tr id="i33" class="rowColor">
+<tr id="i38" class="altColor">
 <td class="colFirst"><code>java.io.File</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#MINECRAFT_VERSION_MANIFEST_LOCATION--">MINECRAFT_VERSION_MANIFEST_LOCATION</a></span>()</code>
 <div class="block">Path to the Minecraft version manifest-file, as a file.</div>
 </td>
 </tr>
-<tr id="i34" class="altColor">
+<tr id="i39" class="rowColor">
 <td class="colFirst"><code>java.io.File</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#MINECRAFT_VERSION_MANIFEST--">MINECRAFT_VERSION_MANIFEST</a></span>()</code>
 <div class="block">Minecraft version manifest-file.</div>
 </td>
 </tr>
-<tr id="i35" class="rowColor">
-<td class="colFirst"><code>java.io.File</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#OLD_CONFIG--">OLD_CONFIG</a></span>()</code>
-<div class="block">Old configuration-file used for automated migration in case anyone upgrades from 1.x.</div>
-</td>
-</tr>
-<tr id="i36" class="altColor">
+<tr id="i40" class="altColor">
 <td class="colFirst"><code>java.io.File</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#QUILT_INSTALLER_VERSION_MANIFEST_LOCATION--">QUILT_INSTALLER_VERSION_MANIFEST_LOCATION</a></span>()</code>
 <div class="block">Path to the Quilt installer version manifest-file, as a file.</div>
 </td>
 </tr>
-<tr id="i37" class="rowColor">
+<tr id="i41" class="rowColor">
 <td class="colFirst"><code>java.io.File</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#QUILT_INSTALLER_VERSION_MANIFEST--">QUILT_INSTALLER_VERSION_MANIFEST</a></span>()</code>
 <div class="block">Quilt installer version manifest-file.</div>
 </td>
 </tr>
-<tr id="i38" class="altColor">
+<tr id="i42" class="altColor">
 <td class="colFirst"><code>java.io.File</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#QUILT_VERSION_MANIFEST_LOCATION--">QUILT_VERSION_MANIFEST_LOCATION</a></span>()</code>
 <div class="block">Path to the Quilt version manifest-file, as a file.</div>
 </td>
 </tr>
-<tr id="i39" class="rowColor">
+<tr id="i43" class="rowColor">
 <td class="colFirst"><code>java.io.File</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#QUILT_VERSION_MANIFEST--">QUILT_VERSION_MANIFEST</a></span>()</code>
 <div class="block">Quilt version manifest-file.</div>
 </td>
 </tr>
-<tr id="i40" class="altColor">
+<tr id="i44" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#reload--">reload</a></span>()</code>
 <div class="block">Reload serverpackcreator.properties.</div>
 </td>
 </tr>
-<tr id="i41" class="rowColor">
+<tr id="i45" class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#saveToDisk--">saveToDisk</a></span>()</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#saveToDisk-java.io.File-">saveToDisk</a></span>(java.io.File&nbsp;propertiesFile)</code>
 <div class="block">Store the ApplicationProperties to disk, overwriting the existing one.</div>
 </td>
 </tr>
-<tr id="i42" class="altColor">
+<tr id="i46" class="altColor">
 <td class="colFirst"><code>java.util.List&lt;java.io.File&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#scriptTemplates--">scriptTemplates</a></span>()</code>
 <div class="block">Configured list of script templates.</div>
 </td>
 </tr>
-<tr id="i43" class="rowColor">
+<tr id="i47" class="rowColor">
 <td class="colFirst"><code>java.io.File</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#SERVERPACKCREATOR_DATABASE--">SERVERPACKCREATOR_DATABASE</a></span>()</code>
 <div class="block">ServerPackCreator-database when running as a webservice.</div>
 </td>
 </tr>
-<tr id="i44" class="altColor">
+<tr id="i48" class="altColor">
 <td class="colFirst"><code>java.io.File</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#SERVERPACKCREATOR_PROPERTIES--">SERVERPACKCREATOR_PROPERTIES</a></span>()</code>
 <div class="block">Properties file used by ServerPackCreator, containing the configuration for this instance of
  it.</div>
 </td>
 </tr>
-<tr id="i45" class="rowColor">
+<tr id="i49" class="rowColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#SERVERPACKCREATOR_VERSION--">SERVERPACKCREATOR_VERSION</a></span>()</code>
 <div class="block">Getter for the version of ServerPackCreator.<br> If a JAR-file compiled from a release-job from
@@ -473,19 +518,19 @@ extends java.util.Properties</pre>
  said release.</div>
 </td>
 </tr>
-<tr id="i46" class="altColor">
+<tr id="i50" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#setTheme-boolean-">setTheme</a></span>(boolean&nbsp;dark)</code>
 <div class="block">Set the current theme to Dark Theme or Light Theme.</div>
 </td>
 </tr>
-<tr id="i47" class="rowColor">
+<tr id="i51" class="rowColor">
 <td class="colFirst"><code>java.lang.String[]</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#SUPPORTED_MODLOADERS--">SUPPORTED_MODLOADERS</a></span>()</code>
 <div class="block">String-array of modloaders supported by ServerPackCreator.</div>
 </td>
 </tr>
-<tr id="i48" class="altColor">
+<tr id="i52" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#updateFallback--">updateFallback</a></span>()</code>
 <div class="block">Update the fallback clientside-only modlist of our <code>serverpackcreator.properties</code>
@@ -645,10 +690,24 @@ public&nbsp;ApplicationProperties()</pre>
 <li class="blockList">
 <h4>FALLBACK_CLIENTSIDE_MODS</h4>
 <pre>public&nbsp;java.util.List&lt;java.lang.String&gt;&nbsp;FALLBACK_CLIENTSIDE_MODS()</pre>
-<div class="block">String-list of fallback clientside-only mods.</div>
+<div class="block">List of fallback clientside-only mods.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>List of fallback clientside-only mods.</dd>
+</dl>
+</li>
+</ul>
+<a name="FALLBACK_REGEX_CLIENTSIDE_MODS--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>FALLBACK_REGEX_CLIENTSIDE_MODS</h4>
+<pre>public&nbsp;java.util.List&lt;java.lang.String&gt;&nbsp;FALLBACK_REGEX_CLIENTSIDE_MODS()</pre>
+<div class="block">Regex-list of fallback clientside-only mods.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Regex list of fallback clientside-only mods.</dd>
 </dl>
 </li>
 </ul>
@@ -663,20 +722,6 @@ public&nbsp;ApplicationProperties()</pre>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>serverpackcreator.conf-file.</dd>
-</dl>
-</li>
-</ul>
-<a name="OLD_CONFIG--">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>OLD_CONFIG</h4>
-<pre>public&nbsp;java.io.File&nbsp;OLD_CONFIG()</pre>
-<div class="block">Old configuration-file used for automated migration in case anyone upgrades from 1.x.</div>
-<dl>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>creator.conf-file.</dd>
 </dl>
 </li>
 </ul>
@@ -978,6 +1023,20 @@ public&nbsp;ApplicationProperties()</pre>
 </dl>
 </li>
 </ul>
+<a name="getDefaultListFallbackMods--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getDefaultListFallbackMods</h4>
+<pre>public&nbsp;java.util.List&lt;java.lang.String&gt;&nbsp;getDefaultListFallbackMods()</pre>
+<div class="block">Acquire the default fallback list of clientside-only mods.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Returns the fallback list of clientside-only mods.</dd>
+</dl>
+</li>
+</ul>
 <a name="getListFallbackMods--">
 <!--   -->
 </a>
@@ -985,10 +1044,26 @@ public&nbsp;ApplicationProperties()</pre>
 <li class="blockList">
 <h4>getListFallbackMods</h4>
 <pre>public&nbsp;java.util.List&lt;java.lang.String&gt;&nbsp;getListFallbackMods()</pre>
-<div class="block">Getter for the fallback list of clientside-only mods.</div>
+<div class="block">Acquire the default fallback list of clientside-only mods. If
+ <code>de.griefed.serverpackcreator.serverpack.autodiscovery.filter</code> is set to
+ <a href="../../../de/griefed/serverpackcreator/ApplicationProperties.ExclusionFilter.html#REGEX"><code>ApplicationProperties.ExclusionFilter.REGEX</code></a>, a regex fallback list is returned.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>List String. Returns the fallback list of clientside-only mods.</dd>
+<dd>The fallback list of clientside-only mods.</dd>
+</dl>
+</li>
+</ul>
+<a name="getListFallbackModsRegex--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getListFallbackModsRegex</h4>
+<pre>public&nbsp;java.util.List&lt;java.lang.String&gt;&nbsp;getListFallbackModsRegex()</pre>
+<div class="block">Getter for the regex fallback list of clientside-only mods.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>The regex fallback list of clientside-only mods.</dd>
 </dl>
 </li>
 </ul>
@@ -1016,7 +1091,7 @@ public&nbsp;ApplicationProperties()</pre>
 <div class="block">Getter for the list of directories to exclude from server packs.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>List String. Returns the list of directories to exclude from server packs.</dd>
+<dd>Returns the list of directories to exclude from server packs.</dd>
 </dl>
 </li>
 </ul>
@@ -1030,8 +1105,7 @@ public&nbsp;ApplicationProperties()</pre>
 <div class="block">Adder for the list of directories to exclude from server packs.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>entry</code> - String. The directory to add to the list of directories to exclude from server
-              packs.</dd>
+<dd><code>entry</code> - The directory to add to the list of directories to exclude from server packs.</dd>
 </dl>
 </li>
 </ul>
@@ -1115,7 +1189,7 @@ public&nbsp;ApplicationProperties()</pre>
  href="https://github.com/Griefed/ServerPackCreator/issues">GitHub</a></div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>List</code> <code>String</code> of files to exclude from the ZIP archive of a server pack.</dd>
+<dd>Files and folders to exclude from the ZIP archive of a server pack.</dd>
 </dl>
 </li>
 </ul>
@@ -1129,7 +1203,7 @@ public&nbsp;ApplicationProperties()</pre>
 <div class="block">Whether the exclusion of files from the ZIP-archive of the server pack is enabled.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>Boolean</code> <code>true</code> if the exclusion is enabled.</dd>
+<dd><code>true</code> if the exclusion is enabled.</dd>
 </dl>
 </li>
 </ul>
@@ -1143,7 +1217,7 @@ public&nbsp;ApplicationProperties()</pre>
 <div class="block">Is auto excluding of clientside-only mods enabled.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>Boolean</code> <code>true</code> if autodiscovery is enabled.</dd>
+<dd><code>true</code> if autodiscovery is enabled.</dd>
 </dl>
 </li>
 </ul>
@@ -1190,14 +1264,18 @@ public&nbsp;ApplicationProperties()</pre>
 </dl>
 </li>
 </ul>
-<a name="saveToDisk--">
+<a name="saveToDisk-java.io.File-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>saveToDisk</h4>
-<pre>public&nbsp;void&nbsp;saveToDisk()</pre>
+<pre>public&nbsp;void&nbsp;saveToDisk(java.io.File&nbsp;propertiesFile)</pre>
 <div class="block">Store the ApplicationProperties to disk, overwriting the existing one.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>propertiesFile</code> - The file to store the properties to.</dd>
+</dl>
 </li>
 </ul>
 <a name="isServerPacksOverwriteEnabled--">
@@ -1245,7 +1323,7 @@ public&nbsp;ApplicationProperties()</pre>
 <a name="getHasteBinServerUrl--">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>getHasteBinServerUrl</h4>
 <pre>public&nbsp;java.lang.String&nbsp;getHasteBinServerUrl()</pre>
@@ -1253,6 +1331,43 @@ public&nbsp;ApplicationProperties()</pre>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>URL to the HasteBin server documents endpoint.</dd>
+</dl>
+</li>
+</ul>
+<a name="enableMinecraftPreReleases--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>enableMinecraftPreReleases</h4>
+<pre>public&nbsp;boolean&nbsp;enableMinecraftPreReleases()</pre>
+<div class="block">Whether Minecraft pre-releases and snapshots are available to the user in, for example, the
+ GUI.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd><code>true</code> if they are available.</dd>
+</dl>
+</li>
+</ul>
+<a name="exclusionFilter--">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>exclusionFilter</h4>
+<pre>public&nbsp;<a href="../../../de/griefed/serverpackcreator/ApplicationProperties.ExclusionFilter.html" title="enum in de.griefed.serverpackcreator">ApplicationProperties.ExclusionFilter</a>&nbsp;exclusionFilter()</pre>
+<div class="block">The filter method with which to determine whether a user-specified clientside-only mod should
+ be excluded from the server pack. Available settings are:<br>
+ <ul>
+   <li><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.ExclusionFilter.html#START"><code>ApplicationProperties.ExclusionFilter.START</code></a></li>
+   <li><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.ExclusionFilter.html#END"><code>ApplicationProperties.ExclusionFilter.END</code></a></li>
+   <li><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.ExclusionFilter.html#CONTAIN"><code>ApplicationProperties.ExclusionFilter.CONTAIN</code></a></li>
+   <li><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.ExclusionFilter.html#REGEX"><code>ApplicationProperties.ExclusionFilter.REGEX</code></a></li>
+   <li><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.ExclusionFilter.html#EITHER"><code>ApplicationProperties.ExclusionFilter.EITHER</code></a></li>
+ </ul></div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>The filter method by which to exclude user-specified clientside-only mods.</dd>
 </dl>
 </li>
 </ul>
@@ -1284,7 +1399,7 @@ public&nbsp;ApplicationProperties()</pre>
 <div class="subNav">
 <ul class="navList">
 <li><a href="../../../de/griefed/serverpackcreator/ApplicationPlugins.html" title="class in de.griefed.serverpackcreator"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
-<li><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html" title="class in de.griefed.serverpackcreator"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
+<li><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.ExclusionFilter.html" title="enum in de.griefed.serverpackcreator"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
 </ul>
 <ul class="navList">
 <li><a href="../../../index.html?de/griefed/serverpackcreator/ApplicationProperties.html" target="_top">Frames</a></li>
@@ -1308,7 +1423,7 @@ public&nbsp;ApplicationProperties()</pre>
 <div>
 <ul class="subNavList">
 <li>Summary:&nbsp;</li>
-<li>Nested&nbsp;|&nbsp;</li>
+<li><a href="#nested.class.summary">Nested</a>&nbsp;|&nbsp;</li>
 <li><a href="#fields.inherited.from.class.java.util.Properties">Field</a>&nbsp;|&nbsp;</li>
 <li><a href="#constructor.summary">Constr</a>&nbsp;|&nbsp;</li>
 <li><a href="#method.summary">Method</a></li>

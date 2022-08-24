@@ -107,7 +107,8 @@ var activeTableTab = "activeTableTab";
 <li class="blockList">
 <hr>
 <br>
-<pre>public class <span class="typeNameLabel">FileUtilities</span>
+<pre>@Component
+public final class <span class="typeNameLabel">FileUtilities</span>
 extends java.lang.Object</pre>
 <div class="block">Utility-class revolving around various file-interactions.</div>
 </li>
@@ -369,10 +370,10 @@ extends java.lang.Object</pre>
  symlink.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>file</code> - <code>File</code> The file to check</dd>
+<dd><code>file</code> - The file to check</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.FileType.html" title="enum in de.griefed.serverpackcreator.utilities.common"><code>FileUtilities.FileType</code></a> The type of the given file. Either <a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.FileType.html#FILE"><code>FileUtilities.FileType.FILE</code></a>,
- <a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.FileType.html#LINK"><code>FileUtilities.FileType.LINK</code></a> or <a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.FileType.html#SYMLINK"><code>FileUtilities.FileType.SYMLINK</code></a></dd>
+<dd>The type of the given file. Either <a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.FileType.html#FILE"><code>FileUtilities.FileType.FILE</code></a>, <a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.FileType.html#LINK"><code>FileUtilities.FileType.LINK</code></a> or
+ <a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.FileType.html#SYMLINK"><code>FileUtilities.FileType.SYMLINK</code></a></dd>
 </dl>
 </li>
 </ul>
@@ -387,10 +388,10 @@ extends java.lang.Object</pre>
  symlink.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>file</code> - <code>File</code> The file to check</dd>
+<dd><code>file</code> - The file to check</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.FileType.html" title="enum in de.griefed.serverpackcreator.utilities.common"><code>FileUtilities.FileType</code></a> The type of the given file. Either <a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.FileType.html#FILE"><code>FileUtilities.FileType.FILE</code></a>,
- <a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.FileType.html#LINK"><code>FileUtilities.FileType.LINK</code></a> or <a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.FileType.html#SYMLINK"><code>FileUtilities.FileType.SYMLINK</code></a></dd>
+<dd>The type of the given file. Either <a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.FileType.html#FILE"><code>FileUtilities.FileType.FILE</code></a>, <a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.FileType.html#LINK"><code>FileUtilities.FileType.LINK</code></a> or
+ <a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.FileType.html#SYMLINK"><code>FileUtilities.FileType.SYMLINK</code></a></dd>
 </dl>
 </li>
 </ul>
@@ -404,7 +405,7 @@ extends java.lang.Object</pre>
 <div class="block">Check if the given file is a UNIX symlink or Windows lnk.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>file</code> - <code>String</code> The file to check.</dd>
+<dd><code>file</code> - The file to check.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd><code>true</code> if the given file is a UNIX symlink or Windows lnk.</dd>
 </dl>
@@ -420,7 +421,7 @@ extends java.lang.Object</pre>
 <div class="block">Check if the given file is a UNIX symlink or Windows lnk.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>file</code> - <code>File</code> The file to check.</dd>
+<dd><code>file</code> - The file to check.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd><code>true</code> if the given file is a UNIX symlink or Windows lnk.</dd>
 </dl>
@@ -438,10 +439,10 @@ extends java.lang.Object</pre>
 <div class="block">Resolve a given link/symlink to its source.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>link</code> - <code>String</code> The link you want to resolve.</dd>
+<dd><code>link</code> - The link you want to resolve.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>String</code> Path to the source of the link. If the specified file is not a link, the
- path to the passed file is returned.</dd>
+<dd>Path to the source of the link. If the specified file is not a link, the path to the
+ passed file is returned.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code>java.io.IOException</code> - if the link could not be parsed.</dd>
 <dd><code><a href="../../../../../de/griefed/serverpackcreator/utilities/common/InvalidFileTypeException.html" title="class in de.griefed.serverpackcreator.utilities.common">InvalidFileTypeException</a></code> - if the specified file is neither a file, lnk nor symlink.</dd>
@@ -460,10 +461,10 @@ extends java.lang.Object</pre>
 <div class="block">Resolve a given link/symlink to its source.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>link</code> - <code>File</code> The link you want to resolve.</dd>
+<dd><code>link</code> - The link you want to resolve.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>String</code> Path to the source of the link. If the specified file is not a link, the
- path to the passed file is returned.</dd>
+<dd>Path to the source of the link. If the specified file is not a link, the path to the
+ passed file is returned.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code>java.io.IOException</code> - if the link could not be parsed.</dd>
 <dd><code><a href="../../../../../de/griefed/serverpackcreator/utilities/common/InvalidFileTypeException.html" title="class in de.griefed.serverpackcreator.utilities.common">InvalidFileTypeException</a></code> - if the specified file is neither a file, lnk nor symlink.</dd>
@@ -481,9 +482,9 @@ extends java.lang.Object</pre>
 <div class="block">Check the given file or directory for read- and write-permission.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>fileOrDirectory</code> - <code>String</code> File or directory.</dd>
+<dd><code>fileOrDirectory</code> - File or directory.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>Boolean</code> <code>true</code> if both read- and write-permissions are set.</dd>
+<dd><code>true</code> if both read- and write-permissions are set.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code>java.nio.file.InvalidPathException</code> - if the path string cannot be converted to a Path.</dd>
 </dl>
@@ -500,9 +501,9 @@ extends java.lang.Object</pre>
 <div class="block">Check the given file or directory for read- and write-permission.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>fileOrDirectory</code> - <code>File</code> File or directory.</dd>
+<dd><code>fileOrDirectory</code> - File or directory.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>Boolean</code> <code>true</code> if both read- and write-permissions are set.</dd>
+<dd><code>true</code> if both read- and write-permissions are set.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code>java.nio.file.InvalidPathException</code> - if a <code>Path</code> object cannot be constructed from the abstract
                               path (see
@@ -520,9 +521,9 @@ extends java.lang.Object</pre>
 <div class="block">Check the given file or directory for read- and write-permission.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>fileOrDirectory</code> - <code>Path</code> File or directory.</dd>
+<dd><code>fileOrDirectory</code> - File or directory.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>Boolean</code> <code>true</code> if both read- and write-permissions are set.</dd>
+<dd><code>true</code> if both read- and write-permissions are set.</dd>
 </dl>
 </li>
 </ul>
@@ -536,9 +537,9 @@ extends java.lang.Object</pre>
 <div class="block">Check the given file or directory for read-permission.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>fileOrDirectory</code> - <code>String</code> File or directory.</dd>
+<dd><code>fileOrDirectory</code> - File or directory.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>Boolean</code> <code>true</code> if read-permissions are set.</dd>
+<dd><code>true</code> if read-permissions are set.</dd>
 </dl>
 </li>
 </ul>
@@ -552,9 +553,9 @@ extends java.lang.Object</pre>
 <div class="block">Check the given file or directory for read-permission.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>fileOrDirectory</code> - <code>File</code> File or directory.</dd>
+<dd><code>fileOrDirectory</code> - File or directory.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>Boolean</code> <code>true</code> if read-permissions are set.</dd>
+<dd><code>true</code> if read-permissions are set.</dd>
 </dl>
 </li>
 </ul>
@@ -568,9 +569,9 @@ extends java.lang.Object</pre>
 <div class="block">Check the given file or directory for read-permission.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>fileOrDirectory</code> - <code>Path</code> File or directory.</dd>
+<dd><code>fileOrDirectory</code> - File or directory.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>Boolean</code> <code>true</code> if read-permissions are set.</dd>
+<dd><code>true</code> if read-permissions are set.</dd>
 </dl>
 </li>
 </ul>
@@ -584,9 +585,9 @@ extends java.lang.Object</pre>
 <div class="block">Check the given file or directory for write-permission.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>fileOrDirectory</code> - <code>String</code> File or directory.</dd>
+<dd><code>fileOrDirectory</code> - File or directory.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>Boolean</code> <code>true</code> if write-permissions are set.</dd>
+<dd><code>true</code> if write-permissions are set.</dd>
 </dl>
 </li>
 </ul>
@@ -600,9 +601,9 @@ extends java.lang.Object</pre>
 <div class="block">Check the given file or directory for write-permission.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>fileOrDirectory</code> - <code>File</code> File or directory.</dd>
+<dd><code>fileOrDirectory</code> - File or directory.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>Boolean</code> <code>true</code> if write-permissions are set.</dd>
+<dd><code>true</code> if write-permissions are set.</dd>
 </dl>
 </li>
 </ul>
@@ -616,9 +617,9 @@ extends java.lang.Object</pre>
 <div class="block">Check the given file or directory for write-permission.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>fileOrDirectory</code> - <code>Path</code> File or directory.</dd>
+<dd><code>fileOrDirectory</code> - File or directory.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>Boolean</code> <code>true</code> if write-permissions are set.</dd>
+<dd><code>true</code> if write-permissions are set.</dd>
 </dl>
 </li>
 </ul>
@@ -632,7 +633,7 @@ extends java.lang.Object</pre>
 <div class="block">Open the specified folder in the file explorer.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>folder</code> - <code>String</code> The folder to open.</dd>
+<dd><code>folder</code> - The folder to open.</dd>
 </dl>
 </li>
 </ul>
@@ -646,7 +647,7 @@ extends java.lang.Object</pre>
 <div class="block">Open the specified file in an editor.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>fileToOpen</code> - <code>String</code> The file to open.</dd>
+<dd><code>fileToOpen</code> - The file to open.</dd>
 </dl>
 </li>
 </ul>

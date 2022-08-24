@@ -108,7 +108,7 @@ var activeTableTab = "activeTableTab";
 <hr>
 <br>
 <pre>@Component
-public class <span class="typeNameLabel">ConfigUtilities</span>
+public final class <span class="typeNameLabel">ConfigUtilities</span>
 extends java.lang.Object</pre>
 <div class="block">Utility-class revolving around configuration utilities.</div>
 </li>
@@ -355,8 +355,7 @@ public&nbsp;ConfigUtilities(<a href="../../../../de/griefed/serverpackcreator/ut
  ServerPackCreator will still be able to work with the users input.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>modloader</code> - String. The String to check for case-insensitive cases of either Forge or
-                  Fabric.</dd>
+<dd><code>modloader</code> - The String to check for case-insensitive cases of either Forge or Fabric.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>String. Returns a normalized String of the specified modloader.</dd>
 </dl>
@@ -408,30 +407,29 @@ public&nbsp;ConfigUtilities(<a href="../../../../de/griefed/serverpackcreator/ut
  exists, it is replaced.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>modpackDir</code> - String. The path to the modpack.</dd>
-<dd><code>clientMods</code> - List, String. List of clientside-only mods.</dd>
-<dd><code>copyDirs</code> - List, String. List of directories to include in server pack.</dd>
-<dd><code>serverIconPath</code> - String. The path to the custom server-icon.png to include in the
-                             server pack.</dd>
-<dd><code>serverPropertiesPath</code> - String. The path to the custom server.properties to include in the
-                             server pack.</dd>
-<dd><code>includeServer</code> - Boolean. Whether the modloader server software should be
-                             installed.</dd>
-<dd><code>javaPath</code> - String. Path to the java executable/binary.</dd>
-<dd><code>minecraftVersion</code> - String. Minecraft version used by the modpack and server pack.</dd>
-<dd><code>modLoader</code> - String. Modloader used by the modpack and server pack. Ether Forge
-                             or Fabric.</dd>
-<dd><code>modLoaderVersion</code> - String. Modloader version used by the modpack and server pack.</dd>
-<dd><code>includeIcon</code> - Boolean. Whether to include a server-icon in the server pack.</dd>
-<dd><code>includeProperties</code> - Boolean. Whether to include a properties file in the server pack.</dd>
-<dd><code>includeZip</code> - Boolean. Whether to create a ZIP-archive of the server pack,
-                             excluding Mojang's Minecraft server JAR.</dd>
-<dd><code>javaArgs</code> - String. Java arguments to write the start-scripts with.</dd>
-<dd><code>serverPackSuffix</code> - String. Suffix to append to the server pack to be generated.</dd>
+<dd><code>modpackDir</code> - The path to the modpack.</dd>
+<dd><code>clientMods</code> - List of clientside-only mods.</dd>
+<dd><code>copyDirs</code> - List of directories to include in server pack.</dd>
+<dd><code>serverIconPath</code> - The path to the custom server-icon.png to include in the server
+                             pack.</dd>
+<dd><code>serverPropertiesPath</code> - The path to the custom server.properties to include in the server
+                             pack.</dd>
+<dd><code>includeServer</code> - Whether the modloader server software should be installed.</dd>
+<dd><code>javaPath</code> - Path to the java executable/binary.</dd>
+<dd><code>minecraftVersion</code> - Minecraft version used by the modpack and server pack.</dd>
+<dd><code>modLoader</code> - Modloader used by the modpack and server pack. Ether Forge or
+                             Fabric.</dd>
+<dd><code>modLoaderVersion</code> - Modloader version used by the modpack and server pack.</dd>
+<dd><code>includeIcon</code> - Whether to include a server-icon in the server pack.</dd>
+<dd><code>includeProperties</code> - Whether to include a properties file in the server pack.</dd>
+<dd><code>includeZip</code> - Whether to create a ZIP-archive of the server pack, excluding
+                             Mojang's Minecraft server JAR.</dd>
+<dd><code>javaArgs</code> - Java arguments to write the start-scripts with.</dd>
+<dd><code>serverPackSuffix</code> - Suffix to append to the server pack to be generated.</dd>
 <dd><code>fileName</code> - The name under which to write the new configuration file.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>Boolean. Returns true if the configuration file has been successfully written and old
- ones replaced.</dd>
+<dd>Returns true if the configuration file has been successfully written and old ones
+ replaced.</dd>
 </dl>
 </li>
 </ul>
@@ -481,33 +479,27 @@ public&nbsp;ConfigUtilities(<a href="../../../../de/griefed/serverpackcreator/ut
  use more logging.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>modpackDirectory</code> - String. The used modpackDir field either from a configuration file
-                             or from configuration setup.</dd>
-<dd><code>clientsideMods</code> - String List. List of clientside-only mods to exclude from the
-                             server pack...</dd>
-<dd><code>copyDirectories</code> - String List. List of directories in the modpack which are to be
-                             included in the server pack.</dd>
-<dd><code>installServer</code> - Boolean. Whether to install the modloader server in the server
-                             pack.</dd>
-<dd><code>javaInstallPath</code> - String. Path to the Java executable/binary needed for installing
-                             the modloader server in the server pack.</dd>
-<dd><code>minecraftVer</code> - String. The Minecraft version the modpack uses.</dd>
-<dd><code>modloader</code> - String. The modloader the modpack uses.</dd>
-<dd><code>modloaderVersion</code> - String. The version of the modloader the modpack uses.</dd>
-<dd><code>includeIcon</code> - Boolean. Whether to include the server-icon.png in the server
-                             pack.</dd>
-<dd><code>includeProperties</code> - Boolean. Whether to include the server.properties in the server
-                             pack.</dd>
-<dd><code>includeZip</code> - Boolean. Whether to create a zip-archive of the server pack,
-                             excluding the Minecraft server JAR according to Mojang's TOS and
-                             EULA.</dd>
-<dd><code>javaArgs</code> - String. Java arguments to write the start-scripts with.</dd>
-<dd><code>serverPackSuffix</code> - String. Suffix to append to name of the server pack to be
-                             generated.</dd>
-<dd><code>serverIconPath</code> - String. The path to the custom server-icon.png to be used in the
+<dd><code>modpackDirectory</code> - The used modpackDir field either from a configuration file or from
+                             configuration setup.</dd>
+<dd><code>clientsideMods</code> - List of clientside-only mods to exclude from the server pack...</dd>
+<dd><code>copyDirectories</code> - List of directories in the modpack which are to be included in the
                              server pack.</dd>
-<dd><code>serverPropertiesPath</code> - String. The path to the custom server.properties to be used in the
-                             server pack.</dd>
+<dd><code>installServer</code> - Whether to install the modloader server in the server pack.</dd>
+<dd><code>javaInstallPath</code> - Path to the Java executable/binary needed for installing the
+                             modloader server in the server pack.</dd>
+<dd><code>minecraftVer</code> - The Minecraft version the modpack uses.</dd>
+<dd><code>modloader</code> - The modloader the modpack uses.</dd>
+<dd><code>modloaderVersion</code> - The version of the modloader the modpack uses.</dd>
+<dd><code>includeIcon</code> - Whether to include the server-icon.png in the server pack.</dd>
+<dd><code>includeProperties</code> - Whether to include the server.properties in the server pack.</dd>
+<dd><code>includeZip</code> - Whether to create a zip-archive of the server pack, excluding the
+                             Minecraft server JAR according to Mojang's TOS and EULA.</dd>
+<dd><code>javaArgs</code> - Java arguments to write the start-scripts with.</dd>
+<dd><code>serverPackSuffix</code> - Suffix to append to name of the server pack to be generated.</dd>
+<dd><code>serverIconPath</code> - The path to the custom server-icon.png to be used in the server
+                             pack.</dd>
+<dd><code>serverPropertiesPath</code> - The path to the custom server.properties to be used in the server
+                             pack.</dd>
 </dl>
 </li>
 </ul>
@@ -525,8 +517,8 @@ public&nbsp;ConfigUtilities(<a href="../../../../de/griefed/serverpackcreator/ut
  <p>Update the given ConfigurationModel with values gathered from a ATLauncher manifest.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>configurationModel</code> - <a href="../../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a> The model to update.</dd>
-<dd><code>manifest</code> - <code>File</code> The manifest file.</dd>
+<dd><code>configurationModel</code> - The model to update.</dd>
+<dd><code>manifest</code> - The manifest file.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code>java.io.IOException</code> - when the instance.json-file could not be parsed.</dd>
 </dl>
@@ -547,8 +539,8 @@ public&nbsp;ConfigUtilities(<a href="../../../../de/griefed/serverpackcreator/ut
  modrinth.index.json</code>-manifest.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>configurationModel</code> - <a href="../../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a> The model to update.</dd>
-<dd><code>manifest</code> - <code>File</code> The manifest file.</dd>
+<dd><code>configurationModel</code> - The model to update.</dd>
+<dd><code>manifest</code> - The manifest file.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code>java.io.IOException</code> - when the modrinth.index.json-file could not be parsed.</dd>
 </dl>
@@ -570,8 +562,8 @@ public&nbsp;ConfigUtilities(<a href="../../../../de/griefed/serverpackcreator/ut
  like Overwolf's CurseForge or GDLauncher.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>configurationModel</code> - <a href="../../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a>. An instance containing a configuration
-                           for a modpack from which to create a server pack.</dd>
+<dd><code>configurationModel</code> - An instance containing a configuration for a modpack from which to
+                           create a server pack.</dd>
 <dd><code>manifest</code> - File. The CurseForge manifest.json-file of the modpack to read.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code>java.io.IOException</code> - when the manifest.json-file could not be parsed.</dd>
@@ -593,8 +585,8 @@ public&nbsp;ConfigUtilities(<a href="../../../../de/griefed/serverpackcreator/ut
  the modpack. A minecraftinstance.json is usually created by Overwolf's CurseForge launcher.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>configurationModel</code> - <a href="../../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a>. An instance containing a configuration
-                           for a modpack from which to create a server pack.</dd>
+<dd><code>configurationModel</code> - An instance containing a configuration for a modpack from which to
+                           create a server pack.</dd>
 <dd><code>minecraftInstance</code> - File. The minecraftinstance.json-file of the modpack to read.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code>java.io.IOException</code> - when the minecraftinstance.json-file could not be parsed.</dd>
@@ -616,9 +608,9 @@ public&nbsp;ConfigUtilities(<a href="../../../../de/griefed/serverpackcreator/ut
  config.json is usually created by GDLauncher.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>configurationModel</code> - <a href="../../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a>. An instance containing a configuration
-                           for a modpack from which to create a server pack.</dd>
-<dd><code>config</code> - <code>File</code>. The config.json-file of the modpack to read.</dd>
+<dd><code>configurationModel</code> - An instance containing a configuration for a modpack from which to
+                           create a server pack.</dd>
+<dd><code>config</code> - The config.json-file of the modpack to read.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code>java.io.IOException</code> - when the config.json-file could not be parsed.</dd>
 </dl>
@@ -639,9 +631,9 @@ public&nbsp;ConfigUtilities(<a href="../../../../de/griefed/serverpackcreator/ut
  mmc-pack.json is usually created by the MultiMC launcher.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>configurationModel</code> - <a href="../../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a>. An instance containing a configuration
-                           for a modpack from which to create a server pack.</dd>
-<dd><code>mmcPack</code> - <code>File</code>. The config.json-file of the modpack to read.</dd>
+<dd><code>configurationModel</code> - An instance containing a configuration for a modpack from which to
+                           create a server pack.</dd>
+<dd><code>mmcPack</code> - The config.json-file of the modpack to read.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code>java.io.IOException</code> - when the mmc-pack.json-file could not be parsed.</dd>
 </dl>
@@ -661,9 +653,9 @@ public&nbsp;ConfigUtilities(<a href="../../../../de/griefed/serverpackcreator/ut
  instance.cfg, which is usually created by the MultiMC launcher.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>instanceCfg</code> - <code>File</code>. The config.json-file of the modpack to read.</dd>
+<dd><code>instanceCfg</code> - The config.json-file of the modpack to read.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>String</code> Returns the instance name.</dd>
+<dd>The instance name.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code>java.io.IOException</code> - when the file could not be found or the properties not be loaded from the
                      file.</dd>
@@ -684,8 +676,8 @@ public&nbsp;ConfigUtilities(<a href="../../../../de/griefed/serverpackcreator/ut
  href="https://github.com/Griefed/ServerPackCreator/issues/new/choose">GitHub</a></div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>modpackDir</code> - String. The directory for which to gather a list of directories to copy to
-                   the server pack.</dd>
+<dd><code>modpackDir</code> - The directory for which to gather a list of directories to copy to the server
+                   pack.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>List, String. Returns a list of directories inside the modpack, excluding well known
  client-side only directories.</dd>
@@ -730,10 +722,9 @@ public&nbsp;boolean&nbsp;checkCurseForgeJsonForFabric(com.fasterxml.jackson.data
 <div class="block">Acquire a list of directories in the base-directory of a ZIP-file.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>zipFile</code> - <code>Path</code> The ZIP-archive to get the list of files from.</dd>
+<dd><code>zipFile</code> - The ZIP-archive to get the list of files from.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>List</code> <code>String</code> A list of all directories in the base-directory of the
- ZIP-file.</dd>
+<dd>List of all directories in the base-directory of the ZIP-file.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code>java.lang.IllegalArgumentException</code> - if the pre-conditions for the uri parameter are not
                                           met, or the env parameter does not contain properties
@@ -764,9 +755,9 @@ public&nbsp;boolean&nbsp;checkCurseForgeJsonForFabric(com.fasterxml.jackson.data
 <div class="block">Acquire a list of all files in a ZIP-file.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>zipFile</code> - <code>Path</code> The ZIP-archive to get the list of files from.</dd>
+<dd><code>zipFile</code> - The ZIP-archive to get the list of files from.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>List</code> <code>String</code> A list of all files in the ZIP-file.</dd>
+<dd>List of all files in the ZIP-file.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code>java.lang.IllegalArgumentException</code> - if the pre-conditions for the uri parameter are not
                                           met, or the env parameter does not contain properties
@@ -797,9 +788,9 @@ public&nbsp;boolean&nbsp;checkCurseForgeJsonForFabric(com.fasterxml.jackson.data
 <div class="block">Acquire a list of all directories in a ZIP-file.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>zipFile</code> - <code>Path</code> The ZIP-archive to get the list of files from.</dd>
+<dd><code>zipFile</code> - The ZIP-archive to get the list of files from.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>List</code> <code>String</code> A list of all directories in the ZIP-file.</dd>
+<dd>List of all directories in the ZIP-file.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code>java.lang.IllegalArgumentException</code> - if the pre-conditions for the uri parameter are not
                                           met, or the env parameter does not contain properties
@@ -830,9 +821,9 @@ public&nbsp;boolean&nbsp;checkCurseForgeJsonForFabric(com.fasterxml.jackson.data
 <div class="block">Acquire a list of all files and directories in a ZIP-file.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>zipFile</code> - <code>Path</code> The ZIP-archive to get the list of files from.</dd>
+<dd><code>zipFile</code> - The ZIP-archive to get the list of files from.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>List</code> <code>String</code> A list of all files and directories in the ZIP-file.</dd>
+<dd>List of all files and directories in the ZIP-file.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code>java.lang.IllegalArgumentException</code> - if the pre-conditions for the uri parameter are not
                                           met, or the env parameter does not contain properties

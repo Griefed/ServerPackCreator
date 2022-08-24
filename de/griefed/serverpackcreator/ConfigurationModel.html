@@ -396,7 +396,7 @@ extends java.lang.Object</pre>
 </tr>
 <tr id="i36" class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html#setScriptSettings-java.util.HashMap-">setScriptSettings</a></span>(java.util.HashMap&lt;java.lang.String,java.lang.String&gt;&nbsp;scriptSettings)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html#setScriptSettings-java.util.HashMap-">setScriptSettings</a></span>(java.util.HashMap&lt;java.lang.String,java.lang.String&gt;&nbsp;settings)</code>
 <div class="block">Putter for the script settings used during script creation.</div>
 </td>
 </tr>
@@ -516,8 +516,8 @@ extends java.lang.Object</pre>
 <div class="block">Create a new configuration model from a config file.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>utilities</code> - <a href="../../../de/griefed/serverpackcreator/utilities/common/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.common"><code>Utilities</code></a> Instance of our SPC utilities.</dd>
-<dd><code>configFile</code> - <code>File</code> Configuration file to load.</dd>
+<dd><code>utilities</code> - Instance of our SPC utilities.</dd>
+<dd><code>configFile</code> - Configuration file to load.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code>java.io.FileNotFoundException</code> - if the specified file can not be found.</dd>
 <dd><code>com.electronwill.nightconfig.core.file.NoFormatFoundException</code></dd>
@@ -556,7 +556,7 @@ extends java.lang.Object</pre>
 <div class="block">Setter for the suffix of the server pack to be generated</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>serverPackSuffix</code> - String. The suffix of the server pack to be generated.</dd>
+<dd><code>serverPackSuffix</code> - The suffix of the server pack to be generated.</dd>
 </dl>
 </li>
 </ul>
@@ -570,7 +570,7 @@ extends java.lang.Object</pre>
 <div class="block">Getter for a list of clientside-only mods to exclude from server pack.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>List String. Returns the list of clientside-only mods.</dd>
+<dd>Returns the list of clientside-only mods.</dd>
 </dl>
 </li>
 </ul>
@@ -598,7 +598,7 @@ extends java.lang.Object</pre>
 <div class="block">Getter for the list of directories in the modpack to copy to the server pack.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>List String. Returns the list of directories to copy to the server pack.</dd>
+<dd>Returns the list of directories to copy to the server pack.</dd>
 </dl>
 </li>
 </ul>
@@ -892,8 +892,7 @@ extends java.lang.Object</pre>
 <div class="block">Setter for the Java arguments with which the start-scripts will be generated.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>javaArgs</code> - String. Sets the Java arguments with which the start-scripts will be
-                 generated.</dd>
+<dd><code>javaArgs</code> - Sets the Java arguments with which the start-scripts will be generated.</dd>
 </dl>
 </li>
 </ul>
@@ -951,7 +950,7 @@ extends java.lang.Object</pre>
 <div class="block">Setter for the name of the CurseForge project.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>projectName</code> - String. The name of the CurseForge project.</dd>
+<dd><code>projectName</code> - The name of the CurseForge project.</dd>
 </dl>
 </li>
 </ul>
@@ -979,7 +978,7 @@ extends java.lang.Object</pre>
 <div class="block">Setter for the name of the CurseForge project file.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>fileName</code> - String. The name of the CurseForge project file.</dd>
+<dd><code>fileName</code> - The name of the CurseForge project file.</dd>
 </dl>
 </li>
 </ul>
@@ -1007,7 +1006,7 @@ extends java.lang.Object</pre>
 <div class="block">Setter for the disk-name of the CurseForge project file.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>fileName</code> - String. The disk-name of the CurseForge project file.</dd>
+<dd><code>fileName</code> - The disk-name of the CurseForge project file.</dd>
 </dl>
 </li>
 </ul>
@@ -1035,7 +1034,7 @@ extends java.lang.Object</pre>
 <div class="block">Setter for the path of the server-icon.png to include in the server pack.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>serverIconPath</code> - String. The path to the server-icon.png to include in the server pack.</dd>
+<dd><code>serverIconPath</code> - The path to the server-icon.png to include in the server pack.</dd>
 </dl>
 </li>
 </ul>
@@ -1049,7 +1048,7 @@ extends java.lang.Object</pre>
 <div class="block">Getter for the path of the server.properties to include in the server pack.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>String. Returns the path to the server.properties to include in the server pack.</dd>
+<dd>Returns the path to the server.properties to include in the server pack.</dd>
 </dl>
 </li>
 </ul>
@@ -1063,8 +1062,7 @@ extends java.lang.Object</pre>
 <div class="block">Setter for the path of the server.properties to include in the server pack.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>serverPropertiesPath</code> - String. The path to the server.properties to include in the server
-                             pack.</dd>
+<dd><code>serverPropertiesPath</code> - The path to the server.properties to include in the server pack.</dd>
 </dl>
 </li>
 </ul>
@@ -1078,7 +1076,7 @@ extends java.lang.Object</pre>
 <div class="block">Getter for the script settings used during script creation.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>HashMap</code> <code>String</code>-<code>String</code></dd>
+<dd>Map of all script settings and their values.</dd>
 </dl>
 </li>
 </ul>
@@ -1088,13 +1086,12 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>setScriptSettings</h4>
-<pre>public&nbsp;void&nbsp;setScriptSettings(java.util.HashMap&lt;java.lang.String,java.lang.String&gt;&nbsp;scriptSettings)</pre>
+<pre>public&nbsp;void&nbsp;setScriptSettings(java.util.HashMap&lt;java.lang.String,java.lang.String&gt;&nbsp;settings)</pre>
 <div class="block">Putter for the script settings used during script creation. All key-value pairs from the passed
  hashmap are put into this models hashmap.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>scriptSettings</code> - <code>HashMap</code> <code>String</code>-<code>String</code> containing key-value pairs
-                       to be used in script creation.</dd>
+<dd><code>settings</code> - Key-value pairs to be used in script creation.</dd>
 </dl>
 </li>
 </ul>

@@ -47,7 +47,7 @@ var activeTableTab = "activeTableTab";
 </div>
 <div class="subNav">
 <ul class="navList">
-<li><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
+<li><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.ExclusionFilter.html" title="enum in de.griefed.serverpackcreator"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
 <li><a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
 </ul>
 <ul class="navList">
@@ -108,7 +108,7 @@ var activeTableTab = "activeTableTab";
 <hr>
 <br>
 <pre>@Component
-public class <span class="typeNameLabel">ConfigurationHandler</span>
+public final class <span class="typeNameLabel">ConfigurationHandler</span>
 extends java.lang.Object</pre>
 <div class="block">This class revolves around checking and adjusting a given instance of <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a>
  so it can safely be used in <a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html#run-de.griefed.serverpackcreator.ConfigurationModel-"><code>ServerPackHandler.run(ConfigurationModel)</code></a> later.</div>
@@ -545,8 +545,8 @@ public&nbsp;ConfigurationHandler(<a href="../../../de/griefed/serverpackcreator/
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>pathToZip</code> - Path to the ZIP-file to check.</dd>
-<dd><code>encounteredErrors</code> - String List. List of encountered errors for further processing, like
-                          printing to logs or display in GUI or whatever you want, really.</dd>
+<dd><code>encounteredErrors</code> - List of encountered errors for further processing, like printing to
+                          logs or display in GUI or whatever you want, really.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>Boolean. <code>false</code> if the ZIP-archive is considered valid.</dd>
 </dl>
@@ -562,7 +562,7 @@ public&nbsp;ConfigurationHandler(<a href="../../../de/griefed/serverpackcreator/
 <div class="block">Check the passed directory for existence and whether it is a directory, rather than a file.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>modpackDir</code> - <code>String</code> The modpack directory.</dd>
+<dd><code>modpackDir</code> - The modpack directory.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>Boolean. Returns true if the directory exists.</dd>
 </dl>
@@ -658,8 +658,8 @@ public&nbsp;ConfigurationHandler(<a href="../../../de/griefed/serverpackcreator/
  corresponding boolean.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>iconOrPropertiesPath</code> - String. The path to the custom server-icon.png or server.properties
-                             file to check.</dd>
+<dd><code>iconOrPropertiesPath</code> - The path to the custom server-icon.png or server.properties file to
+                             check.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>Boolean. True if the file exists or an empty String was passed, false if a file was
  specified, but the file was not found.</dd>
@@ -676,7 +676,7 @@ public&nbsp;ConfigurationHandler(<a href="../../../de/griefed/serverpackcreator/
 <div class="block">Check whether the given path is a valid Java specification.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>pathToJava</code> - <code>String</code> Path to the Java executable</dd>
+<dd><code>pathToJava</code> - Path to the Java executable</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>Boolean. Returns <code>true</code> if the path is valid.</dd>
 </dl>
@@ -693,9 +693,9 @@ public&nbsp;ConfigurationHandler(<a href="../../../de/griefed/serverpackcreator/
  goes through without errors, it is considered a correct specification.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>pathToJava</code> - <code>String</code> Path to the java executable/binary.</dd>
+<dd><code>pathToJava</code> - Path to the java executable/binary.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>Boolean</code> <code>true</code> if the specified file is a valid Java
+<dd><code>true</code> if the specified file is a valid Java
  executable/binary.</dd>
 </dl>
 </li>
@@ -712,7 +712,7 @@ public&nbsp;ConfigurationHandler(<a href="../../../de/griefed/serverpackcreator/
  is considered invalid, the system default is acquired and returned.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>pathToJava</code> - String. The path to check for whether it is a valid Java installation.</dd>
+<dd><code>pathToJava</code> - The path to check for whether it is a valid Java installation.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>String. Returns the path to the Java installation. If user input was incorrect, SPC
  will try to acquire the path automatically.</dd>
@@ -729,7 +729,7 @@ public&nbsp;ConfigurationHandler(<a href="../../../de/griefed/serverpackcreator/
 <div class="block">Checks whether either Forge or Fabric were specified as the modloader.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>modloader</code> - String. Check as case-insensitive for Forge or Fabric.</dd>
+<dd><code>modloader</code> - Check as case-insensitive for Forge or Fabric.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>Boolean. Returns true if the specified modloader is either Forge or Fabric. False if
  neither.</dd>
@@ -748,13 +748,13 @@ public&nbsp;ConfigurationHandler(<a href="../../../de/griefed/serverpackcreator/
 <div class="block">Check the given Minecraft and modloader versions for the specified modloader.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>modloader</code> - String. The passed modloader which determines whether the check for
-                         Forge or Fabric is called.</dd>
-<dd><code>modloaderVersion</code> - String. The version of the modloader which is checked against the
-                         corresponding modloaders manifest.</dd>
-<dd><code>minecraftVersion</code> - String. The version of Minecraft used for checking the Forge version.</dd>
+<dd><code>modloader</code> - The passed modloader which determines whether the check for Forge or
+                         Fabric is called.</dd>
+<dd><code>modloaderVersion</code> - The version of the modloader which is checked against the corresponding
+                         modloaders manifest.</dd>
+<dd><code>minecraftVersion</code> - The version of Minecraft used for checking the Forge version.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>Boolean. Returns true if the specified modloader version was found in the corresponding
+<dd>Returns true if the specified modloader version was found in the corresponding
  manifest.</dd>
 </dl>
 </li>
@@ -778,8 +778,7 @@ public&nbsp;ConfigurationHandler(<a href="../../../de/griefed/serverpackcreator/
 <dd><code>modloaderVersion</code> - String. The version of the modloader which is checked against the
                           corresponding modloaders manifest.</dd>
 <dd><code>minecraftVersion</code> - String. The version of Minecraft used for checking the Forge version.</dd>
-<dd><code>encounteredErrors</code> - <code>String</code>-list of encountered errors to add to in case of
-                          errors.</dd>
+<dd><code>encounteredErrors</code> - List of encountered errors to add to in case of errors.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>Boolean. Returns true if the specified modloader version was found in the corresponding
  manifest.</dd>
@@ -813,7 +812,7 @@ public&nbsp;ConfigurationHandler(<a href="../../../de/griefed/serverpackcreator/
 </div>
 <div class="subNav">
 <ul class="navList">
-<li><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
+<li><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.ExclusionFilter.html" title="enum in de.griefed.serverpackcreator"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
 <li><a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
 </ul>
 <ul class="navList">

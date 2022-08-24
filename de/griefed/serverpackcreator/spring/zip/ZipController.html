@@ -242,9 +242,9 @@ public&nbsp;org.springframework.http.ResponseEntity&lt;java.lang.String&gt;&nbsp
 <div class="block">Upload a file and check whether it is a ServerPackCreator valid ZIP-archive.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>file</code> - <code>MultipartFile</code> The file uploaded to ServerPackCreator.</dd>
+<dd><code>file</code> - The file uploaded to ServerPackCreator.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>String List. A list on encountered errors, if any.</dd>
+<dd>A list on encountered errors, if any.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code>java.io.IOException</code> - if an errors occurred saving or reading the file.</dd>
 </dl>
@@ -275,17 +275,14 @@ public&nbsp;org.springframework.http.ResponseEntity&lt;java.lang.String&gt;&nbsp
  <code>modLoaderVersion</code><br></div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>zipName</code> - <code>String</code> The name of the previously uploaded ZIP-archive.</dd>
-<dd><code>clientMods</code> - <code>String</code> A comma separated list of clientside-only mods to
-                         exclude from the server pack.</dd>
-<dd><code>minecraftVersion</code> - <code>String</code> The Minecraft version the modpack, and therefor the
-                         server pack, uses.</dd>
-<dd><code>modLoader</code> - <code>String</code> The modloader the modpack, and therefor the server pack,
-                         uses.</dd>
-<dd><code>modLoaderVersion</code> - <code>String</code> The modloader version the modpack, and therefor the
-                         server pack, uses.</dd>
+<dd><code>zipName</code> - The name of the previously uploaded ZIP-archive.</dd>
+<dd><code>clientMods</code> - A comma separated list of clientside-only mods to exclude from the
+                         server pack.</dd>
+<dd><code>minecraftVersion</code> - The Minecraft version the modpack, and therefor the server pack, uses.</dd>
+<dd><code>modLoader</code> - The modloader the modpack, and therefor the server pack, uses.</dd>
+<dd><code>modLoaderVersion</code> - The modloader version the modpack, and therefor the server pack, uses.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><a href="../../../../../de/griefed/serverpackcreator/spring/NotificationResponse.html" title="class in de.griefed.serverpackcreator.spring"><code>NotificationResponse</code></a> with information about the result.</dd>
+<dd>Notification message with information about the result.</dd>
 </dl>
 </li>
 </ul>
