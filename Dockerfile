@@ -1,27 +1,3 @@
-FROM ghcr.io/griefed/baseimage-ubuntu-jdk-8:2.0.12 AS builder
-
-ARG BRANCH_OR_TAG=webservice
-ARG HOSTER=git.griefed.de
-ARG VERSION=dev
-
-RUN \
-  apt-get update && apt-get upgrade -y && \
-  apt-get install -y \
-    libatomic1 && \
-  git clone \
-    -b $BRANCH_OR_TAG \
-      https://$HOSTER/Griefed/ServerPackCreator.git \
-        /tmp/serverpackcreator && \
-  chmod +x /tmp/serverpackcreator/gradlew* && \
-  cd /tmp/serverpackcreator && \
-  rm -Rf /tmp/serverpackcreator/backend/test && \
-  ./gradlew about installQuasar cleanFrontend assembleFrontend copyDist build -Pversion=$VERSION --info --full-stacktrace -x test && \
-  ls -ahl ./build/libs/ && \
-  mv \
-    ./build/libs/serverpackcreator-$VERSION.jar \
-    ./build/libs/serverpackcreator.jar && \
-  ls -ahl ./build/libs/
-
 FROM ghcr.io/griefed/baseimage-ubuntu-jdk-8:2.0.12
 
 ARG VERSION=dev
@@ -48,7 +24,7 @@ RUN \
       /root/.cache \
       /tmp/*
 
-COPY --from=builder tmp/serverpackcreator/build/libs/serverpackcreator.jar /app/serverpackcreator/serverpackcreator.jar
+COPY build/libs/ServerPackCreator-${VERSION}.jar /app/serverpackcreator/serverpackcreator.jar
 
 COPY backend/main/resources/de/griefed/resources/server_files /defaults/server_files
 
