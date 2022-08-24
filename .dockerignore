@@ -26,12 +26,8 @@ backend/main/resources/third-party-licenses
 backend/main/resources/application.properties
 backend/main/resources/banner.txt
 backend/main/resources/CHANGELOG.md
-backend/main/resources/CODE_OF_CONDUCT.md
-backend/main/resources/CONTRIBUTING.md
-backend/main/resources/LICENSE
 backend/main/resources/log4j2.component.properties
 backend/main/resources/log4j2.xml
-backend/main/resources/README.md
 frontend
 gradle
 testruns

@@ -36,9 +36,9 @@ COPY --chown=grfd:grfd build/libs/ServerPackCreator-${VERSION}.jar /app/serverpa
 
 COPY --chown=grfd:grfd backend/main/resources/de/griefed/resources/server_files /defaults/server_files
 
-COPY --chown=grfd:grfd backend/main/resources/de/griefed/resources/serverpackcreator.properties /defaults/serverpackcreator.properties
+COPY --chown=grfd:grfd backend/main/resources/serverpackcreator.properties /defaults/serverpackcreator.properties
 
-COPY --chown=grfd:grfd backend/main/resources/de/griefed/resources/de/griefed/resources/serverpackcreator.conf /defaults/serverpackcreator.conf
+COPY --chown=grfd:grfd backend/main/resources/de/griefed/resources/serverpackcreator.conf /defaults/serverpackcreator.conf
 
 VOLUME /data /server-packs
 
