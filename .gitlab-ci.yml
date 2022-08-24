@@ -299,6 +299,10 @@ Build Release:
 Sign Java Publication:
   stage: Build Release
   image: ghcr.io/griefed/baseimage-ubuntu-jdk-8:2.0.12
+  needs:
+    - job: Build Release
+      artifacts: false
+      optional: false
   before_script:
     - echo "**** Running in $CI_JOB_ID ****"
     - echo "**** Java location ****"
