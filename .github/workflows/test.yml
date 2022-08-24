@@ -6,10 +6,16 @@ on:
   workflow_dispatch:
 
 jobs:
-  gradle:
+  test:
     runs-on: ubuntu-latest
     steps:
+
       - uses: actions/checkout@v3
+
+      - name: Get branch name
+        id: branch-name
+        uses: tj-actions/branch-names@v5
+
       - name: Set up JDK 8
         uses: actions/setup-java@v3
         with:
@@ -17,41 +23,40 @@ jobs:
           java-version: '8'
           check-latest: true
           cache: 'gradle'
+
       - name: Where is Java
         run: which java
+
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
+
       - name: Build with Gradle
-        run: ./gradlew about installQuasar cleanFrontend assembleFrontend copyDist build createExe --info --stacktrace
+        run: ./gradlew -Pversion=${{ steps.branch-name.outputs.current_branch }} about installQuasar cleanFrontend assembleFrontend copyDist build createExe --info --stacktrace
+
       - name: List files in libs
         run: ls -ahl build/libs
+
       - uses: actions/upload-artifact@v3
         with:
-          name: build-artifacts-gradle
+          name: build-artifacts
           path: |
             build
             frontend/dist
           if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
 
-  docker:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Get branch name
-        id: branch-name
-        uses: tj-actions/branch-names@v5
       # DOCKER RELATED
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
+
       - name: Build
         uses: docker/build-push-action@v3
         with:
           context: .
           file: ./Dockerfile
           build-args: |
-            BRANCH_OR_TAG=${{ steps.branch-name.outputs.current_branch }}
-            HOSTER=github.com
+            VERSION=${{ steps.branch-name.outputs.current_branch }}
           platforms: linux/amd64,linux/arm/v7,linux/arm64
           push: false
