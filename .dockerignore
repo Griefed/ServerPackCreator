@@ -16,6 +16,7 @@ logs
 tests
 src/test
 addons
+!backend/main/resources/de/griefed/resources/server_files
 backend
 frontend
 gradle
