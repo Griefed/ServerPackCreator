@@ -219,6 +219,9 @@ Build Release:
   stage: Build Release
   image: ghcr.io/griefed/baseimage-ubuntu-jdk-8:2.0.12
   needs:
+    - job: Gradle Test
+      artifacts: false
+      optional: false
     - job: release_job
       optional: true
       artifacts: false
