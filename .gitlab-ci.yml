@@ -47,8 +47,6 @@ sast:
 .sast-analyzer:
   extends: sast
   allow_failure: true
-  # `rules` must be overridden explicitly by each child job
-  # see https://gitlab.com/gitlab-org/gitlab/-/issues/218444
   script:
     - /analyzer run
 
@@ -115,8 +113,6 @@ semgrep-sast:
   image: "$SECURE_ANALYZERS_PREFIX/secrets:$SECRETS_ANALYZER_VERSION"
   services: []
   allow_failure: true
-  # `rules` must be overridden explicitly by each child job
-  # see https://gitlab.com/gitlab-org/gitlab/-/issues/218444
   artifacts:
     reports:
       secret_detection: gl-secret-detection-report.json
@@ -153,14 +149,12 @@ Gradle Test:
     - echo "**** Building ServerPackCreator ****"
     - "./gradlew installQuasar cleanFrontend assembleFrontend copyDist build createExe --info --full-stacktrace"
     - echo "**** Renaming files to please the eye ****"
-    - mv build/libs/${CI_PROJECT_NAME}.exe build/libs/ServerPackCreator-$CI_COMMIT_REF_NAME.exe
-    - mv build/libs/${CI_PROJECT_NAME}-dev.jar build/libs/ServerPackCreator-$CI_COMMIT_REF_NAME.jar
-#    - echo "**** Fetching jacoco test coverage ****"
-#    - cat build/reports/jacoco/test/html/index.html | grep -o 'Total[^%]*%'
-#  coverage: '/Total.*?([0-9]{1,3})%/'
+    - mv build/libs/${CI_PROJECT_NAME}.exe build/libs/ServerPackCreator-${CI_COMMIT_REF_NAME}.exe
+    - mv build/libs/${CI_PROJECT_NAME}-dev.jar build/libs/ServerPackCreator-${CI_COMMIT_REF_NAME}.jar
   artifacts:
     when: always
     name: "$CI_COMMIT_BRANCH-$CI_COMMIT_SHORT_SHA-$CI_JOB_NAME"
+    expose_as: "Gradle-Test-Artifacts"
     untracked: true
     paths:
       - build
@@ -184,19 +178,23 @@ Gradle Test:
 Docker Test:
   stage: Tests
   image: ghcr.io/griefed/gitlab-ci-cd:2.0.9
+  needs:
+    - job: Gradle Test
+      artifacts: true
+      optional: false
   before_script:
     - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
     - docker buildx create --use --name grfdbuilder
   script:
     - docker buildx build --no-cache --platform linux/amd64,linux/arm/v7,linux/arm64
-      --build-arg BRANCH_OR_TAG=$CI_COMMIT_REF_NAME
-      --build-arg HOSTER=$CI_SERVER_HOST
+      --build-arg VERSION=$CI_COMMIT_REF_NAME
       --file Dockerfile .
-  rules:
-    - if: '$CI_SERVER_HOST == "git.griefed.de"' # Remove once GitLab no longer throws javax.net.ssl.SSLHandshakeException: Remote host terminated the handshake
+#  rules:
+#    - if: '$CI_SERVER_HOST == "git.griefed.de"' # Remove once GitLab no longer throws javax.net.ssl.SSLHandshakeException: Remote host terminated the handshake
 
 Generate Release:
   stage: Release
+  image: ghcr.io/griefed/gitlab-ci-cd:2.0.9
   needs:
     - job: Gradle Test
       artifacts: false
@@ -210,7 +208,6 @@ Generate Release:
       artifacts: false
     - job: secret_detection
       artifacts: false
-  image: ghcr.io/griefed/gitlab-ci-cd:2.0.9
   script:
     - npx semantic-release
   rules:
@@ -460,6 +457,10 @@ Publish OSSRH:
 Build Docker Release:
   stage: Build Release
   image: ghcr.io/griefed/gitlab-ci-cd:2.0.9
+  needs:
+    - job: Gradle Test
+      artifacts: true
+      optional: false
   before_script:
     - docker login -u "$DOCKERHUB_USER" -p "$DOCKERHUB_TOKEN" docker.io
     - docker login -u "$DOCKERHUB_USER" -p "$GITHUB_TOKEN" ghcr.io
@@ -471,9 +472,7 @@ Build Docker Release:
       --tag "ghcr.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:latest"
       --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_TAG"
       --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:latest"
-      --build-arg BRANCH_OR_TAG=$CI_COMMIT_TAG
-      --build-arg HOSTER=$CI_SERVER_HOST
-      --build-arg VERSION=$CI_COMMIT_TAG
+      --build-arg VERSION=$CI_COMMIT_REF_NAME
       --file Dockerfile .
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
@@ -481,6 +480,10 @@ Build Docker Release:
 Build Docker PreRelease:
   stage: Build Release
   image: ghcr.io/griefed/gitlab-ci-cd:2.0.9
+  needs:
+    - job: Gradle Test
+      artifacts: true
+      optional: false
   before_script:
     - docker login -u "$DOCKERHUB_USER" -p "$DOCKERHUB_TOKEN" docker.io
     - docker login -u "$DOCKERHUB_USER" -p "$GITHUB_TOKEN" ghcr.io
@@ -490,9 +493,7 @@ Build Docker PreRelease:
     - docker buildx build --push --no-cache --platform linux/amd64,linux/arm/v7,linux/arm64
       --tag "ghcr.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_TAG"
       --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_TAG"
-      --build-arg BRANCH_OR_TAG=$CI_COMMIT_TAG
-      --build-arg HOSTER=$CI_SERVER_HOST
-      --build-arg VERSION=$CI_COMMIT_TAG
+      --build-arg VERSION=$CI_COMMIT_REF_NAME
       --file Dockerfile .
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-(alpha|beta)\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
