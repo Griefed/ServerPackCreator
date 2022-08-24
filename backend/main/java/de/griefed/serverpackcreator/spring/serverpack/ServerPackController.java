@@ -56,7 +56,7 @@ public class ServerPackController {
   /**
    * GET request for downloading a server pack by the id in the database.
    *
-   * @param id Integer. The id of the server pack in the database.
+   * @param id The id of the server pack in the database.
    * @return ResponseEntity Resource. Gives the requester the requested file as a download, if it
    * was found.
    * @author Griefed
@@ -69,7 +69,7 @@ public class ServerPackController {
   /**
    * GET request for retrieving a list of all available server packs.
    *
-   * @return List {@link ServerPackModel}. A list of all available server packs on this instance.
+   * @return A list of all available server packs on this instance.
    * @author Griefed
    */
   @GetMapping("all")
@@ -89,8 +89,8 @@ public class ServerPackController {
   /**
    * GET request for voting whether a server pack works or not.
    *
-   * @param voting String. The vote, consisting of the id of the server pack and whether the vote
-   *               should be incremented or decremented. Example <code>42,up</code> or
+   * @param voting The vote, consisting of the id of the server pack and whether the vote should be
+   *               incremented or decremented. Example <code>42,up</code> or
    *               <code>23,down</code>.
    * @return ResponseEntity OK/BadRequest/NotFound
    * @author Griefed

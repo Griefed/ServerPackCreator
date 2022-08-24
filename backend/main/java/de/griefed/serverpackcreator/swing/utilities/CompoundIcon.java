@@ -150,7 +150,7 @@ public class CompoundIcon implements Icon {
   /**
    * Get the Axis along which each icon is painted.
    *
-   * @return the Axis
+   * @return The Axis
    */
   public Axis getAxis() {
     return axis;
@@ -159,7 +159,7 @@ public class CompoundIcon implements Icon {
   /**
    * Get the gap between each icon
    *
-   * @return the gap in pixels
+   * @return The gap in pixels
    */
   public int getGap() {
     return gap;
@@ -168,7 +168,7 @@ public class CompoundIcon implements Icon {
   /**
    * Get the alignment of the icon on the x-axis
    *
-   * @return the alignment
+   * @return The alignment
    */
   public float getAlignmentX() {
     return alignmentX;
@@ -177,7 +177,7 @@ public class CompoundIcon implements Icon {
   /**
    * Get the alignment of the icon on the y-axis
    *
-   * @return the alignment
+   * @return The alignment
    */
   public float getAlignmentY() {
     return alignmentY;
@@ -186,7 +186,7 @@ public class CompoundIcon implements Icon {
   /**
    * Get the number of Icons contained in this CompoundIcon.
    *
-   * @return the total number of Icons
+   * @return The total number of Icons
    */
   public int getIconCount() {
     return icons.length;
@@ -195,8 +195,8 @@ public class CompoundIcon implements Icon {
   /**
    * Get the Icon at the specified index.
    *
-   * @param index the index of the Icon to be returned
-   * @return the Icon at the specifed index
+   * @param index The index of the Icon to be returned
+   * @return The Icon at the specifed index
    * @throws IndexOutOfBoundsException if the index is out of range
    */
   public Icon getIcon(int index) {
@@ -206,7 +206,7 @@ public class CompoundIcon implements Icon {
   /**
    * Gets the width of this icon.
    *
-   * @return the width of the icon in pixels.
+   * @return The width of the icon in pixels.
    */
   @Override
   public int getIconWidth() {
@@ -236,7 +236,7 @@ public class CompoundIcon implements Icon {
   /**
    * Gets the height of this icon.
    *
-   * @return the height of the icon in pixels.
+   * @return The height of the icon in pixels.
    */
   @Override
   public int getIconHeight() {
@@ -265,9 +265,9 @@ public class CompoundIcon implements Icon {
    * Paint the icons of this compound icon at the specified location
    *
    * @param c The component on which the icon is painted
-   * @param g the graphics context
-   * @param x the X coordinate of the icon's top-left corner
-   * @param y the Y coordinate of the icon's top-left corner
+   * @param g The graphics context
+   * @param x The X coordinate of the icon's top-left corner
+   * @param y The Y coordinate of the icon's top-left corner
    */
   @Override
   public void paintIcon(Component c, Graphics g, int x, int y) {

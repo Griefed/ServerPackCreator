@@ -29,7 +29,7 @@ import java.util.List;
  *
  * @author Griefed
  */
-class MinecraftServerMeta {
+final class MinecraftServerMeta {
 
   private final MinecraftClientMeta MINECRAFT_CLIENT_META;
   private final List<MinecraftServer> RELEASES = new ArrayList<>();
@@ -42,7 +42,7 @@ class MinecraftServerMeta {
    * @param minecraftClientMeta Instance of {@link MinecraftClientMeta}.
    * @author Griefed
    */
-  protected MinecraftServerMeta(MinecraftClientMeta minecraftClientMeta) {
+  MinecraftServerMeta(MinecraftClientMeta minecraftClientMeta) {
     this.MINECRAFT_CLIENT_META = minecraftClientMeta;
   }
 
@@ -51,7 +51,7 @@ class MinecraftServerMeta {
    *
    * @author Griefed
    */
-  protected void update() {
+  void update() {
 
     this.RELEASES.clear();
     MINECRAFT_CLIENT_META.releases().forEach(client -> this.RELEASES.add(client.server()));
@@ -71,20 +71,20 @@ class MinecraftServerMeta {
   /**
    * Get a list of {@link MinecraftServer} of the {@link Type#RELEASE}.
    *
-   * @return {@link MinecraftServer}-list of the {@link Type#RELEASE}.
+   * @return Release server-list of the {@link Type#RELEASE}.
    * @author Griefed
    */
-  protected List<MinecraftServer> releases() {
+  List<MinecraftServer> releases() {
     return RELEASES;
   }
 
   /**
    * Get a list of {@link MinecraftServer} of the {@link Type#SNAPSHOT}.
    *
-   * @return {@link MinecraftServer}-list of the {@link Type#SNAPSHOT}.
+   * @return Snapshot server-list of the {@link Type#SNAPSHOT}.
    * @author Griefed
    */
-  protected List<MinecraftServer> snapshots() {
+  List<MinecraftServer> snapshots() {
     return SNAPSHOTS;
   }
 
@@ -92,10 +92,10 @@ class MinecraftServerMeta {
    * Get the {@link MinecraftServer} meta.<br> key: {@link String} Minecraft version<br> value:
    * {@link MinecraftServer} for said Minecraft version
    *
-   * @return {@link HashMap} containing the {@link MinecraftServerMeta}.
+   * @return Map containing the {@link MinecraftServerMeta}.
    * @author Griefed
    */
-  protected HashMap<String, MinecraftServer> meta() {
+  HashMap<String, MinecraftServer> meta() {
     return meta;
   }
 }

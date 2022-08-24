@@ -80,7 +80,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableScheduling
 @PropertySources({
     @PropertySource("classpath:application.properties"),
-    @PropertySource("classpath:serverpackcreator.properties")
+    @PropertySource("classpath:serverpackcreator.properties"),
+    @PropertySource("file:./serverpackcreator.properties")
 })
 public class ServerPackCreator {
 
@@ -121,13 +122,14 @@ public class ServerPackCreator {
    * @author Griefed
    */
   public ServerPackCreator(String[] args) {
-    this.COMMANDLINE_PARSER = new CommandlineParser(args);
-    this.APPLICATIONPROPERTIES = new ApplicationProperties();
+    ARGS = args;
+    COMMANDLINE_PARSER = new CommandlineParser(args);
+    APPLICATIONPROPERTIES = new ApplicationProperties();
 
     if (COMMANDLINE_PARSER.getLanguageToUse().isPresent()) {
-      this.I18N = new I18n(APPLICATIONPROPERTIES, COMMANDLINE_PARSER.getLanguageToUse().get());
+      I18N = new I18n(APPLICATIONPROPERTIES, COMMANDLINE_PARSER.getLanguageToUse().get());
     } else {
-      this.I18N = new I18n(APPLICATIONPROPERTIES);
+      I18N = new I18n(APPLICATIONPROPERTIES);
     }
   }
 
@@ -136,10 +138,6 @@ public class ServerPackCreator {
       serverPackCreator = new ServerPackCreator(args);
     }
     return serverPackCreator;
-  }
-
-  public static String[] getArgs() {
-    return ARGS;
   }
 
   /**
@@ -154,9 +152,18 @@ public class ServerPackCreator {
    * @author Griefed
    */
   public static void main(String[] args) throws IOException {
-    ARGS = args;
-    serverPackCreator = getServerPackCreator(ARGS);
+    serverPackCreator = getServerPackCreator(args);
     serverPackCreator.run();
+  }
+
+  /**
+   * The arguments with which ServerPackCreator was started.
+   *
+   * @return All arguments with which ServerPackCreator was started.
+   * @author Griefed
+   */
+  public static String[] getArgs() {
+    return ARGS;
   }
 
   /**
@@ -345,7 +352,7 @@ public class ServerPackCreator {
   /**
    * Run ServerPackCreator in a specific {@link CommandlineParser.Mode}.
    *
-   * @param modeToRunIn {@link CommandlineParser.Mode} to run in.
+   * @param modeToRunIn Mode to run in.
    * @throws IOException if the run fails.
    * @author Griefed
    */
@@ -885,8 +892,10 @@ public class ServerPackCreator {
     if (!APPLICATIONPROPERTIES.DEFAULT_CONFIG().exists()) {
 
       LOG.warn("No serverpackcreator.conf found...");
-      LOG.info("If you want to run ServerPackCreator in CLI-mode, a serverpackcreator.conf is required.");
-      LOG.info("Either copy an existing config, or run ServerPackCreator with the '-cgen'-argument to generate one via commandline.");
+      LOG.info(
+          "If you want to run ServerPackCreator in CLI-mode, a serverpackcreator.conf is required.");
+      LOG.info(
+          "Either copy an existing config, or run ServerPackCreator with the '-cgen'-argument to generate one via commandline.");
       System.exit(1);
 
     } else {
@@ -922,23 +931,8 @@ public class ServerPackCreator {
    */
   public boolean checkForConfig() {
     boolean firstRun = false;
-    if (APPLICATIONPROPERTIES.OLD_CONFIG().exists()) {
-      try {
-        Files.copy(
-            APPLICATIONPROPERTIES.OLD_CONFIG().getAbsoluteFile().toPath(),
-            APPLICATIONPROPERTIES.DEFAULT_CONFIG().getAbsoluteFile().toPath());
 
-        if (APPLICATIONPROPERTIES.OLD_CONFIG().delete()) {
-
-          LOG.info("creator.conf migrated to serverpackcreator.conf.");
-        }
-
-      } catch (IOException ex) {
-        if (!ex.toString().startsWith("java.nio.file.FileAlreadyExistsException")) {
-          LOG.error("Error renaming creator.conf to serverpackcreator.conf.", ex);
-        }
-      }
-    } else if (!APPLICATIONPROPERTIES.DEFAULT_CONFIG().exists()
+    if (!APPLICATIONPROPERTIES.DEFAULT_CONFIG().exists()
         && COMMANDLINE_PARSER.getModeToRunIn() != Mode.CLI
         && COMMANDLINE_PARSER.getModeToRunIn() != Mode.CGEN) {
       try {
@@ -1176,8 +1170,8 @@ public class ServerPackCreator {
      * {@link #getLanguageToUse()}.<br> {@link #getLanguageToUse()} is wrapped in an
      * {@link Optional} to quickly determine whether a language was specified.
      *
-     * @param args {@link String}-array of commandline-arguments with which ServerPackCreator was
-     *             started. Typically passed from {@link ServerPackCreator}.
+     * @param args Array of commandline-arguments with which ServerPackCreator was started.
+     *             Typically passed from {@link ServerPackCreator}.
      * @author Griefed
      */
     public CommandlineParser(String[] args) {
@@ -1271,7 +1265,7 @@ public class ServerPackCreator {
     /**
      * Get the mode in which ServerPackCreator should be run in.
      *
-     * @return {@link Mode} in which ServerPackCreator should be run in.
+     * @return Mode in which ServerPackCreator should be run in.
      * @author Griefed
      */
     protected Mode getModeToRunIn() {
@@ -1281,7 +1275,7 @@ public class ServerPackCreator {
     /**
      * Get the locale in which ServerPackCreator should be run in, wrapped in an {@link Optional}.
      *
-     * @return {@link String} The locale in which ServerPackCreator should be run in, wrapped in an
+     * @return The locale in which ServerPackCreator should be run in, wrapped in an
      * {@link Optional}.
      * @author Griefed
      */
@@ -1354,7 +1348,7 @@ public class ServerPackCreator {
       /**
        * Textual representation of this mode.
        *
-       * @return {@link String} Textual representation of this mode.
+       * @return Textual representation of this mode.
        * @author Griefed
        */
       public String argument() {

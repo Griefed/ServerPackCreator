@@ -59,7 +59,7 @@ public class VersionsController {
   /**
    * Get a list of all available Minecraft versions.
    *
-   * @return String List. Returns a list of all available Minecraft verions.
+   * @return Returns a list of all available Minecraft verions.
    * @author Griefed
    */
   @GetMapping(value = "/minecraft")
@@ -77,10 +77,8 @@ public class VersionsController {
   /**
    * Get a list of all available Forge versions for a specific Minecraft version.
    *
-   * @param minecraftVersion String. The Minecraft version you want to get a list of Forge versions
-   *                         for.
-   * @return String List. Returns a list of all available Forge versions for the specified Minecraft
-   * version.
+   * @param minecraftVersion The Minecraft version you want to get a list of Forge versions for.
+   * @return Returns a list of all available Forge versions for the specified Minecraft version.
    * @author Griefed
    */
   @GetMapping(value = "/forge/{minecraftversion}")
@@ -110,7 +108,7 @@ public class VersionsController {
   /**
    * Get a list of all available Fabric versions.
    *
-   * @return String List. Returns a list of all available Fabric versions.
+   * @return Returns a list of all available Fabric versions.
    * @author Griefed
    */
   @GetMapping(value = "/fabric")
@@ -151,7 +149,7 @@ public class VersionsController {
   /**
    * Get a list of all available Fabric versions.
    *
-   * @return String List. Returns a list of all available Fabric versions.
+   * @return Returns a list of all available Fabric versions.
    * @author Griefed
    */
   @GetMapping(value = "/quilt")

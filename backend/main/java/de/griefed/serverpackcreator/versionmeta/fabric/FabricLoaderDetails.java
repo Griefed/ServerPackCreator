@@ -29,28 +29,28 @@ import java.util.Optional;
  *
  * @author Griefed
  */
-public class FabricLoaderDetails {
+final class FabricLoaderDetails {
 
   private final ObjectMapper OBJECT_MAPPER;
 
   /**
-   * @param objectMapper {@link ObjectMapper} for acquiring and parsing JSON.
+   * @param objectMapper Object mapper for JSON parsing.
    * @author Griefed
    */
-  public FabricLoaderDetails(ObjectMapper objectMapper) {
+  FabricLoaderDetails(ObjectMapper objectMapper) {
     this.OBJECT_MAPPER = objectMapper;
   }
 
   /**
    * Get the details for a given Minecraft and Fabric version combination.
    *
-   * @param minecraftVersion {@link String} Minecraft version.
-   * @param modloaderVersion {@link String} Fabric version,
-   * @return {@link FabricDetails} for a given Minecraft and Fabric version combination, wrappen in
-   * an {@link Optional}.
+   * @param minecraftVersion Minecraft version.
+   * @param modloaderVersion Fabric version,
+   * @return Details for a given Minecraft and Fabric version combination, wrappen in an
+   * {@link Optional}.
    * @author Griefed
    */
-  public Optional<FabricDetails> getDetails(String minecraftVersion, String modloaderVersion) {
+  Optional<FabricDetails> getDetails(String minecraftVersion, String modloaderVersion) {
     try {
       return Optional.of(
           OBJECT_MAPPER.readValue(

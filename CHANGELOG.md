@@ -1,3 +1,131 @@
+## [3.12.0-beta.7](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.12.0-beta.6...3.12.0-beta.7) (2022-08-23)
+
+
+### 🧪 Tests
+
+* Read correct script for contains-assertion. ([9a4f71e](https://git.griefed.de/Griefed/ServerPackCreator/commit/9a4f71e8bd99610134c5ec4b54056e166abe3fef))
+
+
+### 🛠 Fixes
+
+* **Scripts:** Set and write default values in start scripts ([fb621be](https://git.griefed.de/Griefed/ServerPackCreator/commit/fb621bee7f347b3c87eb3def09385d314ff31e9b))
+
+## [3.12.0-beta.6](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.12.0-beta.5...3.12.0-beta.6) (2022-08-22)
+
+
+### :scissors: Refactor
+
+* **Mod scanning:** Improve logging of exclusions, dependencies etc. ([d04f100](https://git.griefed.de/Griefed/ServerPackCreator/commit/d04f100c39db69b665a7895cdcf8ce495ef5acf1))
+
+
+### 💎 Improvements
+
+* **Menubar i18n:** Replace 'New configuration' in File-menu with language key, allowing for translation ([b20a1d4](https://git.griefed.de/Griefed/ServerPackCreator/commit/b20a1d4c6a0eef7b0d6f1157768db429b9e6b32b))
+
+
+### 🦊 CI/CD
+
+* **GitLab:** Switch newline to line break in release job for gitlab.com ([9f264db](https://git.griefed.de/Griefed/ServerPackCreator/commit/9f264dbe6a8f753b0277206c5325f748ec3281df))
+
+
+### 🛠 Fixes
+
+* **Fallback Mods:** Acquire correct fallback clientside-only mods list depending on the currently set filter method. ([54dd1b7](https://git.griefed.de/Griefed/ServerPackCreator/commit/54dd1b75b78a5b77fd828968c6acd408bdc89074))
+* **GUI Config Loading:** Correctly set modloader versions when loading from a config. ([8edb5fb](https://git.griefed.de/Griefed/ServerPackCreator/commit/8edb5fb69437cc0d9329d8af7f5bcd6e878767a7))
+
+
+### Other
+
+* **deps-dev:** bump @types/node from 18.7.6 to 18.7.9 in /frontend ([bb868ef](https://git.griefed.de/Griefed/ServerPackCreator/commit/bb868ef9a9d5dc38aaf5494b6f1ce80025f34b42))
+* **deps:** bump jgroups from 5.2.5.Final to 5.2.6.Final ([3f6c09f](https://git.griefed.de/Griefed/ServerPackCreator/commit/3f6c09f5e9144350da26fc99c3af92ede83dacbb))
+* **deps:** bump org.springframework.boot from 2.7.2 to 2.7.3 ([e51b933](https://git.griefed.de/Griefed/ServerPackCreator/commit/e51b933739600aca76e4bc34a0859636b3fd7e0b))
+* **deps:** bump spring-boot-devtools from 2.7.2 to 2.7.3 ([5e2efcf](https://git.griefed.de/Griefed/ServerPackCreator/commit/5e2efcff9900daaa885be6857b26fb8a587a2b3d))
+* **deps:** bump spring-boot-starter-artemis from 2.7.2 to 2.7.3 ([1bd1486](https://git.griefed.de/Griefed/ServerPackCreator/commit/1bd1486f9c19408362523f4feea003d23f9397fc))
+* **deps:** bump spring-boot-starter-data-jpa from 2.7.2 to 2.7.3 ([a0672bb](https://git.griefed.de/Griefed/ServerPackCreator/commit/a0672bb67aae3df6e3141f5b6f961250c1556476))
+* **deps:** bump spring-boot-starter-log4j2 from 2.7.2 to 2.7.3 ([c7eb1aa](https://git.griefed.de/Griefed/ServerPackCreator/commit/c7eb1aad62d42a179e0199f55203b9f302e2bffc))
+* **deps:** bump spring-boot-starter-test from 2.7.2 to 2.7.3 ([5b3a7c4](https://git.griefed.de/Griefed/ServerPackCreator/commit/5b3a7c48ed7b46002fd740bd353d9c73fe936661))
+* **deps:** bump spring-boot-starter-web from 2.7.2 to 2.7.3 ([cc79cbc](https://git.griefed.de/Griefed/ServerPackCreator/commit/cc79cbcc8fa4fc41dc14b8fbbbe0c15726f0c3c4))
+
+## [3.12.0-beta.5](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.12.0-beta.4...3.12.0-beta.5) (2022-08-21)
+
+
+### 🛠 Fixes
+
+* **GitLab CI:** Run workflow for tag pipelines when a release was published. ([696e387](https://git.griefed.de/Griefed/ServerPackCreator/commit/696e3879e91fa789509d9d4ae63353d2cc5cf4ee))
+
+## [3.12.0-beta.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.12.0-beta.3...3.12.0-beta.4) (2022-08-21)
+
+
+### 🦊 CI/CD
+
+* **GitLab:** Point in the right directions for changelogs in GitLab.com releases. ([0207b67](https://git.griefed.de/Griefed/ServerPackCreator/commit/0207b6794fa6d86f2e7b2cbba52b890969f47f90))
+* **GitLab:** Prevent workflow from running when the branch variable is null, a commit tag variable is available and the commit title is that of a release. ([6968424](https://git.griefed.de/Griefed/ServerPackCreator/commit/696842423f4cb55d60ec5182c68796f276f8954f))
+
+
+### 🛠 Fixes
+
+* **Properties:** Only overwrite autodiscovery-property when legacy value is present. ([59ab398](https://git.griefed.de/Griefed/ServerPackCreator/commit/59ab3989cec8c00ed2f75ffa5f9b4ab00dbf6891))
+
+## [3.12.0-beta.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.12.0-beta.2...3.12.0-beta.3) (2022-08-20)
+
+
+### 🛠 Fixes
+
+* **GitHub CI:** Acquire the release notes from GitLab via GitLab API ([1517c19](https://git.griefed.de/Griefed/ServerPackCreator/commit/1517c19088fbb5ecbae52c5d26c2dfc171bc31a9))
+
+
+### Other
+
+* Remove duplicate entry from CHANGELOG.md ([91de213](https://git.griefed.de/Griefed/ServerPackCreator/commit/91de213da7d0019966553f335b1d82e69a8456e5))
+
+## [3.12.0-beta.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.12.0-beta.1...3.12.0-beta.2) (2022-08-20)
+
+
+### :scissors: Refactor
+
+* Mark appropriate classes as final ([4d2b91a](https://git.griefed.de/Griefed/ServerPackCreator/commit/4d2b91aaea4bf750fb190cdac6770c9c05b4c018))
+* **ApplicationProperties:** Custom getter and setter to make property handling easier and more reliable. ([f7e21f4](https://git.griefed.de/Griefed/ServerPackCreator/commit/f7e21f46dbf4760057a00c341ebd13d33eb916bf))
+
+
+### 🦊 CI/CD
+
+* **Node and Frontend:** Skip node and quasar installation if the corresponding folders are already present ([46c83db](https://git.griefed.de/Griefed/ServerPackCreator/commit/46c83dbc168732444c7e64c5e7fafe1dfd1ce98a))
+* **Caching:** Cache gradle and node dependencies to improve build and test speeds ([05225f3](https://git.griefed.de/Griefed/ServerPackCreator/commit/05225f3ae7942234848145346c0a53db66865bb8))
+* **Caching:** Move caches to appropriate jobs and introduce pull-push accordingly. Give artifacts an appropriate name depending on branch, commit short sha and the ci job name. ([4365451](https://git.griefed.de/Griefed/ServerPackCreator/commit/436545122357841d8fc86db89363e7c09fe3954a))
+* **GitHub:** Migrate to Zulu JDK 8. Cache gradle dependencies. Acquire changelog from CHANGELOG.md and create release and pre-release with it. ([e8ee712](https://git.griefed.de/Griefed/ServerPackCreator/commit/e8ee7128f117a871c277bdf3c4fbf12539485fd8))
+* **Maven Publish:** Add and configure Nexus Staging plugin to automate stage,close and release on OSSRH ([4d991be](https://git.griefed.de/Griefed/ServerPackCreator/commit/4d991bea0e371fc719f53a94bb26aee604a7fd22))
+* **Maven Publish:** Delete old maven publish job which is no longer needed. ([f68ae85](https://git.griefed.de/Griefed/ServerPackCreator/commit/f68ae85e92cac6cfb3ad923982b6cd0d5844c063))
+* **Qodana:** Exclude the frontend from the Qodana checks and reports ([972fe32](https://git.griefed.de/Griefed/ServerPackCreator/commit/972fe329e003a4d160dc36092824167eaf9c2018))
+
+
+### 🛠 Fixes
+
+* **User-specified clientside-only mod exclusion:** Correctly scan with user-specified values and excluded based on the currently set filter. ([92fcf06](https://git.griefed.de/Griefed/ServerPackCreator/commit/92fcf061ce3897b100d547612394a67303e557c1))
+
+
+### Other
+
+* Latest Changelog ([2906f63](https://git.griefed.de/Griefed/ServerPackCreator/commit/2906f63e083a111c29defa1b50ca110fa6c1e99e))
+* **Dependencies:** Update dependencies ([ca946a4](https://git.griefed.de/Griefed/ServerPackCreator/commit/ca946a47c897875bd4172d3319f1f0686b653865))
+
+## [3.12.0-beta.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.11.1...3.12.0-beta.1) (2022-08-14)
+
+
+### :scissors: Refactor
+
+* **Start:** When running as webservice, read serverpackcreator.properties, too. Re-order assignment for ARGS. ([6052855](https://git.griefed.de/Griefed/ServerPackCreator/commit/6052855a3cff5165ce3369bffa3a6e032f1b3f88))
+
+
+### 💎 Improvements
+
+* **Minecraft snapshot and pre-release versions:** Opt-in for listing Minecraft pre-release and snapshot versions via `de.griefed.serverpackcreator.minecraft.snapshots` ([9858322](https://git.griefed.de/Griefed/ServerPackCreator/commit/9858322b5030d18073e361ac51dccc29eb5fd7dd))
+* **User-specified clientside-only mod exclusion filters:** Allow users to change the way SPC filters user-specified clientside-only mods by introducting an additional property de.griefed.serverpackcreator.serverpack.autodiscovery.filter ([eb024f4](https://git.griefed.de/Griefed/ServerPackCreator/commit/eb024f45dedcad431868a12c31d690408975fc52))
+
+
+### 🛠 Fixes
+
+* **ApplicationProperties:** Remove unnecessary and conflicting declaration ([3b16aa4](https://git.griefed.de/Griefed/ServerPackCreator/commit/3b16aa4eb0044b259ff1e14c030ca67eb366777b))
+
 ## [3.11.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.11.0...3.11.1) (2022-08-12)
 
 
@@ -2351,61 +2479,6 @@
 * **deps:** update ghcr.io/griefed/baseimage-ubuntu-jdk-8 docker tag to v2.0.3 ([a849b0e](https://git.griefed.de/Griefed/ServerPackCreator/commit/a849b0eed192bee1e0cf175930375beffc97f226))
 * **deps:** update jamesives/github-pages-deploy-action action to v4.2.3 ([a3706fc](https://git.griefed.de/Griefed/ServerPackCreator/commit/a3706fca5b4164ce8c2aeb569dfa452272197593))
 
-## [3.0.0-alpha.19](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.0.0-alpha.18...3.0.0-alpha.19) (2022-02-06)
-
-
-### :scissors: Refactor
-
-* Change groupID. Also change url for OSSRH to the correct snapshot url. ([e9ff899](https://git.griefed.de/Griefed/ServerPackCreator/commit/e9ff899023f5f2386653cf49e29dd9cea87ab99e))
-* Change groupID. Also change url for OSSRH. Now everything works when ([0cf5dbc](https://git.griefed.de/Griefed/ServerPackCreator/commit/0cf5dbccc8f40cf16e28a4011ede3264a7626076))
-* Move plugins folder creationf to DefaultFiles. Create example file for disabling plugins. Improve logging for installed plugin extensions. ([1fad8ac](https://git.griefed.de/Griefed/ServerPackCreator/commit/1fad8ac858377c43250d4f6f644ecf7c719c7e02))
-
-
-### 📔 Docs
-
-* Add documentation for UpdateChecker utility. ([f804589](https://git.griefed.de/Griefed/ServerPackCreator/commit/f8045896d075fc67d0befa1565e88ddd1a831ba5))
-* Cleanup changelog due to some sort of tag issue I created. Yay. ([17c234b](https://git.griefed.de/Griefed/ServerPackCreator/commit/17c234bfbe56760cefd07bf98b3e7357f8167a55))
-* Cleanup changelog due to some sort of tag issue I created. Yay. ([65bf366](https://git.griefed.de/Griefed/ServerPackCreator/commit/65bf366c368f13de51f2f8963d7c3ce9ecbc954b))
-* Generate patch release on docs change. ([d6e65ea](https://git.griefed.de/Griefed/ServerPackCreator/commit/d6e65eadb8e5c5071d8b8a693433ae7e38aa2582))
-
-
-### 🦊 CI/CD
-
-* Add signing and publishing. Will be published to GitLab, GitHub, git.griefed, OSSRH on new tag creation. ([b60a8f2](https://git.griefed.de/Griefed/ServerPackCreator/commit/b60a8f2a63c986eb609975f8299719aa9f731e32))
-* Switch VersionChecker to library implementation. Update jms-server. Minor URL refactorings in gradle publishing. ([62c438a](https://git.griefed.de/Griefed/ServerPackCreator/commit/62c438a75d5a783d741fbacfc8c0861899892f69))
-* **deps:** bump com.github.ben-manes.versions from 0.41.0 to 0.42.0 ([6456e3f](https://git.griefed.de/Griefed/ServerPackCreator/commit/6456e3f211af4dda8f693c5f6222950b709032bb))
-* **deps:** bump versionchecker from 1.0.4 to 1.0.5 ([57f0dd0](https://git.griefed.de/Griefed/ServerPackCreator/commit/57f0dd0f03a9ca48fe7fde7bec144c0e7136a3a8))
-* Deactivate push on docker tests. Remove unnecessary file renaming in build release. Properly run publish job. ([481a048](https://git.griefed.de/Griefed/ServerPackCreator/commit/481a0488e27333ae3c7964a1fa67b8234e3ac6ac))
-* Fix artifact names for renaming ([d4f4f35](https://git.griefed.de/Griefed/ServerPackCreator/commit/d4f4f352150a874f270e4468bcf102df10b72c68))
-* Prevent Generate Release job from running unnecessarily ([5be9fcd](https://git.griefed.de/Griefed/ServerPackCreator/commit/5be9fcdf2624991b9eaf845aafc3bdef8d34f04d))
-* Remove unnecessary logins from test job ([dac135c](https://git.griefed.de/Griefed/ServerPackCreator/commit/dac135cc4e079a996e8ca45ae95d019345ea2283))
-* You have a problem, so you use regex. Now you have two problems. ([b05c007](https://git.griefed.de/Griefed/ServerPackCreator/commit/b05c0075a810f89ba79ff3a9f32939e0abbe0ca8))
-
-
-### 🧪 Tests
-
-* Add more unit tests. ([ae06aa6](https://git.griefed.de/Griefed/ServerPackCreator/commit/ae06aa64a2463f31305efb072e7c5c49b42e5575))
-
-
-### 🚀 Features
-
-* Create server packs from zipped modpacks. Point modpackDir at a ZIP-file which contains a modpack in the ZIP-archives root. ([fbdae16](https://git.griefed.de/Griefed/ServerPackCreator/commit/fbdae16759e90cfd86786ee43ccf7a448fae0cce))
-
-
-### 🛠 Fixes
-
-* Prevent UpdateChecker from crashing SPC when any instance can not be reached ([b96cdb3](https://git.griefed.de/Griefed/ServerPackCreator/commit/b96cdb347329e4512ecfe2b7c11e66479ee8be10))
-
-
-### Other
-
-* Cleanup after build with tests. ([145e9d5](https://git.griefed.de/Griefed/ServerPackCreator/commit/145e9d5b171e5afaaaaa5c5488437388d12ae4bf))
-* Update README with new addon example ([bcca1ce](https://git.griefed.de/Griefed/ServerPackCreator/commit/bcca1ce72aff02ad28cdd3408286bfa8c64311da))
-* **deps:** update dependency @quasar/app to v3.3.2 ([e43122d](https://git.griefed.de/Griefed/ServerPackCreator/commit/e43122d85cb34e81d884feffe87023669f62ee3b))
-* **deps:** update dependency eslint-plugin-vue to v8.4.1 ([0b16371](https://git.griefed.de/Griefed/ServerPackCreator/commit/0b16371881d6a5069744fc6b05a5fd05353b7dc6))
-* **deps:** update ghcr.io/griefed/baseimage-ubuntu-jdk-8 docker tag to v2.0.3 ([a849b0e](https://git.griefed.de/Griefed/ServerPackCreator/commit/a849b0eed192bee1e0cf175930375beffc97f226))
-* **deps:** update jamesives/github-pages-deploy-action action to v4.2.3 ([a3706fc](https://git.griefed.de/Griefed/ServerPackCreator/commit/a3706fca5b4164ce8c2aeb569dfa452272197593))
-
 ## [3.0.0-alpha.18](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.0.0-alpha.17...3.0.0-alpha.18) (2022-01-30)
 
 
@@ -2516,7 +2589,7 @@
 * Empty commit so a new alpha will be generated... ([c1b5698](https://git.griefed.de/Griefed/ServerPackCreator/commit/c1b5698a0aac863518244998c72a4f21ff4d604c))
 
 ## [3.0.0-alpha.16](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.0.0-alpha.15...3.0.0-alpha.16) (2022-01-18)
- 
+
 
 ### 👀 Reverts
 

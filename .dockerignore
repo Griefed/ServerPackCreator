@@ -1,19 +1,47 @@
 # dot-files and folders
 .docker
 .github
+.gitlab
 .gitignore
 .idea
-
+.gradle
+.jpb
+.runConfigurations
+.gitlab-ci.yml
+.releaserc.yml
 
 # folders
 img
 logs
 tests
 src/test
+addons
+backend/test
+backend/main/java
+backend/main/resources/de/griefed/resources/examples
+backend/main/resources/de/griefed/resources/gui
+backend/main/resources/de/griefed/resources/lang
+backend/main/resources/static
+backend/main/resources/third-party-licenses
+backend/main/resources/application.properties
+backend/main/resources/banner.txt
+backend/main/resources/CHANGELOG.md
+backend/main/resources/log4j2.component.properties
+backend/main/resources/log4j2.xml
+frontend
+gradle
+testruns
 
-# other
+# files
+build.gradle
 CONTRIBUTING.md
+CODE_OF_CONDUCT.md
 LICENSE
 README.md
-
-
+gradle.properties
+gradlew
+gradlew.bat
+Project.xml
+qodana.yaml
+renovate.json
+settings.gradle

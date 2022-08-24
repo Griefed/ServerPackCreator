@@ -31,7 +31,7 @@ import org.w3c.dom.Document;
  *
  * @author Griefed
  */
-public class QuiltInstaller {
+final class QuiltInstaller {
 
   private final String URL_TEMPLATE_INSTALLER =
       "https://maven.quiltmc.org/repository/release/org/quiltmc/quilt-installer/%s/quilt-installer-%s.jar";
@@ -45,10 +45,10 @@ public class QuiltInstaller {
   /**
    * Create a new Quilt Installer instance.
    *
-   * @param installerManifest {@link Document} containing Quilt installer information
+   * @param installerManifest Quilt installer information.
    * @author Griefed
    */
-  protected QuiltInstaller(Document installerManifest) {
+  QuiltInstaller(Document installerManifest) {
     this.latestInstaller =
         installerManifest
             .getElementsByTagName("latest")
@@ -101,10 +101,10 @@ public class QuiltInstaller {
   /**
    * Update this {@link QuiltInstaller} with information from the given {@link Document}.
    *
-   * @param installerManifest {@link Document} containing new installer information.
+   * @param installerManifest New installer information.
    * @author Griefed
    */
-  protected void update(Document installerManifest) {
+  void update(Document installerManifest) {
     this.latestInstaller =
         installerManifest
             .getElementsByTagName("latest")
@@ -157,8 +157,8 @@ public class QuiltInstaller {
   /**
    * Acquire the URL for the given Quilt version.
    *
-   * @param quiltInstallerVersion {@link String} Quilt version.
-   * @return {@link URL} to the installer for the given Quilt version.
+   * @param quiltInstallerVersion Quilt version.
+   * @return URL to the installer for the given Quilt version.
    * @throws MalformedURLException if the URL could not be formed.
    * @author Griefed
    */
@@ -170,10 +170,10 @@ public class QuiltInstaller {
   /**
    * Get a list of available installer versions for Quilt.
    *
-   * @return {@link String}-list of available Quilt installer versions.
+   * @return List of available Quilt installer versions.
    * @author Griefed
    */
-  protected List<String> installers() {
+  List<String> installers() {
     return installers;
   }
 
@@ -181,50 +181,50 @@ public class QuiltInstaller {
    * Meta for the Quilt-Version-to-Installer-URL.<br> key: {@link String} Quilt version.<br> value:
    * {@link URL} Quilt installer URL.
    *
-   * @return {@link HashMap} with the Quilt-Version-to-Installer-URL.
+   * @return Map with the Quilt-Version-to-Installer-URL.
    * @author Griefed
    */
-  protected HashMap<String, URL> meta() {
+  HashMap<String, URL> meta() {
     return installerUrlMeta;
   }
 
   /**
    * Get the latest Quilt installer version.
    *
-   * @return {@link String} The latest Quilt installer version.
+   * @return The latest Quilt installer version.
    * @author Griefed
    */
-  protected String latestInstallerVersion() {
+  String latestInstallerVersion() {
     return latestInstaller;
   }
 
   /**
    * Get the release Quilt installer version.
    *
-   * @return {@link String} The release Quilt installer version.
+   * @return The release Quilt installer version.
    * @author Griefed
    */
-  protected String releaseInstallerVersion() {
+  String releaseInstallerVersion() {
     return releaseInstaller;
   }
 
   /**
    * Get the {@link URL} to the latest Quilt installer.
    *
-   * @return {@link URL} to the latest Quilt installer.
+   * @return URL to the latest Quilt installer.
    * @author Griefed
    */
-  protected URL latestInstallerUrl() {
+  URL latestInstallerUrl() {
     return latestInstallerUrl;
   }
 
   /**
    * Get the {@link URL} to the release Quilt installer.
    *
-   * @return {@link URL} to the release Quilt installer.
+   * @return URL to the release Quilt installer.
    * @author Griefed
    */
-  protected URL releaseInstallerUrl() {
+  URL releaseInstallerUrl() {
     return releaseInstallerUrl;
   }
 }

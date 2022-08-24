@@ -45,13 +45,6 @@ public class RouteController {
     return new ModelAndView("redirect:/#/downloads");
   }
 
-  /*@RequestMapping("/logs")
-  public ModelAndView redirectLogs() {
-          * Redirect /logs to /#/logs.
-          * @author Griefed
-          * @return Redirects requests for /logs to /#/logs
-      return new ModelAndView("redirect:/#/logs");}*/
-
   /**
    * Redirect /about to /#/about.
    *

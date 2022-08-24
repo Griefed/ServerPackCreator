@@ -24,18 +24,18 @@ package de.griefed.serverpackcreator.versionmeta.fabric;
  *
  * @author Griefed
  */
-public class FabricLibrary {
+public final class FabricLibrary {
 
   private String name;
   private String url;
 
-  private FabricLibrary() {
+  FabricLibrary() {
   }
 
   /**
    * The name of this library.
    *
-   * @return {@link String} Library-name.
+   * @return Library-name.
    * @author Griefed
    */
   public String getName() {
@@ -45,7 +45,7 @@ public class FabricLibrary {
   /**
    * The URL to this library.
    *
-   * @return {@link String} Library-URL as a String.
+   * @return Library-URL as a String.
    * @author Griefed
    */
   public String getUrl() {

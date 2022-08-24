@@ -26,7 +26,7 @@ package de.griefed.serverpackcreator.utilities.common;
  *
  * @author Griefed
  */
-public class InvalidFileTypeException extends Exception {
+public final class InvalidFileTypeException extends Exception {
 
   public InvalidFileTypeException(String message) {
     super(message);

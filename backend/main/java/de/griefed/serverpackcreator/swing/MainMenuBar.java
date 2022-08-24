@@ -273,7 +273,8 @@ public class MainMenuBar extends Component {
     JMenu aboutMenu = new JMenu(I18N.getMessage("menubar.gui.menu.about"));
 
     // create menu items
-    JMenuItem file_NewConfigurationMenuItem = new JMenuItem("New configuration");
+    JMenuItem file_NewConfigurationMenuItem = new JMenuItem(
+        I18N.getMessage("menubar.gui.menuitem.newconfig"));
     JMenuItem file_LoadConfigMenuItem =
         new JMenuItem(I18N.getMessage("menubar.gui.menuitem.loadconfig"));
     JMenuItem file_SaveConfigMenuItem =
@@ -450,7 +451,7 @@ public class MainMenuBar extends Component {
   /**
    * If an initialize is available for ServerPackCreator, display a dialog asking the user whether
    *
-   * @return {@link Boolean} <code>true</code> if an update was found and the dialog displayed.
+   * @return <code>true</code> if an update was found and the dialog displayed.
    * @author Griefed
    */
   protected boolean displayUpdateDialog() {
@@ -686,8 +687,8 @@ public class MainMenuBar extends Component {
   /**
    * Display the given URL in a text pane.
    *
-   * @param urltoHasteBin   {@link String} The URL, as a String, to display.
-   * @param displayTextPane {@link JTextPane} The text pane to display the URL in.
+   * @param urltoHasteBin   The URL, as a String, to display.
+   * @param displayTextPane The text pane to display the URL in.
    * @author Griefed
    */
   private void displayUploadUrl(String urltoHasteBin, JTextPane displayTextPane) {
@@ -861,7 +862,7 @@ public class MainMenuBar extends Component {
         UIManager.setLookAndFeel(LAF_DARK);
         MaterialLookAndFeel.changeTheme(DARKTHEME);
         APPLICATIONPROPERTIES.setTheme(true);
-        APPLICATIONPROPERTIES.saveToDisk();
+        APPLICATIONPROPERTIES.saveToDisk(APPLICATIONPROPERTIES.SERVERPACKCREATOR_PROPERTIES());
 
       } catch (UnsupportedLookAndFeelException ex) {
         LOG.error("Couldn't change theme.", ex);
@@ -871,7 +872,7 @@ public class MainMenuBar extends Component {
         UIManager.setLookAndFeel(LAF_LIGHT);
         MaterialLookAndFeel.changeTheme(LIGHTTHEME);
         APPLICATIONPROPERTIES.setTheme(false);
-        APPLICATIONPROPERTIES.saveToDisk();
+        APPLICATIONPROPERTIES.saveToDisk(APPLICATIONPROPERTIES.SERVERPACKCREATOR_PROPERTIES());
 
       } catch (UnsupportedLookAndFeelException ex) {
         LOG.error("Couldn't change theme.", ex);

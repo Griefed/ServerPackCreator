@@ -41,13 +41,15 @@ import javax.net.ssl.HttpsURLConnection;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.stereotype.Component;
 
 /**
  * Utility-class revolving around interactions with web-resources.
  *
  * @author Griefed
  */
-public class WebUtilities {
+@Component
+public final class WebUtilities {
 
   private static final Logger LOG = LogManager.getLogger(WebUtilities.class);
 
@@ -62,9 +64,9 @@ public class WebUtilities {
    * already exists. The destination should end in a valid filename. Any directories up to the
    * specified file will be created.
    *
-   * @param destinationFile File. The file to store the web-resource in. Examples:<br>
+   * @param destinationFile The file to store the web-resource in. Examples:<br>
    *                        /tmp/some_folder/foo.bar<br> C:/temp/some_folder/bar.foo
-   * @param downloadURL     URL. The URL to the file you want to download.
+   * @param downloadURL     The URL to the file you want to download.
    * @return Boolean. Returns true if the file could be found on the hosts filesystem.
    * @author Griefed
    */
@@ -78,9 +80,9 @@ public class WebUtilities {
    * already exists. The destination should end in a valid filename. Any directories up to the
    * specified file will be created.
    *
-   * @param fileDestination String. The file to store the web-resource in. Examples:<br>
+   * @param fileDestination The file to store the web-resource in. Examples:<br>
    *                        /tmp/some_folder/foo.bar<br> C:/temp/some_folder/bar.foo
-   * @param downloadURL     URL. The URL to the file you want to download.
+   * @param downloadURL     The URL to the file you want to download.
    * @return Boolean. Returns true if the file could be found on the hosts filesystem.
    * @author Griefed
    */
@@ -108,10 +110,10 @@ public class WebUtilities {
    * Download the file from the specified URL to the specified destination. The destination should
    * end in a valid filename. Any directories up to the specified file will be created.
    *
-   * @param fileDestination String. The destination where the file should be stored. Must include
-   *                        the filename as well. Examples:<br> /tmp/some_folder/foo.bar<br>
+   * @param fileDestination The destination where the file should be stored. Must include the
+   *                        filename as well. Examples:<br> /tmp/some_folder/foo.bar<br>
    *                        C:/temp/some_folder/bar.foo
-   * @param downloadURL     URL. The URL to the file you want to download.
+   * @param downloadURL     The URL to the file you want to download.
    * @return Boolean. Returns true if the file could be found on the hosts filesystem.
    * @author Griefed
    */
@@ -176,7 +178,7 @@ public class WebUtilities {
   /**
    * Open the given url in a browser.
    *
-   * @param url {@link URL} the URI to the website you want to open.
+   * @param url The URI to the website you want to open.
    * @author Griefed
    */
   public void openLinkInBrowser(URL url) {
@@ -190,7 +192,7 @@ public class WebUtilities {
   /**
    * Open the given uri in a browser.
    *
-   * @param uri {@link URI} the URI to the website you want to open.
+   * @param uri The URI to the website you want to open.
    * @author Griefed
    */
   public void openLinkInBrowser(URI uri) {
@@ -327,8 +329,8 @@ public class WebUtilities {
   /**
    * Get the reponse of a call to a URL as a string.
    *
-   * @param url {@link URL} The URL you want to get the response from
-   * @return {@link String} The response.
+   * @param url The URL you want to get the response from
+   * @return The response.
    * @throws IOException if the URL could not be called or a communication error occurred.
    */
   public String getResponseAsString(URL url) throws IOException {
@@ -351,8 +353,8 @@ public class WebUtilities {
   /**
    * Get the response-code of a call to a URL as an integer.
    *
-   * @param url {@link URL} The URL you want to get the response from
-   * @return {@link String} The response.
+   * @param url The URL you want to get the response from
+   * @return The response.
    * @throws IOException if the URL could not be called or a communication error occurred.
    */
   public int getResponseCode(URL url) throws IOException {

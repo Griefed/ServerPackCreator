@@ -28,7 +28,7 @@ import org.w3c.dom.Document;
  *
  * @author Griefed
  */
-public class QuiltLoader {
+final class QuiltLoader {
 
   private final List<String> loaders = new ArrayList<>();
   private String latest;
@@ -37,10 +37,10 @@ public class QuiltLoader {
   /**
    * Create a new Quilt Loader instance.
    *
-   * @param loaderManifest {@link Document} containing Quilts manifest.
+   * @param loaderManifest Quilts manifest.
    * @author Griefed
    */
-  protected QuiltLoader(Document loaderManifest) {
+  QuiltLoader(Document loaderManifest) {
 
     this.latest =
         loaderManifest
@@ -71,10 +71,10 @@ public class QuiltLoader {
   /**
    * Update the latest, release and releases information.
    *
-   * @param loaderManifest {@link Document} containing Quilts manifest.
+   * @param loaderManifest Quilts manifest.
    * @author Griefed
    */
-  protected void update(Document loaderManifest) {
+  void update(Document loaderManifest) {
     this.latest =
         loaderManifest
             .getElementsByTagName("latest")
@@ -104,30 +104,30 @@ public class QuiltLoader {
   /**
    * Get the latest Quilt loader version.
    *
-   * @return {@link String} The latest Quilt loader version.
+   * @return The latest Quilt loader version.
    * @author Griefed
    */
-  protected String latestLoaderVersion() {
+  String latestLoaderVersion() {
     return latest;
   }
 
   /**
    * Get the release Quilt loader version.
    *
-   * @return {@link String} The release Quilt loader version.
+   * @return The release Quilt loader version.
    * @author Griefed
    */
-  protected String releaseLoaderVersion() {
+  String releaseLoaderVersion() {
     return release;
   }
 
   /**
    * Get the list of available Quilt loader versions.
    *
-   * @return {@link String}-list of the available Quilt loader versions.
+   * @return List of the available Quilt loader versions.
    * @author Griefed
    */
-  protected List<String> loaders() {
+  List<String> loaders() {
     return loaders;
   }
 }

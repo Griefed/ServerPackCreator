@@ -28,7 +28,7 @@ import org.w3c.dom.Document;
  *
  * @author Griefed
  */
-public class FabricLoader {
+final class FabricLoader {
 
   private final List<String> loaders = new ArrayList<>();
   private String latest;
@@ -37,20 +37,20 @@ public class FabricLoader {
   /**
    * Create a new instance of the Fabric Loader.
    *
-   * @param loaderManifest {@link Document} containing Fabrics manifest.
+   * @param loaderManifest Fabrics manifest.
    * @author Griefed
    */
-  protected FabricLoader(Document loaderManifest) {
+  FabricLoader(Document loaderManifest) {
     update(loaderManifest);
   }
 
   /**
    * Update the latest, release and releases information.
    *
-   * @param loaderManifest {@link Document} containing Fabrics manifest.
+   * @param loaderManifest Fabrics manifest.
    * @author Griefed
    */
-  protected void update(Document loaderManifest) {
+  void update(Document loaderManifest) {
     this.latest =
         loaderManifest
             .getElementsByTagName("latest")
@@ -80,30 +80,30 @@ public class FabricLoader {
   /**
    * Get the latest Fabric loader version.
    *
-   * @return {@link String} The latest Fabric loader version.
+   * @return The latest Fabric loader version.
    * @author Griefed
    */
-  protected String latestLoaderVersion() {
+  String latestLoaderVersion() {
     return latest;
   }
 
   /**
    * Get the release Fabric loader version.
    *
-   * @return {@link String} The release Fabric loader version.
+   * @return The release Fabric loader version.
    * @author Griefed
    */
-  protected String releaseLoaderVersion() {
+  String releaseLoaderVersion() {
     return release;
   }
 
   /**
    * Get the list of available Fabric loader versions.
    *
-   * @return {@link String}-list of the available Fabric loader versions.
+   * @return List of the available Fabric loader versions.
    * @author Griefed
    */
-  protected List<String> loaders() {
+  List<String> loaders() {
     return loaders;
   }
 }

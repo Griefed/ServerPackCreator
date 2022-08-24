@@ -24,17 +24,17 @@ package de.griefed.serverpackcreator.versionmeta.fabric;
  *
  * @author Griefed
  */
-public class FabricArguments {
+public final class FabricArguments {
 
   private Object[] game;
 
-  private FabricArguments() {
+  FabricArguments() {
   }
 
   /**
    * Object-array of arguments used.
    *
-   * @return {@link Object} Object-array of arguments used.
+   * @return Object-array of arguments used.
    * @author Griefed
    */
   public Object[] getGame() {

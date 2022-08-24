@@ -64,7 +64,7 @@ import org.springframework.stereotype.Component;
  * @author Griefed
  */
 @Component
-public class I18n {
+public final class I18n {
 
   private static final Logger LOG = LogManager.getLogger(I18n.class);
 

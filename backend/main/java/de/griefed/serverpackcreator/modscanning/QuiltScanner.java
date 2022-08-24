@@ -37,10 +37,11 @@ import org.springframework.stereotype.Component;
  * @author Griefed
  */
 @Component
-public class QuiltScanner extends JsonBasedScanner implements
+public final class QuiltScanner extends JsonBasedScanner implements
     Scanner<TreeSet<File>, Collection<File>> {
 
   private static final Logger LOG = LogManager.getLogger(QuiltScanner.class);
+  private final String DEPENDENCY_EXCLUSIONS = "(quilt_loader|quilt_base|quilted_fabric_api|java|minecraft)";
   private final ObjectMapper OBJECT_MAPPER;
   private final Utilities UTILITIES;
 
@@ -59,8 +60,7 @@ public class QuiltScanner extends JsonBasedScanner implements
    *
    * @param filesInModsDir A list of files in which to check the
    *                       <code>fabric.mod.json</code>-files.
-   * @return List String. List of mods not to include in server pack based on
-   * fabric.mod.json-content.
+   * @return List of mods not to include in server pack based on fabric.mod.json-content.
    * @author Griefed
    */
   @Override
@@ -91,7 +91,7 @@ public class QuiltScanner extends JsonBasedScanner implements
   void checkForClientModsAndDeps(Collection<File> filesInModsDir, TreeSet<String> clientMods,
       TreeSet<String> modDependencies) {
     for (File mod : filesInModsDir) {
-      if (mod.toString().endsWith("jar")) {
+      if (mod.getName().endsWith("jar")) {
 
         String modId;
 
@@ -120,9 +120,32 @@ public class QuiltScanner extends JsonBasedScanner implements
                 .getNestedElement(modJson, "quilt_loader", "depends")) {
 
               if (dependency.isContainerNode()) {
-                modDependencies.add(UTILITIES.JsonUtilities().getNestedText(dependency, "id"));
+                if (!UTILITIES.JsonUtilities().getNestedText(dependency, "id")
+                    .matches(DEPENDENCY_EXCLUSIONS)
+                    && modDependencies.add(
+                    UTILITIES.JsonUtilities().getNestedText(dependency, "id"))) {
+
+                  try {
+                    LOG.debug("Added dependency " + UTILITIES.JsonUtilities()
+                        .getNestedText(dependency, "id")
+                        + " for " + modId + " (" + mod.getName() + ").");
+                  } catch (NullPointerException ex) {
+                    LOG.debug("Added dependency " + UTILITIES.JsonUtilities()
+                        .getNestedText(dependency, "id") + " (" + mod.getName() + ").");
+                  }
+                }
               } else {
-                modDependencies.add(dependency.asText());
+                if (!dependency.asText().matches(DEPENDENCY_EXCLUSIONS)
+                    && modDependencies.add(dependency.asText())) {
+
+                  try {
+                    LOG.debug("Added dependency " + dependency.asText()
+                        + " for " + modId + " (" + mod.getName() + ").");
+                  } catch (NullPointerException ex) {
+                    LOG.debug(
+                        "Added dependency " + dependency.asText() + " (" + mod.getName() + ").");
+                  }
+                }
               }
             }
 
@@ -132,8 +155,11 @@ public class QuiltScanner extends JsonBasedScanner implements
 
         } catch (Exception ex) {
 
-          LOG.error("Couldn't scan " + mod, ex);
-
+          if (ex.toString().startsWith("java.lang.NullPointerException")) {
+            LOG.warn("Couldn't scan " + mod + " as it contains no quilt.mod.json.");
+          } else {
+            LOG.error("Couldn't scan " + mod, ex);
+          }
         }
       }
     }

@@ -32,7 +32,7 @@ import java.util.Optional;
  *
  * @author Griefed
  */
-public class MinecraftServer {
+public final class MinecraftServer {
 
   private final ObjectMapper OBJECT_MAPPER;
   private final URL MANIFEST_URL;
@@ -44,14 +44,14 @@ public class MinecraftServer {
   /**
    * Create a new Minecraft Server.
    *
-   * @param mcVersion    {@link String} The Minecraft version of this server.
-   * @param mcType       {@link Type} The release-type of this server. Either {@link Type#RELEASE}
-   *                     or {@link Type#SNAPSHOT}.
-   * @param mcUrl        {@link URL} The URL to the download of this servers JAR-file.
-   * @param objectMapper {@link ObjectMapper} for parsing.
+   * @param mcVersion    The Minecraft version of this server.
+   * @param mcType       The release-type of this server. Either {@link Type#RELEASE} or
+   *                     {@link Type#SNAPSHOT}.
+   * @param mcUrl        The URL to the download of this servers JAR-file.
+   * @param objectMapper Object mapper for JSON parsing.
    * @author Griefed
    */
-  protected MinecraftServer(String mcVersion, Type mcType, URL mcUrl, ObjectMapper objectMapper) {
+  MinecraftServer(String mcVersion, Type mcType, URL mcUrl, ObjectMapper objectMapper) {
     this.MANIFEST_URL = mcUrl;
     this.VERSION = mcVersion;
     this.TYPE = mcType;
@@ -63,7 +63,7 @@ public class MinecraftServer {
    *
    * @author Griefed
    */
-  protected void setServerJson() {
+  private void setServerJson() {
     try {
       this.serverJson = OBJECT_MAPPER.readTree(MANIFEST_URL.openStream());
     } catch (IOException e) {
@@ -74,7 +74,7 @@ public class MinecraftServer {
   /**
    * Get the Minecraft-version of this {@link MinecraftServer}.
    *
-   * @return {@link String}
+   * @return Version.
    * @author Griefed
    */
   public String version() {
@@ -85,7 +85,7 @@ public class MinecraftServer {
    * Get the release-type of this Minecraft-server. Either {@link Type#RELEASE} or
    * {@link Type#SNAPSHOT}.
    *
-   * @return {@link Type}
+   * @return Type.
    * @author Griefed
    */
   public Type type() {
@@ -95,7 +95,7 @@ public class MinecraftServer {
   /**
    * Get the {@link URL} to the download of this Minecraft-servers JAR-file.
    *
-   * @return {@link URL}
+   * @return URL.
    * @author Griefed
    */
   public Optional<URL> url() {
@@ -112,7 +112,7 @@ public class MinecraftServer {
   /**
    * Get the Java-version of this Minecraft-server.
    *
-   * @return {@link Byte}.
+   * @return Java version.
    * @author Griefed
    */
   public Optional<Byte> javaVersion() {

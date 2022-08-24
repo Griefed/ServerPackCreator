@@ -34,7 +34,7 @@ import org.apache.logging.log4j.Logger;
  *
  * @author Griefed
  */
-public class ForgeLoader {
+final class ForgeLoader {
 
   private static final Logger LOG = LogManager.getLogger(ForgeLoader.class);
 
@@ -67,13 +67,11 @@ public class ForgeLoader {
   /**
    * Create a new instance of the Forge Loader.
    *
-   * @param forgemanifest         {@link JsonNode} containing information about available Forge
-   *                              versions.
-   * @param injectedMinecraftMeta {@link MinecraftMeta} for retroactively updating the previously
-   *                              passed meta.
+   * @param forgemanifest         Node containing information about available Forge versions.
+   * @param injectedMinecraftMeta Meta for retroactively updating the previously passed meta.
    * @author Griefed
    */
-  protected ForgeLoader(JsonNode forgemanifest, MinecraftMeta injectedMinecraftMeta) {
+  ForgeLoader(JsonNode forgemanifest, MinecraftMeta injectedMinecraftMeta) {
     this.MINECRAFT_META = injectedMinecraftMeta;
     update(forgemanifest);
   }
@@ -81,10 +79,10 @@ public class ForgeLoader {
   /**
    * Update the available Forge loader information.
    *
-   * @param forgeManifest {@link JsonNode} containing information about available Forge versions.
+   * @param forgeManifest Node containing information about available Forge versions.
    * @author Griefed
    */
-  protected void update(JsonNode forgeManifest) {
+  void update(JsonNode forgeManifest) {
 
     minecraftVersions.clear();
     forgeVersions.clear();
@@ -165,20 +163,20 @@ public class ForgeLoader {
   /**
    * Get a list of available Minecraft versions for Forge.
    *
-   * @return {@link String}-list of the available Minecraft versions for Forge.
+   * @return List of the available Minecraft versions for Forge.
    * @author Griefed
    */
-  protected List<String> minecraftVersions() {
+  List<String> minecraftVersions() {
     return minecraftVersions;
   }
 
   /**
    * Get a list of available Forge versions.
    *
-   * @return {@link String}-list of the available Forge versions.
+   * @return List of the available Forge versions.
    * @author Griefed
    */
-  protected List<String> forgeVersions() {
+  List<String> forgeVersions() {
     return forgeVersions;
   }
 
@@ -186,10 +184,10 @@ public class ForgeLoader {
    * Get the {@link ForgeLoader} version-meta.<br> key: {@link String} Minecraft version<br> value:
    * {@link String}-list of Forge versions available for the given Minecraft version.
    *
-   * @return {@link HashMap} containing the version meta.
+   * @return Map containing the version meta.
    * @author Griefed
    */
-  protected HashMap<String, List<String>> versionMeta() {
+  HashMap<String, List<String>> versionMeta() {
     return versionMeta;
   }
 
@@ -197,10 +195,10 @@ public class ForgeLoader {
    * Get the Forge version to Minecraft version meta.<br> key: {@link String} Forge version.<br>
    * version: {@link String} Minecraft version for the given Forge version.
    *
-   * @return {@link HashMap} with Forge-to-Minecraft-version mappings.
+   * @return Map with Forge-to-Minecraft-version mappings.
    * @author Griefed
    */
-  protected HashMap<String, String> forgeToMinecraftMeta() {
+  HashMap<String, String> forgeToMinecraftMeta() {
     return forgeToMinecraftMeta;
   }
 
@@ -209,10 +207,10 @@ public class ForgeLoader {
    * concatenation.<br> value: {@link ForgeInstance} for the given Minecraft version + Forge version
    * concatenation.
    *
-   * @return {@link HashMap} with Minecraft-Forge-version-to-ForgeInstance mapping.
+   * @return Map with Minecraft-Forge-version-to-ForgeInstance mapping.
    * @author Griefed
    */
-  protected HashMap<String, ForgeInstance> instanceMeta() {
+  HashMap<String, ForgeInstance> instanceMeta() {
     return instanceMeta;
   }
 }

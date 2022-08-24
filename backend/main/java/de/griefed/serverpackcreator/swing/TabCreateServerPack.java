@@ -605,8 +605,13 @@ public class TabCreateServerPack extends JPanel {
 
     CREATESERVERPACKPANEL.add(labelMinecraftVersion, GRIDBAGCONSTRAINTS);
 
-    COMBOBOX_MINECRAFTVERSIONS.setModel(
-        new DefaultComboBoxModel<>(VERSIONMETA.minecraft().releaseVersionsArrayDescending()));
+    if (APPLICATIONPROPERTIES.enableMinecraftPreReleases()) {
+      COMBOBOX_MINECRAFTVERSIONS.setModel(
+          new DefaultComboBoxModel<>(VERSIONMETA.minecraft().allVersionsArrayDescending()));
+    } else {
+      COMBOBOX_MINECRAFTVERSIONS.setModel(
+          new DefaultComboBoxModel<>(VERSIONMETA.minecraft().releaseVersionsArrayDescending()));
+    }
     if (COMBOBOX_MINECRAFTVERSIONS.getSelectedItem() == null) {
       COMBOBOX_MINECRAFTVERSIONS.setSelectedIndex(0);
     }
@@ -1191,8 +1196,7 @@ public class TabCreateServerPack extends JPanel {
    * @author Griefed
    */
   private void validateClientMods() {
-    if (!TEXTAREA_CLIENTSIDEMODS.getText().matches("^.*,\\s*\\\\*$")
-        && UTILITIES.StringUtils().checkForIllegalCharacters(TEXTAREA_CLIENTSIDEMODS.getText())) {
+    if (!TEXTAREA_CLIENTSIDEMODS.getText().matches("^.*,\\s*\\\\*$")) {
 
       TEXTAREA_CLIENTSIDEMODS.setIcon(null);
       TEXTAREA_CLIENTSIDEMODS.setToolTipText(
@@ -1409,8 +1413,8 @@ public class TabCreateServerPack extends JPanel {
    * Get the DefaultComboboxModel of available Forge versions depending on the passed Minecraft
    * version. If the specified Minecraft version is not supported, the DCBM will be set to NONE.
    *
-   * @param chosenMinecraftVersion String. The selected Minecraft version which determines the list
-   *                               of available Forge versions.
+   * @param chosenMinecraftVersion The selected Minecraft version which determines the list of
+   *                               available Forge versions.
    * @author Griefed
    */
   private DefaultComboBoxModel<String> updateForgeComboBoxVersions(
@@ -1435,8 +1439,8 @@ public class TabCreateServerPack extends JPanel {
    * Get the DefaultComboboxModel of available Fabric versions depending on the passed Minecraft
    * version. If the specified Minecraft version is not supported, the DCBM will be set to NONE.
    *
-   * @param chosenMinecraftVersion String. The selected Minecraft version which determines the list
-   *                               of available Fabric versions.
+   * @param chosenMinecraftVersion The selected Minecraft version which determines the list of
+   *                               available Fabric versions.
    * @author Griefed
    */
   private DefaultComboBoxModel<String> updateFabricComboBoxVersions(
@@ -1457,8 +1461,8 @@ public class TabCreateServerPack extends JPanel {
    * Get the DefaultComboboxModel of available Quilt versions depending on the passed Minecraft
    * version. If the specified Minecraft version is not supported, the DCBM will be set to NONE.
    *
-   * @param chosenMinecraftVersion String. The selected Minecraft version which determines the list
-   *                               of available Fabric versions.
+   * @param chosenMinecraftVersion The selected Minecraft version which determines the list of
+   *                               available Fabric versions.
    * @author Griefed
    */
   private DefaultComboBoxModel<String> updateQuiltComboBoxVersions(
@@ -1517,7 +1521,7 @@ public class TabCreateServerPack extends JPanel {
   /**
    * Helper method which changes various states of GUI components.
    *
-   * @param modloader String. The modloader to set.
+   * @param modloader The modloader to set.
    * @author Griefed
    */
   private void updateModloaderGuiComponents(String modloader) {
@@ -2036,7 +2040,7 @@ public class TabCreateServerPack extends JPanel {
   /**
    * Save the current configuration to a specified file.
    *
-   * @param configFile File. The file to store the configuration under.
+   * @param configFile The file to store the configuration under.
    * @author Griefed
    */
   void saveConfig(File configFile) {
@@ -2076,7 +2080,7 @@ public class TabCreateServerPack extends JPanel {
    * When the GUI has finished loading, try and load the existing serverpackcreator.conf-file into
    * ServerPackCreator.
    *
-   * @param configFile File. The configuration file to parse and load into the GUI.
+   * @param configFile The configuration file to parse and load into the GUI.
    * @author Griefed
    */
   protected void loadConfig(File configFile) {
@@ -2122,13 +2126,8 @@ public class TabCreateServerPack extends JPanel {
         chosenMinecraftVersion = configurationModel.getMinecraftVersion();
       }
 
-      for (int i = 0; i < VERSIONMETA.minecraft().releaseVersionsArrayDescending().length; i++) {
-
-        if (VERSIONMETA
-            .minecraft()
-            .releaseVersionsArrayDescending()[i]
-            .equals(chosenMinecraftVersion)) {
-
+      for (int i = 0; i < COMBOBOX_MINECRAFTVERSIONS.getModel().getSize(); i++) {
+        if (COMBOBOX_MINECRAFTVERSIONS.getModel().getElementAt(i).equals(chosenMinecraftVersion)) {
           COMBOBOX_MINECRAFTVERSIONS.setSelectedIndex(i);
           break;
         }
@@ -2137,79 +2136,79 @@ public class TabCreateServerPack extends JPanel {
       // Set modloader and modloader version
       switch (configurationModel.getModLoader().toLowerCase()) {
         case "fabric":
-          if (!configurationModel.getModLoaderVersion().isEmpty()) {
+          if (configurationModel.getModLoaderVersion().isEmpty()) {
+            configurationModel.setModLoaderVersion(VERSIONMETA.fabric().releaseLoaderVersion());
+          }
 
-            // Go through all Fabric versions and check if specified version matches official
-            // version list
-            for (int i = 0; i < VERSIONMETA.fabric().loaderVersionsArrayDescending().length; i++) {
+          COMBOBOX_MODLOADERS.setSelectedIndex(0);
+          COMBOBOX_MODLOADER_VERSIONS.setModel(
+              updateFabricComboBoxVersions(
+                  COMBOBOX_MINECRAFTVERSIONS.getSelectedItem().toString()));
 
-              // If match is found, set selected version
-              if (VERSIONMETA
-                  .fabric()
-                  .loaderVersionsArrayDescending()[i]
-                  .equals(configurationModel.getModLoaderVersion())) {
+          // Go through all Fabric versions and check if specified version matches official
+          // version list
+          for (int i = 0; i < COMBOBOX_MODLOADER_VERSIONS.getModel().getSize(); i++) {
 
-                COMBOBOX_MODLOADER_VERSIONS.setSelectedIndex(i);
-                chosenModloaderVersion = configurationModel.getModLoaderVersion();
-                break;
-              }
+            // If match is found, set selected version
+            if (COMBOBOX_MODLOADER_VERSIONS.getModel().getElementAt(i)
+                .equals(configurationModel.getModLoaderVersion())) {
+
+              COMBOBOX_MODLOADER_VERSIONS.setSelectedIndex(i);
+              chosenModloaderVersion = configurationModel.getModLoaderVersion();
+              break;
             }
           }
-          updateModloaderGuiComponents("Fabric");
+
           break;
 
         case "forge":
-          String[] forgever;
-          if (VERSIONMETA
-              .forge()
-              .availableForgeVersionsArrayDescending(chosenMinecraftVersion)
-              .isPresent()) {
 
-            forgever =
-                VERSIONMETA
-                    .forge()
-                    .availableForgeVersionsArrayDescending(chosenMinecraftVersion)
-                    .get();
+          if (configurationModel.getModLoaderVersion().isEmpty() && VERSIONMETA.forge()
+              .latestForgeVersion(configurationModel.getMinecraftVersion()).isPresent()) {
 
-          } else {
-            forgever = NONE;
+            configurationModel.setModLoaderVersion(
+                VERSIONMETA.forge().latestForgeVersion(configurationModel.getMinecraftVersion())
+                    .get());
           }
 
-          if (!configurationModel.getModLoaderVersion().isEmpty()) {
+          COMBOBOX_MODLOADERS.setSelectedIndex(1);
+          COMBOBOX_MODLOADER_VERSIONS.setModel(
+              updateForgeComboBoxVersions(COMBOBOX_MINECRAFTVERSIONS.getSelectedItem().toString()));
 
-            for (int i = 0; i < forgever.length; i++) {
+          for (int i = 0; i < COMBOBOX_MODLOADER_VERSIONS.getModel().getSize(); i++) {
 
-              if (forgever[i].equals(configurationModel.getModLoaderVersion())) {
+            if (COMBOBOX_MODLOADER_VERSIONS.getModel().getElementAt(i)
+                .equals(configurationModel.getModLoaderVersion())) {
 
-                COMBOBOX_MODLOADER_VERSIONS.setSelectedIndex(i);
-                chosenModloaderVersion = configurationModel.getModLoaderVersion();
-                break;
-              }
+              COMBOBOX_MODLOADER_VERSIONS.setSelectedIndex(i);
+              chosenModloaderVersion = configurationModel.getModLoaderVersion();
+              break;
             }
           }
-          updateModloaderGuiComponents("Forge");
           break;
 
         case "quilt":
           if (!configurationModel.getModLoaderVersion().isEmpty()) {
+            configurationModel.setModLoaderVersion(VERSIONMETA.quilt().releaseLoaderVersion());
+          }
 
-            // Go through all Fabric versions and check if specified version matches official
-            // version list
-            for (int i = 0; i < VERSIONMETA.quilt().loaderVersionsArrayDescending().length; i++) {
+          COMBOBOX_MODLOADERS.setSelectedIndex(2);
+          COMBOBOX_MODLOADER_VERSIONS.setModel(
+              updateQuiltComboBoxVersions(COMBOBOX_MINECRAFTVERSIONS.getSelectedItem().toString()));
 
-              // If match is found, set selected version
-              if (VERSIONMETA
-                  .quilt()
-                  .loaderVersionsArrayDescending()[i]
-                  .equals(configurationModel.getModLoaderVersion())) {
+          // Go through all Fabric versions and check if specified version matches official
+          // version list
+          for (int i = 0; i < COMBOBOX_MODLOADER_VERSIONS.getModel().getSize(); i++) {
 
-                COMBOBOX_MODLOADER_VERSIONS.setSelectedIndex(i);
-                chosenModloaderVersion = configurationModel.getModLoaderVersion();
-                break;
-              }
+            // If match is found, set selected version
+            if (COMBOBOX_MODLOADER_VERSIONS.getModel().getElementAt(i)
+                .equals(configurationModel.getModLoaderVersion())) {
+
+              COMBOBOX_MODLOADER_VERSIONS.setSelectedIndex(i);
+              chosenModloaderVersion = configurationModel.getModLoaderVersion();
+              break;
             }
           }
-          updateModloaderGuiComponents("Quilt");
           break;
       }
 
@@ -2338,7 +2337,7 @@ public class TabCreateServerPack extends JPanel {
   /**
    * Setter for the JVM flags / Java args.
    *
-   * @param javaArgs String. The javaargs to set.
+   * @param javaArgs The javaargs to set.
    * @author Griefed
    */
   public void setJavaArgs(String javaArgs) {

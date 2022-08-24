@@ -33,13 +33,15 @@ import net.lingala.zip4j.ZipFile;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.stereotype.Component;
 
 /**
  * Utility-class revolving around various file-interactions.
  *
  * @author Griefed
  */
-public class FileUtilities {
+@Component
+public final class FileUtilities {
 
   private static final Logger LOG = LogManager.getLogger(FileUtilities.class);
 
@@ -92,9 +94,9 @@ public class FileUtilities {
    * Check the given file for its type, whether it is a regular file, a Windows link or a UNIX
    * symlink.
    *
-   * @param file {@link File} The file to check
-   * @return {@link FileType} The type of the given file. Either {@link FileType#FILE},
-   * {@link FileType#LINK} or {@link FileType#SYMLINK}
+   * @param file The file to check
+   * @return The type of the given file. Either {@link FileType#FILE}, {@link FileType#LINK} or
+   * {@link FileType#SYMLINK}
    * @author Griefed
    */
   public FileType checkFileType(String file) {
@@ -108,9 +110,9 @@ public class FileUtilities {
    * Check the given file for its type, whether it is a regular file, a Windows link or a UNIX
    * symlink.
    *
-   * @param file {@link File} The file to check
-   * @return {@link FileType} The type of the given file. Either {@link FileType#FILE},
-   * {@link FileType#LINK} or {@link FileType#SYMLINK}
+   * @param file The file to check
+   * @return The type of the given file. Either {@link FileType#FILE}, {@link FileType#LINK} or
+   * {@link FileType#SYMLINK}
    * @author Griefed
    */
   public FileType checkFileType(File file) {
@@ -136,7 +138,7 @@ public class FileUtilities {
   /**
    * Check if the given file is a UNIX symlink or Windows lnk.
    *
-   * @param file {@link String} The file to check.
+   * @param file The file to check.
    * @return <code>true</code> if the given file is a UNIX symlink or Windows lnk.
    * @author Griefed
    */
@@ -147,7 +149,7 @@ public class FileUtilities {
   /**
    * Check if the given file is a UNIX symlink or Windows lnk.
    *
-   * @param file {@link File} The file to check.
+   * @param file The file to check.
    * @return <code>true</code> if the given file is a UNIX symlink or Windows lnk.
    * @author Griefed
    */
@@ -162,9 +164,9 @@ public class FileUtilities {
   /**
    * Resolve a given link/symlink to its source.
    *
-   * @param link {@link String} The link you want to resolve.
-   * @return {@link String} Path to the source of the link. If the specified file is not a link, the
-   * path to the passed file is returned.
+   * @param link The link you want to resolve.
+   * @return Path to the source of the link. If the specified file is not a link, the path to the
+   * passed file is returned.
    * @throws IOException              if the link could not be parsed.
    * @throws InvalidFileTypeException if the specified file is neither a file, lnk nor symlink.
    * @author Griefed
@@ -176,9 +178,9 @@ public class FileUtilities {
   /**
    * Resolve a given link/symlink to its source.
    *
-   * @param link {@link File} The link you want to resolve.
-   * @return {@link String} Path to the source of the link. If the specified file is not a link, the
-   * path to the passed file is returned.
+   * @param link The link you want to resolve.
+   * @return Path to the source of the link. If the specified file is not a link, the path to the
+   * passed file is returned.
    * @throws IOException              if the link could not be parsed.
    * @throws InvalidFileTypeException if the specified file is neither a file, lnk nor symlink.
    * @author Griefed
@@ -213,10 +215,10 @@ public class FileUtilities {
    * Shortcut lnk parser in Java</a><br> Huge shoutout to <a
    * href="https://stackoverflow.com/users/675721/codebling">Codebling</a>
    *
-   * @param file     {@link File} The file of which to acquire the source.
-   * @param fileType {@link FileType} The link-type. Either {@link FileType#LINK} for Windows, or
+   * @param file     The file of which to acquire the source.
+   * @param fileType The link-type. Either {@link FileType#LINK} for Windows, or
    *                 {@link FileType#SYMLINK} for UNIX systems.
-   * @return {@link String} The path to the source of the given link.
+   * @return The path to the source of the given link.
    * @throws InvalidFileTypeException if the specified {@link FileType} is invalid.
    * @throws InvalidLinkException     if the specified file is not a valid Windows link.
    * @throws ShellLinkException       if the specified file could not be parsed as a Windows link.
@@ -240,8 +242,8 @@ public class FileUtilities {
   /**
    * Check the given file or directory for read- and write-permission.
    *
-   * @param fileOrDirectory {@link String} File or directory.
-   * @return {@link Boolean} <code>true</code> if both read- and write-permissions are set.
+   * @param fileOrDirectory File or directory.
+   * @return <code>true</code> if both read- and write-permissions are set.
    * @throws InvalidPathException if the path string cannot be converted to a Path.
    * @author Griefed
    */
@@ -252,8 +254,8 @@ public class FileUtilities {
   /**
    * Check the given file or directory for read- and write-permission.
    *
-   * @param fileOrDirectory {@link File} File or directory.
-   * @return {@link Boolean} <code>true</code> if both read- and write-permissions are set.
+   * @param fileOrDirectory File or directory.
+   * @return <code>true</code> if both read- and write-permissions are set.
    * @throws InvalidPathException if a {@code Path} object cannot be constructed from the abstract
    *                              path (see
    *                              {@link java.nio.file.FileSystem#getPath FileSystem.getPath})
@@ -266,8 +268,8 @@ public class FileUtilities {
   /**
    * Check the given file or directory for read- and write-permission.
    *
-   * @param fileOrDirectory {@link Path} File or directory.
-   * @return {@link Boolean} <code>true</code> if both read- and write-permissions are set.
+   * @param fileOrDirectory File or directory.
+   * @return <code>true</code> if both read- and write-permissions are set.
    * @author Griefed
    */
   public boolean checkPermissions(Path fileOrDirectory) {
@@ -277,8 +279,8 @@ public class FileUtilities {
   /**
    * Check the given file or directory for read-permission.
    *
-   * @param fileOrDirectory {@link String} File or directory.
-   * @return {@link Boolean} <code>true</code> if read-permissions are set.
+   * @param fileOrDirectory File or directory.
+   * @return <code>true</code> if read-permissions are set.
    * @author Griefed
    */
   public boolean checkReadPermission(String fileOrDirectory) {
@@ -288,8 +290,8 @@ public class FileUtilities {
   /**
    * Check the given file or directory for read-permission.
    *
-   * @param fileOrDirectory {@link File} File or directory.
-   * @return {@link Boolean} <code>true</code> if read-permissions are set.
+   * @param fileOrDirectory File or directory.
+   * @return <code>true</code> if read-permissions are set.
    * @author Griefed
    */
   public boolean checkReadPermission(File fileOrDirectory) {
@@ -299,8 +301,8 @@ public class FileUtilities {
   /**
    * Check the given file or directory for read-permission.
    *
-   * @param fileOrDirectory {@link Path} File or directory.
-   * @return {@link Boolean} <code>true</code> if read-permissions are set.
+   * @param fileOrDirectory File or directory.
+   * @return <code>true</code> if read-permissions are set.
    * @author Griefed
    */
   public boolean checkReadPermission(Path fileOrDirectory) {
@@ -323,8 +325,8 @@ public class FileUtilities {
   /**
    * Check the given file or directory for write-permission.
    *
-   * @param fileOrDirectory {@link String} File or directory.
-   * @return {@link Boolean} <code>true</code> if write-permissions are set.
+   * @param fileOrDirectory File or directory.
+   * @return <code>true</code> if write-permissions are set.
    * @author Griefed
    */
   public boolean checkWritePermission(String fileOrDirectory) {
@@ -334,8 +336,8 @@ public class FileUtilities {
   /**
    * Check the given file or directory for write-permission.
    *
-   * @param fileOrDirectory {@link File} File or directory.
-   * @return {@link Boolean} <code>true</code> if write-permissions are set.
+   * @param fileOrDirectory File or directory.
+   * @return <code>true</code> if write-permissions are set.
    * @author Griefed
    */
   public boolean checkWritePermission(File fileOrDirectory) {
@@ -345,8 +347,8 @@ public class FileUtilities {
   /**
    * Check the given file or directory for write-permission.
    *
-   * @param fileOrDirectory {@link Path} File or directory.
-   * @return {@link Boolean} <code>true</code> if write-permissions are set.
+   * @param fileOrDirectory File or directory.
+   * @return <code>true</code> if write-permissions are set.
    * @author Griefed
    */
   public boolean checkWritePermission(Path fileOrDirectory) {
@@ -369,7 +371,7 @@ public class FileUtilities {
   /**
    * Open the specified folder in the file explorer.
    *
-   * @param folder {@link String} The folder to open.
+   * @param folder The folder to open.
    * @author Griefed
    */
   public void openFolder(String folder) {
@@ -387,7 +389,7 @@ public class FileUtilities {
   /**
    * Open the specified file in an editor.
    *
-   * @param fileToOpen {@link String} The file to open.
+   * @param fileToOpen The file to open.
    * @author Griefed
    */
   public void openFile(String fileToOpen) {

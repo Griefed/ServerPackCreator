@@ -44,155 +44,288 @@ import org.springframework.stereotype.Component;
  * @author Griefed
  */
 @Component
-public class ApplicationProperties extends Properties {
+public final class ApplicationProperties extends Properties {
 
   private static final Logger LOG = LogManager.getLogger(ApplicationProperties.class);
 
-  // ServerPackHandler related
+  /**
+   * Default properties.
+   */
   private final String SERVERPACKCREATOR_PROPERTIES = "serverpackcreator.properties";
+  /**
+   * Default properties file.
+   */
   private final File SERVERPACKCREATOR_PROPERTIES_FILE = new File(SERVERPACKCREATOR_PROPERTIES);
-
+  /**
+   * Default fallback clientside-only mods.
+   */
   private final String FALLBACK_MODS_DEFAULT_ASSTRING =
       "Armor Status HUD-,[1.12.2]bspkrscore-,[1.12.2]DamageIndicatorsMod-,3dskinlayers-,Absolutely-Not-A-Zoom-Mod-,AdvancedChat-,AdvancedCompas-,AdvancementPlaques-,Ambience,AmbientEnvironment-,AmbientSounds_,antighost-,anviltooltipmod-,appleskin-,armorchroma-,armorpointspp-,ArmorSoundTweak-,AromaBackup-,authme-,autobackup-,autoreconnect-,auto-reconnect-,axolotl-item-fix-,backtools-,Backups-,bannerunlimited-,Batty's Coordinates PLUS Mod,beenfo-1.19-,BetterAdvancements-,BetterAnimationsCollection-,betterbiomeblend-,BetterDarkMode-,BetterF3-,BetterFoliage-,BetterPingDisplay-,BetterPlacement-,better-recipe-book-,BetterTaskbar-,BetterThirdPerson,BetterTitleScreen-,bhmenu-,BH-Menu-,blur-,Blur-,borderless-mining-,BorderlessWindow-,catalogue-,charmonium-,chat_heads-,cherishedworlds-,ChunkAnimator-,cirback-1.0-,classicbar-,clickadv-,clienttweaks-,ClientTweaks_,combat_music-,configured-,controllable-,Controller Support-,Controlling-,CraftPresence-,CTM-,cullleaves-,cullparticles-,custom-crosshair-mod-,CustomCursorMod-,customdiscordrpc-,CustomMainMenu-,darkness-,dashloader-,defaultoptions-,DefaultOptions_,DefaultSettings-,DeleteWorldsToTrash-,desiredservers-,DetailArmorBar-,Ding-,discordrpc-,DistantHorizons-,drippyloadingscreen-,drippyloadingscreen_,DripSounds-,Durability101-,DurabilityNotifier-,dynamic-fps-,dynamiclights-,dynamic-music-,DynamicSurroundings-,DynamicSurroundingsHuds-,dynmus-,effective-,EffectsLeft-,eggtab-,eguilib-,eiramoticons-,EiraMoticons_,EnchantmentDescriptions-,enchantment-lore-,EnhancedVisuals_,entityculling-,entity-texture-features-,EquipmentCompare-,exhaustedstamina-,extremesoundmuffler-,FabricCustomCursorMod-,fabricemotes-,Fallingleaves-,fancymenu_,fancymenu_video_extension,FancySpawnEggs,FancyVideo-API-,findme-,FirstPersonMod,flickerfix-,fm_audio_extension_,FogTweaker-,ForgeCustomCursorMod-,forgemod_VoxelMap-,FPS-Monitor-,FpsReducer-,FpsReducer2-,freelook-,ftb-backups-,ftbbackups2-,FullscreenWindowed-,galacticraft-rpc-,GameMenuModOption-,gamestagesviewer-,grid-,HealthOverlay-,hiddenrecipebook_,HorseStatsMod-,infinitemusic-,InventoryEssentials_,InventoryHud_[1.17.1].forge-,inventoryprofiles,InventorySpam-,InventoryTweaks-,invtweaks-,ItemBorders-,ItemPhysicLite_,ItemStitchingFix-,itemzoom,itlt-,JBRA-Client-,jeed-,jehc-,jeiintegration_,justenoughbeacons-,JustEnoughCalculation-,justenoughdrags-,JustEnoughEffects-,just-enough-harvestcraft-,JustEnoughProfessions-,JustEnoughResources-,justzoom_,keymap-,keywizard-,konkrete_,konkrete_forge_,lazydfu-,LegendaryTooltips,LegendaryTooltips-,lightfallclient-,LightOverlay-,light-overlay-,LLOverlayReloaded-,loadmyresources_,lock_minecart_view-,lootbeams-,LOTRDRP-,lwl-,magnesium_extras-,maptooltip-,massunbind,mcbindtype-,mcwifipnp-,medievalmusic-,mightyarchitect-,mindful-eating-,minetogether-,MoBends,mobplusplus-,modcredits-,modernworldcreation_,modmenu-,modnametooltip-,modnametooltip_,moreoverlays-,MouseTweaks-,mousewheelie-,movement-vision-,multihotbar-,musicdr-,music-duration-reducer-,MyServerIsCompatible-,Neat-,Neat ,neiRecipeHandlers-,NekosEnchantedBooks-,ngrok-lan-expose-mod-,NoAutoJump-,NoFog-,nopotionshift_,notenoughanimations-,Notes-,NotifMod-,oculus-,OldJavaWarning-,openbackup-,OptiFine,OptiForge,OptiForge-,ornaments-,overloadedarmorbar-,PackMenu-,PackModeMenu-,panorama-,paperdoll-,phosphor-,PickUpNotifier-,Ping-,preciseblockplacing-,PresenceFootsteps-,realm-of-lost-souls-,ReAuth-,rebrand-,replanter-,ResourceLoader-,ResourcePackOrganizer,RPG-HUD-,rubidium-,rubidium_extras-,screenshot-to-clipboard-,ShoulderSurfing-,ShulkerTooltip-,shutupexperimentalsettings-,shutupmodelloader-,signtools-,simpleautorun-,simplebackup-,SimpleBackups-,SimpleDiscordRichPresence-,simple-rpc-,SimpleWorldTimer-,smartcursor-,smoothboot-,smoothfocus-,sounddeviceoptions-,SoundFilters-,soundreloader-,SpawnerFix-,spoticraft-,tconplanner-,textile_backup-,timestamps-,Tips-,TipTheScales-,Toast Control-,ToastControl-,Toast-Control-,tooltipscroller-,torchoptimizer-,torohealth-,totaldarkness,toughnessbar-,TRansliterationLib-,TravelersTitles-,VoidFog-,WindowedFullscreen-,wisla-,WorldNameRandomizer-,xlifeheartcolors-,yisthereautojump-";
+  /**
+   * Default fallback clientside-only mods list.
+   */
   private final List<String> FALLBACK_CLIENTSIDE_MODS =
       new ArrayList<>(Arrays.asList(FALLBACK_MODS_DEFAULT_ASSTRING.split(",")));
-  private final String SERVERPACKCREATOR_VERSION;
-  private final String[] SUPPORTED_MODLOADERS = new String[]{"Fabric", "Forge", "Quilt"};
-  private final String FALLBACK_DIRECTORIES_INCLUDE_ASSTRING = "mods,config,defaultconfigs,scripts";
-  private final List<String> FALLBACK_DIRECTORIES_INCLUDE =
-      new ArrayList<>(Arrays.asList(FALLBACK_DIRECTORIES_INCLUDE_ASSTRING.split(",")));
-  private final String FALLBACK_DIRECTORIES_EXCLUDE_ASSTRING =
-      "overrides,packmenu,resourcepacks,server_pack,fancymenu,libraries";
-  private final List<String> FALLBACK_DIRECTORIES_EXCLUDE =
-      new ArrayList<>(Arrays.asList(FALLBACK_DIRECTORIES_EXCLUDE_ASSTRING.split(",")));
-  private final String FALLBACK_FILES_EXCLUDE_ZIP_ASSTRING =
-      "minecraft_server.MINECRAFT_VERSION.jar,server.jar,libraries/net/minecraft/server/MINECRAFT_VERSION/server-MINECRAFT_VERSION.jar";
-  private final List<String> FALLBACK_FILES_EXCLUDE_ZIP =
-      new ArrayList<>(Arrays.asList(FALLBACK_FILES_EXCLUDE_ZIP_ASSTRING.split(",")));
-  private final String DEFAULT_SHELL_TEMPALTE = "default_template.sh";
-  private final String DEFAULT_POWERSHELL_TEMPLATE = "default_template.ps1";
-
-  private final List<File> FALLBACK_SCRIPT_TEMPLATES =
-      new ArrayList<>(
-          Arrays.asList(
-              new File("server_files/" + DEFAULT_SHELL_TEMPALTE),
-              new File("server_files/" + DEFAULT_POWERSHELL_TEMPLATE)));
-
-  // DefaultFiles related
-  private final File DEFAULT_CONFIG = new File("serverpackcreator.conf");
-  private final File OLD_CONFIG = new File("creator.conf");
-  private final File DEFAULT_SERVER_PROPERTIES = new File("server.properties");
-  private final File DEFAULT_SERVER_ICON = new File("server-icon.png");
-  private final File MINECRAFT_VERSION_MANIFEST = new File("minecraft-manifest.json");
-  private final File FORGE_VERSION_MANIFEST = new File("forge-manifest.json");
-  private final File FABRIC_VERSION_MANIFEST = new File("fabric-manifest.xml");
-  private final File FABRIC_INTERMEDIARIES_MANIFEST_LOCATION =
-      new File("./work/fabric-intermediaries-manifest.json");
-  private final File FABRIC_INSTALLER_VERSION_MANIFEST = new File("fabric-installer-manifest.xml");
-  private final File QUILT_VERSION_MANIFEST = new File("quilt-manifest.xml");
-  private final File QUILT_INSTALLER_VERSION_MANIFEST = new File("quilt-installer-manifest.xml");
-  private final File SERVERPACKCREATOR_DATABASE = new File("serverpackcreator.db");
-
-  // VersionLister related
-  private final File MINECRAFT_VERSION_MANIFEST_LOCATION =
-      new File("./work/minecraft-manifest.json");
-  private final File FORGE_VERSION_MANIFEST_LOCATION = new File("./work/forge-manifest.json");
-  private final File FABRIC_VERSION_MANIFEST_LOCATION = new File("./work/fabric-manifest.xml");
-  private final File FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION =
-      new File("./work/fabric-installer-manifest.xml");
-  private final File QUILT_VERSION_MANIFEST_LOCATION = new File("./work/quilt-manifest.xml");
-  private final File QUILT_INSTALLER_VERSION_MANIFEST_LOCATION =
-      new File("./work/quilt-installer-manifest.xml");
-
-  /**
-   * The directory in which server packs will be generated and stored in, as well as server pack
-   * ZIP-archives. Default is ./server-packs
-   */
-  private String directoryServerPacks;
-
   /**
    * List of mods which should be excluded from server packs.
    */
-  private List<String> listFallbackMods;
-
+  private List<String> listFallbackMods = FALLBACK_CLIENTSIDE_MODS;
   /**
-   * List of directories which should be excluded from server packs. Default is overrides, packmenu,
-   * resourcepacks, server_pack, fancymenu.
+   * Default fallback clientside-only mods, regex.
    */
-  private List<String> directoriesToExclude;
-
+  private final String FALLBACK_MODS_DEFAULT_REGEX_ASSTRING =
+      "^Armor Status HUD-.*$,^[1.12.2]bspkrscore-.*$,^[1.12.2]DamageIndicatorsMod-.*$,^3dskinlayers-.*$,^Absolutely-Not-A-Zoom-Mod-.*$,^AdvancedChat-.*$,^AdvancedCompas-.*$,^AdvancementPlaques-.*$,^Ambience.*$,^AmbientEnvironment-.*$,^AmbientSounds_.*$,^antighost-.*$,^anviltooltipmod-.*$,^appleskin-.*$,^armorchroma-.*$,^armorpointspp-.*$,^ArmorSoundTweak-.*$,^AromaBackup-.*$,^authme-.*$,^autobackup-.*$,^autoreconnect-.*$,^auto-reconnect-.*$,^axolotl-item-fix-.*$,^backtools-.*$,^Backups-.*$,^bannerunlimited-.*$,^Batty's Coordinates PLUS Mod.*$,^beenfo-1.19-.*$,^BetterAdvancements-.*$,^BetterAnimationsCollection-.*$,^betterbiomeblend-.*$,^BetterDarkMode-.*$,^BetterF3-.*$,^BetterFoliage-.*$,^BetterPingDisplay-.*$,^BetterPlacement-.*$,^better-recipe-book-.*$,^BetterTaskbar-.*$,^BetterThirdPerson.*$,^BetterTitleScreen-.*$,^bhmenu-.*$,^BH-Menu-.*$,^blur-.*$,^borderless-mining-.*$,^BorderlessWindow-.*$,^catalogue-.*$,^charmonium-.*$,^chat_heads-.*$,^cherishedworlds-.*$,^ChunkAnimator-.*$,^cirback-1.0-.*$,^classicbar-.*$,^clickadv-.*$,^clienttweaks-.*$,^ClientTweaks_.*$,^combat_music-.*$,^configured-.*$,^controllable-.*$,^Controller Support-.*$,^Controlling-.*$,^CraftPresence-.*$,^CTM-.*$,^cullleaves-.*$,^cullparticles-.*$,^custom-crosshair-mod-.*$,^CustomCursorMod-.*$,^customdiscordrpc-.*$,^CustomMainMenu-.*$,^darkness-.*$,^dashloader-.*$,^defaultoptions-.*$,^DefaultOptions_.*$,^DefaultSettings-.*$,^DeleteWorldsToTrash-.*$,^desiredservers-.*$,^DetailArmorBar-.*$,^Ding-.*$,^discordrpc-.*$,^DistantHorizons-.*$,^drippyloadingscreen-.*$,^drippyloadingscreen_.*$,^DripSounds-.*$,^Durability101-.*$,^DurabilityNotifier-.*$,^dynamic-fps-.*$,^dynamiclights-.*$,^dynamic-music-.*$,^DynamicSurroundings-.*$,^DynamicSurroundingsHuds-.*$,^dynmus-.*$,^effective-.*$,^EffectsLeft-.*$,^eggtab-.*$,^eguilib-.*$,^eiramoticons-.*$,^EiraMoticons_.*$,^EnchantmentDescriptions-.*$,^enchantment-lore-.*$,^EnhancedVisuals_.*$,^entityculling-.*$,^entity-texture-features-.*$,^EquipmentCompare-.*$,^exhaustedstamina-.*$,^extremesoundmuffler-.*$,^FabricCustomCursorMod-.*$,^fabricemotes-.*$,^Fallingleaves-.*$,^fancymenu_.*$,^fancymenu_video_extension.*$,^FancySpawnEggs.*$,^FancyVideo-API-.*$,^findme-.*$,^FirstPersonMod.*$,^flickerfix-.*$,^fm_audio_extension_.*$,^FogTweaker-.*$,^ForgeCustomCursorMod-.*$,^forgemod_VoxelMap-.*$,^FPS-Monitor-.*$,^FpsReducer-.*$,^FpsReducer2-.*$,^freelook-.*$,^ftb-backups-.*$,^ftbbackups2-.*$,^FullscreenWindowed-.*$,^galacticraft-rpc-.*$,^GameMenuModOption-.*$,^gamestagesviewer-.*$,^grid-.*$,^HealthOverlay-.*$,^hiddenrecipebook_.*$,^HorseStatsMod-.*$,^infinitemusic-.*$,^InventoryEssentials_.*$,^InventoryHud_[1.17.1].forge-.*$,^inventoryprofiles.*$,^InventorySpam-.*$,^InventoryTweaks-.*$,^invtweaks-.*$,^ItemBorders-.*$,^ItemPhysicLite_.*$,^ItemStitchingFix-.*$,^itemzoom.*$,^itlt-.*$,^JBRA-Client-.*$,^jeed-.*$,^jehc-.*$,^jeiintegration_.*$,^justenoughbeacons-.*$,^JustEnoughCalculation-.*$,^justenoughdrags-.*$,^JustEnoughEffects-.*$,^just-enough-harvestcraft-.*$,^JustEnoughProfessions-.*$,^JustEnoughResources-.*$,^justzoom_.*$,^keymap-.*$,^keywizard-.*$,^konkrete_.*$,^konkrete_forge_.*$,^lazydfu-.*$,^LegendaryTooltips.*$,^LegendaryTooltips-.*$,^lightfallclient-.*$,^LightOverlay-.*$,^light-overlay-.*$,^LLOverlayReloaded-.*$,^loadmyresources_.*$,^lock_minecart_view-.*$,^lootbeams-.*$,^LOTRDRP-.*$,^lwl-.*$,^magnesium_extras-.*$,^maptooltip-.*$,^massunbind.*$,^mcbindtype-.*$,^mcwifipnp-.*$,^medievalmusic-.*$,^mightyarchitect-.*$,^mindful-eating-.*$,^minetogether-.*$,^MoBends.*$,^mobplusplus-.*$,^modcredits-.*$,^modernworldcreation_.*$,^modmenu-.*$,^modnametooltip-.*$,^modnametooltip_.*$,^moreoverlays-.*$,^MouseTweaks-.*$,^mousewheelie-.*$,^movement-vision-.*$,^multihotbar-.*$,^musicdr-.*$,^music-duration-reducer-.*$,^MyServerIsCompatible-.*$,^Neat-.*$,^Neat .*$,^neiRecipeHandlers-.*$,^NekosEnchantedBooks-.*$,^ngrok-lan-expose-mod-.*$,^NoAutoJump-.*$,^NoFog-.*$,^nopotionshift_.*$,^notenoughanimations-.*$,^Notes-.*$,^NotifMod-.*$,^oculus-.*$,^OldJavaWarning-.*$,^openbackup-.*$,^OptiFine.*$,^OptiForge.*$,^OptiForge-.*$,^ornaments-.*$,^overloadedarmorbar-.*$,^PackMenu-.*$,^PackModeMenu-.*$,^panorama-.*$,^paperdoll-.*$,^phosphor-.*$,^PickUpNotifier-.*$,^Ping-.*$,^preciseblockplacing-.*$,^PresenceFootsteps-.*$,^realm-of-lost-souls-.*$,^ReAuth-.*$,^rebrand-.*$,^replanter-.*$,^ResourceLoader-.*$,^ResourcePackOrganizer.*$,^RPG-HUD-.*$,^rubidium-.*$,^rubidium_extras-.*$,^screenshot-to-clipboard-.*$,^ShoulderSurfing-.*$,^ShulkerTooltip-.*$,^shutupexperimentalsettings-.*$,^shutupmodelloader-.*$,^signtools-.*$,^simpleautorun-.*$,^simplebackup-.*$,^SimpleBackups-.*$,^SimpleDiscordRichPresence-.*$,^simple-rpc-.*$,^SimpleWorldTimer-.*$,^smartcursor-.*$,^smoothboot-.*$,^smoothfocus-.*$,^sounddeviceoptions-.*$,^SoundFilters-.*$,^soundreloader-.*$,^SpawnerFix-.*$,^spoticraft-.*$,^tconplanner-.*$,^textile_backup-.*$,^timestamps-.*$,^Tips-.*$,^TipTheScales-.*$,^Toast Control-.*$,^ToastControl-.*$,^Toast-Control-.*$,^tooltipscroller-.*$,^torchoptimizer-.*$,^torohealth-.*$,^totaldarkness.*$,^toughnessbar-.*$,^TRansliterationLib-.*$,^TravelersTitles-.*$,^VoidFog-.*$,^WindowedFullscreen-.*$,^wisla-.*$,^WorldNameRandomizer-.*$,^xlifeheartcolors-.*$,^yisthereautojump-.*$";
+  /**
+   * Default fallback clientside-only mods list, regex.
+   */
+  private final List<String> FALLBACK_REGEX_CLIENTSIDE_MODS =
+      new ArrayList<>(Arrays.asList(FALLBACK_MODS_DEFAULT_REGEX_ASSTRING.split(",")));
+  /**
+   * List of mods which should be excluded from server packs, in regex format.
+   */
+  private List<String> listFallbackModsRegex = FALLBACK_REGEX_CLIENTSIDE_MODS;
+  /**
+   * ServerPackCreator version.
+   */
+  private final String SERVERPACKCREATOR_VERSION;
+  /**
+   * Supported modloaders.
+   */
+  private final String[] SUPPORTED_MODLOADERS = new String[]{"Fabric", "Forge", "Quilt"};
+  /**
+   * Default directories to include in the server pack.
+   */
+  private final String FALLBACK_DIRECTORIES_INCLUDE_ASSTRING = "mods,config,defaultconfigs,scripts";
+  /**
+   * Default list of directories to include in the server pack.
+   */
+  private final List<String> FALLBACK_DIRECTORIES_INCLUDE =
+      new ArrayList<>(Arrays.asList(FALLBACK_DIRECTORIES_INCLUDE_ASSTRING.split(",")));
   /**
    * List of directories which must not be excluded from server packs. Default is mods, config,
    * defaultconfigs, scripts, saves, seeds, libraries.
    */
-  private List<String> directoriesToInclude;
-
+  private List<String> directoriesToInclude = FALLBACK_DIRECTORIES_INCLUDE;
+  /**
+   * Default directories to exclude from the server pack.
+   */
+  private final String FALLBACK_DIRECTORIES_EXCLUDE_ASSTRING =
+      "overrides,packmenu,resourcepacks,server_pack,fancymenu,libraries";
+  /**
+   * Default list of directories to exclude from the server pack.
+   */
+  private final List<String> FALLBACK_DIRECTORIES_EXCLUDE =
+      new ArrayList<>(Arrays.asList(FALLBACK_DIRECTORIES_EXCLUDE_ASSTRING.split(",")));
+  /**
+   * List of directories which should be excluded from server packs. Default is overrides, packmenu,
+   * resourcepacks, server_pack, fancymenu.
+   */
+  private List<String> directoriesToExclude = FALLBACK_DIRECTORIES_EXCLUDE;
+  /**
+   * Default files to exclude from a server pack ZIP-archive.
+   */
+  private final String FALLBACK_FILES_EXCLUDE_ZIP_ASSTRING =
+      "minecraft_server.MINECRAFT_VERSION.jar,server.jar,libraries/net/minecraft/server/MINECRAFT_VERSION/server-MINECRAFT_VERSION.jar";
+  /**
+   * Default list of files to exclude from a server pack ZIP-archive.
+   */
+  private final List<String> FALLBACK_FILES_EXCLUDE_ZIP =
+      new ArrayList<>(Arrays.asList(FALLBACK_FILES_EXCLUDE_ZIP_ASSTRING.split(",")));
+  /**
+   * List of files to be excluded from ZIP-archives.
+   */
+  private List<String> filesToExcludeFromZipArchive = FALLBACK_FILES_EXCLUDE_ZIP;
+  /**
+   * Default shell-script template.
+   */
+  private final String DEFAULT_SHELL_TEMPLATE = "default_template.sh";
+  /**
+   * Default PowerShell script template.
+   */
+  private final String DEFAULT_POWERSHELL_TEMPLATE = "default_template.ps1";
+  /**
+   * Default script templates list as string.
+   */
+  private final String FALLBACK_SCRIPT_TEMPLATES_ASSTRING =
+      DEFAULT_SHELL_TEMPLATE + "," + DEFAULT_POWERSHELL_TEMPLATE;
+  /**
+   * Default list of script templates in the server_files-directory.
+   */
+  private final List<File> FALLBACK_SCRIPT_TEMPLATES =
+      new ArrayList<>(
+          Arrays.asList(
+              new File("server_files/" + DEFAULT_SHELL_TEMPLATE),
+              new File("server_files/" + DEFAULT_POWERSHELL_TEMPLATE)));
+  /**
+   * List of templates used for start-script creation.
+   */
+  private List<File> scriptTemplates = FALLBACK_SCRIPT_TEMPLATES;
+  /**
+   * Default configuration file from which to load a server pack configuration.
+   */
+  private final File DEFAULT_CONFIG = new File("serverpackcreator.conf");
+  /**
+   * Default properties file for a Minecraft server.
+   */
+  private final File DEFAULT_SERVER_PROPERTIES = new File("server.properties");
+  /**
+   * Default server-icon for a Minecraft server.
+   */
+  private final File DEFAULT_SERVER_ICON = new File("server-icon.png");
+  /**
+   * Minecraft version manifest file.
+   */
+  private final File MINECRAFT_VERSION_MANIFEST = new File("minecraft-manifest.json");
+  /**
+   * Forge version manifest file.
+   */
+  private final File FORGE_VERSION_MANIFEST = new File("forge-manifest.json");
+  /**
+   * Fabric version manifest file.
+   */
+  private final File FABRIC_VERSION_MANIFEST = new File("fabric-manifest.xml");
+  /**
+   * Fabric intermediaries manifest file.
+   */
+  private final File FABRIC_INTERMEDIARIES_MANIFEST_LOCATION =
+      new File("./work/fabric-intermediaries-manifest.json");
+  /**
+   * Fabric installer version manifest file.
+   */
+  private final File FABRIC_INSTALLER_VERSION_MANIFEST = new File("fabric-installer-manifest.xml");
+  /**
+   * Quilt version manifest file.
+   */
+  private final File QUILT_VERSION_MANIFEST = new File("quilt-manifest.xml");
+  /**
+   * Quilt installer version manifest file.
+   */
+  private final File QUILT_INSTALLER_VERSION_MANIFEST = new File("quilt-installer-manifest.xml");
+  /**
+   * ServerPackCreator webservice database file.
+   */
+  private final File SERVERPACKCREATOR_DATABASE = new File("serverpackcreator.db");
+  /**
+   * Storage location for Minecraft version manifest file.
+   */
+  private final File MINECRAFT_VERSION_MANIFEST_LOCATION =
+      new File("./work/minecraft-manifest.json");
+  /**
+   * Storage location for Forge version manifest file.
+   */
+  private final File FORGE_VERSION_MANIFEST_LOCATION = new File("./work/forge-manifest.json");
+  /**
+   * Storage location for Fabric version manifest file.
+   */
+  private final File FABRIC_VERSION_MANIFEST_LOCATION = new File("./work/fabric-manifest.xml");
+  /**
+   * Storage location for Fabric installer version manifest file.
+   */
+  private final File FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION =
+      new File("./work/fabric-installer-manifest.xml");
+  /**
+   * Storage location for Quilt version manifest file.
+   */
+  private final File QUILT_VERSION_MANIFEST_LOCATION = new File("./work/quilt-manifest.xml");
+  /**
+   * Storage location for Quilt installer version manifest file.
+   */
+  private final File QUILT_INSTALLER_VERSION_MANIFEST_LOCATION =
+      new File("./work/quilt-installer-manifest.xml");
+  /**
+   * Default Aikars flags.
+   */
+  private final String AIKARS_FLAGS =
+      "-Xms4G -Xmx4G -XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200 "
+          + "-XX:+UnlockExperimentalVMOptions -XX:+DisableExplicitGC -XX:+AlwaysPreTouch -XX:G1NewSizePercent=30 "
+          + "-XX:G1MaxNewSizePercent=40 -XX:G1HeapRegionSize=8M -XX:G1ReservePercent=20 -XX:G1HeapWastePercent=5 "
+          + "-XX:G1MixedGCCountTarget=4 -XX:InitiatingHeapOccupancyPercent=15 -XX:G1MixedGCLiveThresholdPercent=90 "
+          + "-XX:G1RSetUpdatingPauseTimePercent=5 -XX:SurvivorRatio=32 -XX:+PerfDisableSharedMem "
+          + "-XX:MaxTenuringThreshold=1 -Dusing.aikars.flags=https://mcflags.emc.gs -Daikars.new.flags=true";
+  private final String PROPERTY_VERSIONCHECK_PRERELEASE = "de.griefed.serverpackcreator.versioncheck.prerelease";
+  private final String PROPERTY_LANGUAGE = "de.griefed.serverpackcreator.language";
+  private final String PROPERTY_CONFIGURATION_FALLBACKMODSLIST = "de.griefed.serverpackcreator.configuration.fallbackmodslist";
+  private final String PROPERTY_CONFIGURATION_FALLBACKMODSLIST_REGEX = "de.griefed.serverpackcreator.configuration.fallbackmodslist.regex";
+  private final String PROPERTY_CONFIGURATION_HASTEBINSERVER = "de.griefed.serverpackcreator.configuration.hastebinserver";
+  private final String PROPERTY_CONFIGURATION_AIKAR = "de.griefed.serverpackcreator.configuration.aikar";
+  private final String PROPERTY_SERVERPACK_AUTODISCOVERY_ENABLED = "de.griefed.serverpackcreator.serverpack.autodiscovery.enabled";
+  private final String PROPERTY_SERVERPACK_AUTODISCOVERY_ENABLED_LEGACY = "de.griefed.serverpackcreator.serverpack.autodiscoverenabled";
+  private final String PROPERTY_GUI_DARKMODE = "de.griefed.serverpackcreator.gui.darkmode";
+  private final String PROPERTY_CONFIGURATION_DIRECTORIES_SERVERPACKS = "de.griefed.serverpackcreator.configuration.directories.serverpacks";
+  private final String PROPERTY_SERVERPACK_CLEANUP_ENABLED = "de.griefed.serverpackcreator.serverpack.cleanup.enabled";
+  private final String PROPERTY_SERVERPACK_OVERWRITE_ENABLED = "de.griefed.serverpackcreator.serverpack.overwrite.enabled";
+  private final String PROPERTY_CONFIGURATION_DIRECTORIES_SHOULDEXCLUDE = "de.griefed.serverpackcreator.configuration.directories.shouldexclude";
+  private final String PROPERTY_SPRING_SCHEDULES_DATABASE_CLEANUP = "de.griefed.serverpackcreator.spring.schedules.database.cleanup";
+  private final String PROPERTY_SPRING_SCHEDULES_FILES_CLEANUP = "de.griefed.serverpackcreator.spring.schedules.files.cleanup";
+  private final String PROPERTY_SPRING_SCHEDULES_VERSIONS_REFRESH = "de.griefed.serverpackcreator.spring.schedules.versions.refresh";
+  private final String PROPERTY_SPRING_ARTEMIS_QUEUE_MAX_DISK_USAGE = "de.griefed.serverpackcreator.spring.artemis.queue.max_disk_usage";
+  private final String PROPERTY_CONFIGURATION_SAVELOADEDCONFIG = "de.griefed.serverpackcreator.configuration.saveloadedconfig";
+  private final String PROPERTY_CONFIGURATION_DIRECTORIES_MUSTINCLUDE = "de.griefed.serverpackcreator.configuration.directories.mustinclude";
+  private final String PROPERTY_SERVERPACK_ZIP_EXCLUDE = "de.griefed.serverpackcreator.serverpack.zip.exclude";
+  private final String PROPERTY_SERVERPACK_ZIP_EXCLUDE_ENABLED = "de.griefed.serverpackcreator.serverpack.zip.exclude.enabled";
+  private final String PROPERTY_SERVERPACK_SCRIPT_TEMPLATE = "de.griefed.serverpackcreator.serverpack.script.template";
+  private final String PROPERTY_MINECRAFT_SNAPSHOTS = "de.griefed.serverpackcreator.minecraft.snapshots";
+  private final String PROPERTY_SERVERPACK_AUTODISCOVERY_FILTER = "de.griefed.serverpackcreator.serverpack.autodiscovery.filter";
+  /**
+   * The directory in which server packs will be generated and stored in, as well as server pack
+   * ZIP-archives. Default is ./server-packs
+   */
+  private String directoryServerPacks = "server-packs";
   /**
    * When running as a webservice: Maximum disk usage in % at which JMS/Artemis will stop storing
    * message in the queue saved on disk. Default is 90%.
    */
-  private int queueMaxDiskUsage;
-
+  private int queueMaxDiskUsage = 90;
   /**
    * Whether the manually loaded configuration file should be saved as well as the default
    * serverpackcreator.conf. Setting this to true will make ServerPackCreator save
    * serverpackcreator.conf as well as the last loaded configuration-file. Default is false.
    */
-  private boolean saveLoadedConfiguration;
-
+  private boolean saveLoadedConfiguration = false;
   /**
    * Whether ServerPackCreator should check for available PreReleases. Set to <code>true</code> to
    * get notified about available PreReleases. Set to <code>false</code> if you only want stable
    * releases.
    */
-  private boolean checkForPreReleases;
-
+  private boolean checkForPreReleases = false;
   /**
    * Aikars flags recommended for running a Minecraft server, from <a
    * href=https://aikar.co/mcflags.html>aikar.co</a>
    */
-  private String aikarsFlags;
-
-  /**
-   * List of files to be excluded from ZIP-archives.
-   */
-  private List<String> filesToExcludeFromZipArchive;
-
+  private String aikarsFlags = AIKARS_FLAGS;
   /**
    * Whether the exclusion of files from the server pack is enabled.
    */
-  private boolean isZipFileExclusionEnabled;
-
-  /**
-   * List of templates used for start-script creation.
-   */
-  private List<File> scriptTemplates;
-
+  private boolean isZipFileExclusionEnabled = true;
   /**
    * Whether clientside-only mods should automatically be excluded *
    */
   private boolean autoExcludingModsEnabled = true;
-
   /**
    * Whether overwriting of already existing server packs is enabled
    */
   private boolean serverPacksOverwriteEnabled = true;
-
   /**
    * Whether cleanup procedures of server packs after generation are enabled. See
    * <code>ServerPackHandler#cleanUpServerPack(...)</code> for details.
    */
   private boolean serverPackCleanupEnabled = true;
-
   /**
    * The language currently being used.
    */
   private String language = "en_us";
-
   /**
    * URL to the hastebin server documents endpoint.
    */
   private String hasteBinServerUrl = "https://haste.zneix.eu/documents";
+  /**
+   * Whether pre-releases and snapshots should be available to the user.
+   */
+  private boolean minecraftPreReleases = false;
+  /**
+   * In which way user-specified clientside-only mods should be excluded.
+   */
+  private ExclusionFilter exclusionFilter = ExclusionFilter.START;
 
   /**
    * Initialize an instance of our application properties using the default
@@ -304,7 +437,103 @@ public class ApplicationProperties extends Properties {
 
     setHasteBinServerUrl();
 
-    saveToDisk();
+    setMinecraftPreReleases();
+
+    setModExclusionFilterMethod();
+
+    saveToDisk(propertiesFile);
+  }
+
+  /**
+   * Set a property in our ApplicationProperties.
+   *
+   * @param key   The key in which to store the property.
+   * @param value The value to store in the specified key.
+   * @author Griefed
+   */
+  private String defineProperty(String key, String value) {
+    setProperty(key, value);
+    return value;
+  }
+
+  /**
+   * Get a property from our ApplicationProperties. If the property is not available, it is created
+   * with the specified value, thus allowing subsequent calls.
+   *
+   * @param key          The key of the property to acquire.
+   * @param defaultValue The default value for the specified key in case the key is not present or
+   *                     empty.
+   * @return The value stored in the specified key.
+   * @author Griefed
+   */
+  private String acquireProperty(String key, String defaultValue) {
+    if (getProperty(key) == null) {
+      return defineProperty(key, defaultValue);
+    } else {
+      return getProperty(key, defaultValue);
+    }
+  }
+
+  /**
+   * Get a list from our properties.
+   *
+   * @param key          The key of the property which holds the comma-separated list.
+   * @param defaultValue The default value to set the property to in case it is undefined.
+   * @return The requested list.
+   * @author Griefed
+   */
+  private List<String> getListProperty(String key, String defaultValue) {
+    if (acquireProperty(key, defaultValue).contains(",")) {
+      return new ArrayList<>(Arrays.asList(acquireProperty(key, defaultValue).split(",")));
+    } else {
+      return Collections.singletonList(acquireProperty(key, defaultValue));
+    }
+  }
+
+  /**
+   * Get an integer from our properties.
+   *
+   * @param key          The key of the property which holds the comma-separated list.
+   * @param defaultValue The default value to set the property to in case it is undefined.
+   * @return The requested integer.
+   * @author Griefed
+   */
+  private int getIntProperty(String key, int defaultValue) {
+    try {
+      return Integer.parseInt(acquireProperty(key, String.valueOf(defaultValue)));
+    } catch (NumberFormatException ex) {
+      defineProperty(key, String.valueOf(defaultValue));
+      return defaultValue;
+    }
+  }
+
+  /**
+   * Get a list of files from our properties, with each file having a specific prefix.
+   *
+   * @param key          The key of the property which holds the comma-separated list.
+   * @param defaultValue The default value to set the property to in case it is undefined.
+   * @param filePrefix   The prefix every file should receive.
+   * @return The requested list of files.
+   * @author Griefed
+   */
+  private List<File> getFileListProperty(String key, String defaultValue, String filePrefix) {
+    List<File> files = new ArrayList<>();
+    for (String entry : getListProperty(key, defaultValue)) {
+      files.add(new File(filePrefix + entry));
+    }
+    return files;
+  }
+
+  /**
+   * Get a boolean from our properties.
+   *
+   * @param key          The key of the property which holds the comma-separated list.
+   * @param defaultValue The default value to set the property to in case it is undefined.
+   * @return The requested integer.
+   * @author Griefed
+   */
+  private boolean getBoolProperty(String key, boolean defaultValue) {
+    return Boolean.parseBoolean(acquireProperty(key, String.valueOf(defaultValue)));
   }
 
   /**
@@ -313,69 +542,30 @@ public class ApplicationProperties extends Properties {
    * @author Griefed
    */
   private void setServerPacksDir() {
-    String tempDir = null;
-    try {
-
-      // Try to use the directory specified in the
-      // de.griefed.serverpackcreator.configuration.directories.serverpacks property.
-      tempDir =
-          getProperty(
-              "de.griefed.serverpackcreator.configuration.directories.serverpacks", "server-packs");
-
-    } catch (NullPointerException npe) {
-
-      // If setting the directory via property fails, set the property to the default value
-      // server-packs.
-      setProperty(
-          "de.griefed.serverpackcreator.configuration.directories.serverpacks", "server-packs");
-      tempDir = "server-packs";
-
-    } finally {
-
-      // Check tempDir for correctness. Set property and directory if it is correct and overwrite
-      // serverpackcreator.properties
-      if (tempDir != null && !tempDir.isEmpty() && new File(tempDir).isDirectory()) {
-        setProperty(
-            "de.griefed.serverpackcreator.configuration.directories.serverpacks", tempDir);
-        directoryServerPacks = tempDir;
-
-        // Use directory server-packs
-      } else {
-        directoryServerPacks = "server-packs";
-      }
+    if (new File(acquireProperty(PROPERTY_CONFIGURATION_DIRECTORIES_SERVERPACKS,
+        "server-packs")).exists()) {
+      directoryServerPacks = acquireProperty(PROPERTY_CONFIGURATION_DIRECTORIES_SERVERPACKS,
+          "server-packs");
+    } else {
+      LOG.error("Invalid server-packs directory specified. Defaulting to 'server-packs'.");
+      directoryServerPacks = "server-packs";
     }
-    LOG.debug("Server packs directory set to: " + directoryServerPacks);
+    LOG.info("Server packs directory set to: " + directoryServerPacks);
   }
 
   /**
-   * Setup our fallback list of clientside-only mods.
+   * Set up our fallback list of clientside-only mods.
    *
    * @author Griefed
    */
   private void setFallbackModsList() {
-    if (getProperty("de.griefed.serverpackcreator.configuration.fallbackmodslist") == null) {
+    listFallbackMods = getListProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST,
+        FALLBACK_MODS_DEFAULT_ASSTRING);
+    LOG.info("Fallback modslist set to: " + listFallbackMods);
 
-      listFallbackMods = FALLBACK_CLIENTSIDE_MODS;
-      LOG.debug("Fallbackmodslist property null. Using fallback.");
-
-    } else if (getProperty("de.griefed.serverpackcreator.configuration.fallbackmodslist")
-        .contains(",")) {
-
-      listFallbackMods =
-          new ArrayList<>(
-              Arrays.asList(
-                  getProperty(
-                      "de.griefed.serverpackcreator.configuration.fallbackmodslist",
-                      FALLBACK_MODS_DEFAULT_ASSTRING)
-                      .split(",")));
-
-    } else {
-
-      listFallbackMods =
-          Collections.singletonList(
-              (getProperty("de.griefed.serverpackcreator.configuration.fallbackmodslist")));
-    }
-    LOG.debug("Fallbackmodslist set to: " + listFallbackMods);
+    listFallbackModsRegex = getListProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST_REGEX,
+        FALLBACK_MODS_DEFAULT_REGEX_ASSTRING);
+    LOG.info("Fallback regex modslist set to: " + listFallbackModsRegex);
   }
 
   /**
@@ -384,32 +574,9 @@ public class ApplicationProperties extends Properties {
    * @author Griefed
    */
   private void setDirsToExcludeList() {
-    if (getProperty("de.griefed.serverpackcreator.configuration.directories.shouldexclude")
-        == null) {
-
-      directoriesToExclude = FALLBACK_DIRECTORIES_EXCLUDE;
-      LOG.debug("directories.shouldexclude-property null. Using fallback.");
-
-    } else if (getProperty(
-        "de.griefed.serverpackcreator.configuration.directories.shouldexclude")
-        .contains(",")) {
-
-      directoriesToExclude =
-          new ArrayList<>(
-              Arrays.asList(
-                  getProperty(
-                      "de.griefed.serverpackcreator.configuration.directories.shouldexclude",
-                      FALLBACK_DIRECTORIES_EXCLUDE_ASSTRING)
-                      .split(",")));
-
-    } else {
-
-      directoriesToExclude =
-          Collections.singletonList(
-              getProperty(
-                  "de.griefed.serverpackcreator.configuration.directories.shouldexclude"));
-    }
-    LOG.debug("Directories to exclude set to: " + directoriesToExclude);
+    directoriesToExclude = getListProperty(PROPERTY_CONFIGURATION_DIRECTORIES_SHOULDEXCLUDE,
+        FALLBACK_DIRECTORIES_EXCLUDE_ASSTRING);
+    LOG.info("Directories to exclude set to: " + directoriesToExclude);
   }
 
   /**
@@ -419,32 +586,9 @@ public class ApplicationProperties extends Properties {
    * @author Griefed
    */
   private void setDirsToIncludeList() {
-    if (getProperty("de.griefed.serverpackcreator.configuration.directories.mustinclude")
-        == null) {
-
-      directoriesToInclude = FALLBACK_DIRECTORIES_INCLUDE;
-      LOG.debug("directories.mustinclude-property null. Using fallback.");
-
-    } else if (getProperty(
-        "de.griefed.serverpackcreator.configuration.directories.mustinclude")
-        .contains(",")) {
-
-      directoriesToInclude =
-          new ArrayList<>(
-              Arrays.asList(
-                  getProperty(
-                      "de.griefed.serverpackcreator.configuration.directories.mustinclude",
-                      FALLBACK_DIRECTORIES_INCLUDE_ASSTRING)
-                      .split(",")));
-
-    } else {
-
-      directoriesToInclude =
-          Collections.singletonList(
-              getProperty(
-                  "de.griefed.serverpackcreator.configuration.directories.mustinclude"));
-    }
-    LOG.debug("Directories which must always be included set to: " + directoriesToInclude);
+    directoriesToInclude = getListProperty(PROPERTY_CONFIGURATION_DIRECTORIES_MUSTINCLUDE,
+        FALLBACK_DIRECTORIES_INCLUDE_ASSTRING);
+    LOG.info("Directories which must always be included set to: " + directoriesToInclude);
   }
 
   /**
@@ -453,10 +597,14 @@ public class ApplicationProperties extends Properties {
    * @author Griefed
    */
   private void setQueueMaxDiskUsage() {
-    queueMaxDiskUsage =
-        Integer.parseInt(
-            getProperty("de.griefed.serverpackcreator.spring.artemis.queue.max_disk_usage", "90"));
-    LOG.debug("Queue max disk usage set to: " + queueMaxDiskUsage);
+    int usage = getIntProperty(PROPERTY_SPRING_ARTEMIS_QUEUE_MAX_DISK_USAGE, 90);
+    if (usage >= 0 && usage <= 100) {
+      queueMaxDiskUsage = getIntProperty(PROPERTY_SPRING_ARTEMIS_QUEUE_MAX_DISK_USAGE, 90);
+    } else {
+      LOG.error("Invalid max disk usage set. Defaulting to 90");
+      queueMaxDiskUsage = 90;
+    }
+    LOG.info("Queue max disk usage set to: " + queueMaxDiskUsage);
   }
 
   /**
@@ -465,22 +613,18 @@ public class ApplicationProperties extends Properties {
    * @author Griefed
    */
   private void setSaveLoadedConfiguration() {
-    saveLoadedConfiguration =
-        Boolean.parseBoolean(
-            getProperty("de.griefed.serverpackcreator.configuration.saveloadedconfig", "false"));
-    LOG.debug("Save last loaded config set to: " + saveLoadedConfiguration);
+    saveLoadedConfiguration = getBoolProperty(PROPERTY_CONFIGURATION_SAVELOADEDCONFIG, false);
+    LOG.info("Save last loaded config set to: " + saveLoadedConfiguration);
   }
 
   /**
-   * Whether to check for prereleases as well.
+   * Whether to check for pre-releases as well.
    *
    * @author Griefed
    */
   private void setCheckForPreReleases() {
-    checkForPreReleases =
-        Boolean.parseBoolean(
-            getProperty("de.griefed.serverpackcreator.versioncheck.prerelease", "false"));
-    LOG.debug("Set check for prereleases to: " + checkForPreReleases);
+    checkForPreReleases = getBoolProperty(PROPERTY_VERSIONCHECK_PRERELEASE, false);
+    LOG.info("Set check for pre-releases to: " + checkForPreReleases);
   }
 
   /**
@@ -489,16 +633,8 @@ public class ApplicationProperties extends Properties {
    * @author Griefed
    */
   private void setAikarsFlags() {
-    aikarsFlags =
-        getProperty(
-            "de.griefed.serverpackcreator.configuration.aikar",
-            "-Xms4G -Xmx4G -XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200 "
-                + "-XX:+UnlockExperimentalVMOptions -XX:+DisableExplicitGC -XX:+AlwaysPreTouch -XX:G1NewSizePercent=30 "
-                + "-XX:G1MaxNewSizePercent=40 -XX:G1HeapRegionSize=8M -XX:G1ReservePercent=20 -XX:G1HeapWastePercent=5 "
-                + "-XX:G1MixedGCCountTarget=4 -XX:InitiatingHeapOccupancyPercent=15 -XX:G1MixedGCLiveThresholdPercent=90 "
-                + "-XX:G1RSetUpdatingPauseTimePercent=5 -XX:SurvivorRatio=32 -XX:+PerfDisableSharedMem "
-                + "-XX:MaxTenuringThreshold=1 -Dusing.aikars.flags=https://mcflags.emc.gs -Daikars.new.flags=true");
-    LOG.debug("Aikars flags set to: " + aikarsFlags);
+    aikarsFlags = acquireProperty(PROPERTY_CONFIGURATION_AIKAR, AIKARS_FLAGS);
+    LOG.info("Aikars flags set to: " + aikarsFlags);
   }
 
   /**
@@ -507,33 +643,10 @@ public class ApplicationProperties extends Properties {
    * @author Griefed
    */
   private void setFilesToExcludeFromZip() {
-    if (getProperty("de.griefed.serverpackcreator.serverpack.zip.exclude") == null) {
-
-      filesToExcludeFromZipArchive = FALLBACK_FILES_EXCLUDE_ZIP;
-      LOG.debug("serverpack.zip.exclude-property null. Using fallback.");
-
-    } else if (getProperty("de.griefed.serverpackcreator.serverpack.zip.exclude")
-        .contains(",")) {
-
-      filesToExcludeFromZipArchive =
-          new ArrayList<>(
-              Arrays.asList(
-                  getProperty(
-                      "de.griefed.serverpackcreator.serverpack.zip.exclude",
-                      FALLBACK_FILES_EXCLUDE_ZIP_ASSTRING)
-                      .split(",")));
-
-    } else {
-
-      filesToExcludeFromZipArchive =
-          Collections.singletonList(
-              getProperty(
-                  "de.griefed.serverpackcreator.serverpack.zip.exclude",
-                  FALLBACK_FILES_EXCLUDE_ZIP_ASSTRING));
-    }
-    LOG.debug(
-        "Files which must be excluded from ZIP-archives set to: "
-            + filesToExcludeFromZipArchive);
+    filesToExcludeFromZipArchive = getListProperty(PROPERTY_SERVERPACK_ZIP_EXCLUDE,
+        FALLBACK_FILES_EXCLUDE_ZIP_ASSTRING);
+    LOG.info(
+        "Files which must be excluded from ZIP-archives set to: " + filesToExcludeFromZipArchive);
   }
 
   /**
@@ -542,10 +655,8 @@ public class ApplicationProperties extends Properties {
    * @author Griefed
    */
   private void setZipFileExclusionEnabled() {
-    isZipFileExclusionEnabled =
-        Boolean.parseBoolean(
-            getProperty("de.griefed.serverpackcreator.serverpack.zip.exclude.enabled", "true"));
-    LOG.debug("Zip file exclusion enabled set to: " + isZipFileExclusionEnabled);
+    isZipFileExclusionEnabled = getBoolProperty(PROPERTY_SERVERPACK_ZIP_EXCLUDE_ENABLED, true);
+    LOG.info("Zip file exclusion enabled set to: " + isZipFileExclusionEnabled);
   }
 
   /**
@@ -554,32 +665,9 @@ public class ApplicationProperties extends Properties {
    * @author Griefed
    */
   private void setScriptTemplates() {
-    // Setup our start script template list
-    if (getProperty("de.griefed.serverpackcreator.serverpack.script.template") == null) {
-
-      scriptTemplates = FALLBACK_SCRIPT_TEMPLATES;
-      LOG.debug("Script template property null. Using fallback.");
-
-    } else if (getProperty("de.griefed.serverpackcreator.serverpack.script.template")
-        .contains(",")) {
-
-      scriptTemplates = new ArrayList<>(10);
-
-      for (String template :
-          getProperty("de.griefed.serverpackcreator.serverpack.script.template").split(",")) {
-        scriptTemplates.add(new File("server_files/" + template));
-      }
-
-    } else {
-
-      scriptTemplates =
-          Collections.singletonList(
-              (new File(
-                  "server_files/"
-                      + getProperty(
-                      "de.griefed.serverpackcreator.serverpack.script.template"))));
-    }
-    LOG.debug("Script templates set to: " + scriptTemplates);
+    scriptTemplates = getFileListProperty(PROPERTY_SERVERPACK_SCRIPT_TEMPLATE,
+        FALLBACK_SCRIPT_TEMPLATES_ASSTRING, "server_files/");
+    LOG.info("Script templates set to: " + scriptTemplates);
   }
 
   /**
@@ -588,16 +676,30 @@ public class ApplicationProperties extends Properties {
    * @author Griefed
    */
   private void setAutoExclusionOfMods() {
-    // Whether automatic exclusion of clientside-only mods is enabled or disabled.
+    autoExcludingModsEnabled = getBoolProperty(PROPERTY_SERVERPACK_AUTODISCOVERY_ENABLED, true);
+
+    // Legacy declaration which may still be present in some serverpackcreator.properties-files.
     try {
-      autoExcludingModsEnabled =
-          Boolean.parseBoolean(
-              getProperty("de.griefed.serverpackcreator.serverpack.autodiscoverenabled"));
-    } catch (Exception e) {
-      autoExcludingModsEnabled = true;
-      setProperty("de.griefed.serverpackcreator.serverpack.autodiscoverenabled", "true");
+      if (getProperty(PROPERTY_SERVERPACK_AUTODISCOVERY_ENABLED_LEGACY).matches("(true|false)")) {
+        autoExcludingModsEnabled =
+            Boolean.parseBoolean(
+                getProperty(PROPERTY_SERVERPACK_AUTODISCOVERY_ENABLED_LEGACY));
+
+        setProperty(PROPERTY_SERVERPACK_AUTODISCOVERY_ENABLED,
+            String.valueOf(autoExcludingModsEnabled));
+
+        remove(PROPERTY_SERVERPACK_AUTODISCOVERY_ENABLED_LEGACY);
+
+        LOG.info(
+            "Migrated '" + PROPERTY_SERVERPACK_AUTODISCOVERY_ENABLED_LEGACY + "' to '"
+                + PROPERTY_SERVERPACK_AUTODISCOVERY_ENABLED + "'.");
+      }
+
+    } catch (Exception ignored) {
+      // No legacy declaration present, so we can safely ignore any exception.
     }
-    LOG.debug("Auto-discovery of clientside-only mods set to: " + autoExcludingModsEnabled);
+
+    LOG.info("Auto-discovery of clientside-only mods set to: " + autoExcludingModsEnabled);
   }
 
   /**
@@ -606,16 +708,8 @@ public class ApplicationProperties extends Properties {
    * @author Griefed
    */
   private void setServerPackOverwrite() {
-    // Whether overwriting of server packs is enabled or disabled.
-    try {
-      serverPacksOverwriteEnabled =
-          Boolean.parseBoolean(
-              getProperty("de.griefed.serverpackcreator.serverpack.overwrite.enabled"));
-    } catch (Exception e) {
-      serverPacksOverwriteEnabled = true;
-      setProperty("de.griefed.serverpackcreator.serverpack.overwrite.enabled", "true");
-    }
-    LOG.debug(
+    serverPacksOverwriteEnabled = getBoolProperty(PROPERTY_SERVERPACK_OVERWRITE_ENABLED, true);
+    LOG.info(
         "Overwriting of already existing server packs set to: " + serverPacksOverwriteEnabled);
   }
 
@@ -625,17 +719,9 @@ public class ApplicationProperties extends Properties {
    * @author Griefed
    */
   private void setServerPackCleanup() {
-    // Whether cleanup procedures after server pack generation are enabled.
-    try {
-      serverPackCleanupEnabled =
-          Boolean.parseBoolean(
-              getProperty("de.griefed.serverpackcreator.serverpack.cleanup.enabled"));
-    } catch (Exception e) {
-      serverPackCleanupEnabled = true;
-      setProperty("de.griefed.serverpackcreator.serverpack.cleanup.enabled", "true");
-    }
-    LOG.debug(
-        "Overwriting of already existing server packs set to: " + serverPackCleanupEnabled);
+    serverPackCleanupEnabled = getBoolProperty(PROPERTY_SERVERPACK_CLEANUP_ENABLED, true);
+    LOG.info(
+        "Cleanup of already existing server packs set to: " + serverPackCleanupEnabled);
   }
 
   /**
@@ -644,33 +730,8 @@ public class ApplicationProperties extends Properties {
    * @author Griefed
    */
   private void setLanguage() {
-    // Set the language currently being used by SPC.
-    String lang = null;
-    try {
-
-      // Try to use the directory specified in the
-      // de.griefed.serverpackcreator.configuration.directories.serverpacks property.
-      lang =
-          getProperty(
-              "de.griefed.serverpackcreator.language", "en_us");
-
-    } catch (NullPointerException npe) {
-
-      // If setting the directory via property fails, set the property to the default value
-      // server-packs.
-      setProperty(
-          "de.griefed.serverpackcreator.language", "en_us");
-      lang = "en_us";
-
-    } finally {
-
-      // Check tempDir for correctness. Set property and directory if it is correct and overwrite
-      // serverpackcreator.properties
-      setProperty(
-          "de.griefed.serverpackcreator.language", lang);
-      language = lang;
-    }
-    LOG.debug("Language set to: " + language);
+    language = acquireProperty(PROPERTY_LANGUAGE, "en_us");
+    LOG.info("Language set to: " + language);
   }
 
   /**
@@ -679,35 +740,61 @@ public class ApplicationProperties extends Properties {
    * @author Griefed
    */
   private void setHasteBinServerUrl() {
-    // Set the language currently being used by SPC.
-    String haste = null;
+    hasteBinServerUrl = acquireProperty(PROPERTY_CONFIGURATION_HASTEBINSERVER,
+        "https://haste.zneix.eu/documents");
+    LOG.info("HasteBin documents endpoint set to: " + hasteBinServerUrl);
+  }
+
+  /**
+   * Whether Minecraft pre-releases and snapshots should be made available to the user.
+   *
+   * @author Griefed
+   */
+  private void setMinecraftPreReleases() {
+    minecraftPreReleases = getBoolProperty(PROPERTY_MINECRAFT_SNAPSHOTS,false);
+    LOG.info("Minecraft pre-releases and snapshots available set to: " + minecraftPreReleases);
+  }
+
+  /**
+   * Set in which way user-specified clientside-only mods should be excluded.
+   *
+   * @author Griefed
+   */
+  private void setModExclusionFilterMethod() {
+    ExclusionFilter filter = ExclusionFilter.START;
+
     try {
+      String filterText = acquireProperty(PROPERTY_SERVERPACK_AUTODISCOVERY_FILTER, "START");
+      switch (filterText) {
+        case "END":
+          filter = ExclusionFilter.END;
+          break;
 
-      // Try to use the directory specified in the
-      // de.griefed.serverpackcreator.configuration.directories.serverpacks property.
-      haste =
-          getProperty(
-              "de.griefed.serverpackcreator.configuration.hastebinserver",
-              "https://haste.zneix.eu/documents");
+        case "CONTAIN":
+          filter = ExclusionFilter.CONTAIN;
+          break;
 
-    } catch (NullPointerException npe) {
+        case "REGEX":
+          filter = ExclusionFilter.REGEX;
+          break;
 
-      // If setting the directory via property fails, set the property to the default value
-      // server-packs.
-      setProperty(
-          "de.griefed.serverpackcreator.configuration.hastebinserver",
-          "https://haste.zneix.eu/documents");
-      haste = "https://haste.zneix.eu/documents";
+        case "EITHER":
+          filter = ExclusionFilter.EITHER;
+          break;
+
+        default:
+          LOG.error("Invalid filter specified. Defaulting to START.");
+        case "START":
+          filter = ExclusionFilter.START;
+          break;
+      }
+    } catch (NullPointerException ignored) {
 
     } finally {
-
-      // Check tempDir for correctness. Set property and directory if it is correct and overwrite
-      // serverpackcreator.properties
-      setProperty(
-          "de.griefed.serverpackcreator.configuration.hastebinserver", haste);
-      hasteBinServerUrl = haste;
+      this.exclusionFilter = filter;
+      setProperty(PROPERTY_SERVERPACK_AUTODISCOVERY_FILTER, filter.toString());
     }
-    LOG.debug("HasteBin documents endpoint set to: " + hasteBinServerUrl);
+    LOG.info("User specified clientside-only mod exclusion filter set to: " + exclusionFilter);
   }
 
   /**
@@ -726,7 +813,7 @@ public class ApplicationProperties extends Properties {
   }
 
   public File DEFAULT_SHELL_TEMPLATE() {
-    return new File(DEFAULT_SHELL_TEMPALTE);
+    return new File(DEFAULT_SHELL_TEMPLATE);
   }
 
   public File DEFAULT_POWERSHELL_TEMPLATE() {
@@ -755,13 +842,23 @@ public class ApplicationProperties extends Properties {
   }
 
   /**
-   * String-list of fallback clientside-only mods.
+   * List of fallback clientside-only mods.
    *
    * @return List of fallback clientside-only mods.
    * @author Griefed
    */
   public List<String> FALLBACK_CLIENTSIDE_MODS() {
     return FALLBACK_CLIENTSIDE_MODS;
+  }
+
+  /**
+   * Regex-list of fallback clientside-only mods.
+   *
+   * @return Regex list of fallback clientside-only mods.
+   * @author Griefed
+   */
+  public List<String> FALLBACK_REGEX_CLIENTSIDE_MODS() {
+    return FALLBACK_REGEX_CLIENTSIDE_MODS;
   }
 
   /**
@@ -772,16 +869,6 @@ public class ApplicationProperties extends Properties {
    */
   public File DEFAULT_CONFIG() {
     return DEFAULT_CONFIG;
-  }
-
-  /**
-   * Old configuration-file used for automated migration in case anyone upgrades from 1.x.
-   *
-   * @return creator.conf-file.
-   * @author Griefed
-   */
-  public File OLD_CONFIG() {
-    return OLD_CONFIG;
   }
 
   /**
@@ -998,13 +1085,39 @@ public class ApplicationProperties extends Properties {
   }
 
   /**
-   * Getter for the fallback list of clientside-only mods.
+   * Acquire the default fallback list of clientside-only mods.
    *
-   * @return List String. Returns the fallback list of clientside-only mods.
+   * @return Returns the fallback list of clientside-only mods.
+   * @author Griefed
+   */
+  public List<String> getDefaultListFallbackMods() {
+    return listFallbackMods;
+  }
+
+  /**
+   * Acquire the default fallback list of clientside-only mods. If
+   * <code>de.griefed.serverpackcreator.serverpack.autodiscovery.filter</code> is set to
+   * {@link ExclusionFilter#REGEX}, a regex fallback list is returned.
+   *
+   * @return The fallback list of clientside-only mods.
    * @author Griefed
    */
   public List<String> getListFallbackMods() {
-    return listFallbackMods;
+    if (exclusionFilter.equals(ExclusionFilter.REGEX)) {
+      return listFallbackModsRegex;
+    } else {
+      return listFallbackMods;
+    }
+  }
+
+  /**
+   * Getter for the regex fallback list of clientside-only mods.
+   *
+   * @return The regex fallback list of clientside-only mods.
+   * @author Griefed
+   */
+  public List<String> getListFallbackModsRegex() {
+    return listFallbackModsRegex;
   }
 
   /**
@@ -1020,7 +1133,7 @@ public class ApplicationProperties extends Properties {
   /**
    * Getter for the list of directories to exclude from server packs.
    *
-   * @return List String. Returns the list of directories to exclude from server packs.
+   * @return Returns the list of directories to exclude from server packs.
    * @author Griefed
    */
   public List<String> getDirectoriesToExclude() {
@@ -1030,8 +1143,7 @@ public class ApplicationProperties extends Properties {
   /**
    * Adder for the list of directories to exclude from server packs.
    *
-   * @param entry String. The directory to add to the list of directories to exclude from server
-   *              packs.
+   * @param entry The directory to add to the list of directories to exclude from server packs.
    * @author Griefed
    */
   public void addDirectoryToExclude(String entry) {
@@ -1097,7 +1209,7 @@ public class ApplicationProperties extends Properties {
    * Should you want these filters to be expanded, open an issue on <a
    * href="https://github.com/Griefed/ServerPackCreator/issues">GitHub</a>
    *
-   * @return {@link List} {@link String} of files to exclude from the ZIP archive of a server pack.
+   * @return Files and folders to exclude from the ZIP archive of a server pack.
    * @author Griefed
    */
   public List<String> getFilesToExcludeFromZipArchive() {
@@ -1107,7 +1219,7 @@ public class ApplicationProperties extends Properties {
   /**
    * Whether the exclusion of files from the ZIP-archive of the server pack is enabled.
    *
-   * @return {@link Boolean} <code>true</code> if the exclusion is enabled.
+   * @return <code>true</code> if the exclusion is enabled.
    * @author Griefed
    */
   public boolean isZipFileExclusionEnabled() {
@@ -1117,7 +1229,7 @@ public class ApplicationProperties extends Properties {
   /**
    * Is auto excluding of clientside-only mods enabled.
    *
-   * @return {@link Boolean} <code>true</code> if autodiscovery is enabled.
+   * @return <code>true</code> if autodiscovery is enabled.
    */
   public boolean isAutoExcludingModsEnabled() {
     return autoExcludingModsEnabled;
@@ -1170,33 +1282,40 @@ public class ApplicationProperties extends Properties {
       }
     }
 
-    if (properties != null
-        && !getProperty("de.griefed.serverpackcreator.configuration.fallbackmodslist")
-        .equals(
-            properties.getProperty(
-                "de.griefed.serverpackcreator.configuration.fallbackmodslist"))) {
+    boolean updated = false;
 
-      setProperty(
-          "de.griefed.serverpackcreator.configuration.fallbackmodslist",
-          properties.getProperty("de.griefed.serverpackcreator.configuration.fallbackmodslist"));
+    if (properties != null) {
+      String fallback = "de.griefed.serverpackcreator.configuration.fallbackmodslist";
+      String fallbackRegex = "de.griefed.serverpackcreator.configuration.fallbackmodslist.regex";
 
-      saveToDisk();
+      if (properties.getProperty(fallback) != null && !getProperty(fallback).equals(
+          properties.getProperty(fallback))) {
 
-      listFallbackMods =
-          new ArrayList<>(
-              Arrays.asList(
-                  getProperty(
-                      "de.griefed.serverpackcreator.configuration.fallbackmodslist",
-                      FALLBACK_MODS_DEFAULT_ASSTRING)
-                      .split(",")));
-      LOG.debug("Fallbackmodslist set to: " + listFallbackMods);
-      LOG.info("The fallback-list for clientside only mods has been updated.");
-      return true;
+        setProperty(fallback, properties.getProperty(fallback));
+        listFallbackMods = new ArrayList<>(Arrays.asList(getProperty(fallback).split(",")));
 
-    } else {
-      LOG.info("No fallback-list updates available.");
-      return false;
+        LOG.info("The fallback-list for clientside only mods has been updated to: " + listFallbackMods);
+        updated = true;
+      }
+
+      if (properties.getProperty(fallbackRegex) != null && !getProperty(fallbackRegex).equals(
+          properties.getProperty(fallbackRegex))) {
+
+        setProperty(fallbackRegex, properties.getProperty(fallbackRegex));
+        listFallbackModsRegex = new ArrayList<>(
+            Arrays.asList(getProperty(fallbackRegex).split(",")));
+
+        LOG.info("The fallback regex-list for clientside only mods has been updated to: " + listFallbackModsRegex);
+        updated = true;
+      }
+
     }
+
+    if (updated) {
+      saveToDisk(SERVERPACKCREATOR_PROPERTIES_FILE);
+    }
+
+    return updated;
   }
 
   /**
@@ -1206,7 +1325,7 @@ public class ApplicationProperties extends Properties {
    * @author Griefed
    */
   public boolean isDarkTheme() {
-    return Boolean.parseBoolean(getProperty("de.griefed.serverpackcreator.gui.darkmode"));
+    return Boolean.parseBoolean(acquireProperty("de.griefed.serverpackcreator.gui.darkmode","true"));
   }
 
   /**
@@ -1217,7 +1336,7 @@ public class ApplicationProperties extends Properties {
    */
   public void setTheme(boolean dark) {
     if (dark) {
-      setProperty(
+      defineProperty(
           "de.griefed.serverpackcreator.gui.darkmode", "true");
     } else {
       setProperty(
@@ -1228,11 +1347,12 @@ public class ApplicationProperties extends Properties {
   /**
    * Store the ApplicationProperties to disk, overwriting the existing one.
    *
+   * @param propertiesFile The file to store the properties to.
    * @author Griefed
    */
-  public void saveToDisk() {
+  public void saveToDisk(File propertiesFile) {
     try (OutputStream outputStream =
-        Files.newOutputStream(SERVERPACKCREATOR_PROPERTIES_FILE.toPath())) {
+        Files.newOutputStream(propertiesFile.toPath())) {
       store(outputStream, null);
     } catch (IOException ex) {
       LOG.error("Couldn't write properties-file.", ex);
@@ -1277,5 +1397,60 @@ public class ApplicationProperties extends Properties {
    */
   public String getHasteBinServerUrl() {
     return hasteBinServerUrl;
+  }
+
+  /**
+   * Whether Minecraft pre-releases and snapshots are available to the user in, for example, the
+   * GUI.
+   *
+   * @return <code>true</code> if they are available.
+   * @author Griefed
+   */
+  public boolean enableMinecraftPreReleases() {
+    return minecraftPreReleases;
+  }
+
+  /**
+   * The filter method with which to determine whether a user-specified clientside-only mod should
+   * be excluded from the server pack. Available settings are:<br>
+   * <ul>
+   *   <li>{@link ExclusionFilter#START}</li>
+   *   <li>{@link ExclusionFilter#END}</li>
+   *   <li>{@link ExclusionFilter#CONTAIN}</li>
+   *   <li>{@link ExclusionFilter#REGEX}</li>
+   *   <li>{@link ExclusionFilter#EITHER}</li>
+   * </ul>
+   *
+   * @return The filter method by which to exclude user-specified clientside-only mods.
+   */
+  public ExclusionFilter exclusionFilter() {
+    return exclusionFilter;
+  }
+
+  public enum ExclusionFilter {
+    /**
+     * Does the name of a mod start with the user specified string?
+     */
+    START,
+
+    /**
+     * Does the name of a mod end with the user specified string?
+     */
+    END,
+
+    /**
+     * Does the name of a mod contain the user specified string?
+     */
+    CONTAIN,
+
+    /**
+     * Does the name of a mod match the user specified regex?
+     */
+    REGEX,
+
+    /**
+     * Does any of the above hit for the user specified string/regex?
+     */
+    EITHER
   }
 }

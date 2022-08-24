@@ -47,7 +47,6 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -74,7 +73,7 @@ import org.springframework.stereotype.Component;
  * @author Griefed
  */
 @Component
-public class ServerPackHandler {
+public final class ServerPackHandler {
 
   private static final Logger LOG = LogManager.getLogger(ServerPackHandler.class);
   private static final Logger LOG_ADDONS = LogManager.getLogger("AddonsLogger");
@@ -86,7 +85,7 @@ public class ServerPackHandler {
   private final Utilities UTILITIES;
   private final ApplicationPlugins APPLICATIONPLUGINS;
   private final StopWatch STOPWATCH_SCANS = new StopWatch();
-  private final String[] MOD_FILE_ENDINGS = new String[]{"jar"};
+  private final String[] MOD_FILE_ENDINGS = new String[]{"jar", "disabled"};
 
   /**
    * <strong>Constructor</strong>
@@ -160,9 +159,8 @@ public class ServerPackHandler {
    * </code> Even though it is the year 2022, spaces in paths can and do still cause trouble. Such
    * as for Powershell scripts. Powershell throws a complete fit if the path contains spaces....
    *
-   * @param configurationModel {@link ConfigurationModel} or {@link ServerPackModel} containing the
-   *                           modpack directory of the modpack from which the server pack will be
-   *                           generated.
+   * @param configurationModel Model containing the modpack directory of the modpack from which the
+   *                           server pack will be generated.
    * @return The complete path to the directory in which the server pack will be generated.
    * @author Griefed
    */
@@ -346,11 +344,11 @@ public class ServerPackHandler {
    * Download and provide the improved Fabric Server Launcher, if it is available for the given
    * Minecraft and Fabric version.
    *
-   * @param minecraftVersion String. The Minecraft version the modpack uses and the Fabric Server
-   *                         Launcher should be downloaded for.
-   * @param fabricVersion    String. The modloader version the modpack uses and the Fabric Server
-   *                         Launcher should be downloaded for.
-   * @param destination      String. The destination of the server pack.
+   * @param minecraftVersion The Minecraft version the modpack uses and the Fabric Server Launcher
+   *                         should be downloaded for.
+   * @param fabricVersion    The modloader version the modpack uses and the Fabric Server Launcher
+   *                         should be downloaded for.
+   * @param destination      The destination of the server pack.
    * @author Griefed
    */
   private void provideImprovedFabricServerLauncher(
@@ -399,8 +397,8 @@ public class ServerPackHandler {
    * Deletes all files, directories and ZIP-archives of previously generated server packs to ensure
    * newly generated server pack is as clean as possible.
    *
-   * @param deleteZip   Boolean. Whether to delete the server pack ZIP-archive.
-   * @param destination String. The destination at which to clean up in.
+   * @param deleteZip   Whether to delete the server pack ZIP-archive.
+   * @param destination The destination at which to clean up in.
    * @author Griefed
    */
   private void cleanupEnvironment(boolean deleteZip, String destination) {
@@ -427,8 +425,6 @@ public class ServerPackHandler {
    */
   private void createStartScripts(ConfigurationModel configurationModel, String destination) {
 
-    HashMap<String, String> scriptSettings = configurationModel.getScriptSettings();
-
     for (File template : APPLICATIONPROPERTIES.scriptTemplates()) {
 
       try {
@@ -437,7 +433,7 @@ public class ServerPackHandler {
 
         String scriptContent = FileUtils.readFileToString(template, StandardCharsets.UTF_8);
 
-        for (Map.Entry<String, String> entry : scriptSettings.entrySet()) {
+        for (Map.Entry<String, String> entry : configurationModel.getScriptSettings().entrySet()) {
           scriptContent = scriptContent.replace(entry.getKey(), entry.getValue());
         }
 
@@ -454,14 +450,12 @@ public class ServerPackHandler {
    * -combination is provided, the specified source-file is copied to the specified
    * destination-file.
    *
-   * @param modpackDir        String. Files and directories are copied into the server_pack
-   *                          directory inside the modpack directory.
-   * @param directoriesToCopy String List. All directories and files therein to copy to the server
-   *                          pack.
-   * @param clientMods        String List. List of clientside-only mods to exclude from the server
-   *                          pack.
-   * @param minecraftVersion  String. The Minecraft version the modpack uses.
-   * @param destination       String. The destination where the files should be copied to.
+   * @param modpackDir        Files and directories are copied into the server_pack directory inside
+   *                          the modpack directory.
+   * @param directoriesToCopy All directories and files therein to copy to the server pack.
+   * @param clientMods        List of clientside-only mods to exclude from the server pack.
+   * @param minecraftVersion  The Minecraft version the modpack uses.
+   * @param destination       The destination where the files should be copied to.
    * @author Griefed
    */
   private void copyFiles(
@@ -502,13 +496,18 @@ public class ServerPackHandler {
     } else {
 
       TreeSet<String> exclusions = new TreeSet<>(APPLICATIONPROPERTIES.getDirectoriesToExclude());
-      directoriesToCopy.forEach(
-          entry -> {
-            if (entry.startsWith("!")) {
-              exclusions.add(entry.substring(1).replace("\\", "/"));
-            }
-          });
-      directoriesToCopy.removeIf(n -> n.startsWith("!"));
+
+      directoriesToCopy.removeIf(exclude -> {
+
+        if (exclude.startsWith("!")) {
+
+          exclusions.add(exclude.substring(1).replace("\\", "/"));
+          return true;
+
+        } else {
+          return false;
+        }
+      });
 
       List<ServerPackFile> serverPackFiles = new ArrayList<>(100000);
 
@@ -542,8 +541,6 @@ public class ServerPackHandler {
            * If the entry starts with mods, we need to run our checks for clientside-only mods as well as exclude any
            * user-specified clientside-only mods from the list of mods in the mods-directory.
            */
-          List<String> listOfFiles =
-              excludeClientMods(clientDir, clientMods, minecraftVersion, modloader);
 
           try {
             Files.createDirectories(Paths.get(serverDir));
@@ -551,11 +548,11 @@ public class ServerPackHandler {
 
           }
 
-          for (String file : listOfFiles) {
+          for (File mod : excludeClientMods(clientDir, clientMods, minecraftVersion, modloader)) {
 
             serverPackFiles.add(
                 new ServerPackFile(
-                    file, String.format("%s/%s", serverDir, new File(file).getName())));
+                    mod.getAbsolutePath(), String.format("%s/%s", serverDir, mod.getName())));
           }
 
         } else if (new File(directory).isFile()) {
@@ -652,7 +649,7 @@ public class ServerPackHandler {
    *
    * @param source            {@link String} The source-directory.
    * @param destination{@link String} The server pack-directory.
-   * @return {@link ServerPackFile}-list.
+   * @return List of files and folders of the server pack.
    * @author Griefed
    */
   private List<ServerPackFile> getDirectoryFiles(String source, String destination) {
@@ -685,10 +682,9 @@ public class ServerPackHandler {
   /**
    * Gather all files in the specified save-directory and create {@link ServerPackFile}s from it.
    *
-   * @param clientDir   {@link String} Target directory in the server pack. Usually the name of the
-   *                    world.
-   * @param directory   {@link String} The save-directory.
-   * @param destination {@link String} The destination of the server pack.
+   * @param clientDir   Target directory in the server pack. Usually the name of the world.
+   * @param directory   The save-directory.
+   * @param destination The destination of the server pack.
    * @return List of {@link ServerPackFile}.
    * @author Griefed
    */
@@ -732,10 +728,10 @@ public class ServerPackHandler {
    *                                modloader is Forge, this determines whether Annotations or Tomls
    *                                are scanned.
    * @param modloader               {@link String} The modloader the modpack uses.
-   * @return List String. A list of all mods to include in the server pack.
+   * @return A list of all mods to include in the server pack.
    * @author Griefed
    */
-  private List<String> excludeClientMods(
+  private List<File> excludeClientMods(
       String modsDir,
       List<String> userSpecifiedClientMods,
       String minecraftVersion,
@@ -745,8 +741,7 @@ public class ServerPackHandler {
 
     Collection<File> filesInModsDir =
         new ArrayList<>(FileUtils.listFiles(new File(modsDir), MOD_FILE_ENDINGS, true));
-
-    TreeSet<String> modsInModpack = new TreeSet<>();
+    TreeSet<File> modsInModpack = new TreeSet<>(filesInModsDir);
     List<File> autodiscoveredClientMods = new ArrayList<>();
 
     // Check whether scanning mods for sideness is activated.
@@ -776,77 +771,133 @@ public class ServerPackHandler {
           discoMods.clear();
       }
 
+      // Exclude scanned mods from copying if said functionality is enabled.
+      excludeAutoDiscoveredMods(autodiscoveredClientMods, modsInModpack);
+
       STOPWATCH_SCANS.stop();
-      LOG.debug("Scanning of " + filesInModsDir.size() + " mods took " + STOPWATCH_SCANS);
+      LOG.debug(
+          "Scanning and excluding of " + filesInModsDir.size() + " mods took " + STOPWATCH_SCANS);
       STOPWATCH_SCANS.reset();
-    }
 
-    // Gather a list of all mod-JAR-files.
-
-    for (File mod : filesInModsDir) {
-
-      if (mod.isFile() && mod.toString().endsWith("jar")) {
-        modsInModpack.add(mod.getAbsolutePath());
-      }
+    } else {
+      LOG.info("Automatic clientside-only mod detection disabled.");
     }
 
     // Exclude user-specified mods from copying.
-    if (userSpecifiedClientMods.size() > 0) {
+    excludeUserSpecifiedMod(userSpecifiedClientMods, modsInModpack);
 
-      for (String clientMod : userSpecifiedClientMods) {
+    return new ArrayList<>(modsInModpack);
+  }
 
+  /**
+   * Exclude every automatically discovered clientside-only mod from the list of mods in the
+   * modpack.
+   *
+   * @param autodiscoveredClientMods Automatically discovered clientside-only mods in the modpack.
+   * @param modsInModpack            All mods in the modpack.
+   * @author Griefed
+   */
+  private void excludeAutoDiscoveredMods(List<File> autodiscoveredClientMods,
+      TreeSet<File> modsInModpack) {
+
+    if (autodiscoveredClientMods.size() > 0) {
+
+      LOG.info("Automatically detected mods: " + autodiscoveredClientMods.size());
+
+      for (File discoveredMod : autodiscoveredClientMods) {
         modsInModpack.removeIf(
             mod -> {
-              if (mod.replace("\\", "/").contains(clientMod.replace("\\", "/"))) {
-                LOG.debug("Removed user-specified mod from mods list as per input: " + clientMod);
+              if (mod.getName().contains(discoveredMod.getName())) {
+                LOG.warn("Automatically excluding mod: " + discoveredMod.getName());
                 return true;
               } else {
                 return false;
               }
             });
       }
+    } else {
+      LOG.info("No clientside-only mods detected.");
+    }
+  }
+
+  /**
+   * Exclude user-specified mods from the server pack.
+   *
+   * @param userSpecifiedExclusions User-specified clientside-only mods to exclude from the server
+   *                                pack.
+   * @param modsInModpack           Every mod ending with <code>jar</code> or <code>disabled</code>
+   *                                in the modpack.
+   * @author Griefed
+   */
+  private void excludeUserSpecifiedMod(List<String> userSpecifiedExclusions,
+      TreeSet<File> modsInModpack) {
+
+    if (userSpecifiedExclusions.size() > 0) {
+
+      LOG.info("Performing " + APPLICATIONPROPERTIES.exclusionFilter()
+          + "-type checks for user-specified clientside-only mod exclusion.");
+      for (String userSpecifiedExclusion : userSpecifiedExclusions) {
+        exclude(userSpecifiedExclusion, modsInModpack);
+      }
 
     } else {
       LOG.warn("User specified no clientside-only mods.");
     }
+  }
 
-    // Exclude scanned mods from copying if said functionality is enabled.
-    if (APPLICATIONPROPERTIES.isAutoExcludingModsEnabled()) {
+  /**
+   * Go through the mods in the modpack and exclude any of the user-specified clientside-only mods
+   * according to the filter method set in the serverpackcreator.properties.
+   *
+   * @param userSpecifiedExclusion The client mod to check whether it needs to be excluded.
+   * @param modsInModpack          All mods in the modpack.
+   */
+  private void exclude(String userSpecifiedExclusion, TreeSet<File> modsInModpack) {
+    modsInModpack.removeIf(
+        mod -> {
+          boolean excluded;
+          String check = mod.getName();
 
-      if (autodiscoveredClientMods.size() > 0) {
+          switch (APPLICATIONPROPERTIES.exclusionFilter()) {
 
-        LOG.info("Automatically detected mods: " + autodiscoveredClientMods.size());
+            case END:
+              excluded = check.endsWith(userSpecifiedExclusion);
+              break;
 
-        for (File discoveredMod : autodiscoveredClientMods) {
-          modsInModpack.removeIf(
-              mod -> {
-                if (mod.replace("\\", "/").contains(discoveredMod.toString().replace("\\", "/"))) {
-                  LOG.warn("Automatically excluding mod: " + discoveredMod.getName());
-                  return true;
-                } else {
-                  return false;
-                }
-              });
-        }
-      } else {
-        LOG.info("No clientside-only mods detected.");
-      }
+            case CONTAIN:
+              excluded = check.contains(userSpecifiedExclusion);
+              break;
 
-    } else {
-      LOG.info("Automatic clientside-only mod detection disabled.");
-    }
+            case REGEX:
+              excluded = check.matches(userSpecifiedExclusion);
+              break;
 
-    autodiscoveredClientMods.clear();
-    filesInModsDir.clear();
+            case EITHER:
+              excluded = check.startsWith(userSpecifiedExclusion) || check.endsWith(
+                  userSpecifiedExclusion)
+                  || check.contains(userSpecifiedExclusion) || check.matches(
+                  userSpecifiedExclusion);
+              break;
 
-    return new ArrayList<>(modsInModpack);
+            case START:
+            default:
+              excluded = check.startsWith(userSpecifiedExclusion);
+          }
+
+          if (excluded) {
+            LOG.debug(
+                "Removed " + mod.getName() + " as per user-specified check: "
+                    + userSpecifiedExclusion);
+          }
+          return excluded;
+        });
   }
 
   /**
    * Check whether the given file is present in the list of directories to exclude from the server
    * pack.
    *
-   * @param fileToCheckFor String. The string to check for.
+   * @param fileToCheckFor The string to check for.
    * @return Boolean. Returns true if the file is found in the list of directories to exclude, false
    * if not.
    * @author Griefed
@@ -865,8 +916,8 @@ public class ServerPackHandler {
   /**
    * Copies the server-icon.png into server_pack.
    *
-   * @param destination      String. The destination where the icon should be copied to.
-   * @param pathToServerIcon String. The path to the custom server-icon.
+   * @param destination      The destination where the icon should be copied to.
+   * @param pathToServerIcon The path to the custom server-icon.
    * @author Griefed
    */
   private void copyIcon(String destination, String pathToServerIcon) {
@@ -944,9 +995,8 @@ public class ServerPackHandler {
   /**
    * Copies the server.properties into server_pack.
    *
-   * @param destination            String. The destination where the properties should be copied
-   *                               to.
-   * @param pathToServerProperties String. The path to the custom server.properties.
+   * @param destination            The destination where the properties should be copied to.
+   * @param pathToServerProperties The path to the custom server.properties.
    * @author Griefed
    */
   private void copyProperties(String destination, String pathToServerProperties) {
@@ -992,16 +1042,15 @@ public class ServerPackHandler {
    * Installs the modloader server for the specified modloader, modloader version and Minecraft
    * version.
    *
-   * @param modLoader        String. The modloader for which to install the server software. Either
-   *                         Forge or Fabric.
-   * @param minecraftVersion String. The Minecraft version for which to install the modloader and
-   *                         Minecraft server.
-   * @param modLoaderVersion String. The modloader version for which to install the modloader and
-   *                         Minecraft server.
-   * @param javaPath         String. The path to the Java executable/binary which is needed to
-   *                         execute the Forge/Fabric installersList.
-   * @param destination      String. The destination where the modloader server should be installed
-   *                         into.
+   * @param modLoader        The modloader for which to install the server software. Either Forge or
+   *                         Fabric.
+   * @param minecraftVersion The Minecraft version for which to install the modloader and Minecraft
+   *                         server.
+   * @param modLoaderVersion The modloader version for which to install the modloader and Minecraft
+   *                         server.
+   * @param javaPath         The path to the Java executable/binary which is needed to execute the
+   *                         Forge/Fabric installersList.
+   * @param destination      The destination where the modloader server should be installed into.
    * @author Griefed
    */
   private void installServer(
@@ -1193,15 +1242,13 @@ public class ServerPackHandler {
    * the files which will be excluded, see
    * {@link ApplicationProperties#getFilesToExcludeFromZipArchive()}
    *
-   * @param minecraftVersion          {@link String} Determines the name of the Minecraft server JAR
-   *                                  to exclude from the ZIP-archive if the modloader is Forge.
-   * @param includeServerInstallation {@link Boolean} Determines whether the Minecraft server JAR
-   *                                  info should be printed.
-   * @param destination               {@link String} The destination where the ZIP-archive should be
-   *                                  created in.
-   * @param modloader                 {@link String} The modloader the modpack and server pack use.
-   * @param modloaderVersion          {@link String} The modloader version the modpack and server
-   *                                  pack use.
+   * @param minecraftVersion          Determines the name of the Minecraft server JAR to exclude
+   *                                  from the ZIP-archive if the modloader is Forge.
+   * @param includeServerInstallation Determines whether the Minecraft server JAR info should be
+   *                                  printed.
+   * @param destination               The destination where the ZIP-archive should be created in.
+   * @param modloader                 The modloader the modpack and server pack use.
+   * @param modloaderVersion          The modloader version the modpack and server pack use.
    * @author Griefed
    */
   public void zipBuilder(
@@ -1274,11 +1321,11 @@ public class ServerPackHandler {
    * Cleans up the server_pack directory by deleting left-over files from modloader installations
    * and version checking.
    *
-   * @param minecraftVersion String. Needed for renaming the Forge server JAR to work with launch
-   *                         scripts provided by ServerPackCreator.
-   * @param modLoaderVersion String. Needed for renaming the Forge server JAR to work with launch
-   *                         scripts provided by ServerPackCreator.
-   * @param destination      String. The destination where we should clean up in.
+   * @param minecraftVersion Needed for renaming the Forge server JAR to work with launch scripts
+   *                         provided by ServerPackCreator.
+   * @param modLoaderVersion Needed for renaming the Forge server JAR to work with launch scripts
+   *                         provided by ServerPackCreator.
+   * @param destination      The destination where we should clean up in.
    * @author Griefed
    */
   private void cleanUpServerPack(
@@ -1320,7 +1367,8 @@ public class ServerPackHandler {
    *
    * @author Griefed
    */
-  private static class ServerPackFile {
+  @SuppressWarnings("InnerClassMayBeStatic")
+  private class ServerPackFile {
 
     private final File SOURCE_FILE;
     private final Path SOURCE_PATH;
@@ -1330,9 +1378,8 @@ public class ServerPackHandler {
     /**
      * Construct a new ServerPackFile from two {@link File}-objects, a source and a destination.
      *
-     * @param sourceFile      {@link File} The source file/directory. Usually a file/directory in a
-     *                        modpack.
-     * @param destinationFile {@link File} The destination file/directory in the server pack.
+     * @param sourceFile      The source file/directory. Usually a file/directory in a modpack.
+     * @param destinationFile The destination file/directory in the server pack.
      * @author Griefed
      */
     public ServerPackFile(File sourceFile, File destinationFile) throws InvalidPathException {
@@ -1345,9 +1392,8 @@ public class ServerPackHandler {
     /**
      * Construct a new ServerPackFile from two {@link String}-objects, a source and a destination.
      *
-     * @param sourceFile      {@link String} The source file/directory. Usually a file/directory in
-     *                        a modpack.
-     * @param destinationFile {@link String} The destination file/directory in the server pack.
+     * @param sourceFile      The source file/directory. Usually a file/directory in a modpack.
+     * @param destinationFile The destination file/directory in the server pack.
      * @author Griefed
      */
     public ServerPackFile(String sourceFile, String destinationFile)
@@ -1361,9 +1407,8 @@ public class ServerPackHandler {
     /**
      * Construct a new ServerPackFile from two {@link Path}-objects, a source and a destination.
      *
-     * @param sourcePath      {@link Path} The source file/directory. Usually a file/directory in a
-     *                        modpack.
-     * @param destinationPath {@link Path} The destination file/directory in the server pack.
+     * @param sourcePath      The source file/directory. Usually a file/directory in a modpack.
+     * @param destinationPath The destination file/directory in the server pack.
      * @author Griefed
      */
     public ServerPackFile(Path sourcePath, Path destinationPath)
@@ -1377,7 +1422,7 @@ public class ServerPackHandler {
     /**
      * The source-file.
      *
-     * @return {@link File} The source-file.
+     * @return The source-file.
      * @author Griefed
      */
     public File source() {
@@ -1387,7 +1432,7 @@ public class ServerPackHandler {
     /**
      * The destination-file.
      *
-     * @return {@link File} The destination-file.
+     * @return The destination-file.
      * @author Griefed
      */
     public File destination() {
@@ -1397,7 +1442,7 @@ public class ServerPackHandler {
     /**
      * The path to the source-file.
      *
-     * @return {@link Path} The path to the source-file.
+     * @return The path to the source-file.
      * @author Griefed
      */
     public Path sourcePath() {
@@ -1407,7 +1452,7 @@ public class ServerPackHandler {
     /**
      * The path to the destination-file.
      *
-     * @return {@link Path} The path to the destination-file.
+     * @return The path to the destination-file.
      * @author Griefed
      */
     public Path destinationPath() {
@@ -1464,7 +1509,7 @@ public class ServerPackHandler {
      * This ServerPackFiles source-file and destination-file as a {@link String}-combination,
      * separated by a <code>;</code>
      *
-     * @return {@link String} This ServerPackFiles source-file and destination-file as a
+     * @return This ServerPackFiles source-file and destination-file as a
      * {@link String}-combination, separated by a <code>;</code>
      * @author Griefed
      */

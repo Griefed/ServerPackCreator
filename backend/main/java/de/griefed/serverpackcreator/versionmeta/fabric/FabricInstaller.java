@@ -32,7 +32,7 @@ import org.w3c.dom.Document;
  *
  * @author Griefed
  */
-public class FabricInstaller {
+final class FabricInstaller {
 
   private final String URL_TEMPLATE_INSTALLER =
       "https://maven.fabricmc.net/net/fabricmc/fabric-installer/%s/fabric-installer-%s.jar";
@@ -46,10 +46,10 @@ public class FabricInstaller {
   /**
    * Create a new instance of the Fabric Installer.
    *
-   * @param installerManifest {@link Document} containing Fabric installer information
+   * @param installerManifest Fabric installer information
    * @author Griefed
    */
-  protected FabricInstaller(Document installerManifest) {
+  FabricInstaller(Document installerManifest) {
     this.latestInstaller =
         installerManifest
             .getElementsByTagName("latest")
@@ -102,10 +102,10 @@ public class FabricInstaller {
   /**
    * Update this {@link FabricInstaller} with information from the given {@link Document}.
    *
-   * @param installerManifest {@link Document} containing new installer information.
+   * @param installerManifest Installer information.
    * @author Griefed
    */
-  protected void update(Document installerManifest) {
+  void update(Document installerManifest) {
     this.latestInstaller =
         installerManifest
             .getElementsByTagName("latest")
@@ -158,8 +158,8 @@ public class FabricInstaller {
   /**
    * Acquire the URL for the given Fabric version.
    *
-   * @param fabricInstallerVersion {@link String} Fabric version.
-   * @return {@link URL} to the installer for the given Fabric version.
+   * @param fabricInstallerVersion Fabric version.
+   * @return URL to the installer for the given Fabric version.
    * @throws MalformedURLException if the URL could not be formed.
    * @author Griefed
    */
@@ -171,10 +171,10 @@ public class FabricInstaller {
   /**
    * Get a list of available installer versions for Fabric.
    *
-   * @return {@link String}-list of available Fabric installer versions.
+   * @return List of available Fabric installer versions.
    * @author Griefed
    */
-  protected List<String> installers() {
+  List<String> installers() {
     return installers;
   }
 
@@ -182,50 +182,50 @@ public class FabricInstaller {
    * Meta for the Fabric-Version-to-Installer-URL.<br> key: {@link String} Fabric version.<br>
    * value: {@link URL} Fabric installer URL.
    *
-   * @return {@link HashMap} with the Fabric-Version-to-Installer-URL.
+   * @return Map with the Fabric-Version-to-Installer-URL.
    * @author Griefed
    */
-  protected HashMap<String, URL> meta() {
+  HashMap<String, URL> meta() {
     return installerUrlMeta;
   }
 
   /**
    * Get the latest Fabric installer version.
    *
-   * @return {@link String} The latest Fabric installer version.
+   * @return The latest Fabric installer version.
    * @author Griefed
    */
-  protected String latestInstallerVersion() {
+  String latestInstallerVersion() {
     return latestInstaller;
   }
 
   /**
    * Get the release Fabric installer version.
    *
-   * @return {@link String} The release Fabric installer version.
+   * @return The release Fabric installer version.
    * @author Griefed
    */
-  protected String releaseInstallerVersion() {
+  String releaseInstallerVersion() {
     return releaseInstaller;
   }
 
   /**
    * Get the {@link URL} to the latest Fabric installer.
    *
-   * @return {@link URL} to the latest Fabric installer.
+   * @return URL to the latest Fabric installer.
    * @author Griefed
    */
-  protected URL latestInstallerUrl() {
+  URL latestInstallerUrl() {
     return latestInstallerUrl;
   }
 
   /**
    * Get the {@link URL} to the release Fabric installer.
    *
-   * @return {@link URL} to the release Fabric installer.
+   * @return URL to the release Fabric installer.
    * @author Griefed
    */
-  protected URL releaseInstallerUrl() {
+  URL releaseInstallerUrl() {
     return releaseInstallerUrl;
   }
 
@@ -233,12 +233,12 @@ public class FabricInstaller {
    * Get the {@link URL} to the improved Fabric launcher for the given Minecraft and Fabric
    * versions.
    *
-   * @param minecraftVersion {@link String} Minecraft version.
-   * @param fabricVersion    {@link String} Fabric version.
-   * @return {@link URL} to the improved Fabric launcher, wrapped in an {@link Optional}.
+   * @param minecraftVersion Minecraft version.
+   * @param fabricVersion    Fabric version.
+   * @return URL to the improved Fabric launcher, wrapped in an {@link Optional}.
    * @author Griefed
    */
-  protected Optional<URL> improvedLauncherUrl(String minecraftVersion, String fabricVersion) {
+  Optional<URL> improvedLauncherUrl(String minecraftVersion, String fabricVersion) {
     try {
       return Optional.of(
           new URL(

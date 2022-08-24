@@ -47,7 +47,7 @@ public class BeanConfiguration {
   /**
    * Bean for the location of the Minecraft version manifest-file.
    *
-   * @return {@link File}
+   * @return Minecraft version manifest file.
    * @author Griefed
    */
   @Bean
@@ -58,7 +58,7 @@ public class BeanConfiguration {
   /**
    * Bean for the location of the Forge version manifest-file.
    *
-   * @return {@link File}
+   * @return Forge version manifest file.
    * @author Griefed
    */
   @Bean
@@ -69,7 +69,7 @@ public class BeanConfiguration {
   /**
    * Bean for the location of the Fabric version manifest-file.
    *
-   * @return {@link File}
+   * @return Fabric version manifest file.
    * @author Griefed
    */
   @Bean
@@ -80,7 +80,7 @@ public class BeanConfiguration {
   /**
    * Bean for the location of the Fabric intermediaries manifest-file.
    *
-   * @return {@link File}
+   * @return Fabric intermediaries manifest file.
    * @author Griefed
    */
   @Bean
@@ -91,7 +91,7 @@ public class BeanConfiguration {
   /**
    * Bean for the location of the Fabric installer version manifest-file.
    *
-   * @return {@link File}
+   * @return Fabric installer versions manifest file.
    * @author Griefed
    */
   @Bean
@@ -102,7 +102,7 @@ public class BeanConfiguration {
   /**
    * Bean for the location of the Quilt version manifest-file.
    *
-   * @return {@link File}
+   * @return Quilt versions manifest file.
    * @author Griefed
    */
   @Bean
@@ -113,7 +113,7 @@ public class BeanConfiguration {
   /**
    * Bean for the location of the Quilt installer version manifest-file.
    *
-   * @return {@link File}
+   * @return Quilt installer versions manifest file.
    * @author Griefed
    */
   @Bean
@@ -142,7 +142,7 @@ public class BeanConfiguration {
    * DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES</code>, enabled <code>
    * DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY</code>.
    *
-   * @return {@link ObjectMapper}
+   * @return Objectmapper for JSON parsing.
    */
   @Bean
   public ObjectMapper objectMapper() {
@@ -154,7 +154,7 @@ public class BeanConfiguration {
   /**
    * {@link TomlParser} for parsing <code>.toml</code>-files.
    *
-   * @return {@link TomlParser}
+   * @return Tomlparser for Toml parsing.
    */
   @Bean
   public TomlParser tomlParser() {

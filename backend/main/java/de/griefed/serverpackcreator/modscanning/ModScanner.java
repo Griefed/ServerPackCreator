@@ -29,7 +29,7 @@ import org.springframework.stereotype.Service;
  * @author Griefed
  */
 @Service
-public class ModScanner {
+public final class ModScanner {
 
   private final AnnotationScanner ANNOTATION;
   private final FabricScanner FABRIC;
@@ -52,7 +52,7 @@ public class ModScanner {
   /**
    * Forge annotation-based scanner.
    *
-   * @return {@link AnnotationScanner} for scanning Forge annotations for sideness.
+   * @return Scanner for scanning Forge annotations for sideness.
    * @author Griefed
    */
   public AnnotationScanner annotations() {
@@ -62,7 +62,7 @@ public class ModScanner {
   /**
    * Fabric-based scanner.
    *
-   * @return {@link FabricScanner} for scanning Fabric mods for sideness.
+   * @return Scanner for scanning Fabric mods for sideness.
    * @author Griefed
    */
   public FabricScanner fabric() {
@@ -72,7 +72,7 @@ public class ModScanner {
   /**
    * Quilt-based scanner.
    *
-   * @return {@link QuiltScanner} for scanning Quilt mods for sideness.
+   * @return Scanner for scanning Quilt mods for sideness.
    * @author Griefed
    */
   public QuiltScanner quilt() {
@@ -82,7 +82,7 @@ public class ModScanner {
   /**
    * Forge toml-based scanner.
    *
-   * @return {@link TomlScanner} for scanning Forge tomls for sideness.
+   * @return Scanner for scanning Forge tomls for sideness.
    * @author Griefed
    */
   public TomlScanner tomls() {

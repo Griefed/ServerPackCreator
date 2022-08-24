@@ -37,10 +37,11 @@ import org.springframework.stereotype.Component;
  * @author Griefed
  */
 @Component
-public class FabricScanner extends JsonBasedScanner implements
+public final class FabricScanner extends JsonBasedScanner implements
     Scanner<TreeSet<File>, Collection<File>> {
 
   private static final Logger LOG = LogManager.getLogger(FabricScanner.class);
+  private final String DEPENDENCY_EXCLUSIONS = "(fabric|fabricloader|java|minecraft)";
   private final ObjectMapper OBJECT_MAPPER;
   private final Utilities UTILITIES;
 
@@ -58,8 +59,7 @@ public class FabricScanner extends JsonBasedScanner implements
    *
    * @param filesInModsDir A list of files in which to check the
    *                       <code>fabric.mod.json</code>-files.
-   * @return List String. List of mods not to include in server pack based on
-   * fabric.mod.json-content.
+   * @return List of mods not to include in server pack based on fabric.mod.json-content.
    * @author Griefed
    */
   @Override
@@ -90,7 +90,7 @@ public class FabricScanner extends JsonBasedScanner implements
   void checkForClientModsAndDeps(Collection<File> filesInModsDir, TreeSet<String> clientMods,
       TreeSet<String> modDependencies) {
     for (File mod : filesInModsDir) {
-      if (mod.toString().endsWith("jar")) {
+      if (mod.getName().endsWith("jar")) {
 
         String modId;
 
@@ -115,14 +115,27 @@ public class FabricScanner extends JsonBasedScanner implements
           // Get this mods dependencies
           try {
             UTILITIES.JsonUtilities().getFieldNames(modJson, "depends")
-                .forEachRemaining(modDependencies::add);
+                .forEachRemaining(dependency -> {
+                  if (!dependency.matches(DEPENDENCY_EXCLUSIONS)) {
+                    try {
+                      LOG.debug("Added dependency " + dependency
+                          + " for " + modId + " (" + mod.getName() + ").");
+                    } catch (NullPointerException ex) {
+                      LOG.debug("Added dependency " + dependency + " (" + mod.getName() + ").");
+                    }
+                  }
+                });
           } catch (NullPointerException ignored) {
 
           }
 
         } catch (Exception ex) {
 
-          LOG.error("Couldn't scan " + mod, ex);
+          if (ex.toString().startsWith("java.lang.NullPointerException")) {
+            LOG.warn("Couldn't scan " + mod + " as it contains no fabric.mod.json.");
+          } else {
+            LOG.error("Couldn't scan " + mod, ex);
+          }
         }
       }
     }

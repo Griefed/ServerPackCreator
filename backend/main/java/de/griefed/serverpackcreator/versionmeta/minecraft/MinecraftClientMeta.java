@@ -37,7 +37,7 @@ import org.apache.logging.log4j.Logger;
  *
  * @author Griefed
  */
-public class MinecraftClientMeta {
+final class MinecraftClientMeta {
 
   private static final Logger LOG = LogManager.getLogger(MinecraftClientMeta.class);
   private final ObjectMapper OBJECTMAPPER;
@@ -46,6 +46,7 @@ public class MinecraftClientMeta {
   private final File MINECRAFT_MANIFEST;
   private final List<MinecraftClient> RELEASES = new ArrayList<>();
   private final List<MinecraftClient> SNAPSHOTS = new ArrayList<>();
+  private final List<MinecraftClient> ALL = new ArrayList<>();
 
   private MinecraftClient latestRelease;
   private MinecraftClient latestSnapshot;
@@ -54,13 +55,12 @@ public class MinecraftClientMeta {
   /**
    * Create a new Minecraft Client Meta.
    *
-   * @param injectedForgeMeta {@link ForgeMeta} to acquire Forge instances for this
-   *                          {@link MinecraftClient} version.
-   * @param minecraftManifest {@link File} Minecraft manifest file.
-   * @param objectMapper      {@link ObjectMapper} for parsing.
+   * @param injectedForgeMeta To acquire Forge instances for this {@link MinecraftClient} version.
+   * @param minecraftManifest Minecraft manifest file.
+   * @param objectMapper      Object mapper for JSON parsing.
    * @author Griefed
    */
-  protected MinecraftClientMeta(
+  MinecraftClientMeta(
       File minecraftManifest, ForgeMeta injectedForgeMeta, ObjectMapper objectMapper) {
     this.MINECRAFT_MANIFEST = minecraftManifest;
     this.FORGE_META = injectedForgeMeta;
@@ -73,7 +73,7 @@ public class MinecraftClientMeta {
    * @throws IOException if the manifest could not be read.
    * @author Griefed
    */
-  protected void update() throws IOException {
+  void update() throws IOException {
 
     RELEASES.clear();
     SNAPSHOTS.clear();
@@ -85,16 +85,21 @@ public class MinecraftClientMeta {
         .get("versions")
         .forEach(
             minecraftVersion -> {
+
+              MinecraftClient client = null;
+
               if (minecraftVersion.get("type").asText().equalsIgnoreCase("release")) {
 
                 try {
-                  RELEASES.add(
-                      new MinecraftClient(
-                          minecraftVersion.get("id").asText(),
-                          Type.RELEASE,
-                          new URL(minecraftVersion.get("url").asText()),
-                          this.FORGE_META,
-                          OBJECTMAPPER));
+                  client = new MinecraftClient(
+                      minecraftVersion.get("id").asText(),
+                      Type.RELEASE,
+                      new URL(minecraftVersion.get("url").asText()),
+                      this.FORGE_META,
+                      OBJECTMAPPER);
+
+                  RELEASES.add(client);
+
                 } catch (IOException ex) {
                   LOG.debug(
                       "No server available for MinecraftClient version "
@@ -105,13 +110,14 @@ public class MinecraftClientMeta {
               } else if (minecraftVersion.get("type").asText().equalsIgnoreCase("snapshot")) {
 
                 try {
-                  SNAPSHOTS.add(
-                      new MinecraftClient(
-                          minecraftVersion.get("id").asText(),
-                          Type.SNAPSHOT,
-                          new URL(minecraftVersion.get("url").asText()),
-                          this.FORGE_META,
-                          OBJECTMAPPER));
+                  client = new MinecraftClient(
+                      minecraftVersion.get("id").asText(),
+                      Type.SNAPSHOT,
+                      new URL(minecraftVersion.get("url").asText()),
+                      this.FORGE_META,
+                      OBJECTMAPPER);
+
+                  SNAPSHOTS.add(client);
                 } catch (IOException ex) {
                   LOG.debug(
                       "No server available for MinecraftClient version "
@@ -119,10 +125,12 @@ public class MinecraftClientMeta {
                       ex);
                 }
               }
-            });
 
-    RELEASES.forEach(minecraftClient -> meta.put(minecraftClient.version(), minecraftClient));
-    SNAPSHOTS.forEach(minecraftClient -> meta.put(minecraftClient.version(), minecraftClient));
+              if (client != null) {
+                meta.put(client.version(), client);
+                ALL.add(client);
+              }
+            });
 
     this.latestRelease =
         new MinecraftClient(
@@ -141,42 +149,52 @@ public class MinecraftClientMeta {
   }
 
   /**
-   * Get a list of {@link MinecraftClient} of the {@link Type#RELEASE}.
+   * All available Minecraft releases.
    *
-   * @return {@link MinecraftClient}-list of the {@link Type#RELEASE}.
+   * @return All available Minecraft releases.
    * @author Griefed
    */
-  protected List<MinecraftClient> releases() {
+  List<MinecraftClient> all() {
+    return ALL;
+  }
+
+  /**
+   * Get a list of {@link MinecraftClient} of the {@link Type#RELEASE}.
+   *
+   * @return Client-list of the {@link Type#RELEASE}.
+   * @author Griefed
+   */
+  List<MinecraftClient> releases() {
     return RELEASES;
   }
 
   /**
    * Get a list of {@link MinecraftClient} of the {@link Type#SNAPSHOT}.
    *
-   * @return {@link MinecraftClient}-list of the {@link Type#SNAPSHOT}.
+   * @return Client-list of the {@link Type#SNAPSHOT}.
    * @author Griefed
    */
-  protected List<MinecraftClient> snapshots() {
+  List<MinecraftClient> snapshots() {
     return SNAPSHOTS;
   }
 
   /**
    * Get the latest Minecraft {@link Type#RELEASE} as a {@link MinecraftClient}.
    *
-   * @return {@link MinecraftClient} {@link Type#RELEASE} as a {@link MinecraftClient}
+   * @return Latest release as a {@link MinecraftClient}
    * @author Griefed
    */
-  protected MinecraftClient latestRelease() {
+  MinecraftClient latestRelease() {
     return latestRelease;
   }
 
   /**
    * Get the latest Minecraft {@link Type#SNAPSHOT} as a {@link MinecraftClient}.
    *
-   * @return {@link MinecraftClient} {@link Type#SNAPSHOT} as a {@link MinecraftClient}
+   * @return Latest snapshot as a {@link MinecraftClient}
    * @author Griefed
    */
-  protected MinecraftClient latestSnapshot() {
+  MinecraftClient latestSnapshot() {
     return latestSnapshot;
   }
 
@@ -184,10 +202,10 @@ public class MinecraftClientMeta {
    * Get the {@link MinecraftClient} meta.<br> key: {@link String} Minecraft version<br> value:
    * {@link MinecraftClient} for said Minecraft version
    *
-   * @return {@link HashMap} containing the {@link MinecraftClientMeta}.
+   * @return Map containing the {@link MinecraftClientMeta}.
    * @author Griefed
    */
-  protected HashMap<String, MinecraftClient> meta() {
+  HashMap<String, MinecraftClient> meta() {
     return meta;
   }
 }

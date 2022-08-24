@@ -80,8 +80,8 @@ public class ZipService {
   /**
    * Store an uploaded ZIP-archive to disk.
    *
-   * @param uploadedFile {@link File} The file which was uploaded which you want to store on disk.
-   * @return {@link Path} The path to the saved file.
+   * @param uploadedFile The file which was uploaded which you want to store on disk.
+   * @return The path to the saved file.
    * @throws IOException If an I/O error occurs writing to or creating the file.
    * @author Griefed
    */
@@ -116,11 +116,11 @@ public class ZipService {
   /**
    * Submit a task for the generation of a server pack from a ZIP-archive.
    *
-   * @param zipGenerationProperties {@link String} containing all information required to generate a
-   *                                server pack from a ZIP-archive. See
+   * @param zipGenerationProperties String containing all information required to generate a server
+   *                                pack from a ZIP-archive. See
    *                                {@link ZipController#requestGenerationFromZip(String, String,
    *                                String, String, String)}.
-   * @return {@link Boolean} Returns true if the task was submitted.
+   * @return <code>true</code> if the task was submitted.
    * @author Griefed
    */
   protected String submitGenerationTask(String zipGenerationProperties) {

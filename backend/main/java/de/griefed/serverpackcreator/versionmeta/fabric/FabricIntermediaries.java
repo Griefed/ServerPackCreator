@@ -32,7 +32,7 @@ import java.util.Optional;
  *
  * @author Griefed
  */
-public class FabricIntermediaries {
+final class FabricIntermediaries {
 
   private final ObjectMapper OBJECT_MAPPER;
   private final File INTERMEDIARY_MANIFEST;
@@ -41,12 +41,12 @@ public class FabricIntermediaries {
   /**
    * Instantiate Fabric intermediaries.
    *
-   * @param intermediaryManifest {@link File} Fabric Intermediary manifest-file.
-   * @param objectMapper         {@link ObjectMapper} to parse JSON.
+   * @param intermediaryManifest Fabric Intermediary manifest-file.
+   * @param objectMapper         Object mapper for JSON parsing.
    * @throws IOException when the manifest could not be read.
    * @author Griefed
    */
-  public FabricIntermediaries(File intermediaryManifest, ObjectMapper objectMapper)
+  FabricIntermediaries(File intermediaryManifest, ObjectMapper objectMapper)
       throws IOException {
 
     this.INTERMEDIARY_MANIFEST = intermediaryManifest;
@@ -59,7 +59,7 @@ public class FabricIntermediaries {
    *
    * @throws IOException when the manifest could not be read.
    */
-  protected void update() throws IOException {
+  void update() throws IOException {
     for (FabricIntermediary intermediary : listIntermediariesFromManifest()) {
       INTERMEDIARIES.put(intermediary.getVersion(), intermediary);
     }
@@ -68,7 +68,7 @@ public class FabricIntermediaries {
   /**
    * Get a list of intermediaries from the manifest.
    *
-   * @return {@link List} of intermediaries.
+   * @return List of intermediaries.
    * @throws IOException when the manifest could not be read.
    * @author Griefed
    */
@@ -81,21 +81,21 @@ public class FabricIntermediaries {
   /**
    * HashMap of available intermediaries.
    *
-   * @return {@link HashMap} of available intermediaries.
+   * @return Map of available intermediaries.
    * @author Griefed
    */
-  protected HashMap<String, FabricIntermediary> getIntermediaries() {
+  HashMap<String, FabricIntermediary> getIntermediaries() {
     return INTERMEDIARIES;
   }
 
   /**
    * Get a specific intermediary, wrapped in an {@link Optional}.
    *
-   * @param minecraftVersion {@link String} Minecraft version.
+   * @param minecraftVersion Minecraft version.
    * @return A specific intermediary, wrapped in an {@link Optional}.
    * @author Griefed
    */
-  protected Optional<FabricIntermediary> getIntermediary(String minecraftVersion) {
+  Optional<FabricIntermediary> getIntermediary(String minecraftVersion) {
     return Optional.ofNullable(INTERMEDIARIES.get(minecraftVersion));
   }
 }

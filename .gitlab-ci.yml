@@ -14,6 +14,8 @@ variables:
   SCAN_KUBERNETES_MANIFESTS: "false"
   SECRETS_ANALYZER_VERSION: "3"
   SECRET_DETECTION_EXCLUDED_PATHS: ""
+  GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+  GRADLE_USER_HOME: "$CI_PROJECT_DIR/.gradle"
 
 services:
   - name: ghcr.io/griefed/gitlab-ci-cd:2.0.9
@@ -24,6 +26,8 @@ workflow:
     - if: '$CI_MERGE_REQUEST_EVENT_TYPE == "detached"'
       when: never
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: never
+    - if: '$CI_COMMIT_TITLE =~ /^RELEASE:.+$/ && $CI_COMMIT_BRANCH' # && $CI_COMMIT_TAG == null
       when: never
     - when: always
 
@@ -43,8 +47,6 @@ sast:
 .sast-analyzer:
   extends: sast
   allow_failure: true
-  # `rules` must be overridden explicitly by each child job
-  # see https://gitlab.com/gitlab-org/gitlab/-/issues/218444
   script:
     - /analyzer run
 
@@ -111,8 +113,6 @@ semgrep-sast:
   image: "$SECURE_ANALYZERS_PREFIX/secrets:$SECRETS_ANALYZER_VERSION"
   services: []
   allow_failure: true
-  # `rules` must be overridden explicitly by each child job
-  # see https://gitlab.com/gitlab-org/gitlab/-/issues/218444
   artifacts:
     reports:
       secret_detection: gl-secret-detection-report.json
@@ -149,35 +149,52 @@ Gradle Test:
     - echo "**** Building ServerPackCreator ****"
     - "./gradlew installQuasar cleanFrontend assembleFrontend copyDist build createExe --info --full-stacktrace"
     - echo "**** Renaming files to please the eye ****"
-    - mv build/libs/${CI_PROJECT_NAME}.exe build/libs/ServerPackCreator-$CI_COMMIT_REF_NAME.exe
-    - mv build/libs/${CI_PROJECT_NAME}-dev.jar build/libs/ServerPackCreator-$CI_COMMIT_REF_NAME.jar
-#    - echo "**** Fetching jacoco test coverage ****"
-#    - cat build/reports/jacoco/test/html/index.html | grep -o 'Total[^%]*%'
-#  coverage: '/Total.*?([0-9]{1,3})%/'
+    - mv build/libs/${CI_PROJECT_NAME}.exe build/libs/ServerPackCreator-${CI_COMMIT_REF_NAME}.exe
+    - mv build/libs/${CI_PROJECT_NAME}-dev.jar build/libs/ServerPackCreator-${CI_COMMIT_REF_NAME}.jar
   artifacts:
+    when: always
+    name: "$CI_COMMIT_BRANCH-$CI_COMMIT_SHORT_SHA-$CI_JOB_NAME"
+    expose_as: "Gradle-Test-Artifacts"
+    untracked: true
     paths:
-      - build/libs/${CI_PROJECT_NAME}-$CI_COMMIT_REF_NAME.exe
-      - build/libs/${CI_PROJECT_NAME}-$CI_COMMIT_REF_NAME.jar
-#      - build/reports/jacoco/test/jacocoTestReport.xml
-#      - build/reports/
+      - build
+      - frontend/dist
     expire_in: 1 week
+  cache:
+    - key:
+        files:
+          - build.gradle
+          - gradle/gradle-wrapper.properties
+      paths:
+        - .gradle
+    - key:
+        files:
+          - frontend/package.json
+      paths:
+        - frontend/.quasar
+        - frontend/node_modules
+        - frontend/node
 
 Docker Test:
   stage: Tests
   image: ghcr.io/griefed/gitlab-ci-cd:2.0.9
+  needs:
+    - job: Gradle Test
+      artifacts: true
+      optional: false
   before_script:
     - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
     - docker buildx create --use --name grfdbuilder
   script:
     - docker buildx build --no-cache --platform linux/amd64,linux/arm/v7,linux/arm64
-      --build-arg BRANCH_OR_TAG=$CI_COMMIT_REF_NAME
-      --build-arg HOSTER=$CI_SERVER_HOST
+      --build-arg VERSION=$CI_COMMIT_REF_NAME
       --file Dockerfile .
-  rules:
-    - if: '$CI_SERVER_HOST == "git.griefed.de"' # Remove once GitLab no longer throws javax.net.ssl.SSLHandshakeException: Remote host terminated the handshake
+#  rules:
+#    - if: '$CI_SERVER_HOST == "git.griefed.de"' # Remove once GitLab no longer throws javax.net.ssl.SSLHandshakeException: Remote host terminated the handshake
 
 Generate Release:
   stage: Release
+  image: ghcr.io/griefed/gitlab-ci-cd:2.0.9
   needs:
     - job: Gradle Test
       artifacts: false
@@ -191,7 +208,6 @@ Generate Release:
       artifacts: false
     - job: secret_detection
       artifacts: false
-  image: ghcr.io/griefed/gitlab-ci-cd:2.0.9
   script:
     - npx semantic-release
   rules:
@@ -252,8 +268,32 @@ Build Release:
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-(alpha|beta)\.\d+$/'
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/'
+  artifacts:
+    when: always
+    name: "$CI_COMMIT_BRANCH-$CI_COMMIT_SHORT_SHA-$CI_JOB_NAME"
+    untracked: true
+    paths:
+      - build
+      - frontend/dist
+    expire_in: 1 week
+  cache:
+    - key:
+        files:
+          - build.gradle
+          - gradle/gradle-wrapper.properties
+      paths:
+        - .gradle
+      policy: pull
+    - key:
+        files:
+          - frontend/package.json
+      paths:
+        - frontend/.quasar
+        - frontend/node_modules
+        - frontend/node
+      policy: pull
 
-Publish Maven Artifacts:
+Sign Java Publication:
   stage: Build Release
   image: ghcr.io/griefed/baseimage-ubuntu-jdk-8:2.0.12
   before_script:
@@ -264,18 +304,163 @@ Publish Maven Artifacts:
     - java -version
     - echo "**** Allowing execution of gradlew ****"
     - chmod +x gradlew
-    - echo "**** Ensure clean environment ****"
-    - "./gradlew clean"
   script:
     - echo "**** Publishing Maven Artifacts ****"
-    - "./gradlew publish -Pversion=${CI_COMMIT_TAG} -x test --info --stacktrace"
+    - "./gradlew signMavenJavaPublication -Pversion=${CI_COMMIT_TAG} -x test --info --stacktrace"
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-beta\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
+  artifacts:
+    when: always
+    name: "$CI_COMMIT_BRANCH-$CI_COMMIT_SHORT_SHA-$CI_JOB_NAME"
+    untracked: true
+    paths:
+      - build
+    expire_in: 1 week
+  cache:
+    - key:
+        files:
+          - build.gradle
+          - gradle/gradle-wrapper.properties
+      paths:
+        - .gradle
+      policy: pull
+    - key:
+        files:
+          - frontend/package.json
+      paths:
+        - frontend/.quasar
+        - frontend/node_modules
+        - frontend/node
+      policy: pull
+
+Publish GitHub:
+  stage: Build Release
+  image: ghcr.io/griefed/baseimage-ubuntu-jdk-8:2.0.12
+  needs:
+    - job: Sign Java Publication
+      optional: false
+      artifacts: true
+  script:
+    - echo "**** Publishing Maven Artifacts to GitHub ****"
+    - "./gradlew publishMavenJavaPublicationToGitHubPackagesRepository -Pversion=${CI_COMMIT_TAG} -x test --info --stacktrace"
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-beta\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
+    - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
+  cache:
+    - key:
+        files:
+          - build.gradle
+          - gradle/gradle-wrapper.properties
+      paths:
+        - .gradle
+      policy: pull
+    - key:
+        files:
+          - frontend/package.json
+      paths:
+        - frontend/.quasar
+        - frontend/node_modules
+        - frontend/node
+      policy: pull
+
+Publish GitLab:
+  stage: Build Release
+  image: ghcr.io/griefed/baseimage-ubuntu-jdk-8:2.0.12
+  needs:
+    - job: Sign Java Publication
+      optional: false
+      artifacts: true
+  script:
+    - echo "**** Publishing Maven Artifacts to GitLab ****"
+    - "./gradlew publishMavenJavaPublicationToMaven2Repository -Pversion=${CI_COMMIT_TAG} -x test --info --stacktrace"
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-beta\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
+    - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
+  cache:
+    - key:
+        files:
+          - build.gradle
+          - gradle/gradle-wrapper.properties
+      paths:
+        - .gradle
+      policy: pull
+    - key:
+        files:
+          - frontend/package.json
+      paths:
+        - frontend/.quasar
+        - frontend/node_modules
+        - frontend/node
+      policy: pull
+
+Publish GitGriefed:
+  stage: Build Release
+  image: ghcr.io/griefed/baseimage-ubuntu-jdk-8:2.0.12
+  needs:
+    - job: Sign Java Publication
+      optional: false
+      artifacts: true
+  script:
+    - echo "**** Publishing Maven Artifacts GitGriefed ****"
+    - "./gradlew publishMavenJavaPublicationToMavenRepository -Pversion=${CI_COMMIT_TAG} -x test --info --stacktrace"
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-beta\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
+    - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
+  cache:
+    - key:
+        files:
+          - build.gradle
+          - gradle/gradle-wrapper.properties
+      paths:
+        - .gradle
+      policy: pull
+    - key:
+        files:
+          - frontend/package.json
+      paths:
+        - frontend/.quasar
+        - frontend/node_modules
+        - frontend/node
+      policy: pull
+
+Publish OSSRH:
+  stage: Build Release
+  image: ghcr.io/griefed/baseimage-ubuntu-jdk-8:2.0.12
+  needs:
+    - job: Sign Java Publication
+      optional: false
+      artifacts: true
+  script:
+    - echo "**** Publishing Maven Artifacts to OSSRH ****"
+    - "./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository -Pversion=${CI_COMMIT_TAG} -x test --info --stacktrace"
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-beta\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
+    - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
+  cache:
+    - key:
+        files:
+          - build.gradle
+          - gradle/gradle-wrapper.properties
+      paths:
+        - .gradle
+      policy: pull
+    - key:
+        files:
+          - frontend/package.json
+      paths:
+        - frontend/.quasar
+        - frontend/node_modules
+        - frontend/node
+      policy: pull
 
 Build Docker Release:
   stage: Build Release
   image: ghcr.io/griefed/gitlab-ci-cd:2.0.9
+  needs:
+    - job: Gradle Test
+      artifacts: true
+      optional: false
   before_script:
     - docker login -u "$DOCKERHUB_USER" -p "$DOCKERHUB_TOKEN" docker.io
     - docker login -u "$DOCKERHUB_USER" -p "$GITHUB_TOKEN" ghcr.io
@@ -287,9 +472,7 @@ Build Docker Release:
       --tag "ghcr.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:latest"
       --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_TAG"
       --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:latest"
-      --build-arg BRANCH_OR_TAG=$CI_COMMIT_TAG
-      --build-arg HOSTER=$CI_SERVER_HOST
-      --build-arg VERSION=$CI_COMMIT_TAG
+      --build-arg VERSION=$CI_COMMIT_REF_NAME
       --file Dockerfile .
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
@@ -297,6 +480,10 @@ Build Docker Release:
 Build Docker PreRelease:
   stage: Build Release
   image: ghcr.io/griefed/gitlab-ci-cd:2.0.9
+  needs:
+    - job: Gradle Test
+      artifacts: true
+      optional: false
   before_script:
     - docker login -u "$DOCKERHUB_USER" -p "$DOCKERHUB_TOKEN" docker.io
     - docker login -u "$DOCKERHUB_USER" -p "$GITHUB_TOKEN" ghcr.io
@@ -306,9 +493,7 @@ Build Docker PreRelease:
     - docker buildx build --push --no-cache --platform linux/amd64,linux/arm/v7,linux/arm64
       --tag "ghcr.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_TAG"
       --tag "index.docker.io/$DOCKERHUB_USER/$DOCKERHUB_REPO:$CI_COMMIT_TAG"
-      --build-arg BRANCH_OR_TAG=$CI_COMMIT_TAG
-      --build-arg HOSTER=$CI_SERVER_HOST
-      --build-arg VERSION=$CI_COMMIT_TAG
+      --build-arg VERSION=$CI_COMMIT_REF_NAME
       --file Dockerfile .
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-(alpha|beta)\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
@@ -398,7 +583,6 @@ pages:
   before_script:
     - which java
     - chmod +x gradlew
-    - "./gradlew clean"
   script:
     - "./gradlew javaDoc -Pversion='' --info -x test"
     - cp -Rf build/docs/javadoc public
@@ -418,7 +602,7 @@ release_job:
   release:
     tag_name: $CI_COMMIT_TAG
     name: 'Release $CI_COMMIT_TAG'
-    description: './CHANGELOG.md'
+    description: '## Changelogs for this release available at:<br><br>1. **[GitHub](https://github.com/Griefed/ServerPackCreator/releases/tag/$CI_COMMIT_TAG)**<br>2. **[GitGriefed](https://git.griefed.de/Griefed/ServerPackCreator/-/releases/$CI_COMMIT_TAG)**<br>3. **[CHANGELOG.md](https://gitlab.com/Griefed/ServerPackCreator/-/blob/$CI_COMMIT_TAG/CHANGELOG.md)**<br>'
   rules:
     - if: '$CI_COMMIT_TAG && $CI_SERVER_HOST == "gitlab.com"'
 

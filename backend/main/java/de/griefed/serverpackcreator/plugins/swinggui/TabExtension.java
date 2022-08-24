@@ -36,7 +36,7 @@ public interface TabExtension extends PluginInformation {
   /**
    * Get the {@link JTabbedPane} from this addon to add it to the ServerPackCreator GUI.
    *
-   * @return {@link JTabbedPane}.
+   * @return Component to add to the ServerPackCreator GUI as a tab.
    * @author Griefed
    */
   JComponent getTab();
@@ -44,7 +44,7 @@ public interface TabExtension extends PluginInformation {
   /**
    * Get the {@link Icon} for this tabbed pane addon to display to the ServerPackCreator GUI.
    *
-   * @return {@link Icon}.
+   * @return Icon to be used by the added tab.
    * @author Griefed
    */
   Icon getTabIcon();
@@ -52,7 +52,7 @@ public interface TabExtension extends PluginInformation {
   /**
    * Get the title of this tabbed pane addon to display in the ServerPackCreator GUI.
    *
-   * @return String. The title of this addons tabbed pane.
+   * @return The title of this addons tabbed pane.
    * @author Griefed
    */
   String getTabTitle();
@@ -60,7 +60,7 @@ public interface TabExtension extends PluginInformation {
   /**
    * Get the tooltip for this tabbed pane addon to display in the ServerPackCreator GUI.
    *
-   * @return String. The tooltip of this addons tabbed pane.
+   * @return The tooltip of this addons tabbed pane.
    * @author Griefed
    */
   String getTabTooltip();

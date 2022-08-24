@@ -53,10 +53,11 @@ abstract class JsonBasedScanner {
    *                               a JsonNode.
    * @throws SecurityException     if an error occurs reading the file in the jar.
    * @throws IllegalStateException if an error occurs reading the file in the jar.
+   * @throws NullPointerException  if the jar does not contain the specified entry.
    * @author Griefed
    */
   JsonNode getJarJson(File file, String entryInJar, ObjectMapper objectMapper)
-      throws IOException, SecurityException, IllegalStateException {
+      throws NullPointerException, IOException, SecurityException, IllegalStateException {
 
     JarFile jarFile = new JarFile(file);
     JarEntry jarEntry = jarFile.getJarEntry(entryInJar);
@@ -82,11 +83,11 @@ abstract class JsonBasedScanner {
     for (String dependency : modDependencies) {
 
       clientMods.removeIf(mod -> {
-        if (mod.contains(dependency)) {
+        if (mod.equals(dependency)) {
           LOG.debug(
               "Removing "
                   + dependency
-                  + " from list of clientmods as it is a dependency for " + mod + ".");
+                  + " from list of clientmods as it is a dependency for another mod.");
           return true;
 
         } else {

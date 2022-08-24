@@ -38,7 +38,7 @@ import org.springframework.stereotype.Component;
  * @author Griefed
  */
 @Component
-public class AnnotationScanner extends JsonBasedScanner implements
+public final class AnnotationScanner extends JsonBasedScanner implements
     Scanner<TreeSet<File>, Collection<File>> {
 
   private static final Logger LOG = LogManager.getLogger(AnnotationScanner.class);
@@ -61,8 +61,7 @@ public class AnnotationScanner extends JsonBasedScanner implements
    *
    * @param filesInModsDir A list of files in which to check the <code>fml-cache-annotation.json
    *                       </code>-files.
-   * @return List String. List of mods not to include in server pack based on
-   * fml-cache-annotation.json-content.
+   * @return List of mods not to include in server pack based on fml-cache-annotation.json-content.
    * @author Griefed
    */
   @Override
@@ -79,7 +78,7 @@ public class AnnotationScanner extends JsonBasedScanner implements
      */
     checkForClientModsAndDeps(filesInModsDir, clientMods, modDependencies);
 
-    //Remove any dependency from out list of clientside-only mods, so we do not exclude any dependency.
+    //Remove any dependency from our list of clientside-only mods, so we do not exclude any dependency.
     cleanupClientMods(modDependencies, clientMods);
 
     /*
@@ -94,7 +93,7 @@ public class AnnotationScanner extends JsonBasedScanner implements
   void checkForClientModsAndDeps(Collection<File> filesInModsDir,
       TreeSet<String> clientMods, TreeSet<String> modDependencies) {
     for (File mod : filesInModsDir) {
-      if (mod.toString().endsWith("jar")) {
+      if (mod.getName().endsWith("jar")) {
 
         String modId = null;
         TreeSet<String> additionalMods = new TreeSet<>();
@@ -140,7 +139,7 @@ public class AnnotationScanner extends JsonBasedScanner implements
                 }
 
                 // Get dependency modIds
-                checkDependencies(child, modDependencies);
+                checkDependencies(child, modDependencies, mod.getName());
               }
 
             } catch (NullPointerException ignored) {
@@ -152,7 +151,12 @@ public class AnnotationScanner extends JsonBasedScanner implements
             checkAdditionalMods(modId, additionalMods, modJson, clientMods);
           }
         } catch (Exception ex) {
-          LOG.error("Couldn't scan " + mod, ex);
+
+          if (ex.toString().startsWith("java.lang.NullPointerException")) {
+            LOG.warn("Couldn't scan " + mod + " as it contains no fml_cache_annotation.json.");
+          } else {
+            LOG.error("Couldn't scan " + mod, ex);
+          }
         }
 
       }
@@ -245,7 +249,7 @@ public class AnnotationScanner extends JsonBasedScanner implements
    * @param modDependencies Set containing our dependency ids.
    * @author Griefed
    */
-  private void checkDependencies(JsonNode child, TreeSet<String> modDependencies) {
+  private void checkDependencies(JsonNode child, TreeSet<String> modDependencies, String modFileName) {
     try {
       if (!UTILITIES.JsonUtilities().nestedTextIsEmpty(child, "values", "dependencies", "value")) {
 
@@ -263,11 +267,7 @@ public class AnnotationScanner extends JsonBasedScanner implements
               dependency =
                   getDependency(dependency);
 
-              if (!dependency.equalsIgnoreCase("forge") && !dependency.equals("*")) {
-                modDependencies.add(dependency);
-
-                LOG.debug("Added dependency " + dependency);
-              }
+              addDependency(dependency, child, modDependencies, modFileName);
             }
           }
 
@@ -283,16 +283,36 @@ public class AnnotationScanner extends JsonBasedScanner implements
                 .getNestedText(child, "values", "dependencies", "value");
             String dependency = getDependency(dependencies);
 
-            if (!dependency.equalsIgnoreCase("forge") && !dependency.equals("*")) {
-              modDependencies.add(dependency);
-
-              LOG.debug("Added dependency " + dependency);
-            }
+            addDependency(dependency, child, modDependencies, modFileName);
           }
         }
       }
     } catch (NullPointerException ignored) {
 
+    }
+  }
+
+  /**
+   * Add a dependency to our set of dependencies.
+   *
+   * @param dependency      The dependency to add
+   * @param child           The JSON node containing information about dependencies and ids.
+   * @param modDependencies The set of dependencies to add the new dependency to.
+   * @author Griefed
+   */
+  private void addDependency(String dependency, JsonNode child, TreeSet<String> modDependencies, String modFileName) {
+    if (!dependency.equalsIgnoreCase("forge") && !dependency.equals("*")) {
+
+      if (modDependencies.add(dependency)) {
+
+        try {
+          LOG.debug("Added dependency " + dependency + " for " + UTILITIES.JsonUtilities()
+              .getNestedText(child, "values", "modid", "value") + " (" + modFileName + ").");
+        } catch (NullPointerException ex) {
+          LOG.debug("Added dependency " + dependency + " (" + modFileName + ").");
+        }
+
+      }
     }
   }
 
@@ -324,53 +344,65 @@ public class AnnotationScanner extends JsonBasedScanner implements
    */
   private void checkAdditionalMods(String modId, TreeSet<String> additionalMods, JsonNode modJson,
       TreeSet<String> clientMods) {
+
     for (String additionalModId : additionalMods) {
 
       // base of json
       for (JsonNode node : modJson) {
 
         try {
-          // iterate though annotations again but this time for the modID of the
-          // second
-          // mod
+          // iterate though annotations again but this time for the modID of the second mod
           for (JsonNode child : node.get("annotations")) {
             boolean additionalModDependsOnFirst = false;
 
             // check if second mod depends on first
             try {
-              // if the modId is that of our additional mod, check the dependencies
-              // whether the first modId is present
+              /*
+               * if the modId is that of our additional mod, check the dependencies whether the
+               * first modId is present
+               */
               if (UTILITIES.JsonUtilities()
-                  .nestedTextEqualsIgnoreCase(child, additionalModId, "values", "modid", "value")) {
-                if (!UTILITIES.JsonUtilities()
-                    .nestedTextIsEmpty(child, "values", "dependencies", "value")) {
+                  .nestedTextEqualsIgnoreCase(
+                      child,
+                      additionalModId,
+                      "values", "modid", "value")
+                  &&
+                  !UTILITIES.JsonUtilities()
+                      .nestedTextIsEmpty(
+                          child,
+                          "values", "dependencies", "value")
+              ) {
 
-                  if (UTILITIES.JsonUtilities()
-                      .nestedTextContains(child, ";", "values", "dependencies", "value")) {
+                if (UTILITIES.JsonUtilities()
+                    .nestedTextContains(child, ";", "values", "dependencies", "value")) {
 
-                    if (additionalDepsDepend(child, modId)) {
-                      additionalModDependsOnFirst = true;
-                    }
+                  if (additionalDependenciesDepend(child, modId)) {
+                    additionalModDependsOnFirst = true;
+                  }
 
-                  } else {
+                } else {
 
-                    if (additionalDepDepends(child, modId)) {
-                      additionalModDependsOnFirst = true;
-                    }
+                  if (additionalDependencyDepends(child, modId)) {
+                    additionalModDependsOnFirst = true;
                   }
                 }
               }
+
 
             } catch (NullPointerException ignored) {
 
             }
 
-            // If the additional mod depends on the first one, check if the additional one
-            // is clientside-only
+            /*
+             * If the additional mod depends on the first one, check if the additional one is
+             * clientside-only
+             */
             if (additionalModDependsOnFirst) {
 
-              // if the additional mod is NOT clientside-only, we have to remove this mod
-              // from the list of clientside-only mods
+              /*
+               * if the additional mod is NOT clientside-only, we have to remove this mod from the
+               * list of clientside-only mods
+               */
               if (!isAdditionalModClientSide(node, additionalModId)) {
                 if (clientMods.removeIf(n -> n.equals(modId))) {
                   LOG.info(
@@ -397,7 +429,7 @@ public class AnnotationScanner extends JsonBasedScanner implements
    * @return <code>true</code> if the modId is a dependency.
    * @author Griefed
    */
-  private boolean additionalDepsDepend(JsonNode child, String modId) {
+  private boolean additionalDependenciesDepend(JsonNode child, String modId) {
     boolean depends = false;
     String[] dependencies = UTILITIES.JsonUtilities()
         .getNestedTexts(child, ";", "values", "dependencies", "value");
@@ -429,7 +461,7 @@ public class AnnotationScanner extends JsonBasedScanner implements
    * @return <code>true</code> if the modId is a dependency.
    * @author Griefed
    */
-  private boolean additionalDepDepends(JsonNode child, String modId) {
+  private boolean additionalDependencyDepends(JsonNode child, String modId) {
     boolean depends = false;
     if (UTILITIES.JsonUtilities()
         .nestedTextMatches(child, DEPENDENCY_CHECK_REGEX, "values", "dependencies", "value")) {

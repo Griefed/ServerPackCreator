@@ -36,7 +36,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-public class TomlScanner implements Scanner<TreeSet<File>, Collection<File>> {
+public final class TomlScanner implements Scanner<TreeSet<File>, Collection<File>> {
 
   private static final Logger LOG = LogManager.getLogger(TomlScanner.class);
   private final TomlParser PARSER;
@@ -59,8 +59,7 @@ public class TomlScanner implements Scanner<TreeSet<File>, Collection<File>> {
    * can be found for a given mod, it is added to prevent false positives.
    *
    * @param filesInModsDir A list of files in which to check the <code>mods.toml</code>-files.
-   * @return TreeSet File. List of mods not to include in server pack based on
-   * mods.toml-configuration.
+   * @return Mods not to include in server pack based on mods.toml-configuration.
    * @author Griefed
    */
   @Override

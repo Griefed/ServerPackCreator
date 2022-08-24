@@ -38,9 +38,9 @@ import java.util.List;
  */
 public class ConfigurationModel {
 
-  private List<String> clientMods = new ArrayList<>();
-  private List<String> copyDirs = new ArrayList<>();
-  private HashMap<String, String> scriptSettings = new HashMap<>();
+  private final List<String> clientMods = new ArrayList<>();
+  private final List<String> copyDirs = new ArrayList<>();
+  private final HashMap<String, String> scriptSettings = new HashMap<>();
   private String modpackDir = "";
   private String javaPath = "";
   private String minecraftVersion = "";
@@ -111,8 +111,8 @@ public class ConfigurationModel {
       boolean includeZipCreation,
       HashMap<String, String> scriptSettings) {
 
-    this.clientMods = clientMods;
-    this.copyDirs = copyDirs;
+    this.clientMods.addAll(clientMods);
+    this.copyDirs.addAll(copyDirs);
     this.modpackDir = modpackDir;
     this.javaPath = javaPath;
     this.minecraftVersion = minecraftVersion;
@@ -132,8 +132,8 @@ public class ConfigurationModel {
   /**
    * Create a new configuration model from a config file.
    *
-   * @param utilities  {@link Utilities} Instance of our SPC utilities.
-   * @param configFile {@link File} Configuration file to load.
+   * @param utilities  Instance of our SPC utilities.
+   * @param configFile Configuration file to load.
    * @throws FileNotFoundException if the specified file can not be found.
    * @author Griefed
    */
@@ -156,7 +156,7 @@ public class ConfigurationModel {
     setMinecraftVersion(config.getOrElse("minecraftVersion", ""));
     setModLoader(config.getOrElse("modLoader", ""));
     setModLoaderVersion(config.getOrElse("modLoaderVersion", ""));
-    setJavaArgs(config.getOrElse("javaArgs", "empty"));
+    setJavaArgs(config.getOrElse("javaArgs", ""));
 
     setServerPackSuffix(
         utilities.StringUtils().pathSecureText(config.getOrElse("serverPackSuffix", "")));
@@ -177,6 +177,8 @@ public class ConfigurationModel {
     setIncludeZipCreation(
         utilities.BooleanUtils()
             .convert(String.valueOf(config.getOrElse("includeZipCreation", "False"))));
+
+    config.close();
   }
 
   /**
@@ -192,7 +194,7 @@ public class ConfigurationModel {
   /**
    * Setter for the suffix of the server pack to be generated
    *
-   * @param serverPackSuffix String. The suffix of the server pack to be generated.
+   * @param serverPackSuffix The suffix of the server pack to be generated.
    * @author Griefed
    */
   public void setServerPackSuffix(String serverPackSuffix) {
@@ -202,7 +204,7 @@ public class ConfigurationModel {
   /**
    * Getter for a list of clientside-only mods to exclude from server pack.
    *
-   * @return List String. Returns the list of clientside-only mods.
+   * @return Returns the list of clientside-only mods.
    * @author Griefed
    */
   public List<String> getClientMods() {
@@ -216,14 +218,17 @@ public class ConfigurationModel {
    * @author Griefed
    */
   public void setClientMods(List<String> newClientMods) {
-    newClientMods.removeIf(entry -> entry.matches("\\s+") || entry.length() == 0);
-    this.clientMods = newClientMods;
+    this.clientMods.clear();
+    newClientMods.removeIf(entry ->
+        entry.matches("\\s+") || entry.length() == 0
+    );
+    this.clientMods.addAll(newClientMods);
   }
 
   /**
    * Getter for the list of directories in the modpack to copy to the server pack.
    *
-   * @return List String. Returns the list of directories to copy to the server pack.
+   * @return Returns the list of directories to copy to the server pack.
    * @author Griefed
    */
   public List<String> getCopyDirs() {
@@ -237,11 +242,12 @@ public class ConfigurationModel {
    * @author Griefed
    */
   public void setCopyDirs(List<String> newCopyDirs) {
+    this.copyDirs.clear();
     newCopyDirs.removeIf(
         entry ->
             entry.equalsIgnoreCase("server_pack") || entry.matches("\\s+") || entry.length() == 0);
     newCopyDirs.replaceAll(entry -> entry.replace("\\", "/"));
-    this.copyDirs = newCopyDirs;
+    this.copyDirs.addAll(newCopyDirs);
   }
 
   /**
@@ -448,8 +454,7 @@ public class ConfigurationModel {
   /**
    * Setter for the Java arguments with which the start-scripts will be generated.
    *
-   * @param javaArgs String. Sets the Java arguments with which the start-scripts will be
-   *                 generated.
+   * @param javaArgs Sets the Java arguments with which the start-scripts will be generated.
    * @author Griefed
    */
   public void setJavaArgs(String javaArgs) {
@@ -491,7 +496,7 @@ public class ConfigurationModel {
   /**
    * Setter for the name of the CurseForge project.
    *
-   * @param projectName String. The name of the CurseForge project.
+   * @param projectName The name of the CurseForge project.
    * @author Griefed
    */
   public void setProjectName(String projectName) {
@@ -511,7 +516,7 @@ public class ConfigurationModel {
   /**
    * Setter for the name of the CurseForge project file.
    *
-   * @param fileName String. The name of the CurseForge project file.
+   * @param fileName The name of the CurseForge project file.
    * @author Griefed
    */
   public void setFileName(String fileName) {
@@ -531,7 +536,7 @@ public class ConfigurationModel {
   /**
    * Setter for the disk-name of the CurseForge project file.
    *
-   * @param fileName String. The disk-name of the CurseForge project file.
+   * @param fileName The disk-name of the CurseForge project file.
    * @author Griefed
    */
   public void setFileDiskName(String fileName) {
@@ -551,7 +556,7 @@ public class ConfigurationModel {
   /**
    * Setter for the path of the server-icon.png to include in the server pack.
    *
-   * @param serverIconPath String. The path to the server-icon.png to include in the server pack.
+   * @param serverIconPath The path to the server-icon.png to include in the server pack.
    * @author Griefed
    */
   public void setServerIconPath(String serverIconPath) {
@@ -561,7 +566,7 @@ public class ConfigurationModel {
   /**
    * Getter for the path of the server.properties to include in the server pack.
    *
-   * @return String. Returns the path to the server.properties to include in the server pack.
+   * @return Returns the path to the server.properties to include in the server pack.
    * @author Griefed
    */
   public String getServerPropertiesPath() {
@@ -571,8 +576,7 @@ public class ConfigurationModel {
   /**
    * Setter for the path of the server.properties to include in the server pack.
    *
-   * @param serverPropertiesPath String. The path to the server.properties to include in the server
-   *                             pack.
+   * @param serverPropertiesPath The path to the server.properties to include in the server pack.
    * @author Griefed
    */
   public void setServerPropertiesPath(String serverPropertiesPath) {
@@ -582,7 +586,7 @@ public class ConfigurationModel {
   /**
    * Getter for the script settings used during script creation.
    *
-   * @return {@link HashMap} {@link String}-{@link String}
+   * @return Map of all script settings and their values.
    * @author Griefed
    */
   public HashMap<String, String> getScriptSettings() {
@@ -593,67 +597,37 @@ public class ConfigurationModel {
    * Putter for the script settings used during script creation. All key-value pairs from the passed
    * hashmap are put into this models hashmap.
    *
-   * @param scriptSettings {@link HashMap} {@link String}-{@link String} containing key-value pairs
-   *                       to be used in script creation.
+   * @param settings Key-value pairs to be used in script creation.
    * @author Griefed
    */
-  public void setScriptSettings(HashMap<String, String> scriptSettings) {
-    this.scriptSettings.putAll(scriptSettings);
+  public void setScriptSettings(HashMap<String, String> settings) {
+    this.scriptSettings.clear();
+    this.scriptSettings.putAll(settings);
   }
 
   @Override
   public String toString() {
-    return "ConfigurationModel{"
-        + "clientMods="
-        + clientMods
-        + ", copyDirs="
-        + copyDirs
-        + ", modpackDir='"
-        + modpackDir
-        + '\''
-        + ", javaPath='"
-        + javaPath
-        + '\''
-        + ", minecraftVersion='"
-        + minecraftVersion
-        + '\''
-        + ", modLoader='"
-        + modLoader
-        + '\''
-        + ", modLoaderVersion='"
-        + modLoaderVersion
-        + '\''
-        + ", javaArgs='"
-        + javaArgs
-        + '\''
-        + ", serverPackSuffix='"
-        + serverPackSuffix
-        + '\''
-        + ", serverIconPath='"
-        + serverIconPath
-        + '\''
-        + ", serverPropertiesPath='"
-        + serverPropertiesPath
-        + '\''
-        + ", includeServerInstallation="
-        + includeServerInstallation
-        + ", includeServerIcon="
-        + includeServerIcon
-        + ", includeServerProperties="
-        + includeServerProperties
-        + ", includeZipCreation="
-        + includeZipCreation
-        + ", curseModpack="
-        + modpackJson
-        + ", projectName='"
-        + projectName
-        + '\''
-        + ", fileName='"
-        + fileName
-        + '\''
-        + ", fileDiskName='"
-        + fileDiskName
-        + '\''
-        + '}';
+    return "ConfigurationModel{" +
+        "clientMods=" + clientMods +
+        ", copyDirs=" + copyDirs +
+        ", scriptSettings=" + scriptSettings +
+        ", modpackDir='" + modpackDir + '\'' +
+        ", javaPath='" + javaPath + '\'' +
+        ", minecraftVersion='" + minecraftVersion + '\'' +
+        ", modLoader='" + modLoader + '\'' +
+        ", modLoaderVersion='" + modLoaderVersion + '\'' +
+        ", javaArgs='" + javaArgs + '\'' +
+        ", serverPackSuffix='" + serverPackSuffix + '\'' +
+        ", serverIconPath='" + serverIconPath + '\'' +
+        ", serverPropertiesPath='" + serverPropertiesPath + '\'' +
+        ", includeServerInstallation=" + includeServerInstallation +
+        ", includeServerIcon=" + includeServerIcon +
+        ", includeServerProperties=" + includeServerProperties +
+        ", includeZipCreation=" + includeZipCreation +
+        ", modpackJson=" + modpackJson +
+        ", projectName='" + projectName + '\'' +
+        ", fileName='" + fileName + '\'' +
+        ", fileDiskName='" + fileDiskName + '\'' +
+        '}';
   }
 }

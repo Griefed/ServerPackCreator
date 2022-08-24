@@ -24,13 +24,13 @@ package de.griefed.serverpackcreator.versionmeta.fabric;
  *
  * @author Griefed
  */
-public class FabricIntermediary {
+public final class FabricIntermediary {
 
   private String maven;
   private String version;
   private boolean stable;
 
-  private FabricIntermediary() {
+  FabricIntermediary() {
   }
 
   /**
@@ -46,7 +46,7 @@ public class FabricIntermediary {
   /**
    * The version of this intermediary.
    *
-   * @return {@link String} The version of this intermediary.
+   * @return The version of this intermediary.
    * @author Griefed
    */
   public String getVersion() {
@@ -56,7 +56,7 @@ public class FabricIntermediary {
   /**
    * Whether this intermediary is considered stable.
    *
-   * @return {@link Boolean} Whether this intermediary is considered stable.
+   * @return Whether this intermediary is considered stable.
    * @author Griefed
    */
   public boolean isStable() {
