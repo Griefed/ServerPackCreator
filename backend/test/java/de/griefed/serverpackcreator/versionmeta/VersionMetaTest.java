@@ -14,10 +14,8 @@ public class VersionMetaTest {
   private final VersionMeta versionMeta;
 
   public VersionMetaTest() throws IOException, ParserConfigurationException, SAXException {
-    String[] setup = new String[]{"--setup"};
-    ServerPackCreator serverPackCreator = new ServerPackCreator(setup);
-    serverPackCreator.run(Mode.SETUP);
-    versionMeta = serverPackCreator.getVersionMeta();
+    ServerPackCreator.getInstance().run(Mode.SETUP);
+    versionMeta = ServerPackCreator.getInstance().getVersionMeta();
   }
 
   @Test

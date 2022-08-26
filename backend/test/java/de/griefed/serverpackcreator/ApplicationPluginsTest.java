@@ -20,7 +20,7 @@ public class ApplicationPluginsTest {
     } catch (IOException e) {
       LOG.error("Error copying file.", e);
     }
-    applicationPlugins = new ApplicationPlugins();
+    applicationPlugins = ServerPackCreator.getInstance().getApplicationPlugins();
   }
 
   @Test
