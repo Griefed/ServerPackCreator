@@ -438,7 +438,11 @@ public final class ServerPackHandler {
           scriptContent = scriptContent.replace(entry.getKey(), entry.getValue());
         }
 
-        FileUtils.writeStringToFile(destinationScript, scriptContent, StandardCharsets.UTF_8);
+        if (destinationScript.getName().endsWith(".sh") || destinationScript.getName().endsWith(".bash") || destinationScript.getName().endsWith(".zsh")) {
+          FileUtils.writeStringToFile(destinationScript, scriptContent, StandardCharsets.ISO_8859_1);
+        } else {
+          FileUtils.writeStringToFile(destinationScript, scriptContent, StandardCharsets.UTF_8);
+        }
       } catch (Exception ex) {
         LOG.error("File not accessible: " + template + ".", ex);
       }
