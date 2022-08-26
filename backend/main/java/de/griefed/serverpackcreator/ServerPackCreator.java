@@ -989,7 +989,7 @@ public class ServerPackCreator {
   public boolean checkServerFilesFile(File fileToCheckFor) {
     boolean firstRun = false;
 
-    if (!new File(String.format("server_files/%s", fileToCheckFor)).exists()) {
+    if (!new File(String.format("server_files/%s", fileToCheckFor.getName())).exists()) {
       try {
 
         FileUtils.copyInputStreamToFile(
@@ -1023,7 +1023,7 @@ public class ServerPackCreator {
    * @author Griefed
    */
   public void overwriteServerFilesFile(File fileToOverwrite) {
-    FileUtils.deleteQuietly(fileToOverwrite);
+    FileUtils.deleteQuietly(new File(String.format("server_files/%s", fileToOverwrite.getName())));
     checkServerFilesFile(fileToOverwrite);
   }
 

@@ -1,3 +1,21 @@
+## [3.13.0-beta.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.12.0...3.13.0-beta.1) (2022-08-26)
+
+
+### 💎 Improvements
+
+* **Default Start Script Templates:** Check for Java 32Bit and warn appropriately. Overwrite default start script templates during boot of ServerPackCreator to ensure users always have the latest default templates. ([96a7354](https://git.griefed.de/Griefed/ServerPackCreator/commit/96a73541b2fb16e2847f945ddb5d132cd9c5a1c9))
+
+
+### 🦊 CI/CD
+
+* **GitLab:** Make Build Release dependant on Gradle Test to prevent release build before tests ([744e7d1](https://git.griefed.de/Griefed/ServerPackCreator/commit/744e7d1d91f4e44b01a0650c42e8d0bb24a07965))
+* **GitLab:** Make Sign Java Publication dependant on Build Release to prevent signing before build releasing ([ca2f669](https://git.griefed.de/Griefed/ServerPackCreator/commit/ca2f6690cdd3a99b9fbd4b4b9997070daf7fc82d))
+
+
+### 🚀 Features
+
+* **LegacyFabric:** Support LegacyFabric ([30e3e8e](https://git.griefed.de/Griefed/ServerPackCreator/commit/30e3e8e332dc215968e5e7042a4db0b2c7dc1f27))
+
 ## [3.12.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.11.1...3.12.0) (2022-08-24)
 
 
