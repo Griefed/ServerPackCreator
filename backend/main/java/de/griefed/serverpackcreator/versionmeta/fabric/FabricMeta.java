@@ -21,29 +21,23 @@ package de.griefed.serverpackcreator.versionmeta.fabric;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
-import de.griefed.serverpackcreator.versionmeta.Type;
+import de.griefed.serverpackcreator.versionmeta.Manifests;
+import de.griefed.serverpackcreator.versionmeta.Meta;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 /**
- * Fabric meta containing information about available Fabric releases and installers.
+ * Fabric meta containing information about available Quilt versions and installers.
  *
  * @author Griefed
  */
-public final class FabricMeta {
-
-  private static final Logger LOG = LogManager.getLogger(FabricMeta.class);
+public final class FabricMeta extends Manifests implements Meta {
 
   private final File FABRIC_MANIFEST;
   private final File FABRIC_INSTALLER_MANIFEST;
@@ -54,227 +48,116 @@ public final class FabricMeta {
   private final HashMap<String, FabricDetails> LOADER_DETAILS = new HashMap<>();
 
   /**
-   * Create a new Fabric Meta instance.
+   * Create a new Fabric Meta instance, giving you access to available loader and installer
+   * versions, as well as URLs to installer for further processing.
    *
-   * @param fabricManifest             Fabric manifest file.
-   * @param fabricInstallerManifest    Fabric-installer manifest file.
-   * @param fabricIntermediaryManifest Fabric Intermediary manifest file.
-   * @param objectMapper               Object mapper for JSON parsing.
-   * @throws IOException when the Intermediaries manifest could not be parsed.
+   * @param fabricManifest               Fabric manifest file.
+   * @param fabricInstallerManifest      Fabric-installer manifest file.
+   * @param injectedFabricIntermediaries Fabric Intermediary instance.
+   * @param objectMapper                 Object mapper for JSON parsing.
+   * @throws ParserConfigurationException indicates a serious configuration error.
+   * @throws IOException if any IO errors occur.
+   * @throws SAXException if any parse errors occur.
    * @author Griefed
    */
   public FabricMeta(
       File fabricManifest,
       File fabricInstallerManifest,
-      File fabricIntermediaryManifest,
+      FabricIntermediaries injectedFabricIntermediaries,
       ObjectMapper objectMapper)
-      throws IOException {
+      throws IOException, ParserConfigurationException, SAXException {
 
     this.FABRIC_LOADER_DETAILS = new FabricLoaderDetails(objectMapper);
     this.FABRIC_MANIFEST = fabricManifest;
     this.FABRIC_INSTALLER_MANIFEST = fabricInstallerManifest;
     this.FABRIC_LOADER = new FabricLoader(getXml(this.FABRIC_MANIFEST));
-    this.FABRIC_INTERMEDIARIES = new FabricIntermediaries(fabricIntermediaryManifest, objectMapper);
+    this.FABRIC_INTERMEDIARIES = injectedFabricIntermediaries;
     this.FABRIC_INSTALLER = new FabricInstaller(getXml(this.FABRIC_INSTALLER_MANIFEST));
   }
 
-  /**
-   * Update the {@link FabricLoader} and {@link FabricInstaller} information.
-   *
-   * @author Griefed
-   */
-  public void update() {
+  @Override
+  public void update() throws ParserConfigurationException, IOException, SAXException {
     this.FABRIC_LOADER.update(getXml(this.FABRIC_MANIFEST));
     this.FABRIC_INSTALLER.update(getXml(this.FABRIC_INSTALLER_MANIFEST));
   }
 
-  private Document getXml(File manifest) {
-    DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-    DocumentBuilder documentBuilder = null;
-    Document xml = null;
-
-    try {
-
-      documentBuilder = documentBuilderFactory.newDocumentBuilder();
-
-    } catch (ParserConfigurationException ex) {
-      LOG.error("Couldn't read document.", ex);
-    }
-
-    try {
-
-      assert documentBuilder != null;
-      xml = documentBuilder.parse(manifest);
-
-    } catch (SAXException | IOException ex) {
-      LOG.error("Couldn't read document.", ex);
-    }
-
-    assert xml != null;
-    xml.normalize();
-    return xml;
-  }
-
-  /**
-   * Get the latest Fabric loader version.
-   *
-   * @return The latest version of the Fabric loader.
-   * @author Griefed
-   */
-  public String latestLoaderVersion() {
+  @Override
+  public String latestLoader() {
     return FABRIC_LOADER.latestLoaderVersion();
   }
 
-  /**
-   * Get the release Fabric loader version.
-   *
-   * @return The release version of the Fabric loader.
-   * @author Griefed
-   */
-  public String releaseLoaderVersion() {
+  @Override
+  public String releaseLoader() {
     return FABRIC_LOADER.releaseLoaderVersion();
   }
 
-  /**
-   * Get a list of available Fabric loader versions, in {@link Type#ASCENDING} order.
-   *
-   * @return List of available Fabric loader versions, in {@link Type#ASCENDING} order.
-   * @author Griefed
-   */
-  public List<String> loaderVersionsAscending() {
+  @Override
+  public List<String> loaderVersionsListAscending() {
     return FABRIC_LOADER.loaders();
   }
 
-  /**
-   * Get a list of available Fabric loader versions, in {@link Type#DESCENDING} order.
-   *
-   * @return List of available Fabric loader versions, in {@link Type#DESCENDING} order.
-   * @author Griefed
-   */
-  public List<String> loaderVersionsDescending() {
+  @Override
+  public List<String> loaderVersionsListDescending() {
     return Lists.reverse(FABRIC_LOADER.loaders());
   }
 
-  /**
-   * Get an array of available Fabric loader versions, in {@link Type#ASCENDING} order.
-   *
-   * @return Array of available Fabric loader versions, in {@link Type#ASCENDING} order.
-   * @author Griefed
-   */
+  @Override
   public String[] loaderVersionsArrayAscending() {
     return FABRIC_LOADER.loaders().toArray(new String[0]);
   }
 
-  /**
-   * Get an array of available Fabric loader versions, in {@link Type#DESCENDING} order.
-   *
-   * @return Array of available Fabric loader versions, in {@link Type#DESCENDING} order.
-   * @author Griefed
-   */
+  @Override
   public String[] loaderVersionsArrayDescending() {
     return Lists.reverse(FABRIC_LOADER.loaders()).toArray(new String[0]);
   }
 
-  /**
-   * Get the latest Fabric installer version.
-   *
-   * @return The latest Fabric installer version.
-   * @author Griefed
-   */
-  public String latestInstallerVersion() {
+  @Override
+  public String latestInstaller() {
     return FABRIC_INSTALLER.latestInstallerVersion();
   }
 
-  /**
-   * Get the release Fabric installer version.
-   *
-   * @return The release Fabric installer version.
-   * @author Griefed
-   */
-  public String releaseInstallerVersion() {
+  @Override
+  public String releaseInstaller() {
     return FABRIC_INSTALLER.releaseInstallerVersion();
   }
 
-  /**
-   * Get the list of available Fabric installer version, in {@link Type#ASCENDING} order.
-   *
-   * @return List of available Fabric installer version, in {@link Type#ASCENDING} order.
-   * @author Griefed
-   */
-  public List<String> installerVersionsAscending() {
+  @Override
+  public List<String> installerVersionsListAscending() {
     return FABRIC_INSTALLER.installers();
   }
 
-  /**
-   * Get the list of available Fabric installer version, in {@link Type#DESCENDING} order.
-   *
-   * @return List of available Fabric installer version, in {@link Type#DESCENDING} order.
-   * @author Griefed
-   */
-  public List<String> installerVersionsDescending() {
+  @Override
+  public List<String> installerVersionsListDescending() {
     return Lists.reverse(FABRIC_INSTALLER.installers());
   }
 
-  /**
-   * Get the array of available Fabric installer version, in {@link Type#ASCENDING} order.
-   *
-   * @return Array of available Fabric installer version, in {@link Type#ASCENDING} order.
-   * @author Griefed
-   */
+  @Override
   public String[] installerVersionsArrayAscending() {
     return FABRIC_INSTALLER.installers().toArray(new String[0]);
   }
 
-  /**
-   * Get the array of available Fabric installer version, in {@link Type#DESCENDING} order.
-   *
-   * @return Array of available Fabric installer version, in {@link Type#DESCENDING} order.
-   * @author Griefed
-   */
+  @Override
   public String[] installerVersionsArrayDescending() {
     return Lists.reverse(FABRIC_INSTALLER.installers()).toArray(new String[0]);
   }
 
-  /**
-   * Get the {@link URL} to the latest Fabric installer.
-   *
-   * @return URL to the latest Fabric installer.
-   * @author Griefed
-   */
+  @Override
   public URL latestInstallerUrl() {
     return FABRIC_INSTALLER.latestInstallerUrl();
   }
 
-  /**
-   * Get the {@link URL} to the release Fabric installer.
-   *
-   * @return URL to the release Fabric installer.
-   * @author Griefed
-   */
+  @Override
   public URL releaseInstallerUrl() {
     return FABRIC_INSTALLER.releaseInstallerUrl();
   }
 
-  /**
-   * Check whether a {@link URL} to the specified Fabric installer version is available.
-   *
-   * @param fabricVersion Fabric version.
-   * @return <code>true</code> if a {@link URL} to the specified Fabric installer
-   * version is available.
-   * @author Griefed
-   */
+  @Override
   public boolean isInstallerUrlAvailable(String fabricVersion) {
     return Optional.ofNullable(FABRIC_INSTALLER.meta().get(fabricVersion)).isPresent();
   }
 
-  /**
-   * Get the {@link URL} to the Fabric installer for the specified version.
-   *
-   * @param fabricVersion Fabric version.
-   * @return URL to the Fabric installer for the specified version.
-   * @author Griefed
-   */
-  public Optional<URL> installerUrl(String fabricVersion) {
+  @Override
+  public Optional<URL> getInstallerUrl(String fabricVersion) {
     return Optional.ofNullable(FABRIC_INSTALLER.meta().get(fabricVersion));
   }
 
@@ -290,14 +173,8 @@ public final class FabricMeta {
     return FABRIC_INSTALLER.improvedLauncherUrl(minecraftVersion, fabricVersion);
   }
 
-  /**
-   * Check whether the specified Fabric version is available/correct/valid.
-   *
-   * @param fabricVersion Fabric version.
-   * @return <code>true</code> if the specified version is available/correct/valid.
-   * @author Griefed
-   */
-  public boolean checkFabricVersion(String fabricVersion) {
+  @Override
+  public boolean isVersionValid(String fabricVersion) {
     return FABRIC_LOADER.loaders().contains(fabricVersion);
   }
 
@@ -329,24 +206,8 @@ public final class FabricMeta {
     }
   }
 
-  /**
-   * HashMap of available intermediaries.
-   *
-   * @return Map of available intermediaries.
-   * @author Griefed
-   */
-  public HashMap<String, FabricIntermediary> getFabricIntermediaries() {
-    return FABRIC_INTERMEDIARIES.getIntermediaries();
-  }
-
-  /**
-   * Get a specific intermediary, wrapped in an {@link Optional}.
-   *
-   * @param minecraftVersion Minecraft version.
-   * @return A specific intermediary, wrapped in an {@link Optional}.
-   * @author Griefed
-   */
-  public Optional<FabricIntermediary> getFabricIntermediary(String minecraftVersion) {
-    return FABRIC_INTERMEDIARIES.getIntermediary(minecraftVersion);
+  @Override
+  public boolean isMinecraftSupported(String minecraftVersion) {
+    return FABRIC_INTERMEDIARIES.getIntermediary(minecraftVersion).isPresent();
   }
 }

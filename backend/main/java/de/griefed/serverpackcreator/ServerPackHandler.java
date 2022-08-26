@@ -36,6 +36,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.math.BigInteger;
+import java.net.MalformedURLException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.CopyOption;
 import java.nio.file.DirectoryNotEmptyException;
@@ -751,6 +752,7 @@ public final class ServerPackHandler {
       // If Minecraft version is 1.12 or newer, scan Tomls, else scan annotations.
 
       switch (modloader) {
+        case "LegacyFabric":
         case "Fabric":
           autodiscoveredClientMods.addAll(MODSCANNER.fabric().scan(filesInModsDir));
           break;
@@ -1064,16 +1066,14 @@ public final class ServerPackHandler {
 
     Process process = null;
     BufferedReader bufferedReader = null;
-    String fileDestination;
 
     switch (modLoader) {
       case "Fabric":
         LOG_INSTALLER.info("Starting Fabric installation.");
 
-        fileDestination = String.format("%s/fabric-installer.jar", destination);
 
         if (UTILITIES.WebUtils()
-            .downloadFile(fileDestination, VERSIONMETA.fabric().releaseInstallerUrl())) {
+            .downloadFile(String.format("%s/fabric-installer.jar", destination), VERSIONMETA.fabric().releaseInstallerUrl())) {
 
           LOG.info("Fabric installer successfully downloaded.");
 
@@ -1090,19 +1090,17 @@ public final class ServerPackHandler {
         } else {
 
           LOG.error(
-              "Something went wrong during the installation of Fabric. Maybe the Fabric server are down or unreachable? Skipping...");
+              "Something went wrong during the installation of Fabric. Maybe the Fabric servers are down or unreachable? Skipping...");
         }
         break;
 
       case "Forge":
         LOG_INSTALLER.info("Starting Forge installation.");
 
-        fileDestination = String.format("%s/forge-installer.jar", destination);
-
         if (VERSIONMETA.forge().getForgeInstance(minecraftVersion, modLoaderVersion).isPresent()
             && UTILITIES.WebUtils()
             .downloadFile(
-                fileDestination,
+                String.format("%s/forge-installer.jar", destination),
                 VERSIONMETA
                     .forge()
                     .getForgeInstance(minecraftVersion, modLoaderVersion)
@@ -1110,6 +1108,7 @@ public final class ServerPackHandler {
                     .installerUrl())) {
 
           LOG.info("Forge installer successfully downloaded.");
+
           commandArguments.add(javaPath);
           commandArguments.add("-jar");
           commandArguments.add("forge-installer.jar");
@@ -1125,10 +1124,8 @@ public final class ServerPackHandler {
       case "Quilt":
         LOG_INSTALLER.info("Starting Quilt installation.");
 
-        fileDestination = String.format("%s/quilt-installer.jar", destination);
-
         if (UTILITIES.WebUtils()
-            .downloadFile(fileDestination, VERSIONMETA.quilt().releaseInstallerUrl())) {
+            .downloadFile(String.format("%s/quilt-installer.jar", destination), VERSIONMETA.quilt().releaseInstallerUrl())) {
 
           LOG.info("Quilt installer successfully downloaded.");
 
@@ -1144,7 +1141,36 @@ public final class ServerPackHandler {
         } else {
 
           LOG.error(
-              "Something went wrong during the installation of Fabric. Maybe the Fabric server are down or unreachable? Skipping...");
+              "Something went wrong during the installation of Quilt. Maybe the Quilt servers are down or unreachable? Skipping...");
+        }
+        break;
+
+      case "LegacyFabric":
+        LOG_INSTALLER.info("Starting Legacy Fabric installation.");
+
+        try {
+          if (UTILITIES.WebUtils()
+              .downloadFile(String.format("%s/legacyfabric-installer.jar", destination), VERSIONMETA.legacyFabric().releaseInstallerUrl())) {
+
+            LOG.info("LegacyFabric installer successfully downloaded.");
+
+            commandArguments.add(javaPath);
+            commandArguments.add("-jar");
+            commandArguments.add("legacyfabric-installer.jar");
+            commandArguments.add("server");
+            commandArguments.add("-mcversion");
+            commandArguments.add(minecraftVersion);
+            commandArguments.add("-loader");
+            commandArguments.add(modLoaderVersion);
+            commandArguments.add("-downloadMinecraft");
+
+          } else {
+
+            LOG.error(
+                "Something went wrong during the installation of LegacyFabric. Maybe the LegacyFabric servers are down or unreachable? Skipping...");
+          }
+        } catch (MalformedURLException ex) {
+          LOG.error("Couldn't acquire LegacyFabric installer URL.",ex);
         }
         break;
 

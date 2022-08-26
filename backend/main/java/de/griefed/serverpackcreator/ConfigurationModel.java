@@ -327,17 +327,21 @@ public class ConfigurationModel {
    * @author Griefed
    */
   public void setModLoader(String newModLoader) {
-    if (newModLoader.toLowerCase().contains("forge")) {
+    if (newModLoader.toLowerCase().matches("^forge$")) {
 
       this.modLoader = "Forge";
 
-    } else if (newModLoader.toLowerCase().contains("fabric")) {
+    } else if (newModLoader.toLowerCase().matches("^fabric$")) {
 
       this.modLoader = "Fabric";
 
-    } else if (newModLoader.toLowerCase().contains("quilt")) {
+    } else if (newModLoader.toLowerCase().matches("^quilt$")) {
 
       this.modLoader = "Quilt";
+
+    } else if (newModLoader.toLowerCase().matches("^legacyfabric$")) {
+
+      this.modLoader = "LegacyFabric";
     }
   }
 

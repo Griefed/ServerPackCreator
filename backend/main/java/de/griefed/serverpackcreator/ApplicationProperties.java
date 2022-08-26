@@ -43,6 +43,7 @@ import org.springframework.stereotype.Component;
  *
  * @author Griefed
  */
+@SuppressWarnings("FieldCanBeLocal")
 @Component
 public final class ApplicationProperties extends Properties {
 
@@ -91,7 +92,7 @@ public final class ApplicationProperties extends Properties {
   /**
    * Supported modloaders.
    */
-  private final String[] SUPPORTED_MODLOADERS = new String[]{"Fabric", "Forge", "Quilt"};
+  private final String[] SUPPORTED_MODLOADERS = new String[]{"Fabric", "Forge", "Quilt","LegacyFabric"};
   /**
    * Default directories to include in the server pack.
    */
@@ -218,6 +219,30 @@ public final class ApplicationProperties extends Properties {
    * Storage location for Fabric version manifest file.
    */
   private final File FABRIC_VERSION_MANIFEST_LOCATION = new File("./work/fabric-manifest.xml");
+  /**
+   * Legacy Fabric Game version manifest file.
+   */
+  private final File LEGACY_FABRIC_GAME_MANIFEST = new File("legacy-fabric-game-manifest.json");
+  /**
+   * Legacy Fabric Loader version manifest file.
+   */
+  private final File LEGACY_FABRIC_LOADER_MANIFEST = new File("legacy-fabric-loader-manifest.json");
+  /**
+   * Legacy Fabric Installer version manifest file.
+   */
+  private final File LEGACY_FABRIC_INSTALLER_MANIFEST = new File("legacy-fabric-installer-manifest.xml");
+  /**
+   * Storage location for Legacy Fabric Game version manifest file.
+   */
+  private final File LEGACY_FABRIC_GAME_MANIFEST_LOCATION = new File("./work/legacy-fabric-game-manifest.json");
+  /**
+   * Storage location for Legacy Fabric Loader version manifest file.
+   */
+  private final File LEGACY_FABRIC_LOADER_MANIFEST_LOCATION = new File("./work/legacy-fabric-loader-manifest.json");
+  /**
+   * Storage location for Legacy Fabric Installer version manifest file.
+   */
+  private final File LEGACY_FABRIC_INSTALLER_MANIFEST_LOCATION = new File("./work/legacy-fabric-installer-manifest.xml");
   /**
    * Storage location for Fabric installer version manifest file.
    */
@@ -1031,6 +1056,63 @@ public final class ApplicationProperties extends Properties {
   }
 
   /**
+   * Legacy Fabric Game version manifest-file.
+   *
+   * @return legacy-fabric-game-manifest.json-file
+   * @author Griefed
+   */
+  public File LEGACY_FABRIC_GAME_MANIFEST() {
+    return LEGACY_FABRIC_GAME_MANIFEST;
+  }
+
+  /**
+   * Legacy Fabric Loader version manifest-file.
+   *
+   * @return legacy-fabric-game-manifest.json-file
+   * @author Griefed
+   */
+  public File LEGACY_FABRIC_LOADER_MANIFEST() {
+    return LEGACY_FABRIC_LOADER_MANIFEST;
+  }
+
+  /**
+   * Legacy Fabric Installer version manifest-file.
+   *
+   * @return legacy-fabric-installer-manifest.xml-file
+   * @author Griefed
+   */
+  public File LEGACY_FABRIC_INSTALLER_MANIFEST() {
+    return LEGACY_FABRIC_INSTALLER_MANIFEST;
+  }
+
+  /**
+   * Path to the Legacy Fabric Game version manifest-file, as a file.
+   * @return ./work/legacy-fabric-game-manifest.json
+   * @author Griefed
+   */
+  public File LEGACY_FABRIC_GAME_MANIFEST_LOCATION() {
+    return LEGACY_FABRIC_GAME_MANIFEST_LOCATION;
+  }
+
+  /**
+   * Path to the Legacy Fabric Loader version manifest-file, as a file.
+   * @return ./work/legacy-fabric-loader-manifest.json
+   * @author Griefed
+   */
+  public File LEGACY_FABRIC_LOADER_MANIFEST_LOCATION() {
+    return LEGACY_FABRIC_LOADER_MANIFEST_LOCATION;
+  }
+
+  /**
+   * Path to the Legacy Fabric Installer version manifest-file, as a file.
+   * @return ./work/legacy-fabric-installer-manifest.xml
+   * @author Griefed
+   */
+  public File LEGACY_FABRIC_INSTALLER_MANIFEST_LOCATION() {
+    return LEGACY_FABRIC_INSTALLER_MANIFEST_LOCATION;
+  }
+
+  /**
    * Getter for the version of ServerPackCreator.<br> If a JAR-file compiled from a release-job from
    * a CI/CD-pipeline is used, it should contain a VERSION.txt-file which contains the version of
    * said release. If a non-release-version is used, from a regular pipeline or local dev-build,
@@ -1325,7 +1407,7 @@ public final class ApplicationProperties extends Properties {
    * @author Griefed
    */
   public boolean isDarkTheme() {
-    return Boolean.parseBoolean(acquireProperty("de.griefed.serverpackcreator.gui.darkmode","true"));
+    return Boolean.parseBoolean(acquireProperty(PROPERTY_GUI_DARKMODE,"true"));
   }
 
   /**
@@ -1337,10 +1419,10 @@ public final class ApplicationProperties extends Properties {
   public void setTheme(boolean dark) {
     if (dark) {
       defineProperty(
-          "de.griefed.serverpackcreator.gui.darkmode", "true");
+          PROPERTY_GUI_DARKMODE, "true");
     } else {
       setProperty(
-          "de.griefed.serverpackcreator.gui.darkmode", "false");
+          PROPERTY_GUI_DARKMODE, "false");
     }
   }
 
@@ -1353,7 +1435,7 @@ public final class ApplicationProperties extends Properties {
   public void saveToDisk(File propertiesFile) {
     try (OutputStream outputStream =
         Files.newOutputStream(propertiesFile.toPath())) {
-      store(outputStream, null);
+      store(outputStream, "For details about each property, see https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-Help#serverpackcreatorproperties");
     } catch (IOException ex) {
       LOG.error("Couldn't write properties-file.", ex);
     }

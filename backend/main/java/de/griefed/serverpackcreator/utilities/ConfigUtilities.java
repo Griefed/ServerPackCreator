@@ -221,7 +221,7 @@ public final class ConfigUtilities {
             javaPath.replace("\\", "/"),
             "# Which Minecraft version to use. Example: \"1.16.5\".\n# Automatically set when projectID,fileID for modpackDir has been specified.\n# Only needed if includeServerInstallation is true.",
             minecraftVersion,
-            "# Which modloader to install. Must be either \"Forge\", \"Fabric\" or \"Quilt\".\n# Automatically set when projectID,fileID for modpackDir has been specified.\n# Only needed if includeServerInstallation is true.",
+            "# Which modloader to install. Must be either \"Forge\", \"Fabric\", \"Quilt\" or \"LegacyFabric\".\n# Automatically set when projectID,fileID for modpackDir has been specified.\n# Only needed if includeServerInstallation is true.",
             modLoader,
             "# The version of the modloader you want to install. Example for Fabric=\"0.7.3\", example for Forge=\"36.0.15\".\n# Automatically set when projectID,fileID for modpackDir has been specified.\n# Only needed if includeServerInstallation is true.",
             modLoaderVersion,

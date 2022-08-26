@@ -14,6 +14,7 @@ MODLOADER="SPC_MODLOADER_SPC"
 MODLOADER_VERSION="SPC_MODLOADER_VERSION_SPC"
 ARGS="SPC_JAVA_ARGS_SPC"
 JAVA="SPC_JAVA_SPC"
+LEGACYFABRIC_INSTALLER_VERSION="SPC_LEGACYFABRIC_INSTALLER_VERSION_SPC"
 FABRIC_INSTALLER_VERSION="SPC_FABRIC_INSTALLER_VERSION_SPC"
 QUILT_INSTALLER_VERSION="SPC_QUILT_INSTALLER_VERSION_SPC"
 MINECRAFT_SERVER_URL="SPC_MINECRAFT_SERVER_URL_SPC"
@@ -52,6 +53,10 @@ downloadIfNotExist() {
 
 runJavaCommand() {
   "$JAVA" ${1}
+}
+
+checkJavaBitness() {
+  "$JAVA" "-version" 2>&1 | grep -i "32-Bit" && echo "WARNING! 32-Bit Java detected! It is highly recommended to use a 64-Bit version of Java!"
 }
 
 # If modloader = Forge, run Forge-specific checks
@@ -232,6 +237,49 @@ setup_quilt() {
   echo ""
 }
 
+# If modloader = LegacyFabric, run LegacyFabric-specific checks
+setup_legacyfabric() {
+  echo ""
+  echo "Running LegacyFabric checks and setup..."
+
+  LEGACYFABRIC_INSTALLER_URL="https://maven.legacyfabric.net/net/legacyfabric/fabric-installer/${LEGACYFABRIC_INSTALLER_VERSION}/fabric-installer-${LEGACYFABRIC_INSTALLER_VERSION}.jar"
+  LEGACYFABRIC_CHECK_URL="https://meta.legacyfabric.net/v2/versions/loader/${MINECRAFT_VERSION}"
+  LEGACYFABRIC_AVAILABLE="$(wget -qO- ${LEGACYFABRIC_CHECK_URL})"
+
+  if [[ "${#LEGACYFABRIC_AVAILABLE}" -eq "2" ]]; then
+
+    echo "LegacyFabric is not available for Minecraft ${MINECRAFT_VERSION}, LegacyFabric ${MODLOADER_VERSION}."
+    crash
+
+  elif [[ $(downloadIfNotExist "fabric-server-launch.jar" "legacyfabric-installer.jar" "${LEGACYFABRIC_INSTALLER_URL}") == "true" ]]; then
+
+    echo "Installer downloaded. Installing..."
+    runJavaCommand "-jar legacyfabric-installer.jar server -mcversion ${MINECRAFT_VERSION} -loader ${MODLOADER_VERSION} -downloadMinecraft"
+
+    if [[ -s "fabric-server-launch.jar" ]]; then
+
+      rm legacyfabric-installer.jar
+      echo "Installation complete. legacyfabric-installer.jar deleted."
+
+    else
+
+      rm -f legacyfabric-installer.jar
+      echo "fabric-server-launch.jar not found. Maybe the LegacyFabric servers are having trouble."
+      echo "Please try again in a couple of minutes and check your internet connection."
+      crash
+
+    fi
+
+  else
+    echo "fabric-server-launch.jar present. Moving on..."
+  fi
+
+  LAUNCHER_JAR_LOCATION="fabric-server-launch.jar"
+  MINECRAFT_SERVER_JAR_LOCATION="server.jar"
+  SERVER_RUN_COMMAND="-Dlog4j2.formatMsgNoLookups=true ${ARGS} -jar ${LAUNCHER_JAR_LOCATION} nogui"
+  echo ""
+}
+
 # Check for a minecraft server and download it if necessary
 minecraft() {
   echo ""
@@ -279,24 +327,28 @@ eula() {
 }
 
 # Main
-if [[ "${MODLOADER}" == "Forge" ]]; then
+case ${MODLOADER} in
 
-  setup_forge
+  "Forge")
+    setup_forge
+    ;;
 
-elif [[ "${MODLOADER}" == "Fabric" ]]; then
+  "Fabric")
+    setup_fabric
+    ;;
 
-  setup_fabric
+  "Quilt")
+    setup_quilt
+    ;;
 
-elif [[ "${MODLOADER}" == "Quilt" ]]; then
+  "LegacyFabric")
+    setup_legacyfabric
+    ;;
 
-  setup_quilt
-
-else
-
-  echo "Incorrect modloader specified."
-  crash
-
-fi
+  *)
+    echo "Incorrect modloader specified: ${MODLOADER}"
+    crash
+esac
 
 if [[ "${PWD}" == *" "*  ]]; then
 
@@ -319,6 +371,7 @@ if [[ "${PWD}" == *" "*  ]]; then
     fi
 fi
 
+checkJavaBitness
 minecraft
 eula
 

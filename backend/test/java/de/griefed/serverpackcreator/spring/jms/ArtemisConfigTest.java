@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Objects;
+import javax.xml.parsers.ParserConfigurationException;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -18,6 +19,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.support.destination.JmsDestinationAccessor;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.xml.sax.SAXException;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
@@ -31,7 +33,8 @@ public class ArtemisConfigTest {
   private final String QUEUE_TASKS = "tasks.background";
 
   @Autowired
-  ArtemisConfigTest(JmsTemplate injectedJmsTemplate) throws IOException {
+  ArtemisConfigTest(JmsTemplate injectedJmsTemplate)
+      throws IOException, ParserConfigurationException, SAXException {
     try {
       FileUtils.copyFile(
           new File("backend/main/resources/serverpackcreator.properties"),

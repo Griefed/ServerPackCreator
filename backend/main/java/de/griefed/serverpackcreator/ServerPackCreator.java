@@ -58,6 +58,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Scanner;
 import java.util.concurrent.Executors;
+import javax.xml.parsers.ParserConfigurationException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.monitor.FileAlterationListener;
 import org.apache.commons.io.monitor.FileAlterationMonitor;
@@ -69,6 +70,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.annotation.PropertySources;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.xml.sax.SAXException;
 
 /**
  * Launch-class of ServerPackCreator which determines the mode to run in, takes care of
@@ -148,10 +150,13 @@ public class ServerPackCreator {
    *
    * @param args Commandline arguments with which ServerPackCreator is run. Determines which mode
    *             ServerPackCreator will enter and which locale is used.
-   * @throws IOException if the {@link VersionMeta} could not be instantiated.
+   * @throws ParserConfigurationException indicates a serious configuration error.
+   * @throws IOException if any IO errors occur.
+   * @throws SAXException if any parse errors occur.
    * @author Griefed
    */
-  public static void main(String[] args) throws IOException {
+  public static void main(String[] args)
+      throws IOException, ParserConfigurationException, SAXException {
     serverPackCreator = getServerPackCreator(args);
     serverPackCreator.run();
   }
@@ -199,7 +204,8 @@ public class ServerPackCreator {
     return utilities;
   }
 
-  public VersionMeta getVersionMeta() throws IOException {
+  public VersionMeta getVersionMeta()
+      throws IOException, ParserConfigurationException, SAXException {
     if (this.versionMeta == null) {
       this.versionMeta =
           new VersionMeta(
@@ -210,6 +216,9 @@ public class ServerPackCreator {
               APPLICATIONPROPERTIES.FABRIC_INTERMEDIARIES_MANIFEST_LOCATION(),
               APPLICATIONPROPERTIES.QUILT_VERSION_MANIFEST_LOCATION(),
               APPLICATIONPROPERTIES.QUILT_INSTALLER_VERSION_MANIFEST_LOCATION(),
+              APPLICATIONPROPERTIES.LEGACY_FABRIC_GAME_MANIFEST_LOCATION(),
+              APPLICATIONPROPERTIES.LEGACY_FABRIC_LOADER_MANIFEST_LOCATION(),
+              APPLICATIONPROPERTIES.LEGACY_FABRIC_INSTALLER_MANIFEST_LOCATION(),
               OBJECT_MAPPER);
     }
     return versionMeta;
@@ -223,7 +232,8 @@ public class ServerPackCreator {
     return configUtilities;
   }
 
-  public ConfigurationHandler getConfigurationHandler() throws IOException {
+  public ConfigurationHandler getConfigurationHandler()
+      throws IOException, ParserConfigurationException, SAXException {
     if (this.configurationHandler == null) {
       this.configurationHandler =
           new ConfigurationHandler(
@@ -239,7 +249,8 @@ public class ServerPackCreator {
     return applicationPlugins;
   }
 
-  public ServerPackHandler getServerPackHandler() throws IOException {
+  public ServerPackHandler getServerPackHandler()
+      throws IOException, ParserConfigurationException, SAXException {
     if (this.serverPackHandler == null) {
       this.serverPackHandler =
           new ServerPackHandler(
@@ -310,7 +321,8 @@ public class ServerPackCreator {
     return tomlScanner;
   }
 
-  public ConfigurationEditor getConfigurationEditor() throws IOException {
+  public ConfigurationEditor getConfigurationEditor()
+      throws IOException, ParserConfigurationException, SAXException {
     if (this.configurationEditor == null) {
       this.configurationEditor = new ConfigurationEditor(
           getConfigurationHandler(),
@@ -322,7 +334,8 @@ public class ServerPackCreator {
     return configurationEditor;
   }
 
-  public ServerPackCreatorGui getServerPackCreatorGui() throws IOException {
+  public ServerPackCreatorGui getServerPackCreatorGui()
+      throws IOException, ParserConfigurationException, SAXException {
     if (this.serverPackCreatorGui == null) {
       this.serverPackCreatorGui = new ServerPackCreatorGui(
           I18N,
@@ -342,10 +355,12 @@ public class ServerPackCreator {
   /**
    * Run ServerPackCreator with the mode acquired from {@link CommandlineParser}.
    *
-   * @throws IOException if the run fails.
+   * @throws ParserConfigurationException indicates a serious configuration error.
+   * @throws IOException if any IO errors occur.
+   * @throws SAXException if any parse errors occur.
    * @author Griefed
    */
-  public void run() throws IOException {
+  public void run() throws IOException, ParserConfigurationException, SAXException {
     run(COMMANDLINE_PARSER.getModeToRunIn());
   }
 
@@ -353,10 +368,12 @@ public class ServerPackCreator {
    * Run ServerPackCreator in a specific {@link CommandlineParser.Mode}.
    *
    * @param modeToRunIn Mode to run in.
-   * @throws IOException if the run fails.
+   * @throws ParserConfigurationException indicates a serious configuration error.
+   * @throws IOException if any IO errors occur.
+   * @throws SAXException if any parse errors occur.
    * @author Griefed
    */
-  public void run(Mode modeToRunIn) throws IOException {
+  public void run(Mode modeToRunIn) throws IOException, ParserConfigurationException, SAXException {
 
     switch (modeToRunIn) {
       case HELP:
@@ -527,11 +544,11 @@ public class ServerPackCreator {
     boolean serverProperties =
         checkServerFilesFile(APPLICATIONPROPERTIES.DEFAULT_SERVER_PROPERTIES());
     boolean serverIcon = checkServerFilesFile(APPLICATIONPROPERTIES.DEFAULT_SERVER_ICON());
-    boolean shellTemplate = checkServerFilesFile(APPLICATIONPROPERTIES.DEFAULT_SHELL_TEMPLATE());
-    boolean powershellTemplate =
-        checkServerFilesFile(APPLICATIONPROPERTIES.DEFAULT_POWERSHELL_TEMPLATE());
 
-    if (config || serverProperties || serverIcon || shellTemplate || powershellTemplate) {
+    overwriteServerFilesFile(APPLICATIONPROPERTIES.DEFAULT_SHELL_TEMPLATE());
+    overwriteServerFilesFile(APPLICATIONPROPERTIES.DEFAULT_POWERSHELL_TEMPLATE());
+
+    if (config || serverProperties || serverIcon) {
 
       LOG.warn("#################################################################");
       LOG.warn("#.............ONE OR MORE DEFAULT FILE(S) GENERATED.............#");
@@ -583,7 +600,7 @@ public class ServerPackCreator {
    * @throws IOException if the {@link VersionMeta} could not be instantiated.
    * @author Griefed
    */
-  private void stageTwo() throws IOException {
+  private void stageTwo() throws IOException, ParserConfigurationException, SAXException {
     getVersionMeta();
     getConfigUtilities();
     getConfigurationHandler();
@@ -596,7 +613,7 @@ public class ServerPackCreator {
    * @throws IOException if the {@link VersionMeta} could not be instantiated.
    * @author Griefed
    */
-  private void stageThree() throws IOException {
+  private void stageThree() throws IOException, ParserConfigurationException, SAXException {
     getApplicationPlugins();
     getAnnotationScanner();
     getFabricScanner();
@@ -731,7 +748,7 @@ public class ServerPackCreator {
    * @throws IOException if the {@link VersionMeta} could not be instantiated.
    * @author Griefed
    */
-  private void runGui() throws IOException {
+  private void runGui() throws IOException, ParserConfigurationException, SAXException {
     getServerPackCreatorGui().mainGUI();
   }
 
@@ -743,7 +760,8 @@ public class ServerPackCreator {
    *                     {@link CommandlineParser.Mode#WEB}
    * @author Griefed
    */
-  private void continuedRunOptions() throws IOException {
+  private void continuedRunOptions()
+      throws IOException, ParserConfigurationException, SAXException {
 
     printMenu();
 
@@ -793,7 +811,7 @@ public class ServerPackCreator {
             }
         }
 
-      } catch (InputMismatchException ex) {
+      } catch (InputMismatchException | ParserConfigurationException | SAXException ex) {
         System.out.println("Not a valid number. Please pick a number from 0 to 7.");
         selection = 100;
       }
@@ -888,7 +906,7 @@ public class ServerPackCreator {
    * @throws IOException if the {@link ConfigurationEditor} could not be instantiated.
    * @author Griefed
    */
-  private void runHeadless() throws IOException {
+  private void runHeadless() throws IOException, ParserConfigurationException, SAXException {
     if (!APPLICATIONPROPERTIES.DEFAULT_CONFIG().exists()) {
 
       LOG.warn("No serverpackcreator.conf found...");
@@ -917,7 +935,8 @@ public class ServerPackCreator {
    *
    * @author Griefed
    */
-  private void runConfigurationEditor() throws IOException {
+  private void runConfigurationEditor()
+      throws IOException, ParserConfigurationException, SAXException {
     getConfigurationEditor().continuedRunOptions();
   }
 
@@ -963,7 +982,7 @@ public class ServerPackCreator {
    *
    * @param fileToCheckFor The file which is to be checked for whether it exists and if it doesn't,
    *                       should be created.
-   * @return Boolean. Returns true if the file was generated, so we can inform the user about said
+   * @return <code>true</code> if the file was generated, so we can inform the user about said
    * newly generated file.
    * @author Griefed
    */
@@ -993,6 +1012,19 @@ public class ServerPackCreator {
       }
     }
     return firstRun;
+  }
+
+  /**
+   * Delete and recreate a server-files file, so we always have the latest and greatest hits
+   * available on the host, and therefor, the user.
+   *
+   * @param fileToOverwrite The file which is to be overwritten. If it exists. it is first deleted,
+   *                        then extracted from our JAR-file.
+   * @author Griefed
+   */
+  public void overwriteServerFilesFile(File fileToOverwrite) {
+    FileUtils.deleteQuietly(fileToOverwrite);
+    checkServerFilesFile(fileToOverwrite);
   }
 
   /**

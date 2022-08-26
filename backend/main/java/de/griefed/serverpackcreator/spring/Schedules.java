@@ -26,12 +26,14 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.Date;
+import javax.xml.parsers.ParserConfigurationException;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.xml.sax.SAXException;
 
 /**
  * Schedules to cover all kinds of aspects of ServerPackCreator.
@@ -145,7 +147,7 @@ public class Schedules {
   private void refreshVersionLister() {
     try {
       VERSIONMETA.update();
-    } catch (IOException ex) {
+    } catch (IOException | ParserConfigurationException | SAXException ex) {
       LOG.error("Could not update VersionMeta.", ex);
     }
   }
