@@ -62,12 +62,12 @@ Function global:RunJavaCommand
     CMD /C "`"${Java}`" ${CommandToRun}"
 }
 
-Function global:CheckJavaBtiness
+Function global:CheckJavaBitness
 {
     $Bit = CMD /C "`"${Java}`" -version 2>&1"
     if ( ( ${Bit} | Select-String "32-Bit" ).Length -gt 0)
     {
-        "WARNING! 32-Bit Java detected! It is highly recommended to use a 64-Bit version of Java!"
+        Write-Host "WARNING! 32-Bit Java detected! It is highly recommended to use a 64-Bit version of Java!"
     }
 }
 
