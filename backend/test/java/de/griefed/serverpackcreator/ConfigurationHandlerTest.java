@@ -12,9 +12,11 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import javax.xml.parsers.ParserConfigurationException;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.xml.sax.SAXException;
 
 class ConfigurationHandlerTest {
 
@@ -22,7 +24,7 @@ class ConfigurationHandlerTest {
   private final ConfigurationHandler configurationHandler;
   private final VersionMeta versionMeta;
 
-  ConfigurationHandlerTest() throws IOException {
+  ConfigurationHandlerTest() throws IOException, ParserConfigurationException, SAXException {
     try {
       FileUtils.copyFile(
           new File("backend/main/resources/serverpackcreator.properties"),
@@ -46,6 +48,9 @@ class ConfigurationHandlerTest {
             applicationProperties.FABRIC_INTERMEDIARIES_MANIFEST_LOCATION(),
             applicationProperties.QUILT_VERSION_MANIFEST(),
             applicationProperties.QUILT_INSTALLER_VERSION_MANIFEST(),
+            applicationProperties.LEGACY_FABRIC_GAME_MANIFEST_LOCATION(),
+            applicationProperties.LEGACY_FABRIC_LOADER_MANIFEST_LOCATION(),
+            applicationProperties.LEGACY_FABRIC_INSTALLER_MANIFEST_LOCATION(),
             objectMapper);
     configurationHandler =
         new ConfigurationHandler(
@@ -90,10 +95,18 @@ class ConfigurationHandlerTest {
   }
 
   @Test
-  void isDirTestModLoader() {
+  void isModLoaderLegacyFabric() {
     Assertions.assertFalse(
         configurationHandler.checkConfiguration(
-            new File("./backend/test/resources/testresources/serverpackcreator_modloader.conf"),
+            new File("./backend/test/resources/testresources/serverpackcreator_legacyfabric.conf"),
+            false));
+  }
+
+  @Test
+  void isModLoaderQuilt() {
+    Assertions.assertFalse(
+        configurationHandler.checkConfiguration(
+            new File("./backend/test/resources/testresources/serverpackcreator_quilt.conf"),
             false));
   }
 
@@ -209,6 +222,8 @@ class ConfigurationHandlerTest {
     Assertions.assertTrue(configurationHandler.checkModloader("fAbRiC"));
     Assertions.assertTrue(configurationHandler.checkModloader("Quilt"));
     Assertions.assertTrue(configurationHandler.checkModloader("qUiLt"));
+    Assertions.assertTrue(configurationHandler.checkModloader("lEgAcYfAbRiC"));
+    Assertions.assertTrue(configurationHandler.checkModloader("LegacyFabric"));
 
     Assertions.assertFalse(configurationHandler.checkModloader("modloader"));
   }
@@ -222,8 +237,7 @@ class ConfigurationHandlerTest {
   @Test
   void checkModloaderVersionTestFabric() {
     Assertions.assertTrue(configurationHandler.checkModloaderVersion("Fabric", "0.11.3", "1.16.5"));
-    Assertions.assertFalse(
-        configurationHandler.checkModloaderVersion("Fabric", "0.90.3", "1.16.5"));
+    Assertions.assertFalse(configurationHandler.checkModloaderVersion("Fabric", "0.90.3", "1.16.5"));
   }
 
   @Test
@@ -233,27 +247,9 @@ class ConfigurationHandlerTest {
   }
 
   @Test
-  void isMinecraftVersionCorrectTest() {
-    Assertions.assertTrue(versionMeta.minecraft().checkMinecraftVersion("1.16.5"));
-    Assertions.assertFalse(versionMeta.minecraft().checkMinecraftVersion("1.99.5"));
-  }
-
-  @Test
-  void isFabricVersionCorrectTest() {
-    Assertions.assertTrue(versionMeta.fabric().checkFabricVersion("0.11.3"));
-    Assertions.assertFalse(versionMeta.fabric().checkFabricVersion("0.90.3"));
-  }
-
-  @Test
-  void isForgeVersionCorrectTest() {
-    Assertions.assertTrue(versionMeta.forge().checkForgeAndMinecraftVersion("1.16.5", "36.1.2"));
-    Assertions.assertFalse(versionMeta.forge().checkForgeAndMinecraftVersion("1.16.5", "99.0.0"));
-  }
-
-  @Test
-  void isQuiltVersionCorrectTest() {
-    Assertions.assertTrue(versionMeta.quilt().checkQuiltVersion("0.16.1"));
-    Assertions.assertFalse(versionMeta.quilt().checkQuiltVersion("0.90.3"));
+  void isLegacyFabricVersionCorrectTest() {
+    Assertions.assertTrue(configurationHandler.checkModloaderVersion("LegacyFabric","0.13.3","1.12.2"));
+    Assertions.assertFalse(configurationHandler.checkModloaderVersion("LegacyFabric","0.999.3","1.12.2"));
   }
 
   @Test
@@ -308,6 +304,7 @@ class ConfigurationHandlerTest {
     Assertions.assertTrue(configurationModel.getScriptSettings().containsKey("SPC_JAVA_ARGS_SPC"));
     Assertions.assertTrue(configurationModel.getScriptSettings().containsKey("SPC_JAVA_SPC"));
     Assertions.assertTrue(configurationModel.getScriptSettings().containsKey("SPC_FABRIC_INSTALLER_VERSION_SPC"));
+    Assertions.assertTrue(configurationModel.getScriptSettings().containsKey("SPC_LEGACYFABRIC_INSTALLER_VERSION_SPC"));
     Assertions.assertTrue(configurationModel.getScriptSettings().containsKey("SPC_QUILT_INSTALLER_VERSION_SPC"));
 
     Assertions.assertEquals(configurationModel.getMinecraftVersion(),configurationModel.getScriptSettings().get("SPC_MINECRAFT_VERSION_SPC"));
@@ -317,8 +314,9 @@ class ConfigurationHandlerTest {
     Assertions.assertEquals("java",configurationModel.getScriptSettings().get("SPC_JAVA_SPC"));
     Assertions.assertEquals(versionMeta.minecraft().getServer(configurationModel.getMinecraftVersion()).get().url().get().toString(),configurationModel.getScriptSettings().get("SPC_MINECRAFT_SERVER_URL_SPC"));
     Assertions.assertEquals(applicationProperties.SERVERPACKCREATOR_VERSION(),configurationModel.getScriptSettings().get("SPC_SERVERPACKCREATOR_VERSION_SPC"));
-    Assertions.assertEquals(versionMeta.fabric().releaseInstallerVersion(),configurationModel.getScriptSettings().get("SPC_FABRIC_INSTALLER_VERSION_SPC"));
-    Assertions.assertEquals(versionMeta.quilt().releaseInstallerVersion(),configurationModel.getScriptSettings().get("SPC_QUILT_INSTALLER_VERSION_SPC"));
+    Assertions.assertEquals(versionMeta.fabric().releaseInstaller(),configurationModel.getScriptSettings().get("SPC_FABRIC_INSTALLER_VERSION_SPC"));
+    Assertions.assertEquals(versionMeta.legacyFabric().releaseInstaller(),configurationModel.getScriptSettings().get("SPC_LEGACYFABRIC_INSTALLER_VERSION_SPC"));
+    Assertions.assertEquals(versionMeta.quilt().releaseInstaller(),configurationModel.getScriptSettings().get("SPC_QUILT_INSTALLER_VERSION_SPC"));
   }
 
   @Test

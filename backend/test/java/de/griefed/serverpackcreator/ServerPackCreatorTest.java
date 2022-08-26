@@ -3,9 +3,11 @@ package de.griefed.serverpackcreator;
 import de.griefed.serverpackcreator.ServerPackCreator.CommandlineParser.Mode;
 import java.io.File;
 import java.io.IOException;
+import javax.xml.parsers.ParserConfigurationException;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.xml.sax.SAXException;
 
 public class ServerPackCreatorTest {
 
@@ -17,7 +19,7 @@ public class ServerPackCreatorTest {
   }
 
   @Test
-  void filesSetupTest() throws IOException {
+  void filesSetupTest() throws IOException, ParserConfigurationException, SAXException {
     FileUtils.deleteQuietly(new File("./server_files"));
     FileUtils.deleteQuietly(new File("./work"));
     FileUtils.deleteQuietly(new File("./work/temp"));

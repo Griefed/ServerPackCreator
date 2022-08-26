@@ -21,6 +21,7 @@ package de.griefed.serverpackcreator.versionmeta.minecraft;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.griefed.serverpackcreator.versionmeta.Manifests;
 import de.griefed.serverpackcreator.versionmeta.Type;
 import java.io.IOException;
 import java.net.URL;
@@ -32,7 +33,7 @@ import java.util.Optional;
  *
  * @author Griefed
  */
-public final class MinecraftServer {
+public final class MinecraftServer extends Manifests {
 
   private final ObjectMapper OBJECT_MAPPER;
   private final URL MANIFEST_URL;
@@ -65,7 +66,7 @@ public final class MinecraftServer {
    */
   private void setServerJson() {
     try {
-      this.serverJson = OBJECT_MAPPER.readTree(MANIFEST_URL.openStream());
+      this.serverJson = getJson(MANIFEST_URL.openStream(), OBJECT_MAPPER);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

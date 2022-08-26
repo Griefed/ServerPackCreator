@@ -161,7 +161,7 @@ public class ZipService {
         // Check Fabric
       } else {
 
-        if (!VERSIONMETA.fabric().checkFabricVersion(parameters[4])) {
+        if (!VERSIONMETA.fabric().isVersionValid(parameters[4])) {
           LOG.info(parameters[3] + " version " + parameters[4] + " incorrect.");
           return NOTIFICATIONRESPONSE.zipResponse(
               "Incorrect Fabric version: " + parameters[4], 5000, "error", "negative", null, false);

@@ -21,6 +21,7 @@ package de.griefed.serverpackcreator.versionmeta.forge;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
+import de.griefed.serverpackcreator.versionmeta.Manifests;
 import de.griefed.serverpackcreator.versionmeta.Type;
 import de.griefed.serverpackcreator.versionmeta.minecraft.MinecraftMeta;
 import java.io.File;
@@ -35,7 +36,7 @@ import java.util.Optional;
  *
  * @author Griefed
  */
-public final class ForgeMeta {
+public final class ForgeMeta extends Manifests {
 
   private final File FORGE_MANIFEST;
   private final ObjectMapper OBJECTMAPPER;
@@ -66,7 +67,7 @@ public final class ForgeMeta {
   public void initialize(MinecraftMeta injectedMinecraftMeta) throws IOException {
     if (this.forgeLoader == null) {
       this.forgeLoader =
-          new ForgeLoader(OBJECTMAPPER.readTree(this.FORGE_MANIFEST), injectedMinecraftMeta);
+          new ForgeLoader(getJson(FORGE_MANIFEST, OBJECTMAPPER), injectedMinecraftMeta);
     }
   }
 
@@ -79,7 +80,7 @@ public final class ForgeMeta {
    * @author Griefed
    */
   public void update() throws IOException {
-    this.forgeLoader.update(OBJECTMAPPER.readTree(this.FORGE_MANIFEST));
+    this.forgeLoader.update(getJson(FORGE_MANIFEST, OBJECTMAPPER));
   }
 
   /**

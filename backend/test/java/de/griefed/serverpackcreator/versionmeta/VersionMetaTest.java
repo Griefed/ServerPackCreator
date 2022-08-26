@@ -3,14 +3,17 @@ package de.griefed.serverpackcreator.versionmeta;
 import de.griefed.serverpackcreator.ServerPackCreator;
 import de.griefed.serverpackcreator.ServerPackCreator.CommandlineParser.Mode;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import javax.xml.parsers.ParserConfigurationException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.xml.sax.SAXException;
 
 public class VersionMetaTest {
 
   private final VersionMeta versionMeta;
 
-  public VersionMetaTest() throws IOException {
+  public VersionMetaTest() throws IOException, ParserConfigurationException, SAXException {
     String[] setup = new String[]{"--setup"};
     ServerPackCreator serverPackCreator = new ServerPackCreator(setup);
     serverPackCreator.run(Mode.SETUP);
@@ -18,7 +21,7 @@ public class VersionMetaTest {
   }
 
   @Test
-  void meta() throws IOException {
+  void meta() throws IOException, ParserConfigurationException, SAXException {
     Assertions.assertNotNull(versionMeta.update());
   }
 
@@ -365,21 +368,21 @@ public class VersionMetaTest {
 
   @Test
   void fabric() {
-    Assertions.assertNotNull(versionMeta.fabric().loaderVersionsAscending());
-    Assertions.assertNotNull(versionMeta.fabric().loaderVersionsDescending());
+    Assertions.assertNotNull(versionMeta.fabric().loaderVersionsListAscending());
+    Assertions.assertNotNull(versionMeta.fabric().loaderVersionsListDescending());
     Assertions.assertNotNull(versionMeta.fabric().loaderVersionsArrayAscending());
     Assertions.assertNotNull(versionMeta.fabric().loaderVersionsArrayDescending());
-    Assertions.assertNotNull(versionMeta.fabric().latestLoaderVersion());
-    Assertions.assertNotNull(versionMeta.fabric().releaseLoaderVersion());
-    Assertions.assertNotNull(versionMeta.fabric().latestInstallerVersion());
-    Assertions.assertNotNull(versionMeta.fabric().releaseInstallerVersion());
-    Assertions.assertNotNull(versionMeta.fabric().installerVersionsAscending());
-    Assertions.assertNotNull(versionMeta.fabric().installerVersionsDescending());
-    Assertions.assertNotNull(versionMeta.fabric().installerVersionsAscending());
+    Assertions.assertNotNull(versionMeta.fabric().latestLoader());
+    Assertions.assertNotNull(versionMeta.fabric().releaseLoader());
+    Assertions.assertNotNull(versionMeta.fabric().latestInstaller());
+    Assertions.assertNotNull(versionMeta.fabric().releaseInstaller());
+    Assertions.assertNotNull(versionMeta.fabric().installerVersionsListAscending());
+    Assertions.assertNotNull(versionMeta.fabric().installerVersionsListDescending());
+    Assertions.assertNotNull(versionMeta.fabric().installerVersionsListAscending());
     Assertions.assertNotNull(versionMeta.fabric().installerVersionsArrayAscending());
     Assertions.assertEquals(
         versionMeta.fabric().installerVersionsArrayAscending().length,
-        versionMeta.fabric().installerVersionsAscending().size());
+        versionMeta.fabric().installerVersionsListAscending().size());
     Assertions.assertEquals(
         versionMeta.fabric().installerVersionsArrayAscending()[0],
         versionMeta.fabric()
@@ -388,7 +391,7 @@ public class VersionMetaTest {
     Assertions.assertNotNull(versionMeta.fabric().installerVersionsArrayDescending());
     Assertions.assertEquals(
         versionMeta.fabric().installerVersionsArrayDescending().length,
-        versionMeta.fabric().installerVersionsDescending().size());
+        versionMeta.fabric().installerVersionsListDescending().size());
     Assertions.assertEquals(
         versionMeta.fabric().installerVersionsArrayDescending()[0],
         versionMeta.fabric()
@@ -398,35 +401,35 @@ public class VersionMetaTest {
     Assertions.assertNotNull(versionMeta.fabric().releaseInstallerUrl());
     versionMeta
         .fabric()
-        .installerVersionsAscending()
+        .installerVersionsListAscending()
         .forEach(
             version -> {
               Assertions.assertTrue(versionMeta.fabric().isInstallerUrlAvailable(version));
-              Assertions.assertNotNull(versionMeta.fabric().installerUrl(version).get());
+              Assertions.assertNotNull(versionMeta.fabric().getInstallerUrl(version).get());
             });
     Assertions.assertFalse(versionMeta.fabric().isInstallerUrlAvailable("0.11233.3"));
-    Assertions.assertFalse(versionMeta.fabric().installerUrl("0.13123.3").isPresent());
-    Assertions.assertTrue(versionMeta.fabric().checkFabricVersion("0.13.3"));
-    Assertions.assertFalse(versionMeta.fabric().checkFabricVersion("0.12313.3"));
+    Assertions.assertFalse(versionMeta.fabric().getInstallerUrl("0.13123.3").isPresent());
+    Assertions.assertTrue(versionMeta.fabric().isVersionValid("0.13.3"));
+    Assertions.assertFalse(versionMeta.fabric().isVersionValid("0.12313.3"));
   }
 
   @Test
   void quilt() {
-    Assertions.assertNotNull(versionMeta.quilt().loaderVersionsAscending());
-    Assertions.assertNotNull(versionMeta.quilt().loaderVersionsDescending());
+    Assertions.assertNotNull(versionMeta.quilt().loaderVersionsListAscending());
+    Assertions.assertNotNull(versionMeta.quilt().loaderVersionsListDescending());
     Assertions.assertNotNull(versionMeta.quilt().loaderVersionsArrayAscending());
     Assertions.assertNotNull(versionMeta.quilt().loaderVersionsArrayDescending());
-    Assertions.assertNotNull(versionMeta.quilt().latestLoaderVersion());
-    Assertions.assertNotNull(versionMeta.quilt().releaseLoaderVersion());
-    Assertions.assertNotNull(versionMeta.quilt().latestInstallerVersion());
-    Assertions.assertNotNull(versionMeta.quilt().releaseInstallerVersion());
-    Assertions.assertNotNull(versionMeta.quilt().installerVersionsAscending());
-    Assertions.assertNotNull(versionMeta.quilt().installerVersionsDescending());
-    Assertions.assertNotNull(versionMeta.quilt().installerVersionsAscending());
+    Assertions.assertNotNull(versionMeta.quilt().latestLoader());
+    Assertions.assertNotNull(versionMeta.quilt().releaseLoader());
+    Assertions.assertNotNull(versionMeta.quilt().latestInstaller());
+    Assertions.assertNotNull(versionMeta.quilt().releaseInstaller());
+    Assertions.assertNotNull(versionMeta.quilt().installerVersionsListAscending());
+    Assertions.assertNotNull(versionMeta.quilt().installerVersionsListDescending());
+    Assertions.assertNotNull(versionMeta.quilt().installerVersionsListAscending());
     Assertions.assertNotNull(versionMeta.quilt().installerVersionsArrayAscending());
     Assertions.assertEquals(
         versionMeta.quilt().installerVersionsArrayAscending().length,
-        versionMeta.quilt().installerVersionsAscending().size());
+        versionMeta.quilt().installerVersionsListAscending().size());
     Assertions.assertEquals(
         versionMeta.quilt().installerVersionsArrayAscending()[0],
         versionMeta.quilt()
@@ -435,7 +438,7 @@ public class VersionMetaTest {
     Assertions.assertNotNull(versionMeta.quilt().installerVersionsArrayDescending());
     Assertions.assertEquals(
         versionMeta.quilt().installerVersionsArrayDescending().length,
-        versionMeta.quilt().installerVersionsDescending().size());
+        versionMeta.quilt().installerVersionsListDescending().size());
     Assertions.assertEquals(
         versionMeta.quilt().installerVersionsArrayDescending()[0],
         versionMeta.quilt()
@@ -445,15 +448,66 @@ public class VersionMetaTest {
     Assertions.assertNotNull(versionMeta.quilt().releaseInstallerUrl());
     versionMeta
         .quilt()
-        .installerVersionsAscending()
+        .installerVersionsListAscending()
         .forEach(
             version -> {
               Assertions.assertTrue(versionMeta.quilt().isInstallerUrlAvailable(version));
-              Assertions.assertNotNull(versionMeta.quilt().installerUrl(version).get());
+              Assertions.assertNotNull(versionMeta.quilt().getInstallerUrl(version).get());
             });
     Assertions.assertFalse(versionMeta.quilt().isInstallerUrlAvailable("0.11233.3"));
-    Assertions.assertFalse(versionMeta.quilt().installerUrl("0.13123.3").isPresent());
-    Assertions.assertTrue(versionMeta.quilt().checkQuiltVersion("0.16.1"));
-    Assertions.assertFalse(versionMeta.quilt().checkQuiltVersion("0.12313.3"));
+    Assertions.assertFalse(versionMeta.quilt().getInstallerUrl("0.13123.3").isPresent());
+    Assertions.assertTrue(versionMeta.quilt().isVersionValid("0.16.1"));
+    Assertions.assertFalse(versionMeta.quilt().isVersionValid("0.12313.3"));
+  }
+
+  @Test
+  void legacyFabric() throws MalformedURLException {
+    Assertions.assertNotNull(versionMeta.legacyFabric().loaderVersionsListAscending());
+    Assertions.assertNotNull(versionMeta.legacyFabric().loaderVersionsListDescending());
+    Assertions.assertNotNull(versionMeta.legacyFabric().loaderVersionsArrayAscending());
+    Assertions.assertNotNull(versionMeta.legacyFabric().loaderVersionsArrayDescending());
+    Assertions.assertNotNull(versionMeta.legacyFabric().latestLoader());
+    Assertions.assertNotNull(versionMeta.legacyFabric().releaseLoader());
+    Assertions.assertNotNull(versionMeta.legacyFabric().latestInstaller());
+    Assertions.assertNotNull(versionMeta.legacyFabric().releaseInstaller());
+    Assertions.assertNotNull(versionMeta.legacyFabric().installerVersionsListAscending());
+    Assertions.assertNotNull(versionMeta.legacyFabric().installerVersionsListDescending());
+    Assertions.assertNotNull(versionMeta.legacyFabric().installerVersionsListAscending());
+    Assertions.assertNotNull(versionMeta.legacyFabric().installerVersionsArrayAscending());
+    Assertions.assertEquals(
+        versionMeta.legacyFabric().installerVersionsArrayAscending().length,
+        versionMeta.legacyFabric().installerVersionsListAscending().size());
+    Assertions.assertEquals(
+        versionMeta.legacyFabric().installerVersionsArrayAscending()[0],
+        versionMeta.legacyFabric()
+            .installerVersionsArrayDescending()[
+            versionMeta.legacyFabric().installerVersionsArrayDescending().length - 1]);
+    Assertions.assertNotNull(versionMeta.legacyFabric().installerVersionsArrayDescending());
+    Assertions.assertEquals(
+        versionMeta.legacyFabric().installerVersionsArrayDescending().length,
+        versionMeta.legacyFabric().installerVersionsListDescending().size());
+    Assertions.assertEquals(
+        versionMeta.legacyFabric().installerVersionsArrayDescending()[0],
+        versionMeta.legacyFabric()
+            .installerVersionsArrayAscending()[
+            versionMeta.legacyFabric().installerVersionsArrayAscending().length - 1]);
+    Assertions.assertNotNull(versionMeta.legacyFabric().latestInstallerUrl());
+    Assertions.assertNotNull(versionMeta.legacyFabric().releaseInstallerUrl());
+    versionMeta
+        .legacyFabric()
+        .installerVersionsListAscending()
+        .forEach(
+            version -> {
+              Assertions.assertTrue(versionMeta.legacyFabric().isInstallerUrlAvailable(version));
+              try {
+                Assertions.assertNotNull(versionMeta.legacyFabric().getInstallerUrl(version).get());
+              } catch (MalformedURLException e) {
+                throw new RuntimeException(e);
+              }
+            });
+    Assertions.assertFalse(versionMeta.legacyFabric().isInstallerUrlAvailable("0.11233.3"));
+    Assertions.assertFalse(versionMeta.legacyFabric().getInstallerUrl("0.13123.3").isPresent());
+    Assertions.assertTrue(versionMeta.legacyFabric().isVersionValid("0.13.3"));
+    Assertions.assertFalse(versionMeta.legacyFabric().isVersionValid("0.12313.3"));
   }
 }

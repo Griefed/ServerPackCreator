@@ -21,6 +21,7 @@ package de.griefed.serverpackcreator.versionmeta.minecraft;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.griefed.serverpackcreator.versionmeta.Manifests;
 import de.griefed.serverpackcreator.versionmeta.Type;
 import de.griefed.serverpackcreator.versionmeta.forge.ForgeMeta;
 import java.io.File;
@@ -37,7 +38,7 @@ import org.apache.logging.log4j.Logger;
  *
  * @author Griefed
  */
-final class MinecraftClientMeta {
+final class MinecraftClientMeta extends Manifests {
 
   private static final Logger LOG = LogManager.getLogger(MinecraftClientMeta.class);
   private final ObjectMapper OBJECTMAPPER;
@@ -79,7 +80,7 @@ final class MinecraftClientMeta {
     SNAPSHOTS.clear();
     meta = new HashMap<>();
 
-    JsonNode minecraftManifest = OBJECTMAPPER.readTree(this.MINECRAFT_MANIFEST);
+    JsonNode minecraftManifest = getJson(MINECRAFT_MANIFEST, OBJECTMAPPER);
 
     minecraftManifest
         .get("versions")
