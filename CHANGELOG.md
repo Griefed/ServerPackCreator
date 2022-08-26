@@ -1,3 +1,19 @@
+## [3.13.0-beta.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.13.0-beta.1...3.13.0-beta.2) (2022-08-26)
+
+
+### 🛠 Fixes
+
+* **Powershell Script:** Fix function call and echo to host if 32Bit Java is detected ([8680333](https://git.griefed.de/Griefed/ServerPackCreator/commit/8680333c07bc8cf29d6c120a2c9f51aa0801a450))
+* **Shell Start Script:** Remove character from PWD echo and replace variable name for user input with human readable one ([69132ca](https://git.griefed.de/Griefed/ServerPackCreator/commit/69132caf19b553249a1c48e1bc740e55db59ccab))
+* **Start Script refreshing:** Delete existing default start script templates and extract up-to-date ones from ServerPackCreator ([3d1913f](https://git.griefed.de/Griefed/ServerPackCreator/commit/3d1913f5773356828b225816338d58fef314ed0d))
+* **Start Scripts:** When `sh`, `bash` or `zsh` scripts are created, use ISO-8859_1 encoding ([c615437](https://git.griefed.de/Griefed/ServerPackCreator/commit/c6154378604a3b0bd11bc4e3c1873fbadb1c9b26))
+
+
+### Other
+
+* Add changelog section for dependency changes ([039b242](https://git.griefed.de/Griefed/ServerPackCreator/commit/039b242f18be520fcdc5f0ca7c87a41d305f8dd9))
+* **RenovateBot:** Set commit type to `deps` ([a58de49](https://git.griefed.de/Griefed/ServerPackCreator/commit/a58de49f328cbed91dc5b50f9b7130d7c1c68e1e))
+
 ## [3.13.0-beta.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.12.0...3.13.0-beta.1) (2022-08-26)
 
 
