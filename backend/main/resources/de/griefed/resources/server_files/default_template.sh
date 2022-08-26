@@ -356,13 +356,13 @@ if [[ "${PWD}" == *" "*  ]]; then
     echo "It is strongly recommended to move this server pack to a location whose path does NOT contain SPACES!"
     echo ""
     echo "Current path:"
-    echo "${PWD}t"
+    echo "${PWD}"
     echo ""
 
     echo -n "Are you sure you want to continue? (Yes/No): "
-    read -r ITIS2022WHYARESPACESSTILLSUCHAPROBLEMWHATTHEFRAG
+    read -r WHY
 
-    if [[ "${ITIS2022WHYARESPACESSTILLSUCHAPROBLEMWHATTHEFRAG}" == "Yes" ]]; then
+    if [[ "${WHY}" == "Yes" ]]; then
 
         echo "Alrighty. Prepare for unforseen consequences, Mr. Freeman..."
 
