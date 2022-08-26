@@ -786,38 +786,35 @@ public final class ApplicationProperties extends Properties {
    * @author Griefed
    */
   private void setModExclusionFilterMethod() {
-    ExclusionFilter filter = ExclusionFilter.START;
-
     try {
       String filterText = acquireProperty(PROPERTY_SERVERPACK_AUTODISCOVERY_FILTER, "START");
       switch (filterText) {
         case "END":
-          filter = ExclusionFilter.END;
+          exclusionFilter = ExclusionFilter.END;
           break;
 
         case "CONTAIN":
-          filter = ExclusionFilter.CONTAIN;
+          exclusionFilter = ExclusionFilter.CONTAIN;
           break;
 
         case "REGEX":
-          filter = ExclusionFilter.REGEX;
+          exclusionFilter = ExclusionFilter.REGEX;
           break;
 
         case "EITHER":
-          filter = ExclusionFilter.EITHER;
+          exclusionFilter = ExclusionFilter.EITHER;
           break;
 
         default:
           LOG.error("Invalid filter specified. Defaulting to START.");
         case "START":
-          filter = ExclusionFilter.START;
+          exclusionFilter = ExclusionFilter.START;
           break;
       }
     } catch (NullPointerException ignored) {
 
     } finally {
-      this.exclusionFilter = filter;
-      setProperty(PROPERTY_SERVERPACK_AUTODISCOVERY_FILTER, filter.toString());
+      setProperty(PROPERTY_SERVERPACK_AUTODISCOVERY_FILTER, exclusionFilter.toString());
     }
     LOG.info("User specified clientside-only mod exclusion filter set to: " + exclusionFilter);
   }

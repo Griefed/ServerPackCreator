@@ -149,9 +149,7 @@ public class TaskHandler {
 
           pack = SERVERPACKHANDLER.run(serverPackModel);
 
-          if (pack != null) {
-            SERVERPACKSERVICE.updateServerPackByID(serverPackModel.getId(), pack);
-          }
+          SERVERPACKSERVICE.updateServerPackByID(serverPackModel.getId(), pack);
 
         } else {
 

@@ -264,7 +264,7 @@ public final class VersionMeta extends Manifests {
                         newXML.getElementsByTagName("version").item(0).getChildNodes().item(0)
                             .getNodeValue())) {
 
-                  countNewFile = countNewFile + 1;
+                  countNewFile += 1;
                 }
               }
             }

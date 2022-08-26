@@ -89,7 +89,7 @@ public class ServerPackCreator {
 
   private static final Logger LOG = LogManager.getLogger(ServerPackCreator.class);
   private static ServerPackCreator serverPackCreator = null;
-  private static String[] ARGS;
+  private final String[] ARGS;
   private final CommandlineParser COMMANDLINE_PARSER;
   private final ApplicationProperties APPLICATIONPROPERTIES;
   private final I18n I18N;
@@ -135,7 +135,12 @@ public class ServerPackCreator {
     }
   }
 
-  public static ServerPackCreator getServerPackCreator(String[] args) {
+  public synchronized static ServerPackCreator getInstance() {
+    String[] args = new String[] {"--setup"};
+    return getInstance(args);
+  }
+
+  public synchronized static ServerPackCreator getInstance(String[] args) {
     if (serverPackCreator == null) {
       serverPackCreator = new ServerPackCreator(args);
     }
@@ -157,7 +162,7 @@ public class ServerPackCreator {
    */
   public static void main(String[] args)
       throws IOException, ParserConfigurationException, SAXException {
-    serverPackCreator = getServerPackCreator(args);
+    serverPackCreator = getInstance(args);
     serverPackCreator.run();
   }
 
@@ -167,7 +172,7 @@ public class ServerPackCreator {
    * @return All arguments with which ServerPackCreator was started.
    * @author Griefed
    */
-  public static String[] getArgs() {
+  public String[] getArgs() {
     return ARGS;
   }
 
