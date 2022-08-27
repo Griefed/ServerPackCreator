@@ -165,6 +165,7 @@ public class BeanConfiguration {
 
   /**
    * Storage location for Legacy Fabric Game version manifest file.
+   *
    * @return ./work/legacy-fabric-game-manifest.json
    * @author Griefed
    */
@@ -175,6 +176,7 @@ public class BeanConfiguration {
 
   /**
    * Storage location for Legacy Fabric Loader version manifest file.
+   *
    * @return ./work/legacy-fabric-loader-manifest.json
    * @author Griefed
    */
@@ -185,6 +187,7 @@ public class BeanConfiguration {
 
   /**
    * Storage location for Legacy Fabric Installer version manifest file.
+   *
    * @return ./work/legacy-fabric-installer-manifest.json
    * @author Griefed
    */

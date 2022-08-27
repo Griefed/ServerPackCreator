@@ -92,7 +92,8 @@ public final class ApplicationProperties extends Properties {
   /**
    * Supported modloaders.
    */
-  private final String[] SUPPORTED_MODLOADERS = new String[]{"Fabric", "Forge", "Quilt","LegacyFabric"};
+  private final String[] SUPPORTED_MODLOADERS = new String[]{"Fabric", "Forge", "Quilt",
+      "LegacyFabric"};
   /**
    * Default directories to include in the server pack.
    */
@@ -230,19 +231,23 @@ public final class ApplicationProperties extends Properties {
   /**
    * Legacy Fabric Installer version manifest file.
    */
-  private final File LEGACY_FABRIC_INSTALLER_MANIFEST = new File("legacy-fabric-installer-manifest.xml");
+  private final File LEGACY_FABRIC_INSTALLER_MANIFEST = new File(
+      "legacy-fabric-installer-manifest.xml");
   /**
    * Storage location for Legacy Fabric Game version manifest file.
    */
-  private final File LEGACY_FABRIC_GAME_MANIFEST_LOCATION = new File("./work/legacy-fabric-game-manifest.json");
+  private final File LEGACY_FABRIC_GAME_MANIFEST_LOCATION = new File(
+      "./work/legacy-fabric-game-manifest.json");
   /**
    * Storage location for Legacy Fabric Loader version manifest file.
    */
-  private final File LEGACY_FABRIC_LOADER_MANIFEST_LOCATION = new File("./work/legacy-fabric-loader-manifest.json");
+  private final File LEGACY_FABRIC_LOADER_MANIFEST_LOCATION = new File(
+      "./work/legacy-fabric-loader-manifest.json");
   /**
    * Storage location for Legacy Fabric Installer version manifest file.
    */
-  private final File LEGACY_FABRIC_INSTALLER_MANIFEST_LOCATION = new File("./work/legacy-fabric-installer-manifest.xml");
+  private final File LEGACY_FABRIC_INSTALLER_MANIFEST_LOCATION = new File(
+      "./work/legacy-fabric-installer-manifest.xml");
   /**
    * Storage location for Fabric installer version manifest file.
    */
@@ -776,7 +781,7 @@ public final class ApplicationProperties extends Properties {
    * @author Griefed
    */
   private void setMinecraftPreReleases() {
-    minecraftPreReleases = getBoolProperty(PROPERTY_MINECRAFT_SNAPSHOTS,false);
+    minecraftPreReleases = getBoolProperty(PROPERTY_MINECRAFT_SNAPSHOTS, false);
     LOG.info("Minecraft pre-releases and snapshots available set to: " + minecraftPreReleases);
   }
 
@@ -1084,6 +1089,7 @@ public final class ApplicationProperties extends Properties {
 
   /**
    * Path to the Legacy Fabric Game version manifest-file, as a file.
+   *
    * @return ./work/legacy-fabric-game-manifest.json
    * @author Griefed
    */
@@ -1093,6 +1099,7 @@ public final class ApplicationProperties extends Properties {
 
   /**
    * Path to the Legacy Fabric Loader version manifest-file, as a file.
+   *
    * @return ./work/legacy-fabric-loader-manifest.json
    * @author Griefed
    */
@@ -1102,6 +1109,7 @@ public final class ApplicationProperties extends Properties {
 
   /**
    * Path to the Legacy Fabric Installer version manifest-file, as a file.
+   *
    * @return ./work/legacy-fabric-installer-manifest.xml
    * @author Griefed
    */
@@ -1373,7 +1381,8 @@ public final class ApplicationProperties extends Properties {
         setProperty(fallback, properties.getProperty(fallback));
         listFallbackMods = new ArrayList<>(Arrays.asList(getProperty(fallback).split(",")));
 
-        LOG.info("The fallback-list for clientside only mods has been updated to: " + listFallbackMods);
+        LOG.info(
+            "The fallback-list for clientside only mods has been updated to: " + listFallbackMods);
         updated = true;
       }
 
@@ -1384,7 +1393,8 @@ public final class ApplicationProperties extends Properties {
         listFallbackModsRegex = new ArrayList<>(
             Arrays.asList(getProperty(fallbackRegex).split(",")));
 
-        LOG.info("The fallback regex-list for clientside only mods has been updated to: " + listFallbackModsRegex);
+        LOG.info("The fallback regex-list for clientside only mods has been updated to: "
+            + listFallbackModsRegex);
         updated = true;
       }
 
@@ -1404,7 +1414,7 @@ public final class ApplicationProperties extends Properties {
    * @author Griefed
    */
   public boolean isDarkTheme() {
-    return Boolean.parseBoolean(acquireProperty(PROPERTY_GUI_DARKMODE,"true"));
+    return Boolean.parseBoolean(acquireProperty(PROPERTY_GUI_DARKMODE, "true"));
   }
 
   /**
@@ -1432,7 +1442,8 @@ public final class ApplicationProperties extends Properties {
   public void saveToDisk(File propertiesFile) {
     try (OutputStream outputStream =
         Files.newOutputStream(propertiesFile.toPath())) {
-      store(outputStream, "For details about each property, see https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-Help#serverpackcreatorproperties");
+      store(outputStream,
+          "For details about each property, see https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-Help#serverpackcreatorproperties");
     } catch (IOException ex) {
       LOG.error("Couldn't write properties-file.", ex);
     }

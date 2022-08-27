@@ -23,6 +23,7 @@ abstract class LegacyFabricVersioning extends Manifests {
 
   /**
    * Update all lists of available versions with new information gathered from the manifest.
+   *
    * @throws IOException
    */
   void update() throws IOException {
@@ -43,6 +44,7 @@ abstract class LegacyFabricVersioning extends Manifests {
 
   /**
    * List of release versions for this meta.
+   *
    * @return Release versions.
    * @author Griefed
    */
@@ -52,6 +54,7 @@ abstract class LegacyFabricVersioning extends Manifests {
 
   /**
    * List of snapshot/pre-release versions for this meta.
+   *
    * @return Snapshot/pre-release versions.
    * @author Griefed
    */
@@ -61,6 +64,7 @@ abstract class LegacyFabricVersioning extends Manifests {
 
   /**
    * List of all versions for this meta.
+   *
    * @return All versions.
    * @author Griefed
    */

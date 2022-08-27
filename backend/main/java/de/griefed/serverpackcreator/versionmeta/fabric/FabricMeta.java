@@ -56,8 +56,8 @@ public final class FabricMeta extends Manifests implements Meta {
    * @param injectedFabricIntermediaries Fabric Intermediary instance.
    * @param objectMapper                 Object mapper for JSON parsing.
    * @throws ParserConfigurationException indicates a serious configuration error.
-   * @throws IOException if any IO errors occur.
-   * @throws SAXException if any parse errors occur.
+   * @throws IOException                  if any IO errors occur.
+   * @throws SAXException                 if any parse errors occur.
    * @author Griefed
    */
   public FabricMeta(

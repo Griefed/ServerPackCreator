@@ -111,8 +111,8 @@ public final class VersionMeta extends Manifests {
    * @param legacyFabricLoaderManifest    Fabric Legacy Loader manifest file.
    * @param legacyFabricInstallerManifest Fabric Legacy Installer manifest file.
    * @throws ParserConfigurationException indicates a serious configuration error.
-   * @throws IOException if any IO errors occur.
-   * @throws SAXException if any parse errors occur.
+   * @throws IOException                  if any IO errors occur.
+   * @throws SAXException                 if any parse errors occur.
    * @author Griefed
    */
   @Autowired
@@ -376,8 +376,8 @@ public final class VersionMeta extends Manifests {
    *
    * @return Instance of {@link VersionMeta}.
    * @throws ParserConfigurationException indicates a serious configuration error.
-   * @throws IOException if any IO errors occur.
-   * @throws SAXException if any parse errors occur.
+   * @throws IOException                  if any IO errors occur.
+   * @throws SAXException                 if any parse errors occur.
    * @author Griefed
    */
   public VersionMeta update() throws IOException, ParserConfigurationException, SAXException {
@@ -431,6 +431,7 @@ public final class VersionMeta extends Manifests {
 
   /**
    * The LegacyFabric-instance for working with Legacy Fabric versions and information about them.
+   *
    * @return Instance of {@link LegacyFabricMeta}.
    */
   public LegacyFabricMeta legacyFabric() {

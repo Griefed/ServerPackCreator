@@ -15,8 +15,8 @@ public interface Meta {
    * installer versions, thus giving you access to version-checks, URLs etc.
    *
    * @throws ParserConfigurationException indicates a serious configuration error.
-   * @throws IOException if any IO errors occur.
-   * @throws SAXException if any parse errors occur.
+   * @throws IOException                  if any IO errors occur.
+   * @throws SAXException                 if any parse errors occur.
    * @author Griefed
    */
   void update() throws IOException, ParserConfigurationException, SAXException;
@@ -148,8 +148,8 @@ public interface Meta {
    * Get the URL to the installer for the specified version, wrapped in an Optional.
    *
    * @param version The modloader version for which to get the installer.
-   * @throws MalformedURLException when the URL could not be created.
    * @return The URL to the installer, wrapped in an Optional.
+   * @throws MalformedURLException when the URL could not be created.
    * @author Griefed
    */
   Optional<URL> getInstallerUrl(String version) throws MalformedURLException;

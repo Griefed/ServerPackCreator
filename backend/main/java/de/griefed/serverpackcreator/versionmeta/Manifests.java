@@ -20,8 +20,8 @@ public abstract class Manifests {
    * @param manifest The xml-file to parse into a Document.
    * @return The parsed and normalized document.
    * @throws ParserConfigurationException indicates a serious configuration error.
-   * @throws IOException if any IO errors occur.
-   * @throws SAXException if any parse errors occur.
+   * @throws IOException                  if any IO errors occur.
+   * @throws SAXException                 if any parse errors occur.
    * @author Griefed
    */
   public Document getXml(File manifest)
@@ -38,8 +38,8 @@ public abstract class Manifests {
    * @param manifest The xml-inputstream to parse into a Document.
    * @return The parsed and normalized document.
    * @throws ParserConfigurationException indicates a serious configuration error.
-   * @throws IOException if any IO errors occur.
-   * @throws SAXException if any parse errors occur.
+   * @throws IOException                  if any IO errors occur.
+   * @throws SAXException                 if any parse errors occur.
    * @author Griefed
    */
   public Document getXml(InputStream manifest)
@@ -58,7 +58,7 @@ public abstract class Manifests {
    * Acquire a {@link JsonNode} from the given json inputstream.
    *
    * @param inputStream The inputstream to read.
-   * @param mapper ObjectMapper for reading and parsing JSON.
+   * @param mapper      ObjectMapper for reading and parsing JSON.
    * @return JSON data from the specified file.
    * @throws IOException when the file could not be parsed/read into a {@link JsonNode}.
    * @author Griefed
@@ -70,7 +70,7 @@ public abstract class Manifests {
   /**
    * Acquire a {@link JsonNode} from the given json file.
    *
-   * @param file The file to read.
+   * @param file   The file to read.
    * @param mapper ObjectMapper for reading and parsing JSON.
    * @return JSON data from the specified file.
    * @throws IOException when the file could not be parsed/read into a {@link JsonNode}.
@@ -83,7 +83,7 @@ public abstract class Manifests {
   /**
    * Acquire a {@link JsonNode} from the given URL.
    *
-   * @param url URL to the data which contains your JSON.
+   * @param url    URL to the data which contains your JSON.
    * @param mapper ObjectMapper for reading and parsing JSON.
    * @return JSON data from the specified file.
    * @throws IOException when the file could not be parsed/read into a {@link JsonNode}.

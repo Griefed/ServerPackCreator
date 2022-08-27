@@ -90,8 +90,9 @@ public final class FabricIntermediaries {
   }
 
   /**
-   * Check whether Fabric Intermediaries for the given Minecraft version are present, indicating that
-   * the given Minecraft version is supported.
+   * Check whether Fabric Intermediaries for the given Minecraft version are present, indicating
+   * that the given Minecraft version is supported.
+   *
    * @param minecraftVersion The Minecraft version to check for.
    * @return <code>true</code> if intermediaries are present.
    */

@@ -249,7 +249,8 @@ public final class AnnotationScanner extends JsonBasedScanner implements
    * @param modDependencies Set containing our dependency ids.
    * @author Griefed
    */
-  private void checkDependencies(JsonNode child, TreeSet<String> modDependencies, String modFileName) {
+  private void checkDependencies(JsonNode child, TreeSet<String> modDependencies,
+      String modFileName) {
     try {
       if (!UTILITIES.JsonUtilities().nestedTextIsEmpty(child, "values", "dependencies", "value")) {
 
@@ -300,7 +301,8 @@ public final class AnnotationScanner extends JsonBasedScanner implements
    * @param modDependencies The set of dependencies to add the new dependency to.
    * @author Griefed
    */
-  private void addDependency(String dependency, JsonNode child, TreeSet<String> modDependencies, String modFileName) {
+  private void addDependency(String dependency, JsonNode child, TreeSet<String> modDependencies,
+      String modFileName) {
     if (!dependency.equalsIgnoreCase("forge") && !dependency.equals("*")) {
 
       if (modDependencies.add(dependency)) {
