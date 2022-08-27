@@ -10,6 +10,7 @@
       </option>
       <option name="taskNames">
         <list>
+          <option value="cleanUp" />
           <option value="about" />
           <option value="installQuasar" />
           <option value="cleanFrontend" />
