@@ -17,15 +17,9 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
+/**
+ * Anything and everything related to the LegacyFabric-modloader.
+ *
+ * @author Griefed
+ */
 package de.griefed.serverpackcreator.versionmeta.legacyfabric;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.File;
-import java.io.IOException;
-
-final class LegacyFabricGame extends LegacyFabricVersioning {
-
-  LegacyFabricGame(File manifest, ObjectMapper mapper) throws IOException {
-    super(manifest, mapper);
-  }
-}

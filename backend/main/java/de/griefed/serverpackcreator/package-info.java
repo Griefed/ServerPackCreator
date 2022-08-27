@@ -17,11 +17,16 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
+
 /**
  * The ServerPackCreator core.<br> The heart and soul, if you will.<br> The classes inside this
  * package are responsible for turning your modpack into a server pack. Especially the
  * {@link de.griefed.serverpackcreator.ServerPackHandler}, which receives a configuration and then
- * creates the actual server pack for you.
+ * creates the actual server pack for you.<br><br>A regular run of ServerPackCreator is
+ * <ol>
+ *   <li>Load or create a configuration. <p>See {@link de.griefed.serverpackcreator.ConfigurationModel#ConfigurationModel(de.griefed.serverpackcreator.utilities.common.Utilities, java.io.File)}<br>and {@link de.griefed.serverpackcreator.ConfigurationHandler#checkConfiguration}<br>or {@link de.griefed.serverpackcreator.ConfigurationHandler#checkConfiguration(java.io.File, de.griefed.serverpackcreator.ConfigurationModel, java.util.List, boolean)}</p></li>
+ *   <li>Run ServerPackCreator with the configuration. See {@link de.griefed.serverpackcreator.ServerPackHandler#run(de.griefed.serverpackcreator.ConfigurationModel)}</li>
+ * </ol>
  *
  * @author Griefed
  */
