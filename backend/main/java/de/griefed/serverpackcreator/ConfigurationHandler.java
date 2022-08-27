@@ -503,7 +503,7 @@ public final class ConfigurationHandler {
    * @return <code>true</code> if an error is found during configuration check.
    * @author Griefed
    */
-  private boolean isDir(ConfigurationModel configurationModel, List<String> encounteredErrors) {
+  public boolean isDir(ConfigurationModel configurationModel, List<String> encounteredErrors) {
     boolean configHasError = false;
 
     if (checkCopyDirs(
@@ -534,9 +534,10 @@ public final class ConfigurationHandler {
    *                           configuration.
    * @param encounteredErrors  A list of errors encountered during configuration checks.
    * @return <code>false</code> when no errors were encountered.
+   * @throws IOException if an error occurred trying to move the server pack directory.
    * @author Griefed
    */
-  private boolean isZip(ConfigurationModel configurationModel, List<String> encounteredErrors)
+  public boolean isZip(ConfigurationModel configurationModel, List<String> encounteredErrors)
       throws IOException {
     boolean configHasError = false;
 
@@ -677,7 +678,7 @@ public final class ConfigurationHandler {
    * not be acquired.
    * @author Griefed
    */
-  private String checkManifests(String destination, ConfigurationModel configurationModel,
+  public String checkManifests(String destination, ConfigurationModel configurationModel,
       List<String> encounteredErrors) {
     String packName = null;
 
@@ -1019,7 +1020,7 @@ public final class ConfigurationHandler {
    * @param configurationModel Model in which to ensure the default key-value pairs are present.
    * @author Griefed
    */
-  private void ensureScriptSettingsDefaults(ConfigurationModel configurationModel) {
+  public void ensureScriptSettingsDefaults(ConfigurationModel configurationModel) {
 
     HashMap<String, String> scriptSettings = configurationModel.getScriptSettings();
 
@@ -1072,7 +1073,7 @@ public final class ConfigurationHandler {
    *                           their respective destinations.
    * @author Griefed
    */
-  private void sanitizeLinks(ConfigurationModel configurationModel) {
+  public void sanitizeLinks(ConfigurationModel configurationModel) {
 
     LOG.info("Checking configuration for links...");
 
