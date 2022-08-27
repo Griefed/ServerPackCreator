@@ -88,6 +88,7 @@ import org.xml.sax.SAXException;
 public class ServerPackCreator {
 
   private static final Logger LOG = LogManager.getLogger(ServerPackCreator.class);
+  private static final String[] SETUP = new String[]{"--setup"};
   private static ServerPackCreator serverPackCreator = null;
   private final String[] ARGS;
   private final CommandlineParser COMMANDLINE_PARSER;
@@ -135,14 +136,37 @@ public class ServerPackCreator {
     }
   }
 
+  /**
+   * Acquire an instance of ServerPackCreator using the <code>--setup</code>-argument so a prepared
+   * environment is present after acquiring the instance. If a new instance of ServerPackCreator is
+   * created as the result of calling this method, then the setup is run to ensure a properly
+   * prepared environment.
+   *
+   * @return ServerPackCreator-instance using the <code>--setup</code>-argument.
+   * @author Griefed
+   */
   public synchronized static ServerPackCreator getInstance() {
-    String[] args = new String[] {"--setup"};
-    return getInstance(args);
+    return getInstance(SETUP);
   }
 
+  /**
+   * Acquire an instance of ServerPackCreator using the specified argument. If a new instance of
+   * ServerPackCreator is created as the result of calling this method, then the setup is run to
+   * ensure a properly prepared environment.
+   *
+   * @param args Arguments with which to instantiate ServerPackCreator. Possible arguments can be
+   *             found at {@link Mode}.
+   * @return ServerPackCreator-instance with the specified argument.
+   * @author Griefed
+   */
   public synchronized static ServerPackCreator getInstance(String[] args) {
     if (serverPackCreator == null) {
       serverPackCreator = new ServerPackCreator(args);
+      try {
+        serverPackCreator.run(Mode.SETUP);
+      } catch (IOException | ParserConfigurationException | SAXException ex) {
+        LOG.error("Something went horribly wrong trying to run the ServerPackCreator setup.", ex);
+      }
     }
     return serverPackCreator;
   }
@@ -156,24 +180,14 @@ public class ServerPackCreator {
    * @param args Commandline arguments with which ServerPackCreator is run. Determines which mode
    *             ServerPackCreator will enter and which locale is used.
    * @throws ParserConfigurationException indicates a serious configuration error.
-   * @throws IOException if any IO errors occur.
-   * @throws SAXException if any parse errors occur.
+   * @throws IOException                  if any IO errors occur.
+   * @throws SAXException                 if any parse errors occur.
    * @author Griefed
    */
   public static void main(String[] args)
       throws IOException, ParserConfigurationException, SAXException {
     serverPackCreator = getInstance(args);
     serverPackCreator.run();
-  }
-
-  /**
-   * The arguments with which ServerPackCreator was started.
-   *
-   * @return All arguments with which ServerPackCreator was started.
-   * @author Griefed
-   */
-  public String[] getArgs() {
-    return ARGS;
   }
 
   /**
@@ -184,6 +198,16 @@ public class ServerPackCreator {
    */
   public static void web(String[] args) {
     SpringApplication.run(ServerPackCreator.class, args);
+  }
+
+  /**
+   * The arguments with which ServerPackCreator was started.
+   *
+   * @return All arguments with which ServerPackCreator was started.
+   * @author Griefed
+   */
+  public String[] getArgs() {
+    return ARGS;
   }
 
   public CommandlineParser getCommandlineParser() {
@@ -361,8 +385,8 @@ public class ServerPackCreator {
    * Run ServerPackCreator with the mode acquired from {@link CommandlineParser}.
    *
    * @throws ParserConfigurationException indicates a serious configuration error.
-   * @throws IOException if any IO errors occur.
-   * @throws SAXException if any parse errors occur.
+   * @throws IOException                  if any IO errors occur.
+   * @throws SAXException                 if any parse errors occur.
    * @author Griefed
    */
   public void run() throws IOException, ParserConfigurationException, SAXException {
@@ -374,8 +398,8 @@ public class ServerPackCreator {
    *
    * @param modeToRunIn Mode to run in.
    * @throws ParserConfigurationException indicates a serious configuration error.
-   * @throws IOException if any IO errors occur.
-   * @throws SAXException if any parse errors occur.
+   * @throws IOException                  if any IO errors occur.
+   * @throws SAXException                 if any parse errors occur.
    * @author Griefed
    */
   public void run(Mode modeToRunIn) throws IOException, ParserConfigurationException, SAXException {
