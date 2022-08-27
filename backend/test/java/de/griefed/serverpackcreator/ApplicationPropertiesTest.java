@@ -67,15 +67,18 @@ public class ApplicationPropertiesTest {
 
     Assertions.assertNotNull(applicationProperties.LEGACY_FABRIC_GAME_MANIFEST());
     Assertions.assertEquals(
-        applicationProperties.LEGACY_FABRIC_GAME_MANIFEST(), new File("legacy-fabric-game-manifest.json"));
+        applicationProperties.LEGACY_FABRIC_GAME_MANIFEST(),
+        new File("legacy-fabric-game-manifest.json"));
 
     Assertions.assertNotNull(applicationProperties.LEGACY_FABRIC_LOADER_MANIFEST());
     Assertions.assertEquals(
-        applicationProperties.LEGACY_FABRIC_LOADER_MANIFEST(), new File("legacy-fabric-loader-manifest.json"));
+        applicationProperties.LEGACY_FABRIC_LOADER_MANIFEST(),
+        new File("legacy-fabric-loader-manifest.json"));
 
     Assertions.assertNotNull(applicationProperties.LEGACY_FABRIC_INSTALLER_MANIFEST());
     Assertions.assertEquals(
-        applicationProperties.LEGACY_FABRIC_INSTALLER_MANIFEST(), new File("legacy-fabric-installer-manifest.xml"));
+        applicationProperties.LEGACY_FABRIC_INSTALLER_MANIFEST(),
+        new File("legacy-fabric-installer-manifest.xml"));
 
     Assertions.assertNotNull(applicationProperties.FABRIC_INSTALLER_VERSION_MANIFEST());
     Assertions.assertEquals(

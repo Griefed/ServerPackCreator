@@ -1,7 +1,6 @@
 package de.griefed.serverpackcreator.versionmeta;
 
 import de.griefed.serverpackcreator.ServerPackCreator;
-import de.griefed.serverpackcreator.ServerPackCreator.CommandlineParser.Mode;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import javax.xml.parsers.ParserConfigurationException;
@@ -14,7 +13,6 @@ public class VersionMetaTest {
   private final VersionMeta versionMeta;
 
   public VersionMetaTest() throws IOException, ParserConfigurationException, SAXException {
-    ServerPackCreator.getInstance().run(Mode.SETUP);
     versionMeta = ServerPackCreator.getInstance().getVersionMeta();
   }
 

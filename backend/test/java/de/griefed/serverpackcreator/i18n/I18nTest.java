@@ -18,7 +18,8 @@ public class I18nTest {
 
   @Test
   void localeTest() {
-    ApplicationProperties applicationProperties = new ApplicationProperties(new File("backend/test/resources/serverpackcreator.properties"));
+    ApplicationProperties applicationProperties = new ApplicationProperties(
+        new File("backend/test/resources/serverpackcreator.properties"));
     FileUtils.deleteQuietly(new File("lang"));
     I18n i18n = new I18n(applicationProperties);
     Assertions.assertEquals("English (United States)", i18n.getMessage("localeUnlocalizedName"));

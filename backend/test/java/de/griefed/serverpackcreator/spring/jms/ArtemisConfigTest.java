@@ -43,7 +43,7 @@ public class ArtemisConfigTest {
       e.printStackTrace();
     }
 
-    ServerPackCreator SERVER_PACK_CREATOR = new ServerPackCreator(new String[] {"--setup"});
+    ServerPackCreator SERVER_PACK_CREATOR = new ServerPackCreator(new String[]{"--setup"});
     SERVER_PACK_CREATOR.run(CommandlineParser.Mode.SETUP);
     SERVER_PACK_CREATOR.checkDatabase();
 

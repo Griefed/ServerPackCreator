@@ -111,6 +111,6 @@ public class ListUtilitiesTest {
                 .split(",")));
 
     listUtilities.printListToConsoleChunked(mods, 5, "    ", true);
-    listUtilities.printListToLogChunked(mods,5,"    ",true);
+    listUtilities.printListToLogChunked(mods, 5, "    ", true);
   }
 }

@@ -30,33 +30,6 @@ class ConfigurationHandlerTest {
     applicationProperties = ServerPackCreator.getInstance().getApplicationProperties();
     configurationHandler = ServerPackCreator.getInstance().getConfigurationHandler();
     versionMeta = ServerPackCreator.getInstance().getVersionMeta();
-    /*applicationProperties = new ApplicationProperties();
-    I18n i18N = new I18n(applicationProperties);
-    ObjectMapper objectMapper =
-        new ObjectMapper()
-            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-            .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
-    Utilities utilities = new Utilities(applicationProperties);
-    versionMeta =
-        new VersionMeta(
-            applicationProperties.MINECRAFT_VERSION_MANIFEST(),
-            applicationProperties.FORGE_VERSION_MANIFEST(),
-            applicationProperties.FABRIC_VERSION_MANIFEST(),
-            applicationProperties.FABRIC_INSTALLER_VERSION_MANIFEST(),
-            applicationProperties.FABRIC_INTERMEDIARIES_MANIFEST_LOCATION(),
-            applicationProperties.QUILT_VERSION_MANIFEST(),
-            applicationProperties.QUILT_INSTALLER_VERSION_MANIFEST(),
-            applicationProperties.LEGACY_FABRIC_GAME_MANIFEST_LOCATION(),
-            applicationProperties.LEGACY_FABRIC_LOADER_MANIFEST_LOCATION(),
-            applicationProperties.LEGACY_FABRIC_INSTALLER_MANIFEST_LOCATION(),
-            objectMapper);
-    configurationHandler =
-        new ConfigurationHandler(
-            i18N,
-            versionMeta,
-            applicationProperties,
-            utilities,
-            new ConfigUtilities(utilities, applicationProperties, objectMapper));*/
   }
 
   @Test
@@ -234,7 +207,8 @@ class ConfigurationHandlerTest {
   @Test
   void checkModloaderVersionTestFabric() {
     Assertions.assertTrue(configurationHandler.checkModloaderVersion("Fabric", "0.11.3", "1.16.5"));
-    Assertions.assertFalse(configurationHandler.checkModloaderVersion("Fabric", "0.90.3", "1.16.5"));
+    Assertions.assertFalse(
+        configurationHandler.checkModloaderVersion("Fabric", "0.90.3", "1.16.5"));
   }
 
   @Test
@@ -245,8 +219,10 @@ class ConfigurationHandlerTest {
 
   @Test
   void isLegacyFabricVersionCorrectTest() {
-    Assertions.assertTrue(configurationHandler.checkModloaderVersion("LegacyFabric","0.13.3","1.12.2"));
-    Assertions.assertFalse(configurationHandler.checkModloaderVersion("LegacyFabric","0.999.3","1.12.2"));
+    Assertions.assertTrue(
+        configurationHandler.checkModloaderVersion("LegacyFabric", "0.13.3", "1.12.2"));
+    Assertions.assertFalse(
+        configurationHandler.checkModloaderVersion("LegacyFabric", "0.999.3", "1.12.2"));
   }
 
   @Test
@@ -293,27 +269,45 @@ class ConfigurationHandlerTest {
     configurationModel.setMinecraftVersion("1.16.5");
     Assertions.assertFalse(configurationHandler.checkConfiguration(configurationModel, false));
 
-    Assertions.assertTrue(configurationModel.getScriptSettings().containsKey("SPC_MINECRAFT_SERVER_URL_SPC"));
-    Assertions.assertTrue(configurationModel.getScriptSettings().containsKey("SPC_SERVERPACKCREATOR_VERSION_SPC"));
-    Assertions.assertTrue(configurationModel.getScriptSettings().containsKey("SPC_MINECRAFT_VERSION_SPC"));
+    Assertions.assertTrue(
+        configurationModel.getScriptSettings().containsKey("SPC_MINECRAFT_SERVER_URL_SPC"));
+    Assertions.assertTrue(
+        configurationModel.getScriptSettings().containsKey("SPC_SERVERPACKCREATOR_VERSION_SPC"));
+    Assertions.assertTrue(
+        configurationModel.getScriptSettings().containsKey("SPC_MINECRAFT_VERSION_SPC"));
     Assertions.assertTrue(configurationModel.getScriptSettings().containsKey("SPC_MODLOADER_SPC"));
-    Assertions.assertTrue(configurationModel.getScriptSettings().containsKey("SPC_MODLOADER_VERSION_SPC"));
+    Assertions.assertTrue(
+        configurationModel.getScriptSettings().containsKey("SPC_MODLOADER_VERSION_SPC"));
     Assertions.assertTrue(configurationModel.getScriptSettings().containsKey("SPC_JAVA_ARGS_SPC"));
     Assertions.assertTrue(configurationModel.getScriptSettings().containsKey("SPC_JAVA_SPC"));
-    Assertions.assertTrue(configurationModel.getScriptSettings().containsKey("SPC_FABRIC_INSTALLER_VERSION_SPC"));
-    Assertions.assertTrue(configurationModel.getScriptSettings().containsKey("SPC_LEGACYFABRIC_INSTALLER_VERSION_SPC"));
-    Assertions.assertTrue(configurationModel.getScriptSettings().containsKey("SPC_QUILT_INSTALLER_VERSION_SPC"));
+    Assertions.assertTrue(
+        configurationModel.getScriptSettings().containsKey("SPC_FABRIC_INSTALLER_VERSION_SPC"));
+    Assertions.assertTrue(configurationModel.getScriptSettings()
+        .containsKey("SPC_LEGACYFABRIC_INSTALLER_VERSION_SPC"));
+    Assertions.assertTrue(
+        configurationModel.getScriptSettings().containsKey("SPC_QUILT_INSTALLER_VERSION_SPC"));
 
-    Assertions.assertEquals(configurationModel.getMinecraftVersion(),configurationModel.getScriptSettings().get("SPC_MINECRAFT_VERSION_SPC"));
-    Assertions.assertEquals(configurationModel.getModLoader(),configurationModel.getScriptSettings().get("SPC_MODLOADER_SPC"));
-    Assertions.assertEquals(configurationModel.getModLoaderVersion(),configurationModel.getScriptSettings().get("SPC_MODLOADER_VERSION_SPC"));
-    Assertions.assertEquals(configurationModel.getJavaArgs(),configurationModel.getScriptSettings().get("SPC_JAVA_ARGS_SPC"));
-    Assertions.assertEquals("java",configurationModel.getScriptSettings().get("SPC_JAVA_SPC"));
-    Assertions.assertEquals(versionMeta.minecraft().getServer(configurationModel.getMinecraftVersion()).get().url().get().toString(),configurationModel.getScriptSettings().get("SPC_MINECRAFT_SERVER_URL_SPC"));
-    Assertions.assertEquals(applicationProperties.SERVERPACKCREATOR_VERSION(),configurationModel.getScriptSettings().get("SPC_SERVERPACKCREATOR_VERSION_SPC"));
-    Assertions.assertEquals(versionMeta.fabric().releaseInstaller(),configurationModel.getScriptSettings().get("SPC_FABRIC_INSTALLER_VERSION_SPC"));
-    Assertions.assertEquals(versionMeta.legacyFabric().releaseInstaller(),configurationModel.getScriptSettings().get("SPC_LEGACYFABRIC_INSTALLER_VERSION_SPC"));
-    Assertions.assertEquals(versionMeta.quilt().releaseInstaller(),configurationModel.getScriptSettings().get("SPC_QUILT_INSTALLER_VERSION_SPC"));
+    Assertions.assertEquals(configurationModel.getMinecraftVersion(),
+        configurationModel.getScriptSettings().get("SPC_MINECRAFT_VERSION_SPC"));
+    Assertions.assertEquals(configurationModel.getModLoader(),
+        configurationModel.getScriptSettings().get("SPC_MODLOADER_SPC"));
+    Assertions.assertEquals(configurationModel.getModLoaderVersion(),
+        configurationModel.getScriptSettings().get("SPC_MODLOADER_VERSION_SPC"));
+    Assertions.assertEquals(configurationModel.getJavaArgs(),
+        configurationModel.getScriptSettings().get("SPC_JAVA_ARGS_SPC"));
+    Assertions.assertEquals("java", configurationModel.getScriptSettings().get("SPC_JAVA_SPC"));
+    Assertions.assertEquals(
+        versionMeta.minecraft().getServer(configurationModel.getMinecraftVersion()).get().url()
+            .get().toString(),
+        configurationModel.getScriptSettings().get("SPC_MINECRAFT_SERVER_URL_SPC"));
+    Assertions.assertEquals(applicationProperties.SERVERPACKCREATOR_VERSION(),
+        configurationModel.getScriptSettings().get("SPC_SERVERPACKCREATOR_VERSION_SPC"));
+    Assertions.assertEquals(versionMeta.fabric().releaseInstaller(),
+        configurationModel.getScriptSettings().get("SPC_FABRIC_INSTALLER_VERSION_SPC"));
+    Assertions.assertEquals(versionMeta.legacyFabric().releaseInstaller(),
+        configurationModel.getScriptSettings().get("SPC_LEGACYFABRIC_INSTALLER_VERSION_SPC"));
+    Assertions.assertEquals(versionMeta.quilt().releaseInstaller(),
+        configurationModel.getScriptSettings().get("SPC_QUILT_INSTALLER_VERSION_SPC"));
   }
 
   @Test

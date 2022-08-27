@@ -22,7 +22,7 @@ public class ModScannerTest {
   void tomlTest() {
     Collection<File> files =
         FileUtils.listFiles(
-            new File("backend/test/resources/forge_tests/mods"), new String[] {"jar"}, true);
+            new File("backend/test/resources/forge_tests/mods"), new String[]{"jar"}, true);
 
     List<File> excluded = new ArrayList<>(modScanner.tomls().scan(files));
 
@@ -77,7 +77,7 @@ public class ModScannerTest {
   void fabricTest() {
     Collection<File> files =
         FileUtils.listFiles(
-            new File("backend/test/resources/fabric_tests/mods"), new String[] {"jar"}, true);
+            new File("backend/test/resources/fabric_tests/mods"), new String[]{"jar"}, true);
 
     List<File> excluded = new ArrayList<>(modScanner.fabric().scan(files));
 
@@ -124,7 +124,7 @@ public class ModScannerTest {
   void quiltTest() {
     Collection<File> files =
         FileUtils.listFiles(
-            new File("backend/test/resources/quilt_tests/mods"), new String[] {"jar"}, true);
+            new File("backend/test/resources/quilt_tests/mods"), new String[]{"jar"}, true);
 
     List<File> excluded = new ArrayList<>(modScanner.quilt().scan(files));
 
@@ -141,7 +141,7 @@ public class ModScannerTest {
   void annotationTest() {
     Collection<File> files =
         FileUtils.listFiles(
-            new File("backend/test/resources/forge_old/mods"), new String[] {"jar"}, true);
+            new File("backend/test/resources/forge_old/mods"), new String[]{"jar"}, true);
 
     List<File> excluded = new ArrayList<>(modScanner.annotations().scan(files));
 
