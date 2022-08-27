@@ -40,10 +40,8 @@ public class WebServiceTest {
     } catch (IOException e) {
       LOG.error("Error copying file", e);
     }
-    String[] setup = new String[]{"--setup"};
-    ServerPackCreator serverPackCreator = new ServerPackCreator(setup);
-    serverPackCreator.run(Mode.SETUP);
-    serverPackCreator.checkDatabase();
+    ServerPackCreator.getInstance().run(Mode.SETUP);
+    ServerPackCreator.getInstance().checkDatabase();
   }
 
   @Test

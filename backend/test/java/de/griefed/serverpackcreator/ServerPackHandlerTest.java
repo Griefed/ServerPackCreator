@@ -24,7 +24,6 @@ import org.xml.sax.SAXException;
 
 class ServerPackHandlerTest {
 
-  private final ApplicationProperties applicationProperties;
   private final ConfigurationHandler configurationHandler;
   private final ServerPackHandler serverPackHandler;
   private final VersionMeta versionMeta;
@@ -37,14 +36,10 @@ class ServerPackHandlerTest {
     } catch (IOException e) {
       e.printStackTrace();
     }
-    String[] setup = new String[]{"--setup"};
-    ServerPackCreator serverPackCreator = new ServerPackCreator(setup);
-    serverPackCreator.run(Mode.SETUP);
-
-    applicationProperties = serverPackCreator.getApplicationProperties();
-    versionMeta = serverPackCreator.getVersionMeta();
-    configurationHandler = serverPackCreator.getConfigurationHandler();
-    serverPackHandler = serverPackCreator.getServerPackHandler();
+    ServerPackCreator.getInstance().run(Mode.SETUP);
+    versionMeta = ServerPackCreator.getInstance().getVersionMeta();
+    configurationHandler = ServerPackCreator.getInstance().getConfigurationHandler();
+    serverPackHandler = ServerPackCreator.getInstance().getServerPackHandler();
   }
 
   @Test

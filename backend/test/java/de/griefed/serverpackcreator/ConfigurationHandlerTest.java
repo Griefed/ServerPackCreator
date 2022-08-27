@@ -1,10 +1,5 @@
 package de.griefed.serverpackcreator;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import de.griefed.serverpackcreator.i18n.I18n;
-import de.griefed.serverpackcreator.utilities.ConfigUtilities;
-import de.griefed.serverpackcreator.utilities.common.Utilities;
 import de.griefed.serverpackcreator.versionmeta.VersionMeta;
 import java.io.File;
 import java.io.IOException;
@@ -32,7 +27,10 @@ class ConfigurationHandlerTest {
     } catch (IOException e) {
       e.printStackTrace();
     }
-    applicationProperties = new ApplicationProperties();
+    applicationProperties = ServerPackCreator.getInstance().getApplicationProperties();
+    configurationHandler = ServerPackCreator.getInstance().getConfigurationHandler();
+    versionMeta = ServerPackCreator.getInstance().getVersionMeta();
+    /*applicationProperties = new ApplicationProperties();
     I18n i18N = new I18n(applicationProperties);
     ObjectMapper objectMapper =
         new ObjectMapper()
@@ -58,8 +56,7 @@ class ConfigurationHandlerTest {
             versionMeta,
             applicationProperties,
             utilities,
-            new ConfigUtilities(utilities, applicationProperties, objectMapper));
-
+            new ConfigUtilities(utilities, applicationProperties, objectMapper));*/
   }
 
   @Test
