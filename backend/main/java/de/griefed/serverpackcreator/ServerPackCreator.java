@@ -186,7 +186,7 @@ public class ServerPackCreator {
    */
   public static void main(String[] args)
       throws IOException, ParserConfigurationException, SAXException {
-    serverPackCreator = getInstance(args);
+    serverPackCreator = new ServerPackCreator(args);
     serverPackCreator.run();
   }
 
