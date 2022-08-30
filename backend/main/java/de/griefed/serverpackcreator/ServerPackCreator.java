@@ -1097,7 +1097,7 @@ public class ServerPackCreator {
     getUpdateChecker().refresh();
 
     Optional<Update> update =
-        updateChecker.checkForUpdate(
+        getUpdateChecker().checkForUpdate(
             APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION(),
             APPLICATIONPROPERTIES.checkForAvailablePreReleases());
 
