@@ -206,34 +206,34 @@ public class ServerPackCreator {
    * @return All arguments with which ServerPackCreator was started.
    * @author Griefed
    */
-  public String[] getArgs() {
+  public synchronized String[] getArgs() {
     return ARGS;
   }
 
-  public CommandlineParser getCommandlineParser() {
+  public synchronized CommandlineParser getCommandlineParser() {
     return COMMANDLINE_PARSER;
   }
 
-  public I18n getI18n() {
+  public synchronized I18n getI18n() {
     return I18N;
   }
 
-  public ObjectMapper getObjectMapper() {
+  public synchronized ObjectMapper getObjectMapper() {
     return OBJECT_MAPPER;
   }
 
-  public ApplicationProperties getApplicationProperties() {
+  public synchronized ApplicationProperties getApplicationProperties() {
     return APPLICATIONPROPERTIES;
   }
 
-  public Utilities getUtilities() {
+  public synchronized Utilities getUtilities() {
     if (this.utilities == null) {
       this.utilities = new Utilities(APPLICATIONPROPERTIES);
     }
     return utilities;
   }
 
-  public VersionMeta getVersionMeta()
+  public synchronized VersionMeta getVersionMeta()
       throws IOException, ParserConfigurationException, SAXException {
     if (this.versionMeta == null) {
       this.versionMeta =
@@ -253,7 +253,7 @@ public class ServerPackCreator {
     return versionMeta;
   }
 
-  public ConfigUtilities getConfigUtilities() {
+  public synchronized ConfigUtilities getConfigUtilities() {
     if (this.configUtilities == null) {
       this.configUtilities = new ConfigUtilities(getUtilities(), APPLICATIONPROPERTIES,
           OBJECT_MAPPER);
@@ -261,7 +261,7 @@ public class ServerPackCreator {
     return configUtilities;
   }
 
-  public ConfigurationHandler getConfigurationHandler()
+  public synchronized ConfigurationHandler getConfigurationHandler()
       throws IOException, ParserConfigurationException, SAXException {
     if (this.configurationHandler == null) {
       this.configurationHandler =
@@ -271,14 +271,14 @@ public class ServerPackCreator {
     return configurationHandler;
   }
 
-  public ApplicationPlugins getApplicationPlugins() {
+  public synchronized ApplicationPlugins getApplicationPlugins() {
     if (this.applicationPlugins == null) {
       this.applicationPlugins = new ApplicationPlugins();
     }
     return applicationPlugins;
   }
 
-  public ServerPackHandler getServerPackHandler()
+  public synchronized ServerPackHandler getServerPackHandler()
       throws IOException, ParserConfigurationException, SAXException {
     if (this.serverPackHandler == null) {
       this.serverPackHandler =
@@ -292,7 +292,7 @@ public class ServerPackCreator {
     return serverPackHandler;
   }
 
-  public ServerPackCreatorSplash getServerPackCreatorSplash() {
+  public synchronized ServerPackCreatorSplash getServerPackCreatorSplash() {
     if (this.serverPackCreatorSplash == null) {
       this.serverPackCreatorSplash = new ServerPackCreatorSplash(
           APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION());
@@ -300,14 +300,14 @@ public class ServerPackCreator {
     return serverPackCreatorSplash;
   }
 
-  public UpdateChecker getUpdateChecker() {
+  public synchronized UpdateChecker getUpdateChecker() {
     if (this.updateChecker == null) {
       this.updateChecker = new UpdateChecker();
     }
     return updateChecker;
   }
 
-  public ModScanner getModScanner() {
+  public synchronized ModScanner getModScanner() {
     if (this.modScanner == null) {
       this.modScanner = new ModScanner(getAnnotationScanner(), getFabricScanner(),
           getQuiltScanner(), getTomlScanner());
@@ -315,42 +315,42 @@ public class ServerPackCreator {
     return modScanner;
   }
 
-  public AnnotationScanner getAnnotationScanner() {
+  public synchronized AnnotationScanner getAnnotationScanner() {
     if (this.annotationScanner == null) {
       this.annotationScanner = new AnnotationScanner(OBJECT_MAPPER, getUtilities());
     }
     return annotationScanner;
   }
 
-  public FabricScanner getFabricScanner() {
+  public synchronized FabricScanner getFabricScanner() {
     if (this.fabricScanner == null) {
       this.fabricScanner = new FabricScanner(OBJECT_MAPPER, getUtilities());
     }
     return fabricScanner;
   }
 
-  public QuiltScanner getQuiltScanner() {
+  public synchronized QuiltScanner getQuiltScanner() {
     if (this.quiltScanner == null) {
       this.quiltScanner = new QuiltScanner(OBJECT_MAPPER, getUtilities());
     }
     return quiltScanner;
   }
 
-  public TomlParser getTomlParser() {
+  public synchronized TomlParser getTomlParser() {
     if (this.tomlParser == null) {
       this.tomlParser = new TomlParser();
     }
     return tomlParser;
   }
 
-  public TomlScanner getTomlScanner() {
+  public synchronized TomlScanner getTomlScanner() {
     if (this.tomlScanner == null) {
       this.tomlScanner = new TomlScanner(getTomlParser());
     }
     return tomlScanner;
   }
 
-  public ConfigurationEditor getConfigurationEditor()
+  public synchronized ConfigurationEditor getConfigurationEditor()
       throws IOException, ParserConfigurationException, SAXException {
     if (this.configurationEditor == null) {
       this.configurationEditor = new ConfigurationEditor(
@@ -363,7 +363,7 @@ public class ServerPackCreator {
     return configurationEditor;
   }
 
-  public ServerPackCreatorGui getServerPackCreatorGui()
+  public synchronized ServerPackCreatorGui getServerPackCreatorGui()
       throws IOException, ParserConfigurationException, SAXException {
     if (this.serverPackCreatorGui == null) {
       this.serverPackCreatorGui = new ServerPackCreatorGui(
@@ -389,7 +389,7 @@ public class ServerPackCreator {
    * @throws SAXException                 if any parse errors occur.
    * @author Griefed
    */
-  public void run() throws IOException, ParserConfigurationException, SAXException {
+  public synchronized void run() throws IOException, ParserConfigurationException, SAXException {
     run(COMMANDLINE_PARSER.getModeToRunIn());
   }
 
@@ -402,7 +402,7 @@ public class ServerPackCreator {
    * @throws SAXException                 if any parse errors occur.
    * @author Griefed
    */
-  public void run(Mode modeToRunIn) throws IOException, ParserConfigurationException, SAXException {
+  public synchronized void run(Mode modeToRunIn) throws IOException, ParserConfigurationException, SAXException {
 
     switch (modeToRunIn) {
       case HELP:

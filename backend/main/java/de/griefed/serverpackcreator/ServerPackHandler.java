@@ -135,7 +135,7 @@ public final class ServerPackHandler {
    * said server pack.
    * @author Griefed
    */
-  public ServerPackModel run(@NotNull ServerPackModel serverPackModel) {
+  public synchronized ServerPackModel run(@NotNull ServerPackModel serverPackModel) {
 
     String destination = getServerPackDestination(serverPackModel);
 
@@ -191,7 +191,7 @@ public final class ServerPackHandler {
    * @return Boolean. Returns true if the server pack was successfully generated.
    * @author Griefed
    */
-  public boolean run(@NotNull ConfigurationModel configurationModel) {
+  public synchronized boolean run(@NotNull ConfigurationModel configurationModel) {
 
     String destination = getServerPackDestination(configurationModel);
 

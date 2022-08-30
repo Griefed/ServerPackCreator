@@ -1,3 +1,35 @@
+## [3.13.0-beta.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.13.0-beta.2...3.13.0-beta.3) (2022-08-27)
+
+
+### :scissors: Refactor
+
+* Cleanup and optimize imports ([79fe583](https://git.griefed.de/Griefed/ServerPackCreator/commit/79fe583f9460ec2b7c20a314dd64050988e95230))
+* **API:** Open certain methods to public to allow more usage out of ServerPackCreator. Overload API methods for ease of use. ([faad1ec](https://git.griefed.de/Griefed/ServerPackCreator/commit/faad1ec61f6c55123b9cca9afe9c38e69a11decc))
+* **ServerPackCreator:** Run setup if ServerPackCreator was newly instantiated ([941e7a2](https://git.griefed.de/Griefed/ServerPackCreator/commit/941e7a26ecad1deb918f0cffd5c82ffd81c6ab5e))
+* **Start Script writing:** Write all scripts with ISO 8859_1 as this is compatible with both Windows and Linux. Templates are still read using UTF-8. ([5f80c6d](https://git.griefed.de/Griefed/ServerPackCreator/commit/5f80c6dc440431f9b9dd4425ce11a7616b41b936))
+
+
+### 📔 Docs
+
+* License headers and package info ([99982e7](https://git.griefed.de/Griefed/ServerPackCreator/commit/99982e78d9807a6658390ff5ef6d44d3b3cd3cda))
+
+
+### 🦊 CI/CD
+
+* Do not include untracked files in build artifacts as they would fill up our servers harddrive.... ([bd03534](https://git.griefed.de/Griefed/ServerPackCreator/commit/bd03534b386c55a8fd958749c58c2c8a730cddaa))
+
+
+### 🧪 Tests
+
+* Do not finalize tests with cleanup. Call cleanUp manually if you want to...well...clean up. ([cd893a1](https://git.griefed.de/Griefed/ServerPackCreator/commit/cd893a1f128fa52c429a130323a644cea23bfddc))
+* Migrate tests to use the new ServerPackCreator instantiation ([a3af66b](https://git.griefed.de/Griefed/ServerPackCreator/commit/a3af66bcd7ed7c57b6b1cd42d1e6675bc7fde0da))
+* Use instance for unit tests ([79f89d8](https://git.griefed.de/Griefed/ServerPackCreator/commit/79f89d885d7d9c641cd6c85b54d31657e924a308))
+
+
+### Other
+
+* **Qodana reports:** Some cleanups and minor refactorings according to Qodana. ([f1b028a](https://git.griefed.de/Griefed/ServerPackCreator/commit/f1b028a4605715c80fc6604ece93d3a81ae7e7ab))
+
 ## [3.13.0-beta.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.13.0-beta.1...3.13.0-beta.2) (2022-08-26)
 
 
