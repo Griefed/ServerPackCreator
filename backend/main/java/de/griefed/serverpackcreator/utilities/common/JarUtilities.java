@@ -62,63 +62,119 @@ public final class JarUtilities {
    * inside the JAR-file to be copied to the outside of the JAR-file as <code>log4j2.xml</code>
    *
    * @param fileToCopy      File. The source-file in the JAR you wish to copy outside the JAR.
-   * @param replace         Boolean. Whether to replace the file, if it already exists.
+   * @param replaceIfExists Boolean. Whether to replace the file, if it already exists.
    * @param classToCopyFrom Class. The class of the JAR from which you want to copy from.
    * @author Griefed
    */
-  public void copyFileFromJar(File fileToCopy, boolean replace, Class<?> classToCopyFrom) {
+  public void copyFileFromJar(String fileToCopy, boolean replaceIfExists,
+      Class<?> classToCopyFrom) {
 
-    if (fileToCopy.exists() && replace) {
-
-      FileUtils.deleteQuietly(fileToCopy);
-      copyFileFromJar(fileToCopy, classToCopyFrom);
-
-    } else if (fileToCopy.exists() && !replace) {
-
-      LOG.info("File " + fileToCopy + " already exists.");
-
-    } else if (!fileToCopy.exists()) {
-
-      copyFileFromJar(fileToCopy, classToCopyFrom);
+    if (replaceIfExists) {
+      FileUtils.deleteQuietly(new File(fileToCopy));
     }
+    copyFileFromJar(fileToCopy, classToCopyFrom);
   }
 
   /**
-   * Copy a file from inside our JAR-file to the host filesystem. The file will create exactly as
-   * specified in the parameter. <br> Example:<br>
+   * Copy a file from inside our JAR-file to the host filesystem. The file will be created with
+   * exactly the same path specified in the parameter. <br> Example:<br>
    * <code>copyFileFromJar(new File("log4j2.xml"))</code> will result in the log4j2.xml file from
    * inside the JAR-file to be copied to the outside of the JAR-file as <code>log4j2.xml</code>
    *
-   * @param fileToCopy      File. The source-file in the JAR you wish to copy outside the JAR.
-   * @param classToCopyFrom Class. The class of the JAR from which to get the resource.
+   * @param fileToCopy      The source-file in the JAR you wish to copy outside the JAR.
+   * @param identifierClass The class of the JAR from which to get the resource.
+   * @return <code>true</code> if the file was created, <code>false</code> otherwise.
    * @author Griefed
    */
-  public void copyFileFromJar(File fileToCopy, Class<?> classToCopyFrom) {
+  public boolean copyFileFromJar(String fileToCopy, Class<?> identifierClass) {
 
-    if (!fileToCopy.exists()) {
+    if (!new File(fileToCopy).exists()) {
 
       try {
 
         FileUtils.copyInputStreamToFile(
-            Objects.requireNonNull(classToCopyFrom.getResourceAsStream("/" + fileToCopy.getName())),
-            fileToCopy);
+            Objects.requireNonNull(identifierClass.getResourceAsStream("/" + fileToCopy)),
+            new File(fileToCopy));
+
+        return true;
 
       } catch (IOException ex) {
 
         LOG.error("Error creating file: " + fileToCopy, ex);
+        return false;
       }
 
     } else {
 
       LOG.info("File " + fileToCopy + " already exists.");
+      return false;
+    }
+  }
+
+  /**
+   * Copy a file from inside our JAR-file to the host filesystem to the specified destination,
+   * replacing an already existing file. The file will be created with exactly the same path
+   * specified in the parameter. <br> Example:<br>
+   * <code>copyFileFromJar(new File("log4j2.xml"))</code> will result in the log4j2.xml file from
+   * inside the JAR-file to be copied to the outside of the JAR-file as <code>log4j2.xml</code>
+   *
+   * @param fileToCopy      The source-file in the JAR you wish to copy outside the JAR.
+   * @param destinationFile The file to which to copy to.
+   * @param identifierClass The class of the JAR from which to get the resource.
+   * @param replaceIfExists Boolean. Whether to replace the file, if it already exists.
+   * @author Griefed
+   */
+  public void copyFileFromJar(String fileToCopy, File destinationFile, boolean replaceIfExists,
+      Class<?> identifierClass) {
+
+    if (replaceIfExists) {
+      FileUtils.deleteQuietly(destinationFile);
+    }
+    copyFileFromJar(fileToCopy, destinationFile, identifierClass);
+  }
+
+  /**
+   * Copy a file from inside our JAR-file to the host filesystem to the specified destination. The
+   * file will be created with exactly the same path specified in the parameter. <br> Example:<br>
+   * <code>copyFileFromJar(new File("log4j2.xml"))</code> will result in the log4j2.xml file from
+   * inside the JAR-file to be copied to the outside of the JAR-file as <code>log4j2.xml</code>
+   *
+   * @param fileToCopy      The source-file in the JAR you wish to copy outside the JAR.
+   * @param identifierClass The class of the JAR from which to get the resource.
+   * @param destinationFile The file to which to copy to.
+   * @return <code>true</code> if the file was created, <code>false</code> otherwise.
+   * @author Griefed
+   */
+  public boolean copyFileFromJar(String fileToCopy, File destinationFile,
+      Class<?> identifierClass) {
+
+    if (!destinationFile.exists()) {
+
+      try {
+
+        FileUtils.copyInputStreamToFile(
+            Objects.requireNonNull(identifierClass.getResourceAsStream("/" + fileToCopy)),
+            destinationFile);
+        return true;
+
+      } catch (IOException ex) {
+
+        LOG.error("Error creating file: " + destinationFile, ex);
+        return false;
+      }
+
+    } else {
+
+      LOG.info("File " + destinationFile + " already exists.");
+      return false;
     }
   }
 
   /**
    * Retrieve the ApplicationHome for a given class.
    *
-   * @param classToRetrieveHomeFor Class. The class to retrieve the {@link ApplicationHome} for.
-   * @return ApplicationHome. An instance of {@link ApplicationHome} for the given class.
+   * @param classToRetrieveHomeFor The class to retrieve the {@link ApplicationHome} for.
+   * @return An instance of {@link ApplicationHome} for the given class.
    * @author Griefed
    */
   public ApplicationHome getApplicationHomeForClass(Class<?> classToRetrieveHomeFor) {

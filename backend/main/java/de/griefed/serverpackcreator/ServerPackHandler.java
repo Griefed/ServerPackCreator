@@ -1513,6 +1513,7 @@ public final class ServerPackHandler {
     FileUtils.deleteQuietly(new File(destination + "/quilt-installer.jar"));
     FileUtils.deleteQuietly(new File(destination + "/installer.log"));
     FileUtils.deleteQuietly(new File(destination + "/forge-installer.jar.log"));
+    FileUtils.deleteQuietly(new File(destination + "/legacyfabric-installer.jar"));
     FileUtils.deleteQuietly(Paths.get(destination + "/run.bat").toFile());
     FileUtils.deleteQuietly(Paths.get(destination + "/run.sh").toFile());
     FileUtils.deleteQuietly(Paths.get(destination + "/user_jvm_args.txt").toFile());

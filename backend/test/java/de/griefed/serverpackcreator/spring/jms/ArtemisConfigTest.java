@@ -1,7 +1,7 @@
 package de.griefed.serverpackcreator.spring.jms;
 
 import de.griefed.serverpackcreator.ServerPackCreator;
-import de.griefed.serverpackcreator.ServerPackCreator.CommandlineParser;
+import de.griefed.serverpackcreator.ServerPackCreator.Mode;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
@@ -42,10 +42,7 @@ public class ArtemisConfigTest {
     } catch (IOException e) {
       e.printStackTrace();
     }
-
-    ServerPackCreator SERVER_PACK_CREATOR = new ServerPackCreator(new String[]{"--setup"});
-    SERVER_PACK_CREATOR.run(CommandlineParser.Mode.SETUP);
-    SERVER_PACK_CREATOR.checkDatabase();
+    ServerPackCreator.getInstance().run(Mode.SETUP);
 
     this.jmsTemplate = injectedJmsTemplate;
     this.jmsTemplate.setReceiveTimeout(JmsDestinationAccessor.RECEIVE_TIMEOUT_NO_WAIT);

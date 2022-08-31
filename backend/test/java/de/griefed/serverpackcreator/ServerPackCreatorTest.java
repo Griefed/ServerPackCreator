@@ -1,6 +1,6 @@
 package de.griefed.serverpackcreator;
 
-import de.griefed.serverpackcreator.ServerPackCreator.CommandlineParser.Mode;
+import de.griefed.serverpackcreator.ServerPackCreator.Mode;
 import java.io.File;
 import java.io.IOException;
 import javax.xml.parsers.ParserConfigurationException;
