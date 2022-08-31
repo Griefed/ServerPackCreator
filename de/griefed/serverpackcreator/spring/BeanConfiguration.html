@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -184,29 +184,47 @@ extends java.lang.Object</pre>
 </tr>
 <tr id="i5" class="rowColor">
 <td class="colFirst"><code>java.io.File</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/spring/BeanConfiguration.html#legacyFabricGameManifest--">legacyFabricGameManifest</a></span>()</code>
+<div class="block">Storage location for Legacy Fabric Game version manifest file.</div>
+</td>
+</tr>
+<tr id="i6" class="altColor">
+<td class="colFirst"><code>java.io.File</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/spring/BeanConfiguration.html#legacyFabricInstallerManifest--">legacyFabricInstallerManifest</a></span>()</code>
+<div class="block">Storage location for Legacy Fabric Installer version manifest file.</div>
+</td>
+</tr>
+<tr id="i7" class="rowColor">
+<td class="colFirst"><code>java.io.File</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/spring/BeanConfiguration.html#legacyFabricLoaderManifest--">legacyFabricLoaderManifest</a></span>()</code>
+<div class="block">Storage location for Legacy Fabric Loader version manifest file.</div>
+</td>
+</tr>
+<tr id="i8" class="altColor">
+<td class="colFirst"><code>java.io.File</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/spring/BeanConfiguration.html#minecraftManifest--">minecraftManifest</a></span>()</code>
 <div class="block">Bean for the location of the Minecraft version manifest-file.</div>
 </td>
 </tr>
-<tr id="i6" class="altColor">
+<tr id="i9" class="rowColor">
 <td class="colFirst"><code>com.fasterxml.jackson.databind.ObjectMapper</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/spring/BeanConfiguration.html#objectMapper--">objectMapper</a></span>()</code>
 <div class="block"><code>ObjectMapper</code>-bean for use in various JSON-related things.</div>
 </td>
 </tr>
-<tr id="i7" class="rowColor">
+<tr id="i10" class="altColor">
 <td class="colFirst"><code>java.io.File</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/spring/BeanConfiguration.html#quiltInstallerManifest--">quiltInstallerManifest</a></span>()</code>
 <div class="block">Bean for the location of the Quilt installer version manifest-file.</div>
 </td>
 </tr>
-<tr id="i8" class="altColor">
+<tr id="i11" class="rowColor">
 <td class="colFirst"><code>java.io.File</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/spring/BeanConfiguration.html#quiltManifest--">quiltManifest</a></span>()</code>
 <div class="block">Bean for the location of the Quilt version manifest-file.</div>
 </td>
 </tr>
-<tr id="i9" class="rowColor">
+<tr id="i12" class="altColor">
 <td class="colFirst"><code>com.electronwill.nightconfig.toml.TomlParser</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/spring/BeanConfiguration.html#tomlParser--">tomlParser</a></span>()</code>
 <div class="block"><code>TomlParser</code> for parsing <code>.toml</code>-files.</div>
@@ -397,7 +415,7 @@ public&nbsp;com.fasterxml.jackson.databind.ObjectMapper&nbsp;objectMapper()</pre
 <a name="tomlParser--">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>tomlParser</h4>
 <pre>@Bean
@@ -406,6 +424,51 @@ public&nbsp;com.electronwill.nightconfig.toml.TomlParser&nbsp;tomlParser()</pre>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>Tomlparser for Toml parsing.</dd>
+</dl>
+</li>
+</ul>
+<a name="legacyFabricGameManifest--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>legacyFabricGameManifest</h4>
+<pre>@Bean
+public&nbsp;java.io.File&nbsp;legacyFabricGameManifest()</pre>
+<div class="block">Storage location for Legacy Fabric Game version manifest file.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>./work/legacy-fabric-game-manifest.json</dd>
+</dl>
+</li>
+</ul>
+<a name="legacyFabricLoaderManifest--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>legacyFabricLoaderManifest</h4>
+<pre>@Bean
+public&nbsp;java.io.File&nbsp;legacyFabricLoaderManifest()</pre>
+<div class="block">Storage location for Legacy Fabric Loader version manifest file.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>./work/legacy-fabric-loader-manifest.json</dd>
+</dl>
+</li>
+</ul>
+<a name="legacyFabricInstallerManifest--">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>legacyFabricInstallerManifest</h4>
+<pre>@Bean
+public&nbsp;java.io.File&nbsp;legacyFabricInstallerManifest()</pre>
+<div class="block">Storage location for Legacy Fabric Installer version manifest file.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>./work/legacy-fabric-installer-manifest.json</dd>
 </dl>
 </li>
 </ul>

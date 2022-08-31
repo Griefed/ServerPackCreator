@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10,"i17":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10,"i17":10,"i18":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -98,18 +98,28 @@ var activeTableTab = "activeTableTab";
 <li>java.lang.Object</li>
 <li>
 <ul class="inheritance">
+<li><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Manifests.html" title="class in de.griefed.serverpackcreator.versionmeta">de.griefed.serverpackcreator.versionmeta.Manifests</a></li>
+<li>
+<ul class="inheritance">
 <li>de.griefed.serverpackcreator.versionmeta.quilt.QuiltMeta</li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
 <div class="description">
 <ul class="blockList">
 <li class="blockList">
+<dl>
+<dt>All Implemented Interfaces:</dt>
+<dd><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html" title="interface in de.griefed.serverpackcreator.versionmeta">Meta</a></dd>
+</dl>
 <hr>
 <br>
 <pre>public final class <span class="typeNameLabel">QuiltMeta</span>
-extends java.lang.Object</pre>
-<div class="block">Quilt meta containing information about available Quilt releases and installers.</div>
+extends <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Manifests.html" title="class in de.griefed.serverpackcreator.versionmeta">Manifests</a>
+implements <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html" title="interface in de.griefed.serverpackcreator.versionmeta">Meta</a></pre>
+<div class="block">Quilt meta containing information about available Quilt versions and installers.</div>
 </li>
 </ul>
 </div>
@@ -128,9 +138,11 @@ extends java.lang.Object</pre>
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/quilt/QuiltMeta.html#QuiltMeta-java.io.File-java.io.File-">QuiltMeta</a></span>(java.io.File&nbsp;quiltManifest,
-         java.io.File&nbsp;quiltInstallerManifest)</code>
-<div class="block">Create a new Quilt Meta instance.</div>
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/quilt/QuiltMeta.html#QuiltMeta-java.io.File-java.io.File-de.griefed.serverpackcreator.versionmeta.fabric.FabricIntermediaries-">QuiltMeta</a></span>(java.io.File&nbsp;quiltManifest,
+         java.io.File&nbsp;quiltInstallerManifest,
+         <a href="../../../../../de/griefed/serverpackcreator/versionmeta/fabric/FabricIntermediaries.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric">FabricIntermediaries</a>&nbsp;injectedFabricIntermediaries)</code>
+<div class="block">Create a new Quilt Meta instance, giving you access to available loader and installer versions,
+ as well as URLs to installer for further processing.</div>
 </td>
 </tr>
 </table>
@@ -149,114 +161,128 @@ extends java.lang.Object</pre>
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr id="i0" class="altColor">
-<td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/quilt/QuiltMeta.html#checkQuiltVersion-java.lang.String-">checkQuiltVersion</a></span>(java.lang.String&nbsp;quiltVersion)</code>
-<div class="block">Check whether the specified Quilt version is available/correct/valid.</div>
+<td class="colFirst"><code>java.util.Optional&lt;java.net.URL&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/quilt/QuiltMeta.html#getInstallerUrl-java.lang.String-">getInstallerUrl</a></span>(java.lang.String&nbsp;quiltVersion)</code>
+<div class="block">Get the URL to the installer for the specified version, wrapped in an Optional.</div>
 </td>
 </tr>
 <tr id="i1" class="rowColor">
-<td class="colFirst"><code>java.util.Optional&lt;java.net.URL&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/quilt/QuiltMeta.html#installerUrl-java.lang.String-">installerUrl</a></span>(java.lang.String&nbsp;quiltVersion)</code>
-<div class="block">Get the <code>URL</code> to the Quilt installer for the specified version.</div>
+<td class="colFirst"><code>java.lang.String[]</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/quilt/QuiltMeta.html#installerVersionsArrayAscending--">installerVersionsArrayAscending</a></span>()</code>
+<div class="block">Array of available installer version in ascending order.</div>
 </td>
 </tr>
 <tr id="i2" class="altColor">
 <td class="colFirst"><code>java.lang.String[]</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/quilt/QuiltMeta.html#installerVersionsArrayAscending--">installerVersionsArrayAscending</a></span>()</code>
-<div class="block">Get the array of available Quilt installer version, in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#ASCENDING"><code>Type.ASCENDING</code></a> order.</div>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/quilt/QuiltMeta.html#installerVersionsArrayDescending--">installerVersionsArrayDescending</a></span>()</code>
+<div class="block">Array of available installer version in descending order.</div>
 </td>
 </tr>
 <tr id="i3" class="rowColor">
-<td class="colFirst"><code>java.lang.String[]</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/quilt/QuiltMeta.html#installerVersionsArrayDescending--">installerVersionsArrayDescending</a></span>()</code>
-<div class="block">Get the array of available Quilt installer version, in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#DESCENDING"><code>Type.DESCENDING</code></a> order.</div>
+<td class="colFirst"><code>java.util.List&lt;java.lang.String&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/quilt/QuiltMeta.html#installerVersionsListAscending--">installerVersionsListAscending</a></span>()</code>
+<div class="block">List of available installer version in ascending order.</div>
 </td>
 </tr>
 <tr id="i4" class="altColor">
 <td class="colFirst"><code>java.util.List&lt;java.lang.String&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/quilt/QuiltMeta.html#installerVersionsAscending--">installerVersionsAscending</a></span>()</code>
-<div class="block">Get the list of available Quilt installer version, in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#ASCENDING"><code>Type.ASCENDING</code></a> order.</div>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/quilt/QuiltMeta.html#installerVersionsListDescending--">installerVersionsListDescending</a></span>()</code>
+<div class="block">List of available installer version in descending order.</div>
 </td>
 </tr>
 <tr id="i5" class="rowColor">
-<td class="colFirst"><code>java.util.List&lt;java.lang.String&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/quilt/QuiltMeta.html#installerVersionsDescending--">installerVersionsDescending</a></span>()</code>
-<div class="block">Get the list of available Quilt installer version, in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#DESCENDING"><code>Type.DESCENDING</code></a> order.</div>
+<td class="colFirst"><code>boolean</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/quilt/QuiltMeta.html#isInstallerUrlAvailable-java.lang.String-">isInstallerUrlAvailable</a></span>(java.lang.String&nbsp;quiltVersion)</code>
+<div class="block">Check whether a URL to an installer is available for the specified version.</div>
 </td>
 </tr>
 <tr id="i6" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/quilt/QuiltMeta.html#isInstallerUrlAvailable-java.lang.String-">isInstallerUrlAvailable</a></span>(java.lang.String&nbsp;quiltVersion)</code>
-<div class="block">Check whether a <code>URL</code> to the specified Quilt installer version is available.</div>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/quilt/QuiltMeta.html#isMinecraftSupported-java.lang.String-">isMinecraftSupported</a></span>(java.lang.String&nbsp;minecraftVersion)</code>
+<div class="block">Check whether the given Minecraft version is supported by this modloader.</div>
 </td>
 </tr>
 <tr id="i7" class="rowColor">
-<td class="colFirst"><code>java.net.URL</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/quilt/QuiltMeta.html#latestInstallerUrl--">latestInstallerUrl</a></span>()</code>
-<div class="block">Get the <code>URL</code> to the latest Quilt installer.</div>
+<td class="colFirst"><code>boolean</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/quilt/QuiltMeta.html#isVersionValid-java.lang.String-">isVersionValid</a></span>(java.lang.String&nbsp;quiltVersion)</code>
+<div class="block">Check whether the specified version is available/correct/valid.</div>
 </td>
 </tr>
 <tr id="i8" class="altColor">
 <td class="colFirst"><code>java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/quilt/QuiltMeta.html#latestInstallerVersion--">latestInstallerVersion</a></span>()</code>
-<div class="block">Get the latest Quilt installer version.</div>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/quilt/QuiltMeta.html#latestInstaller--">latestInstaller</a></span>()</code>
+<div class="block">Get the latest installer version.</div>
 </td>
 </tr>
 <tr id="i9" class="rowColor">
-<td class="colFirst"><code>java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/quilt/QuiltMeta.html#latestLoaderVersion--">latestLoaderVersion</a></span>()</code>
-<div class="block">Get the latest Quilt loader version.</div>
+<td class="colFirst"><code>java.net.URL</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/quilt/QuiltMeta.html#latestInstallerUrl--">latestInstallerUrl</a></span>()</code>
+<div class="block">Get the URL to the latest installer.</div>
 </td>
 </tr>
 <tr id="i10" class="altColor">
-<td class="colFirst"><code>java.lang.String[]</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/quilt/QuiltMeta.html#loaderVersionsArrayAscending--">loaderVersionsArrayAscending</a></span>()</code>
-<div class="block">Get an array of available Quilt loader versions, in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#ASCENDING"><code>Type.ASCENDING</code></a> order.</div>
+<td class="colFirst"><code>java.lang.String</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/quilt/QuiltMeta.html#latestLoader--">latestLoader</a></span>()</code>
+<div class="block">Get the latest loader version.</div>
 </td>
 </tr>
 <tr id="i11" class="rowColor">
 <td class="colFirst"><code>java.lang.String[]</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/quilt/QuiltMeta.html#loaderVersionsArrayDescending--">loaderVersionsArrayDescending</a></span>()</code>
-<div class="block">Get an array of available Quilt loader versions, in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#DESCENDING"><code>Type.DESCENDING</code></a> order.</div>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/quilt/QuiltMeta.html#loaderVersionsArrayAscending--">loaderVersionsArrayAscending</a></span>()</code>
+<div class="block">Array of available loader versions in ascending order.</div>
 </td>
 </tr>
 <tr id="i12" class="altColor">
-<td class="colFirst"><code>java.util.List&lt;java.lang.String&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/quilt/QuiltMeta.html#loaderVersionsAscending--">loaderVersionsAscending</a></span>()</code>
-<div class="block">Get a list of available Quilt loader versions, in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#ASCENDING"><code>Type.ASCENDING</code></a> order.</div>
+<td class="colFirst"><code>java.lang.String[]</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/quilt/QuiltMeta.html#loaderVersionsArrayDescending--">loaderVersionsArrayDescending</a></span>()</code>
+<div class="block">Array of available loader versions in descending order.</div>
 </td>
 </tr>
 <tr id="i13" class="rowColor">
 <td class="colFirst"><code>java.util.List&lt;java.lang.String&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/quilt/QuiltMeta.html#loaderVersionsDescending--">loaderVersionsDescending</a></span>()</code>
-<div class="block">Get a list of available Quilt loader versions, in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#DESCENDING"><code>Type.DESCENDING</code></a> order.</div>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/quilt/QuiltMeta.html#loaderVersionsListAscending--">loaderVersionsListAscending</a></span>()</code>
+<div class="block">List of available loader versions in ascending order.</div>
 </td>
 </tr>
 <tr id="i14" class="altColor">
-<td class="colFirst"><code>java.net.URL</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/quilt/QuiltMeta.html#releaseInstallerUrl--">releaseInstallerUrl</a></span>()</code>
-<div class="block">Get the <code>URL</code> to the release Quilt installer.</div>
+<td class="colFirst"><code>java.util.List&lt;java.lang.String&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/quilt/QuiltMeta.html#loaderVersionsListDescending--">loaderVersionsListDescending</a></span>()</code>
+<div class="block">List of available loader versions in descending order.</div>
 </td>
 </tr>
 <tr id="i15" class="rowColor">
 <td class="colFirst"><code>java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/quilt/QuiltMeta.html#releaseInstallerVersion--">releaseInstallerVersion</a></span>()</code>
-<div class="block">Get the release Quilt installer version.</div>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/quilt/QuiltMeta.html#releaseInstaller--">releaseInstaller</a></span>()</code>
+<div class="block">Get the release installer version.</div>
 </td>
 </tr>
 <tr id="i16" class="altColor">
-<td class="colFirst"><code>java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/quilt/QuiltMeta.html#releaseLoaderVersion--">releaseLoaderVersion</a></span>()</code>
-<div class="block">Get the release Quilt loader version.</div>
+<td class="colFirst"><code>java.net.URL</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/quilt/QuiltMeta.html#releaseInstallerUrl--">releaseInstallerUrl</a></span>()</code>
+<div class="block">Get the URL to the release installer.</div>
 </td>
 </tr>
 <tr id="i17" class="rowColor">
+<td class="colFirst"><code>java.lang.String</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/quilt/QuiltMeta.html#releaseLoader--">releaseLoader</a></span>()</code>
+<div class="block">Get the release loader version.</div>
+</td>
+</tr>
+<tr id="i18" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/quilt/QuiltMeta.html#update--">update</a></span>()</code>
-<div class="block">Update the <code>QuiltLoader</code> and <code>QuiltInstaller</code> information.</div>
+<div class="block">Update the meta-information for this modloader-meta, updating the available loader and
+ installer versions, thus giving you access to version-checks, URLs etc.</div>
 </td>
 </tr>
 </table>
+<ul class="blockList">
+<li class="blockList"><a name="methods.inherited.from.class.de.griefed.serverpackcreator.versionmeta.Manifests">
+<!--   -->
+</a>
+<h3>Methods inherited from class&nbsp;de.griefed.serverpackcreator.versionmeta.<a href="../../../../../de/griefed/serverpackcreator/versionmeta/Manifests.html" title="class in de.griefed.serverpackcreator.versionmeta">Manifests</a></h3>
+<code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Manifests.html#getJson-java.io.File-com.fasterxml.jackson.databind.ObjectMapper-">getJson</a>, <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Manifests.html#getJson-java.io.InputStream-com.fasterxml.jackson.databind.ObjectMapper-">getJson</a>, <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Manifests.html#getJson-java.net.URL-com.fasterxml.jackson.databind.ObjectMapper-">getJson</a>, <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Manifests.html#getXml-java.io.File-">getXml</a>, <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Manifests.html#getXml-java.io.InputStream-">getXml</a></code></li>
+</ul>
 <ul class="blockList">
 <li class="blockList"><a name="methods.inherited.from.class.java.lang.Object">
 <!--   -->
@@ -278,19 +304,29 @@ extends java.lang.Object</pre>
 <!--   -->
 </a>
 <h3>Constructor Detail</h3>
-<a name="QuiltMeta-java.io.File-java.io.File-">
+<a name="QuiltMeta-java.io.File-java.io.File-de.griefed.serverpackcreator.versionmeta.fabric.FabricIntermediaries-">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>QuiltMeta</h4>
 <pre>public&nbsp;QuiltMeta(java.io.File&nbsp;quiltManifest,
-                 java.io.File&nbsp;quiltInstallerManifest)</pre>
-<div class="block">Create a new Quilt Meta instance.</div>
+                 java.io.File&nbsp;quiltInstallerManifest,
+                 <a href="../../../../../de/griefed/serverpackcreator/versionmeta/fabric/FabricIntermediaries.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric">FabricIntermediaries</a>&nbsp;injectedFabricIntermediaries)
+          throws javax.xml.parsers.ParserConfigurationException,
+                 java.io.IOException,
+                 org.xml.sax.SAXException</pre>
+<div class="block">Create a new Quilt Meta instance, giving you access to available loader and installer versions,
+ as well as URLs to installer for further processing.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>quiltManifest</code> - Quilt manifest file..</dd>
-<dd><code>quiltInstallerManifest</code> - Quilt-installer manifest file..</dd>
+<dd><code>quiltManifest</code> - Quilt manifest file.</dd>
+<dd><code>quiltInstallerManifest</code> - Quilt-installer manifest file.</dd>
+<dd><code>injectedFabricIntermediaries</code> - Fabric-Intermediaries for further compatibility tests.</dd>
+<dt><span class="throwsLabel">Throws:</span></dt>
+<dd><code>javax.xml.parsers.ParserConfigurationException</code> - indicates a serious configuration error.</dd>
+<dd><code>java.io.IOException</code> - if any IO errors occur.</dd>
+<dd><code>org.xml.sax.SAXException</code> - if any parse errors occur.</dd>
 </dl>
 </li>
 </ul>
@@ -309,67 +345,87 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>update</h4>
 <pre>public&nbsp;void&nbsp;update()
-            throws java.net.MalformedURLException</pre>
-<div class="block">Update the <code>QuiltLoader</code> and <code>QuiltInstaller</code> information.</div>
+            throws java.io.IOException,
+                   javax.xml.parsers.ParserConfigurationException,
+                   org.xml.sax.SAXException</pre>
+<div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#update--">Meta</a></code></span></div>
+<div class="block">Update the meta-information for this modloader-meta, updating the available loader and
+ installer versions, thus giving you access to version-checks, URLs etc.</div>
 <dl>
+<dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
+<dd><code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#update--">update</a></code>&nbsp;in interface&nbsp;<code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html" title="interface in de.griefed.serverpackcreator.versionmeta">Meta</a></code></dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.net.MalformedURLException</code> - if a URL could not be constructed</dd>
+<dd><code>java.io.IOException</code> - if any IO errors occur.</dd>
+<dd><code>javax.xml.parsers.ParserConfigurationException</code> - indicates a serious configuration error.</dd>
+<dd><code>org.xml.sax.SAXException</code> - if any parse errors occur.</dd>
 </dl>
 </li>
 </ul>
-<a name="latestLoaderVersion--">
+<a name="latestLoader--">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>latestLoaderVersion</h4>
-<pre>public&nbsp;java.lang.String&nbsp;latestLoaderVersion()</pre>
-<div class="block">Get the latest Quilt loader version.</div>
+<h4>latestLoader</h4>
+<pre>public&nbsp;java.lang.String&nbsp;latestLoader()</pre>
+<div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#latestLoader--">Meta</a></code></span></div>
+<div class="block">Get the latest loader version.</div>
 <dl>
+<dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
+<dd><code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#latestLoader--">latestLoader</a></code>&nbsp;in interface&nbsp;<code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html" title="interface in de.griefed.serverpackcreator.versionmeta">Meta</a></code></dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>The latest version of the Quilt loader.</dd>
+<dd>The latest version.</dd>
 </dl>
 </li>
 </ul>
-<a name="releaseLoaderVersion--">
+<a name="releaseLoader--">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>releaseLoaderVersion</h4>
-<pre>public&nbsp;java.lang.String&nbsp;releaseLoaderVersion()</pre>
-<div class="block">Get the release Quilt loader version.</div>
+<h4>releaseLoader</h4>
+<pre>public&nbsp;java.lang.String&nbsp;releaseLoader()</pre>
+<div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#releaseLoader--">Meta</a></code></span></div>
+<div class="block">Get the release loader version.</div>
 <dl>
+<dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
+<dd><code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#releaseLoader--">releaseLoader</a></code>&nbsp;in interface&nbsp;<code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html" title="interface in de.griefed.serverpackcreator.versionmeta">Meta</a></code></dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>The release version of the Quilt loader.</dd>
+<dd>The release loader version.</dd>
 </dl>
 </li>
 </ul>
-<a name="loaderVersionsAscending--">
+<a name="loaderVersionsListAscending--">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>loaderVersionsAscending</h4>
-<pre>public&nbsp;java.util.List&lt;java.lang.String&gt;&nbsp;loaderVersionsAscending()</pre>
-<div class="block">Get a list of available Quilt loader versions, in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#ASCENDING"><code>Type.ASCENDING</code></a> order.</div>
+<h4>loaderVersionsListAscending</h4>
+<pre>public&nbsp;java.util.List&lt;java.lang.String&gt;&nbsp;loaderVersionsListAscending()</pre>
+<div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#loaderVersionsListAscending--">Meta</a></code></span></div>
+<div class="block">List of available loader versions in ascending order.</div>
 <dl>
+<dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
+<dd><code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#loaderVersionsListAscending--">loaderVersionsListAscending</a></code>&nbsp;in interface&nbsp;<code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html" title="interface in de.griefed.serverpackcreator.versionmeta">Meta</a></code></dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>List of available Quilt loader versions, in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#ASCENDING"><code>Type.ASCENDING</code></a> order.</dd>
+<dd>Available loader versions in ascending order.</dd>
 </dl>
 </li>
 </ul>
-<a name="loaderVersionsDescending--">
+<a name="loaderVersionsListDescending--">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>loaderVersionsDescending</h4>
-<pre>public&nbsp;java.util.List&lt;java.lang.String&gt;&nbsp;loaderVersionsDescending()</pre>
-<div class="block">Get a list of available Quilt loader versions, in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#DESCENDING"><code>Type.DESCENDING</code></a> order.</div>
+<h4>loaderVersionsListDescending</h4>
+<pre>public&nbsp;java.util.List&lt;java.lang.String&gt;&nbsp;loaderVersionsListDescending()</pre>
+<div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#loaderVersionsListDescending--">Meta</a></code></span></div>
+<div class="block">List of available loader versions in descending order.</div>
 <dl>
+<dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
+<dd><code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#loaderVersionsListDescending--">loaderVersionsListDescending</a></code>&nbsp;in interface&nbsp;<code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html" title="interface in de.griefed.serverpackcreator.versionmeta">Meta</a></code></dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>List of available Quilt loader versions, in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#DESCENDING"><code>Type.DESCENDING</code></a> order.</dd>
+<dd>Available loader versions in descending order.</dd>
 </dl>
 </li>
 </ul>
@@ -380,10 +436,13 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>loaderVersionsArrayAscending</h4>
 <pre>public&nbsp;java.lang.String[]&nbsp;loaderVersionsArrayAscending()</pre>
-<div class="block">Get an array of available Quilt loader versions, in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#ASCENDING"><code>Type.ASCENDING</code></a> order.</div>
+<div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#loaderVersionsArrayAscending--">Meta</a></code></span></div>
+<div class="block">Array of available loader versions in ascending order.</div>
 <dl>
+<dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
+<dd><code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#loaderVersionsArrayAscending--">loaderVersionsArrayAscending</a></code>&nbsp;in interface&nbsp;<code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html" title="interface in de.griefed.serverpackcreator.versionmeta">Meta</a></code></dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>Array of available Quilt loader versions, in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#ASCENDING"><code>Type.ASCENDING</code></a> order.</dd>
+<dd>Available loader versions in ascending order.</dd>
 </dl>
 </li>
 </ul>
@@ -394,66 +453,81 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>loaderVersionsArrayDescending</h4>
 <pre>public&nbsp;java.lang.String[]&nbsp;loaderVersionsArrayDescending()</pre>
-<div class="block">Get an array of available Quilt loader versions, in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#DESCENDING"><code>Type.DESCENDING</code></a> order.</div>
+<div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#loaderVersionsArrayDescending--">Meta</a></code></span></div>
+<div class="block">Array of available loader versions in descending order.</div>
 <dl>
+<dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
+<dd><code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#loaderVersionsArrayDescending--">loaderVersionsArrayDescending</a></code>&nbsp;in interface&nbsp;<code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html" title="interface in de.griefed.serverpackcreator.versionmeta">Meta</a></code></dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>Array of available Quilt loader versions, in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#DESCENDING"><code>Type.DESCENDING</code></a> order.</dd>
+<dd>Available loader versions in descending order.</dd>
 </dl>
 </li>
 </ul>
-<a name="latestInstallerVersion--">
+<a name="latestInstaller--">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>latestInstallerVersion</h4>
-<pre>public&nbsp;java.lang.String&nbsp;latestInstallerVersion()</pre>
-<div class="block">Get the latest Quilt installer version.</div>
+<h4>latestInstaller</h4>
+<pre>public&nbsp;java.lang.String&nbsp;latestInstaller()</pre>
+<div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#latestInstaller--">Meta</a></code></span></div>
+<div class="block">Get the latest installer version.</div>
 <dl>
+<dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
+<dd><code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#latestInstaller--">latestInstaller</a></code>&nbsp;in interface&nbsp;<code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html" title="interface in de.griefed.serverpackcreator.versionmeta">Meta</a></code></dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>The latest Quilt installer version.</dd>
+<dd>The latest installer version.</dd>
 </dl>
 </li>
 </ul>
-<a name="releaseInstallerVersion--">
+<a name="releaseInstaller--">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>releaseInstallerVersion</h4>
-<pre>public&nbsp;java.lang.String&nbsp;releaseInstallerVersion()</pre>
-<div class="block">Get the release Quilt installer version.</div>
+<h4>releaseInstaller</h4>
+<pre>public&nbsp;java.lang.String&nbsp;releaseInstaller()</pre>
+<div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#releaseInstaller--">Meta</a></code></span></div>
+<div class="block">Get the release installer version.</div>
 <dl>
+<dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
+<dd><code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#releaseInstaller--">releaseInstaller</a></code>&nbsp;in interface&nbsp;<code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html" title="interface in de.griefed.serverpackcreator.versionmeta">Meta</a></code></dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>The release Quilt installer version.</dd>
+<dd>The release installer version.</dd>
 </dl>
 </li>
 </ul>
-<a name="installerVersionsAscending--">
+<a name="installerVersionsListAscending--">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>installerVersionsAscending</h4>
-<pre>public&nbsp;java.util.List&lt;java.lang.String&gt;&nbsp;installerVersionsAscending()</pre>
-<div class="block">Get the list of available Quilt installer version, in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#ASCENDING"><code>Type.ASCENDING</code></a> order.</div>
+<h4>installerVersionsListAscending</h4>
+<pre>public&nbsp;java.util.List&lt;java.lang.String&gt;&nbsp;installerVersionsListAscending()</pre>
+<div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#installerVersionsListAscending--">Meta</a></code></span></div>
+<div class="block">List of available installer version in ascending order.</div>
 <dl>
+<dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
+<dd><code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#installerVersionsListAscending--">installerVersionsListAscending</a></code>&nbsp;in interface&nbsp;<code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html" title="interface in de.griefed.serverpackcreator.versionmeta">Meta</a></code></dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>List of available Quilt installer version, in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#ASCENDING"><code>Type.ASCENDING</code></a> order.</dd>
+<dd>Available installer version in ascending order.</dd>
 </dl>
 </li>
 </ul>
-<a name="installerVersionsDescending--">
+<a name="installerVersionsListDescending--">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>installerVersionsDescending</h4>
-<pre>public&nbsp;java.util.List&lt;java.lang.String&gt;&nbsp;installerVersionsDescending()</pre>
-<div class="block">Get the list of available Quilt installer version, in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#DESCENDING"><code>Type.DESCENDING</code></a> order.</div>
+<h4>installerVersionsListDescending</h4>
+<pre>public&nbsp;java.util.List&lt;java.lang.String&gt;&nbsp;installerVersionsListDescending()</pre>
+<div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#installerVersionsListDescending--">Meta</a></code></span></div>
+<div class="block">List of available installer version in descending order.</div>
 <dl>
+<dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
+<dd><code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#installerVersionsListDescending--">installerVersionsListDescending</a></code>&nbsp;in interface&nbsp;<code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html" title="interface in de.griefed.serverpackcreator.versionmeta">Meta</a></code></dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>List of available Quilt installer version, in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#DESCENDING"><code>Type.DESCENDING</code></a> order.</dd>
+<dd>Available installer version in descending order.</dd>
 </dl>
 </li>
 </ul>
@@ -464,10 +538,13 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>installerVersionsArrayAscending</h4>
 <pre>public&nbsp;java.lang.String[]&nbsp;installerVersionsArrayAscending()</pre>
-<div class="block">Get the array of available Quilt installer version, in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#ASCENDING"><code>Type.ASCENDING</code></a> order.</div>
+<div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#installerVersionsArrayAscending--">Meta</a></code></span></div>
+<div class="block">Array of available installer version in ascending order.</div>
 <dl>
+<dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
+<dd><code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#installerVersionsArrayAscending--">installerVersionsArrayAscending</a></code>&nbsp;in interface&nbsp;<code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html" title="interface in de.griefed.serverpackcreator.versionmeta">Meta</a></code></dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>Array of available Quilt installer version, in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#ASCENDING"><code>Type.ASCENDING</code></a> order.</dd>
+<dd>Available installer version in ascending order.</dd>
 </dl>
 </li>
 </ul>
@@ -478,10 +555,13 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>installerVersionsArrayDescending</h4>
 <pre>public&nbsp;java.lang.String[]&nbsp;installerVersionsArrayDescending()</pre>
-<div class="block">Get the array of available Quilt installer version, in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#DESCENDING"><code>Type.DESCENDING</code></a> order.</div>
+<div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#installerVersionsArrayDescending--">Meta</a></code></span></div>
+<div class="block">Array of available installer version in descending order.</div>
 <dl>
+<dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
+<dd><code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#installerVersionsArrayDescending--">installerVersionsArrayDescending</a></code>&nbsp;in interface&nbsp;<code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html" title="interface in de.griefed.serverpackcreator.versionmeta">Meta</a></code></dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>Array of available Quilt installer version, in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#DESCENDING"><code>Type.DESCENDING</code></a> order.</dd>
+<dd>Available installer version in descending order.</dd>
 </dl>
 </li>
 </ul>
@@ -492,10 +572,13 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>latestInstallerUrl</h4>
 <pre>public&nbsp;java.net.URL&nbsp;latestInstallerUrl()</pre>
-<div class="block">Get the <code>URL</code> to the latest Quilt installer.</div>
+<div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#latestInstallerUrl--">Meta</a></code></span></div>
+<div class="block">Get the URL to the latest installer.</div>
 <dl>
+<dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
+<dd><code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#latestInstallerUrl--">latestInstallerUrl</a></code>&nbsp;in interface&nbsp;<code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html" title="interface in de.griefed.serverpackcreator.versionmeta">Meta</a></code></dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>URL to the latest Quilt installer.</dd>
+<dd>URL to the latest installer.</dd>
 </dl>
 </li>
 </ul>
@@ -506,10 +589,13 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>releaseInstallerUrl</h4>
 <pre>public&nbsp;java.net.URL&nbsp;releaseInstallerUrl()</pre>
-<div class="block">Get the <code>URL</code> to the release Quilt installer.</div>
+<div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#releaseInstallerUrl--">Meta</a></code></span></div>
+<div class="block">Get the URL to the release installer.</div>
 <dl>
+<dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
+<dd><code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#releaseInstallerUrl--">releaseInstallerUrl</a></code>&nbsp;in interface&nbsp;<code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html" title="interface in de.griefed.serverpackcreator.versionmeta">Meta</a></code></dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>URL to the release Quilt installer.</dd>
+<dd>URL to the release installer.</dd>
 </dl>
 </li>
 </ul>
@@ -520,45 +606,72 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>isInstallerUrlAvailable</h4>
 <pre>public&nbsp;boolean&nbsp;isInstallerUrlAvailable(java.lang.String&nbsp;quiltVersion)</pre>
-<div class="block">Check whether a <code>URL</code> to the specified Quilt installer version is available.</div>
+<div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#isInstallerUrlAvailable-java.lang.String-">Meta</a></code></span></div>
+<div class="block">Check whether a URL to an installer is available for the specified version.</div>
 <dl>
+<dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
+<dd><code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#isInstallerUrlAvailable-java.lang.String-">isInstallerUrlAvailable</a></code>&nbsp;in interface&nbsp;<code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html" title="interface in de.griefed.serverpackcreator.versionmeta">Meta</a></code></dd>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>quiltVersion</code> - Quilt version.</dd>
+<dd><code>quiltVersion</code> - The modloader version for which to check for installer availability.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>true</code> if a <code>URL</code> to the specified Quilt installer
- version is available.</dd>
+<dd><code>true</code> if available.</dd>
 </dl>
 </li>
 </ul>
-<a name="installerUrl-java.lang.String-">
+<a name="getInstallerUrl-java.lang.String-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>installerUrl</h4>
-<pre>public&nbsp;java.util.Optional&lt;java.net.URL&gt;&nbsp;installerUrl(java.lang.String&nbsp;quiltVersion)</pre>
-<div class="block">Get the <code>URL</code> to the Quilt installer for the specified version.</div>
+<h4>getInstallerUrl</h4>
+<pre>public&nbsp;java.util.Optional&lt;java.net.URL&gt;&nbsp;getInstallerUrl(java.lang.String&nbsp;quiltVersion)</pre>
+<div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#getInstallerUrl-java.lang.String-">Meta</a></code></span></div>
+<div class="block">Get the URL to the installer for the specified version, wrapped in an Optional.</div>
 <dl>
+<dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
+<dd><code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#getInstallerUrl-java.lang.String-">getInstallerUrl</a></code>&nbsp;in interface&nbsp;<code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html" title="interface in de.griefed.serverpackcreator.versionmeta">Meta</a></code></dd>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>quiltVersion</code> - Quilt version.</dd>
+<dd><code>quiltVersion</code> - The modloader version for which to get the installer.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>URL to the Quilt installer for the specified version.</dd>
+<dd>The URL to the installer, wrapped in an Optional.</dd>
 </dl>
 </li>
 </ul>
-<a name="checkQuiltVersion-java.lang.String-">
+<a name="isVersionValid-java.lang.String-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>isVersionValid</h4>
+<pre>public&nbsp;boolean&nbsp;isVersionValid(java.lang.String&nbsp;quiltVersion)</pre>
+<div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#isVersionValid-java.lang.String-">Meta</a></code></span></div>
+<div class="block">Check whether the specified version is available/correct/valid.</div>
+<dl>
+<dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
+<dd><code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#isVersionValid-java.lang.String-">isVersionValid</a></code>&nbsp;in interface&nbsp;<code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html" title="interface in de.griefed.serverpackcreator.versionmeta">Meta</a></code></dd>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>quiltVersion</code> - The version to check.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd><code>true</code> if the specified version is available/correct/valid.</dd>
+</dl>
+</li>
+</ul>
+<a name="isMinecraftSupported-java.lang.String-">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
-<h4>checkQuiltVersion</h4>
-<pre>public&nbsp;boolean&nbsp;checkQuiltVersion(java.lang.String&nbsp;quiltVersion)</pre>
-<div class="block">Check whether the specified Quilt version is available/correct/valid.</div>
+<h4>isMinecraftSupported</h4>
+<pre>public&nbsp;boolean&nbsp;isMinecraftSupported(java.lang.String&nbsp;minecraftVersion)</pre>
+<div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#isMinecraftSupported-java.lang.String-">Meta</a></code></span></div>
+<div class="block">Check whether the given Minecraft version is supported by this modloader.</div>
 <dl>
+<dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
+<dd><code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#isMinecraftSupported-java.lang.String-">isMinecraftSupported</a></code>&nbsp;in interface&nbsp;<code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html" title="interface in de.griefed.serverpackcreator.versionmeta">Meta</a></code></dd>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>quiltVersion</code> - Quilt version.</dd>
+<dd><code>minecraftVersion</code> - The Minecraft version for which to check for support.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>true</code> if the specified version is available/correct/valid.</dd>
+<dd><code>true</code> if the specified Minecraft version is supported.</dd>
 </dl>
 </li>
 </ul>

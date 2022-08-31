@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -47,7 +47,7 @@ var activeTableTab = "activeTableTab";
 </div>
 <div class="subNav">
 <ul class="navList">
-<li><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.CommandlineParser.Mode.html" title="enum in de.griefed.serverpackcreator"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
+<li><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.Mode.html" title="enum in de.griefed.serverpackcreator"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
 <li>Next&nbsp;Class</li>
 </ul>
 <ul class="navList">
@@ -156,24 +156,92 @@ extends java.lang.Object</pre>
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr id="i0" class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html#createStartScripts-de.griefed.serverpackcreator.ConfigurationModel-">createStartScripts</a></span>(<a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel)</code>
+<div class="block">Create start-scripts for the generated server pack.</div>
+</td>
+</tr>
+<tr id="i1" class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html#createStartScripts-java.util.HashMap-java.lang.String-">createStartScripts</a></span>(java.util.HashMap&lt;java.lang.String,java.lang.String&gt;&nbsp;scriptSettings,
+                  java.lang.String&nbsp;destination)</code>
+<div class="block">Create start-scripts for the generated server pack.</div>
+</td>
+</tr>
+<tr id="i2" class="altColor">
+<td class="colFirst"><code>java.util.List&lt;java.io.File&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html#getModsToInclude-de.griefed.serverpackcreator.ConfigurationModel-">getModsToInclude</a></span>(<a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel)</code>
+<div class="block">Generates a list of all mods to include in the server pack.</div>
+</td>
+</tr>
+<tr id="i3" class="rowColor">
+<td class="colFirst"><code>java.util.List&lt;java.io.File&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html#getModsToInclude-java.lang.String-java.util.List-java.lang.String-java.lang.String-">getModsToInclude</a></span>(java.lang.String&nbsp;modsDir,
+                java.util.List&lt;java.lang.String&gt;&nbsp;userSpecifiedClientMods,
+                java.lang.String&nbsp;minecraftVersion,
+                java.lang.String&nbsp;modloader)</code>
+<div class="block">Generates a list of all mods to include in the server pack.</div>
+</td>
+</tr>
+<tr id="i4" class="altColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html#getServerPackDestination-de.griefed.serverpackcreator.ConfigurationModel-">getServerPackDestination</a></span>(<a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel)</code>
 <div class="block">Acquire the destination directory in which the server pack will be generated.</div>
 </td>
 </tr>
-<tr id="i1" class="rowColor">
+<tr id="i5" class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html#installServer-de.griefed.serverpackcreator.ConfigurationModel-">installServer</a></span>(<a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel)</code>
+<div class="block">Installs the modloader server for the specified modloader, modloader version and Minecraft
+ version.</div>
+</td>
+</tr>
+<tr id="i6" class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html#installServer-java.lang.String-java.lang.String-java.lang.String-java.lang.String-java.lang.String-">installServer</a></span>(java.lang.String&nbsp;modLoader,
+             java.lang.String&nbsp;minecraftVersion,
+             java.lang.String&nbsp;modLoaderVersion,
+             java.lang.String&nbsp;javaPath,
+             java.lang.String&nbsp;destination)</code>
+<div class="block">Installs the modloader server for the specified modloader, modloader version and Minecraft
+ version.</div>
+</td>
+</tr>
+<tr id="i7" class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html#provideImprovedFabricServerLauncher-de.griefed.serverpackcreator.ConfigurationModel-">provideImprovedFabricServerLauncher</a></span>(<a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel)</code>
+<div class="block">Download and provide the improved Fabric Server Launcher, if it is available for the given
+ Minecraft and Fabric version.</div>
+</td>
+</tr>
+<tr id="i8" class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html#provideImprovedFabricServerLauncher-java.lang.String-java.lang.String-java.lang.String-">provideImprovedFabricServerLauncher</a></span>(java.lang.String&nbsp;minecraftVersion,
+                                   java.lang.String&nbsp;fabricVersion,
+                                   java.lang.String&nbsp;destination)</code>
+<div class="block">Download and provide the improved Fabric Server Launcher, if it is available for the given
+ Minecraft and Fabric version.</div>
+</td>
+</tr>
+<tr id="i9" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html#run-de.griefed.serverpackcreator.ConfigurationModel-">run</a></span>(@NotNull <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel)</code>
 <div class="block">Create a server pack from a given instance of <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a>.</div>
 </td>
 </tr>
-<tr id="i2" class="altColor">
+<tr id="i10" class="altColor">
 <td class="colFirst"><code><a href="../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackModel.html" title="class in de.griefed.serverpackcreator.spring.serverpack">ServerPackModel</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html#run-de.griefed.serverpackcreator.spring.serverpack.ServerPackModel-">run</a></span>(@NotNull <a href="../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackModel.html" title="class in de.griefed.serverpackcreator.spring.serverpack">ServerPackModel</a>&nbsp;serverPackModel)</code>
 <div class="block">Create a server pack from a given instance of <a href="../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackModel.html" title="class in de.griefed.serverpackcreator.spring.serverpack"><code>ServerPackModel</code></a> via webUI.</div>
 </td>
 </tr>
-<tr id="i3" class="rowColor">
+<tr id="i11" class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html#zipBuilder-de.griefed.serverpackcreator.ConfigurationModel-">zipBuilder</a></span>(<a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel)</code>
+<div class="block">Creates a ZIP-archive of the server pack previously generated.</div>
+</td>
+</tr>
+<tr id="i12" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html#zipBuilder-java.lang.String-boolean-java.lang.String-java.lang.String-java.lang.String-">zipBuilder</a></span>(java.lang.String&nbsp;minecraftVersion,
           boolean&nbsp;includeServerInstallation,
@@ -308,6 +376,189 @@ public&nbsp;ServerPackHandler(<a href="../../../de/griefed/serverpackcreator/App
 </dl>
 </li>
 </ul>
+<a name="provideImprovedFabricServerLauncher-de.griefed.serverpackcreator.ConfigurationModel-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>provideImprovedFabricServerLauncher</h4>
+<pre>public&nbsp;void&nbsp;provideImprovedFabricServerLauncher(<a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel)</pre>
+<div class="block">Download and provide the improved Fabric Server Launcher, if it is available for the given
+ Minecraft and Fabric version.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>configurationModel</code> - ConfigurationModel containing the Minecraft and Fabric version for
+                           which to acquire the improved Fabric Server Launcher.</dd>
+</dl>
+</li>
+</ul>
+<a name="provideImprovedFabricServerLauncher-java.lang.String-java.lang.String-java.lang.String-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>provideImprovedFabricServerLauncher</h4>
+<pre>public&nbsp;void&nbsp;provideImprovedFabricServerLauncher(java.lang.String&nbsp;minecraftVersion,
+                                                java.lang.String&nbsp;fabricVersion,
+                                                java.lang.String&nbsp;destination)</pre>
+<div class="block">Download and provide the improved Fabric Server Launcher, if it is available for the given
+ Minecraft and Fabric version.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>minecraftVersion</code> - The Minecraft version the modpack uses and the Fabric Server Launcher
+                         should be downloaded for.</dd>
+<dd><code>fabricVersion</code> - The modloader version the modpack uses and the Fabric Server Launcher
+                         should be downloaded for.</dd>
+<dd><code>destination</code> - The destination of the server pack.</dd>
+</dl>
+</li>
+</ul>
+<a name="createStartScripts-de.griefed.serverpackcreator.ConfigurationModel-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>createStartScripts</h4>
+<pre>public&nbsp;void&nbsp;createStartScripts(<a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel)</pre>
+<div class="block">Create start-scripts for the generated server pack.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>configurationModel</code> - Configuration model containing modpack specific values. keys to be
+                           replaced with their respective values in the start scripts, as well
+                           as the modpack directory from which the destination of the server
+                           pack is acquired.</dd>
+</dl>
+</li>
+</ul>
+<a name="createStartScripts-java.util.HashMap-java.lang.String-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>createStartScripts</h4>
+<pre>public&nbsp;void&nbsp;createStartScripts(java.util.HashMap&lt;java.lang.String,java.lang.String&gt;&nbsp;scriptSettings,
+                               java.lang.String&nbsp;destination)</pre>
+<div class="block">Create start-scripts for the generated server pack.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>scriptSettings</code> - Key-value pairs to replace in the script. A given key in the script is
+                       replaced with its value.</dd>
+<dd><code>destination</code> - The destination where the scripts should be created in.</dd>
+</dl>
+</li>
+</ul>
+<a name="getModsToInclude-de.griefed.serverpackcreator.ConfigurationModel-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getModsToInclude</h4>
+<pre>public&nbsp;java.util.List&lt;java.io.File&gt;&nbsp;getModsToInclude(<a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel)</pre>
+<div class="block">Generates a list of all mods to include in the server pack. If the user specified
+ clientside-mods to exclude, and/or if the automatic exclusion of clientside-only mods is
+ active, they will be excluded, too.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>configurationModel</code> - The configurationModel containing the modpack directory, list of
+                           clientside-only mods to exclude, Minecraft version used by the
+                           modpack and server pack and the modloader used by the modpack and
+                           server pack.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>A list of all mods to include in the server pack.</dd>
+</dl>
+</li>
+</ul>
+<a name="getModsToInclude-java.lang.String-java.util.List-java.lang.String-java.lang.String-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getModsToInclude</h4>
+<pre>public&nbsp;java.util.List&lt;java.io.File&gt;&nbsp;getModsToInclude(java.lang.String&nbsp;modsDir,
+                                                     java.util.List&lt;java.lang.String&gt;&nbsp;userSpecifiedClientMods,
+                                                     java.lang.String&nbsp;minecraftVersion,
+                                                     java.lang.String&nbsp;modloader)</pre>
+<div class="block">Generates a list of all mods to include in the server pack. If the user specified
+ clientside-mods to exclude, and/or if the automatic exclusion of clientside-only mods is
+ active, they will be excluded, too.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>modsDir</code> - String. The mods-directory of the modpack of which to generate a
+                                list of all its contents.</dd>
+<dd><code>userSpecifiedClientMods</code> - List String. A list of all clientside-only mods.</dd>
+<dd><code>minecraftVersion</code> - String. The Minecraft version the modpack uses. When the
+                                modloader is Forge, this determines whether Annotations or Tomls
+                                are scanned.</dd>
+<dd><code>modloader</code> - <code>String</code> The modloader the modpack uses.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>A list of all mods to include in the server pack.</dd>
+</dl>
+</li>
+</ul>
+<a name="installServer-de.griefed.serverpackcreator.ConfigurationModel-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>installServer</h4>
+<pre>public&nbsp;void&nbsp;installServer(<a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel)</pre>
+<div class="block">Installs the modloader server for the specified modloader, modloader version and Minecraft
+ version.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>configurationModel</code> - Contains the used modloader, Minecraft version, modloader version,
+                           path to the java executable/binary and modpack directory in order to
+                           acquire the destination at which to install the server.</dd>
+</dl>
+</li>
+</ul>
+<a name="installServer-java.lang.String-java.lang.String-java.lang.String-java.lang.String-java.lang.String-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>installServer</h4>
+<pre>public&nbsp;void&nbsp;installServer(java.lang.String&nbsp;modLoader,
+                          java.lang.String&nbsp;minecraftVersion,
+                          java.lang.String&nbsp;modLoaderVersion,
+                          java.lang.String&nbsp;javaPath,
+                          java.lang.String&nbsp;destination)</pre>
+<div class="block">Installs the modloader server for the specified modloader, modloader version and Minecraft
+ version.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>modLoader</code> - The modloader for which to install the server software. Either Forge or
+                         Fabric.</dd>
+<dd><code>minecraftVersion</code> - The Minecraft version for which to install the modloader and Minecraft
+                         server.</dd>
+<dd><code>modLoaderVersion</code> - The modloader version for which to install the modloader and Minecraft
+                         server.</dd>
+<dd><code>javaPath</code> - The path to the Java executable/binary which is needed to execute the
+                         Forge/Fabric installersList.</dd>
+<dd><code>destination</code> - The destination where the modloader server should be installed into.</dd>
+</dl>
+</li>
+</ul>
+<a name="zipBuilder-de.griefed.serverpackcreator.ConfigurationModel-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>zipBuilder</h4>
+<pre>public&nbsp;void&nbsp;zipBuilder(<a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel)</pre>
+<div class="block">Creates a ZIP-archive of the server pack previously generated. Depending on
+ <a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#isZipFileExclusionEnabled--"><code>ApplicationProperties.isZipFileExclusionEnabled()</code></a>, files will be excluded. To customize
+ the files which will be excluded, see
+ <a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html#getFilesToExcludeFromZipArchive--"><code>ApplicationProperties.getFilesToExcludeFromZipArchive()</code></a></div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>configurationModel</code> - Contains the Minecraft version used by the modpack and server pack,
+                           whether the modloader server was installed, the modpack directory to
+                           acquire the destination of the server pack, the modloader used by the
+                           modpack and server pack and the modloader version.</dd>
+</dl>
+</li>
+</ul>
 <a name="zipBuilder-java.lang.String-boolean-java.lang.String-java.lang.String-java.lang.String-">
 <!--   -->
 </a>
@@ -362,7 +613,7 @@ public&nbsp;ServerPackHandler(<a href="../../../de/griefed/serverpackcreator/App
 </div>
 <div class="subNav">
 <ul class="navList">
-<li><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.CommandlineParser.Mode.html" title="enum in de.griefed.serverpackcreator"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
+<li><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.Mode.html" title="enum in de.griefed.serverpackcreator"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
 <li>Next&nbsp;Class</li>
 </ul>
 <ul class="navList">

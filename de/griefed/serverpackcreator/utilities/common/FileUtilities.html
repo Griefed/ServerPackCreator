@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10,"i17":10,"i18":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10,"i17":10,"i18":10,"i19":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -234,49 +234,55 @@ extends java.lang.Object</pre>
 </td>
 </tr>
 <tr id="i11" class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.html#createDirectories-java.nio.file.Path-">createDirectories</a></span>(java.nio.file.Path&nbsp;directory)</code>
+<div class="block">Create a directory, including any necessary parent directories.</div>
+</td>
+</tr>
+<tr id="i12" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.html#isLink-java.io.File-">isLink</a></span>(java.io.File&nbsp;file)</code>
 <div class="block">Check if the given file is a UNIX symlink or Windows lnk.</div>
 </td>
 </tr>
-<tr id="i12" class="altColor">
+<tr id="i13" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.html#isLink-java.lang.String-">isLink</a></span>(java.lang.String&nbsp;file)</code>
 <div class="block">Check if the given file is a UNIX symlink or Windows lnk.</div>
 </td>
 </tr>
-<tr id="i13" class="rowColor">
+<tr id="i14" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.html#openFile-java.lang.String-">openFile</a></span>(java.lang.String&nbsp;fileToOpen)</code>
 <div class="block">Open the specified file in an editor.</div>
 </td>
 </tr>
-<tr id="i14" class="altColor">
+<tr id="i15" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.html#openFolder-java.lang.String-">openFolder</a></span>(java.lang.String&nbsp;folder)</code>
 <div class="block">Open the specified folder in the file explorer.</div>
 </td>
 </tr>
-<tr id="i15" class="rowColor">
+<tr id="i16" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.html#replaceFile-java.io.File-java.io.File-">replaceFile</a></span>(java.io.File&nbsp;sourceFile,
            java.io.File&nbsp;destinationFile)</code>
 <div class="block">Move a file from source to destination, and replace the destination file if it exists.</div>
 </td>
 </tr>
-<tr id="i16" class="altColor">
+<tr id="i17" class="rowColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.html#resolveLink-java.io.File-">resolveLink</a></span>(java.io.File&nbsp;link)</code>
 <div class="block">Resolve a given link/symlink to its source.</div>
 </td>
 </tr>
-<tr id="i17" class="rowColor">
+<tr id="i18" class="altColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.html#resolveLink-java.lang.String-">resolveLink</a></span>(java.lang.String&nbsp;link)</code>
 <div class="block">Resolve a given link/symlink to its source.</div>
 </td>
 </tr>
-<tr id="i18" class="altColor">
+<tr id="i19" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.html#unzipArchive-java.lang.String-java.lang.String-">unzipArchive</a></span>(java.lang.String&nbsp;zipFile,
             java.lang.String&nbsp;destinationDirectory)</code>
@@ -340,6 +346,21 @@ extends java.lang.Object</pre>
 <dd>Boolean. Returns true if the file was sucessfully replaced.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code>java.io.IOException</code> - Thrown if an error occurs when the file is moved.</dd>
+</dl>
+</li>
+</ul>
+<a name="createDirectories-java.nio.file.Path-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>createDirectories</h4>
+<pre>public&nbsp;void&nbsp;createDirectories(java.nio.file.Path&nbsp;directory)</pre>
+<div class="block">Create a directory, including any necessary parent directories. If an error is encountered, it
+ is printed to our logs.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>directory</code> - The directory to create.</dd>
 </dl>
 </li>
 </ul>

@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -148,20 +148,38 @@ extends java.lang.Object</pre>
 </tr>
 <tr id="i0" class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/JarUtilities.html#copyFileFromJar-java.io.File-boolean-java.lang.Class-">copyFileFromJar</a></span>(java.io.File&nbsp;fileToCopy,
-               boolean&nbsp;replace,
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/JarUtilities.html#copyFileFromJar-java.lang.String-boolean-java.lang.Class-">copyFileFromJar</a></span>(java.lang.String&nbsp;fileToCopy,
+               boolean&nbsp;replaceIfExists,
                java.lang.Class&lt;?&gt;&nbsp;classToCopyFrom)</code>
 <div class="block">Copy a file from inside our JAR-file to the host filesystem.</div>
 </td>
 </tr>
 <tr id="i1" class="rowColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/JarUtilities.html#copyFileFromJar-java.io.File-java.lang.Class-">copyFileFromJar</a></span>(java.io.File&nbsp;fileToCopy,
-               java.lang.Class&lt;?&gt;&nbsp;classToCopyFrom)</code>
+<td class="colFirst"><code>boolean</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/JarUtilities.html#copyFileFromJar-java.lang.String-java.lang.Class-">copyFileFromJar</a></span>(java.lang.String&nbsp;fileToCopy,
+               java.lang.Class&lt;?&gt;&nbsp;identifierClass)</code>
 <div class="block">Copy a file from inside our JAR-file to the host filesystem.</div>
 </td>
 </tr>
 <tr id="i2" class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/JarUtilities.html#copyFileFromJar-java.lang.String-java.io.File-boolean-java.lang.Class-">copyFileFromJar</a></span>(java.lang.String&nbsp;fileToCopy,
+               java.io.File&nbsp;destinationFile,
+               boolean&nbsp;replaceIfExists,
+               java.lang.Class&lt;?&gt;&nbsp;identifierClass)</code>
+<div class="block">Copy a file from inside our JAR-file to the host filesystem to the specified destination,
+ replacing an already existing file.</div>
+</td>
+</tr>
+<tr id="i3" class="rowColor">
+<td class="colFirst"><code>boolean</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/JarUtilities.html#copyFileFromJar-java.lang.String-java.io.File-java.lang.Class-">copyFileFromJar</a></span>(java.lang.String&nbsp;fileToCopy,
+               java.io.File&nbsp;destinationFile,
+               java.lang.Class&lt;?&gt;&nbsp;identifierClass)</code>
+<div class="block">Copy a file from inside our JAR-file to the host filesystem to the specified destination.</div>
+</td>
+</tr>
+<tr id="i4" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/JarUtilities.html#copyFolderFromJar-java.lang.Class-java.lang.String-java.lang.String-java.lang.String-java.lang.String-">copyFolderFromJar</a></span>(java.lang.Class&lt;?&gt;&nbsp;classToRetrieveHomeFor,
                  java.lang.String&nbsp;directoryToCopy,
@@ -171,13 +189,13 @@ extends java.lang.Object</pre>
 <div class="block">Copy a folder from inside a JAR-file to the host filesystem.</div>
 </td>
 </tr>
-<tr id="i3" class="rowColor">
+<tr id="i5" class="rowColor">
 <td class="colFirst"><code>org.springframework.boot.system.ApplicationHome</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/JarUtilities.html#getApplicationHomeForClass-java.lang.Class-">getApplicationHomeForClass</a></span>(java.lang.Class&lt;?&gt;&nbsp;classToRetrieveHomeFor)</code>
 <div class="block">Retrieve the ApplicationHome for a given class.</div>
 </td>
 </tr>
-<tr id="i4" class="altColor">
+<tr id="i6" class="altColor">
 <td class="colFirst"><code>java.util.HashMap&lt;java.lang.String,java.lang.String&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/JarUtilities.html#systemInformation-org.springframework.boot.system.ApplicationHome-">systemInformation</a></span>(org.springframework.boot.system.ApplicationHome&nbsp;applicationHome)</code>
 <div class="block">Retrieve information about the environment for the given instance of <code>ApplicationHome</code>,
@@ -226,14 +244,14 @@ extends java.lang.Object</pre>
 <!--   -->
 </a>
 <h3>Method Detail</h3>
-<a name="copyFileFromJar-java.io.File-boolean-java.lang.Class-">
+<a name="copyFileFromJar-java.lang.String-boolean-java.lang.Class-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>copyFileFromJar</h4>
-<pre>public&nbsp;void&nbsp;copyFileFromJar(java.io.File&nbsp;fileToCopy,
-                            boolean&nbsp;replace,
+<pre>public&nbsp;void&nbsp;copyFileFromJar(java.lang.String&nbsp;fileToCopy,
+                            boolean&nbsp;replaceIfExists,
                             java.lang.Class&lt;?&gt;&nbsp;classToCopyFrom)</pre>
 <div class="block">Copy a file from inside our JAR-file to the host filesystem. The file will create exactly as
  specified in the parameter. <br> Example:<br>
@@ -242,27 +260,76 @@ extends java.lang.Object</pre>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>fileToCopy</code> - File. The source-file in the JAR you wish to copy outside the JAR.</dd>
-<dd><code>replace</code> - Boolean. Whether to replace the file, if it already exists.</dd>
+<dd><code>replaceIfExists</code> - Boolean. Whether to replace the file, if it already exists.</dd>
 <dd><code>classToCopyFrom</code> - Class. The class of the JAR from which you want to copy from.</dd>
 </dl>
 </li>
 </ul>
-<a name="copyFileFromJar-java.io.File-java.lang.Class-">
+<a name="copyFileFromJar-java.lang.String-java.lang.Class-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>copyFileFromJar</h4>
-<pre>public&nbsp;void&nbsp;copyFileFromJar(java.io.File&nbsp;fileToCopy,
-                            java.lang.Class&lt;?&gt;&nbsp;classToCopyFrom)</pre>
-<div class="block">Copy a file from inside our JAR-file to the host filesystem. The file will create exactly as
+<pre>public&nbsp;boolean&nbsp;copyFileFromJar(java.lang.String&nbsp;fileToCopy,
+                               java.lang.Class&lt;?&gt;&nbsp;identifierClass)</pre>
+<div class="block">Copy a file from inside our JAR-file to the host filesystem. The file will be created with
+ exactly the same path specified in the parameter. <br> Example:<br>
+ <code>copyFileFromJar(new File("log4j2.xml"))</code> will result in the log4j2.xml file from
+ inside the JAR-file to be copied to the outside of the JAR-file as <code>log4j2.xml</code></div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>fileToCopy</code> - The source-file in the JAR you wish to copy outside the JAR.</dd>
+<dd><code>identifierClass</code> - The class of the JAR from which to get the resource.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd><code>true</code> if the file was created, <code>false</code> otherwise.</dd>
+</dl>
+</li>
+</ul>
+<a name="copyFileFromJar-java.lang.String-java.io.File-boolean-java.lang.Class-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>copyFileFromJar</h4>
+<pre>public&nbsp;void&nbsp;copyFileFromJar(java.lang.String&nbsp;fileToCopy,
+                            java.io.File&nbsp;destinationFile,
+                            boolean&nbsp;replaceIfExists,
+                            java.lang.Class&lt;?&gt;&nbsp;identifierClass)</pre>
+<div class="block">Copy a file from inside our JAR-file to the host filesystem to the specified destination,
+ replacing an already existing file. The file will be created with exactly the same path
  specified in the parameter. <br> Example:<br>
  <code>copyFileFromJar(new File("log4j2.xml"))</code> will result in the log4j2.xml file from
  inside the JAR-file to be copied to the outside of the JAR-file as <code>log4j2.xml</code></div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>fileToCopy</code> - File. The source-file in the JAR you wish to copy outside the JAR.</dd>
-<dd><code>classToCopyFrom</code> - Class. The class of the JAR from which to get the resource.</dd>
+<dd><code>fileToCopy</code> - The source-file in the JAR you wish to copy outside the JAR.</dd>
+<dd><code>destinationFile</code> - The file to which to copy to.</dd>
+<dd><code>identifierClass</code> - The class of the JAR from which to get the resource.</dd>
+<dd><code>replaceIfExists</code> - Boolean. Whether to replace the file, if it already exists.</dd>
+</dl>
+</li>
+</ul>
+<a name="copyFileFromJar-java.lang.String-java.io.File-java.lang.Class-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>copyFileFromJar</h4>
+<pre>public&nbsp;boolean&nbsp;copyFileFromJar(java.lang.String&nbsp;fileToCopy,
+                               java.io.File&nbsp;destinationFile,
+                               java.lang.Class&lt;?&gt;&nbsp;identifierClass)</pre>
+<div class="block">Copy a file from inside our JAR-file to the host filesystem to the specified destination. The
+ file will be created with exactly the same path specified in the parameter. <br> Example:<br>
+ <code>copyFileFromJar(new File("log4j2.xml"))</code> will result in the log4j2.xml file from
+ inside the JAR-file to be copied to the outside of the JAR-file as <code>log4j2.xml</code></div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>fileToCopy</code> - The source-file in the JAR you wish to copy outside the JAR.</dd>
+<dd><code>identifierClass</code> - The class of the JAR from which to get the resource.</dd>
+<dd><code>destinationFile</code> - The file to which to copy to.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd><code>true</code> if the file was created, <code>false</code> otherwise.</dd>
 </dl>
 </li>
 </ul>
@@ -276,9 +343,9 @@ extends java.lang.Object</pre>
 <div class="block">Retrieve the ApplicationHome for a given class.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>classToRetrieveHomeFor</code> - Class. The class to retrieve the <code>ApplicationHome</code> for.</dd>
+<dd><code>classToRetrieveHomeFor</code> - The class to retrieve the <code>ApplicationHome</code> for.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>ApplicationHome. An instance of <code>ApplicationHome</code> for the given class.</dd>
+<dd>An instance of <code>ApplicationHome</code> for the given class.</dd>
 </dl>
 </li>
 </ul>

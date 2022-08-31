@@ -16,5 +16,6 @@ de.griefed.serverpackcreator.utilities.common
 de.griefed.serverpackcreator.versionmeta
 de.griefed.serverpackcreator.versionmeta.fabric
 de.griefed.serverpackcreator.versionmeta.forge
+de.griefed.serverpackcreator.versionmeta.legacyfabric
 de.griefed.serverpackcreator.versionmeta.minecraft
 de.griefed.serverpackcreator.versionmeta.quilt

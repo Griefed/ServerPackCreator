@@ -118,13 +118,6 @@
  initialization and dependency injection and, finally, running ServerPackCreator.</div>
 </td>
 </tr>
-<tr class="rowColor">
-<td class="colFirst"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.CommandlineParser.html" title="class in de.griefed.serverpackcreator">ServerPackCreator.CommandlineParser</a></td>
-<td class="colLast">
-<div class="block">Check the passed commandline-arguments with which ServerPackCreator was started and return the
- mode in which to run.</div>
-</td>
-</tr>
 <tr class="altColor">
 <td class="colFirst"><a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html" title="class in de.griefed.serverpackcreator">ServerPackHandler</a></td>
 <td class="colLast">
@@ -149,7 +142,7 @@
 <td class="colLast">&nbsp;</td>
 </tr>
 <tr class="rowColor">
-<td class="colFirst"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.CommandlineParser.Mode.html" title="enum in de.griefed.serverpackcreator">ServerPackCreator.CommandlineParser.Mode</a></td>
+<td class="colFirst"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.Mode.html" title="enum in de.griefed.serverpackcreator">ServerPackCreator.Mode</a></td>
 <td class="colLast">
 <div class="block">Mode-priorities.</div>
 </td>
@@ -165,7 +158,11 @@
 <div class="block">The ServerPackCreator core.<br> The heart and soul, if you will.<br> The classes inside this
  package are responsible for turning your modpack into a server pack. Especially the
  <a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html" title="class in de.griefed.serverpackcreator"><code>ServerPackHandler</code></a>, which receives a configuration and then
- creates the actual server pack for you.</div>
+ creates the actual server pack for you.<br><br>A regular run of ServerPackCreator is
+ <ol>
+   <li>Load or create a configuration. <p>See <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html#ConfigurationModel-de.griefed.serverpackcreator.utilities.common.Utilities-java.io.File-"><code>ConfigurationModel(de.griefed.serverpackcreator.utilities.common.Utilities, java.io.File)</code></a><br>and <a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#checkConfiguration-java.io.File-java.util.List-boolean-"><code>ConfigurationHandler.checkConfiguration(java.io.File, java.util.List&lt;java.lang.String&gt;, boolean)</code></a><br>or <a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#checkConfiguration-java.io.File-de.griefed.serverpackcreator.ConfigurationModel-java.util.List-boolean-"><code>ConfigurationHandler.checkConfiguration(java.io.File, de.griefed.serverpackcreator.ConfigurationModel, java.util.List, boolean)</code></a></p></li>
+   <li>Run ServerPackCreator with the configuration. See <a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html#run-de.griefed.serverpackcreator.ConfigurationModel-"><code>ServerPackHandler.run(de.griefed.serverpackcreator.ConfigurationModel)</code></a></li>
+ </ol></div>
 </div>
 <!-- ======= START OF BOTTOM NAVBAR ====== -->
 <div class="bottomNav"><a name="navbar.bottom">

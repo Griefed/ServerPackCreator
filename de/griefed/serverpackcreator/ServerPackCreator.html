@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":9,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":9,"i17":10,"i18":10,"i19":10,"i20":10,"i21":10,"i22":10,"i23":10,"i24":10,"i25":9,"i26":10,"i27":10,"i28":10,"i29":9};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":9,"i14":9,"i15":10,"i16":10,"i17":10,"i18":10,"i19":10,"i20":10,"i21":10,"i22":10,"i23":10,"i24":10,"i25":10,"i26":9,"i27":10,"i28":10,"i29":10,"i30":10,"i31":9};
 var tabs = {65535:["t0","All Methods"],1:["t1","Static Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -133,10 +133,16 @@ extends java.lang.Object</pre>
 <th class="colLast" scope="col">Class and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colFirst"><code>static class&nbsp;</code></td>
+<td class="colFirst"><code>class&nbsp;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.CommandlineParser.html" title="class in de.griefed.serverpackcreator">ServerPackCreator.CommandlineParser</a></span></code>
 <div class="block">Check the passed commandline-arguments with which ServerPackCreator was started and return the
  mode in which to run.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>static class&nbsp;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.Mode.html" title="enum in de.griefed.serverpackcreator">ServerPackCreator.Mode</a></span></code>
+<div class="block">Mode-priorities.</div>
 </td>
 </tr>
 </table>
@@ -155,7 +161,7 @@ extends java.lang.Object</pre>
 </tr>
 <tr class="altColor">
 <td class="colOne"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#ServerPackCreator-java.lang.String:A-">ServerPackCreator</a></span>(java.lang.String[]&nbsp;args)</code>
-<div class="block">Initialize ServerPackCreator and determine the <a href="../../../de/griefed/serverpackcreator/ServerPackCreator.CommandlineParser.Mode.html" title="enum in de.griefed.serverpackcreator"><code>ServerPackCreator.CommandlineParser.Mode</code></a> to run in.</div>
+<div class="block">Initialize ServerPackCreator and determine the <a href="../../../de/griefed/serverpackcreator/ServerPackCreator.Mode.html" title="enum in de.griefed.serverpackcreator"><code>ServerPackCreator.Mode</code></a> to run in.</div>
 </td>
 </tr>
 </table>
@@ -204,7 +210,7 @@ extends java.lang.Object</pre>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getApplicationProperties--">getApplicationProperties</a></span>()</code>&nbsp;</td>
 </tr>
 <tr id="i6" class="altColor">
-<td class="colFirst"><code>static java.lang.String[]</code></td>
+<td class="colFirst"><code>java.lang.String[]</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getArgs--">getArgs</a></span>()</code>
 <div class="block">The arguments with which ServerPackCreator was started.</div>
 </td>
@@ -234,78 +240,94 @@ extends java.lang.Object</pre>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getI18n--">getI18n</a></span>()</code>&nbsp;</td>
 </tr>
 <tr id="i13" class="rowColor">
+<td class="colFirst"><code>static <a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html" title="class in de.griefed.serverpackcreator">ServerPackCreator</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getInstance--">getInstance</a></span>()</code>
+<div class="block">Acquire an instance of ServerPackCreator using the <code>--setup</code>-argument so a prepared
+ environment is present after acquiring the instance.</div>
+</td>
+</tr>
+<tr id="i14" class="altColor">
+<td class="colFirst"><code>static <a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html" title="class in de.griefed.serverpackcreator">ServerPackCreator</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getInstance-java.lang.String:A-">getInstance</a></span>(java.lang.String[]&nbsp;args)</code>
+<div class="block">Acquire an instance of ServerPackCreator using the specified argument.</div>
+</td>
+</tr>
+<tr id="i15" class="rowColor">
 <td class="colFirst"><code><a href="../../../de/griefed/serverpackcreator/modscanning/ModScanner.html" title="class in de.griefed.serverpackcreator.modscanning">ModScanner</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getModScanner--">getModScanner</a></span>()</code>&nbsp;</td>
 </tr>
-<tr id="i14" class="altColor">
+<tr id="i16" class="altColor">
 <td class="colFirst"><code>com.fasterxml.jackson.databind.ObjectMapper</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getObjectMapper--">getObjectMapper</a></span>()</code>&nbsp;</td>
 </tr>
-<tr id="i15" class="rowColor">
+<tr id="i17" class="rowColor">
 <td class="colFirst"><code><a href="../../../de/griefed/serverpackcreator/modscanning/QuiltScanner.html" title="class in de.griefed.serverpackcreator.modscanning">QuiltScanner</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getQuiltScanner--">getQuiltScanner</a></span>()</code>&nbsp;</td>
 </tr>
-<tr id="i16" class="altColor">
-<td class="colFirst"><code>static <a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html" title="class in de.griefed.serverpackcreator">ServerPackCreator</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getServerPackCreator-java.lang.String:A-">getServerPackCreator</a></span>(java.lang.String[]&nbsp;args)</code>&nbsp;</td>
-</tr>
-<tr id="i17" class="rowColor">
+<tr id="i18" class="altColor">
 <td class="colFirst"><code><a href="../../../de/griefed/serverpackcreator/swing/ServerPackCreatorGui.html" title="class in de.griefed.serverpackcreator.swing">ServerPackCreatorGui</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getServerPackCreatorGui--">getServerPackCreatorGui</a></span>()</code>&nbsp;</td>
 </tr>
-<tr id="i18" class="altColor">
+<tr id="i19" class="rowColor">
 <td class="colFirst"><code><a href="../../../de/griefed/serverpackcreator/swing/ServerPackCreatorSplash.html" title="class in de.griefed.serverpackcreator.swing">ServerPackCreatorSplash</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getServerPackCreatorSplash--">getServerPackCreatorSplash</a></span>()</code>&nbsp;</td>
 </tr>
-<tr id="i19" class="rowColor">
+<tr id="i20" class="altColor">
 <td class="colFirst"><code><a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html" title="class in de.griefed.serverpackcreator">ServerPackHandler</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getServerPackHandler--">getServerPackHandler</a></span>()</code>&nbsp;</td>
 </tr>
-<tr id="i20" class="altColor">
+<tr id="i21" class="rowColor">
 <td class="colFirst"><code>com.electronwill.nightconfig.toml.TomlParser</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getTomlParser--">getTomlParser</a></span>()</code>&nbsp;</td>
 </tr>
-<tr id="i21" class="rowColor">
+<tr id="i22" class="altColor">
 <td class="colFirst"><code><a href="../../../de/griefed/serverpackcreator/modscanning/TomlScanner.html" title="class in de.griefed.serverpackcreator.modscanning">TomlScanner</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getTomlScanner--">getTomlScanner</a></span>()</code>&nbsp;</td>
 </tr>
-<tr id="i22" class="altColor">
+<tr id="i23" class="rowColor">
 <td class="colFirst"><code><a href="../../../de/griefed/serverpackcreator/utilities/UpdateChecker.html" title="class in de.griefed.serverpackcreator.utilities">UpdateChecker</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getUpdateChecker--">getUpdateChecker</a></span>()</code>&nbsp;</td>
 </tr>
-<tr id="i23" class="rowColor">
+<tr id="i24" class="altColor">
 <td class="colFirst"><code><a href="../../../de/griefed/serverpackcreator/utilities/common/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.common">Utilities</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getUtilities--">getUtilities</a></span>()</code>&nbsp;</td>
 </tr>
-<tr id="i24" class="altColor">
+<tr id="i25" class="rowColor">
 <td class="colFirst"><code><a href="../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta">VersionMeta</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getVersionMeta--">getVersionMeta</a></span>()</code>&nbsp;</td>
 </tr>
-<tr id="i25" class="rowColor">
+<tr id="i26" class="altColor">
 <td class="colFirst"><code>static void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#main-java.lang.String:A-">main</a></span>(java.lang.String[]&nbsp;args)</code>
 <div class="block">Initialize ServerPackCreator with the passed commandline-arguments and run.</div>
 </td>
 </tr>
-<tr id="i26" class="altColor">
+<tr id="i27" class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#overwriteServerFilesFile-java.io.File-">overwriteServerFilesFile</a></span>(java.io.File&nbsp;fileToOverwrite)</code>
+<div class="block">Delete and recreate a server-files file, so we always have the latest and greatest hits
+ available on the host, and therefor, the user.</div>
+</td>
+</tr>
+<tr id="i28" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#run--">run</a></span>()</code>
 <div class="block">Run ServerPackCreator with the mode acquired from <a href="../../../de/griefed/serverpackcreator/ServerPackCreator.CommandlineParser.html" title="class in de.griefed.serverpackcreator"><code>ServerPackCreator.CommandlineParser</code></a>.</div>
 </td>
 </tr>
-<tr id="i27" class="rowColor">
+<tr id="i29" class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#run-de.griefed.serverpackcreator.ServerPackCreator.CommandlineParser.Mode-">run</a></span>(<a href="../../../de/griefed/serverpackcreator/ServerPackCreator.CommandlineParser.Mode.html" title="enum in de.griefed.serverpackcreator">ServerPackCreator.CommandlineParser.Mode</a>&nbsp;modeToRunIn)</code>
-<div class="block">Run ServerPackCreator in a specific <a href="../../../de/griefed/serverpackcreator/ServerPackCreator.CommandlineParser.Mode.html" title="enum in de.griefed.serverpackcreator"><code>ServerPackCreator.CommandlineParser.Mode</code></a>.</div>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#run-de.griefed.serverpackcreator.ServerPackCreator.Mode-">run</a></span>(<a href="../../../de/griefed/serverpackcreator/ServerPackCreator.Mode.html" title="enum in de.griefed.serverpackcreator">ServerPackCreator.Mode</a>&nbsp;modeToRunIn)</code>
+<div class="block">Run ServerPackCreator in a specific <a href="../../../de/griefed/serverpackcreator/ServerPackCreator.Mode.html" title="enum in de.griefed.serverpackcreator"><code>ServerPackCreator.Mode</code></a>.</div>
 </td>
 </tr>
-<tr id="i28" class="altColor">
+<tr id="i30" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#updateCheck--">updateCheck</a></span>()</code>
 <div class="block">Check for update-availability and exit with status code 0.</div>
 </td>
 </tr>
-<tr id="i29" class="rowColor">
+<tr id="i31" class="rowColor">
 <td class="colFirst"><code>static void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#web-java.lang.String:A-">web</a></span>(java.lang.String[]&nbsp;args)</code>
 <div class="block">Start Spring Boot app, providing our Apache Tomcat and serving our frontend.</div>
@@ -340,7 +362,7 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>ServerPackCreator</h4>
 <pre>public&nbsp;ServerPackCreator(java.lang.String[]&nbsp;args)</pre>
-<div class="block">Initialize ServerPackCreator and determine the <a href="../../../de/griefed/serverpackcreator/ServerPackCreator.CommandlineParser.Mode.html" title="enum in de.griefed.serverpackcreator"><code>ServerPackCreator.CommandlineParser.Mode</code></a> to run in.</div>
+<div class="block">Initialize ServerPackCreator and determine the <a href="../../../de/griefed/serverpackcreator/ServerPackCreator.Mode.html" title="enum in de.griefed.serverpackcreator"><code>ServerPackCreator.Mode</code></a> to run in.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>args</code> - Commandline arguments with which ServerPackCreator is run. Determines which mode
@@ -356,13 +378,40 @@ extends java.lang.Object</pre>
 <!--   -->
 </a>
 <h3>Method Detail</h3>
-<a name="getServerPackCreator-java.lang.String:A-">
+<a name="getInstance--">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>getServerPackCreator</h4>
-<pre>public static&nbsp;<a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html" title="class in de.griefed.serverpackcreator">ServerPackCreator</a>&nbsp;getServerPackCreator(java.lang.String[]&nbsp;args)</pre>
+<h4>getInstance</h4>
+<pre>public static&nbsp;<a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html" title="class in de.griefed.serverpackcreator">ServerPackCreator</a>&nbsp;getInstance()</pre>
+<div class="block">Acquire an instance of ServerPackCreator using the <code>--setup</code>-argument so a prepared
+ environment is present after acquiring the instance. If a new instance of ServerPackCreator is
+ created as the result of calling this method, then the setup is run to ensure a properly
+ prepared environment.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>ServerPackCreator-instance using the <code>--setup</code>-argument.</dd>
+</dl>
+</li>
+</ul>
+<a name="getInstance-java.lang.String:A-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getInstance</h4>
+<pre>public static&nbsp;<a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html" title="class in de.griefed.serverpackcreator">ServerPackCreator</a>&nbsp;getInstance(java.lang.String[]&nbsp;args)</pre>
+<div class="block">Acquire an instance of ServerPackCreator using the specified argument. If a new instance of
+ ServerPackCreator is created as the result of calling this method, then the setup is run to
+ ensure a properly prepared environment.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>args</code> - Arguments with which to instantiate ServerPackCreator. Possible arguments can be
+             found at <a href="../../../de/griefed/serverpackcreator/ServerPackCreator.Mode.html" title="enum in de.griefed.serverpackcreator"><code>ServerPackCreator.Mode</code></a>.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>ServerPackCreator-instance with the specified argument.</dd>
+</dl>
 </li>
 </ul>
 <a name="main-java.lang.String:A-">
@@ -372,30 +421,20 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>main</h4>
 <pre>public static&nbsp;void&nbsp;main(java.lang.String[]&nbsp;args)
-                 throws java.io.IOException</pre>
+                 throws java.io.IOException,
+                        javax.xml.parsers.ParserConfigurationException,
+                        org.xml.sax.SAXException</pre>
 <div class="block">Initialize ServerPackCreator with the passed commandline-arguments and run.
 
- <p>For a list of available commandline arguments, check out <a href="../../../de/griefed/serverpackcreator/ServerPackCreator.CommandlineParser.Mode.html" title="enum in de.griefed.serverpackcreator"><code>ServerPackCreator.CommandlineParser.Mode</code></a></div>
+ <p>For a list of available commandline arguments, check out <a href="../../../de/griefed/serverpackcreator/ServerPackCreator.Mode.html" title="enum in de.griefed.serverpackcreator"><code>ServerPackCreator.Mode</code></a></div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>args</code> - Commandline arguments with which ServerPackCreator is run. Determines which mode
              ServerPackCreator will enter and which locale is used.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.io.IOException</code> - if the <a href="../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta"><code>VersionMeta</code></a> could not be instantiated.</dd>
-</dl>
-</li>
-</ul>
-<a name="getArgs--">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>getArgs</h4>
-<pre>public static&nbsp;java.lang.String[]&nbsp;getArgs()</pre>
-<div class="block">The arguments with which ServerPackCreator was started.</div>
-<dl>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>All arguments with which ServerPackCreator was started.</dd>
+<dd><code>javax.xml.parsers.ParserConfigurationException</code> - indicates a serious configuration error.</dd>
+<dd><code>java.io.IOException</code> - if any IO errors occur.</dd>
+<dd><code>org.xml.sax.SAXException</code> - if any parse errors occur.</dd>
 </dl>
 </li>
 </ul>
@@ -410,6 +449,20 @@ extends java.lang.Object</pre>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>args</code> - Arguments passed from invocation in <a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#main-java.lang.String:A-"><code>main(String[])</code></a>.</dd>
+</dl>
+</li>
+</ul>
+<a name="getArgs--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getArgs</h4>
+<pre>public&nbsp;java.lang.String[]&nbsp;getArgs()</pre>
+<div class="block">The arguments with which ServerPackCreator was started.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>All arguments with which ServerPackCreator was started.</dd>
 </dl>
 </li>
 </ul>
@@ -465,10 +518,14 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>getVersionMeta</h4>
 <pre>public&nbsp;<a href="../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta">VersionMeta</a>&nbsp;getVersionMeta()
-                           throws java.io.IOException</pre>
+                           throws java.io.IOException,
+                                  javax.xml.parsers.ParserConfigurationException,
+                                  org.xml.sax.SAXException</pre>
 <dl>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code>java.io.IOException</code></dd>
+<dd><code>javax.xml.parsers.ParserConfigurationException</code></dd>
+<dd><code>org.xml.sax.SAXException</code></dd>
 </dl>
 </li>
 </ul>
@@ -488,10 +545,14 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>getConfigurationHandler</h4>
 <pre>public&nbsp;<a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html" title="class in de.griefed.serverpackcreator">ConfigurationHandler</a>&nbsp;getConfigurationHandler()
-                                             throws java.io.IOException</pre>
+                                             throws java.io.IOException,
+                                                    javax.xml.parsers.ParserConfigurationException,
+                                                    org.xml.sax.SAXException</pre>
 <dl>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code>java.io.IOException</code></dd>
+<dd><code>javax.xml.parsers.ParserConfigurationException</code></dd>
+<dd><code>org.xml.sax.SAXException</code></dd>
 </dl>
 </li>
 </ul>
@@ -511,10 +572,14 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>getServerPackHandler</h4>
 <pre>public&nbsp;<a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html" title="class in de.griefed.serverpackcreator">ServerPackHandler</a>&nbsp;getServerPackHandler()
-                                       throws java.io.IOException</pre>
+                                       throws java.io.IOException,
+                                              javax.xml.parsers.ParserConfigurationException,
+                                              org.xml.sax.SAXException</pre>
 <dl>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code>java.io.IOException</code></dd>
+<dd><code>javax.xml.parsers.ParserConfigurationException</code></dd>
+<dd><code>org.xml.sax.SAXException</code></dd>
 </dl>
 </li>
 </ul>
@@ -597,10 +662,14 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>getConfigurationEditor</h4>
 <pre>public&nbsp;<a href="../../../de/griefed/serverpackcreator/utilities/ConfigurationEditor.html" title="class in de.griefed.serverpackcreator.utilities">ConfigurationEditor</a>&nbsp;getConfigurationEditor()
-                                           throws java.io.IOException</pre>
+                                           throws java.io.IOException,
+                                                  javax.xml.parsers.ParserConfigurationException,
+                                                  org.xml.sax.SAXException</pre>
 <dl>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code>java.io.IOException</code></dd>
+<dd><code>javax.xml.parsers.ParserConfigurationException</code></dd>
+<dd><code>org.xml.sax.SAXException</code></dd>
 </dl>
 </li>
 </ul>
@@ -611,10 +680,14 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>getServerPackCreatorGui</h4>
 <pre>public&nbsp;<a href="../../../de/griefed/serverpackcreator/swing/ServerPackCreatorGui.html" title="class in de.griefed.serverpackcreator.swing">ServerPackCreatorGui</a>&nbsp;getServerPackCreatorGui()
-                                             throws java.io.IOException</pre>
+                                             throws java.io.IOException,
+                                                    javax.xml.parsers.ParserConfigurationException,
+                                                    org.xml.sax.SAXException</pre>
 <dl>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code>java.io.IOException</code></dd>
+<dd><code>javax.xml.parsers.ParserConfigurationException</code></dd>
+<dd><code>org.xml.sax.SAXException</code></dd>
 </dl>
 </li>
 </ul>
@@ -625,28 +698,36 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>run</h4>
 <pre>public&nbsp;void&nbsp;run()
-         throws java.io.IOException</pre>
+         throws java.io.IOException,
+                javax.xml.parsers.ParserConfigurationException,
+                org.xml.sax.SAXException</pre>
 <div class="block">Run ServerPackCreator with the mode acquired from <a href="../../../de/griefed/serverpackcreator/ServerPackCreator.CommandlineParser.html" title="class in de.griefed.serverpackcreator"><code>ServerPackCreator.CommandlineParser</code></a>.</div>
 <dl>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.io.IOException</code> - if the run fails.</dd>
+<dd><code>javax.xml.parsers.ParserConfigurationException</code> - indicates a serious configuration error.</dd>
+<dd><code>java.io.IOException</code> - if any IO errors occur.</dd>
+<dd><code>org.xml.sax.SAXException</code> - if any parse errors occur.</dd>
 </dl>
 </li>
 </ul>
-<a name="run-de.griefed.serverpackcreator.ServerPackCreator.CommandlineParser.Mode-">
+<a name="run-de.griefed.serverpackcreator.ServerPackCreator.Mode-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>run</h4>
-<pre>public&nbsp;void&nbsp;run(<a href="../../../de/griefed/serverpackcreator/ServerPackCreator.CommandlineParser.Mode.html" title="enum in de.griefed.serverpackcreator">ServerPackCreator.CommandlineParser.Mode</a>&nbsp;modeToRunIn)
-         throws java.io.IOException</pre>
-<div class="block">Run ServerPackCreator in a specific <a href="../../../de/griefed/serverpackcreator/ServerPackCreator.CommandlineParser.Mode.html" title="enum in de.griefed.serverpackcreator"><code>ServerPackCreator.CommandlineParser.Mode</code></a>.</div>
+<pre>public&nbsp;void&nbsp;run(<a href="../../../de/griefed/serverpackcreator/ServerPackCreator.Mode.html" title="enum in de.griefed.serverpackcreator">ServerPackCreator.Mode</a>&nbsp;modeToRunIn)
+         throws java.io.IOException,
+                javax.xml.parsers.ParserConfigurationException,
+                org.xml.sax.SAXException</pre>
+<div class="block">Run ServerPackCreator in a specific <a href="../../../de/griefed/serverpackcreator/ServerPackCreator.Mode.html" title="enum in de.griefed.serverpackcreator"><code>ServerPackCreator.Mode</code></a>.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>modeToRunIn</code> - Mode to run in.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.io.IOException</code> - if the run fails.</dd>
+<dd><code>javax.xml.parsers.ParserConfigurationException</code> - indicates a serious configuration error.</dd>
+<dd><code>java.io.IOException</code> - if any IO errors occur.</dd>
+<dd><code>org.xml.sax.SAXException</code> - if any parse errors occur.</dd>
 </dl>
 </li>
 </ul>
@@ -679,8 +760,24 @@ extends java.lang.Object</pre>
 <dd><code>fileToCheckFor</code> - The file which is to be checked for whether it exists and if it doesn't,
                        should be created.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>Boolean. Returns true if the file was generated, so we can inform the user about said
+<dd><code>true</code> if the file was generated, so we can inform the user about said
  newly generated file.</dd>
+</dl>
+</li>
+</ul>
+<a name="overwriteServerFilesFile-java.io.File-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>overwriteServerFilesFile</h4>
+<pre>public&nbsp;void&nbsp;overwriteServerFilesFile(java.io.File&nbsp;fileToOverwrite)</pre>
+<div class="block">Delete and recreate a server-files file, so we always have the latest and greatest hits
+ available on the host, and therefor, the user.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>fileToOverwrite</code> - The file which is to be overwritten. If it exists. it is first deleted,
+                        then extracted from our JAR-file.</dd>
 </dl>
 </li>
 </ul>
