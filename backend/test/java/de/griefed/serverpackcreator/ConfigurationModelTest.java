@@ -8,7 +8,8 @@ import org.junit.jupiter.api.Test;
 
 public class ConfigurationModelTest {
 
-  ConfigurationModelTest() {}
+  ConfigurationModelTest() {
+  }
 
   @Test
   void getsetCopyDirsTest() {

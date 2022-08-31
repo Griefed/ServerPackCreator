@@ -21,7 +21,6 @@ package de.griefed.serverpackcreator;
 
 import com.electronwill.nightconfig.core.file.FileConfig;
 import com.typesafe.config.ConfigException;
-import de.griefed.serverpackcreator.ApplicationProperties.ExclusionFilter;
 import de.griefed.serverpackcreator.i18n.I18n;
 import de.griefed.serverpackcreator.utilities.ConfigUtilities;
 import de.griefed.serverpackcreator.utilities.common.FileUtilities;
@@ -504,7 +503,7 @@ public final class ConfigurationHandler {
    * @return <code>true</code> if an error is found during configuration check.
    * @author Griefed
    */
-  private boolean isDir(ConfigurationModel configurationModel, List<String> encounteredErrors) {
+  public boolean isDir(ConfigurationModel configurationModel, List<String> encounteredErrors) {
     boolean configHasError = false;
 
     if (checkCopyDirs(
@@ -535,9 +534,10 @@ public final class ConfigurationHandler {
    *                           configuration.
    * @param encounteredErrors  A list of errors encountered during configuration checks.
    * @return <code>false</code> when no errors were encountered.
+   * @throws IOException if an error occurred trying to move the server pack directory.
    * @author Griefed
    */
-  private boolean isZip(ConfigurationModel configurationModel, List<String> encounteredErrors)
+  public boolean isZip(ConfigurationModel configurationModel, List<String> encounteredErrors)
       throws IOException {
     boolean configHasError = false;
 
@@ -678,7 +678,7 @@ public final class ConfigurationHandler {
    * not be acquired.
    * @author Griefed
    */
-  private String checkManifests(String destination, ConfigurationModel configurationModel,
+  public String checkManifests(String destination, ConfigurationModel configurationModel,
       List<String> encounteredErrors) {
     String packName = null;
 
@@ -1020,7 +1020,7 @@ public final class ConfigurationHandler {
    * @param configurationModel Model in which to ensure the default key-value pairs are present.
    * @author Griefed
    */
-  private void ensureScriptSettingsDefaults(ConfigurationModel configurationModel) {
+  public void ensureScriptSettingsDefaults(ConfigurationModel configurationModel) {
 
     HashMap<String, String> scriptSettings = configurationModel.getScriptSettings();
 
@@ -1058,9 +1058,11 @@ public final class ConfigurationHandler {
     scriptSettings.put("SPC_JAVA_SPC", "java");
 
     scriptSettings.put(
-        "SPC_FABRIC_INSTALLER_VERSION_SPC", VERSIONMETA.fabric().releaseInstallerVersion());
+        "SPC_FABRIC_INSTALLER_VERSION_SPC", VERSIONMETA.fabric().releaseInstaller());
     scriptSettings.put(
-        "SPC_QUILT_INSTALLER_VERSION_SPC", VERSIONMETA.quilt().releaseInstallerVersion());
+        "SPC_QUILT_INSTALLER_VERSION_SPC", VERSIONMETA.quilt().releaseInstaller());
+    scriptSettings.put("SPC_LEGACYFABRIC_INSTALLER_VERSION_SPC",
+        VERSIONMETA.legacyFabric().releaseInstaller());
   }
 
   /**
@@ -1071,7 +1073,7 @@ public final class ConfigurationHandler {
    *                           their respective destinations.
    * @author Griefed
    */
-  private void sanitizeLinks(ConfigurationModel configurationModel) {
+  public void sanitizeLinks(ConfigurationModel configurationModel) {
 
     LOG.info("Checking configuration for links...");
 
@@ -1787,9 +1789,10 @@ public final class ConfigurationHandler {
    */
   public boolean checkModloader(String modloader) {
 
-    if (modloader.toLowerCase().contains("forge")
-        || modloader.toLowerCase().contains("fabric")
-        || modloader.toLowerCase().contains("quilt")) {
+    if (modloader.toLowerCase().matches("^forge$")
+        || modloader.toLowerCase().matches("^fabric$")
+        || modloader.toLowerCase().matches("^quilt$")
+        || modloader.toLowerCase().matches("^legacyfabric$")) {
 
       return true;
 
@@ -1858,7 +1861,7 @@ public final class ConfigurationHandler {
         }
 
       case "Fabric":
-        if (VERSIONMETA.fabric().checkFabricVersion(modloaderVersion)
+        if (VERSIONMETA.fabric().isVersionValid(modloaderVersion)
             && VERSIONMETA
             .fabric()
             .getLoaderDetails(minecraftVersion, modloaderVersion)
@@ -1878,8 +1881,25 @@ public final class ConfigurationHandler {
         }
 
       case "Quilt":
-        if (VERSIONMETA.quilt().checkQuiltVersion(modloaderVersion)
-            && VERSIONMETA.fabric().getFabricIntermediary(minecraftVersion).isPresent()) {
+        if (VERSIONMETA.quilt().isVersionValid(modloaderVersion)
+            && VERSIONMETA.fabric().isMinecraftSupported(minecraftVersion)) {
+
+          return true;
+
+        } else {
+          encounteredErrors.add(
+              String.format(
+                  I18N.getMessage("configuration.log.error.checkmodloaderandversion"),
+                  minecraftVersion,
+                  modloader,
+                  modloaderVersion));
+
+          return false;
+        }
+
+      case "LegacyFabric":
+        if (VERSIONMETA.legacyFabric().isVersionValid(modloaderVersion)
+            && VERSIONMETA.legacyFabric().isMinecraftSupported(minecraftVersion)) {
 
           return true;
 

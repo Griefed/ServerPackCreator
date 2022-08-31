@@ -1,3 +1,69 @@
+## [3.13.0-beta.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.13.0-beta.2...3.13.0-beta.3) (2022-08-27)
+
+
+### :scissors: Refactor
+
+* Cleanup and optimize imports ([79fe583](https://git.griefed.de/Griefed/ServerPackCreator/commit/79fe583f9460ec2b7c20a314dd64050988e95230))
+* **API:** Open certain methods to public to allow more usage out of ServerPackCreator. Overload API methods for ease of use. ([faad1ec](https://git.griefed.de/Griefed/ServerPackCreator/commit/faad1ec61f6c55123b9cca9afe9c38e69a11decc))
+* **ServerPackCreator:** Run setup if ServerPackCreator was newly instantiated ([941e7a2](https://git.griefed.de/Griefed/ServerPackCreator/commit/941e7a26ecad1deb918f0cffd5c82ffd81c6ab5e))
+* **Start Script writing:** Write all scripts with ISO 8859_1 as this is compatible with both Windows and Linux. Templates are still read using UTF-8. ([5f80c6d](https://git.griefed.de/Griefed/ServerPackCreator/commit/5f80c6dc440431f9b9dd4425ce11a7616b41b936))
+
+
+### 📔 Docs
+
+* License headers and package info ([99982e7](https://git.griefed.de/Griefed/ServerPackCreator/commit/99982e78d9807a6658390ff5ef6d44d3b3cd3cda))
+
+
+### 🦊 CI/CD
+
+* Do not include untracked files in build artifacts as they would fill up our servers harddrive.... ([bd03534](https://git.griefed.de/Griefed/ServerPackCreator/commit/bd03534b386c55a8fd958749c58c2c8a730cddaa))
+
+
+### 🧪 Tests
+
+* Do not finalize tests with cleanup. Call cleanUp manually if you want to...well...clean up. ([cd893a1](https://git.griefed.de/Griefed/ServerPackCreator/commit/cd893a1f128fa52c429a130323a644cea23bfddc))
+* Migrate tests to use the new ServerPackCreator instantiation ([a3af66b](https://git.griefed.de/Griefed/ServerPackCreator/commit/a3af66bcd7ed7c57b6b1cd42d1e6675bc7fde0da))
+* Use instance for unit tests ([79f89d8](https://git.griefed.de/Griefed/ServerPackCreator/commit/79f89d885d7d9c641cd6c85b54d31657e924a308))
+
+
+### Other
+
+* **Qodana reports:** Some cleanups and minor refactorings according to Qodana. ([f1b028a](https://git.griefed.de/Griefed/ServerPackCreator/commit/f1b028a4605715c80fc6604ece93d3a81ae7e7ab))
+
+## [3.13.0-beta.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.13.0-beta.1...3.13.0-beta.2) (2022-08-26)
+
+
+### 🛠 Fixes
+
+* **Powershell Script:** Fix function call and echo to host if 32Bit Java is detected ([8680333](https://git.griefed.de/Griefed/ServerPackCreator/commit/8680333c07bc8cf29d6c120a2c9f51aa0801a450))
+* **Shell Start Script:** Remove character from PWD echo and replace variable name for user input with human readable one ([69132ca](https://git.griefed.de/Griefed/ServerPackCreator/commit/69132caf19b553249a1c48e1bc740e55db59ccab))
+* **Start Script refreshing:** Delete existing default start script templates and extract up-to-date ones from ServerPackCreator ([3d1913f](https://git.griefed.de/Griefed/ServerPackCreator/commit/3d1913f5773356828b225816338d58fef314ed0d))
+* **Start Scripts:** When `sh`, `bash` or `zsh` scripts are created, use ISO-8859_1 encoding ([c615437](https://git.griefed.de/Griefed/ServerPackCreator/commit/c6154378604a3b0bd11bc4e3c1873fbadb1c9b26))
+
+
+### Other
+
+* Add changelog section for dependency changes ([039b242](https://git.griefed.de/Griefed/ServerPackCreator/commit/039b242f18be520fcdc5f0ca7c87a41d305f8dd9))
+* **RenovateBot:** Set commit type to `deps` ([a58de49](https://git.griefed.de/Griefed/ServerPackCreator/commit/a58de49f328cbed91dc5b50f9b7130d7c1c68e1e))
+
+## [3.13.0-beta.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.12.0...3.13.0-beta.1) (2022-08-26)
+
+
+### 💎 Improvements
+
+* **Default Start Script Templates:** Check for Java 32Bit and warn appropriately. Overwrite default start script templates during boot of ServerPackCreator to ensure users always have the latest default templates. ([96a7354](https://git.griefed.de/Griefed/ServerPackCreator/commit/96a73541b2fb16e2847f945ddb5d132cd9c5a1c9))
+
+
+### 🦊 CI/CD
+
+* **GitLab:** Make Build Release dependant on Gradle Test to prevent release build before tests ([744e7d1](https://git.griefed.de/Griefed/ServerPackCreator/commit/744e7d1d91f4e44b01a0650c42e8d0bb24a07965))
+* **GitLab:** Make Sign Java Publication dependant on Build Release to prevent signing before build releasing ([ca2f669](https://git.griefed.de/Griefed/ServerPackCreator/commit/ca2f6690cdd3a99b9fbd4b4b9997070daf7fc82d))
+
+
+### 🚀 Features
+
+* **LegacyFabric:** Support LegacyFabric ([30e3e8e](https://git.griefed.de/Griefed/ServerPackCreator/commit/30e3e8e332dc215968e5e7042a4db0b2c7dc1f27))
+
 ## [3.12.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.11.1...3.12.0) (2022-08-24)
 
 

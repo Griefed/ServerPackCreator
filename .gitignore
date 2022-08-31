@@ -163,6 +163,7 @@ backend/test/resources/tests/server_pack/fabric-installer.jar
 backend/test/resources/tests/server_pack/forge-installer.jar
 backend/test/resources/forge_tests/Vanilla Forge
 backend/test/resources/fabric_tests/server_pack.zip
+backend/test/resources/legacyfabric_tests/server_pack.zip
 backend/test/resources/forge_tests/server_pack.zip
 /Vanilla Forge
 /serverpackcreator.conf
@@ -188,6 +189,7 @@ backend/test/resources/forge_tests/server_pack.zip
 backend/main/resources/VERSION.txt
 /backend/test/resources/forge_tests_server_pack.zip
 /backend/test/resources/fabric_tests_server_pack.zip
+/backend/test/resources/legacyfabric_tests_server_pack.zip
 /backend/test/resources/quilt_tests_server_pack.zip
 /fabric_tests/
 /forge_tests/
@@ -195,6 +197,7 @@ backend/main/resources/VERSION.txt
 /set_env.ps1
 /backend/test/resources/forge_tests_copy/
 /backend/test/resources/fabric_tests_copy/
+/backend/test/resources/legacyfabric_tests_copy/
 /backend/test/resources/quilt_tests_copy/
 /backend/test/resources/fabric_tests/server_pack/.fabric-installer/
 /backend/test/resources/fabric_tests/server_pack/download_minecraft-server.jar_fabric.bat

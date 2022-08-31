@@ -16,7 +16,7 @@ public class JarUtilitiesTest {
 
   @Test
   void copyFileFromJarTest() {
-    jarUtilities.copyFileFromJar(new File("banner.txt"), JarUtilitiesTest.class);
+    jarUtilities.copyFileFromJar("banner.txt", JarUtilitiesTest.class);
     Assertions.assertTrue(new File("banner.txt").exists());
   }
 

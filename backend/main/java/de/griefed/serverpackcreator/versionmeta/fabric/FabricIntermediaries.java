@@ -32,7 +32,7 @@ import java.util.Optional;
  *
  * @author Griefed
  */
-final class FabricIntermediaries {
+public final class FabricIntermediaries {
 
   private final ObjectMapper OBJECT_MAPPER;
   private final File INTERMEDIARY_MANIFEST;
@@ -46,7 +46,7 @@ final class FabricIntermediaries {
    * @throws IOException when the manifest could not be read.
    * @author Griefed
    */
-  FabricIntermediaries(File intermediaryManifest, ObjectMapper objectMapper)
+  public FabricIntermediaries(File intermediaryManifest, ObjectMapper objectMapper)
       throws IOException {
 
     this.INTERMEDIARY_MANIFEST = intermediaryManifest;
@@ -59,7 +59,7 @@ final class FabricIntermediaries {
    *
    * @throws IOException when the manifest could not be read.
    */
-  void update() throws IOException {
+  public void update() throws IOException {
     for (FabricIntermediary intermediary : listIntermediariesFromManifest()) {
       INTERMEDIARIES.put(intermediary.getVersion(), intermediary);
     }
@@ -79,23 +79,24 @@ final class FabricIntermediaries {
   }
 
   /**
-   * HashMap of available intermediaries.
-   *
-   * @return Map of available intermediaries.
-   * @author Griefed
-   */
-  HashMap<String, FabricIntermediary> getIntermediaries() {
-    return INTERMEDIARIES;
-  }
-
-  /**
    * Get a specific intermediary, wrapped in an {@link Optional}.
    *
    * @param minecraftVersion Minecraft version.
    * @return A specific intermediary, wrapped in an {@link Optional}.
    * @author Griefed
    */
-  Optional<FabricIntermediary> getIntermediary(String minecraftVersion) {
+  public Optional<FabricIntermediary> getIntermediary(String minecraftVersion) {
     return Optional.ofNullable(INTERMEDIARIES.get(minecraftVersion));
+  }
+
+  /**
+   * Check whether Fabric Intermediaries for the given Minecraft version are present, indicating
+   * that the given Minecraft version is supported.
+   *
+   * @param minecraftVersion The Minecraft version to check for.
+   * @return <code>true</code> if intermediaries are present.
+   */
+  public boolean areIntermediariesPresent(String minecraftVersion) {
+    return getIntermediary(minecraftVersion).isPresent();
   }
 }

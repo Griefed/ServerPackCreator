@@ -1,6 +1,5 @@
 package de.griefed.serverpackcreator;
 
-import de.griefed.serverpackcreator.ServerPackCreator.CommandlineParser.Mode;
 import java.io.File;
 import java.io.IOException;
 import org.apache.commons.io.FileUtils;
@@ -17,7 +16,7 @@ public class WebServiceTest {
 
   private static final Logger LOG = LogManager.getLogger(WebServiceTest.class);
 
-  WebServiceTest() throws IOException {
+  WebServiceTest() {
     try {
       FileUtils.copyDirectory(
           new File("backend/test/resources/testresources/addons"), new File("plugins"));
@@ -38,10 +37,7 @@ public class WebServiceTest {
     } catch (IOException e) {
       LOG.error("Error copying file", e);
     }
-    String[] setup = new String[]{"--setup"};
-    ServerPackCreator serverPackCreator = new ServerPackCreator(setup);
-    serverPackCreator.run(Mode.SETUP);
-    serverPackCreator.checkDatabase();
+    ServerPackCreator.getInstance().checkDatabase();
   }
 
   @Test

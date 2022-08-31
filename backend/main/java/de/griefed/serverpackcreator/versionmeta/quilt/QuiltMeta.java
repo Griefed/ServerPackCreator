@@ -20,258 +20,145 @@
 package de.griefed.serverpackcreator.versionmeta.quilt;
 
 import com.google.common.collect.Lists;
-import de.griefed.serverpackcreator.versionmeta.Type;
+import de.griefed.serverpackcreator.versionmeta.Manifests;
+import de.griefed.serverpackcreator.versionmeta.Meta;
+import de.griefed.serverpackcreator.versionmeta.fabric.FabricIntermediaries;
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 import java.util.Optional;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 /**
- * Quilt meta containing information about available Quilt releases and installers.
+ * Quilt meta containing information about available Quilt versions and installers.
  *
  * @author Griefed
  */
-public final class QuiltMeta {
-
-  private static final Logger LOG = LogManager.getLogger(QuiltMeta.class);
+public final class QuiltMeta extends Manifests implements Meta {
 
   private final File QUILT_MANIFEST;
   private final File QUILT_INSTALLER_MANIFEST;
   private final QuiltLoader QUILT_LOADER;
   private final QuiltInstaller QUILT_INSTALLER;
+  private final FabricIntermediaries FABRIC_INTERMEDIARIES;
 
   /**
-   * Create a new Quilt Meta instance.
+   * Create a new Quilt Meta instance, giving you access to available loader and installer versions,
+   * as well as URLs to installer for further processing.
    *
-   * @param quiltManifest          Quilt manifest file..
-   * @param quiltInstallerManifest Quilt-installer manifest file..
+   * @param quiltManifest                Quilt manifest file.
+   * @param quiltInstallerManifest       Quilt-installer manifest file.
+   * @param injectedFabricIntermediaries Fabric-Intermediaries for further compatibility tests.
+   * @throws ParserConfigurationException indicates a serious configuration error.
+   * @throws IOException                  if any IO errors occur.
+   * @throws SAXException                 if any parse errors occur.
    * @author Griefed
    */
-  public QuiltMeta(File quiltManifest, File quiltInstallerManifest) {
-    this.QUILT_MANIFEST = quiltManifest;
-    this.QUILT_INSTALLER_MANIFEST = quiltInstallerManifest;
-    this.QUILT_LOADER = new QuiltLoader(getXml(this.QUILT_MANIFEST));
-    this.QUILT_INSTALLER = new QuiltInstaller(getXml(this.QUILT_INSTALLER_MANIFEST));
+  public QuiltMeta(File quiltManifest, File quiltInstallerManifest,
+      FabricIntermediaries injectedFabricIntermediaries)
+      throws ParserConfigurationException, IOException, SAXException {
+    QUILT_MANIFEST = quiltManifest;
+    QUILT_INSTALLER_MANIFEST = quiltInstallerManifest;
+    QUILT_LOADER = new QuiltLoader(getXml(QUILT_MANIFEST));
+    QUILT_INSTALLER = new QuiltInstaller(getXml(QUILT_INSTALLER_MANIFEST));
+    FABRIC_INTERMEDIARIES = injectedFabricIntermediaries;
   }
 
-  /**
-   * Update the {@link QuiltLoader} and {@link QuiltInstaller} information.
-   *
-   * @throws MalformedURLException if a URL could not be constructed
-   * @author Griefed
-   */
-  public void update() throws MalformedURLException {
-    this.QUILT_LOADER.update(getXml(this.QUILT_MANIFEST));
-    this.QUILT_INSTALLER.update(getXml(this.QUILT_INSTALLER_MANIFEST));
+  @Override
+  public void update() throws IOException, ParserConfigurationException, SAXException {
+    QUILT_LOADER.update(getXml(QUILT_MANIFEST));
+    QUILT_INSTALLER.update(getXml(QUILT_INSTALLER_MANIFEST));
   }
 
-  private Document getXml(File manifest) {
-    DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-    DocumentBuilder documentBuilder = null;
-    Document xml = null;
-
-    try {
-
-      documentBuilder = documentBuilderFactory.newDocumentBuilder();
-
-    } catch (ParserConfigurationException ex) {
-      LOG.error("Couldn't read document.", ex);
-    }
-
-    try {
-
-      assert documentBuilder != null;
-      xml = documentBuilder.parse(manifest);
-
-    } catch (SAXException | IOException ex) {
-      LOG.error("Couldn't read document.", ex);
-    }
-
-    assert xml != null;
-    xml.normalize();
-    return xml;
-  }
-
-  /**
-   * Get the latest Quilt loader version.
-   *
-   * @return The latest version of the Quilt loader.
-   * @author Griefed
-   */
-  public String latestLoaderVersion() {
+  @Override
+  public String latestLoader() {
     return QUILT_LOADER.latestLoaderVersion();
   }
 
-  /**
-   * Get the release Quilt loader version.
-   *
-   * @return The release version of the Quilt loader.
-   * @author Griefed
-   */
-  public String releaseLoaderVersion() {
+  @Override
+  public String releaseLoader() {
     return QUILT_LOADER.releaseLoaderVersion();
   }
 
-  /**
-   * Get a list of available Quilt loader versions, in {@link Type#ASCENDING} order.
-   *
-   * @return List of available Quilt loader versions, in {@link Type#ASCENDING} order.
-   * @author Griefed
-   */
-  public List<String> loaderVersionsAscending() {
+  @Override
+  public List<String> loaderVersionsListAscending() {
     return QUILT_LOADER.loaders();
   }
 
-  /**
-   * Get a list of available Quilt loader versions, in {@link Type#DESCENDING} order.
-   *
-   * @return List of available Quilt loader versions, in {@link Type#DESCENDING} order.
-   * @author Griefed
-   */
-  public List<String> loaderVersionsDescending() {
+  @Override
+  public List<String> loaderVersionsListDescending() {
     return Lists.reverse(QUILT_LOADER.loaders());
   }
 
-  /**
-   * Get an array of available Quilt loader versions, in {@link Type#ASCENDING} order.
-   *
-   * @return Array of available Quilt loader versions, in {@link Type#ASCENDING} order.
-   * @author Griefed
-   */
+  @Override
   public String[] loaderVersionsArrayAscending() {
     return QUILT_LOADER.loaders().toArray(new String[0]);
   }
 
-  /**
-   * Get an array of available Quilt loader versions, in {@link Type#DESCENDING} order.
-   *
-   * @return Array of available Quilt loader versions, in {@link Type#DESCENDING} order.
-   * @author Griefed
-   */
+  @Override
   public String[] loaderVersionsArrayDescending() {
     return Lists.reverse(QUILT_LOADER.loaders()).toArray(new String[0]);
   }
 
-  /**
-   * Get the latest Quilt installer version.
-   *
-   * @return The latest Quilt installer version.
-   * @author Griefed
-   */
-  public String latestInstallerVersion() {
+  @Override
+  public String latestInstaller() {
     return QUILT_INSTALLER.latestInstallerVersion();
   }
 
-  /**
-   * Get the release Quilt installer version.
-   *
-   * @return The release Quilt installer version.
-   * @author Griefed
-   */
-  public String releaseInstallerVersion() {
+  @Override
+  public String releaseInstaller() {
     return QUILT_INSTALLER.releaseInstallerVersion();
   }
 
-  /**
-   * Get the list of available Quilt installer version, in {@link Type#ASCENDING} order.
-   *
-   * @return List of available Quilt installer version, in {@link Type#ASCENDING} order.
-   * @author Griefed
-   */
-  public List<String> installerVersionsAscending() {
+  @Override
+  public List<String> installerVersionsListAscending() {
     return QUILT_INSTALLER.installers();
   }
 
-  /**
-   * Get the list of available Quilt installer version, in {@link Type#DESCENDING} order.
-   *
-   * @return List of available Quilt installer version, in {@link Type#DESCENDING} order.
-   * @author Griefed
-   */
-  public List<String> installerVersionsDescending() {
+  @Override
+  public List<String> installerVersionsListDescending() {
     return Lists.reverse(QUILT_INSTALLER.installers());
   }
 
-  /**
-   * Get the array of available Quilt installer version, in {@link Type#ASCENDING} order.
-   *
-   * @return Array of available Quilt installer version, in {@link Type#ASCENDING} order.
-   * @author Griefed
-   */
+  @Override
   public String[] installerVersionsArrayAscending() {
     return QUILT_INSTALLER.installers().toArray(new String[0]);
   }
 
-  /**
-   * Get the array of available Quilt installer version, in {@link Type#DESCENDING} order.
-   *
-   * @return Array of available Quilt installer version, in {@link Type#DESCENDING} order.
-   * @author Griefed
-   */
+  @Override
   public String[] installerVersionsArrayDescending() {
     return Lists.reverse(QUILT_INSTALLER.installers()).toArray(new String[0]);
   }
 
-  /**
-   * Get the {@link URL} to the latest Quilt installer.
-   *
-   * @return URL to the latest Quilt installer.
-   * @author Griefed
-   */
+  @Override
   public URL latestInstallerUrl() {
     return QUILT_INSTALLER.latestInstallerUrl();
   }
 
-  /**
-   * Get the {@link URL} to the release Quilt installer.
-   *
-   * @return URL to the release Quilt installer.
-   * @author Griefed
-   */
+  @Override
   public URL releaseInstallerUrl() {
     return QUILT_INSTALLER.releaseInstallerUrl();
   }
 
-  /**
-   * Check whether a {@link URL} to the specified Quilt installer version is available.
-   *
-   * @param quiltVersion Quilt version.
-   * @return <code>true</code> if a {@link URL} to the specified Quilt installer
-   * version is available.
-   * @author Griefed
-   */
+  @Override
   public boolean isInstallerUrlAvailable(String quiltVersion) {
     return Optional.ofNullable(QUILT_INSTALLER.meta().get(quiltVersion)).isPresent();
   }
 
-  /**
-   * Get the {@link URL} to the Quilt installer for the specified version.
-   *
-   * @param quiltVersion Quilt version.
-   * @return URL to the Quilt installer for the specified version.
-   * @author Griefed
-   */
-  public Optional<URL> installerUrl(String quiltVersion) {
+  @Override
+  public Optional<URL> getInstallerUrl(String quiltVersion) {
     return Optional.ofNullable(QUILT_INSTALLER.meta().get(quiltVersion));
   }
 
-  /**
-   * Check whether the specified Quilt version is available/correct/valid.
-   *
-   * @param quiltVersion Quilt version.
-   * @return <code>true</code> if the specified version is available/correct/valid.
-   * @author Griefed
-   */
-  public boolean checkQuiltVersion(String quiltVersion) {
+  @Override
+  public boolean isVersionValid(String quiltVersion) {
     return QUILT_LOADER.loaders().contains(quiltVersion);
+  }
+
+  @Override
+  public boolean isMinecraftSupported(String minecraftVersion) {
+    return FABRIC_INTERMEDIARIES.areIntermediariesPresent(minecraftVersion);
   }
 }

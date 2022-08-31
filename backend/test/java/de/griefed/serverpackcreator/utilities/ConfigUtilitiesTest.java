@@ -1,10 +1,7 @@
 package de.griefed.serverpackcreator.utilities;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.ConfigurationModel;
-import de.griefed.serverpackcreator.utilities.common.Utilities;
+import de.griefed.serverpackcreator.ServerPackCreator;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -19,10 +16,7 @@ public class ConfigUtilitiesTest {
   ConfigUtilities configUtilities;
 
   ConfigUtilitiesTest() {
-    ApplicationProperties applicationProperties = new ApplicationProperties();
-    configUtilities = new ConfigUtilities(new Utilities(applicationProperties), applicationProperties, new ObjectMapper()
-        .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-        .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY));
+    configUtilities = ServerPackCreator.getInstance().getConfigUtilities();
   }
 
   @SuppressWarnings("ResultOfMethodCallIgnored")

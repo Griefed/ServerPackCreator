@@ -119,7 +119,7 @@ public class VersionsController {
         .body(
             "{\"fabric\":"
                 + UTILITIES.ListUtils()
-                .encapsulateListElements(VERSIONMETA.fabric().loaderVersionsDescending())
+                .encapsulateListElements(VERSIONMETA.fabric().loaderVersionsListDescending())
                 + "}");
   }
 
@@ -138,10 +138,10 @@ public class VersionsController {
         .body(
             "{"
                 + "\"release\":\""
-                + VERSIONMETA.fabric().releaseInstallerVersion()
+                + VERSIONMETA.fabric().releaseInstaller()
                 + "\","
                 + "\"latest\":\""
-                + VERSIONMETA.fabric().releaseInstallerVersion()
+                + VERSIONMETA.fabric().releaseInstaller()
                 + "\""
                 + "}");
   }
@@ -160,7 +160,7 @@ public class VersionsController {
         .body(
             "{\"quilt\":"
                 + UTILITIES.ListUtils()
-                .encapsulateListElements(VERSIONMETA.quilt().loaderVersionsDescending())
+                .encapsulateListElements(VERSIONMETA.quilt().loaderVersionsListDescending())
                 + "}");
   }
 
@@ -179,10 +179,10 @@ public class VersionsController {
         .body(
             "{"
                 + "\"release\":\""
-                + VERSIONMETA.quilt().releaseInstallerVersion()
+                + VERSIONMETA.quilt().releaseInstaller()
                 + "\","
                 + "\"latest\":\""
-                + VERSIONMETA.quilt().releaseInstallerVersion()
+                + VERSIONMETA.quilt().releaseInstaller()
                 + "\""
                 + "}");
   }

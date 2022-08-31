@@ -15,6 +15,7 @@ $ModLoader = "SPC_MODLOADER_SPC"
 $ModLoaderVersion = "SPC_MODLOADER_VERSION_SPC"
 $Args = "SPC_JAVA_ARGS_SPC"
 $Java = "SPC_JAVA_SPC"
+$LegacyFabricInstallerVersion = "SPC_LEGACYFABRIC_INSTALLER_VERSION_SPC"
 $FabricInstallerVersion = "SPC_FABRIC_INSTALLER_VERSION_SPC"
 $QuiltInstallerVersion = "SPC_QUILT_INSTALLER_VERSION_SPC"
 $MinecraftServerUrl = "SPC_MINECRAFT_SERVER_URL_SPC"
@@ -61,6 +62,15 @@ Function global:RunJavaCommand
     CMD /C "`"${Java}`" ${CommandToRun}"
 }
 
+Function global:CheckJavaBitness
+{
+    $Bit = CMD /C "`"${Java}`" -version 2>&1"
+    if ( ( ${Bit} | Select-String "32-Bit" ).Length -gt 0)
+    {
+        Write-Host "WARNING! 32-Bit Java detected! It is highly recommended to use a 64-Bit version of Java!"
+    }
+}
+
 # $1 = Filename to check for
 # $2 = Filename to save download as
 # $3 = URL to download $2 from
@@ -93,7 +103,7 @@ Function DownloadIfNotExists
 
 }
 
-# If modloader = Forge, run Forge-speci}c checks
+# If modloader = Forge, run Forge-specific checks
 Function global:SetupForge
 {
     ""
@@ -165,7 +175,7 @@ Function global:SetupForge
     ""
 }
 
-# If modloader = Fabric, run Fabric-speci}c checks
+# If modloader = Fabric, run Fabric-specific checks
 Function global:SetupFabric
 {
     ""
@@ -234,8 +244,7 @@ Function global:SetupFabric
     ""
 }
 
-
-# If modloader = Quilt, run Quilt-speci}c checks
+# If modloader = Quilt, run Quilt-specific checks
 Function global:SetupQuilt
 {
     ""
@@ -272,6 +281,48 @@ Function global:SetupQuilt
         "quilt-server-launch.jar present. Moving on..."
     }
     $script:LauncherJarLocation = "quilt-server-launch.jar"
+    $script:MinecraftServerJarLocation = "server.jar"
+    $script:ServerRunCommand = "-Dlog4j2.formatMsgNoLookups=true ${Args} -jar ${LauncherJarLocation} nogui"
+    ""
+}
+
+# If modloader = LegacyFabric, run LegacyFabric-specific checks
+Function global:SetupLegacyFabric
+{
+    ""
+    "Running LegacyFabric checks and setup..."
+
+    $LegacyFabricInstallerUrl = "https://maven.legacyfabric.net/net/legacyfabric/fabric-installer/${LegacyFabricInstallerVersion}/fabric-installer-${LegacyFabricInstallerVersion}.jar"
+
+    if ((ConvertFrom-JSON (Invoke-WebRequest -Uri "https://meta.legacyfabric.net/v2/versions/loader/${MinecraftVersion}")).Length -eq 0)
+    {
+        "LegacyFabric is not available for Minecraft ${MinecraftVersion}, LegacyFabric ${ModLoaderVersion}."
+        Crash
+    }
+    elseif ((DownloadIfNotExists "fabric-server-launch.jar" "legacyfabric-installer.jar" "${LegacyFabricInstallerUrl}"))
+    {
+        "Installer downloaded. Installing..."
+        RunJavaCommand "-jar legacyfabric-installer.jar server -mcversion ${MinecraftVersion} -loader ${ModLoaderVersion} -downloadMinecraft"
+
+        if ((Test-Path -Path 'fabric-server-launch.jar' -PathType Leaf))
+        {
+            DeleteFileSilently 'legacyfabric-installer.jar'
+            "Installation complete. legacyfabric-installer.jar deleted."
+        }
+        else
+        {
+            DeleteFileSilently 'legacyfabric-installer.jar'
+            "fabric-server-launch.jar not found. Maybe the LegacyFabric servers are having trouble."
+            "Please try again in a couple of minutes and check your internet connection."
+            Crash
+        }
+
+    }
+    else
+    {
+        "fabric-server-launch.jar present. Moving on..."
+    }
+    $script:LauncherJarLocation = "fabric-server-launch.jar"
     $script:MinecraftServerJarLocation = "server.jar"
     $script:ServerRunCommand = "-Dlog4j2.formatMsgNoLookups=true ${Args} -jar ${LauncherJarLocation} nogui"
     ""
@@ -347,24 +398,32 @@ if ( ${PSScriptRoot}.Contains(" "))
 }
 
 # Main
-if ("${ModLoader}" -eq "Forge")
+switch ( ${ModLoader} )
 {
-    SetupForge
-}
-elseif ( "${ModLoader}" -eq "Fabric" )
-{
-    SetupFabric
-}
-elseif ( "${ModLoader}" -eq "Quilt" )
-{
-    SetupQuilt
-}
-else
-{
-    "Incorrect modloader specified."
-    Crash
+    Forge
+    {
+        SetupForge
+    }
+    Fabric
+    {
+        SetupFabric
+    }
+    Quilt
+    {
+        SetupQuilt
+    }
+    LegacyFabric
+    {
+        SetupLegacyFabric
+    }
+    default
+    {
+        "Incorrect modloader specified: ${ModLoader}"
+        Crash
+    }
 }
 
+CheckJavaBitness
 Minecraft
 Eula
 

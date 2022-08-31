@@ -84,5 +84,10 @@ public enum Type {
   /**
    * Indicates this operation concerns Quilt Installer.
    */
-  QUILT_INSTALLER
+  QUILT_INSTALLER,
+
+  /**
+   * Indicates this operation concerns Legacy Fabric.
+   */
+  LEGACY_FABRIC
 }

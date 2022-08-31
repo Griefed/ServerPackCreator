@@ -71,6 +71,21 @@ public final class FileUtilities {
   }
 
   /**
+   * Create a directory, including any necessary parent directories. If an error is encountered, it
+   * is printed to our logs.
+   *
+   * @param directory The directory to create.
+   * @author Griefed
+   */
+  public void createDirectories(Path directory) {
+    try {
+      Files.createDirectories(directory);
+    } catch (IOException ex) {
+      LOG.error("Could not create directory: " + directory, ex);
+    }
+  }
+
+  /**
    * Unzips the downloaded modpack ZIP-archive to the specified directory.
    *
    * @param zipFile              String. The path to the ZIP-archive which we want to unzip.

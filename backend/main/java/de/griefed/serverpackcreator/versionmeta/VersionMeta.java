@@ -21,8 +21,10 @@ package de.griefed.serverpackcreator.versionmeta;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.griefed.serverpackcreator.versionmeta.fabric.FabricIntermediaries;
 import de.griefed.serverpackcreator.versionmeta.fabric.FabricMeta;
 import de.griefed.serverpackcreator.versionmeta.forge.ForgeMeta;
+import de.griefed.serverpackcreator.versionmeta.legacyfabric.LegacyFabricMeta;
 import de.griefed.serverpackcreator.versionmeta.minecraft.MinecraftMeta;
 import de.griefed.serverpackcreator.versionmeta.quilt.QuiltMeta;
 import java.io.File;
@@ -34,8 +36,6 @@ import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
@@ -51,7 +51,7 @@ import org.xml.sax.SAXException;
  * @author Griefed
  */
 @Service
-public final class VersionMeta {
+public final class VersionMeta extends Manifests {
 
   private static final Logger LOG = LogManager.getLogger(VersionMeta.class);
 
@@ -63,6 +63,16 @@ public final class VersionMeta {
   private final File FABRIC_INSTALLER_MANIFEST;
   private final File QUILT_MANIFEST;
   private final File QUILT_INSTALLER_MANIFEST;
+  private final File LEGACY_FABRIC_GAME_MANIFEST;
+  private final File LEGACY_FABRIC_LOADER_MANIFEST;
+  private final File LEGACY_FABRIC_INSTALLER_MANIFEST;
+  private final String FABRIC_LEGACY_BASE_URL = "https://meta.legacyfabric.net/";
+  private final URL LEGACY_FABRIC_GAME_MANIFEST_URL = new URL(
+      FABRIC_LEGACY_BASE_URL + "v2/versions/game");
+  private final URL LEGACY_FABRIC_LOADER_MANIFEST_URL = new URL(
+      FABRIC_LEGACY_BASE_URL + "v2/versions/loader");
+  private final URL LEGACY_FABRIC_INSTALLER_MANIFEST_URL = new URL(
+      "https://maven.legacyfabric.net/net/legacyfabric/fabric-installer/maven-metadata.xml");
   private final URL MINECRAFT_MANIFEST_URL =
       new URL("https://launchermeta.mojang.com/mc/game/version_manifest.json");
   private final URL FORGE_MANIFEST_URL =
@@ -83,19 +93,26 @@ public final class VersionMeta {
   private final FabricMeta FABRIC_META;
   private final ForgeMeta FORGE_META;
   private final QuiltMeta QUIL_META;
+  private final FabricIntermediaries FABRIC_INTERMEDIARIES;
+  private final LegacyFabricMeta LEGACY_FABRIC_META;
 
   /**
    * Constructor.
    *
-   * @param minecraftManifest            Minecraft manifest file.
-   * @param forgeManifest                Forge manifest file.
-   * @param fabricManifest               Fabric manifest file.
-   * @param fabricIntermediariesManifest Fabric Intermediary manifest-file.
-   * @param fabricInstallerManifest      Fabric-installer manifest file.
-   * @param quiltManifest                Quilt manifest file.
-   * @param quiltInstallerManifest       Quilt-installer manifest file.
-   * @param injectedObjectMapper         Object mapper-instance for JSON parsing.
-   * @throws IOException if one of the metas could not be initialized.
+   * @param minecraftManifest             Minecraft manifest file.
+   * @param forgeManifest                 Forge manifest file.
+   * @param fabricManifest                Fabric manifest file.
+   * @param fabricIntermediariesManifest  Fabric Intermediary manifest-file.
+   * @param fabricInstallerManifest       Fabric-installer manifest file.
+   * @param quiltManifest                 Quilt manifest file.
+   * @param quiltInstallerManifest        Quilt-installer manifest file.
+   * @param injectedObjectMapper          Object mapper-instance for JSON parsing.
+   * @param legacyFabricGameManifest      Fabric Legacy Game manifest file.
+   * @param legacyFabricLoaderManifest    Fabric Legacy Loader manifest file.
+   * @param legacyFabricInstallerManifest Fabric Legacy Installer manifest file.
+   * @throws ParserConfigurationException indicates a serious configuration error.
+   * @throws IOException                  if any IO errors occur.
+   * @throws SAXException                 if any parse errors occur.
    * @author Griefed
    */
   @Autowired
@@ -107,32 +124,43 @@ public final class VersionMeta {
       File fabricIntermediariesManifest,
       File quiltManifest,
       File quiltInstallerManifest,
+      File legacyFabricGameManifest,
+      File legacyFabricLoaderManifest,
+      File legacyFabricInstallerManifest,
       ObjectMapper injectedObjectMapper)
-      throws IOException {
+      throws IOException, ParserConfigurationException, SAXException {
 
-    this.MINECRAFT_MANIFEST = minecraftManifest;
-    this.FORGE_MANIFEST = forgeManifest;
-    this.FABRIC_MANIFEST = fabricManifest;
-    this.FABRIC_INTERMEDIARIES_MANIFEST = fabricIntermediariesManifest;
-    this.FABRIC_INSTALLER_MANIFEST = fabricInstallerManifest;
-    this.QUILT_MANIFEST = quiltManifest;
-    this.QUILT_INSTALLER_MANIFEST = quiltInstallerManifest;
-    this.OBJECT_MAPPER = injectedObjectMapper;
+    MINECRAFT_MANIFEST = minecraftManifest;
+    FORGE_MANIFEST = forgeManifest;
+    FABRIC_MANIFEST = fabricManifest;
+    LEGACY_FABRIC_GAME_MANIFEST = legacyFabricGameManifest;
+    LEGACY_FABRIC_LOADER_MANIFEST = legacyFabricLoaderManifest;
+    LEGACY_FABRIC_INSTALLER_MANIFEST = legacyFabricInstallerManifest;
+    FABRIC_INTERMEDIARIES_MANIFEST = fabricIntermediariesManifest;
+    FABRIC_INSTALLER_MANIFEST = fabricInstallerManifest;
+    QUILT_MANIFEST = quiltManifest;
+    QUILT_INSTALLER_MANIFEST = quiltInstallerManifest;
+    OBJECT_MAPPER = injectedObjectMapper;
 
     checkManifests();
 
-    this.FORGE_META = new ForgeMeta(forgeManifest, OBJECT_MAPPER);
-    this.MINECRAFT_META = new MinecraftMeta(minecraftManifest, this.FORGE_META, OBJECT_MAPPER);
-    this.FABRIC_META =
+    FORGE_META = new ForgeMeta(FORGE_MANIFEST, OBJECT_MAPPER);
+    MINECRAFT_META = new MinecraftMeta(MINECRAFT_MANIFEST, FORGE_META, OBJECT_MAPPER);
+    FABRIC_INTERMEDIARIES = new FabricIntermediaries(FABRIC_INTERMEDIARIES_MANIFEST, OBJECT_MAPPER);
+    LEGACY_FABRIC_META = new LegacyFabricMeta(LEGACY_FABRIC_GAME_MANIFEST,
+        LEGACY_FABRIC_LOADER_MANIFEST, LEGACY_FABRIC_INSTALLER_MANIFEST, OBJECT_MAPPER);
+    FABRIC_META =
         new FabricMeta(
-            fabricManifest, fabricInstallerManifest, fabricIntermediariesManifest, OBJECT_MAPPER);
-    this.FORGE_META.initialize(this.MINECRAFT_META);
-    this.QUIL_META = new QuiltMeta(quiltManifest, quiltInstallerManifest);
+            FABRIC_MANIFEST, FABRIC_INSTALLER_MANIFEST, FABRIC_INTERMEDIARIES, OBJECT_MAPPER);
+    FORGE_META.initialize(MINECRAFT_META);
+    QUIL_META = new QuiltMeta(QUILT_MANIFEST, QUILT_INSTALLER_MANIFEST, FABRIC_INTERMEDIARIES);
 
-    this.MINECRAFT_META.update();
-    this.FABRIC_META.update();
-    this.FORGE_META.update();
-    this.QUIL_META.update();
+    MINECRAFT_META.update();
+    FABRIC_INTERMEDIARIES.update();
+    FABRIC_META.update();
+    LEGACY_FABRIC_META.update();
+    FORGE_META.update();
+    QUIL_META.update();
   }
 
   /**
@@ -146,11 +174,16 @@ public final class VersionMeta {
   private void checkManifests() {
     checkManifest(MINECRAFT_MANIFEST, MINECRAFT_MANIFEST_URL, Type.MINECRAFT);
     checkManifest(FORGE_MANIFEST, FORGE_MANIFEST_URL, Type.FORGE);
-    checkManifest(FABRIC_MANIFEST, FABRIC_MANIFEST_URL, Type.FABRIC);
     checkManifest(
         FABRIC_INTERMEDIARIES_MANIFEST,
         FABRIC_INTERMEDIARIES_MANIFEST_URL,
         Type.FABRIC_INTERMEDIARIES);
+    checkManifest(LEGACY_FABRIC_GAME_MANIFEST, LEGACY_FABRIC_GAME_MANIFEST_URL, Type.LEGACY_FABRIC);
+    checkManifest(LEGACY_FABRIC_LOADER_MANIFEST, LEGACY_FABRIC_LOADER_MANIFEST_URL,
+        Type.LEGACY_FABRIC);
+    checkManifest(LEGACY_FABRIC_INSTALLER_MANIFEST, LEGACY_FABRIC_INSTALLER_MANIFEST_URL,
+        Type.LEGACY_FABRIC);
+    checkManifest(FABRIC_MANIFEST, FABRIC_MANIFEST_URL, Type.FABRIC);
     checkManifest(FABRIC_INSTALLER_MANIFEST, FABRIC_INSTALLER_MANIFEST_URL, Type.FABRIC_INSTALLER);
     checkManifest(QUILT_MANIFEST, QUILT_MANIFEST_URL, Type.QUILT);
     checkManifest(QUILT_INSTALLER_MANIFEST, QUILT_INSTALLER_MANIFEST_URL, Type.QUILT_INSTALLER);
@@ -179,24 +212,24 @@ public final class VersionMeta {
 
         switch (manifestType) {
           case MINECRAFT:
-            countOldFile = getJson(existing).get("versions").size();
-            countNewFile = getJson(newManifest).get("versions").size();
+            countOldFile = getJson(existing, OBJECT_MAPPER).get("versions").size();
+            countNewFile = getJson(newManifest, OBJECT_MAPPER).get("versions").size();
 
             break;
 
           case FORGE:
-            for (JsonNode mcVer : getJson(existing)) {
+            for (JsonNode mcVer : getJson(existing, OBJECT_MAPPER)) {
               countOldFile += mcVer.size();
             }
-            for (JsonNode mcVer : getJson(newManifest)) {
+            for (JsonNode mcVer : getJson(newManifest, OBJECT_MAPPER)) {
               countNewFile += mcVer.size();
             }
 
             break;
 
           case FABRIC_INTERMEDIARIES:
-            countOldFile = getJson(existing).size();
-            countNewFile = getJson(newManifest).size();
+            countOldFile = getJson(existing, OBJECT_MAPPER).size();
+            countNewFile = getJson(newManifest, OBJECT_MAPPER).size();
 
             break;
 
@@ -207,6 +240,34 @@ public final class VersionMeta {
             countOldFile = getXml(existing).getElementsByTagName("version").getLength();
             countNewFile = getXml(newManifest).getElementsByTagName("version").getLength();
 
+            break;
+
+          case LEGACY_FABRIC:
+            if (manifestToCheck.getName().endsWith(".json")) {
+
+              countOldFile = getJson(existing, OBJECT_MAPPER).size();
+              countNewFile = getJson(newManifest, OBJECT_MAPPER).size();
+
+            } else {
+
+              Document oldXML = getXml(existing);
+              Document newXML = getXml(newManifest);
+
+              countOldFile = oldXML.getElementsByTagName("version").getLength();
+              countNewFile = newXML.getElementsByTagName("version").getLength();
+
+              if (countOldFile == countNewFile) {
+
+                if (!oldXML.getElementsByTagName("version").item(0).getChildNodes().item(0)
+                    .getNodeValue()
+                    .equals(
+                        newXML.getElementsByTagName("version").item(0).getChildNodes().item(0)
+                            .getNodeValue())) {
+
+                  countNewFile += 1;
+                }
+              }
+            }
             break;
 
           default:
@@ -229,7 +290,8 @@ public final class VersionMeta {
           LOG.info("Manifest " + manifestToCheck + " does not need to be refreshed.");
         }
 
-      } catch (IOException | InvalidTypeException ex) {
+      } catch (ParserConfigurationException | SAXException | IOException |
+               InvalidTypeException ex) {
 
         LOG.error("Couldn't refresh manifest " + manifestToCheck, ex);
       }
@@ -309,64 +371,21 @@ public final class VersionMeta {
   }
 
   /**
-   * Acquire a {@link JsonNode} from the given json file.
-   *
-   * @param inputStream The file to read.
-   * @return JSON data from the specified file.
-   * @throws IOException when the file could not be parsed/read into a {@link JsonNode}.
-   * @author Griefed
-   */
-  private JsonNode getJson(InputStream inputStream) throws IOException {
-    return OBJECT_MAPPER.readTree(inputStream);
-  }
-
-  /**
-   * Reads the Fabric manifest-file into a {@link Document} and {@link Document#normalize()} it.
-   *
-   * @param manifest The xml-file to parse into a Document.
-   * @return Document. Returns the file parsed into a Document.
-   * @author Griefed
-   */
-  private Document getXml(InputStream manifest) {
-    DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-    DocumentBuilder documentBuilder = null;
-    Document xml = null;
-
-    try {
-
-      documentBuilder = documentBuilderFactory.newDocumentBuilder();
-
-    } catch (ParserConfigurationException ex) {
-      LOG.error("Couldn't read document.", ex);
-    }
-
-    try {
-
-      assert documentBuilder != null;
-      xml = documentBuilder.parse(manifest);
-
-    } catch (SAXException | IOException ex) {
-      LOG.error("Couldn't read document.", ex);
-    }
-
-    assert xml != null;
-    xml.normalize();
-    return xml;
-  }
-
-  /**
    * Update the Minecraft, Forge and Fabric metas. Usually called when the manifest files have been
    * refreshed.
    *
    * @return Instance of {@link VersionMeta}.
-   * @throws IOException if any of the metas could not be updated.
+   * @throws ParserConfigurationException indicates a serious configuration error.
+   * @throws IOException                  if any IO errors occur.
+   * @throws SAXException                 if any parse errors occur.
    * @author Griefed
    */
-  public VersionMeta update() throws IOException {
+  public VersionMeta update() throws IOException, ParserConfigurationException, SAXException {
     checkManifests();
-    this.MINECRAFT_META.update();
-    this.FABRIC_META.update();
-    this.FORGE_META.update();
+    MINECRAFT_META.update();
+    FABRIC_META.update();
+    FORGE_META.update();
+    LEGACY_FABRIC_META.update();
     return this;
   }
 
@@ -408,5 +427,14 @@ public final class VersionMeta {
    */
   public QuiltMeta quilt() {
     return QUIL_META;
+  }
+
+  /**
+   * The LegacyFabric-instance for working with Legacy Fabric versions and information about them.
+   *
+   * @return Instance of {@link LegacyFabricMeta}.
+   */
+  public LegacyFabricMeta legacyFabric() {
+    return LEGACY_FABRIC_META;
   }
 }

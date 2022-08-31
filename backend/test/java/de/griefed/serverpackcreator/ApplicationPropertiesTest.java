@@ -65,10 +65,40 @@ public class ApplicationPropertiesTest {
     Assertions.assertEquals(
         applicationProperties.FABRIC_VERSION_MANIFEST(), new File("fabric-manifest.xml"));
 
+    Assertions.assertNotNull(applicationProperties.LEGACY_FABRIC_GAME_MANIFEST());
+    Assertions.assertEquals(
+        applicationProperties.LEGACY_FABRIC_GAME_MANIFEST(),
+        new File("legacy-fabric-game-manifest.json"));
+
+    Assertions.assertNotNull(applicationProperties.LEGACY_FABRIC_LOADER_MANIFEST());
+    Assertions.assertEquals(
+        applicationProperties.LEGACY_FABRIC_LOADER_MANIFEST(),
+        new File("legacy-fabric-loader-manifest.json"));
+
+    Assertions.assertNotNull(applicationProperties.LEGACY_FABRIC_INSTALLER_MANIFEST());
+    Assertions.assertEquals(
+        applicationProperties.LEGACY_FABRIC_INSTALLER_MANIFEST(),
+        new File("legacy-fabric-installer-manifest.xml"));
+
     Assertions.assertNotNull(applicationProperties.FABRIC_INSTALLER_VERSION_MANIFEST());
     Assertions.assertEquals(
         applicationProperties.FABRIC_INSTALLER_VERSION_MANIFEST(),
         new File("fabric-installer-manifest.xml"));
+
+    Assertions.assertNotNull(applicationProperties.LEGACY_FABRIC_GAME_MANIFEST_LOCATION());
+    Assertions.assertEquals(
+        applicationProperties.LEGACY_FABRIC_GAME_MANIFEST_LOCATION(),
+        new File("./work/legacy-fabric-game-manifest.json"));
+
+    Assertions.assertNotNull(applicationProperties.LEGACY_FABRIC_LOADER_MANIFEST_LOCATION());
+    Assertions.assertEquals(
+        applicationProperties.LEGACY_FABRIC_LOADER_MANIFEST_LOCATION(),
+        new File("./work/legacy-fabric-loader-manifest.json"));
+
+    Assertions.assertNotNull(applicationProperties.LEGACY_FABRIC_INSTALLER_MANIFEST_LOCATION());
+    Assertions.assertEquals(
+        applicationProperties.LEGACY_FABRIC_INSTALLER_MANIFEST_LOCATION(),
+        new File("./work/legacy-fabric-installer-manifest.xml"));
 
     Assertions.assertNotNull(applicationProperties.QUILT_VERSION_MANIFEST());
     Assertions.assertEquals(

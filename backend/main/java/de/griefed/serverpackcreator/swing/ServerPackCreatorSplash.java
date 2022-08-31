@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.swing;
 
-import de.griefed.serverpackcreator.ServerPackCreator.CommandlineParser;
+import de.griefed.serverpackcreator.ServerPackCreator.Mode;
 import de.griefed.serverpackcreator.swing.utilities.BackgroundPanel;
 import de.griefed.serverpackcreator.utilities.ReticulatingSplines;
 import java.awt.Color;
@@ -42,7 +42,7 @@ import javax.swing.SwingConstants;
 import javax.swing.plaf.basic.BasicProgressBarUI;
 
 /**
- * The ServerPackCreator splashscreen shown when {@link CommandlineParser.Mode#GUI} is used.
+ * The ServerPackCreator splashscreen shown when {@link Mode#GUI} is used.
  */
 public class ServerPackCreatorSplash {
 

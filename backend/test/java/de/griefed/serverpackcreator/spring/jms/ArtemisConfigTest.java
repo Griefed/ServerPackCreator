@@ -1,11 +1,12 @@
 package de.griefed.serverpackcreator.spring.jms;
 
 import de.griefed.serverpackcreator.ServerPackCreator;
-import de.griefed.serverpackcreator.ServerPackCreator.CommandlineParser;
+import de.griefed.serverpackcreator.ServerPackCreator.Mode;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Objects;
+import javax.xml.parsers.ParserConfigurationException;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -18,6 +19,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.support.destination.JmsDestinationAccessor;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.xml.sax.SAXException;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
@@ -31,7 +33,8 @@ public class ArtemisConfigTest {
   private final String QUEUE_TASKS = "tasks.background";
 
   @Autowired
-  ArtemisConfigTest(JmsTemplate injectedJmsTemplate) throws IOException {
+  ArtemisConfigTest(JmsTemplate injectedJmsTemplate)
+      throws IOException, ParserConfigurationException, SAXException {
     try {
       FileUtils.copyFile(
           new File("backend/main/resources/serverpackcreator.properties"),
@@ -39,10 +42,7 @@ public class ArtemisConfigTest {
     } catch (IOException e) {
       e.printStackTrace();
     }
-
-    ServerPackCreator SERVER_PACK_CREATOR = new ServerPackCreator(new String[] {"--setup"});
-    SERVER_PACK_CREATOR.run(CommandlineParser.Mode.SETUP);
-    SERVER_PACK_CREATOR.checkDatabase();
+    ServerPackCreator.getInstance().run(Mode.SETUP);
 
     this.jmsTemplate = injectedJmsTemplate;
     this.jmsTemplate.setReceiveTimeout(JmsDestinationAccessor.RECEIVE_TIMEOUT_NO_WAIT);

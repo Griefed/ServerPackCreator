@@ -22,7 +22,6 @@ package de.griefed.serverpackcreator;
 import com.electronwill.nightconfig.toml.TomlParser;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.griefed.serverpackcreator.ServerPackCreator.CommandlineParser.Mode;
 import de.griefed.serverpackcreator.i18n.I18n;
 import de.griefed.serverpackcreator.i18n.IncorrectLanguageException;
 import de.griefed.serverpackcreator.modscanning.AnnotationScanner;
@@ -44,7 +43,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -54,10 +52,10 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.InputMismatchException;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Scanner;
 import java.util.concurrent.Executors;
+import javax.xml.parsers.ParserConfigurationException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.monitor.FileAlterationListener;
 import org.apache.commons.io.monitor.FileAlterationMonitor;
@@ -69,6 +67,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.annotation.PropertySources;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.xml.sax.SAXException;
 
 /**
  * Launch-class of ServerPackCreator which determines the mode to run in, takes care of
@@ -86,8 +85,9 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 public class ServerPackCreator {
 
   private static final Logger LOG = LogManager.getLogger(ServerPackCreator.class);
+  private static final String[] SETUP = new String[]{"--setup"};
   private static ServerPackCreator serverPackCreator = null;
-  private static String[] ARGS;
+  private final String[] ARGS;
   private final CommandlineParser COMMANDLINE_PARSER;
   private final ApplicationProperties APPLICATIONPROPERTIES;
   private final I18n I18N;
@@ -115,7 +115,7 @@ public class ServerPackCreator {
   private ServerPackCreatorGui serverPackCreatorGui = null;
 
   /**
-   * Initialize ServerPackCreator and determine the {@link CommandlineParser.Mode} to run in.
+   * Initialize ServerPackCreator and determine the {@link Mode} to run in.
    *
    * @param args Commandline arguments with which ServerPackCreator is run. Determines which mode
    *             ServerPackCreator will enter and which locale is used.
@@ -133,9 +133,37 @@ public class ServerPackCreator {
     }
   }
 
-  public static ServerPackCreator getServerPackCreator(String[] args) {
+  /**
+   * Acquire an instance of ServerPackCreator using the <code>--setup</code>-argument so a prepared
+   * environment is present after acquiring the instance. If a new instance of ServerPackCreator is
+   * created as the result of calling this method, then the setup is run to ensure a properly
+   * prepared environment.
+   *
+   * @return ServerPackCreator-instance using the <code>--setup</code>-argument.
+   * @author Griefed
+   */
+  public synchronized static ServerPackCreator getInstance() {
+    return getInstance(SETUP);
+  }
+
+  /**
+   * Acquire an instance of ServerPackCreator using the specified argument. If a new instance of
+   * ServerPackCreator is created as the result of calling this method, then the setup is run to
+   * ensure a properly prepared environment.
+   *
+   * @param args Arguments with which to instantiate ServerPackCreator. Possible arguments can be
+   *             found at {@link Mode}.
+   * @return ServerPackCreator-instance with the specified argument.
+   * @author Griefed
+   */
+  public synchronized static ServerPackCreator getInstance(String[] args) {
     if (serverPackCreator == null) {
       serverPackCreator = new ServerPackCreator(args);
+      try {
+        serverPackCreator.run(Mode.SETUP);
+      } catch (IOException | ParserConfigurationException | SAXException ex) {
+        LOG.error("Something went horribly wrong trying to run the ServerPackCreator setup.", ex);
+      }
     }
     return serverPackCreator;
   }
@@ -144,26 +172,19 @@ public class ServerPackCreator {
    * Initialize ServerPackCreator with the passed commandline-arguments and run.
    *
    * <p>For a list of available commandline arguments, check out {@link
-   * ServerPackCreator.CommandlineParser.Mode}
+   * ServerPackCreator.Mode}
    *
    * @param args Commandline arguments with which ServerPackCreator is run. Determines which mode
    *             ServerPackCreator will enter and which locale is used.
-   * @throws IOException if the {@link VersionMeta} could not be instantiated.
+   * @throws ParserConfigurationException indicates a serious configuration error.
+   * @throws IOException                  if any IO errors occur.
+   * @throws SAXException                 if any parse errors occur.
    * @author Griefed
    */
-  public static void main(String[] args) throws IOException {
-    serverPackCreator = getServerPackCreator(args);
+  public static void main(String[] args)
+      throws IOException, ParserConfigurationException, SAXException {
+    serverPackCreator = new ServerPackCreator(args);
     serverPackCreator.run();
-  }
-
-  /**
-   * The arguments with which ServerPackCreator was started.
-   *
-   * @return All arguments with which ServerPackCreator was started.
-   * @author Griefed
-   */
-  public static String[] getArgs() {
-    return ARGS;
   }
 
   /**
@@ -176,30 +197,41 @@ public class ServerPackCreator {
     SpringApplication.run(ServerPackCreator.class, args);
   }
 
-  public CommandlineParser getCommandlineParser() {
+  /**
+   * The arguments with which ServerPackCreator was started.
+   *
+   * @return All arguments with which ServerPackCreator was started.
+   * @author Griefed
+   */
+  public synchronized String[] getArgs() {
+    return ARGS;
+  }
+
+  public synchronized CommandlineParser getCommandlineParser() {
     return COMMANDLINE_PARSER;
   }
 
-  public I18n getI18n() {
+  public synchronized I18n getI18n() {
     return I18N;
   }
 
-  public ObjectMapper getObjectMapper() {
+  public synchronized ObjectMapper getObjectMapper() {
     return OBJECT_MAPPER;
   }
 
-  public ApplicationProperties getApplicationProperties() {
+  public synchronized ApplicationProperties getApplicationProperties() {
     return APPLICATIONPROPERTIES;
   }
 
-  public Utilities getUtilities() {
+  public synchronized Utilities getUtilities() {
     if (this.utilities == null) {
       this.utilities = new Utilities(APPLICATIONPROPERTIES);
     }
     return utilities;
   }
 
-  public VersionMeta getVersionMeta() throws IOException {
+  public synchronized VersionMeta getVersionMeta()
+      throws IOException, ParserConfigurationException, SAXException {
     if (this.versionMeta == null) {
       this.versionMeta =
           new VersionMeta(
@@ -210,12 +242,15 @@ public class ServerPackCreator {
               APPLICATIONPROPERTIES.FABRIC_INTERMEDIARIES_MANIFEST_LOCATION(),
               APPLICATIONPROPERTIES.QUILT_VERSION_MANIFEST_LOCATION(),
               APPLICATIONPROPERTIES.QUILT_INSTALLER_VERSION_MANIFEST_LOCATION(),
+              APPLICATIONPROPERTIES.LEGACY_FABRIC_GAME_MANIFEST_LOCATION(),
+              APPLICATIONPROPERTIES.LEGACY_FABRIC_LOADER_MANIFEST_LOCATION(),
+              APPLICATIONPROPERTIES.LEGACY_FABRIC_INSTALLER_MANIFEST_LOCATION(),
               OBJECT_MAPPER);
     }
     return versionMeta;
   }
 
-  public ConfigUtilities getConfigUtilities() {
+  public synchronized ConfigUtilities getConfigUtilities() {
     if (this.configUtilities == null) {
       this.configUtilities = new ConfigUtilities(getUtilities(), APPLICATIONPROPERTIES,
           OBJECT_MAPPER);
@@ -223,7 +258,8 @@ public class ServerPackCreator {
     return configUtilities;
   }
 
-  public ConfigurationHandler getConfigurationHandler() throws IOException {
+  public synchronized ConfigurationHandler getConfigurationHandler()
+      throws IOException, ParserConfigurationException, SAXException {
     if (this.configurationHandler == null) {
       this.configurationHandler =
           new ConfigurationHandler(
@@ -232,14 +268,15 @@ public class ServerPackCreator {
     return configurationHandler;
   }
 
-  public ApplicationPlugins getApplicationPlugins() {
+  public synchronized ApplicationPlugins getApplicationPlugins() {
     if (this.applicationPlugins == null) {
       this.applicationPlugins = new ApplicationPlugins();
     }
     return applicationPlugins;
   }
 
-  public ServerPackHandler getServerPackHandler() throws IOException {
+  public synchronized ServerPackHandler getServerPackHandler()
+      throws IOException, ParserConfigurationException, SAXException {
     if (this.serverPackHandler == null) {
       this.serverPackHandler =
           new ServerPackHandler(
@@ -252,7 +289,7 @@ public class ServerPackCreator {
     return serverPackHandler;
   }
 
-  public ServerPackCreatorSplash getServerPackCreatorSplash() {
+  public synchronized ServerPackCreatorSplash getServerPackCreatorSplash() {
     if (this.serverPackCreatorSplash == null) {
       this.serverPackCreatorSplash = new ServerPackCreatorSplash(
           APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION());
@@ -260,14 +297,14 @@ public class ServerPackCreator {
     return serverPackCreatorSplash;
   }
 
-  public UpdateChecker getUpdateChecker() {
+  public synchronized UpdateChecker getUpdateChecker() {
     if (this.updateChecker == null) {
       this.updateChecker = new UpdateChecker();
     }
     return updateChecker;
   }
 
-  public ModScanner getModScanner() {
+  public synchronized ModScanner getModScanner() {
     if (this.modScanner == null) {
       this.modScanner = new ModScanner(getAnnotationScanner(), getFabricScanner(),
           getQuiltScanner(), getTomlScanner());
@@ -275,42 +312,43 @@ public class ServerPackCreator {
     return modScanner;
   }
 
-  public AnnotationScanner getAnnotationScanner() {
+  public synchronized AnnotationScanner getAnnotationScanner() {
     if (this.annotationScanner == null) {
       this.annotationScanner = new AnnotationScanner(OBJECT_MAPPER, getUtilities());
     }
     return annotationScanner;
   }
 
-  public FabricScanner getFabricScanner() {
+  public synchronized FabricScanner getFabricScanner() {
     if (this.fabricScanner == null) {
       this.fabricScanner = new FabricScanner(OBJECT_MAPPER, getUtilities());
     }
     return fabricScanner;
   }
 
-  public QuiltScanner getQuiltScanner() {
+  public synchronized QuiltScanner getQuiltScanner() {
     if (this.quiltScanner == null) {
       this.quiltScanner = new QuiltScanner(OBJECT_MAPPER, getUtilities());
     }
     return quiltScanner;
   }
 
-  public TomlParser getTomlParser() {
+  public synchronized TomlParser getTomlParser() {
     if (this.tomlParser == null) {
       this.tomlParser = new TomlParser();
     }
     return tomlParser;
   }
 
-  public TomlScanner getTomlScanner() {
+  public synchronized TomlScanner getTomlScanner() {
     if (this.tomlScanner == null) {
       this.tomlScanner = new TomlScanner(getTomlParser());
     }
     return tomlScanner;
   }
 
-  public ConfigurationEditor getConfigurationEditor() throws IOException {
+  public synchronized ConfigurationEditor getConfigurationEditor()
+      throws IOException, ParserConfigurationException, SAXException {
     if (this.configurationEditor == null) {
       this.configurationEditor = new ConfigurationEditor(
           getConfigurationHandler(),
@@ -322,7 +360,8 @@ public class ServerPackCreator {
     return configurationEditor;
   }
 
-  public ServerPackCreatorGui getServerPackCreatorGui() throws IOException {
+  public synchronized ServerPackCreatorGui getServerPackCreatorGui()
+      throws IOException, ParserConfigurationException, SAXException {
     if (this.serverPackCreatorGui == null) {
       this.serverPackCreatorGui = new ServerPackCreatorGui(
           I18N,
@@ -342,21 +381,26 @@ public class ServerPackCreator {
   /**
    * Run ServerPackCreator with the mode acquired from {@link CommandlineParser}.
    *
-   * @throws IOException if the run fails.
+   * @throws ParserConfigurationException indicates a serious configuration error.
+   * @throws IOException                  if any IO errors occur.
+   * @throws SAXException                 if any parse errors occur.
    * @author Griefed
    */
-  public void run() throws IOException {
+  public synchronized void run() throws IOException, ParserConfigurationException, SAXException {
     run(COMMANDLINE_PARSER.getModeToRunIn());
   }
 
   /**
-   * Run ServerPackCreator in a specific {@link CommandlineParser.Mode}.
+   * Run ServerPackCreator in a specific {@link Mode}.
    *
    * @param modeToRunIn Mode to run in.
-   * @throws IOException if the run fails.
+   * @throws ParserConfigurationException indicates a serious configuration error.
+   * @throws IOException                  if any IO errors occur.
+   * @throws SAXException                 if any parse errors occur.
    * @author Griefed
    */
-  public void run(Mode modeToRunIn) throws IOException {
+  public synchronized void run(Mode modeToRunIn)
+      throws IOException, ParserConfigurationException, SAXException {
 
     switch (modeToRunIn) {
       case HELP:
@@ -441,15 +485,11 @@ public class ServerPackCreator {
           "One or more file or directory has no read- or write-permission. This may lead to corrupted server packs! Check the permissions of the ServerPackCreator base directory!");
     }
 
-    getUtilities().JarUtils().copyFileFromJar(LOG4J2XML, ServerPackCreator.class);
+    getUtilities().JarUtils().copyFileFromJar(LOG4J2XML.getName(), ServerPackCreator.class);
 
     if (!SERVERPACKCREATOR_PROPERTIES.exists()) {
-      try {
-        //noinspection ResultOfMethodCallIgnored
-        SERVERPACKCREATOR_PROPERTIES.createNewFile();
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
+      getUtilities().JarUtils()
+          .copyFileFromJar(SERVERPACKCREATOR_PROPERTIES.getName(), ServerPackCreator.class);
     }
 
     try {
@@ -469,43 +509,15 @@ public class ServerPackCreator {
       LOG.error("Error copying \"/de/griefed/resources/lang\" from the JAR-file.");
     }
 
-    try {
-      Files.createDirectories(Paths.get("./server_files"));
-    } catch (IOException ex) {
-      LOG.error("Could not create server_files directory.", ex);
-    }
+    getUtilities().FileUtils().createDirectories(Paths.get("./server_files"));
+    getUtilities().FileUtils().createDirectories(Paths.get("./work"));
+    getUtilities().FileUtils().createDirectories(Paths.get("./work/temp"));
+    getUtilities().FileUtils().createDirectories(Paths.get("./work/modpacks"));
+    getUtilities().FileUtils().createDirectories(Paths.get("./server-packs"));
+    getUtilities().FileUtils()
+        .createDirectories(Paths.get(System.getProperty("pf4j.pluginsDir", "./plugins")));
 
-    try {
-      Files.createDirectories(Paths.get("./work"));
-    } catch (IOException ex) {
-      LOG.error("Could not create work directory.", ex);
-    }
-
-    try {
-      Files.createDirectories(Paths.get("./work/temp"));
-    } catch (IOException ex) {
-      LOG.error("Could not create work/temp directory.", ex);
-    }
-
-    try {
-      Files.createDirectories(Paths.get("./work/modpacks"));
-    } catch (IOException ex) {
-      LOG.error("Could not create work/modpacks directory.", ex);
-    }
-
-    try {
-      Files.createDirectories(Paths.get("./server-packs"));
-    } catch (IOException ex) {
-      LOG.error("Could not create server-packs directory.", ex);
-    }
-
-    try {
-      Files.createDirectories(Paths.get(System.getProperty("pf4j.pluginsDir", "./plugins")));
-    } catch (IOException ex) {
-      LOG.error("Could not create plugins directory.", ex);
-    }
-
-    if (!new File(System.getProperty("pf4j.pluginsDir", "./plugins") + "/disabled.txt").isFile()) {
+    if (!new File(System.getProperty("pf4j.pluginsDir", "./plugins") + "/disabled.txt").exists()) {
       try (BufferedWriter writer =
           new BufferedWriter(
               new FileWriter(
@@ -527,11 +539,11 @@ public class ServerPackCreator {
     boolean serverProperties =
         checkServerFilesFile(APPLICATIONPROPERTIES.DEFAULT_SERVER_PROPERTIES());
     boolean serverIcon = checkServerFilesFile(APPLICATIONPROPERTIES.DEFAULT_SERVER_ICON());
-    boolean shellTemplate = checkServerFilesFile(APPLICATIONPROPERTIES.DEFAULT_SHELL_TEMPLATE());
-    boolean powershellTemplate =
-        checkServerFilesFile(APPLICATIONPROPERTIES.DEFAULT_POWERSHELL_TEMPLATE());
 
-    if (config || serverProperties || serverIcon || shellTemplate || powershellTemplate) {
+    overwriteServerFilesFile(APPLICATIONPROPERTIES.DEFAULT_SHELL_TEMPLATE());
+    overwriteServerFilesFile(APPLICATIONPROPERTIES.DEFAULT_POWERSHELL_TEMPLATE());
+
+    if (config || serverProperties || serverIcon) {
 
       LOG.warn("#################################################################");
       LOG.warn("#.............ONE OR MORE DEFAULT FILE(S) GENERATED.............#");
@@ -583,7 +595,7 @@ public class ServerPackCreator {
    * @throws IOException if the {@link VersionMeta} could not be instantiated.
    * @author Griefed
    */
-  private void stageTwo() throws IOException {
+  private void stageTwo() throws IOException, ParserConfigurationException, SAXException {
     getVersionMeta();
     getConfigUtilities();
     getConfigurationHandler();
@@ -596,7 +608,7 @@ public class ServerPackCreator {
    * @throws IOException if the {@link VersionMeta} could not be instantiated.
    * @author Griefed
    */
-  private void stageThree() throws IOException {
+  private void stageThree() throws IOException, ParserConfigurationException, SAXException {
     getApplicationPlugins();
     getAnnotationScanner();
     getFabricScanner();
@@ -691,15 +703,9 @@ public class ServerPackCreator {
           }
 
           private void createFile(File toCreate) {
-            try {
-              FileUtils.copyInputStreamToFile(
-                  Objects.requireNonNull(
-                      ServerPackCreator.class.getResourceAsStream("/" + toCreate.getName())),
-                  toCreate);
 
-            } catch (IOException ex) {
-              LOG.error("Error creating file: " + toCreate, ex);
-            }
+            getUtilities().JarUtils()
+                .copyFileFromJar(toCreate.getName(), ServerPackCreator.class);
           }
         };
 
@@ -731,19 +737,19 @@ public class ServerPackCreator {
    * @throws IOException if the {@link VersionMeta} could not be instantiated.
    * @author Griefed
    */
-  private void runGui() throws IOException {
+  private void runGui() throws IOException, ParserConfigurationException, SAXException {
     getServerPackCreatorGui().mainGUI();
   }
 
   /**
    * Offer the user to continue using ServerPackCreator.
    *
-   * @throws IOException if an error occurs trying to run ServerPackCreator in
-   *                     {@link CommandlineParser.Mode#GUI}, {@link CommandlineParser.Mode#CLI} or
-   *                     {@link CommandlineParser.Mode#WEB}
+   * @throws IOException if an error occurs trying to run ServerPackCreator in {@link Mode#GUI},
+   *                     {@link Mode#CLI} or {@link Mode#WEB}
    * @author Griefed
    */
-  private void continuedRunOptions() throws IOException {
+  private void continuedRunOptions()
+      throws IOException, ParserConfigurationException, SAXException {
 
     printMenu();
 
@@ -793,7 +799,7 @@ public class ServerPackCreator {
             }
         }
 
-      } catch (InputMismatchException ex) {
+      } catch (InputMismatchException | ParserConfigurationException | SAXException ex) {
         System.out.println("Not a valid number. Please pick a number from 0 to 7.");
         selection = 100;
       }
@@ -804,15 +810,15 @@ public class ServerPackCreator {
 
     switch (selection) {
       case 5:
-        run(CommandlineParser.Mode.CLI);
+        run(Mode.CLI);
         break;
 
       case 6:
-        run(CommandlineParser.Mode.WEB);
+        run(Mode.WEB);
         break;
 
       case 7:
-        run(CommandlineParser.Mode.GUI);
+        run(Mode.GUI);
         break;
 
       case 0:
@@ -888,7 +894,7 @@ public class ServerPackCreator {
    * @throws IOException if the {@link ConfigurationEditor} could not be instantiated.
    * @author Griefed
    */
-  private void runHeadless() throws IOException {
+  private void runHeadless() throws IOException, ParserConfigurationException, SAXException {
     if (!APPLICATIONPROPERTIES.DEFAULT_CONFIG().exists()) {
 
       LOG.warn("No serverpackcreator.conf found...");
@@ -917,7 +923,8 @@ public class ServerPackCreator {
    *
    * @author Griefed
    */
-  private void runConfigurationEditor() throws IOException {
+  private void runConfigurationEditor()
+      throws IOException, ParserConfigurationException, SAXException {
     getConfigurationEditor().continuedRunOptions();
   }
 
@@ -930,32 +937,17 @@ public class ServerPackCreator {
    * @author Griefed
    */
   public boolean checkForConfig() {
-    boolean firstRun = false;
 
     if (!APPLICATIONPROPERTIES.DEFAULT_CONFIG().exists()
         && COMMANDLINE_PARSER.getModeToRunIn() != Mode.CLI
         && COMMANDLINE_PARSER.getModeToRunIn() != Mode.CGEN) {
-      try {
 
-        FileUtils.copyInputStreamToFile(
-            Objects.requireNonNull(
-                ServerPackCreator.class.getResourceAsStream(
-                    String.format(
-                        "/de/griefed/resources/%s",
-                        APPLICATIONPROPERTIES.DEFAULT_CONFIG().getName()))),
-            APPLICATIONPROPERTIES.DEFAULT_CONFIG());
+      return getUtilities().JarUtils().copyFileFromJar(
+          "de/griefed/resources/" + APPLICATIONPROPERTIES.DEFAULT_CONFIG().getName(),
+          APPLICATIONPROPERTIES.DEFAULT_CONFIG(), ServerPackCreator.class);
 
-        LOG.info("serverpackcreator.conf generated. Please customize.");
-        firstRun = true;
-
-      } catch (IOException ex) {
-        if (!ex.toString().startsWith("java.nio.file.FileAlreadyExistsException")) {
-          LOG.error("Could not extract default config-file.", ex);
-          firstRun = true;
-        }
-      }
     }
-    return firstRun;
+    return false;
   }
 
   /**
@@ -963,36 +955,27 @@ public class ServerPackCreator {
    *
    * @param fileToCheckFor The file which is to be checked for whether it exists and if it doesn't,
    *                       should be created.
-   * @return Boolean. Returns true if the file was generated, so we can inform the user about said
+   * @return <code>true</code> if the file was generated, so we can inform the user about said
    * newly generated file.
    * @author Griefed
    */
   public boolean checkServerFilesFile(File fileToCheckFor) {
-    boolean firstRun = false;
+    return getUtilities().JarUtils()
+        .copyFileFromJar("de/griefed/resources/server_files/" + fileToCheckFor,
+            new File("./server_files/" + fileToCheckFor), ServerPackCreator.class);
+  }
 
-    if (!new File(String.format("server_files/%s", fileToCheckFor)).exists()) {
-      try {
-
-        FileUtils.copyInputStreamToFile(
-            Objects.requireNonNull(
-                ServerPackCreator.class.getResourceAsStream(
-                    String.format("/de/griefed/resources/server_files/%s", fileToCheckFor))),
-            new File(String.format("./server_files/%s", fileToCheckFor)));
-
-        LOG.info(fileToCheckFor + " generated. Please customize if you intend on using it.");
-
-        firstRun = true;
-
-      } catch (IOException ex) {
-
-        if (!ex.toString().startsWith("java.nio.file.FileAlreadyExistsException")) {
-
-          LOG.error("Could not extract default " + fileToCheckFor + " file.", ex);
-          firstRun = true;
-        }
-      }
-    }
-    return firstRun;
+  /**
+   * Delete and recreate a server-files file, so we always have the latest and greatest hits
+   * available on the host, and therefor, the user.
+   *
+   * @param fileToOverwrite The file which is to be overwritten. If it exists. it is first deleted,
+   *                        then extracted from our JAR-file.
+   * @author Griefed
+   */
+  public void overwriteServerFilesFile(File fileToOverwrite) {
+    FileUtils.deleteQuietly(new File(String.format("server_files/%s", fileToOverwrite.getName())));
+    checkServerFilesFile(fileToOverwrite);
   }
 
   /**
@@ -1036,7 +1019,7 @@ public class ServerPackCreator {
     getUpdateChecker().refresh();
 
     Optional<Update> update =
-        updateChecker.checkForUpdate(
+        getUpdateChecker().checkForUpdate(
             APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION(),
             APPLICATIONPROPERTIES.checkForAvailablePreReleases());
 
@@ -1145,12 +1128,85 @@ public class ServerPackCreator {
   }
 
   /**
+   * Mode-priorities. Highest to lowest.
+   */
+  public enum Mode {
+
+    /**
+     * Priority 0. Print ServerPackCreators help to commandline.
+     */
+    HELP("-help"),
+
+    /**
+     * Priority 1. Check whether a newer version of ServerPackCreator is available.
+     */
+    UPDATE("-update"),
+
+    /**
+     * Priority 2. Run ServerPackCreators configuration generation.
+     */
+    CGEN("-cgen"),
+
+    /**
+     * Priority 3. Run ServerPackCreator in commandline-mode. If no graphical environment is
+     * supported, this is the default ServerPackCreator will enter, even when starting
+     * ServerPackCreator with no extra arguments at all.
+     */
+    CLI("-cli"),
+
+    /**
+     * Priority 4. Run ServerPackCreator as a webservice.
+     */
+    WEB("-web"),
+
+    /**
+     * Priority 5. Run ServerPackCreator with our GUI. If a graphical environment is supported, this
+     * is the default ServerPackCreator will enter, even when starting ServerPackCreator with no
+     * extra arguments at all.
+     */
+    GUI("-gui"),
+
+    /**
+     * Priority 6 Set up and prepare the environment for subsequent runs of ServerPackCreator. This
+     * will create/copy all files needed for ServerPackCreator to function properly from inside its
+     * JAR-file and setup everything else, too.
+     */
+    SETUP("--setup"),
+
+    /**
+     * Priority 7. Exit ServerPackCreator.
+     */
+    EXIT("exit"),
+
+    /**
+     * Used when the user wants to change the language of ServerPackCreator.
+     */
+    LANG("-lang");
+
+    private final String ARGUMENT;
+
+    Mode(String cliArg) {
+      this.ARGUMENT = cliArg;
+    }
+
+    /**
+     * Textual representation of this mode.
+     *
+     * @return Textual representation of this mode.
+     * @author Griefed
+     */
+    public String argument() {
+      return ARGUMENT;
+    }
+  }
+
+  /**
    * Check the passed commandline-arguments with which ServerPackCreator was started and return the
    * mode in which to run.
    *
    * @author Griefed
    */
-  public static class CommandlineParser {
+  public class CommandlineParser {
 
     /**
      * The mode in which ServerPackCreator will run in after the commandline arguments have been
@@ -1281,79 +1337,6 @@ public class ServerPackCreator {
      */
     protected Optional<String> getLanguageToUse() {
       return Optional.ofNullable(LANG);
-    }
-
-    /**
-     * Mode-priorities. Highest to lowest.
-     */
-    public enum Mode {
-
-      /**
-       * Priority 0. Print ServerPackCreators help to commandline.
-       */
-      HELP("-help"),
-
-      /**
-       * Priority 1. Check whether a newer version of ServerPackCreator is available.
-       */
-      UPDATE("-update"),
-
-      /**
-       * Priority 2. Run ServerPackCreators configuration generation.
-       */
-      CGEN("-cgen"),
-
-      /**
-       * Priority 3. Run ServerPackCreator in commandline-mode. If no graphical environment is
-       * supported, this is the default ServerPackCreator will enter, even when starting
-       * ServerPackCreator with no extra arguments at all.
-       */
-      CLI("-cli"),
-
-      /**
-       * Priority 4. Run ServerPackCreator as a webservice.
-       */
-      WEB("-web"),
-
-      /**
-       * Priority 5. Run ServerPackCreator with our GUI. If a graphical environment is supported,
-       * this is the default ServerPackCreator will enter, even when starting ServerPackCreator with
-       * no extra arguments at all.
-       */
-      GUI("-gui"),
-
-      /**
-       * Priority 6 Set up and prepare the environment for subsequent runs of ServerPackCreator.
-       * This will create/copy all files needed for ServerPackCreator to function properly from
-       * inside its JAR-file and setup everything else, too.
-       */
-      SETUP("--setup"),
-
-      /**
-       * Priority 7. Exit ServerPackCreator.
-       */
-      EXIT("exit"),
-
-      /**
-       * Used when the user wants to change the language of ServerPackCreator.
-       */
-      LANG("-lang");
-
-      private final String ARGUMENT;
-
-      Mode(String cliArg) {
-        this.ARGUMENT = cliArg;
-      }
-
-      /**
-       * Textual representation of this mode.
-       *
-       * @return Textual representation of this mode.
-       * @author Griefed
-       */
-      public String argument() {
-        return ARGUMENT;
-      }
     }
   }
 }

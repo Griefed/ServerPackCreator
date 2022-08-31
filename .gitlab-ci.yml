@@ -155,7 +155,6 @@ Gradle Test:
     when: always
     name: "$CI_COMMIT_BRANCH-$CI_COMMIT_SHORT_SHA-$CI_JOB_NAME"
     expose_as: "Gradle-Test-Artifacts"
-    untracked: true
     paths:
       - build
       - frontend/dist

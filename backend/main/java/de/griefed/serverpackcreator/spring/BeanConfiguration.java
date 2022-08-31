@@ -143,6 +143,7 @@ public class BeanConfiguration {
    * DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY</code>.
    *
    * @return Objectmapper for JSON parsing.
+   * @author Griefed
    */
   @Bean
   public ObjectMapper objectMapper() {
@@ -155,9 +156,43 @@ public class BeanConfiguration {
    * {@link TomlParser} for parsing <code>.toml</code>-files.
    *
    * @return Tomlparser for Toml parsing.
+   * @author Griefed
    */
   @Bean
   public TomlParser tomlParser() {
     return new TomlParser();
+  }
+
+  /**
+   * Storage location for Legacy Fabric Game version manifest file.
+   *
+   * @return ./work/legacy-fabric-game-manifest.json
+   * @author Griefed
+   */
+  @Bean
+  public File legacyFabricGameManifest() {
+    return APPLICATIONPROPERTIES.LEGACY_FABRIC_GAME_MANIFEST_LOCATION();
+  }
+
+  /**
+   * Storage location for Legacy Fabric Loader version manifest file.
+   *
+   * @return ./work/legacy-fabric-loader-manifest.json
+   * @author Griefed
+   */
+  @Bean
+  public File legacyFabricLoaderManifest() {
+    return APPLICATIONPROPERTIES.LEGACY_FABRIC_LOADER_MANIFEST_LOCATION();
+  }
+
+  /**
+   * Storage location for Legacy Fabric Installer version manifest file.
+   *
+   * @return ./work/legacy-fabric-installer-manifest.json
+   * @author Griefed
+   */
+  @Bean
+  public File legacyFabricInstallerManifest() {
+    return APPLICATIONPROPERTIES.LEGACY_FABRIC_INSTALLER_MANIFEST_LOCATION();
   }
 }
