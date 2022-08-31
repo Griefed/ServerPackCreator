@@ -62,13 +62,12 @@ configurations {
 dependencies {
   // Backend
   embed 'de.griefed:versionchecker:1.1.0'
-  embed 'com.electronwill.night-config:hocon:3.6.5'
-  embed 'com.electronwill.night-config:toml:3.6.5'
+  embed 'com.electronwill.night-config:toml:3.6.6'
   embed 'commons-io:commons-io:2.11.0'
   embed 'commons-lang:commons-lang:2.6'
 
   embed 'net.lingala.zip4j:zip4j:2.11.1'
-  embed 'org.xerial:sqlite-jdbc:3.39.2.0'
+  embed 'org.xerial:sqlite-jdbc:3.39.2.1'
   embed 'org.pf4j:pf4j:3.7.0'
   embed 'com.github.vatbub:mslinks:1.0.5'
   implementation 'org.jetbrains:annotations:23.0.0'

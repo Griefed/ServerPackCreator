@@ -1009,26 +1009,22 @@ public final class ConfigurationEditor {
           "Enter the name under which you want to additionally store the above configuration:");
       File customFileName = new File(UTILITIES.StringUtils().pathSecureText(getNextLine(scanner)));
 
-      if (CONFIGUTILITIES.writeConfigToFile(
-          configurationModel,
-          customFileName)) {
+      configurationModel.save(customFileName);
 
-        printToFileAndConsole(
-            "Your configuration has been saved as '" + customFileName + "'.");
-        printToFileAndConsole(
-            "Please note that running ServerPackCreator in CLI mode requires a valid 'serverpackcreator.conf'-file to be present.");
-        printToFileAndConsole("You may load the previous configuration, saved as '" + customFileName
-            + "' and save it as 'serverpackcreator.conf'");
-      }
+      printToFileAndConsole(
+          "Your configuration has been saved as '" + customFileName + "'.");
+      printToFileAndConsole(
+          "Please note that running ServerPackCreator in CLI mode requires a valid 'serverpackcreator.conf'-file to be present.");
+      printToFileAndConsole("You may load the previous configuration, saved as '" + customFileName
+          + "' and save it as 'serverpackcreator.conf'");
+
 
     } else {
-      if (CONFIGUTILITIES.writeConfigToFile(
-          configurationModel,
-          APPLICATIONPROPERTIES.DEFAULT_CONFIG())) {
 
-        printToFileAndConsole(
-            "Your configuration has been saved as 'serverpackcreator.conf'.");
-      }
+      configurationModel.save(APPLICATIONPROPERTIES.DEFAULT_CONFIG());
+      printToFileAndConsole(
+          "Your configuration has been saved as 'serverpackcreator.conf'.");
+
     }
   }
 
