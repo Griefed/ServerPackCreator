@@ -44,7 +44,7 @@ class ServerPackHandlerTest {
   void runTest() throws IOException {
     ConfigurationModel configurationModel = new ConfigurationModel();
     configurationHandler.checkConfiguration(
-        new File("./backend/test/resources/testresources/serverpackcreator.conf"),
+        new File("backend/test/resources/testresources/spcconfs/serverpackcreator.conf"),
         configurationModel,
         true);
     Assertions.assertTrue(serverPackHandler.run(configurationModel));
@@ -180,13 +180,13 @@ class ServerPackHandlerTest {
     }
 
     configurationHandler.checkConfiguration(
-        new File("./backend/test/resources/testresources/serverpackcreator_quilt.conf"),
+        new File("backend/test/resources/testresources/spcconfs/serverpackcreator_quilt.conf"),
         configurationModel,
         true);
     Assertions.assertTrue(serverPackHandler.run(configurationModel));
 
     configurationHandler.checkConfiguration(
-        new File("./backend/test/resources/testresources/serverpackcreator_fabric.conf"),
+        new File("backend/test/resources/testresources/spcconfs/serverpackcreator_fabric.conf"),
         configurationModel,
         true);
     Assertions.assertTrue(serverPackHandler.run(configurationModel));

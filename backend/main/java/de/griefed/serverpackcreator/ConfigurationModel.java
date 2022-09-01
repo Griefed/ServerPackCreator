@@ -139,11 +139,6 @@ public class ConfigurationModel {
     this.scriptSettings.putAll(scriptSettings);
     this.addonsConfigs.putAll(addonsConfigs);
   }
-  // TODO save and load all non-default values from scriptSettings
-  // TODO write unit tests which confirm that addon configurations are loaded
-  // TODO write unit tests which confirm that addon configurations are stored
-  // TODO write unit tests which confirm that scriptSettings are loaded
-  // TODO write unit tests which confirm that scriptSettings are stored
 
   /**
    * Create a new configuration model from a config file.
@@ -191,7 +186,16 @@ public class ConfigurationModel {
           .entrySet()) {
         addonsConfigs.put(entry.getKey(), (ArrayList<CommentedConfig>) entry.getValue());
       }
-    } catch (NullPointerException ignored) {
+    } catch (Exception ignored) {
+
+    }
+
+    try {
+      for (Map.Entry<String, Object> entry : ((CommentedConfig) config.get("scripts")).valueMap()
+          .entrySet()) {
+        scriptSettings.put(entry.getKey(), entry.getValue().toString());
+      }
+    } catch (Exception ignored) {
 
     }
 
@@ -269,12 +273,30 @@ public class ConfigurationModel {
         " Which modloader to install. Must be either \"Forge\", \"Fabric\", \"Quilt\" or \"LegacyFabric\".\n Automatically set when projectID,fileID for modpackDir has been specified.\n Only needed if includeServerInstallation is true.");
     conf.set("modLoader", getModLoader());
 
-    Config addons = TomlFormat.instance().createConfig();
+    Config addons = TomlFormat.newConfig();
     addons.valueMap().putAll(getAddonsConfigs());
 
     conf.setComment("addons",
         " Configurations for any and all addons installed and used by this configuration.");
+    conf.setComment("addons"," Settings related to addons. An addon is identified by its ID.");
     conf.set("addons", addons);
+
+    Config scripts = TomlFormat.newConfig();
+    for (Map.Entry<String, String> entry : scriptSettings.entrySet()) {
+      if (!entry.getKey().equals("SPC_SERVERPACKCREATOR_VERSION_SPC") && !entry.getKey()
+          .equals("SPC_MINECRAFT_VERSION_SPC") && !entry.getKey()
+          .equals("SPC_MODLOADER_SPC") && !entry.getKey()
+          .equals("SPC_MODLOADER_VERSION_SPC") && !entry.getKey()
+          .equals("SPC_JAVA_ARGS_SPC") && !entry.getKey()
+          .equals("SPC_JAVA_SPC") && !entry.getKey()
+          .equals("SPC_FABRIC_INSTALLER_VERSION_SPC") && !entry.getKey()
+          .equals("SPC_QUILT_INSTALLER_VERSION_SPC") && !entry.getKey()
+          .equals("SPC_LEGACYFABRIC_INSTALLER_VERSION_SPC")) {
+        scripts.set(entry.getKey(),entry.getValue());
+      }
+    }
+    conf.setComment("scripts"," Key-value pairs for start scripts. A given key in a start script is replaced with the value.");
+    conf.add("scripts",scripts);
 
     TomlFormat.instance().createWriter()
         .write(conf, destination, WritingMode.REPLACE, StandardCharsets.UTF_8);
