@@ -139,13 +139,20 @@ public class ConfigurationModel {
     this.scriptSettings.putAll(scriptSettings);
     this.addonsConfigs.putAll(addonsConfigs);
   }
+  // TODO save and load all non-default values from scriptSettings
+  // TODO write unit tests which confirm that addon configurations are loaded
+  // TODO write unit tests which confirm that addon configurations are stored
+  // TODO write unit tests which confirm that scriptSettings are loaded
+  // TODO write unit tests which confirm that scriptSettings are stored
 
   /**
    * Create a new configuration model from a config file.
    *
    * @param utilities  Instance of our SPC utilities.
    * @param configFile Configuration file to load.
-   * @throws FileNotFoundException if the specified file can not be found.
+   * @throws FileNotFoundException  if the specified file can not be found.
+   * @throws NoFormatFoundException if the configuration format could not be determined by
+   *                                Night-Config.
    * @author Griefed
    */
   public ConfigurationModel(Utilities utilities, File configFile)
