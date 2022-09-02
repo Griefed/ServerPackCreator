@@ -18,8 +18,9 @@
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
 /**
- * Addon/plugin annotations in the Swing-GUI of ServerPackCreator.
+ * Addon/plugin annotations which hook into the
+ * {@link de.griefed.serverpackcreator.ServerPackHandler}-class.
  *
  * @author Griefed
  */
-package de.griefed.serverpackcreator.plugins.swinggui;
+package de.griefed.serverpackcreator.addons.serverpackhandler;

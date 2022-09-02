@@ -17,16 +17,49 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.plugins.serverpackhandler;
+package de.griefed.serverpackcreator.addons;
 
-import de.griefed.serverpackcreator.plugins.PluginInformation;
+import org.pf4j.ExtensionPoint;
 
-/**
- * Plugin interface for plugins which are to be executed after a server pack has been generated, but
- * before the ZIP-archive is created.
- *
- * @author Griefed
- */
-public interface PreZipExtension extends PluginInformation {
+public interface BaseInformation extends ExtensionPoint {
 
+  /**
+   * Get the ID of this addon.
+   *
+   * @return The ID of this addon.
+   * @author Griefed
+   */
+  String getId();
+
+  /**
+   * Get the name of this addon.
+   *
+   * @return The name of this addon.
+   * @author Griefed
+   */
+  String getName();
+
+  /**
+   * Get the description of this addon.
+   *
+   * @return The description of this addon.
+   * @author Griefed
+   */
+  String getDescription();
+
+  /**
+   * Get the author of this addon.
+   *
+   * @return The author of this addon.
+   * @author Griefed
+   */
+  String getAuthor();
+
+  /**
+   * Get the version of this addon.
+   *
+   * @return The version of this addon.
+   * @author Griefed
+   */
+  String getVersion();
 }

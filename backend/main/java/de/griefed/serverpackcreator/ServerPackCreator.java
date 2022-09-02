@@ -101,7 +101,7 @@ public class ServerPackCreator {
   private VersionMeta versionMeta = null;
   private ConfigUtilities configUtilities = null;
   private ConfigurationHandler configurationHandler = null;
-  private ApplicationPlugins applicationPlugins = null;
+  private ApplicationAddons applicationAddons = null;
   private ServerPackHandler serverPackHandler = null;
   private ServerPackCreatorSplash serverPackCreatorSplash = null;
   private UpdateChecker updateChecker = null;
@@ -263,16 +263,16 @@ public class ServerPackCreator {
     if (this.configurationHandler == null) {
       this.configurationHandler =
           new ConfigurationHandler(
-              I18N, getVersionMeta(), APPLICATIONPROPERTIES, getUtilities(), getConfigUtilities());
+              I18N, getVersionMeta(), APPLICATIONPROPERTIES, getUtilities(), getConfigUtilities(), getApplicationAddons(),getTomlParser());
     }
     return configurationHandler;
   }
 
-  public synchronized ApplicationPlugins getApplicationPlugins() {
-    if (this.applicationPlugins == null) {
-      this.applicationPlugins = new ApplicationPlugins();
+  public synchronized ApplicationAddons getApplicationAddons() {
+    if (this.applicationAddons == null) {
+      this.applicationAddons = new ApplicationAddons();
     }
-    return applicationPlugins;
+    return applicationAddons;
   }
 
   public synchronized ServerPackHandler getServerPackHandler()
@@ -283,7 +283,7 @@ public class ServerPackCreator {
               APPLICATIONPROPERTIES,
               getVersionMeta(),
               getUtilities(),
-              getApplicationPlugins(),
+              getApplicationAddons(),
               getModScanner());
     }
     return serverPackHandler;
@@ -371,7 +371,7 @@ public class ServerPackCreator {
           getVersionMeta(),
           getUtilities(),
           getUpdateChecker(),
-          getApplicationPlugins(),
+          getApplicationAddons(),
           getConfigUtilities(),
           getServerPackCreatorSplash());
     }
@@ -516,6 +516,7 @@ public class ServerPackCreator {
     getUtilities().FileUtils().createDirectories(Paths.get("./server-packs"));
     getUtilities().FileUtils()
         .createDirectories(Paths.get(System.getProperty("pf4j.pluginsDir", "./plugins")));
+    getUtilities().FileUtils().createDirectories(Paths.get("./plugins/config"));
 
     if (!new File(System.getProperty("pf4j.pluginsDir", "./plugins") + "/disabled.txt").exists()) {
       try (BufferedWriter writer =
@@ -602,14 +603,14 @@ public class ServerPackCreator {
   }
 
   /**
-   * Initialize {@link ApplicationPlugins}, {@link ServerPackHandler} and our {@link UpdateChecker}
+   * Initialize {@link ApplicationAddons}, {@link ServerPackHandler} and our {@link UpdateChecker}
    * if it is found to be <code>null</code>.
    *
    * @throws IOException if the {@link VersionMeta} could not be instantiated.
    * @author Griefed
    */
   private void stageThree() throws IOException, ParserConfigurationException, SAXException {
-    getApplicationPlugins();
+    getApplicationAddons();
     getAnnotationScanner();
     getFabricScanner();
     getQuiltScanner();

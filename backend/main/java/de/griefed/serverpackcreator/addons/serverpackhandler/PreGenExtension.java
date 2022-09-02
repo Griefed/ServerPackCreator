@@ -17,16 +17,14 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.plugins.serverpackhandler;
-
-import de.griefed.serverpackcreator.plugins.PluginInformation;
+package de.griefed.serverpackcreator.addons.serverpackhandler;
 
 /**
- * Plugin interface for plugins which are to be executed after server pack, and it's ZIP-archive,
- * have been created.
+ * Extension point for addons which are to be executed before the generation of a server pack is
+ * started.
  *
- * @author Girefed
+ * @author Griefed
  */
-public interface PostGenExtension extends PluginInformation {
+public interface PreGenExtension extends ServerPackHandlerBase {
 
 }

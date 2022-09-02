@@ -17,12 +17,14 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
+package de.griefed.serverpackcreator.addons.serverpackhandler;
+
 /**
- * Annotations for ServerPackCreator plugins/addons. If you plan on adding additional entrypoints
- * for addons and/or plugins, make sure to extend from
- * {@link de.griefed.serverpackcreator.plugins.PluginInformation} and put your new annotation into a
- * sub-package corresponding to the part of ServerPackCreator where it will hook into.
+ * Extension point for addons which are to be executed after a server pack has been generated, but
+ * before the ZIP-archive is created.
  *
  * @author Griefed
  */
-package de.griefed.serverpackcreator.plugins;
+public interface PreZipExtension extends ServerPackHandlerBase {
+
+}

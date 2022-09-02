@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.swing;
 
-import de.griefed.serverpackcreator.ApplicationPlugins;
+import de.griefed.serverpackcreator.ApplicationAddons;
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.ConfigurationHandler;
 import de.griefed.serverpackcreator.ServerPackHandler;
@@ -118,7 +118,7 @@ public class ServerPackCreatorGui {
    *                                        version related in the GUI.
    * @param injectedUtilities               Instance of {@link Utilities}.
    * @param injectedUpdateChecker           Instance of {@link UpdateChecker}.
-   * @param injectedPluginManager           Instance of {@link ApplicationPlugins}.
+   * @param injectedPluginManager           Instance of {@link ApplicationAddons}.
    * @param injectedConfigUtilities         Instance of {@link ConfigUtilities}.
    * @param injectedServerPackCreatorSplash Instance of {@link ServerPackCreatorSplash}
    * @throws IOException if the {@link VersionMeta} could not be instantiated.
@@ -132,7 +132,7 @@ public class ServerPackCreatorGui {
       VersionMeta injectedVersionMeta,
       Utilities injectedUtilities,
       UpdateChecker injectedUpdateChecker,
-      ApplicationPlugins injectedPluginManager,
+      ApplicationAddons injectedPluginManager,
       ConfigUtilities injectedConfigUtilities,
       ServerPackCreatorSplash injectedServerPackCreatorSplash)
       throws IOException {
@@ -200,9 +200,9 @@ public class ServerPackCreatorGui {
     TABBEDPANE.setMnemonicAt(1, KeyEvent.VK_2);
     TABBEDPANE.setMnemonicAt(2, KeyEvent.VK_3);
 
-    if (!injectedPluginManager.pluginsTabExtension().isEmpty()) {
+    if (!injectedPluginManager.tabExtensions().isEmpty()) {
       injectedPluginManager
-          .pluginsTabExtension()
+          .tabExtensions()
           .forEach(
               plugin ->
                   TABBEDPANE.addTab(

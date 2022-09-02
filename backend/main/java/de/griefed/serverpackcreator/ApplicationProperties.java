@@ -1162,6 +1162,16 @@ public final class ApplicationProperties extends Properties {
   }
 
   /**
+   * Directory where plugin configurations are stored in.
+   *
+   * @return plugin configurations directory.
+   * @author Griefed
+   */
+  public String DIRECTORY_PLUGINS_CONFIG() {
+    return DIRECTORY_PLUGINS() + "/config";
+  }
+
+  /**
    * Getter for the directory in which the server packs are stored/generated in.
    *
    * @return String. Returns the directory in which the server packs are stored/generated in.

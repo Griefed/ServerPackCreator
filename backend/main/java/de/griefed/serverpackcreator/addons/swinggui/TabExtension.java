@@ -17,32 +17,37 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.plugins.swinggui;
+package de.griefed.serverpackcreator.addons.swinggui;
 
-import de.griefed.serverpackcreator.plugins.PluginInformation;
+import com.electronwill.nightconfig.core.CommentedConfig;
+import de.griefed.serverpackcreator.addons.BaseInformation;
+import java.util.List;
 import javax.swing.Icon;
-import javax.swing.JComponent;
-import javax.swing.JTabbedPane;
+import javax.swing.JPanel;
 
 /**
- * Plugin interface for plugins which are to be executed after the ServerPackCreator GUI have been
- * initialized. This interface allows plugins to add additional {@link JComponent}s as additional
- * tabs.
+ * Extension point for addons which add additional {@link JPanel}s as additional tabs to the
+ * ServerPackCreator GUI.
  *
  * @author Griefed
  */
-public interface TabExtension extends PluginInformation {
+public interface TabExtension extends BaseInformation {
 
   /**
-   * Get the {@link JTabbedPane} from this addon to add it to the ServerPackCreator GUI.
+   * Get the {@link JPanel} from this addon to add it to the ServerPackCreator GUI as an additional
+   * tab.
    *
+   * @param extensionConfig     Configuration for this addon, conveniently provided by
+   *                            ServerPackCreator.
+   * @param packSpecificConfigs Modpack and server pack specific configurations for this addon,
+   *                            conveniently provided by ServerPackCreator.
    * @return Component to add to the ServerPackCreator GUI as a tab.
    * @author Griefed
    */
-  JComponent getTab();
+  JPanel getTab(CommentedConfig extensionConfig, List<CommentedConfig> packSpecificConfigs);
 
   /**
-   * Get the {@link Icon} for this tabbed pane addon to display to the ServerPackCreator GUI.
+   * Get the {@link Icon} for this tab to display to the ServerPackCreator GUI.
    *
    * @return Icon to be used by the added tab.
    * @author Griefed
@@ -50,7 +55,7 @@ public interface TabExtension extends PluginInformation {
   Icon getTabIcon();
 
   /**
-   * Get the title of this tabbed pane addon to display in the ServerPackCreator GUI.
+   * Get the title of this tab to display in the ServerPackCreator GUI.
    *
    * @return The title of this addons tabbed pane.
    * @author Griefed
@@ -58,7 +63,7 @@ public interface TabExtension extends PluginInformation {
   String getTabTitle();
 
   /**
-   * Get the tooltip for this tabbed pane addon to display in the ServerPackCreator GUI.
+   * Get the tooltip for this tab to display in the ServerPackCreator GUI.
    *
    * @return The tooltip of this addons tabbed pane.
    * @author Griefed
