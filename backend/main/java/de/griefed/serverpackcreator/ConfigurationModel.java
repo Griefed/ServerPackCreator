@@ -278,7 +278,7 @@ public class ConfigurationModel {
 
     conf.setComment("addons",
         " Configurations for any and all addons installed and used by this configuration.");
-    conf.setComment("addons"," Settings related to addons. An addon is identified by its ID.");
+    conf.setComment("addons", " Settings related to addons. An addon is identified by its ID.");
     conf.set("addons", addons);
 
     Config scripts = TomlFormat.newConfig();
@@ -292,11 +292,12 @@ public class ConfigurationModel {
           .equals("SPC_FABRIC_INSTALLER_VERSION_SPC") && !entry.getKey()
           .equals("SPC_QUILT_INSTALLER_VERSION_SPC") && !entry.getKey()
           .equals("SPC_LEGACYFABRIC_INSTALLER_VERSION_SPC")) {
-        scripts.set(entry.getKey(),entry.getValue());
+        scripts.set(entry.getKey(), entry.getValue());
       }
     }
-    conf.setComment("scripts"," Key-value pairs for start scripts. A given key in a start script is replaced with the value.");
-    conf.add("scripts",scripts);
+    conf.setComment("scripts",
+        " Key-value pairs for start scripts. A given key in a start script is replaced with the value.");
+    conf.add("scripts", scripts);
 
     TomlFormat.instance().createWriter()
         .write(conf, destination, WritingMode.REPLACE, StandardCharsets.UTF_8);
@@ -310,7 +311,7 @@ public class ConfigurationModel {
    * @return A hashmap containing configurations for various addons.
    * @author Griefed
    */
-  public HashMap<String, ArrayList<CommentedConfig>> getAddonsConfigs() {
+  HashMap<String, ArrayList<CommentedConfig>> getAddonsConfigs() {
     return addonsConfigs;
   }
 
@@ -320,36 +321,26 @@ public class ConfigurationModel {
    * @param addonsConfigs The new configurations for various addons.
    * @author Griefed
    */
-  public void setAddonsConfigs(HashMap<String, ArrayList<CommentedConfig>> addonsConfigs) {
+  void setAddonsConfigs(HashMap<String, ArrayList<CommentedConfig>> addonsConfigs) {
     this.addonsConfigs.clear();
     this.addonsConfigs.putAll(addonsConfigs);
   }
 
   /**
-   * Set the configuration list for a specific addon, identified by the addons ID.
-   *
-   * @param addonId    The ID of the addon.
-   * @param configList The list of configurations for the specific addon.
-   * @author Griefed
-   */
-  public void setAddonConfigs(String addonId, ArrayList<CommentedConfig> configList) {
-    this.addonsConfigs.put(addonId, configList);
-  }
-
-  /**
-   * Get the list of configurations for a specific addon. If no configurations are available, an
-   * empty list will be returned.
+   * Get the list of configurations for a specific addon. If no configurations are available, a list
+   * for the specified ID os added to the addons configuration so you may add, change or delete to
+   * your hearts content.
    *
    * @param addonId The ID of the addon.
-   * @return A list of configuration for the specified addon. If none are available, an empty list
-   * will be returned.
+   * @return A list of configuration for the specified addon.
    * @author Griefed
    */
   public ArrayList<CommentedConfig> getAddonConfigs(String addonId) {
     if (addonsConfigs.containsKey(addonId)) {
       return addonsConfigs.get(addonId);
     } else {
-      return new ArrayList<>();
+      addonsConfigs.put(addonId, new ArrayList<>());
+      return addonsConfigs.get(addonId);
     }
   }
 
