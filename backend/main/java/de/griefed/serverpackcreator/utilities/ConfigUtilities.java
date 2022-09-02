@@ -53,8 +53,6 @@ import org.springframework.stereotype.Component;
 @Component
 public final class ConfigUtilities {
 
-  // TODO move class back to configurationhandler...why did I make all this stuff a separate class
-  // anyway?
   private static final Logger LOG = LogManager.getLogger(ConfigUtilities.class);
 
   private final Utilities UTILITIES;
@@ -114,9 +112,10 @@ public final class ConfigUtilities {
    * @return Boolean. Returns true if the configuration file has been successfully written and old
    * ones replaced.
    * @author Griefed
+   * @deprecated Use {@link ConfigurationModel#save(File)} instead.
    */
+  @Deprecated
   public boolean writeConfigToFile(ConfigurationModel configurationModel, File fileName) {
-
     return writeConfigToFile(
         configurationModel.getModpackDir(),
         configurationModel.getClientMods(),
@@ -164,7 +163,9 @@ public final class ConfigUtilities {
    * replaced.
    * @author whitebear60
    * @author Griefed
+   * @deprecated Use {@link ConfigurationModel#save(File)} instead.
    */
+  @Deprecated
   public boolean writeConfigToFile(
       String modpackDir,
       List<String> clientMods,

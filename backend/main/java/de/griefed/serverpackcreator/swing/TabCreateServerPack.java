@@ -1909,9 +1909,6 @@ public class TabCreateServerPack extends JPanel {
    * @author Griefed
    */
   private ConfigurationModel currentConfigAsModel() {
-    // To be used and enhanced in a later milestone
-    HashMap<String, String> scriptSettings = new HashMap<>();
-
     return new ConfigurationModel(
         UTILITIES.ListUtils()
             .cleanList(
@@ -1925,9 +1922,9 @@ public class TabCreateServerPack extends JPanel {
                         TEXTAREA_COPYDIRECTORIES.getText().replace(", ", ",").split(",")))),
         TEXTFIELD_MODPACKDIRECTORY.getText().replace("\\", "/"),
         TEXTFIELD_JAVAPATH.getText().replace("\\", "/"),
-        chosenMinecraftVersion,
-        chosenModloader,
-        chosenModloaderVersion,
+        COMBOBOX_MINECRAFTVERSIONS.getSelectedItem().toString(),
+        COMBOBOX_MODLOADERS.getSelectedItem().toString(),
+        COMBOBOX_MODLOADER_VERSIONS.getSelectedItem().toString(),
         TEXTAREA_JAVAARGS.getText(),
         UTILITIES.StringUtils().pathSecureText(TEXTFIELD_SERVERPACKSUFFIX.getText()),
         TEXTFIELD_SERVERICONPATH.getText().replace("\\", "/"),
@@ -1936,7 +1933,8 @@ public class TabCreateServerPack extends JPanel {
         CHECKBOX_ICON.isSelected(),
         CHECKBOX_PROPERTIES.isSelected(),
         CHECKBOX_ZIP.isSelected(),
-        scriptSettings);
+        new HashMap<>(),
+        new HashMap<>());
   }
 
   /**
@@ -2080,36 +2078,7 @@ public class TabCreateServerPack extends JPanel {
    * @author Griefed
    */
   void saveConfig(File configFile) {
-    List<String> tempClientMods =
-        UTILITIES.ListUtils()
-            .cleanList(
-                new ArrayList<>(
-                    Arrays.asList(
-                        TEXTAREA_CLIENTSIDEMODS.getText().replace(", ", ",").split(","))));
-    List<String> tempCopyDirs =
-        UTILITIES.ListUtils()
-            .cleanList(
-                new ArrayList<>(
-                    Arrays.asList(
-                        TEXTAREA_COPYDIRECTORIES.getText().replace(", ", ",").split(","))));
-
-    CONFIGUTILITIES.writeConfigToFile(
-        TEXTFIELD_MODPACKDIRECTORY.getText().replace("\\", "/"),
-        tempClientMods,
-        tempCopyDirs,
-        TEXTFIELD_SERVERICONPATH.getText().replace("\\", "/"),
-        TEXTFIELD_SERVERPROPERTIESPATH.getText().replace("\\", "/"),
-        CHECKBOX_SERVER.isSelected(),
-        TEXTFIELD_JAVAPATH.getText().replace("\\", "/"),
-        chosenMinecraftVersion,
-        chosenModloader,
-        chosenModloaderVersion,
-        CHECKBOX_ICON.isSelected(),
-        CHECKBOX_PROPERTIES.isSelected(),
-        CHECKBOX_ZIP.isSelected(),
-        TEXTAREA_JAVAARGS.getText(),
-        UTILITIES.StringUtils().pathSecureText(TEXTFIELD_SERVERPACKSUFFIX.getText()),
-        configFile);
+    currentConfigAsModel().save(configFile);
   }
 
   /**

@@ -19,16 +19,22 @@
  */
 package de.griefed.serverpackcreator;
 
+import com.electronwill.nightconfig.core.CommentedConfig;
+import com.electronwill.nightconfig.core.Config;
 import com.electronwill.nightconfig.core.file.FileConfig;
 import com.electronwill.nightconfig.core.file.NoFormatFoundException;
+import com.electronwill.nightconfig.core.io.WritingMode;
+import com.electronwill.nightconfig.toml.TomlFormat;
 import com.fasterxml.jackson.databind.JsonNode;
 import de.griefed.serverpackcreator.utilities.common.Utilities;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Class containing all fields and therefore all information either gathered from a configuration
@@ -41,6 +47,7 @@ public class ConfigurationModel {
   private final List<String> clientMods = new ArrayList<>();
   private final List<String> copyDirs = new ArrayList<>();
   private final HashMap<String, String> scriptSettings = new HashMap<>();
+  private final HashMap<String, ArrayList<CommentedConfig>> addonsConfigs = new HashMap<>();
   private String modpackDir = "";
   private String javaPath = "";
   private String minecraftVersion = "";
@@ -91,6 +98,8 @@ public class ConfigurationModel {
    * @param includeZipCreation        Whether to create a ZIP-archive of the server pack.
    * @param scriptSettings            Map containing key-value pairs to be used in start script
    *                                  creation.
+   * @param addonsConfigs             Configuration for any and all addons used by this
+   *                                  configuration.
    * @author Griefed
    */
   public ConfigurationModel(
@@ -109,7 +118,8 @@ public class ConfigurationModel {
       boolean includeServerIcon,
       boolean includeServerProperties,
       boolean includeZipCreation,
-      HashMap<String, String> scriptSettings) {
+      HashMap<String, String> scriptSettings,
+      HashMap<String, ArrayList<CommentedConfig>> addonsConfigs) {
 
     this.clientMods.addAll(clientMods);
     this.copyDirs.addAll(copyDirs);
@@ -127,6 +137,7 @@ public class ConfigurationModel {
     this.includeServerProperties = includeServerProperties;
     this.includeZipCreation = includeZipCreation;
     this.scriptSettings.putAll(scriptSettings);
+    this.addonsConfigs.putAll(addonsConfigs);
   }
 
   /**
@@ -134,7 +145,9 @@ public class ConfigurationModel {
    *
    * @param utilities  Instance of our SPC utilities.
    * @param configFile Configuration file to load.
-   * @throws FileNotFoundException if the specified file can not be found.
+   * @throws FileNotFoundException  if the specified file can not be found.
+   * @throws NoFormatFoundException if the configuration format could not be determined by
+   *                                Night-Config.
    * @author Griefed
    */
   public ConfigurationModel(Utilities utilities, File configFile)
@@ -144,7 +157,7 @@ public class ConfigurationModel {
       throw new FileNotFoundException("Couldn't find file: " + configFile);
     }
 
-    FileConfig config = FileConfig.of(configFile);
+    FileConfig config = FileConfig.of(configFile, TomlFormat.instance());
 
     config.load();
 
@@ -163,22 +176,172 @@ public class ConfigurationModel {
     setServerIconPath(config.getOrElse("serverIconPath", "").replace("\\", "/"));
     setServerPropertiesPath(config.getOrElse("serverPropertiesPath", "").replace("\\", "/"));
 
-    setIncludeServerInstallation(
-        utilities.BooleanUtils()
-            .convert(
-                String.valueOf(config.getOrElse("includeServerInstallation", "False"))));
-    setIncludeServerIcon(
-        utilities.BooleanUtils()
-            .convert(String.valueOf(config.getOrElse("includeServerIcon", "False"))));
-    setIncludeServerProperties(
-        utilities.BooleanUtils()
-            .convert(
-                String.valueOf(config.getOrElse("includeServerProperties", "False"))));
-    setIncludeZipCreation(
-        utilities.BooleanUtils()
-            .convert(String.valueOf(config.getOrElse("includeZipCreation", "False"))));
+    setIncludeServerInstallation(config.getOrElse("includeServerInstallation", false));
+    setIncludeServerIcon(config.getOrElse("includeServerIcon", false));
+    setIncludeServerProperties(config.getOrElse("includeServerProperties", false));
+    setIncludeZipCreation(config.getOrElse("includeZipCreation", false));
+
+    try {
+      for (Map.Entry<String, Object> entry : ((CommentedConfig) config.get("addons")).valueMap()
+          .entrySet()) {
+        addonsConfigs.put(entry.getKey(), (ArrayList<CommentedConfig>) entry.getValue());
+      }
+    } catch (Exception ignored) {
+
+    }
+
+    try {
+      for (Map.Entry<String, Object> entry : ((CommentedConfig) config.get("scripts")).valueMap()
+          .entrySet()) {
+        scriptSettings.put(entry.getKey(), entry.getValue().toString());
+      }
+    } catch (Exception ignored) {
+
+    }
 
     config.close();
+  }
+
+  /**
+   * Save this configuration.
+   *
+   * @param destination The file to store the configuration in.
+   * @return The configuration for further operations.
+   * @author Griefed
+   */
+  public ConfigurationModel save(File destination) {
+
+    CommentedConfig conf = TomlFormat.instance().createConfig();
+    conf.set("includeServerInstallation",
+        getIncludeServerInstallation());
+    conf.setComment("includeServerInstallation",
+        " Whether to install a Forge/Fabric/Quilt server for the serverpack. Must be true or false.\n Default value is true.");
+
+    conf.setComment("serverIconPath",
+        " Path to a custom server-icon.png-file to include in the server pack.");
+    conf.set("serverIconPath", getServerIconPath());
+
+    conf.setComment("copyDirs",
+        " Name of directories or files to include in serverpack.\n When specifying \"saves/world_name\", \"world_name\" will be copied to the base directory of the serverpack\n for immediate use with the server. Automatically set when projectID,fileID for modpackDir has been specified.\n Example: [config,mods,scripts]");
+    conf.set("copyDirs", getCopyDirs());
+
+    conf.setComment("serverPackSuffix",
+        " Suffix to append to the server pack to be generated. Can be left blank/empty.");
+    conf.set("serverPackSuffix", getServerPackSuffix());
+
+    conf.setComment("clientMods",
+        " List of client-only mods to delete from serverpack.\n No need to include version specifics. Must be the filenames of the mods, not their project names on CurseForge!\n Example: [AmbientSounds-,ClientTweaks-,PackMenu-,BetterAdvancement-,jeiintegration-]");
+    conf.set("clientMods", getClientMods());
+
+    conf.setComment("serverPropertiesPath",
+        " Path to a custom server.properties-file to include in the server pack.");
+    conf.set("serverPropertiesPath", getServerPropertiesPath());
+
+    conf.setComment("includeServerProperties",
+        " Include a server.properties in your serverpack. Must be true or false.\n If no server.properties is provided but is set to true, a default one will be provided.\n Default value is true.");
+    conf.set("includeServerProperties", getIncludeServerProperties());
+
+    conf.setComment("javaArgs",
+        " Java arguments to set in the start-scripts for the generated server pack. Default value is \"empty\".\n Leave as \"empty\" to not have Java arguments in your start-scripts.");
+    conf.set("javaArgs", getJavaArgs());
+
+    conf.setComment("javaPath",
+        " Path to the Java executable. On Linux systems it would be something like \"/usr/bin/java\".\n Only needed if includeServerInstallation is true.");
+    conf.set("javaPath", getJavaPath());
+
+    conf.setComment("modpackDir",
+        " Path to your modpack. Can be either relative or absolute.\n Example: \"./Some Modpack\" or \"C:/Minecraft/Some Modpack\"");
+    conf.set("modpackDir", getModpackDir());
+
+    conf.setComment("includeServerIcon",
+        " Include a server-icon.png in your serverpack. Must be true or false\n Default value is true.");
+    conf.set("includeServerIcon", getIncludeServerIcon());
+
+    conf.setComment("includeZipCreation",
+        " Create zip-archive of serverpack. Must be true or false.\n Default value is true.");
+    conf.set("includeZipCreation", getIncludeZipCreation());
+
+    conf.setComment("modLoaderVersion",
+        " The version of the modloader you want to install. Example for Fabric=\"0.7.3\", example for Forge=\"36.0.15\".\n Automatically set when projectID,fileID for modpackDir has been specified.\n Only needed if includeServerInstallation is true.");
+    conf.set("modLoaderVersion", getModLoaderVersion());
+
+    conf.setComment("minecraftVersion",
+        " Which Minecraft version to use. Example: \"1.16.5\".\n Automatically set when projectID,fileID for modpackDir has been specified.\n Only needed if includeServerInstallation is true.");
+    conf.set("minecraftVersion", getMinecraftVersion());
+
+    conf.setComment("modLoader",
+        " Which modloader to install. Must be either \"Forge\", \"Fabric\", \"Quilt\" or \"LegacyFabric\".\n Automatically set when projectID,fileID for modpackDir has been specified.\n Only needed if includeServerInstallation is true.");
+    conf.set("modLoader", getModLoader());
+
+    Config addons = TomlFormat.newConfig();
+    addons.valueMap().putAll(getAddonsConfigs());
+
+    conf.setComment("addons",
+        " Configurations for any and all addons installed and used by this configuration.");
+    conf.setComment("addons", " Settings related to addons. An addon is identified by its ID.");
+    conf.set("addons", addons);
+
+    Config scripts = TomlFormat.newConfig();
+    for (Map.Entry<String, String> entry : scriptSettings.entrySet()) {
+      if (!entry.getKey().equals("SPC_SERVERPACKCREATOR_VERSION_SPC") && !entry.getKey()
+          .equals("SPC_MINECRAFT_VERSION_SPC") && !entry.getKey()
+          .equals("SPC_MODLOADER_SPC") && !entry.getKey()
+          .equals("SPC_MODLOADER_VERSION_SPC") && !entry.getKey()
+          .equals("SPC_JAVA_ARGS_SPC") && !entry.getKey()
+          .equals("SPC_JAVA_SPC") && !entry.getKey()
+          .equals("SPC_FABRIC_INSTALLER_VERSION_SPC") && !entry.getKey()
+          .equals("SPC_QUILT_INSTALLER_VERSION_SPC") && !entry.getKey()
+          .equals("SPC_LEGACYFABRIC_INSTALLER_VERSION_SPC")) {
+        scripts.set(entry.getKey(), entry.getValue());
+      }
+    }
+    conf.setComment("scripts",
+        " Key-value pairs for start scripts. A given key in a start script is replaced with the value.");
+    conf.add("scripts", scripts);
+
+    TomlFormat.instance().createWriter()
+        .write(conf, destination, WritingMode.REPLACE, StandardCharsets.UTF_8);
+
+    return this;
+  }
+
+  /**
+   * Get the configurations for various addons.
+   *
+   * @return A hashmap containing configurations for various addons.
+   * @author Griefed
+   */
+  HashMap<String, ArrayList<CommentedConfig>> getAddonsConfigs() {
+    return addonsConfigs;
+  }
+
+  /**
+   * Clear and set the configs for addons.
+   *
+   * @param addonsConfigs The new configurations for various addons.
+   * @author Griefed
+   */
+  void setAddonsConfigs(HashMap<String, ArrayList<CommentedConfig>> addonsConfigs) {
+    this.addonsConfigs.clear();
+    this.addonsConfigs.putAll(addonsConfigs);
+  }
+
+  /**
+   * Get the list of configurations for a specific addon. If no configurations are available, a list
+   * for the specified ID os added to the addons configuration so you may add, change or delete to
+   * your hearts content.
+   *
+   * @param addonId The ID of the addon.
+   * @return A list of configuration for the specified addon.
+   * @author Griefed
+   */
+  public ArrayList<CommentedConfig> getAddonConfigs(String addonId) {
+    if (addonsConfigs.containsKey(addonId)) {
+      return addonsConfigs.get(addonId);
+    } else {
+      addonsConfigs.put(addonId, new ArrayList<>());
+      return addonsConfigs.get(addonId);
+    }
   }
 
   /**

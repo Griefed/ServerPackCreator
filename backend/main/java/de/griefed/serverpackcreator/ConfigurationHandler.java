@@ -20,10 +20,8 @@
 package de.griefed.serverpackcreator;
 
 import com.electronwill.nightconfig.core.CommentedConfig;
-import com.electronwill.nightconfig.core.file.FileConfig;
 import com.electronwill.nightconfig.core.file.FileNotFoundAction;
 import com.electronwill.nightconfig.toml.TomlParser;
-import com.typesafe.config.ConfigException;
 import de.griefed.serverpackcreator.i18n.I18n;
 import de.griefed.serverpackcreator.utilities.ConfigUtilities;
 import de.griefed.serverpackcreator.utilities.common.FileUtilities;
@@ -39,7 +37,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -233,66 +230,26 @@ public final class ConfigurationHandler {
       @NotNull List<String> encounteredErrors,
       boolean quietCheck) {
 
-    FileConfig config = null;
-
     try {
-      config = FileConfig.of(configFile);
-    } catch (ConfigException ex) {
-
-      LOG.error(
-          "Couldn't parse config file. Consider checking your config file and fixing empty values. If the value needs to be an empty string, leave its value to \"\".");
-
-      /* This log is meant to be read by the user, therefore we allow translation. */
-      encounteredErrors.add(I18N.getMessage("configuration.log.error.checkconfig.start"));
-    }
-
-    if (config != null) {
-
-      try {
-        config.load();
-      } catch (ConfigException ex) {
-
-        LOG.error(
-            "Couldn't parse config file. Consider checking your config file and fixing empty values. If the value needs to be an empty string, leave its value to \"\".");
-
-        /* This log is meant to be read by the user, therefore we allow translation. */
-        encounteredErrors.add(I18N.getMessage("configuration.log.error.checkconfig.start"));
-      }
-
-      configurationModel.setClientMods(
-          config.getOrElse("clientMods", Collections.singletonList("")));
-      configurationModel.setCopyDirs(config.getOrElse("copyDirs", Collections.singletonList("")));
-      configurationModel.setModpackDir(config.getOrElse("modpackDir", "").replace("\\", "/"));
-      configurationModel.setJavaPath(config.getOrElse("javaPath", "").replace("\\", "/"));
-
-      configurationModel.setMinecraftVersion(config.getOrElse("minecraftVersion", ""));
-      configurationModel.setModLoader(config.getOrElse("modLoader", ""));
-      configurationModel.setModLoaderVersion(config.getOrElse("modLoaderVersion", ""));
-      configurationModel.setJavaArgs(config.getOrElse("javaArgs", ""));
-
-      configurationModel.setServerPackSuffix(
-          UTILITIES.StringUtils().pathSecureText(config.getOrElse("serverPackSuffix", "")));
-      configurationModel.setServerIconPath(
-          config.getOrElse("serverIconPath", "").replace("\\", "/"));
-      configurationModel.setServerPropertiesPath(
-          config.getOrElse("serverPropertiesPath", "").replace("\\", "/"));
-
-      configurationModel.setIncludeServerInstallation(
-          UTILITIES.BooleanUtils()
-              .convert(
-                  String.valueOf(config.getOrElse("includeServerInstallation", "False"))));
-      configurationModel.setIncludeServerIcon(
-          UTILITIES.BooleanUtils()
-              .convert(String.valueOf(config.getOrElse("includeServerIcon", "False"))));
-      configurationModel.setIncludeServerProperties(
-          UTILITIES.BooleanUtils()
-              .convert(
-                  String.valueOf(config.getOrElse("includeServerProperties", "False"))));
-      configurationModel.setIncludeZipCreation(
-          UTILITIES.BooleanUtils()
-              .convert(String.valueOf(config.getOrElse("includeZipCreation", "False"))));
-
-    } else {
+      ConfigurationModel fileConf = new ConfigurationModel(UTILITIES, configFile);
+      configurationModel.setClientMods(fileConf.getClientMods());
+      configurationModel.setCopyDirs(fileConf.getCopyDirs());
+      configurationModel.setModpackDir(fileConf.getModpackDir());
+      configurationModel.setJavaPath(fileConf.getJavaPath());
+      configurationModel.setMinecraftVersion(fileConf.getMinecraftVersion());
+      configurationModel.setModLoader(fileConf.getModLoader());
+      configurationModel.setModLoaderVersion(fileConf.getModLoaderVersion());
+      configurationModel.setJavaArgs(fileConf.getJavaArgs());
+      configurationModel.setServerPackSuffix(fileConf.getServerPackSuffix());
+      configurationModel.setServerIconPath(fileConf.getServerIconPath());
+      configurationModel.setServerPropertiesPath(fileConf.getServerPropertiesPath());
+      configurationModel.setIncludeServerInstallation(fileConf.getIncludeServerInstallation());
+      configurationModel.setIncludeServerIcon(fileConf.getIncludeServerIcon());
+      configurationModel.setIncludeServerProperties(fileConf.getIncludeServerProperties());
+      configurationModel.setIncludeZipCreation(fileConf.getIncludeZipCreation());
+      configurationModel.setScriptSettings(fileConf.getScriptSettings());
+      configurationModel.setAddonsConfigs(fileConf.getAddonsConfigs());
+    } catch (Exception ex) {
 
       LOG.error(
           "Couldn't parse config file. Consider checking your config file and fixing empty values. If the value needs to be an empty string, leave its value to \"\".");

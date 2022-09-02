@@ -12,15 +12,18 @@ import org.junit.jupiter.api.Test;
 public class ApplicationAddonsTest {
 
   private static final Logger LOG = LogManager.getLogger(ApplicationAddonsTest.class);
-  ApplicationAddons applicationAddons;
 
-  ApplicationAddonsTest() {
+  static {
     try {
       FileUtils.copyDirectory(
           new File("backend/test/resources/testresources/addons"), new File("plugins"));
     } catch (IOException e) {
       LOG.error("Error copying file.", e);
     }
+  }
+  ApplicationAddons applicationAddons;
+
+  ApplicationAddonsTest() {
     applicationAddons = ServerPackCreator.getInstance().getApplicationAddons();
   }
 
