@@ -36,14 +36,14 @@ class ConfigurationHandlerTest {
   void checkConfigFileTest() {
     Assertions.assertFalse(
         configurationHandler.checkConfiguration(
-            new File("./backend/test/resources/testresources/serverpackcreator.conf"), false));
+            new File("backend/test/resources/testresources/spcconfs/serverpackcreator.conf"), false));
   }
 
   @Test
   void isDirTestCopyDirs() {
     Assertions.assertTrue(
         configurationHandler.checkConfiguration(
-            new File("./backend/test/resources/testresources/serverpackcreator_copydirs.conf"),
+            new File("backend/test/resources/testresources/spcconfs/serverpackcreator_copydirs.conf"),
             false));
   }
 
@@ -51,7 +51,7 @@ class ConfigurationHandlerTest {
   void isDirTestJavaPath() {
     Assertions.assertFalse(
         configurationHandler.checkConfiguration(
-            new File("./backend/test/resources/testresources/serverpackcreator_javapath.conf"),
+            new File("backend/test/resources/testresources/spcconfs/serverpackcreator_javapath.conf"),
             false));
   }
 
@@ -60,7 +60,7 @@ class ConfigurationHandlerTest {
     Assertions.assertTrue(
         configurationHandler.checkConfiguration(
             new File(
-                "./backend/test/resources/testresources/serverpackcreator_minecraftversion.conf"),
+                "backend/test/resources/testresources/spcconfs/serverpackcreator_minecraftversion.conf"),
             false));
   }
 
@@ -68,7 +68,7 @@ class ConfigurationHandlerTest {
   void isModLoaderLegacyFabric() {
     Assertions.assertFalse(
         configurationHandler.checkConfiguration(
-            new File("./backend/test/resources/testresources/serverpackcreator_legacyfabric.conf"),
+            new File("backend/test/resources/testresources/spcconfs/serverpackcreator_legacyfabric.conf"),
             false));
   }
 
@@ -76,7 +76,7 @@ class ConfigurationHandlerTest {
   void isModLoaderQuilt() {
     Assertions.assertFalse(
         configurationHandler.checkConfiguration(
-            new File("./backend/test/resources/testresources/serverpackcreator_quilt.conf"),
+            new File("backend/test/resources/testresources/spcconfs/serverpackcreator_quilt.conf"),
             false));
   }
 
@@ -85,7 +85,7 @@ class ConfigurationHandlerTest {
     Assertions.assertTrue(
         configurationHandler.checkConfiguration(
             new File(
-                "./backend/test/resources/testresources/serverpackcreator_modloaderfalse.conf"),
+                "backend/test/resources/testresources/spcconfs/serverpackcreator_modloaderfalse.conf"),
             false));
   }
 
@@ -94,7 +94,7 @@ class ConfigurationHandlerTest {
     Assertions.assertTrue(
         configurationHandler.checkConfiguration(
             new File(
-                "./backend/test/resources/testresources/serverpackcreator_modloaderversion.conf"),
+                "backend/test/resources/testresources/spcconfs/serverpackcreator_modloaderversion.conf"),
             false));
   }
 
@@ -326,7 +326,7 @@ class ConfigurationHandlerTest {
   void checkConfigurationFileTest() {
     Assertions.assertFalse(
         configurationHandler.checkConfiguration(
-            new File("backend/test/resources/testresources/serverpackcreator.conf"), true));
+            new File("backend/test/resources/testresources/spcconfs/serverpackcreator.conf"), true));
   }
 
   @Test
@@ -334,7 +334,7 @@ class ConfigurationHandlerTest {
     ConfigurationModel configurationModel = new ConfigurationModel();
     Assertions.assertFalse(
         configurationHandler.checkConfiguration(
-            new File("backend/test/resources/testresources/serverpackcreator.conf"),
+            new File("backend/test/resources/testresources/spcconfs/serverpackcreator.conf"),
             configurationModel,
             true));
     Assertions.assertEquals(
@@ -346,7 +346,7 @@ class ConfigurationHandlerTest {
     configurationModel = new ConfigurationModel();
     Assertions.assertFalse(
         configurationHandler.checkConfiguration(
-            new File("backend/test/resources/testresources/serverpackcreator.conf"),
+            new File("backend/test/resources/testresources/spcconfs/serverpackcreator.conf"),
             configurationModel,
             new ArrayList<>(),
             false));
