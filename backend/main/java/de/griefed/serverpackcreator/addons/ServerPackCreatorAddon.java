@@ -36,7 +36,6 @@ public class ServerPackCreatorAddon extends Plugin implements BaseInformation {
 
   protected static final Logger LOG_ADDONS = LogManager.getLogger("AddonsLogger");
   private static final Logger LOG = LogManager.getLogger(ServerPackCreatorAddon.class);
-  private final String ID;
   private final String NAME;
   private final String DESCRIPTION;
   private final String AUTHOR;
@@ -51,7 +50,6 @@ public class ServerPackCreatorAddon extends Plugin implements BaseInformation {
     CommentedConfig addonToml = TomlFormat.instance().createParser().parse(new URL(
         classPath.substring(0, classPath.lastIndexOf("!") + 1) + "/addon.toml").openStream());
 
-    ID = addonToml.get("id");
     NAME = addonToml.get("name");
     DESCRIPTION = addonToml.get("description");
     AUTHOR = addonToml.get("author");
@@ -71,25 +69,25 @@ public class ServerPackCreatorAddon extends Plugin implements BaseInformation {
   public void start() throws PluginRuntimeException {
     super.start();
 
-    if (!new File("plugins/config/" + ID + ".toml").exists()) {
+    if (!new File("plugins/config/" + getId() + ".toml").exists()) {
       ServerPackCreator.getInstance().getUtilities().JarUtils()
-          .copyFileFromJar("config.toml", new File("plugins/config/" + ID + ".toml"), false,
+          .copyFileFromJar("config.toml", new File("plugins/config/" + getId() + ".toml"), false,
               this.getClass());
     }
 
-    LOG.info("Addon-ID:          " + ID);
+    LOG.info("Addon-ID:          " + getId());
     LOG.info("Addon-Name:        " + NAME);
     LOG.info("Addon-Description: " + DESCRIPTION);
     LOG.info("Addon-Author:      " + AUTHOR);
     LOG.info("Addon-Version:     " + VERSION);
-    LOG.info("Started: " + NAME + " (" + ID + ")");
+    LOG.info("Started: " + NAME + " (" + getId() + ")");
 
-    LOG_ADDONS.info("Addon-ID:          " + ID);
+    LOG_ADDONS.info("Addon-ID:          " + getId());
     LOG_ADDONS.info("Addon-Name:        " + NAME);
     LOG_ADDONS.info("Addon-Description: " + DESCRIPTION);
     LOG_ADDONS.info("Addon-Author:      " + AUTHOR);
     LOG_ADDONS.info("Addon-Version:     " + VERSION);
-    LOG_ADDONS.info("Started: " + NAME + " (" + ID + ")");
+    LOG_ADDONS.info("Started: " + NAME + " (" + getId() + ")");
   }
 
   /**
@@ -103,13 +101,12 @@ public class ServerPackCreatorAddon extends Plugin implements BaseInformation {
   @Override
   public void stop() throws PluginRuntimeException {
     super.stop();
-    LOG.info("Stopped: " + NAME + " (" + ID + ")");
-    LOG_ADDONS.info("Stopped: " + NAME + " (" + ID + ")");
+    LOG.info("Stopped: " + NAME + " (" + getId() + ")");
+    LOG_ADDONS.info("Stopped: " + NAME + " (" + getId() + ")");
   }
 
-  @Override
   public String getId() {
-    return ID;
+    return getWrapper().getPluginId();
   }
 
   @Override

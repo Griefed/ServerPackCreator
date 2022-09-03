@@ -22,26 +22,32 @@ package de.griefed.serverpackcreator.addons.swinggui;
 import com.electronwill.nightconfig.core.CommentedConfig;
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.addons.BaseInformation;
+import de.griefed.serverpackcreator.swing.TabCreateServerPack;
 import de.griefed.serverpackcreator.utilities.common.Utilities;
 import de.griefed.serverpackcreator.versionmeta.VersionMeta;
-import java.io.File;
 import java.util.Optional;
 import java.util.Properties;
-import javax.swing.Icon;
 import javax.swing.JPanel;
 
 /**
- * Extension point for addons which add additional {@link JPanel}s as additional tabs to the
- * ServerPackCreator GUI.
+ * Extension point for addons which add additional {@link JPanel}s in a given server pack tab,
+ * allowing users to customize server pack specific configurations of an addon.
  *
  * @author Griefed
  */
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-public interface TabExtension extends BaseInformation {
+public interface ConfigPanelExtension extends BaseInformation {
 
   /**
-   * Get the {@link JPanel} from this addon to add it to the ServerPackCreator GUI as an additional
-   * tab.
+   * This method gets called when an extension of this type is run. All parameters are provided by
+   * ServerPackCreator, so you do not have to take care of them. A ConfigPanel is intended to be
+   * used to change server pack-specific configurations which can then be used by other extensions
+   * in your plugin. A simple example would be downloading a specific version of some mod. You could
+   * add a panel which lets the user configure the version of the mod to use. When the user then
+   * runs the server pack generation, your setting will be stored in the subsequently generated
+   * serverpackcreator.conf, and could be used in any of the
+   * {@link de.griefed.serverpackcreator.ServerPackHandler} extension-points, which would then
+   * download the version you specified via this here panel.
    *
    * @param versionMeta           Instance of {@link VersionMeta} so you can work with available
    *                              Minecraft, Forge, Fabric, LegacyFabric and Quilt versions.
@@ -50,42 +56,24 @@ public interface TabExtension extends BaseInformation {
    *                              the server pack directory etc.
    * @param utilities             Instance of {@link Utilities} commonly used across
    *                              ServerPackCreator.
+   * @param tabCreateServerPack   Instance of {@link TabCreateServerPack} to give you access to the
+   *                              various fields inside it, like the modpack directory, selected
+   *                              Minecraft, modloader and modloader versions, etc.
    * @param addonConfig           Addon specific configuration conveniently provided by
    *                              ServerPackCreator. This is the global configuration of the addon
    *                              which provides the ConfigPanelExtension to ServerPackCreator.
-   * @param configFile            The config-file corresponding to the ID of the addon, wrapped in
-   *                              an Optional.
-   * @return Component to add to the ServerPackCreator GUI as a tab.
+   * @param extensionName         The name the titled border of this ConfigPanel will get.
+   * @param pluginID              The same as the PluginId.
+   * @return A ConfigPanel allowing users to further customize their ServerPackCreator experience
+   * when using an addon.
    * @author Griefed
    */
-  ExtensionTab getTab(
+  ExtensionConfigPanel getPanel(
       VersionMeta versionMeta,
       ApplicationProperties applicationProperties,
       Utilities utilities,
+      TabCreateServerPack tabCreateServerPack,
       Optional<CommentedConfig> addonConfig,
-      Optional<File> configFile);
-
-  /**
-   * Get the {@link Icon} for this tab to display to the ServerPackCreator GUI.
-   *
-   * @return Icon to be used by the added tab.
-   * @author Griefed
-   */
-  Icon getTabIcon();
-
-  /**
-   * Get the title of this tab to display in the ServerPackCreator GUI.
-   *
-   * @return The title of this addons tabbed pane.
-   * @author Griefed
-   */
-  String getTabTitle();
-
-  /**
-   * Get the tooltip for this tab to display in the ServerPackCreator GUI.
-   *
-   * @return The tooltip of this addons tabbed pane.
-   * @author Griefed
-   */
-  String getTabTooltip();
+      String extensionName,
+      String pluginID);
 }

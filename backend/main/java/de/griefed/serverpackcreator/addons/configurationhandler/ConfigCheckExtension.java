@@ -22,7 +22,9 @@ package de.griefed.serverpackcreator.addons.configurationhandler;
 import com.electronwill.nightconfig.core.CommentedConfig;
 import de.griefed.serverpackcreator.ConfigurationModel;
 import de.griefed.serverpackcreator.addons.BaseInformation;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Extension point for configuration checks, so you can run your own checks on a given
@@ -30,13 +32,14 @@ import java.util.List;
  *
  * @author Girefed
  */
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public interface ConfigCheckExtension extends BaseInformation {
 
   /**
    * @param configurationModel  The configuration to check.
    * @param encounteredErrors   A list of encountered errors during any and all checks. The list is
    *                            displayed to the user if it contains any entries.
-   * @param extensionConfig     Configuration for this addon, conveniently provided by
+   * @param addonConfig         Configuration for this addon, conveniently provided by
    *                            ServerPackCreator.
    * @param packSpecificConfigs Modpack and server pack specific configurations for this addon,
    *                            conveniently provided by ServerPackCreator.
@@ -45,8 +48,10 @@ public interface ConfigCheckExtension extends BaseInformation {
    * @throws Exception if any unexpected error is encountered during the execution of this method.
    * @author Griefed
    */
-  boolean runCheck(final ConfigurationModel configurationModel,
-      final List<String> encounteredErrors, CommentedConfig extensionConfig,
-      List<CommentedConfig> packSpecificConfigs)
+  boolean runCheck(
+      final ConfigurationModel configurationModel,
+      final List<String> encounteredErrors,
+      Optional<CommentedConfig> addonConfig,
+      Optional<ArrayList<CommentedConfig>> packSpecificConfigs)
       throws Exception;
 }

@@ -19,12 +19,15 @@
  */
 package de.griefed.serverpackcreator.swing;
 
+import com.electronwill.nightconfig.core.CommentedConfig;
 import de.griefed.larsonscanner.LarsonScanner;
 import de.griefed.larsonscanner.LarsonScanner.ScannerConfig;
+import de.griefed.serverpackcreator.ApplicationAddons;
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.ConfigurationHandler;
 import de.griefed.serverpackcreator.ConfigurationModel;
 import de.griefed.serverpackcreator.ServerPackHandler;
+import de.griefed.serverpackcreator.addons.swinggui.ExtensionConfigPanel;
 import de.griefed.serverpackcreator.i18n.I18n;
 import de.griefed.serverpackcreator.swing.themes.DarkTheme;
 import de.griefed.serverpackcreator.swing.themes.LightTheme;
@@ -34,7 +37,6 @@ import de.griefed.serverpackcreator.swing.utilities.IconTextField;
 import de.griefed.serverpackcreator.swing.utilities.RotatedIcon;
 import de.griefed.serverpackcreator.swing.utilities.SimpleDocumentListener;
 import de.griefed.serverpackcreator.swing.utilities.TextIcon;
-import de.griefed.serverpackcreator.utilities.ConfigUtilities;
 import de.griefed.serverpackcreator.utilities.ReticulatingSplines;
 import de.griefed.serverpackcreator.utilities.common.Utilities;
 import de.griefed.serverpackcreator.versionmeta.VersionMeta;
@@ -61,6 +63,7 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.imageio.ImageIO;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
@@ -118,9 +121,9 @@ public class TabCreateServerPack extends JPanel {
   private final VersionMeta VERSIONMETA;
   private final Utilities UTILITIES;
   private final ApplicationProperties APPLICATIONPROPERTIES;
-  private final ConfigUtilities CONFIGUTILITIES;
   private final DarkTheme DARKTHEME;
   private final LightTheme LIGHTTHEME;
+  private final ApplicationAddons APPLICATIONADDONS;
 
   private final StyledDocument SERVERPACKGENERATEDDOCUMENT = new DefaultStyledDocument();
   private final SimpleAttributeSet SERVERPACKGENERATEDATTRIBUTESET = new SimpleAttributeSet();
@@ -238,6 +241,7 @@ public class TabCreateServerPack extends JPanel {
   private final File DIRECTORY_CHOOSER = new File(".");
 
   private final String[] NONE;
+  private final List<ExtensionConfigPanel> CONFIG_PANELS = new ArrayList<>();
 
   private final JLabel STATUS_LABEL_LINE_0;
   private final JLabel STATUS_LABEL_LINE_1;
@@ -268,22 +272,17 @@ public class TabCreateServerPack extends JPanel {
    * <p>Receives an instance of {@link ServerPackHandler} which is required to generate a server
    * pack.
    *
-   * @param injectedI18n                   Instance of {@link I18n} required for localized log
-   *                                       messages.
-   * @param injectedConfigurationHandler   Instance of {@link ConfigurationHandler} required to
-   *                                       successfully and correctly create the server pack.
-   * @param injectedServerPackHandler      Instance of {@link ServerPackHandler} required for the
-   *                                       generation of server packs.
-   * @param injectedVersionMeta            Instance of {@link VersionMeta} required for
-   *                                       setting/changing comboboxes.
-   * @param injectedApplicationProperties  Instance of {@link Properties} required for various
-   *                                       different things.
+   * @param injectedI18n                   Instance of {@link I18n}.
+   * @param injectedConfigurationHandler   Instance of {@link ConfigurationHandler}.
+   * @param injectedServerPackHandler      Instance of {@link ServerPackHandler}.
+   * @param injectedVersionMeta            Instance of {@link VersionMeta}.
+   * @param injectedApplicationProperties  Instance of {@link Properties}.
    * @param injectedServerPackCreatorFrame Our parent frame which contains all of
    *                                       ServerPackCreator.
    * @param injectedUtilities              Instance of {@link Utilities}.
-   * @param injectedConfigUtilities        Instance of {@link ConfigUtilities}.
    * @param injectedDarkTheme              Instance of {@link DarkTheme}.
    * @param injectedLightTheme             Instance of {@link LightTheme}.
+   * @param injectedApplicationAddons      Instance of {@link ApplicationAddons}.
    * @throws IOException if the {@link VersionMeta} could not be instantiated.
    * @author Griefed
    */
@@ -295,21 +294,21 @@ public class TabCreateServerPack extends JPanel {
       ApplicationProperties injectedApplicationProperties,
       JFrame injectedServerPackCreatorFrame,
       Utilities injectedUtilities,
-      ConfigUtilities injectedConfigUtilities,
       DarkTheme injectedDarkTheme,
-      LightTheme injectedLightTheme)
+      LightTheme injectedLightTheme,
+      ApplicationAddons injectedApplicationAddons)
       throws IOException {
 
-    this.DARKTHEME = injectedDarkTheme;
-    this.LIGHTTHEME = injectedLightTheme;
-    this.APPLICATIONPROPERTIES = injectedApplicationProperties;
-    this.I18N = injectedI18n;
-    this.VERSIONMETA = injectedVersionMeta;
-    this.UTILITIES = injectedUtilities;
-    this.CONFIGUTILITIES = injectedConfigUtilities;
-    this.CONFIGURATIONHANDLER = injectedConfigurationHandler;
-    this.SERVERPACKHANDLER = injectedServerPackHandler;
-    this.FRAME_SERVERPACKCREATOR = injectedServerPackCreatorFrame;
+    DARKTHEME = injectedDarkTheme;
+    LIGHTTHEME = injectedLightTheme;
+    APPLICATIONPROPERTIES = injectedApplicationProperties;
+    I18N = injectedI18n;
+    VERSIONMETA = injectedVersionMeta;
+    UTILITIES = injectedUtilities;
+    CONFIGURATIONHANDLER = injectedConfigurationHandler;
+    SERVERPACKHANDLER = injectedServerPackHandler;
+    FRAME_SERVERPACKCREATOR = injectedServerPackCreatorFrame;
+    APPLICATIONADDONS = injectedApplicationAddons;
 
     SERVERPACKGENERATEDTEXTPANE.setOpaque(false);
     SERVERPACKGENERATEDTEXTPANE.setEditable(false);
@@ -1037,6 +1036,21 @@ public class TabCreateServerPack extends JPanel {
 
     STATUS_BAR.loadConfig(IDLE_CONFIG);
     STATUS_BAR.play();
+
+    // --------------------------------------------------------CONFIGPANE EXTENSIONS----------------
+
+    GRIDBAGCONSTRAINTS.anchor = GridBagConstraints.WEST;
+    AtomicInteger yPos = new AtomicInteger(21);
+    if (!APPLICATIONADDONS.configPanelExtensions().isEmpty()) {
+      CONFIG_PANELS.clear();
+      CONFIG_PANELS.addAll(APPLICATIONADDONS.getConfigPanels(this));
+      CONFIG_PANELS
+          .forEach(
+              extensionConfigPanel -> {
+                GRIDBAGCONSTRAINTS.gridy = yPos.addAndGet(1);
+                CREATESERVERPACKPANEL.add(extensionConfigPanel, GRIDBAGCONSTRAINTS);
+              });
+    }
 
     // --------------------------------------------------------LEFTOVERS AND EVERYTHING ELSE--------
     GRIDBAGCONSTRAINTS.fill = GridBagConstraints.NONE;
@@ -1933,8 +1947,25 @@ public class TabCreateServerPack extends JPanel {
         CHECKBOX_ICON.isSelected(),
         CHECKBOX_PROPERTIES.isSelected(),
         CHECKBOX_ZIP.isSelected(),
+        //TODO replace with configurable map so users can customize start scripts further
         new HashMap<>(),
-        new HashMap<>());
+        getConfigPanelConfigs());
+  }
+
+  /**
+   * Get the configurations of the available ExtensionConfigPanel as a hashmap, so we can store them
+   * in our serverpackcreator.conf.
+   *
+   * @return Map containing lists of CommentedConfigs mapped to the corresponding pluginID.
+   */
+  private HashMap<String, ArrayList<CommentedConfig>> getConfigPanelConfigs() {
+    HashMap<String, ArrayList<CommentedConfig>> configs = new HashMap<>();
+    if (!CONFIG_PANELS.isEmpty()) {
+      CONFIG_PANELS.forEach(
+          panel -> configs.put(panel.pluginID(), panel.serverPackExtensionConfig())
+      );
+    }
+    return configs;
   }
 
   /**
@@ -2212,6 +2243,11 @@ public class TabCreateServerPack extends JPanel {
       TEXTFIELD_SERVERPACKSUFFIX.setText(
           UTILITIES.StringUtils().pathSecureText(configurationModel.getServerPackSuffix()));
 
+      CONFIG_PANELS.forEach(panel -> {
+        panel.setServerPackExtensionConfig(
+            configurationModel.getOrCreateAddonConfigList(panel.pluginID()));
+      });
+
     } catch (Exception ex) {
 
       LOG.error("Couldn't load configuration file.", ex);
@@ -2257,6 +2293,8 @@ public class TabCreateServerPack extends JPanel {
     setJavaArgs("");
 
     validateInputFields();
+
+    CONFIG_PANELS.forEach(ExtensionConfigPanel::clear);
   }
 
   /**

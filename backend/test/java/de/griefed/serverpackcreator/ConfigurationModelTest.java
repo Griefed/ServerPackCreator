@@ -87,14 +87,14 @@ public class ConfigurationModelTest {
     Assertions.assertEquals(3, configurationModel.getAddonsConfigs().get("example").size());
 
     List<String> list = new ArrayList<>(Arrays.asList("foo", "bar", "fasel", "blubba"));
-    configurationModel.getAddonConfigs("tetris").forEach(config -> {
+    configurationModel.getAddonConfigs("tetris").get().forEach(config -> {
       Assertions.assertTrue((Boolean) config.get("bool"));
       Assertions.assertTrue(config.get("loader").toString().matches("(forge|fabric|quilt)"));
       Assertions.assertEquals(config.get("id"),"tetris");
       Assertions.assertEquals(((ArrayList<String>) config.get("list")).size(),4);
       Assertions.assertEquals(config.get("list"), list);
     });
-    configurationModel.getAddonConfigs("example").forEach(config -> {
+    configurationModel.getAddonConfigs("example").get().forEach(config -> {
       Assertions.assertTrue((Boolean) config.get("bool"));
       Assertions.assertTrue(config.get("loader").toString().matches("(forge|fabric|quilt)"));
       Assertions.assertEquals(config.get("id"),"example");
@@ -136,14 +136,14 @@ public class ConfigurationModelTest {
     Assertions.assertEquals(configurationModel.getAddonsConfigs().get("tetris").size(), after.getAddonsConfigs().get("tetris").size());
     Assertions.assertEquals(configurationModel.getAddonsConfigs().get("example").size(), after.getAddonsConfigs().get("example").size());
 
-    after.getAddonConfigs("tetris").forEach(config -> {
+    after.getAddonConfigs("tetris").get().forEach(config -> {
       Assertions.assertTrue((Boolean) config.get("bool"));
       Assertions.assertTrue(config.get("loader").toString().matches("(forge|fabric|quilt)"));
       Assertions.assertEquals(config.get("id"),"tetris");
       Assertions.assertEquals(((ArrayList<String>) config.get("list")).size(),4);
       Assertions.assertEquals(config.get("list"), list);
     });
-    after.getAddonConfigs("example").forEach(config -> {
+    after.getAddonConfigs("example").get().forEach(config -> {
       Assertions.assertTrue((Boolean) config.get("bool"));
       Assertions.assertTrue(config.get("loader").toString().matches("(forge|fabric|quilt)"));
       Assertions.assertEquals(config.get("id"),"example");

@@ -27,7 +27,6 @@ import de.griefed.serverpackcreator.i18n.I18n;
 import de.griefed.serverpackcreator.swing.themes.DarkTheme;
 import de.griefed.serverpackcreator.swing.themes.LightTheme;
 import de.griefed.serverpackcreator.swing.utilities.BackgroundPanel;
-import de.griefed.serverpackcreator.utilities.ConfigUtilities;
 import de.griefed.serverpackcreator.utilities.UpdateChecker;
 import de.griefed.serverpackcreator.utilities.common.Utilities;
 import de.griefed.serverpackcreator.versionmeta.VersionMeta;
@@ -58,7 +57,7 @@ import org.apache.logging.log4j.Logger;
  *
  * @author Griefed
  */
-public class ServerPackCreatorGui {
+public final class ServerPackCreatorGui {
 
   private static final Logger LOG = LogManager.getLogger(ServerPackCreatorGui.class);
 
@@ -74,6 +73,7 @@ public class ServerPackCreatorGui {
   private final Dimension DIMENSION_WINDOW = new Dimension(1050, 800);
 
   private final ApplicationProperties APPLICATIONPROPERTIES;
+  private final ApplicationAddons APPLICATIONADDONS;
   private final ServerPackCreatorSplash SERVERPACKCREATORSPLASH;
 
   private final LightTheme LIGHTTHEME = new LightTheme();
@@ -118,9 +118,8 @@ public class ServerPackCreatorGui {
    *                                        version related in the GUI.
    * @param injectedUtilities               Instance of {@link Utilities}.
    * @param injectedUpdateChecker           Instance of {@link UpdateChecker}.
-   * @param injectedPluginManager           Instance of {@link ApplicationAddons}.
-   * @param injectedConfigUtilities         Instance of {@link ConfigUtilities}.
-   * @param injectedServerPackCreatorSplash Instance of {@link ServerPackCreatorSplash}
+   * @param injectedServerPackCreatorSplash Instance of {@link ServerPackCreatorSplash}.
+   * @param injectedApplicationAddons       Instance of {@link ApplicationAddons}.
    * @throws IOException if the {@link VersionMeta} could not be instantiated.
    * @author Griefed
    */
@@ -132,14 +131,14 @@ public class ServerPackCreatorGui {
       VersionMeta injectedVersionMeta,
       Utilities injectedUtilities,
       UpdateChecker injectedUpdateChecker,
-      ApplicationAddons injectedPluginManager,
-      ConfigUtilities injectedConfigUtilities,
-      ServerPackCreatorSplash injectedServerPackCreatorSplash)
+      ServerPackCreatorSplash injectedServerPackCreatorSplash,
+      ApplicationAddons injectedApplicationAddons)
       throws IOException {
 
-    this.SERVERPACKCREATORSPLASH = injectedServerPackCreatorSplash;
-    this.SERVERPACKCREATORSPLASH.update(90);
-    this.APPLICATIONPROPERTIES = injectedApplicationProperties;
+    SERVERPACKCREATORSPLASH = injectedServerPackCreatorSplash;
+    SERVERPACKCREATORSPLASH.update(90);
+    APPLICATIONPROPERTIES = injectedApplicationProperties;
+    APPLICATIONADDONS = injectedApplicationAddons;
 
     BufferedImage bufferedImage = ImageIO.read(
         Objects.requireNonNull(
@@ -147,13 +146,13 @@ public class ServerPackCreatorGui {
                 .getResource(
                     "/de/griefed/resources/gui/tile" + new Random().nextInt(4) + ".jpg")));
 
-    this.FRAME_SERVERPACKCREATOR =
+    FRAME_SERVERPACKCREATOR =
         new JFrame(
             injectedI18n.getMessage("createserverpack.gui.createandshowgui")
                 + " - "
                 + APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION());
 
-    this.TAB_CREATESERVERPACK =
+    TAB_CREATESERVERPACK =
         new TabCreateServerPack(
             injectedI18n,
             injectedConfigurationHandler,
@@ -162,9 +161,9 @@ public class ServerPackCreatorGui {
             APPLICATIONPROPERTIES,
             FRAME_SERVERPACKCREATOR,
             injectedUtilities,
-            injectedConfigUtilities,
             DARKTHEME,
-            LIGHTTHEME);
+            LIGHTTHEME,
+            APPLICATIONADDONS);
 
     TabServerPackCreatorLog TAB_LOG_SERVERPACKCREATOR =
         new TabServerPackCreatorLog(
@@ -175,9 +174,9 @@ public class ServerPackCreatorGui {
         new TabAddonsHandlerLog(
             injectedI18n.getMessage("createserverpack.gui.tabbedpane.addonshandlerlog.tip"));
 
-    this.BACKGROUNDPANEL = new BackgroundPanel(bufferedImage, BackgroundPanel.TILED, 0.0f, 0.0f);
+    BACKGROUNDPANEL = new BackgroundPanel(bufferedImage, BackgroundPanel.TILED, 0.0f, 0.0f);
 
-    this.TABBEDPANE = new JTabbedPane(JTabbedPane.TOP);
+    TABBEDPANE = new JTabbedPane(JTabbedPane.TOP);
 
     TABBEDPANE.addTab(
         injectedI18n.getMessage("createserverpack.gui.tabbedpane.createserverpack.title"),
@@ -200,19 +199,7 @@ public class ServerPackCreatorGui {
     TABBEDPANE.setMnemonicAt(1, KeyEvent.VK_2);
     TABBEDPANE.setMnemonicAt(2, KeyEvent.VK_3);
 
-    if (!injectedPluginManager.tabExtensions().isEmpty()) {
-      injectedPluginManager
-          .tabExtensions()
-          .forEach(
-              plugin ->
-                  TABBEDPANE.addTab(
-                      plugin.getTabTitle(),
-                      plugin.getTabIcon(),
-                      plugin.getTab(),
-                      plugin.getTabTooltip()));
-    } else {
-      LOG.info("No TabbedPane addons to add.");
-    }
+    APPLICATIONADDONS.addTabExtensionTabs(TABBEDPANE);
 
     TABBEDPANE.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 

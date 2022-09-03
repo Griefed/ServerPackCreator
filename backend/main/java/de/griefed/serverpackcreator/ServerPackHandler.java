@@ -104,7 +104,7 @@ public final class ServerPackHandler {
    * @param injectedVersionMeta           Instance of {@link VersionMeta} required for everything
    *                                      version related.
    * @param injectedUtilities             Instance of {@link Utilities}.
-   * @param injectedApplicationAddons    Instance of {@link ApplicationAddons}.
+   * @param injectedApplicationAddons     Instance of {@link ApplicationAddons}.
    * @param injectedModScanner            Instance of {@link ModScanner} required to determine
    *                                      sideness of mods.
    * @throws IOException if the {@link VersionMeta} could not be instantiated.
@@ -215,24 +215,7 @@ public final class ServerPackHandler {
 
       }
 
-      if (!APPLICATIONADDONS.preGenExtensions().isEmpty()) {
-        LOG.info("Executing PreGenExtension addons.");
-        LOG_ADDONS.info("Executing PreGenExtension addons.");
-        APPLICATIONADDONS
-            .preGenExtensions()
-            .forEach(
-                extension -> {
-                  LOG_ADDONS.info("Executing addon " + extension.getName());
-
-                  try {
-                    extension.run(APPLICATIONPROPERTIES, configurationModel, destination);
-                  } catch (Exception | Error ex) {
-                    LOG_ADDONS.error("Addon " + extension.getName() + " encountered an error.", ex);
-                  }
-                });
-      } else {
-        LOG.info("No PreGenExtension addons to execute.");
-      }
+      APPLICATIONADDONS.runPreGenExtensions(configurationModel, destination);
 
       // Recursively copy all specified directories and files, excluding clientside-only mods, to
       // server pack.
@@ -263,24 +246,7 @@ public final class ServerPackHandler {
         LOG.info("Not including server.properties.");
       }
 
-      if (!APPLICATIONADDONS.preZipExtensions().isEmpty()) {
-        LOG.info("Executing PreZipExtension addons.");
-        LOG_ADDONS.info("Executing PreZipExtension addons.");
-        APPLICATIONADDONS
-            .preZipExtensions()
-            .forEach(
-                extension -> {
-                  LOG_ADDONS.info("Executing addon " + extension.getName());
-
-                  try {
-                    extension.run(APPLICATIONPROPERTIES, configurationModel, destination);
-                  } catch (Exception | Error ex) {
-                    LOG_ADDONS.error("Addon " + extension.getName() + " encountered an error.", ex);
-                  }
-                });
-      } else {
-        LOG.info("No PreZipExtension addons to execute.");
-      }
+      APPLICATIONADDONS.runPreZipExtensions(configurationModel, destination);
 
       // If true, create a ZIP-archive excluding the Minecraft server JAR of the server pack.
       if (configurationModel.getIncludeZipCreation()) {
@@ -304,24 +270,7 @@ public final class ServerPackHandler {
       LOG.info("Server pack archive available at: " + destination + "_server_pack.zip");
       LOG.info("Done!");
 
-      if (!APPLICATIONADDONS.postGenExtensions().isEmpty()) {
-        LOG.info("Executing PostGenExtension addons.");
-        LOG_ADDONS.info("Executing PostGenExtension addons.");
-        APPLICATIONADDONS
-            .postGenExtensions()
-            .forEach(
-                extension -> {
-                  LOG_ADDONS.info("Executing addon " + extension.getName());
-
-                  try {
-                    extension.run(APPLICATIONPROPERTIES, configurationModel, destination);
-                  } catch (Exception | Error ex) {
-                    LOG_ADDONS.error("Addon " + extension.getName() + " encountered an error.", ex);
-                  }
-                });
-      } else {
-        LOG.info("No PostGenExtension addons to execute.");
-      }
+      APPLICATIONADDONS.runPostGenExtensions(configurationModel, destination);
     }
     return true;
   }

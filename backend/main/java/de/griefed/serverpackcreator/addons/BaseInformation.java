@@ -24,14 +24,6 @@ import org.pf4j.ExtensionPoint;
 public interface BaseInformation extends ExtensionPoint {
 
   /**
-   * Get the ID of this addon.
-   *
-   * @return The ID of this addon.
-   * @author Griefed
-   */
-  String getId();
-
-  /**
    * Get the name of this addon.
    *
    * @return The name of this addon.

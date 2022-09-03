@@ -263,14 +263,17 @@ public class ServerPackCreator {
     if (this.configurationHandler == null) {
       this.configurationHandler =
           new ConfigurationHandler(
-              I18N, getVersionMeta(), APPLICATIONPROPERTIES, getUtilities(), getConfigUtilities(), getApplicationAddons(),getTomlParser());
+              I18N, getVersionMeta(), APPLICATIONPROPERTIES, getUtilities(), getConfigUtilities(),
+              getApplicationAddons(), getTomlParser());
     }
     return configurationHandler;
   }
 
-  public synchronized ApplicationAddons getApplicationAddons() {
+  public synchronized ApplicationAddons getApplicationAddons()
+      throws IOException, ParserConfigurationException, SAXException {
     if (this.applicationAddons == null) {
-      this.applicationAddons = new ApplicationAddons();
+      this.applicationAddons = new ApplicationAddons(getTomlParser(), getApplicationProperties(),
+          getVersionMeta(), getUtilities());
     }
     return applicationAddons;
   }
@@ -371,9 +374,8 @@ public class ServerPackCreator {
           getVersionMeta(),
           getUtilities(),
           getUpdateChecker(),
-          getApplicationAddons(),
-          getConfigUtilities(),
-          getServerPackCreatorSplash());
+          getServerPackCreatorSplash(),
+          getApplicationAddons());
     }
     return serverPackCreatorGui;
   }

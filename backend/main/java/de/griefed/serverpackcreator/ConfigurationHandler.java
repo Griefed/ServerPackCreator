@@ -19,8 +19,6 @@
  */
 package de.griefed.serverpackcreator;
 
-import com.electronwill.nightconfig.core.CommentedConfig;
-import com.electronwill.nightconfig.core.file.FileNotFoundAction;
 import com.electronwill.nightconfig.toml.TomlParser;
 import de.griefed.serverpackcreator.i18n.I18n;
 import de.griefed.serverpackcreator.utilities.ConfigUtilities;
@@ -32,14 +30,12 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 import net.lingala.zip4j.ZipFile;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
@@ -289,7 +285,7 @@ public final class ConfigurationHandler {
       @NotNull final List<String> encounteredErrors,
       boolean quietCheck) {
 
-    AtomicBoolean configHasError = new AtomicBoolean(false);
+    boolean configHasError = false;
 
     sanitizeLinks(configurationModel);
 
@@ -306,8 +302,7 @@ public final class ConfigurationHandler {
 
     if (!checkIconAndProperties(configurationModel.getServerIconPath())) {
 
-      //noinspection UnusedAssignment
-      configHasError.set(true);
+      configHasError = true;
 
       LOG.error(
           "The specified server-icon does not exist: " + configurationModel.getServerIconPath());
@@ -322,8 +317,7 @@ public final class ConfigurationHandler {
         && new File(configurationModel.getServerIconPath()).exists()
         && !UTILITIES.FileUtils().checkReadPermission(configurationModel.getServerIconPath())) {
 
-      //noinspection UnusedAssignment
-      configHasError.set(true);
+      configHasError = true;
 
       LOG.error("No read-permission for " + configurationModel.getServerIconPath());
 
@@ -336,8 +330,7 @@ public final class ConfigurationHandler {
 
     if (!checkIconAndProperties(configurationModel.getServerPropertiesPath())) {
 
-      //noinspection UnusedAssignment
-      configHasError.set(true);
+      configHasError = true;
 
       LOG.error(
           "The specified server.properties does not exist: "
@@ -354,8 +347,7 @@ public final class ConfigurationHandler {
         && !UTILITIES.FileUtils()
         .checkReadPermission(configurationModel.getServerPropertiesPath())) {
 
-      //noinspection UnusedAssignment
-      configHasError.set(true);
+      configHasError = true;
 
       LOG.error("No read-permission for " + configurationModel.getServerPropertiesPath());
 
@@ -380,20 +372,24 @@ public final class ConfigurationHandler {
 
     if (modpack.isDirectory()) {
 
-      configHasError.set(isDir(configurationModel, encounteredErrors));
+      if (isDir(configurationModel, encounteredErrors)) {
+        configHasError = true;
+      }
 
     } else if (modpack.isFile() && modpack.getName().endsWith("zip")) {
 
       try {
-        configHasError.set(isZip(configurationModel, encounteredErrors));
+        if (isZip(configurationModel, encounteredErrors)) {
+          configHasError = true;
+        }
       } catch (IOException ex) {
-        configHasError.set(true);
+        configHasError = true;
         LOG.error("An error occurred whilst working with the ZIP-archive.", ex);
       }
 
     } else {
-      configHasError.set(true);
-      LOG.error("Modpack directory not specified. Please specify an existing directory.");
+      configHasError = true;
+      LOG.error("Modpack directory not specified. Please specify an existing directory. Specified: " + configurationModel.getModpackDir());
 
       /* This log is meant to be read by the user, therefore we allow translation. */
       encounteredErrors.add(I18N.getMessage("configuration.log.error.checkmodpackdir"));
@@ -416,7 +412,7 @@ public final class ConfigurationHandler {
 
         } else {
 
-          configHasError.set(true);
+          configHasError = true;
 
           LOG.error("There's something wrong with your Modloader version setting.");
 
@@ -426,7 +422,7 @@ public final class ConfigurationHandler {
 
       } else {
 
-        configHasError.set(true);
+        configHasError = true;
         LOG.error("There's something wrong with your Minecraft version setting.");
 
         /* This log is meant to be read by the user, therefore we allow translation. */
@@ -435,7 +431,7 @@ public final class ConfigurationHandler {
 
     } else {
 
-      configHasError.set(true);
+      configHasError = true;
 
       LOG.error("There's something wrong with your Modloader or Modloader version setting.");
 
@@ -443,44 +439,15 @@ public final class ConfigurationHandler {
       encounteredErrors.add(I18N.getMessage("configuration.log.error.checkmodloader"));
     }
 
-    if (!APPLICATIONADDONS.configCheckExtensions().isEmpty()) {
-      LOG.info("Executing ConfigCheckExtensions.");
-      LOG_ADDONS.info("Executing ConfigCheckExtensions.");
-      APPLICATIONADDONS
-          .configCheckExtensions()
-          .forEach(
-              extension -> {
-                LOG_ADDONS.info("Executing addon " + extension.getName());
-
-                CommentedConfig config = TOMLPARSER.parse(
-                    new File(
-                        APPLICATIONPROPERTIES.DIRECTORY_PLUGINS_CONFIG() + "/" + extension.getId()
-                            + ".toml"),
-                    FileNotFoundAction.READ_NOTHING,
-                    StandardCharsets.UTF_8);
-
-                try {
-                  if (extension
-                      .runCheck(
-                          configurationModel,
-                          encounteredErrors,
-                          config,
-                          configurationModel.get
-                      )
-                  ) {
-                    configHasError.set(true);
-                  }
-                } catch (Exception | Error ex) {
-                  LOG_ADDONS.error("Addon " + extension.getName() + " encountered an error.", ex);
-                }
-              });
+    if (APPLICATIONADDONS.runConfigCheckExtensions(configurationModel, encounteredErrors)) {
+      configHasError = true;
     }
 
     if (quietCheck) {
       CONFIGUTILITIES.printConfigurationModel(configurationModel);
     }
 
-    if (!configHasError.get()) {
+    if (!configHasError) {
 
       LOG.info("Config check successful. No errors encountered.");
 
@@ -492,7 +459,7 @@ public final class ConfigurationHandler {
 
     ensureScriptSettingsDefaults(configurationModel);
 
-    return configHasError.get();
+    return configHasError;
   }
 
   /**
