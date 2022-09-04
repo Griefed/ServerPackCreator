@@ -41,7 +41,7 @@ public class ServerPackCreatorAddon extends Plugin implements BaseInformation {
   private final String AUTHOR;
   private final String VERSION;
 
-  public ServerPackCreatorAddon(PluginWrapper wrapper) throws IOException {
+  public ServerPackCreatorAddon(final PluginWrapper wrapper) throws IOException {
     super(wrapper);
 
     String classPath =
