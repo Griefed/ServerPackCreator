@@ -352,10 +352,8 @@ public class ConfigurationModel {
       throws IllegalArgumentException {
     if (!addonsConfigs.containsKey(addonId)) {
       addonsConfigs.put(addonId, new ArrayList<>());
-      return addonsConfigs.get(addonId);
-    } else {
-      return addonsConfigs.get(addonId);
     }
+    return addonsConfigs.get(addonId);
   }
 
   /**
