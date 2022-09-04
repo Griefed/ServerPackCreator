@@ -17,20 +17,17 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.plugins;
+package de.griefed.serverpackcreator.addons.serverpackhandler;
 
+import com.electronwill.nightconfig.core.CommentedConfig;
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.ConfigurationModel;
-import org.pf4j.ExtensionPoint;
+import de.griefed.serverpackcreator.addons.BaseInformation;
+import java.util.ArrayList;
+import java.util.Optional;
 
-/**
- * Starting point from which all plugin interfaces in ServerPackCreator extend.<br> DO NOT IMPLEMENT
- * THIS CLASS DIRECTLY WHEN WRITING A PLUGIN!<br> Instead, implement any of the interfaces in the
- * sub-packages of <code> de.griefed.serverpackcreator.plugins.*</code>
- *
- * @author Griefed
- */
-public interface PluginInformation extends ExtensionPoint {
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+interface ServerPackHandlerBase extends BaseInformation {
 
   /**
    * Run this plugin with the passed {@link ApplicationProperties}, {@link ConfigurationModel} and
@@ -40,44 +37,19 @@ public interface PluginInformation extends ExtensionPoint {
    *                              itself uses it.
    * @param configurationModel    Instance of {@link ConfigurationModel} for a given server pack.
    * @param destination           String. The destination of the server pack.
+   * @param addonConfig           Configuration for this addon, conveniently provided by
+   *                              ServerPackCreator.
+   * @param packSpecificConfigs   Modpack and server pack specific configurations for this addon,
+   *                              conveniently provided by ServerPackCreator.
    * @throws Exception {@link Exception} when an uncaught error occurs in the addon.
    * @author Griefed
    */
   void run(
-      ApplicationProperties applicationProperties,
-      ConfigurationModel configurationModel,
-      String destination)
+      final ApplicationProperties applicationProperties,
+      final ConfigurationModel configurationModel,
+      String destination,
+      Optional<CommentedConfig> addonConfig,
+      Optional<ArrayList<CommentedConfig>> packSpecificConfigs)
       throws Exception;
 
-  /**
-   * Get the name of this plugin.
-   *
-   * @return String. Returns the name of this plugin.
-   * @author Griefed
-   */
-  String getName();
-
-  /**
-   * Get the description of this plugin.
-   *
-   * @return String. Returns the description of this plugin.
-   * @author Griefed
-   */
-  String getDescription();
-
-  /**
-   * Get the author of this plugin.
-   *
-   * @return String. Returns the author of this plugin.
-   * @author Griefed
-   */
-  String getAuthor();
-
-  /**
-   * Get the version of this plugin.
-   *
-   * @return String. Returns the version of this plugin.
-   * @author Griefed
-   */
-  String getVersion();
 }

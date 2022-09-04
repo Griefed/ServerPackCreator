@@ -17,16 +17,10 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.plugins.serverpackhandler;
-
-import de.griefed.serverpackcreator.plugins.PluginInformation;
-
 /**
- * Plugin interface for plugins which are to be executed after a server pack has been generated, but
- * before the ZIP-archive is created.
+ * Addon/plugin annotations which hook into the
+ * {@link de.griefed.serverpackcreator.ServerPackHandler}-class.
  *
  * @author Griefed
  */
-public interface PreZipExtension extends PluginInformation {
-
-}
+package de.griefed.serverpackcreator.addons.serverpackhandler;

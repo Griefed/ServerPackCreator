@@ -35,6 +35,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Class containing all fields and therefore all information either gathered from a configuration
@@ -335,11 +336,24 @@ public class ConfigurationModel {
    * @return A list of configuration for the specified addon.
    * @author Griefed
    */
-  public ArrayList<CommentedConfig> getAddonConfigs(String addonId) {
-    if (addonsConfigs.containsKey(addonId)) {
+  public Optional<ArrayList<CommentedConfig>> getAddonConfigs(String addonId) {
+    return Optional.ofNullable(addonsConfigs.get(addonId));
+  }
+
+  /**
+   * Get the configurations for the specified addon ID. If no list of configurations is present for
+   * the requested ID, one is created, so it can then be adjusted as you wish.
+   *
+   * @param addonId The ID identifying the addon for which to get the list of configurations.
+   * @return A list of configurations for the specified addon ID.
+   * @author Griefed
+   */
+  public ArrayList<CommentedConfig> getOrCreateAddonConfigList(String addonId)
+      throws IllegalArgumentException {
+    if (!addonsConfigs.containsKey(addonId)) {
+      addonsConfigs.put(addonId, new ArrayList<>());
       return addonsConfigs.get(addonId);
     } else {
-      addonsConfigs.put(addonId, new ArrayList<>());
       return addonsConfigs.get(addonId);
     }
   }

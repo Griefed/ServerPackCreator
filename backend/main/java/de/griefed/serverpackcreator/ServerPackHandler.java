@@ -85,7 +85,7 @@ public final class ServerPackHandler {
   private final ModScanner MODSCANNER;
   private final ApplicationProperties APPLICATIONPROPERTIES;
   private final Utilities UTILITIES;
-  private final ApplicationPlugins APPLICATIONPLUGINS;
+  private final ApplicationAddons APPLICATIONADDONS;
   private final StopWatch STOPWATCH_SCANS = new StopWatch();
   private final String[] MOD_FILE_ENDINGS = new String[]{"jar", "disabled"};
 
@@ -104,7 +104,7 @@ public final class ServerPackHandler {
    * @param injectedVersionMeta           Instance of {@link VersionMeta} required for everything
    *                                      version related.
    * @param injectedUtilities             Instance of {@link Utilities}.
-   * @param injectedApplicationPlugins    Instance of {@link ApplicationPlugins}.
+   * @param injectedApplicationAddons     Instance of {@link ApplicationAddons}.
    * @param injectedModScanner            Instance of {@link ModScanner} required to determine
    *                                      sideness of mods.
    * @throws IOException if the {@link VersionMeta} could not be instantiated.
@@ -112,17 +112,17 @@ public final class ServerPackHandler {
    */
   @Autowired
   public ServerPackHandler(
-      ApplicationProperties injectedApplicationProperties,
-      VersionMeta injectedVersionMeta,
-      Utilities injectedUtilities,
-      ApplicationPlugins injectedApplicationPlugins,
-      ModScanner injectedModScanner)
+      final ApplicationProperties injectedApplicationProperties,
+      final VersionMeta injectedVersionMeta,
+      final Utilities injectedUtilities,
+      final ApplicationAddons injectedApplicationAddons,
+      final ModScanner injectedModScanner)
       throws IOException {
 
     this.APPLICATIONPROPERTIES = injectedApplicationProperties;
     this.VERSIONMETA = injectedVersionMeta;
     this.UTILITIES = injectedUtilities;
-    this.APPLICATIONPLUGINS = injectedApplicationPlugins;
+    this.APPLICATIONADDONS = injectedApplicationAddons;
     this.MODSCANNER = injectedModScanner;
   }
 
@@ -135,7 +135,7 @@ public final class ServerPackHandler {
    * said server pack.
    * @author Griefed
    */
-  public synchronized ServerPackModel run(@NotNull ServerPackModel serverPackModel) {
+  public synchronized ServerPackModel run(@NotNull final ServerPackModel serverPackModel) {
 
     String destination = getServerPackDestination(serverPackModel);
 
@@ -166,7 +166,7 @@ public final class ServerPackHandler {
    * @return The complete path to the directory in which the server pack will be generated.
    * @author Griefed
    */
-  public String getServerPackDestination(ConfigurationModel configurationModel) {
+  public String getServerPackDestination(final ConfigurationModel configurationModel) {
 
     String serverPackToBe =
         configurationModel
@@ -191,7 +191,7 @@ public final class ServerPackHandler {
    * @return Boolean. Returns true if the server pack was successfully generated.
    * @author Griefed
    */
-  public synchronized boolean run(@NotNull ConfigurationModel configurationModel) {
+  public synchronized boolean run(@NotNull final ConfigurationModel configurationModel) {
 
     String destination = getServerPackDestination(configurationModel);
 
@@ -215,23 +215,7 @@ public final class ServerPackHandler {
 
       }
 
-      if (!APPLICATIONPLUGINS.pluginsPreGenExtension().isEmpty()) {
-        LOG_ADDONS.info("Executing PreGenExtension addons.");
-        APPLICATIONPLUGINS
-            .pluginsPreGenExtension()
-            .forEach(
-                plugin -> {
-                  LOG_ADDONS.info("Executing addon " + plugin.getName());
-
-                  try {
-                    plugin.run(APPLICATIONPROPERTIES, configurationModel, destination);
-                  } catch (Exception | Error ex) {
-                    LOG_ADDONS.error("Addon " + plugin.getName() + " encountered an error.", ex);
-                  }
-                });
-      } else {
-        LOG.info("No PreGenExtension addons to execute.");
-      }
+      APPLICATIONADDONS.runPreGenExtensions(configurationModel, destination);
 
       // Recursively copy all specified directories and files, excluding clientside-only mods, to
       // server pack.
@@ -262,23 +246,7 @@ public final class ServerPackHandler {
         LOG.info("Not including server.properties.");
       }
 
-      if (!APPLICATIONPLUGINS.pluginsPreZipExtension().isEmpty()) {
-        LOG_ADDONS.info("Executing PreZipExtension addons.");
-        APPLICATIONPLUGINS
-            .pluginsPreZipExtension()
-            .forEach(
-                plugin -> {
-                  LOG_ADDONS.info("Executing addon " + plugin.getName());
-
-                  try {
-                    plugin.run(APPLICATIONPROPERTIES, configurationModel, destination);
-                  } catch (Exception | Error ex) {
-                    LOG_ADDONS.error("Addon " + plugin.getName() + " encountered an error.", ex);
-                  }
-                });
-      } else {
-        LOG.info("No PreZipExtension addons to execute.");
-      }
+      APPLICATIONADDONS.runPreZipExtensions(configurationModel, destination);
 
       // If true, create a ZIP-archive excluding the Minecraft server JAR of the server pack.
       if (configurationModel.getIncludeZipCreation()) {
@@ -302,23 +270,7 @@ public final class ServerPackHandler {
       LOG.info("Server pack archive available at: " + destination + "_server_pack.zip");
       LOG.info("Done!");
 
-      if (!APPLICATIONPLUGINS.pluginsPostGenExtension().isEmpty()) {
-        LOG_ADDONS.info("Executing PostGenExtension addons.");
-        APPLICATIONPLUGINS
-            .pluginsPostGenExtension()
-            .forEach(
-                plugin -> {
-                  LOG_ADDONS.info("Executing addon " + plugin.getName());
-
-                  try {
-                    plugin.run(APPLICATIONPROPERTIES, configurationModel, destination);
-                  } catch (Exception | Error ex) {
-                    LOG_ADDONS.error("Addon " + plugin.getName() + " encountered an error.", ex);
-                  }
-                });
-      } else {
-        LOG.info("No PostGenExtension addons to execute.");
-      }
+      APPLICATIONADDONS.runPostGenExtensions(configurationModel, destination);
     }
     return true;
   }
@@ -331,7 +283,8 @@ public final class ServerPackHandler {
    *                           which to acquire the improved Fabric Server Launcher.
    * @author Griefed
    */
-  public void provideImprovedFabricServerLauncher(ConfigurationModel configurationModel) {
+  public void provideImprovedFabricServerLauncher(final ConfigurationModel configurationModel) {
+
     provideImprovedFabricServerLauncher(configurationModel.getMinecraftVersion(),
         configurationModel.getModLoaderVersion(), getServerPackDestination(configurationModel));
   }
@@ -349,6 +302,7 @@ public final class ServerPackHandler {
    */
   public void provideImprovedFabricServerLauncher(
       String minecraftVersion, String fabricVersion, String destination) {
+
     String fileDestination = String.format("%s/fabric-server-launcher.jar", destination);
 
     if (VERSIONMETA.fabric().improvedLauncherUrl(minecraftVersion, fabricVersion).isPresent()
@@ -433,7 +387,7 @@ public final class ServerPackHandler {
    *                           pack is acquired.
    * @author Griefed
    */
-  public void createStartScripts(ConfigurationModel configurationModel) {
+  public void createStartScripts(final ConfigurationModel configurationModel) {
     createStartScripts(configurationModel.getScriptSettings(),
         getServerPackDestination(configurationModel));
   }
@@ -446,7 +400,7 @@ public final class ServerPackHandler {
    * @param destination    The destination where the scripts should be created in.
    * @author Griefed
    */
-  public void createStartScripts(HashMap<String, String> scriptSettings, String destination) {
+  public void createStartScripts(final HashMap<String, String> scriptSettings, String destination) {
     for (File template : APPLICATIONPROPERTIES.scriptTemplates()) {
 
       try {
@@ -479,7 +433,7 @@ public final class ServerPackHandler {
    *                           and the modloader used by the modpack and server pack.
    * @author Griefed
    */
-  private void copyFiles(ConfigurationModel configurationModel) {
+  private void copyFiles(final ConfigurationModel configurationModel) {
     copyFiles(configurationModel.getModpackDir(), configurationModel.getCopyDirs(),
         configurationModel.getClientMods(), configurationModel.getMinecraftVersion(),
         getServerPackDestination(configurationModel), configurationModel.getModLoader());
@@ -501,8 +455,8 @@ public final class ServerPackHandler {
    */
   private void copyFiles(
       String modpackDir,
-      List<String> directoriesToCopy,
-      List<String> clientMods,
+      final List<String> directoriesToCopy,
+      final List<String> clientMods,
       String minecraftVersion,
       String destination,
       String modloader) {
@@ -656,8 +610,8 @@ public final class ServerPackHandler {
    * @return List of {@link ServerPackFile}.
    * @author Griefed
    */
-  private List<ServerPackFile> getExplicitFiles(String[] combination,
-      ConfigurationModel configurationModel) {
+  private List<ServerPackFile> getExplicitFiles(final String[] combination,
+      final ConfigurationModel configurationModel) {
     return getExplicitFiles(combination, configurationModel.getModpackDir(),
         getServerPackDestination(configurationModel));
   }
@@ -675,7 +629,7 @@ public final class ServerPackHandler {
    * @author Griefed
    */
   private List<ServerPackFile> getExplicitFiles(
-      String[] combination, String modpackDir, String destination) {
+      final String[] combination, String modpackDir, String destination) {
     List<ServerPackFile> serverPackFiles = new ArrayList<>();
 
     if (new File(String.format("%s/%s", modpackDir, combination[0])).isFile()) {
@@ -749,6 +703,7 @@ public final class ServerPackHandler {
    */
   private List<ServerPackFile> getSaveFiles(
       String clientDir, String directory, String destination) {
+
     List<ServerPackFile> serverPackFiles = new ArrayList<>();
 
     try (Stream<Path> files = Files.walk(Paths.get(clientDir))) {
@@ -787,7 +742,7 @@ public final class ServerPackHandler {
    * @return A list of all mods to include in the server pack.
    * @author Griefed
    */
-  public List<File> getModsToInclude(ConfigurationModel configurationModel) {
+  public List<File> getModsToInclude(final ConfigurationModel configurationModel) {
     return getModsToInclude(configurationModel.getModpackDir() + "/mods",
         configurationModel.getClientMods(), configurationModel.getMinecraftVersion(),
         configurationModel.getModLoader());
@@ -810,7 +765,7 @@ public final class ServerPackHandler {
    */
   public List<File> getModsToInclude(
       String modsDir,
-      List<String> userSpecifiedClientMods,
+      final List<String> userSpecifiedClientMods,
       String minecraftVersion,
       String modloader) {
 
@@ -875,8 +830,8 @@ public final class ServerPackHandler {
    * @param modsInModpack            All mods in the modpack.
    * @author Griefed
    */
-  private void excludeMods(List<File> autodiscoveredClientMods,
-      TreeSet<File> modsInModpack) {
+  private void excludeMods(final List<File> autodiscoveredClientMods,
+      final TreeSet<File> modsInModpack) {
 
     if (autodiscoveredClientMods.size() > 0) {
 
@@ -907,8 +862,8 @@ public final class ServerPackHandler {
    *                                in the modpack.
    * @author Griefed
    */
-  private void excludeUserSpecifiedMod(List<String> userSpecifiedExclusions,
-      TreeSet<File> modsInModpack) {
+  private void excludeUserSpecifiedMod(final List<String> userSpecifiedExclusions,
+      final TreeSet<File> modsInModpack) {
 
     if (userSpecifiedExclusions.size() > 0) {
 
@@ -930,7 +885,7 @@ public final class ServerPackHandler {
    * @param userSpecifiedExclusion The client mod to check whether it needs to be excluded.
    * @param modsInModpack          All mods in the modpack.
    */
-  private void exclude(String userSpecifiedExclusion, TreeSet<File> modsInModpack) {
+  private void exclude(String userSpecifiedExclusion, final TreeSet<File> modsInModpack) {
     modsInModpack.removeIf(
         mod -> {
           boolean excluded;
@@ -980,7 +935,7 @@ public final class ServerPackHandler {
    * if not.
    * @author Griefed
    */
-  private boolean excludeFileOrDirectory(String fileToCheckFor, TreeSet<String> exclusions) {
+  private boolean excludeFileOrDirectory(String fileToCheckFor, final TreeSet<String> exclusions) {
     boolean isPresentInList = false;
     for (String entry : exclusions) {
       if (fileToCheckFor.replace("\\", "/").contains(entry)) {
@@ -998,7 +953,7 @@ public final class ServerPackHandler {
    *                           server pack and the path to the server icon to copy.
    * @author Griefed
    */
-  private void copyIcon(ConfigurationModel configurationModel) {
+  private void copyIcon(final ConfigurationModel configurationModel) {
     copyIcon(getServerPackDestination(configurationModel), configurationModel.getServerIconPath());
   }
 
@@ -1088,7 +1043,7 @@ public final class ServerPackHandler {
    *                           server pack and the path to the server properties to copy.
    * @author Griefed
    */
-  private void copyProperties(ConfigurationModel configurationModel) {
+  private void copyProperties(final ConfigurationModel configurationModel) {
     copyProperties(getServerPackDestination(configurationModel),
         configurationModel.getServerPropertiesPath());
   }
@@ -1148,7 +1103,7 @@ public final class ServerPackHandler {
    *                           acquire the destination at which to install the server.
    * @author Griefed
    */
-  public void installServer(ConfigurationModel configurationModel) {
+  public void installServer(final ConfigurationModel configurationModel) {
     installServer(configurationModel.getModLoader(), configurationModel.getMinecraftVersion(),
         configurationModel.getModLoaderVersion(),
         configurationModel.getJavaPath(), getServerPackDestination(configurationModel));
@@ -1390,7 +1345,7 @@ public final class ServerPackHandler {
    *                           modpack and server pack and the modloader version.
    * @author Griefed
    */
-  public void zipBuilder(ConfigurationModel configurationModel) {
+  public void zipBuilder(final ConfigurationModel configurationModel) {
     zipBuilder(configurationModel.getMinecraftVersion(),
         configurationModel.getIncludeServerInstallation(),
         getServerPackDestination(configurationModel),
@@ -1487,7 +1442,7 @@ public final class ServerPackHandler {
    *                           modpack directory to acquire the destination of the server pack.
    * @author Griefed
    */
-  private void cleanUpServerPack(ConfigurationModel configurationModel) {
+  private void cleanUpServerPack(final ConfigurationModel configurationModel) {
     cleanUpServerPack(configurationModel.getMinecraftVersion(),
         configurationModel.getModLoaderVersion(), getServerPackDestination(configurationModel));
   }

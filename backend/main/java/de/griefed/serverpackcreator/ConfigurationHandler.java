@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator;
 
-import com.electronwill.nightconfig.core.file.FileConfig;
+import com.electronwill.nightconfig.toml.TomlParser;
 import de.griefed.serverpackcreator.i18n.I18n;
 import de.griefed.serverpackcreator.utilities.ConfigUtilities;
 import de.griefed.serverpackcreator.utilities.common.FileUtilities;
@@ -54,12 +54,15 @@ import org.springframework.stereotype.Component;
 public final class ConfigurationHandler {
 
   private static final Logger LOG = LogManager.getLogger(ConfigurationHandler.class);
+  private static final Logger LOG_ADDONS = LogManager.getLogger("AddonsLogger");
 
   private final I18n I18N;
   private final VersionMeta VERSIONMETA;
   private final ApplicationProperties APPLICATIONPROPERTIES;
   private final Utilities UTILITIES;
   private final ConfigUtilities CONFIGUTILITIES;
+  private final ApplicationAddons APPLICATIONADDONS;
+  private final TomlParser TOMLPARSER;
 
   /**
    * Construct a new ConfigurationHandler giving you access to various config check methods.
@@ -72,6 +75,8 @@ public final class ConfigurationHandler {
    *                                      version-related.
    * @param injectedUtilities             Instance of {@link Utilities}.
    * @param injectedConfigUtilities       Instance of {@link ConfigUtilities}.
+   * @param injectedApplicationAddons     Instance of {@link ApplicationAddons}.
+   * @param injectedTomlParser            Instance of {@link TomlParser}.
    * @throws IOException if the {@link VersionMeta} could not be instantiated.
    * @author Griefed
    */
@@ -81,14 +86,18 @@ public final class ConfigurationHandler {
       VersionMeta injectedVersionMeta,
       ApplicationProperties injectedApplicationProperties,
       Utilities injectedUtilities,
-      ConfigUtilities injectedConfigUtilities)
+      ConfigUtilities injectedConfigUtilities,
+      ApplicationAddons injectedApplicationAddons,
+      TomlParser injectedTomlParser)
       throws IOException {
 
-    this.APPLICATIONPROPERTIES = injectedApplicationProperties;
-    this.I18N = injectedI18n;
-    this.VERSIONMETA = injectedVersionMeta;
-    this.UTILITIES = injectedUtilities;
-    this.CONFIGUTILITIES = injectedConfigUtilities;
+    APPLICATIONPROPERTIES = injectedApplicationProperties;
+    I18N = injectedI18n;
+    VERSIONMETA = injectedVersionMeta;
+    UTILITIES = injectedUtilities;
+    CONFIGUTILITIES = injectedConfigUtilities;
+    APPLICATIONADDONS = injectedApplicationAddons;
+    TOMLPARSER = injectedTomlParser;
   }
 
   /**
@@ -112,7 +121,8 @@ public final class ConfigurationHandler {
    * @author Griefed
    */
   public boolean checkConfiguration(
-      @NotNull File configFile, @NotNull List<String> encounteredErrors, boolean quietCheck) {
+      @NotNull final File configFile, @NotNull final List<String> encounteredErrors,
+      boolean quietCheck) {
 
     ConfigurationModel configurationModel = new ConfigurationModel();
 
@@ -132,7 +142,7 @@ public final class ConfigurationHandler {
    * @return <code>false</code> if the configuration has passed all tests.
    * @author Griefed
    */
-  public boolean checkConfiguration(@NotNull File configFile, boolean quietCheck) {
+  public boolean checkConfiguration(@NotNull final File configFile, boolean quietCheck) {
 
     List<String> encounteredErrors = new ArrayList<>(100);
 
@@ -158,8 +168,8 @@ public final class ConfigurationHandler {
    * @author Griefed
    */
   public boolean checkConfiguration(
-      @NotNull File configFile,
-      @NotNull ConfigurationModel configurationModel,
+      @NotNull final File configFile,
+      @NotNull final ConfigurationModel configurationModel,
       boolean quietCheck) {
 
     List<String> encounteredErrors = new ArrayList<>(100);
@@ -181,7 +191,7 @@ public final class ConfigurationHandler {
    * @author Griefed
    */
   public boolean checkConfiguration(
-      @NotNull ConfigurationModel configurationModel, boolean quietCheck) {
+      @NotNull final ConfigurationModel configurationModel, boolean quietCheck) {
 
     List<String> encounteredErrors = new ArrayList<>(100);
 
@@ -211,8 +221,8 @@ public final class ConfigurationHandler {
    * @author Griefed
    */
   public boolean checkConfiguration(
-      @NotNull File configFile,
-      @NotNull ConfigurationModel configurationModel,
+      @NotNull final File configFile,
+      @NotNull final ConfigurationModel configurationModel,
       @NotNull List<String> encounteredErrors,
       boolean quietCheck) {
 
@@ -271,11 +281,11 @@ public final class ConfigurationHandler {
    * @author Griefed
    */
   public boolean checkConfiguration(
-      @NotNull ConfigurationModel configurationModel,
-      @NotNull List<String> encounteredErrors,
+      @NotNull final ConfigurationModel configurationModel,
+      @NotNull final List<String> encounteredErrors,
       boolean quietCheck) {
 
-    boolean configHasError;
+    boolean configHasError = false;
 
     sanitizeLinks(configurationModel);
 
@@ -292,7 +302,6 @@ public final class ConfigurationHandler {
 
     if (!checkIconAndProperties(configurationModel.getServerIconPath())) {
 
-      //noinspection UnusedAssignment
       configHasError = true;
 
       LOG.error(
@@ -308,7 +317,6 @@ public final class ConfigurationHandler {
         && new File(configurationModel.getServerIconPath()).exists()
         && !UTILITIES.FileUtils().checkReadPermission(configurationModel.getServerIconPath())) {
 
-      //noinspection UnusedAssignment
       configHasError = true;
 
       LOG.error("No read-permission for " + configurationModel.getServerIconPath());
@@ -322,7 +330,6 @@ public final class ConfigurationHandler {
 
     if (!checkIconAndProperties(configurationModel.getServerPropertiesPath())) {
 
-      //noinspection UnusedAssignment
       configHasError = true;
 
       LOG.error(
@@ -340,7 +347,6 @@ public final class ConfigurationHandler {
         && !UTILITIES.FileUtils()
         .checkReadPermission(configurationModel.getServerPropertiesPath())) {
 
-      //noinspection UnusedAssignment
       configHasError = true;
 
       LOG.error("No read-permission for " + configurationModel.getServerPropertiesPath());
@@ -366,12 +372,16 @@ public final class ConfigurationHandler {
 
     if (modpack.isDirectory()) {
 
-      configHasError = isDir(configurationModel, encounteredErrors);
+      if (isDir(configurationModel, encounteredErrors)) {
+        configHasError = true;
+      }
 
     } else if (modpack.isFile() && modpack.getName().endsWith("zip")) {
 
       try {
-        configHasError = isZip(configurationModel, encounteredErrors);
+        if (isZip(configurationModel, encounteredErrors)) {
+          configHasError = true;
+        }
       } catch (IOException ex) {
         configHasError = true;
         LOG.error("An error occurred whilst working with the ZIP-archive.", ex);
@@ -379,7 +389,8 @@ public final class ConfigurationHandler {
 
     } else {
       configHasError = true;
-      LOG.error("Modpack directory not specified. Please specify an existing directory.");
+      LOG.error("Modpack directory not specified. Please specify an existing directory. Specified: "
+          + configurationModel.getModpackDir());
 
       /* This log is meant to be read by the user, therefore we allow translation. */
       encounteredErrors.add(I18N.getMessage("configuration.log.error.checkmodpackdir"));
@@ -429,6 +440,10 @@ public final class ConfigurationHandler {
       encounteredErrors.add(I18N.getMessage("configuration.log.error.checkmodloader"));
     }
 
+    if (APPLICATIONADDONS.runConfigCheckExtensions(configurationModel, encounteredErrors)) {
+      configHasError = true;
+    }
+
     if (quietCheck) {
       CONFIGUTILITIES.printConfigurationModel(configurationModel);
     }
@@ -461,7 +476,8 @@ public final class ConfigurationHandler {
    * @return <code>true</code> if an error is found during configuration check.
    * @author Griefed
    */
-  public boolean isDir(ConfigurationModel configurationModel, List<String> encounteredErrors) {
+  public boolean isDir(final ConfigurationModel configurationModel,
+      final List<String> encounteredErrors) {
     boolean configHasError = false;
 
     if (checkCopyDirs(
@@ -495,7 +511,8 @@ public final class ConfigurationHandler {
    * @throws IOException if an error occurred trying to move the server pack directory.
    * @author Griefed
    */
-  public boolean isZip(ConfigurationModel configurationModel, List<String> encounteredErrors)
+  public boolean isZip(final ConfigurationModel configurationModel,
+      final List<String> encounteredErrors)
       throws IOException {
     boolean configHasError = false;
 
@@ -636,7 +653,7 @@ public final class ConfigurationHandler {
    * not be acquired.
    * @author Griefed
    */
-  public String checkManifests(String destination, ConfigurationModel configurationModel,
+  public String checkManifests(String destination, final ConfigurationModel configurationModel,
       List<String> encounteredErrors) {
     String packName = null;
 
@@ -783,7 +800,7 @@ public final class ConfigurationHandler {
    * @return The new name of the modpack.
    * @author Griefed
    */
-  private String updatePackName(ConfigurationModel configurationModel, String... childNodes) {
+  private String updatePackName(final ConfigurationModel configurationModel, String... childNodes) {
     try {
 
       return
@@ -886,7 +903,7 @@ public final class ConfigurationHandler {
    * @return Boolean. <code>false</code> if the ZIP-archive is considered valid.
    * @author Griefed
    */
-  public boolean checkZipArchive(Path pathToZip, List<String> encounteredErrors) {
+  public boolean checkZipArchive(Path pathToZip, final List<String> encounteredErrors) {
 
     ZipFile modpackZip;
 
@@ -978,7 +995,7 @@ public final class ConfigurationHandler {
    * @param configurationModel Model in which to ensure the default key-value pairs are present.
    * @author Griefed
    */
-  public void ensureScriptSettingsDefaults(ConfigurationModel configurationModel) {
+  public void ensureScriptSettingsDefaults(final ConfigurationModel configurationModel) {
 
     HashMap<String, String> scriptSettings = configurationModel.getScriptSettings();
 
@@ -1031,7 +1048,7 @@ public final class ConfigurationHandler {
    *                           their respective destinations.
    * @author Griefed
    */
-  public void sanitizeLinks(ConfigurationModel configurationModel) {
+  public void sanitizeLinks(final ConfigurationModel configurationModel) {
 
     LOG.info("Checking configuration for links...");
 
@@ -1208,7 +1225,7 @@ public final class ConfigurationHandler {
    *                          configuration check.
    * @author Griefed
    */
-  private void printEncounteredErrors(List<String> encounteredErrors) {
+  private void printEncounteredErrors(final List<String> encounteredErrors) {
 
     LOG.error(
         "Encountered " + encounteredErrors.size() + " errors during the configuration check.");
@@ -1247,7 +1264,7 @@ public final class ConfigurationHandler {
    * @return Boolean. Returns true if the directory exists.
    * @author Griefed
    */
-  public boolean checkModpackDir(String modpackDir, List<String> encounteredErrors) {
+  public boolean checkModpackDir(String modpackDir, final List<String> encounteredErrors) {
     boolean configCorrect = false;
 
     if (modpackDir.isEmpty()) {
@@ -1288,7 +1305,7 @@ public final class ConfigurationHandler {
    * single one was not found, false is returned.
    * @author Griefed
    */
-  public boolean checkCopyDirs(List<String> directoriesToCopy, String modpackDir) {
+  public boolean checkCopyDirs(final List<String> directoriesToCopy, String modpackDir) {
     return checkCopyDirs(directoriesToCopy, modpackDir, new ArrayList<>());
   }
 
@@ -1312,7 +1329,8 @@ public final class ConfigurationHandler {
    * @author Griefed
    */
   public boolean checkCopyDirs(
-      List<String> directoriesToCopy, String modpackDir, List<String> encounteredErrors) {
+      final List<String> directoriesToCopy, String modpackDir,
+      final List<String> encounteredErrors) {
     boolean configCorrect = true;
 
     directoriesToCopy.removeIf(entry -> entry.matches("^\\s+$") || entry.length() == 0);
@@ -1798,7 +1816,7 @@ public final class ConfigurationHandler {
       String modloader,
       String modloaderVersion,
       String minecraftVersion,
-      List<String> encounteredErrors) {
+      final List<String> encounteredErrors) {
 
     switch (modloader) {
       case "Forge":
