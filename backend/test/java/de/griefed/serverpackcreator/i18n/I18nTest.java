@@ -2,6 +2,9 @@ package de.griefed.serverpackcreator.i18n;
 
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.ServerPackCreator;
+import de.griefed.serverpackcreator.utilities.common.FileUtilities;
+import de.griefed.serverpackcreator.utilities.common.ListUtilities;
+import de.griefed.serverpackcreator.utilities.common.SystemUtilities;
 import java.io.File;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
@@ -57,7 +60,7 @@ public class I18nTest {
     }
 
     LOG.info("customLanguageTest() ef_gh");
-    i18n = new I18n(new ApplicationProperties(), "ef_gh");
+    i18n = new I18n(new ApplicationProperties(new FileUtilities(),new SystemUtilities(), new ListUtilities()), "ef_gh");
     Assertions.assertEquals("I bims 1 Sprache", i18n.getMessage("localeUnlocalizedName"));
   }
 

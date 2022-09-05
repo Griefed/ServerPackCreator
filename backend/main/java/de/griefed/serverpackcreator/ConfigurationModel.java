@@ -50,7 +50,6 @@ public class ConfigurationModel {
   private final HashMap<String, String> scriptSettings = new HashMap<>();
   private final HashMap<String, ArrayList<CommentedConfig>> addonsConfigs = new HashMap<>();
   private String modpackDir = "";
-  private String javaPath = "";
   private String minecraftVersion = "";
   private String modLoader = "";
   private String modLoaderVersion = "";
@@ -82,8 +81,6 @@ public class ConfigurationModel {
    * @param copyDirs                  List of directories and/or files to include in the server
    *                                  pack.
    * @param modpackDir                The path to the modpack.
-   * @param javaPath                  The path to the java installation used for modloader server
-   *                                  installation.
    * @param minecraftVersion          The Minecraft version the modpack uses.
    * @param modLoader                 The modloader the modpack uses. Either
    *                                  <code>Forge</code>,
@@ -107,7 +104,6 @@ public class ConfigurationModel {
       List<String> clientMods,
       List<String> copyDirs,
       String modpackDir,
-      String javaPath,
       String minecraftVersion,
       String modLoader,
       String modLoaderVersion,
@@ -125,7 +121,6 @@ public class ConfigurationModel {
     this.clientMods.addAll(clientMods);
     this.copyDirs.addAll(copyDirs);
     this.modpackDir = modpackDir;
-    this.javaPath = javaPath;
     this.minecraftVersion = minecraftVersion;
     this.modLoader = modLoader;
     this.modLoaderVersion = modLoaderVersion;
@@ -165,13 +160,10 @@ public class ConfigurationModel {
     setClientMods(config.getOrElse("clientMods", Collections.singletonList("")));
     setCopyDirs(config.getOrElse("copyDirs", Collections.singletonList("")));
     setModpackDir(config.getOrElse("modpackDir", "").replace("\\", "/"));
-    setJavaPath(config.getOrElse("javaPath", "").replace("\\", "/"));
-
     setMinecraftVersion(config.getOrElse("minecraftVersion", ""));
     setModLoader(config.getOrElse("modLoader", ""));
     setModLoaderVersion(config.getOrElse("modLoaderVersion", ""));
     setJavaArgs(config.getOrElse("javaArgs", ""));
-
     setServerPackSuffix(
         utilities.StringUtils().pathSecureText(config.getOrElse("serverPackSuffix", "")));
     setServerIconPath(config.getOrElse("serverIconPath", "").replace("\\", "/"));
@@ -245,10 +237,6 @@ public class ConfigurationModel {
     conf.setComment("javaArgs",
         "\n Java arguments to set in the start-scripts for the generated server pack. Default value is \"empty\".\n Leave as \"empty\" to not have Java arguments in your start-scripts.");
     conf.set("javaArgs", getJavaArgs());
-
-    conf.setComment("javaPath",
-        "\n Path to the Java executable. On Linux systems it would be something like \"/usr/bin/java\".\n Only needed if includeServerInstallation is true.");
-    conf.set("javaPath", getJavaPath());
 
     conf.setComment("modpackDir",
         "\n Path to your modpack. Can be either relative or absolute.\n Example: \"./Some Modpack\" or \"C:/Minecraft/Some Modpack\"");
@@ -443,26 +431,6 @@ public class ConfigurationModel {
    */
   public void setModpackDir(String newModpackDir) {
     this.modpackDir = newModpackDir.replace("\\", "/");
-  }
-
-  /**
-   * Getter for the path to the Java executable/binary.
-   *
-   * @return String. Returns the path to the Java executable/binary.
-   * @author Griefed
-   */
-  public String getJavaPath() {
-    return javaPath;
-  }
-
-  /**
-   * Setter for the path to the Java executable/binary. Replaces any occurrences of \ with /.
-   *
-   * @param newJavaPath The new Java path to store.
-   * @author Griefed
-   */
-  public void setJavaPath(String newJavaPath) {
-    this.javaPath = newJavaPath.replace("\\", "/");
   }
 
   /**
@@ -790,8 +758,8 @@ public class ConfigurationModel {
         "clientMods=" + clientMods +
         ", copyDirs=" + copyDirs +
         ", scriptSettings=" + scriptSettings +
+        ", addonsConfigs=" + addonsConfigs +
         ", modpackDir='" + modpackDir + '\'' +
-        ", javaPath='" + javaPath + '\'' +
         ", minecraftVersion='" + minecraftVersion + '\'' +
         ", modLoader='" + modLoader + '\'' +
         ", modLoaderVersion='" + modLoaderVersion + '\'' +

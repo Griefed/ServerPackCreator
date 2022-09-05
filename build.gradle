@@ -226,7 +226,8 @@ java {
 bootJar {
   // Customize MANIFEST to include relevant information.
   manifest {
-    attributes "Start-Class": "de.griefed.serverpackcreator.ServerPackCreator",
+    attributes(
+        "Start-Class": "de.griefed.serverpackcreator.ServerPackCreator",
         "Class-Path": configurations.embed.findAll { it.name.endsWith('jar') }.collect { zipTree(it) },
         "Description": "Create server packs from Minecraft modpacks.",
         "Built-By": System.getProperty("user.name"),
@@ -237,6 +238,7 @@ bootJar {
         "Implementation-Version": "${project.version}",
         "Implementation-Title": "serverpackcreator",
         "Application-Name": "ServerPackCreator"
+    )
 
   }
   exclude(

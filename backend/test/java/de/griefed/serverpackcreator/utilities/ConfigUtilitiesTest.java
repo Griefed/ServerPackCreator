@@ -78,7 +78,6 @@ public class ConfigUtilitiesTest {
             javaArgs,
             "",
             "",
-            "",
             true,
             true,
             true,
@@ -148,7 +147,6 @@ public class ConfigUtilitiesTest {
             javaArgs,
             "",
             "",
-            "",
             true,
             true,
             true,
@@ -196,7 +194,6 @@ public class ConfigUtilitiesTest {
     configurationModel.setIncludeServerIcon(true);
     configurationModel.setIncludeServerProperties(true);
     configurationModel.setIncludeZipCreation(true);
-    configurationModel.setJavaPath("/usr/bin/java");
     configurationModel.setMinecraftVersion("1.16.5");
     configurationModel.setModLoader("Forge");
     configurationModel.setModLoaderVersion("36.1.2");
@@ -271,7 +268,6 @@ public class ConfigUtilitiesTest {
         clientMods,
         copyDirs,
         includeServerInstallation,
-        javaPath,
         minecraftVersion,
         modLoader,
         modLoaderVersion,
@@ -320,7 +316,6 @@ public class ConfigUtilitiesTest {
     configurationModel.setIncludeServerIcon(true);
     configurationModel.setIncludeServerProperties(true);
     configurationModel.setIncludeZipCreation(true);
-    configurationModel.setJavaPath("/usr/bin/java");
     configurationModel.setMinecraftVersion("1.16.5");
     configurationModel.setModLoader("Forge");
     configurationModel.setModLoaderVersion("36.1.2");

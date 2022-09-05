@@ -19,9 +19,15 @@
  */
 package de.griefed.serverpackcreator;
 
+import de.griefed.serverpackcreator.utilities.common.FileUtilities;
+import de.griefed.serverpackcreator.utilities.common.InvalidFileTypeException;
+import de.griefed.serverpackcreator.utilities.common.ListUtilities;
+import de.griefed.serverpackcreator.utilities.common.SystemUtilities;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.URL;
 import java.nio.file.Files;
@@ -30,7 +36,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
-import org.apache.commons.io.FileUtils;
+import java.util.TreeSet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,7 +55,9 @@ import org.springframework.stereotype.Component;
 public final class ApplicationProperties extends Properties {
 
   private static final Logger LOG = LogManager.getLogger(ApplicationProperties.class);
-
+  private final FileUtilities FILE_UTILITIES;
+  private final SystemUtilities SYSTEM_UTILITIES;
+  private final ListUtilities LIST_UTILITIES;
   /**
    * Default properties.
    */
@@ -62,30 +70,30 @@ public final class ApplicationProperties extends Properties {
    * Default fallback clientside-only mods.
    */
   private final String FALLBACK_MODS_DEFAULT_ASSTRING =
-      "Armor Status HUD-,[1.12.2]bspkrscore-,[1.12.2]DamageIndicatorsMod-,3dskinlayers-,Absolutely-Not-A-Zoom-Mod-,AdvancedChat-,AdvancedCompas-,AdvancementPlaques-,Ambience,AmbientEnvironment-,AmbientSounds_,antighost-,anviltooltipmod-,appleskin-,armorchroma-,armorpointspp-,ArmorSoundTweak-,AromaBackup-,authme-,autobackup-,autoreconnect-,auto-reconnect-,axolotl-item-fix-,backtools-,Backups-,bannerunlimited-,Batty's Coordinates PLUS Mod,beenfo-1.19-,BetterAdvancements-,BetterAnimationsCollection-,betterbiomeblend-,BetterDarkMode-,BetterF3-,BetterFoliage-,BetterPingDisplay-,BetterPlacement-,better-recipe-book-,BetterTaskbar-,BetterThirdPerson,BetterTitleScreen-,bhmenu-,BH-Menu-,blur-,Blur-,borderless-mining-,BorderlessWindow-,catalogue-,charmonium-,chat_heads-,cherishedworlds-,ChunkAnimator-,cirback-1.0-,classicbar-,clickadv-,clienttweaks-,ClientTweaks_,combat_music-,configured-,controllable-,Controller Support-,Controlling-,CraftPresence-,CTM-,cullleaves-,cullparticles-,custom-crosshair-mod-,CustomCursorMod-,customdiscordrpc-,CustomMainMenu-,darkness-,dashloader-,defaultoptions-,DefaultOptions_,DefaultSettings-,DeleteWorldsToTrash-,desiredservers-,DetailArmorBar-,Ding-,discordrpc-,DistantHorizons-,drippyloadingscreen-,drippyloadingscreen_,DripSounds-,Durability101-,DurabilityNotifier-,dynamic-fps-,dynamiclights-,dynamic-music-,DynamicSurroundings-,DynamicSurroundingsHuds-,dynmus-,effective-,EffectsLeft-,eggtab-,eguilib-,eiramoticons-,EiraMoticons_,EnchantmentDescriptions-,enchantment-lore-,EnhancedVisuals_,entityculling-,entity-texture-features-,EquipmentCompare-,exhaustedstamina-,extremesoundmuffler-,FabricCustomCursorMod-,fabricemotes-,Fallingleaves-,fancymenu_,fancymenu_video_extension,FancySpawnEggs,FancyVideo-API-,findme-,FirstPersonMod,flickerfix-,fm_audio_extension_,FogTweaker-,ForgeCustomCursorMod-,forgemod_VoxelMap-,FPS-Monitor-,FpsReducer-,FpsReducer2-,freelook-,ftb-backups-,ftbbackups2-,FullscreenWindowed-,galacticraft-rpc-,GameMenuModOption-,gamestagesviewer-,grid-,HealthOverlay-,hiddenrecipebook_,HorseStatsMod-,infinitemusic-,InventoryEssentials_,InventoryHud_[1.17.1].forge-,inventoryprofiles,InventorySpam-,InventoryTweaks-,invtweaks-,ItemBorders-,ItemPhysicLite_,ItemStitchingFix-,itemzoom,itlt-,JBRA-Client-,jeed-,jehc-,jeiintegration_,justenoughbeacons-,JustEnoughCalculation-,justenoughdrags-,JustEnoughEffects-,just-enough-harvestcraft-,JustEnoughProfessions-,JustEnoughResources-,justzoom_,keymap-,keywizard-,konkrete_,konkrete_forge_,lazydfu-,LegendaryTooltips,LegendaryTooltips-,lightfallclient-,LightOverlay-,light-overlay-,LLOverlayReloaded-,loadmyresources_,lock_minecart_view-,lootbeams-,LOTRDRP-,lwl-,magnesium_extras-,maptooltip-,massunbind,mcbindtype-,mcwifipnp-,medievalmusic-,mightyarchitect-,mindful-eating-,minetogether-,MoBends,mobplusplus-,modcredits-,modernworldcreation_,modmenu-,modnametooltip-,modnametooltip_,moreoverlays-,MouseTweaks-,mousewheelie-,movement-vision-,multihotbar-,musicdr-,music-duration-reducer-,MyServerIsCompatible-,Neat-,Neat ,neiRecipeHandlers-,NekosEnchantedBooks-,ngrok-lan-expose-mod-,NoAutoJump-,NoFog-,nopotionshift_,notenoughanimations-,Notes-,NotifMod-,oculus-,OldJavaWarning-,openbackup-,OptiFine,OptiForge,OptiForge-,ornaments-,overloadedarmorbar-,PackMenu-,PackModeMenu-,panorama-,paperdoll-,phosphor-,PickUpNotifier-,Ping-,preciseblockplacing-,PresenceFootsteps-,realm-of-lost-souls-,ReAuth-,rebrand-,replanter-,ResourceLoader-,ResourcePackOrganizer,RPG-HUD-,rubidium-,rubidium_extras-,screenshot-to-clipboard-,ShoulderSurfing-,ShulkerTooltip-,shutupexperimentalsettings-,shutupmodelloader-,signtools-,simpleautorun-,simplebackup-,SimpleBackups-,SimpleDiscordRichPresence-,simple-rpc-,SimpleWorldTimer-,smartcursor-,smoothboot-,smoothfocus-,sounddeviceoptions-,SoundFilters-,soundreloader-,SpawnerFix-,spoticraft-,tconplanner-,textile_backup-,timestamps-,Tips-,TipTheScales-,Toast Control-,ToastControl-,Toast-Control-,tooltipscroller-,torchoptimizer-,torohealth-,totaldarkness,toughnessbar-,TRansliterationLib-,TravelersTitles-,VoidFog-,WindowedFullscreen-,wisla-,WorldNameRandomizer-,xlifeheartcolors-,yisthereautojump-";
+      "3dskinlayers-,Absolutely-Not-A-Zoom-Mod-,AdvancedChat-,AdvancedCompas-,AdvancementPlaques-,Ambience,AmbientEnvironment-,AmbientSounds_,Armor Status HUD-,ArmorSoundTweak-,AromaBackup-,BH-Menu-,Backups-,Batty's Coordinates PLUS Mod,BetterAdvancements-,BetterAnimationsCollection-,BetterDarkMode-,BetterF3-,BetterFoliage-,BetterPingDisplay-,BetterPlacement-,BetterTaskbar-,BetterThirdPerson,BetterTitleScreen-,Blur-,BorderlessWindow-,CTM-,ChunkAnimator-,ClientTweaks_,Controller Support-,Controlling-,CraftPresence-,CustomCursorMod-,CustomMainMenu-,DefaultOptions_,DefaultSettings-,DeleteWorldsToTrash-,DetailArmorBar-,Ding-,DistantHorizons-,DripSounds-,Durability101-,DurabilityNotifier-,DynamicSurroundings-,DynamicSurroundingsHuds-,EffectsLeft-,EiraMoticons_,EnchantmentDescriptions-,EnhancedVisuals_,EquipmentCompare-,FPS-Monitor-,FabricCustomCursorMod-,Fallingleaves-,FancySpawnEggs,FancyVideo-API-,FirstPersonMod,FogTweaker-,ForgeCustomCursorMod-,FpsReducer-,FpsReducer2-,FullscreenWindowed-,GameMenuModOption-,HealthOverlay-,HorseStatsMod-,InventoryEssentials_,InventoryHud_[1.17.1].forge-,InventorySpam-,InventoryTweaks-,ItemBorders-,ItemPhysicLite_,ItemStitchingFix-,JBRA-Client-,JustEnoughCalculation-,JustEnoughEffects-,JustEnoughProfessions-,JustEnoughResources-,LLOverlayReloaded-,LOTRDRP-,LegendaryTooltips,LegendaryTooltips-,LightOverlay-,MoBends,MouseTweaks-,MyServerIsCompatible-,Neat ,Neat-,NekosEnchantedBooks-,NoAutoJump-,NoFog-,Notes-,NotifMod-,OldJavaWarning-,OptiFine,OptiForge,OptiForge-,PackMenu-,PackModeMenu-,PickUpNotifier-,Ping-,PresenceFootsteps-,RPG-HUD-,ReAuth-,ResourceLoader-,ResourcePackOrganizer,ShoulderSurfing-,ShulkerTooltip-,SimpleBackups-,SimpleDiscordRichPresence-,SimpleWorldTimer-,SoundFilters-,SpawnerFix-,TRansliterationLib-,TipTheScales-,Tips-,Toast Control-,Toast-Control-,ToastControl-,TravelersTitles-,VoidFog-,WindowedFullscreen-,WorldNameRandomizer-,[1.12.2]DamageIndicatorsMod-,[1.12.2]bspkrscore-,antighost-,anviltooltipmod-,appleskin-,armorchroma-,armorpointspp-,authme-,auto-reconnect-,autobackup-,autoreconnect-,axolotl-item-fix-,backtools-,bannerunlimited-,beenfo-1.19-,better-recipe-book-,betterbiomeblend-,bhmenu-,blur-,borderless-mining-,catalogue-,charmonium-,chat_heads-,cherishedworlds-,cirback-1.0-,classicbar-,clickadv-,clienttweaks-,combat_music-,configured-,controllable-,cullleaves-,cullparticles-,custom-crosshair-mod-,customdiscordrpc-,darkness-,dashloader-,defaultoptions-,desiredservers-,discordrpc-,drippyloadingscreen-,drippyloadingscreen_,dynamic-fps-,dynamic-music-,dynamiclights-,dynmus-,effective-,eggtab-,eguilib-,eiramoticons-,enchantment-lore-,entity-texture-features-,entityculling-,exhaustedstamina-,extremesoundmuffler-,fabricemotes-,fancymenu_,fancymenu_video_extension,findme-,flickerfix-,fm_audio_extension_,forgemod_VoxelMap-,freelook-,ftb-backups-,ftbbackups2-,galacticraft-rpc-,gamestagesviewer-,grid-,hiddenrecipebook_,infinitemusic-,inventoryprofiles,invtweaks-,itemzoom,itlt-,jeed-,jehc-,jeiintegration_,just-enough-harvestcraft-,justenoughbeacons-,justenoughdrags-,justzoom_,keymap-,keywizard-,konkrete_,konkrete_forge_,lazydfu-,light-overlay-,lightfallclient-,loadmyresources_,lock_minecart_view-,lootbeams-,lwl-,magnesium_extras-,maptooltip-,massunbind,mcbindtype-,mcwifipnp-,medievalmusic-,mightyarchitect-,mindful-eating-,minetogether-,mobplusplus-,modcredits-,modernworldcreation_,modmenu-,modnametooltip-,modnametooltip_,moreoverlays-,mousewheelie-,movement-vision-,multihotbar-,music-duration-reducer-,musicdr-,neiRecipeHandlers-,ngrok-lan-expose-mod-,nopotionshift_,notenoughanimations-,oculus-,openbackup-,ornaments-,overloadedarmorbar-,panorama-,paperdoll-,phosphor-,preciseblockplacing-,realm-of-lost-souls-,rebrand-,replanter-,rubidium-,rubidium_extras-,screenshot-to-clipboard-,shutupexperimentalsettings-,shutupmodelloader-,signtools-,simple-rpc-,simpleautorun-,simplebackup-,smartcursor-,smoothboot-,smoothfocus-,sounddeviceoptions-,soundreloader-,spoticraft-,tconplanner-,textile_backup-,timestamps-,tooltipscroller-,torchoptimizer-,torohealth-,totaldarkness,toughnessbar-,wisla-,xlifeheartcolors-,yisthereautojump-";
   /**
    * Default fallback clientside-only mods list.
    */
-  private final List<String> FALLBACK_CLIENTSIDE_MODS =
-      new ArrayList<>(Arrays.asList(FALLBACK_MODS_DEFAULT_ASSTRING.split(",")));
+  private final TreeSet<String> FALLBACK_CLIENTSIDE_MODS =
+      new TreeSet<>(Arrays.asList(FALLBACK_MODS_DEFAULT_ASSTRING.split(",")));
   /**
    * List of mods which should be excluded from server packs.
    */
-  private List<String> listFallbackMods = FALLBACK_CLIENTSIDE_MODS;
+  private final TreeSet<String> FALLBACK_MODS = new TreeSet<>(FALLBACK_CLIENTSIDE_MODS);
   /**
    * Default fallback clientside-only mods, regex.
    */
   private final String FALLBACK_MODS_DEFAULT_REGEX_ASSTRING =
-      "^Armor Status HUD-.*$,^[1.12.2]bspkrscore-.*$,^[1.12.2]DamageIndicatorsMod-.*$,^3dskinlayers-.*$,^Absolutely-Not-A-Zoom-Mod-.*$,^AdvancedChat-.*$,^AdvancedCompas-.*$,^AdvancementPlaques-.*$,^Ambience.*$,^AmbientEnvironment-.*$,^AmbientSounds_.*$,^antighost-.*$,^anviltooltipmod-.*$,^appleskin-.*$,^armorchroma-.*$,^armorpointspp-.*$,^ArmorSoundTweak-.*$,^AromaBackup-.*$,^authme-.*$,^autobackup-.*$,^autoreconnect-.*$,^auto-reconnect-.*$,^axolotl-item-fix-.*$,^backtools-.*$,^Backups-.*$,^bannerunlimited-.*$,^Batty's Coordinates PLUS Mod.*$,^beenfo-1.19-.*$,^BetterAdvancements-.*$,^BetterAnimationsCollection-.*$,^betterbiomeblend-.*$,^BetterDarkMode-.*$,^BetterF3-.*$,^BetterFoliage-.*$,^BetterPingDisplay-.*$,^BetterPlacement-.*$,^better-recipe-book-.*$,^BetterTaskbar-.*$,^BetterThirdPerson.*$,^BetterTitleScreen-.*$,^bhmenu-.*$,^BH-Menu-.*$,^blur-.*$,^borderless-mining-.*$,^BorderlessWindow-.*$,^catalogue-.*$,^charmonium-.*$,^chat_heads-.*$,^cherishedworlds-.*$,^ChunkAnimator-.*$,^cirback-1.0-.*$,^classicbar-.*$,^clickadv-.*$,^clienttweaks-.*$,^ClientTweaks_.*$,^combat_music-.*$,^configured-.*$,^controllable-.*$,^Controller Support-.*$,^Controlling-.*$,^CraftPresence-.*$,^CTM-.*$,^cullleaves-.*$,^cullparticles-.*$,^custom-crosshair-mod-.*$,^CustomCursorMod-.*$,^customdiscordrpc-.*$,^CustomMainMenu-.*$,^darkness-.*$,^dashloader-.*$,^defaultoptions-.*$,^DefaultOptions_.*$,^DefaultSettings-.*$,^DeleteWorldsToTrash-.*$,^desiredservers-.*$,^DetailArmorBar-.*$,^Ding-.*$,^discordrpc-.*$,^DistantHorizons-.*$,^drippyloadingscreen-.*$,^drippyloadingscreen_.*$,^DripSounds-.*$,^Durability101-.*$,^DurabilityNotifier-.*$,^dynamic-fps-.*$,^dynamiclights-.*$,^dynamic-music-.*$,^DynamicSurroundings-.*$,^DynamicSurroundingsHuds-.*$,^dynmus-.*$,^effective-.*$,^EffectsLeft-.*$,^eggtab-.*$,^eguilib-.*$,^eiramoticons-.*$,^EiraMoticons_.*$,^EnchantmentDescriptions-.*$,^enchantment-lore-.*$,^EnhancedVisuals_.*$,^entityculling-.*$,^entity-texture-features-.*$,^EquipmentCompare-.*$,^exhaustedstamina-.*$,^extremesoundmuffler-.*$,^FabricCustomCursorMod-.*$,^fabricemotes-.*$,^Fallingleaves-.*$,^fancymenu_.*$,^fancymenu_video_extension.*$,^FancySpawnEggs.*$,^FancyVideo-API-.*$,^findme-.*$,^FirstPersonMod.*$,^flickerfix-.*$,^fm_audio_extension_.*$,^FogTweaker-.*$,^ForgeCustomCursorMod-.*$,^forgemod_VoxelMap-.*$,^FPS-Monitor-.*$,^FpsReducer-.*$,^FpsReducer2-.*$,^freelook-.*$,^ftb-backups-.*$,^ftbbackups2-.*$,^FullscreenWindowed-.*$,^galacticraft-rpc-.*$,^GameMenuModOption-.*$,^gamestagesviewer-.*$,^grid-.*$,^HealthOverlay-.*$,^hiddenrecipebook_.*$,^HorseStatsMod-.*$,^infinitemusic-.*$,^InventoryEssentials_.*$,^InventoryHud_[1.17.1].forge-.*$,^inventoryprofiles.*$,^InventorySpam-.*$,^InventoryTweaks-.*$,^invtweaks-.*$,^ItemBorders-.*$,^ItemPhysicLite_.*$,^ItemStitchingFix-.*$,^itemzoom.*$,^itlt-.*$,^JBRA-Client-.*$,^jeed-.*$,^jehc-.*$,^jeiintegration_.*$,^justenoughbeacons-.*$,^JustEnoughCalculation-.*$,^justenoughdrags-.*$,^JustEnoughEffects-.*$,^just-enough-harvestcraft-.*$,^JustEnoughProfessions-.*$,^JustEnoughResources-.*$,^justzoom_.*$,^keymap-.*$,^keywizard-.*$,^konkrete_.*$,^konkrete_forge_.*$,^lazydfu-.*$,^LegendaryTooltips.*$,^LegendaryTooltips-.*$,^lightfallclient-.*$,^LightOverlay-.*$,^light-overlay-.*$,^LLOverlayReloaded-.*$,^loadmyresources_.*$,^lock_minecart_view-.*$,^lootbeams-.*$,^LOTRDRP-.*$,^lwl-.*$,^magnesium_extras-.*$,^maptooltip-.*$,^massunbind.*$,^mcbindtype-.*$,^mcwifipnp-.*$,^medievalmusic-.*$,^mightyarchitect-.*$,^mindful-eating-.*$,^minetogether-.*$,^MoBends.*$,^mobplusplus-.*$,^modcredits-.*$,^modernworldcreation_.*$,^modmenu-.*$,^modnametooltip-.*$,^modnametooltip_.*$,^moreoverlays-.*$,^MouseTweaks-.*$,^mousewheelie-.*$,^movement-vision-.*$,^multihotbar-.*$,^musicdr-.*$,^music-duration-reducer-.*$,^MyServerIsCompatible-.*$,^Neat-.*$,^Neat .*$,^neiRecipeHandlers-.*$,^NekosEnchantedBooks-.*$,^ngrok-lan-expose-mod-.*$,^NoAutoJump-.*$,^NoFog-.*$,^nopotionshift_.*$,^notenoughanimations-.*$,^Notes-.*$,^NotifMod-.*$,^oculus-.*$,^OldJavaWarning-.*$,^openbackup-.*$,^OptiFine.*$,^OptiForge.*$,^OptiForge-.*$,^ornaments-.*$,^overloadedarmorbar-.*$,^PackMenu-.*$,^PackModeMenu-.*$,^panorama-.*$,^paperdoll-.*$,^phosphor-.*$,^PickUpNotifier-.*$,^Ping-.*$,^preciseblockplacing-.*$,^PresenceFootsteps-.*$,^realm-of-lost-souls-.*$,^ReAuth-.*$,^rebrand-.*$,^replanter-.*$,^ResourceLoader-.*$,^ResourcePackOrganizer.*$,^RPG-HUD-.*$,^rubidium-.*$,^rubidium_extras-.*$,^screenshot-to-clipboard-.*$,^ShoulderSurfing-.*$,^ShulkerTooltip-.*$,^shutupexperimentalsettings-.*$,^shutupmodelloader-.*$,^signtools-.*$,^simpleautorun-.*$,^simplebackup-.*$,^SimpleBackups-.*$,^SimpleDiscordRichPresence-.*$,^simple-rpc-.*$,^SimpleWorldTimer-.*$,^smartcursor-.*$,^smoothboot-.*$,^smoothfocus-.*$,^sounddeviceoptions-.*$,^SoundFilters-.*$,^soundreloader-.*$,^SpawnerFix-.*$,^spoticraft-.*$,^tconplanner-.*$,^textile_backup-.*$,^timestamps-.*$,^Tips-.*$,^TipTheScales-.*$,^Toast Control-.*$,^ToastControl-.*$,^Toast-Control-.*$,^tooltipscroller-.*$,^torchoptimizer-.*$,^torohealth-.*$,^totaldarkness.*$,^toughnessbar-.*$,^TRansliterationLib-.*$,^TravelersTitles-.*$,^VoidFog-.*$,^WindowedFullscreen-.*$,^wisla-.*$,^WorldNameRandomizer-.*$,^xlifeheartcolors-.*$,^yisthereautojump-.*$";
+      "^3dskinlayers-.*$,^Absolutely-Not-A-Zoom-Mod-.*$,^AdvancedChat-.*$,^AdvancedCompas-.*$,^AdvancementPlaques-.*$,^Ambience.*$,^AmbientEnvironment-.*$,^AmbientSounds_.*$,^Armor Status HUD-.*$,^ArmorSoundTweak-.*$,^AromaBackup-.*$,^BH-Menu-.*$,^Backups-.*$,^Batty's Coordinates PLUS Mod.*$,^BetterAdvancements-.*$,^BetterAnimationsCollection-.*$,^BetterDarkMode-.*$,^BetterF3-.*$,^BetterFoliage-.*$,^BetterPingDisplay-.*$,^BetterPlacement-.*$,^BetterTaskbar-.*$,^BetterThirdPerson.*$,^BetterTitleScreen-.*$,^BorderlessWindow-.*$,^CTM-.*$,^ChunkAnimator-.*$,^ClientTweaks_.*$,^Controller Support-.*$,^Controlling-.*$,^CraftPresence-.*$,^CustomCursorMod-.*$,^CustomMainMenu-.*$,^DefaultOptions_.*$,^DefaultSettings-.*$,^DeleteWorldsToTrash-.*$,^DetailArmorBar-.*$,^Ding-.*$,^DistantHorizons-.*$,^DripSounds-.*$,^Durability101-.*$,^DurabilityNotifier-.*$,^DynamicSurroundings-.*$,^DynamicSurroundingsHuds-.*$,^EffectsLeft-.*$,^EiraMoticons_.*$,^EnchantmentDescriptions-.*$,^EnhancedVisuals_.*$,^EquipmentCompare-.*$,^FPS-Monitor-.*$,^FabricCustomCursorMod-.*$,^Fallingleaves-.*$,^FancySpawnEggs.*$,^FancyVideo-API-.*$,^FirstPersonMod.*$,^FogTweaker-.*$,^ForgeCustomCursorMod-.*$,^FpsReducer-.*$,^FpsReducer2-.*$,^FullscreenWindowed-.*$,^GameMenuModOption-.*$,^HealthOverlay-.*$,^HorseStatsMod-.*$,^InventoryEssentials_.*$,^InventoryHud_[1.17.1].forge-.*$,^InventorySpam-.*$,^InventoryTweaks-.*$,^ItemBorders-.*$,^ItemPhysicLite_.*$,^ItemStitchingFix-.*$,^JBRA-Client-.*$,^JustEnoughCalculation-.*$,^JustEnoughEffects-.*$,^JustEnoughProfessions-.*$,^JustEnoughResources-.*$,^LLOverlayReloaded-.*$,^LOTRDRP-.*$,^LegendaryTooltips-.*$,^LegendaryTooltips.*$,^LightOverlay-.*$,^MoBends.*$,^MouseTweaks-.*$,^MyServerIsCompatible-.*$,^Neat .*$,^Neat-.*$,^NekosEnchantedBooks-.*$,^NoAutoJump-.*$,^NoFog-.*$,^Notes-.*$,^NotifMod-.*$,^OldJavaWarning-.*$,^OptiFine.*$,^OptiForge-.*$,^OptiForge.*$,^PackMenu-.*$,^PackModeMenu-.*$,^PickUpNotifier-.*$,^Ping-.*$,^PresenceFootsteps-.*$,^RPG-HUD-.*$,^ReAuth-.*$,^ResourceLoader-.*$,^ResourcePackOrganizer.*$,^ShoulderSurfing-.*$,^ShulkerTooltip-.*$,^SimpleBackups-.*$,^SimpleDiscordRichPresence-.*$,^SimpleWorldTimer-.*$,^SoundFilters-.*$,^SpawnerFix-.*$,^TRansliterationLib-.*$,^TipTheScales-.*$,^Tips-.*$,^Toast Control-.*$,^Toast-Control-.*$,^ToastControl-.*$,^TravelersTitles-.*$,^VoidFog-.*$,^WindowedFullscreen-.*$,^WorldNameRandomizer-.*$,^[1.12.2]DamageIndicatorsMod-.*$,^[1.12.2]bspkrscore-.*$,^antighost-.*$,^anviltooltipmod-.*$,^appleskin-.*$,^armorchroma-.*$,^armorpointspp-.*$,^authme-.*$,^auto-reconnect-.*$,^autobackup-.*$,^autoreconnect-.*$,^axolotl-item-fix-.*$,^backtools-.*$,^bannerunlimited-.*$,^beenfo-1.19-.*$,^better-recipe-book-.*$,^betterbiomeblend-.*$,^bhmenu-.*$,^blur-.*$,^borderless-mining-.*$,^catalogue-.*$,^charmonium-.*$,^chat_heads-.*$,^cherishedworlds-.*$,^cirback-1.0-.*$,^classicbar-.*$,^clickadv-.*$,^clienttweaks-.*$,^combat_music-.*$,^configured-.*$,^controllable-.*$,^cullleaves-.*$,^cullparticles-.*$,^custom-crosshair-mod-.*$,^customdiscordrpc-.*$,^darkness-.*$,^dashloader-.*$,^defaultoptions-.*$,^desiredservers-.*$,^discordrpc-.*$,^drippyloadingscreen-.*$,^drippyloadingscreen_.*$,^dynamic-fps-.*$,^dynamic-music-.*$,^dynamiclights-.*$,^dynmus-.*$,^effective-.*$,^eggtab-.*$,^eguilib-.*$,^eiramoticons-.*$,^enchantment-lore-.*$,^entity-texture-features-.*$,^entityculling-.*$,^exhaustedstamina-.*$,^extremesoundmuffler-.*$,^fabricemotes-.*$,^fancymenu_.*$,^fancymenu_video_extension.*$,^findme-.*$,^flickerfix-.*$,^fm_audio_extension_.*$,^forgemod_VoxelMap-.*$,^freelook-.*$,^ftb-backups-.*$,^ftbbackups2-.*$,^galacticraft-rpc-.*$,^gamestagesviewer-.*$,^grid-.*$,^hiddenrecipebook_.*$,^infinitemusic-.*$,^inventoryprofiles.*$,^invtweaks-.*$,^itemzoom.*$,^itlt-.*$,^jeed-.*$,^jehc-.*$,^jeiintegration_.*$,^just-enough-harvestcraft-.*$,^justenoughbeacons-.*$,^justenoughdrags-.*$,^justzoom_.*$,^keymap-.*$,^keywizard-.*$,^konkrete_.*$,^konkrete_forge_.*$,^lazydfu-.*$,^light-overlay-.*$,^lightfallclient-.*$,^loadmyresources_.*$,^lock_minecart_view-.*$,^lootbeams-.*$,^lwl-.*$,^magnesium_extras-.*$,^maptooltip-.*$,^massunbind.*$,^mcbindtype-.*$,^mcwifipnp-.*$,^medievalmusic-.*$,^mightyarchitect-.*$,^mindful-eating-.*$,^minetogether-.*$,^mobplusplus-.*$,^modcredits-.*$,^modernworldcreation_.*$,^modmenu-.*$,^modnametooltip-.*$,^modnametooltip_.*$,^moreoverlays-.*$,^mousewheelie-.*$,^movement-vision-.*$,^multihotbar-.*$,^music-duration-reducer-.*$,^musicdr-.*$,^neiRecipeHandlers-.*$,^ngrok-lan-expose-mod-.*$,^nopotionshift_.*$,^notenoughanimations-.*$,^oculus-.*$,^openbackup-.*$,^ornaments-.*$,^overloadedarmorbar-.*$,^panorama-.*$,^paperdoll-.*$,^phosphor-.*$,^preciseblockplacing-.*$,^realm-of-lost-souls-.*$,^rebrand-.*$,^replanter-.*$,^rubidium-.*$,^rubidium_extras-.*$,^screenshot-to-clipboard-.*$,^shutupexperimentalsettings-.*$,^shutupmodelloader-.*$,^signtools-.*$,^simple-rpc-.*$,^simpleautorun-.*$,^simplebackup-.*$,^smartcursor-.*$,^smoothboot-.*$,^smoothfocus-.*$,^sounddeviceoptions-.*$,^soundreloader-.*$,^spoticraft-.*$,^tconplanner-.*$,^textile_backup-.*$,^timestamps-.*$,^tooltipscroller-.*$,^torchoptimizer-.*$,^torohealth-.*$,^totaldarkness.*$,^toughnessbar-.*$,^wisla-.*$,^xlifeheartcolors-.*$,^yisthereautojump-.*$";
   /**
    * Default fallback clientside-only mods list, regex.
    */
-  private final List<String> FALLBACK_REGEX_CLIENTSIDE_MODS =
-      new ArrayList<>(Arrays.asList(FALLBACK_MODS_DEFAULT_REGEX_ASSTRING.split(",")));
+  private final TreeSet<String> FALLBACK_REGEX_CLIENTSIDE_MODS =
+      new TreeSet<>(Arrays.asList(FALLBACK_MODS_DEFAULT_REGEX_ASSTRING.split(",")));
   /**
    * List of mods which should be excluded from server packs, in regex format.
    */
-  private List<String> listFallbackModsRegex = FALLBACK_REGEX_CLIENTSIDE_MODS;
+  private final TreeSet<String> FALLBACK_MODS_REGEX = new TreeSet<>(FALLBACK_REGEX_CLIENTSIDE_MODS);
   /**
    * ServerPackCreator version.
    */
@@ -102,13 +110,13 @@ public final class ApplicationProperties extends Properties {
   /**
    * Default list of directories to include in the server pack.
    */
-  private final List<String> FALLBACK_DIRECTORIES_INCLUDE =
-      new ArrayList<>(Arrays.asList(FALLBACK_DIRECTORIES_INCLUDE_ASSTRING.split(",")));
+  private final TreeSet<String> FALLBACK_DIRECTORIES_INCLUDE =
+      new TreeSet<>(Arrays.asList(FALLBACK_DIRECTORIES_INCLUDE_ASSTRING.split(",")));
   /**
    * List of directories which must not be excluded from server packs. Default is mods, config,
    * defaultconfigs, scripts, saves, seeds, libraries.
    */
-  private List<String> directoriesToInclude = FALLBACK_DIRECTORIES_INCLUDE;
+  private final List<String> DIRECTORIES_TO_INCLUDE = new ArrayList<>(FALLBACK_DIRECTORIES_INCLUDE);
   /**
    * Default directories to exclude from the server pack.
    */
@@ -117,13 +125,14 @@ public final class ApplicationProperties extends Properties {
   /**
    * Default list of directories to exclude from the server pack.
    */
-  private final List<String> FALLBACK_DIRECTORIES_EXCLUDE =
-      new ArrayList<>(Arrays.asList(FALLBACK_DIRECTORIES_EXCLUDE_ASSTRING.split(",")));
+  private final TreeSet<String> FALLBACK_DIRECTORIES_EXCLUDE =
+      new TreeSet<>(Arrays.asList(FALLBACK_DIRECTORIES_EXCLUDE_ASSTRING.split(",")));
   /**
    * List of directories which should be excluded from server packs. Default is overrides, packmenu,
    * resourcepacks, server_pack, fancymenu.
    */
-  private List<String> directoriesToExclude = FALLBACK_DIRECTORIES_EXCLUDE;
+  private final TreeSet<String> DIRECTORIES_TO_EXCLUDE = new TreeSet<>(
+      FALLBACK_DIRECTORIES_EXCLUDE);
   /**
    * Default files to exclude from a server pack ZIP-archive.
    */
@@ -132,12 +141,13 @@ public final class ApplicationProperties extends Properties {
   /**
    * Default list of files to exclude from a server pack ZIP-archive.
    */
-  private final List<String> FALLBACK_FILES_EXCLUDE_ZIP =
-      new ArrayList<>(Arrays.asList(FALLBACK_FILES_EXCLUDE_ZIP_ASSTRING.split(",")));
+  private final TreeSet<String> FALLBACK_FILES_EXCLUDE_ZIP =
+      new TreeSet<>(Arrays.asList(FALLBACK_FILES_EXCLUDE_ZIP_ASSTRING.split(",")));
   /**
    * List of files to be excluded from ZIP-archives.
    */
-  private List<String> filesToExcludeFromZipArchive = FALLBACK_FILES_EXCLUDE_ZIP;
+  private final TreeSet<String> FILES_TO_EXCLUDE_FROM_ZIP = new TreeSet<>(
+      FALLBACK_FILES_EXCLUDE_ZIP);
   /**
    * Default shell-script template.
    */
@@ -154,15 +164,15 @@ public final class ApplicationProperties extends Properties {
   /**
    * Default list of script templates in the server_files-directory.
    */
-  private final List<File> FALLBACK_SCRIPT_TEMPLATES =
-      new ArrayList<>(
+  private final TreeSet<File> FALLBACK_SCRIPT_TEMPLATES =
+      new TreeSet<>(
           Arrays.asList(
               new File("server_files/" + DEFAULT_SHELL_TEMPLATE),
               new File("server_files/" + DEFAULT_POWERSHELL_TEMPLATE)));
   /**
    * List of templates used for start-script creation.
    */
-  private List<File> scriptTemplates = FALLBACK_SCRIPT_TEMPLATES;
+  private final TreeSet<File> SCRIPT_TEMPLATES = new TreeSet<>(FALLBACK_SCRIPT_TEMPLATES);
   /**
    * Default configuration file from which to load a server pack configuration.
    */
@@ -297,6 +307,7 @@ public final class ApplicationProperties extends Properties {
   private final String PROPERTY_SERVERPACK_SCRIPT_TEMPLATE = "de.griefed.serverpackcreator.serverpack.script.template";
   private final String PROPERTY_MINECRAFT_SNAPSHOTS = "de.griefed.serverpackcreator.minecraft.snapshots";
   private final String PROPERTY_SERVERPACK_AUTODISCOVERY_FILTER = "de.griefed.serverpackcreator.serverpack.autodiscovery.filter";
+  private final String PROPERTY_JAVA = "de.griefed.serverpackcreator.java";
   /**
    * The directory in which server packs will be generated and stored in, as well as server pack
    * ZIP-archives. Default is ./server-packs
@@ -357,26 +368,47 @@ public final class ApplicationProperties extends Properties {
    * In which way user-specified clientside-only mods should be excluded.
    */
   private ExclusionFilter exclusionFilter = ExclusionFilter.START;
+  /**
+   * The path to a viable Java executable or binary for use in modloader server installation.
+   */
+  private String javaPath = "java";
 
   /**
    * Initialize an instance of our application properties using the default
    * <code>serverpackcreator.properties</code>.
    *
+   * @param fileUtilities Instance of {@link FileUtilities} for file-operations.
+   * @param systemUtilities Instance of {@link SystemUtilities} to acquire the Java path automatically.
    * @author Griefed
    */
   @Autowired
-  public ApplicationProperties() {
-    this(new File("serverpackcreator.properties"));
+  public ApplicationProperties(
+      FileUtilities fileUtilities,
+      SystemUtilities systemUtilities,
+      ListUtilities listUtilities) {
+
+    this(new File("serverpackcreator.properties"), fileUtilities, systemUtilities, listUtilities);
   }
 
   /**
    * Initialize an instance of our application properties using a custom properties-file.
    *
    * @param propertiesFile The properties file from which to load the settings and configuration.
+   * @param fileUtilities Instance of {@link FileUtilities} for file-operations.
+   * @param systemUtilities Instance of {@link SystemUtilities} to acquire the Java path automatically.
    * @author Griefed
    */
-  public ApplicationProperties(File propertiesFile) {
+  public ApplicationProperties(
+      File propertiesFile,
+      FileUtilities fileUtilities,
+      SystemUtilities systemUtilities,
+      ListUtilities listUtilities) {
+
     super();
+
+    FILE_UTILITIES = fileUtilities;
+    SYSTEM_UTILITIES = systemUtilities;
+    LIST_UTILITIES = listUtilities;
 
     // Load the properties file from the classpath, providing default values.
     try (InputStream inputStream =
@@ -408,7 +440,8 @@ public final class ApplicationProperties extends Properties {
   /**
    * Reload from a specific properties-file.
    *
-   * @param propertiesFile The properties-file with which to loadProperties the settings and configuration.
+   * @param propertiesFile The properties-file with which to loadProperties the settings and
+   *                       configuration.
    * @author Griefed
    */
   private void loadProperties(File propertiesFile) {
@@ -474,6 +507,8 @@ public final class ApplicationProperties extends Properties {
     setMinecraftPreReleases();
 
     setModExclusionFilterMethod();
+
+    setJavaPath();
 
     saveToDisk(SERVERPACKCREATOR_PROPERTIES_FILE);
   }
@@ -593,13 +628,17 @@ public final class ApplicationProperties extends Properties {
    * @author Griefed
    */
   private void setFallbackModsList() {
-    listFallbackMods = getListProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST,
-        FALLBACK_MODS_DEFAULT_ASSTRING);
-    LOG.info("Fallback modslist set to: " + listFallbackMods);
+    FALLBACK_MODS.addAll(getListProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST,
+        FALLBACK_MODS_DEFAULT_ASSTRING));
+    setProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST,String.join(",",FALLBACK_MODS));
+    LOG.info("Fallback modslist set to:");
+    LIST_UTILITIES.printListToLogChunked(new ArrayList<>(FALLBACK_MODS),5,"    ",true);
 
-    listFallbackModsRegex = getListProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST_REGEX,
-        FALLBACK_MODS_DEFAULT_REGEX_ASSTRING);
-    LOG.info("Fallback regex modslist set to: " + listFallbackModsRegex);
+    FALLBACK_MODS_REGEX.addAll(getListProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST_REGEX,
+        FALLBACK_MODS_DEFAULT_REGEX_ASSTRING));
+    setProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST_REGEX,String.join(",",FALLBACK_MODS_REGEX));
+    LOG.info("Fallback regex modslist set to:");
+    LIST_UTILITIES.printListToLogChunked(new ArrayList<>(FALLBACK_MODS_REGEX),5,"    ",true);
   }
 
   /**
@@ -608,9 +647,9 @@ public final class ApplicationProperties extends Properties {
    * @author Griefed
    */
   private void setDirsToExcludeList() {
-    directoriesToExclude = getListProperty(PROPERTY_CONFIGURATION_DIRECTORIES_SHOULDEXCLUDE,
-        FALLBACK_DIRECTORIES_EXCLUDE_ASSTRING);
-    LOG.info("Directories to exclude set to: " + directoriesToExclude);
+    DIRECTORIES_TO_EXCLUDE.addAll(getListProperty(PROPERTY_CONFIGURATION_DIRECTORIES_SHOULDEXCLUDE,
+        FALLBACK_DIRECTORIES_EXCLUDE_ASSTRING));
+    LOG.info("Directories to exclude set to: " + DIRECTORIES_TO_EXCLUDE);
   }
 
   /**
@@ -620,9 +659,9 @@ public final class ApplicationProperties extends Properties {
    * @author Griefed
    */
   private void setDirsToIncludeList() {
-    directoriesToInclude = getListProperty(PROPERTY_CONFIGURATION_DIRECTORIES_MUSTINCLUDE,
-        FALLBACK_DIRECTORIES_INCLUDE_ASSTRING);
-    LOG.info("Directories which must always be included set to: " + directoriesToInclude);
+    DIRECTORIES_TO_INCLUDE.addAll(getListProperty(PROPERTY_CONFIGURATION_DIRECTORIES_MUSTINCLUDE,
+        FALLBACK_DIRECTORIES_INCLUDE_ASSTRING));
+    LOG.info("Directories which must always be included set to: " + DIRECTORIES_TO_INCLUDE);
   }
 
   /**
@@ -677,10 +716,10 @@ public final class ApplicationProperties extends Properties {
    * @author Griefed
    */
   private void setFilesToExcludeFromZip() {
-    filesToExcludeFromZipArchive = getListProperty(PROPERTY_SERVERPACK_ZIP_EXCLUDE,
-        FALLBACK_FILES_EXCLUDE_ZIP_ASSTRING);
+    FILES_TO_EXCLUDE_FROM_ZIP.addAll(getListProperty(PROPERTY_SERVERPACK_ZIP_EXCLUDE,
+        FALLBACK_FILES_EXCLUDE_ZIP_ASSTRING));
     LOG.info(
-        "Files which must be excluded from ZIP-archives set to: " + filesToExcludeFromZipArchive);
+        "Files which must be excluded from ZIP-archives set to: " + FILES_TO_EXCLUDE_FROM_ZIP);
   }
 
   /**
@@ -699,9 +738,11 @@ public final class ApplicationProperties extends Properties {
    * @author Griefed
    */
   private void setScriptTemplates() {
-    scriptTemplates = getFileListProperty(PROPERTY_SERVERPACK_SCRIPT_TEMPLATE,
-        FALLBACK_SCRIPT_TEMPLATES_ASSTRING, "server_files/");
-    LOG.info("Script templates set to: " + scriptTemplates);
+    SCRIPT_TEMPLATES.clear();
+    SCRIPT_TEMPLATES.addAll(getFileListProperty(PROPERTY_SERVERPACK_SCRIPT_TEMPLATE,
+        FALLBACK_SCRIPT_TEMPLATES_ASSTRING, "server_files/"));
+    LOG.info("Using script templates:");
+    SCRIPT_TEMPLATES.forEach(template -> LOG.info("    " + template.getPath()));
   }
 
   /**
@@ -829,6 +870,187 @@ public final class ApplicationProperties extends Properties {
   }
 
   /**
+   * Set the Java path using the defined property, if it exists. If the setting is incorrect,
+   * ServerPackCreator will try to automatically determine the path and set the property
+   * accordingly.
+   *
+   * @author Griefed
+   */
+  private void setJavaPath() {
+    if (checkJavaPath(getProperty(PROPERTY_JAVA,""))) {
+      javaPath = getProperty(PROPERTY_JAVA);
+    } else {
+      setProperty(PROPERTY_JAVA,getJavaPath(""));
+      javaPath = acquireProperty(PROPERTY_JAVA, getJavaPath(""));
+    }
+    LOG.info("Java path set to: " + javaPath);
+  }
+
+  /**
+   * Setter for the path to the Java executable/binary. Replaces any occurrences of \ with /. The
+   * path to the Java executable or binary <code>MUST NOT</code> be a symbolic link, or link of any
+   * kind. It must be a direct path!
+   *
+   * @param javaPath The new Java path to store.
+   * @author Griefed
+   */
+  public void setJavaPath(String javaPath) {
+    this.javaPath = getJavaPath(javaPath);
+    saveToDisk(SERVERPACKCREATOR_PROPERTIES_FILE);
+  }
+
+  /**
+   * Getter for the path to the Java executable/binary.
+   *
+   * @return String. Returns the path to the Java executable/binary.
+   * @author Griefed
+   */
+  public String java() {
+    return javaPath;
+  }
+
+  /**
+   * Whether a viable path to a Java executable or binary has been configured for
+   * ServerPackCreator.
+   *
+   * @return <code>true</code> if a viable path has been set.
+   * @author Griefed
+   */
+  public boolean javaAvailable() {
+    return checkJavaPath(javaPath);
+  }
+
+  /**
+   * Check whether the given path is a valid Java specification.
+   *
+   * @param pathToJava Path to the Java executable
+   * @return <code>true</code> if the path is valid.
+   * @author Griefed
+   */
+  private boolean checkJavaPath(String pathToJava) {
+
+    if (pathToJava.length() == 0) {
+      return false;
+    }
+
+    FileUtilities.FileType type = FILE_UTILITIES.checkFileType(pathToJava);
+
+    switch (type) {
+      case FILE:
+        return testJava(pathToJava);
+
+      case LINK:
+      case SYMLINK:
+        try {
+
+          return testJava(FILE_UTILITIES.resolveLink(new File(pathToJava)));
+
+        } catch (InvalidFileTypeException | IOException ex) {
+          LOG.error("Could not read Java link/symlink.", ex);
+        }
+
+        return false;
+
+      case DIRECTORY:
+        LOG.error("Directory specified. Path to Java must lead to a lnk, symlink or file.");
+
+      case INVALID:
+      default:
+        return false;
+    }
+  }
+
+  /**
+   * Test for a valid Java specification by trying to run <code>java -version</code>. If the command
+   * goes through without errors, it is considered a correct specification.
+   *
+   * @param pathToJava Path to the java executable/binary.
+   * @return <code>true</code> if the specified file is a valid Java
+   * executable/binary.
+   * @author Griefed
+   */
+  private boolean testJava(String pathToJava) {
+    boolean testSuccessful;
+    try {
+      ProcessBuilder processBuilder =
+          new ProcessBuilder(new ArrayList<>(Arrays.asList(pathToJava, "-version")));
+
+      processBuilder.redirectErrorStream(true);
+
+      Process process = processBuilder.start();
+
+      BufferedReader bufferedReader =
+          new BufferedReader(new InputStreamReader(process.getInputStream()));
+
+      while (bufferedReader.readLine() != null && !bufferedReader.readLine().equals("null")) {
+        System.out.println(bufferedReader.readLine());
+      }
+
+      bufferedReader.close();
+      process.destroyForcibly();
+
+      testSuccessful = true;
+    } catch (IOException e) {
+
+      LOG.error("Invalid Java specified.");
+      testSuccessful = false;
+    }
+
+    return testSuccessful;
+  }
+
+  /**
+   * Check the given path to a Java installation for validity and return it, if it is valid. If the
+   * passed path is a UNIX symlink or Windows lnk, it is resolved, then returned. If the passed path
+   * is considered invalid, the system default is acquired and returned.
+   *
+   * @param pathToJava The path to check for whether it is a valid Java installation.
+   * @return String. Returns the path to the Java installation. If user input was incorrect, SPC
+   * will try to acquire the path automatically.
+   * @author Griefed
+   */
+  private String getJavaPath(String pathToJava) {
+
+    String checkedJavaPath;
+
+    try {
+
+      if (pathToJava.length() > 0) {
+
+        if (checkJavaPath(pathToJava)) {
+
+          return pathToJava;
+        }
+
+        if (checkJavaPath(pathToJava + ".exe")) {
+
+          return pathToJava + ".exe";
+        }
+
+        if (checkJavaPath(pathToJava + ".lnk")) {
+
+          return FILE_UTILITIES.resolveLink(new File(pathToJava + ".lnk"));
+        }
+      }
+
+      LOG.info("Java setting invalid or otherwise not usable. Using system default.");
+      LOG.debug("Acquiring path to Java installation from system properties...");
+      checkedJavaPath = SYSTEM_UTILITIES.acquireJavaPathFromSystem();
+
+      LOG.debug("Automatically acquired path to Java installation: " + checkedJavaPath);
+
+    } catch (NullPointerException | InvalidFileTypeException | IOException ex) {
+
+      LOG.info("Java setting invalid or otherwise not usable. Using system default.");
+      checkedJavaPath = SYSTEM_UTILITIES.acquireJavaPathFromSystem();
+
+      LOG.debug("Automatically acquired path to Java installation: " + checkedJavaPath, ex);
+    }
+
+    return checkedJavaPath;
+  }
+
+  /**
    * Default list of script templates, used in case not a single one was configured.
    *
    * <ul>
@@ -840,13 +1062,25 @@ public final class ApplicationProperties extends Properties {
    * @author Griefed
    */
   public List<File> FALLBACK_SCRIPT_TEMPLATES() {
-    return FALLBACK_SCRIPT_TEMPLATES;
+    return new ArrayList<>(FALLBACK_SCRIPT_TEMPLATES);
   }
 
+  /**
+   * The default shell-script template.
+   *
+   * @return The default shell-script template.
+   * @author Griefed
+   */
   public File DEFAULT_SHELL_TEMPLATE() {
     return new File(DEFAULT_SHELL_TEMPLATE);
   }
 
+  /**
+   * The default PowerShell-script template.
+   *
+   * @return The default PowerShell-script template.
+   * @author Griefed
+   */
   public File DEFAULT_POWERSHELL_TEMPLATE() {
     return new File(DEFAULT_POWERSHELL_TEMPLATE);
   }
@@ -858,7 +1092,7 @@ public final class ApplicationProperties extends Properties {
    * @author Griefed
    */
   public List<File> scriptTemplates() {
-    return scriptTemplates;
+    return new ArrayList<>(SCRIPT_TEMPLATES);
   }
 
   /**
@@ -879,7 +1113,7 @@ public final class ApplicationProperties extends Properties {
    * @author Griefed
    */
   public List<String> FALLBACK_CLIENTSIDE_MODS() {
-    return FALLBACK_CLIENTSIDE_MODS;
+    return new ArrayList<>(FALLBACK_CLIENTSIDE_MODS);
   }
 
   /**
@@ -889,7 +1123,7 @@ public final class ApplicationProperties extends Properties {
    * @author Griefed
    */
   public List<String> FALLBACK_REGEX_CLIENTSIDE_MODS() {
-    return FALLBACK_REGEX_CLIENTSIDE_MODS;
+    return new ArrayList<>(FALLBACK_REGEX_CLIENTSIDE_MODS);
   }
 
   /**
@@ -1192,7 +1426,7 @@ public final class ApplicationProperties extends Properties {
    * @author Griefed
    */
   public List<String> getDefaultListFallbackMods() {
-    return listFallbackMods;
+    return new ArrayList<>(FALLBACK_MODS);
   }
 
   /**
@@ -1205,9 +1439,9 @@ public final class ApplicationProperties extends Properties {
    */
   public List<String> getListFallbackMods() {
     if (exclusionFilter.equals(ExclusionFilter.REGEX)) {
-      return listFallbackModsRegex;
+      return new ArrayList<>(FALLBACK_MODS_REGEX);
     } else {
-      return listFallbackMods;
+      return new ArrayList<>(FALLBACK_MODS);
     }
   }
 
@@ -1218,7 +1452,7 @@ public final class ApplicationProperties extends Properties {
    * @author Griefed
    */
   public List<String> getListFallbackModsRegex() {
-    return listFallbackModsRegex;
+    return new ArrayList<>(FALLBACK_MODS_REGEX);
   }
 
   /**
@@ -1228,7 +1462,7 @@ public final class ApplicationProperties extends Properties {
    * @author Griefed
    */
   public List<String> getDirectoriesToInclude() {
-    return directoriesToInclude;
+    return DIRECTORIES_TO_INCLUDE;
   }
 
   /**
@@ -1238,7 +1472,7 @@ public final class ApplicationProperties extends Properties {
    * @author Griefed
    */
   public List<String> getDirectoriesToExclude() {
-    return directoriesToExclude;
+    return new ArrayList<>(DIRECTORIES_TO_EXCLUDE);
   }
 
   /**
@@ -1248,9 +1482,9 @@ public final class ApplicationProperties extends Properties {
    * @author Griefed
    */
   public void addDirectoryToExclude(String entry) {
-    if (!directoriesToExclude.contains(entry) && !directoriesToInclude.contains(entry)) {
+    if (!DIRECTORIES_TO_EXCLUDE.contains(entry) && !DIRECTORIES_TO_INCLUDE.contains(entry)) {
       LOG.debug("Adding " + entry + " to list of files or directories to exclude.");
-      directoriesToExclude.add(entry);
+      DIRECTORIES_TO_EXCLUDE.add(entry);
     }
   }
 
@@ -1314,7 +1548,7 @@ public final class ApplicationProperties extends Properties {
    * @author Griefed
    */
   public List<String> getFilesToExcludeFromZipArchive() {
-    return filesToExcludeFromZipArchive;
+    return new ArrayList<>(FILES_TO_EXCLUDE_FROM_ZIP);
   }
 
   /**
@@ -1386,29 +1620,28 @@ public final class ApplicationProperties extends Properties {
     boolean updated = false;
 
     if (properties != null) {
-      String fallback = "de.griefed.serverpackcreator.configuration.fallbackmodslist";
-      String fallbackRegex = "de.griefed.serverpackcreator.configuration.fallbackmodslist.regex";
 
-      if (properties.getProperty(fallback) != null && !getProperty(fallback).equals(
-          properties.getProperty(fallback))) {
+      if (properties.getProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST) != null && !getProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST).equals(
+          properties.getProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST))) {
 
-        setProperty(fallback, properties.getProperty(fallback));
-        listFallbackMods = new ArrayList<>(Arrays.asList(getProperty(fallback).split(",")));
+        setProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST, properties.getProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST));
+        FALLBACK_MODS.clear();
+        FALLBACK_MODS.addAll(Arrays.asList(getProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST).split(",")));
 
         LOG.info(
-            "The fallback-list for clientside only mods has been updated to: " + listFallbackMods);
+            "The fallback-list for clientside only mods has been updated to: " + FALLBACK_MODS);
         updated = true;
       }
 
-      if (properties.getProperty(fallbackRegex) != null && !getProperty(fallbackRegex).equals(
-          properties.getProperty(fallbackRegex))) {
+      if (properties.getProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST_REGEX) != null && !getProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST_REGEX).equals(
+          properties.getProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST_REGEX))) {
 
-        setProperty(fallbackRegex, properties.getProperty(fallbackRegex));
-        listFallbackModsRegex = new ArrayList<>(
-            Arrays.asList(getProperty(fallbackRegex).split(",")));
+        setProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST_REGEX, properties.getProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST_REGEX));
+        FALLBACK_MODS_REGEX.clear();
+        FALLBACK_MODS_REGEX.addAll(Arrays.asList(getProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST_REGEX).split(",")));
 
         LOG.info("The fallback regex-list for clientside only mods has been updated to: "
-            + listFallbackModsRegex);
+            + FALLBACK_MODS_REGEX);
         updated = true;
       }
 

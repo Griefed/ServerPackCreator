@@ -42,14 +42,33 @@ public final class Utilities {
 
   @Autowired
   public Utilities(ApplicationProperties injectedApplicationProperties) {
-    this.BOOLEAN_UTILITIES = new BooleanUtilities();
-    this.FILE_UTILITIES = new FileUtilities();
-    this.JAR_UTILITIES = new JarUtilities();
-    this.LIST_UTILITIES = new ListUtilities();
-    this.STRING_UTILITIES = new StringUtilities();
-    this.SYSTEM_UTILITIES = new SystemUtilities();
-    this.WEB_UTILITIES = new WebUtilities(injectedApplicationProperties);
-    this.JSON_UTILITIES = new JsonUtilities();
+    BOOLEAN_UTILITIES = new BooleanUtilities();
+    FILE_UTILITIES = new FileUtilities();
+    JAR_UTILITIES = new JarUtilities();
+    LIST_UTILITIES = new ListUtilities();
+    STRING_UTILITIES = new StringUtilities();
+    SYSTEM_UTILITIES = new SystemUtilities();
+    WEB_UTILITIES = new WebUtilities(injectedApplicationProperties);
+    JSON_UTILITIES = new JsonUtilities();
+  }
+
+  public Utilities(
+      BooleanUtilities booleanUtilities,
+      FileUtilities fileUtilities,
+      JarUtilities jarUtilities,
+      ListUtilities listUtilities,
+      StringUtilities stringUtilities,
+      SystemUtilities systemUtilities,
+      WebUtilities webUtilities,
+      JsonUtilities jsonUtilities) {
+    BOOLEAN_UTILITIES = booleanUtilities;
+    FILE_UTILITIES = fileUtilities;
+    JAR_UTILITIES = jarUtilities;
+    LIST_UTILITIES = listUtilities;
+    STRING_UTILITIES = stringUtilities;
+    SYSTEM_UTILITIES = systemUtilities;
+    WEB_UTILITIES = webUtilities;
+    JSON_UTILITIES = jsonUtilities;
   }
 
   public BooleanUtilities BooleanUtils() {

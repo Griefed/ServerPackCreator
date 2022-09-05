@@ -231,7 +231,6 @@ public final class ConfigurationHandler {
       configurationModel.setClientMods(fileConf.getClientMods());
       configurationModel.setCopyDirs(fileConf.getCopyDirs());
       configurationModel.setModpackDir(fileConf.getModpackDir());
-      configurationModel.setJavaPath(fileConf.getJavaPath());
       configurationModel.setMinecraftVersion(fileConf.getMinecraftVersion());
       configurationModel.setModLoader(fileConf.getModLoader());
       configurationModel.setModLoaderVersion(fileConf.getModLoaderVersion());
@@ -296,9 +295,6 @@ public final class ConfigurationHandler {
       LOG.warn("No clientside-only mods specified. Using fallback list.");
       configurationModel.setClientMods(APPLICATIONPROPERTIES.getListFallbackMods());
     }
-
-    configurationModel.setJavaPath(
-        getJavaPath(configurationModel.getJavaPath().replace("\\", "/")));
 
     if (!checkIconAndProperties(configurationModel.getServerIconPath())) {
 
@@ -1092,19 +1088,6 @@ public final class ConfigurationHandler {
       }
     }
 
-    if (configurationModel.getJavaPath().length() > 0
-        && UTILITIES.FileUtils().isLink(configurationModel.getJavaPath())) {
-      try {
-        configurationModel.setJavaPath(
-            UTILITIES.FileUtils().resolveLink(configurationModel.getJavaPath()));
-
-        LOG.info("Resolved Java link to: " + configurationModel.getJavaPath());
-
-      } catch (InvalidFileTypeException | IOException ex) {
-        LOG.error("Couldn't resolve link for Java path.", ex);
-      }
-    }
-
     if (!configurationModel.getCopyDirs().isEmpty()) {
       List<String> copyDirs = new ArrayList<>(configurationModel.getCopyDirs());
       boolean copyDirChanges = false;
@@ -1631,7 +1614,11 @@ public final class ConfigurationHandler {
    * @param pathToJava Path to the Java executable
    * @return Boolean. Returns <code>true</code> if the path is valid.
    * @author Griefed
+   * @deprecated Will be removed in Milestone 4. Java path settings have moved to the global
+   * ApplicationProperties, because the Java path setting is used for modloader installation by
+   * ServerPackCreator only.
    */
+  @Deprecated
   public boolean checkJavaPath(String pathToJava) {
 
     if (pathToJava.length() == 0) {
@@ -1673,7 +1660,11 @@ public final class ConfigurationHandler {
    * @return <code>true</code> if the specified file is a valid Java
    * executable/binary.
    * @author Griefed
+   * @deprecated Will be removed in Milestone 4. Java path settings have moved to the global
+   * ApplicationProperties, because the Java path setting is used for modloader installation by
+   * ServerPackCreator only.
    */
+  @Deprecated
   public boolean testJava(String pathToJava) {
     boolean testSuccessful;
     try {
@@ -1713,7 +1704,11 @@ public final class ConfigurationHandler {
    * @return String. Returns the path to the Java installation. If user input was incorrect, SPC
    * will try to acquire the path automatically.
    * @author Griefed
+   * @deprecated Will be removed in Milestone 4. Java path settings have moved to the global
+   * ApplicationProperties, because the Java path setting is used for modloader installation by
+   * ServerPackCreator only.
    */
+  @Deprecated
   public String getJavaPath(String pathToJava) {
 
     String checkedJavaPath;

@@ -71,7 +71,7 @@ public final class ServerPackCreatorGui {
           .getImage(
               Objects.requireNonNull(
                   ServerPackCreatorGui.class.getResource("/de/griefed/resources/gui/app.png")));
-  private final Dimension DIMENSION_WINDOW = new Dimension(1050, 800);
+  private final Dimension DIMENSION_WINDOW = new Dimension(1200, 800);
 
   private final ApplicationProperties APPLICATIONPROPERTIES;
   private final ApplicationAddons APPLICATIONADDONS;
