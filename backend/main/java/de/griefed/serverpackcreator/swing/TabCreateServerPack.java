@@ -34,6 +34,7 @@ import de.griefed.serverpackcreator.swing.themes.LightTheme;
 import de.griefed.serverpackcreator.swing.utilities.CompoundIcon;
 import de.griefed.serverpackcreator.swing.utilities.IconTextArea;
 import de.griefed.serverpackcreator.swing.utilities.IconTextField;
+import de.griefed.serverpackcreator.swing.utilities.RXTable;
 import de.griefed.serverpackcreator.swing.utilities.RotatedIcon;
 import de.griefed.serverpackcreator.swing.utilities.SimpleDocumentListener;
 import de.griefed.serverpackcreator.swing.utilities.TextIcon;
@@ -42,6 +43,7 @@ import de.griefed.serverpackcreator.utilities.common.Utilities;
 import de.griefed.serverpackcreator.versionmeta.VersionMeta;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -77,9 +79,13 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.JTextPane;
 import javax.swing.UIManager;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.SimpleAttributeSet;
@@ -166,6 +172,9 @@ public class TabCreateServerPack extends JPanel {
   private final JPanel CREATESERVERPACKPANEL = new JPanel();
 
   private final LarsonScanner STATUS_BAR = new LarsonScanner();
+  private final Color C0FFEE = new Color(192, 255, 238);
+  private final Color SWAMP_GREEN = new Color(50, 83, 88);
+  private final Color DARK_GREY = new Color(49, 47, 47);
   private final ScannerConfig IDLE_CONFIG =
       new ScannerConfig(
           2,
@@ -182,16 +191,16 @@ public class TabCreateServerPack extends JPanel {
           false,
           false,
           new Color[]{
-              new Color(50, 83, 88),
-              new Color(50, 83, 88),
-              new Color(50, 83, 88),
-              new Color(50, 83, 88),
-              new Color(50, 83, 88),
-              new Color(50, 83, 88),
-              new Color(50, 83, 88)
+              SWAMP_GREEN,
+              SWAMP_GREEN,
+              SWAMP_GREEN,
+              SWAMP_GREEN,
+              SWAMP_GREEN,
+              SWAMP_GREEN,
+              SWAMP_GREEN
           },
-          new Color(49, 47, 47),
-          new Color(49, 47, 47));
+          DARK_GREY,
+          DARK_GREY);
   private final ScannerConfig BUSY_CONFIG =
       new ScannerConfig(
           2,
@@ -208,16 +217,16 @@ public class TabCreateServerPack extends JPanel {
           true,
           false,
           new Color[]{
-              new Color(192, 255, 238),
-              new Color(192, 255, 238),
-              new Color(192, 255, 238),
-              new Color(192, 255, 238),
-              new Color(192, 255, 238),
-              new Color(192, 255, 238),
-              new Color(192, 255, 238)
+              C0FFEE,
+              C0FFEE,
+              C0FFEE,
+              C0FFEE,
+              C0FFEE,
+              C0FFEE,
+              C0FFEE
           },
-          new Color(49, 47, 47),
-          new Color(49, 47, 47));
+          DARK_GREY,
+          DARK_GREY);
   private final MaterialTextPaneUI MATERIALTEXTPANEUI = new MaterialTextPaneUI();
 
   private final JComboBox<String> COMBOBOX_MINECRAFTVERSIONS = new JComboBox<>();
@@ -242,6 +251,8 @@ public class TabCreateServerPack extends JPanel {
 
   private final String[] NONE;
   private final List<ExtensionConfigPanel> CONFIG_PANELS = new ArrayList<>();
+
+  private final RXTable SCRIPT_VARIABLES;
 
   private final JLabel STATUS_LABEL_LINE_0;
   private final JLabel STATUS_LABEL_LINE_1;
@@ -915,6 +926,30 @@ public class TabCreateServerPack extends JPanel {
 
     CREATESERVERPACKPANEL.add(BUTTON_AIKARS_FLAGS, GRIDBAGCONSTRAINTS);
 
+    // --------------------------------------------------------SCRIPT VARIABLES---------------------
+
+    GRIDBAGCONSTRAINTS.gridx = 0;
+    GRIDBAGCONSTRAINTS.gridwidth = 6;
+    GRIDBAGCONSTRAINTS.weightx = 1;
+    GRIDBAGCONSTRAINTS.weighty = 1;
+    GRIDBAGCONSTRAINTS.gridy = 17;
+    GRIDBAGCONSTRAINTS.insets = new Insets(10, 10, 10, 100);
+
+    JLabel scriptSettingsLabel =
+        new JLabel(I18N.getMessage("createserverpack.gui.createserverpack.scriptsettings.label"));
+    scriptSettingsLabel.setToolTipText(
+        I18N.getMessage("createserverpack.gui.createserverpack.scriptsettings.label.tooltip"));
+    CREATESERVERPACKPANEL.add(scriptSettingsLabel, GRIDBAGCONSTRAINTS);
+
+    SCRIPT_VARIABLES = new RXTable(I18N);
+    SCRIPT_VARIABLES.setSelectAllForEdit(true);
+    JScrollPane tableScrollPane = new JScrollPane(SCRIPT_VARIABLES);
+    tableScrollPane.setPreferredSize(new Dimension(700, 300));
+    tableScrollPane.setMaximumSize(new Dimension(700, 300));
+    GRIDBAGCONSTRAINTS.gridy = 18;
+    GRIDBAGCONSTRAINTS.insets = new Insets(0, 10, 20, 100);
+    CREATESERVERPACKPANEL.add(tableScrollPane, GRIDBAGCONSTRAINTS);
+
     // ---------------------------------------------------------MAIN ACTION BUTTON AND LABEL--------
 
     GRIDBAGCONSTRAINTS.weightx = 0;
@@ -962,7 +997,7 @@ public class TabCreateServerPack extends JPanel {
 
     GRIDBAGCONSTRAINTS.fill = GridBagConstraints.NONE;
     GRIDBAGCONSTRAINTS.gridx = 1;
-    GRIDBAGCONSTRAINTS.gridy = 19;
+    GRIDBAGCONSTRAINTS.gridy = 21;
     GRIDBAGCONSTRAINTS.gridwidth = 5;
     GRIDBAGCONSTRAINTS.gridheight = 2;
     GRIDBAGCONSTRAINTS.weightx = 1;
@@ -992,7 +1027,7 @@ public class TabCreateServerPack extends JPanel {
         I18N.getMessage("createserverpack.gui.buttongenerateserverpack.tip"));
 
     GRIDBAGCONSTRAINTS.gridx = 0;
-    GRIDBAGCONSTRAINTS.gridy = 19;
+    GRIDBAGCONSTRAINTS.gridy = 21;
     GRIDBAGCONSTRAINTS.gridwidth = 1;
     GRIDBAGCONSTRAINTS.gridheight = 1;
     GRIDBAGCONSTRAINTS.weightx = 1;
@@ -1015,14 +1050,14 @@ public class TabCreateServerPack extends JPanel {
     BUTTON_SERVER_PACKS.setToolTipText(
         I18N.getMessage("createserverpack.gui.buttonserverpacks.tip"));
 
-    GRIDBAGCONSTRAINTS.gridy = 20;
+    GRIDBAGCONSTRAINTS.gridy = 22;
     GRIDBAGCONSTRAINTS.anchor = GridBagConstraints.WEST;
     GRIDBAGCONSTRAINTS.fill = GridBagConstraints.HORIZONTAL;
 
     CREATESERVERPACKPANEL.add(BUTTON_SERVER_PACKS, GRIDBAGCONSTRAINTS);
 
     GRIDBAGCONSTRAINTS.gridx = 0;
-    GRIDBAGCONSTRAINTS.gridy = 21;
+    GRIDBAGCONSTRAINTS.gridy = 23;
     GRIDBAGCONSTRAINTS.gridwidth = 6;
     GRIDBAGCONSTRAINTS.weightx = 1;
     GRIDBAGCONSTRAINTS.weighty = 1;
@@ -1039,8 +1074,8 @@ public class TabCreateServerPack extends JPanel {
 
     // --------------------------------------------------------CONFIGPANE EXTENSIONS----------------
 
-    GRIDBAGCONSTRAINTS.anchor = GridBagConstraints.WEST;
-    AtomicInteger yPos = new AtomicInteger(21);
+    GRIDBAGCONSTRAINTS.anchor = GridBagConstraints.SOUTH;
+    AtomicInteger yPos = new AtomicInteger(GRIDBAGCONSTRAINTS.gridy);
     if (!APPLICATIONADDONS.configPanelExtensions().isEmpty()) {
       CONFIG_PANELS.clear();
       CONFIG_PANELS.addAll(APPLICATIONADDONS.getConfigPanels(this));
@@ -1108,6 +1143,16 @@ public class TabCreateServerPack extends JPanel {
 
     STATUS_BAR.setBackground(getBackground());
     STATUS_BAR.setEyeBackground(getBackground());
+
+    SCRIPT_VARIABLES.setShowGrid(true);
+    SCRIPT_VARIABLES.setShowHorizontalLines(true);
+    SCRIPT_VARIABLES.setShowVerticalLines(true);
+
+    if (APPLICATIONPROPERTIES.isDarkTheme()) {
+      SCRIPT_VARIABLES.setGridColor(C0FFEE);
+    } else {
+      SCRIPT_VARIABLES.setGridColor(SWAMP_GREEN);
+    }
   }
 
   /**
@@ -1947,8 +1992,7 @@ public class TabCreateServerPack extends JPanel {
         CHECKBOX_ICON.isSelected(),
         CHECKBOX_PROPERTIES.isSelected(),
         CHECKBOX_ZIP.isSelected(),
-        //TODO replace with configurable map so users can customize start scripts further
-        new HashMap<>(),
+        SCRIPT_VARIABLES.getData(),
         getConfigPanelConfigs());
   }
 
@@ -2248,6 +2292,8 @@ public class TabCreateServerPack extends JPanel {
             configurationModel.getOrCreateAddonConfigList(panel.pluginID()));
       });
 
+      SCRIPT_VARIABLES.loadData(configurationModel.getScriptSettings());
+
     } catch (Exception ex) {
 
       LOG.error("Couldn't load configuration file.", ex);
@@ -2401,5 +2447,24 @@ public class TabCreateServerPack extends JPanel {
    */
   public String getServerPropertiesPath() {
     return TEXTFIELD_SERVERPROPERTIESPATH.getText();
+  }
+
+  private static class HeaderRenderer implements TableCellRenderer {
+
+    DefaultTableCellRenderer renderer;
+
+    public HeaderRenderer(JTable table) {
+      renderer = (DefaultTableCellRenderer)
+          table.getTableHeader().getDefaultRenderer();
+      renderer.setHorizontalAlignment(JLabel.CENTER);
+    }
+
+    @Override
+    public Component getTableCellRendererComponent(
+        JTable table, Object value, boolean isSelected,
+        boolean hasFocus, int row, int col) {
+      return renderer.getTableCellRendererComponent(
+          table, value, isSelected, hasFocus, row, col);
+    }
   }
 }

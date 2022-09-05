@@ -13,11 +13,11 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class ConfigUtilitiesTest {
-
+  String[] args = new String[]{"--setup", "backend/test/resources/serverpackcreator.properties"};
   ConfigUtilities configUtilities;
 
   ConfigUtilitiesTest() {
-    configUtilities = ServerPackCreator.getInstance().getConfigUtilities();
+    configUtilities = ServerPackCreator.getInstance(args).getConfigUtilities();
   }
 
   @SuppressWarnings("ResultOfMethodCallIgnored")

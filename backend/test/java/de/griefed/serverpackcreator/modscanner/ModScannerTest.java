@@ -11,11 +11,11 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class ModScannerTest {
-
+  String[] args = new String[]{"--setup", "backend/test/resources/serverpackcreator.properties"};
   ModScanner modScanner;
 
   ModScannerTest() {
-    modScanner = ServerPackCreator.getInstance().getModScanner();
+    modScanner = ServerPackCreator.getInstance(args).getModScanner();
   }
 
   @Test

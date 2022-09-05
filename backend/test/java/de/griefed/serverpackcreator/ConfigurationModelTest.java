@@ -10,6 +10,8 @@ import org.junit.jupiter.api.Test;
 
 public class ConfigurationModelTest {
 
+  String[] args = new String[]{"--setup", "backend/test/resources/serverpackcreator.properties"};
+
   ConfigurationModelTest() {
   }
 
@@ -53,7 +55,7 @@ public class ConfigurationModelTest {
 
   @Test
   void scriptSettingsTest() throws FileNotFoundException {
-    ConfigurationModel configurationModel = new ConfigurationModel(ServerPackCreator.getInstance()
+    ConfigurationModel configurationModel = new ConfigurationModel(ServerPackCreator.getInstance(args)
         .getUtilities(), new File("backend/test/resources/testresources/spcconfs/scriptSettings.conf"));
 
     Assertions.assertEquals(configurationModel.getServerIconPath(),"C:/Minecraft/ServerPackCreator/server_files/server-icon.png");
@@ -105,7 +107,7 @@ public class ConfigurationModelTest {
     File afterFile = new File("after.conf");
     configurationModel.save(afterFile);
 
-    ConfigurationModel after = new ConfigurationModel(ServerPackCreator.getInstance().getUtilities(), afterFile);
+    ConfigurationModel after = new ConfigurationModel(ServerPackCreator.getInstance(args).getUtilities(), afterFile);
     Assertions.assertEquals(after.getServerIconPath(),configurationModel.getServerIconPath());
     Assertions.assertEquals(after.getServerPackSuffix(),configurationModel.getServerPackSuffix());
     Assertions.assertEquals(after.getServerPropertiesPath(),configurationModel.getServerPropertiesPath());

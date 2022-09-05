@@ -26,7 +26,7 @@ import org.xml.sax.SAXException;
 public class ArtemisConfigTest {
 
   private static final Logger LOG = LogManager.getLogger(ArtemisConfigTest.class);
-
+  String[] args = new String[]{"--setup", "backend/test/resources/serverpackcreator.properties"};
   private final JmsTemplate jmsTemplate;
 
   private final String QUEUE_UNIQUE_ID = "unique_id";
@@ -35,14 +35,7 @@ public class ArtemisConfigTest {
   @Autowired
   ArtemisConfigTest(JmsTemplate injectedJmsTemplate)
       throws IOException, ParserConfigurationException, SAXException {
-    try {
-      FileUtils.copyFile(
-          new File("backend/main/resources/serverpackcreator.properties"),
-          new File("serverpackcreator.properties"));
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-    ServerPackCreator.getInstance().run(Mode.SETUP);
+    ServerPackCreator.getInstance(args).run(Mode.SETUP);
 
     this.jmsTemplate = injectedJmsTemplate;
     this.jmsTemplate.setReceiveTimeout(JmsDestinationAccessor.RECEIVE_TIMEOUT_NO_WAIT);

@@ -48,6 +48,7 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.InputMismatchException;
@@ -124,7 +125,11 @@ public class ServerPackCreator {
   public ServerPackCreator(String[] args) {
     ARGS = args;
     COMMANDLINE_PARSER = new CommandlineParser(args);
-    APPLICATIONPROPERTIES = new ApplicationProperties();
+    if (COMMANDLINE_PARSER.propertiesFile().isPresent()) {
+      APPLICATIONPROPERTIES = new ApplicationProperties(COMMANDLINE_PARSER.propertiesFile().get());
+    } else {
+      APPLICATIONPROPERTIES = new ApplicationProperties();
+    }
 
     if (COMMANDLINE_PARSER.getLanguageToUse().isPresent()) {
       I18N = new I18n(APPLICATIONPROPERTIES, COMMANDLINE_PARSER.getLanguageToUse().get());
@@ -205,10 +210,6 @@ public class ServerPackCreator {
    */
   public synchronized String[] getArgs() {
     return ARGS;
-  }
-
-  public synchronized CommandlineParser getCommandlineParser() {
-    return COMMANDLINE_PARSER;
   }
 
   public synchronized I18n getI18n() {
@@ -667,7 +668,7 @@ public class ServerPackCreator {
               if (check(file, APPLICATIONPROPERTIES.SERVERPACKCREATOR_PROPERTIES())) {
 
                 createFile(APPLICATIONPROPERTIES.SERVERPACKCREATOR_PROPERTIES());
-                APPLICATIONPROPERTIES.reload();
+                APPLICATIONPROPERTIES.loadProperties();
                 LOG.info("Restored serverpackcreator.properties and loaded defaults.");
 
               } else if (check(file, APPLICATIONPROPERTIES.DEFAULT_SERVER_PROPERTIES())) {
@@ -1209,6 +1210,7 @@ public class ServerPackCreator {
    *
    * @author Griefed
    */
+  @SuppressWarnings("InnerClassMayBeStatic")
   public class CommandlineParser {
 
     /**
@@ -1221,6 +1223,8 @@ public class ServerPackCreator {
      * so we can use the default language <code>en_us</code>.
      */
     private final String LANG;
+
+    private File propertiesFile = null;
 
     /**
      * Create a new CommandlineParser from the passed commandline-arguments with which
@@ -1235,17 +1239,18 @@ public class ServerPackCreator {
      */
     public CommandlineParser(String[] args) {
 
-      List<String> argsList = Arrays.asList(args);
+      final List<String> argsList = new ArrayList<>(Arrays.asList(args));
 
       /*
        * Check whether a language locale was specified by the user.
        * If none was specified, set LANG to null so the Optional returns false for isPresent(),
        * thus allowing us to use the locale set in the ApplicationProperties later on.
        */
-      if (argsList.contains(Mode.LANG.argument())) {
+      if (argsList.contains(Mode.LANG.argument())
+          && argsList.size() >= argsList.indexOf(Mode.LANG.argument()) + 1) {
         this.LANG = argsList.get(argsList.indexOf(Mode.LANG.argument()) + 1);
       } else {
-        this.LANG = null;
+        this.LANG = "en_us";
       }
 
       /*
@@ -1303,6 +1308,13 @@ public class ServerPackCreator {
        * Check whether the user wants to set up and prepare the environment for subsequent runs.
        */
       if (argsList.contains(Mode.SETUP.argument())) {
+        if (argsList.size() > 1
+            && new File(argsList.get(argsList.indexOf(Mode.SETUP.argument()) + 1)).isFile()) {
+
+          propertiesFile = new File(argsList.get(argsList.indexOf(Mode.SETUP.argument()) + 1));
+
+        }
+
         this.MODE = Mode.SETUP;
         return;
       }
@@ -1340,6 +1352,18 @@ public class ServerPackCreator {
      */
     protected Optional<String> getLanguageToUse() {
       return Optional.ofNullable(LANG);
+    }
+
+    /**
+     * If ServerPackCreator was executed with the <code>--setup</code>-argument as well as a
+     * properties-file, then this method will return the specified properties file, wrapped in an
+     * {@link Optional}, so you can check whether it is present or not.
+     *
+     * @return The specified properties-file, wrapped in an Optional.
+     * @author Griefed
+     */
+    public Optional<File> propertiesFile() {
+      return Optional.ofNullable(propertiesFile);
     }
   }
 }

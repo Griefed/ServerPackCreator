@@ -1,3 +1,11 @@
+## [3.14.0-alpha.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.13.0...3.14.0-alpha.1) (2022-09-04)
+
+
+### 💎 Improvements
+
+* **Addon System Overhaul:** Exapnd addon system. Adds ConfigCheck & ConfigPanel extensions. Provide abstracts for ConfigPanel, Addon and ExtensionTab. Create, load and provide global addon- and extension-specific configuration. ([22a4c15](https://git.griefed.de/Griefed/ServerPackCreator/commit/22a4c15337025b9e7e755334fd901d42ef840845))
+* **Configuration:** Allow storing and loading of addon configurations and custom script settings ([b29fa0a](https://git.griefed.de/Griefed/ServerPackCreator/commit/b29fa0a2f372ca54e2903d81823e392bdbae33e8))
+
 ## [3.13.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.12.0...3.13.0) (2022-08-31)
 
 
