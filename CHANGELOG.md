@@ -1,3 +1,10 @@
+## [3.14.0-alpha.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.14.0-alpha.2...3.14.0-alpha.3) (2022-09-05)
+
+
+### 💎 Improvements
+
+* **Java Setting For Modloader Server Installation:** Move Java setting to global setting in ApplicationProperties. Small GUI makeover, too. ([885bb04](https://git.griefed.de/Griefed/ServerPackCreator/commit/885bb0442d167832105f5e6538e3d1eb0a0ae51b))
+
 ## [3.14.0-alpha.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.14.0-alpha.1...3.14.0-alpha.2) (2022-09-05)
 
 
