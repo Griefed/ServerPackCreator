@@ -252,7 +252,6 @@ class ConfigurationHandlerTest {
     configurationModel.setModpackDir("./backend/test/resources/forge_tests");
     configurationModel.setClientMods(clientMods);
     configurationModel.setCopyDirs(copyDirs);
-    configurationModel.setJavaPath("");
     configurationModel.setIncludeServerInstallation(true);
     configurationModel.setIncludeServerIcon(true);
     configurationModel.setIncludeServerProperties(true);
@@ -384,7 +383,6 @@ class ConfigurationHandlerTest {
     configurationModel.setModpackDir("./backend/test/resources/forge_tests");
     configurationModel.setClientMods(clientMods);
     configurationModel.setCopyDirs(copyDirs);
-    configurationModel.setJavaPath("");
     configurationModel.setIncludeServerInstallation(true);
     configurationModel.setIncludeServerIcon(true);
     configurationModel.setIncludeServerProperties(true);

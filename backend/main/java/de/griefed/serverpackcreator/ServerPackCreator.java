@@ -34,7 +34,15 @@ import de.griefed.serverpackcreator.swing.ServerPackCreatorSplash;
 import de.griefed.serverpackcreator.utilities.ConfigUtilities;
 import de.griefed.serverpackcreator.utilities.ConfigurationEditor;
 import de.griefed.serverpackcreator.utilities.UpdateChecker;
+import de.griefed.serverpackcreator.utilities.common.BooleanUtilities;
+import de.griefed.serverpackcreator.utilities.common.FileUtilities;
+import de.griefed.serverpackcreator.utilities.common.JarUtilities;
+import de.griefed.serverpackcreator.utilities.common.JsonUtilities;
+import de.griefed.serverpackcreator.utilities.common.ListUtilities;
+import de.griefed.serverpackcreator.utilities.common.StringUtilities;
+import de.griefed.serverpackcreator.utilities.common.SystemUtilities;
 import de.griefed.serverpackcreator.utilities.common.Utilities;
+import de.griefed.serverpackcreator.utilities.common.WebUtilities;
 import de.griefed.serverpackcreator.versionmeta.VersionMeta;
 import de.griefed.versionchecker.Update;
 import java.awt.GraphicsEnvironment;
@@ -98,6 +106,14 @@ public class ServerPackCreator {
       new ObjectMapper()
           .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
           .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
+  private BooleanUtilities booleanUtilities = null;
+  private FileUtilities fileUtilities = null;
+  private JarUtilities jarUtilities = null;
+  private JsonUtilities jsonUtilities = null;
+  private ListUtilities listUtilities = null;
+  private StringUtilities stringUtilities = null;
+  private SystemUtilities systemUtilities = null;
+  private WebUtilities webUtilities = null;
   private Utilities utilities = null;
   private VersionMeta versionMeta = null;
   private ConfigUtilities configUtilities = null;
@@ -126,9 +142,9 @@ public class ServerPackCreator {
     ARGS = args;
     COMMANDLINE_PARSER = new CommandlineParser(args);
     if (COMMANDLINE_PARSER.propertiesFile().isPresent()) {
-      APPLICATIONPROPERTIES = new ApplicationProperties(COMMANDLINE_PARSER.propertiesFile().get());
+      APPLICATIONPROPERTIES = new ApplicationProperties(COMMANDLINE_PARSER.propertiesFile().get(),getFileUtilities(),getSystemUtilities(),getListUtilities());
     } else {
-      APPLICATIONPROPERTIES = new ApplicationProperties();
+      APPLICATIONPROPERTIES = new ApplicationProperties(getFileUtilities(),getSystemUtilities(),getListUtilities());
     }
 
     if (COMMANDLINE_PARSER.getLanguageToUse().isPresent()) {
@@ -224,9 +240,74 @@ public class ServerPackCreator {
     return APPLICATIONPROPERTIES;
   }
 
+  public synchronized BooleanUtilities getBooleanUtilities() {
+    if (booleanUtilities == null) {
+      booleanUtilities = new BooleanUtilities();
+    }
+    return booleanUtilities;
+  }
+
+  public synchronized FileUtilities getFileUtilities() {
+    if (fileUtilities == null) {
+      fileUtilities = new FileUtilities();
+    }
+    return fileUtilities;
+  }
+
+  public synchronized JarUtilities getJarUtilities() {
+    if (jarUtilities == null) {
+      jarUtilities = new JarUtilities();
+    }
+    return jarUtilities;
+  }
+
+  public synchronized JsonUtilities getJsonUtilities() {
+    if (jsonUtilities == null) {
+      jsonUtilities = new JsonUtilities();
+    }
+    return jsonUtilities;
+  }
+
+  public synchronized ListUtilities getListUtilities() {
+    if (listUtilities == null) {
+      listUtilities = new ListUtilities();
+    }
+    return listUtilities;
+  }
+
+  public synchronized StringUtilities getStringUtilities() {
+    if (stringUtilities == null) {
+      stringUtilities = new StringUtilities();
+    }
+    return stringUtilities;
+  }
+
+  public synchronized SystemUtilities getSystemUtilities() {
+    if (systemUtilities == null) {
+      systemUtilities = new SystemUtilities();
+    }
+    return systemUtilities;
+  }
+
+  public synchronized WebUtilities getWebUtilities() {
+    if (webUtilities == null) {
+      webUtilities = new WebUtilities(getApplicationProperties());
+    }
+    return webUtilities;
+  }
+
   public synchronized Utilities getUtilities() {
     if (this.utilities == null) {
-      this.utilities = new Utilities(APPLICATIONPROPERTIES);
+      this.utilities = new Utilities(
+          getBooleanUtilities(),
+          getFileUtilities(),
+          getJarUtilities(),
+          getListUtilities(),
+          getStringUtilities(),
+          getSystemUtilities(),
+          getWebUtilities(),
+          getJsonUtilities()
+      );
     }
     return utilities;
   }

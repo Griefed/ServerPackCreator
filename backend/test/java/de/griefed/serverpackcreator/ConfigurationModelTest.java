@@ -62,7 +62,6 @@ public class ConfigurationModelTest {
     Assertions.assertEquals(configurationModel.getServerPackSuffix(),"-4.0.0");
     Assertions.assertEquals(configurationModel.getServerPropertiesPath(),"C:/Minecraft/ServerPackCreator/server_files/scp3.properties");
     Assertions.assertEquals(configurationModel.getJavaArgs(),"-Xms8G -Xmx8G -XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200 -XX:+UnlockExperimentalVMOptions -XX:+DisableExplicitGC -XX:+AlwaysPreTouch -XX:G1NewSizePercent=30 -XX:G1MaxNewSizePercent=40 -XX:G1HeapRegionSize=8M -XX:G1ReservePercent=20 -XX:G1HeapWastePercent=5 -XX:G1MixedGCCountTarget=4 -XX:InitiatingHeapOccupancyPercent=15 -XX:G1MixedGCLiveThresholdPercent=90 -XX:G1RSetUpdatingPauseTimePercent=5 -XX:SurvivorRatio=32 -XX:+PerfDisableSharedMem -XX:MaxTenuringThreshold=1 -Dusing.aikars.flags=https://mcflags.emc.gs -Daikars.new.flags=true");
-    Assertions.assertEquals(configurationModel.getJavaPath(),"C:/Program Files/JetBrains/IntelliJ IDEA 2021.1.1/jbr/bin/java.exe");
     Assertions.assertEquals(configurationModel.getModpackDir(),"C:/Minecraft/Game/Instances/Survive Create Prosper 3");
     Assertions.assertEquals(configurationModel.getModLoaderVersion(),"14.23.5.2860");
     Assertions.assertEquals(configurationModel.getMinecraftVersion(),"1.12.2");
@@ -112,7 +111,6 @@ public class ConfigurationModelTest {
     Assertions.assertEquals(after.getServerPackSuffix(),configurationModel.getServerPackSuffix());
     Assertions.assertEquals(after.getServerPropertiesPath(),configurationModel.getServerPropertiesPath());
     Assertions.assertEquals(after.getJavaArgs(),configurationModel.getJavaArgs());
-    Assertions.assertEquals(after.getJavaPath(),configurationModel.getJavaPath());
     Assertions.assertEquals(after.getModpackDir(),configurationModel.getModpackDir());
     Assertions.assertEquals(after.getModLoaderVersion(),configurationModel.getModLoaderVersion());
     Assertions.assertEquals(after.getMinecraftVersion(),configurationModel.getMinecraftVersion());

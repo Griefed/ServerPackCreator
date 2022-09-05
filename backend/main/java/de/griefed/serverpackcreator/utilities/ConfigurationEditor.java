@@ -204,38 +204,34 @@ public final class ConfigurationEditor {
           break;
 
         case 10:
-          configurationModel.setJavaPath(getJavaPath(scanner));
-          break;
-
-        case 11:
           configurationModel.setIncludeServerIcon(includeServerIcon(scanner));
           break;
 
-        case 12:
+        case 11:
           configurationModel.setIncludeServerProperties(includeServerProperties(scanner));
           break;
 
-        case 13:
+        case 12:
           configurationModel.setIncludeZipCreation(includeZipCreation(scanner));
           break;
 
-        case 14:
+        case 13:
           configurationModel.setJavaArgs(getJavaArgs(scanner));
           break;
 
-        case 15:
+        case 14:
           configurationModel.setServerPackSuffix(getServerPackSuffix(scanner));
           break;
 
-        case 16:
+        case 15:
           saveConfiguration(scanner, configurationModel);
           break;
 
-        case 17:
+        case 16:
           CONFIGUTILITIES.printConfigurationModel(configurationModel);
           break;
 
-        case 18:
+        case 17:
           checkConfig(configurationModel);
           break;
 
@@ -365,15 +361,6 @@ public final class ConfigurationEditor {
       configurationModel.setModLoaderVersion(
           getModloaderVersion(scanner, configurationModel.getMinecraftVersion(),
               configurationModel.getModLoader()));
-
-      // ---------------------------------------------------------PATH TO JAVA INSTALLATION---------
-
-      if (configurationModel.getIncludeServerInstallation()) {
-        configurationModel.setJavaPath(getJavaPath(scanner));
-      } else {
-        printToFileAndConsole(
-            "Skipping Java installation path acquisition, as the modloader server installation is deactivated as per your input.");
-      }
 
       // ---------------------------------WHETHER TO INCLUDE SERVER-ICON.PNG IN SERVER PACK---------
 

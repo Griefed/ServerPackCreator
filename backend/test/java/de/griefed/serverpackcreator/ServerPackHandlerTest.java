@@ -275,7 +275,6 @@ class ServerPackHandlerTest {
     configurationModel.setModpackDir("./backend/test/resources/quilt_tests_copy");
     configurationModel.setClientMods(clientMods);
     configurationModel.setCopyDirs(copyDirs);
-    configurationModel.setJavaPath("");
     configurationModel.setIncludeServerInstallation(true);
     configurationModel.setIncludeServerIcon(true);
     configurationModel.setIncludeServerProperties(true);
@@ -302,7 +301,6 @@ class ServerPackHandlerTest {
     configurationModel.setModpackDir("./backend/test/resources/fabric_tests_copy");
     configurationModel.setClientMods(clientMods);
     configurationModel.setCopyDirs(copyDirs);
-    configurationModel.setJavaPath("");
     configurationModel.setIncludeServerInstallation(true);
     configurationModel.setIncludeServerIcon(true);
     configurationModel.setIncludeServerProperties(true);
@@ -363,7 +361,6 @@ class ServerPackHandlerTest {
     serverPackModel.setModpackDir("./backend/test/resources/fabric_tests_copy");
     serverPackModel.setClientMods(clientMods);
     serverPackModel.setCopyDirs(copyDirs);
-    serverPackModel.setJavaPath("");
     serverPackModel.setIncludeServerInstallation(true);
     serverPackModel.setIncludeServerIcon(true);
     serverPackModel.setIncludeServerProperties(true);

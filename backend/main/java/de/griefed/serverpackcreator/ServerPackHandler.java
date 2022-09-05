@@ -1105,8 +1105,7 @@ public final class ServerPackHandler {
    */
   public void installServer(final ConfigurationModel configurationModel) {
     installServer(configurationModel.getModLoader(), configurationModel.getMinecraftVersion(),
-        configurationModel.getModLoaderVersion(),
-        configurationModel.getJavaPath(), getServerPackDestination(configurationModel));
+        configurationModel.getModLoaderVersion(), getServerPackDestination(configurationModel));
   }
 
   /**
@@ -1119,8 +1118,6 @@ public final class ServerPackHandler {
    *                         server.
    * @param modLoaderVersion The modloader version for which to install the modloader and Minecraft
    *                         server.
-   * @param javaPath         The path to the Java executable/binary which is needed to execute the
-   *                         Forge/Fabric installersList.
    * @param destination      The destination where the modloader server should be installed into.
    * @author Griefed
    */
@@ -1128,10 +1125,10 @@ public final class ServerPackHandler {
       String modLoader,
       String minecraftVersion,
       String modLoaderVersion,
-      String javaPath,
       String destination) {
 
     List<String> commandArguments = new ArrayList<>();
+    commandArguments.add(APPLICATIONPROPERTIES.java());
 
     Process process = null;
     BufferedReader bufferedReader = null;
@@ -1146,7 +1143,6 @@ public final class ServerPackHandler {
 
           LOG.info("Fabric installer successfully downloaded.");
 
-          commandArguments.add(javaPath);
           commandArguments.add("-jar");
           commandArguments.add("fabric-installer.jar");
           commandArguments.add("server");
@@ -1178,7 +1174,6 @@ public final class ServerPackHandler {
 
           LOG.info("Forge installer successfully downloaded.");
 
-          commandArguments.add(javaPath);
           commandArguments.add("-jar");
           commandArguments.add("forge-installer.jar");
           commandArguments.add("--installServer");
@@ -1199,7 +1194,6 @@ public final class ServerPackHandler {
 
           LOG.info("Quilt installer successfully downloaded.");
 
-          commandArguments.add(javaPath);
           commandArguments.add("-jar");
           commandArguments.add("quilt-installer.jar");
           commandArguments.add("install");
@@ -1225,7 +1219,6 @@ public final class ServerPackHandler {
 
             LOG.info("LegacyFabric installer successfully downloaded.");
 
-            commandArguments.add(javaPath);
             commandArguments.add("-jar");
             commandArguments.add("legacyfabric-installer.jar");
             commandArguments.add("server");
