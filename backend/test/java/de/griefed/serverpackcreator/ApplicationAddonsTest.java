@@ -14,7 +14,7 @@ import org.xml.sax.SAXException;
 public class ApplicationAddonsTest {
 
   private static final Logger LOG = LogManager.getLogger(ApplicationAddonsTest.class);
-
+  String[] args = new String[]{"--setup", "backend/test/resources/serverpackcreator.properties"};
   static {
     try {
       FileUtils.copyDirectory(
@@ -23,10 +23,15 @@ public class ApplicationAddonsTest {
       LOG.error("Error copying file.", e);
     }
   }
+
   ApplicationAddons applicationAddons;
 
   ApplicationAddonsTest() throws IOException, ParserConfigurationException, SAXException {
-    applicationAddons = ServerPackCreator.getInstance().getApplicationAddons();
+    applicationAddons = new ApplicationAddons(
+        ServerPackCreator.getInstance(args).getTomlParser(),
+        ServerPackCreator.getInstance(args).getApplicationProperties(),
+        ServerPackCreator.getInstance(args).getVersionMeta(),
+        ServerPackCreator.getInstance(args).getUtilities());
   }
 
   @Test

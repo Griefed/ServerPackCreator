@@ -14,22 +14,15 @@ import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
 class ConfigurationHandlerTest {
-
+  String[] args = new String[]{"--setup", "backend/test/resources/serverpackcreator.properties"};
   private final ApplicationProperties applicationProperties;
   private final ConfigurationHandler configurationHandler;
   private final VersionMeta versionMeta;
 
   ConfigurationHandlerTest() throws IOException, ParserConfigurationException, SAXException {
-    try {
-      FileUtils.copyFile(
-          new File("backend/main/resources/serverpackcreator.properties"),
-          new File("serverpackcreator.properties"));
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-    applicationProperties = ServerPackCreator.getInstance().getApplicationProperties();
-    configurationHandler = ServerPackCreator.getInstance().getConfigurationHandler();
-    versionMeta = ServerPackCreator.getInstance().getVersionMeta();
+    applicationProperties = ServerPackCreator.getInstance(args).getApplicationProperties();
+    configurationHandler = ServerPackCreator.getInstance(args).getConfigurationHandler();
+    versionMeta = ServerPackCreator.getInstance(args).getVersionMeta();
   }
 
   @Test

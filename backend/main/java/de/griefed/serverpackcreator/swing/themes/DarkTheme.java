@@ -21,6 +21,7 @@ package de.griefed.serverpackcreator.swing.themes;
 
 import java.awt.Color;
 import javax.swing.BorderFactory;
+import javax.swing.UIDefaults;
 import javax.swing.plaf.BorderUIResource;
 import javax.swing.plaf.ColorUIResource;
 import javax.swing.plaf.InsetsUIResource;
@@ -51,6 +52,11 @@ public class DarkTheme extends JMarsDarkTheme {
     this.tabInsetsTabbedPane = new InsetsUIResource(6, 10, 10, 10);
     this.selectedTabInsetsTabbedPane = new InsetsUIResource(6, 10, 10, 10);
     this.borderFrameRootPane = new BorderUIResource(BorderFactory.createEmptyBorder());
+    this.cellBorderTableHeader =
+        new BorderUIResource(
+            BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new ColorUIResource(192, 255, 238)),
+                BorderFactory.createLineBorder(new ColorUIResource(192, 255, 238))));
   }
 
   @Override
@@ -105,7 +111,7 @@ public class DarkTheme extends JMarsDarkTheme {
     this.backgroundTable = new ColorUIResource(45, 48, 56);
     this.backgroundTableHeader = new ColorUIResource(66, 179, 176);
     this.selectionBackgroundTable = new ColorUIResource(126, 132, 153);
-    this.gridColorTable = new ColorUIResource(151, 151, 151);
+    this.gridColorTable = new ColorUIResource(192, 255, 238);
     this.alternateRowBackgroundTable = new ColorUIResource(59, 62, 69);
 
     this.backgroundTextField = new ColorUIResource(81, 86, 101);
@@ -149,5 +155,10 @@ public class DarkTheme extends JMarsDarkTheme {
   @Override
   public boolean getButtonBorderEnable() {
     return true;
+  }
+
+  @Override
+  public ColorUIResource getGridColorTable() {
+    return this.gridColorTable;
   }
 }

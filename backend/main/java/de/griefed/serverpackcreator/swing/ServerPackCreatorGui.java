@@ -31,6 +31,7 @@ import de.griefed.serverpackcreator.utilities.UpdateChecker;
 import de.griefed.serverpackcreator.utilities.common.Utilities;
 import de.griefed.serverpackcreator.versionmeta.VersionMeta;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Toolkit;
@@ -241,7 +242,12 @@ public final class ServerPackCreatorGui {
 
               UIManager.setLookAndFeel(LAF_LIGHT);
               MaterialLookAndFeel.changeTheme(LIGHTTHEME);
+
             }
+
+            UIManager.put("Table.showVerticalLines", true);
+            UIManager.put("Table.showHorizontalLines", true);
+            UIManager.put("Table.intercellSpacing", new Dimension(1, 1));
 
           } catch (UnsupportedLookAndFeelException ex) {
             LOG.error("Error: There was an error setting the look and feel.", ex);

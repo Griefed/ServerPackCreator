@@ -30,6 +30,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -392,7 +393,7 @@ public final class ApplicationProperties extends Properties {
       SERVERPACKCREATOR_VERSION = "dev";
     }
 
-    reload(propertiesFile);
+    loadProperties(propertiesFile);
   }
 
   /**
@@ -400,17 +401,17 @@ public final class ApplicationProperties extends Properties {
    *
    * @author Griefed
    */
-  public void reload() {
-    reload(SERVERPACKCREATOR_PROPERTIES_FILE);
+  public void loadProperties() {
+    loadProperties(SERVERPACKCREATOR_PROPERTIES_FILE);
   }
 
   /**
    * Reload from a specific properties-file.
    *
-   * @param propertiesFile The properties-file with which to reload the settings and configuration.
+   * @param propertiesFile The properties-file with which to loadProperties the settings and configuration.
    * @author Griefed
    */
-  private void reload(File propertiesFile) {
+  private void loadProperties(File propertiesFile) {
     if (SERVERPACKCREATOR_PROPERTIES_FILE.exists()) {
       /*
        * If our properties-file exists, load it to ensure we always have base settings available.
@@ -429,7 +430,10 @@ public final class ApplicationProperties extends Properties {
        */
       try (InputStream inputStream =
           Files.newInputStream(propertiesFile.toPath())) {
+
         load(inputStream);
+        LOG.info("Loading file: " + propertiesFile.getAbsolutePath());
+
       } catch (IOException ex) {
         LOG.error("Couldn't read properties file.", ex);
       }
@@ -471,7 +475,7 @@ public final class ApplicationProperties extends Properties {
 
     setModExclusionFilterMethod();
 
-    saveToDisk(propertiesFile);
+    saveToDisk(SERVERPACKCREATOR_PROPERTIES_FILE);
   }
 
   /**
