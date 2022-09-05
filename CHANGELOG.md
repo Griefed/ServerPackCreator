@@ -1,3 +1,10 @@
+## [3.14.0-alpha.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.14.0-alpha.1...3.14.0-alpha.2) (2022-09-05)
+
+
+### 🚀 Features
+
+* **Start Script Settings Editing:** Provide table to add, edit, remove placeholders and values for custom start scripts ([0c98c3b](https://git.griefed.de/Griefed/ServerPackCreator/commit/0c98c3b3111b480088941bb464fbdf92e9ec6db6))
+
 ## [3.14.0-alpha.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.13.0...3.14.0-alpha.1) (2022-09-04)
 
 
