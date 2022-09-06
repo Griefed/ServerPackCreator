@@ -34,7 +34,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import net.lingala.zip4j.ZipFile;
 import org.apache.commons.io.FileUtils;
@@ -411,7 +410,7 @@ public final class ConfigurationHandler {
 
           configHasError = true;
 
-          LOG.error("There's something wrong with your Modloader version setting.");
+          LOG.error("There's something wrong with your modloader version setting.");
 
           /* This log is meant to be read by the user, therefore we allow translation. */
           encounteredErrors.add(I18N.getMessage("configuration.log.error.checkmodloaderversion"));
@@ -430,7 +429,7 @@ public final class ConfigurationHandler {
 
       configHasError = true;
 
-      LOG.error("There's something wrong with your Modloader or Modloader version setting.");
+      LOG.error("There's something wrong with your modloader or modloader version setting.");
 
       /* This log is meant to be read by the user, therefore we allow translation. */
       encounteredErrors.add(I18N.getMessage("configuration.log.error.checkmodloader"));
@@ -993,8 +992,6 @@ public final class ConfigurationHandler {
    */
   public void ensureScriptSettingsDefaults(final ConfigurationModel configurationModel) {
 
-    HashMap<String, String> scriptSettings = configurationModel.getScriptSettings();
-
     if (!VERSIONMETA.minecraft().getServer(configurationModel.getMinecraftVersion()).isPresent()
         || !VERSIONMETA
         .minecraft()
@@ -1003,10 +1000,10 @@ public final class ConfigurationHandler {
         .url()
         .isPresent()) {
 
-      scriptSettings.put("SPC_MINECRAFT_SERVER_URL_SPC", "");
+      configurationModel.getScriptSettings().put("SPC_MINECRAFT_SERVER_URL_SPC", "");
 
     } else {
-      scriptSettings.put(
+      configurationModel.getScriptSettings().put(
           "SPC_MINECRAFT_SERVER_URL_SPC",
           VERSIONMETA
               .minecraft()
@@ -1017,22 +1014,27 @@ public final class ConfigurationHandler {
               .toString());
     }
 
-    scriptSettings.put(
+    configurationModel.getScriptSettings().put(
         "SPC_SERVERPACKCREATOR_VERSION_SPC", APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION());
-    scriptSettings.put("SPC_MINECRAFT_VERSION_SPC", configurationModel.getMinecraftVersion());
+    configurationModel.getScriptSettings()
+        .put("SPC_MINECRAFT_VERSION_SPC", configurationModel.getMinecraftVersion());
 
-    scriptSettings.put("SPC_MODLOADER_SPC", configurationModel.getModLoader());
-    scriptSettings.put("SPC_MODLOADER_VERSION_SPC", configurationModel.getModLoaderVersion());
-    scriptSettings.put("SPC_JAVA_ARGS_SPC", configurationModel.getJavaArgs());
+    configurationModel.getScriptSettings()
+        .put("SPC_MODLOADER_SPC", configurationModel.getModLoader());
+    configurationModel.getScriptSettings()
+        .put("SPC_MODLOADER_VERSION_SPC", configurationModel.getModLoaderVersion());
+    configurationModel.getScriptSettings()
+        .put("SPC_JAVA_ARGS_SPC", configurationModel.getJavaArgs());
 
-    // To be enhanced in a later milestone
-    scriptSettings.put("SPC_JAVA_SPC", "java");
+    if (!configurationModel.getScriptSettings().containsKey("SPC_JAVA_SPC")) {
+      configurationModel.getScriptSettings().put("SPC_JAVA_SPC", "java");
+    }
 
-    scriptSettings.put(
+    configurationModel.getScriptSettings().put(
         "SPC_FABRIC_INSTALLER_VERSION_SPC", VERSIONMETA.fabric().releaseInstaller());
-    scriptSettings.put(
+    configurationModel.getScriptSettings().put(
         "SPC_QUILT_INSTALLER_VERSION_SPC", VERSIONMETA.quilt().releaseInstaller());
-    scriptSettings.put("SPC_LEGACYFABRIC_INSTALLER_VERSION_SPC",
+    configurationModel.getScriptSettings().put("SPC_LEGACYFABRIC_INSTALLER_VERSION_SPC",
         VERSIONMETA.legacyFabric().releaseInstaller());
   }
 

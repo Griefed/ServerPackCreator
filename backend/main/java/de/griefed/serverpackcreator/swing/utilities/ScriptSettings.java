@@ -20,20 +20,40 @@
 package de.griefed.serverpackcreator.swing.utilities;
 
 import de.griefed.serverpackcreator.i18n.I18n;
+import java.awt.Color;
 import java.awt.Component;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.io.IOException;
 import java.util.EventObject;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
+import javax.imageio.ImageIO;
+import javax.swing.AbstractAction;
+import javax.swing.AbstractCellEditor;
+import javax.swing.Action;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.border.Border;
+import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import javax.swing.text.JTextComponent;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Hey, Griefed here. This class is based on another masterpiece by the wonderful Rob Camick. It
@@ -42,7 +62,7 @@ import javax.swing.text.JTextComponent;
  * href="https://tips4java.wordpress.com/2008/10/20/table-select-all-editor/">Table Select All
  * Editor</a>.
  * <br><br><br>
- * The RXTable provides some extensions to the default JTable
+ * The ScriptSettings provides some extensions to the default JTable
  * <p>
  * 1) Select All editing - when a text related cell is placed in editing mode the text is selected.
  * Controlled by invoking a "setSelectAll..." method.
@@ -52,8 +72,9 @@ import javax.swing.text.JTextComponent;
  * @author Rob Camick
  * @author Griefed
  */
-public class RXTable extends JTable {
+public class ScriptSettings extends JTable {
 
+  private static final Logger LOG = LogManager.getLogger(ScriptSettings.class);
   private boolean isSelectAllForMouseEvent = false;
   private boolean isSelectAllForActionEvent = false;
   private boolean isSelectAllForKeyEvent = false;
@@ -64,15 +85,22 @@ public class RXTable extends JTable {
    *
    * @param i18n ServerPackCreators internationalization for acquiring the column names.
    */
-  public RXTable(I18n i18n) {
-    this(new DefaultTableModel(new Object[]{i18n.getMessage(
-        "createserverpack.gui.createserverpack.scriptsettings.table.column.variable"),
-        i18n.getMessage("createserverpack.gui.createserverpack.scriptsettings.table.column.value")},
-        100), null, null);
+  public ScriptSettings(I18n i18n) {
+    this(new DefaultTableModel(
+            new Object[]{
+                i18n.getMessage(
+                    "createserverpack.gui.createserverpack.scriptsettings.table.column.variable"),
+                i18n.getMessage(
+                    "createserverpack.gui.createserverpack.scriptsettings.table.column.value"),
+                i18n.getMessage(
+                    "createserverpack.gui.createserverpack.scriptsettings.table.column.clear")},
+            100),
+        null,
+        null);
   }
 
   /**
-   * Constructs a <code>RXTable</code> that is initialized with
+   * Constructs a <code>ScriptSettings</code> that is initialized with
    * <code>dm</code> as the data model, <code>cm</code> as the
    * column model, and <code>sm</code> as the selection model. If any of the parameters are
    * <code>null</code> this method will initialize the table with the corresponding default model.
@@ -84,9 +112,26 @@ public class RXTable extends JTable {
    * @param cm the column model for the table
    * @param sm the row selection model for the table
    */
-  public RXTable(TableModel dm, TableColumnModel cm, ListSelectionModel sm) {
+  public ScriptSettings(TableModel dm, TableColumnModel cm, ListSelectionModel sm) {
     super(dm, cm, sm);
+    try {
+      Action delete = new AbstractAction() {
+        public void actionPerformed(ActionEvent e) {
+          JTable table = (JTable) e.getSource();
+          int modelRow = Integer.parseInt(e.getActionCommand());
+          ((DefaultTableModel) table.getModel()).removeRow(modelRow);
+        }
+      };
+      new ButtonColumn(this, delete, 2);
+    } catch (IOException ex) {
+      LOG.error("Couldn't create button column.", ex);
+    }
     putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
+    setSelectAllForEdit(true);
+    getColumnModel().getColumn(2).setMinWidth(60);
+    getColumnModel().getColumn(2).setMaxWidth(60);
+    getColumnModel().getColumn(2).setWidth(60);
+    getColumnModel().getColumn(2).setResizable(false);
   }
 
   /**
@@ -224,4 +269,132 @@ public class RXTable extends JTable {
     return data;
   }
 
+  @SuppressWarnings("InnerClassMayBeStatic")
+  public class ButtonColumn extends AbstractCellEditor
+      implements TableCellRenderer, TableCellEditor, ActionListener, MouseListener {
+
+    private final JTable table;
+    private final Action action;
+    private final Border originalBorder;
+    private final JButton renderButton;
+    private final JButton editButton;
+    private Border focusBorder;
+    private Object editorValue;
+    private boolean isButtonColumnEditor;
+
+    /**
+     * Create the ButtonColumn to be used as a renderer and editor. The renderer and editor will
+     * automatically be installed on the TableColumn of the specified column.
+     *
+     * @param table  the table containing the button renderer/editor
+     * @param action the Action to be invoked when the button is invoked
+     * @param column the column to which the button renderer/editor is added
+     */
+    public ButtonColumn(JTable table, Action action, int column) throws IOException {
+      this.table = table;
+      this.action = action;
+
+      Icon delete = new ImageIcon(
+          ImageIO.read(
+                  Objects.requireNonNull(
+                      ScriptSettings.class.getResource("/de/griefed/resources/gui/delete.png")))
+              .getScaledInstance(32, 32, Image.SCALE_SMOOTH));
+      renderButton = new JButton(delete);
+      editButton = new JButton(delete);
+      editButton.setFocusPainted(false);
+      editButton.addActionListener(this);
+      originalBorder = editButton.getBorder();
+      setFocusBorder(new LineBorder(Color.BLUE));
+
+      TableColumnModel columnModel = table.getColumnModel();
+      columnModel.getColumn(column).setCellRenderer(this);
+      columnModel.getColumn(column).setCellEditor(this);
+      table.addMouseListener(this);
+    }
+
+    /**
+     * The foreground color of the button when the cell has focus
+     *
+     * @param focusBorder the foreground color
+     */
+    public void setFocusBorder(Border focusBorder) {
+      this.focusBorder = focusBorder;
+      editButton.setBorder(focusBorder);
+    }
+
+    @Override
+    public Component getTableCellEditorComponent(
+        JTable table, Object value, boolean isSelected, int row, int column) {
+      this.editorValue = value;
+      return editButton;
+    }
+
+    @Override
+    public Object getCellEditorValue() {
+      return editorValue;
+    }
+
+    public Component getTableCellRendererComponent(
+        JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+      if (isSelected) {
+        renderButton.setForeground(table.getSelectionForeground());
+        renderButton.setBackground(table.getSelectionBackground());
+      } else {
+        renderButton.setForeground(table.getForeground());
+        renderButton.setBackground(UIManager.getColor("Button.background"));
+      }
+
+      if (hasFocus) {
+        renderButton.setBorder(focusBorder);
+      } else {
+        renderButton.setBorder(originalBorder);
+      }
+
+      return renderButton;
+    }
+
+    /**
+     * The button has been pressed. Stop editing and invoke the custom Action
+     */
+    public void actionPerformed(ActionEvent e) {
+      int row = table.convertRowIndexToModel(table.getEditingRow());
+      fireEditingStopped();
+
+      ActionEvent event = new ActionEvent(
+          table,
+          ActionEvent.ACTION_PERFORMED,
+          "" + row);
+      action.actionPerformed(event);
+    }
+
+    /**
+     * When the mouse is pressed the editor is invoked. If you then drag the mouse to another cell
+     * before releasing it, the editor is still active. Make sure editing is stopped when the mouse
+     * is released.
+     */
+    public void mousePressed(MouseEvent e) {
+      if (table.isEditing()
+          && table.getCellEditor() == this) {
+        isButtonColumnEditor = true;
+      }
+    }
+
+    public void mouseReleased(MouseEvent e) {
+      if (isButtonColumnEditor
+          && table.isEditing()) {
+        table.getCellEditor().stopCellEditing();
+      }
+
+      isButtonColumnEditor = false;
+    }
+
+    public void mouseClicked(MouseEvent e) {
+    }
+
+    public void mouseEntered(MouseEvent e) {
+    }
+
+    public void mouseExited(MouseEvent e) {
+    }
+  }
 }

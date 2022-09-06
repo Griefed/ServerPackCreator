@@ -34,8 +34,10 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.ProviderNotFoundException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import net.lingala.zip4j.ZipFile;
@@ -254,8 +256,8 @@ public final class ConfigUtilities {
   /**
    * Convenience method which passes the important fields from an instance of
    * {@link ConfigurationModel} to
-   * {@link #printConfigurationModel(String, List, List, boolean, String, String, String,
-   * boolean, boolean, boolean, String, String, String, String)}
+   * {@link #printConfigurationModel(String, List, List, boolean, String, String, String, boolean,
+   * boolean, boolean, String, String, String, String, HashMap)}
    *
    * @param configurationModel Instance of {@link ConfigurationModel} to print to console and logs.
    * @author Griefed
@@ -275,7 +277,8 @@ public final class ConfigUtilities {
         configurationModel.getJavaArgs(),
         configurationModel.getServerPackSuffix(),
         configurationModel.getServerIconPath(),
-        configurationModel.getServerPropertiesPath());
+        configurationModel.getServerPropertiesPath(),
+        configurationModel.getScriptSettings());
   }
 
   /**
@@ -305,6 +308,9 @@ public final class ConfigUtilities {
    *                             pack.
    * @param serverPropertiesPath The path to the custom server.properties to be used in the server
    *                             pack.
+   * @param scriptSettings       Custom settings for start script creation. <code>KEY</code>s are
+   *                             the placeholder, <code>VALUE</code>s are the values with which the
+   *                             placeholders are to be replaced.
    * @author Griefed
    */
   public void printConfigurationModel(
@@ -321,7 +327,8 @@ public final class ConfigUtilities {
       String javaArgs,
       String serverPackSuffix,
       String serverIconPath,
-      String serverPropertiesPath) {
+      String serverPropertiesPath,
+      HashMap<String, String> scriptSettings) {
 
     LOG.info("Your configuration is:");
     LOG.info("Modpack directory: " + modpackDirectory);
@@ -362,6 +369,11 @@ public final class ConfigUtilities {
     LOG.info("Server pack suffix:               " + serverPackSuffix);
     LOG.info("Path to custom server-icon:       " + serverIconPath);
     LOG.info("Path to custom server.properties: " + serverPropertiesPath);
+    LOG.info("Script settings:");
+    for (Map.Entry<String,String> entry : scriptSettings.entrySet()) {
+      LOG.info("  Placeholder: " + entry.getKey());
+      LOG.info("        Value: " + entry.getValue());
+    }
   }
 
   /**

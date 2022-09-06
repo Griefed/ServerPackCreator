@@ -16,7 +16,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import javax.xml.parsers.ParserConfigurationException;
+import net.lingala.zip4j.ZipFile;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Assertions;
@@ -24,7 +26,9 @@ import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
 class ServerPackHandlerTest {
+
   private static final Logger LOG = LogManager.getLogger(ServerPackHandlerTest.class);
+
   static {
     try {
       FileUtils.copyFile(
@@ -41,6 +45,7 @@ class ServerPackHandlerTest {
       LOG.error("Error copying file.", e);
     }
   }
+
   String[] args = new String[]{"--setup", "backend/test/resources/serverpackcreator.properties"};
   private final ConfigurationHandler configurationHandler;
   private final ServerPackHandler serverPackHandler;
@@ -76,6 +81,18 @@ class ServerPackHandlerTest {
     Assertions.assertTrue(new File("server-packs/forge_tests/exclude_me").exists());
     Assertions.assertTrue(new File(
         "server-packs/forge_tests/exclude_me/exclude_me_some_more/ICANSEEMYHOUSEFROMHEEEEEEEEEEEEERE").exists());
+    Assertions.assertTrue(new File("server-packs/forge_tests_server_pack.zip").exists());
+
+    ZipFile zip = new ZipFile("server-packs/forge_tests_server_pack.zip");
+
+    Assertions.assertTrue(IOUtils.toString(zip.getInputStream(zip.getFileHeader("start.sh")),
+        StandardCharsets.UTF_8).contains("JAVA=\"java\""), "Default Java setting not present!");
+
+    Assertions.assertTrue(IOUtils.toString(zip.getInputStream(zip.getFileHeader("start.ps1")),
+            StandardCharsets.UTF_8).contains("$Java = \"java\""),
+        "Default Java setting not present!");
+
+    zip.close();
 
     String ps1 = FileUtils.readFileToString(new File("server-packs/forge_tests/start.ps1"),
         StandardCharsets.UTF_8);
@@ -85,7 +102,8 @@ class ServerPackHandlerTest {
     Assertions.assertTrue(ps1.contains("$ModLoader = \"" + configurationModel.getModLoader()));
     Assertions.assertTrue(
         ps1.contains("$ModLoaderVersion = \"" + configurationModel.getModLoaderVersion()));
-    Assertions.assertTrue(ps1.contains("$Java = \"java\""));
+    Assertions.assertTrue(
+        ps1.contains("$Java = \"C:\\Program Files\\Java\\jdk1.8.0_301\\bin\\java.exe\""));
     Assertions.assertTrue(
         ps1.contains("$FabricInstallerVersion = \"" + versionMeta.fabric().releaseInstaller()));
     Assertions.assertTrue(ps1.contains(
@@ -104,7 +122,8 @@ class ServerPackHandlerTest {
     Assertions.assertTrue(shell.contains("MODLOADER=\"" + configurationModel.getModLoader()));
     Assertions.assertTrue(
         shell.contains("MODLOADER_VERSION=\"" + configurationModel.getModLoaderVersion()));
-    Assertions.assertTrue(shell.contains("JAVA=\"java\""));
+    Assertions.assertTrue(
+        shell.contains("JAVA=\"C:\\Program Files\\Java\\jdk1.8.0_301\\bin\\java.exe\""));
     Assertions.assertTrue(
         shell.contains("FABRIC_INSTALLER_VERSION=\"" + versionMeta.fabric().releaseInstaller()));
     Assertions.assertTrue(shell.contains(
@@ -115,18 +134,27 @@ class ServerPackHandlerTest {
     Assertions.assertTrue(shell.contains("MINECRAFT_SERVER_URL=\"" + versionMeta.minecraft()
         .getServer(configurationModel.getMinecraftVersion()).get().url().get()));
 
-    Assertions.assertTrue(ps1.contains("Flynn = \"Now that's a big door\""),"Custom script settings not present!");
-    Assertions.assertTrue(ps1.contains("SomeValue = \"something\""),"Custom script settings not present!");
-    Assertions.assertTrue(ps1.contains("PraiseTheLamb = \"Kannema jajaja kannema\""),"Custom script settings not present!");
-    Assertions.assertTrue(ps1.contains("AnotherValue = \"another\""),"Custom script settings not present!");
-    Assertions.assertTrue(ps1.contains("Hello = \"Is it me you are looking foooooor\""),"Custom script settings not present!");
+    Assertions.assertTrue(ps1.contains("Flynn = \"Now that's a big door\""),
+        "Custom script settings not present!");
+    Assertions.assertTrue(ps1.contains("SomeValue = \"something\""),
+        "Custom script settings not present!");
+    Assertions.assertTrue(ps1.contains("PraiseTheLamb = \"Kannema jajaja kannema\""),
+        "Custom script settings not present!");
+    Assertions.assertTrue(ps1.contains("AnotherValue = \"another\""),
+        "Custom script settings not present!");
+    Assertions.assertTrue(ps1.contains("Hello = \"Is it me you are looking foooooor\""),
+        "Custom script settings not present!");
 
-    Assertions.assertTrue(shell.contains("FLYNN=\"Now that's a big door\""),"Custom script settings not present!");
-    Assertions.assertTrue(shell.contains("SOME_VALUE=\"something\""),"Custom script settings not present!");
-    Assertions.assertTrue(shell.contains("PRAISE_THE_LAMB=\"Kannema jajaja kannema\""),"Custom script settings not present!");
-    Assertions.assertTrue(shell.contains("ANOTHER_VALUE=\"another\""),"Custom script settings not present!");
-    Assertions.assertTrue(shell.contains("HELLO=\"Is it me you are looking foooooor\""),"Custom script settings not present!");
-
+    Assertions.assertTrue(shell.contains("FLYNN=\"Now that's a big door\""),
+        "Custom script settings not present!");
+    Assertions.assertTrue(shell.contains("SOME_VALUE=\"something\""),
+        "Custom script settings not present!");
+    Assertions.assertTrue(shell.contains("PRAISE_THE_LAMB=\"Kannema jajaja kannema\""),
+        "Custom script settings not present!");
+    Assertions.assertTrue(shell.contains("ANOTHER_VALUE=\"another\""),
+        "Custom script settings not present!");
+    Assertions.assertTrue(shell.contains("HELLO=\"Is it me you are looking foooooor\""),
+        "Custom script settings not present!");
 
     Assertions.assertFalse(
         new File("server-packs/forge_tests/exclude_me/I_dont_want_to_be_included.file").exists());

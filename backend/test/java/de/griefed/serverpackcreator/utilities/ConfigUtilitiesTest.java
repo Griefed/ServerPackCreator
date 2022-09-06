@@ -254,7 +254,6 @@ public class ConfigUtilitiesTest {
     List<String> copyDirs =
         new ArrayList<>(Arrays.asList("config", "mods", "scripts", "seeds", "defaultconfigs"));
     boolean includeServerInstallation = true;
-    String javaPath = "/usr/bin/java";
     String minecraftVersion = "1.16.5";
     String modLoader = "Forge";
     String modLoaderVersion = "36.1.2";
@@ -262,22 +261,6 @@ public class ConfigUtilitiesTest {
     boolean includeServerIcon = true;
     boolean includeServerProperties = true;
     boolean includeZipCreation = true;
-
-    configUtilities.printConfigurationModel(
-        modpackDir,
-        clientMods,
-        copyDirs,
-        includeServerInstallation,
-        minecraftVersion,
-        modLoader,
-        modLoaderVersion,
-        includeServerIcon,
-        includeServerProperties,
-        includeZipCreation,
-        javaArgs,
-        "",
-        "",
-        "");
   }
 
   @Test

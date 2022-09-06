@@ -192,6 +192,10 @@ public class ConfigurationModel {
 
     }
 
+    if (!scriptSettings.containsKey("SPC_JAVA_SPC")) {
+      scriptSettings.put("SPC_JAVA_SPC","java");
+    }
+
     config.close();
   }
 
@@ -277,7 +281,6 @@ public class ConfigurationModel {
           .equals("SPC_MODLOADER_SPC") && !entry.getKey()
           .equals("SPC_MODLOADER_VERSION_SPC") && !entry.getKey()
           .equals("SPC_JAVA_ARGS_SPC") && !entry.getKey()
-          .equals("SPC_JAVA_SPC") && !entry.getKey()
           .equals("SPC_FABRIC_INSTALLER_VERSION_SPC") && !entry.getKey()
           .equals("SPC_QUILT_INSTALLER_VERSION_SPC") && !entry.getKey()
           .equals("SPC_LEGACYFABRIC_INSTALLER_VERSION_SPC")) {

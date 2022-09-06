@@ -71,6 +71,8 @@ public class ConfigurationModelTest {
     Assertions.assertTrue(configurationModel.getIncludeServerIcon());
     Assertions.assertTrue(configurationModel.getIncludeZipCreation());
 
+    Assertions.assertTrue(configurationModel.getScriptSettings().containsKey("SPC_JAVA_SPC"));
+    Assertions.assertEquals(configurationModel.getScriptSettings().get("SPC_JAVA_SPC"),"C:\\Program Files\\Java\\jdk1.8.0_301\\bin\\java.exe");
     Assertions.assertTrue(configurationModel.getScriptSettings().containsKey("SPC_FLYNN_LIVES_SPC"));
     Assertions.assertEquals(configurationModel.getScriptSettings().get("SPC_FLYNN_LIVES_SPC"),"Now that's a big door");
     Assertions.assertTrue(configurationModel.getScriptSettings().containsKey("SPC_SOME_VALUE_SPC"));
