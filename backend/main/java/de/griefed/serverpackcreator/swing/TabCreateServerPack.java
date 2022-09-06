@@ -770,8 +770,7 @@ public class TabCreateServerPack extends JPanel {
 
     GRIDBAGCONSTRAINTS.gridwidth = 1;
     GRIDBAGCONSTRAINTS.fill = GridBagConstraints.NONE;
-    Insets ZERO_TEN_ZERO_TEN = new Insets(0, 10, 0, 10);
-    GRIDBAGCONSTRAINTS.insets = ZERO_TEN_ZERO_TEN;
+    GRIDBAGCONSTRAINTS.insets = new Insets(0, 10, 0, 10);
     GRIDBAGCONSTRAINTS.weightx = 0;
     GRIDBAGCONSTRAINTS.weighty = 0;
 
@@ -867,7 +866,7 @@ public class TabCreateServerPack extends JPanel {
     CREATESERVERPACKPANEL.add(BUTTON_AIKARS_FLAGS, GRIDBAGCONSTRAINTS);
 
     // --------------------------------------------------------SCRIPT VARIABLES---------------------
-    // TODO ensure script settings label doesnt grow vertically
+
     GRIDBAGCONSTRAINTS.anchor = GridBagConstraints.NORTHWEST;
     GRIDBAGCONSTRAINTS.gridx = 0;
     GRIDBAGCONSTRAINTS.gridy = 17;
@@ -882,7 +881,6 @@ public class TabCreateServerPack extends JPanel {
         I18N.getMessage("createserverpack.gui.createserverpack.scriptsettings.label.tooltip"));
     CREATESERVERPACKPANEL.add(scriptSettingsLabel, GRIDBAGCONSTRAINTS);
 
-    // TODO ensure script settings table doesnt grow vertically
     SCRIPT_VARIABLES = new ScriptSettings(I18N);
     JScrollPane tableScrollPane = new JScrollPane(SCRIPT_VARIABLES);
     tableScrollPane.setPreferredSize(new Dimension(700, 300));
@@ -1025,7 +1023,6 @@ public class TabCreateServerPack extends JPanel {
     GRIDBAGCONSTRAINTS.weightx = 1;
     GRIDBAGCONSTRAINTS.weighty = 1;
     GRIDBAGCONSTRAINTS.anchor = GridBagConstraints.NORTHWEST;
-    // TODO ensure buttons and panel stay where they are supposed to be
     CREATESERVERPACKPANEL.add(statusPanel, GRIDBAGCONSTRAINTS);
 
     GRIDBAGCONSTRAINTS.insets = new Insets(0,0,0,0);
@@ -1038,7 +1035,6 @@ public class TabCreateServerPack extends JPanel {
     GRIDBAGCONSTRAINTS.fill = GridBagConstraints.HORIZONTAL;
 
     STATUS_BAR.setPreferredSize(new Dimension(700, 40));
-    // TODO ensure status bar stays at the bottom of the window
     CREATESERVERPACKPANEL.add(STATUS_BAR, GRIDBAGCONSTRAINTS);
 
     STATUS_BAR.loadConfig(IDLE_CONFIG);
