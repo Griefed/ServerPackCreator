@@ -396,6 +396,9 @@ public final class ServerPackHandler {
    *                           replaced with their respective values in the start scripts, as well
    *                           as the modpack directory from which the destination of the server
    *                           pack is acquired.
+   * @param isLocal            Whether the start scripts should be created for a locally usable
+   *                           server pack. Use <code>false</code> if the start scripts should be
+   *                           created for a server pack about to be zipped.
    * @author Griefed
    */
   public void createStartScripts(final ConfigurationModel configurationModel, boolean isLocal) {
@@ -409,6 +412,9 @@ public final class ServerPackHandler {
    * @param scriptSettings Key-value pairs to replace in the script. A given key in the script is
    *                       replaced with its value.
    * @param destination    The destination where the scripts should be created in.
+   * @param isLocal        Whether the start scripts should be created for a locally usable server
+   *                       pack. Use <code>false</code> if the start scripts should be created for a
+   *                       server pack about to be zipped.
    * @author Griefed
    */
   public void createStartScripts(final HashMap<String, String> scriptSettings, String destination,

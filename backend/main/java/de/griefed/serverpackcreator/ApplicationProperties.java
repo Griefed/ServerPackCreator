@@ -380,6 +380,7 @@ public final class ApplicationProperties extends Properties {
    * @param fileUtilities   Instance of {@link FileUtilities} for file-operations.
    * @param systemUtilities Instance of {@link SystemUtilities} to acquire the Java path
    *                        automatically.
+   * @param listUtilities   Used to print the configured fallback modlists in chunks.
    * @author Griefed
    */
   @Autowired
@@ -398,6 +399,7 @@ public final class ApplicationProperties extends Properties {
    * @param fileUtilities   Instance of {@link FileUtilities} for file-operations.
    * @param systemUtilities Instance of {@link SystemUtilities} to acquire the Java path
    *                        automatically.
+   * @param listUtilities   Used to print the configured fallback modlists in chunks.
    * @author Griefed
    */
   public ApplicationProperties(

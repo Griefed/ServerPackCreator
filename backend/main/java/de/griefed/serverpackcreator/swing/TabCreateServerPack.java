@@ -468,14 +468,16 @@ public class TabCreateServerPack extends JPanel {
             JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
     CLIENTSIDEMODS_JPANEL.add(
         SCROLL_PANEL_CLIENTSIDEMODS, TEXTAREA_CLIENTSIDEMODS_JPANEL_CONSTRAINTS);
-    CLIENTSIDEMODS_JPANEL.setSize(100, 100);
-    CLIENTSIDEMODS_JPANEL.setPreferredSize(new Dimension(100, 100));
-    CLIENTSIDEMODS_JPANEL.setMaximumSize(new Dimension(100, 100));
-    CLIENTSIDEMODS_JPANEL.setMinimumSize(new Dimension(100, 100));
+    Dimension client = new Dimension(100,150);
+    CLIENTSIDEMODS_JPANEL.setSize(client);
+    CLIENTSIDEMODS_JPANEL.setPreferredSize(client);
+    CLIENTSIDEMODS_JPANEL.setMaximumSize(client);
+    CLIENTSIDEMODS_JPANEL.setMinimumSize(client);
 
     GRIDBAGCONSTRAINTS.gridx = 0;
     GRIDBAGCONSTRAINTS.gridy = 3;
     GRIDBAGCONSTRAINTS.insets = ZERO_TEN_ZERO_ZERO;
+    GRIDBAGCONSTRAINTS.fill = GridBagConstraints.BOTH;
 
     CREATESERVERPACKPANEL.add(CLIENTSIDEMODS_JPANEL, GRIDBAGCONSTRAINTS);
 
@@ -514,10 +516,11 @@ public class TabCreateServerPack extends JPanel {
             JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
     COPYDIRECTORIES_JPANEL.add(
         SCROLL_PANEL_COPYDIRECTORIES, TEXTAREA_COPYDIRECTORIES_JPANEL_CONSTRAINTS);
-    COPYDIRECTORIES_JPANEL.setSize(100, 100);
-    COPYDIRECTORIES_JPANEL.setPreferredSize(new Dimension(100, 100));
-    COPYDIRECTORIES_JPANEL.setMaximumSize(new Dimension(100, 100));
-    COPYDIRECTORIES_JPANEL.setMinimumSize(new Dimension(100, 100));
+    Dimension copy = new Dimension(100,100);
+    COPYDIRECTORIES_JPANEL.setSize(copy);
+    COPYDIRECTORIES_JPANEL.setPreferredSize(copy);
+    COPYDIRECTORIES_JPANEL.setMaximumSize(copy);
+    COPYDIRECTORIES_JPANEL.setMinimumSize(copy);
 
     GRIDBAGCONSTRAINTS.gridx = 0;
     GRIDBAGCONSTRAINTS.gridy = 5;
@@ -865,12 +868,13 @@ public class TabCreateServerPack extends JPanel {
     CREATESERVERPACKPANEL.add(BUTTON_AIKARS_FLAGS, GRIDBAGCONSTRAINTS);
 
     // --------------------------------------------------------SCRIPT VARIABLES---------------------
-
+    // TODO ensure script settings label doesnt grow vertically
+    GRIDBAGCONSTRAINTS.anchor = GridBagConstraints.NORTHWEST;
     GRIDBAGCONSTRAINTS.gridx = 0;
-    GRIDBAGCONSTRAINTS.gridwidth = 5;
-    GRIDBAGCONSTRAINTS.weightx = 1;
-    GRIDBAGCONSTRAINTS.weighty = 1;
     GRIDBAGCONSTRAINTS.gridy = 17;
+    GRIDBAGCONSTRAINTS.gridwidth = 5;
+    GRIDBAGCONSTRAINTS.gridheight = 1;
+    GRIDBAGCONSTRAINTS.weightx = 1;
     GRIDBAGCONSTRAINTS.insets = new Insets(10, 10, 10, 0);
 
     JLabel scriptSettingsLabel =
@@ -879,6 +883,7 @@ public class TabCreateServerPack extends JPanel {
         I18N.getMessage("createserverpack.gui.createserverpack.scriptsettings.label.tooltip"));
     CREATESERVERPACKPANEL.add(scriptSettingsLabel, GRIDBAGCONSTRAINTS);
 
+    // TODO ensure script settings table doesnt grow vertically
     SCRIPT_VARIABLES = new ScriptSettings(I18N);
     JScrollPane tableScrollPane = new JScrollPane(SCRIPT_VARIABLES);
     tableScrollPane.setPreferredSize(new Dimension(700, 300));
@@ -886,6 +891,24 @@ public class TabCreateServerPack extends JPanel {
     GRIDBAGCONSTRAINTS.gridy = 18;
     GRIDBAGCONSTRAINTS.insets = new Insets(0, 10, 20, 0);
     CREATESERVERPACKPANEL.add(tableScrollPane, GRIDBAGCONSTRAINTS);
+
+    // --------------------------------------------------------CONFIGPANE EXTENSIONS----------------
+
+    GRIDBAGCONSTRAINTS.anchor = GridBagConstraints.NORTHWEST;
+    GRIDBAGCONSTRAINTS.fill = GridBagConstraints.BOTH;
+    GRIDBAGCONSTRAINTS.insets = new Insets(10,10,10,10);
+    GRIDBAGCONSTRAINTS.gridwidth = 6;
+    AtomicInteger yPos = new AtomicInteger(GRIDBAGCONSTRAINTS.gridy);
+    if (!injectedApplicationAddons.configPanelExtensions().isEmpty()) {
+      CONFIG_PANELS.clear();
+      CONFIG_PANELS.addAll(injectedApplicationAddons.getConfigPanels(this));
+      CONFIG_PANELS
+          .forEach(
+              extensionConfigPanel -> {
+                GRIDBAGCONSTRAINTS.gridy = yPos.addAndGet(1);
+                CREATESERVERPACKPANEL.add(extensionConfigPanel, GRIDBAGCONSTRAINTS);
+              });
+    }
 
     // ---------------------------------------------------------MAIN ACTION BUTTON AND LABEL--------
 
@@ -915,12 +938,12 @@ public class TabCreateServerPack extends JPanel {
     BUTTON_GENERATESERVERPACK.setMaximumSize(dimension);
 
     GRIDBAGCONSTRAINTS.gridx = 0;
-    GRIDBAGCONSTRAINTS.gridy = 21;
+    GRIDBAGCONSTRAINTS.gridy += 1;
     GRIDBAGCONSTRAINTS.gridwidth = 1;
     GRIDBAGCONSTRAINTS.gridheight = 1;
     GRIDBAGCONSTRAINTS.weightx = 1;
-    GRIDBAGCONSTRAINTS.weighty = 0.5;
-    GRIDBAGCONSTRAINTS.anchor = GridBagConstraints.WEST;
+    GRIDBAGCONSTRAINTS.weighty = 1;
+    GRIDBAGCONSTRAINTS.anchor = GridBagConstraints.NORTHWEST;
     GRIDBAGCONSTRAINTS.fill = GridBagConstraints.NONE;
 
     CREATESERVERPACKPANEL.add(BUTTON_GENERATESERVERPACK, GRIDBAGCONSTRAINTS);
@@ -942,9 +965,8 @@ public class TabCreateServerPack extends JPanel {
     BUTTON_SERVER_PACKS.setPreferredSize(dimension);
     BUTTON_SERVER_PACKS.setMaximumSize(dimension);
 
-    GRIDBAGCONSTRAINTS.insets = new Insets(5, 10, 5, 10);
-    GRIDBAGCONSTRAINTS.gridy = 22;
-    GRIDBAGCONSTRAINTS.anchor = GridBagConstraints.WEST;
+    GRIDBAGCONSTRAINTS.insets = new Insets(85, 10, 5, 10);
+    GRIDBAGCONSTRAINTS.anchor = GridBagConstraints.NORTHWEST;
 
     CREATESERVERPACKPANEL.add(BUTTON_SERVER_PACKS, GRIDBAGCONSTRAINTS);
 
@@ -996,49 +1018,32 @@ public class TabCreateServerPack extends JPanel {
     statusPanel.add(STATUS_LABEL_LINE_5);
     statusPanel.setPreferredSize(new Dimension(700, 140));
 
-    GRIDBAGCONSTRAINTS.insets = new Insets(5, 220, 5, 10);
-    GRIDBAGCONSTRAINTS.fill = GridBagConstraints.BOTH;
+    GRIDBAGCONSTRAINTS.insets = new Insets(15, 220, 5, 10);
+    GRIDBAGCONSTRAINTS.fill = GridBagConstraints.HORIZONTAL;
     GRIDBAGCONSTRAINTS.gridx = 0;
-    GRIDBAGCONSTRAINTS.gridy = 21;
-    GRIDBAGCONSTRAINTS.gridwidth = 5;
-    GRIDBAGCONSTRAINTS.gridheight = 2;
+    GRIDBAGCONSTRAINTS.gridwidth = 6;
+    GRIDBAGCONSTRAINTS.gridheight = 1;
     GRIDBAGCONSTRAINTS.weightx = 1;
     GRIDBAGCONSTRAINTS.weighty = 1;
-    GRIDBAGCONSTRAINTS.anchor = GridBagConstraints.WEST;
-
+    GRIDBAGCONSTRAINTS.anchor = GridBagConstraints.NORTHWEST;
+    // TODO ensure buttons and panel stay where they are supposed to be
     CREATESERVERPACKPANEL.add(statusPanel, GRIDBAGCONSTRAINTS);
 
-    GRIDBAGCONSTRAINTS.insets = ZERO_TEN_ZERO_TEN;
+    GRIDBAGCONSTRAINTS.insets = new Insets(0,0,0,0);
     GRIDBAGCONSTRAINTS.gridx = 0;
-    GRIDBAGCONSTRAINTS.gridy = 23;
+    GRIDBAGCONSTRAINTS.gridy += 1;
     GRIDBAGCONSTRAINTS.gridwidth = 6;
     GRIDBAGCONSTRAINTS.weightx = 1;
     GRIDBAGCONSTRAINTS.weighty = 1;
-    GRIDBAGCONSTRAINTS.anchor = GridBagConstraints.NORTH;
+    GRIDBAGCONSTRAINTS.anchor = GridBagConstraints.SOUTH;
     GRIDBAGCONSTRAINTS.fill = GridBagConstraints.HORIZONTAL;
 
     STATUS_BAR.setPreferredSize(new Dimension(700, 40));
-    STATUS_BAR.setMaximumSize(new Dimension(Integer.MAX_VALUE, 20));
-
+    // TODO ensure status bar stays at the bottom of the window
     CREATESERVERPACKPANEL.add(STATUS_BAR, GRIDBAGCONSTRAINTS);
 
     STATUS_BAR.loadConfig(IDLE_CONFIG);
     STATUS_BAR.play();
-
-    // --------------------------------------------------------CONFIGPANE EXTENSIONS----------------
-
-    GRIDBAGCONSTRAINTS.anchor = GridBagConstraints.SOUTH;
-    AtomicInteger yPos = new AtomicInteger(GRIDBAGCONSTRAINTS.gridy);
-    if (!injectedApplicationAddons.configPanelExtensions().isEmpty()) {
-      CONFIG_PANELS.clear();
-      CONFIG_PANELS.addAll(injectedApplicationAddons.getConfigPanels(this));
-      CONFIG_PANELS
-          .forEach(
-              extensionConfigPanel -> {
-                GRIDBAGCONSTRAINTS.gridy = yPos.addAndGet(1);
-                CREATESERVERPACKPANEL.add(extensionConfigPanel, GRIDBAGCONSTRAINTS);
-              });
-    }
 
     // --------------------------------------------------------LEFTOVERS AND EVERYTHING ELSE--------
     GRIDBAGCONSTRAINTS.fill = GridBagConstraints.NONE;

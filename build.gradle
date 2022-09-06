@@ -179,8 +179,9 @@ launch4j {
   icon = "${projectDir}/backend/main/resources/de/griefed/resources/gui/icon.ico"
 }
 
-task cleanUp(type: Delete) {
-  delete 'lang',
+clean {
+  delete(
+      'lang',
       'fabric-installer-manifest.xml',
       'fabric-manifest.xml',
       'forge-manifest.json',
@@ -198,6 +199,7 @@ task cleanUp(type: Delete) {
       'serverpackcreator.properties',
       'somefile.conf',
       'after.conf'
+  )
 }
 
 test {

@@ -1,3 +1,17 @@
+## [3.14.0-alpha.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.14.0-alpha.3...3.14.0-alpha.4) (2022-09-06)
+
+
+### 💎 Improvements
+
+* **Start Script Settings:** Allow setting custom Java path in start scripts. Java in scripts for ZIP-archives will continue to be set to `java` only. ([5e34e7f](https://git.griefed.de/Griefed/ServerPackCreator/commit/5e34e7f62f45842064c2d716b808241f75590150))
+
+## [3.14.0-alpha.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.14.0-alpha.2...3.14.0-alpha.3) (2022-09-05)
+
+
+### 💎 Improvements
+
+* **Java Setting For Modloader Server Installation:** Move Java setting to global setting in ApplicationProperties. Small GUI makeover, too. ([885bb04](https://git.griefed.de/Griefed/ServerPackCreator/commit/885bb0442d167832105f5e6538e3d1eb0a0ae51b))
+
 ## [3.14.0-alpha.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.14.0-alpha.1...3.14.0-alpha.2) (2022-09-05)
 
 

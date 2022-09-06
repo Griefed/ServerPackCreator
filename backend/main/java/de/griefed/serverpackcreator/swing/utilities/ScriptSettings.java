@@ -289,6 +289,7 @@ public class ScriptSettings extends JTable {
      * @param table  the table containing the button renderer/editor
      * @param action the Action to be invoked when the button is invoked
      * @param column the column to which the button renderer/editor is added
+     * @throws IOException if the icon for the delete button can not be initialized.
      */
     public ButtonColumn(JTable table, Action action, int column) throws IOException {
       this.table = table;
