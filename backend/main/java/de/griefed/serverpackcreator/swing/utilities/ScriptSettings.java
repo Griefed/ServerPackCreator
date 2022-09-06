@@ -234,10 +234,7 @@ public class ScriptSettings extends JTable {
    * @author Griefed
    */
   public void loadData(HashMap<String, String> data) {
-    for (int row = 0; row < getModel().getRowCount(); row++) {
-      getModel().setValueAt("", row, 0);
-      getModel().setValueAt("", row, 1);
-    }
+    clearData();
     int row = 0;
     for (Map.Entry<String, String> entry : data.entrySet()) {
       getModel().setValueAt(entry.getKey(), row, 0);
@@ -267,6 +264,19 @@ public class ScriptSettings extends JTable {
       }
     }
     return data;
+  }
+
+  /**
+   * Clear the table of all data. Only leave SPC_JAVA_SPC behind.
+   * @author Griefed
+   */
+  public void clearData() {
+    for (int row = 0; row < getModel().getRowCount(); row++) {
+      getModel().setValueAt("", row, 0);
+      getModel().setValueAt("", row, 1);
+    }
+    getModel().setValueAt("SPC_JAVA_SPC",0,0);
+    getModel().setValueAt("java",0,1);
   }
 
   @SuppressWarnings("InnerClassMayBeStatic")

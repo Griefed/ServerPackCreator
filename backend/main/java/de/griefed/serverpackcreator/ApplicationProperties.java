@@ -106,7 +106,7 @@ public final class ApplicationProperties extends Properties {
   /**
    * Default directories to include in the server pack.
    */
-  private final String FALLBACK_DIRECTORIES_INCLUDE_ASSTRING = "mods,config,defaultconfigs,scripts";
+  private final String FALLBACK_DIRECTORIES_INCLUDE_ASSTRING = "mods,config";
   /**
    * Default list of directories to include in the server pack.
    */
@@ -116,7 +116,7 @@ public final class ApplicationProperties extends Properties {
    * List of directories which must not be excluded from server packs. Default is mods, config,
    * defaultconfigs, scripts, saves, seeds, libraries.
    */
-  private final List<String> DIRECTORIES_TO_INCLUDE = new ArrayList<>(FALLBACK_DIRECTORIES_INCLUDE);
+  private final TreeSet<String> DIRECTORIES_TO_INCLUDE = new TreeSet<>(FALLBACK_DIRECTORIES_INCLUDE);
   /**
    * Default directories to exclude from the server pack.
    */
@@ -1467,7 +1467,7 @@ public final class ApplicationProperties extends Properties {
    * @author Griefed
    */
   public List<String> getDirectoriesToInclude() {
-    return DIRECTORIES_TO_INCLUDE;
+    return new ArrayList<>(DIRECTORIES_TO_INCLUDE);
   }
 
   /**

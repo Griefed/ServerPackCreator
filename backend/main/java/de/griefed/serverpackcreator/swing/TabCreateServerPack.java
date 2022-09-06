@@ -244,7 +244,6 @@ public class TabCreateServerPack extends JPanel {
   private String chosenModloader = "Fabric";
   private String chosenModloaderVersion;
   private String chosenMinecraftVersion = "1.18.2";
-  private String javaArgs = "";
 
   /**
    * <strong>Constructor</strong>
@@ -2267,7 +2266,8 @@ public class TabCreateServerPack extends JPanel {
     CHECKBOX_ICON.setSelected(false);
     CHECKBOX_PROPERTIES.setSelected(false);
     CHECKBOX_ZIP.setSelected(false);
-    setJavaArgs("");
+    TEXTAREA_JAVAARGS.setText("");
+    SCRIPT_VARIABLES.clearData();
 
     validateInputFields();
 
@@ -2336,7 +2336,7 @@ public class TabCreateServerPack extends JPanel {
    * @author Griefed
    */
   public String getJavaArgs() {
-    return javaArgs;
+    return TEXTAREA_JAVAARGS.getText();
   }
 
   /**
@@ -2346,7 +2346,7 @@ public class TabCreateServerPack extends JPanel {
    * @author Griefed
    */
   public void setJavaArgs(String javaArgs) {
-    this.javaArgs = javaArgs;
+    TEXTAREA_JAVAARGS.setText(javaArgs);
   }
 
   /**
