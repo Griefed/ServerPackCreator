@@ -142,9 +142,11 @@ public class ServerPackCreator {
     ARGS = args;
     COMMANDLINE_PARSER = new CommandlineParser(args);
     if (COMMANDLINE_PARSER.propertiesFile().isPresent()) {
-      APPLICATIONPROPERTIES = new ApplicationProperties(COMMANDLINE_PARSER.propertiesFile().get(),getFileUtilities(),getSystemUtilities(),getListUtilities());
+      APPLICATIONPROPERTIES = new ApplicationProperties(COMMANDLINE_PARSER.propertiesFile().get(),
+          getFileUtilities(), getSystemUtilities(), getListUtilities());
     } else {
-      APPLICATIONPROPERTIES = new ApplicationProperties(getFileUtilities(),getSystemUtilities(),getListUtilities());
+      APPLICATIONPROPERTIES = new ApplicationProperties(getFileUtilities(), getSystemUtilities(),
+          getListUtilities());
     }
 
     if (COMMANDLINE_PARSER.getLanguageToUse().isPresent()) {

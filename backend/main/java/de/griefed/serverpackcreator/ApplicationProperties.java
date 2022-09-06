@@ -377,8 +377,9 @@ public final class ApplicationProperties extends Properties {
    * Initialize an instance of our application properties using the default
    * <code>serverpackcreator.properties</code>.
    *
-   * @param fileUtilities Instance of {@link FileUtilities} for file-operations.
-   * @param systemUtilities Instance of {@link SystemUtilities} to acquire the Java path automatically.
+   * @param fileUtilities   Instance of {@link FileUtilities} for file-operations.
+   * @param systemUtilities Instance of {@link SystemUtilities} to acquire the Java path
+   *                        automatically.
    * @author Griefed
    */
   @Autowired
@@ -393,9 +394,10 @@ public final class ApplicationProperties extends Properties {
   /**
    * Initialize an instance of our application properties using a custom properties-file.
    *
-   * @param propertiesFile The properties file from which to load the settings and configuration.
-   * @param fileUtilities Instance of {@link FileUtilities} for file-operations.
-   * @param systemUtilities Instance of {@link SystemUtilities} to acquire the Java path automatically.
+   * @param propertiesFile  The properties file from which to load the settings and configuration.
+   * @param fileUtilities   Instance of {@link FileUtilities} for file-operations.
+   * @param systemUtilities Instance of {@link SystemUtilities} to acquire the Java path
+   *                        automatically.
    * @author Griefed
    */
   public ApplicationProperties(
@@ -630,15 +632,16 @@ public final class ApplicationProperties extends Properties {
   private void setFallbackModsList() {
     FALLBACK_MODS.addAll(getListProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST,
         FALLBACK_MODS_DEFAULT_ASSTRING));
-    setProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST,String.join(",",FALLBACK_MODS));
+    setProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST, String.join(",", FALLBACK_MODS));
     LOG.info("Fallback modslist set to:");
-    LIST_UTILITIES.printListToLogChunked(new ArrayList<>(FALLBACK_MODS),5,"    ",true);
+    LIST_UTILITIES.printListToLogChunked(new ArrayList<>(FALLBACK_MODS), 5, "    ", true);
 
     FALLBACK_MODS_REGEX.addAll(getListProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST_REGEX,
         FALLBACK_MODS_DEFAULT_REGEX_ASSTRING));
-    setProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST_REGEX,String.join(",",FALLBACK_MODS_REGEX));
+    setProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST_REGEX,
+        String.join(",", FALLBACK_MODS_REGEX));
     LOG.info("Fallback regex modslist set to:");
-    LIST_UTILITIES.printListToLogChunked(new ArrayList<>(FALLBACK_MODS_REGEX),5,"    ",true);
+    LIST_UTILITIES.printListToLogChunked(new ArrayList<>(FALLBACK_MODS_REGEX), 5, "    ", true);
   }
 
   /**
@@ -877,10 +880,10 @@ public final class ApplicationProperties extends Properties {
    * @author Griefed
    */
   private void setJavaPath() {
-    if (checkJavaPath(getProperty(PROPERTY_JAVA,""))) {
+    if (checkJavaPath(getProperty(PROPERTY_JAVA, ""))) {
       javaPath = getProperty(PROPERTY_JAVA);
     } else {
-      setProperty(PROPERTY_JAVA,getJavaPath(""));
+      setProperty(PROPERTY_JAVA, getJavaPath(""));
       javaPath = acquireProperty(PROPERTY_JAVA, getJavaPath(""));
     }
     LOG.info("Java path set to: " + javaPath);
@@ -1621,24 +1624,30 @@ public final class ApplicationProperties extends Properties {
 
     if (properties != null) {
 
-      if (properties.getProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST) != null && !getProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST).equals(
+      if (properties.getProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST) != null && !getProperty(
+          PROPERTY_CONFIGURATION_FALLBACKMODSLIST).equals(
           properties.getProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST))) {
 
-        setProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST, properties.getProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST));
+        setProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST,
+            properties.getProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST));
         FALLBACK_MODS.clear();
-        FALLBACK_MODS.addAll(Arrays.asList(getProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST).split(",")));
+        FALLBACK_MODS.addAll(
+            Arrays.asList(getProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST).split(",")));
 
         LOG.info(
             "The fallback-list for clientside only mods has been updated to: " + FALLBACK_MODS);
         updated = true;
       }
 
-      if (properties.getProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST_REGEX) != null && !getProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST_REGEX).equals(
+      if (properties.getProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST_REGEX) != null
+          && !getProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST_REGEX).equals(
           properties.getProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST_REGEX))) {
 
-        setProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST_REGEX, properties.getProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST_REGEX));
+        setProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST_REGEX,
+            properties.getProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST_REGEX));
         FALLBACK_MODS_REGEX.clear();
-        FALLBACK_MODS_REGEX.addAll(Arrays.asList(getProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST_REGEX).split(",")));
+        FALLBACK_MODS_REGEX.addAll(
+            Arrays.asList(getProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST_REGEX).split(",")));
 
         LOG.info("The fallback regex-list for clientside only mods has been updated to: "
             + FALLBACK_MODS_REGEX);

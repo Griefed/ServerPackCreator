@@ -34,7 +34,7 @@ import de.griefed.serverpackcreator.swing.themes.LightTheme;
 import de.griefed.serverpackcreator.swing.utilities.CompoundIcon;
 import de.griefed.serverpackcreator.swing.utilities.IconTextArea;
 import de.griefed.serverpackcreator.swing.utilities.IconTextField;
-import de.griefed.serverpackcreator.swing.utilities.RXTable;
+import de.griefed.serverpackcreator.swing.utilities.ScriptSettings;
 import de.griefed.serverpackcreator.swing.utilities.RotatedIcon;
 import de.griefed.serverpackcreator.swing.utilities.SimpleDocumentListener;
 import de.griefed.serverpackcreator.swing.utilities.TextIcon;
@@ -126,7 +126,6 @@ public class TabCreateServerPack extends JPanel {
   private final ApplicationProperties APPLICATIONPROPERTIES;
   private final DarkTheme DARKTHEME;
   private final LightTheme LIGHTTHEME;
-  private final ApplicationAddons APPLICATIONADDONS;
   private final StyledDocument SERVERPACKGENERATEDDOCUMENT = new DefaultStyledDocument();
   private final SimpleAttributeSet SERVERPACKGENERATEDATTRIBUTESET = new SimpleAttributeSet();
   private final JTextPane SERVERPACKGENERATEDTEXTPANE = new JTextPane(SERVERPACKGENERATEDDOCUMENT);
@@ -231,7 +230,7 @@ public class TabCreateServerPack extends JPanel {
   private final File DIRECTORY_CHOOSER = new File(".");
   private final String[] NONE;
   private final List<ExtensionConfigPanel> CONFIG_PANELS = new ArrayList<>();
-  private final RXTable SCRIPT_VARIABLES;
+  private final ScriptSettings SCRIPT_VARIABLES;
   private final JLabel STATUS_LABEL_LINE_0;
   private final JLabel STATUS_LABEL_LINE_1;
   private final JLabel STATUS_LABEL_LINE_2;
@@ -297,7 +296,6 @@ public class TabCreateServerPack extends JPanel {
     CONFIGURATIONHANDLER = injectedConfigurationHandler;
     SERVERPACKHANDLER = injectedServerPackHandler;
     FRAME_SERVERPACKCREATOR = injectedServerPackCreatorFrame;
-    APPLICATIONADDONS = injectedApplicationAddons;
 
     SERVERPACKGENERATEDTEXTPANE.setOpaque(false);
     SERVERPACKGENERATEDTEXTPANE.setEditable(false);
@@ -584,7 +582,7 @@ public class TabCreateServerPack extends JPanel {
     GRIDBAGCONSTRAINTS.anchor = GridBagConstraints.WEST;
     GRIDBAGCONSTRAINTS.fill = GridBagConstraints.NONE;
     GRIDBAGCONSTRAINTS.gridx = 0;
-    Dimension combo = new Dimension(270,30);
+    Dimension combo = new Dimension(270, 30);
 
     // Label and combobox minecraftVersion
     GRIDBAGCONSTRAINTS.insets = new Insets(0, 10, 0, 5);
@@ -596,7 +594,6 @@ public class TabCreateServerPack extends JPanel {
     labelMinecraftVersion.setPreferredSize(combo);
     labelMinecraftVersion.setMaximumSize(combo);
     CREATESERVERPACKPANEL.add(labelMinecraftVersion, GRIDBAGCONSTRAINTS);
-
 
     if (APPLICATIONPROPERTIES.enableMinecraftPreReleases()) {
       COMBOBOX_MINECRAFTVERSIONS.setModel(
@@ -636,7 +633,6 @@ public class TabCreateServerPack extends JPanel {
     COMBOBOX_MODLOADERS.setMaximumSize(combo);
     CREATESERVERPACKPANEL.add(COMBOBOX_MODLOADERS, GRIDBAGCONSTRAINTS);
 
-
     // Label and combobox modloaderVersion
     GRIDBAGCONSTRAINTS.insets = new Insets(0, 590, 0, 5);
     JLabel labelModloaderVersion =
@@ -665,7 +661,7 @@ public class TabCreateServerPack extends JPanel {
     GRIDBAGCONSTRAINTS.gridx = 0;
     GRIDBAGCONSTRAINTS.gridy = 14;
     GRIDBAGCONSTRAINTS.insets = new Insets(10, 5, 5, 5);
-    Dimension check = new Dimension(270,40);
+    Dimension check = new Dimension(270, 40);
 
     // Checkbox installServer
     CHECKBOX_SERVER =
@@ -883,8 +879,7 @@ public class TabCreateServerPack extends JPanel {
         I18N.getMessage("createserverpack.gui.createserverpack.scriptsettings.label.tooltip"));
     CREATESERVERPACKPANEL.add(scriptSettingsLabel, GRIDBAGCONSTRAINTS);
 
-    SCRIPT_VARIABLES = new RXTable(I18N);
-    SCRIPT_VARIABLES.setSelectAllForEdit(true);
+    SCRIPT_VARIABLES = new ScriptSettings(I18N);
     JScrollPane tableScrollPane = new JScrollPane(SCRIPT_VARIABLES);
     tableScrollPane.setPreferredSize(new Dimension(700, 300));
     tableScrollPane.setMaximumSize(new Dimension(700, 300));
@@ -901,7 +896,7 @@ public class TabCreateServerPack extends JPanel {
             Objects.requireNonNull(
                 ServerPackCreatorGui.class.getResource(
                     "/de/griefed/resources/gui/start_generation.png")));
-    Dimension dimension = new Dimension(200,70);
+    Dimension dimension = new Dimension(200, 70);
     BUTTON_GENERATESERVERPACK.setIcon(
         new CompoundIcon(
             CompoundIcon.Axis.X_AXIS,
@@ -1034,9 +1029,9 @@ public class TabCreateServerPack extends JPanel {
 
     GRIDBAGCONSTRAINTS.anchor = GridBagConstraints.SOUTH;
     AtomicInteger yPos = new AtomicInteger(GRIDBAGCONSTRAINTS.gridy);
-    if (!APPLICATIONADDONS.configPanelExtensions().isEmpty()) {
+    if (!injectedApplicationAddons.configPanelExtensions().isEmpty()) {
       CONFIG_PANELS.clear();
-      CONFIG_PANELS.addAll(APPLICATIONADDONS.getConfigPanels(this));
+      CONFIG_PANELS.addAll(injectedApplicationAddons.getConfigPanels(this));
       CONFIG_PANELS
           .forEach(
               extensionConfigPanel -> {

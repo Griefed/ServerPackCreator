@@ -78,7 +78,6 @@ import org.springframework.stereotype.Component;
 public final class ServerPackHandler {
 
   private static final Logger LOG = LogManager.getLogger(ServerPackHandler.class);
-  private static final Logger LOG_ADDONS = LogManager.getLogger("AddonsLogger");
   private static final Logger LOG_INSTALLER = LogManager.getLogger("InstallerLogger");
 
   private final VersionMeta VERSIONMETA;
@@ -221,9 +220,6 @@ public final class ServerPackHandler {
       // server pack.
       copyFiles(configurationModel);
 
-      // Create the start scripts for this server pack.
-      createStartScripts(configurationModel);
-
       // If modloader is fabric, try and replace the old server-launch.jar with the new and improved
       // one which also downloads the Minecraft server.
       if (configurationModel.getModLoader().equalsIgnoreCase("Fabric")) {
@@ -250,11 +246,26 @@ public final class ServerPackHandler {
 
       // If true, create a ZIP-archive excluding the Minecraft server JAR of the server pack.
       if (configurationModel.getIncludeZipCreation()) {
+
+        /*
+         * Create the start scripts for this server pack. Ignores custom SPC_JAVA_SPC setting if one
+         * is present. This is because a ZIP-archive, if one is created, is supposed to be uploaded
+         * to platforms like CurseForge. We must not have scripts with custom Java paths there.
+         */
+        createStartScripts(configurationModel, false);
+
         zipBuilder(configurationModel);
       } else {
 
         LOG.info("Not creating zip archive of serverpack.");
       }
+
+      /*
+       * Create the start scripts for this server pack to be used for local testing.
+       * The difference to the previous call is that these scripts respect the SPC_JAVA_SPC
+       * placeholder setting, if the user has set one
+       */
+      createStartScripts(configurationModel, true);
 
       // If true, Install the modloader software for the specified Minecraft version, modloader,
       // modloader version
@@ -387,9 +398,9 @@ public final class ServerPackHandler {
    *                           pack is acquired.
    * @author Griefed
    */
-  public void createStartScripts(final ConfigurationModel configurationModel) {
+  public void createStartScripts(final ConfigurationModel configurationModel, boolean isLocal) {
     createStartScripts(configurationModel.getScriptSettings(),
-        getServerPackDestination(configurationModel));
+        getServerPackDestination(configurationModel), isLocal);
   }
 
   /**
@@ -400,7 +411,8 @@ public final class ServerPackHandler {
    * @param destination    The destination where the scripts should be created in.
    * @author Griefed
    */
-  public void createStartScripts(final HashMap<String, String> scriptSettings, String destination) {
+  public void createStartScripts(final HashMap<String, String> scriptSettings, String destination,
+      boolean isLocal) {
     for (File template : APPLICATIONPROPERTIES.scriptTemplates()) {
 
       try {
@@ -410,7 +422,17 @@ public final class ServerPackHandler {
         String scriptContent = FileUtils.readFileToString(template, StandardCharsets.UTF_8);
 
         for (Map.Entry<String, String> entry : scriptSettings.entrySet()) {
-          scriptContent = scriptContent.replace(entry.getKey(), entry.getValue());
+          if (isLocal && entry.getKey().equals("SPC_JAVA_SPC")) {
+
+            scriptContent = scriptContent.replace(entry.getKey(), entry.getValue());
+
+          } else if (!isLocal && entry.getKey().equals("SPC_JAVA_SPC")) {
+
+            scriptContent = scriptContent.replace(entry.getKey(), "java");
+
+          } else {
+            scriptContent = scriptContent.replace(entry.getKey(), entry.getValue());
+          }
         }
 
         FileUtils.writeStringToFile(destinationScript, scriptContent, StandardCharsets.ISO_8859_1);
