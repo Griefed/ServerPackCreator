@@ -1,3 +1,10 @@
+## [3.14.0-alpha.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.14.0-alpha.3...3.14.0-alpha.4) (2022-09-06)
+
+
+### 💎 Improvements
+
+* **Start Script Settings:** Allow setting custom Java path in start scripts. Java in scripts for ZIP-archives will continue to be set to `java` only. ([5e34e7f](https://git.griefed.de/Griefed/ServerPackCreator/commit/5e34e7f62f45842064c2d716b808241f75590150))
+
 ## [3.14.0-alpha.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.14.0-alpha.2...3.14.0-alpha.3) (2022-09-05)
 
 
