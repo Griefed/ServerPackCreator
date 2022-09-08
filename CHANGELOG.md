@@ -1,3 +1,15 @@
+## [3.14.0-beta.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.14.0-beta.1...3.14.0-beta.2) (2022-09-08)
+
+
+### 💎 Improvements
+
+* **Extension Configuration Provision:** Identify configuration to provide by addonID and extension ID to ensure we do not pass foreign configurations by accident. ([19945c9](https://git.griefed.de/Griefed/ServerPackCreator/commit/19945c9200d4d00b4ef37fb970c3bb5a2fbc76e6))
+
+
+### 🛠 Fixes
+
+* Java arguments and script settings not being cleared when hitting "New Configuration". Directories which must be included not migrated to TreeSet, so it accumulated over time. ([c6d6c05](https://git.griefed.de/Griefed/ServerPackCreator/commit/c6d6c0504ec106fe3cf1911838d7fb221c22ef5b))
+
 ## [3.14.0-beta.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.13.0...3.14.0-beta.1) (2022-09-06)
 
 
