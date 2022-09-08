@@ -42,13 +42,13 @@ public abstract class ExtensionConfigPanel extends JPanel {
 
   protected static final Logger LOG = LogManager.getLogger(ExtensionConfigPanel.class);
   protected static final Logger LOG_ADDONS = LogManager.getLogger("AddonsLogger");
+  protected final ArrayList<CommentedConfig> SERVERPACK_EXTENSION_CONFIG = new ArrayList<>();
   private final Optional<CommentedConfig> ADDON_CONFIG;
   private final VersionMeta VERSIONMETA;
   private final ApplicationProperties APPLICATIONPROPERTIES;
   private final Utilities UTILITIES;
   private final TabCreateServerPack SERVERPACK_CONFIGURATION_TAB;
   private final String EXTENSION_ID;
-  protected final ArrayList<CommentedConfig> SERVERPACK_EXTENSION_CONFIG = new ArrayList<>();
 
   /**
    * Construct a panel which allows users to further customize their ServerPackCreator experience.
@@ -126,19 +126,14 @@ public abstract class ExtensionConfigPanel extends JPanel {
   public abstract ArrayList<CommentedConfig> serverPackExtensionConfig();
 
   /**
-   * Overwrite this extensions available configurations. Before the new list of configs is added,
-   * the current configuration is cleared completely. Use with caution!
+   * Pass the extension configuration to the configuration panel so it can then, in turn, load the
+   * available configurations and make them editable, if so desired.
    *
-   * @param serverPackExtensionConfig The list with which to overwrite this extensions
-   *                                  configurations.
+   * @param serverPackExtensionConfig The list of extension configurations to pass to the configuration panel.
    * @author Griefed
    */
-  public final void setServerPackExtensionConfig(
-      ArrayList<CommentedConfig> serverPackExtensionConfig) {
-
-    SERVERPACK_EXTENSION_CONFIG.clear();
-    SERVERPACK_EXTENSION_CONFIG.addAll(serverPackExtensionConfig);
-  }
+  public abstract void setServerPackExtensionConfig(
+      ArrayList<CommentedConfig> serverPackExtensionConfig);
 
   /**
    * Get the tab in which this ConfigPanel resides in, giving you access to various fields for
