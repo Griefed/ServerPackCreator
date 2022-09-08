@@ -48,7 +48,7 @@ public abstract class ExtensionConfigPanel extends JPanel {
   private final Utilities UTILITIES;
   private final TabCreateServerPack SERVERPACK_CONFIGURATION_TAB;
   private final String EXTENSION_ID;
-  private final ArrayList<CommentedConfig> SERVERPACK_EXTENSION_CONFIG = new ArrayList<>();
+  protected final ArrayList<CommentedConfig> SERVERPACK_EXTENSION_CONFIG = new ArrayList<>();
 
   /**
    * Construct a panel which allows users to further customize their ServerPackCreator experience.
@@ -123,9 +123,7 @@ public abstract class ExtensionConfigPanel extends JPanel {
    * extensions.
    * @author Griefed
    */
-  public final ArrayList<CommentedConfig> serverPackExtensionConfig() {
-    return SERVERPACK_EXTENSION_CONFIG;
-  }
+  public abstract ArrayList<CommentedConfig> serverPackExtensionConfig();
 
   /**
    * Overwrite this extensions available configurations. Before the new list of configs is added,
@@ -137,6 +135,7 @@ public abstract class ExtensionConfigPanel extends JPanel {
    */
   public final void setServerPackExtensionConfig(
       ArrayList<CommentedConfig> serverPackExtensionConfig) {
+
     SERVERPACK_EXTENSION_CONFIG.clear();
     SERVERPACK_EXTENSION_CONFIG.addAll(serverPackExtensionConfig);
   }
