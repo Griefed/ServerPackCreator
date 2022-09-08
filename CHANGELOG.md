@@ -1,3 +1,11 @@
+## [3.14.0-beta.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.14.0-beta.2...3.14.0-beta.3) (2022-09-08)
+
+
+### 🛠 Fixes
+
+* **ConfigPanelExtension:** Make serverpackExtensionConfig abstract and leave implementation to developers. We can not anticipate what a given panel holds. ([1a15787](https://git.griefed.de/Griefed/ServerPackCreator/commit/1a15787ece1738700050468e4dc6b179424c67b2))
+* **ConfigPanelExtension:** Make setServerPackExtensionConfig abstract and leave implementation to developers. We can not anticipate what a given panel holds. ([4d4bbb2](https://git.griefed.de/Griefed/ServerPackCreator/commit/4d4bbb28d6ed185fc8bab92afcb169ea2128e47f))
+
 ## [3.14.0-beta.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.14.0-beta.1...3.14.0-beta.2) (2022-09-08)
 
 
