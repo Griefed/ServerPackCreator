@@ -23,16 +23,14 @@ import com.electronwill.nightconfig.core.CommentedConfig;
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.ConfigurationModel;
 import de.griefed.serverpackcreator.addons.BaseInformation;
+import de.griefed.serverpackcreator.addons.ExtensionInformation;
 import java.util.ArrayList;
 import java.util.Optional;
 
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-interface ServerPackHandlerBase extends BaseInformation {
+interface ServerPackHandlerBase extends ExtensionInformation {
 
   /**
-   * Run this plugin with the passed {@link ApplicationProperties}, {@link ConfigurationModel} and
-   * server pack <code>destination</code>
-   *
    * @param applicationProperties Instance of {@link ApplicationProperties} as ServerPackCreator
    *                              itself uses it.
    * @param configurationModel    Instance of {@link ConfigurationModel} for a given server pack.
@@ -49,7 +47,7 @@ interface ServerPackHandlerBase extends BaseInformation {
       final ConfigurationModel configurationModel,
       String destination,
       Optional<CommentedConfig> addonConfig,
-      Optional<ArrayList<CommentedConfig>> packSpecificConfigs)
+      ArrayList<CommentedConfig> packSpecificConfigs)
       throws Exception;
 
 }

@@ -28,7 +28,6 @@ import de.griefed.serverpackcreator.versionmeta.VersionMeta;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
-import java.util.Properties;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.apache.logging.log4j.LogManager;
@@ -54,7 +53,7 @@ public abstract class ExtensionTab extends JPanel {
    *
    * @param versionMeta           Instance of {@link VersionMeta} so you can work with available
    *                              Minecraft, Forge, Fabric, LegacyFabric and Quilt versions.
-   * @param applicationProperties Instance of {@link Properties} The current configuration of
+   * @param applicationProperties Instance of {@link ApplicationProperties} The current configuration of
    *                              ServerPackCreator, like the default list of clientside-only mods,
    *                              the server pack directory etc.
    * @param utilities             Instance of {@link Utilities} commonly used across

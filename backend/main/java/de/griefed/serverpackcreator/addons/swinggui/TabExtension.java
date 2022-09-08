@@ -26,7 +26,6 @@ import de.griefed.serverpackcreator.utilities.common.Utilities;
 import de.griefed.serverpackcreator.versionmeta.VersionMeta;
 import java.io.File;
 import java.util.Optional;
-import java.util.Properties;
 import javax.swing.Icon;
 import javax.swing.JPanel;
 
@@ -40,12 +39,9 @@ import javax.swing.JPanel;
 public interface TabExtension extends BaseInformation {
 
   /**
-   * Get the {@link JPanel} from this addon to add it to the ServerPackCreator GUI as an additional
-   * tab.
-   *
    * @param versionMeta           Instance of {@link VersionMeta} so you can work with available
    *                              Minecraft, Forge, Fabric, LegacyFabric and Quilt versions.
-   * @param applicationProperties Instance of {@link Properties} The current configuration of
+   * @param applicationProperties Instance of {@link ApplicationProperties} The current configuration of
    *                              ServerPackCreator, like the default list of clientside-only mods,
    *                              the server pack directory etc.
    * @param utilities             Instance of {@link Utilities} commonly used across

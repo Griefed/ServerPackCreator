@@ -22,6 +22,7 @@ package de.griefed.serverpackcreator.addons.configurationhandler;
 import com.electronwill.nightconfig.core.CommentedConfig;
 import de.griefed.serverpackcreator.ConfigurationModel;
 import de.griefed.serverpackcreator.addons.BaseInformation;
+import de.griefed.serverpackcreator.addons.ExtensionInformation;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -33,7 +34,7 @@ import java.util.Optional;
  * @author Girefed
  */
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-public interface ConfigCheckExtension extends BaseInformation {
+public interface ConfigCheckExtension extends ExtensionInformation {
 
   /**
    * @param configurationModel  The configuration to check.
@@ -52,6 +53,6 @@ public interface ConfigCheckExtension extends BaseInformation {
       final ConfigurationModel configurationModel,
       final List<String> encounteredErrors,
       Optional<CommentedConfig> addonConfig,
-      Optional<ArrayList<CommentedConfig>> packSpecificConfigs)
+      ArrayList<CommentedConfig> packSpecificConfigs)
       throws Exception;
 }

@@ -44,6 +44,7 @@ import net.lingala.zip4j.ZipFile;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.pf4j.JarPluginManager;
+import org.pf4j.PluginWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -186,6 +187,41 @@ public final class ApplicationAddons extends JarPluginManager {
   }
 
   /**
+   * Get and return any configuration for the extension about to be run. If none is available, the
+   * returned list is empty. In order for a given extension to provide a configuration, the list of
+   * available configurations for the encompassing addon is scanned for
+   * <code>extension=extensionID</code> pairs. If any <code>extension</code> matches the ID of the
+   * extension being run, the configuration is added to the list and provided to the extension by
+   * ServerPackCreator.
+   *
+   * @param plugin             The addon which contains the extension.
+   * @param configurationModel The configuration model with which the server pack is, or will be,
+   *                           generated.
+   * @param extensionId        The ID of the extension about to be run.
+   * @return A list of configurations for the specified extension of the specified addon. May be
+   * empty, if no configuration is available.
+   * @author Griefed
+   */
+  private ArrayList<CommentedConfig> getExtensionConfigs(PluginWrapper plugin,
+      ConfigurationModel configurationModel, String extensionId) {
+
+    ArrayList<CommentedConfig> extConf = new ArrayList<>();
+
+    if (configurationModel.getAddonConfigs(plugin.getPluginId()).isPresent()) {
+
+      configurationModel.getAddonConfigs(plugin.getPluginId()).get().forEach(
+          config -> {
+
+            if (config.get("extension").equals(extensionId)) {
+              extConf.add(config);
+            }
+          }
+      );
+    }
+    return extConf;
+  }
+
+  /**
    * Run any and all Pre-Server Pack-Generation extensions, using the passed configuration model and
    * the destination at which the server pack is to be generated and stored at.
    *
@@ -212,8 +248,9 @@ public final class ApplicationAddons extends JarPluginManager {
                         configurationModel,
                         destination,
                         getAddonConfig(plugin.getPluginId()),
-                        configurationModel.getAddonConfigs(plugin.getPluginId())
-                    );
+                        getExtensionConfigs(plugin, configurationModel,
+                            preGenExt.getExtensionId()));
+
                   } catch (Exception | Error ex) {
                     LOG_ADDONS.error(
                         "Extension " + preGenExt.getName() + " in plugin " + plugin.getPluginId()
@@ -256,8 +293,9 @@ public final class ApplicationAddons extends JarPluginManager {
                         configurationModel,
                         destination,
                         getAddonConfig(plugin.getPluginId()),
-                        configurationModel.getAddonConfigs(plugin.getPluginId())
-                    );
+                        getExtensionConfigs(plugin, configurationModel,
+                            preZipExt.getExtensionId()));
+
                   } catch (Exception | Error ex) {
                     LOG_ADDONS.error(
                         "Extension " + preZipExt.getName() + " in plugin " + plugin.getPluginId()
@@ -302,8 +340,9 @@ public final class ApplicationAddons extends JarPluginManager {
                         configurationModel,
                         destination,
                         getAddonConfig(plugin.getPluginId()),
-                        configurationModel.getAddonConfigs(plugin.getPluginId())
-                    );
+                        getExtensionConfigs(plugin, configurationModel,
+                            postGenExt.getExtensionId()));
+
                   } catch (Exception | Error ex) {
                     LOG_ADDONS.error(
                         "Extension " + postGenExt.getName() + " in plugin " + plugin.getPluginId()
@@ -465,9 +504,9 @@ public final class ApplicationAddons extends JarPluginManager {
                             configurationModel,
                             encounteredErrors,
                             getAddonConfig(plugin.getPluginId()),
-                            configurationModel.getAddonConfigs(plugin.getPluginId())
-                        )
-                    ) {
+                            getExtensionConfigs(plugin, configurationModel,
+                                configCheckExt.getExtensionId())))
+                    {
                       hasError.set(true);
                     }
                   } catch (Exception | Error ex) {
