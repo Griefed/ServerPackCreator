@@ -32,7 +32,7 @@ import org.pf4j.PluginManager;
 import org.pf4j.PluginRuntimeException;
 import org.pf4j.PluginWrapper;
 
-public class ServerPackCreatorAddon extends Plugin implements BaseInformation {
+public abstract class ServerPackCreatorAddon extends Plugin implements BaseInformation {
 
   protected static final Logger LOG_ADDONS = LogManager.getLogger("AddonsLogger");
   private static final Logger LOG = LogManager.getLogger(ServerPackCreatorAddon.class);

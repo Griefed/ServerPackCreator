@@ -81,6 +81,7 @@ public final class ApplicationAddons extends JarPluginManager {
   public ApplicationAddons(TomlParser tomlParser,
       ApplicationProperties injectedApplicationProperties, VersionMeta injectedVersionMeta,
       Utilities injectedUtilities) {
+    super();
 
     APPLICATIONPROPERTIES = injectedApplicationProperties;
     VERSIONMETA = injectedVersionMeta;
@@ -118,14 +119,16 @@ public final class ApplicationAddons extends JarPluginManager {
     getPlugins().forEach(
         plugin -> {
 
-          String configFile = "plugins/config/" + plugin.getPluginId() + ".toml";
+          String path = "./plugins/config";
+          String addonConfig = plugin.getPluginId() + ".toml";
 
-          if (!new File(configFile).exists()) {
+          if (!new File(path + "/" + addonConfig).exists()) {
 
             try (ZipFile addonJar = new ZipFile(plugin.getPluginPath().toFile())) {
 
-              addonJar.extractFile("config.toml", configFile);
-              registerAddonConfig(tomlParser, plugin.getPluginId(), new File(configFile));
+              addonJar.extractFile("config.toml", path, addonConfig);
+              registerAddonConfig(tomlParser, plugin.getPluginId(),
+                  new File(path + "/" + addonConfig));
 
             } catch (Exception ex) {
               LOG.error(
@@ -505,8 +508,7 @@ public final class ApplicationAddons extends JarPluginManager {
                             encounteredErrors,
                             getAddonConfig(plugin.getPluginId()),
                             getExtensionConfigs(plugin, configurationModel,
-                                configCheckExt.getExtensionId())))
-                    {
+                                configCheckExt.getExtensionId()))) {
                       hasError.set(true);
                     }
                   } catch (Exception | Error ex) {
