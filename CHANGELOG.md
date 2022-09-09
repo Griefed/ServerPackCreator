@@ -1,3 +1,10 @@
+## [3.14.0-beta.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.14.0-beta.3...3.14.0-beta.4) (2022-09-09)
+
+
+### 🛠 Fixes
+
+* **Addon Suite:** Do not base BaseInformation off of ExtensionPoint ([9e7a68f](https://git.griefed.de/Griefed/ServerPackCreator/commit/9e7a68f08d9737c08018d1c364ac551b96275c54))
+
 ## [3.14.0-beta.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.14.0-beta.2...3.14.0-beta.3) (2022-09-08)
 
 
