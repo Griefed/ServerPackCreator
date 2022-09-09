@@ -22,6 +22,7 @@ package de.griefed.serverpackcreator.addons.swinggui;
 import com.electronwill.nightconfig.core.CommentedConfig;
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.addons.BaseInformation;
+import de.griefed.serverpackcreator.addons.ExtensionInformation;
 import de.griefed.serverpackcreator.utilities.common.Utilities;
 import de.griefed.serverpackcreator.versionmeta.VersionMeta;
 import java.io.File;
@@ -36,7 +37,7 @@ import javax.swing.JPanel;
  * @author Griefed
  */
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-public interface TabExtension extends BaseInformation {
+public interface TabExtension extends ExtensionInformation {
 
   /**
    * @param versionMeta           Instance of {@link VersionMeta} so you can work with available

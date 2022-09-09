@@ -32,7 +32,7 @@ import org.pf4j.PluginManager;
 import org.pf4j.PluginRuntimeException;
 import org.pf4j.PluginWrapper;
 
-public class ServerPackCreatorAddon extends Plugin implements BaseInformation {
+public abstract class ServerPackCreatorAddon extends Plugin implements BaseInformation {
 
   protected static final Logger LOG_ADDONS = LogManager.getLogger("AddonsLogger");
   private static final Logger LOG = LogManager.getLogger(ServerPackCreatorAddon.class);
@@ -68,12 +68,6 @@ public class ServerPackCreatorAddon extends Plugin implements BaseInformation {
   @Override
   public void start() throws PluginRuntimeException {
     super.start();
-
-    if (!new File("plugins/config/" + getId() + ".toml").exists()) {
-      ServerPackCreator.getInstance().getUtilities().JarUtils()
-          .copyFileFromJar("config.toml", new File("plugins/config/" + getId() + ".toml"), false,
-              this.getClass());
-    }
 
     LOG.info("Addon-ID:          " + getId());
     LOG.info("Addon-Name:        " + NAME);

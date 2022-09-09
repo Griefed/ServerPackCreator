@@ -851,33 +851,6 @@ public final class ConfigurationEditor {
   }
 
   /**
-   * Get the path to the Java installation to use in the modloader server installation.
-   *
-   * @param scanner Used for reading the users input.
-   * @return The path to the Java installation to use during modloader server installation, as per
-   * the users input.
-   * @author Griefed
-   */
-  private String getJavaPath(Scanner scanner) {
-    String javaPath;
-    printToFileAndConsole(
-        "Specify the path to your Java installation. Must end with \"java\" on Linux, or \"java.exe\" on Windows.");
-    printToFileAndConsole(
-        "If you leave this empty, ServerPackCreator will try to determine the path for you.");
-    printToFileAndConsole(
-        "Example Linux: /usr/bin/java | Example Windows: C:/Program Files/AdoptOpenJDK/jdk-8.0.275.1-hotspot/jre/bin/java.exe");
-
-    printToFileAndConsole("Path to your Java installation: ", false);
-
-    javaPath = CONFIGURATIONHANDLER.getJavaPath(getNextLine(scanner));
-
-    printToFileAndConsole("Automatically acquired path to Java installation: " + javaPath);
-    printToFileAndConsole();
-
-    return javaPath;
-  }
-
-  /**
    * Get the users decision on whether they want to include the server-icon.
    *
    * @return <code>true</code> if the user wants the server-icon to be included.

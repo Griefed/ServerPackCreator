@@ -19,9 +19,7 @@
  */
 package de.griefed.serverpackcreator.addons;
 
-import org.pf4j.ExtensionPoint;
-
-public interface BaseInformation extends ExtensionPoint {
+public interface BaseInformation {
 
   /**
    * Get the name of this addon.
