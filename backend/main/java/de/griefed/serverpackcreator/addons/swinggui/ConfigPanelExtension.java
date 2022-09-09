@@ -22,6 +22,7 @@ package de.griefed.serverpackcreator.addons.swinggui;
 import com.electronwill.nightconfig.core.CommentedConfig;
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.addons.BaseInformation;
+import de.griefed.serverpackcreator.addons.ExtensionInformation;
 import de.griefed.serverpackcreator.swing.TabCreateServerPack;
 import de.griefed.serverpackcreator.utilities.common.Utilities;
 import de.griefed.serverpackcreator.versionmeta.VersionMeta;
@@ -35,7 +36,7 @@ import javax.swing.JPanel;
  * @author Griefed
  */
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-public interface ConfigPanelExtension extends BaseInformation {
+public interface ConfigPanelExtension extends ExtensionInformation {
 
   /**
    * This method gets called when an extension of this type is run. All parameters are provided by

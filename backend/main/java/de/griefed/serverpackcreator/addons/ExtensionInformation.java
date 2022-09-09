@@ -1,6 +1,8 @@
 package de.griefed.serverpackcreator.addons;
 
-public interface ExtensionInformation extends BaseInformation {
+import org.pf4j.ExtensionPoint;
+
+public interface ExtensionInformation extends BaseInformation, ExtensionPoint {
 
   /**
    * Get the if of this extension. Used by ServerPackCreator to determine which configuration, if any,
