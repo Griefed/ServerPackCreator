@@ -268,6 +268,7 @@ public class ScriptSettings extends JTable {
 
   /**
    * Clear the table of all data. Only leave SPC_JAVA_SPC behind.
+   *
    * @author Griefed
    */
   public void clearData() {
@@ -275,8 +276,8 @@ public class ScriptSettings extends JTable {
       getModel().setValueAt("", row, 0);
       getModel().setValueAt("", row, 1);
     }
-    getModel().setValueAt("SPC_JAVA_SPC",0,0);
-    getModel().setValueAt("java",0,1);
+    getModel().setValueAt("SPC_JAVA_SPC", 0, 0);
+    getModel().setValueAt("java", 0, 1);
   }
 
   @SuppressWarnings("InnerClassMayBeStatic")

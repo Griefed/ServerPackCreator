@@ -370,7 +370,7 @@ public final class ConfigUtilities {
     LOG.info("Path to custom server-icon:       " + serverIconPath);
     LOG.info("Path to custom server.properties: " + serverPropertiesPath);
     LOG.info("Script settings:");
-    for (Map.Entry<String,String> entry : scriptSettings.entrySet()) {
+    for (Map.Entry<String, String> entry : scriptSettings.entrySet()) {
       LOG.info("  Placeholder: " + entry.getKey());
       LOG.info("        Value: " + entry.getValue());
     }

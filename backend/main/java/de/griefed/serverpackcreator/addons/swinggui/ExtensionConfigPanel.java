@@ -74,13 +74,13 @@ public abstract class ExtensionConfigPanel extends JPanel {
    * @author Griefed
    */
   protected ExtensionConfigPanel(
-      VersionMeta versionMeta,
-      ApplicationProperties applicationProperties,
-      Utilities utilities,
-      TabCreateServerPack tabCreateServerPack,
-      Optional<CommentedConfig> addonConfig,
-      String extensionName,
-      String pluginID) {
+      final VersionMeta versionMeta,
+      final ApplicationProperties applicationProperties,
+      final Utilities utilities,
+      final TabCreateServerPack tabCreateServerPack,
+      final Optional<CommentedConfig> addonConfig,
+      final String extensionName,
+      final String pluginID) {
 
     super();
     VERSIONMETA = versionMeta;
@@ -129,7 +129,8 @@ public abstract class ExtensionConfigPanel extends JPanel {
    * Pass the extension configuration to the configuration panel so it can then, in turn, load the
    * available configurations and make them editable, if so desired.
    *
-   * @param serverPackExtensionConfig The list of extension configurations to pass to the configuration panel.
+   * @param serverPackExtensionConfig The list of extension configurations to pass to the
+   *                                  configuration panel.
    * @author Griefed
    */
   public abstract void setServerPackExtensionConfig(

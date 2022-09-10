@@ -116,7 +116,8 @@ public final class ApplicationProperties extends Properties {
    * List of directories which must not be excluded from server packs. Default is mods, config,
    * defaultconfigs, scripts, saves, seeds, libraries.
    */
-  private final TreeSet<String> DIRECTORIES_TO_INCLUDE = new TreeSet<>(FALLBACK_DIRECTORIES_INCLUDE);
+  private final TreeSet<String> DIRECTORIES_TO_INCLUDE = new TreeSet<>(
+      FALLBACK_DIRECTORIES_INCLUDE);
   /**
    * Default directories to exclude from the server pack.
    */

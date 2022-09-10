@@ -115,20 +115,19 @@ public final class ApplicationAddons extends JarPluginManager {
    *                   addons ID.
    * @author Griefed
    */
-  private void extractAddonConfigs(TomlParser tomlParser) {
+  private void extractAddonConfigs(final TomlParser tomlParser) {
     getPlugins().forEach(
         plugin -> {
 
           String path = "./plugins/config";
           String addonConfig = plugin.getPluginId() + ".toml";
+          File addonConfigFile = new File(path + "/" + addonConfig);
 
-          if (!new File(path + "/" + addonConfig).exists()) {
+          if (!addonConfigFile.exists()) {
 
             try (ZipFile addonJar = new ZipFile(plugin.getPluginPath().toFile())) {
 
               addonJar.extractFile("config.toml", path, addonConfig);
-              registerAddonConfig(tomlParser, plugin.getPluginId(),
-                  new File(path + "/" + addonConfig));
 
             } catch (Exception ex) {
               LOG.error(
@@ -136,6 +135,12 @@ public final class ApplicationAddons extends JarPluginManager {
                       + ". Does it contain a valid config.toml?");
               LOG.debug("", ex);
             }
+
+          }
+
+          if (addonConfigFile.isFile()) {
+
+            registerAddonConfig(tomlParser, plugin.getPluginId(), addonConfigFile);
 
           }
 
@@ -150,7 +155,8 @@ public final class ApplicationAddons extends JarPluginManager {
    * @param addonConfig The global configuration file corresponding to the addons ID.
    * @author Griefed
    */
-  private void registerAddonConfig(TomlParser tomlParser, String addonId, File addonConfig) {
+  private void registerAddonConfig(final TomlParser tomlParser, final String addonId,
+      final File addonConfig) {
     try {
       ADDON_CONFIGS.put(addonId, tomlParser.parse(addonConfig, FileNotFoundAction.THROW_ERROR,
           StandardCharsets.UTF_8));
@@ -171,7 +177,7 @@ public final class ApplicationAddons extends JarPluginManager {
    * @return The global addon configuration, wrapped in an Optional.
    * @author Griefed
    */
-  public Optional<CommentedConfig> getAddonConfig(String addonId) {
+  public Optional<CommentedConfig> getAddonConfig(final String addonId) {
     return Optional.ofNullable(ADDON_CONFIGS.get(addonId));
   }
 
@@ -185,7 +191,7 @@ public final class ApplicationAddons extends JarPluginManager {
    * @return The config-file corresponding to the ID of the addon, wrapped in an Optional.
    * @author Griefed
    */
-  public Optional<File> getAddonConfigFile(String addonId) {
+  public Optional<File> getAddonConfigFile(final String addonId) {
     return Optional.ofNullable(ADDON_CONFIG_FILES.get(addonId));
   }
 
@@ -205,14 +211,14 @@ public final class ApplicationAddons extends JarPluginManager {
    * empty, if no configuration is available.
    * @author Griefed
    */
-  private ArrayList<CommentedConfig> getExtensionConfigs(PluginWrapper plugin,
-      ConfigurationModel configurationModel, String extensionId) {
+  private ArrayList<CommentedConfig> getExtensionSpecificConfigs(final PluginWrapper plugin,
+      final ConfigurationModel configurationModel, final String extensionId) {
 
     ArrayList<CommentedConfig> extConf = new ArrayList<>();
 
     if (configurationModel.getAddonConfigs(plugin.getPluginId()).isPresent()) {
 
-      configurationModel.getAddonConfigs(plugin.getPluginId()).get().forEach(
+      getExtensionConfigs(plugin, configurationModel).forEach(
           config -> {
 
             if (config.get("extension").equals(extensionId)) {
@@ -225,6 +231,26 @@ public final class ApplicationAddons extends JarPluginManager {
   }
 
   /**
+   * Get all available extension configurations from the passed ConfigurationModel for the specified
+   * addon.
+   *
+   * @param plugin             The addon for which to acquire the list of extension-configurations.
+   * @param configurationModel The configuration model which holds the extension configurations.
+   * @return A list of available extension-configurations, if any.
+   * @author Griefed
+   */
+  private ArrayList<CommentedConfig> getExtensionConfigs(final PluginWrapper plugin,
+      final ConfigurationModel configurationModel) {
+    ArrayList<CommentedConfig> configs = new ArrayList<>();
+
+    if (configurationModel.getAddonConfigs(plugin.getPluginId()).isPresent()) {
+      configs.addAll(configurationModel.getAddonConfigs(plugin.getPluginId()).get());
+    }
+
+    return configs;
+  }
+
+  /**
    * Run any and all Pre-Server Pack-Generation extensions, using the passed configuration model and
    * the destination at which the server pack is to be generated and stored at.
    *
@@ -233,7 +259,7 @@ public final class ApplicationAddons extends JarPluginManager {
    *                           at.
    * @author Griefed
    */
-  void runPreGenExtensions(ConfigurationModel configurationModel, String destination) {
+  void runPreGenExtensions(final ConfigurationModel configurationModel, final String destination) {
     getPlugins().forEach(
         plugin -> {
           if (!plugin.getPluginManager().getExtensions(PreGenExtension.class).isEmpty()) {
@@ -247,11 +273,13 @@ public final class ApplicationAddons extends JarPluginManager {
 
                   try {
                     preGenExt.run(
+                        VERSIONMETA,
+                        UTILITIES,
                         APPLICATIONPROPERTIES,
                         configurationModel,
                         destination,
                         getAddonConfig(plugin.getPluginId()),
-                        getExtensionConfigs(plugin, configurationModel,
+                        getExtensionSpecificConfigs(plugin, configurationModel,
                             preGenExt.getExtensionId()));
 
                   } catch (Exception | Error ex) {
@@ -278,7 +306,7 @@ public final class ApplicationAddons extends JarPluginManager {
    *                           at.
    * @author Griefed
    */
-  void runPreZipExtensions(ConfigurationModel configurationModel, String destination) {
+  void runPreZipExtensions(final ConfigurationModel configurationModel, final String destination) {
     getPlugins().forEach(
         plugin -> {
           if (!plugin.getPluginManager().getExtensions(PreZipExtension.class).isEmpty()) {
@@ -292,11 +320,13 @@ public final class ApplicationAddons extends JarPluginManager {
 
                   try {
                     preZipExt.run(
+                        VERSIONMETA,
+                        UTILITIES,
                         APPLICATIONPROPERTIES,
                         configurationModel,
                         destination,
                         getAddonConfig(plugin.getPluginId()),
-                        getExtensionConfigs(plugin, configurationModel,
+                        getExtensionSpecificConfigs(plugin, configurationModel,
                             preZipExt.getExtensionId()));
 
                   } catch (Exception | Error ex) {
@@ -325,7 +355,7 @@ public final class ApplicationAddons extends JarPluginManager {
    *                           at.
    * @author Griefed
    */
-  void runPostGenExtensions(ConfigurationModel configurationModel, String destination) {
+  void runPostGenExtensions(final ConfigurationModel configurationModel, final String destination) {
     getPlugins().forEach(
         plugin -> {
           if (!plugin.getPluginManager().getExtensions(PostGenExtension.class).isEmpty()) {
@@ -339,11 +369,13 @@ public final class ApplicationAddons extends JarPluginManager {
 
                   try {
                     postGenExt.run(
+                        VERSIONMETA,
+                        UTILITIES,
                         APPLICATIONPROPERTIES,
                         configurationModel,
                         destination,
                         getAddonConfig(plugin.getPluginId()),
-                        getExtensionConfigs(plugin, configurationModel,
+                        getExtensionSpecificConfigs(plugin, configurationModel,
                             postGenExt.getExtensionId()));
 
                   } catch (Exception | Error ex) {
@@ -371,7 +403,7 @@ public final class ApplicationAddons extends JarPluginManager {
    * @param tabbedPane The tabbed pane to which the additional panels should be added to as tabs.
    * @author Griefed
    */
-  public void addTabExtensionTabs(JTabbedPane tabbedPane) {
+  public void addTabExtensionTabs(final JTabbedPane tabbedPane) {
     getPlugins().forEach(
         plugin -> {
           if (!plugin.getPluginManager().getExtensions(TabExtension.class).isEmpty()) {
@@ -428,7 +460,8 @@ public final class ApplicationAddons extends JarPluginManager {
    * @author Griefed
    */
   public List<ExtensionConfigPanel> getConfigPanels(
-      TabCreateServerPack tabCreateServerPack) {
+      final TabCreateServerPack tabCreateServerPack) {
+
     List<ExtensionConfigPanel> panels = new ArrayList<>();
     getPlugins().forEach(
         plugin -> {
@@ -486,8 +519,8 @@ public final class ApplicationAddons extends JarPluginManager {
    * errored.
    * @author Griefed
    */
-  boolean runConfigCheckExtensions(ConfigurationModel configurationModel,
-      List<String> encounteredErrors) {
+  boolean runConfigCheckExtensions(final ConfigurationModel configurationModel,
+      final List<String> encounteredErrors) {
     AtomicBoolean hasError = new AtomicBoolean(false);
 
     getPlugins().forEach(
@@ -504,11 +537,14 @@ public final class ApplicationAddons extends JarPluginManager {
                   try {
                     if (configCheckExt
                         .runCheck(
+                            VERSIONMETA,
+                            APPLICATIONPROPERTIES,
+                            UTILITIES,
                             configurationModel,
                             encounteredErrors,
                             getAddonConfig(plugin.getPluginId()),
-                            getExtensionConfigs(plugin, configurationModel,
-                                configCheckExt.getExtensionId()))) {
+                            getExtensionConfigs(plugin, configurationModel))
+                    ) {
                       hasError.set(true);
                     }
                   } catch (Exception | Error ex) {
