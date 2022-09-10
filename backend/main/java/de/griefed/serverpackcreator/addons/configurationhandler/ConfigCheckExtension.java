@@ -20,9 +20,11 @@
 package de.griefed.serverpackcreator.addons.configurationhandler;
 
 import com.electronwill.nightconfig.core.CommentedConfig;
+import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.ConfigurationModel;
-import de.griefed.serverpackcreator.addons.BaseInformation;
 import de.griefed.serverpackcreator.addons.ExtensionInformation;
+import de.griefed.serverpackcreator.utilities.common.Utilities;
+import de.griefed.serverpackcreator.versionmeta.VersionMeta;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -37,22 +39,32 @@ import java.util.Optional;
 public interface ConfigCheckExtension extends ExtensionInformation {
 
   /**
-   * @param configurationModel  The configuration to check.
-   * @param encounteredErrors   A list of encountered errors during any and all checks. The list is
-   *                            displayed to the user if it contains any entries.
-   * @param addonConfig         Configuration for this addon, conveniently provided by
-   *                            ServerPackCreator.
-   * @param packSpecificConfigs Modpack and server pack specific configurations for this addon,
-   *                            conveniently provided by ServerPackCreator.
+   * @param versionMeta           Instance of {@link VersionMeta} so you can work with available
+   *                              Minecraft, Forge, Fabric, LegacyFabric and Quilt versions.
+   * @param applicationProperties Instance of {@link ApplicationProperties} The current
+   *                              configuration of ServerPackCreator, like the default list of
+   *                              clientside-only mods, the server pack directory etc.
+   * @param utilities             Instance of {@link Utilities} commonly used across
+   *                              ServerPackCreator.
+   * @param configurationModel    The configuration to check.
+   * @param encounteredErrors     A list of encountered errors during any and all checks. The list
+   *                              is displayed to the user if it contains any entries.
+   * @param addonConfig           Configuration for this addon, conveniently provided by
+   *                              ServerPackCreator.
+   * @param packSpecificConfigs   Modpack and server pack specific configurations for this addon,
+   *                              conveniently provided by ServerPackCreator.
    * @return <code>true</code> if an error was encountered. <code>false</code> if the checks were
    * successful.
    * @throws Exception if any unexpected error is encountered during the execution of this method.
    * @author Griefed
    */
   boolean runCheck(
+      final VersionMeta versionMeta,
+      final ApplicationProperties applicationProperties,
+      final Utilities utilities,
       final ConfigurationModel configurationModel,
       final List<String> encounteredErrors,
-      Optional<CommentedConfig> addonConfig,
-      ArrayList<CommentedConfig> packSpecificConfigs)
+      final Optional<CommentedConfig> addonConfig,
+      final ArrayList<CommentedConfig> packSpecificConfigs)
       throws Exception;
 }

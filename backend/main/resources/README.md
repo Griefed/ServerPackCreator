@@ -131,7 +131,15 @@ Huge shoutout and thank you!**
 10. Don't like the default start scripts ServerPackCreator offers? Create your own and tell ServerPackCreator to use them!
     1. You can configure placeholders and correlating values on a per-server pack-basis. If your custom start script templates contain, for example the placeholder `SPC_FLYNN_LIVES_SPC`, tell ServerPackCreator to replace any occurance of that placeholder with `Now that's a big door`. Voila! Every start script created with that server pack configuration will replace `SPC_FLYNN_LIVES_SPC` with `Now that's a big door` whenever you create a server pack. Other server pack configuration may contain other values for that placeholder. Knock yourself out!
 
-# 3 Java
+# 3 How To
+
+Coming Soon™
+
+## 3.1 Help
+
+A [Help section](https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-Help) is available at my wiki. It goes into detail on the many configurable aspects of ServerPackCreator. Give it a read before asking something, it *does* contain lots of useful information.
+
+# 4 Java
 
 ServerPackCreator is being developed with Java 8, ServerPackCreator is guaranteed to work with that version.
 
@@ -142,9 +150,9 @@ version other than version 8. Things may break at **random**, at **any** place, 
 You are welcome to try and use any other version, but do **not** report issues back to me if you do encounter problems
 when running ServerPackCreator with a more recent Java version.
 
-# 4. Addons
+# 5 Addons
 
-## 4.1 Why
+## 5.1 Why
 
 There are things which people want to do with their server packs which could most certainly be automated. Some of those
 things so special, or maybe out of place, that they would not warrant a separate feature for ServerPackCreator itself.
@@ -160,7 +168,7 @@ they see fit or want.
 
 For an example of an addon, see the [ServerPackCreator Example Addon](https://github.com/Griefed/ServerPackCreatorExampleAddon)
 
-## 4.2 Adding your own
+## 5.2 Adding your own
 
 A curated list of officially acknowledged addons/plugins can be found at [addons.griefed.de](https://addons.griefed.de) (redirects to [GitHub Pages](https://griefed.github.io/ServerPackCreator-Addons-Overview/#/))
 
@@ -174,7 +182,7 @@ For an addon to be accepted, you must at least provide:
 - The branch of the repository where the main code resides in.
 - A description of the addon.
 
-# 5. Running
+# 6 Running
 
 In every situation, the `.jar`-file needs to be run from the commandline. Executing it via "Open with..." and selecting Java will not work. To use the GUI, for example, simply run `java -jar ServerPackCreator-2.x.x.jar`.
 The `.exe` can be executed as usual by simply double-clicking it and is GUI exclusive. It only works in Windows, though. Please keep that in mind.
@@ -198,13 +206,7 @@ If you wish to run ServerPackCreator with your locale (if it is already supporte
 2. Running `java -jar ServerPackCreator-x.x.x.jar` without `-lang en_us` or any other language will set the locale to en_us by default and create the lang.properties-file.
 3. Modify the `serverpackcreator.properties`-file in the same directory as ServerPackCreator-X-X-X.jar and set your locale like this `lang=your_locale` for example `lang=en_us`
 
-## 6.2 Using ServerPackCreator
-
-**Detailed How-To guides are available at [my wiki](https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-HowTo)!**
-
-Make sure to give them a read if you are just getting started with ServerPackCreator, or you need some help.
-
-# 7. Contributing
+# 7 Contributing
 
 Java documentation available at:
 - https://griefed.pages.griefed.de/ServerPackCreator/ or

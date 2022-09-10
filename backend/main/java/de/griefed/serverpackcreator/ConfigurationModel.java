@@ -193,7 +193,7 @@ public class ConfigurationModel {
     }
 
     if (!scriptSettings.containsKey("SPC_JAVA_SPC")) {
-      scriptSettings.put("SPC_JAVA_SPC","java");
+      scriptSettings.put("SPC_JAVA_SPC", "java");
     }
 
     config.close();
@@ -339,8 +339,7 @@ public class ConfigurationModel {
    * @return A list of configurations for the specified addon ID.
    * @author Griefed
    */
-  public ArrayList<CommentedConfig> getOrCreateAddonConfigList(String addonId)
-      throws IllegalArgumentException {
+  public ArrayList<CommentedConfig> getOrCreateAddonConfigList(String addonId) {
     if (!addonsConfigs.containsKey(addonId)) {
       addonsConfigs.put(addonId, new ArrayList<>());
     }

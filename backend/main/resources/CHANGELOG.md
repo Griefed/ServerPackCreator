@@ -1,3 +1,38 @@
+## [3.14.0-beta.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.14.0-beta.2...3.14.0-beta.3) (2022-09-08)
+
+
+### 🛠 Fixes
+
+* **ConfigPanelExtension:** Make serverpackExtensionConfig abstract and leave implementation to developers. We can not anticipate what a given panel holds. ([1a15787](https://git.griefed.de/Griefed/ServerPackCreator/commit/1a15787ece1738700050468e4dc6b179424c67b2))
+* **ConfigPanelExtension:** Make setServerPackExtensionConfig abstract and leave implementation to developers. We can not anticipate what a given panel holds. ([4d4bbb2](https://git.griefed.de/Griefed/ServerPackCreator/commit/4d4bbb28d6ed185fc8bab92afcb169ea2128e47f))
+
+## [3.14.0-beta.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.14.0-beta.1...3.14.0-beta.2) (2022-09-08)
+
+
+### 💎 Improvements
+
+* **Extension Configuration Provision:** Identify configuration to provide by addonID and extension ID to ensure we do not pass foreign configurations by accident. ([19945c9](https://git.griefed.de/Griefed/ServerPackCreator/commit/19945c9200d4d00b4ef37fb970c3bb5a2fbc76e6))
+
+
+### 🛠 Fixes
+
+* Java arguments and script settings not being cleared when hitting "New Configuration". Directories which must be included not migrated to TreeSet, so it accumulated over time. ([c6d6c05](https://git.griefed.de/Griefed/ServerPackCreator/commit/c6d6c0504ec106fe3cf1911838d7fb221c22ef5b))
+
+## [3.14.0-beta.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.13.0...3.14.0-beta.1) (2022-09-06)
+
+
+### 💎 Improvements
+
+* **Addon System Overhaul:** Exapnd addon system. Adds ConfigCheck & ConfigPanel extensions. Provide abstracts for ConfigPanel, Addon and ExtensionTab. Create, load and provide global addon- and extension-specific configuration. ([22a4c15](https://git.griefed.de/Griefed/ServerPackCreator/commit/22a4c15337025b9e7e755334fd901d42ef840845))
+* **Configuration:** Allow storing and loading of addon configurations and custom script settings ([b29fa0a](https://git.griefed.de/Griefed/ServerPackCreator/commit/b29fa0a2f372ca54e2903d81823e392bdbae33e8))
+* **Java Setting For Modloader Server Installation:** Move Java setting to global setting in ApplicationProperties. Small GUI makeover, too. ([885bb04](https://git.griefed.de/Griefed/ServerPackCreator/commit/885bb0442d167832105f5e6538e3d1eb0a0ae51b))
+* **Start Script Settings:** Allow setting custom Java path in start scripts. Java in scripts for ZIP-archives will continue to be set to `java` only. ([5e34e7f](https://git.griefed.de/Griefed/ServerPackCreator/commit/5e34e7f62f45842064c2d716b808241f75590150))
+
+
+### 🚀 Features
+
+* **Start Script Settings Editing:** Provide table to add, edit, remove placeholders and values for custom start scripts ([0c98c3b](https://git.griefed.de/Griefed/ServerPackCreator/commit/0c98c3b3111b480088941bb464fbdf92e9ec6db6))
+
 ## [3.14.0-alpha.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.14.0-alpha.3...3.14.0-alpha.4) (2022-09-06)
 
 

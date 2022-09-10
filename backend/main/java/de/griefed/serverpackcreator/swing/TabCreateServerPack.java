@@ -34,8 +34,8 @@ import de.griefed.serverpackcreator.swing.themes.LightTheme;
 import de.griefed.serverpackcreator.swing.utilities.CompoundIcon;
 import de.griefed.serverpackcreator.swing.utilities.IconTextArea;
 import de.griefed.serverpackcreator.swing.utilities.IconTextField;
-import de.griefed.serverpackcreator.swing.utilities.ScriptSettings;
 import de.griefed.serverpackcreator.swing.utilities.RotatedIcon;
+import de.griefed.serverpackcreator.swing.utilities.ScriptSettings;
 import de.griefed.serverpackcreator.swing.utilities.SimpleDocumentListener;
 import de.griefed.serverpackcreator.swing.utilities.TextIcon;
 import de.griefed.serverpackcreator.utilities.ReticulatingSplines;
@@ -305,7 +305,7 @@ public class TabCreateServerPack extends JPanel {
     try {
       SERVERPACKGENERATEDDOCUMENT.insertString(
           0,
-          I18N.getMessage("createserverpack.gui.createserverpack.openfolder.browse"),
+          I18N.getMessage("createserverpack.gui.createserverpack.openfolder.browse") + "    ",
           SERVERPACKGENERATEDATTRIBUTESET);
     } catch (BadLocationException ex) {
       LOG.error("Error inserting text into aboutDocument.", ex);
@@ -467,7 +467,7 @@ public class TabCreateServerPack extends JPanel {
             JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
     CLIENTSIDEMODS_JPANEL.add(
         SCROLL_PANEL_CLIENTSIDEMODS, TEXTAREA_CLIENTSIDEMODS_JPANEL_CONSTRAINTS);
-    Dimension client = new Dimension(100,150);
+    Dimension client = new Dimension(100, 150);
     CLIENTSIDEMODS_JPANEL.setSize(client);
     CLIENTSIDEMODS_JPANEL.setPreferredSize(client);
     CLIENTSIDEMODS_JPANEL.setMaximumSize(client);
@@ -515,7 +515,7 @@ public class TabCreateServerPack extends JPanel {
             JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
     COPYDIRECTORIES_JPANEL.add(
         SCROLL_PANEL_COPYDIRECTORIES, TEXTAREA_COPYDIRECTORIES_JPANEL_CONSTRAINTS);
-    Dimension copy = new Dimension(100,100);
+    Dimension copy = new Dimension(100, 100);
     COPYDIRECTORIES_JPANEL.setSize(copy);
     COPYDIRECTORIES_JPANEL.setPreferredSize(copy);
     COPYDIRECTORIES_JPANEL.setMaximumSize(copy);
@@ -893,7 +893,7 @@ public class TabCreateServerPack extends JPanel {
 
     GRIDBAGCONSTRAINTS.anchor = GridBagConstraints.NORTHWEST;
     GRIDBAGCONSTRAINTS.fill = GridBagConstraints.BOTH;
-    GRIDBAGCONSTRAINTS.insets = new Insets(10,10,10,10);
+    GRIDBAGCONSTRAINTS.insets = new Insets(10, 10, 10, 10);
     GRIDBAGCONSTRAINTS.gridwidth = 6;
     AtomicInteger yPos = new AtomicInteger(GRIDBAGCONSTRAINTS.gridy);
     if (!injectedApplicationAddons.configPanelExtensions().isEmpty()) {
@@ -1025,7 +1025,7 @@ public class TabCreateServerPack extends JPanel {
     GRIDBAGCONSTRAINTS.anchor = GridBagConstraints.NORTHWEST;
     CREATESERVERPACKPANEL.add(statusPanel, GRIDBAGCONSTRAINTS);
 
-    GRIDBAGCONSTRAINTS.insets = new Insets(0,0,0,0);
+    GRIDBAGCONSTRAINTS.insets = new Insets(0, 0, 0, 0);
     GRIDBAGCONSTRAINTS.gridx = 0;
     GRIDBAGCONSTRAINTS.gridy += 1;
     GRIDBAGCONSTRAINTS.gridwidth = 6;
@@ -1966,13 +1966,13 @@ public class TabCreateServerPack extends JPanel {
 
     updateStatus(I18N.getMessage("createserverpack.log.info.buttoncreateserverpack.start"));
 
-    List<String> encounteredErrors = new ArrayList<>(100);
-
-    ConfigurationModel configurationModel = currentConfigAsModel();
-
     final ExecutorService executorService = Executors.newSingleThreadExecutor();
     executorService.execute(
         () -> {
+
+          ConfigurationModel configurationModel = currentConfigAsModel();
+          List<String> encounteredErrors = new ArrayList<>(100);
+
           if (!CONFIGURATIONHANDLER.checkConfiguration(
               configurationModel, encounteredErrors, true)) {
 
@@ -2038,7 +2038,8 @@ public class TabCreateServerPack extends JPanel {
 
               for (int i = 0; i < encounteredErrors.size(); i++) {
 
-                errors.append(i + 1).append(": ").append(encounteredErrors.get(i)).append("\n");
+                errors.append(i + 1).append(": ").append(encounteredErrors.get(i)).append("    ")
+                    .append("\n");
               }
 
               ready();
@@ -2054,6 +2055,7 @@ public class TabCreateServerPack extends JPanel {
             }
           }
 
+          encounteredErrors.clear();
           tailer.stop();
 
           ready();
@@ -2214,10 +2216,12 @@ public class TabCreateServerPack extends JPanel {
       TEXTFIELD_SERVERPACKSUFFIX.setText(
           UTILITIES.StringUtils().pathSecureText(configurationModel.getServerPackSuffix()));
 
-      CONFIG_PANELS.forEach(panel -> {
-        panel.setServerPackExtensionConfig(
-            configurationModel.getOrCreateAddonConfigList(panel.pluginID()));
-      });
+      CONFIG_PANELS.forEach(
+          panel ->
+              panel.setServerPackExtensionConfig(
+                  configurationModel.getOrCreateAddonConfigList(panel.pluginID())
+              )
+      );
 
       SCRIPT_VARIABLES.loadData(configurationModel.getScriptSettings());
 

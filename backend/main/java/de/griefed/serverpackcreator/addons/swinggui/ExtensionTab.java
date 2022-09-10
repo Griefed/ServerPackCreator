@@ -53,9 +53,9 @@ public abstract class ExtensionTab extends JPanel {
    *
    * @param versionMeta           Instance of {@link VersionMeta} so you can work with available
    *                              Minecraft, Forge, Fabric, LegacyFabric and Quilt versions.
-   * @param applicationProperties Instance of {@link ApplicationProperties} The current configuration of
-   *                              ServerPackCreator, like the default list of clientside-only mods,
-   *                              the server pack directory etc.
+   * @param applicationProperties Instance of {@link ApplicationProperties} The current
+   *                              configuration of ServerPackCreator, like the default list of
+   *                              clientside-only mods, the server pack directory etc.
    * @param utilities             Instance of {@link Utilities} commonly used across
    *                              ServerPackCreator.
    * @param addonConfig           Addon specific configuration conveniently provided by
@@ -65,11 +65,11 @@ public abstract class ExtensionTab extends JPanel {
    *                              an Optional.
    */
   protected ExtensionTab(
-      VersionMeta versionMeta,
-      ApplicationProperties applicationProperties,
-      Utilities utilities,
-      Optional<CommentedConfig> addonConfig,
-      Optional<File> configFile) {
+      final VersionMeta versionMeta,
+      final ApplicationProperties applicationProperties,
+      final Utilities utilities,
+      final Optional<CommentedConfig> addonConfig,
+      final Optional<File> configFile) {
 
     super();
     VERSIONMETA = versionMeta;
@@ -90,10 +90,13 @@ public abstract class ExtensionTab extends JPanel {
   protected final void saveConfiguration() {
     SwingUtilities.invokeLater(() -> {
       if (ADDON_CONFIG.isPresent() && CONFIG_FILE.isPresent()) {
+
         TomlFormat.instance().createWriter()
             .write(ADDON_CONFIG.get(), CONFIG_FILE.get(), WritingMode.REPLACE,
                 StandardCharsets.UTF_8);
+
         LOG_ADDONS.info("Configuration saved.");
+
       } else {
         LOG_ADDONS.info("No configuration or configuration file available.");
       }

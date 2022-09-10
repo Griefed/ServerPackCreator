@@ -51,9 +51,9 @@ public interface ConfigPanelExtension extends ExtensionInformation {
    *
    * @param versionMeta           Instance of {@link VersionMeta} so you can work with available
    *                              Minecraft, Forge, Fabric, LegacyFabric and Quilt versions.
-   * @param applicationProperties Instance of {@link ApplicationProperties} The current configuration of
-   *                              ServerPackCreator, like the default list of clientside-only mods,
-   *                              the server pack directory etc.
+   * @param applicationProperties Instance of {@link ApplicationProperties} The current
+   *                              configuration of ServerPackCreator, like the default list of
+   *                              clientside-only mods, the server pack directory etc.
    * @param utilities             Instance of {@link Utilities} commonly used across
    *                              ServerPackCreator.
    * @param tabCreateServerPack   Instance of {@link TabCreateServerPack} to give you access to the
@@ -69,11 +69,11 @@ public interface ConfigPanelExtension extends ExtensionInformation {
    * @author Griefed
    */
   ExtensionConfigPanel getPanel(
-      VersionMeta versionMeta,
-      ApplicationProperties applicationProperties,
-      Utilities utilities,
-      TabCreateServerPack tabCreateServerPack,
-      Optional<CommentedConfig> addonConfig,
-      String extensionName,
-      String pluginID);
+      final VersionMeta versionMeta,
+      final ApplicationProperties applicationProperties,
+      final Utilities utilities,
+      final TabCreateServerPack tabCreateServerPack,
+      final Optional<CommentedConfig> addonConfig,
+      final String extensionName,
+      final String pluginID);
 }
