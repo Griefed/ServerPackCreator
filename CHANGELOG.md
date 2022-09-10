@@ -1,3 +1,10 @@
+## [3.14.0-beta.5](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.14.0-beta.4...3.14.0-beta.5) (2022-09-10)
+
+
+### 💎 Improvements
+
+* **Addon Suite:** Provide more data to extensions. Ensure global addon configurations are properly managed by SPC. ([a3ce520](https://git.griefed.de/Griefed/ServerPackCreator/commit/a3ce52050d7a43301f7dcf16b87ca8b0939517b8))
+
 ## [3.14.0-beta.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.14.0-beta.3...3.14.0-beta.4) (2022-09-09)
 
 
