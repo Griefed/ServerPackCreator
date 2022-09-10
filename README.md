@@ -133,7 +133,32 @@ Huge shoutout and thank you!**
 
 # 3 How To
 
-Coming Soon™
+This How-To guide was inspired by the wonderful [Kreezxil](https://github.com/kreezxil). Guide originally from [his website](https://kreezcraft.com/server-pack-creator/), with permission to add it to this README.
+
+ServerPackCreator does what Kreezxil's articles do to create your server pack. It takes away the building part, not the debugging part. However, it gives a nice installer script which stops players from asking how to install a pack made with it.
+The scripts run on both Windows, and Linux, and probably also Mac.
+
+![howto](img/howto.png)
+
+I’ve placed numbers on the screenshot, and here’s what those sections do:
+
+1. Click this folder to browse to the place where the client pack lives. In the screenshot, the desired modpack resides on a Windows-machine, with paths you should recognize from the Overwolf CurseForge app.
+2. **Optional!** Specify a suffix for your server pack. It should honestly match the client pack version you’re distributing.
+3. Click this folder to navigate to the mods folder of your client pack. Here, you will CTRL select only those mods that run on a client exclusively. If the mod runs on a server, do not select it. Do not select everything, if you do that you’re failing right out the gate. Check the mod’s page to know for sure if it’s client only. If you are completely unsure which mod in your modpack should be selected, skip this step and keep the default list you see in the screenshot.
+4. After clicking this folder, you will choose those folders that must be included in your server pack for it to function properly. These should honestly at minimum be the **`mods`** and **`config`** directories. Without these, your server pack would not be compatible with your modpack. 
+5. **Optional!** Click the folder button to browse to an image file which should become the server icon of your server pack.
+6. **Optional!** Click the folder button to browse to a server.properties-file you want your players to use with your server pack. With this, you can provide default settings like difficulty, or the world-type.
+7. Select the Minecraft version of your modpack.
+8. Select the mod loader you are using.
+9. Choose the exact version of the modloader you are using.
+10. In this section are options that you can toggle. I recommend to toggle them all on. It will pre-install the modloader server so you can immediately start and test/debug, include the server-icon.png (either you specified one, or a default will be used), include the server.properties (either you specified one, or a default will be used) and finally, create a ZIP-archive of your server pack.
+11. **Optional!** JVM arguments, also called Java flags, to start your server with. Have you heard of the so-called Aikars Flags? You can use them via the `Use Aikars Flags`-button, or set your own. Useful if your server pack needs a lot of RAM and you want your server pack users to not have to work with these values themselves.
+12. **Optional!** This table lets you edit the Java path used in the start scripts. This does nothing for the scripts in the ZIP-archive, so don't worry. If your modpack and server pack need a different Java version to run, you can set the path the that Java versions binary/executable here. 
+13. **Optional!** Even more optional that #5, #6, #11 and #12, under this menu is an option to save and load a custom configuration. Useful for if you have more than one mod pack for which you make server packs. Note: Regardless of what you do, a default configuration exists. 
+
+And finally hit the play button ("Generate") to build the server pack. Once it is done, the app will ask if you want to go there. You should do that, and activate one of the start-up scripts that matches your system.
+
+For more, go follow the rest of the relevant articles at [Kreezcraft-How to make a Forge server from a Forge pack](https://kreezcraft.com/modpack-tutorials/how-to-make-a-forge-server-from-a-forge-pack/) and [Kreezcraft-How to make a Fabric server from a Fabric pack](https://kreezcraft.com/modpack-tutorials/how-to-make-a-fabric-server-from-a-fabric-pack/).
 
 ## 3.1 Help
 
@@ -170,7 +195,7 @@ For an example of an addon, see the [ServerPackCreator Example Addon](https://gi
 
 ## 5.2 Adding your own
 
-A curated list of officially acknowledged addons/plugins can be found at [addons.griefed.de](https://addons.griefed.de) (redirects to [GitHub Pages](https://griefed.github.io/ServerPackCreator-Addons-Overview/#/))
+A curated list of officially acknowledged addons/plugins can be found [here](https://addons.griefed.de) (redirects to [GitHub Pages](https://griefed.github.io/ServerPackCreator-Addons-Overview/#/))
 
 How to get your own addon into this list:
 
