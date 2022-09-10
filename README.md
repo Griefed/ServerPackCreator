@@ -48,7 +48,7 @@ into the world of programming.
 
 And here we are.
 
-**Required:** Please be aware that ServerPackCreator requires a working internet connection in order to work.
+**Required:** Please be aware that ServerPackCreator requires a working internet connection in order to work. The first run will create all necessary files and folders in the directory in which you are running ServerPackCreator. Move it to a dedicated directory before using it!
 
 **Note:** For more detailed information about all the different configuration options and possibilities of ServerPackCreator, take a look at the [Wiki](https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-Help)
 
@@ -62,7 +62,7 @@ And here we are.
 
 ![gui dark](img/gui_dark.png)
 
-# Advantages/Disadvantages of CLI, GUI and Webservice:
+# Advantages/Disadvantages of CLI, GUI:
 
 Each way of using ServerPackCreator has its advantages and disadvantages. Depending on your environment, it may be better to use one way over the other. This section highlights some of the
 advantages and disadvantages of each version to help you decide which way you are going to use.
@@ -87,25 +87,12 @@ Note: All three ways are supported by the **.jar**-file. Which one is started de
 | Loading and saving different configurations for quick generation of multiple server packs in short succession.         |                                   |
 | Edit the configuration in the GUI. No manual file-editing required.                                                    |                                   |
 
----
+## Webservice:
 
-# Awesomesauce!
-
-**None of this would have been possible without the excellent IDEs by JetBrains. They have kindly provided this open source project with an All Products Pack license.**
-**Additionally, ej-Technologies has provided an open-source license for JProfiler for ServerPackCreator, which allows me to resolve performance bottlenecks, pin down memory leaks and understand threading issues.
-Huge shoutout and thank you!**
-
-| [JetBrains](https://www.jetbrains.com/)                                                             | [IntelliJ IDEA](https://www.jetbrains.com/idea/)                                                                      | [WebStorm](https://www.jetbrains.com/webstorm/)                                                                 | [JProfiler](https://www.ej-technologies.com/products/jprofiler/overview.html)                                                                                                                                                                                                                                                              |
-|-----------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [![JetBrains](https://i.griefed.de/images/2021/05/11/jetbrains.th.png)](https://www.jetbrains.com/) | [![IntelliJ IDEA](https://i.griefed.de/images/2021/05/11/icon-intellij-idea.th.png)](https://www.jetbrains.com/idea/) | [![WebStorm](https://i.griefed.de/images/2021/05/11/icon-webstorm.th.png)](https://www.jetbrains.com/webstorm/) | [![ej-Technologies](https://www.ej-technologies.com/assets/logo-18cdc16334888781eb17378d82e5b1bb.png)](https://www.ej-technologies.com/products/jprofiler/overview.html) <br> [![JProfiler](https://www.ej-technologies.com/images/product_banners/jprofiler_large.png)](https://www.ej-technologies.com/products/jprofiler/overview.html) |
+ServerPackCreator also has a webservice which you can run with the `-web`-argument. However, this webservice is still barebones and prone to massive improvements in a later milestone, so usage of said webservice-mode is not advised at this moment. 
 
 ---
 
-# ✨ Thanks to all of my Supporters and Sponsors ✨
-
-<!-- sponsors --><a href="https://github.com/kreezxil"><img src="https://github.com/kreezxil.png" width="60px" alt="" /></a><!-- sponsors -->
-
----
 # 1. Known issues and help
 
 - A list of known issues can be found in [Known Issues](https://github.com/Griefed/ServerPackCreator/issues/55).
@@ -297,3 +284,169 @@ If you are on linux, run `chmod +x gradlew` first.
 Build with:
 
 `cleanUp about installQuasar cleanFrontend assembleFrontend copyDist build createExe --info --stacktrace`
+
+# 9. Awesomesauce!
+
+**None of this would have been possible without the excellent IDEs by JetBrains. They have kindly provided this open source project with an All Products Pack license.**
+**Additionally, ej-Technologies has provided an open-source license for JProfiler for ServerPackCreator, which allows me to resolve performance bottlenecks, pin down memory leaks and understand threading issues.
+Huge shoutout and thank you!**
+
+| [JetBrains](https://www.jetbrains.com/)                                                             | [IntelliJ IDEA](https://www.jetbrains.com/idea/)                                                                      | [WebStorm](https://www.jetbrains.com/webstorm/)                                                                 | [JProfiler](https://www.ej-technologies.com/products/jprofiler/overview.html)                                                                                                                                                                                                                                                              |
+|-----------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [![JetBrains](https://i.griefed.de/images/2021/05/11/jetbrains.th.png)](https://www.jetbrains.com/) | [![IntelliJ IDEA](https://i.griefed.de/images/2021/05/11/icon-intellij-idea.th.png)](https://www.jetbrains.com/idea/) | [![WebStorm](https://i.griefed.de/images/2021/05/11/icon-webstorm.th.png)](https://www.jetbrains.com/webstorm/) | [![ej-Technologies](https://www.ej-technologies.com/assets/logo-18cdc16334888781eb17378d82e5b1bb.png)](https://www.ej-technologies.com/products/jprofiler/overview.html) <br> [![JProfiler](https://www.ej-technologies.com/images/product_banners/jprofiler_large.png)](https://www.ej-technologies.com/products/jprofiler/overview.html) |
+
+---
+
+## ✨ Thanks to all of my Supporters and Sponsors ✨
+
+<!-- sponsors --><a href="https://github.com/kreezxil"><img src="https://github.com/kreezxil.png" width="60px" alt="" /></a><!-- sponsors -->
+
+---
+
+# 10. Libraries and Licenses
+
+This project would not be possible without these awesome groups, creators and developers and their wonderful libraries they have kindly provided to people such as me.
+
+**License report generated using [jk1/Gradle-License-Report](https://github.com/jk1/Gradle-License-Report)**
+
+Dependency License Report 2022-09-10
+
+## Apache License, Version 2.0
+
+**1** **Group:** `com.github.vatbub` **Name:** `mslinks` **Version:** `1.0.5`
+> - **POM Project URL**: [https://github.com/vatbub/mslinks](https://github.com/vatbub/mslinks)
+> - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
+
+**2** **Group:** `commons-io` **Name:** `commons-io` **Version:** `2.11.0`
+> - **Project URL**: [https://commons.apache.org/proper/commons-io/](https://commons.apache.org/proper/commons-io/)
+> - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
+> - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
+> - **Embedded license files**: [commons-io-2.11.0.jar/META-INF/LICENSE.txt](licenses/commons-io-2.11.0.jar/META-INF/LICENSE.txt)
+    - [commons-io-2.11.0.jar/META-INF/NOTICE.txt](licenses/commons-io-2.11.0.jar/META-INF/NOTICE.txt)
+
+**3** **Group:** `commons-lang` **Name:** `commons-lang` **Version:** `2.6`
+> - **Project URL**: [http://commons.apache.org/lang/](http://commons.apache.org/lang/)
+> - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
+> - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
+> - **Embedded license files**: [commons-lang-2.6.jar/META-INF/LICENSE.txt](licenses/commons-lang-2.6.jar/META-INF/LICENSE.txt)
+    - [commons-lang-2.6.jar/META-INF/NOTICE.txt](licenses/commons-lang-2.6.jar/META-INF/NOTICE.txt)
+
+**4** **Group:** `net.lingala.zip4j` **Name:** `zip4j` **Version:** `2.11.1`
+> - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
+> - **POM Project URL**: [https://github.com/srikanth-lingala/zip4j](https://github.com/srikanth-lingala/zip4j)
+> - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
+
+**5** **Group:** `org.apache.activemq` **Name:** `artemis-jms-server` **Version:** `2.19.1`
+> - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
+> - **Embedded license files**: [artemis-jms-server-2.19.1.jar/META-INF/LICENSE](licenses/artemis-jms-server-2.19.1.jar/META-INF/LICENSE)
+    - [artemis-jms-server-2.19.1.jar/META-INF/NOTICE](licenses/artemis-jms-server-2.19.1.jar/META-INF/NOTICE)
+
+**6** **Group:** `org.apache.logging.log4j` **Name:** `log4j-api` **Version:** `2.18.0`
+> - **Manifest Project URL**: [https://www.apache.org/](https://www.apache.org/)
+> - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
+> - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
+> - **Embedded license files**: [log4j-api-2.18.0.jar/META-INF/LICENSE](licenses/log4j-api-2.18.0.jar/META-INF/LICENSE)
+    - [log4j-api-2.18.0.jar/META-INF/NOTICE](licenses/log4j-api-2.18.0.jar/META-INF/NOTICE)
+
+**7** **Group:** `org.apache.logging.log4j` **Name:** `log4j-slf4j-impl` **Version:** `2.18.0`
+> - **Manifest Project URL**: [https://www.apache.org/](https://www.apache.org/)
+> - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
+> - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
+> - **Embedded license files**: [log4j-slf4j-impl-2.18.0.jar/META-INF/LICENSE](licenses/log4j-slf4j-impl-2.18.0.jar/META-INF/LICENSE)
+    - [log4j-slf4j-impl-2.18.0.jar/META-INF/NOTICE](licenses/log4j-slf4j-impl-2.18.0.jar/META-INF/NOTICE)
+
+**8** **Group:** `org.apache.logging.log4j` **Name:** `log4j-web` **Version:** `2.18.0`
+> - **Manifest Project URL**: [https://www.apache.org/](https://www.apache.org/)
+> - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
+> - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
+> - **Embedded license files**: [log4j-web-2.18.0.jar/META-INF/LICENSE](licenses/log4j-web-2.18.0.jar/META-INF/LICENSE)
+    - [log4j-web-2.18.0.jar/META-INF/NOTICE](licenses/log4j-web-2.18.0.jar/META-INF/NOTICE)
+
+**9** **Group:** `org.apache.logging.log4j` **Name:** `log4j-jul` **Version:** `2.18.0`
+> - **Manifest Project URL**: [https://www.apache.org/](https://www.apache.org/)
+> - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
+> - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
+> - **Embedded license files**: [log4j-jul-2.18.0.jar/META-INF/LICENSE](licenses/log4j-jul-2.18.0.jar/META-INF/LICENSE)
+    - [log4j-jul-2.18.0.jar/META-INF/NOTICE](licenses/log4j-jul-2.18.0.jar/META-INF/NOTICE)
+
+**10** **Group:** `org.apache.logging.log4j` **Name:** `log4j-core` **Version:** `2.18.0`
+> - **Manifest Project URL**: [https://www.apache.org/](https://www.apache.org/)
+> - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
+> - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
+> - **Embedded license files**: [log4j-core-2.18.0.jar/META-INF/LICENSE](licenses/log4j-core-2.18.0.jar/META-INF/LICENSE)
+    - [log4j-core-2.18.0.jar/META-INF/NOTICE](licenses/log4j-core-2.18.0.jar/META-INF/NOTICE)
+
+**11** **Group:** `org.jgroups` **Name:** `jgroups` **Version:** `5.2.6.Final`
+> - **POM Project URL**: [http://www.jgroups.org](http://www.jgroups.org)
+> - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
+> - **Embedded license files**: [jgroups-5.2.6.Final.jar/LICENSE](licenses/jgroups-5.2.6.Final.jar/LICENSE)
+    - [jgroups-5.2.6.Final.jar/README](licenses/jgroups-5.2.6.Final.jar/README)
+
+**12** **Group:** `org.pf4j` **Name:** `pf4j` **Version:** `3.7.0`
+> - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
+
+**13** **Group:** `org.springframework.boot` **Name:** `spring-boot-starter-data-jpa` **Version:** `2.7.3`
+> - **POM Project URL**: [https://spring.io/projects/spring-boot](https://spring.io/projects/spring-boot)
+> - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
+> - **Embedded license files**: [spring-boot-starter-data-jpa-2.7.3.jar/META-INF/LICENSE.txt](licenses/spring-boot-starter-data-jpa-2.7.3.jar/META-INF/LICENSE.txt)
+    - [spring-boot-starter-data-jpa-2.7.3.jar/META-INF/NOTICE.txt](licenses/spring-boot-starter-data-jpa-2.7.3.jar/META-INF/NOTICE.txt)
+
+**14** **Group:** `org.springframework.boot` **Name:** `spring-boot-starter-log4j2` **Version:** `2.7.3`
+> - **POM Project URL**: [https://spring.io/projects/spring-boot](https://spring.io/projects/spring-boot)
+> - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
+> - **Embedded license files**: [spring-boot-starter-log4j2-2.7.3.jar/META-INF/LICENSE.txt](licenses/spring-boot-starter-log4j2-2.7.3.jar/META-INF/LICENSE.txt)
+    - [spring-boot-starter-log4j2-2.7.3.jar/META-INF/NOTICE.txt](licenses/spring-boot-starter-log4j2-2.7.3.jar/META-INF/NOTICE.txt)
+
+**15** **Group:** `org.springframework.boot` **Name:** `spring-boot-devtools` **Version:** `2.7.3`
+> - **POM Project URL**: [https://spring.io/projects/spring-boot](https://spring.io/projects/spring-boot)
+> - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
+> - **Embedded license files**: [spring-boot-devtools-2.7.3.jar/META-INF/LICENSE.txt](licenses/spring-boot-devtools-2.7.3.jar/META-INF/LICENSE.txt)
+    - [spring-boot-devtools-2.7.3.jar/META-INF/NOTICE.txt](licenses/spring-boot-devtools-2.7.3.jar/META-INF/NOTICE.txt)
+
+**16** **Group:** `org.springframework.boot` **Name:** `spring-boot-starter-artemis` **Version:** `2.7.3`
+> - **POM Project URL**: [https://spring.io/projects/spring-boot](https://spring.io/projects/spring-boot)
+> - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
+> - **Embedded license files**: [spring-boot-starter-artemis-2.7.3.jar/META-INF/LICENSE.txt](licenses/spring-boot-starter-artemis-2.7.3.jar/META-INF/LICENSE.txt)
+    - [spring-boot-starter-artemis-2.7.3.jar/META-INF/NOTICE.txt](licenses/spring-boot-starter-artemis-2.7.3.jar/META-INF/NOTICE.txt)
+
+**17** **Group:** `org.springframework.boot` **Name:** `spring-boot-starter-web` **Version:** `2.7.3`
+> - **POM Project URL**: [https://spring.io/projects/spring-boot](https://spring.io/projects/spring-boot)
+> - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
+> - **Embedded license files**: [spring-boot-starter-web-2.7.3.jar/META-INF/LICENSE.txt](licenses/spring-boot-starter-web-2.7.3.jar/META-INF/LICENSE.txt)
+    - [spring-boot-starter-web-2.7.3.jar/META-INF/NOTICE.txt](licenses/spring-boot-starter-web-2.7.3.jar/META-INF/NOTICE.txt)
+
+**18** **Group:** `org.xerial` **Name:** `sqlite-jdbc` **Version:** `3.39.2.1`
+> - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
+> - **POM Project URL**: [https://github.com/xerial/sqlite-jdbc](https://github.com/xerial/sqlite-jdbc)
+> - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
+> - **Embedded license files**: [sqlite-jdbc-3.39.2.1.jar/META-INF/maven/org.xerial/sqlite-jdbc/LICENSE](licenses/sqlite-jdbc-3.39.2.1.jar/META-INF/maven/org.xerial/sqlite-jdbc/LICENSE)
+    - [sqlite-jdbc-3.39.2.1.jar/META-INF/maven/org.xerial/sqlite-jdbc/LICENSE.zentus](licenses/sqlite-jdbc-3.39.2.1.jar/META-INF/maven/org.xerial/sqlite-jdbc/LICENSE.zentus)
+
+## GNU Lesser General Public License v3.0
+
+**19** **Group:** `com.electronwill.night-config` **Name:** `toml` **Version:** `3.6.6`
+> - **POM Project URL**: [https://github.com/TheElectronWill/Night-Config](https://github.com/TheElectronWill/Night-Config)
+> - **POM License**: GNU Lesser General Public License v3.0 - [https://www.gnu.org/licenses/lgpl-3.0.txt](https://www.gnu.org/licenses/lgpl-3.0.txt)
+
+## MIT License
+
+**20** **Group:** `de.griefed` **Name:** `larsonscanner` **Version:** `1.0.4`
+> - **POM Project URL**: [https://git.griefed.de/Griefed/LarsonScanner.git](https://git.griefed.de/Griefed/LarsonScanner.git)
+> - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
+> - **Embedded license files**: [larsonscanner-1.0.4.jar/LICENSE](licenses/larsonscanner-1.0.4.jar/LICENSE)
+
+**21** **Group:** `de.griefed` **Name:** `versionchecker` **Version:** `1.1.0`
+> - **POM Project URL**: [https://git.griefed.de/Griefed/VersionChecker.git](https://git.griefed.de/Griefed/VersionChecker.git)
+> - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
+
+**22** **Group:** `io.github.vincenzopalazzo` **Name:** `material-ui-swing` **Version:** `1.1.3`
+> - **POM Project URL**: [https://material-ui-swing.github.io](https://material-ui-swing.github.io)
+> - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
+
+## PUBLIC DOMAIN
+
+**23** **Group:** `com.github.gwenn` **Name:** `sqlite-dialect` **Version:** `0.1.2`
+> - **POM Project URL**: [https://github.com/gwenn/sqlite-dialect](https://github.com/gwenn/sqlite-dialect)
+> - **POM License**: PUBLIC DOMAIN - [http://unlicense.org/](http://unlicense.org/)
+
+

@@ -1,8 +1,9 @@
 //file:noinspection GroovyAssignabilityCheck
 //file:noinspection GrUnresolvedAccess
 import org.siouan.frontendgradleplugin.infrastructure.gradle.RunNpm
-
+import com.github.jk1.license.render.*
 import java.text.SimpleDateFormat
+import com.github.jk1.license.filter.*
 
 plugins {
   id 'java'
@@ -17,10 +18,9 @@ plugins {
   id 'org.siouan.frontend-jdk8' version '6.0.0'
   id 'org.springframework.boot' version '2.7.3'
   id 'io.spring.dependency-management' version '1.0.13.RELEASE'
-}
 
-sourceCompatibility = targetCompatibility = '1.8'
-group = 'de.griefed'
+  id 'com.github.jk1.dependency-license-report' version '2.0'
+}
 
 repositories {
   mavenCentral()
@@ -47,49 +47,53 @@ sourceSets {
   }
 }
 
+sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
+group = 'de.griefed'
+def mainClass = 'de.griefed.serverpackcreator.ServerPackCreator'
+def description = 'Create server packs from Minecraft modpacks.'
+def implTitle = 'serverpackcreator'
+def title = 'ServerPackCreator'
+def author = 'Griefed'
+
 configurations {
   all {
     // Exclude logging from dependencies because we already have logging set up
     exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
     exclude group: 'org.slf4j', module: 'slf4j-log4j12'
-
   }
-
-  embed
-  implementation.extendsFrom(embed)
 }
 
 dependencies {
   // Backend
-  embed 'de.griefed:versionchecker:1.1.0'
-  embed 'com.electronwill.night-config:toml:3.6.6'
-  embed 'commons-io:commons-io:2.11.0'
-  embed 'commons-lang:commons-lang:2.6'
+  implementation 'de.griefed:versionchecker:1.1.0'
+  implementation 'com.electronwill.night-config:toml:3.6.6'
+  implementation 'commons-io:commons-io:2.11.0'
+  implementation 'commons-lang:commons-lang:2.6'
 
-  embed 'net.lingala.zip4j:zip4j:2.11.1'
-  embed 'org.xerial:sqlite-jdbc:3.39.2.1'
-  embed 'org.pf4j:pf4j:3.7.0'
-  embed 'com.github.vatbub:mslinks:1.0.5'
-  implementation 'org.jetbrains:annotations:23.0.0'
+  implementation 'net.lingala.zip4j:zip4j:2.11.1'
+  implementation 'org.xerial:sqlite-jdbc:3.39.2.1'
+  implementation 'org.pf4j:pf4j:3.7.0'
+  implementation 'com.github.vatbub:mslinks:1.0.5'
+  annotationProcessor 'org.jetbrains:annotations:23.0.0'
 
-  embed 'org.apache.logging.log4j:log4j-core:2.18.0'
-  embed 'org.apache.logging.log4j:log4j-api:2.18.0'
-  embed 'org.apache.logging.log4j:log4j-slf4j-impl:2.18.0'
-  embed 'org.apache.logging.log4j:log4j-web:2.18.0'
-  embed 'org.apache.logging.log4j:log4j-jul:2.18.0'
-  embed 'org.jgroups:jgroups:5.2.6.Final'
+  implementation 'org.apache.logging.log4j:log4j-core:2.18.0'
+  implementation 'org.apache.logging.log4j:log4j-api:2.18.0'
+  implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.18.0'
+  implementation 'org.apache.logging.log4j:log4j-web:2.18.0'
+  implementation 'org.apache.logging.log4j:log4j-jul:2.18.0'
+  implementation 'org.jgroups:jgroups:5.2.6.Final'
 
   // GUI
-  embed 'io.github.vincenzopalazzo:material-ui-swing:1.1.3'
-  embed 'de.griefed:larsonscanner:1.0.4'
+  implementation 'io.github.vincenzopalazzo:material-ui-swing:1.1.3'
+  implementation 'de.griefed:larsonscanner:1.0.4'
 
   // WEB
-  embed 'org.springframework.boot:spring-boot-starter-web:2.7.3'
-  embed 'org.springframework.boot:spring-boot-starter-log4j2:2.7.3'
-  embed 'org.apache.activemq:artemis-jms-server:2.19.1'
-  embed 'org.springframework.boot:spring-boot-starter-data-jpa:2.7.3'
-  embed 'org.springframework.boot:spring-boot-starter-artemis:2.7.3'
-  embed 'com.github.gwenn:sqlite-dialect:0.1.2'
+  implementation 'org.springframework.boot:spring-boot-starter-web:2.7.3'
+  implementation 'org.springframework.boot:spring-boot-starter-log4j2:2.7.3'
+  implementation 'org.apache.activemq:artemis-jms-server:2.19.1'
+  implementation 'org.springframework.boot:spring-boot-starter-data-jpa:2.7.3'
+  implementation 'org.springframework.boot:spring-boot-starter-artemis:2.7.3'
+  implementation 'com.github.gwenn:sqlite-dialect:0.1.2'
 
   // Dev tools
   developmentOnly 'org.springframework.boot:spring-boot-devtools:2.7.3'
@@ -99,6 +103,35 @@ dependencies {
   testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.0'
   testImplementation 'org.springframework.boot:spring-boot-starter-test:2.7.3'
   testImplementation 'org.junit.platform:junit-platform-commons:1.9.0'
+}
+
+licenseReport {
+  // Set output directory for the report data.
+  // Defaults to ${project.buildDir}/reports/dependency-license.
+  outputDir = "$projectDir/licenses"
+
+  // Select projects to examine for dependencies.
+  // Defaults to current project and all its subprojects
+  projects = [project] + project.subprojects
+
+  // Adjust the configurations to fetch dependencies. Default is 'runtimeClasspath'
+  // For Android projects use 'releaseRuntimeClasspath' or 'yourFlavorNameReleaseRuntimeClasspath'
+  // Use 'ALL' to dynamically resolve all configurations:
+  // configurations = ALL
+  configurations = ['runtimeClasspath']
+
+  // Don't include artifacts of project's own group into the report
+  excludeOwnGroup = false
+
+  // Don't exclude bom dependencies.
+  // If set to true, then all boms will be excluded from the report
+  excludeBoms = true
+
+  filters = [new ExcludeTransitiveDependenciesFilter(),new LicenseBundleNormalizer()]
+
+  // Set custom report renderer, implementing ReportRenderer.
+  // Yes, you can write your own to support any format necessary.
+  renderers = [new InventoryHtmlReportRenderer('index.html', 'Dependency Licences'), new InventoryMarkdownReportRenderer("licences.md","Licenses")]
 }
 
 // Configure frontend plugin. See documentation at https://siouan.github.io/frontend-gradle-plugin/.
@@ -165,12 +198,12 @@ tasks.withType(Javadoc) {
 
 // Launch4j builds our ServerPackCreator.exe.
 launch4j {
-  mainClassName = 'de.griefed.serverpackcreator.ServerPackCreator'
+  mainClassName = mainClass
   jarTask = project.tasks.jar
-  fileDescription = "Create server packs from Minecraft modpacks."
+  fileDescription = description
   version = project.version
   textVersion = project.version
-  windowTitle = "ServerPackCreator"
+  windowTitle = title
   copyright = "GNU Lesser General Public License v2.1"
   downloadUrl = "https://github.com/Griefed/serverpackcreator/releases"
   supportUrl = "https://github.com/Griefed/serverpackcreator/issues"
@@ -229,17 +262,17 @@ bootJar {
   // Customize MANIFEST to include relevant information.
   manifest {
     attributes(
-        "Start-Class": "de.griefed.serverpackcreator.ServerPackCreator",
-        "Class-Path": configurations.embed.findAll { it.name.endsWith('jar') }.collect { zipTree(it) },
-        "Description": "Create server packs from Minecraft modpacks.",
+        "Start-Class": mainClass,
+        "Description": description,
         "Built-By": System.getProperty("user.name"),
         "Build-Timestamp": new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date()),
         "Created-By": "Gradle ${gradle.gradleVersion}",
         "Build-Jdk": "${System.getProperty('java.version')} (${System.getProperty('java.vendor')} ${System.getProperty('java.vm.version')})",
         "Build-OS": "${System.getProperty('os.name')} ${System.getProperty('os.arch')} ${System.getProperty('os.version')}",
+        "Implementation-Vendor" : author,
         "Implementation-Version": "${project.version}",
-        "Implementation-Title": "serverpackcreator",
-        "Application-Name": "ServerPackCreator"
+        "Implementation-Title": implTitle,
+        "Application-Name": title
     )
 
   }
@@ -269,23 +302,23 @@ jar {
 
   // Include all libraries in our JAR-file.
   from {
-    configurations.embed.findAll { it.name.endsWith('jar') }.collect { zipTree(it) }
+    configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
   }
 
   // Customize MANIFEST to include relevant information.
   manifest {
     attributes(
         "Main-Class": "de.griefed.serverpackcreator.ServerPackCreator",
-        "Class-Path": configurations.embed.findAll { it.name.endsWith('jar') }.collect { zipTree(it) },
         "Description": "Create server packs from Minecraft Forge or Fabric modpacks.",
         "Built-By": System.getProperty("user.name"),
         "Build-Timestamp": new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date()),
         "Created-By": "Gradle ${gradle.gradleVersion}",
         "Build-Jdk": "${System.getProperty('java.version')} (${System.getProperty('java.vendor')} ${System.getProperty('java.vm.version')})",
         "Build-OS": "${System.getProperty('os.name')} ${System.getProperty('os.arch')} ${System.getProperty('os.version')}",
+        "Implementation-Vendor" : author,
         "Implementation-Version": "${project.version}",
-        "Implementation-Title": "serverpackcreator",
-        "Application-Name": "ServerPackCreator"
+        "Implementation-Title": implTitle,
+        "Application-Name": title
     )
   }
   // Exclude files and folders which would otherwise bloat our JAR-file up.
