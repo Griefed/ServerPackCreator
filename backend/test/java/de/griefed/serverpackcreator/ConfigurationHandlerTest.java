@@ -160,24 +160,6 @@ class ConfigurationHandlerTest {
   }
 
   @Test
-  void checkJavaPathTest() {
-    String javaPath;
-    String autoJavaPath = System.getProperty("java.home").replace("\\", "/") + "/bin/java";
-    if (autoJavaPath.startsWith("C:")) {
-      autoJavaPath = String.format("%s.exe", autoJavaPath);
-    }
-    if (new File("/usr/bin/java").exists()) {
-      javaPath = "/usr/bin/java";
-    } else if (new File("/opt/hostedtoolcache/jdk/8.0.282/x64/bin/java").exists()) {
-      javaPath = "/opt/hostedtoolcache/jdk/8.0.282/x64/bin/java";
-    } else {
-      javaPath = autoJavaPath;
-    }
-    Assertions.assertNotNull(configurationHandler.getJavaPath(javaPath));
-    Assertions.assertTrue(new File(configurationHandler.getJavaPath(javaPath)).exists());
-  }
-
-  @Test
   void checkModloaderTestForge() {
     Assertions.assertTrue(configurationHandler.checkModloader("Forge"));
     Assertions.assertTrue(configurationHandler.checkModloader("fOrGe"));

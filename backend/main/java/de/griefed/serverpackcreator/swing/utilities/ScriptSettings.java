@@ -337,6 +337,7 @@ public class ScriptSettings extends JTable {
     @Override
     public Component getTableCellEditorComponent(
         JTable table, Object value, boolean isSelected, int row, int column) {
+
       this.editorValue = value;
       return editButton;
     }
@@ -348,6 +349,7 @@ public class ScriptSettings extends JTable {
 
     public Component getTableCellRendererComponent(
         JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+
       if (isSelected) {
         renderButton.setForeground(table.getSelectionForeground());
         renderButton.setBackground(table.getSelectionBackground());
@@ -374,8 +376,7 @@ public class ScriptSettings extends JTable {
 
       ActionEvent event = new ActionEvent(
           table,
-          ActionEvent.ACTION_PERFORMED,
-          "" + row);
+          ActionEvent.ACTION_PERFORMED,String.valueOf(row));
       action.actionPerformed(event);
     }
 
@@ -385,18 +386,15 @@ public class ScriptSettings extends JTable {
      * is released.
      */
     public void mousePressed(MouseEvent e) {
-      if (table.isEditing()
-          && table.getCellEditor() == this) {
+      if (table.isEditing() && table.getCellEditor().equals(this)) {
         isButtonColumnEditor = true;
       }
     }
 
     public void mouseReleased(MouseEvent e) {
-      if (isButtonColumnEditor
-          && table.isEditing()) {
+      if (isButtonColumnEditor && table.isEditing()) {
         table.getCellEditor().stopCellEditing();
       }
-
       isButtonColumnEditor = false;
     }
 

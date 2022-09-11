@@ -64,6 +64,9 @@ public class ApplicationPropertiesTest {
         new File("backend/test/resources/serverpackcreator.properties"), fileUtilities,
         systemUtilities,listUtilities);
 
+    Assertions.assertNotNull(applicationProperties.java());
+    Assertions.assertTrue(new File(applicationProperties.java()).exists());
+
     Assertions.assertNotNull(applicationProperties.FALLBACK_CLIENTSIDE_MODS());
     Assertions.assertEquals(applicationProperties.FALLBACK_CLIENTSIDE_MODS(), listFallback);
     Assertions.assertEquals(applicationProperties.getListFallbackMods(), listFallback);

@@ -19,7 +19,6 @@
  */
 package de.griefed.serverpackcreator;
 
-import com.electronwill.nightconfig.toml.TomlParser;
 import de.griefed.serverpackcreator.i18n.I18n;
 import de.griefed.serverpackcreator.utilities.ConfigUtilities;
 import de.griefed.serverpackcreator.utilities.common.FileUtilities;
@@ -53,7 +52,6 @@ import org.springframework.stereotype.Component;
 public final class ConfigurationHandler {
 
   private static final Logger LOG = LogManager.getLogger(ConfigurationHandler.class);
-  private static final Logger LOG_ADDONS = LogManager.getLogger("AddonsLogger");
 
   private final I18n I18N;
   private final VersionMeta VERSIONMETA;
@@ -61,7 +59,6 @@ public final class ConfigurationHandler {
   private final Utilities UTILITIES;
   private final ConfigUtilities CONFIGUTILITIES;
   private final ApplicationAddons APPLICATIONADDONS;
-  private final TomlParser TOMLPARSER;
 
   /**
    * Construct a new ConfigurationHandler giving you access to various config check methods.
@@ -75,7 +72,6 @@ public final class ConfigurationHandler {
    * @param injectedUtilities             Instance of {@link Utilities}.
    * @param injectedConfigUtilities       Instance of {@link ConfigUtilities}.
    * @param injectedApplicationAddons     Instance of {@link ApplicationAddons}.
-   * @param injectedTomlParser            Instance of {@link TomlParser}.
    * @throws IOException if the {@link VersionMeta} could not be instantiated.
    * @author Griefed
    */
@@ -86,8 +82,7 @@ public final class ConfigurationHandler {
       ApplicationProperties injectedApplicationProperties,
       Utilities injectedUtilities,
       ConfigUtilities injectedConfigUtilities,
-      ApplicationAddons injectedApplicationAddons,
-      TomlParser injectedTomlParser)
+      ApplicationAddons injectedApplicationAddons)
       throws IOException {
 
     APPLICATIONPROPERTIES = injectedApplicationProperties;
@@ -96,7 +91,6 @@ public final class ConfigurationHandler {
     UTILITIES = injectedUtilities;
     CONFIGUTILITIES = injectedConfigUtilities;
     APPLICATIONADDONS = injectedApplicationAddons;
-    TOMLPARSER = injectedTomlParser;
   }
 
   /**

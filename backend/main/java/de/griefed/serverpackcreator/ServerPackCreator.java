@@ -348,7 +348,7 @@ public class ServerPackCreator {
       this.configurationHandler =
           new ConfigurationHandler(
               I18N, getVersionMeta(), APPLICATIONPROPERTIES, getUtilities(), getConfigUtilities(),
-              getApplicationAddons(), getTomlParser());
+              getApplicationAddons());
     }
     return configurationHandler;
   }
