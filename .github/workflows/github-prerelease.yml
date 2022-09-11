@@ -29,28 +29,15 @@ jobs:
         run: |
           curl --header \
           'PRIVATE-TOKEN: ${{ secrets.GITLAB_TOKEN }}' \
-          'https://git.griefed.de/api/v4/projects/63/releases/${{steps.tag.outputs.tag}}' >> ./version.json
+          'https://git.griefed.de/api/v4/projects/63/releases/${{steps.tag.outputs.tag}}' >> version.json
 
       # GET DESCRIPTION
-      - name: Extract version from package.json
+      - name: Extract version changelog
         uses: sergeysova/jq-action@v2
         id: description
         with:
-          cmd: 'jq .description version.json -r'
+          cmd: "jq .description version.json -r | sed -e 's/\\n/\\n/g' > description.txt"
           multiline: true
-
-      # GENERATE RELEASE
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@latest
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: Pre-Release ${{steps.tag.outputs.tag}}
-          body: ${{ steps.description.outputs.value }}
-          draft: false
-          prerelease: true
 
       # BUILD PROJECT AND PUBLISH TO PACKAGES
       - name: Set up JDK 8
@@ -67,11 +54,15 @@ jobs:
           GITHUB_ACTOR: ${{ secrets.GITHUB_ACTOR }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          ./gradlew about
-          echo "version=${{steps.tag.outputs.tag}}" > backend/main/resources/VERSION.txt
-          ./gradlew -Pversion=${{steps.tag.outputs.tag}} installQuasar cleanFrontend assembleFrontend copyDist build createExe --info --stacktrace -x test
-      - name: List files
-        run: ls -ahl build/libs
+          ./gradlew about -Pversion=${{steps.tag.outputs.tag}} installQuasar cleanFrontend assembleFrontend copyDist build createExe --info --stacktrace  -x test
+
+      # RENAME EXE
+      - name: Rename files
+        run: |
+          echo "**** Renaming files to please the eye ****"
+          mv build/libs/ServerPackCreator.exe build/libs/ServerPackCreator-${{steps.tag.outputs.tag}}.exe
+
+      # PUBLISH ARTIFACTS
       - uses: actions/upload-artifact@v3
         with:
           name: build-artifacts-gradle
@@ -80,66 +71,23 @@ jobs:
             frontend/dist
           if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
 
-      - name: Rename files
-        run: |
-          echo "**** Renaming files to please the eye ****"
-          mv build/libs/ServerPackCreator.exe build/libs/ServerPackCreator-${{steps.tag.outputs.tag}}.exe
-
-      - uses: actions/upload-artifact@v3
+      # GENERATE RELEASE
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
         with:
-          name: build-artifacts-gradle
-          path: |
-            build/libs/
-            frontend/dist/spa
-          if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
-      - uses: actions/upload-artifact@v3
-        if: failure()
-        with:
-          name: report
-          path: build/reports/tests/test/
-          if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
-
-      # UPLOAD ASSETS TO RELEASE
-      - name: Upload Release Asset Main Jar
-        id: upload-release-asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./build/libs/ServerPackCreator-${{steps.tag.outputs.tag}}.jar
-          asset_name: ServerPackCreator-${{steps.tag.outputs.tag}}.jar
-          asset_content_type: application/jar
-      - name: Upload Release Asset Executable
-        id: upload-release-asset-executable
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./build/libs/ServerPackCreator-${{steps.tag.outputs.tag}}.exe
-          asset_name: ServerPackCreator-${{steps.tag.outputs.tag}}.exe
-          asset_content_type: application/jar
-      - name: Upload Release Asset Sources Jar
-        id: upload-release-asset-sources
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./build/libs/ServerPackCreator-${{steps.tag.outputs.tag}}-sources.jar
-          asset_name: ServerPackCreator-${{steps.tag.outputs.tag}}-sources.jar
-          asset_content_type: application/jar
-      - name: Upload Release Asset Javadoc Jar
-        id: upload-release-asset-javadoc
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./build/libs/ServerPackCreator-${{steps.tag.outputs.tag}}-javadoc.jar
-          asset_name: ServerPackCreator-${{steps.tag.outputs.tag}}-javadoc.jar
-          asset_content_type: application/jar
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag_name: ${{steps.tag.outputs.tag}}
+          name: Release ${{steps.tag.outputs.tag}}
+          body_path: description.txt
+          draft: false
+          prerelease: true
+          fail_on_unmatched_files: false
+          files: |
+            build/libs/ServerPackCreator-${{steps.tag.outputs.tag}}.exe
+            build/libs/ServerPackCreator-${{steps.tag.outputs.tag}}.jar
+            build/libs/ServerPackCreator-${{steps.tag.outputs.tag}}-sources.jar
+            build/libs/ServerPackCreator-${{steps.tag.outputs.tag}}-javadoc.jar
 
       - name: Get current date
         id: date
@@ -160,8 +108,7 @@ jobs:
             --author "Griefed" \
             --author-url "$GITHUB_SERVER_URL/Griefed" \
             --author-icon "https://i.griefed.de/images/2022/01/21/sam_1500x1500.th.jpg" \
-            --image "https://i.griefed.de/images/2021/05/08/app.png" \
-            --thumbnail "https://i.griefed.de/images/2020/11/18/Prosper_Docker_300x300.th.png" \
+            --thumbnail "https://i.griefed.de/images/2021/05/08/app.png" \
             --field "Author;[Griefed]($GITHUB_SERVER_URL/Griefed)" \
             --field "Platform;[GitHub]($GITHUB_SERVER_URL)" \
             --footer "Released at ${{ steps.date.outputs.today }}" \
