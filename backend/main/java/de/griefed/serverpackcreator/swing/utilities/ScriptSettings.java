@@ -376,7 +376,7 @@ public class ScriptSettings extends JTable {
 
       ActionEvent event = new ActionEvent(
           table,
-          ActionEvent.ACTION_PERFORMED,String.valueOf(row));
+          ActionEvent.ACTION_PERFORMED, String.valueOf(row));
       action.actionPerformed(event);
     }
 

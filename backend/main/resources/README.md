@@ -76,6 +76,7 @@ Note: All three ways are supported by the **.jar**-file. Which one is started de
 | Step-by-Step generation of a configuration-file with the use of the `-cgen` argument. Generated config will be used immediately afterwards.                                                             | No convenience features file folder-browsing or jumping to the generated server pack after generation.                |
 | Load and edit an existing configuration. Editing is limited to base values of a given configuration. Not editable via CLI are script settings as well as any potentially installed addon configuration. | Debugging in case of a broken/erroring configuration file can be time consuming. Careful reading of logs is required. |
 |                                                                                                                                                                                                         | Manual editing of the configuration-file in case you want to change it.                                               |
+|                                                                                                                                                                                                         | Unable to edit start script placeholders and variables                                                                |
 
 ## GUI:
 
@@ -86,6 +87,7 @@ Note: All three ways are supported by the **.jar**-file. Which one is started de
 | Browsing the generated server pack after generation has finished.                                                      |                                   |
 | Loading and saving different configurations for quick generation of multiple server packs in short succession.         |                                   |
 | Edit the configuration in the GUI. No manual file-editing required.                                                    |                                   |
+| Edit start script placeholders and values                                                                              |                                   |
 
 ## Webservice:
 
@@ -103,20 +105,36 @@ ServerPackCreator also has a webservice which you can run with the `-web`-argume
 
 # 2. Small feature overview
 
-1. Exclude clientside-only mods
-    1. Either automatically by letting ServerPackCreator scan the mods of your modpack for their sideness
-    2. Manually by configuring a list mods which ServerPackCreator will filter out according to your input. There are four different filter-types at your disposal by which to filter your clientside-only mods.
-2. Include files and directories in your server pack. These can be files or folders from your modpack, but also modpack-external files and folders, from your computer!
-3. Create your server pack with a server icon. Server icons are automatically scaled down, or up, to 64x64!
-4. Create your server pack with a server.properties. Already have a properties-file somewhere you want to use with your new server packs? Tell ServerPackCreator to include it, and off you go! A pre-made server.properties is also a nice way of making sure your server pack users have the correct world-type, difficulty etc. set up already!
-5. ServerPackCreator supports the following modloaders: **Forge, Fabric, LegacyFabric and Quilt**
-6. If you so desire, you can use Minecraft snapshots and pre-releases, too! Fabric has a habit of supporting the occasional snapshot and/or pre-release.
-7. You can let ServerPackCreator install the server for your server pack, so you can run it immediately after generation finished!
-8. You can let ServerPackCreator generate a ZIP-archive of the generated server pack, for immediate upload to places like CurseForge (**after** you've tested your server pack, of course 😉)
-9. Set commandline arguments with which to start the Minecraft server. Does your modpack require a lot of RAM? Well, tell ServerPackCreator to create the start scripts with `-Xms8G -Xmx8G` or similar values!
-    1. Aikars flags are available, too. If you like 'em, use 'em.
-10. Don't like the default start scripts ServerPackCreator offers? Create your own and tell ServerPackCreator to use them!
-    1. You can configure placeholders and correlating values on a per-server pack-basis. If your custom start script templates contain, for example the placeholder `SPC_FLYNN_LIVES_SPC`, tell ServerPackCreator to replace any occurance of that placeholder with `Now that's a big door`. Voila! Every start script created with that server pack configuration will replace `SPC_FLYNN_LIVES_SPC` with `Now that's a big door` whenever you create a server pack. Other server pack configuration may contain other values for that placeholder. Knock yourself out!
+1. **Exclude clientside-only mods**
+    - **Automatically** by letting ServerPackCreator scan the mods of your modpack for their sideness
+    - **Manually** by configuring a list mods which ServerPackCreator will filter out according to your input and the chosen filter.
+2. **Add files and directories** in your server pack.
+    - Files and directories in **your modpack**
+    - Files and directories from **your computer**
+3. **Add a server icon**
+    - Server icons are **automatically scaled** down, or up, to 64x64!
+    - Specify a custom one, or use a default provided by ServerPackCreator.
+        - Change the default to your liking if you intend on using the same icon across multiple server packs!
+4. **Add a server.properties**
+    - Ship your server pack with default settings!
+    - Specify a custom one, or use a default provided by ServerPackCreator.
+        - Change the default to your liking if you intend on using the same icon across multiple server packs!
+5. Many **modloaders** supported
+    - **Forge**
+    - **Fabric**
+    - **LegacyFabric**
+    - **Quilt**
+6. Use Minecraft **snapshots** and **pre-releases**
+    - Per default, only regular releases enabled 
+7. Let ServerPackCreator **install the modloader-server** for your server pack, for immediate testing and debugging after generation!
+8. Let ServerPackCreator **generate a ZIP-archive**, for immediate upload to places like CurseForge (**after** you've tested your server pack, of course 😉)
+9. Configure **commandline arguments** with which to **start** the **Minecraft server**
+    - Does your modpack require **a lot of RAM?** Well, tell ServerPackCreator to create the start scripts with `-Xms8G -Xmx8G` or similar values!
+    - **Aikars flags** are available, too. If you like 'em, use 'em.
+10. Create your own **start-script templates**
+    - **Add additional functionality** to your servers start scripts
+    - Use **placeholders in your templates**, to be **replaced with custom values**
+        - Example: placeholder `SPC_FLYNN_LIVES_SPC` in the templates can be replaced with a value configured on a per-server pack basis, i.e `Now that's a big door`
 
 # 3 How To
 
