@@ -329,7 +329,9 @@ public class ServerPackCreator {
               APPLICATIONPROPERTIES.LEGACY_FABRIC_GAME_MANIFEST_LOCATION(),
               APPLICATIONPROPERTIES.LEGACY_FABRIC_LOADER_MANIFEST_LOCATION(),
               APPLICATIONPROPERTIES.LEGACY_FABRIC_INSTALLER_MANIFEST_LOCATION(),
-              OBJECT_MAPPER);
+              OBJECT_MAPPER,
+              getUtilities(),
+              getApplicationProperties());
     }
     return versionMeta;
   }
@@ -593,6 +595,28 @@ public class ServerPackCreator {
 
     } catch (IOException ex) {
       LOG.error("Error copying \"/de/griefed/resources/lang\" from the JAR-file.");
+    }
+
+    try {
+
+      String prefix = "BOOT-INF/classes";
+      String manifestSource = "/de/griefed/resources/manifests";
+
+      if (systemInformation.get("jarName").endsWith(".exe")) {
+        prefix = "";
+        manifestSource = "de/griefed/resources/manifests";
+      }
+
+      getUtilities().JarUtils()
+          .copyFolderFromJar(
+              ServerPackCreator.class,
+              manifestSource,
+              "manifests",
+              prefix,
+              "");
+
+    } catch (IOException ex) {
+      LOG.error("Error copying \"/de/griefed/resources/manifests\" from the JAR-file.");
     }
 
     getUtilities().FileUtils().createDirectories(Paths.get("./server_files"));

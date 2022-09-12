@@ -20,6 +20,8 @@
 package de.griefed.serverpackcreator.versionmeta.minecraft;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.griefed.serverpackcreator.ApplicationProperties;
+import de.griefed.serverpackcreator.utilities.common.Utilities;
 import de.griefed.serverpackcreator.versionmeta.Type;
 import de.griefed.serverpackcreator.versionmeta.forge.ForgeInstance;
 import de.griefed.serverpackcreator.versionmeta.forge.ForgeMeta;
@@ -39,43 +41,58 @@ public final class MinecraftClient {
   private final URL URL;
   private final MinecraftServer MINECRAFT_SERVER;
   private final ForgeMeta FORGE_META;
+  private final Utilities UTILITIES;
+  private final ApplicationProperties APPLICATIONPROPERTIES;
 
   /**
    * Constructor using version, type and url.
    *
-   * @param version      The Minecraft version.
-   * @param type         Either {@link Type#RELEASE} or {@link Type#SNAPSHOT}.
-   * @param url          Url to this versions manifest.
-   * @param forgeMeta    To acquire Forge instances for this {@link MinecraftClient} version.
-   * @param objectMapper Object mapper for JSON parsing.
+   * @param version               The Minecraft version.
+   * @param type                  Either {@link Type#RELEASE} or {@link Type#SNAPSHOT}.
+   * @param url                   Url to this versions manifest.
+   * @param forgeMeta             To acquire Forge instances for this {@link MinecraftClient}
+   *                              version.
+   * @param objectMapper          Object mapper for JSON parsing.
+   * @param utilities             Instance of commonly used utilities.
+   * @param applicationProperties ServerPackCreator settings.
    * @author Griefed
    */
   MinecraftClient(
-      String version, Type type, URL url, ForgeMeta forgeMeta, ObjectMapper objectMapper) {
-    this.VERSION = version;
-    this.TYPE = type;
-    this.URL = url;
-    this.FORGE_META = forgeMeta;
-    this.MINECRAFT_SERVER = new MinecraftServer(version, type, url, objectMapper);
+      String version, Type type, URL url, ForgeMeta forgeMeta, ObjectMapper objectMapper,
+      Utilities utilities, ApplicationProperties applicationProperties) {
+    APPLICATIONPROPERTIES = applicationProperties;
+    UTILITIES = utilities;
+    VERSION = version;
+    TYPE = type;
+    URL = url;
+    FORGE_META = forgeMeta;
+    MINECRAFT_SERVER = new MinecraftServer(version, type, url, objectMapper, UTILITIES,
+        APPLICATIONPROPERTIES);
   }
 
   /**
    * Constructor using version, type, url and a {@link MinecraftServer}.
    *
-   * @param version   The Minecraft version.
-   * @param type      Either {@link Type#RELEASE} or {@link Type#SNAPSHOT}.
-   * @param url       Url to this versions manifest.
-   * @param server    Instance of {@link MinecraftServer}
-   * @param forgeMeta To acquire Forge instances for this {@link MinecraftClient} version.
+   * @param version               The Minecraft version.
+   * @param type                  Either {@link Type#RELEASE} or {@link Type#SNAPSHOT}.
+   * @param url                   Url to this versions manifest.
+   * @param server                Instance of {@link MinecraftServer}
+   * @param forgeMeta             To acquire Forge instances for this {@link MinecraftClient}
+   *                              version.
+   * @param utilities             Instance of commonly used utilities.
+   * @param applicationProperties ServerPackCreator settings.
    * @author Griefed
    */
   MinecraftClient(
-      String version, Type type, URL url, MinecraftServer server, ForgeMeta forgeMeta) {
-    this.VERSION = version;
-    this.TYPE = type;
-    this.URL = url;
-    this.MINECRAFT_SERVER = server;
-    this.FORGE_META = forgeMeta;
+      String version, Type type, URL url, MinecraftServer server, ForgeMeta forgeMeta,
+      Utilities utilities, ApplicationProperties applicationProperties) {
+    APPLICATIONPROPERTIES = applicationProperties;
+    UTILITIES = utilities;
+    VERSION = version;
+    TYPE = type;
+    URL = url;
+    MINECRAFT_SERVER = server;
+    FORGE_META = forgeMeta;
   }
 
   /**

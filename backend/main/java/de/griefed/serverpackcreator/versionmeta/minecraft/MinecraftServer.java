@@ -21,8 +21,11 @@ package de.griefed.serverpackcreator.versionmeta.minecraft;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.griefed.serverpackcreator.ApplicationProperties;
+import de.griefed.serverpackcreator.utilities.common.Utilities;
 import de.griefed.serverpackcreator.versionmeta.Manifests;
 import de.griefed.serverpackcreator.versionmeta.Type;
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Optional;
@@ -35,8 +38,10 @@ import java.util.Optional;
  */
 public final class MinecraftServer extends Manifests {
 
+  private final Utilities UTILITIES;
   private final ObjectMapper OBJECT_MAPPER;
   private final URL MANIFEST_URL;
+  private final File MANIFEST_FILE;
   private final String VERSION;
   private final Type TYPE;
 
@@ -45,18 +50,25 @@ public final class MinecraftServer extends Manifests {
   /**
    * Create a new Minecraft Server.
    *
-   * @param mcVersion    The Minecraft version of this server.
-   * @param mcType       The release-type of this server. Either {@link Type#RELEASE} or
-   *                     {@link Type#SNAPSHOT}.
-   * @param mcUrl        The URL to the download of this servers JAR-file.
-   * @param objectMapper Object mapper for JSON parsing.
+   * @param mcVersion             The Minecraft version of this server.
+   * @param mcType                The release-type of this server. Either {@link Type#RELEASE} or
+   *                              {@link Type#SNAPSHOT}.
+   * @param mcUrl                 The URL to the download of this servers JAR-file.
+   * @param objectMapper          Object mapper for JSON parsing.
+   * @param utilities             Instance of commonly used utilities.
+   * @param applicationProperties ServerPackCreator settings.
    * @author Griefed
    */
-  MinecraftServer(String mcVersion, Type mcType, URL mcUrl, ObjectMapper objectMapper) {
-    this.MANIFEST_URL = mcUrl;
-    this.VERSION = mcVersion;
-    this.TYPE = mcType;
-    this.OBJECT_MAPPER = objectMapper;
+  MinecraftServer(String mcVersion, Type mcType, URL mcUrl, ObjectMapper objectMapper,
+      Utilities utilities, ApplicationProperties applicationProperties) {
+
+    UTILITIES = utilities;
+    MANIFEST_URL = mcUrl;
+    VERSION = mcVersion;
+    MANIFEST_FILE = new File(
+        applicationProperties.MINECRAFT_SERVER_MANIFEST_LOCATION() + VERSION + ".json");
+    TYPE = mcType;
+    OBJECT_MAPPER = objectMapper;
   }
 
   /**
@@ -65,8 +77,12 @@ public final class MinecraftServer extends Manifests {
    * @author Griefed
    */
   private void setServerJson() {
+    if (!MANIFEST_FILE.exists()) {
+      UTILITIES.WebUtils().downloadFile(MANIFEST_FILE, MANIFEST_URL);
+    }
+
     try {
-      this.serverJson = getJson(MANIFEST_URL.openStream(), OBJECT_MAPPER);
+      this.serverJson = getJson(MANIFEST_FILE, OBJECT_MAPPER);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

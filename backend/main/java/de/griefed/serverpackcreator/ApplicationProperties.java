@@ -198,11 +198,18 @@ public final class ApplicationProperties extends Properties {
    * Fabric version manifest file.
    */
   private final File FABRIC_VERSION_MANIFEST = new File("fabric-manifest.xml");
+  private final File FABRIC_INTERMEDIARIES_MANIFEST = new File(
+      "fabric-intermediaries-manifest.json");
+  /**
+   * Storage location of manifests used by the VersionMeta.
+   */
+  private final String MANIFEST_LOCATION = "./manifests/";
+  private final String MINECRAFT_SERVER_MANIFESTS_LOCATION = MANIFEST_LOCATION + "mcserver/";
   /**
    * Fabric intermediaries manifest file.
    */
   private final File FABRIC_INTERMEDIARIES_MANIFEST_LOCATION =
-      new File("./work/fabric-intermediaries-manifest.json");
+      new File(MANIFEST_LOCATION + FABRIC_INTERMEDIARIES_MANIFEST.getName());
   /**
    * Fabric installer version manifest file.
    */
@@ -223,15 +230,17 @@ public final class ApplicationProperties extends Properties {
    * Storage location for Minecraft version manifest file.
    */
   private final File MINECRAFT_VERSION_MANIFEST_LOCATION =
-      new File("./work/minecraft-manifest.json");
+      new File(MANIFEST_LOCATION + MINECRAFT_VERSION_MANIFEST.getName());
   /**
    * Storage location for Forge version manifest file.
    */
-  private final File FORGE_VERSION_MANIFEST_LOCATION = new File("./work/forge-manifest.json");
+  private final File FORGE_VERSION_MANIFEST_LOCATION = new File(
+      MANIFEST_LOCATION + "forge-manifest.json");
   /**
    * Storage location for Fabric version manifest file.
    */
-  private final File FABRIC_VERSION_MANIFEST_LOCATION = new File("./work/fabric-manifest.xml");
+  private final File FABRIC_VERSION_MANIFEST_LOCATION = new File(
+      MANIFEST_LOCATION + "fabric-manifest.xml");
   /**
    * Legacy Fabric Game version manifest file.
    */
@@ -249,31 +258,32 @@ public final class ApplicationProperties extends Properties {
    * Storage location for Legacy Fabric Game version manifest file.
    */
   private final File LEGACY_FABRIC_GAME_MANIFEST_LOCATION = new File(
-      "./work/legacy-fabric-game-manifest.json");
+      MANIFEST_LOCATION + LEGACY_FABRIC_GAME_MANIFEST.getName());
   /**
    * Storage location for Legacy Fabric Loader version manifest file.
    */
   private final File LEGACY_FABRIC_LOADER_MANIFEST_LOCATION = new File(
-      "./work/legacy-fabric-loader-manifest.json");
+      MANIFEST_LOCATION + LEGACY_FABRIC_LOADER_MANIFEST.getName());
   /**
    * Storage location for Legacy Fabric Installer version manifest file.
    */
   private final File LEGACY_FABRIC_INSTALLER_MANIFEST_LOCATION = new File(
-      "./work/legacy-fabric-installer-manifest.xml");
+      MANIFEST_LOCATION + LEGACY_FABRIC_INSTALLER_MANIFEST.getName());
   /**
    * Storage location for Fabric installer version manifest file.
    */
   private final File FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION =
-      new File("./work/fabric-installer-manifest.xml");
+      new File(MANIFEST_LOCATION + FABRIC_INSTALLER_VERSION_MANIFEST.getName());
   /**
    * Storage location for Quilt version manifest file.
    */
-  private final File QUILT_VERSION_MANIFEST_LOCATION = new File("./work/quilt-manifest.xml");
+  private final File QUILT_VERSION_MANIFEST_LOCATION = new File(
+      MANIFEST_LOCATION + QUILT_VERSION_MANIFEST.getName());
   /**
    * Storage location for Quilt installer version manifest file.
    */
   private final File QUILT_INSTALLER_VERSION_MANIFEST_LOCATION =
-      new File("./work/quilt-installer-manifest.xml");
+      new File(MANIFEST_LOCATION + QUILT_INSTALLER_VERSION_MANIFEST.getName());
   /**
    * Default Aikars flags.
    */
@@ -1235,7 +1245,7 @@ public final class ApplicationProperties extends Properties {
   /**
    * Path to the Minecraft version manifest-file, as a file.
    *
-   * @return ./work/minecraft-manifest.json
+   * @return ./manifests/minecraft-manifest.json
    * @author Griefed
    */
   public File MINECRAFT_VERSION_MANIFEST_LOCATION() {
@@ -1245,7 +1255,7 @@ public final class ApplicationProperties extends Properties {
   /**
    * Path to the Forge version manifest-file, as a file.
    *
-   * @return ./work/forge-manifest.json
+   * @return ./manifests/forge-manifest.json
    * @author Griefed
    */
   public File FORGE_VERSION_MANIFEST_LOCATION() {
@@ -1255,7 +1265,7 @@ public final class ApplicationProperties extends Properties {
   /**
    * Path to the Fabric version manifest-file, as a file.
    *
-   * @return ./work/fabric-manifest.xml
+   * @return ./manifests/fabric-manifest.xml
    * @author Griefed
    */
   public File FABRIC_VERSION_MANIFEST_LOCATION() {
@@ -1265,7 +1275,7 @@ public final class ApplicationProperties extends Properties {
   /**
    * Path to the Fabric intermediaries manifest-file, as a file.
    *
-   * @return ./work/fabric-intermediaries-manifest.json
+   * @return ./manifests/fabric-intermediaries-manifest.json
    */
   public File FABRIC_INTERMEDIARIES_MANIFEST_LOCATION() {
     return FABRIC_INTERMEDIARIES_MANIFEST_LOCATION;
@@ -1274,7 +1284,7 @@ public final class ApplicationProperties extends Properties {
   /**
    * Path to the Fabric installer version manifest-file, as a file.
    *
-   * @return ./work/fabric-installer-manifest.xml
+   * @return ./manifests/fabric-installer-manifest.xml
    * @author Griefed
    */
   public File FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION() {
@@ -1284,7 +1294,7 @@ public final class ApplicationProperties extends Properties {
   /**
    * Path to the Quilt version manifest-file, as a file.
    *
-   * @return ./work/quilt-manifest.xml
+   * @return ./manifests/quilt-manifest.xml
    * @author Griefed
    */
   public File QUILT_VERSION_MANIFEST_LOCATION() {
@@ -1294,7 +1304,7 @@ public final class ApplicationProperties extends Properties {
   /**
    * Path to the Quilt installer version manifest-file, as a file.
    *
-   * @return ./work/quilt-installer-manifest.xml
+   * @return ./manifests/quilt-installer-manifest.xml
    * @author Griefed
    */
   public File QUILT_INSTALLER_VERSION_MANIFEST_LOCATION() {
@@ -1334,7 +1344,7 @@ public final class ApplicationProperties extends Properties {
   /**
    * Path to the Legacy Fabric Game version manifest-file, as a file.
    *
-   * @return ./work/legacy-fabric-game-manifest.json
+   * @return ./manifests/legacy-fabric-game-manifest.json
    * @author Griefed
    */
   public File LEGACY_FABRIC_GAME_MANIFEST_LOCATION() {
@@ -1344,7 +1354,7 @@ public final class ApplicationProperties extends Properties {
   /**
    * Path to the Legacy Fabric Loader version manifest-file, as a file.
    *
-   * @return ./work/legacy-fabric-loader-manifest.json
+   * @return ./manifests/legacy-fabric-loader-manifest.json
    * @author Griefed
    */
   public File LEGACY_FABRIC_LOADER_MANIFEST_LOCATION() {
@@ -1354,7 +1364,7 @@ public final class ApplicationProperties extends Properties {
   /**
    * Path to the Legacy Fabric Installer version manifest-file, as a file.
    *
-   * @return ./work/legacy-fabric-installer-manifest.xml
+   * @return ./manifests/legacy-fabric-installer-manifest.xml
    * @author Griefed
    */
   public File LEGACY_FABRIC_INSTALLER_MANIFEST_LOCATION() {
@@ -1413,6 +1423,26 @@ public final class ApplicationProperties extends Properties {
    */
   public String DIRECTORY_PLUGINS_CONFIG() {
     return DIRECTORY_PLUGINS() + "/config";
+  }
+
+  /**
+   * Directory where version manifests reside in.
+   *
+   * @return Directory where manifests reside in.
+   * @author Griefed
+   */
+  public String MANIFEST_LOCATION() {
+    return MANIFEST_LOCATION;
+  }
+
+  /**
+   * Directory where Minecraft server manifests reside in.
+   *
+   * @return Directory where Minecraft server manifests reside in.
+   * @author Griefed
+   */
+  public String MINECRAFT_SERVER_MANIFEST_LOCATION() {
+    return MINECRAFT_SERVER_MANIFESTS_LOCATION;
   }
 
   /**

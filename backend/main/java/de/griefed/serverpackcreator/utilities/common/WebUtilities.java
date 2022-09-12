@@ -137,11 +137,11 @@ public final class WebUtilities {
 
       fileChannel = fileOutputStream.getChannel();
 
-      fileOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
+      fileChannel.transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
 
     } catch (IOException ex) {
-      LOG.error("An error occurred downloading " + fileDestination.replace("\\", "/") + ".", ex);
-      FileUtils.deleteQuietly(new File(fileDestination.replace("\\", "/")));
+      LOG.error("An error occurred downloading " + fileDestination + " from " + downloadURL + ".",
+          ex);
     } finally {
 
       try {

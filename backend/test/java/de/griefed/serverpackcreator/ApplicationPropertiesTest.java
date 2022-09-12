@@ -132,17 +132,17 @@ public class ApplicationPropertiesTest {
     Assertions.assertNotNull(applicationProperties.LEGACY_FABRIC_GAME_MANIFEST_LOCATION());
     Assertions.assertEquals(
         applicationProperties.LEGACY_FABRIC_GAME_MANIFEST_LOCATION(),
-        new File("./work/legacy-fabric-game-manifest.json"));
+        new File("./manifests/legacy-fabric-game-manifest.json"));
 
     Assertions.assertNotNull(applicationProperties.LEGACY_FABRIC_LOADER_MANIFEST_LOCATION());
     Assertions.assertEquals(
         applicationProperties.LEGACY_FABRIC_LOADER_MANIFEST_LOCATION(),
-        new File("./work/legacy-fabric-loader-manifest.json"));
+        new File("./manifests/legacy-fabric-loader-manifest.json"));
 
     Assertions.assertNotNull(applicationProperties.LEGACY_FABRIC_INSTALLER_MANIFEST_LOCATION());
     Assertions.assertEquals(
         applicationProperties.LEGACY_FABRIC_INSTALLER_MANIFEST_LOCATION(),
-        new File("./work/legacy-fabric-installer-manifest.xml"));
+        new File("./manifests/legacy-fabric-installer-manifest.xml"));
 
     Assertions.assertNotNull(applicationProperties.QUILT_VERSION_MANIFEST());
     Assertions.assertEquals(
@@ -160,32 +160,32 @@ public class ApplicationPropertiesTest {
     Assertions.assertNotNull(applicationProperties.MINECRAFT_VERSION_MANIFEST_LOCATION());
     Assertions.assertEquals(
         applicationProperties.MINECRAFT_VERSION_MANIFEST_LOCATION(),
-        new File("./work/minecraft-manifest.json"));
+        new File("./manifests/minecraft-manifest.json"));
 
     Assertions.assertNotNull(applicationProperties.FORGE_VERSION_MANIFEST_LOCATION());
     Assertions.assertEquals(
         applicationProperties.FORGE_VERSION_MANIFEST_LOCATION(),
-        new File("./work/forge-manifest.json"));
+        new File("./manifests/forge-manifest.json"));
 
     Assertions.assertNotNull(applicationProperties.FABRIC_VERSION_MANIFEST_LOCATION());
     Assertions.assertEquals(
         applicationProperties.FABRIC_VERSION_MANIFEST_LOCATION(),
-        new File("./work/fabric-manifest.xml"));
+        new File("./manifests/fabric-manifest.xml"));
 
     Assertions.assertNotNull(applicationProperties.FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION());
     Assertions.assertEquals(
         applicationProperties.FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION(),
-        new File("./work/fabric-installer-manifest.xml"));
+        new File("./manifests/fabric-installer-manifest.xml"));
 
     Assertions.assertNotNull(applicationProperties.QUILT_VERSION_MANIFEST_LOCATION());
     Assertions.assertEquals(
         applicationProperties.QUILT_VERSION_MANIFEST_LOCATION(),
-        new File("./work/quilt-manifest.xml"));
+        new File("./manifests/quilt-manifest.xml"));
 
     Assertions.assertNotNull(applicationProperties.QUILT_INSTALLER_VERSION_MANIFEST_LOCATION());
     Assertions.assertEquals(
         applicationProperties.QUILT_INSTALLER_VERSION_MANIFEST_LOCATION(),
-        new File("./work/quilt-installer-manifest.xml"));
+        new File("./manifests/quilt-installer-manifest.xml"));
 
     Assertions.assertNotNull(applicationProperties.getDirectoryServerPacks());
 
