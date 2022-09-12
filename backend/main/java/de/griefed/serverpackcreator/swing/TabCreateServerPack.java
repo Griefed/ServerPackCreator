@@ -43,7 +43,6 @@ import de.griefed.serverpackcreator.utilities.common.Utilities;
 import de.griefed.serverpackcreator.versionmeta.VersionMeta;
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -79,12 +78,8 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTable;
 import javax.swing.JTextPane;
-import javax.swing.UIManager;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.TableCellRenderer;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.SimpleAttributeSet;
@@ -95,7 +90,6 @@ import org.apache.commons.io.input.Tailer;
 import org.apache.commons.io.input.TailerListenerAdapter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * This class creates the tab which displays the labels, textfields, buttons and functions in order
@@ -135,7 +129,7 @@ public class TabCreateServerPack extends JPanel {
   private final BufferedImage ERROR_ICON_BASE =
       ImageIO.read(
           Objects.requireNonNull(
-              ServerPackCreatorGui.class.getResource("/de/griefed/resources/gui/error.png")));
+              TabCreateServerPack.class.getResource("/de/griefed/resources/gui/error.png")));
   private final ImageIcon ERROR_ICON_MODPACKDIRECTORY =
       new ImageIcon(
           ERROR_ICON_BASE.getScaledInstance(ERROR_ICON_SIZE, ERROR_ICON_SIZE, Image.SCALE_SMOOTH));
@@ -154,6 +148,9 @@ public class TabCreateServerPack extends JPanel {
   private final ImageIcon ERROR_ICON_SERVERPROPERTIES =
       new ImageIcon(
           ERROR_ICON_BASE.getScaledInstance(ERROR_ICON_SIZE, ERROR_ICON_SIZE, Image.SCALE_SMOOTH));
+  private final ImageIcon ISSUE_ICON = new ImageIcon(ImageIO.read(Objects.requireNonNull(
+          TabCreateServerPack.class.getResource("/de/griefed/resources/gui/issue.png")))
+      .getScaledInstance(48, 48, Image.SCALE_SMOOTH));
   private final Dimension CHOOSERDIMENSION = new Dimension(750, 450);
   private final JButton BUTTON_GENERATESERVERPACK = new JButton();
   private final JPanel CREATESERVERPACKPANEL = new JPanel();
@@ -217,6 +214,7 @@ public class TabCreateServerPack extends JPanel {
   private final JComboBox<String> COMBOBOX_MINECRAFTVERSIONS = new JComboBox<>();
   private final JComboBox<String> COMBOBOX_MODLOADERS = new JComboBox<>();
   private final JComboBox<String> COMBOBOX_MODLOADER_VERSIONS = new JComboBox<>();
+  private final DefaultComboBoxModel<String> NO_VERSIONS;
   private final DefaultComboBoxModel<String> LEGACY_FABRIC_VERSIONS;
   private final DefaultComboBoxModel<String> FABRIC_VERSIONS;
   private final DefaultComboBoxModel<String> QUILT_VERSIONS;
@@ -228,9 +226,9 @@ public class TabCreateServerPack extends JPanel {
   private final IconTextField TEXTFIELD_SERVERICONPATH = new IconTextField("");
   private final IconTextField TEXTFIELD_SERVERPROPERTIESPATH = new IconTextField("");
   private final File DIRECTORY_CHOOSER = new File(".");
-  private final String[] NONE;
   private final List<ExtensionConfigPanel> CONFIG_PANELS = new ArrayList<>();
   private final ScriptSettings SCRIPT_VARIABLES;
+  private final JLabel REQUIRED_JAVA_VERSION = new JLabel("");
   private final JLabel STATUS_LABEL_LINE_0;
   private final JLabel STATUS_LABEL_LINE_1;
   private final JLabel STATUS_LABEL_LINE_2;
@@ -241,9 +239,6 @@ public class TabCreateServerPack extends JPanel {
   private final JCheckBox CHECKBOX_ICON;
   private final JCheckBox CHECKBOX_PROPERTIES;
   private final JCheckBox CHECKBOX_ZIP;
-  private String chosenModloader = "Fabric";
-  private String chosenModloaderVersion;
-  private String chosenMinecraftVersion = "1.18.2";
 
   /**
    * <strong>Constructor</strong>
@@ -335,7 +330,9 @@ public class TabCreateServerPack extends JPanel {
       LOG.error("Error inserting text into aboutDocument.", ex);
     }
 
-    NONE = new String[]{I18N.getMessage("createserverpack.gui.createserverpack.forge.none")};
+    String[] NONE = new String[]{
+        I18N.getMessage("createserverpack.gui.createserverpack.forge.none")};
+    NO_VERSIONS = new DefaultComboBoxModel<>(NONE);
 
     LEGACY_FABRIC_VERSIONS = new DefaultComboBoxModel<>(
         VERSIONMETA.legacyFabric().loaderVersionsArrayDescending());
@@ -351,6 +348,8 @@ public class TabCreateServerPack extends JPanel {
         new ImageIcon(
             Objects.requireNonNull(
                 ServerPackCreatorGui.class.getResource("/de/griefed/resources/gui/folder.png")));
+
+    Font NOTO_SANS_DISPLAY_REGULAR_BOLD_15 = new Font("Noto Sans Display Regular", Font.BOLD, 15);
 
     // ----------------------------------------------------------------LABELS AND TEXTFIELDS--------
     GridBagConstraints GRIDBAGCONSTRAINTS = new GridBagConstraints();
@@ -648,12 +647,28 @@ public class TabCreateServerPack extends JPanel {
 
     COMBOBOX_MODLOADER_VERSIONS.setModel(FABRIC_VERSIONS);
     COMBOBOX_MODLOADER_VERSIONS.setSelectedIndex(0);
-    COMBOBOX_MODLOADER_VERSIONS.addActionListener(this::actionEventComboBoxModloaderVersions);
     COMBOBOX_MODLOADER_VERSIONS.setVisible(true);
     GRIDBAGCONSTRAINTS.gridy = 11;
     COMBOBOX_MODLOADER_VERSIONS.setPreferredSize(combo);
     COMBOBOX_MODLOADER_VERSIONS.setMaximumSize(combo);
     CREATESERVERPACKPANEL.add(COMBOBOX_MODLOADER_VERSIONS, GRIDBAGCONSTRAINTS);
+
+    GRIDBAGCONSTRAINTS.insets = new Insets(0, 880, 0, 5);
+    Dimension java = new Dimension(160, 30);
+    JLabel labelRequiredJavaVersion =
+        new JLabel(I18N.getMessage("createserverpack.gui.createserverpack.minecraft.java"));
+    labelRequiredJavaVersion.setToolTipText(
+        I18N.getMessage("createserverpack.gui.createserverpack.minecraft.java.tooltip"));
+    GRIDBAGCONSTRAINTS.gridy = 10;
+    labelRequiredJavaVersion.setPreferredSize(java);
+    labelRequiredJavaVersion.setMaximumSize(java);
+    CREATESERVERPACKPANEL.add(labelRequiredJavaVersion, GRIDBAGCONSTRAINTS);
+
+    REQUIRED_JAVA_VERSION.setPreferredSize(java);
+    REQUIRED_JAVA_VERSION.setMaximumSize(java);
+    REQUIRED_JAVA_VERSION.setFont(NOTO_SANS_DISPLAY_REGULAR_BOLD_15);
+    GRIDBAGCONSTRAINTS.gridy = 11;
+    CREATESERVERPACKPANEL.add(REQUIRED_JAVA_VERSION, GRIDBAGCONSTRAINTS);
 
     // ----------------------------------------------------------------CHECKBOXES-------------------
 
@@ -988,7 +1003,7 @@ public class TabCreateServerPack extends JPanel {
     STATUS_LABEL_LINE_4.setHorizontalAlignment(JLabel.LEFT);
     STATUS_LABEL_LINE_5.setHorizontalAlignment(JLabel.LEFT);
 
-    // Set the preferred size of the labels so they do not resize when long texts are set later on
+    // Set the preferred size of the labels, so they do not resize when long texts are set later on
     Dimension labelDimension = new Dimension(700, 30);
     STATUS_LABEL_LINE_0.setPreferredSize(labelDimension);
     STATUS_LABEL_LINE_1.setPreferredSize(labelDimension);
@@ -997,7 +1012,6 @@ public class TabCreateServerPack extends JPanel {
     STATUS_LABEL_LINE_4.setPreferredSize(labelDimension);
     STATUS_LABEL_LINE_5.setPreferredSize(labelDimension);
 
-    Font NOTO_SANS_DISPLAY_REGULAR_BOLD_15 = new Font("Noto Sans Display Regular", Font.BOLD, 15);
     STATUS_LABEL_LINE_0.setFont(NOTO_SANS_DISPLAY_REGULAR_BOLD_15);
     STATUS_LABEL_LINE_1.setFont(NOTO_SANS_DISPLAY_REGULAR_BOLD_15);
     STATUS_LABEL_LINE_2.setFont(NOTO_SANS_DISPLAY_REGULAR_BOLD_15);
@@ -1161,7 +1175,7 @@ public class TabCreateServerPack extends JPanel {
   private void validateModpackDir() {
     List<String> errorsTEXTFIELD_MODPACKDIRECTORY = new ArrayList<>();
     if (CONFIGURATIONHANDLER.checkModpackDir(
-        TEXTFIELD_MODPACKDIRECTORY.getText(), errorsTEXTFIELD_MODPACKDIRECTORY)) {
+        getModpackDirectory(), errorsTEXTFIELD_MODPACKDIRECTORY)) {
 
       TEXTFIELD_MODPACKDIRECTORY.setIcon(null);
       TEXTFIELD_MODPACKDIRECTORY.setToolTipText(
@@ -1209,7 +1223,7 @@ public class TabCreateServerPack extends JPanel {
    * @author Griefed
    */
   private void validateClientMods() {
-    if (!TEXTAREA_CLIENTSIDEMODS.getText().matches("^.*,\\s*\\\\*$")) {
+    if (!getClientsideMods().matches("^.*,\\s*\\\\*$")) {
 
       TEXTAREA_CLIENTSIDEMODS.setIcon(null);
       TEXTAREA_CLIENTSIDEMODS.setToolTipText(
@@ -1231,33 +1245,29 @@ public class TabCreateServerPack extends JPanel {
    * @author Griefed
    */
   private void validateCopyDirs() {
-    if (CONFIGURATIONHANDLER.checkModpackDir(TEXTFIELD_MODPACKDIRECTORY.getText())) {
-      List<String> errorsTEXTFIELD_COPYDIRECTORIES = new ArrayList<>();
-      if (!TEXTAREA_COPYDIRECTORIES.getText().matches("^.*,\\s*\\\\*$")
-          && CONFIGURATIONHANDLER.checkCopyDirs(
-          UTILITIES.ListUtils()
-              .cleanList(
-                  new ArrayList<>(
-                      Arrays.asList(
-                          TEXTAREA_COPYDIRECTORIES.getText().replace(", ", ",").split(",")))),
-          TEXTFIELD_MODPACKDIRECTORY.getText(),
-          errorsTEXTFIELD_COPYDIRECTORIES)) {
+    List<String> errors = new ArrayList<>();
 
-        TEXTAREA_COPYDIRECTORIES.setIcon(null);
-        TEXTAREA_COPYDIRECTORIES.setToolTipText(
-            I18N.getMessage("createserverpack.gui.createserverpack.labelcopydirs.tip"));
+    if (!getCopyDirectories().matches("^.*,\\s*\\\\*$")
+        && CONFIGURATIONHANDLER.checkCopyDirs(
+        getCopyDirectoriesList(),
+        getModpackDirectory(),
+        errors)) {
 
-        TEXTAREA_COPYDIRECTORIES.setForeground(getThemeTextColor());
+      TEXTAREA_COPYDIRECTORIES.setIcon(null);
+      TEXTAREA_COPYDIRECTORIES.setToolTipText(
+          I18N.getMessage("createserverpack.gui.createserverpack.labelcopydirs.tip"));
 
-      } else {
+      TEXTAREA_COPYDIRECTORIES.setForeground(getThemeTextColor());
 
-        TEXTAREA_COPYDIRECTORIES.setForeground(getThemeErrorColor());
-        TEXTAREA_COPYDIRECTORIES.setIcon(ERROR_ICON_COPYDIRECTORIES);
-        ERROR_ICON_COPYDIRECTORIES.setDescription(
-            String.join(",", errorsTEXTFIELD_COPYDIRECTORIES));
-        TEXTAREA_COPYDIRECTORIES.setToolTipText(String.join(",", errorsTEXTFIELD_COPYDIRECTORIES));
-      }
+    } else {
+
+      TEXTAREA_COPYDIRECTORIES.setForeground(getThemeErrorColor());
+      TEXTAREA_COPYDIRECTORIES.setIcon(ERROR_ICON_COPYDIRECTORIES);
+      ERROR_ICON_COPYDIRECTORIES.setDescription(
+          String.join(",", errors));
+      TEXTAREA_COPYDIRECTORIES.setToolTipText(String.join(",", errors));
     }
+
   }
 
   /**
@@ -1266,7 +1276,7 @@ public class TabCreateServerPack extends JPanel {
    * @author Griefed
    */
   private void validateServerIcon() {
-    if (CONFIGURATIONHANDLER.checkIconAndProperties(TEXTFIELD_SERVERICONPATH.getText())) {
+    if (CONFIGURATIONHANDLER.checkIconAndProperties(getServerIconPath())) {
 
       TEXTFIELD_SERVERICONPATH.setIcon(null);
       TEXTFIELD_SERVERICONPATH.setToolTipText(
@@ -1288,7 +1298,7 @@ public class TabCreateServerPack extends JPanel {
    * @author Griefed
    */
   private void validateServerProperties() {
-    if (CONFIGURATIONHANDLER.checkIconAndProperties(TEXTFIELD_SERVERPROPERTIESPATH.getText())) {
+    if (CONFIGURATIONHANDLER.checkIconAndProperties(getServerPropertiesPath())) {
       TEXTFIELD_SERVERPROPERTIESPATH.setIcon(null);
       TEXTFIELD_SERVERPROPERTIESPATH.setToolTipText(
           I18N.getMessage("createserverpack.gui.createserverpack.textfield.propertiespath"));
@@ -1311,7 +1321,16 @@ public class TabCreateServerPack extends JPanel {
    * @author Griefed
    */
   private void setAikarsFlags(ActionEvent actionEvent) {
-    if (!TEXTAREA_JAVAARGS.getText().isEmpty()) {
+    setAikarsFlags();
+  }
+
+  /**
+   * Sets the text of the Java args textarea to the popular Aikar flags.
+   *
+   * @author Griefed
+   */
+  public void setAikarsFlags() {
+    if (!getJavaArgs().isEmpty()) {
       switch (JOptionPane.showConfirmDialog(
           CREATESERVERPACKPANEL,
           I18N.getMessage("createserverpack.gui.createserverpack.javaargs.confirm.message"),
@@ -1319,7 +1338,7 @@ public class TabCreateServerPack extends JPanel {
           JOptionPane.YES_NO_OPTION,
           JOptionPane.WARNING_MESSAGE)) {
         case 0:
-          setAikarsFlags();
+          setJavaArgs(APPLICATIONPROPERTIES.getAikarsFlags());
 
         case 1:
         default:
@@ -1328,17 +1347,8 @@ public class TabCreateServerPack extends JPanel {
 
     } else {
 
-      setAikarsFlags();
+      setJavaArgs(APPLICATIONPROPERTIES.getAikarsFlags());
     }
-  }
-
-  /**
-   * Sets the text of the Java args textarea to the popular Aikar flags.
-   *
-   * @author Griefed
-   */
-  private void setAikarsFlags() {
-    TEXTAREA_JAVAARGS.setText(APPLICATIONPROPERTIES.getAikarsFlags());
   }
 
   /**
@@ -1353,7 +1363,7 @@ public class TabCreateServerPack extends JPanel {
    * @author Griefed
    */
   private void actionEventCheckBoxServer(ActionEvent actionEvent) {
-    if (CHECKBOX_SERVER.isSelected() && !APPLICATIONPROPERTIES.javaAvailable()) {
+    if (isServerInstallationTicked() && !APPLICATIONPROPERTIES.javaAvailable()) {
       switch (JOptionPane.showConfirmDialog(
           CREATESERVERPACKPANEL,
           I18N.getMessage("createserverpack.gui.createserverpack.checkboxserver.confirm.message"),
@@ -1372,10 +1382,7 @@ public class TabCreateServerPack extends JPanel {
               I18N.getMessage("createserverpack.gui.createserverpack.checkboxserver.message.title"),
               JOptionPane.ERROR_MESSAGE,
               null);
-          break;
-
-        default:
-          break;
+          setServerInstallationSelection(false);
       }
     }
   }
@@ -1402,95 +1409,66 @@ public class TabCreateServerPack extends JPanel {
   }
 
   /**
-   * Get the DefaultComboboxModel of available Forge versions depending on the passed Minecraft
-   * version. If the specified Minecraft version is not supported, the DCBM will be set to NONE.
+   * Set the modloader version combobox model depending on the currently selected modloader and
+   * Minecraft version.
    *
-   * @param chosenMinecraftVersion The selected Minecraft version which determines the list of
-   *                               available Forge versions.
    * @author Griefed
    */
-  private DefaultComboBoxModel<String> updateForgeComboBoxVersions(
-      @Nullable String chosenMinecraftVersion) {
-
-    if (chosenMinecraftVersion != null
-        && VERSIONMETA
-        .forge()
-        .availableForgeVersionsArrayDescending(chosenMinecraftVersion)
-        .isPresent()) {
-
-      return new DefaultComboBoxModel<>(
-          VERSIONMETA.forge().availableForgeVersionsArrayDescending(chosenMinecraftVersion).get());
-
-    } else {
-
-      return new DefaultComboBoxModel<>(this.NONE);
-    }
+  private void setModloaderVersionsModel() {
+    setModloaderVersionsModel(COMBOBOX_MINECRAFTVERSIONS.getSelectedItem().toString());
   }
 
   /**
-   * Get the DefaultComboboxModel of available Fabric versions depending on the passed Minecraft
-   * version. If the specified Minecraft version is not supported, the DCBM will be set to NONE.
+   * Set the modloader version combobox model depending on the currently selected modloader, with
+   * the specified Minecraft version.
    *
-   * @param chosenMinecraftVersion The selected Minecraft version which determines the list of
-   *                               available Fabric versions.
+   * @param minecraftVersion The Minecraft version to work with in the GUI update.
    * @author Griefed
    */
-  private DefaultComboBoxModel<String> updateFabricComboBoxVersions(
-      @Nullable String chosenMinecraftVersion) {
+  private void setModloaderVersionsModel(String minecraftVersion) {
+    switch (COMBOBOX_MODLOADERS.getSelectedIndex()) {
+      case 0:
+        if (VERSIONMETA.fabric().isMinecraftSupported(minecraftVersion)) {
 
-    if (chosenMinecraftVersion != null
-        && VERSIONMETA.fabric().isMinecraftSupported(chosenMinecraftVersion)) {
+          COMBOBOX_MODLOADER_VERSIONS.setModel(FABRIC_VERSIONS);
 
-      return FABRIC_VERSIONS;
+        } else {
+          COMBOBOX_MODLOADER_VERSIONS.setModel(NO_VERSIONS);
+        }
+        return;
 
-    } else {
+      case 1:
+        if (VERSIONMETA
+            .forge()
+            .availableForgeVersionsArrayDescending(minecraftVersion)
+            .isPresent()) {
 
-      return new DefaultComboBoxModel<>(this.NONE);
-    }
-  }
+          COMBOBOX_MODLOADER_VERSIONS.setModel(new DefaultComboBoxModel<>(
+              VERSIONMETA.forge().availableForgeVersionsArrayDescending(minecraftVersion).get()));
 
-  /**
-   * Get the DefaultComboboxModel of available LegacyFabric versions depending on the passed
-   * Minecraft version. If the specified Minecraft version is not supported, the DCBM will be set to
-   * NONE.
-   *
-   * @param chosenMinecraftVersion The selected Minecraft version which determines the list of
-   *                               available LegacyFabric versions.
-   * @author Griefed
-   */
-  private DefaultComboBoxModel<String> updateLegacyFabricComboBoxVersions(
-      @Nullable String chosenMinecraftVersion) {
+        } else {
+          COMBOBOX_MODLOADER_VERSIONS.setModel(NO_VERSIONS);
+        }
+        return;
 
-    if (chosenMinecraftVersion != null
-        && VERSIONMETA.legacyFabric().isMinecraftSupported(chosenMinecraftVersion)) {
+      case 2:
+        if (VERSIONMETA.fabric().isMinecraftSupported(minecraftVersion)) {
 
-      return LEGACY_FABRIC_VERSIONS;
+          COMBOBOX_MODLOADER_VERSIONS.setModel(QUILT_VERSIONS);
 
-    } else {
+        } else {
+          COMBOBOX_MODLOADER_VERSIONS.setModel(NO_VERSIONS);
+        }
+        return;
 
-      return new DefaultComboBoxModel<>(this.NONE);
-    }
-  }
+      case 3:
+        if (VERSIONMETA.legacyFabric().isMinecraftSupported(minecraftVersion)) {
 
-  /**
-   * Get the DefaultComboboxModel of available Quilt versions depending on the passed Minecraft
-   * version. If the specified Minecraft version is not supported, the DCBM will be set to NONE.
-   *
-   * @param chosenMinecraftVersion The selected Minecraft version which determines the list of
-   *                               available Fabric versions.
-   * @author Griefed
-   */
-  private DefaultComboBoxModel<String> updateQuiltComboBoxVersions(
-      @Nullable String chosenMinecraftVersion) {
+          COMBOBOX_MODLOADER_VERSIONS.setModel(LEGACY_FABRIC_VERSIONS);
 
-    if (chosenMinecraftVersion != null
-        && VERSIONMETA.fabric().isMinecraftSupported(chosenMinecraftVersion)) {
-
-      return QUILT_VERSIONS;
-
-    } else {
-
-      return new DefaultComboBoxModel<>(this.NONE);
+        } else {
+          COMBOBOX_MODLOADER_VERSIONS.setModel(NO_VERSIONS);
+        }
     }
   }
 
@@ -1501,18 +1479,62 @@ public class TabCreateServerPack extends JPanel {
    * @author Griefed
    */
   private void actionEventComboBoxMinecraftVersion(ActionEvent event) {
-
-    chosenMinecraftVersion =
-        Objects.requireNonNull(COMBOBOX_MINECRAFTVERSIONS.getSelectedItem()).toString();
-
-    updateModloaderGuiComponents(
-        Objects.requireNonNull(COMBOBOX_MODLOADERS.getSelectedItem()).toString());
+    setModloaderVersionsModel(COMBOBOX_MINECRAFTVERSIONS.getSelectedItem().toString());
+    updateRequiredJavaVersion();
+    checkMinecraftServer();
   }
 
-  private void actionEventComboBoxModloaderVersions(ActionEvent event) {
+  private void updateRequiredJavaVersion() {
+    if (VERSIONMETA.minecraft().getServer(getMinecraftVersion()).isPresent()
+        && VERSIONMETA.minecraft().getServer(getMinecraftVersion()).get().javaVersion()
+        .isPresent()) {
 
-    chosenModloaderVersion =
-        Objects.requireNonNull(COMBOBOX_MODLOADER_VERSIONS.getSelectedItem()).toString();
+      REQUIRED_JAVA_VERSION.setText(
+          VERSIONMETA.minecraft().getServer(getMinecraftVersion()).get().javaVersion().get()
+              .toString());
+
+    } else {
+      REQUIRED_JAVA_VERSION.setText("?");
+    }
+  }
+
+  /**
+   * Check whether the selected Minecraft version has a server available. If no server is available,
+   * or no URL to download the server for the selected version is available, a warning is
+   * displayed.
+   *
+   * @author Griefed
+   */
+  public void checkMinecraftServer() {
+    if (!VERSIONMETA.minecraft().getServer(COMBOBOX_MINECRAFTVERSIONS.getSelectedItem().toString())
+        .isPresent()) {
+
+      JOptionPane.showMessageDialog(
+          this,
+          String.format(
+              I18N.getMessage("createserverpack.gui.createserverpack.minecraft.server.unavailable"),
+              COMBOBOX_MINECRAFTVERSIONS.getSelectedItem().toString()) + "   ",
+          I18N.getMessage("createserverpack.gui.createserverpack.minecraft.server"),
+          JOptionPane.WARNING_MESSAGE,
+          ISSUE_ICON
+      );
+    } else if (
+        VERSIONMETA.minecraft().getServer(COMBOBOX_MINECRAFTVERSIONS.getSelectedItem().toString())
+            .isPresent()
+            && !VERSIONMETA.minecraft()
+            .getServer(COMBOBOX_MINECRAFTVERSIONS.getSelectedItem().toString()).get().url()
+            .isPresent()) {
+
+      JOptionPane.showMessageDialog(
+          this,
+          String.format(I18N.getMessage(
+                  "createserverpack.gui.createserverpack.minecraft.server.url.unavailable"),
+              COMBOBOX_MINECRAFTVERSIONS.getSelectedItem().toString()) + "   ",
+          I18N.getMessage("createserverpack.gui.createserverpack.minecraft.server"),
+          JOptionPane.WARNING_MESSAGE,
+          ISSUE_ICON
+      );
+    }
   }
 
   /**
@@ -1522,75 +1544,7 @@ public class TabCreateServerPack extends JPanel {
    * @author Griefed
    */
   private void actionEventComboBoxModloaders(ActionEvent event) {
-
-    String modloader;
-    if (COMBOBOX_MODLOADERS.getSelectedItem() != null) {
-      modloader = COMBOBOX_MODLOADERS.getSelectedItem().toString();
-    } else {
-      modloader = "Forge";
-    }
-
-    updateModloaderGuiComponents(modloader);
-  }
-
-  /**
-   * Helper method which changes various states of GUI components.
-   *
-   * @param modloader The modloader to set.
-   * @author Griefed
-   */
-  private void updateModloaderGuiComponents(String modloader) {
-
-    switch (modloader) {
-      // Fabric
-      case "Fabric":
-        COMBOBOX_MODLOADERS.setSelectedIndex(0);
-        //noinspection ConstantConditions
-        COMBOBOX_MODLOADER_VERSIONS.setModel(
-            updateFabricComboBoxVersions(COMBOBOX_MINECRAFTVERSIONS.getSelectedItem().toString()));
-
-        break;
-
-      // Forge
-      case "Forge":
-        COMBOBOX_MODLOADERS.setSelectedIndex(1);
-        //noinspection ConstantConditions
-        COMBOBOX_MODLOADER_VERSIONS.setModel(
-            updateForgeComboBoxVersions(COMBOBOX_MINECRAFTVERSIONS.getSelectedItem().toString()));
-
-        break;
-
-      // Quilt
-      case "Quilt":
-        COMBOBOX_MODLOADERS.setSelectedIndex(2);
-        //noinspection ConstantConditions
-        COMBOBOX_MODLOADER_VERSIONS.setModel(
-            updateQuiltComboBoxVersions(COMBOBOX_MINECRAFTVERSIONS.getSelectedItem().toString()));
-
-        break;
-
-      case "LegacyFabric":
-        COMBOBOX_MODLOADERS.setSelectedIndex(3);
-        //noinspection ConstantConditions
-        COMBOBOX_MODLOADER_VERSIONS.setModel(
-            updateLegacyFabricComboBoxVersions(
-                COMBOBOX_MINECRAFTVERSIONS.getSelectedItem().toString()));
-
-    }
-
-    COMBOBOX_MODLOADER_VERSIONS.setSelectedIndex(0);
-    //noinspection ConstantConditions
-    chosenModloaderVersion = COMBOBOX_MODLOADER_VERSIONS.getSelectedItem().toString();
-    chosenModloader = modloader;
-
-    //noinspection ConstantConditions
-    LOG.debug(
-        "Minecraft version: "
-            + COMBOBOX_MINECRAFTVERSIONS.getSelectedItem().toString()
-            + "; Modloader: "
-            + COMBOBOX_MODLOADERS.getSelectedItem().toString()
-            + "; Modloader version "
-            + COMBOBOX_MODLOADER_VERSIONS.getSelectedItem().toString());
+    setModloader(COMBOBOX_MODLOADERS.getSelectedItem().toString());
   }
 
   /**
@@ -1603,14 +1557,14 @@ public class TabCreateServerPack extends JPanel {
 
     JFileChooser modpackDirChooser = new JFileChooser();
 
-    if (new File(TEXTFIELD_MODPACKDIRECTORY.getText()).isDirectory()) {
+    if (new File(getModpackDirectory()).isDirectory()) {
 
-      modpackDirChooser.setCurrentDirectory(new File(TEXTFIELD_MODPACKDIRECTORY.getText()));
+      modpackDirChooser.setCurrentDirectory(new File(getModpackDirectory()));
 
-    } else if (new File(TEXTFIELD_MODPACKDIRECTORY.getText()).isFile()) {
+    } else if (new File(getModpackDirectory()).isFile()) {
 
       modpackDirChooser.setCurrentDirectory(
-          new File(new File(TEXTFIELD_MODPACKDIRECTORY.getText()).getParent()));
+          new File(new File(getModpackDirectory()).getParent()));
 
     } else {
       modpackDirChooser.setCurrentDirectory(DIRECTORY_CHOOSER);
@@ -1628,10 +1582,8 @@ public class TabCreateServerPack extends JPanel {
 
     if (modpackDirChooser.showOpenDialog(FRAME_SERVERPACKCREATOR) == JFileChooser.APPROVE_OPTION) {
       try {
-        TEXTFIELD_MODPACKDIRECTORY.setText(
-            modpackDirChooser.getSelectedFile().getCanonicalPath().replace("\\", "/"));
+        setModpackDirectory(modpackDirChooser.getSelectedFile().getCanonicalPath());
 
-        /* This log is meant to be read by the user, therefore we allow translation. */
         LOG.debug(
             "Selected modpack directory: "
                 + modpackDirChooser.getSelectedFile().getCanonicalPath().replace("\\", "/"));
@@ -1668,10 +1620,9 @@ public class TabCreateServerPack extends JPanel {
     serverIconChooser.setPreferredSize(CHOOSERDIMENSION);
 
     if (serverIconChooser.showOpenDialog(FRAME_SERVERPACKCREATOR) == JFileChooser.APPROVE_OPTION) {
-      try {
 
-        TEXTFIELD_SERVERICONPATH.setText(
-            serverIconChooser.getSelectedFile().getCanonicalPath().replace("\\", "/"));
+      try {
+        setServerIconPath(serverIconChooser.getSelectedFile().getCanonicalPath());
 
       } catch (IOException ex) {
         LOG.error("Error getting the icon-file for the server pack.", ex);
@@ -1703,10 +1654,9 @@ public class TabCreateServerPack extends JPanel {
 
     if (serverPropertiesChooser.showOpenDialog(FRAME_SERVERPACKCREATOR)
         == JFileChooser.APPROVE_OPTION) {
-      try {
 
-        TEXTFIELD_SERVERPROPERTIESPATH.setText(
-            serverPropertiesChooser.getSelectedFile().getCanonicalPath().replace("\\", "/"));
+      try {
+        setServerPropertiesPath(serverPropertiesChooser.getSelectedFile().getCanonicalPath());
 
       } catch (IOException ex) {
         LOG.error("Error getting the properties-file for the server pack.", ex);
@@ -1725,12 +1675,12 @@ public class TabCreateServerPack extends JPanel {
 
     JFileChooser clientModsChooser = new JFileChooser();
 
-    if (TEXTFIELD_MODPACKDIRECTORY.getText().length() > 0
-        && new File(TEXTFIELD_MODPACKDIRECTORY.getText()).isDirectory()
-        && new File(String.format("%s/mods", TEXTFIELD_MODPACKDIRECTORY.getText())).isDirectory()) {
+    if (getModpackDirectory().length() > 0
+        && new File(getModpackDirectory()).isDirectory()
+        && new File(getModpackDirectory() + "/mods").isDirectory()) {
 
       clientModsChooser.setCurrentDirectory(
-          new File(String.format("%s/mods", TEXTFIELD_MODPACKDIRECTORY.getText())));
+          new File(getModpackDirectory() + "/mods"));
     } else {
       clientModsChooser.setCurrentDirectory(DIRECTORY_CHOOSER);
     }
@@ -1756,7 +1706,7 @@ public class TabCreateServerPack extends JPanel {
         clientModsFilenames.add(mod.getName());
       }
 
-      TEXTAREA_CLIENTSIDEMODS.setText(UTILITIES.StringUtils().buildString(clientModsFilenames));
+      setClientsideMods(clientModsFilenames);
 
       LOG.debug("Selected mods: " + clientModsFilenames);
     }
@@ -1774,10 +1724,10 @@ public class TabCreateServerPack extends JPanel {
 
     JFileChooser copyDirsChooser = new JFileChooser();
 
-    if (TEXTFIELD_MODPACKDIRECTORY.getText().length() > 0
-        && new File(TEXTFIELD_MODPACKDIRECTORY.getText()).isDirectory()) {
+    if (getModpackDirectory().length() > 0
+        && new File(getModpackDirectory()).isDirectory()) {
 
-      copyDirsChooser.setCurrentDirectory(new File(TEXTFIELD_MODPACKDIRECTORY.getText()));
+      copyDirsChooser.setCurrentDirectory(new File(getModpackDirectory()));
     } else {
       copyDirsChooser.setCurrentDirectory(DIRECTORY_CHOOSER);
     }
@@ -1796,20 +1746,10 @@ public class TabCreateServerPack extends JPanel {
         copyDirsNames.add(directory.getName());
       }
 
-      TEXTAREA_COPYDIRECTORIES.setText(UTILITIES.StringUtils().buildString(copyDirsNames));
+      setCopyDirectories(copyDirsNames);
 
       LOG.debug("Selected directories: " + copyDirsNames);
     }
-  }
-
-  /**
-   * Upon button-press, open a file-selector to select the Java-executable.
-   *
-   * @param event The event which triggers this method.
-   * @author Griefed
-   */
-  private void selectJavaInstallation(ActionEvent event) {
-    chooseJava();
   }
 
   /**
@@ -1866,7 +1806,7 @@ public class TabCreateServerPack extends JPanel {
 
     MATERIALTEXTPANEUI.installUI(LAZYMODETEXTPANE);
 
-    if (TEXTAREA_COPYDIRECTORIES.getText().equals("lazy_mode")) {
+    if (getCopyDirectories().equals("lazy_mode")) {
       decision =
           JOptionPane.showConfirmDialog(
               FRAME_SERVERPACKCREATOR,
@@ -1897,31 +1837,23 @@ public class TabCreateServerPack extends JPanel {
    * @return The current settings in the GUI.
    * @author Griefed
    */
-  private ConfigurationModel currentConfigAsModel() {
+  public ConfigurationModel currentConfigAsModel() {
     return new ConfigurationModel(
-        UTILITIES.ListUtils()
-            .cleanList(
-                new ArrayList<>(
-                    Arrays.asList(
-                        TEXTAREA_CLIENTSIDEMODS.getText().replace(", ", ",").split(",")))),
-        UTILITIES.ListUtils()
-            .cleanList(
-                new ArrayList<>(
-                    Arrays.asList(
-                        TEXTAREA_COPYDIRECTORIES.getText().replace(", ", ",").split(",")))),
-        TEXTFIELD_MODPACKDIRECTORY.getText().replace("\\", "/"),
-        COMBOBOX_MINECRAFTVERSIONS.getSelectedItem().toString(),
-        COMBOBOX_MODLOADERS.getSelectedItem().toString(),
-        COMBOBOX_MODLOADER_VERSIONS.getSelectedItem().toString(),
-        TEXTAREA_JAVAARGS.getText(),
-        UTILITIES.StringUtils().pathSecureText(TEXTFIELD_SERVERPACKSUFFIX.getText()),
-        TEXTFIELD_SERVERICONPATH.getText().replace("\\", "/"),
-        TEXTFIELD_SERVERPROPERTIESPATH.getText().replace("\\", "/"),
-        CHECKBOX_SERVER.isSelected(),
-        CHECKBOX_ICON.isSelected(),
-        CHECKBOX_PROPERTIES.isSelected(),
-        CHECKBOX_ZIP.isSelected(),
-        SCRIPT_VARIABLES.getData(),
+        getClientsideModsList(),
+        getCopyDirectoriesList(),
+        getModpackDirectory(),
+        getMinecraftVersion(),
+        getModloader(),
+        getModloaderVersion(),
+        getJavaArgs(),
+        getServerpackSuffix(),
+        getServerIconPath(),
+        getServerPropertiesPath(),
+        isServerInstallationTicked(),
+        isServerIconInclusionTicked(),
+        isServerPropertiesInclusionTicked(),
+        isZipCreationTicked(),
+        getScriptSettings(),
         getConfigPanelConfigs());
   }
 
@@ -1981,7 +1913,7 @@ public class TabCreateServerPack extends JPanel {
             updateStatus(
                 I18N.getMessage("createserverpack.log.info.buttoncreateserverpack.checked"));
 
-            saveConfig(APPLICATIONPROPERTIES.DEFAULT_CONFIG());
+            configurationModel.save(APPLICATIONPROPERTIES.DEFAULT_CONFIG());
 
             LOG.info("Starting ServerPackCreator run.");
 
@@ -1992,7 +1924,7 @@ public class TabCreateServerPack extends JPanel {
 
               SERVERPACKHANDLER.run(configurationModel);
 
-              loadConfig(new File("serverpackcreator.conf"));
+              loadConfig(APPLICATIONPROPERTIES.DEFAULT_CONFIG());
 
               updateStatus(
                   I18N.getMessage("createserverpack.log.info.buttoncreateserverpack.ready"));
@@ -2051,7 +1983,7 @@ public class TabCreateServerPack extends JPanel {
                       I18N.getMessage("createserverpack.gui.createserverpack.errors.encountered"),
                       encounteredErrors.size()),
                   JOptionPane.ERROR_MESSAGE,
-                  UIManager.getIcon("OptionPane.errorIcon"));
+                  ISSUE_ICON);
             }
           }
 
@@ -2098,123 +2030,45 @@ public class TabCreateServerPack extends JPanel {
     try {
       ConfigurationModel configurationModel = new ConfigurationModel(UTILITIES, configFile);
 
-      TEXTFIELD_MODPACKDIRECTORY.setText(configurationModel.getModpackDir().replace("\\", "/"));
+      setModpackDirectory(configurationModel.getModpackDir());
 
       if (configurationModel.getClientMods().isEmpty()) {
 
-        TEXTAREA_CLIENTSIDEMODS.setText(
-            UTILITIES.StringUtils().buildString(APPLICATIONPROPERTIES.getListFallbackMods()));
+        setClientsideMods(APPLICATIONPROPERTIES.getListFallbackMods());
         LOG.debug("Set clientMods with fallback list.");
 
       } else {
-
-        TEXTAREA_CLIENTSIDEMODS.setText(
-            UTILITIES.StringUtils().buildString(configurationModel.getClientMods()));
+        setClientsideMods(configurationModel.getClientMods());
       }
 
       if (configurationModel.getCopyDirs().isEmpty()) {
 
-        TEXTAREA_COPYDIRECTORIES.setText(
-            UTILITIES.StringUtils().buildString(APPLICATIONPROPERTIES.getDirectoriesToInclude()));
+        setCopyDirectories(APPLICATIONPROPERTIES.getDirectoriesToInclude());
 
       } else {
 
-        TEXTAREA_COPYDIRECTORIES.setText(
-            UTILITIES.StringUtils()
-                .buildString(configurationModel.getCopyDirs().toString().replace("\\", "/")));
+        setCopyDirectories(configurationModel.getCopyDirs());
       }
 
-      TEXTFIELD_SERVERICONPATH.setText(configurationModel.getServerIconPath().replace("\\", "/"));
-
-      TEXTFIELD_SERVERPROPERTIESPATH.setText(
-          configurationModel.getServerPropertiesPath().replace("\\", "/"));
+      setServerIconPath(configurationModel.getServerIconPath());
+      setServerPropertiesPath(configurationModel.getServerPropertiesPath());
 
       if (configurationModel.getMinecraftVersion().isEmpty()) {
-        chosenMinecraftVersion = VERSIONMETA.minecraft().latestRelease().version();
-      } else {
-        chosenMinecraftVersion = configurationModel.getMinecraftVersion();
+        configurationModel.setMinecraftVersion(VERSIONMETA.minecraft().latestRelease().version());
       }
 
-      for (int i = 0; i < COMBOBOX_MINECRAFTVERSIONS.getModel().getSize(); i++) {
-        if (COMBOBOX_MINECRAFTVERSIONS.getModel().getElementAt(i).equals(chosenMinecraftVersion)) {
-          COMBOBOX_MINECRAFTVERSIONS.setSelectedIndex(i);
-          break;
-        }
-      }
+      setMinecraftVersion(configurationModel.getMinecraftVersion());
+      setModloader(configurationModel.getModLoader());
+      setModloaderVersion(configurationModel.getModLoaderVersion());
 
-      // Set modloader and modloader version
-      switch (configurationModel.getModLoader().toLowerCase()) {
-        case "fabric":
-          if (configurationModel.getModLoaderVersion().isEmpty()) {
-            configurationModel.setModLoaderVersion(VERSIONMETA.fabric().releaseLoader());
-          }
+      setServerInstallationSelection(configurationModel.getIncludeServerInstallation());
+      setServerIconSelection(configurationModel.getIncludeServerIcon());
+      setServerPropertiesSelection(configurationModel.getIncludeServerProperties());
+      setServerZipArchiveSelection(configurationModel.getIncludeZipCreation());
 
-          COMBOBOX_MODLOADERS.setSelectedIndex(0);
-          COMBOBOX_MODLOADER_VERSIONS.setModel(
-              updateFabricComboBoxVersions(
-                  COMBOBOX_MINECRAFTVERSIONS.getSelectedItem().toString()));
-          break;
+      setJavaArgs(configurationModel.getJavaArgs());
 
-        default:
-        case "forge":
-
-          if (configurationModel.getModLoaderVersion().isEmpty() && VERSIONMETA.forge()
-              .latestForgeVersion(configurationModel.getMinecraftVersion()).isPresent()) {
-
-            configurationModel.setModLoaderVersion(
-                VERSIONMETA.forge().latestForgeVersion(configurationModel.getMinecraftVersion())
-                    .get());
-          }
-
-          COMBOBOX_MODLOADERS.setSelectedIndex(1);
-          COMBOBOX_MODLOADER_VERSIONS.setModel(
-              updateForgeComboBoxVersions(COMBOBOX_MINECRAFTVERSIONS.getSelectedItem().toString()));
-          break;
-
-        case "quilt":
-          if (!configurationModel.getModLoaderVersion().isEmpty()) {
-            configurationModel.setModLoaderVersion(VERSIONMETA.quilt().releaseLoader());
-          }
-
-          COMBOBOX_MODLOADERS.setSelectedIndex(2);
-          COMBOBOX_MODLOADER_VERSIONS.setModel(
-              updateQuiltComboBoxVersions(COMBOBOX_MINECRAFTVERSIONS.getSelectedItem().toString()));
-          break;
-
-        case "legacyfabric":
-          if (configurationModel.getModLoaderVersion().isEmpty()) {
-            configurationModel.setModLoaderVersion(VERSIONMETA.legacyFabric().releaseLoader());
-          }
-
-          COMBOBOX_MODLOADERS.setSelectedIndex(3);
-          COMBOBOX_MODLOADER_VERSIONS.setModel(
-              updateLegacyFabricComboBoxVersions(
-                  COMBOBOX_MINECRAFTVERSIONS.getSelectedItem().toString()));
-      }
-
-      // Go through all Fabric versions and check if specified version matches official
-      // version list
-      for (int i = 0; i < COMBOBOX_MODLOADER_VERSIONS.getModel().getSize(); i++) {
-
-        // If match is found, set selected version
-        if (COMBOBOX_MODLOADER_VERSIONS.getModel().getElementAt(i)
-            .equals(configurationModel.getModLoaderVersion())) {
-
-          COMBOBOX_MODLOADER_VERSIONS.setSelectedIndex(i);
-          chosenModloaderVersion = configurationModel.getModLoaderVersion();
-          break;
-        }
-      }
-
-      CHECKBOX_SERVER.setSelected(configurationModel.getIncludeServerInstallation());
-      CHECKBOX_ICON.setSelected(configurationModel.getIncludeServerIcon());
-      CHECKBOX_PROPERTIES.setSelected(configurationModel.getIncludeServerProperties());
-      CHECKBOX_ZIP.setSelected(configurationModel.getIncludeZipCreation());
-
-      TEXTAREA_JAVAARGS.setText(configurationModel.getJavaArgs());
-
-      TEXTFIELD_SERVERPACKSUFFIX.setText(
-          UTILITIES.StringUtils().pathSecureText(configurationModel.getServerPackSuffix()));
+      setServerpackSuffix(configurationModel.getServerPackSuffix());
 
       CONFIG_PANELS.forEach(
           panel ->
@@ -2223,7 +2077,7 @@ public class TabCreateServerPack extends JPanel {
               )
       );
 
-      SCRIPT_VARIABLES.loadData(configurationModel.getScriptSettings());
+      setScriptVariables(configurationModel.getScriptSettings());
 
     } catch (Exception ex) {
 
@@ -2239,37 +2093,27 @@ public class TabCreateServerPack extends JPanel {
    * @author Griefed
    */
   protected void clearInterface() {
-    TEXTFIELD_MODPACKDIRECTORY.setText("");
-    TEXTFIELD_SERVERPACKSUFFIX.setText("");
-    TEXTAREA_CLIENTSIDEMODS.setText(
-        UTILITIES.StringUtils().buildString(APPLICATIONPROPERTIES.getListFallbackMods()));
-    TEXTAREA_COPYDIRECTORIES.setText(
-        UTILITIES.StringUtils().buildString(APPLICATIONPROPERTIES.getDirectoriesToInclude()));
-    TEXTFIELD_SERVERICONPATH.setText("");
-    TEXTFIELD_SERVERPROPERTIESPATH.setText("");
 
-    for (int i = 0; i < VERSIONMETA.minecraft().releaseVersionsArrayDescending().length; i++) {
+    setModpackDirectory("");
+    setServerpackSuffix("");
 
-      if (VERSIONMETA
-          .minecraft()
-          .releaseVersionsArrayDescending()[i]
-          .equals(VERSIONMETA.minecraft().latestRelease().version())) {
+    setClientsideMods(APPLICATIONPROPERTIES.getListFallbackMods());
+    setCopyDirectories(APPLICATIONPROPERTIES.getDirectoriesToInclude());
 
-        COMBOBOX_MINECRAFTVERSIONS.setSelectedIndex(i);
-        chosenMinecraftVersion = VERSIONMETA.minecraft().latestRelease().version();
-      }
-    }
+    setServerIconPath("");
+    setServerPropertiesPath("");
 
-    updateModloaderGuiComponents("Forge");
+    COMBOBOX_MINECRAFTVERSIONS.setSelectedIndex(0);
+    setModloader("Forge");
 
-    CHECKBOX_SERVER.setSelected(false);
-    CHECKBOX_ICON.setSelected(false);
-    CHECKBOX_PROPERTIES.setSelected(false);
-    CHECKBOX_ZIP.setSelected(false);
-    TEXTAREA_JAVAARGS.setText("");
-    SCRIPT_VARIABLES.clearData();
+    setServerInstallationSelection(true);
+    setServerIconSelection(true);
+    setServerPropertiesSelection(true);
+    setServerZipArchiveSelection(true);
 
-    validateInputFields();
+    setJavaArgs("");
+
+    clearScriptVariables();
 
     CONFIG_PANELS.forEach(ExtensionConfigPanel::clear);
   }
@@ -2280,7 +2124,7 @@ public class TabCreateServerPack extends JPanel {
    * @return The current themes error-text colour.
    * @author Griefed
    */
-  private Color getThemeErrorColor() {
+  public Color getThemeErrorColor() {
     if (APPLICATIONPROPERTIES.isDarkTheme()) {
 
       return DARKTHEME.getTextErrorColour();
@@ -2297,7 +2141,7 @@ public class TabCreateServerPack extends JPanel {
    * @return The current themes default text colour.
    * @author Griefed
    */
-  private Color getThemeTextColor() {
+  public Color getThemeTextColor() {
     if (APPLICATIONPROPERTIES.isDarkTheme()) {
 
       return DARKTHEME.getTextColor();
@@ -2306,27 +2150,6 @@ public class TabCreateServerPack extends JPanel {
 
       return LIGHTTHEME.getTextColor();
     }
-  }
-
-  /**
-   * Getter for the chosen modloader from the JRadioButtons.
-   *
-   * @return String. Returns either Fabric or Forge.
-   * @author Griefed
-   */
-  public String getChosenModloader() {
-    return chosenModloader;
-  }
-
-  /**
-   * Getter for the selected modloader version depending on which modloader is currently selected.
-   *
-   * @return String. Returns the modloader version depending on which modloader is currently
-   * selected.
-   * @author Griefed
-   */
-  private String getSelectedModloaderVersion() {
-    return chosenModloaderVersion;
   }
 
   /**
@@ -2360,6 +2183,16 @@ public class TabCreateServerPack extends JPanel {
   }
 
   /**
+   * Getter for the text in the custom server-icon textfield.
+   *
+   * @param path The path to the server icon file.
+   * @author Griefed
+   */
+  public void setServerIconPath(String path) {
+    TEXTFIELD_SERVERICONPATH.setText(path.replace("\\", "/"));
+  }
+
+  /**
    * Getter for the text in the custom server.properties textfield
    *
    * @return String. Returns the text in the server.properties textfield.
@@ -2369,22 +2202,341 @@ public class TabCreateServerPack extends JPanel {
     return TEXTFIELD_SERVERPROPERTIESPATH.getText();
   }
 
-  private static class HeaderRenderer implements TableCellRenderer {
+  /**
+   * Getter for the text in the custom server.properties textfield
+   *
+   * @param path The path to the server properties file.
+   * @author Griefed
+   */
+  public void setServerPropertiesPath(String path) {
+    TEXTFIELD_SERVERPROPERTIESPATH.setText(path.replace("\\", "/"));
+  }
 
-    DefaultTableCellRenderer renderer;
+  /**
+   * Get the currently loaded configuration of the status bar.
+   *
+   * @return The configuration of the status bar.
+   * @author Griefed
+   */
+  public ScannerConfig getStatusBarSettings() {
+    return STATUS_BAR.getCurrentConfig();
+  }
 
-    public HeaderRenderer(JTable table) {
-      renderer = (DefaultTableCellRenderer)
-          table.getTableHeader().getDefaultRenderer();
-      renderer.setHorizontalAlignment(JLabel.CENTER);
+  /**
+   * set the configuration for the status bar in the GUI. Bear in mind that after the generation of
+   * a server pack has finished, the idle-config is loaded into the status bar.
+   *
+   * @param config The configuration to load into the status bar.
+   * @author Griefed
+   */
+  public void setStatusBarSettings(ScannerConfig config) {
+    STATUS_BAR.loadConfig(config);
+  }
+
+  /**
+   * Get the Minecraft version currently selected in the GUI.
+   *
+   * @return The Minecraft version currently selected in the GUI.
+   * @author Griefed
+   */
+  public String getMinecraftVersion() {
+    return COMBOBOX_MINECRAFTVERSIONS.getSelectedItem().toString();
+  }
+
+  /**
+   * Set the Minecraft version selected in the GUI. If the specified version is not available in the
+   * current combobox model, nothing happens.
+   *
+   * @param minecraftVersion The Minecraft version to select.
+   * @author Griefed
+   */
+  public void setMinecraftVersion(String minecraftVersion) {
+    for (int i = 0; i < COMBOBOX_MINECRAFTVERSIONS.getModel().getSize(); i++) {
+      if (COMBOBOX_MINECRAFTVERSIONS.getModel().getElementAt(i).equals(minecraftVersion)) {
+        COMBOBOX_MINECRAFTVERSIONS.setSelectedIndex(i);
+        break;
+      }
     }
+  }
 
-    @Override
-    public Component getTableCellRendererComponent(
-        JTable table, Object value, boolean isSelected,
-        boolean hasFocus, int row, int col) {
-      return renderer.getTableCellRendererComponent(
-          table, value, isSelected, hasFocus, row, col);
+  /**
+   * Get the modloader selected in the GUI.
+   *
+   * @return The modloader selected in the GUI.
+   * @author Griefed
+   */
+  public String getModloader() {
+    return COMBOBOX_MODLOADERS.getSelectedItem().toString();
+  }
+
+  /**
+   * Set the modloader selected in the GUI. If the specified modloader is not viable, nothing
+   * happens.
+   *
+   * @param modloader The modloader to select.
+   * @author Griefed
+   */
+  public void setModloader(String modloader) {
+    switch (modloader) {
+      // Fabric
+      case "Fabric":
+        COMBOBOX_MODLOADERS.setSelectedIndex(0);
+
+        break;
+
+      // Forge
+      case "Forge":
+        COMBOBOX_MODLOADERS.setSelectedIndex(1);
+
+        break;
+
+      // Quilt
+      case "Quilt":
+        COMBOBOX_MODLOADERS.setSelectedIndex(2);
+
+        break;
+
+      case "LegacyFabric":
+        COMBOBOX_MODLOADERS.setSelectedIndex(3);
     }
+    setModloaderVersionsModel();
+  }
+
+  /**
+   * Get the modloader version selected in the GUI.
+   *
+   * @return The modloader version selected in the GUI.
+   * @author Griefed
+   */
+  public String getModloaderVersion() {
+    return COMBOBOX_MODLOADER_VERSIONS.getSelectedItem().toString();
+  }
+
+  /**
+   * Set the modloader version selected in the GUI. If the specified version is not available in the
+   * currently set modloader version combobox model, nothing happens.
+   *
+   * @param version The modloader version to select.
+   * @author Griefed
+   */
+  public void setModloaderVersion(String version) {
+    for (int i = 0; i < COMBOBOX_MODLOADER_VERSIONS.getModel().getSize(); i++) {
+      if (COMBOBOX_MODLOADER_VERSIONS.getModel().getElementAt(i).equals(version)) {
+        COMBOBOX_MODLOADER_VERSIONS.setSelectedIndex(i);
+        break;
+      }
+    }
+  }
+
+  /**
+   * Get the list of clientside-only mods to exclude from the server pack.
+   *
+   * @return The list of clientside-only mods to exclude from the server pack.
+   * @author Griefed
+   */
+  public String getClientsideMods() {
+    return TEXTAREA_CLIENTSIDEMODS.getText().replace(", ", ",");
+  }
+
+  /**
+   * Set the list of clientside-only mods to exclude from the server pack.
+   *
+   * @param mods the list of clientside-only mods.
+   * @author Griefed
+   */
+  public void setClientsideMods(List<String> mods) {
+    TEXTAREA_CLIENTSIDEMODS.setText(UTILITIES.StringUtils().buildString(mods));
+  }
+
+  /**
+   * Get the list of clientside-only mods to exclude from the server pack.
+   *
+   * @return The list of clientside-only mods to exclude from the server pack.
+   * @author Griefed
+   */
+  public List<String> getClientsideModsList() {
+    return UTILITIES.ListUtils()
+        .cleanList(new ArrayList<>(Arrays.asList(getClientsideMods().split(","))));
+  }
+
+  /**
+   * Get the list of files and directories to include in the server pack.
+   *
+   * @return The list of files and directories to include in the server pack.
+   * @author Griefed
+   */
+  public String getCopyDirectories() {
+    return TEXTAREA_COPYDIRECTORIES.getText().replace(", ", ",");
+  }
+
+  /**
+   * Set the list of files and directories to include in the server pack.
+   *
+   * @param directoriesAndFiles The list of files and directories to include in the server pack.
+   * @author Griefed
+   */
+  public void setCopyDirectories(List<String> directoriesAndFiles) {
+    TEXTAREA_COPYDIRECTORIES.setText(
+        UTILITIES.StringUtils()
+            .buildString(directoriesAndFiles.toString().replace("\\", "/")));
+  }
+
+  /**
+   * Get the list of files and directories to include in the server pack.
+   *
+   * @return The list of files and directories to include in the server pack.
+   * @author Griefed
+   */
+  public List<String> getCopyDirectoriesList() {
+    return UTILITIES.ListUtils()
+        .cleanList(new ArrayList<>(Arrays.asList(getCopyDirectories().split(","))));
+  }
+
+  /**
+   * Get the modpack directory.
+   *
+   * @return The modpack directory.
+   * @author Griefed
+   */
+  public String getModpackDirectory() {
+    return TEXTFIELD_MODPACKDIRECTORY.getText().replace("\\", "/");
+  }
+
+  /**
+   * Set the modpack directory.
+   *
+   * @param directory The directory which holds the modpack.
+   * @author Griefed
+   */
+  public void setModpackDirectory(String directory) {
+    TEXTFIELD_MODPACKDIRECTORY.setText(directory.replace("\\", "/"));
+  }
+
+  /**
+   * Get the server pack suffix text.
+   *
+   * @return The server pack suffix text.
+   * @author Griefed
+   */
+  public String getServerpackSuffix() {
+    return UTILITIES.StringUtils().pathSecureText(TEXTFIELD_SERVERPACKSUFFIX.getText());
+  }
+
+  /**
+   * Set the server pack suffix text.
+   *
+   * @param suffix The suffix to append to the server pack folder and ZIP-archive.
+   * @author Griefed
+   */
+  public void setServerpackSuffix(String suffix) {
+    TEXTFIELD_SERVERPACKSUFFIX.setText(UTILITIES.StringUtils().pathSecureText(suffix));
+  }
+
+  /**
+   * Get a hashmap of the data available in the script variables table.
+   *
+   * @return A map containig all placeholders with their respective values.
+   * @author Griefed
+   */
+  public HashMap<String, String> getScriptSettings() {
+    return SCRIPT_VARIABLES.getData();
+  }
+
+  /**
+   * Load the hashmap into the script variables table. Before the data is loaded, all currently
+   * available data in the table is cleared. Use with caution.
+   *
+   * @param data The new map of placeholder-value pairs to set the table to.
+   * @author Griefed
+   */
+  public void setScriptVariables(HashMap<String, String> data) {
+    SCRIPT_VARIABLES.loadData(data);
+  }
+
+  /**
+   * Clear any available data in the script variables table.
+   */
+  public void clearScriptVariables() {
+    SCRIPT_VARIABLES.clearData();
+  }
+
+  /**
+   * Is the modloader server installation desired?
+   *
+   * @return <code>true</code> if it is.
+   * @author Griefed
+   */
+  public boolean isServerInstallationTicked() {
+    return CHECKBOX_SERVER.isSelected();
+  }
+
+  /**
+   * Is the inclusion of a server-icon.png desired?
+   *
+   * @return <code>true</code> if it is.
+   * @author Griefed
+   */
+  public boolean isServerIconInclusionTicked() {
+    return CHECKBOX_ICON.isSelected();
+  }
+
+  /**
+   * Is the inclusion of a server.properties-file desired?
+   *
+   * @return <code>true</code> if it is.
+   * @author Griefed
+   */
+  public boolean isServerPropertiesInclusionTicked() {
+    return CHECKBOX_PROPERTIES.isSelected();
+  }
+
+  /**
+   * Is the creation of a server pack ZIP-archive desired?
+   *
+   * @return <code>true</code> if it is.
+   * @author Griefed
+   */
+  public boolean isZipCreationTicked() {
+    return CHECKBOX_ZIP.isSelected();
+  }
+
+  /**
+   * Change the selection of the server installation checkbox.
+   *
+   * @param selected Whether the checkbox should be ticked.
+   * @author Griefed
+   */
+  public void setServerInstallationSelection(boolean selected) {
+    CHECKBOX_SERVER.setSelected(selected);
+  }
+
+  /**
+   * Change the selection of the server icon checkbox.
+   *
+   * @param selected Whether the checkbox should be ticked.
+   * @author Griefed
+   */
+  public void setServerIconSelection(boolean selected) {
+    CHECKBOX_ICON.setSelected(selected);
+  }
+
+  /**
+   * Change the selection of the server properties checkbox.
+   *
+   * @param selected Whether the checkbox should be ticked.
+   * @author Griefed
+   */
+  public void setServerPropertiesSelection(boolean selected) {
+    CHECKBOX_PROPERTIES.setSelected(selected);
+  }
+
+  /**
+   * Change the selection of the server ZIP-archive checkbox.
+   *
+   * @param selected Whether the checkbox should be ticked.
+   * @author Griefed
+   */
+  public void setServerZipArchiveSelection(boolean selected) {
+    CHECKBOX_ZIP.setSelected(selected);
   }
 }
