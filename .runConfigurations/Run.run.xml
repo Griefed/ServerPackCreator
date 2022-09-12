@@ -4,7 +4,6 @@
     <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
     <option name="MAIN_CLASS_NAME" value="de.griefed.serverpackcreator.ServerPackCreator" />
     <module name="ServerPackCreator.main" />
-    <option name="PROGRAM_PARAMETERS" value="-Dpf4j.mode=development" />
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/testruns" />
     <extension name="coverage">
       <pattern>
