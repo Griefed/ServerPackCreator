@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.TreeSet;
 import org.apache.logging.log4j.LogManager;
@@ -319,6 +320,8 @@ public final class ApplicationProperties extends Properties {
   private final String PROPERTY_MINECRAFT_SNAPSHOTS = "de.griefed.serverpackcreator.minecraft.snapshots";
   private final String PROPERTY_SERVERPACK_AUTODISCOVERY_FILTER = "de.griefed.serverpackcreator.serverpack.autodiscovery.filter";
   private final String PROPERTY_JAVA = "de.griefed.serverpackcreator.java";
+  private final String PROPERTY_SCRIPT_JAVA_8 = "de.griefed.serverpackcreator.script.java8";
+  private final String PROPERTY_SCRIPT_JAVA_17 = "de.griefed.serverpackcreator.script.java17";
   /**
    * The directory in which server packs will be generated and stored in, as well as server pack
    * ZIP-archives. Default is ./server-packs
@@ -383,6 +386,8 @@ public final class ApplicationProperties extends Properties {
    * The path to a viable Java executable or binary for use in modloader server installation.
    */
   private String javaPath = "java";
+  private String java8Path = "";
+  private String java17Path = "";
 
   /**
    * Initialize an instance of our application properties using the default
@@ -524,6 +529,10 @@ public final class ApplicationProperties extends Properties {
     setModExclusionFilterMethod();
 
     setJavaPath();
+
+    setJava8Path();
+
+    setJava17Path();
 
     saveToDisk(SERVERPACKCREATOR_PROPERTIES_FILE);
   }
@@ -1064,6 +1073,30 @@ public final class ApplicationProperties extends Properties {
     }
 
     return checkedJavaPath;
+  }
+
+  /**
+   * Sets the path to the Java 8 executable/binary.
+   * @author Griefed
+   */
+  private void setJava8Path() {
+    if (checkJavaPath(getProperty(PROPERTY_SCRIPT_JAVA_8, ""))) {
+      java8Path = getProperty(PROPERTY_SCRIPT_JAVA_8).replace("\\","/");
+      setProperty(PROPERTY_SCRIPT_JAVA_8,java8Path);
+    }
+    LOG.info("Java 8 path set to: " + java8Path);
+  }
+
+  /**
+   * Sets the path to the Java 17 executable/binary.
+   * @author Griefed
+   */
+  private void setJava17Path() {
+    if (checkJavaPath(getProperty(PROPERTY_SCRIPT_JAVA_17, ""))) {
+      java17Path = getProperty(PROPERTY_SCRIPT_JAVA_17).replace("\\","/");
+      setProperty(PROPERTY_SCRIPT_JAVA_17,java17Path);
+    }
+    LOG.info("Java 17 path set to: " + java17Path);
   }
 
   /**
@@ -1831,5 +1864,31 @@ public final class ApplicationProperties extends Properties {
      * Does any of the above hit for the user specified string/regex?
      */
     EITHER
+  }
+
+  /**
+   * Get the path to the Java 8 executable/binary, wrapped in an {@link Optional} for your convenience.
+   * @return The path to the Java 8 executable/binary, if available.
+   * @author Griefed
+   */
+  public Optional<String> java8Path() {
+    if (new File(java8Path).isFile()) {
+      return Optional.of(java8Path);
+    } else {
+      return Optional.empty();
+    }
+  }
+
+  /**
+   * Get the path to the Java 17 executable/binary, wrapped in an {@link Optional} for your convenience.
+   * @return The path to the Java 17 executable/binary, if available.
+   * @author Griefed
+   */
+  public Optional<String> java17Path() {
+    if (new File(java17Path).isFile()) {
+      return Optional.of(java17Path);
+    } else {
+      return Optional.empty();
+    }
   }
 }

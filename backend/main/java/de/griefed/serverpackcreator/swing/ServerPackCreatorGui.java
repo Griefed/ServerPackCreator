@@ -27,6 +27,7 @@ import de.griefed.serverpackcreator.i18n.I18n;
 import de.griefed.serverpackcreator.swing.themes.DarkTheme;
 import de.griefed.serverpackcreator.swing.themes.LightTheme;
 import de.griefed.serverpackcreator.swing.utilities.BackgroundPanel;
+import de.griefed.serverpackcreator.utilities.ConfigUtilities;
 import de.griefed.serverpackcreator.utilities.UpdateChecker;
 import de.griefed.serverpackcreator.utilities.common.Utilities;
 import de.griefed.serverpackcreator.versionmeta.VersionMeta;
@@ -120,6 +121,7 @@ public final class ServerPackCreatorGui {
    * @param injectedUpdateChecker           Instance of {@link UpdateChecker}.
    * @param injectedServerPackCreatorSplash Instance of {@link ServerPackCreatorSplash}.
    * @param injectedApplicationAddons       Instance of {@link ApplicationAddons}.
+   *                                        @param injectedConfigUtilities        Instance of {@link ConfigUtilities}.
    * @throws IOException if the {@link VersionMeta} could not be instantiated.
    * @author Griefed
    */
@@ -132,7 +134,8 @@ public final class ServerPackCreatorGui {
       Utilities injectedUtilities,
       UpdateChecker injectedUpdateChecker,
       ServerPackCreatorSplash injectedServerPackCreatorSplash,
-      ApplicationAddons injectedApplicationAddons)
+      ApplicationAddons injectedApplicationAddons,
+      ConfigUtilities injectedConfigUtilities)
       throws IOException {
 
     SERVERPACKCREATORSPLASH = injectedServerPackCreatorSplash;
@@ -163,7 +166,8 @@ public final class ServerPackCreatorGui {
             injectedUtilities,
             DARKTHEME,
             LIGHTTHEME,
-            APPLICATIONADDONS);
+            APPLICATIONADDONS,
+            injectedConfigUtilities);
 
     TabServerPackCreatorLog TAB_LOG_SERVERPACKCREATOR =
         new TabServerPackCreatorLog(

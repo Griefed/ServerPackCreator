@@ -461,7 +461,8 @@ public class ServerPackCreator {
           getUtilities(),
           getUpdateChecker(),
           getServerPackCreatorSplash(),
-          getApplicationAddons());
+          getApplicationAddons(),
+          getConfigUtilities());
     }
     return serverPackCreatorGui;
   }
