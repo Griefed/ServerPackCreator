@@ -91,11 +91,10 @@ public class LightTheme extends MaterialLiteTheme {
     this.buttonDefaultBackgroundColorMouseHover = this.buttonBackgroundColorMouseHover;
     this.buttonDefaultBackgroundColor = secondBackground;
     this.buttonDisabledBackground = disableBackground;
-    this.buttonFocusColor = this.textColor;
     this.buttonDefaultFocusColor = this.buttonFocusColor;
     this.buttonBorderColor = new ColorUIResource(211, 225, 232);
     this.buttonColorHighlight = selectedBackground;
-
+    this.buttonFocusColor = new ColorUIResource(new Color(0,0,0,0));
     this.selectedInDropDownBackgroundComboBox = this.buttonBackgroundColorMouseHover;
     this.selectedForegroundComboBox = this.textColor;
 
@@ -155,5 +154,20 @@ public class LightTheme extends MaterialLiteTheme {
 
     super.backgroundSeparator = MaterialColors.GRAY_300;
     super.foregroundSeparator = MaterialColors.GRAY_300;
+  }
+
+  @Override
+  public boolean getButtonBorderEnableToAll() {
+    return true;
+  }
+
+  @Override
+  public boolean getButtonBorderEnable() {
+    return true;
+  }
+
+  @Override
+  public ColorUIResource getGridColorTable() {
+    return this.gridColorTable;
   }
 }
