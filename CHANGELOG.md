@@ -1,3 +1,39 @@
+## [3.14.0-beta.6](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.14.0-beta.5...3.14.0-beta.6) (2022-09-13)
+
+
+### :scissors: Refactor
+
+* Smallish README changes. Some minor refactorings. ([89259e8](https://git.griefed.de/Griefed/ServerPackCreator/commit/89259e83d59ab83a3c951e85c1883123939252bd))
+* **Dialogs:** Use new info icon in info dialogs ([be5fbd6](https://git.griefed.de/Griefed/ServerPackCreator/commit/be5fbd60356f58c327d8499209af8df04194a74c))
+
+
+### 💎 Improvements
+
+* **GUI:** DIsplay required Java version correlating to selected Minecraft version. Add getters and setters to allow read & write from addons. Warn if selected Minecraft version has no server available. ([379d1f9](https://git.griefed.de/Griefed/ServerPackCreator/commit/379d1f9fe573acfb61d83287368b04fa2ac2c853))
+* **Java Script Variable Update:** Allow disabling of automatic update of SPC_JAVA_SPC-placeholder in script variables ([e3bd477](https://git.griefed.de/Griefed/ServerPackCreator/commit/e3bd477bdf421d15000dc6919aece6fdb0d991e7))
+
+
+### 🦊 CI/CD
+
+* **Gradle:** Combine all tasks into build to reduce complexity of..well...building SPC ([b1574a0](https://git.griefed.de/Griefed/ServerPackCreator/commit/b1574a004e0319ff018c12154d2ef9be4bff2e3e))
+* Ensure long changelogs do not crash release pipeline. Use softprops/action-gh-release for release with assets upload included. Trim Discord webhook message. ([09e7293](https://git.griefed.de/Griefed/ServerPackCreator/commit/09e7293c1831cbf45bd0640853876da4d93fc4de))
+
+
+### 🚀 Features
+
+* **Scan selected modpack directory & Java 8/17 paths in script variables:** After selecting the modpack-directory, Minecraft version, modloader and modloader version are automatically set, if possible. Display required Java version. Allow defining Java 8 and 17 paths for local testing and automatically update SPC_JAVA_SPC. ([580ecdf](https://git.griefed.de/Griefed/ServerPackCreator/commit/580ecdf088d70a914893543b28b01bfc67bc71a6))
+
+
+### 🛠 Fixes
+
+* **VersionMeta:** Provide default manifests. Prevents SPC from not starting up properly just because the servers of a modloader aren't accessible. ([a10fa93](https://git.griefed.de/Griefed/ServerPackCreator/commit/a10fa933a6fb4e1ff6c98e03f6d99a0ff9ea4489))
+
+
+### Other
+
+* Provide license information for third party libraries ([5b99340](https://git.griefed.de/Griefed/ServerPackCreator/commit/5b99340504a728f7eb4add2345958f2d418f84a1))
+* **README:** Add how to section, inspired by @Kreezxil, to be reviewed by the very same. ([647f3ce](https://git.griefed.de/Griefed/ServerPackCreator/commit/647f3cebb7537d7e98d9d181cadd1bb1ec66d325))
+
 ## [3.14.0-beta.5](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.14.0-beta.4...3.14.0-beta.5) (2022-09-10)
 
 
