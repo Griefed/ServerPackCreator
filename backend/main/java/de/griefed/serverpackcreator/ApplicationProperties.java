@@ -34,7 +34,10 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.TreeSet;
 import org.apache.logging.log4j.LogManager;
@@ -198,11 +201,18 @@ public final class ApplicationProperties extends Properties {
    * Fabric version manifest file.
    */
   private final File FABRIC_VERSION_MANIFEST = new File("fabric-manifest.xml");
+  private final File FABRIC_INTERMEDIARIES_MANIFEST = new File(
+      "fabric-intermediaries-manifest.json");
+  /**
+   * Storage location of manifests used by the VersionMeta.
+   */
+  private final String MANIFEST_LOCATION = "./manifests/";
+  private final String MINECRAFT_SERVER_MANIFESTS_LOCATION = MANIFEST_LOCATION + "mcserver/";
   /**
    * Fabric intermediaries manifest file.
    */
   private final File FABRIC_INTERMEDIARIES_MANIFEST_LOCATION =
-      new File("./work/fabric-intermediaries-manifest.json");
+      new File(MANIFEST_LOCATION + FABRIC_INTERMEDIARIES_MANIFEST.getName());
   /**
    * Fabric installer version manifest file.
    */
@@ -223,15 +233,17 @@ public final class ApplicationProperties extends Properties {
    * Storage location for Minecraft version manifest file.
    */
   private final File MINECRAFT_VERSION_MANIFEST_LOCATION =
-      new File("./work/minecraft-manifest.json");
+      new File(MANIFEST_LOCATION + MINECRAFT_VERSION_MANIFEST.getName());
   /**
    * Storage location for Forge version manifest file.
    */
-  private final File FORGE_VERSION_MANIFEST_LOCATION = new File("./work/forge-manifest.json");
+  private final File FORGE_VERSION_MANIFEST_LOCATION = new File(
+      MANIFEST_LOCATION + "forge-manifest.json");
   /**
    * Storage location for Fabric version manifest file.
    */
-  private final File FABRIC_VERSION_MANIFEST_LOCATION = new File("./work/fabric-manifest.xml");
+  private final File FABRIC_VERSION_MANIFEST_LOCATION = new File(
+      MANIFEST_LOCATION + "fabric-manifest.xml");
   /**
    * Legacy Fabric Game version manifest file.
    */
@@ -249,31 +261,32 @@ public final class ApplicationProperties extends Properties {
    * Storage location for Legacy Fabric Game version manifest file.
    */
   private final File LEGACY_FABRIC_GAME_MANIFEST_LOCATION = new File(
-      "./work/legacy-fabric-game-manifest.json");
+      MANIFEST_LOCATION + LEGACY_FABRIC_GAME_MANIFEST.getName());
   /**
    * Storage location for Legacy Fabric Loader version manifest file.
    */
   private final File LEGACY_FABRIC_LOADER_MANIFEST_LOCATION = new File(
-      "./work/legacy-fabric-loader-manifest.json");
+      MANIFEST_LOCATION + LEGACY_FABRIC_LOADER_MANIFEST.getName());
   /**
    * Storage location for Legacy Fabric Installer version manifest file.
    */
   private final File LEGACY_FABRIC_INSTALLER_MANIFEST_LOCATION = new File(
-      "./work/legacy-fabric-installer-manifest.xml");
+      MANIFEST_LOCATION + LEGACY_FABRIC_INSTALLER_MANIFEST.getName());
   /**
    * Storage location for Fabric installer version manifest file.
    */
   private final File FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION =
-      new File("./work/fabric-installer-manifest.xml");
+      new File(MANIFEST_LOCATION + FABRIC_INSTALLER_VERSION_MANIFEST.getName());
   /**
    * Storage location for Quilt version manifest file.
    */
-  private final File QUILT_VERSION_MANIFEST_LOCATION = new File("./work/quilt-manifest.xml");
+  private final File QUILT_VERSION_MANIFEST_LOCATION = new File(
+      MANIFEST_LOCATION + QUILT_VERSION_MANIFEST.getName());
   /**
    * Storage location for Quilt installer version manifest file.
    */
   private final File QUILT_INSTALLER_VERSION_MANIFEST_LOCATION =
-      new File("./work/quilt-installer-manifest.xml");
+      new File(MANIFEST_LOCATION + QUILT_INSTALLER_VERSION_MANIFEST.getName());
   /**
    * Default Aikars flags.
    */
@@ -284,6 +297,12 @@ public final class ApplicationProperties extends Properties {
           + "-XX:G1MixedGCCountTarget=4 -XX:InitiatingHeapOccupancyPercent=15 -XX:G1MixedGCLiveThresholdPercent=90 "
           + "-XX:G1RSetUpdatingPauseTimePercent=5 -XX:SurvivorRatio=32 -XX:+PerfDisableSharedMem "
           + "-XX:MaxTenuringThreshold=1 -Dusing.aikars.flags=https://mcflags.emc.gs -Daikars.new.flags=true";
+  /**
+   * Map containing any Java paths from properties with the format
+   * <code>de.griefed.serverpackcreator.script.javaN</code> where N is the version of the Java
+   * installation.
+   */
+  private final HashMap<String, String> JAVA_PATHS = new HashMap<>();
   private final String PROPERTY_VERSIONCHECK_PRERELEASE = "de.griefed.serverpackcreator.versioncheck.prerelease";
   private final String PROPERTY_LANGUAGE = "de.griefed.serverpackcreator.language";
   private final String PROPERTY_CONFIGURATION_FALLBACKMODSLIST = "de.griefed.serverpackcreator.configuration.fallbackmodslist";
@@ -309,6 +328,8 @@ public final class ApplicationProperties extends Properties {
   private final String PROPERTY_MINECRAFT_SNAPSHOTS = "de.griefed.serverpackcreator.minecraft.snapshots";
   private final String PROPERTY_SERVERPACK_AUTODISCOVERY_FILTER = "de.griefed.serverpackcreator.serverpack.autodiscovery.filter";
   private final String PROPERTY_JAVA = "de.griefed.serverpackcreator.java";
+  private final String PROPERTY_SCRIPT_JAVA = "de.griefed.serverpackcreator.script.java";
+  private final String PROPERTY_SCRIPT_JAVA_AUTOUPDATE = "de.griefed.serverpackcreator.script.java.autoupdate";
   /**
    * The directory in which server packs will be generated and stored in, as well as server pack
    * ZIP-archives. Default is ./server-packs
@@ -373,6 +394,11 @@ public final class ApplicationProperties extends Properties {
    * The path to a viable Java executable or binary for use in modloader server installation.
    */
   private String javaPath = "java";
+  /**
+   * Whether to automatically update the <code>SPC_JAVA_SPC</code>-placeholder in the script
+   * variables table with a Java path matching the required Java version for the Minecraft server.
+   */
+  private boolean javaScriptAutoupdate = true;
 
   /**
    * Initialize an instance of our application properties using the default
@@ -514,6 +540,10 @@ public final class ApplicationProperties extends Properties {
     setModExclusionFilterMethod();
 
     setJavaPath();
+
+    setJavaScriptsVariablePaths();
+
+    setAutoUpdateScriptVariablesJavaPlaceholder();
 
     saveToDisk(SERVERPACKCREATOR_PROPERTIES_FILE);
   }
@@ -1057,6 +1087,45 @@ public final class ApplicationProperties extends Properties {
   }
 
   /**
+   * Sets the path to the Java 17 executable/binary.
+   *
+   * @author Griefed
+   */
+  private void setJavaScriptsVariablePaths() {
+    for (int i = 8; i < 256; i++) {
+      if (checkJavaPath(getProperty(PROPERTY_SCRIPT_JAVA + i, ""))) {
+
+        if (JAVA_PATHS.containsKey(i)) {
+          JAVA_PATHS.replace(String.valueOf(i),
+              getProperty(PROPERTY_SCRIPT_JAVA + i).replace("\\", "/"));
+        } else {
+          JAVA_PATHS.put(String.valueOf(i),
+              getProperty(PROPERTY_SCRIPT_JAVA + i).replace("\\", "/"));
+        }
+
+        setProperty(PROPERTY_SCRIPT_JAVA + i, JAVA_PATHS.get(String.valueOf(i)));
+      }
+    }
+
+    LOG.info("Available Java paths for scripts for local testing and debugging:");
+    for (Map.Entry<String, String> entry : JAVA_PATHS.entrySet()) {
+      LOG.info("Java " + entry.getKey() + " path: " + entry.getValue());
+    }
+  }
+
+  /**
+   * Set whether to automatically update the <code>SPC_JAVA_SPC</code>-placeholder in the script
+   * variables table with a Java path matching the required Java version for the Minecraft server.
+   *
+   * @author Griefed
+   */
+  private void setAutoUpdateScriptVariablesJavaPlaceholder() {
+    javaScriptAutoupdate = getBoolProperty(PROPERTY_SCRIPT_JAVA_AUTOUPDATE, true);
+    LOG.info("Automatically update SPC_JAVA_SPC-placeholder in script variables table set to: "
+        + javaScriptAutoupdate);
+  }
+
+  /**
    * Default list of script templates, used in case not a single one was configured.
    *
    * <ul>
@@ -1235,7 +1304,7 @@ public final class ApplicationProperties extends Properties {
   /**
    * Path to the Minecraft version manifest-file, as a file.
    *
-   * @return ./work/minecraft-manifest.json
+   * @return ./manifests/minecraft-manifest.json
    * @author Griefed
    */
   public File MINECRAFT_VERSION_MANIFEST_LOCATION() {
@@ -1245,7 +1314,7 @@ public final class ApplicationProperties extends Properties {
   /**
    * Path to the Forge version manifest-file, as a file.
    *
-   * @return ./work/forge-manifest.json
+   * @return ./manifests/forge-manifest.json
    * @author Griefed
    */
   public File FORGE_VERSION_MANIFEST_LOCATION() {
@@ -1255,7 +1324,7 @@ public final class ApplicationProperties extends Properties {
   /**
    * Path to the Fabric version manifest-file, as a file.
    *
-   * @return ./work/fabric-manifest.xml
+   * @return ./manifests/fabric-manifest.xml
    * @author Griefed
    */
   public File FABRIC_VERSION_MANIFEST_LOCATION() {
@@ -1265,7 +1334,7 @@ public final class ApplicationProperties extends Properties {
   /**
    * Path to the Fabric intermediaries manifest-file, as a file.
    *
-   * @return ./work/fabric-intermediaries-manifest.json
+   * @return ./manifests/fabric-intermediaries-manifest.json
    */
   public File FABRIC_INTERMEDIARIES_MANIFEST_LOCATION() {
     return FABRIC_INTERMEDIARIES_MANIFEST_LOCATION;
@@ -1274,7 +1343,7 @@ public final class ApplicationProperties extends Properties {
   /**
    * Path to the Fabric installer version manifest-file, as a file.
    *
-   * @return ./work/fabric-installer-manifest.xml
+   * @return ./manifests/fabric-installer-manifest.xml
    * @author Griefed
    */
   public File FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION() {
@@ -1284,7 +1353,7 @@ public final class ApplicationProperties extends Properties {
   /**
    * Path to the Quilt version manifest-file, as a file.
    *
-   * @return ./work/quilt-manifest.xml
+   * @return ./manifests/quilt-manifest.xml
    * @author Griefed
    */
   public File QUILT_VERSION_MANIFEST_LOCATION() {
@@ -1294,7 +1363,7 @@ public final class ApplicationProperties extends Properties {
   /**
    * Path to the Quilt installer version manifest-file, as a file.
    *
-   * @return ./work/quilt-installer-manifest.xml
+   * @return ./manifests/quilt-installer-manifest.xml
    * @author Griefed
    */
   public File QUILT_INSTALLER_VERSION_MANIFEST_LOCATION() {
@@ -1334,7 +1403,7 @@ public final class ApplicationProperties extends Properties {
   /**
    * Path to the Legacy Fabric Game version manifest-file, as a file.
    *
-   * @return ./work/legacy-fabric-game-manifest.json
+   * @return ./manifests/legacy-fabric-game-manifest.json
    * @author Griefed
    */
   public File LEGACY_FABRIC_GAME_MANIFEST_LOCATION() {
@@ -1344,7 +1413,7 @@ public final class ApplicationProperties extends Properties {
   /**
    * Path to the Legacy Fabric Loader version manifest-file, as a file.
    *
-   * @return ./work/legacy-fabric-loader-manifest.json
+   * @return ./manifests/legacy-fabric-loader-manifest.json
    * @author Griefed
    */
   public File LEGACY_FABRIC_LOADER_MANIFEST_LOCATION() {
@@ -1354,7 +1423,7 @@ public final class ApplicationProperties extends Properties {
   /**
    * Path to the Legacy Fabric Installer version manifest-file, as a file.
    *
-   * @return ./work/legacy-fabric-installer-manifest.xml
+   * @return ./manifests/legacy-fabric-installer-manifest.xml
    * @author Griefed
    */
   public File LEGACY_FABRIC_INSTALLER_MANIFEST_LOCATION() {
@@ -1413,6 +1482,26 @@ public final class ApplicationProperties extends Properties {
    */
   public String DIRECTORY_PLUGINS_CONFIG() {
     return DIRECTORY_PLUGINS() + "/config";
+  }
+
+  /**
+   * Directory where version manifests reside in.
+   *
+   * @return Directory where manifests reside in.
+   * @author Griefed
+   */
+  public String MANIFEST_LOCATION() {
+    return MANIFEST_LOCATION;
+  }
+
+  /**
+   * Directory where Minecraft server manifests reside in.
+   *
+   * @return Directory where Minecraft server manifests reside in.
+   * @author Griefed
+   */
+  public String MINECRAFT_SERVER_MANIFEST_LOCATION() {
+    return MINECRAFT_SERVER_MANIFESTS_LOCATION;
   }
 
   /**
@@ -1774,6 +1863,35 @@ public final class ApplicationProperties extends Properties {
    */
   public ExclusionFilter exclusionFilter() {
     return exclusionFilter;
+  }
+
+  /**
+   * Get the path to the specified Java executable/binary, wrapped in an {@link Optional} for your
+   * convenience.
+   *
+   * @param javaVersion The Java version to acquire the path for.
+   * @return The path to the Java executable/binary, if available.
+   * @author Griefed
+   */
+  public Optional<String> javaPath(int javaVersion) {
+    if (JAVA_PATHS.containsKey(String.valueOf(javaVersion)) && new File(
+        JAVA_PATHS.get(String.valueOf(javaVersion))).isFile()) {
+      return Optional.of(JAVA_PATHS.get(String.valueOf(javaVersion)));
+    } else {
+      return Optional.empty();
+    }
+  }
+
+
+  /**
+   * Whether to automatically update the <code>SPC_JAVA_SPC</code>-placeholder in the script
+   * variables table with a Java path matching the required Java version for the Minecraft server.
+   *
+   * @return <code>true</code> if enabled.
+   * @author Griefed
+   */
+  public boolean isJavaScriptAutoupdateEnabled() {
+    return javaScriptAutoupdate;
   }
 
   public enum ExclusionFilter {

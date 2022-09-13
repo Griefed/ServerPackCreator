@@ -52,7 +52,7 @@ jobs:
           GITHUB_ACTOR: ${{ secrets.GITHUB_ACTOR }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          ./gradlew about -Pversion=${{steps.tag.outputs.tag}} installQuasar cleanFrontend assembleFrontend copyDist build createExe --info --stacktrace  -x test
+          ./gradlew -Pversion=${{steps.tag.outputs.tag}} build --info --stacktrace  -x test
 
       # RENAME EXE
       - name: Rename files

@@ -21,6 +21,8 @@ package de.griefed.serverpackcreator.versionmeta;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.griefed.serverpackcreator.ApplicationProperties;
+import de.griefed.serverpackcreator.utilities.common.Utilities;
 import de.griefed.serverpackcreator.versionmeta.fabric.FabricIntermediaries;
 import de.griefed.serverpackcreator.versionmeta.fabric.FabricMeta;
 import de.griefed.serverpackcreator.versionmeta.forge.ForgeMeta;
@@ -110,6 +112,8 @@ public final class VersionMeta extends Manifests {
    * @param legacyFabricGameManifest      Fabric Legacy Game manifest file.
    * @param legacyFabricLoaderManifest    Fabric Legacy Loader manifest file.
    * @param legacyFabricInstallerManifest Fabric Legacy Installer manifest file.
+   * @param injectedUtilities             Instance of commonly used utilities.
+   * @param injectedApplicationProperties ServerPackCreator settings.
    * @throws ParserConfigurationException indicates a serious configuration error.
    * @throws IOException                  if any IO errors occur.
    * @throws SAXException                 if any parse errors occur.
@@ -127,7 +131,9 @@ public final class VersionMeta extends Manifests {
       File legacyFabricGameManifest,
       File legacyFabricLoaderManifest,
       File legacyFabricInstallerManifest,
-      ObjectMapper injectedObjectMapper)
+      ObjectMapper injectedObjectMapper,
+      Utilities injectedUtilities,
+      ApplicationProperties injectedApplicationProperties)
       throws IOException, ParserConfigurationException, SAXException {
 
     MINECRAFT_MANIFEST = minecraftManifest;
@@ -145,7 +151,9 @@ public final class VersionMeta extends Manifests {
     checkManifests();
 
     FORGE_META = new ForgeMeta(FORGE_MANIFEST, OBJECT_MAPPER);
-    MINECRAFT_META = new MinecraftMeta(MINECRAFT_MANIFEST, FORGE_META, OBJECT_MAPPER);
+    MINECRAFT_META = new MinecraftMeta(MINECRAFT_MANIFEST, FORGE_META, OBJECT_MAPPER,
+        injectedUtilities,
+        injectedApplicationProperties);
     FABRIC_INTERMEDIARIES = new FabricIntermediaries(FABRIC_INTERMEDIARIES_MANIFEST, OBJECT_MAPPER);
     LEGACY_FABRIC_META = new LegacyFabricMeta(LEGACY_FABRIC_GAME_MANIFEST,
         LEGACY_FABRIC_LOADER_MANIFEST, LEGACY_FABRIC_INSTALLER_MANIFEST, OBJECT_MAPPER);
@@ -283,7 +291,7 @@ public final class VersionMeta extends Manifests {
 
           LOG.info("Refreshing " + manifestToCheck + ".");
 
-          updateManifest(manifestToCheck, urlToManifest);
+          updateManifest(manifestToCheck, newManifest);
 
         } else {
 
@@ -303,16 +311,33 @@ public final class VersionMeta extends Manifests {
   }
 
   /**
-   * Deletes the specified manifest if it is found, then downloads the specified manifest file
-   * again. Ensures we always have the latest manifest for version validation available.
+   * Ensures we always have the latest manifest for version validation available.
    *
-   * @param manifestToRefresh The manifest file to delete and then download, updating it.
+   * @param manifestToRefresh The manifest file to update.
    * @param urlToManifest     The URL to the file which is to be downloaded.
    * @author whitebear60
    * @author Griefed
    */
   private void updateManifest(File manifestToRefresh, URL urlToManifest) {
-    FileUtils.deleteQuietly(manifestToRefresh);
+    try {
+
+      updateManifest(manifestToRefresh, urlToManifest.openStream());
+    } catch (IOException ex) {
+
+      LOG.error("An error occurred getting the inputstream for  " + manifestToRefresh + ", from "
+          + urlToManifest + ".", ex);
+    }
+  }
+
+  /**
+   * Ensures we always have the latest manifest for version validation available.
+   *
+   * @param manifestToRefresh The manifest file to update.
+   * @param manifestStream    The URL to the file which is to be downloaded.
+   * @author whitebear60
+   * @author Griefed
+   */
+  private void updateManifest(File manifestToRefresh, InputStream manifestStream) {
 
     try {
       FileUtils.createParentDirectories(manifestToRefresh);
@@ -326,18 +351,17 @@ public final class VersionMeta extends Manifests {
 
     try {
 
-      readableByteChannel = Channels.newChannel(urlToManifest.openStream());
+      readableByteChannel = Channels.newChannel(manifestStream);
 
       fileOutputStream = new FileOutputStream(manifestToRefresh);
 
       fileChannel = fileOutputStream.getChannel();
 
-      fileOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
+      fileChannel.transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
 
     } catch (IOException ex) {
 
-      LOG.error("An error occurred downloading " + manifestToRefresh + ".", ex);
-      FileUtils.deleteQuietly(manifestToRefresh);
+      LOG.error("An error occurred refreshing " + manifestToRefresh + ".", ex);
 
     } finally {
 
@@ -383,9 +407,11 @@ public final class VersionMeta extends Manifests {
   public VersionMeta update() throws IOException, ParserConfigurationException, SAXException {
     checkManifests();
     MINECRAFT_META.update();
+    FABRIC_INTERMEDIARIES.update();
     FABRIC_META.update();
-    FORGE_META.update();
     LEGACY_FABRIC_META.update();
+    FORGE_META.update();
+    QUIL_META.update();
     return this;
   }
 

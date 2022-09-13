@@ -29,6 +29,7 @@ import de.griefed.versionchecker.Update;
 import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.Dimension;
+import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.datatransfer.Clipboard;
@@ -42,6 +43,7 @@ import java.net.URISyntaxException;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
+import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -106,12 +108,17 @@ public class MainMenuBar extends Component {
   private final ImageIcon HELPICON =
       new ImageIcon(
           Objects.requireNonNull(
-              ServerPackCreatorGui.class.getResource("/de/griefed/resources/gui/help.png")));
+              MainMenuBar.class.getResource("/de/griefed/resources/gui/help.png")));
   private final ImageIcon ICON_HASTEBIN =
       new ImageIcon(
           Objects.requireNonNull(
-              ServerPackCreatorGui.class.getResource("/de/griefed/resources/gui/hastebin.png")));
+              MainMenuBar.class.getResource("/de/griefed/resources/gui/hastebin.png")));
 
+  private final ImageIcon INFO_ICON = new ImageIcon(
+      ImageIO.read(
+              Objects.requireNonNull(
+                  MainMenuBar.class.getResource("/de/griefed/resources/gui/info.png")))
+          .getScaledInstance(48, 48, Image.SCALE_SMOOTH));
   private final JMenuBar MENUBAR = new JMenuBar();
 
   private final String[] HASTEOPTIONS = new String[3];
@@ -156,6 +163,7 @@ public class MainMenuBar extends Component {
    * @param injectedUpdateChecker         Instance of {@link UpdateChecker} to check for
    *                                      update-availability.
    * @param injectedUtilities             Instance of {@link Utilities} for various things.
+   * @throws IOException when the info icon could not be instantiated.
    * @author Griefed
    */
   public MainMenuBar(
@@ -169,7 +177,8 @@ public class MainMenuBar extends Component {
       JTabbedPane injectedTabbedPane,
       ApplicationProperties injectedApplicationProperties,
       UpdateChecker injectedUpdateChecker,
-      de.griefed.serverpackcreator.utilities.common.Utilities injectedUtilities) {
+      de.griefed.serverpackcreator.utilities.common.Utilities injectedUtilities)
+      throws IOException {
 
     this.APPLICATIONPROPERTIES = injectedApplicationProperties;
     this.I18N = injectedI18n;
@@ -441,10 +450,10 @@ public class MainMenuBar extends Component {
     if (!displayUpdateDialog()) {
       JOptionPane.showMessageDialog(
           FRAME_SERVERPACKCREATOR,
-          I18N.getMessage("menubar.gui.menuitem.updates.none"),
-          I18N.getMessage("menubar.gui.menuitem.updates.none.title"),
+          I18N.getMessage("menubar.gui.menuitem.updates.none") + "   ",
+          I18N.getMessage("menubar.gui.menuitem.updates.none.title") + "   ",
           JOptionPane.INFORMATION_MESSAGE,
-          UIManager.getIcon("OptionPane.informationIcon"));
+          INFO_ICON);
     }
   }
 
@@ -507,7 +516,7 @@ public class MainMenuBar extends Component {
           I18N.getMessage("update.dialog.available"),
           JOptionPane.DEFAULT_OPTION,
           JOptionPane.INFORMATION_MESSAGE,
-          UIManager.getIcon("OptionPane.informationIcon"),
+          INFO_ICON,
           options,
           options[0])) {
         case 0:
@@ -545,14 +554,14 @@ public class MainMenuBar extends Component {
           I18N.getMessage("menubar.gui.menuitem.updatefallback.updated"),
           I18N.getMessage("menubar.gui.menuitem.updatefallback.title"),
           JOptionPane.INFORMATION_MESSAGE,
-          UIManager.getIcon("OptionPane.informationIcon"));
+          INFO_ICON);
     } else {
       JOptionPane.showMessageDialog(
           FRAME_SERVERPACKCREATOR,
           I18N.getMessage("menubar.gui.menuitem.updatefallback.nochange"),
           I18N.getMessage("menubar.gui.menuitem.updatefallback.title"),
           JOptionPane.INFORMATION_MESSAGE,
-          UIManager.getIcon("OptionPane.informationIcon"));
+          INFO_ICON);
     }
   }
 

@@ -21,6 +21,8 @@ package de.griefed.serverpackcreator.versionmeta.minecraft;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
+import de.griefed.serverpackcreator.ApplicationProperties;
+import de.griefed.serverpackcreator.utilities.common.Utilities;
 import de.griefed.serverpackcreator.versionmeta.Type;
 import de.griefed.serverpackcreator.versionmeta.forge.ForgeMeta;
 import java.io.File;
@@ -42,16 +44,21 @@ public final class MinecraftMeta {
   /**
    * Create a new Minecraft Meta instance.
    *
-   * @param minecraftManifest Minecraft manifest file.
-   * @param injectedForgeMeta To acquire Forge instances for this {@link MinecraftClient} version.
-   * @param objectMapper      Object mapper for JSON parsing.
+   * @param minecraftManifest     Minecraft manifest file.
+   * @param injectedForgeMeta     To acquire Forge instances for this {@link MinecraftClient}
+   *                              version.
+   * @param objectMapper          Object mapper for JSON parsing.
+   * @param utilities             Instance of commonly used utilities.
+   * @param applicationProperties ServerPackCreator settings.
    * @author Griefed
    */
   public MinecraftMeta(
-      File minecraftManifest, ForgeMeta injectedForgeMeta, ObjectMapper objectMapper) {
-    this.MINECRAFT_CLIENT_META =
-        new MinecraftClientMeta(minecraftManifest, injectedForgeMeta, objectMapper);
-    this.MINECRAFT_SERVER_META = new MinecraftServerMeta(this.MINECRAFT_CLIENT_META);
+      File minecraftManifest, ForgeMeta injectedForgeMeta, ObjectMapper objectMapper,
+      Utilities utilities, ApplicationProperties applicationProperties) {
+    MINECRAFT_CLIENT_META =
+        new MinecraftClientMeta(minecraftManifest, injectedForgeMeta, objectMapper, utilities,
+            applicationProperties);
+    MINECRAFT_SERVER_META = new MinecraftServerMeta(this.MINECRAFT_CLIENT_META);
   }
 
   /**
@@ -62,8 +69,8 @@ public final class MinecraftMeta {
    * @author Griefed
    */
   public void update() throws IOException {
-    this.MINECRAFT_CLIENT_META.update();
-    this.MINECRAFT_SERVER_META.update();
+    MINECRAFT_CLIENT_META.update();
+    MINECRAFT_SERVER_META.update();
   }
 
   /*

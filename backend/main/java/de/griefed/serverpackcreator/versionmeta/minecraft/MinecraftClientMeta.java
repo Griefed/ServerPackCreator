@@ -21,6 +21,8 @@ package de.griefed.serverpackcreator.versionmeta.minecraft;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.griefed.serverpackcreator.ApplicationProperties;
+import de.griefed.serverpackcreator.utilities.common.Utilities;
 import de.griefed.serverpackcreator.versionmeta.Manifests;
 import de.griefed.serverpackcreator.versionmeta.Type;
 import de.griefed.serverpackcreator.versionmeta.forge.ForgeMeta;
@@ -42,6 +44,8 @@ final class MinecraftClientMeta extends Manifests {
 
   private static final Logger LOG = LogManager.getLogger(MinecraftClientMeta.class);
   private final ObjectMapper OBJECTMAPPER;
+  private final Utilities UTILITIES;
+  private final ApplicationProperties APPLICATIONPROPERTIES;
 
   private final ForgeMeta FORGE_META;
   private final File MINECRAFT_MANIFEST;
@@ -56,16 +60,22 @@ final class MinecraftClientMeta extends Manifests {
   /**
    * Create a new Minecraft Client Meta.
    *
-   * @param injectedForgeMeta To acquire Forge instances for this {@link MinecraftClient} version.
-   * @param minecraftManifest Minecraft manifest file.
-   * @param objectMapper      Object mapper for JSON parsing.
+   * @param injectedForgeMeta     To acquire Forge instances for this {@link MinecraftClient}
+   *                              version.
+   * @param minecraftManifest     Minecraft manifest file.
+   * @param objectMapper          Object mapper for JSON parsing.
+   * @param utilities             Instance of commonly used utilities.
+   * @param applicationProperties ServerPackCreator settings.
    * @author Griefed
    */
   MinecraftClientMeta(
-      File minecraftManifest, ForgeMeta injectedForgeMeta, ObjectMapper objectMapper) {
-    this.MINECRAFT_MANIFEST = minecraftManifest;
-    this.FORGE_META = injectedForgeMeta;
-    this.OBJECTMAPPER = objectMapper;
+      File minecraftManifest, ForgeMeta injectedForgeMeta, ObjectMapper objectMapper,
+      Utilities utilities, ApplicationProperties applicationProperties) {
+    APPLICATIONPROPERTIES = applicationProperties;
+    UTILITIES = utilities;
+    MINECRAFT_MANIFEST = minecraftManifest;
+    FORGE_META = injectedForgeMeta;
+    OBJECTMAPPER = objectMapper;
   }
 
   /**
@@ -97,7 +107,9 @@ final class MinecraftClientMeta extends Manifests {
                       Type.RELEASE,
                       new URL(minecraftVersion.get("url").asText()),
                       this.FORGE_META,
-                      OBJECTMAPPER);
+                      OBJECTMAPPER,
+                      UTILITIES,
+                      APPLICATIONPROPERTIES);
 
                   RELEASES.add(client);
 
@@ -116,7 +128,9 @@ final class MinecraftClientMeta extends Manifests {
                       Type.SNAPSHOT,
                       new URL(minecraftVersion.get("url").asText()),
                       this.FORGE_META,
-                      OBJECTMAPPER);
+                      OBJECTMAPPER,
+                      UTILITIES,
+                      APPLICATIONPROPERTIES);
 
                   SNAPSHOTS.add(client);
                 } catch (IOException ex) {
@@ -139,14 +153,18 @@ final class MinecraftClientMeta extends Manifests {
             Type.RELEASE,
             meta.get(minecraftManifest.get("latest").get("release").asText()).url(),
             meta.get(minecraftManifest.get("latest").get("release").asText()).server(),
-            this.FORGE_META);
+            this.FORGE_META,
+            UTILITIES,
+            APPLICATIONPROPERTIES);
     this.latestSnapshot =
         new MinecraftClient(
             minecraftManifest.get("latest").get("snapshot").asText(),
             Type.SNAPSHOT,
             meta.get(minecraftManifest.get("latest").get("snapshot").asText()).url(),
             meta.get(minecraftManifest.get("latest").get("snapshot").asText()).server(),
-            this.FORGE_META);
+            this.FORGE_META,
+            UTILITIES,
+            APPLICATIONPROPERTIES);
   }
 
   /**

@@ -276,14 +276,16 @@ public class ConfigurationModel {
 
     Config scripts = TomlFormat.newConfig();
     for (Map.Entry<String, String> entry : scriptSettings.entrySet()) {
-      if (!entry.getKey().equals("SPC_SERVERPACKCREATOR_VERSION_SPC") && !entry.getKey()
+      if (!entry.getKey()
+          .equals("SPC_SERVERPACKCREATOR_VERSION_SPC") && !entry.getKey()
           .equals("SPC_MINECRAFT_VERSION_SPC") && !entry.getKey()
           .equals("SPC_MODLOADER_SPC") && !entry.getKey()
           .equals("SPC_MODLOADER_VERSION_SPC") && !entry.getKey()
           .equals("SPC_JAVA_ARGS_SPC") && !entry.getKey()
           .equals("SPC_FABRIC_INSTALLER_VERSION_SPC") && !entry.getKey()
           .equals("SPC_QUILT_INSTALLER_VERSION_SPC") && !entry.getKey()
-          .equals("SPC_LEGACYFABRIC_INSTALLER_VERSION_SPC")) {
+          .equals("SPC_LEGACYFABRIC_INSTALLER_VERSION_SPC") && !entry.getKey()
+          .equals("SPC_MINECRAFT_SERVER_URL_SPC")) {
         scripts.set(entry.getKey(), entry.getValue());
       }
     }

@@ -21,7 +21,7 @@ For questions, you can always join my [Discord server](https://discord.griefed.d
 - Mirror: https://gitlab.com/Griefed/ServerPackCreator (Source code,releases,downloads)
 - Mirror: https://github.com/Griefed/ServerPackCreator (Source code,releases,downloads)
 - Mirror: https://gitea.com/Griefed/ServerPackCreator (Source code)
-
+ 
 ---
 
 [![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/Griefed/ServerPackCreator?include_prereleases&label=Latest%20Release&logo=Github&style=for-the-badge&color=c0ffee&labelColor=325358)](https://github.com/Griefed/ServerPackCreator/releases/latest)
@@ -301,7 +301,9 @@ If you are on linux, run `chmod +x gradlew` first.
 
 Build with:
 
-`cleanUp about installQuasar cleanFrontend assembleFrontend copyDist build createExe --info --stacktrace`
+`build --info --stacktrace`
+
+The `build` task is configured to do everything automatically, from installing frontend dependencies, assembling the web-frontend, copying some files around, build and testing and then, finally, also creating a .exe file.
 
 # 9. Awesomesauce!
 

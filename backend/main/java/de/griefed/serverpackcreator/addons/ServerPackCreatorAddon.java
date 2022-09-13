@@ -21,8 +21,6 @@ package de.griefed.serverpackcreator.addons;
 
 import com.electronwill.nightconfig.core.CommentedConfig;
 import com.electronwill.nightconfig.toml.TomlFormat;
-import de.griefed.serverpackcreator.ServerPackCreator;
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import org.apache.logging.log4j.LogManager;

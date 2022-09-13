@@ -1,9 +1,13 @@
 //file:noinspection GroovyAssignabilityCheck
 //file:noinspection GrUnresolvedAccess
+
+import com.github.jk1.license.filter.ExcludeTransitiveDependenciesFilter
+import com.github.jk1.license.filter.LicenseBundleNormalizer
+import com.github.jk1.license.render.InventoryHtmlReportRenderer
+import com.github.jk1.license.render.InventoryMarkdownReportRenderer
 import org.siouan.frontendgradleplugin.infrastructure.gradle.RunNpm
-import com.github.jk1.license.render.*
+
 import java.text.SimpleDateFormat
-import com.github.jk1.license.filter.*
 
 plugins {
   id 'java'
@@ -127,11 +131,11 @@ licenseReport {
   // If set to true, then all boms will be excluded from the report
   excludeBoms = true
 
-  filters = [new ExcludeTransitiveDependenciesFilter(),new LicenseBundleNormalizer()]
+  filters = [new ExcludeTransitiveDependenciesFilter(), new LicenseBundleNormalizer()]
 
   // Set custom report renderer, implementing ReportRenderer.
   // Yes, you can write your own to support any format necessary.
-  renderers = [new InventoryHtmlReportRenderer('index.html', 'Dependency Licences'), new InventoryMarkdownReportRenderer("licences.md","Licenses")]
+  renderers = [new InventoryHtmlReportRenderer('index.html', 'Dependency Licences'), new InventoryMarkdownReportRenderer("licences.md", "Licenses")]
 }
 
 // Configure frontend plugin. See documentation at https://siouan.github.io/frontend-gradle-plugin/.
@@ -159,35 +163,55 @@ frontend {
   }
 }
 
-// Include specific files in resources folder, like the license and readme.
-tasks.register('about', Copy) {
-  from layout.projectDirectory.file("LICENSE") into layout.projectDirectory.dir("backend/main/resources")
-  from layout.projectDirectory.file("README.md") into layout.projectDirectory.dir("backend/main/resources")
-  from layout.projectDirectory.file("CHANGELOG.md") into layout.projectDirectory.dir("backend/main/resources")
-  from layout.projectDirectory.file("CONTRIBUTING.md") into layout.projectDirectory.dir("backend/main/resources")
-  from layout.projectDirectory.file("CODE_OF_CONDUCT.md") into layout.projectDirectory.dir("backend/main/resources")
-}
+build.finalizedBy(createExe)
 
 // Make sure quasar is installed
 tasks.register('installQuasar', RunNpm) {
   dependsOn tasks.named('installNode')
   script = 'install -g @quasar/cli'
-
 }
 
 // Custom task to build and copy an up-to-date version of our frontend to SpringBoot.
 tasks.register('copyDist', Copy) {
+  dependsOn tasks.named('installQuasar')
   dependsOn tasks.named('assembleFrontend')
-  // Delete old frontend files from SpringBoot.
-  def dirName = "backend/main/resources/static"
-  file(dirName).list().each {
+
+  // Delete old files
+  def frontendResources = "backend/main/resources/static"
+
+  file(frontendResources).list().each {
     f ->
-      delete "${dirName}/${f}"
+      delete "${frontendResources}/${f}"
   }
 
-  // Copy new frontend files to SpringBoot.
-  from layout.projectDirectory.dir("frontend/dist/spa")
-  into layout.projectDirectory.dir("backend/main/resources/static")
+  copy {
+    from layout.projectDirectory.dir("frontend/dist/spa")
+    into layout.projectDirectory.dir("backend/main/resources/static")
+  }
+  copy {
+    from layout.projectDirectory.file("LICENSE")
+    into layout.projectDirectory.dir("backend/main/resources")
+  }
+  copy {
+    from layout.projectDirectory.file("README.md")
+    into layout.projectDirectory.dir("backend/main/resources")
+  }
+  copy {
+    from layout.projectDirectory.file("CHANGELOG.md")
+    into layout.projectDirectory.dir("backend/main/resources")
+  }
+  copy {
+    from layout.projectDirectory.file("CONTRIBUTING.md")
+    into layout.projectDirectory.dir("backend/main/resources")
+  }
+  copy {
+    from layout.projectDirectory.file("CODE_OF_CONDUCT.md")
+    into layout.projectDirectory.dir("backend/main/resources")
+  }
+  copy {
+    from layout.projectDirectory.dir("manifests")
+    into layout.projectDirectory.dir("backend/main/resources/de/griefed/resources/manifests")
+  }
 }
 
 // Make sure everything is included in our JavaDoc.
@@ -213,6 +237,7 @@ launch4j {
 }
 
 clean {
+  cleanFrontend
   delete(
       'lang',
       'fabric-installer-manifest.xml',
@@ -269,7 +294,7 @@ bootJar {
         "Created-By": "Gradle ${gradle.gradleVersion}",
         "Build-Jdk": "${System.getProperty('java.version')} (${System.getProperty('java.vendor')} ${System.getProperty('java.vm.version')})",
         "Build-OS": "${System.getProperty('os.name')} ${System.getProperty('os.arch')} ${System.getProperty('os.version')}",
-        "Implementation-Vendor" : author,
+        "Implementation-Vendor": author,
         "Implementation-Version": "${project.version}",
         "Implementation-Title": implTitle,
         "Application-Name": title
@@ -315,7 +340,7 @@ jar {
         "Created-By": "Gradle ${gradle.gradleVersion}",
         "Build-Jdk": "${System.getProperty('java.version')} (${System.getProperty('java.vendor')} ${System.getProperty('java.vm.version')})",
         "Build-OS": "${System.getProperty('os.name')} ${System.getProperty('os.arch')} ${System.getProperty('os.version')}",
-        "Implementation-Vendor" : author,
+        "Implementation-Vendor": author,
         "Implementation-Version": "${project.version}",
         "Implementation-Title": implTitle,
         "Application-Name": title

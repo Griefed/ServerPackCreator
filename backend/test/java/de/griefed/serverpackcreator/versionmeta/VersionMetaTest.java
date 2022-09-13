@@ -206,6 +206,10 @@ public class VersionMetaTest {
         versionMeta.minecraft()
             .snapshotsServersArrayDescending()[
             versionMeta.minecraft().snapshotsServersArrayDescending().length - 1]);
+
+    versionMeta.minecraft().snapshotsAscending().forEach(
+        version -> version.server().url().isPresent()
+    );
   }
 
   @Test

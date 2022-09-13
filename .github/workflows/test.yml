@@ -31,7 +31,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build with Gradle
-        run: ./gradlew -Pversion=${{ steps.branch-name.outputs.current_branch }} about installQuasar cleanFrontend assembleFrontend copyDist build createExe --info --stacktrace
+        run: ./gradlew -Pversion=${{ steps.branch-name.outputs.current_branch }} build --info --stacktrace
 
       - name: List files in libs
         run: ls -ahl build/libs
