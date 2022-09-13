@@ -29,8 +29,8 @@ import de.griefed.serverpackcreator.modscanning.FabricScanner;
 import de.griefed.serverpackcreator.modscanning.ModScanner;
 import de.griefed.serverpackcreator.modscanning.QuiltScanner;
 import de.griefed.serverpackcreator.modscanning.TomlScanner;
-import de.griefed.serverpackcreator.swing.ServerPackCreatorGui;
 import de.griefed.serverpackcreator.swing.ServerPackCreatorSplash;
+import de.griefed.serverpackcreator.swing.ServerPackCreatorWindow;
 import de.griefed.serverpackcreator.utilities.ConfigUtilities;
 import de.griefed.serverpackcreator.utilities.ConfigurationEditor;
 import de.griefed.serverpackcreator.utilities.UpdateChecker;
@@ -129,7 +129,7 @@ public class ServerPackCreator {
   private TomlParser tomlParser = null;
   private TomlScanner tomlScanner = null;
   private ConfigurationEditor configurationEditor = null;
-  private ServerPackCreatorGui serverPackCreatorGui = null;
+  private ServerPackCreatorWindow serverPackCreatorGui = null;
 
   /**
    * Initialize ServerPackCreator and determine the {@link Mode} to run in.
@@ -449,10 +449,10 @@ public class ServerPackCreator {
     return configurationEditor;
   }
 
-  public synchronized ServerPackCreatorGui getServerPackCreatorGui()
+  public synchronized ServerPackCreatorWindow getServerPackCreatorGui()
       throws IOException, ParserConfigurationException, SAXException {
     if (this.serverPackCreatorGui == null) {
-      this.serverPackCreatorGui = new ServerPackCreatorGui(
+      this.serverPackCreatorGui = new ServerPackCreatorWindow(
           I18N,
           getConfigurationHandler(),
           getServerPackHandler(),

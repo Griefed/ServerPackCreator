@@ -1,3 +1,10 @@
+## [3.14.0-beta.7](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.14.0-beta.6...3.14.0-beta.7) (2022-09-13)
+
+
+### 💎 Improvements
+
+* **GUI:** Server icon preview.Buttons to reset, revert clientside mods, copy directories and inspect modpackdirectory ([b459c2a](https://git.griefed.de/Griefed/ServerPackCreator/commit/b459c2ad74aa5373867a3860b5fab17cdff13888))
+
 ## [3.14.0-beta.6](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.14.0-beta.5...3.14.0-beta.6) (2022-09-13)
 
 

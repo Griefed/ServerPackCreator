@@ -342,7 +342,7 @@ public final class JarUtilities {
             new File(
                 destinationDirectory
                     + "/"
-                    + entryName.replace(jarDirectoryPrefix, "").replace(directoryToCopy,""));
+                    + entryName.replace(jarDirectoryPrefix, "").replace(directoryToCopy, ""));
 
         LOG.debug("Destination: " + destination);
 

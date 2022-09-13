@@ -159,7 +159,7 @@ public class ServerPackCreatorSplash {
           new ImageIcon(
               ImageIO.read(
                       Objects.requireNonNull(
-                          ServerPackCreatorGui.class.getResource(
+                          ServerPackCreatorWindow.class.getResource(
                               "/de/griefed/resources/gui/error.png")))
                   .getScaledInstance(buttonSize, buttonSize, Image.SCALE_SMOOTH)));
     } catch (IOException e) {
@@ -178,7 +178,8 @@ public class ServerPackCreatorSplash {
         Toolkit.getDefaultToolkit()
             .getImage(
                 Objects.requireNonNull(
-                    ServerPackCreatorGui.class.getResource("/de/griefed/resources/gui/app.png"))));
+                    ServerPackCreatorWindow.class.getResource(
+                        "/de/griefed/resources/gui/app.png"))));
 
     this.SPLASH_WINDOW.setVisible(true);
   }

@@ -74,7 +74,6 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -113,7 +112,7 @@ import org.apache.logging.log4j.Logger;
 public class TabCreateServerPack extends JPanel {
 
   private static final Logger LOG = LogManager.getLogger(TabCreateServerPack.class);
-  private final JFrame FRAME_SERVERPACKCREATOR;
+  private final ServerPackCreatorWindow SERVERPACKCREATORWINDOW;
   private final ConfigurationHandler CONFIGURATIONHANDLER;
   private final I18n I18N;
   private final ServerPackHandler SERVERPACKHANDLER;
@@ -284,7 +283,7 @@ public class TabCreateServerPack extends JPanel {
       ServerPackHandler injectedServerPackHandler,
       VersionMeta injectedVersionMeta,
       ApplicationProperties injectedApplicationProperties,
-      JFrame injectedServerPackCreatorFrame,
+      ServerPackCreatorWindow injectedServerPackCreatorFrame,
       Utilities injectedUtilities,
       DarkTheme injectedDarkTheme,
       LightTheme injectedLightTheme,
@@ -300,7 +299,7 @@ public class TabCreateServerPack extends JPanel {
     UTILITIES = injectedUtilities;
     CONFIGURATIONHANDLER = injectedConfigurationHandler;
     SERVERPACKHANDLER = injectedServerPackHandler;
-    FRAME_SERVERPACKCREATOR = injectedServerPackCreatorFrame;
+    SERVERPACKCREATORWINDOW = injectedServerPackCreatorFrame;
     CONFIG_UTILITIES = injectedConfigUtilities;
 
     SERVERPACKGENERATEDTEXTPANE.setOpaque(false);
@@ -359,23 +358,24 @@ public class TabCreateServerPack extends JPanel {
     ImageIcon folderIcon =
         new ImageIcon(
             Objects.requireNonNull(
-                ServerPackCreatorGui.class.getResource("/de/griefed/resources/gui/folder.png")));
+                ServerPackCreatorWindow.class.getResource("/de/griefed/resources/gui/folder.png")));
     ImageIcon revertIcon =
         new ImageIcon(
             Objects.requireNonNull(
-                ServerPackCreatorGui.class.getResource("/de/griefed/resources/gui/revert.png")));
+                ServerPackCreatorWindow.class.getResource("/de/griefed/resources/gui/revert.png")));
     ImageIcon resetIcon =
         new ImageIcon(
             Objects.requireNonNull(
-                ServerPackCreatorGui.class.getResource("/de/griefed/resources/gui/reset.png")));
+                ServerPackCreatorWindow.class.getResource("/de/griefed/resources/gui/reset.png")));
     ImageIcon inspectIcon =
         new ImageIcon(
             Objects.requireNonNull(
-                ServerPackCreatorGui.class.getResource("/de/griefed/resources/gui/inspect.png")));
+                ServerPackCreatorWindow.class.getResource(
+                    "/de/griefed/resources/gui/inspect.png")));
     ImageIcon openIcon =
         new ImageIcon(
             Objects.requireNonNull(
-                ServerPackCreatorGui.class.getResource("/de/griefed/resources/gui/open.png")));
+                ServerPackCreatorWindow.class.getResource("/de/griefed/resources/gui/open.png")));
 
     Font notoSansDisplayRegularBold15 = new Font("Noto Sans Display Regular", Font.BOLD, 15);
 
@@ -1094,7 +1094,7 @@ public class TabCreateServerPack extends JPanel {
     BufferedImage GENERATE =
         ImageIO.read(
             Objects.requireNonNull(
-                ServerPackCreatorGui.class.getResource(
+                ServerPackCreatorWindow.class.getResource(
                     "/de/griefed/resources/gui/start_generation.png")));
     Dimension dimension = new Dimension(200, 70);
     BUTTON_GENERATESERVERPACK.setIcon(
@@ -1640,39 +1640,19 @@ public class TabCreateServerPack extends JPanel {
   }
 
   /**
-   * Checks whether the checkbox for the modloader-server installation is selected and whether the
-   * path to the Java-installation is defined. If true and empty, a message is displayed, warning
-   * the user that Javapath needs to be defined for the modloader-server installation to work. If
-   * "Yes" is clicked, a filechooser will open where the user can select their
-   * Java-executable/binary. If "No" is selected, the user is warned about the consequences of not
-   * setting the Javapath.
+   * Checks whether the checkbox for the modloader-server installation is selected and a
+   * Java-installation is configured. If the checkbox is ticked and no Java is available, a message
+   * is displayed, warning the user that Javapath needs to be defined for the modloader-server
+   * installation to work. If "Yes" is clicked, a filechooser will open where the user can select
+   * their Java-executable/binary. If "No" is selected, the user is warned about the consequences of
+   * not setting the Javapath.
    *
    * @param actionEvent The event which triggers this method.
    * @author Griefed
    */
   private void actionEventCheckBoxServer(ActionEvent actionEvent) {
-    if (isServerInstallationTicked() && !APPLICATIONPROPERTIES.javaAvailable()) {
-      switch (JOptionPane.showConfirmDialog(
-          CREATESERVERPACKPANEL,
-          I18N.getMessage("createserverpack.gui.createserverpack.checkboxserver.confirm.message"),
-          I18N.getMessage("createserverpack.gui.createserverpack.checkboxserver.confirm.title"),
-          JOptionPane.YES_NO_OPTION,
-          JOptionPane.WARNING_MESSAGE,
-          ISSUE_ICON)) {
-        case 0:
-          chooseJava();
-          break;
-
-        case 1:
-          JOptionPane.showMessageDialog(
-              CREATESERVERPACKPANEL,
-              I18N.getMessage(
-                  "createserverpack.gui.createserverpack.checkboxserver.message.message"),
-              I18N.getMessage("createserverpack.gui.createserverpack.checkboxserver.message.title"),
-              JOptionPane.ERROR_MESSAGE,
-              ISSUE_ICON);
-          setServerInstallationSelection(false);
-      }
+    if (isServerInstallationTicked() && !SERVERPACKCREATORWINDOW.checkJava()) {
+      setServerInstallationSelection(false);
     }
   }
 
@@ -1893,7 +1873,7 @@ public class TabCreateServerPack extends JPanel {
     modpackDirChooser.setMultiSelectionEnabled(false);
     modpackDirChooser.setPreferredSize(CHOOSERDIMENSION);
 
-    if (modpackDirChooser.showOpenDialog(FRAME_SERVERPACKCREATOR) == JFileChooser.APPROVE_OPTION) {
+    if (modpackDirChooser.showOpenDialog(SERVERPACKCREATORWINDOW) == JFileChooser.APPROVE_OPTION) {
       try {
 
         setModpackDirectory(modpackDirChooser.getSelectedFile().getCanonicalPath());
@@ -1996,7 +1976,7 @@ public class TabCreateServerPack extends JPanel {
     serverIconChooser.setMultiSelectionEnabled(false);
     serverIconChooser.setPreferredSize(CHOOSERDIMENSION);
 
-    if (serverIconChooser.showOpenDialog(FRAME_SERVERPACKCREATOR) == JFileChooser.APPROVE_OPTION) {
+    if (serverIconChooser.showOpenDialog(SERVERPACKCREATORWINDOW) == JFileChooser.APPROVE_OPTION) {
 
       try {
         setServerIconPath(serverIconChooser.getSelectedFile().getCanonicalPath());
@@ -2029,7 +2009,7 @@ public class TabCreateServerPack extends JPanel {
     serverPropertiesChooser.setMultiSelectionEnabled(false);
     serverPropertiesChooser.setPreferredSize(CHOOSERDIMENSION);
 
-    if (serverPropertiesChooser.showOpenDialog(FRAME_SERVERPACKCREATOR)
+    if (serverPropertiesChooser.showOpenDialog(SERVERPACKCREATORWINDOW)
         == JFileChooser.APPROVE_OPTION) {
 
       try {
@@ -2074,7 +2054,7 @@ public class TabCreateServerPack extends JPanel {
     clientModsChooser.setMultiSelectionEnabled(true);
     clientModsChooser.setPreferredSize(CHOOSERDIMENSION);
 
-    if (clientModsChooser.showOpenDialog(FRAME_SERVERPACKCREATOR) == JFileChooser.APPROVE_OPTION) {
+    if (clientModsChooser.showOpenDialog(SERVERPACKCREATORWINDOW) == JFileChooser.APPROVE_OPTION) {
 
       File[] clientMods = clientModsChooser.getSelectedFiles();
       List<String> clientModsFilenames = new ArrayList<>(100);
@@ -2115,7 +2095,7 @@ public class TabCreateServerPack extends JPanel {
     copyDirsChooser.setMultiSelectionEnabled(true);
     copyDirsChooser.setPreferredSize(CHOOSERDIMENSION);
 
-    if (copyDirsChooser.showOpenDialog(FRAME_SERVERPACKCREATOR) == JFileChooser.APPROVE_OPTION) {
+    if (copyDirsChooser.showOpenDialog(SERVERPACKCREATORWINDOW) == JFileChooser.APPROVE_OPTION) {
       File[] directoriesToCopy = copyDirsChooser.getSelectedFiles();
       List<String> copyDirsNames = new ArrayList<>(100);
 
@@ -2126,45 +2106,6 @@ public class TabCreateServerPack extends JPanel {
       setCopyDirectories(copyDirsNames);
 
       LOG.debug("Selected directories: " + copyDirsNames);
-    }
-  }
-
-  /**
-   * Opens a filechooser to select the Java-executable/binary.
-   *
-   * @author Griefed
-   */
-  void chooseJava() {
-    JFileChooser javaChooser = new JFileChooser();
-
-    if (new File(String.format("%s/bin/", System.getProperty("java.home").replace("\\", "/")))
-        .isDirectory()) {
-
-      javaChooser.setCurrentDirectory(
-          new File(String.format("%s/bin/", System.getProperty("java.home").replace("\\", "/"))));
-
-    } else {
-      javaChooser.setCurrentDirectory(DIRECTORY_CHOOSER);
-    }
-
-    javaChooser.setDialogTitle(I18N.getMessage("createserverpack.gui.buttonjavapath.tile"));
-    javaChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-    javaChooser.setAcceptAllFileFilterUsed(true);
-    javaChooser.setMultiSelectionEnabled(false);
-    javaChooser.setPreferredSize(CHOOSERDIMENSION);
-
-    if (javaChooser.showOpenDialog(FRAME_SERVERPACKCREATOR) == JFileChooser.APPROVE_OPTION) {
-      try {
-        APPLICATIONPROPERTIES.setJavaPath(
-            javaChooser.getSelectedFile().getCanonicalPath().replace("\\", "/"));
-
-        LOG.debug(
-            "Set path to Java executable to: "
-                + javaChooser.getSelectedFile().getCanonicalPath().replace("\\", "/"));
-
-      } catch (IOException ex) {
-        LOG.error("Couldn't set java executable path.", ex);
-      }
     }
   }
 
@@ -2186,7 +2127,7 @@ public class TabCreateServerPack extends JPanel {
     if (getCopyDirectories().equals("lazy_mode")) {
       decision =
           JOptionPane.showConfirmDialog(
-              FRAME_SERVERPACKCREATOR,
+              SERVERPACKCREATORWINDOW,
               LAZYMODETEXTPANE,
               I18N.getMessage("createserverpack.gui.createserverpack.lazymode"),
               JOptionPane.YES_NO_OPTION,
@@ -2316,7 +2257,7 @@ public class TabCreateServerPack extends JPanel {
               ready();
 
               if (JOptionPane.showConfirmDialog(
-                  FRAME_SERVERPACKCREATOR,
+                  SERVERPACKCREATORWINDOW,
                   SERVERPACKGENERATEDTEXTPANE,
                   I18N.getMessage("createserverpack.gui.createserverpack.openfolder.title"),
                   JOptionPane.YES_NO_OPTION,
@@ -2355,7 +2296,7 @@ public class TabCreateServerPack extends JPanel {
               ready();
 
               JOptionPane.showMessageDialog(
-                  FRAME_SERVERPACKCREATOR,
+                  SERVERPACKCREATORWINDOW,
                   errors,
                   String.format(
                       I18N.getMessage("createserverpack.gui.createserverpack.errors.encountered"),
@@ -2405,7 +2346,7 @@ public class TabCreateServerPack extends JPanel {
    * @param configFile The configuration file to parse and load into the GUI.
    * @author Griefed
    */
-  protected void loadConfig(File configFile) {
+  void loadConfig(File configFile) {
     try {
       ConfigurationModel configurationModel = new ConfigurationModel(UTILITIES, configFile);
       lastLoadedConfiguration = configurationModel;

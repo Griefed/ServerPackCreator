@@ -37,14 +37,17 @@ import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Random;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -58,39 +61,32 @@ import org.apache.logging.log4j.Logger;
  *
  * @author Griefed
  */
-public final class ServerPackCreatorGui {
+public final class ServerPackCreatorWindow extends JFrame {
 
-  private static final Logger LOG = LogManager.getLogger(ServerPackCreatorGui.class);
-
+  private static final Logger LOG = LogManager.getLogger(ServerPackCreatorWindow.class);
   private final ImageIcon ICON_SERVERPACKCREATOR_BANNER =
       new ImageIcon(
           Objects.requireNonNull(
-              ServerPackCreatorGui.class.getResource("/de/griefed/resources/gui/banner.png")));
+              ServerPackCreatorWindow.class.getResource("/de/griefed/resources/gui/banner.png")));
   private final Image ICON_SERVERPACKCREATOR =
       Toolkit.getDefaultToolkit()
           .getImage(
               Objects.requireNonNull(
-                  ServerPackCreatorGui.class.getResource("/de/griefed/resources/gui/app.png")));
+                  ServerPackCreatorWindow.class.getResource("/de/griefed/resources/gui/app.png")));
+  private final ImageIcon ISSUE_ICON = new ImageIcon(ImageIO.read(Objects.requireNonNull(
+          TabCreateServerPack.class.getResource("/de/griefed/resources/gui/issue.png")))
+      .getScaledInstance(48, 48, Image.SCALE_SMOOTH));
   private final Dimension DIMENSION_WINDOW = new Dimension(1200, 800);
-
+  private final I18n I18N;
   private final ApplicationProperties APPLICATIONPROPERTIES;
-  private final ApplicationAddons APPLICATIONADDONS;
   private final ServerPackCreatorSplash SERVERPACKCREATORSPLASH;
-
   private final LightTheme LIGHTTHEME = new LightTheme();
   private final DarkTheme DARKTHEME = new DarkTheme();
-
   private final MaterialLookAndFeel LAF_LIGHT = new MaterialLookAndFeel(LIGHTTHEME);
   private final MaterialLookAndFeel LAF_DARK = new MaterialLookAndFeel(DARKTHEME);
-
   private final BackgroundPanel BACKGROUNDPANEL;
-
-  private final JFrame FRAME_SERVERPACKCREATOR;
-
   private final TabCreateServerPack TAB_CREATESERVERPACK;
-
   private final JTabbedPane TABBEDPANE;
-
   private final MainMenuBar MENUBAR;
 
   /**
@@ -121,11 +117,11 @@ public final class ServerPackCreatorGui {
    * @param injectedUpdateChecker           Instance of {@link UpdateChecker}.
    * @param injectedServerPackCreatorSplash Instance of {@link ServerPackCreatorSplash}.
    * @param injectedApplicationAddons       Instance of {@link ApplicationAddons}.
-   *                                        @param injectedConfigUtilities        Instance of {@link ConfigUtilities}.
+   * @param injectedConfigUtilities         Instance of {@link ConfigUtilities}.
    * @throws IOException if the {@link VersionMeta} could not be instantiated.
    * @author Griefed
    */
-  public ServerPackCreatorGui(
+  public ServerPackCreatorWindow(
       I18n injectedI18n,
       ConfigurationHandler injectedConfigurationHandler,
       ServerPackHandler injectedServerPackHandler,
@@ -141,7 +137,7 @@ public final class ServerPackCreatorGui {
     SERVERPACKCREATORSPLASH = injectedServerPackCreatorSplash;
     SERVERPACKCREATORSPLASH.update(90);
     APPLICATIONPROPERTIES = injectedApplicationProperties;
-    APPLICATIONADDONS = injectedApplicationAddons;
+    I18N = injectedI18n;
 
     BufferedImage bufferedImage = ImageIO.read(
         Objects.requireNonNull(
@@ -149,11 +145,9 @@ public final class ServerPackCreatorGui {
                 .getResource(
                     "/de/griefed/resources/gui/tile" + new Random().nextInt(4) + ".jpg")));
 
-    FRAME_SERVERPACKCREATOR =
-        new JFrame(
-            injectedI18n.getMessage("createserverpack.gui.createandshowgui")
-                + " - "
-                + APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION());
+    setTitle(injectedI18n.getMessage("createserverpack.gui.createandshowgui")
+        + " - "
+        + APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION());
 
     TAB_CREATESERVERPACK =
         new TabCreateServerPack(
@@ -162,11 +156,11 @@ public final class ServerPackCreatorGui {
             injectedServerPackHandler,
             injectedVersionMeta,
             APPLICATIONPROPERTIES,
-            FRAME_SERVERPACKCREATOR,
+            this,
             injectedUtilities,
             DARKTHEME,
             LIGHTTHEME,
-            APPLICATIONADDONS,
+            injectedApplicationAddons,
             injectedConfigUtilities);
 
     TabServerPackCreatorLog TAB_LOG_SERVERPACKCREATOR =
@@ -203,7 +197,7 @@ public final class ServerPackCreatorGui {
     TABBEDPANE.setMnemonicAt(1, KeyEvent.VK_2);
     TABBEDPANE.setMnemonicAt(2, KeyEvent.VK_3);
 
-    APPLICATIONADDONS.addTabExtensionTabs(TABBEDPANE);
+    injectedApplicationAddons.addTabExtensionTabs(TABBEDPANE);
 
     TABBEDPANE.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 
@@ -212,7 +206,7 @@ public final class ServerPackCreatorGui {
             injectedI18n,
             LIGHTTHEME,
             DARKTHEME,
-            FRAME_SERVERPACKCREATOR,
+            this,
             LAF_LIGHT,
             LAF_DARK,
             TAB_CREATESERVERPACK,
@@ -221,7 +215,7 @@ public final class ServerPackCreatorGui {
             injectedUpdateChecker,
             injectedUtilities);
 
-    FRAME_SERVERPACKCREATOR.setJMenuBar(MENUBAR.createMenuBar());
+    setJMenuBar(MENUBAR.createMenuBar());
   }
 
   /**
@@ -274,26 +268,26 @@ public final class ServerPackCreatorGui {
     JLabel serverPackCreatorBanner = new JLabel(ICON_SERVERPACKCREATOR_BANNER);
     serverPackCreatorBanner.setOpaque(false);
 
-    FRAME_SERVERPACKCREATOR.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-    FRAME_SERVERPACKCREATOR.setContentPane(BACKGROUNDPANEL);
-    FRAME_SERVERPACKCREATOR.setIconImage(ICON_SERVERPACKCREATOR);
+    setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    setContentPane(BACKGROUNDPANEL);
+    setIconImage(ICON_SERVERPACKCREATOR);
 
-    FRAME_SERVERPACKCREATOR.add(serverPackCreatorBanner, BorderLayout.PAGE_START);
-    FRAME_SERVERPACKCREATOR.add(TABBEDPANE, BorderLayout.CENTER);
+    add(serverPackCreatorBanner, BorderLayout.PAGE_START);
+    add(TABBEDPANE, BorderLayout.CENTER);
 
-    FRAME_SERVERPACKCREATOR.setSize(DIMENSION_WINDOW);
-    FRAME_SERVERPACKCREATOR.setPreferredSize(DIMENSION_WINDOW);
-    FRAME_SERVERPACKCREATOR.setLocationRelativeTo(null);
-    FRAME_SERVERPACKCREATOR.setResizable(true);
+    setSize(DIMENSION_WINDOW);
+    setPreferredSize(DIMENSION_WINDOW);
+    setLocationRelativeTo(null);
+    setResizable(true);
 
-    FRAME_SERVERPACKCREATOR.pack();
+    pack();
     /*
      * I know this looks stupid. Why initialize the tree if it isn't even visible yet?
      * Because otherwise, when switching from light to dark-theme, the inset for tabs of the tabbed pane suddenly
      * changes, which looks ugly. Calling this does the same, but before the GUI is visible. Dirty hack? Maybe.
      * Does it work? Yeah.
      */
-    SwingUtilities.updateComponentTreeUI(FRAME_SERVERPACKCREATOR);
+    SwingUtilities.updateComponentTreeUI(this);
 
     /*
      * This call needs to stay here, otherwise we have a transparent background in the tab-bar of
@@ -301,10 +295,89 @@ public final class ServerPackCreatorGui {
      */
     TABBEDPANE.setOpaque(true);
 
-    FRAME_SERVERPACKCREATOR.setVisible(true);
+    setVisible(true);
 
     TAB_CREATESERVERPACK.validateInputFields();
     TAB_CREATESERVERPACK.updatePanelTheme();
     MENUBAR.displayUpdateDialog();
+  }
+
+  /**
+   * If no Java is available, a message is displayed, warning the user that Javapath needs to be
+   * defined for the modloader-server installation to work. If "Yes" is clicked, a filechooser will
+   * open where the user can select their Java-executable/binary. If "No" is selected, the user is
+   * warned about the consequences of not setting the Javapath.
+   *
+   * @return <code>true</code> if Java is available or was configured by the user.
+   * @author Griefed
+   */
+  boolean checkJava() {
+    if (!APPLICATIONPROPERTIES.javaAvailable()) {
+      switch (JOptionPane.showConfirmDialog(
+          this,
+          I18N.getMessage("createserverpack.gui.createserverpack.checkboxserver.confirm.message"),
+          I18N.getMessage("createserverpack.gui.createserverpack.checkboxserver.confirm.title"),
+          JOptionPane.YES_NO_OPTION,
+          JOptionPane.WARNING_MESSAGE,
+          ISSUE_ICON)) {
+
+        case 0:
+          chooseJava();
+          return true;
+
+        case 1:
+          JOptionPane.showMessageDialog(
+              this,
+              I18N.getMessage(
+                  "createserverpack.gui.createserverpack.checkboxserver.message.message"),
+              I18N.getMessage("createserverpack.gui.createserverpack.checkboxserver.message.title"),
+              JOptionPane.ERROR_MESSAGE,
+              ISSUE_ICON);
+
+        default:
+          return false;
+      }
+    } else {
+      return true;
+    }
+  }
+
+  /**
+   * Opens a filechooser to select the Java-executable/binary.
+   *
+   * @author Griefed
+   */
+  void chooseJava() {
+    JFileChooser javaChooser = new JFileChooser();
+
+    if (new File(String.format("%s/bin/", System.getProperty("java.home").replace("\\", "/")))
+        .isDirectory()) {
+
+      javaChooser.setCurrentDirectory(
+          new File(String.format("%s/bin/", System.getProperty("java.home").replace("\\", "/"))));
+
+    } else {
+      javaChooser.setCurrentDirectory(new File("."));
+    }
+
+    javaChooser.setDialogTitle(I18N.getMessage("createserverpack.gui.buttonjavapath.tile"));
+    javaChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+    javaChooser.setAcceptAllFileFilterUsed(true);
+    javaChooser.setMultiSelectionEnabled(false);
+    javaChooser.setPreferredSize(new Dimension(750, 450));
+
+    if (javaChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+      try {
+        APPLICATIONPROPERTIES.setJavaPath(
+            javaChooser.getSelectedFile().getCanonicalPath().replace("\\", "/"));
+
+        LOG.debug(
+            "Set path to Java executable to: "
+                + javaChooser.getSelectedFile().getCanonicalPath().replace("\\", "/"));
+
+      } catch (IOException ex) {
+        LOG.error("Couldn't set java executable path.", ex);
+      }
+    }
   }
 }

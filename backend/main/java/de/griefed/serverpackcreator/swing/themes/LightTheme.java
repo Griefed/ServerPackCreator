@@ -94,7 +94,7 @@ public class LightTheme extends MaterialLiteTheme {
     this.buttonDefaultFocusColor = this.buttonFocusColor;
     this.buttonBorderColor = new ColorUIResource(211, 225, 232);
     this.buttonColorHighlight = selectedBackground;
-    this.buttonFocusColor = new ColorUIResource(new Color(0,0,0,0));
+    this.buttonFocusColor = new ColorUIResource(new Color(0, 0, 0, 0));
     this.selectedInDropDownBackgroundComboBox = this.buttonBackgroundColorMouseHover;
     this.selectedForegroundComboBox = this.textColor;
 
