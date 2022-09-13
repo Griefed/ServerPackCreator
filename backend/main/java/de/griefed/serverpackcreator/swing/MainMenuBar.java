@@ -108,15 +108,17 @@ public class MainMenuBar extends Component {
   private final ImageIcon HELPICON =
       new ImageIcon(
           Objects.requireNonNull(
-              ServerPackCreatorGui.class.getResource("/de/griefed/resources/gui/help.png")));
+              MainMenuBar.class.getResource("/de/griefed/resources/gui/help.png")));
   private final ImageIcon ICON_HASTEBIN =
       new ImageIcon(
           Objects.requireNonNull(
-              ServerPackCreatorGui.class.getResource("/de/griefed/resources/gui/hastebin.png")));
+              MainMenuBar.class.getResource("/de/griefed/resources/gui/hastebin.png")));
 
-  private final ImageIcon INFO_ICON = new ImageIcon(ImageIO.read(Objects.requireNonNull(
-          TabCreateServerPack.class.getResource("/de/griefed/resources/gui/info.png")))
-      .getScaledInstance(48, 48, Image.SCALE_SMOOTH));
+  private final ImageIcon INFO_ICON = new ImageIcon(
+      ImageIO.read(
+              Objects.requireNonNull(
+                  MainMenuBar.class.getResource("/de/griefed/resources/gui/info.png")))
+          .getScaledInstance(48, 48, Image.SCALE_SMOOTH));
   private final JMenuBar MENUBAR = new JMenuBar();
 
   private final String[] HASTEOPTIONS = new String[3];
@@ -161,6 +163,7 @@ public class MainMenuBar extends Component {
    * @param injectedUpdateChecker         Instance of {@link UpdateChecker} to check for
    *                                      update-availability.
    * @param injectedUtilities             Instance of {@link Utilities} for various things.
+   * @throws IOException when the info icon could not be instantiated.
    * @author Griefed
    */
   public MainMenuBar(
