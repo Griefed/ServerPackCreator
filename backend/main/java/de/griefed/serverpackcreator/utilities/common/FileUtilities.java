@@ -416,7 +416,7 @@ public final class FileUtilities {
           Desktop.getDesktop().open(new File(fileToOpen));
         }
       } catch (IOException ex) {
-        LOG.error("Error opening custom server-icon.png.", ex);
+        LOG.error("Error opening file.", ex);
       }
     }
   }
