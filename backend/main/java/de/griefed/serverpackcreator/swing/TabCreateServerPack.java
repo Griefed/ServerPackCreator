@@ -430,7 +430,8 @@ public class TabCreateServerPack extends JPanel {
         I18N.getMessage("createserverpack.gui.createserverpack.labelsuffix.tip"));
     ERROR_ICON_SERVERPACK_SUFFIX.setDescription(
         I18N.getMessage("createserverpack.gui.createserverpack.textsuffix.error"));
-    TEXTFIELD_SERVERPACKSUFFIX.addDocumentListener((SimpleDocumentListener) e -> validateInputFields());
+    TEXTFIELD_SERVERPACKSUFFIX.addDocumentListener(
+        (SimpleDocumentListener) e -> validateInputFields());
 
     gridBagConstraints.gridx = 3;
     gridBagConstraints.gridy = 1;
@@ -458,7 +459,8 @@ public class TabCreateServerPack extends JPanel {
     TEXTAREA_CLIENTSIDEMODS.setFont(notoSansDisplayRegularPlain15);
     ERROR_ICON_CLIENTSIDE_MODS.setDescription(
         I18N.getMessage("createserverpack.gui.createserverpack.textclientmods.error"));
-    TEXTAREA_CLIENTSIDEMODS.addDocumentListener((SimpleDocumentListener) e -> validateInputFields());
+    TEXTAREA_CLIENTSIDEMODS.addDocumentListener(
+        (SimpleDocumentListener) e -> validateInputFields());
     JPanel clientsidemodsJpanel = new JPanel();
     clientsidemodsJpanel.setLayout(new GridBagLayout());
     GridBagConstraints textareaClientsidemodsJpanelConstraints = new GridBagConstraints();
@@ -506,7 +508,8 @@ public class TabCreateServerPack extends JPanel {
     TEXTAREA_COPYDIRECTORIES.setFont(notoSansDisplayRegularPlain15);
     ERROR_ICON_COPYDIRECTORIES.setDescription(
         I18N.getMessage("createserverpack.gui.createserverpack.textclientmods.error"));
-    TEXTAREA_COPYDIRECTORIES.addDocumentListener((SimpleDocumentListener) e -> validateInputFields());
+    TEXTAREA_COPYDIRECTORIES.addDocumentListener(
+        (SimpleDocumentListener) e -> validateInputFields());
     JPanel copydirectoriesJpanel = new JPanel();
     copydirectoriesJpanel.setLayout(new GridBagLayout());
     GridBagConstraints textareaCopydirectoriesJpanelConstraints = new GridBagConstraints();
@@ -1201,7 +1204,8 @@ public class TabCreateServerPack extends JPanel {
         TEXTFIELD_MODPACKDIRECTORY.setIcon(ERROR_ICON_MODPACKDIRECTORY);
         ERROR_ICON_MODPACKDIRECTORY.setDescription(
             String.join(",", errorsTEXTFIELD_MODPACKDIRECTORY));
-        TEXTFIELD_MODPACKDIRECTORY.setToolTipText(String.join(",", errorsTEXTFIELD_MODPACKDIRECTORY));
+        TEXTFIELD_MODPACKDIRECTORY.setToolTipText(
+            String.join(",", errorsTEXTFIELD_MODPACKDIRECTORY));
       }
     });
   }
@@ -1515,19 +1519,28 @@ public class TabCreateServerPack extends JPanel {
           VERSIONMETA.minecraft().getServer(getMinecraftVersion()).get().javaVersion().get()
               .toString());
 
-      if (REQUIRED_JAVA_VERSION.getText().equals("8") && APPLICATIONPROPERTIES.java8Path().isPresent()) {
+      if (!REQUIRED_JAVA_VERSION.getText().equals("?") &&
+          APPLICATIONPROPERTIES.javaPath(
+                  VERSIONMETA.minecraft().getServer(getMinecraftVersion()).get().javaVersion().get())
+              .isPresent() &&
+          !SCRIPT_VARIABLES.getData().get("SPC_JAVA_SPC").equals(APPLICATIONPROPERTIES.javaPath(
+                  VERSIONMETA.minecraft().getServer(getMinecraftVersion()).get().javaVersion().get())
+              .get()) &&
+          APPLICATIONPROPERTIES.isJavaScriptAutoupdateEnabled()
+      ) {
 
-        HashMap<String,String> data = SCRIPT_VARIABLES.getData();
-        data.replace("SPC_JAVA_SPC",APPLICATIONPROPERTIES.java8Path().get());
+        HashMap<String, String> data = SCRIPT_VARIABLES.getData();
+
+        data.replace("SPC_JAVA_SPC", APPLICATIONPROPERTIES.javaPath(
+                VERSIONMETA.minecraft().getServer(getMinecraftVersion()).get().javaVersion().get())
+            .get());
+
         SCRIPT_VARIABLES.loadData(data);
-        LOG.info("Automatically adjusted script variable SPC_JAVA_SPC to " + APPLICATIONPROPERTIES.java8Path().get());
 
-      } else if (REQUIRED_JAVA_VERSION.getText().equals("17") && APPLICATIONPROPERTIES.java17Path().isPresent()) {
-
-        HashMap<String,String> data = SCRIPT_VARIABLES.getData();
-        data.replace("SPC_JAVA_SPC",APPLICATIONPROPERTIES.java17Path().get());
-        SCRIPT_VARIABLES.loadData(data);
-        LOG.info("Automatically adjusted script variable SPC_JAVA_SPC to " + APPLICATIONPROPERTIES.java17Path().get());
+        LOG.info("Automatically adjusted script variable SPC_JAVA_SPC to "
+            + APPLICATIONPROPERTIES.javaPath(
+                VERSIONMETA.minecraft().getServer(getMinecraftVersion()).get().javaVersion().get())
+            .get());
 
       }
     } else {
@@ -1640,27 +1653,33 @@ public class TabCreateServerPack extends JPanel {
         boolean updated = false;
 
         if (new File(getModpackDirectory() + "/manifest.json").isFile()) {
-          CONFIG_UTILITIES.updateConfigModelFromCurseManifest(configurationModel,new File(getModpackDirectory() + "/manifest.json"));
+          CONFIG_UTILITIES.updateConfigModelFromCurseManifest(configurationModel,
+              new File(getModpackDirectory() + "/manifest.json"));
           updated = true;
 
         } else if (new File(getModpackDirectory() + "/minecraftinstance.json").isFile()) {
-          CONFIG_UTILITIES.updateConfigModelFromMinecraftInstance(configurationModel,new File(getModpackDirectory() + "/minecraftinstance.json"));
+          CONFIG_UTILITIES.updateConfigModelFromMinecraftInstance(configurationModel,
+              new File(getModpackDirectory() + "/minecraftinstance.json"));
           updated = true;
 
         } else if (new File(getModpackDirectory() + "/modrinth.index.json").isFile()) {
-          CONFIG_UTILITIES.updateConfigModelFromModrinthManifest(configurationModel,new File(getModpackDirectory() + "/modrinth.index.json"));
+          CONFIG_UTILITIES.updateConfigModelFromModrinthManifest(configurationModel,
+              new File(getModpackDirectory() + "/modrinth.index.json"));
           updated = true;
 
         } else if (new File(getModpackDirectory() + "/instance.json").isFile()) {
-          CONFIG_UTILITIES.updateConfigModelFromATLauncherInstance(configurationModel,new File(getModpackDirectory() + "/instance.json"));
+          CONFIG_UTILITIES.updateConfigModelFromATLauncherInstance(configurationModel,
+              new File(getModpackDirectory() + "/instance.json"));
           updated = true;
 
         } else if (new File(getModpackDirectory() + "/config.json").isFile()) {
-          CONFIG_UTILITIES.updateConfigModelFromConfigJson(configurationModel,new File(getModpackDirectory() + "/config.json"));
+          CONFIG_UTILITIES.updateConfigModelFromConfigJson(configurationModel,
+              new File(getModpackDirectory() + "/config.json"));
           updated = true;
 
         } else if (new File(getModpackDirectory() + "/mmc-pack.json").isFile()) {
-          CONFIG_UTILITIES.updateConfigModelFromMMCPack(configurationModel,new File(getModpackDirectory() + "/mmc-pack.json"));
+          CONFIG_UTILITIES.updateConfigModelFromMMCPack(configurationModel,
+              new File(getModpackDirectory() + "/mmc-pack.json"));
           updated = true;
         }
 
@@ -1684,7 +1703,7 @@ public class TabCreateServerPack extends JPanel {
 
         }
       } catch (IOException ex) {
-        LOG.error("Couldn't update GUI from modpack manifests.",ex);
+        LOG.error("Couldn't update GUI from modpack manifests.", ex);
       }
     });
   }
@@ -2180,7 +2199,8 @@ public class TabCreateServerPack extends JPanel {
       LOG.error("Couldn't load configuration file.", ex);
       JOptionPane.showMessageDialog(
           this,
-          I18N.getMessage("createserverpack.gui.config.load.error.message") + " " + ex.getCause() + "   ",
+          I18N.getMessage("createserverpack.gui.config.load.error.message") + " " + ex.getCause()
+              + "   ",
           I18N.getMessage("createserverpack.gui.config.load.error"),
           JOptionPane.ERROR_MESSAGE,
           ISSUE_ICON

@@ -34,7 +34,9 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.TreeSet;
@@ -295,6 +297,12 @@ public final class ApplicationProperties extends Properties {
           + "-XX:G1MixedGCCountTarget=4 -XX:InitiatingHeapOccupancyPercent=15 -XX:G1MixedGCLiveThresholdPercent=90 "
           + "-XX:G1RSetUpdatingPauseTimePercent=5 -XX:SurvivorRatio=32 -XX:+PerfDisableSharedMem "
           + "-XX:MaxTenuringThreshold=1 -Dusing.aikars.flags=https://mcflags.emc.gs -Daikars.new.flags=true";
+  /**
+   * Map containing any Java paths from properties with the format
+   * <code>de.griefed.serverpackcreator.script.javaN</code> where N is the version of the Java
+   * installation.
+   */
+  private final HashMap<String, String> JAVA_PATHS = new HashMap<>();
   private final String PROPERTY_VERSIONCHECK_PRERELEASE = "de.griefed.serverpackcreator.versioncheck.prerelease";
   private final String PROPERTY_LANGUAGE = "de.griefed.serverpackcreator.language";
   private final String PROPERTY_CONFIGURATION_FALLBACKMODSLIST = "de.griefed.serverpackcreator.configuration.fallbackmodslist";
@@ -320,8 +328,8 @@ public final class ApplicationProperties extends Properties {
   private final String PROPERTY_MINECRAFT_SNAPSHOTS = "de.griefed.serverpackcreator.minecraft.snapshots";
   private final String PROPERTY_SERVERPACK_AUTODISCOVERY_FILTER = "de.griefed.serverpackcreator.serverpack.autodiscovery.filter";
   private final String PROPERTY_JAVA = "de.griefed.serverpackcreator.java";
-  private final String PROPERTY_SCRIPT_JAVA_8 = "de.griefed.serverpackcreator.script.java8";
-  private final String PROPERTY_SCRIPT_JAVA_17 = "de.griefed.serverpackcreator.script.java17";
+  private final String PROPERTY_SCRIPT_JAVA = "de.griefed.serverpackcreator.script.java";
+  private final String PROPERTY_SCRIPT_JAVA_AUTOUPDATE = "de.griefed.serverpackcreator.script.java.autoupdate";
   /**
    * The directory in which server packs will be generated and stored in, as well as server pack
    * ZIP-archives. Default is ./server-packs
@@ -386,8 +394,11 @@ public final class ApplicationProperties extends Properties {
    * The path to a viable Java executable or binary for use in modloader server installation.
    */
   private String javaPath = "java";
-  private String java8Path = "";
-  private String java17Path = "";
+  /**
+   * Whether to automatically update the <code>SPC_JAVA_SPC</code>-placeholder in the script
+   * variables table with a Java path matching the required Java version for the Minecraft server.
+   */
+  private boolean javaScriptAutoupdate = true;
 
   /**
    * Initialize an instance of our application properties using the default
@@ -530,9 +541,9 @@ public final class ApplicationProperties extends Properties {
 
     setJavaPath();
 
-    setJava8Path();
+    setJavaScriptsVariablePaths();
 
-    setJava17Path();
+    setAutoUpdateScriptVariablesJavaPlaceholder();
 
     saveToDisk(SERVERPACKCREATOR_PROPERTIES_FILE);
   }
@@ -1076,27 +1087,42 @@ public final class ApplicationProperties extends Properties {
   }
 
   /**
-   * Sets the path to the Java 8 executable/binary.
+   * Sets the path to the Java 17 executable/binary.
+   *
    * @author Griefed
    */
-  private void setJava8Path() {
-    if (checkJavaPath(getProperty(PROPERTY_SCRIPT_JAVA_8, ""))) {
-      java8Path = getProperty(PROPERTY_SCRIPT_JAVA_8).replace("\\","/");
-      setProperty(PROPERTY_SCRIPT_JAVA_8,java8Path);
+  private void setJavaScriptsVariablePaths() {
+    for (int i = 8; i < 256; i++) {
+      if (checkJavaPath(getProperty(PROPERTY_SCRIPT_JAVA + i, ""))) {
+
+        if (JAVA_PATHS.containsKey(i)) {
+          JAVA_PATHS.replace(String.valueOf(i),
+              getProperty(PROPERTY_SCRIPT_JAVA + i).replace("\\", "/"));
+        } else {
+          JAVA_PATHS.put(String.valueOf(i),
+              getProperty(PROPERTY_SCRIPT_JAVA + i).replace("\\", "/"));
+        }
+
+        setProperty(PROPERTY_SCRIPT_JAVA + i, JAVA_PATHS.get(String.valueOf(i)));
+      }
     }
-    LOG.info("Java 8 path set to: " + java8Path);
+
+    LOG.info("Available Java paths for scripts for local testing and debugging:");
+    for (Map.Entry<String, String> entry : JAVA_PATHS.entrySet()) {
+      LOG.info("Java " + entry.getKey() + " path: " + entry.getValue());
+    }
   }
 
   /**
-   * Sets the path to the Java 17 executable/binary.
+   * Set whether to automatically update the <code>SPC_JAVA_SPC</code>-placeholder in the script
+   * variables table with a Java path matching the required Java version for the Minecraft server.
+   *
    * @author Griefed
    */
-  private void setJava17Path() {
-    if (checkJavaPath(getProperty(PROPERTY_SCRIPT_JAVA_17, ""))) {
-      java17Path = getProperty(PROPERTY_SCRIPT_JAVA_17).replace("\\","/");
-      setProperty(PROPERTY_SCRIPT_JAVA_17,java17Path);
-    }
-    LOG.info("Java 17 path set to: " + java17Path);
+  private void setAutoUpdateScriptVariablesJavaPlaceholder() {
+    javaScriptAutoupdate = getBoolProperty(PROPERTY_SCRIPT_JAVA_AUTOUPDATE, true);
+    LOG.info("Automatically update SPC_JAVA_SPC-placeholder in script variables table set to: "
+        + javaScriptAutoupdate);
   }
 
   /**
@@ -1839,6 +1865,35 @@ public final class ApplicationProperties extends Properties {
     return exclusionFilter;
   }
 
+  /**
+   * Get the path to the specified Java executable/binary, wrapped in an {@link Optional} for your
+   * convenience.
+   *
+   * @param javaVersion The Java version to acquire the path for.
+   * @return The path to the Java executable/binary, if available.
+   * @author Griefed
+   */
+  public Optional<String> javaPath(int javaVersion) {
+    if (JAVA_PATHS.containsKey(String.valueOf(javaVersion)) && new File(
+        JAVA_PATHS.get(String.valueOf(javaVersion))).isFile()) {
+      return Optional.of(JAVA_PATHS.get(String.valueOf(javaVersion)));
+    } else {
+      return Optional.empty();
+    }
+  }
+
+
+  /**
+   * Whether to automatically update the <code>SPC_JAVA_SPC</code>-placeholder in the script
+   * variables table with a Java path matching the required Java version for the Minecraft server.
+   *
+   * @return <code>true</code> if enabled.
+   * @author Griefed
+   */
+  public boolean isJavaScriptAutoupdateEnabled() {
+    return javaScriptAutoupdate;
+  }
+
   public enum ExclusionFilter {
     /**
      * Does the name of a mod start with the user specified string?
@@ -1864,31 +1919,5 @@ public final class ApplicationProperties extends Properties {
      * Does any of the above hit for the user specified string/regex?
      */
     EITHER
-  }
-
-  /**
-   * Get the path to the Java 8 executable/binary, wrapped in an {@link Optional} for your convenience.
-   * @return The path to the Java 8 executable/binary, if available.
-   * @author Griefed
-   */
-  public Optional<String> java8Path() {
-    if (new File(java8Path).isFile()) {
-      return Optional.of(java8Path);
-    } else {
-      return Optional.empty();
-    }
-  }
-
-  /**
-   * Get the path to the Java 17 executable/binary, wrapped in an {@link Optional} for your convenience.
-   * @return The path to the Java 17 executable/binary, if available.
-   * @author Griefed
-   */
-  public Optional<String> java17Path() {
-    if (new File(java17Path).isFile()) {
-      return Optional.of(java17Path);
-    } else {
-      return Optional.empty();
-    }
   }
 }
