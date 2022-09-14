@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":42,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10,"i17":10};
+var methods = {"i0":42,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":42,"i17":42};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"],32:["t6","Deprecated Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -193,17 +193,16 @@ extends java.lang.Object</pre>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html#printConfigurationModel-de.griefed.serverpackcreator.ConfigurationModel-">printConfigurationModel</a></span>(<a href="../../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel)</code>
 <div class="block">Convenience method which passes the important fields from an instance of
  <a href="../../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a> to
- <a href="../../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html#printConfigurationModel-java.lang.String-java.util.List-java.util.List-boolean-java.lang.String-java.lang.String-java.lang.String-java.lang.String-boolean-boolean-boolean-java.lang.String-java.lang.String-java.lang.String-java.lang.String-"><code>printConfigurationModel(String, List, List, boolean, String, String, String, String,
- boolean, boolean, boolean, String, String, String, String)</code></a></div>
+ <a href="../../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html#printConfigurationModel-java.lang.String-java.util.List-java.util.List-boolean-java.lang.String-java.lang.String-java.lang.String-boolean-boolean-boolean-java.lang.String-java.lang.String-java.lang.String-java.lang.String-java.util.HashMap-"><code>printConfigurationModel(String, List, List, boolean, String, String, String, boolean,
+ boolean, boolean, String, String, String, String, HashMap)</code></a></div>
 </td>
 </tr>
 <tr id="i7" class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html#printConfigurationModel-java.lang.String-java.util.List-java.util.List-boolean-java.lang.String-java.lang.String-java.lang.String-java.lang.String-boolean-boolean-boolean-java.lang.String-java.lang.String-java.lang.String-java.lang.String-">printConfigurationModel</a></span>(java.lang.String&nbsp;modpackDirectory,
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html#printConfigurationModel-java.lang.String-java.util.List-java.util.List-boolean-java.lang.String-java.lang.String-java.lang.String-boolean-boolean-boolean-java.lang.String-java.lang.String-java.lang.String-java.lang.String-java.util.HashMap-">printConfigurationModel</a></span>(java.lang.String&nbsp;modpackDirectory,
                        java.util.List&lt;java.lang.String&gt;&nbsp;clientsideMods,
                        java.util.List&lt;java.lang.String&gt;&nbsp;copyDirectories,
                        boolean&nbsp;installServer,
-                       java.lang.String&nbsp;javaInstallPath,
                        java.lang.String&nbsp;minecraftVer,
                        java.lang.String&nbsp;modloader,
                        java.lang.String&nbsp;modloaderVersion,
@@ -213,7 +212,8 @@ extends java.lang.Object</pre>
                        java.lang.String&nbsp;javaArgs,
                        java.lang.String&nbsp;serverPackSuffix,
                        java.lang.String&nbsp;serverIconPath,
-                       java.lang.String&nbsp;serverPropertiesPath)</code>
+                       java.lang.String&nbsp;serverPropertiesPath,
+                       java.util.HashMap&lt;java.lang.String,java.lang.String&gt;&nbsp;scriptSettings)</code>
 <div class="block">Prints all passed fields to the console and serverpackcreator.log.</div>
 </td>
 </tr>
@@ -276,19 +276,19 @@ extends java.lang.Object</pre>
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html#writeConfigToFile-de.griefed.serverpackcreator.ConfigurationModel-java.io.File-">writeConfigToFile</a></span>(<a href="../../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel,
                  java.io.File&nbsp;fileName)</code>
-<div class="block">Convenience method to write a new configuration file with the <a href="../../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a> passed
- to it.</div>
+<div class="block"><span class="deprecatedLabel">Deprecated.</span>&nbsp;
+<div class="block"><span class="deprecationComment">Use <a href="../../../../de/griefed/serverpackcreator/ConfigurationModel.html#save-java.io.File-"><code>ConfigurationModel.save(File)</code></a> instead.</span></div>
+</div>
 </td>
 </tr>
 <tr id="i17" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html#writeConfigToFile-java.lang.String-java.util.List-java.util.List-java.lang.String-java.lang.String-boolean-java.lang.String-java.lang.String-java.lang.String-java.lang.String-boolean-boolean-boolean-java.lang.String-java.lang.String-java.io.File-">writeConfigToFile</a></span>(java.lang.String&nbsp;modpackDir,
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html#writeConfigToFile-java.lang.String-java.util.List-java.util.List-java.lang.String-java.lang.String-boolean-java.lang.String-java.lang.String-java.lang.String-boolean-boolean-boolean-java.lang.String-java.lang.String-java.io.File-">writeConfigToFile</a></span>(java.lang.String&nbsp;modpackDir,
                  java.util.List&lt;java.lang.String&gt;&nbsp;clientMods,
                  java.util.List&lt;java.lang.String&gt;&nbsp;copyDirs,
                  java.lang.String&nbsp;serverIconPath,
                  java.lang.String&nbsp;serverPropertiesPath,
                  boolean&nbsp;includeServer,
-                 java.lang.String&nbsp;javaPath,
                  java.lang.String&nbsp;minecraftVersion,
                  java.lang.String&nbsp;modLoader,
                  java.lang.String&nbsp;modLoaderVersion,
@@ -298,7 +298,9 @@ extends java.lang.Object</pre>
                  java.lang.String&nbsp;javaArgs,
                  java.lang.String&nbsp;serverPackSuffix,
                  java.io.File&nbsp;fileName)</code>
-<div class="block">Writes a new configuration file with the parameters passed to it.</div>
+<div class="block"><span class="deprecatedLabel">Deprecated.</span>&nbsp;
+<div class="block"><span class="deprecationComment">Use <a href="../../../../de/griefed/serverpackcreator/ConfigurationModel.html#save-java.io.File-"><code>ConfigurationModel.save(File)</code></a> instead.</span></div>
+</div>
 </td>
 </tr>
 </table>
@@ -367,8 +369,10 @@ public&nbsp;ConfigUtilities(<a href="../../../../de/griefed/serverpackcreator/ut
 <ul class="blockList">
 <li class="blockList">
 <h4>writeConfigToFile</h4>
-<pre>public&nbsp;boolean&nbsp;writeConfigToFile(<a href="../../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel,
-                                 java.io.File&nbsp;fileName)</pre>
+<pre>@Deprecated
+public&nbsp;boolean&nbsp;writeConfigToFile(<a href="../../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel,
+                                             java.io.File&nbsp;fileName)</pre>
+<div class="block"><span class="deprecatedLabel">Deprecated.</span>&nbsp;<span class="deprecationComment">Use <a href="../../../../de/griefed/serverpackcreator/ConfigurationModel.html#save-java.io.File-"><code>ConfigurationModel.save(File)</code></a> instead.</span></div>
 <div class="block">Convenience method to write a new configuration file with the <a href="../../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a> passed
  to it. If the given file already exists, it is replaced.</div>
 <dl>
@@ -381,28 +385,29 @@ public&nbsp;ConfigUtilities(<a href="../../../../de/griefed/serverpackcreator/ut
 </dl>
 </li>
 </ul>
-<a name="writeConfigToFile-java.lang.String-java.util.List-java.util.List-java.lang.String-java.lang.String-boolean-java.lang.String-java.lang.String-java.lang.String-java.lang.String-boolean-boolean-boolean-java.lang.String-java.lang.String-java.io.File-">
+<a name="writeConfigToFile-java.lang.String-java.util.List-java.util.List-java.lang.String-java.lang.String-boolean-java.lang.String-java.lang.String-java.lang.String-boolean-boolean-boolean-java.lang.String-java.lang.String-java.io.File-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>writeConfigToFile</h4>
-<pre>public&nbsp;boolean&nbsp;writeConfigToFile(java.lang.String&nbsp;modpackDir,
-                                 java.util.List&lt;java.lang.String&gt;&nbsp;clientMods,
-                                 java.util.List&lt;java.lang.String&gt;&nbsp;copyDirs,
-                                 java.lang.String&nbsp;serverIconPath,
-                                 java.lang.String&nbsp;serverPropertiesPath,
-                                 boolean&nbsp;includeServer,
-                                 java.lang.String&nbsp;javaPath,
-                                 java.lang.String&nbsp;minecraftVersion,
-                                 java.lang.String&nbsp;modLoader,
-                                 java.lang.String&nbsp;modLoaderVersion,
-                                 boolean&nbsp;includeIcon,
-                                 boolean&nbsp;includeProperties,
-                                 boolean&nbsp;includeZip,
-                                 java.lang.String&nbsp;javaArgs,
-                                 java.lang.String&nbsp;serverPackSuffix,
-                                 java.io.File&nbsp;fileName)</pre>
+<pre>@Deprecated
+public&nbsp;boolean&nbsp;writeConfigToFile(java.lang.String&nbsp;modpackDir,
+                                             java.util.List&lt;java.lang.String&gt;&nbsp;clientMods,
+                                             java.util.List&lt;java.lang.String&gt;&nbsp;copyDirs,
+                                             java.lang.String&nbsp;serverIconPath,
+                                             java.lang.String&nbsp;serverPropertiesPath,
+                                             boolean&nbsp;includeServer,
+                                             java.lang.String&nbsp;minecraftVersion,
+                                             java.lang.String&nbsp;modLoader,
+                                             java.lang.String&nbsp;modLoaderVersion,
+                                             boolean&nbsp;includeIcon,
+                                             boolean&nbsp;includeProperties,
+                                             boolean&nbsp;includeZip,
+                                             java.lang.String&nbsp;javaArgs,
+                                             java.lang.String&nbsp;serverPackSuffix,
+                                             java.io.File&nbsp;fileName)</pre>
+<div class="block"><span class="deprecatedLabel">Deprecated.</span>&nbsp;<span class="deprecationComment">Use <a href="../../../../de/griefed/serverpackcreator/ConfigurationModel.html#save-java.io.File-"><code>ConfigurationModel.save(File)</code></a> instead.</span></div>
 <div class="block">Writes a new configuration file with the parameters passed to it. If the given file already
  exists, it is replaced.</div>
 <dl>
@@ -415,7 +420,6 @@ public&nbsp;ConfigUtilities(<a href="../../../../de/griefed/serverpackcreator/ut
 <dd><code>serverPropertiesPath</code> - The path to the custom server.properties to include in the server
                              pack.</dd>
 <dd><code>includeServer</code> - Whether the modloader server software should be installed.</dd>
-<dd><code>javaPath</code> - Path to the java executable/binary.</dd>
 <dd><code>minecraftVersion</code> - Minecraft version used by the modpack and server pack.</dd>
 <dd><code>modLoader</code> - Modloader used by the modpack and server pack. Ether Forge or
                              Fabric.</dd>
@@ -442,15 +446,15 @@ public&nbsp;ConfigUtilities(<a href="../../../../de/griefed/serverpackcreator/ut
 <pre>public&nbsp;void&nbsp;printConfigurationModel(<a href="../../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel)</pre>
 <div class="block">Convenience method which passes the important fields from an instance of
  <a href="../../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a> to
- <a href="../../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html#printConfigurationModel-java.lang.String-java.util.List-java.util.List-boolean-java.lang.String-java.lang.String-java.lang.String-java.lang.String-boolean-boolean-boolean-java.lang.String-java.lang.String-java.lang.String-java.lang.String-"><code>printConfigurationModel(String, List, List, boolean, String, String, String, String,
- boolean, boolean, boolean, String, String, String, String)</code></a></div>
+ <a href="../../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html#printConfigurationModel-java.lang.String-java.util.List-java.util.List-boolean-java.lang.String-java.lang.String-java.lang.String-boolean-boolean-boolean-java.lang.String-java.lang.String-java.lang.String-java.lang.String-java.util.HashMap-"><code>printConfigurationModel(String, List, List, boolean, String, String, String, boolean,
+ boolean, boolean, String, String, String, String, HashMap)</code></a></div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>configurationModel</code> - Instance of <a href="../../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a> to print to console and logs.</dd>
 </dl>
 </li>
 </ul>
-<a name="printConfigurationModel-java.lang.String-java.util.List-java.util.List-boolean-java.lang.String-java.lang.String-java.lang.String-java.lang.String-boolean-boolean-boolean-java.lang.String-java.lang.String-java.lang.String-java.lang.String-">
+<a name="printConfigurationModel-java.lang.String-java.util.List-java.util.List-boolean-java.lang.String-java.lang.String-java.lang.String-boolean-boolean-boolean-java.lang.String-java.lang.String-java.lang.String-java.lang.String-java.util.HashMap-">
 <!--   -->
 </a>
 <ul class="blockList">
@@ -460,7 +464,6 @@ public&nbsp;ConfigUtilities(<a href="../../../../de/griefed/serverpackcreator/ut
                                     java.util.List&lt;java.lang.String&gt;&nbsp;clientsideMods,
                                     java.util.List&lt;java.lang.String&gt;&nbsp;copyDirectories,
                                     boolean&nbsp;installServer,
-                                    java.lang.String&nbsp;javaInstallPath,
                                     java.lang.String&nbsp;minecraftVer,
                                     java.lang.String&nbsp;modloader,
                                     java.lang.String&nbsp;modloaderVersion,
@@ -470,7 +473,8 @@ public&nbsp;ConfigUtilities(<a href="../../../../de/griefed/serverpackcreator/ut
                                     java.lang.String&nbsp;javaArgs,
                                     java.lang.String&nbsp;serverPackSuffix,
                                     java.lang.String&nbsp;serverIconPath,
-                                    java.lang.String&nbsp;serverPropertiesPath)</pre>
+                                    java.lang.String&nbsp;serverPropertiesPath,
+                                    java.util.HashMap&lt;java.lang.String,java.lang.String&gt;&nbsp;scriptSettings)</pre>
 <div class="block">Prints all passed fields to the console and serverpackcreator.log. Used to show the user the
  configuration before ServerPackCreator starts the generation of the server pack or, if checks
  failed, to show the user their last configuration, so they can more easily identify problems
@@ -485,8 +489,6 @@ public&nbsp;ConfigUtilities(<a href="../../../../de/griefed/serverpackcreator/ut
 <dd><code>copyDirectories</code> - List of directories in the modpack which are to be included in the
                              server pack.</dd>
 <dd><code>installServer</code> - Whether to install the modloader server in the server pack.</dd>
-<dd><code>javaInstallPath</code> - Path to the Java executable/binary needed for installing the
-                             modloader server in the server pack.</dd>
 <dd><code>minecraftVer</code> - The Minecraft version the modpack uses.</dd>
 <dd><code>modloader</code> - The modloader the modpack uses.</dd>
 <dd><code>modloaderVersion</code> - The version of the modloader the modpack uses.</dd>
@@ -500,6 +502,9 @@ public&nbsp;ConfigUtilities(<a href="../../../../de/griefed/serverpackcreator/ut
                              pack.</dd>
 <dd><code>serverPropertiesPath</code> - The path to the custom server.properties to be used in the server
                              pack.</dd>
+<dd><code>scriptSettings</code> - Custom settings for start script creation. <code>KEY</code>s are
+                             the placeholder, <code>VALUE</code>s are the values with which the
+                             placeholders are to be replaced.</dd>
 </dl>
 </li>
 </ul>

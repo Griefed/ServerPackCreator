@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10};
+var methods = {"i0":10,"i1":10,"i2":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -165,6 +165,14 @@ extends java.lang.Object</pre>
 <div class="block">Get the mode in which ServerPackCreator should be run in.</div>
 </td>
 </tr>
+<tr id="i2" class="altColor">
+<td class="colFirst"><code>java.util.Optional&lt;java.io.File&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.CommandlineParser.html#propertiesFile--">propertiesFile</a></span>()</code>
+<div class="block">If ServerPackCreator was executed with the <code>--setup</code>-argument as well as a
+ properties-file, then this method will return the specified properties file, wrapped in an
+ <code>Optional</code>, so you can check whether it is present or not.</div>
+</td>
+</tr>
 </table>
 <ul class="blockList">
 <li class="blockList"><a name="methods.inherited.from.class.java.lang.Object">
@@ -231,7 +239,7 @@ extends java.lang.Object</pre>
 <a name="getLanguageToUse--">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>getLanguageToUse</h4>
 <pre>protected&nbsp;java.util.Optional&lt;java.lang.String&gt;&nbsp;getLanguageToUse()</pre>
@@ -240,6 +248,22 @@ extends java.lang.Object</pre>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>The locale in which ServerPackCreator should be run in, wrapped in an
  <code>Optional</code>.</dd>
+</dl>
+</li>
+</ul>
+<a name="propertiesFile--">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>propertiesFile</h4>
+<pre>public&nbsp;java.util.Optional&lt;java.io.File&gt;&nbsp;propertiesFile()</pre>
+<div class="block">If ServerPackCreator was executed with the <code>--setup</code>-argument as well as a
+ properties-file, then this method will return the specified properties file, wrapped in an
+ <code>Optional</code>, so you can check whether it is present or not.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>The specified properties-file, wrapped in an Optional.</dd>
 </dl>
 </li>
 </ul>

@@ -128,9 +128,11 @@ extends java.lang.Object</pre>
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftMeta.html#MinecraftMeta-java.io.File-de.griefed.serverpackcreator.versionmeta.forge.ForgeMeta-com.fasterxml.jackson.databind.ObjectMapper-">MinecraftMeta</a></span>(java.io.File&nbsp;minecraftManifest,
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftMeta.html#MinecraftMeta-java.io.File-de.griefed.serverpackcreator.versionmeta.forge.ForgeMeta-com.fasterxml.jackson.databind.ObjectMapper-de.griefed.serverpackcreator.utilities.common.Utilities-de.griefed.serverpackcreator.ApplicationProperties-">MinecraftMeta</a></span>(java.io.File&nbsp;minecraftManifest,
              <a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.forge">ForgeMeta</a>&nbsp;injectedForgeMeta,
-             com.fasterxml.jackson.databind.ObjectMapper&nbsp;objectMapper)</code>
+             com.fasterxml.jackson.databind.ObjectMapper&nbsp;objectMapper,
+             <a href="../../../../../de/griefed/serverpackcreator/utilities/common/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.common">Utilities</a>&nbsp;utilities,
+             <a href="../../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;applicationProperties)</code>
 <div class="block">Create a new Minecraft Meta instance.</div>
 </td>
 </tr>
@@ -452,7 +454,7 @@ extends java.lang.Object</pre>
 <!--   -->
 </a>
 <h3>Constructor Detail</h3>
-<a name="MinecraftMeta-java.io.File-de.griefed.serverpackcreator.versionmeta.forge.ForgeMeta-com.fasterxml.jackson.databind.ObjectMapper-">
+<a name="MinecraftMeta-java.io.File-de.griefed.serverpackcreator.versionmeta.forge.ForgeMeta-com.fasterxml.jackson.databind.ObjectMapper-de.griefed.serverpackcreator.utilities.common.Utilities-de.griefed.serverpackcreator.ApplicationProperties-">
 <!--   -->
 </a>
 <ul class="blockListLast">
@@ -460,13 +462,18 @@ extends java.lang.Object</pre>
 <h4>MinecraftMeta</h4>
 <pre>public&nbsp;MinecraftMeta(java.io.File&nbsp;minecraftManifest,
                      <a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.forge">ForgeMeta</a>&nbsp;injectedForgeMeta,
-                     com.fasterxml.jackson.databind.ObjectMapper&nbsp;objectMapper)</pre>
+                     com.fasterxml.jackson.databind.ObjectMapper&nbsp;objectMapper,
+                     <a href="../../../../../de/griefed/serverpackcreator/utilities/common/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.common">Utilities</a>&nbsp;utilities,
+                     <a href="../../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;applicationProperties)</pre>
 <div class="block">Create a new Minecraft Meta instance.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>minecraftManifest</code> - Minecraft manifest file.</dd>
-<dd><code>injectedForgeMeta</code> - To acquire Forge instances for this <a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftClient</code></a> version.</dd>
+<dd><code>injectedForgeMeta</code> - To acquire Forge instances for this <a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftClient</code></a>
+                              version.</dd>
 <dd><code>objectMapper</code> - Object mapper for JSON parsing.</dd>
+<dd><code>utilities</code> - Instance of commonly used utilities.</dd>
+<dd><code>applicationProperties</code> - ServerPackCreator settings.</dd>
 </dl>
 </li>
 </ul>

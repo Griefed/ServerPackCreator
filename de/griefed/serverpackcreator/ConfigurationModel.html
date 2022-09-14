@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10,"i17":10,"i18":10,"i19":10,"i20":10,"i21":10,"i22":10,"i23":10,"i24":10,"i25":10,"i26":10,"i27":10,"i28":10,"i29":10,"i30":10,"i31":10,"i32":10,"i33":10,"i34":10,"i35":10,"i36":10,"i37":10,"i38":10,"i39":10,"i40":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10,"i17":10,"i18":10,"i19":10,"i20":10,"i21":10,"i22":10,"i23":10,"i24":10,"i25":10,"i26":10,"i27":10,"i28":10,"i29":10,"i30":10,"i31":10,"i32":10,"i33":10,"i34":10,"i35":10,"i36":10,"i37":10,"i38":10,"i39":10,"i40":10,"i41":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -138,10 +138,9 @@ extends java.lang.Object</pre>
 </td>
 </tr>
 <tr class="rowColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html#ConfigurationModel-java.util.List-java.util.List-java.lang.String-java.lang.String-java.lang.String-java.lang.String-java.lang.String-java.lang.String-java.lang.String-java.lang.String-java.lang.String-boolean-boolean-boolean-boolean-java.util.HashMap-">ConfigurationModel</a></span>(java.util.List&lt;java.lang.String&gt;&nbsp;clientMods,
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html#ConfigurationModel-java.util.List-java.util.List-java.lang.String-java.lang.String-java.lang.String-java.lang.String-java.lang.String-java.lang.String-java.lang.String-java.lang.String-boolean-boolean-boolean-boolean-java.util.HashMap-java.util.HashMap-">ConfigurationModel</a></span>(java.util.List&lt;java.lang.String&gt;&nbsp;clientMods,
                   java.util.List&lt;java.lang.String&gt;&nbsp;copyDirs,
                   java.lang.String&nbsp;modpackDir,
-                  java.lang.String&nbsp;javaPath,
                   java.lang.String&nbsp;minecraftVersion,
                   java.lang.String&nbsp;modLoader,
                   java.lang.String&nbsp;modLoaderVersion,
@@ -153,7 +152,8 @@ extends java.lang.Object</pre>
                   boolean&nbsp;includeServerIcon,
                   boolean&nbsp;includeServerProperties,
                   boolean&nbsp;includeZipCreation,
-                  java.util.HashMap&lt;java.lang.String,java.lang.String&gt;&nbsp;scriptSettings)</code>
+                  java.util.HashMap&lt;java.lang.String,java.lang.String&gt;&nbsp;scriptSettings,
+                  java.util.HashMap&lt;java.lang.String,java.util.ArrayList&lt;com.electronwill.nightconfig.core.CommentedConfig&gt;&gt;&nbsp;addonsConfigs)</code>
 <div class="block">Construct a new configuration model with custom values.</div>
 </td>
 </tr>
@@ -179,63 +179,63 @@ extends java.lang.Object</pre>
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr id="i0" class="altColor">
+<td class="colFirst"><code>java.util.Optional&lt;java.util.ArrayList&lt;com.electronwill.nightconfig.core.CommentedConfig&gt;&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html#getAddonConfigs-java.lang.String-">getAddonConfigs</a></span>(java.lang.String&nbsp;addonId)</code>
+<div class="block">Get the list of configurations for a specific addon.</div>
+</td>
+</tr>
+<tr id="i1" class="rowColor">
 <td class="colFirst"><code>java.util.List&lt;java.lang.String&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html#getClientMods--">getClientMods</a></span>()</code>
 <div class="block">Getter for a list of clientside-only mods to exclude from server pack.</div>
 </td>
 </tr>
-<tr id="i1" class="rowColor">
+<tr id="i2" class="altColor">
 <td class="colFirst"><code>java.util.List&lt;java.lang.String&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html#getCopyDirs--">getCopyDirs</a></span>()</code>
 <div class="block">Getter for the list of directories in the modpack to copy to the server pack.</div>
 </td>
 </tr>
-<tr id="i2" class="altColor">
+<tr id="i3" class="rowColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html#getFileDiskName--">getFileDiskName</a></span>()</code>
 <div class="block">Getter for the disk-name of the CurseForge project file.</div>
 </td>
 </tr>
-<tr id="i3" class="rowColor">
+<tr id="i4" class="altColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html#getFileName--">getFileName</a></span>()</code>
 <div class="block">Getter for the name of the CurseForge project file.</div>
 </td>
 </tr>
-<tr id="i4" class="altColor">
+<tr id="i5" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html#getIncludeServerIcon--">getIncludeServerIcon</a></span>()</code>
 <div class="block">Getter for whether the server-icon.png should be included in the server pack.</div>
 </td>
 </tr>
-<tr id="i5" class="rowColor">
+<tr id="i6" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html#getIncludeServerInstallation--">getIncludeServerInstallation</a></span>()</code>
 <div class="block">Getter for whether the modloader server installation should be included.</div>
 </td>
 </tr>
-<tr id="i6" class="altColor">
+<tr id="i7" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html#getIncludeServerProperties--">getIncludeServerProperties</a></span>()</code>
 <div class="block">Getter for whether the server.properties should be included in the server pack.</div>
 </td>
 </tr>
-<tr id="i7" class="rowColor">
+<tr id="i8" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html#getIncludeZipCreation--">getIncludeZipCreation</a></span>()</code>
 <div class="block">Getter for whether a ZIP-archive of the server pack should be created.</div>
 </td>
 </tr>
-<tr id="i8" class="altColor">
+<tr id="i9" class="rowColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html#getJavaArgs--">getJavaArgs</a></span>()</code>
 <div class="block">Getter for the Java arguments with which the start-scripts will be generated.</div>
-</td>
-</tr>
-<tr id="i9" class="rowColor">
-<td class="colFirst"><code>java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html#getJavaPath--">getJavaPath</a></span>()</code>
-<div class="block">Getter for the path to the Java executable/binary.</div>
 </td>
 </tr>
 <tr id="i10" class="altColor">
@@ -269,156 +269,162 @@ extends java.lang.Object</pre>
 </td>
 </tr>
 <tr id="i15" class="rowColor">
+<td class="colFirst"><code>java.util.ArrayList&lt;com.electronwill.nightconfig.core.CommentedConfig&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html#getOrCreateAddonConfigList-java.lang.String-">getOrCreateAddonConfigList</a></span>(java.lang.String&nbsp;addonId)</code>
+<div class="block">Get the configurations for the specified addon ID.</div>
+</td>
+</tr>
+<tr id="i16" class="altColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html#getProjectName--">getProjectName</a></span>()</code>
 <div class="block">Getter for the name of the CurseForge project.</div>
 </td>
 </tr>
-<tr id="i16" class="altColor">
+<tr id="i17" class="rowColor">
 <td class="colFirst"><code>java.util.HashMap&lt;java.lang.String,java.lang.String&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html#getScriptSettings--">getScriptSettings</a></span>()</code>
 <div class="block">Getter for the script settings used during script creation.</div>
 </td>
 </tr>
-<tr id="i17" class="rowColor">
+<tr id="i18" class="altColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html#getServerIconPath--">getServerIconPath</a></span>()</code>
 <div class="block">Getter for the path to the server-icon.png to include in the server pack.</div>
 </td>
 </tr>
-<tr id="i18" class="altColor">
+<tr id="i19" class="rowColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html#getServerPackSuffix--">getServerPackSuffix</a></span>()</code>
 <div class="block">Getter for the suffix of the server pack to be generated.</div>
 </td>
 </tr>
-<tr id="i19" class="rowColor">
+<tr id="i20" class="altColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html#getServerPropertiesPath--">getServerPropertiesPath</a></span>()</code>
 <div class="block">Getter for the path of the server.properties to include in the server pack.</div>
 </td>
 </tr>
-<tr id="i20" class="altColor">
+<tr id="i21" class="rowColor">
+<td class="colFirst"><code><a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html#save-java.io.File-">save</a></span>(java.io.File&nbsp;destination)</code>
+<div class="block">Save this configuration.</div>
+</td>
+</tr>
+<tr id="i22" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html#setClientMods-java.util.List-">setClientMods</a></span>(java.util.List&lt;java.lang.String&gt;&nbsp;newClientMods)</code>
 <div class="block">Setter for the list of clientside-only mods to exclude from server pack.</div>
 </td>
 </tr>
-<tr id="i21" class="rowColor">
+<tr id="i23" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html#setCopyDirs-java.util.List-">setCopyDirs</a></span>(java.util.List&lt;java.lang.String&gt;&nbsp;newCopyDirs)</code>
 <div class="block">Setter for the list of directories in the modpack to copy to the server pack.</div>
 </td>
 </tr>
-<tr id="i22" class="altColor">
+<tr id="i24" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html#setFileDiskName-java.lang.String-">setFileDiskName</a></span>(java.lang.String&nbsp;fileName)</code>
 <div class="block">Setter for the disk-name of the CurseForge project file.</div>
 </td>
 </tr>
-<tr id="i23" class="rowColor">
+<tr id="i25" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html#setFileName-java.lang.String-">setFileName</a></span>(java.lang.String&nbsp;fileName)</code>
 <div class="block">Setter for the name of the CurseForge project file.</div>
 </td>
 </tr>
-<tr id="i24" class="altColor">
+<tr id="i26" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html#setIncludeServerIcon-boolean-">setIncludeServerIcon</a></span>(boolean&nbsp;newIncludeServerIcon)</code>
 <div class="block">Setter for whether the server-icon.png should be included in the server pack.</div>
 </td>
 </tr>
-<tr id="i25" class="rowColor">
+<tr id="i27" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html#setIncludeServerInstallation-boolean-">setIncludeServerInstallation</a></span>(boolean&nbsp;newIncludeServerInstallation)</code>
 <div class="block">Setter for whether the modloader server installation should be included.</div>
 </td>
 </tr>
-<tr id="i26" class="altColor">
+<tr id="i28" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html#setIncludeServerProperties-boolean-">setIncludeServerProperties</a></span>(boolean&nbsp;newIncludeServerProperties)</code>
 <div class="block">Setter for whether the server.properties should be included in the server pack.</div>
 </td>
 </tr>
-<tr id="i27" class="rowColor">
+<tr id="i29" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html#setIncludeZipCreation-boolean-">setIncludeZipCreation</a></span>(boolean&nbsp;newIncludeZipCreation)</code>
 <div class="block">Setter for whether a ZIP-archive of the server pack should be created.</div>
 </td>
 </tr>
-<tr id="i28" class="altColor">
+<tr id="i30" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html#setJavaArgs-java.lang.String-">setJavaArgs</a></span>(java.lang.String&nbsp;javaArgs)</code>
 <div class="block">Setter for the Java arguments with which the start-scripts will be generated.</div>
 </td>
 </tr>
-<tr id="i29" class="rowColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html#setJavaPath-java.lang.String-">setJavaPath</a></span>(java.lang.String&nbsp;newJavaPath)</code>
-<div class="block">Setter for the path to the Java executable/binary.</div>
-</td>
-</tr>
-<tr id="i30" class="altColor">
+<tr id="i31" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html#setMinecraftVersion-java.lang.String-">setMinecraftVersion</a></span>(java.lang.String&nbsp;newMinecraftVersion)</code>
 <div class="block">Setter for the Minecraft version used by the modpack.</div>
 </td>
 </tr>
-<tr id="i31" class="rowColor">
+<tr id="i32" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html#setModLoader-java.lang.String-">setModLoader</a></span>(java.lang.String&nbsp;newModLoader)</code>
 <div class="block">Setter for the modloader used by the modpack.</div>
 </td>
 </tr>
-<tr id="i32" class="altColor">
+<tr id="i33" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html#setModLoaderVersion-java.lang.String-">setModLoaderVersion</a></span>(java.lang.String&nbsp;newModLoaderVersion)</code>
 <div class="block">Setter for the version of the modloader used by the modpack.</div>
 </td>
 </tr>
-<tr id="i33" class="rowColor">
+<tr id="i34" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html#setModpackDir-java.lang.String-">setModpackDir</a></span>(java.lang.String&nbsp;newModpackDir)</code>
 <div class="block">Setter for the path to the modpack directory.</div>
 </td>
 </tr>
-<tr id="i34" class="altColor">
+<tr id="i35" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html#setModpackJson-com.fasterxml.jackson.databind.JsonNode-">setModpackJson</a></span>(com.fasterxml.jackson.databind.JsonNode&nbsp;modpackJson)</code>
 <div class="block">Setter for the JsonNode containing all information about the modpack.</div>
 </td>
 </tr>
-<tr id="i35" class="rowColor">
+<tr id="i36" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html#setProjectName-java.lang.String-">setProjectName</a></span>(java.lang.String&nbsp;projectName)</code>
 <div class="block">Setter for the name of the CurseForge project.</div>
 </td>
 </tr>
-<tr id="i36" class="altColor">
+<tr id="i37" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html#setScriptSettings-java.util.HashMap-">setScriptSettings</a></span>(java.util.HashMap&lt;java.lang.String,java.lang.String&gt;&nbsp;settings)</code>
 <div class="block">Putter for the script settings used during script creation.</div>
 </td>
 </tr>
-<tr id="i37" class="rowColor">
+<tr id="i38" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html#setServerIconPath-java.lang.String-">setServerIconPath</a></span>(java.lang.String&nbsp;serverIconPath)</code>
 <div class="block">Setter for the path of the server-icon.png to include in the server pack.</div>
 </td>
 </tr>
-<tr id="i38" class="altColor">
+<tr id="i39" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html#setServerPackSuffix-java.lang.String-">setServerPackSuffix</a></span>(java.lang.String&nbsp;serverPackSuffix)</code>
 <div class="block">Setter for the suffix of the server pack to be generated</div>
 </td>
 </tr>
-<tr id="i39" class="rowColor">
+<tr id="i40" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html#setServerPropertiesPath-java.lang.String-">setServerPropertiesPath</a></span>(java.lang.String&nbsp;serverPropertiesPath)</code>
 <div class="block">Setter for the path of the server.properties to include in the server pack.</div>
 </td>
 </tr>
-<tr id="i40" class="altColor">
+<tr id="i41" class="rowColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html#toString--">toString</a></span>()</code>&nbsp;</td>
 </tr>
@@ -454,7 +460,7 @@ extends java.lang.Object</pre>
 <div class="block">Constructor for our ConfigurationModel.</div>
 </li>
 </ul>
-<a name="ConfigurationModel-java.util.List-java.util.List-java.lang.String-java.lang.String-java.lang.String-java.lang.String-java.lang.String-java.lang.String-java.lang.String-java.lang.String-java.lang.String-boolean-boolean-boolean-boolean-java.util.HashMap-">
+<a name="ConfigurationModel-java.util.List-java.util.List-java.lang.String-java.lang.String-java.lang.String-java.lang.String-java.lang.String-java.lang.String-java.lang.String-java.lang.String-boolean-boolean-boolean-boolean-java.util.HashMap-java.util.HashMap-">
 <!--   -->
 </a>
 <ul class="blockList">
@@ -463,7 +469,6 @@ extends java.lang.Object</pre>
 <pre>public&nbsp;ConfigurationModel(java.util.List&lt;java.lang.String&gt;&nbsp;clientMods,
                           java.util.List&lt;java.lang.String&gt;&nbsp;copyDirs,
                           java.lang.String&nbsp;modpackDir,
-                          java.lang.String&nbsp;javaPath,
                           java.lang.String&nbsp;minecraftVersion,
                           java.lang.String&nbsp;modLoader,
                           java.lang.String&nbsp;modLoaderVersion,
@@ -475,7 +480,8 @@ extends java.lang.Object</pre>
                           boolean&nbsp;includeServerIcon,
                           boolean&nbsp;includeServerProperties,
                           boolean&nbsp;includeZipCreation,
-                          java.util.HashMap&lt;java.lang.String,java.lang.String&gt;&nbsp;scriptSettings)</pre>
+                          java.util.HashMap&lt;java.lang.String,java.lang.String&gt;&nbsp;scriptSettings,
+                          java.util.HashMap&lt;java.lang.String,java.util.ArrayList&lt;com.electronwill.nightconfig.core.CommentedConfig&gt;&gt;&nbsp;addonsConfigs)</pre>
 <div class="block">Construct a new configuration model with custom values.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -483,8 +489,6 @@ extends java.lang.Object</pre>
 <dd><code>copyDirs</code> - List of directories and/or files to include in the server
                                   pack.</dd>
 <dd><code>modpackDir</code> - The path to the modpack.</dd>
-<dd><code>javaPath</code> - The path to the java installation used for modloader server
-                                  installation.</dd>
 <dd><code>minecraftVersion</code> - The Minecraft version the modpack uses.</dd>
 <dd><code>modLoader</code> - The modloader the modpack uses. Either
                                   <code>Forge</code>,
@@ -500,6 +504,8 @@ extends java.lang.Object</pre>
 <dd><code>includeZipCreation</code> - Whether to create a ZIP-archive of the server pack.</dd>
 <dd><code>scriptSettings</code> - Map containing key-value pairs to be used in start script
                                   creation.</dd>
+<dd><code>addonsConfigs</code> - Configuration for any and all addons used by this
+                                  configuration.</dd>
 </dl>
 </li>
 </ul>
@@ -520,7 +526,8 @@ extends java.lang.Object</pre>
 <dd><code>configFile</code> - Configuration file to load.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code>java.io.FileNotFoundException</code> - if the specified file can not be found.</dd>
-<dd><code>com.electronwill.nightconfig.core.file.NoFormatFoundException</code></dd>
+<dd><code>com.electronwill.nightconfig.core.file.NoFormatFoundException</code> - if the configuration format could not be determined by
+                                Night-Config.</dd>
 </dl>
 </li>
 </ul>
@@ -532,6 +539,57 @@ extends java.lang.Object</pre>
 <!--   -->
 </a>
 <h3>Method Detail</h3>
+<a name="save-java.io.File-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>save</h4>
+<pre>public&nbsp;<a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;save(java.io.File&nbsp;destination)</pre>
+<div class="block">Save this configuration.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>destination</code> - The file to store the configuration in.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>The configuration for further operations.</dd>
+</dl>
+</li>
+</ul>
+<a name="getAddonConfigs-java.lang.String-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getAddonConfigs</h4>
+<pre>public&nbsp;java.util.Optional&lt;java.util.ArrayList&lt;com.electronwill.nightconfig.core.CommentedConfig&gt;&gt;&nbsp;getAddonConfigs(java.lang.String&nbsp;addonId)</pre>
+<div class="block">Get the list of configurations for a specific addon. If no configurations are available, a list
+ for the specified ID os added to the addons configuration so you may add, change or delete to
+ your hearts content.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>addonId</code> - The ID of the addon.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>A list of configuration for the specified addon.</dd>
+</dl>
+</li>
+</ul>
+<a name="getOrCreateAddonConfigList-java.lang.String-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getOrCreateAddonConfigList</h4>
+<pre>public&nbsp;java.util.ArrayList&lt;com.electronwill.nightconfig.core.CommentedConfig&gt;&nbsp;getOrCreateAddonConfigList(java.lang.String&nbsp;addonId)</pre>
+<div class="block">Get the configurations for the specified addon ID. If no list of configurations is present for
+ the requested ID, one is created, so it can then be adjusted as you wish.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>addonId</code> - The ID identifying the addon for which to get the list of configurations.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>A list of configurations for the specified addon ID.</dd>
+</dl>
+</li>
+</ul>
 <a name="getServerPackSuffix--">
 <!--   -->
 </a>
@@ -641,34 +699,6 @@ extends java.lang.Object</pre>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>newModpackDir</code> - The new modpack directory path to store.</dd>
-</dl>
-</li>
-</ul>
-<a name="getJavaPath--">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>getJavaPath</h4>
-<pre>public&nbsp;java.lang.String&nbsp;getJavaPath()</pre>
-<div class="block">Getter for the path to the Java executable/binary.</div>
-<dl>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>String. Returns the path to the Java executable/binary.</dd>
-</dl>
-</li>
-</ul>
-<a name="setJavaPath-java.lang.String-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>setJavaPath</h4>
-<pre>public&nbsp;void&nbsp;setJavaPath(java.lang.String&nbsp;newJavaPath)</pre>
-<div class="block">Setter for the path to the Java executable/binary. Replaces any occurrences of \ with /.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>newJavaPath</code> - The new Java path to store.</dd>
 </dl>
 </li>
 </ul>

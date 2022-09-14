@@ -17,8 +17,8 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10,"i17":10,"i18":10,"i19":10,"i20":10,"i21":10,"i22":10};
-var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":42,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10,"i17":10,"i18":42,"i19":10,"i20":10,"i21":10,"i22":42};
+var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"],32:["t6","Deprecated Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
 var tableTab = "tableTab";
@@ -130,11 +130,12 @@ extends java.lang.Object</pre>
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#ConfigurationHandler-de.griefed.serverpackcreator.i18n.I18n-de.griefed.serverpackcreator.versionmeta.VersionMeta-de.griefed.serverpackcreator.ApplicationProperties-de.griefed.serverpackcreator.utilities.common.Utilities-de.griefed.serverpackcreator.utilities.ConfigUtilities-">ConfigurationHandler</a></span>(<a href="../../../de/griefed/serverpackcreator/i18n/I18n.html" title="class in de.griefed.serverpackcreator.i18n">I18n</a>&nbsp;injectedI18n,
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#ConfigurationHandler-de.griefed.serverpackcreator.i18n.I18n-de.griefed.serverpackcreator.versionmeta.VersionMeta-de.griefed.serverpackcreator.ApplicationProperties-de.griefed.serverpackcreator.utilities.common.Utilities-de.griefed.serverpackcreator.utilities.ConfigUtilities-de.griefed.serverpackcreator.ApplicationAddons-">ConfigurationHandler</a></span>(<a href="../../../de/griefed/serverpackcreator/i18n/I18n.html" title="class in de.griefed.serverpackcreator.i18n">I18n</a>&nbsp;injectedI18n,
                     <a href="../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta">VersionMeta</a>&nbsp;injectedVersionMeta,
                     <a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;injectedApplicationProperties,
                     <a href="../../../de/griefed/serverpackcreator/utilities/common/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.common">Utilities</a>&nbsp;injectedUtilities,
-                    <a href="../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ConfigUtilities</a>&nbsp;injectedConfigUtilities)</code>
+                    <a href="../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ConfigUtilities</a>&nbsp;injectedConfigUtilities,
+                    <a href="../../../de/griefed/serverpackcreator/ApplicationAddons.html" title="class in de.griefed.serverpackcreator">ApplicationAddons</a>&nbsp;injectedApplicationAddons)</code>
 <div class="block">Construct a new ConfigurationHandler giving you access to various config check methods.</div>
 </td>
 </tr>
@@ -148,7 +149,7 @@ extends java.lang.Object</pre>
 </a>
 <h3>Method Summary</h3>
 <table class="memberSummary" border="0" cellpadding="3" cellspacing="0" summary="Method Summary table, listing methods, and an explanation">
-<caption><span id="t0" class="activeTableTab"><span>All Methods</span><span class="tabEnd">&nbsp;</span></span><span id="t2" class="tableTab"><span><a href="javascript:show(2);">Instance Methods</a></span><span class="tabEnd">&nbsp;</span></span><span id="t4" class="tableTab"><span><a href="javascript:show(8);">Concrete Methods</a></span><span class="tabEnd">&nbsp;</span></span></caption>
+<caption><span id="t0" class="activeTableTab"><span>All Methods</span><span class="tabEnd">&nbsp;</span></span><span id="t2" class="tableTab"><span><a href="javascript:show(2);">Instance Methods</a></span><span class="tabEnd">&nbsp;</span></span><span id="t4" class="tableTab"><span><a href="javascript:show(8);">Concrete Methods</a></span><span class="tabEnd">&nbsp;</span></span><span id="t6" class="tableTab"><span><a href="javascript:show(32);">Deprecated Methods</a></span><span class="tabEnd">&nbsp;</span></span></caption>
 <tr>
 <th class="colFirst" scope="col">Modifier and Type</th>
 <th class="colLast" scope="col">Method and Description</th>
@@ -228,7 +229,11 @@ extends java.lang.Object</pre>
 <tr id="i9" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#checkJavaPath-java.lang.String-">checkJavaPath</a></span>(java.lang.String&nbsp;pathToJava)</code>
-<div class="block">Check whether the given path is a valid Java specification.</div>
+<div class="block"><span class="deprecatedLabel">Deprecated.</span>&nbsp;
+<div class="block"><span class="deprecationComment">Will be removed in Milestone 4. Java path settings have moved to the global
+ ApplicationProperties, because the Java path setting is used for modloader installation by
+ ServerPackCreator only.</span></div>
+</div>
 </td>
 </tr>
 <tr id="i10" class="altColor">
@@ -315,7 +320,11 @@ extends java.lang.Object</pre>
 <tr id="i18" class="altColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#getJavaPath-java.lang.String-">getJavaPath</a></span>(java.lang.String&nbsp;pathToJava)</code>
-<div class="block">Check the given path to a Java installation for validity and return it, if it is valid.</div>
+<div class="block"><span class="deprecatedLabel">Deprecated.</span>&nbsp;
+<div class="block"><span class="deprecationComment">Will be removed in Milestone 4. Java path settings have moved to the global
+ ApplicationProperties, because the Java path setting is used for modloader installation by
+ ServerPackCreator only.</span></div>
+</div>
 </td>
 </tr>
 <tr id="i19" class="rowColor">
@@ -346,7 +355,11 @@ extends java.lang.Object</pre>
 <tr id="i22" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#testJava-java.lang.String-">testJava</a></span>(java.lang.String&nbsp;pathToJava)</code>
-<div class="block">Test for a valid Java specification by trying to run <code>java -version</code>.</div>
+<div class="block"><span class="deprecatedLabel">Deprecated.</span>&nbsp;
+<div class="block"><span class="deprecationComment">Will be removed in Milestone 4. Java path settings have moved to the global
+ ApplicationProperties, because the Java path setting is used for modloader installation by
+ ServerPackCreator only.</span></div>
+</div>
 </td>
 </tr>
 </table>
@@ -371,7 +384,7 @@ extends java.lang.Object</pre>
 <!--   -->
 </a>
 <h3>Constructor Detail</h3>
-<a name="ConfigurationHandler-de.griefed.serverpackcreator.i18n.I18n-de.griefed.serverpackcreator.versionmeta.VersionMeta-de.griefed.serverpackcreator.ApplicationProperties-de.griefed.serverpackcreator.utilities.common.Utilities-de.griefed.serverpackcreator.utilities.ConfigUtilities-">
+<a name="ConfigurationHandler-de.griefed.serverpackcreator.i18n.I18n-de.griefed.serverpackcreator.versionmeta.VersionMeta-de.griefed.serverpackcreator.ApplicationProperties-de.griefed.serverpackcreator.utilities.common.Utilities-de.griefed.serverpackcreator.utilities.ConfigUtilities-de.griefed.serverpackcreator.ApplicationAddons-">
 <!--   -->
 </a>
 <ul class="blockListLast">
@@ -382,7 +395,8 @@ public&nbsp;ConfigurationHandler(<a href="../../../de/griefed/serverpackcreator/
                                        <a href="../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta">VersionMeta</a>&nbsp;injectedVersionMeta,
                                        <a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;injectedApplicationProperties,
                                        <a href="../../../de/griefed/serverpackcreator/utilities/common/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.common">Utilities</a>&nbsp;injectedUtilities,
-                                       <a href="../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ConfigUtilities</a>&nbsp;injectedConfigUtilities)
+                                       <a href="../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ConfigUtilities</a>&nbsp;injectedConfigUtilities,
+                                       <a href="../../../de/griefed/serverpackcreator/ApplicationAddons.html" title="class in de.griefed.serverpackcreator">ApplicationAddons</a>&nbsp;injectedApplicationAddons)
                                 throws java.io.IOException</pre>
 <div class="block">Construct a new ConfigurationHandler giving you access to various config check methods.</div>
 <dl>
@@ -395,6 +409,7 @@ public&nbsp;ConfigurationHandler(<a href="../../../de/griefed/serverpackcreator/
                                       version-related.</dd>
 <dd><code>injectedUtilities</code> - Instance of <a href="../../../de/griefed/serverpackcreator/utilities/common/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.common"><code>Utilities</code></a>.</dd>
 <dd><code>injectedConfigUtilities</code> - Instance of <a href="../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities"><code>ConfigUtilities</code></a>.</dd>
+<dd><code>injectedApplicationAddons</code> - Instance of <a href="../../../de/griefed/serverpackcreator/ApplicationAddons.html" title="class in de.griefed.serverpackcreator"><code>ApplicationAddons</code></a>.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code>java.io.IOException</code> - if the <a href="../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta"><code>VersionMeta</code></a> could not be instantiated.</dd>
 </dl>
@@ -851,7 +866,11 @@ public&nbsp;ConfigurationHandler(<a href="../../../de/griefed/serverpackcreator/
 <ul class="blockList">
 <li class="blockList">
 <h4>checkJavaPath</h4>
-<pre>public&nbsp;boolean&nbsp;checkJavaPath(java.lang.String&nbsp;pathToJava)</pre>
+<pre>@Deprecated
+public&nbsp;boolean&nbsp;checkJavaPath(java.lang.String&nbsp;pathToJava)</pre>
+<div class="block"><span class="deprecatedLabel">Deprecated.</span>&nbsp;<span class="deprecationComment">Will be removed in Milestone 4. Java path settings have moved to the global
+ ApplicationProperties, because the Java path setting is used for modloader installation by
+ ServerPackCreator only.</span></div>
 <div class="block">Check whether the given path is a valid Java specification.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -867,7 +886,11 @@ public&nbsp;ConfigurationHandler(<a href="../../../de/griefed/serverpackcreator/
 <ul class="blockList">
 <li class="blockList">
 <h4>testJava</h4>
-<pre>public&nbsp;boolean&nbsp;testJava(java.lang.String&nbsp;pathToJava)</pre>
+<pre>@Deprecated
+public&nbsp;boolean&nbsp;testJava(java.lang.String&nbsp;pathToJava)</pre>
+<div class="block"><span class="deprecatedLabel">Deprecated.</span>&nbsp;<span class="deprecationComment">Will be removed in Milestone 4. Java path settings have moved to the global
+ ApplicationProperties, because the Java path setting is used for modloader installation by
+ ServerPackCreator only.</span></div>
 <div class="block">Test for a valid Java specification by trying to run <code>java -version</code>. If the command
  goes through without errors, it is considered a correct specification.</div>
 <dl>
@@ -885,7 +908,11 @@ public&nbsp;ConfigurationHandler(<a href="../../../de/griefed/serverpackcreator/
 <ul class="blockList">
 <li class="blockList">
 <h4>getJavaPath</h4>
-<pre>public&nbsp;java.lang.String&nbsp;getJavaPath(java.lang.String&nbsp;pathToJava)</pre>
+<pre>@Deprecated
+public&nbsp;java.lang.String&nbsp;getJavaPath(java.lang.String&nbsp;pathToJava)</pre>
+<div class="block"><span class="deprecatedLabel">Deprecated.</span>&nbsp;<span class="deprecationComment">Will be removed in Milestone 4. Java path settings have moved to the global
+ ApplicationProperties, because the Java path setting is used for modloader installation by
+ ServerPackCreator only.</span></div>
 <div class="block">Check the given path to a Java installation for validity and return it, if it is valid. If the
  passed path is a UNIX symlink or Windows lnk, it is resolved, then returned. If the passed path
  is considered invalid, the system default is acquired and returned.</div>

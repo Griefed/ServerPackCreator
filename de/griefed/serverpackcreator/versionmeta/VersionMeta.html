@@ -134,7 +134,7 @@ extends <a href="../../../../de/griefed/serverpackcreator/versionmeta/Manifests.
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html#VersionMeta-java.io.File-java.io.File-java.io.File-java.io.File-java.io.File-java.io.File-java.io.File-java.io.File-java.io.File-java.io.File-com.fasterxml.jackson.databind.ObjectMapper-">VersionMeta</a></span>(java.io.File&nbsp;minecraftManifest,
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html#VersionMeta-java.io.File-java.io.File-java.io.File-java.io.File-java.io.File-java.io.File-java.io.File-java.io.File-java.io.File-java.io.File-com.fasterxml.jackson.databind.ObjectMapper-de.griefed.serverpackcreator.utilities.common.Utilities-de.griefed.serverpackcreator.ApplicationProperties-">VersionMeta</a></span>(java.io.File&nbsp;minecraftManifest,
            java.io.File&nbsp;forgeManifest,
            java.io.File&nbsp;fabricManifest,
            java.io.File&nbsp;fabricInstallerManifest,
@@ -144,7 +144,9 @@ extends <a href="../../../../de/griefed/serverpackcreator/versionmeta/Manifests.
            java.io.File&nbsp;legacyFabricGameManifest,
            java.io.File&nbsp;legacyFabricLoaderManifest,
            java.io.File&nbsp;legacyFabricInstallerManifest,
-           com.fasterxml.jackson.databind.ObjectMapper&nbsp;injectedObjectMapper)</code>
+           com.fasterxml.jackson.databind.ObjectMapper&nbsp;injectedObjectMapper,
+           <a href="../../../../de/griefed/serverpackcreator/utilities/common/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.common">Utilities</a>&nbsp;injectedUtilities,
+           <a href="../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;injectedApplicationProperties)</code>
 <div class="block">Constructor.</div>
 </td>
 </tr>
@@ -228,7 +230,7 @@ extends <a href="../../../../de/griefed/serverpackcreator/versionmeta/Manifests.
 <!--   -->
 </a>
 <h3>Constructor Detail</h3>
-<a name="VersionMeta-java.io.File-java.io.File-java.io.File-java.io.File-java.io.File-java.io.File-java.io.File-java.io.File-java.io.File-java.io.File-com.fasterxml.jackson.databind.ObjectMapper-">
+<a name="VersionMeta-java.io.File-java.io.File-java.io.File-java.io.File-java.io.File-java.io.File-java.io.File-java.io.File-java.io.File-java.io.File-com.fasterxml.jackson.databind.ObjectMapper-de.griefed.serverpackcreator.utilities.common.Utilities-de.griefed.serverpackcreator.ApplicationProperties-">
 <!--   -->
 </a>
 <ul class="blockListLast">
@@ -245,7 +247,9 @@ public&nbsp;VersionMeta(java.io.File&nbsp;minecraftManifest,
                               java.io.File&nbsp;legacyFabricGameManifest,
                               java.io.File&nbsp;legacyFabricLoaderManifest,
                               java.io.File&nbsp;legacyFabricInstallerManifest,
-                              com.fasterxml.jackson.databind.ObjectMapper&nbsp;injectedObjectMapper)
+                              com.fasterxml.jackson.databind.ObjectMapper&nbsp;injectedObjectMapper,
+                              <a href="../../../../de/griefed/serverpackcreator/utilities/common/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.common">Utilities</a>&nbsp;injectedUtilities,
+                              <a href="../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;injectedApplicationProperties)
                        throws java.io.IOException,
                               javax.xml.parsers.ParserConfigurationException,
                               org.xml.sax.SAXException</pre>
@@ -263,6 +267,8 @@ public&nbsp;VersionMeta(java.io.File&nbsp;minecraftManifest,
 <dd><code>legacyFabricGameManifest</code> - Fabric Legacy Game manifest file.</dd>
 <dd><code>legacyFabricLoaderManifest</code> - Fabric Legacy Loader manifest file.</dd>
 <dd><code>legacyFabricInstallerManifest</code> - Fabric Legacy Installer manifest file.</dd>
+<dd><code>injectedUtilities</code> - Instance of commonly used utilities.</dd>
+<dd><code>injectedApplicationProperties</code> - ServerPackCreator settings.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code>javax.xml.parsers.ParserConfigurationException</code> - indicates a serious configuration error.</dd>
 <dd><code>java.io.IOException</code> - if any IO errors occur.</dd>
