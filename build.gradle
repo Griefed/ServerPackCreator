@@ -206,6 +206,10 @@ tasks.register('copyDist', Copy) {
     from layout.projectDirectory.dir("manifests")
     into layout.projectDirectory.dir("backend/main/resources/de/griefed/resources/manifests")
   }
+  copy {
+    from layout.projectDirectory.dir("licenses")
+    into layout.projectDirectory.dir("backend/main/resources/licenses")
+  }
 }
 
 // Make sure everything is included in our JavaDoc.

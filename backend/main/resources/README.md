@@ -147,12 +147,14 @@ The scripts run on both Windows, and Linux, and probably also Mac.
 
 I’ve placed numbers on the screenshot, and here’s what those sections do:
 
-1. Click this folder to browse to the place where the client pack lives. In the screenshot, the desired modpack resides on a Windows-machine, with paths you should recognize from the Overwolf CurseForge app.
+1. Click the folder-button to browse to select the folder where the client pack/modpack lives.
 2. **Optional!** Specify a suffix for your server pack. It should honestly match the client pack version you’re distributing.
 3. Click this folder to navigate to the mods folder of your client pack. Here, you will CTRL select only those mods that run on a client exclusively. If the mod runs on a server, do not select it. Do not select everything, if you do that you’re failing right out the gate. Check the mod’s page to know for sure if it’s client only. If you are completely unsure which mod in your modpack should be selected, skip this step and keep the default list you see in the screenshot.
 4. After clicking this folder, you will choose those folders that must be included in your server pack for it to function properly. These should honestly at minimum be the **`mods`** and **`config`** directories. Without these, your server pack would not be compatible with your modpack. 
-5. **Optional!** Click the folder button to browse to an image file which should become the server icon of your server pack.
-6. **Optional!** Click the folder button to browse to a server.properties-file you want your players to use with your server pack. With this, you can provide default settings like difficulty, or the world-type.
+5. **Optional!** Click the folder-button to browse to an image file which should become the server icon of your server pack.
+    1. A preview of the server-icon is displayed on the right
+    2. If the server-icon setting is empty, the default icon will be displayed
+6. **Optional!** Click the folder-button to browse to a server.properties-file you want your players to use with your server pack. With this, you can provide default settings like difficulty, or the world-type.
 7. Select the Minecraft version of your modpack.
 8. Select the mod loader you are using.
 9. Choose the exact version of the modloader you are using.
@@ -165,9 +167,50 @@ And finally hit the play button ("Generate") to build the server pack. Once it i
 
 For more, go follow the rest of the relevant articles at [Kreezcraft-How to make a Forge server from a Forge pack](https://kreezcraft.com/modpack-tutorials/how-to-make-a-forge-server-from-a-forge-pack/) and [Kreezcraft-How to make a Fabric server from a Fabric pack](https://kreezcraft.com/modpack-tutorials/how-to-make-a-fabric-server-from-a-fabric-pack/).
 
-## 3.1 Help
+## 3.1 Bonus
 
-A [Help section](https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-Help) is available at my wiki. It goes into detail on the many configurable aspects of ServerPackCreator. Give it a read before asking something, it *does* contain lots of useful information.
+### 3.1.1 Automatic Minecraft version, modloader and modloader version detection
+
+Upon selecting the modpack directory, ServerPackCreator will scan said directory and try to determine the required Minecraft version, modloader and version of the
+modloader. ServerPackCreator will inform you about the versions and modloader it discovered. In case you want to re-scan the modpack-directory, hit the button
+with the magnifying glass-icon!
+
+### 3.1.2 Using default settings, reverting to configuration value
+
+Sometimes you want to go back a couple of steps.
+The list of clientside-only mods and directory and files to include in your server pack each provide you with two convenience-buttons.
+
+The top one, with the arrow pointing backwards, will revert the adjacent field back to the value of the last loaded configuration.
+
+The bottom one, with the cog and two red arrows, will reset the adjacent field back to the globally set, ServerPackCreator wide, configuration, regardless of what
+your configuration specified. Defaults! Factory setting! Ya know. Back to the..future or something.
+
+### 3.1.3 Open your server.properties
+
+The left button next to the custom properties field opens the server.properties file in your computers default text-editor.
+If no custom properties-file has been configured, the default one will be opened. If you've configured a custom properties-file, the custom one will be opened.
+
+**Bear in mind:** The default one is, just as the factory settings for clientside-mods and files/directories to include, used globally by ServerPackCreator.
+Edit with caution!
+
+### 3.1.2 Minecraft 1.12.2 Java 8, Minecraft 1.18.2 Java 17 and all that fuzz
+
+Do you have Minecraft modpacks which require different Java versions? Say, a Minecraft 1.12.2 pack, requiring Java 8, and a Minecraft 1.18.2 pack, requiring Java 17?
+Check out how ServerPackCreator can automatically update the Java path in the created start scripts to your required Java versions, depending on which Minecraft version and
+therefor Java version is desired! [Read Me!](https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-Help#automatically-updating-script-java-placeholder-314x-and-up)
+
+When configured correctly, everytime you change the Minecraft version the `SPC_JAVA_SPC`-placeholder value in the script settings table will be adjusted according to the Java
+version required by the selected Minecraft versions server.
+Very convenient if you switch back and forth between modpacks which need different Java versions. This change only affects the scripts for local testing and debugging.
+Scripts in ZIP-archives are **not** affected. They will always point to `java`, unless you've [provided your own start script templates](https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-Help#changing-the-default-templates). That's a story for another day though.
+
+## 3.2 Further help
+
+More help is available at the official [ServerPackCreator Help Wiki Section](https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-Help).
+
+It goes into detail on the many configurable aspects of ServerPackCreator.
+
+Give it a read before asking something, it *does* contain lots of useful information. 🙂
 
 # 4 Java
 
@@ -329,7 +372,7 @@ This project would not be possible without these awesome groups, creators and de
 
 **License report generated using [jk1/Gradle-License-Report](https://github.com/jk1/Gradle-License-Report)**
 
-Dependency License Report 2022-09-10
+Dependency License Report 2022-09-14
 
 ## Apache License, Version 2.0
 
@@ -468,5 +511,3 @@ Dependency License Report 2022-09-10
 **23** **Group:** `com.github.gwenn` **Name:** `sqlite-dialect` **Version:** `0.1.2`
 > - **POM Project URL**: [https://github.com/gwenn/sqlite-dialect](https://github.com/gwenn/sqlite-dialect)
 > - **POM License**: PUBLIC DOMAIN - [http://unlicense.org/](http://unlicense.org/)
-
-
