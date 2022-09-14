@@ -372,7 +372,7 @@ This project would not be possible without these awesome groups, creators and de
 
 **License report generated using [jk1/Gradle-License-Report](https://github.com/jk1/Gradle-License-Report)**
 
-Dependency License Report 2022-09-10
+Dependency License Report 2022-09-14
 
 ## Apache License, Version 2.0
 
@@ -511,5 +511,3 @@ Dependency License Report 2022-09-10
 **23** **Group:** `com.github.gwenn` **Name:** `sqlite-dialect` **Version:** `0.1.2`
 > - **POM Project URL**: [https://github.com/gwenn/sqlite-dialect](https://github.com/gwenn/sqlite-dialect)
 > - **POM License**: PUBLIC DOMAIN - [http://unlicense.org/](http://unlicense.org/)
-
-

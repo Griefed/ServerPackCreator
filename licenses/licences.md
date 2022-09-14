@@ -1,7 +1,7 @@
 
 #Licenses
 ##Dependency License Report
-_2022-09-10 22:55:25 MESZ_
+_2022-09-14 13:41:17 MESZ_
 ## Apache License, Version 2.0
 
 **1** **Group:** `com.github.vatbub` **Name:** `mslinks` **Version:** `1.0.5` 
