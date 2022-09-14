@@ -21,7 +21,7 @@ For questions, you can always join my [Discord server](https://discord.griefed.d
 - Mirror: https://gitlab.com/Griefed/ServerPackCreator (Source code,releases,downloads)
 - Mirror: https://github.com/Griefed/ServerPackCreator (Source code,releases,downloads)
 - Mirror: https://gitea.com/Griefed/ServerPackCreator (Source code)
-
+ 
 ---
 
 [![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/Griefed/ServerPackCreator?include_prereleases&label=Latest%20Release&logo=Github&style=for-the-badge&color=c0ffee&labelColor=325358)](https://github.com/Griefed/ServerPackCreator/releases/latest)
@@ -48,7 +48,7 @@ into the world of programming.
 
 And here we are.
 
-**Required:** Please be aware that ServerPackCreator requires a working internet connection in order to work.
+**Required:** Please be aware that ServerPackCreator requires a working internet connection in order to work. The first run will create all necessary files and folders in the directory in which you are running ServerPackCreator. Move it to a dedicated directory before using it!
 
 **Note:** For more detailed information about all the different configuration options and possibilities of ServerPackCreator, take a look at the [Wiki](https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-Help)
 
@@ -56,26 +56,13 @@ And here we are.
 
 ## Commandline Interface (CLI)
 
-| Windows                                                                      | Linux                                                                        | Mac                                                                      |
-|------------------------------------------------------------------------------|------------------------------------------------------------------------------|--------------------------------------------------------------------------|
-| ![CLI Win](https://i.griefed.de/images/2021/11/20/cli_windows.png)           | ![CLI Linux](https://i.griefed.de/images/2021/11/20/cli_linux.png)           | ![CLI Mac](https://i.griefed.de/images/2021/11/20/cli_mac.png)           |
-| ![CLI Win Menu](https://i.griefed.de/images/2022/04/24/cli_windows_menu.png) | ![CLI Linux Menu](https://i.griefed.de/images/2022/04/24/cli_linux_menu.png) | ![CLI Mac Menu](https://i.griefed.de/images/2022/04/24/cli_mac_menu.png) |
+![cli](img/cli.png)
 
 ## Graphical User Interface (GUI)
 
-| Windows                                                                    | Linux                                                                    | Mac                                                                    |
-|----------------------------------------------------------------------------|--------------------------------------------------------------------------|------------------------------------------------------------------------|
-| ![GUI Light](https://i.griefed.de/images/2021/11/20/gui_windows_light.png) | ![GUI Light](https://i.griefed.de/images/2021/11/20/gui_linux_light.png) | ![GUI Light](https://i.griefed.de/images/2021/11/20/gui_mac_light.png) |
-| ![GUI Dark](https://i.griefed.de/images/2021/11/20/gui_windows_dark.png)   | ![GUI Dark](https://i.griefed.de/images/2021/11/20/gui_linux_dark.png)   | ![GUI Dark](https://i.griefed.de/images/2021/11/20/gui_mac_dark.png)   |
+![gui dark](img/gui_dark.png)
 
-## Webservice
-
-| Light mode                                                                                 | Dark mode                                                                                |
-|--------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------|
-| ![Light Configuration](https://i.griefed.de/images/2022/02/10/web_configuration_light.png) | ![Dark Configuration](https://i.griefed.de/images/2022/02/10/web_configuration_dark.png) |
-| ![Light Downloads](https://i.griefed.de/images/2022/02/10/web_downloads_light.png)         | ![Dark Downloads](https://i.griefed.de/images/2022/02/10/web_downloads_dark.png)         |
-
-# Advantages/Disadvantages of CLI, GUI and Webservice:
+# Advantages/Disadvantages of CLI, GUI:
 
 Each way of using ServerPackCreator has its advantages and disadvantages. Depending on your environment, it may be better to use one way over the other. This section highlights some of the
 advantages and disadvantages of each version to help you decide which way you are going to use.
@@ -83,12 +70,13 @@ Note: All three ways are supported by the **.jar**-file. Which one is started de
 
 ## CLI:
 
-| Advantages                                                                                                                                  | Disadvantages                                                                                                         |
-|:--------------------------------------------------------------------------------------------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------|
-| No need for a graphical environment. Can be used on a server to generate a server pack for immediate use.                                   | Gathering of information for a configuration file is tedious.                                                         |
-| Step-by-Step generation of a configuration-file with the use of the `-cgen` argument. Generated config will be used immediately afterwards. | No convenience features file folder-browsing or jumping to the generated server pack after generation.                |
-|                                                                                                                                             | Debugging in case of a broken/erroring configuration file can be time consuming. Careful reading of logs is required. |
-|                                                                                                                                             | Manual editing of the configuration-file in case you want to change it.                                               |
+| Advantages                                                                                                                                                                                              | Disadvantages                                                                                                         |
+|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------|
+| No need for a graphical environment. Can be used on a server to generate a server pack for immediate use.                                                                                               | Gathering of information for a configuration file is tedious.                                                         |
+| Step-by-Step generation of a configuration-file with the use of the `-cgen` argument. Generated config will be used immediately afterwards.                                                             | No convenience features file folder-browsing or jumping to the generated server pack after generation.                |
+| Load and edit an existing configuration. Editing is limited to base values of a given configuration. Not editable via CLI are script settings as well as any potentially installed addon configuration. | Debugging in case of a broken/erroring configuration file can be time consuming. Careful reading of logs is required. |
+|                                                                                                                                                                                                         | Manual editing of the configuration-file in case you want to change it.                                               |
+|                                                                                                                                                                                                         | Unable to edit start script placeholders and variables                                                                |
 
 ## GUI:
 
@@ -99,34 +87,14 @@ Note: All three ways are supported by the **.jar**-file. Which one is started de
 | Browsing the generated server pack after generation has finished.                                                      |                                   |
 | Loading and saving different configurations for quick generation of multiple server packs in short succession.         |                                   |
 | Edit the configuration in the GUI. No manual file-editing required.                                                    |                                   |
+| Edit start script placeholders and values                                                                              |                                   |
 
 ## Webservice:
 
-| Advantages                                                                                                                                           | Disadvantages                                             |
-|:-----------------------------------------------------------------------------------------------------------------------------------------------------|:----------------------------------------------------------|
-| No installation/setup required if a public instance is available somewhere.                                                                          | Requires someone to setup a publicly accessible instance. |
-| Voting system to let users indicate whether a generated server pack works.                                                                           | Requires somewhat modern browser versions.                |
-| Open REST API. Interaction with the webservice does not *require* a browser. You can request a server pack generation and/or download from the CLI.  | Not all browers may be supported.                         |
+ServerPackCreator also has a webservice which you can run with the `-web`-argument. However, this webservice is still barebones and prone to massive improvements in a later milestone, so usage of said webservice-mode is not advised at this moment. 
 
 ---
 
-# Awesomesauce!
-
-**None of this would have been possible without the excellent IDEs by JetBrains. They have kindly provided this open source project with an All Products Pack license.**
-**Additionally, ej-Technologies has provided an open-source license for JProfiler for ServerPackCreator, which allows me to resolve performance bottlenecks, pin down memory leaks and understand threading issues.
-Huge shoutout and thank you!**
-
-| [JetBrains](https://www.jetbrains.com/)                                                             | [IntelliJ IDEA](https://www.jetbrains.com/idea/)                                                                      | [WebStorm](https://www.jetbrains.com/webstorm/)                                                                 | [JProfiler](https://www.ej-technologies.com/products/jprofiler/overview.html)                                                                                                                                                                                                                                                              |
-|-----------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [![JetBrains](https://i.griefed.de/images/2021/05/11/jetbrains.th.png)](https://www.jetbrains.com/) | [![IntelliJ IDEA](https://i.griefed.de/images/2021/05/11/icon-intellij-idea.th.png)](https://www.jetbrains.com/idea/) | [![WebStorm](https://i.griefed.de/images/2021/05/11/icon-webstorm.th.png)](https://www.jetbrains.com/webstorm/) | [![ej-Technologies](https://www.ej-technologies.com/assets/logo-18cdc16334888781eb17378d82e5b1bb.png)](https://www.ej-technologies.com/products/jprofiler/overview.html) <br> [![JProfiler](https://www.ej-technologies.com/images/product_banners/jprofiler_large.png)](https://www.ej-technologies.com/products/jprofiler/overview.html) |
-
----
-
-# ✨ Thanks to all of my Supporters and Sponsors ✨
-
-<!-- sponsors --><a href="https://github.com/kreezxil"><img src="https://github.com/kreezxil.png" width="60px" alt="" /></a><!-- sponsors -->
-
----
 # 1. Known issues and help
 
 - A list of known issues can be found in [Known Issues](https://github.com/Griefed/ServerPackCreator/issues/55).
@@ -135,50 +103,118 @@ Huge shoutout and thank you!**
 
 - A wiki article containing useful hints, tips & tricks about, for and with ServerPackCreator can be found on [my Wiki's ServerPackCreator Help page](https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-Help)
 
-# 2. Features
+# 2. Small feature overview
 
-1. **Generate a config step-by-step by running with argument**`-cgen`
-2. **Install a Forge, Fabric or Quilt modloader server in your server pack**
-3. **Configurable list of clientside-only mods to not include your server pack**
-   1. ServerPackCreator will automatically try and detect as many clientside-only mods as possible and exclude them.
-4. **Configurable list of directories from your modpack to include in your server pack**
-   1. Copy saves. Specify `saves/world` and it will result in the world being copied to `your_server_pack/world`.
-   2. Copy specific files. Specify `source/path/to/some.file;some/folder/destination.file` and `source/path/to/some.file` will be copied to `some/folder/destination.file` inside the server pack.
-   3. Exclude files and directories. Prefixing an entry with `!` or adding it to `de.griefed.serverpackcreator.configuration.copydirs.exclude=` in `serverpackcreator.properties` will result in that file or directory not being copied to the server pack.
-   4. Lazy-Mode. Only specify `lazy_mode` and **nothing** else, and the whole modpack you specified will be copied to the server pack. Be warned though that configurations using this will receive no support from me. If the generated server pack errors, it is up to you to fix it.
-5. **Generate Forge, Fabric or Quilt start-scripts in your server pack**
-   1. Specify JVM flags / Java Args for your start scripts!
-6. **Include a server-icon.png-file in your server pack**
-   1. Replace the file in `server-files` with your own!
-7. **Include a server.properties-file in your server pack**
-   1. Replace the file in `server-files` with your own!
-8. **Create a ZIP-archive of your server pack**
-9. **GUI to fully configure and run ServerPackCreator**
-   1. Load existing config.
-   2. Browse local filesystem to select modpack directory, clientside-only mods, directories to include in server pack, Java executable/binary.
-   3. Logs from last run in separate tabs.
-   4. Set a suffix for the server pack to be generated.
-   5. And much more!
-10. **Webservice** 
-    1. Generate a server pack from zipped up modpacks.
-    2. All generated server packs available for download to everyone.
-11. **Addons!**
-    1. Users can provide addons which will be executed after the generation of a server pack. Add them to the `addons`-directory.
-    2. Example addon at [ServerPackCreatorExampleAddon](https://github.com/Griefed/ServerPackCreatorExampleAddon)
+1. **Exclude clientside-only mods**
+    - **Automatically** by letting ServerPackCreator scan the mods of your modpack for their sideness
+    - **Manually** by configuring a list mods which ServerPackCreator will filter out according to your input and the chosen filter.
+2. **Add files and directories** in your server pack.
+    - Files and directories in **your modpack**
+    - Files and directories from **your computer**
+3. **Add a server icon**
+    - Server icons are **automatically scaled** down, or up, to 64x64!
+    - Specify a custom one, or use a default provided by ServerPackCreator.
+        - Change the default to your liking if you intend on using the same icon across multiple server packs!
+4. **Add a server.properties**
+    - Ship your server pack with default settings!
+    - Specify a custom one, or use a default provided by ServerPackCreator.
+        - Change the default to your liking if you intend on using the same icon across multiple server packs!
+5. Many **modloaders** supported
+    - **Forge**
+    - **Fabric**
+    - **LegacyFabric**
+    - **Quilt**
+6. Use Minecraft **snapshots** and **pre-releases**
+    - Per default, only regular releases enabled 
+7. Let ServerPackCreator **install the modloader-server** for your server pack, for immediate testing and debugging after generation!
+8. Let ServerPackCreator **generate a ZIP-archive**, for immediate upload to places like CurseForge (**after** you've tested your server pack, of course 😉)
+9. Configure **commandline arguments** with which to **start** the **Minecraft server**
+    - Does your modpack require **a lot of RAM?** Well, tell ServerPackCreator to create the start scripts with `-Xms8G -Xmx8G` or similar values!
+    - **Aikars flags** are available, too. If you like 'em, use 'em.
+10. Create your own **start-script templates**
+    - **Add additional functionality** to your servers start scripts
+    - Use **placeholders in your templates**, to be **replaced with custom values**
+        - Example: placeholder `SPC_FLYNN_LIVES_SPC` in the templates can be replaced with a value configured on a per-server pack basis, i.e `Now that's a big door`
 
-# 3. Versions
+# 3 How To
 
-Consider major version incompatible to each other. Meaning, configs from 1.x.x are incompatible with version 2.x.x etc.
+This How-To guide was inspired by the wonderful [Kreezxil](https://github.com/kreezxil). Guide originally from [his website](https://kreezcraft.com/server-pack-creator/), with permission to add it to this README.
 
-| Version mask | Description                                                                                                                                                                                            |
-|--------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **1.x.x**    | CLI only                                                                                                                                                                                               |
-| **2.x.x**    | CLI and GUI. To continue to use it in CLI-mode, start it with the `-cli` argument. Note that `-cgen` is exclusive to CLI and not supported by the GUI. **The** ´.exe` **executable is GUI exclusive.** |
-| **3.x.x**    | CLI, GUI, Webservice. Same as with 2.x.x but with `-web`-argument added. Use `-web` to start ServerPackCreator as a webservice which will be available at `http://localhost:8080`                      |
+ServerPackCreator does what Kreezxil's articles do to create your server pack. It takes away the building part, not the debugging part. However, it gives a nice installer script which stops players from asking how to install a pack made with it.
+The scripts run on both Windows, and Linux, and probably also Mac.
 
-## 3.1 Java versions
+![howto](img/howto.png)
 
-ServerPackCreator is develop with Java 8, ServerPackCreator is guaranteed to work with that version.
+I’ve placed numbers on the screenshot, and here’s what those sections do:
+
+1. Click the folder-button to browse to select the folder where the client pack/modpack lives.
+2. **Optional!** Specify a suffix for your server pack. It should honestly match the client pack version you’re distributing.
+3. Click this folder to navigate to the mods folder of your client pack. Here, you will CTRL select only those mods that run on a client exclusively. If the mod runs on a server, do not select it. Do not select everything, if you do that you’re failing right out the gate. Check the mod’s page to know for sure if it’s client only. If you are completely unsure which mod in your modpack should be selected, skip this step and keep the default list you see in the screenshot.
+4. After clicking this folder, you will choose those folders that must be included in your server pack for it to function properly. These should honestly at minimum be the **`mods`** and **`config`** directories. Without these, your server pack would not be compatible with your modpack. 
+5. **Optional!** Click the folder-button to browse to an image file which should become the server icon of your server pack.
+    1. A preview of the server-icon is displayed on the right
+    2. If the server-icon setting is empty, the default icon will be displayed
+6. **Optional!** Click the folder-button to browse to a server.properties-file you want your players to use with your server pack. With this, you can provide default settings like difficulty, or the world-type.
+7. Select the Minecraft version of your modpack.
+8. Select the mod loader you are using.
+9. Choose the exact version of the modloader you are using.
+10. In this section are options that you can toggle. I recommend to toggle them all on. It will pre-install the modloader server so you can immediately start and test/debug, include the server-icon.png (either you specified one, or a default will be used), include the server.properties (either you specified one, or a default will be used) and finally, create a ZIP-archive of your server pack.
+11. **Optional!** JVM arguments, also called Java flags, to start your server with. Have you heard of the so-called Aikars Flags? You can use them via the `Use Aikars Flags`-button, or set your own. Useful if your server pack needs a lot of RAM and you want your server pack users to not have to work with these values themselves.
+12. **Optional!** This table lets you edit the Java path used in the start scripts. This does nothing for the scripts in the ZIP-archive, so don't worry. If your modpack and server pack need a different Java version to run, you can set the path the that Java versions binary/executable here. 
+13. **Optional!** Even more optional that #5, #6, #11 and #12, under this menu is an option to save and load a custom configuration. Useful for if you have more than one mod pack for which you make server packs. Note: Regardless of what you do, a default configuration exists. 
+
+And finally hit the play button ("Generate") to build the server pack. Once it is done, the app will ask if you want to go there. You should do that, and activate one of the start-up scripts that matches your system.
+
+For more, go follow the rest of the relevant articles at [Kreezcraft-How to make a Forge server from a Forge pack](https://kreezcraft.com/modpack-tutorials/how-to-make-a-forge-server-from-a-forge-pack/) and [Kreezcraft-How to make a Fabric server from a Fabric pack](https://kreezcraft.com/modpack-tutorials/how-to-make-a-fabric-server-from-a-fabric-pack/).
+
+## 3.1 Bonus
+
+### 3.1.1 Automatic Minecraft version, modloader and modloader version detection
+
+Upon selecting the modpack directory, ServerPackCreator will scan said directory and try to determine the required Minecraft version, modloader and version of the
+modloader. ServerPackCreator will inform you about the versions and modloader it discovered. In case you want to re-scan the modpack-directory, hit the button
+with the magnifying glass-icon!
+
+### 3.1.2 Using default settings, reverting to configuration value
+
+Sometimes you want to go back a couple of steps.
+The list of clientside-only mods and directory and files to include in your server pack each provide you with two convenience-buttons.
+
+The top one, with the arrow pointing backwards, will revert the adjacent field back to the value of the last loaded configuration.
+
+The bottom one, with the cog and two red arrows, will reset the adjacent field back to the globally set, ServerPackCreator wide, configuration, regardless of what
+your configuration specified. Defaults! Factory setting! Ya know. Back to the..future or something.
+
+### 3.1.3 Open your server.properties
+
+The left button next to the custom properties field opens the server.properties file in your computers default text-editor.
+If no custom properties-file has been configured, the default one will be opened. If you've configured a custom properties-file, the custom one will be opened.
+
+**Bear in mind:** The default one is, just as the factory settings for clientside-mods and files/directories to include, used globally by ServerPackCreator.
+Edit with caution!
+
+### 3.1.2 Minecraft 1.12.2 Java 8, Minecraft 1.18.2 Java 17 and all that fuzz
+
+Do you have Minecraft modpacks which require different Java versions? Say, a Minecraft 1.12.2 pack, requiring Java 8, and a Minecraft 1.18.2 pack, requiring Java 17?
+Check out how ServerPackCreator can automatically update the Java path in the created start scripts to your required Java versions, depending on which Minecraft version and
+therefor Java version is desired! [Read Me!](https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-Help#automatically-updating-script-java-placeholder-314x-and-up)
+
+When configured correctly, everytime you change the Minecraft version the `SPC_JAVA_SPC`-placeholder value in the script settings table will be adjusted according to the Java
+version required by the selected Minecraft versions server.
+Very convenient if you switch back and forth between modpacks which need different Java versions. This change only affects the scripts for local testing and debugging.
+Scripts in ZIP-archives are **not** affected. They will always point to `java`, unless you've [provided your own start script templates](https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-Help#changing-the-default-templates). That's a story for another day though.
+
+## 3.2 Further help
+
+More help is available at the official [ServerPackCreator Help Wiki Section](https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-Help).
+
+It goes into detail on the many configurable aspects of ServerPackCreator.
+
+Give it a read before asking something, it *does* contain lots of useful information. 🙂
+
+# 4 Java
+
+ServerPackCreator is being developed with Java 8, ServerPackCreator is guaranteed to work with that version.
 
 Users have reported the following Java versions to also work with ServerPackCreator. A list of these can be found at the [Wiki help section](https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-Help)
 
@@ -187,12 +223,13 @@ version other than version 8. Things may break at **random**, at **any** place, 
 You are welcome to try and use any other version, but do **not** report issues back to me if you do encounter problems
 when running ServerPackCreator with a more recent Java version.
 
-# 4. Addons
+# 5 Addons
 
-## 4.1 Why
+## 5.1 Why
 
 There are things which people want to do with their server packs which could most certainly be automated. Some of those
 things so special, or maybe out of place, that they would not warrant a separate feature for ServerPackCreator itself.
+In short: Some things are out of scope for me to add to ServerPackCreator.
 
 It may also be that it is such a niche feature, that I either don't have the time to code it in, or simply don't want to.
 Maybe it doesn't fit into the overall design of ServerPackCreator, too. Who knows, it could be any of those reasons or another.
@@ -202,176 +239,23 @@ Maybe it doesn't fit into the overall design of ServerPackCreator, too. Who know
 This allows people to write their own addons to expand the functionality of ServerPackCreator with their own features as
 they see fit or want.
 
-For documentation about Pf4j, visit the [Pf4j documentation](https://pf4j.org/)
+For an example of an addon, see the [ServerPackCreator Example Addon](https://github.com/Griefed/ServerPackCreatorExampleAddon)
 
-## 4.2 Adding your own
+## 5.2 Adding your own
+
+A curated list of officially acknowledged addons/plugins can be found [here](https://addons.griefed.de) (redirects to [GitHub Pages](https://griefed.github.io/ServerPackCreator-Addons-Overview/#/))
 
 How to get your own addon into this list:
 
-If you have written your own addon or plugin for ServerPackCreator and you would like to see it added here, please open an issue over at ServerPackCreatoron GitHub, using the Documentation template.
+If you have written your own addon or plugin for ServerPackCreator and you would like to see it added here, please open an issue over at ServerPackCreator on GitHub, using the Documentation template.
 
 For an addon to be accepted, you must at least provide:
 - The name of the repository, and therefore the addon.
 - The owner of the repository, and therefore the addon.
 - The branch of the repository where the main code resides in.
-- A description of the plugin or addon.
+- A description of the addon.
 
-A curated list of officially acknowledged addons/plugins can be found at [addons.griefed.de](https://addons.griefed.de) (redirects to [GitHub Pages](https://griefed.github.io/ServerPackCreator-Addons-Overview/#/))
-
-## 4.3 Examples for potential addons
-
-Some examples for potential addons can be found [in this discussion thread](https://github.com/Griefed/ServerPackCreator/discussions/201).
-
-Some excerpts:
-1. Changelog generator, by @TheButterbrotMan at [Feature request]: Changelog generator #198
-   - A changelog generator that checks the differences to the previous version and generates a changelog.
-
-2. Bundle Adoptium Java with server packs, by @kreezxil at [Feature request]: Bundle Adoptium Java #199
-   - Because modpacks need one of the either Java 8, 16, or 17, it would be nice to have the corresponding https://adoptium.net java prebundled with the server pack.
-
-3. Automatic setup of a server pack for [BlueMap](https://www.curseforge.com/minecraft/mc-mods/bluemap)
-   - Check all mods in the specified modpacks mods-directory for textures, and if any are found, add the mod to
-     BlueMap's resourcepack folder `config/bluemap/resourcepacks`, install BlueMap for the specified Minecraft and Forge/Fabric
-     version and voilà!
-
-# 5. Configuration
-
-After the first run, ServerPackCreator will generate a couple of template-files in a directory called `server_files` in the directory the ServerPackCreator resides in.
-Inside it are files you can customize, so they suit your modpack and server pack:
-2. server-icon.png
-3. server.properties
-
-If you wish to re-generate the default-files, simply delete any one of the previously mentioned files, run ServerPackCreator again, and the new template-file(s) will be generated in `server_files`
-
-Running ServerPackCreator.jar with the `-cli`-argument will guide you through the generation of a config-file, should none exist. Alternatively, run ServerPackCreator with the `-cgen` argument to create a new config file.
-Should you be using ServerPackCreator.exe, the default/template-files will be generated automatically, if they do not exist yet.
-An example for a fully configured `serverpackcreator.conf` can be viewed [here](https://github.com/Griefed/ServerPackCreator/blob/main/backend/main/resources/de/griefed/resources/examples/serverpackcreator.example).
-Detailed list of all template files:
-
-| File                   | Description                                                                                                                                                                                                         |
-|------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| serverpackcreator.conf | Configuration file for customization. See [serverpackcreator.conf](https://github.com/Griefed/ServerPackCreator/blob/main/backend/main/resources/de/griefed/resources/serverpackcreator.conf).                      |
-| server.properties      | Configuration file for the Minecraft server. See [server.properties](https://github.com/Griefed/ServerPackCreator/blob/main/backend/main/resources/de/griefed/resources/server_files/server.properties).            |
-| server-icon.png        | Icon which is displayed in the server browser in Minecraft. See [server-icon.png](https://github.com/Griefed/ServerPackCreator/blob/main/backend/main/resources/de/griefed/resources/server_files/server-icon.png). |
-
-The serverpackcreator.conf file allows you to customize a couple of different things:
-
-| Variable                  | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-|---------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| modpackDir                | The path to the directory/ZIP-archive where your modpack resides in.                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| clientMods                | List of client-side only mods which are to be deleted from the serverpack. You only need to specify the beginning of the filename up, but excluding, the version number. ServerPackCreator checks whether any of the mods which are copied from the modpack to the serverpack start with any strings in this list and, if there's a match, deletes that file from the serverpack. Check out the [example](https://gist.github.com/Griefed/090cc7c1c2b283daa4b46f6cb85e5e00) for an idea of how it's supposed to look. |
-| copyDirs                  | List for directories which are to be copied to the serverpack. If you specify a world from the `saves`-directory, ServerPackCreator will copy the the specified world to the base directory of the serverpack. In other words, `/saves/MyAwesomeWorld` becomes `/MyAwesomeWorld`.                                                                                                                                                                                                                                     |
-| includeServerInstallation | Whether to install a Forge, Fabric or Quilt server for the serverpack. Must be `true` or `false`.                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| javaPath                  | Path to the Java Installation. On Linux systems use `which java` to find the location of your Java install. On Windows use `where java` and exclude the `.exe`-part.                                                                                                                                                                                                                                                                                                                                                  |
-| minecraftVersion          | The version of Minecraft for which to install the modloader server. The same version of Minecraft your modpack uses.                                                                                                                                                                                                                                                                                                                                                                                                  |
-| modLoader                 | Which modloader to install. Must be either "Forge", "Fabric", "Quilt" or "LegacyFabric". The same modloader your modpack uses.                                                                                                                                                                                                                                                                                                                                                                                        |
-| modLoaderVersion          | Specific Modloader version to install the server in the serverpack. The same version your modpack uses.                                                                                                                                                                                                                                                                                                                                                                                                               |
-| includeServerIcon         | Whether to include server-icon.png in your serverpack. Must be `true` or `false`.                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| includeServerProperties   | Whether to include server.properties in your serverpack. Must be `true` or `false`.                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| includeZipCreation        | Whether to create a zip-file of your serverpack, saved in the directory you specified with `modpackDir`. Must be `true` or `false`.                                                                                                                                                                                                                                                                                                                                                                                   |
-| javaArgs                  | JVM flags / Java Args to add to the generated start-scripts. Set to "empty" to not use any in your start-scripts.                                                                                                                                                                                                                                                                                                                                                                                                     |
-| serverPackSuffix          | A suffix to append to the name of the server pack directory and server pack ZIP-archive. Illegal characters are / < > : " \ &#124; ? * # % & { } $ ! ' @ + ´ ` = and must not end with a SPACE<code>&#32;&#32;</code> or a DOT<code>&#32;.&#32;&#32;</code>                                                                                                                                                                                                                                                           |                                                                                                                                                                                                                                                                                                                                                                                           |
-| serverIconPath            | Path to a custom server-icon.png-file to include in the server pack.                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| serverPropertiesPath      | Path to a custom server.properties-file to include in the server pack.                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-
-After checking the configuration, run ServerPackCreator again, and it'll do it's magic.
-
-# 5.1 Properties
-
-# 5.1.1 Default `serverpackcreator.properties`
-
-```properties
-de.griefed.serverpackcreator.versioncheck.prerelease=false
-de.griefed.serverpackcreator.language=en_us
-de.griefed.serverpackcreator.configuration.fallbackmodslist=Armor Status HUD-,[1.12.2]bspkrscore-,[1.12.2]DamageIndicatorsMod-,3dskinlayers-,Absolutely-Not-A-Zoom-Mod-,AdvancedChat-,AdvancedCompas-,AdvancementPlaques-,Ambience,AmbientEnvironment-,AmbientSounds_,antighost-,anviltooltipmod-,appleskin-,armorchroma-,armorpointspp-,ArmorSoundTweak-,AromaBackup-,authme-,autobackup-,autoreconnect-,auto-reconnect-,axolotl-item-fix-,backtools-,Backups-,bannerunlimited-,Batty's Coordinates PLUS Mod,beenfo-1.19-,BetterAdvancements-,BetterAnimationsCollection-,betterbiomeblend-,BetterDarkMode-,BetterF3-,BetterFoliage-,BetterPingDisplay-,BetterPlacement-,better-recipe-book-,BetterTaskbar-,BetterThirdPerson,BetterTitleScreen-,bhmenu-,BH-Menu-,blur-,Blur-,borderless-mining-,BorderlessWindow-,catalogue-,charmonium-,chat_heads-,cherishedworlds-,ChunkAnimator-,cirback-1.0-,classicbar-,clickadv-,clienttweaks-,ClientTweaks_,combat_music-,configured-,controllable-,Controller Support-,Controlling-,CraftPresence-,CTM-,cullleaves-,cullparticles-,custom-crosshair-mod-,CustomCursorMod-,customdiscordrpc-,CustomMainMenu-,darkness-,dashloader-,defaultoptions-,DefaultOptions_,DefaultSettings-,DeleteWorldsToTrash-,desiredservers-,DetailArmorBar-,Ding-,discordrpc-,DistantHorizons-,drippyloadingscreen-,drippyloadingscreen_,DripSounds-,Durability101-,DurabilityNotifier-,dynamic-fps-,dynamiclights-,dynamic-music-,DynamicSurroundings-,DynamicSurroundingsHuds-,dynmus-,effective-,EffectsLeft-,eggtab-,eguilib-,eiramoticons-,EiraMoticons_,EnchantmentDescriptions-,enchantment-lore-,EnhancedVisuals_,entityculling-,entity-texture-features-,EquipmentCompare-,exhaustedstamina-,extremesoundmuffler-,FabricCustomCursorMod-,fabricemotes-,Fallingleaves-,fancymenu_,fancymenu_video_extension,FancySpawnEggs,FancyVideo-API-,findme-,FirstPersonMod,flickerfix-,fm_audio_extension_,FogTweaker-,ForgeCustomCursorMod-,forgemod_VoxelMap-,FPS-Monitor-,FpsReducer-,FpsReducer2-,freelook-,ftb-backups-,ftbbackups2-,FullscreenWindowed-,galacticraft-rpc-,GameMenuModOption-,gamestagesviewer-,grid-,HealthOverlay-,hiddenrecipebook_,HorseStatsMod-,infinitemusic-,InventoryEssentials_,InventoryHud_[1.17.1].forge-,inventoryprofiles,InventorySpam-,InventoryTweaks-,invtweaks-,ItemBorders-,ItemPhysicLite_,ItemStitchingFix-,itemzoom,itlt-,JBRA-Client-,jeed-,jehc-,jeiintegration_,justenoughbeacons-,JustEnoughCalculation-,justenoughdrags-,JustEnoughEffects-,just-enough-harvestcraft-,JustEnoughProfessions-,JustEnoughResources-,justzoom_,keymap-,keywizard-,konkrete_,konkrete_forge_,lazydfu-,LegendaryTooltips,LegendaryTooltips-,lightfallclient-,LightOverlay-,light-overlay-,LLOverlayReloaded-,loadmyresources_,lock_minecart_view-,lootbeams-,LOTRDRP-,lwl-,magnesium_extras-,maptooltip-,massunbind,mcbindtype-,mcwifipnp-,medievalmusic-,mightyarchitect-,mindful-eating-,minetogether-,MoBends,mobplusplus-,modcredits-,modernworldcreation_,modmenu-,modnametooltip-,modnametooltip_,moreoverlays-,MouseTweaks-,mousewheelie-,movement-vision-,multihotbar-,musicdr-,music-duration-reducer-,MyServerIsCompatible-,Neat-,Neat ,neiRecipeHandlers-,NekosEnchantedBooks-,ngrok-lan-expose-mod-,NoAutoJump-,NoFog-,nopotionshift_,notenoughanimations-,Notes-,NotifMod-,oculus-,OldJavaWarning-,openbackup-,OptiFine,OptiForge,OptiForge-,ornaments-,overloadedarmorbar-,PackMenu-,PackModeMenu-,panorama-,paperdoll-,phosphor-,PickUpNotifier-,Ping-,preciseblockplacing-,PresenceFootsteps-,realm-of-lost-souls-,ReAuth-,rebrand-,replanter-,ResourceLoader-,ResourcePackOrganizer,RPG-HUD-,rubidium-,rubidium_extras-,screenshot-to-clipboard-,ShoulderSurfing-,ShulkerTooltip-,shutupexperimentalsettings-,shutupmodelloader-,signtools-,simpleautorun-,simplebackup-,SimpleBackups-,SimpleDiscordRichPresence-,simple-rpc-,SimpleWorldTimer-,smartcursor-,smoothboot-,smoothfocus-,sounddeviceoptions-,SoundFilters-,soundreloader-,SpawnerFix-,spoticraft-,tconplanner-,textile_backup-,timestamps-,Tips-,TipTheScales-,Toast Control-,ToastControl-,Toast-Control-,tooltipscroller-,torchoptimizer-,torohealth-,totaldarkness,toughnessbar-,TRansliterationLib-,TravelersTitles-,VoidFog-,WindowedFullscreen-,wisla-,WorldNameRandomizer-,xlifeheartcolors-,yisthereautojump-
-de.griefed.serverpackcreator.configuration.fallbackmodslist.regex=^Armor Status HUD-.*$,^[1.12.2]bspkrscore-.*$,^[1.12.2]DamageIndicatorsMod-.*$,^3dskinlayers-.*$,^Absolutely-Not-A-Zoom-Mod-.*$,^AdvancedChat-.*$,^AdvancedCompas-.*$,^AdvancementPlaques-.*$,^Ambience.*$,^AmbientEnvironment-.*$,^AmbientSounds_.*$,^antighost-.*$,^anviltooltipmod-.*$,^appleskin-.*$,^armorchroma-.*$,^armorpointspp-.*$,^ArmorSoundTweak-.*$,^AromaBackup-.*$,^authme-.*$,^autobackup-.*$,^autoreconnect-.*$,^auto-reconnect-.*$,^axolotl-item-fix-.*$,^backtools-.*$,^Backups-.*$,^bannerunlimited-.*$,^Batty's Coordinates PLUS Mod.*$,^beenfo-1.19-.*$,^BetterAdvancements-.*$,^BetterAnimationsCollection-.*$,^betterbiomeblend-.*$,^BetterDarkMode-.*$,^BetterF3-.*$,^BetterFoliage-.*$,^BetterPingDisplay-.*$,^BetterPlacement-.*$,^better-recipe-book-.*$,^BetterTaskbar-.*$,^BetterThirdPerson.*$,^BetterTitleScreen-.*$,^bhmenu-.*$,^BH-Menu-.*$,^blur-.*$,^borderless-mining-.*$,^BorderlessWindow-.*$,^catalogue-.*$,^charmonium-.*$,^chat_heads-.*$,^cherishedworlds-.*$,^ChunkAnimator-.*$,^cirback-1.0-.*$,^classicbar-.*$,^clickadv-.*$,^clienttweaks-.*$,^ClientTweaks_.*$,^combat_music-.*$,^configured-.*$,^controllable-.*$,^Controller Support-.*$,^Controlling-.*$,^CraftPresence-.*$,^CTM-.*$,^cullleaves-.*$,^cullparticles-.*$,^custom-crosshair-mod-.*$,^CustomCursorMod-.*$,^customdiscordrpc-.*$,^CustomMainMenu-.*$,^darkness-.*$,^dashloader-.*$,^defaultoptions-.*$,^DefaultOptions_.*$,^DefaultSettings-.*$,^DeleteWorldsToTrash-.*$,^desiredservers-.*$,^DetailArmorBar-.*$,^Ding-.*$,^discordrpc-.*$,^DistantHorizons-.*$,^drippyloadingscreen-.*$,^drippyloadingscreen_.*$,^DripSounds-.*$,^Durability101-.*$,^DurabilityNotifier-.*$,^dynamic-fps-.*$,^dynamiclights-.*$,^dynamic-music-.*$,^DynamicSurroundings-.*$,^DynamicSurroundingsHuds-.*$,^dynmus-.*$,^effective-.*$,^EffectsLeft-.*$,^eggtab-.*$,^eguilib-.*$,^eiramoticons-.*$,^EiraMoticons_.*$,^EnchantmentDescriptions-.*$,^enchantment-lore-.*$,^EnhancedVisuals_.*$,^entityculling-.*$,^entity-texture-features-.*$,^EquipmentCompare-.*$,^exhaustedstamina-.*$,^extremesoundmuffler-.*$,^FabricCustomCursorMod-.*$,^fabricemotes-.*$,^Fallingleaves-.*$,^fancymenu_.*$,^fancymenu_video_extension.*$,^FancySpawnEggs.*$,^FancyVideo-API-.*$,^findme-.*$,^FirstPersonMod.*$,^flickerfix-.*$,^fm_audio_extension_.*$,^FogTweaker-.*$,^ForgeCustomCursorMod-.*$,^forgemod_VoxelMap-.*$,^FPS-Monitor-.*$,^FpsReducer-.*$,^FpsReducer2-.*$,^freelook-.*$,^ftb-backups-.*$,^ftbbackups2-.*$,^FullscreenWindowed-.*$,^galacticraft-rpc-.*$,^GameMenuModOption-.*$,^gamestagesviewer-.*$,^grid-.*$,^HealthOverlay-.*$,^hiddenrecipebook_.*$,^HorseStatsMod-.*$,^infinitemusic-.*$,^InventoryEssentials_.*$,^InventoryHud_[1.17.1].forge-.*$,^inventoryprofiles.*$,^InventorySpam-.*$,^InventoryTweaks-.*$,^invtweaks-.*$,^ItemBorders-.*$,^ItemPhysicLite_.*$,^ItemStitchingFix-.*$,^itemzoom.*$,^itlt-.*$,^JBRA-Client-.*$,^jeed-.*$,^jehc-.*$,^jeiintegration_.*$,^justenoughbeacons-.*$,^JustEnoughCalculation-.*$,^justenoughdrags-.*$,^JustEnoughEffects-.*$,^just-enough-harvestcraft-.*$,^JustEnoughProfessions-.*$,^JustEnoughResources-.*$,^justzoom_.*$,^keymap-.*$,^keywizard-.*$,^konkrete_.*$,^konkrete_forge_.*$,^lazydfu-.*$,^LegendaryTooltips.*$,^LegendaryTooltips-.*$,^lightfallclient-.*$,^LightOverlay-.*$,^light-overlay-.*$,^LLOverlayReloaded-.*$,^loadmyresources_.*$,^lock_minecart_view-.*$,^lootbeams-.*$,^LOTRDRP-.*$,^lwl-.*$,^magnesium_extras-.*$,^maptooltip-.*$,^massunbind.*$,^mcbindtype-.*$,^mcwifipnp-.*$,^medievalmusic-.*$,^mightyarchitect-.*$,^mindful-eating-.*$,^minetogether-.*$,^MoBends.*$,^mobplusplus-.*$,^modcredits-.*$,^modernworldcreation_.*$,^modmenu-.*$,^modnametooltip-.*$,^modnametooltip_.*$,^moreoverlays-.*$,^MouseTweaks-.*$,^mousewheelie-.*$,^movement-vision-.*$,^multihotbar-.*$,^musicdr-.*$,^music-duration-reducer-.*$,^MyServerIsCompatible-.*$,^Neat-.*$,^Neat .*$,^neiRecipeHandlers-.*$,^NekosEnchantedBooks-.*$,^ngrok-lan-expose-mod-.*$,^NoAutoJump-.*$,^NoFog-.*$,^nopotionshift_.*$,^notenoughanimations-.*$,^Notes-.*$,^NotifMod-.*$,^oculus-.*$,^OldJavaWarning-.*$,^openbackup-.*$,^OptiFine.*$,^OptiForge.*$,^OptiForge-.*$,^ornaments-.*$,^overloadedarmorbar-.*$,^PackMenu-.*$,^PackModeMenu-.*$,^panorama-.*$,^paperdoll-.*$,^phosphor-.*$,^PickUpNotifier-.*$,^Ping-.*$,^preciseblockplacing-.*$,^PresenceFootsteps-.*$,^realm-of-lost-souls-.*$,^ReAuth-.*$,^rebrand-.*$,^replanter-.*$,^ResourceLoader-.*$,^ResourcePackOrganizer.*$,^RPG-HUD-.*$,^rubidium-.*$,^rubidium_extras-.*$,^screenshot-to-clipboard-.*$,^ShoulderSurfing-.*$,^ShulkerTooltip-.*$,^shutupexperimentalsettings-.*$,^shutupmodelloader-.*$,^signtools-.*$,^simpleautorun-.*$,^simplebackup-.*$,^SimpleBackups-.*$,^SimpleDiscordRichPresence-.*$,^simple-rpc-.*$,^SimpleWorldTimer-.*$,^smartcursor-.*$,^smoothboot-.*$,^smoothfocus-.*$,^sounddeviceoptions-.*$,^SoundFilters-.*$,^soundreloader-.*$,^SpawnerFix-.*$,^spoticraft-.*$,^tconplanner-.*$,^textile_backup-.*$,^timestamps-.*$,^Tips-.*$,^TipTheScales-.*$,^Toast Control-.*$,^ToastControl-.*$,^Toast-Control-.*$,^tooltipscroller-.*$,^torchoptimizer-.*$,^torohealth-.*$,^totaldarkness.*$,^toughnessbar-.*$,^TRansliterationLib-.*$,^TravelersTitles-.*$,^VoidFog-.*$,^WindowedFullscreen-.*$,^wisla-.*$,^WorldNameRandomizer-.*$,^xlifeheartcolors-.*$,^yisthereautojump-.*$
-de.griefed.serverpackcreator.configuration.hastebinserver=https://haste.zneix.eu/documents
-de.griefed.serverpackcreator.serverpack.autodiscovery.enabled=true
-de.griefed.serverpackcreator.gui.darkmode=true
-de.griefed.serverpackcreator.configuration.directories.serverpacks=server-packs
-de.griefed.serverpackcreator.serverpack.cleanup.enabled=true
-de.griefed.serverpackcreator.serverpack.overwrite.enabled=true
-de.griefed.serverpackcreator.configuration.directories.shouldexclude=overrides,packmenu,resourcepacks,server_pack,fancymenu
-de.griefed.serverpackcreator.spring.schedules.database.cleanup=0 0 0 * * *
-de.griefed.serverpackcreator.spring.schedules.files.cleanup=0 0 0 * * *
-de.griefed.serverpackcreator.spring.schedules.versions.refresh=0 0 0 * * *
-de.griefed.serverpackcreator.spring.artemis.queue.max_disk_usage=90
-de.griefed.serverpackcreator.configuration.saveloadedconfig=false
-de.griefed.serverpackcreator.configuration.directories.mustinclude=mods,config,defaultconfigs,scripts,saves,seeds,libraries
-de.griefed.serverpackcreator.serverpack.autodiscovery.filter=START
-```
-
-| Property                                                             | Description                                                                                                                                                                  |
-|----------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| de.griefed.serverpackcreator.versioncheck.prerelease                 | `true` or `false`. Whether to check for available pre-releases, too, when checking for updates.                                                                              |
-| de.griefed.serverpackcreator.language                                | The language in which ServerPackCreator should run.                                                                                                                          |
-| de.griefed.serverpackcreator.configuration.fallbackmodslist          | Comma separated fallback-list of clientside-only mods. Do not edit this manually.                                                                                            |
-| de.griefed.serverpackcreator.configuration.fallbackmodslist.regex    | Comma separated fallback-list of clientside-only mods in regex format. Do not edit this manually.                                                                            |
-| de.griefed.serverpackcreator.configuration.hastebinserver            | Address of a HasteBin server to use for config and logs uploading.                                                                                                           |
-| de.griefed.serverpackcreator.serverpack.autodiscovery.enabled        | `true` or `false`. Whether to try and determine sideness of mods in a modpack automatically and exclude them if they are clientside-only. Set this to `false` to disable it. |
-| de.griefed.serverpackcreator.gui.darkmode                            | GUI-only. `true` or `false`. Whether to use dark-mode in the GUI.                                                                                                            |
-| de.griefed.serverpackcreator.configuration.directories.serverpacks   | The directory in which server packs will be generated and stored in.                                                                                                         |
-| de.griefed.serverpackcreator.serverpack.cleanup.enabled              | `true` or `false`. Whether to cleanup files after generating a server pack.                                                                                                  |
-| de.griefed.serverpackcreator.serverpack.overwrite.enabled            | `true` or `false`. Whether an already existing server pack should be overwritten.                                                                                            |
-| de.griefed.serverpackcreator.configuration.directories.shouldexclude | List of directories which should not be in a server pack.                                                                                                                    |
-| de.griefed.serverpackcreator.spring.schedules.database.cleanup       | Web-only. Cron-schedule at which checks are run and server packs cleaned up.                                                                                                 |
-| de.griefed.serverpackcreator.spring.schedules.files.cleanup          | Web-only. Cron-schedule at which checks are run and files from server pack generations are cleaned up.                                                                       |
-| de.griefed.serverpackcreator.spring.schedules.versions.refresh       | Web-only. Cron-schedule at which the available Minecraft, Forge and Fabric versions are refreshed.                                                                           |
-| de.griefed.serverpackcreator.spring.artemis.queue.max_disk_usage     | Web-only. Maximum disk usage in percent at which no new tasks are accepted, preventing the generation of new server packs.                                                   |
-| de.griefed.serverpackcreator.configuration.saveloadedconfig          | GUI-only. `true` or `false`. Whether to overwrite the last manually loaded configuration file, too.                                                                          |
-| de.griefed.serverpackcreator.configuration.directories.mustinclude   | List of directories which must be included in a server pack.                                                                                                                 |
-| de.griefed.serverpackcreator.serverpack.autodiscovery.filter         | Filter method by which to exclude user-specified clientside-only mods. `START`, `END`, `REGEX`, `CONTAIN`, `EITHER`                                                          |
-
-# 5.1.2 Default `application.properties` 
-
-`application.properties`
-```properties
-server.port=8080
-server.error.whitelabel.enabled=false
-server.tomcat.basedir=.
-server.tomcat.accesslog.enabled=true
-server.tomcat.accesslog.directory=logs
-server.tomcat.accesslog.file-date-format=_yyyy-MM-dd
-server.tomcat.accesslog.prefix=tomcat_access
-server.tomcat.accesslog.suffix=.log
-server.tomcat.accesslog.pattern=common
-spring.output.ansi.enabled=ALWAYS
-server.error.include-message=ALWAYS
-server.error.include-stacktrace=ALWAYS
-spring.application.name=ServerPackCreator
-spring.datasource.url=jdbc:sqlite:serverpackcreator.db
-spring.datasource.driver-class-name=org.sqlite.JDBC
-spring.jpa.hibernate.ddl-auto=update
-spring.jpa.database-platform=org.sqlite.hibernate.dialect.SQLiteDialect
-spring.jpa.open-in-view=false
-spring.jdbc.template.query-timeout=3600
-spring.transaction.default-timeout=3600
-spring.artemis.mode=embedded
-spring.artemis.embedded.persistent=true
-spring.artemis.embedded.data-directory=work/artemis
-spring.datasource.tomcat.max-active=50
-spring.datasource.tomcat.max-idle=15
-spring.datasource.tomcat.min-idle=8
-spring.servlet.multipart.max-file-size=500MB
-spring.servlet.multipart.max-request-size=500MB
-spring.config.import=optional:file:./serverpackcreator.properties
-```
-
-If a property above has no description in the table below, it is not to be touched. Changing any of these can break ServerPackCreator or cause otherwise unwanted behaviour.
-Changes to properties not described below are not supported. If you changed a property you were not meant to fiddle around with, do not report an issue. Such issues will be closed without further comment.
-
-| Property                                  | Description                                                                                            |
-|-------------------------------------------|--------------------------------------------------------------------------------------------------------|
-| server.port                               | The port at which ServerPackCreator as a webservice will be available at.                              |
-| spring.datasource.url                     | Path to and name of the SQLite database which the webservice will use.                                 |
-| spring.artemis.embedded.data-directory    | The path to and name of the directory in which Artemis will store queues and task related information. |
-| spring.servlet.multipart.max-file-size    | Maximum filesize for uploads.                                                                          |
-| spring.servlet.multipart.max-request-size | Maximum request size for file uploads.                                                                 |
-| spring.config.import                      | Additional properties-file to import properties from.                                                  |
-
----
-
-# 6. Running
+# 6 Running
 
 In every situation, the `.jar`-file needs to be run from the commandline. Executing it via "Open with..." and selecting Java will not work. To use the GUI, for example, simply run `java -jar ServerPackCreator-2.x.x.jar`.
 The `.exe` can be executed as usual by simply double-clicking it and is GUI exclusive. It only works in Windows, though. Please keep that in mind.
@@ -395,51 +279,7 @@ If you wish to run ServerPackCreator with your locale (if it is already supporte
 2. Running `java -jar ServerPackCreator-x.x.x.jar` without `-lang en_us` or any other language will set the locale to en_us by default and create the lang.properties-file.
 3. Modify the `serverpackcreator.properties`-file in the same directory as ServerPackCreator-X-X-X.jar and set your locale like this `lang=your_locale` for example `lang=en_us`
 
-## 6.2 Using ServerPackCreator
-
-**Detailed How-To guides are available at [my wiki](https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-HowTo)!**
-
-Make sure to give them a read if you are just getting started with ServerPackCreator, or you need some help.
-
-## 6.3 Docker
-
-| Tags      | Description                                                                                   |
-|-----------|-----------------------------------------------------------------------------------------------|
-| `latest`  | Using the `latest` tag will pull the latest image for linux/amd64,linux/arm/v7,linux/arm64.   |
-| `develop` | The latest image of, if existent, the in-dev version of this container. Use at your own risk! |
-
-When running as a docker container, there are a couple more settings you need to be aware of:
-
-| Variable                  | Description                                                                                                                                                                                                                                     |
-|---------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| TZ                        | The timezone your system operates in. Default "Europe/Berlin"                                                                                                                                                                                   |
-| PUID                      | The userID under which this container is run as. Important for file access and permissions. Run **cat /etc/passwd &#124; grep -i $(whoami)** to find your userID.                                                                               |
-| PGID                      | The groupID under which this container is run as. Important for file access and permissions. Run **cat /etc/passwd &#124; grep -i $(whoami)** to find your groupID.                                                                             |
-| STARTUP_PARAMETER         | Decides which mode ServerPackCreator will start in. `cli` for commandline interface, which will generate a server pack from the given config. `web` for starting ServerPackCreator as a webservice.                                             |                                                                                                                                                                               |
-
-### 6.3.1 Using docker-compose:
-
-```docker-compose.yml
-version: "2"
-services:
-  serverpackcreator:
-    image: griefed/serverpackcreator:latest
-    container_name: serverpackcreator
-    restart: unless-stopped
-    environment:
-      - STARTUP_PARAMETER=web
-      - TZ=Europe/Berlin
-      - PUID=1000
-      - PGID=1000
-    volumes:
-      - /host/path/to/data:/data # ServerPackCreator files like configuration files are here
-    ports:
-      - 8080:8080 # Port at which ServerPackCreator will be accessible at. Only needed when setting STARTUP_PARAMETER to web. 
-```
-
----
-
-# 7. Contributing
+# 7 Contributing
 
 Java documentation available at:
 - https://griefed.pages.griefed.de/ServerPackCreator/ or
@@ -504,12 +344,170 @@ If you are on linux, run `chmod +x gradlew` first.
 
 Build with:
 
-`about installQuasar cleanFrontend assembleFrontend copyDist build createExe --info --stacktrace`
+`build --info --stacktrace`
 
-Build without tests:
+The `build` task is configured to do everything automatically, from installing frontend dependencies, assembling the web-frontend, copying some files around, build and testing and then, finally, also creating a .exe file.
 
-`about installQuasar cleanFrontend assembleFrontend copyDist build createExe --info --stacktrace -x test`
+# 9. Awesomesauce!
 
-Build with custom version:
+**None of this would have been possible without the excellent IDEs by JetBrains. They have kindly provided this open source project with an All Products Pack license.**
+**Additionally, ej-Technologies has provided an open-source license for JProfiler for ServerPackCreator, which allows me to resolve performance bottlenecks, pin down memory leaks and understand threading issues.
+Huge shoutout and thank you!**
 
-`about installQuasar cleanFrontend assembleFrontend copyDist build createExe -Pversion=6.6.6-alpha.666 --info --stacktrace`
+| [JetBrains](https://www.jetbrains.com/)                                                             | [IntelliJ IDEA](https://www.jetbrains.com/idea/)                                                                      | [WebStorm](https://www.jetbrains.com/webstorm/)                                                                 | [JProfiler](https://www.ej-technologies.com/products/jprofiler/overview.html)                                                                                                                                                                                                                                                              |
+|-----------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [![JetBrains](https://i.griefed.de/images/2021/05/11/jetbrains.th.png)](https://www.jetbrains.com/) | [![IntelliJ IDEA](https://i.griefed.de/images/2021/05/11/icon-intellij-idea.th.png)](https://www.jetbrains.com/idea/) | [![WebStorm](https://i.griefed.de/images/2021/05/11/icon-webstorm.th.png)](https://www.jetbrains.com/webstorm/) | [![ej-Technologies](https://www.ej-technologies.com/assets/logo-18cdc16334888781eb17378d82e5b1bb.png)](https://www.ej-technologies.com/products/jprofiler/overview.html) <br> [![JProfiler](https://www.ej-technologies.com/images/product_banners/jprofiler_large.png)](https://www.ej-technologies.com/products/jprofiler/overview.html) |
+
+---
+
+## ✨ Thanks to all of my Supporters and Sponsors ✨
+
+<!-- sponsors --><a href="https://github.com/kreezxil"><img src="https://github.com/kreezxil.png" width="60px" alt="" /></a><!-- sponsors -->
+
+---
+
+# 10. Libraries and Licenses
+
+This project would not be possible without these awesome groups, creators and developers and their wonderful libraries they have kindly provided to people such as me.
+
+**License report generated using [jk1/Gradle-License-Report](https://github.com/jk1/Gradle-License-Report)**
+
+Dependency License Report 2022-09-14
+
+## Apache License, Version 2.0
+
+**1** **Group:** `com.github.vatbub` **Name:** `mslinks` **Version:** `1.0.5`
+> - **POM Project URL**: [https://github.com/vatbub/mslinks](https://github.com/vatbub/mslinks)
+> - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
+
+**2** **Group:** `commons-io` **Name:** `commons-io` **Version:** `2.11.0`
+> - **Project URL**: [https://commons.apache.org/proper/commons-io/](https://commons.apache.org/proper/commons-io/)
+> - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
+> - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
+> - **Embedded license files**: [commons-io-2.11.0.jar/META-INF/LICENSE.txt](licenses/commons-io-2.11.0.jar/META-INF/LICENSE.txt)
+    - [commons-io-2.11.0.jar/META-INF/NOTICE.txt](licenses/commons-io-2.11.0.jar/META-INF/NOTICE.txt)
+
+**3** **Group:** `commons-lang` **Name:** `commons-lang` **Version:** `2.6`
+> - **Project URL**: [http://commons.apache.org/lang/](http://commons.apache.org/lang/)
+> - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
+> - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
+> - **Embedded license files**: [commons-lang-2.6.jar/META-INF/LICENSE.txt](licenses/commons-lang-2.6.jar/META-INF/LICENSE.txt)
+    - [commons-lang-2.6.jar/META-INF/NOTICE.txt](licenses/commons-lang-2.6.jar/META-INF/NOTICE.txt)
+
+**4** **Group:** `net.lingala.zip4j` **Name:** `zip4j` **Version:** `2.11.1`
+> - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
+> - **POM Project URL**: [https://github.com/srikanth-lingala/zip4j](https://github.com/srikanth-lingala/zip4j)
+> - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
+
+**5** **Group:** `org.apache.activemq` **Name:** `artemis-jms-server` **Version:** `2.19.1`
+> - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
+> - **Embedded license files**: [artemis-jms-server-2.19.1.jar/META-INF/LICENSE](licenses/artemis-jms-server-2.19.1.jar/META-INF/LICENSE)
+    - [artemis-jms-server-2.19.1.jar/META-INF/NOTICE](licenses/artemis-jms-server-2.19.1.jar/META-INF/NOTICE)
+
+**6** **Group:** `org.apache.logging.log4j` **Name:** `log4j-api` **Version:** `2.18.0`
+> - **Manifest Project URL**: [https://www.apache.org/](https://www.apache.org/)
+> - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
+> - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
+> - **Embedded license files**: [log4j-api-2.18.0.jar/META-INF/LICENSE](licenses/log4j-api-2.18.0.jar/META-INF/LICENSE)
+    - [log4j-api-2.18.0.jar/META-INF/NOTICE](licenses/log4j-api-2.18.0.jar/META-INF/NOTICE)
+
+**7** **Group:** `org.apache.logging.log4j` **Name:** `log4j-slf4j-impl` **Version:** `2.18.0`
+> - **Manifest Project URL**: [https://www.apache.org/](https://www.apache.org/)
+> - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
+> - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
+> - **Embedded license files**: [log4j-slf4j-impl-2.18.0.jar/META-INF/LICENSE](licenses/log4j-slf4j-impl-2.18.0.jar/META-INF/LICENSE)
+    - [log4j-slf4j-impl-2.18.0.jar/META-INF/NOTICE](licenses/log4j-slf4j-impl-2.18.0.jar/META-INF/NOTICE)
+
+**8** **Group:** `org.apache.logging.log4j` **Name:** `log4j-web` **Version:** `2.18.0`
+> - **Manifest Project URL**: [https://www.apache.org/](https://www.apache.org/)
+> - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
+> - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
+> - **Embedded license files**: [log4j-web-2.18.0.jar/META-INF/LICENSE](licenses/log4j-web-2.18.0.jar/META-INF/LICENSE)
+    - [log4j-web-2.18.0.jar/META-INF/NOTICE](licenses/log4j-web-2.18.0.jar/META-INF/NOTICE)
+
+**9** **Group:** `org.apache.logging.log4j` **Name:** `log4j-jul` **Version:** `2.18.0`
+> - **Manifest Project URL**: [https://www.apache.org/](https://www.apache.org/)
+> - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
+> - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
+> - **Embedded license files**: [log4j-jul-2.18.0.jar/META-INF/LICENSE](licenses/log4j-jul-2.18.0.jar/META-INF/LICENSE)
+    - [log4j-jul-2.18.0.jar/META-INF/NOTICE](licenses/log4j-jul-2.18.0.jar/META-INF/NOTICE)
+
+**10** **Group:** `org.apache.logging.log4j` **Name:** `log4j-core` **Version:** `2.18.0`
+> - **Manifest Project URL**: [https://www.apache.org/](https://www.apache.org/)
+> - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
+> - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
+> - **Embedded license files**: [log4j-core-2.18.0.jar/META-INF/LICENSE](licenses/log4j-core-2.18.0.jar/META-INF/LICENSE)
+    - [log4j-core-2.18.0.jar/META-INF/NOTICE](licenses/log4j-core-2.18.0.jar/META-INF/NOTICE)
+
+**11** **Group:** `org.jgroups` **Name:** `jgroups` **Version:** `5.2.6.Final`
+> - **POM Project URL**: [http://www.jgroups.org](http://www.jgroups.org)
+> - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
+> - **Embedded license files**: [jgroups-5.2.6.Final.jar/LICENSE](licenses/jgroups-5.2.6.Final.jar/LICENSE)
+    - [jgroups-5.2.6.Final.jar/README](licenses/jgroups-5.2.6.Final.jar/README)
+
+**12** **Group:** `org.pf4j` **Name:** `pf4j` **Version:** `3.7.0`
+> - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
+
+**13** **Group:** `org.springframework.boot` **Name:** `spring-boot-starter-data-jpa` **Version:** `2.7.3`
+> - **POM Project URL**: [https://spring.io/projects/spring-boot](https://spring.io/projects/spring-boot)
+> - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
+> - **Embedded license files**: [spring-boot-starter-data-jpa-2.7.3.jar/META-INF/LICENSE.txt](licenses/spring-boot-starter-data-jpa-2.7.3.jar/META-INF/LICENSE.txt)
+    - [spring-boot-starter-data-jpa-2.7.3.jar/META-INF/NOTICE.txt](licenses/spring-boot-starter-data-jpa-2.7.3.jar/META-INF/NOTICE.txt)
+
+**14** **Group:** `org.springframework.boot` **Name:** `spring-boot-starter-log4j2` **Version:** `2.7.3`
+> - **POM Project URL**: [https://spring.io/projects/spring-boot](https://spring.io/projects/spring-boot)
+> - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
+> - **Embedded license files**: [spring-boot-starter-log4j2-2.7.3.jar/META-INF/LICENSE.txt](licenses/spring-boot-starter-log4j2-2.7.3.jar/META-INF/LICENSE.txt)
+    - [spring-boot-starter-log4j2-2.7.3.jar/META-INF/NOTICE.txt](licenses/spring-boot-starter-log4j2-2.7.3.jar/META-INF/NOTICE.txt)
+
+**15** **Group:** `org.springframework.boot` **Name:** `spring-boot-devtools` **Version:** `2.7.3`
+> - **POM Project URL**: [https://spring.io/projects/spring-boot](https://spring.io/projects/spring-boot)
+> - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
+> - **Embedded license files**: [spring-boot-devtools-2.7.3.jar/META-INF/LICENSE.txt](licenses/spring-boot-devtools-2.7.3.jar/META-INF/LICENSE.txt)
+    - [spring-boot-devtools-2.7.3.jar/META-INF/NOTICE.txt](licenses/spring-boot-devtools-2.7.3.jar/META-INF/NOTICE.txt)
+
+**16** **Group:** `org.springframework.boot` **Name:** `spring-boot-starter-artemis` **Version:** `2.7.3`
+> - **POM Project URL**: [https://spring.io/projects/spring-boot](https://spring.io/projects/spring-boot)
+> - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
+> - **Embedded license files**: [spring-boot-starter-artemis-2.7.3.jar/META-INF/LICENSE.txt](licenses/spring-boot-starter-artemis-2.7.3.jar/META-INF/LICENSE.txt)
+    - [spring-boot-starter-artemis-2.7.3.jar/META-INF/NOTICE.txt](licenses/spring-boot-starter-artemis-2.7.3.jar/META-INF/NOTICE.txt)
+
+**17** **Group:** `org.springframework.boot` **Name:** `spring-boot-starter-web` **Version:** `2.7.3`
+> - **POM Project URL**: [https://spring.io/projects/spring-boot](https://spring.io/projects/spring-boot)
+> - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
+> - **Embedded license files**: [spring-boot-starter-web-2.7.3.jar/META-INF/LICENSE.txt](licenses/spring-boot-starter-web-2.7.3.jar/META-INF/LICENSE.txt)
+    - [spring-boot-starter-web-2.7.3.jar/META-INF/NOTICE.txt](licenses/spring-boot-starter-web-2.7.3.jar/META-INF/NOTICE.txt)
+
+**18** **Group:** `org.xerial` **Name:** `sqlite-jdbc` **Version:** `3.39.2.1`
+> - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
+> - **POM Project URL**: [https://github.com/xerial/sqlite-jdbc](https://github.com/xerial/sqlite-jdbc)
+> - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
+> - **Embedded license files**: [sqlite-jdbc-3.39.2.1.jar/META-INF/maven/org.xerial/sqlite-jdbc/LICENSE](licenses/sqlite-jdbc-3.39.2.1.jar/META-INF/maven/org.xerial/sqlite-jdbc/LICENSE)
+    - [sqlite-jdbc-3.39.2.1.jar/META-INF/maven/org.xerial/sqlite-jdbc/LICENSE.zentus](licenses/sqlite-jdbc-3.39.2.1.jar/META-INF/maven/org.xerial/sqlite-jdbc/LICENSE.zentus)
+
+## GNU Lesser General Public License v3.0
+
+**19** **Group:** `com.electronwill.night-config` **Name:** `toml` **Version:** `3.6.6`
+> - **POM Project URL**: [https://github.com/TheElectronWill/Night-Config](https://github.com/TheElectronWill/Night-Config)
+> - **POM License**: GNU Lesser General Public License v3.0 - [https://www.gnu.org/licenses/lgpl-3.0.txt](https://www.gnu.org/licenses/lgpl-3.0.txt)
+
+## MIT License
+
+**20** **Group:** `de.griefed` **Name:** `larsonscanner` **Version:** `1.0.4`
+> - **POM Project URL**: [https://git.griefed.de/Griefed/LarsonScanner.git](https://git.griefed.de/Griefed/LarsonScanner.git)
+> - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
+> - **Embedded license files**: [larsonscanner-1.0.4.jar/LICENSE](licenses/larsonscanner-1.0.4.jar/LICENSE)
+
+**21** **Group:** `de.griefed` **Name:** `versionchecker` **Version:** `1.1.0`
+> - **POM Project URL**: [https://git.griefed.de/Griefed/VersionChecker.git](https://git.griefed.de/Griefed/VersionChecker.git)
+> - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
+
+**22** **Group:** `io.github.vincenzopalazzo` **Name:** `material-ui-swing` **Version:** `1.1.3`
+> - **POM Project URL**: [https://material-ui-swing.github.io](https://material-ui-swing.github.io)
+> - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
+
+## PUBLIC DOMAIN
+
+**23** **Group:** `com.github.gwenn` **Name:** `sqlite-dialect` **Version:** `0.1.2`
+> - **POM Project URL**: [https://github.com/gwenn/sqlite-dialect](https://github.com/gwenn/sqlite-dialect)
+> - **POM License**: PUBLIC DOMAIN - [http://unlicense.org/](http://unlicense.org/)

@@ -1,3 +1,165 @@
+## [3.14.0-beta.9](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.14.0-beta.8...3.14.0-beta.9) (2022-09-14)
+
+
+### :scissors: Refactor
+
+* **ApplicationProperties:** Move load from constructor to loadProperties to ensure we always have the classpath-configurations available. When using alpha or beta releases, always check for newer version to prevent people getting stuck on old pre-releases. ([7c166ff](https://git.griefed.de/Griefed/ServerPackCreator/commit/7c166ffba98d35aedbc8d8e98b40dfb164204e50))
+
+
+### 💎 Improvements
+
+* **Modpack scan:** Scan modpack directory for folders to include in the server pack. ([5190327](https://git.griefed.de/Griefed/ServerPackCreator/commit/51903270350873131ebf4e9874a9bc2e4bbc1db9))
+
+## [3.14.0-beta.8](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.14.0-beta.7...3.14.0-beta.8) (2022-09-14)
+
+
+### :scissors: Refactor
+
+* **GUI:** Adjust some button and icon sizes ([1423395](https://git.griefed.de/Griefed/ServerPackCreator/commit/1423395c272e00a0ed98cf629f334648b112fe37))
+* **GUI:** Extend ServerPackCreatorGui from JFrame instead of creating and managing a JFrame inside our class. Move choolseJava() to frame and access from other places. ([85dbdd8](https://git.griefed.de/Griefed/ServerPackCreator/commit/85dbdd864edc521f19a778b788ec0b7ca5eea219))
+
+
+### 🔩 Dependencies
+
+* **deps:** update dependency ghcr.io/griefed/baseimage-ubuntu-jdk-8 to v2.0.13 ([316c301](https://git.griefed.de/Griefed/ServerPackCreator/commit/316c30126440dd98d0c356a45f8ceac353dbc1e4))
+* **deps:** update dependency ghcr.io/griefed/gitlab-ci-cd to v2.2.1 ([5fc6c8b](https://git.griefed.de/Griefed/ServerPackCreator/commit/5fc6c8bd1b78c6119f4724d63bfe6c10c0856aa9))
+* **deps:** update dependency gradle to v7.5.1 ([81b6391](https://git.griefed.de/Griefed/ServerPackCreator/commit/81b63919fe0830834ce022e15e789c6a1433341c))
+* **deps:** update dependency org.xerial:sqlite-jdbc to v3.39.2.1 ([bbfebad](https://git.griefed.de/Griefed/ServerPackCreator/commit/bbfebad449708a1b01a878ec21561768c25ea12e))
+
+
+### 🛠 Fixes
+
+* **Jar:** Correctly set Start-Class attribute in bootJar manifest so the fatjar can be run normally. ([17b0beb](https://git.griefed.de/Griefed/ServerPackCreator/commit/17b0bebdd3c225bfe2836468414992c54dab3d02))
+
+
+### Other
+
+* **deps:** update dependency @quasar/extras to v1.15.2 ([4ec9abd](https://git.griefed.de/Griefed/ServerPackCreator/commit/4ec9abd4289ad331450fa5fd098b9a70986f2dd1))
+* **deps:** update dependency eslint to v8.23.0 ([da93adf](https://git.griefed.de/Griefed/ServerPackCreator/commit/da93adf1670cd14e5e6afc96635d6c8d476c7f11))
+* **deps:** update dependency vue to v3.2.38 ([894554b](https://git.griefed.de/Griefed/ServerPackCreator/commit/894554bdc2c4a6ee20915edf8726551d7db11d20))
+* **Fallback clientside-only mods lists:** Update with mods from @BisectStudios, kindly provided by @AzureDoom ([1026f88](https://git.griefed.de/Griefed/ServerPackCreator/commit/1026f883e03f4d7edcb4b7c428cbf598448c67ca))
+
+## [3.14.0-beta.7](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.14.0-beta.6...3.14.0-beta.7) (2022-09-13)
+
+
+### 💎 Improvements
+
+* **GUI:** Server icon preview.Buttons to reset, revert clientside mods, copy directories and inspect modpackdirectory ([b459c2a](https://git.griefed.de/Griefed/ServerPackCreator/commit/b459c2ad74aa5373867a3860b5fab17cdff13888))
+
+## [3.14.0-beta.6](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.14.0-beta.5...3.14.0-beta.6) (2022-09-13)
+
+
+### :scissors: Refactor
+
+* Smallish README changes. Some minor refactorings. ([89259e8](https://git.griefed.de/Griefed/ServerPackCreator/commit/89259e83d59ab83a3c951e85c1883123939252bd))
+* **Dialogs:** Use new info icon in info dialogs ([be5fbd6](https://git.griefed.de/Griefed/ServerPackCreator/commit/be5fbd60356f58c327d8499209af8df04194a74c))
+
+
+### 💎 Improvements
+
+* **GUI:** DIsplay required Java version correlating to selected Minecraft version. Add getters and setters to allow read & write from addons. Warn if selected Minecraft version has no server available. ([379d1f9](https://git.griefed.de/Griefed/ServerPackCreator/commit/379d1f9fe573acfb61d83287368b04fa2ac2c853))
+* **Java Script Variable Update:** Allow disabling of automatic update of SPC_JAVA_SPC-placeholder in script variables ([e3bd477](https://git.griefed.de/Griefed/ServerPackCreator/commit/e3bd477bdf421d15000dc6919aece6fdb0d991e7))
+
+
+### 🦊 CI/CD
+
+* **Gradle:** Combine all tasks into build to reduce complexity of..well...building SPC ([b1574a0](https://git.griefed.de/Griefed/ServerPackCreator/commit/b1574a004e0319ff018c12154d2ef9be4bff2e3e))
+* Ensure long changelogs do not crash release pipeline. Use softprops/action-gh-release for release with assets upload included. Trim Discord webhook message. ([09e7293](https://git.griefed.de/Griefed/ServerPackCreator/commit/09e7293c1831cbf45bd0640853876da4d93fc4de))
+
+
+### 🚀 Features
+
+* **Scan selected modpack directory & Java 8/17 paths in script variables:** After selecting the modpack-directory, Minecraft version, modloader and modloader version are automatically set, if possible. Display required Java version. Allow defining Java 8 and 17 paths for local testing and automatically update SPC_JAVA_SPC. ([580ecdf](https://git.griefed.de/Griefed/ServerPackCreator/commit/580ecdf088d70a914893543b28b01bfc67bc71a6))
+
+
+### 🛠 Fixes
+
+* **VersionMeta:** Provide default manifests. Prevents SPC from not starting up properly just because the servers of a modloader aren't accessible. ([a10fa93](https://git.griefed.de/Griefed/ServerPackCreator/commit/a10fa933a6fb4e1ff6c98e03f6d99a0ff9ea4489))
+
+
+### Other
+
+* Provide license information for third party libraries ([5b99340](https://git.griefed.de/Griefed/ServerPackCreator/commit/5b99340504a728f7eb4add2345958f2d418f84a1))
+* **README:** Add how to section, inspired by @Kreezxil, to be reviewed by the very same. ([647f3ce](https://git.griefed.de/Griefed/ServerPackCreator/commit/647f3cebb7537d7e98d9d181cadd1bb1ec66d325))
+
+## [3.14.0-beta.5](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.14.0-beta.4...3.14.0-beta.5) (2022-09-10)
+
+
+### 💎 Improvements
+
+* **Addon Suite:** Provide more data to extensions. Ensure global addon configurations are properly managed by SPC. ([a3ce520](https://git.griefed.de/Griefed/ServerPackCreator/commit/a3ce52050d7a43301f7dcf16b87ca8b0939517b8))
+
+## [3.14.0-beta.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.14.0-beta.3...3.14.0-beta.4) (2022-09-09)
+
+
+### 🛠 Fixes
+
+* **Addon Suite:** Do not base BaseInformation off of ExtensionPoint ([9e7a68f](https://git.griefed.de/Griefed/ServerPackCreator/commit/9e7a68f08d9737c08018d1c364ac551b96275c54))
+
+## [3.14.0-beta.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.14.0-beta.2...3.14.0-beta.3) (2022-09-08)
+
+
+### 🛠 Fixes
+
+* **ConfigPanelExtension:** Make serverpackExtensionConfig abstract and leave implementation to developers. We can not anticipate what a given panel holds. ([1a15787](https://git.griefed.de/Griefed/ServerPackCreator/commit/1a15787ece1738700050468e4dc6b179424c67b2))
+* **ConfigPanelExtension:** Make setServerPackExtensionConfig abstract and leave implementation to developers. We can not anticipate what a given panel holds. ([4d4bbb2](https://git.griefed.de/Griefed/ServerPackCreator/commit/4d4bbb28d6ed185fc8bab92afcb169ea2128e47f))
+
+## [3.14.0-beta.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.14.0-beta.1...3.14.0-beta.2) (2022-09-08)
+
+
+### 💎 Improvements
+
+* **Extension Configuration Provision:** Identify configuration to provide by addonID and extension ID to ensure we do not pass foreign configurations by accident. ([19945c9](https://git.griefed.de/Griefed/ServerPackCreator/commit/19945c9200d4d00b4ef37fb970c3bb5a2fbc76e6))
+
+
+### 🛠 Fixes
+
+* Java arguments and script settings not being cleared when hitting "New Configuration". Directories which must be included not migrated to TreeSet, so it accumulated over time. ([c6d6c05](https://git.griefed.de/Griefed/ServerPackCreator/commit/c6d6c0504ec106fe3cf1911838d7fb221c22ef5b))
+
+## [3.14.0-beta.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.13.0...3.14.0-beta.1) (2022-09-06)
+
+
+### 💎 Improvements
+
+* **Addon System Overhaul:** Exapnd addon system. Adds ConfigCheck & ConfigPanel extensions. Provide abstracts for ConfigPanel, Addon and ExtensionTab. Create, load and provide global addon- and extension-specific configuration. ([22a4c15](https://git.griefed.de/Griefed/ServerPackCreator/commit/22a4c15337025b9e7e755334fd901d42ef840845))
+* **Configuration:** Allow storing and loading of addon configurations and custom script settings ([b29fa0a](https://git.griefed.de/Griefed/ServerPackCreator/commit/b29fa0a2f372ca54e2903d81823e392bdbae33e8))
+* **Java Setting For Modloader Server Installation:** Move Java setting to global setting in ApplicationProperties. Small GUI makeover, too. ([885bb04](https://git.griefed.de/Griefed/ServerPackCreator/commit/885bb0442d167832105f5e6538e3d1eb0a0ae51b))
+* **Start Script Settings:** Allow setting custom Java path in start scripts. Java in scripts for ZIP-archives will continue to be set to `java` only. ([5e34e7f](https://git.griefed.de/Griefed/ServerPackCreator/commit/5e34e7f62f45842064c2d716b808241f75590150))
+
+
+### 🚀 Features
+
+* **Start Script Settings Editing:** Provide table to add, edit, remove placeholders and values for custom start scripts ([0c98c3b](https://git.griefed.de/Griefed/ServerPackCreator/commit/0c98c3b3111b480088941bb464fbdf92e9ec6db6))
+
+## [3.14.0-alpha.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.14.0-alpha.3...3.14.0-alpha.4) (2022-09-06)
+
+
+### 💎 Improvements
+
+* **Start Script Settings:** Allow setting custom Java path in start scripts. Java in scripts for ZIP-archives will continue to be set to `java` only. ([5e34e7f](https://git.griefed.de/Griefed/ServerPackCreator/commit/5e34e7f62f45842064c2d716b808241f75590150))
+
+## [3.14.0-alpha.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.14.0-alpha.2...3.14.0-alpha.3) (2022-09-05)
+
+
+### 💎 Improvements
+
+* **Java Setting For Modloader Server Installation:** Move Java setting to global setting in ApplicationProperties. Small GUI makeover, too. ([885bb04](https://git.griefed.de/Griefed/ServerPackCreator/commit/885bb0442d167832105f5e6538e3d1eb0a0ae51b))
+
+## [3.14.0-alpha.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.14.0-alpha.1...3.14.0-alpha.2) (2022-09-05)
+
+
+### 🚀 Features
+
+* **Start Script Settings Editing:** Provide table to add, edit, remove placeholders and values for custom start scripts ([0c98c3b](https://git.griefed.de/Griefed/ServerPackCreator/commit/0c98c3b3111b480088941bb464fbdf92e9ec6db6))
+
+## [3.14.0-alpha.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.13.0...3.14.0-alpha.1) (2022-09-04)
+
+
+### 💎 Improvements
+
+* **Addon System Overhaul:** Exapnd addon system. Adds ConfigCheck & ConfigPanel extensions. Provide abstracts for ConfigPanel, Addon and ExtensionTab. Create, load and provide global addon- and extension-specific configuration. ([22a4c15](https://git.griefed.de/Griefed/ServerPackCreator/commit/22a4c15337025b9e7e755334fd901d42ef840845))
+* **Configuration:** Allow storing and loading of addon configurations and custom script settings ([b29fa0a](https://git.griefed.de/Griefed/ServerPackCreator/commit/b29fa0a2f372ca54e2903d81823e392bdbae33e8))
+
 ## [3.13.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.12.0...3.13.0) (2022-08-31)
 
 

@@ -126,7 +126,6 @@ public class TaskHandler {
       serverPackModel.setModLoader(parameters[3]);
       serverPackModel.setModLoaderVersion(parameters[4]);
       serverPackModel.setClientMods(Arrays.asList(parameters[1].split(",")));
-      serverPackModel.setJavaPath("");
       serverPackModel.setIncludeServerInstallation(false);
 
       ServerPackModel pack;

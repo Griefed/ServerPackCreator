@@ -29,6 +29,7 @@ import de.griefed.versionchecker.Update;
 import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.Dimension;
+import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.datatransfer.Clipboard;
@@ -42,9 +43,9 @@ import java.net.URISyntaxException;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
+import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
-import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -89,7 +90,7 @@ public class MainMenuBar extends Component {
   private final LightTheme LIGHTTHEME;
   private final DarkTheme DARKTHEME;
 
-  private final JFrame FRAME_SERVERPACKCREATOR;
+  private final ServerPackCreatorWindow SERVERPACKCREATORWINDOW;
 
   private final TabCreateServerPack TAB_CREATESERVERPACK;
 
@@ -106,12 +107,17 @@ public class MainMenuBar extends Component {
   private final ImageIcon HELPICON =
       new ImageIcon(
           Objects.requireNonNull(
-              ServerPackCreatorGui.class.getResource("/de/griefed/resources/gui/help.png")));
+              MainMenuBar.class.getResource("/de/griefed/resources/gui/help.png")));
   private final ImageIcon ICON_HASTEBIN =
       new ImageIcon(
           Objects.requireNonNull(
-              ServerPackCreatorGui.class.getResource("/de/griefed/resources/gui/hastebin.png")));
+              MainMenuBar.class.getResource("/de/griefed/resources/gui/hastebin.png")));
 
+  private final ImageIcon INFO_ICON = new ImageIcon(
+      ImageIO.read(
+              Objects.requireNonNull(
+                  MainMenuBar.class.getResource("/de/griefed/resources/gui/info.png")))
+          .getScaledInstance(48, 48, Image.SCALE_SMOOTH));
   private final JMenuBar MENUBAR = new JMenuBar();
 
   private final String[] HASTEOPTIONS = new String[3];
@@ -156,20 +162,22 @@ public class MainMenuBar extends Component {
    * @param injectedUpdateChecker         Instance of {@link UpdateChecker} to check for
    *                                      update-availability.
    * @param injectedUtilities             Instance of {@link Utilities} for various things.
+   * @throws IOException when the info icon could not be instantiated.
    * @author Griefed
    */
   public MainMenuBar(
       I18n injectedI18n,
       LightTheme injectedLightTheme,
       DarkTheme injectedDarkTheme,
-      JFrame injectedJFrame,
+      ServerPackCreatorWindow injectedJFrame,
       MaterialLookAndFeel injectedLAF_Light,
       MaterialLookAndFeel injectedLAF_Dark,
       TabCreateServerPack injectedTabCreateServerPack,
       JTabbedPane injectedTabbedPane,
       ApplicationProperties injectedApplicationProperties,
       UpdateChecker injectedUpdateChecker,
-      de.griefed.serverpackcreator.utilities.common.Utilities injectedUtilities) {
+      de.griefed.serverpackcreator.utilities.common.Utilities injectedUtilities)
+      throws IOException {
 
     this.APPLICATIONPROPERTIES = injectedApplicationProperties;
     this.I18N = injectedI18n;
@@ -177,13 +185,13 @@ public class MainMenuBar extends Component {
     this.UTILITIES = injectedUtilities;
     this.LIGHTTHEME = injectedLightTheme;
     this.DARKTHEME = injectedDarkTheme;
-    this.FRAME_SERVERPACKCREATOR = injectedJFrame;
+    this.SERVERPACKCREATORWINDOW = injectedJFrame;
     this.LAF_LIGHT = injectedLAF_Light;
     this.LAF_DARK = injectedLAF_Dark;
     this.TAB_CREATESERVERPACK = injectedTabCreateServerPack;
     this.TABBEDPANE = injectedTabbedPane;
 
-    CLOSEEVENT = new WindowEvent(FRAME_SERVERPACKCREATOR, WindowEvent.WINDOW_CLOSING);
+    CLOSEEVENT = new WindowEvent(SERVERPACKCREATORWINDOW, WindowEvent.WINDOW_CLOSING);
 
     String ABOUTWINDOWTEXT = I18N.getMessage("createserverpack.gui.about.text");
     ABOUT_WINDOW_TEXTPANE.setEditable(false);
@@ -440,11 +448,11 @@ public class MainMenuBar extends Component {
 
     if (!displayUpdateDialog()) {
       JOptionPane.showMessageDialog(
-          FRAME_SERVERPACKCREATOR,
-          I18N.getMessage("menubar.gui.menuitem.updates.none"),
-          I18N.getMessage("menubar.gui.menuitem.updates.none.title"),
+          SERVERPACKCREATORWINDOW,
+          I18N.getMessage("menubar.gui.menuitem.updates.none") + "   ",
+          I18N.getMessage("menubar.gui.menuitem.updates.none.title") + "   ",
           JOptionPane.INFORMATION_MESSAGE,
-          UIManager.getIcon("OptionPane.informationIcon"));
+          INFO_ICON);
     }
   }
 
@@ -502,12 +510,12 @@ public class MainMenuBar extends Component {
       materialTextPaneUI.installUI(jTextPane);
 
       switch (JOptionPane.showOptionDialog(
-          FRAME_SERVERPACKCREATOR,
+          SERVERPACKCREATORWINDOW,
           jTextPane,
           I18N.getMessage("update.dialog.available"),
           JOptionPane.DEFAULT_OPTION,
           JOptionPane.INFORMATION_MESSAGE,
-          UIManager.getIcon("OptionPane.informationIcon"),
+          INFO_ICON,
           options,
           options[0])) {
         case 0:
@@ -541,18 +549,18 @@ public class MainMenuBar extends Component {
     LOG.debug("Running update check for fallback modslist...");
     if (APPLICATIONPROPERTIES.updateFallback()) {
       JOptionPane.showMessageDialog(
-          FRAME_SERVERPACKCREATOR,
+          SERVERPACKCREATORWINDOW,
           I18N.getMessage("menubar.gui.menuitem.updatefallback.updated"),
           I18N.getMessage("menubar.gui.menuitem.updatefallback.title"),
           JOptionPane.INFORMATION_MESSAGE,
-          UIManager.getIcon("OptionPane.informationIcon"));
+          INFO_ICON);
     } else {
       JOptionPane.showMessageDialog(
-          FRAME_SERVERPACKCREATOR,
+          SERVERPACKCREATORWINDOW,
           I18N.getMessage("menubar.gui.menuitem.updatefallback.nochange"),
           I18N.getMessage("menubar.gui.menuitem.updatefallback.title"),
           JOptionPane.INFORMATION_MESSAGE,
-          UIManager.getIcon("OptionPane.informationIcon"));
+          INFO_ICON);
     }
   }
 
@@ -695,7 +703,7 @@ public class MainMenuBar extends Component {
     MATERIALTEXTPANEUI.installUI(displayTextPane);
 
     switch (JOptionPane.showOptionDialog(
-        FRAME_SERVERPACKCREATOR,
+        SERVERPACKCREATORWINDOW,
         displayTextPane,
         I18N.getMessage("createserverpack.gui.about.hastebin.dialog"),
         JOptionPane.DEFAULT_OPTION,
@@ -725,7 +733,7 @@ public class MainMenuBar extends Component {
   private void fileTooLargeDialog() {
     MATERIALTEXTPANEUI.installUI(FILETOOLARGE_WINDOW_TEXTPANE);
     JOptionPane.showConfirmDialog(
-        FRAME_SERVERPACKCREATOR,
+        SERVERPACKCREATORWINDOW,
         I18N.getMessage("menubar.gui.filetoolarge"),
         I18N.getMessage("menubar.gui.filetoolargetitle"),
         JOptionPane.DEFAULT_OPTION,
@@ -775,7 +783,7 @@ public class MainMenuBar extends Component {
    */
   private void exitMenuItem(ActionEvent actionEvent) {
     LOG.debug("Clicked Exit.");
-    FRAME_SERVERPACKCREATOR.dispatchEvent(CLOSEEVENT);
+    SERVERPACKCREATORWINDOW.dispatchEvent(CLOSEEVENT);
   }
 
   /**
@@ -799,7 +807,7 @@ public class MainMenuBar extends Component {
     configChooser.setMultiSelectionEnabled(false);
     configChooser.setPreferredSize(CHOOSERDIMENSION);
 
-    if (configChooser.showOpenDialog(FRAME_SERVERPACKCREATOR) == JFileChooser.APPROVE_OPTION) {
+    if (configChooser.showOpenDialog(SERVERPACKCREATORWINDOW) == JFileChooser.APPROVE_OPTION) {
 
       try {
 
@@ -879,7 +887,7 @@ public class MainMenuBar extends Component {
       }
     }
 
-    SwingUtilities.updateComponentTreeUI(FRAME_SERVERPACKCREATOR);
+    SwingUtilities.updateComponentTreeUI(SERVERPACKCREATORWINDOW);
     TABBEDPANE.setOpaque(true);
     TAB_CREATESERVERPACK.validateInputFields();
     TAB_CREATESERVERPACK.updatePanelTheme();
@@ -906,7 +914,7 @@ public class MainMenuBar extends Component {
     configChooser.setMultiSelectionEnabled(false);
     configChooser.setPreferredSize(CHOOSERDIMENSION);
 
-    if (configChooser.showOpenDialog(FRAME_SERVERPACKCREATOR) == JFileChooser.APPROVE_OPTION) {
+    if (configChooser.showOpenDialog(SERVERPACKCREATORWINDOW) == JFileChooser.APPROVE_OPTION) {
 
       try {
 
@@ -1016,7 +1024,7 @@ public class MainMenuBar extends Component {
     ABOUTWINDOWSCROLLPANE.setMaximumSize(ABOUTDIMENSION);
 
     JOptionPane.showMessageDialog(
-        FRAME_SERVERPACKCREATOR,
+        SERVERPACKCREATORWINDOW,
         ABOUTWINDOWSCROLLPANE,
         I18N.getMessage("createserverpack.gui.createserverpack.about.title"),
         JOptionPane.INFORMATION_MESSAGE,

@@ -29,12 +29,20 @@ import de.griefed.serverpackcreator.modscanning.FabricScanner;
 import de.griefed.serverpackcreator.modscanning.ModScanner;
 import de.griefed.serverpackcreator.modscanning.QuiltScanner;
 import de.griefed.serverpackcreator.modscanning.TomlScanner;
-import de.griefed.serverpackcreator.swing.ServerPackCreatorGui;
 import de.griefed.serverpackcreator.swing.ServerPackCreatorSplash;
+import de.griefed.serverpackcreator.swing.ServerPackCreatorWindow;
 import de.griefed.serverpackcreator.utilities.ConfigUtilities;
 import de.griefed.serverpackcreator.utilities.ConfigurationEditor;
 import de.griefed.serverpackcreator.utilities.UpdateChecker;
+import de.griefed.serverpackcreator.utilities.common.BooleanUtilities;
+import de.griefed.serverpackcreator.utilities.common.FileUtilities;
+import de.griefed.serverpackcreator.utilities.common.JarUtilities;
+import de.griefed.serverpackcreator.utilities.common.JsonUtilities;
+import de.griefed.serverpackcreator.utilities.common.ListUtilities;
+import de.griefed.serverpackcreator.utilities.common.StringUtilities;
+import de.griefed.serverpackcreator.utilities.common.SystemUtilities;
 import de.griefed.serverpackcreator.utilities.common.Utilities;
+import de.griefed.serverpackcreator.utilities.common.WebUtilities;
 import de.griefed.serverpackcreator.versionmeta.VersionMeta;
 import de.griefed.versionchecker.Update;
 import java.awt.GraphicsEnvironment;
@@ -48,6 +56,7 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.InputMismatchException;
@@ -97,11 +106,19 @@ public class ServerPackCreator {
       new ObjectMapper()
           .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
           .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
+  private BooleanUtilities booleanUtilities = null;
+  private FileUtilities fileUtilities = null;
+  private JarUtilities jarUtilities = null;
+  private JsonUtilities jsonUtilities = null;
+  private ListUtilities listUtilities = null;
+  private StringUtilities stringUtilities = null;
+  private SystemUtilities systemUtilities = null;
+  private WebUtilities webUtilities = null;
   private Utilities utilities = null;
   private VersionMeta versionMeta = null;
   private ConfigUtilities configUtilities = null;
   private ConfigurationHandler configurationHandler = null;
-  private ApplicationPlugins applicationPlugins = null;
+  private ApplicationAddons applicationAddons = null;
   private ServerPackHandler serverPackHandler = null;
   private ServerPackCreatorSplash serverPackCreatorSplash = null;
   private UpdateChecker updateChecker = null;
@@ -112,7 +129,7 @@ public class ServerPackCreator {
   private TomlParser tomlParser = null;
   private TomlScanner tomlScanner = null;
   private ConfigurationEditor configurationEditor = null;
-  private ServerPackCreatorGui serverPackCreatorGui = null;
+  private ServerPackCreatorWindow serverPackCreatorGui = null;
 
   /**
    * Initialize ServerPackCreator and determine the {@link Mode} to run in.
@@ -124,7 +141,13 @@ public class ServerPackCreator {
   public ServerPackCreator(String[] args) {
     ARGS = args;
     COMMANDLINE_PARSER = new CommandlineParser(args);
-    APPLICATIONPROPERTIES = new ApplicationProperties();
+    if (COMMANDLINE_PARSER.propertiesFile().isPresent()) {
+      APPLICATIONPROPERTIES = new ApplicationProperties(COMMANDLINE_PARSER.propertiesFile().get(),
+          getFileUtilities(), getSystemUtilities(), getListUtilities());
+    } else {
+      APPLICATIONPROPERTIES = new ApplicationProperties(getFileUtilities(), getSystemUtilities(),
+          getListUtilities());
+    }
 
     if (COMMANDLINE_PARSER.getLanguageToUse().isPresent()) {
       I18N = new I18n(APPLICATIONPROPERTIES, COMMANDLINE_PARSER.getLanguageToUse().get());
@@ -207,10 +230,6 @@ public class ServerPackCreator {
     return ARGS;
   }
 
-  public synchronized CommandlineParser getCommandlineParser() {
-    return COMMANDLINE_PARSER;
-  }
-
   public synchronized I18n getI18n() {
     return I18N;
   }
@@ -223,9 +242,74 @@ public class ServerPackCreator {
     return APPLICATIONPROPERTIES;
   }
 
+  public synchronized BooleanUtilities getBooleanUtilities() {
+    if (booleanUtilities == null) {
+      booleanUtilities = new BooleanUtilities();
+    }
+    return booleanUtilities;
+  }
+
+  public synchronized FileUtilities getFileUtilities() {
+    if (fileUtilities == null) {
+      fileUtilities = new FileUtilities();
+    }
+    return fileUtilities;
+  }
+
+  public synchronized JarUtilities getJarUtilities() {
+    if (jarUtilities == null) {
+      jarUtilities = new JarUtilities();
+    }
+    return jarUtilities;
+  }
+
+  public synchronized JsonUtilities getJsonUtilities() {
+    if (jsonUtilities == null) {
+      jsonUtilities = new JsonUtilities();
+    }
+    return jsonUtilities;
+  }
+
+  public synchronized ListUtilities getListUtilities() {
+    if (listUtilities == null) {
+      listUtilities = new ListUtilities();
+    }
+    return listUtilities;
+  }
+
+  public synchronized StringUtilities getStringUtilities() {
+    if (stringUtilities == null) {
+      stringUtilities = new StringUtilities();
+    }
+    return stringUtilities;
+  }
+
+  public synchronized SystemUtilities getSystemUtilities() {
+    if (systemUtilities == null) {
+      systemUtilities = new SystemUtilities();
+    }
+    return systemUtilities;
+  }
+
+  public synchronized WebUtilities getWebUtilities() {
+    if (webUtilities == null) {
+      webUtilities = new WebUtilities(getApplicationProperties());
+    }
+    return webUtilities;
+  }
+
   public synchronized Utilities getUtilities() {
     if (this.utilities == null) {
-      this.utilities = new Utilities(APPLICATIONPROPERTIES);
+      this.utilities = new Utilities(
+          getBooleanUtilities(),
+          getFileUtilities(),
+          getJarUtilities(),
+          getListUtilities(),
+          getStringUtilities(),
+          getSystemUtilities(),
+          getWebUtilities(),
+          getJsonUtilities()
+      );
     }
     return utilities;
   }
@@ -245,7 +329,9 @@ public class ServerPackCreator {
               APPLICATIONPROPERTIES.LEGACY_FABRIC_GAME_MANIFEST_LOCATION(),
               APPLICATIONPROPERTIES.LEGACY_FABRIC_LOADER_MANIFEST_LOCATION(),
               APPLICATIONPROPERTIES.LEGACY_FABRIC_INSTALLER_MANIFEST_LOCATION(),
-              OBJECT_MAPPER);
+              OBJECT_MAPPER,
+              getUtilities(),
+              getApplicationProperties());
     }
     return versionMeta;
   }
@@ -263,16 +349,19 @@ public class ServerPackCreator {
     if (this.configurationHandler == null) {
       this.configurationHandler =
           new ConfigurationHandler(
-              I18N, getVersionMeta(), APPLICATIONPROPERTIES, getUtilities(), getConfigUtilities());
+              I18N, getVersionMeta(), APPLICATIONPROPERTIES, getUtilities(), getConfigUtilities(),
+              getApplicationAddons());
     }
     return configurationHandler;
   }
 
-  public synchronized ApplicationPlugins getApplicationPlugins() {
-    if (this.applicationPlugins == null) {
-      this.applicationPlugins = new ApplicationPlugins();
+  public synchronized ApplicationAddons getApplicationAddons()
+      throws IOException, ParserConfigurationException, SAXException {
+    if (this.applicationAddons == null) {
+      this.applicationAddons = new ApplicationAddons(getTomlParser(), getApplicationProperties(),
+          getVersionMeta(), getUtilities());
     }
-    return applicationPlugins;
+    return applicationAddons;
   }
 
   public synchronized ServerPackHandler getServerPackHandler()
@@ -283,7 +372,7 @@ public class ServerPackCreator {
               APPLICATIONPROPERTIES,
               getVersionMeta(),
               getUtilities(),
-              getApplicationPlugins(),
+              getApplicationAddons(),
               getModScanner());
     }
     return serverPackHandler;
@@ -360,10 +449,10 @@ public class ServerPackCreator {
     return configurationEditor;
   }
 
-  public synchronized ServerPackCreatorGui getServerPackCreatorGui()
+  public synchronized ServerPackCreatorWindow getServerPackCreatorGui()
       throws IOException, ParserConfigurationException, SAXException {
     if (this.serverPackCreatorGui == null) {
-      this.serverPackCreatorGui = new ServerPackCreatorGui(
+      this.serverPackCreatorGui = new ServerPackCreatorWindow(
           I18N,
           getConfigurationHandler(),
           getServerPackHandler(),
@@ -371,9 +460,9 @@ public class ServerPackCreator {
           getVersionMeta(),
           getUtilities(),
           getUpdateChecker(),
-          getApplicationPlugins(),
-          getConfigUtilities(),
-          getServerPackCreatorSplash());
+          getServerPackCreatorSplash(),
+          getApplicationAddons(),
+          getConfigUtilities());
     }
     return serverPackCreatorGui;
   }
@@ -509,6 +598,28 @@ public class ServerPackCreator {
       LOG.error("Error copying \"/de/griefed/resources/lang\" from the JAR-file.");
     }
 
+    try {
+
+      String prefix = "BOOT-INF/classes";
+      String manifestSource = "/de/griefed/resources/manifests";
+
+      if (systemInformation.get("jarName").endsWith(".exe")) {
+        prefix = "";
+        manifestSource = "de/griefed/resources/manifests";
+      }
+
+      getUtilities().JarUtils()
+          .copyFolderFromJar(
+              ServerPackCreator.class,
+              manifestSource,
+              "manifests",
+              prefix,
+              "");
+
+    } catch (IOException ex) {
+      LOG.error("Error copying \"/de/griefed/resources/manifests\" from the JAR-file.");
+    }
+
     getUtilities().FileUtils().createDirectories(Paths.get("./server_files"));
     getUtilities().FileUtils().createDirectories(Paths.get("./work"));
     getUtilities().FileUtils().createDirectories(Paths.get("./work/temp"));
@@ -516,6 +627,7 @@ public class ServerPackCreator {
     getUtilities().FileUtils().createDirectories(Paths.get("./server-packs"));
     getUtilities().FileUtils()
         .createDirectories(Paths.get(System.getProperty("pf4j.pluginsDir", "./plugins")));
+    getUtilities().FileUtils().createDirectories(Paths.get("./plugins/config"));
 
     if (!new File(System.getProperty("pf4j.pluginsDir", "./plugins") + "/disabled.txt").exists()) {
       try (BufferedWriter writer =
@@ -602,14 +714,14 @@ public class ServerPackCreator {
   }
 
   /**
-   * Initialize {@link ApplicationPlugins}, {@link ServerPackHandler} and our {@link UpdateChecker}
+   * Initialize {@link ApplicationAddons}, {@link ServerPackHandler} and our {@link UpdateChecker}
    * if it is found to be <code>null</code>.
    *
    * @throws IOException if the {@link VersionMeta} could not be instantiated.
    * @author Griefed
    */
   private void stageThree() throws IOException, ParserConfigurationException, SAXException {
-    getApplicationPlugins();
+    getApplicationAddons();
     getAnnotationScanner();
     getFabricScanner();
     getQuiltScanner();
@@ -664,7 +776,7 @@ public class ServerPackCreator {
               if (check(file, APPLICATIONPROPERTIES.SERVERPACKCREATOR_PROPERTIES())) {
 
                 createFile(APPLICATIONPROPERTIES.SERVERPACKCREATOR_PROPERTIES());
-                APPLICATIONPROPERTIES.reload();
+                APPLICATIONPROPERTIES.loadProperties();
                 LOG.info("Restored serverpackcreator.properties and loaded defaults.");
 
               } else if (check(file, APPLICATIONPROPERTIES.DEFAULT_SERVER_PROPERTIES())) {
@@ -1206,6 +1318,7 @@ public class ServerPackCreator {
    *
    * @author Griefed
    */
+  @SuppressWarnings("InnerClassMayBeStatic")
   public class CommandlineParser {
 
     /**
@@ -1218,6 +1331,8 @@ public class ServerPackCreator {
      * so we can use the default language <code>en_us</code>.
      */
     private final String LANG;
+
+    private File propertiesFile = null;
 
     /**
      * Create a new CommandlineParser from the passed commandline-arguments with which
@@ -1232,17 +1347,18 @@ public class ServerPackCreator {
      */
     public CommandlineParser(String[] args) {
 
-      List<String> argsList = Arrays.asList(args);
+      final List<String> argsList = new ArrayList<>(Arrays.asList(args));
 
       /*
        * Check whether a language locale was specified by the user.
        * If none was specified, set LANG to null so the Optional returns false for isPresent(),
        * thus allowing us to use the locale set in the ApplicationProperties later on.
        */
-      if (argsList.contains(Mode.LANG.argument())) {
+      if (argsList.contains(Mode.LANG.argument())
+          && argsList.size() >= argsList.indexOf(Mode.LANG.argument()) + 1) {
         this.LANG = argsList.get(argsList.indexOf(Mode.LANG.argument()) + 1);
       } else {
-        this.LANG = null;
+        this.LANG = "en_us";
       }
 
       /*
@@ -1300,6 +1416,13 @@ public class ServerPackCreator {
        * Check whether the user wants to set up and prepare the environment for subsequent runs.
        */
       if (argsList.contains(Mode.SETUP.argument())) {
+        if (argsList.size() > 1
+            && new File(argsList.get(argsList.indexOf(Mode.SETUP.argument()) + 1)).isFile()) {
+
+          propertiesFile = new File(argsList.get(argsList.indexOf(Mode.SETUP.argument()) + 1));
+
+        }
+
         this.MODE = Mode.SETUP;
         return;
       }
@@ -1337,6 +1460,18 @@ public class ServerPackCreator {
      */
     protected Optional<String> getLanguageToUse() {
       return Optional.ofNullable(LANG);
+    }
+
+    /**
+     * If ServerPackCreator was executed with the <code>--setup</code>-argument as well as a
+     * properties-file, then this method will return the specified properties file, wrapped in an
+     * {@link Optional}, so you can check whether it is present or not.
+     *
+     * @return The specified properties-file, wrapped in an Optional.
+     * @author Griefed
+     */
+    public Optional<File> propertiesFile() {
+      return Optional.ofNullable(propertiesFile);
     }
   }
 }

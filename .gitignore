@@ -207,3 +207,5 @@ backend/main/resources/VERSION.txt
 /minecraft-manifest.json
 /quilt-installer-manifest.xml
 /quilt-manifest.xml
+/after.conf
+/server-packs_server_pack.zip

@@ -9,11 +9,12 @@ import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
 public class VersionMetaTest {
-
+  String[] args = new String[]{"--setup", "backend/test/resources/serverpackcreator.properties"};
   private final VersionMeta versionMeta;
 
   public VersionMetaTest() throws IOException, ParserConfigurationException, SAXException {
-    versionMeta = ServerPackCreator.getInstance().getVersionMeta();
+
+    versionMeta = ServerPackCreator.getInstance(args).getVersionMeta();
   }
 
   @Test
@@ -205,6 +206,10 @@ public class VersionMetaTest {
         versionMeta.minecraft()
             .snapshotsServersArrayDescending()[
             versionMeta.minecraft().snapshotsServersArrayDescending().length - 1]);
+
+    versionMeta.minecraft().snapshotsAscending().forEach(
+        version -> version.server().url().isPresent()
+    );
   }
 
   @Test

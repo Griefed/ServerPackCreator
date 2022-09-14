@@ -1,6 +1,10 @@
 package de.griefed.serverpackcreator.i18n;
 
 import de.griefed.serverpackcreator.ApplicationProperties;
+import de.griefed.serverpackcreator.ServerPackCreator;
+import de.griefed.serverpackcreator.utilities.common.FileUtilities;
+import de.griefed.serverpackcreator.utilities.common.ListUtilities;
+import de.griefed.serverpackcreator.utilities.common.SystemUtilities;
 import java.io.File;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
@@ -11,15 +15,16 @@ import org.junit.jupiter.api.Test;
 public class I18nTest {
 
   private final Logger LOG = LogManager.getLogger(I18nTest.class);
-
+  String[] args = new String[]{"--setup", "backend/test/resources/serverpackcreator.properties"};
   I18nTest() {
     FileUtils.deleteQuietly(new File("lang"));
   }
 
   @Test
   void localeTest() {
-    ApplicationProperties applicationProperties = new ApplicationProperties(
-        new File("backend/test/resources/serverpackcreator.properties"));
+    ApplicationProperties applicationProperties = ServerPackCreator.getInstance(
+            args)
+        .getApplicationProperties();
     FileUtils.deleteQuietly(new File("lang"));
     I18n i18n = new I18n(applicationProperties);
     Assertions.assertEquals("English (United States)", i18n.getMessage("localeUnlocalizedName"));
@@ -55,7 +60,7 @@ public class I18nTest {
     }
 
     LOG.info("customLanguageTest() ef_gh");
-    i18n = new I18n(new ApplicationProperties(), "ef_gh");
+    i18n = new I18n(new ApplicationProperties(new FileUtilities(),new SystemUtilities(), new ListUtilities()), "ef_gh");
     Assertions.assertEquals("I bims 1 Sprache", i18n.getMessage("localeUnlocalizedName"));
   }
 

@@ -45,3 +45,4 @@ Project.xml
 qodana.yaml
 renovate.json
 settings.gradle
+after.conf

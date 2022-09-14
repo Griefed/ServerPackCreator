@@ -36,7 +36,7 @@ import mdlaf.utils.MaterialColors;
  */
 public class DarkTheme extends JMarsDarkTheme {
 
-  private ColorUIResource selectedBackground = new ColorUIResource(50, 66, 74);
+  private final ColorUIResource selectedBackground = new ColorUIResource(50, 66, 74);
   private Color textErrorColour;
 
   public Color getTextErrorColour() {
@@ -51,6 +51,11 @@ public class DarkTheme extends JMarsDarkTheme {
     this.tabInsetsTabbedPane = new InsetsUIResource(6, 10, 10, 10);
     this.selectedTabInsetsTabbedPane = new InsetsUIResource(6, 10, 10, 10);
     this.borderFrameRootPane = new BorderUIResource(BorderFactory.createEmptyBorder());
+    this.cellBorderTableHeader =
+        new BorderUIResource(
+            BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new ColorUIResource(192, 255, 238)),
+                BorderFactory.createLineBorder(new ColorUIResource(192, 255, 238))));
   }
 
   @Override
@@ -78,7 +83,7 @@ public class DarkTheme extends JMarsDarkTheme {
     this.buttonDefaultBackgroundColor = new ColorUIResource(66, 179, 176);
     this.buttonDisabledBackground = new ColorUIResource(66, 69, 76);
 
-    this.buttonFocusColor = buttonDefaultBackgroundColor;
+    this.buttonFocusColor = new ColorUIResource(new Color(0, 0, 0, 0));
     this.buttonDefaultFocusColor = MaterialColors.WHITE;
     this.buttonBorderColor = new ColorUIResource(50, 83, 88);
     this.buttonColorHighlight = buttonBackgroundColorMouseHover;
@@ -105,7 +110,7 @@ public class DarkTheme extends JMarsDarkTheme {
     this.backgroundTable = new ColorUIResource(45, 48, 56);
     this.backgroundTableHeader = new ColorUIResource(66, 179, 176);
     this.selectionBackgroundTable = new ColorUIResource(126, 132, 153);
-    this.gridColorTable = new ColorUIResource(151, 151, 151);
+    this.gridColorTable = new ColorUIResource(192, 255, 238);
     this.alternateRowBackgroundTable = new ColorUIResource(59, 62, 69);
 
     this.backgroundTextField = new ColorUIResource(81, 86, 101);
@@ -149,5 +154,10 @@ public class DarkTheme extends JMarsDarkTheme {
   @Override
   public boolean getButtonBorderEnable() {
     return true;
+  }
+
+  @Override
+  public ColorUIResource getGridColorTable() {
+    return this.gridColorTable;
   }
 }

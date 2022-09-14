@@ -34,8 +34,10 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.ProviderNotFoundException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import net.lingala.zip4j.ZipFile;
@@ -53,8 +55,6 @@ import org.springframework.stereotype.Component;
 @Component
 public final class ConfigUtilities {
 
-  // TODO move class back to configurationhandler...why did I make all this stuff a separate class
-  // anyway?
   private static final Logger LOG = LogManager.getLogger(ConfigUtilities.class);
 
   private final Utilities UTILITIES;
@@ -114,9 +114,10 @@ public final class ConfigUtilities {
    * @return Boolean. Returns true if the configuration file has been successfully written and old
    * ones replaced.
    * @author Griefed
+   * @deprecated Use {@link ConfigurationModel#save(File)} instead.
    */
+  @Deprecated
   public boolean writeConfigToFile(ConfigurationModel configurationModel, File fileName) {
-
     return writeConfigToFile(
         configurationModel.getModpackDir(),
         configurationModel.getClientMods(),
@@ -124,7 +125,6 @@ public final class ConfigUtilities {
         configurationModel.getServerIconPath(),
         configurationModel.getServerPropertiesPath(),
         configurationModel.getIncludeServerInstallation(),
-        configurationModel.getJavaPath(),
         configurationModel.getMinecraftVersion(),
         configurationModel.getModLoader(),
         configurationModel.getModLoaderVersion(),
@@ -148,7 +148,6 @@ public final class ConfigUtilities {
    * @param serverPropertiesPath The path to the custom server.properties to include in the server
    *                             pack.
    * @param includeServer        Whether the modloader server software should be installed.
-   * @param javaPath             Path to the java executable/binary.
    * @param minecraftVersion     Minecraft version used by the modpack and server pack.
    * @param modLoader            Modloader used by the modpack and server pack. Ether Forge or
    *                             Fabric.
@@ -164,7 +163,9 @@ public final class ConfigUtilities {
    * replaced.
    * @author whitebear60
    * @author Griefed
+   * @deprecated Use {@link ConfigurationModel#save(File)} instead.
    */
+  @Deprecated
   public boolean writeConfigToFile(
       String modpackDir,
       List<String> clientMods,
@@ -172,7 +173,6 @@ public final class ConfigUtilities {
       String serverIconPath,
       String serverPropertiesPath,
       boolean includeServer,
-      String javaPath,
       String minecraftVersion,
       String modLoader,
       String modLoaderVersion,
@@ -194,7 +194,6 @@ public final class ConfigUtilities {
                 + "%s\nserverIconPath = \"%s\"\n\n"
                 + "%s\nserverPropertiesPath = \"%s\"\n\n"
                 + "%s\nincludeServerInstallation = %b\n\n"
-                + "%s\njavaPath = \"%s\"\n\n"
                 + "%s\nminecraftVersion = \"%s\"\n\n"
                 + "%s\nmodLoader = \"%s\"\n\n"
                 + "%s\nmodLoaderVersion = \"%s\"\n\n"
@@ -217,8 +216,6 @@ public final class ConfigUtilities {
             serverPropertiesPath,
             "# Whether to install a Forge/Fabric/Quilt server for the serverpack. Must be true or false.\n# Default value is true.",
             includeServer,
-            "# Path to the Java executable. On Linux systems it would be something like \"/usr/bin/java\".\n# Only needed if includeServerInstallation is true.",
-            javaPath.replace("\\", "/"),
             "# Which Minecraft version to use. Example: \"1.16.5\".\n# Automatically set when projectID,fileID for modpackDir has been specified.\n# Only needed if includeServerInstallation is true.",
             minecraftVersion,
             "# Which modloader to install. Must be either \"Forge\", \"Fabric\", \"Quilt\" or \"LegacyFabric\".\n# Automatically set when projectID,fileID for modpackDir has been specified.\n# Only needed if includeServerInstallation is true.",
@@ -259,8 +256,8 @@ public final class ConfigUtilities {
   /**
    * Convenience method which passes the important fields from an instance of
    * {@link ConfigurationModel} to
-   * {@link #printConfigurationModel(String, List, List, boolean, String, String, String, String,
-   * boolean, boolean, boolean, String, String, String, String)}
+   * {@link #printConfigurationModel(String, List, List, boolean, String, String, String, boolean,
+   * boolean, boolean, String, String, String, String, HashMap)}
    *
    * @param configurationModel Instance of {@link ConfigurationModel} to print to console and logs.
    * @author Griefed
@@ -271,7 +268,6 @@ public final class ConfigUtilities {
         configurationModel.getClientMods(),
         configurationModel.getCopyDirs(),
         configurationModel.getIncludeServerInstallation(),
-        configurationModel.getJavaPath(),
         configurationModel.getMinecraftVersion(),
         configurationModel.getModLoader(),
         configurationModel.getModLoaderVersion(),
@@ -281,7 +277,8 @@ public final class ConfigUtilities {
         configurationModel.getJavaArgs(),
         configurationModel.getServerPackSuffix(),
         configurationModel.getServerIconPath(),
-        configurationModel.getServerPropertiesPath());
+        configurationModel.getServerPropertiesPath(),
+        configurationModel.getScriptSettings());
   }
 
   /**
@@ -298,8 +295,6 @@ public final class ConfigUtilities {
    * @param copyDirectories      List of directories in the modpack which are to be included in the
    *                             server pack.
    * @param installServer        Whether to install the modloader server in the server pack.
-   * @param javaInstallPath      Path to the Java executable/binary needed for installing the
-   *                             modloader server in the server pack.
    * @param minecraftVer         The Minecraft version the modpack uses.
    * @param modloader            The modloader the modpack uses.
    * @param modloaderVersion     The version of the modloader the modpack uses.
@@ -313,6 +308,9 @@ public final class ConfigUtilities {
    *                             pack.
    * @param serverPropertiesPath The path to the custom server.properties to be used in the server
    *                             pack.
+   * @param scriptSettings       Custom settings for start script creation. <code>KEY</code>s are
+   *                             the placeholder, <code>VALUE</code>s are the values with which the
+   *                             placeholders are to be replaced.
    * @author Griefed
    */
   public void printConfigurationModel(
@@ -320,7 +318,6 @@ public final class ConfigUtilities {
       List<String> clientsideMods,
       List<String> copyDirectories,
       boolean installServer,
-      String javaInstallPath,
       String minecraftVer,
       String modloader,
       String modloaderVersion,
@@ -330,7 +327,8 @@ public final class ConfigUtilities {
       String javaArgs,
       String serverPackSuffix,
       String serverIconPath,
-      String serverPropertiesPath) {
+      String serverPropertiesPath,
+      HashMap<String, String> scriptSettings) {
 
     LOG.info("Your configuration is:");
     LOG.info("Modpack directory: " + modpackDirectory);
@@ -361,7 +359,6 @@ public final class ConfigUtilities {
 
     /* This log is meant to be read by the user, therefore we allow translation. */
     LOG.info("Include server installation:      " + installServer);
-    LOG.info("Java Installation path:           " + javaInstallPath);
     LOG.info("Minecraft version:                " + minecraftVer);
     LOG.info("Modloader:                        " + modloader);
     LOG.info("Modloader Version:                " + modloaderVersion);
@@ -372,6 +369,11 @@ public final class ConfigUtilities {
     LOG.info("Server pack suffix:               " + serverPackSuffix);
     LOG.info("Path to custom server-icon:       " + serverIconPath);
     LOG.info("Path to custom server.properties: " + serverPropertiesPath);
+    LOG.info("Script settings:");
+    for (Map.Entry<String, String> entry : scriptSettings.entrySet()) {
+      LOG.info("  Placeholder: " + entry.getKey());
+      LOG.info("        Value: " + entry.getValue());
+    }
   }
 
   /**

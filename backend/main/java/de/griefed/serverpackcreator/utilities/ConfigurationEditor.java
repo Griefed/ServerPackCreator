@@ -204,38 +204,34 @@ public final class ConfigurationEditor {
           break;
 
         case 10:
-          configurationModel.setJavaPath(getJavaPath(scanner));
-          break;
-
-        case 11:
           configurationModel.setIncludeServerIcon(includeServerIcon(scanner));
           break;
 
-        case 12:
+        case 11:
           configurationModel.setIncludeServerProperties(includeServerProperties(scanner));
           break;
 
-        case 13:
+        case 12:
           configurationModel.setIncludeZipCreation(includeZipCreation(scanner));
           break;
 
-        case 14:
+        case 13:
           configurationModel.setJavaArgs(getJavaArgs(scanner));
           break;
 
-        case 15:
+        case 14:
           configurationModel.setServerPackSuffix(getServerPackSuffix(scanner));
           break;
 
-        case 16:
+        case 15:
           saveConfiguration(scanner, configurationModel);
           break;
 
-        case 17:
+        case 16:
           CONFIGUTILITIES.printConfigurationModel(configurationModel);
           break;
 
-        case 18:
+        case 17:
           checkConfig(configurationModel);
           break;
 
@@ -365,15 +361,6 @@ public final class ConfigurationEditor {
       configurationModel.setModLoaderVersion(
           getModloaderVersion(scanner, configurationModel.getMinecraftVersion(),
               configurationModel.getModLoader()));
-
-      // ---------------------------------------------------------PATH TO JAVA INSTALLATION---------
-
-      if (configurationModel.getIncludeServerInstallation()) {
-        configurationModel.setJavaPath(getJavaPath(scanner));
-      } else {
-        printToFileAndConsole(
-            "Skipping Java installation path acquisition, as the modloader server installation is deactivated as per your input.");
-      }
 
       // ---------------------------------WHETHER TO INCLUDE SERVER-ICON.PNG IN SERVER PACK---------
 
@@ -864,33 +851,6 @@ public final class ConfigurationEditor {
   }
 
   /**
-   * Get the path to the Java installation to use in the modloader server installation.
-   *
-   * @param scanner Used for reading the users input.
-   * @return The path to the Java installation to use during modloader server installation, as per
-   * the users input.
-   * @author Griefed
-   */
-  private String getJavaPath(Scanner scanner) {
-    String javaPath;
-    printToFileAndConsole(
-        "Specify the path to your Java installation. Must end with \"java\" on Linux, or \"java.exe\" on Windows.");
-    printToFileAndConsole(
-        "If you leave this empty, ServerPackCreator will try to determine the path for you.");
-    printToFileAndConsole(
-        "Example Linux: /usr/bin/java | Example Windows: C:/Program Files/AdoptOpenJDK/jdk-8.0.275.1-hotspot/jre/bin/java.exe");
-
-    printToFileAndConsole("Path to your Java installation: ", false);
-
-    javaPath = CONFIGURATIONHANDLER.getJavaPath(getNextLine(scanner));
-
-    printToFileAndConsole("Automatically acquired path to Java installation: " + javaPath);
-    printToFileAndConsole();
-
-    return javaPath;
-  }
-
-  /**
    * Get the users decision on whether they want to include the server-icon.
    *
    * @return <code>true</code> if the user wants the server-icon to be included.
@@ -1009,26 +969,22 @@ public final class ConfigurationEditor {
           "Enter the name under which you want to additionally store the above configuration:");
       File customFileName = new File(UTILITIES.StringUtils().pathSecureText(getNextLine(scanner)));
 
-      if (CONFIGUTILITIES.writeConfigToFile(
-          configurationModel,
-          customFileName)) {
+      configurationModel.save(customFileName);
 
-        printToFileAndConsole(
-            "Your configuration has been saved as '" + customFileName + "'.");
-        printToFileAndConsole(
-            "Please note that running ServerPackCreator in CLI mode requires a valid 'serverpackcreator.conf'-file to be present.");
-        printToFileAndConsole("You may load the previous configuration, saved as '" + customFileName
-            + "' and save it as 'serverpackcreator.conf'");
-      }
+      printToFileAndConsole(
+          "Your configuration has been saved as '" + customFileName + "'.");
+      printToFileAndConsole(
+          "Please note that running ServerPackCreator in CLI mode requires a valid 'serverpackcreator.conf'-file to be present.");
+      printToFileAndConsole("You may load the previous configuration, saved as '" + customFileName
+          + "' and save it as 'serverpackcreator.conf'");
+
 
     } else {
-      if (CONFIGUTILITIES.writeConfigToFile(
-          configurationModel,
-          APPLICATIONPROPERTIES.DEFAULT_CONFIG())) {
 
-        printToFileAndConsole(
-            "Your configuration has been saved as 'serverpackcreator.conf'.");
-      }
+      configurationModel.save(APPLICATIONPROPERTIES.DEFAULT_CONFIG());
+      printToFileAndConsole(
+          "Your configuration has been saved as 'serverpackcreator.conf'.");
+
     }
   }
 

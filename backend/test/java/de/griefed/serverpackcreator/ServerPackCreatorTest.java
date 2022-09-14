@@ -11,7 +11,7 @@ import org.xml.sax.SAXException;
 
 public class ServerPackCreatorTest {
 
-
+  String[] args = new String[]{"--setup", "backend/test/resources/serverpackcreator.properties"};
   ServerPackCreatorTest() {
   }
 
@@ -23,7 +23,7 @@ public class ServerPackCreatorTest {
     FileUtils.deleteQuietly(new File("./server-packs"));
     FileUtils.deleteQuietly(new File("./server_files/server.properties"));
     FileUtils.deleteQuietly(new File("./server_files/server-icon.png"));
-    ServerPackCreator.getInstance().run(Mode.SETUP);
+    ServerPackCreator.getInstance(args).run(Mode.SETUP);
     Assertions.assertTrue(new File("./server_files").isDirectory());
     Assertions.assertTrue(new File("./work").isDirectory());
     Assertions.assertTrue(new File("./work/temp").isDirectory());

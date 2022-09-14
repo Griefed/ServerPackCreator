@@ -6,17 +6,18 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import net.lingala.zip4j.ZipFile;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class ConfigUtilitiesTest {
-
+  String[] args = new String[]{"--setup", "backend/test/resources/serverpackcreator.properties"};
   ConfigUtilities configUtilities;
 
   ConfigUtilitiesTest() {
-    configUtilities = ServerPackCreator.getInstance().getConfigUtilities();
+    configUtilities = ServerPackCreator.getInstance(args).getConfigUtilities();
   }
 
   @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -65,24 +66,25 @@ public class ConfigUtilitiesTest {
 
     String javaArgs = "tf3g4jz89agz843fag8z49a3zg8ap3jg8zap9vagv3z8j";
 
-    Assertions.assertTrue(
-        configUtilities.writeConfigToFile(
-            "./backend/test/resources/fabric_tests",
+    Assertions.assertNotNull(
+        new ConfigurationModel(
             clientMods,
             copyDirs,
-            "",
-            "",
-            true,
+            "./backend/test/resources/fabric_tests",
             javaPath,
             "1.16.5",
             "Fabric",
             "0.11.3",
-            true,
-            true,
-            true,
             javaArgs,
             "",
-            new File("./serverpackcreatorfabric.conf")));
+            "",
+            true,
+            true,
+            true,
+            true,
+            new HashMap<>(),
+            new HashMap<>()
+        ).save(new File("./serverpackcreatorfabric.conf")));
     Assertions.assertTrue(new File("./serverpackcreatorfabric.conf").exists());
     new File("./serverpackcreatorfabric.conf").delete();
   }
@@ -133,24 +135,25 @@ public class ConfigUtilitiesTest {
 
     String javaArgs = "tf3g4jz89agz843fag8z49a3zg8ap3jg8zap9vagv3z8j";
 
-    Assertions.assertTrue(
-        configUtilities.writeConfigToFile(
-            "./backend/test/resources/forge_tests",
+    Assertions.assertNotNull(
+        new ConfigurationModel(
             clientMods,
             copyDirs,
-            "",
-            "",
-            true,
+            "./backend/test/resources/forge_tests",
             javaPath,
             "1.16.5",
             "Forge",
             "36.1.2",
-            true,
-            true,
-            true,
             javaArgs,
             "",
-            new File("./serverpackcreatorforge.conf")));
+            "",
+            true,
+            true,
+            true,
+            true,
+            new HashMap<>(),
+            new HashMap<>()
+        ).save(new File("./serverpackcreatorforge.conf")));
     Assertions.assertTrue(new File("./serverpackcreatorforge.conf").exists());
     new File("./serverpackcreatorforge.conf").delete();
   }
@@ -191,13 +194,11 @@ public class ConfigUtilitiesTest {
     configurationModel.setIncludeServerIcon(true);
     configurationModel.setIncludeServerProperties(true);
     configurationModel.setIncludeZipCreation(true);
-    configurationModel.setJavaPath("/usr/bin/java");
     configurationModel.setMinecraftVersion("1.16.5");
     configurationModel.setModLoader("Forge");
     configurationModel.setModLoaderVersion("36.1.2");
     configurationModel.setJavaArgs("tf3g4jz89agz843fag8z49a3zg8ap3jg8zap9vagv3z8j");
-    Assertions.assertTrue(
-        configUtilities.writeConfigToFile(configurationModel, new File("somefile.conf")));
+    Assertions.assertNotNull(configurationModel.save(new File("somefile.conf")));
     Assertions.assertTrue(new File("somefile.conf").exists());
   }
 
@@ -253,7 +254,6 @@ public class ConfigUtilitiesTest {
     List<String> copyDirs =
         new ArrayList<>(Arrays.asList("config", "mods", "scripts", "seeds", "defaultconfigs"));
     boolean includeServerInstallation = true;
-    String javaPath = "/usr/bin/java";
     String minecraftVersion = "1.16.5";
     String modLoader = "Forge";
     String modLoaderVersion = "36.1.2";
@@ -261,23 +261,6 @@ public class ConfigUtilitiesTest {
     boolean includeServerIcon = true;
     boolean includeServerProperties = true;
     boolean includeZipCreation = true;
-
-    configUtilities.printConfigurationModel(
-        modpackDir,
-        clientMods,
-        copyDirs,
-        includeServerInstallation,
-        javaPath,
-        minecraftVersion,
-        modLoader,
-        modLoaderVersion,
-        includeServerIcon,
-        includeServerProperties,
-        includeZipCreation,
-        javaArgs,
-        "",
-        "",
-        "");
   }
 
   @Test
@@ -316,7 +299,6 @@ public class ConfigUtilitiesTest {
     configurationModel.setIncludeServerIcon(true);
     configurationModel.setIncludeServerProperties(true);
     configurationModel.setIncludeZipCreation(true);
-    configurationModel.setJavaPath("/usr/bin/java");
     configurationModel.setMinecraftVersion("1.16.5");
     configurationModel.setModLoader("Forge");
     configurationModel.setModLoaderVersion("36.1.2");

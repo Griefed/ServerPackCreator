@@ -10,14 +10,8 @@
       </option>
       <option name="taskNames">
         <list>
-          <option value="cleanUp" />
-          <option value="about" />
-          <option value="installQuasar" />
-          <option value="cleanFrontend" />
-          <option value="assembleFrontend" />
-          <option value="copyDist" />
+          <option value="clean" />
           <option value="build" />
-          <option value="createExe" />
         </list>
       </option>
       <option name="vmOptions" />

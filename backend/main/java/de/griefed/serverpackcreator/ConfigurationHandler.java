@@ -19,8 +19,6 @@
  */
 package de.griefed.serverpackcreator;
 
-import com.electronwill.nightconfig.core.file.FileConfig;
-import com.typesafe.config.ConfigException;
 import de.griefed.serverpackcreator.i18n.I18n;
 import de.griefed.serverpackcreator.utilities.ConfigUtilities;
 import de.griefed.serverpackcreator.utilities.common.FileUtilities;
@@ -35,8 +33,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import net.lingala.zip4j.ZipFile;
 import org.apache.commons.io.FileUtils;
@@ -62,6 +58,7 @@ public final class ConfigurationHandler {
   private final ApplicationProperties APPLICATIONPROPERTIES;
   private final Utilities UTILITIES;
   private final ConfigUtilities CONFIGUTILITIES;
+  private final ApplicationAddons APPLICATIONADDONS;
 
   /**
    * Construct a new ConfigurationHandler giving you access to various config check methods.
@@ -74,6 +71,7 @@ public final class ConfigurationHandler {
    *                                      version-related.
    * @param injectedUtilities             Instance of {@link Utilities}.
    * @param injectedConfigUtilities       Instance of {@link ConfigUtilities}.
+   * @param injectedApplicationAddons     Instance of {@link ApplicationAddons}.
    * @throws IOException if the {@link VersionMeta} could not be instantiated.
    * @author Griefed
    */
@@ -83,14 +81,16 @@ public final class ConfigurationHandler {
       VersionMeta injectedVersionMeta,
       ApplicationProperties injectedApplicationProperties,
       Utilities injectedUtilities,
-      ConfigUtilities injectedConfigUtilities)
+      ConfigUtilities injectedConfigUtilities,
+      ApplicationAddons injectedApplicationAddons)
       throws IOException {
 
-    this.APPLICATIONPROPERTIES = injectedApplicationProperties;
-    this.I18N = injectedI18n;
-    this.VERSIONMETA = injectedVersionMeta;
-    this.UTILITIES = injectedUtilities;
-    this.CONFIGUTILITIES = injectedConfigUtilities;
+    APPLICATIONPROPERTIES = injectedApplicationProperties;
+    I18N = injectedI18n;
+    VERSIONMETA = injectedVersionMeta;
+    UTILITIES = injectedUtilities;
+    CONFIGUTILITIES = injectedConfigUtilities;
+    APPLICATIONADDONS = injectedApplicationAddons;
   }
 
   /**
@@ -114,7 +114,8 @@ public final class ConfigurationHandler {
    * @author Griefed
    */
   public boolean checkConfiguration(
-      @NotNull File configFile, @NotNull List<String> encounteredErrors, boolean quietCheck) {
+      @NotNull final File configFile, @NotNull final List<String> encounteredErrors,
+      boolean quietCheck) {
 
     ConfigurationModel configurationModel = new ConfigurationModel();
 
@@ -134,7 +135,7 @@ public final class ConfigurationHandler {
    * @return <code>false</code> if the configuration has passed all tests.
    * @author Griefed
    */
-  public boolean checkConfiguration(@NotNull File configFile, boolean quietCheck) {
+  public boolean checkConfiguration(@NotNull final File configFile, boolean quietCheck) {
 
     List<String> encounteredErrors = new ArrayList<>(100);
 
@@ -160,8 +161,8 @@ public final class ConfigurationHandler {
    * @author Griefed
    */
   public boolean checkConfiguration(
-      @NotNull File configFile,
-      @NotNull ConfigurationModel configurationModel,
+      @NotNull final File configFile,
+      @NotNull final ConfigurationModel configurationModel,
       boolean quietCheck) {
 
     List<String> encounteredErrors = new ArrayList<>(100);
@@ -183,7 +184,7 @@ public final class ConfigurationHandler {
    * @author Griefed
    */
   public boolean checkConfiguration(
-      @NotNull ConfigurationModel configurationModel, boolean quietCheck) {
+      @NotNull final ConfigurationModel configurationModel, boolean quietCheck) {
 
     List<String> encounteredErrors = new ArrayList<>(100);
 
@@ -213,71 +214,30 @@ public final class ConfigurationHandler {
    * @author Griefed
    */
   public boolean checkConfiguration(
-      @NotNull File configFile,
-      @NotNull ConfigurationModel configurationModel,
+      @NotNull final File configFile,
+      @NotNull final ConfigurationModel configurationModel,
       @NotNull List<String> encounteredErrors,
       boolean quietCheck) {
 
-    FileConfig config = null;
-
     try {
-      config = FileConfig.of(configFile);
-    } catch (ConfigException ex) {
-
-      LOG.error(
-          "Couldn't parse config file. Consider checking your config file and fixing empty values. If the value needs to be an empty string, leave its value to \"\".");
-
-      /* This log is meant to be read by the user, therefore we allow translation. */
-      encounteredErrors.add(I18N.getMessage("configuration.log.error.checkconfig.start"));
-    }
-
-    if (config != null) {
-
-      try {
-        config.load();
-      } catch (ConfigException ex) {
-
-        LOG.error(
-            "Couldn't parse config file. Consider checking your config file and fixing empty values. If the value needs to be an empty string, leave its value to \"\".");
-
-        /* This log is meant to be read by the user, therefore we allow translation. */
-        encounteredErrors.add(I18N.getMessage("configuration.log.error.checkconfig.start"));
-      }
-
-      configurationModel.setClientMods(
-          config.getOrElse("clientMods", Collections.singletonList("")));
-      configurationModel.setCopyDirs(config.getOrElse("copyDirs", Collections.singletonList("")));
-      configurationModel.setModpackDir(config.getOrElse("modpackDir", "").replace("\\", "/"));
-      configurationModel.setJavaPath(config.getOrElse("javaPath", "").replace("\\", "/"));
-
-      configurationModel.setMinecraftVersion(config.getOrElse("minecraftVersion", ""));
-      configurationModel.setModLoader(config.getOrElse("modLoader", ""));
-      configurationModel.setModLoaderVersion(config.getOrElse("modLoaderVersion", ""));
-      configurationModel.setJavaArgs(config.getOrElse("javaArgs", ""));
-
-      configurationModel.setServerPackSuffix(
-          UTILITIES.StringUtils().pathSecureText(config.getOrElse("serverPackSuffix", "")));
-      configurationModel.setServerIconPath(
-          config.getOrElse("serverIconPath", "").replace("\\", "/"));
-      configurationModel.setServerPropertiesPath(
-          config.getOrElse("serverPropertiesPath", "").replace("\\", "/"));
-
-      configurationModel.setIncludeServerInstallation(
-          UTILITIES.BooleanUtils()
-              .convert(
-                  String.valueOf(config.getOrElse("includeServerInstallation", "False"))));
-      configurationModel.setIncludeServerIcon(
-          UTILITIES.BooleanUtils()
-              .convert(String.valueOf(config.getOrElse("includeServerIcon", "False"))));
-      configurationModel.setIncludeServerProperties(
-          UTILITIES.BooleanUtils()
-              .convert(
-                  String.valueOf(config.getOrElse("includeServerProperties", "False"))));
-      configurationModel.setIncludeZipCreation(
-          UTILITIES.BooleanUtils()
-              .convert(String.valueOf(config.getOrElse("includeZipCreation", "False"))));
-
-    } else {
+      ConfigurationModel fileConf = new ConfigurationModel(UTILITIES, configFile);
+      configurationModel.setClientMods(fileConf.getClientMods());
+      configurationModel.setCopyDirs(fileConf.getCopyDirs());
+      configurationModel.setModpackDir(fileConf.getModpackDir());
+      configurationModel.setMinecraftVersion(fileConf.getMinecraftVersion());
+      configurationModel.setModLoader(fileConf.getModLoader());
+      configurationModel.setModLoaderVersion(fileConf.getModLoaderVersion());
+      configurationModel.setJavaArgs(fileConf.getJavaArgs());
+      configurationModel.setServerPackSuffix(fileConf.getServerPackSuffix());
+      configurationModel.setServerIconPath(fileConf.getServerIconPath());
+      configurationModel.setServerPropertiesPath(fileConf.getServerPropertiesPath());
+      configurationModel.setIncludeServerInstallation(fileConf.getIncludeServerInstallation());
+      configurationModel.setIncludeServerIcon(fileConf.getIncludeServerIcon());
+      configurationModel.setIncludeServerProperties(fileConf.getIncludeServerProperties());
+      configurationModel.setIncludeZipCreation(fileConf.getIncludeZipCreation());
+      configurationModel.setScriptSettings(fileConf.getScriptSettings());
+      configurationModel.setAddonsConfigs(fileConf.getAddonsConfigs());
+    } catch (Exception ex) {
 
       LOG.error(
           "Couldn't parse config file. Consider checking your config file and fixing empty values. If the value needs to be an empty string, leave its value to \"\".");
@@ -313,11 +273,11 @@ public final class ConfigurationHandler {
    * @author Griefed
    */
   public boolean checkConfiguration(
-      @NotNull ConfigurationModel configurationModel,
-      @NotNull List<String> encounteredErrors,
+      @NotNull final ConfigurationModel configurationModel,
+      @NotNull final List<String> encounteredErrors,
       boolean quietCheck) {
 
-    boolean configHasError;
+    boolean configHasError = false;
 
     sanitizeLinks(configurationModel);
 
@@ -329,12 +289,8 @@ public final class ConfigurationHandler {
       configurationModel.setClientMods(APPLICATIONPROPERTIES.getListFallbackMods());
     }
 
-    configurationModel.setJavaPath(
-        getJavaPath(configurationModel.getJavaPath().replace("\\", "/")));
-
     if (!checkIconAndProperties(configurationModel.getServerIconPath())) {
 
-      //noinspection UnusedAssignment
       configHasError = true;
 
       LOG.error(
@@ -350,7 +306,6 @@ public final class ConfigurationHandler {
         && new File(configurationModel.getServerIconPath()).exists()
         && !UTILITIES.FileUtils().checkReadPermission(configurationModel.getServerIconPath())) {
 
-      //noinspection UnusedAssignment
       configHasError = true;
 
       LOG.error("No read-permission for " + configurationModel.getServerIconPath());
@@ -364,7 +319,6 @@ public final class ConfigurationHandler {
 
     if (!checkIconAndProperties(configurationModel.getServerPropertiesPath())) {
 
-      //noinspection UnusedAssignment
       configHasError = true;
 
       LOG.error(
@@ -382,7 +336,6 @@ public final class ConfigurationHandler {
         && !UTILITIES.FileUtils()
         .checkReadPermission(configurationModel.getServerPropertiesPath())) {
 
-      //noinspection UnusedAssignment
       configHasError = true;
 
       LOG.error("No read-permission for " + configurationModel.getServerPropertiesPath());
@@ -408,12 +361,16 @@ public final class ConfigurationHandler {
 
     if (modpack.isDirectory()) {
 
-      configHasError = isDir(configurationModel, encounteredErrors);
+      if (isDir(configurationModel, encounteredErrors)) {
+        configHasError = true;
+      }
 
     } else if (modpack.isFile() && modpack.getName().endsWith("zip")) {
 
       try {
-        configHasError = isZip(configurationModel, encounteredErrors);
+        if (isZip(configurationModel, encounteredErrors)) {
+          configHasError = true;
+        }
       } catch (IOException ex) {
         configHasError = true;
         LOG.error("An error occurred whilst working with the ZIP-archive.", ex);
@@ -421,7 +378,8 @@ public final class ConfigurationHandler {
 
     } else {
       configHasError = true;
-      LOG.error("Modpack directory not specified. Please specify an existing directory.");
+      LOG.error("Modpack directory not specified. Please specify an existing directory. Specified: "
+          + configurationModel.getModpackDir());
 
       /* This log is meant to be read by the user, therefore we allow translation. */
       encounteredErrors.add(I18N.getMessage("configuration.log.error.checkmodpackdir"));
@@ -446,7 +404,7 @@ public final class ConfigurationHandler {
 
           configHasError = true;
 
-          LOG.error("There's something wrong with your Modloader version setting.");
+          LOG.error("There's something wrong with your modloader version setting.");
 
           /* This log is meant to be read by the user, therefore we allow translation. */
           encounteredErrors.add(I18N.getMessage("configuration.log.error.checkmodloaderversion"));
@@ -465,10 +423,14 @@ public final class ConfigurationHandler {
 
       configHasError = true;
 
-      LOG.error("There's something wrong with your Modloader or Modloader version setting.");
+      LOG.error("There's something wrong with your modloader or modloader version setting.");
 
       /* This log is meant to be read by the user, therefore we allow translation. */
       encounteredErrors.add(I18N.getMessage("configuration.log.error.checkmodloader"));
+    }
+
+    if (APPLICATIONADDONS.runConfigCheckExtensions(configurationModel, encounteredErrors)) {
+      configHasError = true;
     }
 
     if (quietCheck) {
@@ -503,7 +465,8 @@ public final class ConfigurationHandler {
    * @return <code>true</code> if an error is found during configuration check.
    * @author Griefed
    */
-  public boolean isDir(ConfigurationModel configurationModel, List<String> encounteredErrors) {
+  public boolean isDir(final ConfigurationModel configurationModel,
+      final List<String> encounteredErrors) {
     boolean configHasError = false;
 
     if (checkCopyDirs(
@@ -537,7 +500,8 @@ public final class ConfigurationHandler {
    * @throws IOException if an error occurred trying to move the server pack directory.
    * @author Griefed
    */
-  public boolean isZip(ConfigurationModel configurationModel, List<String> encounteredErrors)
+  public boolean isZip(final ConfigurationModel configurationModel,
+      final List<String> encounteredErrors)
       throws IOException {
     boolean configHasError = false;
 
@@ -678,7 +642,7 @@ public final class ConfigurationHandler {
    * not be acquired.
    * @author Griefed
    */
-  public String checkManifests(String destination, ConfigurationModel configurationModel,
+  public String checkManifests(String destination, final ConfigurationModel configurationModel,
       List<String> encounteredErrors) {
     String packName = null;
 
@@ -825,7 +789,7 @@ public final class ConfigurationHandler {
    * @return The new name of the modpack.
    * @author Griefed
    */
-  private String updatePackName(ConfigurationModel configurationModel, String... childNodes) {
+  private String updatePackName(final ConfigurationModel configurationModel, String... childNodes) {
     try {
 
       return
@@ -928,7 +892,7 @@ public final class ConfigurationHandler {
    * @return Boolean. <code>false</code> if the ZIP-archive is considered valid.
    * @author Griefed
    */
-  public boolean checkZipArchive(Path pathToZip, List<String> encounteredErrors) {
+  public boolean checkZipArchive(Path pathToZip, final List<String> encounteredErrors) {
 
     ZipFile modpackZip;
 
@@ -1020,9 +984,7 @@ public final class ConfigurationHandler {
    * @param configurationModel Model in which to ensure the default key-value pairs are present.
    * @author Griefed
    */
-  public void ensureScriptSettingsDefaults(ConfigurationModel configurationModel) {
-
-    HashMap<String, String> scriptSettings = configurationModel.getScriptSettings();
+  public void ensureScriptSettingsDefaults(final ConfigurationModel configurationModel) {
 
     if (!VERSIONMETA.minecraft().getServer(configurationModel.getMinecraftVersion()).isPresent()
         || !VERSIONMETA
@@ -1032,10 +994,10 @@ public final class ConfigurationHandler {
         .url()
         .isPresent()) {
 
-      scriptSettings.put("SPC_MINECRAFT_SERVER_URL_SPC", "");
+      configurationModel.getScriptSettings().put("SPC_MINECRAFT_SERVER_URL_SPC", "");
 
     } else {
-      scriptSettings.put(
+      configurationModel.getScriptSettings().put(
           "SPC_MINECRAFT_SERVER_URL_SPC",
           VERSIONMETA
               .minecraft()
@@ -1046,22 +1008,27 @@ public final class ConfigurationHandler {
               .toString());
     }
 
-    scriptSettings.put(
+    configurationModel.getScriptSettings().put(
         "SPC_SERVERPACKCREATOR_VERSION_SPC", APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION());
-    scriptSettings.put("SPC_MINECRAFT_VERSION_SPC", configurationModel.getMinecraftVersion());
+    configurationModel.getScriptSettings()
+        .put("SPC_MINECRAFT_VERSION_SPC", configurationModel.getMinecraftVersion());
 
-    scriptSettings.put("SPC_MODLOADER_SPC", configurationModel.getModLoader());
-    scriptSettings.put("SPC_MODLOADER_VERSION_SPC", configurationModel.getModLoaderVersion());
-    scriptSettings.put("SPC_JAVA_ARGS_SPC", configurationModel.getJavaArgs());
+    configurationModel.getScriptSettings()
+        .put("SPC_MODLOADER_SPC", configurationModel.getModLoader());
+    configurationModel.getScriptSettings()
+        .put("SPC_MODLOADER_VERSION_SPC", configurationModel.getModLoaderVersion());
+    configurationModel.getScriptSettings()
+        .put("SPC_JAVA_ARGS_SPC", configurationModel.getJavaArgs());
 
-    // To be enhanced in a later milestone
-    scriptSettings.put("SPC_JAVA_SPC", "java");
+    if (!configurationModel.getScriptSettings().containsKey("SPC_JAVA_SPC")) {
+      configurationModel.getScriptSettings().put("SPC_JAVA_SPC", "java");
+    }
 
-    scriptSettings.put(
+    configurationModel.getScriptSettings().put(
         "SPC_FABRIC_INSTALLER_VERSION_SPC", VERSIONMETA.fabric().releaseInstaller());
-    scriptSettings.put(
+    configurationModel.getScriptSettings().put(
         "SPC_QUILT_INSTALLER_VERSION_SPC", VERSIONMETA.quilt().releaseInstaller());
-    scriptSettings.put("SPC_LEGACYFABRIC_INSTALLER_VERSION_SPC",
+    configurationModel.getScriptSettings().put("SPC_LEGACYFABRIC_INSTALLER_VERSION_SPC",
         VERSIONMETA.legacyFabric().releaseInstaller());
   }
 
@@ -1073,7 +1040,7 @@ public final class ConfigurationHandler {
    *                           their respective destinations.
    * @author Griefed
    */
-  public void sanitizeLinks(ConfigurationModel configurationModel) {
+  public void sanitizeLinks(final ConfigurationModel configurationModel) {
 
     LOG.info("Checking configuration for links...");
 
@@ -1114,19 +1081,6 @@ public final class ConfigurationHandler {
 
       } catch (InvalidFileTypeException | IOException ex) {
         LOG.error("Couldn't resolve link for server-properties.", ex);
-      }
-    }
-
-    if (configurationModel.getJavaPath().length() > 0
-        && UTILITIES.FileUtils().isLink(configurationModel.getJavaPath())) {
-      try {
-        configurationModel.setJavaPath(
-            UTILITIES.FileUtils().resolveLink(configurationModel.getJavaPath()));
-
-        LOG.info("Resolved Java link to: " + configurationModel.getJavaPath());
-
-      } catch (InvalidFileTypeException | IOException ex) {
-        LOG.error("Couldn't resolve link for Java path.", ex);
       }
     }
 
@@ -1250,7 +1204,7 @@ public final class ConfigurationHandler {
    *                          configuration check.
    * @author Griefed
    */
-  private void printEncounteredErrors(List<String> encounteredErrors) {
+  private void printEncounteredErrors(final List<String> encounteredErrors) {
 
     LOG.error(
         "Encountered " + encounteredErrors.size() + " errors during the configuration check.");
@@ -1289,7 +1243,7 @@ public final class ConfigurationHandler {
    * @return Boolean. Returns true if the directory exists.
    * @author Griefed
    */
-  public boolean checkModpackDir(String modpackDir, List<String> encounteredErrors) {
+  public boolean checkModpackDir(String modpackDir, final List<String> encounteredErrors) {
     boolean configCorrect = false;
 
     if (modpackDir.isEmpty()) {
@@ -1330,7 +1284,7 @@ public final class ConfigurationHandler {
    * single one was not found, false is returned.
    * @author Griefed
    */
-  public boolean checkCopyDirs(List<String> directoriesToCopy, String modpackDir) {
+  public boolean checkCopyDirs(final List<String> directoriesToCopy, String modpackDir) {
     return checkCopyDirs(directoriesToCopy, modpackDir, new ArrayList<>());
   }
 
@@ -1354,7 +1308,8 @@ public final class ConfigurationHandler {
    * @author Griefed
    */
   public boolean checkCopyDirs(
-      List<String> directoriesToCopy, String modpackDir, List<String> encounteredErrors) {
+      final List<String> directoriesToCopy, String modpackDir,
+      final List<String> encounteredErrors) {
     boolean configCorrect = true;
 
     directoriesToCopy.removeIf(entry -> entry.matches("^\\s+$") || entry.length() == 0);
@@ -1655,7 +1610,11 @@ public final class ConfigurationHandler {
    * @param pathToJava Path to the Java executable
    * @return Boolean. Returns <code>true</code> if the path is valid.
    * @author Griefed
+   * @deprecated Will be removed in Milestone 4. Java path settings have moved to the global
+   * ApplicationProperties, because the Java path setting is used for modloader installation by
+   * ServerPackCreator only.
    */
+  @Deprecated
   public boolean checkJavaPath(String pathToJava) {
 
     if (pathToJava.length() == 0) {
@@ -1697,7 +1656,11 @@ public final class ConfigurationHandler {
    * @return <code>true</code> if the specified file is a valid Java
    * executable/binary.
    * @author Griefed
+   * @deprecated Will be removed in Milestone 4. Java path settings have moved to the global
+   * ApplicationProperties, because the Java path setting is used for modloader installation by
+   * ServerPackCreator only.
    */
+  @Deprecated
   public boolean testJava(String pathToJava) {
     boolean testSuccessful;
     try {
@@ -1737,7 +1700,11 @@ public final class ConfigurationHandler {
    * @return String. Returns the path to the Java installation. If user input was incorrect, SPC
    * will try to acquire the path automatically.
    * @author Griefed
+   * @deprecated Will be removed in Milestone 4. Java path settings have moved to the global
+   * ApplicationProperties, because the Java path setting is used for modloader installation by
+   * ServerPackCreator only.
    */
+  @Deprecated
   public String getJavaPath(String pathToJava) {
 
     String checkedJavaPath;
@@ -1840,7 +1807,7 @@ public final class ConfigurationHandler {
       String modloader,
       String modloaderVersion,
       String minecraftVersion,
-      List<String> encounteredErrors) {
+      final List<String> encounteredErrors) {
 
     switch (modloader) {
       case "Forge":
