@@ -216,13 +216,13 @@ tasks.withType(Javadoc) {
 
 // Launch4j builds our ServerPackCreator.exe.
 launch4j {
-  mainClassName = mainClass
+  mainClassName = project.mainClass
   jarTask = project.tasks.jar
-  fileDescription = projectDescription
+  fileDescription = project.projectDescription
   version = project.version
   textVersion = project.version
-  windowTitle = title
-  copyright = lic
+  windowTitle = project.title
+  copyright = project.lic
   downloadUrl = "https://github.com/Griefed/serverpackcreator/releases"
   supportUrl = "https://github.com/Griefed/serverpackcreator/issues"
   libraryDir = 'libraries'
@@ -281,17 +281,17 @@ bootJar {
   // Customize MANIFEST to include relevant information.
   manifest {
     attributes(
-        "Start-Class": mainClass.toString(),
-        "Description": projectDescription,
+        "Start-Class": project.mainClass,
+        "Description": project.projectDescription,
         "Built-By": System.getProperty("user.name"),
         "Build-Timestamp": new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date()),
         "Created-By": "Gradle ${gradle.gradleVersion}",
         "Build-Jdk": "${System.getProperty('java.version')} (${System.getProperty('java.vendor')} ${System.getProperty('java.vm.version')})",
         "Build-OS": "${System.getProperty('os.name')} ${System.getProperty('os.arch')} ${System.getProperty('os.version')}",
-        "Implementation-Vendor": author,
+        "Implementation-Vendor": project.author,
         "Implementation-Version": project.version,
-        "Implementation-Title": implTitle,
-        "Application-Name": title
+        "Implementation-Title": project.implTitle,
+        "Application-Name": project.title
     )
 
   }
@@ -327,17 +327,17 @@ jar {
   // Customize MANIFEST to include relevant information.
   manifest {
     attributes(
-        "Main-Class": mainClass,
-        "Description": projectDescription,
+        "Main-Class": project.mainClass,
+        "Description": project.projectDescription,
         "Built-By": System.getProperty("user.name"),
         "Build-Timestamp": new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date()),
         "Created-By": "Gradle ${gradle.gradleVersion}",
         "Build-Jdk": "${System.getProperty('java.version')} (${System.getProperty('java.vendor')} ${System.getProperty('java.vm.version')})",
         "Build-OS": "${System.getProperty('os.name')} ${System.getProperty('os.arch')} ${System.getProperty('os.version')}",
-        "Implementation-Vendor": author,
+        "Implementation-Vendor": project.author,
         "Implementation-Version": project.version,
-        "Implementation-Title": implTitle,
-        "Application-Name": title
+        "Implementation-Title": project.implTitle,
+        "Application-Name": project.title
     )
   }
   // Exclude files and folders which would otherwise bloat our JAR-file up.
@@ -374,35 +374,35 @@ publishing {
   publications {
     mavenJava(MavenPublication) {
 
-      groupId = group
-      artifactId = implTitle
+      groupId = project.group
+      artifactId = project.implTitle
       from components.java
       version = project.version
 
       pom {
-        name = title
-        description = projectDescription
-        url = ' https://' + projectUrl
+        name = project.title
+        description = project.projectDescription
+        url = ' https://' + project.projectUrl
 
         licenses {
           license {
-            name = lic
-            url = licUrl
+            name = project.lic
+            url = project.licUrl
           }
         }
 
         developers {
           developer {
-            id = authorLowerCase
-            name = author
-            email = authorMail
+            id = project.authorLowerCase
+            name = project.author
+            email = project.authorMail
           }
         }
 
         scm {
-          connection = 'scm:git:git:' + projectUrl + '.git'
-          developerConnection = 'scm:git:ssh://' + projectUrl + '.git'
-          url = 'https://' + projectUrl
+          connection = 'scm:git:git:' + project.projectUrl + '.git'
+          developerConnection = 'scm:git:ssh://' + project.projectUrl + '.git'
+          url = 'https://' + project.projectUrl
         }
 
       }
