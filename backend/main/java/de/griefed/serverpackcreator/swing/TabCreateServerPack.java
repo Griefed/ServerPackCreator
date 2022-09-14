@@ -601,6 +601,7 @@ public class TabCreateServerPack extends JPanel {
     labelCopyDirs.setToolTipText(
         I18N.getMessage("createserverpack.gui.createserverpack.labelcopydirs.tip"));
 
+    gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
     gridBagConstraints.gridx = 0;
     gridBagConstraints.gridy = 4;
     gridBagConstraints.insets = TWENTY_TEN_ZERO_ZERO;
@@ -789,7 +790,7 @@ public class TabCreateServerPack extends JPanel {
 
     JButton buttonOpenServerproperties = new JButton();
     buttonOpenServerproperties.setToolTipText(
-        I18N.getMessage("createserverpack.gui.createserverpack.button.open.properites"));
+        I18N.getMessage("createserverpack.gui.createserverpack.button.open.properties"));
     buttonOpenServerproperties.setContentAreaFilled(false);
     buttonOpenServerproperties.setIcon(openIcon);
     buttonOpenServerproperties.setMultiClickThreshhold(1000);

@@ -441,14 +441,6 @@ public final class ApplicationProperties extends Properties {
     SYSTEM_UTILITIES = systemUtilities;
     LIST_UTILITIES = listUtilities;
 
-    // Load the properties file from the classpath, providing default values.
-    try (InputStream inputStream =
-        new ClassPathResource(SERVERPACKCREATOR_PROPERTIES).getInputStream()) {
-      load(inputStream);
-    } catch (IOException ex) {
-      LOG.error("Couldn't read properties file.", ex);
-    }
-
     String version = ApplicationProperties.class.getPackage().getImplementationVersion();
     if (version != null) {
       SERVERPACKCREATOR_VERSION = version;
@@ -476,10 +468,16 @@ public final class ApplicationProperties extends Properties {
    * @author Griefed
    */
   private void loadProperties(File propertiesFile) {
+    // Load the properties file from the classpath, providing default values.
+    try (InputStream inputStream =
+        new ClassPathResource(SERVERPACKCREATOR_PROPERTIES).getInputStream()) {
+      load(inputStream);
+    } catch (IOException ex) {
+      LOG.error("Couldn't read properties file.", ex);
+    }
+
+    // If our properties-file exists, load it to ensure we always have base settings available.
     if (SERVERPACKCREATOR_PROPERTIES_FILE.exists()) {
-      /*
-       * If our properties-file exists, load it to ensure we always have base settings available.
-       */
       try (InputStream inputStream =
           Files.newInputStream(SERVERPACKCREATOR_PROPERTIES_FILE.toPath())) {
         load(inputStream);
@@ -488,10 +486,8 @@ public final class ApplicationProperties extends Properties {
       }
     }
 
+    // Load the specified properties-file.
     if (propertiesFile.exists()) {
-      /*
-       * Load the specified properties-file.
-       */
       try (InputStream inputStream =
           Files.newInputStream(propertiesFile.toPath())) {
 
@@ -733,7 +729,18 @@ public final class ApplicationProperties extends Properties {
    */
   private void setCheckForPreReleases() {
     checkForPreReleases = getBoolProperty(PROPERTY_VERSIONCHECK_PRERELEASE, false);
-    LOG.info("Set check for pre-releases to: " + checkForPreReleases);
+
+    if (SERVERPACKCREATOR_VERSION.matches("(.*alpha.*|.*beta.*)")) {
+
+      checkForPreReleases = true;
+      LOG.info(
+          "Using pre-release " + SERVERPACKCREATOR_VERSION
+              + ". Checking for pre-releases set to true.");
+
+    } else {
+
+      LOG.info("Set check for pre-releases to: " + checkForPreReleases);
+    }
   }
 
   /**
