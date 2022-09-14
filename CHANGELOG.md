@@ -1,3 +1,32 @@
+## [3.14.0-beta.8](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.14.0-beta.7...3.14.0-beta.8) (2022-09-14)
+
+
+### :scissors: Refactor
+
+* **GUI:** Adjust some button and icon sizes ([1423395](https://git.griefed.de/Griefed/ServerPackCreator/commit/1423395c272e00a0ed98cf629f334648b112fe37))
+* **GUI:** Extend ServerPackCreatorGui from JFrame instead of creating and managing a JFrame inside our class. Move choolseJava() to frame and access from other places. ([85dbdd8](https://git.griefed.de/Griefed/ServerPackCreator/commit/85dbdd864edc521f19a778b788ec0b7ca5eea219))
+
+
+### 🔩 Dependencies
+
+* **deps:** update dependency ghcr.io/griefed/baseimage-ubuntu-jdk-8 to v2.0.13 ([316c301](https://git.griefed.de/Griefed/ServerPackCreator/commit/316c30126440dd98d0c356a45f8ceac353dbc1e4))
+* **deps:** update dependency ghcr.io/griefed/gitlab-ci-cd to v2.2.1 ([5fc6c8b](https://git.griefed.de/Griefed/ServerPackCreator/commit/5fc6c8bd1b78c6119f4724d63bfe6c10c0856aa9))
+* **deps:** update dependency gradle to v7.5.1 ([81b6391](https://git.griefed.de/Griefed/ServerPackCreator/commit/81b63919fe0830834ce022e15e789c6a1433341c))
+* **deps:** update dependency org.xerial:sqlite-jdbc to v3.39.2.1 ([bbfebad](https://git.griefed.de/Griefed/ServerPackCreator/commit/bbfebad449708a1b01a878ec21561768c25ea12e))
+
+
+### 🛠 Fixes
+
+* **Jar:** Correctly set Start-Class attribute in bootJar manifest so the fatjar can be run normally. ([17b0beb](https://git.griefed.de/Griefed/ServerPackCreator/commit/17b0bebdd3c225bfe2836468414992c54dab3d02))
+
+
+### Other
+
+* **deps:** update dependency @quasar/extras to v1.15.2 ([4ec9abd](https://git.griefed.de/Griefed/ServerPackCreator/commit/4ec9abd4289ad331450fa5fd098b9a70986f2dd1))
+* **deps:** update dependency eslint to v8.23.0 ([da93adf](https://git.griefed.de/Griefed/ServerPackCreator/commit/da93adf1670cd14e5e6afc96635d6c8d476c7f11))
+* **deps:** update dependency vue to v3.2.38 ([894554b](https://git.griefed.de/Griefed/ServerPackCreator/commit/894554bdc2c4a6ee20915edf8726551d7db11d20))
+* **Fallback clientside-only mods lists:** Update with mods from @BisectStudios, kindly provided by @AzureDoom ([1026f88](https://git.griefed.de/Griefed/ServerPackCreator/commit/1026f883e03f4d7edcb4b7c428cbf598448c67ca))
+
 ## [3.14.0-beta.7](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.14.0-beta.6...3.14.0-beta.7) (2022-09-13)
 
 
