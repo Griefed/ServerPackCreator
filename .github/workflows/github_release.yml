@@ -52,7 +52,7 @@ jobs:
           GITHUB_ACTOR: ${{ secrets.GITHUB_ACTOR }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          ./gradlew -Pversion=${{steps.tag.outputs.tag}} build --info --stacktrace  -x test
+          ./gradlew -Pversion=${{steps.tag.outputs.tag}} build --info --full-stacktrace -x test
 
       # RENAME EXE
       - name: Rename files

@@ -22,7 +22,7 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - name: Build documentation
-        run: ./gradlew clean build -Pversion='' -x test
+        run: ./gradlew -Pversion='' javadoc --info --full-stacktrace
 
       - uses: actions/upload-artifact@v3
         with:

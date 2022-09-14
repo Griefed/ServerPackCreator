@@ -31,7 +31,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build with Gradle
-        run: ./gradlew -Pversion=${{ steps.branch-name.outputs.current_branch }} build --info --stacktrace
+        run: ./gradlew -Pversion=${{ steps.branch-name.outputs.current_branch }} build --info --full-stacktrace
 
       - name: List files in libs
         run: ls -ahl build/libs
