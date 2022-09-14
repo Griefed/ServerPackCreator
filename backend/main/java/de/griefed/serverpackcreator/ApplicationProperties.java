@@ -109,7 +109,7 @@ public final class ApplicationProperties extends Properties {
   /**
    * Default directories to include in the server pack.
    */
-  private final String FALLBACK_DIRECTORIES_INCLUDE_ASSTRING = "mods,config";
+  private final String FALLBACK_DIRECTORIES_INCLUDE_ASSTRING = "mods,config,kubejs,defaultconfigs,scripts";
   /**
    * Default list of directories to include in the server pack.
    */
@@ -125,7 +125,7 @@ public final class ApplicationProperties extends Properties {
    * Default directories to exclude from the server pack.
    */
   private final String FALLBACK_DIRECTORIES_EXCLUDE_ASSTRING =
-      "overrides,packmenu,resourcepacks,server_pack,fancymenu,libraries";
+      "overrides,packmenu,resourcepacks,server_pack,fancymenu,libraries,downloads,logs,profileImage,resourcepacks,screenshots,shaderpacks,tv-cache,asm";
   /**
    * Default list of directories to exclude from the server pack.
    */
@@ -503,9 +503,9 @@ public final class ApplicationProperties extends Properties {
 
     setFallbackModsList();
 
-    setDirsToExcludeList();
-
     setDirsToIncludeList();
+
+    setDirsToExcludeList();
 
     setQueueMaxDiskUsage();
 
@@ -679,8 +679,10 @@ public final class ApplicationProperties extends Properties {
    * @author Griefed
    */
   private void setDirsToExcludeList() {
-    DIRECTORIES_TO_EXCLUDE.addAll(getListProperty(PROPERTY_CONFIGURATION_DIRECTORIES_SHOULDEXCLUDE,
-        FALLBACK_DIRECTORIES_EXCLUDE_ASSTRING));
+    getListProperty(PROPERTY_CONFIGURATION_DIRECTORIES_SHOULDEXCLUDE,
+        FALLBACK_DIRECTORIES_EXCLUDE_ASSTRING).forEach(
+        this::addDirectoryToExclude
+    );
     LOG.info("Directories to exclude set to: " + DIRECTORIES_TO_EXCLUDE);
   }
 
@@ -1584,9 +1586,8 @@ public final class ApplicationProperties extends Properties {
    * @author Griefed
    */
   public void addDirectoryToExclude(String entry) {
-    if (!DIRECTORIES_TO_EXCLUDE.contains(entry) && !DIRECTORIES_TO_INCLUDE.contains(entry)) {
+    if (!DIRECTORIES_TO_INCLUDE.contains(entry) && DIRECTORIES_TO_EXCLUDE.add(entry)) {
       LOG.debug("Adding " + entry + " to list of files or directories to exclude.");
-      DIRECTORIES_TO_EXCLUDE.add(entry);
     }
   }
 

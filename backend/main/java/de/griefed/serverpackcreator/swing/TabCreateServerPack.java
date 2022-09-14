@@ -63,6 +63,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.TreeSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -828,7 +829,6 @@ public class TabCreateServerPack extends JPanel {
 
     CREATESERVERPACKPANEL.add(buttonServerproperties, gridBagConstraints);
 
-
     Dimension combo = new Dimension(270, 30);
 
     // Label and combobox minecraftVersion
@@ -1066,8 +1066,8 @@ public class TabCreateServerPack extends JPanel {
             RotatedIcon.Rotate.UP));
     buttonAikarsFlags.setMultiClickThreshhold(1000);
     buttonAikarsFlags.addActionListener(this::setAikarsFlags);
-    buttonAikarsFlags.setPreferredSize(new Dimension(44,123));
-    buttonAikarsFlags.setMaximumSize(new Dimension(44,123));
+    buttonAikarsFlags.setPreferredSize(new Dimension(44, 123));
+    buttonAikarsFlags.setMaximumSize(new Dimension(44, 123));
     addMouseListenerContentAreaFilledToButton(buttonAikarsFlags);
 
     gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
@@ -1927,62 +1927,77 @@ public class TabCreateServerPack extends JPanel {
 
   private void updateGuiFromSelectedModpack() {
     SwingUtilities.invokeLater(() -> {
-      try {
-        ConfigurationModel configurationModel = new ConfigurationModel();
-        boolean updated = false;
+      if (new File(getModpackDirectory()).isDirectory()) {
 
-        if (new File(getModpackDirectory() + "/manifest.json").isFile()) {
-          CONFIG_UTILITIES.updateConfigModelFromCurseManifest(configurationModel,
-              new File(getModpackDirectory() + "/manifest.json"));
-          updated = true;
+        try {
+          ConfigurationModel configurationModel = new ConfigurationModel();
+          boolean updated = false;
 
-        } else if (new File(getModpackDirectory() + "/minecraftinstance.json").isFile()) {
-          CONFIG_UTILITIES.updateConfigModelFromMinecraftInstance(configurationModel,
-              new File(getModpackDirectory() + "/minecraftinstance.json"));
-          updated = true;
+          if (new File(getModpackDirectory() + "/manifest.json").isFile()) {
+            CONFIG_UTILITIES.updateConfigModelFromCurseManifest(configurationModel,
+                new File(getModpackDirectory() + "/manifest.json"));
+            updated = true;
 
-        } else if (new File(getModpackDirectory() + "/modrinth.index.json").isFile()) {
-          CONFIG_UTILITIES.updateConfigModelFromModrinthManifest(configurationModel,
-              new File(getModpackDirectory() + "/modrinth.index.json"));
-          updated = true;
+          } else if (new File(getModpackDirectory() + "/minecraftinstance.json").isFile()) {
+            CONFIG_UTILITIES.updateConfigModelFromMinecraftInstance(configurationModel,
+                new File(getModpackDirectory() + "/minecraftinstance.json"));
+            updated = true;
 
-        } else if (new File(getModpackDirectory() + "/instance.json").isFile()) {
-          CONFIG_UTILITIES.updateConfigModelFromATLauncherInstance(configurationModel,
-              new File(getModpackDirectory() + "/instance.json"));
-          updated = true;
+          } else if (new File(getModpackDirectory() + "/modrinth.index.json").isFile()) {
+            CONFIG_UTILITIES.updateConfigModelFromModrinthManifest(configurationModel,
+                new File(getModpackDirectory() + "/modrinth.index.json"));
+            updated = true;
 
-        } else if (new File(getModpackDirectory() + "/config.json").isFile()) {
-          CONFIG_UTILITIES.updateConfigModelFromConfigJson(configurationModel,
-              new File(getModpackDirectory() + "/config.json"));
-          updated = true;
+          } else if (new File(getModpackDirectory() + "/instance.json").isFile()) {
+            CONFIG_UTILITIES.updateConfigModelFromATLauncherInstance(configurationModel,
+                new File(getModpackDirectory() + "/instance.json"));
+            updated = true;
 
-        } else if (new File(getModpackDirectory() + "/mmc-pack.json").isFile()) {
-          CONFIG_UTILITIES.updateConfigModelFromMMCPack(configurationModel,
-              new File(getModpackDirectory() + "/mmc-pack.json"));
-          updated = true;
+          } else if (new File(getModpackDirectory() + "/config.json").isFile()) {
+            CONFIG_UTILITIES.updateConfigModelFromConfigJson(configurationModel,
+                new File(getModpackDirectory() + "/config.json"));
+            updated = true;
+
+          } else if (new File(getModpackDirectory() + "/mmc-pack.json").isFile()) {
+            CONFIG_UTILITIES.updateConfigModelFromMMCPack(configurationModel,
+                new File(getModpackDirectory() + "/mmc-pack.json"));
+            updated = true;
+          }
+
+          TreeSet<String> dirsToInclude = new TreeSet<>(getCopyDirectoriesList());
+
+          File[] files = new File(getModpackDirectory()).listFiles();
+          for (int i = 0; i < files.length; i++) {
+            if (APPLICATIONPROPERTIES.getDirectoriesToInclude().contains(files[i].getName())) {
+              dirsToInclude.add(files[i].getName());
+            }
+          }
+
+          if (updated) {
+
+            setMinecraftVersion(configurationModel.getMinecraftVersion());
+            setModloader(configurationModel.getModLoader());
+            setModloaderVersion(configurationModel.getModLoaderVersion());
+            setCopyDirectories(new ArrayList<>(dirsToInclude));
+
+            JOptionPane.showMessageDialog(
+                this,
+                String.format(
+                    I18N.getMessage("createserverpack.gui.modpack.scan.message"),
+                    getMinecraftVersion(),
+                    getModloader(),
+                    getModloaderVersion(),
+                    UTILITIES.StringUtils().buildString(new ArrayList<>(dirsToInclude))) + "   ",
+                I18N.getMessage("createserverpack.gui.modpack.scan"),
+                JOptionPane.INFORMATION_MESSAGE,
+                INFO_ICON
+            );
+
+          }
+        } catch (IOException ex) {
+          LOG.error("Couldn't update GUI from modpack manifests.", ex);
         }
 
-        if (updated) {
-
-          setMinecraftVersion(configurationModel.getMinecraftVersion());
-          setModloader(configurationModel.getModLoader());
-          setModloaderVersion(configurationModel.getModLoaderVersion());
-
-          JOptionPane.showMessageDialog(
-              this,
-              String.format(
-                  I18N.getMessage("createserverpack.gui.modpack.scan.message"),
-                  getMinecraftVersion(),
-                  getModloader(),
-                  getModloaderVersion()) + "   ",
-              I18N.getMessage("createserverpack.gui.modpack.scan"),
-              JOptionPane.INFORMATION_MESSAGE,
-              INFO_ICON
-          );
-
-        }
-      } catch (IOException ex) {
-        LOG.error("Couldn't update GUI from modpack manifests.", ex);
       }
     });
   }
