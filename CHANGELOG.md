@@ -1,3 +1,15 @@
+## [3.14.0-beta.9](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.14.0-beta.8...3.14.0-beta.9) (2022-09-14)
+
+
+### :scissors: Refactor
+
+* **ApplicationProperties:** Move load from constructor to loadProperties to ensure we always have the classpath-configurations available. When using alpha or beta releases, always check for newer version to prevent people getting stuck on old pre-releases. ([7c166ff](https://git.griefed.de/Griefed/ServerPackCreator/commit/7c166ffba98d35aedbc8d8e98b40dfb164204e50))
+
+
+### 💎 Improvements
+
+* **Modpack scan:** Scan modpack directory for folders to include in the server pack. ([5190327](https://git.griefed.de/Griefed/ServerPackCreator/commit/51903270350873131ebf4e9874a9bc2e4bbc1db9))
+
 ## [3.14.0-beta.8](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.14.0-beta.7...3.14.0-beta.8) (2022-09-14)
 
 
