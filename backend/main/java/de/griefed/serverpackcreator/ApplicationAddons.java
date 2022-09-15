@@ -43,8 +43,10 @@ import javax.swing.JTabbedPane;
 import net.lingala.zip4j.ZipFile;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.pf4j.ExtensionFactory;
 import org.pf4j.JarPluginManager;
 import org.pf4j.PluginWrapper;
+import org.pf4j.SingletonExtensionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -98,6 +100,18 @@ public final class ApplicationAddons extends JarPluginManager {
     extractAddonConfigs(tomlParser);
 
     availableExtensions();
+  }
+
+  @Override
+  protected ExtensionFactory createExtensionFactory() {
+    return new SingletonExtensionFactory(
+        this,
+        ConfigCheckExtension.class.getName(),
+        PostGenExtension.class.getName(),
+        PreGenExtension.class.getName(),
+        PreZipExtension.class.getName(),
+        ConfigPanelExtension.class.getName(),
+        TabExtension.class.getName());
   }
 
   /**
