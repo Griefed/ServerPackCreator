@@ -1,3 +1,27 @@
+## [3.14.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.14.0...3.14.1) (2022-09-15)
+
+
+### :scissors: Refactor
+
+* **Addon suite:** Move to SingletonExtensionFactory ([ad2857c](https://git.griefed.de/Griefed/ServerPackCreator/commit/ad2857cbb73eb262e017f00bde639d72ea30fbd8))
+
+
+### 🧪 Tests
+
+* **Addon Suite:** Re-enable addons test with example addon 4.0.1 ([a219baa](https://git.griefed.de/Griefed/ServerPackCreator/commit/a219baab3303437ef3a99b8a6034487eda8d8422))
+
+
+### 🛠 Fixes
+
+* Only run directory and files scan when the list of files in the specified modpack directory is non-null and has entries to work with ([78f29b4](https://git.griefed.de/Griefed/ServerPackCreator/commit/78f29b46b7f38eba8de32ba41319f202caac5264))
+* Use string value of counter to prevent false negatives in containsKey ([09e7d11](https://git.griefed.de/Griefed/ServerPackCreator/commit/09e7d1153357dbb46eec927dbdc769dd2b0937f5))
+
+
+### Other
+
+* **README:** Add missing addon images ([bf42f3a](https://git.griefed.de/Griefed/ServerPackCreator/commit/bf42f3ae95c5be9defe9c249cc20f000f20f5c68))
+* **README:** Add more information regarding addons so people have a better chance of actually knowing about them ([6afe3e6](https://git.griefed.de/Griefed/ServerPackCreator/commit/6afe3e62b9f1a611dcd915cb63bfa2a8462761dd))
+
 ## [3.14.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.13.0...3.14.0) (2022-09-14)
 
 
