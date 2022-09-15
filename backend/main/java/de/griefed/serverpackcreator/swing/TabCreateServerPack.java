@@ -1965,11 +1965,12 @@ public class TabCreateServerPack extends JPanel {
           }
 
           TreeSet<String> dirsToInclude = new TreeSet<>(getCopyDirectoriesList());
-
           File[] files = new File(getModpackDirectory()).listFiles();
-          for (int i = 0; i < files.length; i++) {
-            if (APPLICATIONPROPERTIES.getDirectoriesToInclude().contains(files[i].getName())) {
-              dirsToInclude.add(files[i].getName());
+          if (files != null && files.length > 0) {
+            for (File file : files) {
+              if (APPLICATIONPROPERTIES.getDirectoriesToInclude().contains(file.getName())) {
+                dirsToInclude.add(file.getName());
+              }
             }
           }
 
