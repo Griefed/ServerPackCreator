@@ -135,8 +135,11 @@ ServerPackCreator also has a webservice which you can run with the `-web`-argume
     - **Add additional functionality** to your servers start scripts
     - Use **placeholders in your templates**, to be **replaced with custom values**
         - Example: placeholder `SPC_FLYNN_LIVES_SPC` in the templates can be replaced with a value configured on a per-server pack basis, i.e `Now that's a big door`
+11. **Addons!**
+    - ServerPackCreator allows you to use addons to add new features in various places.
+    - An example addon can be found at [the Example Addon Repository](https://github.com/Griefed/ServerPackCreatorExampleAddon). It has simple examples for every possible addon and extension in ServerPackCreator
 
-# 3 How To
+# 3. How To
 
 This How-To guide was inspired by the wonderful [Kreezxil](https://github.com/kreezxil). Guide originally from [his website](https://kreezcraft.com/server-pack-creator/), with permission to add it to this README.
 
@@ -212,7 +215,7 @@ It goes into detail on the many configurable aspects of ServerPackCreator.
 
 Give it a read before asking something, it *does* contain lots of useful information. 🙂
 
-# 4 Java
+# 4. Java
 
 ServerPackCreator is being developed with Java 8, ServerPackCreator is guaranteed to work with that version.
 
@@ -223,34 +226,149 @@ version other than version 8. Things may break at **random**, at **any** place, 
 You are welcome to try and use any other version, but do **not** report issues back to me if you do encounter problems
 when running ServerPackCreator with a more recent Java version.
 
-# 5 Addons
+# 5. Addons
 
-## 5.1 Why
+The addons-section shows an excerpt from the README of the example addon README. Check out the repository of the example addon, linked below,
+for more details.
 
-There are things which people want to do with their server packs which could most certainly be automated. Some of those
-things so special, or maybe out of place, that they would not warrant a separate feature for ServerPackCreator itself.
-In short: Some things are out of scope for me to add to ServerPackCreator.
+## 5.1. Example Addon for ServerPackCreator
 
-It may also be that it is such a niche feature, that I either don't have the time to code it in, or simply don't want to.
-Maybe it doesn't fit into the overall design of ServerPackCreator, too. Who knows, it could be any of those reasons or another.
+There is an example addon available at [ServerPackCreator Example Addon](https://github.com/Griefed/ServerPackCreatorExampleAddon)
 
-**Hence, the addon functionality!**
+ServerPackCreator provides several extension endpoints for [pf4j plugins](https://github.com/pf4j/pf4j), from hereon out called **addons**, to add
+additional functionality. This example addon demonstrates an implementation for all available extension endpoints of ServerPackCreator.
 
-This allows people to write their own addons to expand the functionality of ServerPackCreator with their own features as
-they see fit or want.
+The example repository demonstrates how extension for ServerPackCreator are implemented, one small example for every extension
+point available in ServerPackCreator.
 
-For an example of an addon, see the [ServerPackCreator Example Addon](https://github.com/Griefed/ServerPackCreatorExampleAddon)
+### 5.2 Available Extensions
 
-## 5.2 Adding your own
+#### 5.2.1 Configuration Panel Extension
+
+The configuration panel is intended to let you add a panel in which you, or the user of your addon, may
+configure something for any of the extensions added by your addon.
+
+![configpanel](img/configpanel.png)
+
+The above example lets you configure four textfields, one for each extension point used during server pack
+configuration checking and server pack generation. More on this in **Configuration Check Extension**.
+
+Extension configurations are saved to the serverpackcreator.conf of the server pack and re-loaded along
+with everything else, like the Minecraft version, modloader and modloader version etc.
+
+Docs: [Configuration Panel Extension](https://griefed.github.io/ServerPackCreator/de/griefed/serverpackcreator/addons/swinggui/ConfigPanelExtension.html)
+
+#### 5.2.2 Tab Extension
+
+Tab extensions allow you to add whole tabs to the GUI of ServerPackCreator. These additional tabs are intended
+to let you add textfields and such, which allow you to configure your global addon configuration.
+You may add anything you want to it. The sky is the limit!
+
+![tab](img/tabextension.png)
+
+The above example adds a button which, when pressed, opens a minimalistic Tetris game in a new window.
+It's not supposed to be actually that entertaining, but rather to demonstrate that you can do what you want inside
+your tab.
+
+Below the big button are some textfields which allow you to change some values of the global addon-wide configuration.
+Global addon-configurations are handed to you by ServerPackCreator when the tab is instantiated.
+
+Global addon-configurations are passed to every extension, along with any available extension-specific configuration,
+automatically, so you don't have to worry about anything other than actually saving changes you made in the tab.
+
+Maybe have a timer auto-save every few seconds? Your tab, your choice! 😁
+
+Docs: [Tab Extension](https://griefed.github.io/ServerPackCreator/de/griefed/serverpackcreator/addons/swinggui/TabExtension.html)
+
+#### 5.2.3 Configuration Check Extension
+
+The configuration check extension point allows you to run your own config checks, be that on any of the
+already available data from the server pack config tab, or your own data from the configuration panel, or your
+own tab, or whatever else you may want to check.
+
+![check](img/configcheck.png)
+
+The above example simply checks whether the string in `text` of the passed `CommentedConfig` in a list
+of passed configs contains text. If it does, then we add a custom error message to the list of errors encountered
+during configuration checks.
+That list is then displayed to the user after the configurations checks have all run.
+
+Make use of this extension point in combination with the **Configuration Panel Extension** and/or **Tab Extension** in order to
+check user input for any errors!
+
+Docs: [ConfigurationCheck Extension](https://griefed.github.io/ServerPackCreator/de/griefed/serverpackcreator/addons/configurationhandler/ConfigCheckExtension.html)
+
+#### 5.2.4 Pre Server Pack Generation Extension
+
+The Pre Server Pack Generation extensions run, as the name implies, *right before* the generation of a server pack really begins.
+You may use this to prepare the environment for any of the tailing extensions.
+
+![pregen](img/pregen.png)
+
+The above example shows the run of a PreGen extension, with the global addon configuration as well as the extension-specific
+extension passed to it by ServerPackCreator.
+
+Docs: [Pre Generation Extension](https://griefed.github.io/ServerPackCreator/de/griefed/serverpackcreator/addons/serverpackhandler/PreGenExtension.html)
+
+#### 5.2.5 Pre Server Pack ZIP-archive Creation Extension
+
+The Pre Server Pack ZIP-archive Creation extensions run, as the name implies, *right before* the creation of the server packs ZIP-archive is, or would be,
+started. Want to add any files to the ZIP-archive? Or make sure some file doesn't make it into the ZIP-archive?
+
+![prezip](img/prezip.png)
+
+The above example shows the run of a PreZip extension, with the global addon configuration as well as the extension-specific
+extension passed to it by ServerPackCreator.
+
+Docs: [Pre Zip Extension](https://griefed.github.io/ServerPackCreator/de/griefed/serverpackcreator/addons/serverpackhandler/PreZipExtension.html)
+
+#### 5.2.6 Post Server Pack Generation Extension
+
+The Post Server Pack Generation extensions run, as the name implies, *after* the generation of a server pack has finished.
+Want to add any files to the server pack, but don't want them to end up in the ZIP-archive? Maybe download,
+install and configure DynMap with some renderdata? This would be the place to do that!
+
+![postgen](img/postgen.png)
+
+The above example shows the run of a PreGen extension, with the global addon configuration as well as the extension-specific
+extension passed to it by ServerPackCreator.
+
+Docs: [Post Generation Extension](https://griefed.github.io/ServerPackCreator/de/griefed/serverpackcreator/addons/serverpackhandler/PostGenExtension.html)
+
+---
+
+See now why the ConfigPanel, ConfigCheck and Tab extensions are so nice to have?
+The possibilities are (almost) **endless**!😁
+
+## 5.3 The reason for allowing ServerPackCreator to run addons:
+
+Some people need additional functionality for their server packs, or have some additional wishes for
+them. Some of those
+things may not fit into the core functionality of ServerPackCreator itself.
+
+It may also be that it is such a niche feature, that I either don't have the time to code it in, or
+simply don't want to.
+Maybe it doesn't fit into the overall design of ServerPackCreator, too. Who knows, it could be any
+of those reasons or another.
+
+**Hence, the addon functionality.**
+
+This allows people to write their own addons to expand the functionality of ServerPackCreator with
+their own features as
+they see fit.
+
+## 5.4 Adding your own
 
 A curated list of officially acknowledged addons/plugins can be found [here](https://addons.griefed.de) (redirects to [GitHub Pages](https://griefed.github.io/ServerPackCreator-Addons-Overview/#/))
 
 How to get your own addon into this list:
 
-If you have written your own addon or plugin for ServerPackCreator and you would like to see it added here, please open an issue over at ServerPackCreator on GitHub, using the Documentation template.
+If you have written your own addon or plugin for ServerPackCreator and you would like to see it added here,
+please open an issue over at [ServerPackCreator](https://github.com/Griefed/ServerPackCreator/issues/new?assignees=Griefed&labels=documentation&template=documentation-request.yml&title=%5BDocumentation%5D%3A+)
+or [ServerPackCreatorAddonExample](https://github.com/Griefed/ServerPackCreatorExampleAddon/issues/new?assignees=&labels=&template=documentation-request.md), using the Documentation template.
 
 For an addon to be accepted, you must at least provide:
-- The name of the repository, and therefore the addon.
+- The name of and link to the repository, and therefore the addon.
 - The owner of the repository, and therefore the addon.
 - The branch of the repository where the main code resides in.
 - A description of the addon.
