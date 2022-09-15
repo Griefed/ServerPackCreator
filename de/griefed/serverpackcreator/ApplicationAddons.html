@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -208,24 +208,28 @@ extends org.pf4j.JarPluginManager</pre>
 </td>
 </tr>
 <tr id="i2" class="altColor">
+<td class="colFirst"><code>protected org.pf4j.ExtensionFactory</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationAddons.html#createExtensionFactory--">createExtensionFactory</a></span>()</code>&nbsp;</td>
+</tr>
+<tr id="i3" class="rowColor">
 <td class="colFirst"><code>java.util.Optional&lt;com.electronwill.nightconfig.core.CommentedConfig&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationAddons.html#getAddonConfig-java.lang.String-">getAddonConfig</a></span>(java.lang.String&nbsp;addonId)</code>
 <div class="block">Get the global addon configuration for an addon of the passed ID.</div>
 </td>
 </tr>
-<tr id="i3" class="rowColor">
+<tr id="i4" class="altColor">
 <td class="colFirst"><code>java.util.Optional&lt;java.io.File&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationAddons.html#getAddonConfigFile-java.lang.String-">getAddonConfigFile</a></span>(java.lang.String&nbsp;addonId)</code>
 <div class="block">Get the configuration-file for an addon, if it exists.</div>
 </td>
 </tr>
-<tr id="i4" class="altColor">
+<tr id="i5" class="rowColor">
 <td class="colFirst"><code>java.util.List&lt;<a href="../../../de/griefed/serverpackcreator/addons/swinggui/ExtensionConfigPanel.html" title="class in de.griefed.serverpackcreator.addons.swinggui">ExtensionConfigPanel</a>&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationAddons.html#getConfigPanels-de.griefed.serverpackcreator.swing.TabCreateServerPack-">getConfigPanels</a></span>(<a href="../../../de/griefed/serverpackcreator/swing/TabCreateServerPack.html" title="class in de.griefed.serverpackcreator.swing">TabCreateServerPack</a>&nbsp;tabCreateServerPack)</code>
 <div class="block">Create config panels for the passed server pack configuration tab.</div>
 </td>
 </tr>
-<tr id="i5" class="rowColor">
+<tr id="i6" class="altColor">
 <td class="colFirst"><code>java.util.List&lt;<a href="../../../de/griefed/serverpackcreator/addons/swinggui/TabExtension.html" title="interface in de.griefed.serverpackcreator.addons.swinggui">TabExtension</a>&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationAddons.html#tabExtensions--">tabExtensions</a></span>()</code>
 <div class="block">List of available <a href="../../../de/griefed/serverpackcreator/addons/swinggui/TabExtension.html" title="interface in de.griefed.serverpackcreator.addons.swinggui"><code>TabExtension</code></a>-extensions.</div>
@@ -244,7 +248,7 @@ extends org.pf4j.JarPluginManager</pre>
 <!--   -->
 </a>
 <h3>Methods inherited from class&nbsp;org.pf4j.DefaultPluginManager</h3>
-<code>createExtensionFactory, createExtensionFinder, createPluginFactory, createPluginStatusProvider, createVersionManager, initialize, loadPluginFromPath</code></li>
+<code>createExtensionFinder, createPluginFactory, createPluginStatusProvider, createVersionManager, initialize, loadPluginFromPath</code></li>
 </ul>
 <ul class="blockList">
 <li class="blockList"><a name="methods.inherited.from.class.org.pf4j.AbstractPluginManager">
@@ -311,6 +315,19 @@ public&nbsp;ApplicationAddons(com.electronwill.nightconfig.toml.TomlParser&nbsp;
 <!--   -->
 </a>
 <h3>Method Detail</h3>
+<a name="createExtensionFactory--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>createExtensionFactory</h4>
+<pre>protected&nbsp;org.pf4j.ExtensionFactory&nbsp;createExtensionFactory()</pre>
+<dl>
+<dt><span class="overrideSpecifyLabel">Overrides:</span></dt>
+<dd><code>createExtensionFactory</code>&nbsp;in class&nbsp;<code>org.pf4j.DefaultPluginManager</code></dd>
+</dl>
+</li>
+</ul>
 <a name="getAddonConfig-java.lang.String-">
 <!--   -->
 </a>
