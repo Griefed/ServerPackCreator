@@ -1104,7 +1104,7 @@ public final class ApplicationProperties extends Properties {
     for (int i = 8; i < 256; i++) {
       if (checkJavaPath(getProperty(PROPERTY_SCRIPT_JAVA + i, ""))) {
 
-        if (JAVA_PATHS.containsKey(i)) {
+        if (JAVA_PATHS.containsKey(String.valueOf(i))) {
           JAVA_PATHS.replace(String.valueOf(i),
               getProperty(PROPERTY_SCRIPT_JAVA + i).replace("\\", "/"));
         } else {
