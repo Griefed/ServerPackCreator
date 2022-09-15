@@ -35,7 +35,6 @@ public class ApplicationAddonsTest {
   }
 
   @Test
-  @Disabled
   void test() {
     Assertions.assertNotNull(applicationAddons);
     Assertions.assertTrue(applicationAddons.postGenExtensions().size() > 0);
@@ -44,7 +43,5 @@ public class ApplicationAddonsTest {
     Assertions.assertTrue(applicationAddons.preZipExtensions().size() > 0);
     Assertions.assertTrue(applicationAddons.configCheckExtensions().size() > 0);
     Assertions.assertTrue(applicationAddons.configPanelExtensions().size() > 0);
-
-    // TODO have example plugin which creates some file or something, then assert that file exists
   }
 }
