@@ -69,7 +69,7 @@ dependencies {
   implementation 'commons-lang:commons-lang:2.6'
 
   implementation 'net.lingala.zip4j:zip4j:2.11.1'
-  implementation 'org.xerial:sqlite-jdbc:3.39.2.1'
+  implementation 'org.xerial:sqlite-jdbc:3.39.3.0'
   implementation 'org.pf4j:pf4j:3.7.0'
   implementation 'com.github.vatbub:mslinks:1.0.5'
   annotationProcessor 'org.jetbrains:annotations:23.0.0'
@@ -82,7 +82,7 @@ dependencies {
   implementation 'org.jgroups:jgroups:5.2.6.Final'
 
   // GUI
-  implementation 'io.github.vincenzopalazzo:material-ui-swing:1.1.3'
+  implementation 'io.github.vincenzopalazzo:material-ui-swing:1.1.4'
   implementation 'de.griefed:larsonscanner:1.0.4'
 
   // WEB
