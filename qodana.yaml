@@ -1,6 +1,32 @@
 version: "1.0"
+linter: jetbrains/qodana-jvm-community:2022.2
 profile:
   name: qodana.recommended
+exclude:
+  - name: All
+    paths:
+      - frontend
+      - .github
+      - .gitlab
+      - .gradle
+      - .idea
+      - .jpb
+      - .runConfigurations
+      - build
+      - gradle
+      - img
+      - lang
+      - licenses
+      - logs
+      - manifests
+      - plugins
+      - root
+      - server-packs
+      - server_files
+      - testruns
+      - work
+  - name: FieldMayBeStatic
+  - name: SystemOutErr
 include:
   - name: ArrayEquality
   - name: Deprecation
@@ -15,9 +41,3 @@ include:
   - name: StringEquality
   - name: StringEqualsEmptyString
   - name: UseOfObsoleteDateTimeApi
-exclude:
-  - name: All
-    paths:
-      - frontend
-  - name: FieldMayBeStatic
-  - name: SystemOutErr
