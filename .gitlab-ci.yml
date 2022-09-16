@@ -16,6 +16,10 @@ variables:
   SECRET_DETECTION_EXCLUDED_PATHS: ""
   GRADLE_OPTS: "-Dorg.gradle.daemon=false"
   GRADLE_USER_HOME: "$CI_PROJECT_DIR/.gradle"
+  QODANA_REMOTE_URL: "git@$CI_SERVER_HOST:$CI_PROJECT_PATH.git"
+  QODANA_BRANCH: "$CI_COMMIT_BRANCH"
+  QODANA_REPO_URL: "$CI_PROJECT_URL"
+  QODANA_JOB_URL: "$CI_JOB_URL"
 
 services:
   - name: ghcr.io/griefed/gitlab-ci-cd:2.2.1
