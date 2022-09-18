@@ -13,7 +13,7 @@ Set-Location "$PSScriptRoot"
 $MinecraftVersion = "SPC_MINECRAFT_VERSION_SPC"
 $ModLoader = "SPC_MODLOADER_SPC"
 $ModLoaderVersion = "SPC_MODLOADER_VERSION_SPC"
-$Args = "SPC_JAVA_ARGS_SPC"
+$JavaArgs = "SPC_JAVA_ARGS_SPC"
 $Java = "SPC_JAVA_SPC"
 $LegacyFabricInstallerVersion = "SPC_LEGACYFABRIC_INSTALLER_VERSION_SPC"
 $FabricInstallerVersion = "SPC_FABRIC_INSTALLER_VERSION_SPC"
@@ -117,7 +117,7 @@ Function global:SetupForge
         $ForgeJarLocation = "forge.jar"
         $script:LauncherJarLocation = "forge.jar"
         $script:MinecraftServerJarLocation = "minecraft_server.${MinecraftVersion}.jar"
-        $script:ServerRunCommand = "-Dlog4j2.formatMsgNoLookups=true ${Args} -jar ${LauncherJarLocation} nogui"
+        $script:ServerRunCommand = "-Dlog4j2.formatMsgNoLookups=true ${JavaArgs} -jar ${LauncherJarLocation} nogui"
     }
     else
     {
@@ -135,7 +135,7 @@ Function global:SetupForge
                     "# A good default for a modded server is 4GB.`n" +
                     "# Uncomment the next line to set it.`n" +
                     "# -Xmx4G`n" +
-                    "${script:Args}" | Out-File user_jvm_args.txt -encoding utf8
+                    "${script:JavaArgs}" | Out-File user_jvm_args.txt -encoding utf8
         }
         else
         {
@@ -240,7 +240,7 @@ Function global:SetupFabric
             $script:MinecraftServerJarLocation = "server.jar"
         }
     }
-    $script:ServerRunCommand = "-Dlog4j2.formatMsgNoLookups=true ${script:Args} -jar ${script:LauncherJarLocation} nogui"
+    $script:ServerRunCommand = "-Dlog4j2.formatMsgNoLookups=true ${script:JavaArgs} -jar ${script:LauncherJarLocation} nogui"
     ""
 }
 
@@ -282,7 +282,7 @@ Function global:SetupQuilt
     }
     $script:LauncherJarLocation = "quilt-server-launch.jar"
     $script:MinecraftServerJarLocation = "server.jar"
-    $script:ServerRunCommand = "-Dlog4j2.formatMsgNoLookups=true ${Args} -jar ${LauncherJarLocation} nogui"
+    $script:ServerRunCommand = "-Dlog4j2.formatMsgNoLookups=true ${JavaArgs} -jar ${LauncherJarLocation} nogui"
     ""
 }
 
@@ -324,7 +324,7 @@ Function global:SetupLegacyFabric
     }
     $script:LauncherJarLocation = "fabric-server-launch.jar"
     $script:MinecraftServerJarLocation = "server.jar"
-    $script:ServerRunCommand = "-Dlog4j2.formatMsgNoLookups=true ${Args} -jar ${LauncherJarLocation} nogui"
+    $script:ServerRunCommand = "-Dlog4j2.formatMsgNoLookups=true ${JavaArgs} -jar ${LauncherJarLocation} nogui"
     ""
 }
 
@@ -438,7 +438,7 @@ if (!("${LauncherJarLocation}" -eq "do_not_manually_edit"))
     "Launcher JAR:      ${LauncherJarLocation}"
 }
 ""
-"Java args:         ${Args}"
+"Java args:         ${JavaArgs}"
 "Java path:         ${Java}"
 "Run Command:       ${Java} ${ServerRunCommand}"
 "Java version:"
