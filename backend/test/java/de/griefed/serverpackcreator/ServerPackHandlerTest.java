@@ -96,7 +96,7 @@ class ServerPackHandlerTest {
 
     String ps1 = FileUtils.readFileToString(new File("server-packs/forge_tests/start.ps1"),
         StandardCharsets.UTF_8);
-    Assertions.assertTrue(ps1.contains("$Args = \"" + configurationModel.getJavaArgs()));
+    Assertions.assertTrue(ps1.contains("$JavaArgs = \"" + configurationModel.getJavaArgs()));
     Assertions.assertTrue(
         ps1.contains("$MinecraftVersion = \"" + configurationModel.getMinecraftVersion()));
     Assertions.assertTrue(ps1.contains("$ModLoader = \"" + configurationModel.getModLoader()));
