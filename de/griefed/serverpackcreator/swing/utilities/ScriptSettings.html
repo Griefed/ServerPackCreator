@@ -259,9 +259,8 @@ extends javax.swing.JTable</pre>
 <td class="colOne"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/swing/utilities/ScriptSettings.html#ScriptSettings-javax.swing.table.TableModel-javax.swing.table.TableColumnModel-javax.swing.ListSelectionModel-">ScriptSettings</a></span>(javax.swing.table.TableModel&nbsp;dm,
               javax.swing.table.TableColumnModel&nbsp;cm,
               javax.swing.ListSelectionModel&nbsp;sm)</code>
-<div class="block">Constructs a <code>ScriptSettings</code> that is initialized with
- <code>dm</code> as the data model, <code>cm</code> as the
- column model, and <code>sm</code> as the selection model.</div>
+<div class="block">Constructs a <code>ScriptSettings</code> that is initialized with <code>dm</code> as the data model,
+ <code>cm</code> as the column model, and <code>sm</code> as the selection model.</div>
 </td>
 </tr>
 </table>
@@ -403,12 +402,11 @@ extends javax.swing.JTable</pre>
 <pre>public&nbsp;ScriptSettings(javax.swing.table.TableModel&nbsp;dm,
                       javax.swing.table.TableColumnModel&nbsp;cm,
                       javax.swing.ListSelectionModel&nbsp;sm)</pre>
-<div class="block">Constructs a <code>ScriptSettings</code> that is initialized with
- <code>dm</code> as the data model, <code>cm</code> as the
- column model, and <code>sm</code> as the selection model. If any of the parameters are
- <code>null</code> this method will initialize the table with the corresponding default model.
- The <code>autoCreateColumnsFromModel</code> flag is set to false if <code>cm</code> is
- non-null, otherwise it is set to true and the column model is populated with suitable
+<div class="block">Constructs a <code>ScriptSettings</code> that is initialized with <code>dm</code> as the data model,
+ <code>cm</code> as the column model, and <code>sm</code> as the selection model. If any of the parameters
+ are <code>null</code> this method will initialize the table with the corresponding default model.
+ The <code>autoCreateColumnsFromModel</code> flag is set to false if <code>cm</code> is non-null,
+ otherwise it is set to true and the column model is populated with suitable
  <code>TableColumns</code> for the columns in <code>dm</code>.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -505,8 +503,8 @@ extends javax.swing.JTable</pre>
 <li class="blockList">
 <h4>loadData</h4>
 <pre>public&nbsp;void&nbsp;loadData(java.util.HashMap&lt;java.lang.String,java.lang.String&gt;&nbsp;data)</pre>
-<div class="block">Clear and load the provided hashmap into the table. They <code>KEY</code> is placed into column
- 1 (Placeholder) , the <code>VALUE</code> is placed into column 2 (Value).</div>
+<div class="block">Clear and load the provided hashmap into the table. They <code>KEY</code> is placed into column 1
+ (Placeholder) , the <code>VALUE</code> is placed into column 2 (Value).</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>data</code> - The map containing the data to load into the table.</dd>
@@ -521,8 +519,8 @@ extends javax.swing.JTable</pre>
 <h4>getData</h4>
 <pre>public&nbsp;java.util.HashMap&lt;java.lang.String,java.lang.String&gt;&nbsp;getData()</pre>
 <div class="block">Get the data from the table as a map. Column 1 (Placeholder) will be mapped to the maps
- <code>KEY</code>, column 2 (Value) will be mapped to the maps <code>VALUE</code>. Rows are
- ignored of they do not contain values for both columns.</div>
+ <code>KEY</code>, column 2 (Value) will be mapped to the maps <code>VALUE</code>. Rows are ignored of
+ they do not contain values for both columns.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>A map containing the data of the table.</dd>

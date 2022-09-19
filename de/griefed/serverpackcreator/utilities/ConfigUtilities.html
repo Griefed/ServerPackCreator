@@ -502,8 +502,8 @@ public&nbsp;boolean&nbsp;writeConfigToFile(java.lang.String&nbsp;modpackDir,
                              pack.</dd>
 <dd><code>serverPropertiesPath</code> - The path to the custom server.properties to be used in the server
                              pack.</dd>
-<dd><code>scriptSettings</code> - Custom settings for start script creation. <code>KEY</code>s are
-                             the placeholder, <code>VALUE</code>s are the values with which the
+<dd><code>scriptSettings</code> - Custom settings for start script creation. <code>KEY</code>s are the
+                             placeholder, <code>VALUE</code>s are the values with which the
                              placeholders are to be replaced.</dd>
 </dl>
 </li>
@@ -540,8 +540,7 @@ public&nbsp;boolean&nbsp;writeConfigToFile(java.lang.String&nbsp;modpackDir,
                                            throws java.io.IOException</pre>
 <div class="block"><strong><code>modrinth.index.json</code></strong>
 
- <p>Update the given ConfigurationModel with values gathered from a Modrinth <code>
- modrinth.index.json</code>-manifest.</div>
+ <p>Update the given ConfigurationModel with values gathered from a Modrinth <code>modrinth.index.json</code>-manifest.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>configurationModel</code> - The model to update.</dd>
@@ -702,8 +701,8 @@ public&nbsp;boolean&nbsp;checkCurseForgeJsonForFabric(com.fasterxml.jackson.data
  version. Iterating through the mods list is no longer necessary.</span></div>
 <div class="block">Checks whether the projectID for the Jumploader mod is present in the list of mods required by
  the CurseForge modpack. If Jumploader is found, the modloader for the new configuration-file
- will be set to Fabric. If <code>modLoaders</code> in the manifest specifies Fabric, use that to
- set the modloader and its version.</div>
+ will be set to Fabric. If <code>modLoaders</code> in the manifest specifies Fabric, use that to set
+ the modloader and its version.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>modpackJson</code> - JSonNode. JsonNode containing all information about the CurseForge modpack.</dd>

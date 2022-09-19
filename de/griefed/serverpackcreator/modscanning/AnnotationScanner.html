@@ -151,9 +151,9 @@ extends java.lang.Object</pre>
 <td class="colFirst"><code>java.util.TreeSet&lt;java.io.File&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/modscanning/AnnotationScanner.html#scan-java.util.Collection-">scan</a></span>(java.util.Collection&lt;java.io.File&gt;&nbsp;filesInModsDir)</code>
 <div class="block">Scan the <code>fml-cache-annotation.json</code>-files in mod JAR-files of a given directory for
- their sideness.<br> If <code>clientSideOnly</code> specifies <code>"value": "true"</code>, and
- is not listed as a dependency for another mod, it is added and therefore later on excluded from
- the server pack.</div>
+ their sideness.<br> If <code>clientSideOnly</code> specifies <code>"value": "true"</code>, and is not
+ listed as a dependency for another mod, it is added and therefore later on excluded from the
+ server pack.</div>
 </td>
 </tr>
 </table>
@@ -205,13 +205,13 @@ public&nbsp;AnnotationScanner(com.fasterxml.jackson.databind.ObjectMapper&nbsp;o
 <h4>scan</h4>
 <pre>public&nbsp;java.util.TreeSet&lt;java.io.File&gt;&nbsp;scan(java.util.Collection&lt;java.io.File&gt;&nbsp;filesInModsDir)</pre>
 <div class="block">Scan the <code>fml-cache-annotation.json</code>-files in mod JAR-files of a given directory for
- their sideness.<br> If <code>clientSideOnly</code> specifies <code>"value": "true"</code>, and
- is not listed as a dependency for another mod, it is added and therefore later on excluded from
- the server pack.</div>
+ their sideness.<br> If <code>clientSideOnly</code> specifies <code>"value": "true"</code>, and is not
+ listed as a dependency for another mod, it is added and therefore later on excluded from the
+ server pack.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>filesInModsDir</code> - A list of files in which to check the <code>fml-cache-annotation.json
-                       </code>-files.</dd>
+<dd><code>filesInModsDir</code> - A list of files in which to check the
+                       <code>fml-cache-annotation.json </code>-files.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>List of mods not to include in server pack based on fml-cache-annotation.json-content.</dd>
 </dl>

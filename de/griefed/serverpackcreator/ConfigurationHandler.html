@@ -299,8 +299,7 @@ extends java.lang.Object</pre>
  <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a>, are present:
 
  
-   <code>SPC_SERVERPACKCREATOR_VERSION_SPC</code> : <code>
-       ServerPackCreator version with which the scripts were created</code>
+   <code>SPC_SERVERPACKCREATOR_VERSION_SPC</code> : <code>ServerPackCreator version with which the scripts were created</code>
    <code>SPC_MINECRAFT_VERSION_SPC</code> : <code>Minecraft version of the modpack</code>
    <code>SPC_MINECRAFT_SERVER_URL_SPC</code> : <code>Download-URL to the Minecraft server
        </code>
@@ -308,12 +307,9 @@ extends java.lang.Object</pre>
    <code>SPC_MODLOADER_VERSION_SPC</code> : <code>The modloader version of the modpack
        </code>
    <code>SPC_JAVA_ARGS_SPC</code> : <code>The JVM args to be used to run the server</code>
-   <code>SPC_JAVA_SPC</code> : <code>
-       Path to the java installation to be used to run the server</code>
-   <code>SPC_FABRIC_INSTALLER_VERSION_SPC</code> : <code>
-       Most recent version of the Fabric installer at the time of creating the scripts</code>
-   <code>SPC_QUILT_INSTALLER_VERSION_SPC</code> : <code>
-       Most recent version of the Quilt installer at the time of creating the scripts</code>
+   <code>SPC_JAVA_SPC</code> : <code>Path to the java installation to be used to run the server</code>
+   <code>SPC_FABRIC_INSTALLER_VERSION_SPC</code> : <code>Most recent version of the Fabric installer at the time of creating the scripts</code>
+   <code>SPC_QUILT_INSTALLER_VERSION_SPC</code> : <code>Most recent version of the Quilt installer at the time of creating the scripts</code>
  </div>
 </td>
 </tr>
@@ -332,9 +328,8 @@ extends java.lang.Object</pre>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#isDir-de.griefed.serverpackcreator.ConfigurationModel-java.util.List-">isDir</a></span>(<a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel,
      java.util.List&lt;java.lang.String&gt;&nbsp;encounteredErrors)</code>
 <div class="block">If the in the configuration specified modpack dir is an existing directory, checks are made for
- valid configuration of: directories to copy to server pack,<br> if includeServerInstallation
- is
- <code>true</code>) path to Java executable/binary, Minecraft version, modloader and modloader
+ valid configuration of: directories to copy to server pack, if includeServerInstallation is
+ <code>true</code> path to Java executable/binary, Minecraft version, modloader and modloader
  version.</div>
 </td>
 </tr>
@@ -434,8 +429,8 @@ public&nbsp;ConfigurationHandler(<a href="../../../de/griefed/serverpackcreator/
                                   @NotNull
                                   @NotNull java.util.List&lt;java.lang.String&gt;&nbsp;encounteredErrors,
                                   boolean&nbsp;quietCheck)</pre>
-<div class="block">Check the passed configuration-file. If any check returns <code>true</code> then the server
- pack will not be created. In order to find out which check failed, the user has to check their
+<div class="block">Check the passed configuration-file. If any check returns <code>true</code> then the server pack
+ will not be created. In order to find out which check failed, the user has to check their
  serverpackcreator.log in the logs-directory.<br> Does not create a modpack if a CurseForge
  project and file is specified.</div>
 <dl>
@@ -465,8 +460,8 @@ public&nbsp;ConfigurationHandler(<a href="../../../de/griefed/serverpackcreator/
 <pre>public&nbsp;boolean&nbsp;checkConfiguration(@NotNull
                                   @NotNull java.io.File&nbsp;configFile,
                                   boolean&nbsp;quietCheck)</pre>
-<div class="block">Check the passed configuration-file. If any check returns <code>true</code> then the server
- pack will not be created. In order to find out which check failed, the user has to check their
+<div class="block">Check the passed configuration-file. If any check returns <code>true</code> then the server pack
+ will not be created. In order to find out which check failed, the user has to check their
  serverpackcreator.log in the logs-directory.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -491,8 +486,8 @@ public&nbsp;ConfigurationHandler(<a href="../../../de/griefed/serverpackcreator/
                                   @NotNull
                                   @NotNull <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel,
                                   boolean&nbsp;quietCheck)</pre>
-<div class="block">Check the passed configuration-file. If any check returns <code>true</code> then the server
- pack will not be created. In order to find out which check failed, the user has to check their
+<div class="block">Check the passed configuration-file. If any check returns <code>true</code> then the server pack
+ will not be created. In order to find out which check failed, the user has to check their
  serverpackcreator.log in the logs-directory.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -518,9 +513,9 @@ public&nbsp;ConfigurationHandler(<a href="../../../de/griefed/serverpackcreator/
 <pre>public&nbsp;boolean&nbsp;checkConfiguration(@NotNull
                                   @NotNull <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel,
                                   boolean&nbsp;quietCheck)</pre>
-<div class="block">Check the passed <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a>. If any check returns <code>true</code> then the
- server pack will not be created. In order to find out which check failed, the user has to check
- their serverpackcreator.log in the logs-directory.</div>
+<div class="block">Check the passed <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a>. If any check returns <code>true</code> then the server
+ pack will not be created. In order to find out which check failed, the user has to check their
+ serverpackcreator.log in the logs-directory.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>configurationModel</code> - Instance of a configuration of a modpack. Can be used to further
@@ -546,8 +541,8 @@ public&nbsp;ConfigurationHandler(<a href="../../../de/griefed/serverpackcreator/
                                   @NotNull
                                   @NotNull java.util.List&lt;java.lang.String&gt;&nbsp;encounteredErrors,
                                   boolean&nbsp;quietCheck)</pre>
-<div class="block">Check the passed configuration-file. If any check returns <code>true</code> then the server
- pack will not be created. In order to find out which check failed, the user has to check their
+<div class="block">Check the passed configuration-file. If any check returns <code>true</code> then the server pack
+ will not be created. In order to find out which check failed, the user has to check their
  serverpackcreator.log in the logs-directory.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -581,13 +576,13 @@ public&nbsp;ConfigurationHandler(<a href="../../../de/griefed/serverpackcreator/
                                   @NotNull
                                   @NotNull java.util.List&lt;java.lang.String&gt;&nbsp;encounteredErrors,
                                   boolean&nbsp;quietCheck)</pre>
-<div class="block">Check the passed <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a>. If any check returns <code>true</code> then the
- server pack will not be created. In order to find out which check failed, the user has to check
- their serverpackcreator.log in the logs-directory.<br> The passed String List
- <code>encounteredErrors</code> can be used to display the errors, if any were encountered, in
- a UI or be printed into the console or whatever have you.<br> The passed
- <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a> can be used to further display or use any information within, as it
- may be changed or otherwise altered by this method.</div>
+<div class="block">Check the passed <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a>. If any check returns <code>true</code> then the server
+ pack will not be created. In order to find out which check failed, the user has to check their
+ serverpackcreator.log in the logs-directory.<br> The passed String List
+ <code>encounteredErrors</code> can be used to display the errors, if any were encountered, in a UI
+ or be printed into the console or whatever have you.<br> The passed <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a>
+ can be used to further display or use any information within, as it may be changed or otherwise
+ altered by this method.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>configurationModel</code> - Instance of a configuration of a modpack. Can be used to further
@@ -615,9 +610,8 @@ public&nbsp;ConfigurationHandler(<a href="../../../de/griefed/serverpackcreator/
 <pre>public&nbsp;boolean&nbsp;isDir(<a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel,
                      java.util.List&lt;java.lang.String&gt;&nbsp;encounteredErrors)</pre>
 <div class="block">If the in the configuration specified modpack dir is an existing directory, checks are made for
- valid configuration of: directories to copy to server pack,<br> if includeServerInstallation
- is
- <code>true</code>) path to Java executable/binary, Minecraft version, modloader and modloader
+ valid configuration of: directories to copy to server pack, if includeServerInstallation is
+ <code>true</code> path to Java executable/binary, Minecraft version, modloader and modloader
  version.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -639,9 +633,9 @@ public&nbsp;ConfigurationHandler(<a href="../../../de/griefed/serverpackcreator/
                      java.util.List&lt;java.lang.String&gt;&nbsp;encounteredErrors)
               throws java.io.IOException</pre>
 <div class="block">Checks the specified ZIP-archive for validity. In order for a modpack ZIP-archive to be
- considered valid, it needs to contain the <code>mods</code> and <code>config</code> folders at
- minimum. If any of <code>manifest.json</code>, <code>minecraftinstance.json</code> or <code>
- config.json</code> are available, gather as much information from them as possible.</div>
+ considered valid, it needs to contain the <code>mods</code> and <code>config</code> folders at minimum.
+ If any of <code>manifest.json</code>, <code>minecraftinstance.json</code> or <code>config.json</code> are
+ available, gather as much information from them as possible.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>configurationModel</code> - Instance of <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a> with a server pack
@@ -672,8 +666,8 @@ public&nbsp;ConfigurationHandler(<a href="../../../de/griefed/serverpackcreator/
 <dd><code>encounteredErrors</code> - A list of errors encountered during configuration checks, to be added
                            to in case an error is encountered during manifest checks.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>The name of the modpack currently being checked. <code>null</code> if the name could
- not be acquired.</dd>
+<dd>The name of the modpack currently being checked. <code>null</code> if the name could not be
+ acquired.</dd>
 </dl>
 </li>
 </ul>
@@ -708,8 +702,7 @@ public&nbsp;ConfigurationHandler(<a href="../../../de/griefed/serverpackcreator/
  <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a>, are present:
 
  <ol>
-   <li><code>SPC_SERVERPACKCREATOR_VERSION_SPC</code> : <code>
-       ServerPackCreator version with which the scripts were created</code>
+   <li><code>SPC_SERVERPACKCREATOR_VERSION_SPC</code> : <code>ServerPackCreator version with which the scripts were created</code>
    <li><code>SPC_MINECRAFT_VERSION_SPC</code> : <code>Minecraft version of the modpack</code>
    <li><code>SPC_MINECRAFT_SERVER_URL_SPC</code> : <code>Download-URL to the Minecraft server
        </code>
@@ -717,12 +710,9 @@ public&nbsp;ConfigurationHandler(<a href="../../../de/griefed/serverpackcreator/
    <li><code>SPC_MODLOADER_VERSION_SPC</code> : <code>The modloader version of the modpack
        </code>
    <li><code>SPC_JAVA_ARGS_SPC</code> : <code>The JVM args to be used to run the server</code>
-   <li><code>SPC_JAVA_SPC</code> : <code>
-       Path to the java installation to be used to run the server</code>
-   <li><code>SPC_FABRIC_INSTALLER_VERSION_SPC</code> : <code>
-       Most recent version of the Fabric installer at the time of creating the scripts</code>
-   <li><code>SPC_QUILT_INSTALLER_VERSION_SPC</code> : <code>
-       Most recent version of the Quilt installer at the time of creating the scripts</code>
+   <li><code>SPC_JAVA_SPC</code> : <code>Path to the java installation to be used to run the server</code>
+   <li><code>SPC_FABRIC_INSTALLER_VERSION_SPC</code> : <code>Most recent version of the Fabric installer at the time of creating the scripts</code>
+   <li><code>SPC_QUILT_INSTALLER_VERSION_SPC</code> : <code>Most recent version of the Quilt installer at the time of creating the scripts</code>
  </ol></div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -798,10 +788,10 @@ public&nbsp;ConfigurationHandler(<a href="../../../de/griefed/serverpackcreator/
  specified source-file exists on the host.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>directoriesToCopy</code> - List String. The list of directories, or <code>
-                          source/file;destination/file</code>-combinations, to check for
-                          existence. <code> source/file;destination/file</code>-combinations
-                          must be absolute paths to the source-file.</dd>
+<dd><code>directoriesToCopy</code> - List String. The list of directories, or
+                          <code>source/file;destination/file</code>-combinations, to check for
+                          existence. <code>source/file;destination/file</code>-combinations must be
+                          absolute paths to the source-file.</dd>
 <dd><code>modpackDir</code> - String. The path to the modpack directory in which to check for
                           existence of the passed list of directories.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
@@ -827,10 +817,10 @@ public&nbsp;ConfigurationHandler(<a href="../../../de/griefed/serverpackcreator/
  specified source-file exists on the host.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>directoriesToCopy</code> - List String. The list of directories, or <code>
-                          source/file;destination/file</code>-combinations, to check for
-                          existence. <code> source/file;destination/file</code>-combinations
-                          must be absolute paths to the source-file.</dd>
+<dd><code>directoriesToCopy</code> - List String. The list of directories, or
+                          <code>source/file;destination/file</code>-combinations, to check for
+                          existence. <code>source/file;destination/file</code>-combinations must be
+                          absolute paths to the source-file.</dd>
 <dd><code>modpackDir</code> - String. The path to the modpack directory in which to check for
                           existence of the passed list of directories.</dd>
 <dd><code>encounteredErrors</code> - List String. A list to which all encountered errors are saved to.</dd>
@@ -891,14 +881,13 @@ public&nbsp;boolean&nbsp;testJava(java.lang.String&nbsp;pathToJava)</pre>
 <div class="block"><span class="deprecatedLabel">Deprecated.</span>&nbsp;<span class="deprecationComment">Will be removed in Milestone 4. Java path settings have moved to the global
  ApplicationProperties, because the Java path setting is used for modloader installation by
  ServerPackCreator only.</span></div>
-<div class="block">Test for a valid Java specification by trying to run <code>java -version</code>. If the command
- goes through without errors, it is considered a correct specification.</div>
+<div class="block">Test for a valid Java specification by trying to run <code>java -version</code>. If the command goes
+ through without errors, it is considered a correct specification.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>pathToJava</code> - Path to the java executable/binary.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>true</code> if the specified file is a valid Java
- executable/binary.</dd>
+<dd><code>true</code> if the specified file is a valid Java executable/binary.</dd>
 </dl>
 </li>
 </ul>

@@ -368,9 +368,9 @@
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/ApplicationProperties.html#checkForAvailablePreReleases--">checkForAvailablePreReleases()</a></span> - Method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a></dt>
 <dd>
 <div class="block">Getter for whether the search for available PreReleases is enabled or disabled.<br> Depending
- on <code>de.griefed.serverpackcreator.versioncheck.prerelease</code>, returns <code>
- true</code> if checks for available PreReleases are enabled, <code>false</code> if no checks
- for available PreReleases should be made.</div>
+ on <code>de.griefed.serverpackcreator.versioncheck.prerelease</code>, returns <code>true</code> if checks
+ for available PreReleases are enabled, <code>false</code> if no checks for available PreReleases
+ should be made.</div>
 </dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/ServerPackCreator.html#checkForConfig--">checkForConfig()</a></span> - Method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/ServerPackCreator.html" title="class in de.griefed.serverpackcreator">ServerPackCreator</a></dt>
 <dd>
@@ -522,8 +522,8 @@
 </dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/common/ListUtilities.html#cleanList-java.util.List-">cleanList(List&lt;String&gt;)</a></span> - Method in class de.griefed.serverpackcreator.utilities.common.<a href="de/griefed/serverpackcreator/utilities/common/ListUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">ListUtilities</a></dt>
 <dd>
-<div class="block">Clean a given String List of any entry consisting only of whitespace or a length of <code>0
- </code>.</div>
+<div class="block">Clean a given String List of any entry consisting only of whitespace or a length of
+ <code>0 </code>.</div>
 </dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/addons/swinggui/ExtensionConfigPanel.html#clear--">clear()</a></span> - Method in class de.griefed.serverpackcreator.addons.swinggui.<a href="de/griefed/serverpackcreator/addons/swinggui/ExtensionConfigPanel.html" title="class in de.griefed.serverpackcreator.addons.swinggui">ExtensionConfigPanel</a></dt>
 <dd>
@@ -705,14 +705,12 @@
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/spring/task/ArtemisConfig.html#customize-org.apache.activemq.artemis.core.config.Configuration-">customize(Configuration)</a></span> - Method in class de.griefed.serverpackcreator.spring.task.<a href="de/griefed/serverpackcreator/spring/task/ArtemisConfig.html" title="class in de.griefed.serverpackcreator.spring.task">ArtemisConfig</a></dt>
 <dd>
 <div class="block">Customize our configuration.<br> Set the default consumer windows size to 0.<br> Set the
- maximum disk usage from our property <code>
- de.griefed.serverpackcreator.spring.artemis.queue.max_disk_usage</code>.<br> Set the address
- to
- <code>tasks.background</code>.<br> Set the queue configuration to
- <code>tasks.background</code>.<br> Set the name to <code>tasks.background</code>.<br> Set the
- last value key to <code>unique_id</code>.<br> Set the routing type to
- <code>RoutingType.ANYCAST</code>.<br> Add our queue configuration..<br> All of this ensures that any
- message added will be deduplicated and worked on one by one.</div>
+ maximum disk usage from our property
+ <code>de.griefed.serverpackcreator.spring.artemis.queue.max_disk_usage</code>.<br> Set the address
+ to <code>tasks.background</code>.<br> Set the queue configuration to <code>tasks.background</code>.<br>
+ Set the name to <code>tasks.background</code>.<br> Set the last value key to <code>unique_id</code>.<br>
+ Set the routing type to <code>RoutingType.ANYCAST</code>.<br> Add our queue configuration..<br> All
+ of this ensures that any message added will be deduplicated and worked on one by one.</div>
 </dd>
 </dl>
 <a name="I:D">
@@ -915,8 +913,7 @@
  <a href="de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a>, are present:
 
  
-   <code>SPC_SERVERPACKCREATOR_VERSION_SPC</code> : <code>
-       ServerPackCreator version with which the scripts were created</code>
+   <code>SPC_SERVERPACKCREATOR_VERSION_SPC</code> : <code>ServerPackCreator version with which the scripts were created</code>
    <code>SPC_MINECRAFT_VERSION_SPC</code> : <code>Minecraft version of the modpack</code>
    <code>SPC_MINECRAFT_SERVER_URL_SPC</code> : <code>Download-URL to the Minecraft server
        </code>
@@ -924,12 +921,9 @@
    <code>SPC_MODLOADER_VERSION_SPC</code> : <code>The modloader version of the modpack
        </code>
    <code>SPC_JAVA_ARGS_SPC</code> : <code>The JVM args to be used to run the server</code>
-   <code>SPC_JAVA_SPC</code> : <code>
-       Path to the java installation to be used to run the server</code>
-   <code>SPC_FABRIC_INSTALLER_VERSION_SPC</code> : <code>
-       Most recent version of the Fabric installer at the time of creating the scripts</code>
-   <code>SPC_QUILT_INSTALLER_VERSION_SPC</code> : <code>
-       Most recent version of the Quilt installer at the time of creating the scripts</code>
+   <code>SPC_JAVA_SPC</code> : <code>Path to the java installation to be used to run the server</code>
+   <code>SPC_FABRIC_INSTALLER_VERSION_SPC</code> : <code>Most recent version of the Fabric installer at the time of creating the scripts</code>
+   <code>SPC_QUILT_INSTALLER_VERSION_SPC</code> : <code>Most recent version of the Quilt installer at the time of creating the scripts</code>
  </div>
 </dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/spring/CustomErrorController.html#error--">error()</a></span> - Method in class de.griefed.serverpackcreator.spring.<a href="de/griefed/serverpackcreator/spring/CustomErrorController.html" title="class in de.griefed.serverpackcreator.spring">CustomErrorController</a></dt>
@@ -1487,8 +1481,7 @@
 </dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricDetails.html#getId--">getId()</a></span> - Method in class de.griefed.serverpackcreator.versionmeta.fabric.<a href="de/griefed/serverpackcreator/versionmeta/fabric/FabricDetails.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric">FabricDetails</a></dt>
 <dd>
-<div class="block">Fabric loader ID, in the format of <code>fabric-loader-FABRIC_VERSION-MINECRAFT_VERSION
- </code>.</div>
+<div class="block">Fabric loader ID, in the format of <code>fabric-loader-FABRIC_VERSION-MINECRAFT_VERSION </code>.</div>
 </dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/ConfigurationModel.html#getIncludeServerIcon--">getIncludeServerIcon()</a></span> - Method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a></dt>
 <dd>
@@ -1932,16 +1925,16 @@
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/spring/task/TaskHandler.html#handleGeneration-de.griefed.serverpackcreator.spring.task.Task-">handleGeneration(Task)</a></span> - Method in class de.griefed.serverpackcreator.spring.task.<a href="de/griefed/serverpackcreator/spring/task/TaskHandler.html" title="class in de.griefed.serverpackcreator.spring.task">TaskHandler</a></dt>
 <dd>
 <div class="block"><code>JmsListener</code> listening to the destination <code>tasks.background</code> and selector
- <code>type = 'generation'</code>, so only task that match the <code>generation</code>-type are
- worked with in this method.<br> If a task is received that matches this type, the generation of
- a new server pack is started.</div>
+ <code>type = 'generation'</code>, so only task that match the <code>generation</code>-type are worked
+ with in this method.<br> If a task is received that matches this type, the generation of a new
+ server pack is started.</div>
 </dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/spring/task/TaskHandler.html#handleScan-de.griefed.serverpackcreator.spring.task.Task-">handleScan(Task)</a></span> - Method in class de.griefed.serverpackcreator.spring.task.<a href="de/griefed/serverpackcreator/spring/task/TaskHandler.html" title="class in de.griefed.serverpackcreator.spring.task">TaskHandler</a></dt>
 <dd>
 <div class="block"><code>JmsListener</code> listening to the destination <code>tasks.background</code> and selector
- <code>type = 'scan'</code>, so only task that match the <code>scan</code>-type are worked with
- in this method.<br> If a task is received that matches this type, the CurseForge project and
- file ID of said task is checked for validity.</div>
+ <code>type = 'scan'</code>, so only task that match the <code>scan</code>-type are worked with in this
+ method.<br> If a task is received that matches this type, the CurseForge project and file ID of
+ said task is checked for validity.</div>
 </dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/common/WebUtilities.html#hasteBinPreChecks-java.io.File-">hasteBinPreChecks(File)</a></span> - Method in class de.griefed.serverpackcreator.utilities.common.<a href="de/griefed/serverpackcreator/utilities/common/WebUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">WebUtilities</a></dt>
 <dd>
@@ -2126,9 +2119,8 @@
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/ConfigurationHandler.html#isDir-de.griefed.serverpackcreator.ConfigurationModel-java.util.List-">isDir(ConfigurationModel, List&lt;String&gt;)</a></span> - Method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/ConfigurationHandler.html" title="class in de.griefed.serverpackcreator">ConfigurationHandler</a></dt>
 <dd>
 <div class="block">If the in the configuration specified modpack dir is an existing directory, checks are made for
- valid configuration of: directories to copy to server pack,<br> if includeServerInstallation
- is
- <code>true</code>) path to Java executable/binary, Minecraft version, modloader and modloader
+ valid configuration of: directories to copy to server pack, if includeServerInstallation is
+ <code>true</code> path to Java executable/binary, Minecraft version, modloader and modloader
  version.</div>
 </dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html#isForgeInstanceAvailable-java.lang.String-java.lang.String-">isForgeInstanceAvailable(String, String)</a></span> - Method in class de.griefed.serverpackcreator.versionmeta.forge.<a href="de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.forge">ForgeMeta</a></dt>
@@ -2151,8 +2143,8 @@
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/ApplicationProperties.html#isJavaScriptAutoupdateEnabled--">isJavaScriptAutoupdateEnabled()</a></span> - Method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a></dt>
 <dd>
-<div class="block">Whether to automatically update the <code>SPC_JAVA_SPC</code>-placeholder in the script
- variables table with a Java path matching the required Java version for the Minecraft server.</div>
+<div class="block">Whether to automatically update the <code>SPC_JAVA_SPC</code>-placeholder in the script variables
+ table with a Java path matching the required Java version for the Minecraft server.</div>
 </dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/common/FileUtilities.html#isLink-java.lang.String-">isLink(String)</a></span> - Method in class de.griefed.serverpackcreator.utilities.common.<a href="de/griefed/serverpackcreator/utilities/common/FileUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">FileUtilities</a></dt>
 <dd>
@@ -2791,8 +2783,8 @@
 </dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/common/BooleanUtilities.html#readBoolean-java.util.Scanner-">readBoolean(Scanner)</a></span> - Method in class de.griefed.serverpackcreator.utilities.common.<a href="de/griefed/serverpackcreator/utilities/common/BooleanUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">BooleanUtilities</a></dt>
 <dd>
-<div class="block">Prompts the user to enter values which will then be converted to booleans, either <code>TRUE
- </code> or <code>FALSE</code>.</div>
+<div class="block">Prompts the user to enter values which will then be converted to booleans, either <code>TRUE </code>
+ or <code>FALSE</code>.</div>
 </dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/common/ListUtilities.html#readStringList--">readStringList()</a></span> - Method in class de.griefed.serverpackcreator.utilities.common.<a href="de/griefed/serverpackcreator/utilities/common/ListUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">ListUtilities</a></dt>
 <dd>
@@ -2922,11 +2914,8 @@
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/spring/zip/ZipController.html#requestGenerationFromZip-java.lang.String-java.lang.String-java.lang.String-java.lang.String-java.lang.String-">requestGenerationFromZip(String, String, String, String, String)</a></span> - Method in class de.griefed.serverpackcreator.spring.zip.<a href="de/griefed/serverpackcreator/spring/zip/ZipController.html" title="class in de.griefed.serverpackcreator.spring.zip">ZipController</a></dt>
 <dd>
 <div class="block">Request the generation of a server pack from a previously uploaded ZIP-archive, which passed
- validation checks, and from a barebones configuration, including:<br>
- <code>clientMods</code><br>
- <code>minecraftVersion</code><br>
- <code>modLoader</code><br>
- <code>modLoaderVersion</code><br></div>
+ validation checks, and from a barebones configuration, including:<br> <code>clientMods</code><br>
+ <code>minecraftVersion</code><br> <code>modLoader</code><br> <code>modLoaderVersion</code><br></div>
 </dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/utilities/common/FileUtilities.html#resolveLink-java.lang.String-">resolveLink(String)</a></span> - Method in class de.griefed.serverpackcreator.utilities.common.<a href="de/griefed/serverpackcreator/utilities/common/FileUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">FileUtilities</a></dt>
 <dd>
@@ -3034,9 +3023,9 @@
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/modscanning/AnnotationScanner.html#scan-java.util.Collection-">scan(Collection&lt;File&gt;)</a></span> - Method in class de.griefed.serverpackcreator.modscanning.<a href="de/griefed/serverpackcreator/modscanning/AnnotationScanner.html" title="class in de.griefed.serverpackcreator.modscanning">AnnotationScanner</a></dt>
 <dd>
 <div class="block">Scan the <code>fml-cache-annotation.json</code>-files in mod JAR-files of a given directory for
- their sideness.<br> If <code>clientSideOnly</code> specifies <code>"value": "true"</code>, and
- is not listed as a dependency for another mod, it is added and therefore later on excluded from
- the server pack.</div>
+ their sideness.<br> If <code>clientSideOnly</code> specifies <code>"value": "true"</code>, and is not
+ listed as a dependency for another mod, it is added and therefore later on excluded from the
+ server pack.</div>
 </dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/modscanning/FabricScanner.html#scan-java.util.Collection-">scan(Collection&lt;File&gt;)</a></span> - Method in class de.griefed.serverpackcreator.modscanning.<a href="de/griefed/serverpackcreator/modscanning/FabricScanner.html" title="class in de.griefed.serverpackcreator.modscanning">FabricScanner</a></dt>
 <dd>
@@ -3047,14 +3036,12 @@
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/modscanning/QuiltScanner.html#scan-java.util.Collection-">scan(Collection&lt;File&gt;)</a></span> - Method in class de.griefed.serverpackcreator.modscanning.<a href="de/griefed/serverpackcreator/modscanning/QuiltScanner.html" title="class in de.griefed.serverpackcreator.modscanning">QuiltScanner</a></dt>
 <dd>
 <div class="block">Scan the <code>quilt.mod.json</code>-files in mod JAR-files of a given directory for their
- sideness.<br> If <code>minecraft.environment</code> specifies <code>client</code>, and is not
- listed as a dependency for another mod, it is added and therefore later on excluded from the
- server pack.</div>
+ sideness.<br> If <code>minecraft.environment</code> specifies <code>client</code>, and is not listed as a
+ dependency for another mod, it is added and therefore later on excluded from the server pack.</div>
 </dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/modscanning/TomlScanner.html#scan-java.util.Collection-">scan(Collection&lt;File&gt;)</a></span> - Method in class de.griefed.serverpackcreator.modscanning.<a href="de/griefed/serverpackcreator/modscanning/TomlScanner.html" title="class in de.griefed.serverpackcreator.modscanning">TomlScanner</a></dt>
 <dd>
-<div class="block">Scan the <code>mods.toml</code>-files in mod JAR-files of a given directory for their
- sideness.</div>
+<div class="block">Scan the <code>mods.toml</code>-files in mod JAR-files of a given directory for their sideness.</div>
 </dd>
 <dt><a href="de/griefed/serverpackcreator/spring/Schedules.html" title="class in de.griefed.serverpackcreator.spring"><span class="typeNameLink">Schedules</span></a> - Class in <a href="de/griefed/serverpackcreator/spring/package-summary.html">de.griefed.serverpackcreator.spring</a></dt>
 <dd>
@@ -3075,9 +3062,8 @@
 </dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/swing/utilities/ScriptSettings.html#ScriptSettings-javax.swing.table.TableModel-javax.swing.table.TableColumnModel-javax.swing.ListSelectionModel-">ScriptSettings(TableModel, TableColumnModel, ListSelectionModel)</a></span> - Constructor for class de.griefed.serverpackcreator.swing.utilities.<a href="de/griefed/serverpackcreator/swing/utilities/ScriptSettings.html" title="class in de.griefed.serverpackcreator.swing.utilities">ScriptSettings</a></dt>
 <dd>
-<div class="block">Constructs a <code>ScriptSettings</code> that is initialized with
- <code>dm</code> as the data model, <code>cm</code> as the
- column model, and <code>sm</code> as the selection model.</div>
+<div class="block">Constructs a <code>ScriptSettings</code> that is initialized with <code>dm</code> as the data model,
+ <code>cm</code> as the column model, and <code>sm</code> as the selection model.</div>
 </dd>
 <dt><a href="de/griefed/serverpackcreator/swing/utilities/ScriptSettings.ButtonColumn.html" title="class in de.griefed.serverpackcreator.swing.utilities"><span class="typeNameLink">ScriptSettings.ButtonColumn</span></a> - Class in <a href="de/griefed/serverpackcreator/swing/utilities/package-summary.html">de.griefed.serverpackcreator.swing.utilities</a></dt>
 <dd>&nbsp;</dd>
@@ -3842,8 +3828,8 @@
 </dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/ApplicationProperties.html#updateFallback--">updateFallback()</a></span> - Method in class de.griefed.serverpackcreator.<a href="de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a></dt>
 <dd>
-<div class="block">Update the fallback clientside-only modlist of our <code>serverpackcreator.properties</code>
- from the main-repository or one of its mirrors.</div>
+<div class="block">Update the fallback clientside-only modlist of our <code>serverpackcreator.properties</code> from
+ the main-repository or one of its mirrors.</div>
 </dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/swing/TabCreateServerPack.html#updatePanelTheme--">updatePanelTheme()</a></span> - Method in class de.griefed.serverpackcreator.swing.<a href="de/griefed/serverpackcreator/swing/TabCreateServerPack.html" title="class in de.griefed.serverpackcreator.swing">TabCreateServerPack</a></dt>
 <dd>
@@ -3944,11 +3930,11 @@ the order they are declared.</div>
 </dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html#version--">version()</a></span> - Method in class de.griefed.serverpackcreator.versionmeta.minecraft.<a href="de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft">MinecraftClient</a></dt>
 <dd>
-<div class="block">The Minecraft version of this <a href="de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftClient</code></a> instance.</div>
+<div class="block">The Minecraft version of this client.</div>
 </dd>
 <dt><span class="memberNameLink"><a href="de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html#version--">version()</a></span> - Method in class de.griefed.serverpackcreator.versionmeta.minecraft.<a href="de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft">MinecraftServer</a></dt>
 <dd>
-<div class="block">Get the Minecraft-version of this <a href="de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftServer.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft"><code>MinecraftServer</code></a>.</div>
+<div class="block">Get the Minecraft-version of this server.</div>
 </dd>
 <dt><a href="de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta"><span class="typeNameLink">VersionMeta</span></a> - Class in <a href="de/griefed/serverpackcreator/versionmeta/package-summary.html">de.griefed.serverpackcreator.versionmeta</a></dt>
 <dd>
