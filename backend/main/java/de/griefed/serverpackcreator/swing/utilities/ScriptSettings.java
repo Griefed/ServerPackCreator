@@ -100,13 +100,12 @@ public class ScriptSettings extends JTable {
   }
 
   /**
-   * Constructs a <code>ScriptSettings</code> that is initialized with
-   * <code>dm</code> as the data model, <code>cm</code> as the
-   * column model, and <code>sm</code> as the selection model. If any of the parameters are
-   * <code>null</code> this method will initialize the table with the corresponding default model.
-   * The <code>autoCreateColumnsFromModel</code> flag is set to false if <code>cm</code> is
-   * non-null, otherwise it is set to true and the column model is populated with suitable
-   * <code>TableColumns</code> for the columns in <code>dm</code>.
+   * Constructs a {@code ScriptSettings} that is initialized with {@code dm} as the data model,
+   * {@code cm} as the column model, and {@code sm} as the selection model. If any of the parameters
+   * are {@code null} this method will initialize the table with the corresponding default model.
+   * The {@code autoCreateColumnsFromModel} flag is set to false if {@code cm} is non-null,
+   * otherwise it is set to true and the column model is populated with suitable
+   * {@code TableColumns} for the columns in {@code dm}.
    *
    * @param dm the data model for the table
    * @param cm the column model for the table
@@ -194,9 +193,9 @@ public class ScriptSettings extends JTable {
    * @param isSelectAllForEdit Whether to select all for editing
    */
   public void setSelectAllForEdit(boolean isSelectAllForEdit) {
-    setSelectAllForMouseEvent(isSelectAllForEdit);
-    setSelectAllForActionEvent(isSelectAllForEdit);
-    setSelectAllForKeyEvent(isSelectAllForEdit);
+    isSelectAllForMouseEvent = isSelectAllForEdit;
+    isSelectAllForActionEvent = isSelectAllForEdit;
+    isSelectAllForKeyEvent = isSelectAllForEdit;
   }
 
   /**
@@ -227,8 +226,8 @@ public class ScriptSettings extends JTable {
   }
 
   /**
-   * Clear and load the provided hashmap into the table. They <code>KEY</code> is placed into column
-   * 1 (Placeholder) , the <code>VALUE</code> is placed into column 2 (Value).
+   * Clear and load the provided hashmap into the table. They {@code KEY} is placed into column 1
+   * (Placeholder) , the {@code VALUE} is placed into column 2 (Value).
    *
    * @param data The map containing the data to load into the table.
    * @author Griefed
@@ -245,14 +244,14 @@ public class ScriptSettings extends JTable {
 
   /**
    * Get the data from the table as a map. Column 1 (Placeholder) will be mapped to the maps
-   * <code>KEY</code>, column 2 (Value) will be mapped to the maps <code>VALUE</code>. Rows are
-   * ignored of they do not contain values for both columns.
+   * {@code KEY}, column 2 (Value) will be mapped to the maps {@code VALUE}. Rows are ignored of
+   * they do not contain values for both columns.
    *
    * @return A map containing the data of the table.
    * @author Griefed
    */
   public HashMap<String, String> getData() {
-    HashMap<String, String> data = new HashMap<>();
+    HashMap<String, String> data = new HashMap<>(100);
     for (int row = 0; row < getModel().getRowCount(); row++) {
       if (!getModel().getValueAt(row, 0).toString().isEmpty()
           && !getModel().getValueAt(row, 1).toString().isEmpty()) {

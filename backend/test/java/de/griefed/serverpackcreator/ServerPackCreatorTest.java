@@ -12,6 +12,7 @@ import org.xml.sax.SAXException;
 public class ServerPackCreatorTest {
 
   String[] args = new String[]{"--setup", "backend/test/resources/serverpackcreator.properties"};
+
   ServerPackCreatorTest() {
   }
 

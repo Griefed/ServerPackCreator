@@ -16,6 +16,7 @@ public class I18nTest {
 
   private final Logger LOG = LogManager.getLogger(I18nTest.class);
   String[] args = new String[]{"--setup", "backend/test/resources/serverpackcreator.properties"};
+
   I18nTest() {
     FileUtils.deleteQuietly(new File("lang"));
   }
@@ -60,7 +61,9 @@ public class I18nTest {
     }
 
     LOG.info("customLanguageTest() ef_gh");
-    i18n = new I18n(new ApplicationProperties(new FileUtilities(),new SystemUtilities(), new ListUtilities()), "ef_gh");
+    i18n = new I18n(
+        new ApplicationProperties(new FileUtilities(), new SystemUtilities(), new ListUtilities()),
+        "ef_gh");
     Assertions.assertEquals("I bims 1 Sprache", i18n.getMessage("localeUnlocalizedName"));
   }
 

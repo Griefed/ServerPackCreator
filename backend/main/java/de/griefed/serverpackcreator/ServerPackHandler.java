@@ -155,10 +155,10 @@ public final class ServerPackHandler {
 
   /**
    * Acquire the destination directory in which the server pack will be generated. The directory in
-   * which the server pack will be created has all its spaces replaces with underscores, so <code>
-   * Survive Create Prosper 4 - 5.0.1</code> would become <code>Survive_Create_Prosper_4_-_5.0.1
-   * </code> Even though it is the year 2022, spaces in paths can and do still cause trouble. Such
-   * as for Powershell scripts. Powershell throws a complete fit if the path contains spaces....
+   * which the server pack will be created has all its spaces replaces with underscores, so
+   * {@code Survive Create Prosper 4 - 5.0.1} would become {@code Survive_Create_Prosper_4_-_5.0.1 }
+   * Even though it is the year 2022, spaces in paths can and do still cause trouble. Such as for
+   * Powershell scripts. Powershell throws a complete fit if the path contains spaces....
    *
    * @param configurationModel Model containing the modpack directory of the modpack from which the
    *                           server pack will be generated.
@@ -397,8 +397,8 @@ public final class ServerPackHandler {
    *                           as the modpack directory from which the destination of the server
    *                           pack is acquired.
    * @param isLocal            Whether the start scripts should be created for a locally usable
-   *                           server pack. Use <code>false</code> if the start scripts should be
-   *                           created for a server pack about to be zipped.
+   *                           server pack. Use {@code false} if the start scripts should be created
+   *                           for a server pack about to be zipped.
    * @author Griefed
    */
   public void createStartScripts(final ConfigurationModel configurationModel, boolean isLocal) {
@@ -413,7 +413,7 @@ public final class ServerPackHandler {
    *                       replaced with its value.
    * @param destination    The destination where the scripts should be created in.
    * @param isLocal        Whether the start scripts should be created for a locally usable server
-   *                       pack. Use <code>false</code> if the start scripts should be created for a
+   *                       pack. Use {@code false} if the start scripts should be created for a
    *                       server pack about to be zipped.
    * @author Griefed
    */
@@ -451,7 +451,7 @@ public final class ServerPackHandler {
 
   /**
    * Copies all specified directories and mods, excluding clientside-only mods, from the modpack
-   * directory into the server pack directory. If a <code>source/file;destination/file</code>
+   * directory into the server pack directory. If a {@code source/file;destination/file}
    * -combination is provided, the specified source-file is copied to the specified
    * destination-file.
    *
@@ -469,7 +469,7 @@ public final class ServerPackHandler {
 
   /**
    * Copies all specified directories and mods, excluding clientside-only mods, from the modpack
-   * directory into the server pack directory. If a <code>source/file;destination/file</code>
+   * directory into the server pack directory. If a {@code source/file;destination/file}
    * -combination is provided, the specified source-file is copied to the specified
    * destination-file.
    *
@@ -658,7 +658,8 @@ public final class ServerPackHandler {
    */
   private List<ServerPackFile> getExplicitFiles(
       final String[] combination, String modpackDir, String destination) {
-    List<ServerPackFile> serverPackFiles = new ArrayList<>();
+
+    List<ServerPackFile> serverPackFiles = new ArrayList<>(100);
 
     if (new File(String.format("%s/%s", modpackDir, combination[0])).isFile()) {
 
@@ -694,7 +695,7 @@ public final class ServerPackHandler {
    * @author Griefed
    */
   private List<ServerPackFile> getDirectoryFiles(String source, String destination) {
-    List<ServerPackFile> serverPackFiles = new ArrayList<>();
+    List<ServerPackFile> serverPackFiles = new ArrayList<>(100);
     try (Stream<Path> files = Files.walk(Paths.get(source))) {
 
       files.forEach(
@@ -732,7 +733,7 @@ public final class ServerPackHandler {
   private List<ServerPackFile> getSaveFiles(
       String clientDir, String directory, String destination) {
 
-    List<ServerPackFile> serverPackFiles = new ArrayList<>();
+    List<ServerPackFile> serverPackFiles = new ArrayList<>(2000);
 
     try (Stream<Path> files = Files.walk(Paths.get(clientDir))) {
 
@@ -802,7 +803,7 @@ public final class ServerPackHandler {
     Collection<File> filesInModsDir =
         new ArrayList<>(FileUtils.listFiles(new File(modsDir), MOD_FILE_ENDINGS, true));
     TreeSet<File> modsInModpack = new TreeSet<>(filesInModsDir);
-    List<File> autodiscoveredClientMods = new ArrayList<>();
+    List<File> autodiscoveredClientMods = new ArrayList<>(100);
 
     // Check whether scanning mods for sideness is activated.
     if (APPLICATIONPROPERTIES.isAutoExcludingModsEnabled()) {
@@ -861,7 +862,7 @@ public final class ServerPackHandler {
   private void excludeMods(final List<File> autodiscoveredClientMods,
       final TreeSet<File> modsInModpack) {
 
-    if (autodiscoveredClientMods.size() > 0) {
+    if (!autodiscoveredClientMods.isEmpty()) {
 
       LOG.info("Automatically detected mods: " + autodiscoveredClientMods.size());
 
@@ -886,14 +887,14 @@ public final class ServerPackHandler {
    *
    * @param userSpecifiedExclusions User-specified clientside-only mods to exclude from the server
    *                                pack.
-   * @param modsInModpack           Every mod ending with <code>jar</code> or <code>disabled</code>
-   *                                in the modpack.
+   * @param modsInModpack           Every mod ending with {@code jar} or {@code disabled} in the
+   *                                modpack.
    * @author Griefed
    */
   private void excludeUserSpecifiedMod(final List<String> userSpecifiedExclusions,
       final TreeSet<File> modsInModpack) {
 
-    if (userSpecifiedExclusions.size() > 0) {
+    if (!userSpecifiedExclusions.isEmpty()) {
 
       LOG.info("Performing " + APPLICATIONPROPERTIES.exclusionFilter()
           + "-type checks for user-specified clientside-only mod exclusion.");
@@ -1044,7 +1045,7 @@ public final class ServerPackHandler {
         LOG.error("Error reading server-icon image.", ex);
       }
 
-    } else if (pathToServerIcon.length() == 0) {
+    } else if (pathToServerIcon.isEmpty()) {
 
       LOG.info("No custom icon specified or the file doesn't exist.");
 
@@ -1100,7 +1101,7 @@ public final class ServerPackHandler {
         LOG.error("An error occurred trying to copy the server.properties-file.", ex);
       }
 
-    } else if (pathToServerProperties.length() == 0) {
+    } else if (pathToServerProperties.isEmpty()) {
 
       LOG.info("No custom properties specified or the file doesn't exist.");
 
@@ -1155,8 +1156,10 @@ public final class ServerPackHandler {
       String modLoaderVersion,
       String destination) {
 
-    List<String> commandArguments = new ArrayList<>();
+    List<String> commandArguments = new ArrayList<>(10);
     commandArguments.add(APPLICATIONPROPERTIES.java());
+
+    commandArguments.add("-jar");
 
     Process process = null;
     BufferedReader bufferedReader = null;
@@ -1171,7 +1174,6 @@ public final class ServerPackHandler {
 
           LOG.info("Fabric installer successfully downloaded.");
 
-          commandArguments.add("-jar");
           commandArguments.add("fabric-installer.jar");
           commandArguments.add("server");
           commandArguments.add("-mcversion");
@@ -1202,7 +1204,6 @@ public final class ServerPackHandler {
 
           LOG.info("Forge installer successfully downloaded.");
 
-          commandArguments.add("-jar");
           commandArguments.add("forge-installer.jar");
           commandArguments.add("--installServer");
 
@@ -1222,7 +1223,6 @@ public final class ServerPackHandler {
 
           LOG.info("Quilt installer successfully downloaded.");
 
-          commandArguments.add("-jar");
           commandArguments.add("quilt-installer.jar");
           commandArguments.add("install");
           commandArguments.add("server");
@@ -1247,7 +1247,6 @@ public final class ServerPackHandler {
 
             LOG.info("LegacyFabric installer successfully downloaded.");
 
-            commandArguments.add("-jar");
             commandArguments.add("legacyfabric-installer.jar");
             commandArguments.add("server");
             commandArguments.add("-mcversion");
@@ -1343,8 +1342,6 @@ public final class ServerPackHandler {
       } catch (Exception ignored) {
 
       }
-
-      commandArguments.clear();
     }
 
     if (APPLICATIONPROPERTIES.isServerPackCleanupEnabled()) {
@@ -1659,10 +1656,10 @@ public final class ServerPackHandler {
 
     /**
      * This ServerPackFiles source-file and destination-file as a {@link String}-combination,
-     * separated by a <code>;</code>
+     * separated by a {@code ;}
      *
      * @return This ServerPackFiles source-file and destination-file as a
-     * {@link String}-combination, separated by a <code>;</code>
+     * {@link String}-combination, separated by a {@code ;}
      * @author Griefed
      */
     @Override

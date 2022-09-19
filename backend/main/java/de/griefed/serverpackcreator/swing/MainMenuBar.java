@@ -459,7 +459,7 @@ public class MainMenuBar extends Component {
   /**
    * If an initialize is available for ServerPackCreator, display a dialog asking the user whether
    *
-   * @return <code>true</code> if an update was found and the dialog displayed.
+   * @return {@code true} if an update was found and the dialog displayed.
    * @author Griefed
    */
   protected boolean displayUpdateDialog() {
@@ -836,10 +836,10 @@ public class MainMenuBar extends Component {
 
   /**
    * Upon button-press, save the current configuration in the GUI to the serverpackcreator.conf-file
-   * in ServerPackCreators base directory. if <code>
-   * de.griefed.serverpackcreator.configuration.saveloadedconfig</code> is set to <code>true</code>
-   * and the field <code>lastLoadedConfigurationFile</code> is not null, the last loaded
-   * configuration-file is also saved to.
+   * in ServerPackCreators base directory. if
+   * {@code de.griefed.serverpackcreator.configuration.saveloadedconfig} is set to {@code true} and
+   * the field {@code lastLoadedConfigurationFile} is not null, the last loaded configuration-file
+   * is also saved to.
    *
    * @param actionEvent The event which triggers this method.
    * @author Griefed

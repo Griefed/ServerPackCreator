@@ -9,8 +9,9 @@ import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
 public class VersionMetaTest {
-  String[] args = new String[]{"--setup", "backend/test/resources/serverpackcreator.properties"};
+
   private final VersionMeta versionMeta;
+  String[] args = new String[]{"--setup", "backend/test/resources/serverpackcreator.properties"};
 
   public VersionMetaTest() throws IOException, ParserConfigurationException, SAXException {
 

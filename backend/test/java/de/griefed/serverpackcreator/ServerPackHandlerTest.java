@@ -46,10 +46,10 @@ class ServerPackHandlerTest {
     }
   }
 
-  String[] args = new String[]{"--setup", "backend/test/resources/serverpackcreator.properties"};
   private final ConfigurationHandler configurationHandler;
   private final ServerPackHandler serverPackHandler;
   private final VersionMeta versionMeta;
+  String[] args = new String[]{"--setup", "backend/test/resources/serverpackcreator.properties"};
 
   ServerPackHandlerTest() throws IOException, ParserConfigurationException, SAXException {
     versionMeta = ServerPackCreator.getInstance(args).getVersionMeta();

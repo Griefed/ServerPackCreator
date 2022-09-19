@@ -137,10 +137,9 @@ public final class UpdateChecker {
    * the update.
    *
    * @param version         The version for which to check for updates.
-   * @param preReleaseCheck Whether to check pre-releasesDescending as well. Use
-   *                        <code>true</code> to check pre-releasesDescending as well,
-   *                        <Code>false</Code> to only check
-   *                        with regular releases.
+   * @param preReleaseCheck Whether to check pre-releasesDescending as well. Use {@code true} to
+   *                        check pre-releasesDescending as well, {@code false} to only check with
+   *                        regular releases.
    * @return The update, if available, as well as the download URL.
    * @author Griefed
    */

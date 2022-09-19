@@ -42,8 +42,7 @@ public final class FabricDetails {
   }
 
   /**
-   * Fabric loader ID, in the format of <code>fabric-loader-FABRIC_VERSION-MINECRAFT_VERSION
-   * </code>.
+   * Fabric loader ID, in the format of {@code fabric-loader-FABRIC_VERSION-MINECRAFT_VERSION }.
    *
    * @return The Fabric loader ID for the requested Minecraft and Fabric versions.
    * @author Griefed

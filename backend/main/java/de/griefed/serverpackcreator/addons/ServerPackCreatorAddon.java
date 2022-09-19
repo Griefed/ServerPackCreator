@@ -23,6 +23,7 @@ import com.electronwill.nightconfig.core.CommentedConfig;
 import com.electronwill.nightconfig.toml.TomlFormat;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Objects;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.pf4j.Plugin;
@@ -43,7 +44,8 @@ public abstract class ServerPackCreatorAddon extends Plugin implements BaseInfor
     super(wrapper);
 
     String classPath =
-        this.getClass().getResource(this.getClass().getSimpleName() + ".class").toString();
+        Objects.requireNonNull(
+            this.getClass().getResource(this.getClass().getSimpleName() + ".class")).toString();
 
     CommentedConfig addonToml = TomlFormat.instance().createParser().parse(new URL(
         classPath.substring(0, classPath.lastIndexOf("!") + 1) + "/addon.toml").openStream());
@@ -58,7 +60,7 @@ public abstract class ServerPackCreatorAddon extends Plugin implements BaseInfor
   /**
    * This method is called by the application when the plugin is started. See
    * {@link PluginManager#startPlugin(String)}.<br><br> If you intend on overwriting this method,
-   * make sure to call <code>super.start()</code> first.
+   * make sure to call {@code super.start()} first.
    *
    * @throws PluginRuntimeException if something goes wrong.
    * @author Griefed
@@ -85,7 +87,7 @@ public abstract class ServerPackCreatorAddon extends Plugin implements BaseInfor
   /**
    * This method is called by the application when the plugin is stopped. See
    * {@link PluginManager#stopPlugin(String)}.<br><br> If you intend on overwriting this method,
-   * make sure to call <code>super.start()</code> first.
+   * make sure to call {@code super.start()} first.
    *
    * @throws PluginRuntimeException if something goes wrong.
    * @author Griefed

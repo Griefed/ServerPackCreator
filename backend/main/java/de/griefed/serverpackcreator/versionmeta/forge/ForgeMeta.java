@@ -166,8 +166,7 @@ public final class ForgeMeta extends Manifests {
    * Check whether a given Forge version is valid/supported/available.
    *
    * @param forgeVersion Forge version.
-   * @return <code>true</code> if the given Forge version is
-   * valid/supported/available.
+   * @return {@code true} if the given Forge version is valid/supported/available.
    * @author Griefed
    */
   public boolean checkForgeVersion(String forgeVersion) {
@@ -178,8 +177,7 @@ public final class ForgeMeta extends Manifests {
    * Check whether a given Minecraft version is valid/supported/available.
    *
    * @param minecraftVersion Minecraft version.
-   * @return <code>true</code> if the given Minecraft version is
-   * valid/supported/available.
+   * @return {@code true} if the given Minecraft version is valid/supported/available.
    * @author Griefed
    */
   public boolean checkMinecraftVersion(String minecraftVersion) {
@@ -191,8 +189,7 @@ public final class ForgeMeta extends Manifests {
    *
    * @param minecraftVersion Minecraft version.
    * @param forgeVersion     Forge version.
-   * @return <code>true</code> if the given Minecraft and Forge versions are
-   * valid/supported/available.
+   * @return {@code true} if the given Minecraft and Forge versions are valid/supported/available.
    * @author Griefed
    */
   public boolean checkForgeAndMinecraftVersion(String minecraftVersion, String forgeVersion) {
@@ -204,8 +201,7 @@ public final class ForgeMeta extends Manifests {
    *
    * @param minecraftVersion Minecraft version.
    * @param forgeVersion     Forge version.
-   * @return <code>true</code> if Forge is available for the given Forge- and
-   * Minecraft version.
+   * @return {@code true} if Forge is available for the given Forge- and Minecraft version.
    * @author Griefed
    */
   public boolean isForgeInstanceAvailable(String minecraftVersion, String forgeVersion) {
@@ -216,7 +212,7 @@ public final class ForgeMeta extends Manifests {
    * Check whether Forge is available for a given Forge version
    *
    * @param forgeVersion Forge version.
-   * @return <code>true</code> if Forge is available for the given Forge version.
+   * @return {@code true} if Forge is available for the given Forge version.
    * @author Griefed
    */
   public boolean isForgeInstanceAvailable(String forgeVersion) {
@@ -280,7 +276,7 @@ public final class ForgeMeta extends Manifests {
    * @author Griefed
    */
   public Optional<List<ForgeInstance>> getForgeInstances(String minecraftVersion) {
-    List<ForgeInstance> list = new ArrayList<>();
+    List<ForgeInstance> list = new ArrayList<>(100);
     if (Optional.ofNullable(forgeLoader.versionMeta().get(minecraftVersion)).isPresent()) {
 
       forgeLoader

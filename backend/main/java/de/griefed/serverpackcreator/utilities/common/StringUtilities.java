@@ -65,8 +65,8 @@ public final class StringUtilities {
 
   /**
    * Remove commonly forbidden characters from the passed string, making the resulting String safe
-   * to use for files, paths, directories etc. If the passed text ends with a SPACE<code>
-   * (&#32;&#32;)</code> or a DOT<code>(&#32;.&#32;)</code>, they are also removed.<br>
+   * to use for files, paths, directories etc. If the passed text ends with a
+   * SPACE{@code (&#32;&#32;)} or a DOT{@code (&#32;.&#32;)}, they are also removed.<br>
    * Replaced/removed are:
    *
    * <ul>
@@ -132,8 +132,8 @@ public final class StringUtilities {
 
   /**
    * Remove commonly forbidden characters from the passed string, making the resulting String safe
-   * to use for files, paths, directories etc. If the passed text ends with a SPACE<code>
-   * (&#32;&#32;)</code> or a DOT<code>(&#32;.&#32;)</code>, they are also removed.<br> Contraty to
+   * to use for files, paths, directories etc. If the passed text ends with a
+   * SPACE{@code (&#32;&#32;)} or a DOT{@code (&#32;.&#32;)}, they are also removed.<br> Contraty to
    * {@link #pathSecureText(String)}, this method does <strong>NOT</strong> remove
    * <strong>&#47;</strong> or <strong>&#92;</strong>.
    *
@@ -224,7 +224,7 @@ public final class StringUtilities {
    * <br>
    *
    * @param text The text you want to check.
-   * @return <code>true</code> if none of these characters were found.
+   * @return {@code true} if none of these characters were found.
    * @author Griefed
    */
   public boolean checkForIllegalCharacters(String text) {

@@ -66,8 +66,8 @@ public final class ApplicationAddons extends JarPluginManager {
   private final ApplicationProperties APPLICATIONPROPERTIES;
   private final VersionMeta VERSIONMETA;
   private final Utilities UTILITIES;
-  private final HashMap<String, CommentedConfig> ADDON_CONFIGS = new HashMap<>();
-  private final HashMap<String, File> ADDON_CONFIG_FILES = new HashMap<>();
+  private final HashMap<String, CommentedConfig> ADDON_CONFIGS = new HashMap<>(100);
+  private final HashMap<String, File> ADDON_CONFIG_FILES = new HashMap<>(100);
 
   /**
    * Initialize ServerPackCreators addons and give access to any and all available extensions.
@@ -115,15 +115,15 @@ public final class ApplicationAddons extends JarPluginManager {
   }
 
   /**
-   * Retrieve the config.toml of an addon and store it in the <code>plugins/config</code>-directory,
-   * using the ID of the addon as the name for the extracted file. <code>addon.toml</code>-files
-   * must be stored in the root of a addon JAR-file in order for ServerPackCreator to be reliably be
-   * able to retrieve it.<br><br>A given addon does not have to provide a config.toml, as not every
-   * addons requires a global config. When no file is provided by the addon, no file is extracted.
-   * This also means that subsequent runs of any extension provided by the addon do not receive a
-   * global, addon-specific, configuration.<br><br>When a config-file has been successfully
-   * extracted, it is added to a map with the addons ID, which in turn will be accessed when
-   * extensions are run, to retrieve said configuration and pass it to any extensions.
+   * Retrieve the config.toml of an addon and store it in the {@code plugins/config}-directory,
+   * using the ID of the addon as the name for the extracted file. {@code addon.toml}-files must be
+   * stored in the root of a addon JAR-file in order for ServerPackCreator to be reliably be able to
+   * retrieve it.<br><br>A given addon does not have to provide a config.toml, as not every addons
+   * requires a global config. When no file is provided by the addon, no file is extracted. This
+   * also means that subsequent runs of any extension provided by the addon do not receive a global,
+   * addon-specific, configuration.<br><br>When a config-file has been successfully extracted, it is
+   * added to a map with the addons ID, which in turn will be accessed when extensions are run, to
+   * retrieve said configuration and pass it to any extensions.
    *
    * @param tomlParser Toml parser to read the config into a {@link CommentedConfig}, mapped to the
    *                   addons ID.
@@ -213,8 +213,8 @@ public final class ApplicationAddons extends JarPluginManager {
    * Get and return any configuration for the extension about to be run. If none is available, the
    * returned list is empty. In order for a given extension to provide a configuration, the list of
    * available configurations for the encompassing addon is scanned for
-   * <code>extension=extensionID</code> pairs. If any <code>extension</code> matches the ID of the
-   * extension being run, the configuration is added to the list and provided to the extension by
+   * {@code extension=extensionID} pairs. If any {@code extension} matches the ID of the extension
+   * being run, the configuration is added to the list and provided to the extension by
    * ServerPackCreator.
    *
    * @param plugin             The addon which contains the extension.
@@ -228,7 +228,7 @@ public final class ApplicationAddons extends JarPluginManager {
   private ArrayList<CommentedConfig> getExtensionSpecificConfigs(final PluginWrapper plugin,
       final ConfigurationModel configurationModel, final String extensionId) {
 
-    ArrayList<CommentedConfig> extConf = new ArrayList<>();
+    ArrayList<CommentedConfig> extConf = new ArrayList<>(10);
 
     if (configurationModel.getAddonConfigs(plugin.getPluginId()).isPresent()) {
 
@@ -255,7 +255,7 @@ public final class ApplicationAddons extends JarPluginManager {
    */
   private ArrayList<CommentedConfig> getExtensionConfigs(final PluginWrapper plugin,
       final ConfigurationModel configurationModel) {
-    ArrayList<CommentedConfig> configs = new ArrayList<>();
+    ArrayList<CommentedConfig> configs = new ArrayList<>(10);
 
     if (configurationModel.getAddonConfigs(plugin.getPluginId()).isPresent()) {
       configs.addAll(configurationModel.getAddonConfigs(plugin.getPluginId()).get());
@@ -476,7 +476,7 @@ public final class ApplicationAddons extends JarPluginManager {
   public List<ExtensionConfigPanel> getConfigPanels(
       final TabCreateServerPack tabCreateServerPack) {
 
-    List<ExtensionConfigPanel> panels = new ArrayList<>();
+    List<ExtensionConfigPanel> panels = new ArrayList<>(10);
     getPlugins().forEach(
         plugin -> {
           if (!plugin.getPluginManager().getExtensions(ConfigPanelExtension.class).isEmpty()) {
@@ -528,8 +528,8 @@ public final class ApplicationAddons extends JarPluginManager {
    * @param encounteredErrors  A list of encountered errors to add to in case anything goes wrong.
    *                           This list is displayed to the user after am unsuccessful server pack
    *                           generation to help them figure out what went wrong.
-   * @return <code>true</code> if any custom check detected an error with the configuration.
-   * <strong>Only</strong> return <code>false</code> when not a <strong>single</strong> check
+   * @return {@code true} if any custom check detected an error with the configuration.
+   * <strong>Only</strong> return {@code false} when not a <strong>single</strong> check
    * errored.
    * @author Griefed
    */

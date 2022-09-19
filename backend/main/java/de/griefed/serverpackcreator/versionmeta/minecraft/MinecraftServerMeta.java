@@ -32,9 +32,9 @@ import java.util.List;
 final class MinecraftServerMeta {
 
   private final MinecraftClientMeta MINECRAFT_CLIENT_META;
-  private final List<MinecraftServer> RELEASES = new ArrayList<>();
-  private final List<MinecraftServer> SNAPSHOTS = new ArrayList<>();
-  private HashMap<String, MinecraftServer> meta;
+  private final List<MinecraftServer> RELEASES = new ArrayList<>(100);
+  private final List<MinecraftServer> SNAPSHOTS = new ArrayList<>(200);
+  private final HashMap<String, MinecraftServer> meta = new HashMap<>(300);
 
   /**
    * Create a new Minecraft Server Meta instance.
@@ -47,7 +47,7 @@ final class MinecraftServerMeta {
   }
 
   /**
-   * Update this instance of {@link MinecraftServerMeta} with new information.
+   * Update this instance of with new information.
    *
    * @author Griefed
    */
@@ -59,7 +59,7 @@ final class MinecraftServerMeta {
     this.SNAPSHOTS.clear();
     MINECRAFT_CLIENT_META.snapshots().forEach(client -> this.SNAPSHOTS.add(client.server()));
 
-    this.meta = new HashMap<>();
+    this.meta.clear();
     MINECRAFT_CLIENT_META
         .releases()
         .forEach(client -> this.meta.put(client.version(), client.server()));
@@ -92,7 +92,7 @@ final class MinecraftServerMeta {
    * Get the {@link MinecraftServer} meta.<br> key: {@link String} Minecraft version<br> value:
    * {@link MinecraftServer} for said Minecraft version
    *
-   * @return Map containing the {@link MinecraftServerMeta}.
+   * @return Map containing the client meta.
    * @author Griefed
    */
   HashMap<String, MinecraftServer> meta() {

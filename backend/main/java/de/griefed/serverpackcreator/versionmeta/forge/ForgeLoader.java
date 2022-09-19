@@ -39,28 +39,25 @@ final class ForgeLoader {
   private static final Logger LOG = LogManager.getLogger(ForgeLoader.class);
 
   private final MinecraftMeta MINECRAFT_META;
-  private final List<String> minecraftVersions = new ArrayList<>();
-  private final List<String> forgeVersions = new ArrayList<>();
+  private final List<String> minecraftVersions = new ArrayList<>(100);
+  private final List<String> forgeVersions = new ArrayList<>(100);
 
   /**
-   * 1-n Minecraft version to Forge versions.<br>
-   * <code>key</code>: Minecraft version.<br>
-   * <code>value</code>: List of Forge versions for said Minecraft versions.
+   * 1-n Minecraft version to Forge versions.<br> {@code key}: Minecraft version.<br> {@code value}:
+   * List of Forge versions for said Minecraft versions.
    */
   private HashMap<String, List<String>> versionMeta;
 
   /**
-   * 1-1 Forge version to Minecraft version<br>
-   * <code>key</code>: Forge version.<br>
-   * <code>value</code>: Minecraft version for said Forge version.
+   * 1-1 Forge version to Minecraft version<br> {@code key}: Forge version.<br> {@code value}:
+   * Minecraft version for said Forge version.
    */
   private HashMap<String, String> forgeToMinecraftMeta;
 
   /**
-   * 1-1 Minecraft + Forge version combination to {@link ForgeInstance}<br>
-   * <code>key</code>: Minecraft version + Forge version. Example: <code>1.18.2-40.0.44</code><br>
-   * <code>value</code>: The {@link ForgeInstance} for said Minecraft and Forge version
-   * combination.
+   * 1-1 Minecraft + Forge version combination to {@link ForgeInstance}<br> {@code key}: Minecraft
+   * version + Forge version. Example: {@code 1.18.2-40.0.44}<br> {@code value}: The
+   * {@link ForgeInstance} for said Minecraft and Forge version combination.
    */
   private HashMap<String, ForgeInstance> instanceMeta;
 
@@ -86,9 +83,9 @@ final class ForgeLoader {
 
     minecraftVersions.clear();
     forgeVersions.clear();
-    versionMeta = new HashMap<>();
-    forgeToMinecraftMeta = new HashMap<>();
-    instanceMeta = new HashMap<>();
+    versionMeta = new HashMap<>(200);
+    forgeToMinecraftMeta = new HashMap<>(200);
+    instanceMeta = new HashMap<>(200);
 
     forgeManifest
         .fieldNames()
@@ -114,7 +111,7 @@ final class ForgeLoader {
                 minecraftVersions.add(field);
               }
 
-              List<String> forgeVersionsForMCVer = new ArrayList<>();
+              List<String> forgeVersionsForMCVer = new ArrayList<>(100);
 
               forgeManifest
                   .get(field)
@@ -181,8 +178,9 @@ final class ForgeLoader {
   }
 
   /**
-   * Get the {@link ForgeLoader} version-meta.<br> key: {@link String} Minecraft version<br> value:
-   * {@link String}-list of Forge versions available for the given Minecraft version.
+   * Get the version-meta.
+   * <br>key: Minecraft version
+   * <br> value: List of Forge versions available for the given Minecraft version.
    *
    * @return Map containing the version meta.
    * @author Griefed

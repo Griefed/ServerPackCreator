@@ -8,16 +8,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javax.xml.parsers.ParserConfigurationException;
-import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
 class ConfigurationHandlerTest {
-  String[] args = new String[]{"--setup", "backend/test/resources/serverpackcreator.properties"};
+
   private final ApplicationProperties applicationProperties;
   private final ConfigurationHandler configurationHandler;
   private final VersionMeta versionMeta;
+  String[] args = new String[]{"--setup", "backend/test/resources/serverpackcreator.properties"};
 
   ConfigurationHandlerTest() throws IOException, ParserConfigurationException, SAXException {
     applicationProperties = ServerPackCreator.getInstance(args).getApplicationProperties();
@@ -29,14 +29,16 @@ class ConfigurationHandlerTest {
   void checkConfigFileTest() {
     Assertions.assertFalse(
         configurationHandler.checkConfiguration(
-            new File("backend/test/resources/testresources/spcconfs/serverpackcreator.conf"), false));
+            new File("backend/test/resources/testresources/spcconfs/serverpackcreator.conf"),
+            false));
   }
 
   @Test
   void isDirTestCopyDirs() {
     Assertions.assertTrue(
         configurationHandler.checkConfiguration(
-            new File("backend/test/resources/testresources/spcconfs/serverpackcreator_copydirs.conf"),
+            new File(
+                "backend/test/resources/testresources/spcconfs/serverpackcreator_copydirs.conf"),
             false));
   }
 
@@ -44,7 +46,8 @@ class ConfigurationHandlerTest {
   void isDirTestJavaPath() {
     Assertions.assertFalse(
         configurationHandler.checkConfiguration(
-            new File("backend/test/resources/testresources/spcconfs/serverpackcreator_javapath.conf"),
+            new File(
+                "backend/test/resources/testresources/spcconfs/serverpackcreator_javapath.conf"),
             false));
   }
 
@@ -61,7 +64,8 @@ class ConfigurationHandlerTest {
   void isModLoaderLegacyFabric() {
     Assertions.assertFalse(
         configurationHandler.checkConfiguration(
-            new File("backend/test/resources/testresources/spcconfs/serverpackcreator_legacyfabric.conf"),
+            new File(
+                "backend/test/resources/testresources/spcconfs/serverpackcreator_legacyfabric.conf"),
             false));
   }
 
@@ -300,7 +304,8 @@ class ConfigurationHandlerTest {
   void checkConfigurationFileTest() {
     Assertions.assertFalse(
         configurationHandler.checkConfiguration(
-            new File("backend/test/resources/testresources/spcconfs/serverpackcreator.conf"), true));
+            new File("backend/test/resources/testresources/spcconfs/serverpackcreator.conf"),
+            true));
   }
 
   @Test

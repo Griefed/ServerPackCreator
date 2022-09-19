@@ -11,7 +11,9 @@ import org.springframework.context.annotation.PropertySources;
     @PropertySource("file:./backend/test/resources/serverpackcreator.properties")
 })
 public class WebServiceTest {
+
   String[] args = new String[]{"--setup", "backend/test/resources/serverpackcreator.properties"};
+
   WebServiceTest() {
     ServerPackCreator.getInstance(
             args)

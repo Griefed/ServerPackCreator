@@ -85,7 +85,7 @@ public final class MinecraftMeta {
    * Check whether a {@link MinecraftClient} is available for the specified Minecraft-version.
    *
    * @param minecraftVersion The Minecraft-version.
-   * @return <code>true</code> if a {@link MinecraftClient} is available.
+   * @return {@code true} if a {@link MinecraftClient} is available.
    * @author Griefed
    */
   public boolean checkMinecraftVersion(String minecraftVersion) {
@@ -101,7 +101,7 @@ public final class MinecraftMeta {
    * @author Griefed
    */
   public List<String> releaseVersionsDescending() {
-    List<String> list = new ArrayList<>();
+    List<String> list = new ArrayList<>(100);
     releasesDescending().forEach(client -> list.add(client.version()));
     return list;
   }
@@ -115,7 +115,7 @@ public final class MinecraftMeta {
    * @author Griefed
    */
   public List<String> releaseVersionsAscending() {
-    List<String> list = new ArrayList<>();
+    List<String> list = new ArrayList<>(100);
     releasesDescending().forEach(client -> list.add(client.version()));
     return Lists.reverse(list);
   }
@@ -153,7 +153,7 @@ public final class MinecraftMeta {
    * @author Griefed
    */
   public List<String> snapshotVersionsDescending() {
-    List<String> list = new ArrayList<>();
+    List<String> list = new ArrayList<>(100);
     snapshotsDescending().forEach(client -> list.add(client.version()));
     return list;
   }
@@ -167,7 +167,7 @@ public final class MinecraftMeta {
    * @author Griefed
    */
   public List<String> snapshotVersionsAscending() {
-    List<String> list = new ArrayList<>();
+    List<String> list = new ArrayList<>(100);
     snapshotsDescending().forEach(client -> list.add(client.version()));
     return Lists.reverse(list);
   }
@@ -226,7 +226,7 @@ public final class MinecraftMeta {
    * @author Griefed
    */
   public List<String> allVersionsDescending() {
-    List<String> versions = new ArrayList<>();
+    List<String> versions = new ArrayList<>(100);
     allDescending().forEach(client -> versions.add(client.version()));
     return versions;
   }
@@ -449,7 +449,7 @@ public final class MinecraftMeta {
    * Check whether a {@link MinecraftServer} is available for the specified Minecraft-version.
    *
    * @param minecraftVersion The Minecraft-version.
-   * @return <code>true</code> if a {@link MinecraftServer} is available.
+   * @return {@code true} if a {@link MinecraftServer} is available.
    * @author Griefed
    */
   public boolean checkServerAvailability(String minecraftVersion) {

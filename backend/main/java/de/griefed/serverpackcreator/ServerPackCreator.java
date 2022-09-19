@@ -157,12 +157,12 @@ public class ServerPackCreator {
   }
 
   /**
-   * Acquire an instance of ServerPackCreator using the <code>--setup</code>-argument so a prepared
+   * Acquire an instance of ServerPackCreator using the {@code --setup}-argument so a prepared
    * environment is present after acquiring the instance. If a new instance of ServerPackCreator is
    * created as the result of calling this method, then the setup is run to ensure a properly
    * prepared environment.
    *
-   * @return ServerPackCreator-instance using the <code>--setup</code>-argument.
+   * @return ServerPackCreator-instance using the {@code --setup}-argument.
    * @author Griefed
    */
   public synchronized static ServerPackCreator getInstance() {
@@ -293,7 +293,7 @@ public class ServerPackCreator {
 
   public synchronized WebUtilities getWebUtilities() {
     if (webUtilities == null) {
-      webUtilities = new WebUtilities(getApplicationProperties());
+      webUtilities = new WebUtilities(APPLICATIONPROPERTIES);
     }
     return webUtilities;
   }
@@ -331,7 +331,7 @@ public class ServerPackCreator {
               APPLICATIONPROPERTIES.LEGACY_FABRIC_INSTALLER_MANIFEST_LOCATION(),
               OBJECT_MAPPER,
               getUtilities(),
-              getApplicationProperties());
+              APPLICATIONPROPERTIES);
     }
     return versionMeta;
   }
@@ -358,7 +358,7 @@ public class ServerPackCreator {
   public synchronized ApplicationAddons getApplicationAddons()
       throws IOException, ParserConfigurationException, SAXException {
     if (this.applicationAddons == null) {
-      this.applicationAddons = new ApplicationAddons(getTomlParser(), getApplicationProperties(),
+      this.applicationAddons = new ApplicationAddons(getTomlParser(), APPLICATIONPROPERTIES,
           getVersionMeta(), getUtilities());
     }
     return applicationAddons;
@@ -715,7 +715,7 @@ public class ServerPackCreator {
 
   /**
    * Initialize {@link ApplicationAddons}, {@link ServerPackHandler} and our {@link UpdateChecker}
-   * if it is found to be <code>null</code>.
+   * if it is found to be {@code null}.
    *
    * @throws IOException if the {@link VersionMeta} could not be instantiated.
    * @author Griefed
@@ -1067,8 +1067,8 @@ public class ServerPackCreator {
    *
    * @param fileToCheckFor The file which is to be checked for whether it exists and if it doesn't,
    *                       should be created.
-   * @return <code>true</code> if the file was generated, so we can inform the user about said
-   * newly generated file.
+   * @return {@code true} if the file was generated, so we can inform the user about said newly
+   * generated file.
    * @author Griefed
    */
   public boolean checkServerFilesFile(File fileToCheckFor) {
@@ -1328,7 +1328,7 @@ public class ServerPackCreator {
     private final Mode MODE;
     /**
      * The language ServerPackCreator should use if any was specified. Null if none was specified,
-     * so we can use the default language <code>en_us</code>.
+     * so we can use the default language {@code en_us}.
      */
     private final String LANG;
 
@@ -1463,7 +1463,7 @@ public class ServerPackCreator {
     }
 
     /**
-     * If ServerPackCreator was executed with the <code>--setup</code>-argument as well as a
+     * If ServerPackCreator was executed with the {@code --setup}-argument as well as a
      * properties-file, then this method will return the specified properties file, wrapped in an
      * {@link Optional}, so you can check whether it is present or not.
      *

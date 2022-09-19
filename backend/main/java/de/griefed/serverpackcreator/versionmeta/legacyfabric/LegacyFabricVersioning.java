@@ -28,9 +28,9 @@ import java.util.List;
 
 abstract class LegacyFabricVersioning extends Manifests {
 
-  private final List<String> RELEASES = new ArrayList<>();
-  private final List<String> SNAPSHOTS = new ArrayList<>();
-  private final List<String> ALL = new ArrayList<>();
+  private final List<String> RELEASES = new ArrayList<>(100);
+  private final List<String> SNAPSHOTS = new ArrayList<>(100);
+  private final List<String> ALL = new ArrayList<>(200);
   private final ObjectMapper MAPPER;
   private final File MANIFEST;
 

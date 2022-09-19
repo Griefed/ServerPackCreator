@@ -35,12 +35,12 @@ final class QuiltInstaller {
 
   private final String URL_TEMPLATE_INSTALLER =
       "https://maven.quiltmc.org/repository/release/org/quiltmc/quilt-installer/%s/quilt-installer-%s.jar";
-  private final List<String> installers = new ArrayList<>();
+  private final List<String> installers = new ArrayList<>(100);
+  private final HashMap<String, URL> installerUrlMeta = new HashMap<>(100);
   private String latestInstaller;
   private String releaseInstaller;
   private URL latestInstallerUrl;
   private URL releaseInstallerUrl;
-  private HashMap<String, URL> installerUrlMeta;
 
   /**
    * Create a new Quilt Installer instance.
@@ -87,7 +87,7 @@ final class QuiltInstaller {
               .item(0)
               .getNodeValue());
     }
-    this.installerUrlMeta = new HashMap<>();
+    this.installerUrlMeta.clear();
     this.installers.forEach(
         version -> {
           try {
@@ -99,7 +99,7 @@ final class QuiltInstaller {
   }
 
   /**
-   * Update this {@link QuiltInstaller} with information from the given {@link Document}.
+   * Update with information from the given {@link Document}.
    *
    * @param installerManifest New installer information.
    * @author Griefed
@@ -143,7 +143,7 @@ final class QuiltInstaller {
               .item(0)
               .getNodeValue());
     }
-    this.installerUrlMeta = new HashMap<>();
+    this.installerUrlMeta.clear();
     this.installers.forEach(
         version -> {
           try {

@@ -57,9 +57,9 @@ public final class JarUtilities {
 
   /**
    * Copy a file from inside our JAR-file to the host filesystem. The file will create exactly as
-   * specified in the parameter. <br> Example:<br>
-   * <code>copyFileFromJar(new File("log4j2.xml"))</code> will result in the log4j2.xml file from
-   * inside the JAR-file to be copied to the outside of the JAR-file as <code>log4j2.xml</code>
+   * specified in the parameter. <br> Example:<br> {@code copyFileFromJar(new File("log4j2.xml"))}
+   * will result in the log4j2.xml file from inside the JAR-file to be copied to the outside of the
+   * JAR-file as {@code log4j2.xml}
    *
    * @param fileToCopy      File. The source-file in the JAR you wish to copy outside the JAR.
    * @param replaceIfExists Boolean. Whether to replace the file, if it already exists.
@@ -78,12 +78,12 @@ public final class JarUtilities {
   /**
    * Copy a file from inside our JAR-file to the host filesystem. The file will be created with
    * exactly the same path specified in the parameter. <br> Example:<br>
-   * <code>copyFileFromJar(new File("log4j2.xml"))</code> will result in the log4j2.xml file from
-   * inside the JAR-file to be copied to the outside of the JAR-file as <code>log4j2.xml</code>
+   * {@code copyFileFromJar(new File("log4j2.xml"))} will result in the log4j2.xml file from inside
+   * the JAR-file to be copied to the outside of the JAR-file as {@code log4j2.xml}
    *
    * @param fileToCopy      The source-file in the JAR you wish to copy outside the JAR.
    * @param identifierClass The class of the JAR from which to get the resource.
-   * @return <code>true</code> if the file was created, <code>false</code> otherwise.
+   * @return {@code true} if the file was created, {@code false} otherwise.
    * @author Griefed
    */
   public boolean copyFileFromJar(String fileToCopy, Class<?> identifierClass) {
@@ -114,9 +114,9 @@ public final class JarUtilities {
   /**
    * Copy a file from inside our JAR-file to the host filesystem to the specified destination,
    * replacing an already existing file. The file will be created with exactly the same path
-   * specified in the parameter. <br> Example:<br>
-   * <code>copyFileFromJar(new File("log4j2.xml"))</code> will result in the log4j2.xml file from
-   * inside the JAR-file to be copied to the outside of the JAR-file as <code>log4j2.xml</code>
+   * specified in the parameter. <br> Example:<br> {@code copyFileFromJar(new File("log4j2.xml"))}
+   * will result in the log4j2.xml file from inside the JAR-file to be copied to the outside of the
+   * JAR-file as {@code log4j2.xml}
    *
    * @param fileToCopy      The source-file in the JAR you wish to copy outside the JAR.
    * @param destinationFile The file to which to copy to.
@@ -136,13 +136,13 @@ public final class JarUtilities {
   /**
    * Copy a file from inside our JAR-file to the host filesystem to the specified destination. The
    * file will be created with exactly the same path specified in the parameter. <br> Example:<br>
-   * <code>copyFileFromJar(new File("log4j2.xml"))</code> will result in the log4j2.xml file from
-   * inside the JAR-file to be copied to the outside of the JAR-file as <code>log4j2.xml</code>
+   * {@code copyFileFromJar(new File("log4j2.xml"))} will result in the log4j2.xml file from inside
+   * the JAR-file to be copied to the outside of the JAR-file as {@code log4j2.xml}
    *
    * @param fileToCopy      The source-file in the JAR you wish to copy outside the JAR.
    * @param identifierClass The class of the JAR from which to get the resource.
    * @param destinationFile The file to which to copy to.
-   * @return <code>true</code> if the file was created, <code>false</code> otherwise.
+   * @return {@code true} if the file was created, {@code false} otherwise.
    * @author Griefed
    */
   public boolean copyFileFromJar(String fileToCopy, File destinationFile,
@@ -196,7 +196,7 @@ public final class JarUtilities {
    */
   public HashMap<String, String> systemInformation(ApplicationHome applicationHome) {
 
-    HashMap<String, String> sysInfo = new HashMap<>();
+    HashMap<String, String> sysInfo = new HashMap<>(10);
 
     try {
       sysInfo.put("jarPath", applicationHome.getSource().toString().replace("\\", "/"));
@@ -256,18 +256,17 @@ public final class JarUtilities {
    *                               {@link #copyFolderFromJar(Class, String, String, String)} or
    *                               {@link #copyFolderFromJar(JarFile, String, String, String,
    *                               String)} is called.<br> Example for JAR-file:
-   *                               <code>/home/griefed/serverpackcreator/serverpackcreator.jar</code>
+   *                               {@code /home/griefed/serverpackcreator/serverpackcreator.jar}
    *                               <br>
    *                               Example for dev-environment:
-   *                               <code>G:/GitLab/ServerPackCreator/build/classes/java/main
-   *                               </code><br>
+   *                               {@code G:/GitLab/ServerPackCreator/build/classes/java/main }<br>
    *                               See {@link ServerPackCreator#main(String[])} source code for an
    *                               example on how this is acquired automatically.
    * @param directoryToCopy        Path to the directory inside the JAR-file you want to copy.
    * @param destinationDirectory   Path to the destination directory you want to copy source to.
    * @param jarDirectoryPrefix     A prefix to remove when checking for existence of source inside
    *                               the JAR-file. For example, the ServerPackCreator files inside
-   *                               it's JAR-File are located in <code>BOOT-INF/classes</code> due to
+   *                               it's JAR-File are located in {@code BOOT-INF/classes} due to
    *                               SpringBoot. In order to correctly scan for source, we need to
    *                               remove that prefix, so we receive a path that looks like a
    *                               regular path inside a JAR-file.
@@ -311,10 +310,10 @@ public final class JarUtilities {
    * @param destinationDirectory Path to the destination directory you want to copy source to.
    * @param jarDirectoryPrefix   A prefix to remove when checking for existence of source inside the
    *                             JAR-file. For example, the ServerPackCreator files inside it's
-   *                             JAR-File are located in <code>BOOT-INF/classes</code> due to
-   *                             SpringBoot. In order to correctly scan for source, we need to
-   *                             remove that prefix, so we receive a path that looks like a regular
-   *                             path inside a JAR-file.
+   *                             JAR-File are located in {@code BOOT-INF/classes} due to SpringBoot.
+   *                             In order to correctly scan for source, we need to remove that
+   *                             prefix, so we receive a path that looks like a regular path inside
+   *                             a JAR-file.
    * @param fileEnding           The file-ending to filter for.
    * @throws IOException Thrown if no streams of the files can be created, indicating that they are
    *                     inaccessible for some reason.

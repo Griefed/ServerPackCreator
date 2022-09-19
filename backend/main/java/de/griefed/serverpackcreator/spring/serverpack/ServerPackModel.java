@@ -94,9 +94,8 @@ public class ServerPackModel extends ConfigurationModel {
    * @param size             The size of the generated server pack, in MB.
    * @param downloads        The amount of times this server pack was downloaded.
    * @param confirmedWorking The amount of votes indicating whether this server pack works.
-   * @param status           The status of this server pack. Either <code>Queued</code>,
-   *                         <code>Generating
-   *                         </code>, <code>Available</code>.
+   * @param status           The status of this server pack. Either {@code Queued},
+   *                         {@code Generating }, {@code Available}.
    * @param dateCreated      The date and time at which this server pack was requested for
    *                         generation.
    * @param lastModified     The date and time this server pack was last modified. Be it either due
@@ -277,8 +276,8 @@ public class ServerPackModel extends ConfigurationModel {
   }
 
   /**
-   * Getter for the status of the server pack. Either <code>Queued</code>, <code>Generating</code>,
-   * <code>Available</code>.
+   * Getter for the status of the server pack. Either {@code Queued}, {@code Generating},
+   * {@code Available}.
    *
    * @return String. Returns the status of a server pack.
    * @author Griefed
@@ -288,8 +287,8 @@ public class ServerPackModel extends ConfigurationModel {
   }
 
   /**
-   * Setter for the status of a server pack. Either <code>Queued</code>, <code>Generating</code>,
-   * <code>Available</code>.
+   * Setter for the status of a server pack. Either {@code Queued}, {@code Generating},
+   * {@code Available}.
    *
    * @param status The status of a server pack.
    * @author Griefed

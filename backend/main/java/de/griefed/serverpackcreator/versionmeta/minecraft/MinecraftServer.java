@@ -89,7 +89,7 @@ public final class MinecraftServer extends Manifests {
   }
 
   /**
-   * Get the Minecraft-version of this {@link MinecraftServer}.
+   * Get the Minecraft-version of this server.
    *
    * @return Version.
    * @author Griefed

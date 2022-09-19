@@ -2,12 +2,10 @@ package de.griefed.serverpackcreator.spring.jms;
 
 import de.griefed.serverpackcreator.ServerPackCreator;
 import de.griefed.serverpackcreator.ServerPackCreator.Mode;
-import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Objects;
 import javax.xml.parsers.ParserConfigurationException;
-import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.AfterEach;
@@ -26,11 +24,10 @@ import org.xml.sax.SAXException;
 public class ArtemisConfigTest {
 
   private static final Logger LOG = LogManager.getLogger(ArtemisConfigTest.class);
-  String[] args = new String[]{"--setup", "backend/test/resources/serverpackcreator.properties"};
   private final JmsTemplate jmsTemplate;
-
   private final String QUEUE_UNIQUE_ID = "unique_id";
   private final String QUEUE_TASKS = "tasks.background";
+  String[] args = new String[]{"--setup", "backend/test/resources/serverpackcreator.properties"};
 
   @Autowired
   ArtemisConfigTest(JmsTemplate injectedJmsTemplate)

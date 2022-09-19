@@ -33,7 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
- * <code>fml-cache-annotation.json</code>-based scanning of Forge-Minecraft mods of older versions.
+ * {@code fml-cache-annotation.json}-based scanning of Forge-Minecraft mods of older versions.
  *
  * @author Griefed
  */
@@ -54,13 +54,13 @@ public final class AnnotationScanner extends JsonBasedScanner implements
   }
 
   /**
-   * Scan the <code>fml-cache-annotation.json</code>-files in mod JAR-files of a given directory for
-   * their sideness.<br> If <code>clientSideOnly</code> specifies <code>"value": "true"</code>, and
-   * is not listed as a dependency for another mod, it is added and therefore later on excluded from
-   * the server pack.
+   * Scan the {@code fml-cache-annotation.json}-files in mod JAR-files of a given directory for
+   * their sideness.<br> If {@code clientSideOnly} specifies {@code "value": "true"}, and is not
+   * listed as a dependency for another mod, it is added and therefore later on excluded from the
+   * server pack.
    *
-   * @param filesInModsDir A list of files in which to check the <code>fml-cache-annotation.json
-   *                       </code>-files.
+   * @param filesInModsDir A list of files in which to check the
+   *                       {@code fml-cache-annotation.json }-files.
    * @return List of mods not to include in server pack based on fml-cache-annotation.json-content.
    * @author Griefed
    */
@@ -184,10 +184,10 @@ public final class AnnotationScanner extends JsonBasedScanner implements
    *
    * @param jsonNode   The JSON node containing information about the sideness.
    * @param modId      The id of the mod.
-   * @param clientMods Set to the <code>modId</code> if the mod is clientside-only.
+   * @param clientMods Set to the {@code modId} if the mod is clientside-only.
    * @throws NullPointerException if the JSON node does not contain sideness information.
-   * @throws JsonException        if the text in the boolean-field is neither <code>true</code> nor
-   *                              <code>false</code>.
+   * @throws JsonException        if the text in the boolean-field is neither {@code true} nor
+   *                              {@code false}.
    * @author Griefed
    */
   private void checkForClientSide(JsonNode jsonNode, String modId, TreeSet<String> clientMods)
@@ -242,8 +242,8 @@ public final class AnnotationScanner extends JsonBasedScanner implements
   }
 
   /**
-   * Check the dependencies of our mod for sideness. Any dependency that is not <code>forge</code>,
-   * and whose sideness is clientside-only, gets added to the list of required dependencies.
+   * Check the dependencies of our mod for sideness. Any dependency that is not {@code forge}, and
+   * whose sideness is clientside-only, gets added to the list of required dependencies.
    *
    * @param child           JSON node containing information about our dependencies.
    * @param modDependencies Set containing our dependency ids.
@@ -428,7 +428,7 @@ public final class AnnotationScanner extends JsonBasedScanner implements
    *
    * @param child The child-JSON node containing dependency information.
    * @param modId The ID of the mod for which to check for dependencies.
-   * @return <code>true</code> if the modId is a dependency.
+   * @return {@code true} if the modId is a dependency.
    * @author Griefed
    */
   private boolean additionalDependenciesDepend(JsonNode child, String modId) {
@@ -460,7 +460,7 @@ public final class AnnotationScanner extends JsonBasedScanner implements
    *
    * @param child The child-JSON node containing dependency information.
    * @param modId The ID of the mod for which to check for dependencies.
-   * @return <code>true</code> if the modId is a dependency.
+   * @return {@code true} if the modId is a dependency.
    * @author Griefed
    */
   private boolean additionalDependencyDepends(JsonNode child, String modId) {
@@ -488,7 +488,7 @@ public final class AnnotationScanner extends JsonBasedScanner implements
    *
    * @param node            The JSON-node containing information about the additional mod.
    * @param additionalModId The ID of the additional mod
-   * @return <code>true</code> if the additional mod is clientside-only.
+   * @return {@code true} if the additional mod is clientside-only.
    * @author Griefed
    */
   private boolean isAdditionalModClientSide(JsonNode node, String additionalModId) {
@@ -539,7 +539,7 @@ public final class AnnotationScanner extends JsonBasedScanner implements
    *
    * @param file       The mod-jar to check.
    * @param clientMods A set of modIds of clientside-only mods already discovered previously..
-   * @return <code>true</code> if the modJar can be added to the modsDelta set.
+   * @return {@code true} if the modJar can be added to the modsDelta set.
    * @throws IOException if the fml_cache_annotation could not be read.
    * @author Griefed
    */

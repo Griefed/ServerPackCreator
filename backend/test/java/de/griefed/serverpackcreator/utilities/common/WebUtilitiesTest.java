@@ -12,7 +12,8 @@ public class WebUtilitiesTest {
   WebUtilities webUtilities;
 
   WebUtilitiesTest() {
-    webUtilities = new WebUtilities(new ApplicationProperties(new FileUtilities(),new SystemUtilities(), new ListUtilities()));
+    webUtilities = new WebUtilities(
+        new ApplicationProperties(new FileUtilities(), new SystemUtilities(), new ListUtilities()));
   }
 
   @Test

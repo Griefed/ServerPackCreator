@@ -42,7 +42,7 @@ public abstract class ExtensionConfigPanel extends JPanel {
 
   protected static final Logger LOG = LogManager.getLogger(ExtensionConfigPanel.class);
   protected static final Logger LOG_ADDONS = LogManager.getLogger("AddonsLogger");
-  protected final ArrayList<CommentedConfig> SERVERPACK_EXTENSION_CONFIG = new ArrayList<>();
+  protected final ArrayList<CommentedConfig> SERVERPACK_EXTENSION_CONFIG = new ArrayList<>(100);
   private final Optional<CommentedConfig> ADDON_CONFIG;
   private final VersionMeta VERSIONMETA;
   private final ApplicationProperties APPLICATIONPROPERTIES;
@@ -184,8 +184,8 @@ public abstract class ExtensionConfigPanel extends JPanel {
   /**
    * Clear the interface, or in other words, reset this extensions config panel UI. If your Config
    * Panel Extensions has no elements you wish to reset, then simply overwrite this method with an
-   * empty method body.<br><br> The <code>clear()</code>-method is called when the owning
-   * <code>TabCreateServerPack.clearInterface()</code>-method is called.
+   * empty method body.<br><br> The {@code clear()}-method is called when the owning
+   * {@code TabCreateServerPack.clearInterface()}-method is called.
    */
   public abstract void clear();
 }

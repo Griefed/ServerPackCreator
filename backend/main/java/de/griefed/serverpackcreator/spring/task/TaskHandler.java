@@ -78,12 +78,12 @@ public class TaskHandler {
   }
 
   /**
-   * {@link JmsListener} listening to the destination <code>tasks.background</code> and selector
-   * <code>type = 'scan'</code>, so only task that match the <code>scan</code>-type are worked with
-   * in this method.<br> If a task is received that matches this type, the CurseForge project and
-   * file ID of said task is checked for validity. If the combination is found valid, either a new
-   * entry is saved to the database or an already existing one updated, if the existing one has the
-   * status <code> Generating</code> and <code>lastModified</code> is bigger than 30 minutes.
+   * {@link JmsListener} listening to the destination {@code tasks.background} and selector
+   * {@code type = 'scan'}, so only task that match the {@code scan}-type are worked with in this
+   * method.<br> If a task is received that matches this type, the CurseForge project and file ID of
+   * said task is checked for validity. If the combination is found valid, either a new entry is
+   * saved to the database or an already existing one updated, if the existing one has the status
+   * {@code  Generating} and {@code lastModified} is bigger than 30 minutes.
    *
    * @param task The task for which to check the CurseForge project and file ID, as well as status.
    * @author Griefed
@@ -94,10 +94,10 @@ public class TaskHandler {
   }
 
   /**
-   * {@link JmsListener} listening to the destination <code>tasks.background</code> and selector
-   * <code>type = 'generation'</code>, so only task that match the <code>generation</code>-type are
-   * worked with in this method.<br> If a task is received that matches this type, the generation of
-   * a new server pack is started.
+   * {@link JmsListener} listening to the destination {@code tasks.background} and selector
+   * {@code type = 'generation'}, so only task that match the {@code generation}-type are worked
+   * with in this method.<br> If a task is received that matches this type, the generation of a new
+   * server pack is started.
    *
    * @param task The task with which to generate a server pack from a CurseForge project and file
    *             ID.

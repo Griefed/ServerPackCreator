@@ -251,7 +251,7 @@ public final class ConfigurationEditor {
    * @author Griefed
    */
   private void checkConfig(ConfigurationModel configurationModel) {
-    List<String> errors = new ArrayList<>();
+    List<String> errors = new ArrayList<>(10);
     CONFIGURATIONHANDLER.checkConfiguration(configurationModel, errors, false);
     if (!errors.isEmpty()) {
       printToFileAndConsole("Encountered the following errors:");
@@ -674,7 +674,7 @@ public final class ConfigurationEditor {
     try {
       List<File> dirList = new ArrayList<>(FileUtils.listFiles(new File(modpackDir), null, false));
 
-      if (dirList.size() > 0) {
+      if (!dirList.isEmpty()) {
         printToFileAndConsole(
             "The modpack directory you specified contains the following directories:");
         for (int i = 0; i < dirList.size(); i++) {
@@ -762,7 +762,7 @@ public final class ConfigurationEditor {
   /**
    * Get the users decision on whether they want to include the modloader server installation.
    *
-   * @return <code>true</code> if the user wants the modloader server to be installed.
+   * @return {@code true} if the user wants the modloader server to be installed.
    * @author Griefed
    */
   private boolean installModloaderServer(Scanner scanner) {
@@ -853,7 +853,7 @@ public final class ConfigurationEditor {
   /**
    * Get the users decision on whether they want to include the server-icon.
    *
-   * @return <code>true</code> if the user wants the server-icon to be included.
+   * @return {@code true} if the user wants the server-icon to be included.
    * @author Griefed
    */
   private boolean includeServerIcon(Scanner scanner) {
@@ -873,7 +873,7 @@ public final class ConfigurationEditor {
   /**
    * Get the users decision on whether they want to include the server-properties.
    *
-   * @return <code>true</code> if the user wants the server-properties to be included.
+   * @return {@code true} if the user wants the server-properties to be included.
    * @author Griefed
    */
   private boolean includeServerProperties(Scanner scanner) {
@@ -894,7 +894,7 @@ public final class ConfigurationEditor {
    * Get the users decision on whether they want to include the ZIP-archive creation of the server
    * pack.
    *
-   * @return <code>true</code> if the user wants a ZIP-archive of the server pack to be created.
+   * @return {@code true} if the user wants a ZIP-archive of the server pack to be created.
    * @author Griefed
    */
   private boolean includeZipCreation(Scanner scanner) {
@@ -1002,7 +1002,7 @@ public final class ConfigurationEditor {
 
   /**
    * Write/print an empty line to a file as well as console. The filename is
-   * <code>logs/configurationCreator-CURRENT_DATE_CURRENT_TIME.log</code>.
+   * {@code logs/configurationCreator-CURRENT_DATE_CURRENT_TIME.log}.
    *
    * @author Griefed
    */
@@ -1016,7 +1016,7 @@ public final class ConfigurationEditor {
 
   /**
    * Write/print text to a file as well as console. The filename is
-   * <code>logs/configurationCreator-CURRENT_DATE_CURRENT_TIME.log</code>.
+   * {@code logs/configurationCreator-CURRENT_DATE_CURRENT_TIME.log}.
    *
    * @param text The text to write/print
    * @author Griefed

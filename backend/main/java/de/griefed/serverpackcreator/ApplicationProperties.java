@@ -299,10 +299,10 @@ public final class ApplicationProperties extends Properties {
           + "-XX:MaxTenuringThreshold=1 -Dusing.aikars.flags=https://mcflags.emc.gs -Daikars.new.flags=true";
   /**
    * Map containing any Java paths from properties with the format
-   * <code>de.griefed.serverpackcreator.script.javaN</code> where N is the version of the Java
+   * {@code de.griefed.serverpackcreator.script.javaN} where N is the version of the Java
    * installation.
    */
-  private final HashMap<String, String> JAVA_PATHS = new HashMap<>();
+  private final HashMap<String, String> JAVA_PATHS = new HashMap<>(256);
   private final String PROPERTY_VERSIONCHECK_PRERELEASE = "de.griefed.serverpackcreator.versioncheck.prerelease";
   private final String PROPERTY_LANGUAGE = "de.griefed.serverpackcreator.language";
   private final String PROPERTY_CONFIGURATION_FALLBACKMODSLIST = "de.griefed.serverpackcreator.configuration.fallbackmodslist";
@@ -347,9 +347,8 @@ public final class ApplicationProperties extends Properties {
    */
   private boolean saveLoadedConfiguration = false;
   /**
-   * Whether ServerPackCreator should check for available PreReleases. Set to <code>true</code> to
-   * get notified about available PreReleases. Set to <code>false</code> if you only want stable
-   * releases.
+   * Whether ServerPackCreator should check for available PreReleases. Set to {@code true} to get
+   * notified about available PreReleases. Set to {@code false} if you only want stable releases.
    */
   private boolean checkForPreReleases = false;
   /**
@@ -371,7 +370,7 @@ public final class ApplicationProperties extends Properties {
   private boolean serverPacksOverwriteEnabled = true;
   /**
    * Whether cleanup procedures of server packs after generation are enabled. See
-   * <code>ServerPackHandler#cleanUpServerPack(...)</code> for details.
+   * {@code ServerPackHandler#cleanUpServerPack(...)} for details.
    */
   private boolean serverPackCleanupEnabled = true;
   /**
@@ -395,14 +394,14 @@ public final class ApplicationProperties extends Properties {
    */
   private String javaPath = "java";
   /**
-   * Whether to automatically update the <code>SPC_JAVA_SPC</code>-placeholder in the script
-   * variables table with a Java path matching the required Java version for the Minecraft server.
+   * Whether to automatically update the {@code SPC_JAVA_SPC}-placeholder in the script variables
+   * table with a Java path matching the required Java version for the Minecraft server.
    */
   private boolean javaScriptAutoupdate = true;
 
   /**
    * Initialize an instance of our application properties using the default
-   * <code>serverpackcreator.properties</code>.
+   * {@code serverpackcreator.properties}.
    *
    * @param fileUtilities   Instance of {@link FileUtilities} for file-operations.
    * @param systemUtilities Instance of {@link SystemUtilities} to acquire the Java path
@@ -621,7 +620,7 @@ public final class ApplicationProperties extends Properties {
    * @author Griefed
    */
   private List<File> getFileListProperty(String key, String defaultValue, String filePrefix) {
-    List<File> files = new ArrayList<>();
+    List<File> files = new ArrayList<>(10);
     for (String entry : getListProperty(key, defaultValue)) {
       files.add(new File(filePrefix + entry));
     }
@@ -937,8 +936,8 @@ public final class ApplicationProperties extends Properties {
 
   /**
    * Setter for the path to the Java executable/binary. Replaces any occurrences of \ with /. The
-   * path to the Java executable or binary <code>MUST NOT</code> be a symbolic link, or link of any
-   * kind. It must be a direct path!
+   * path to the Java executable or binary {@code MUST NOT} be a symbolic link, or link of any kind.
+   * It must be a direct path!
    *
    * @param javaPath The new Java path to store.
    * @author Griefed
@@ -962,7 +961,7 @@ public final class ApplicationProperties extends Properties {
    * Whether a viable path to a Java executable or binary has been configured for
    * ServerPackCreator.
    *
-   * @return <code>true</code> if a viable path has been set.
+   * @return {@code true} if a viable path has been set.
    * @author Griefed
    */
   public boolean javaAvailable() {
@@ -973,12 +972,12 @@ public final class ApplicationProperties extends Properties {
    * Check whether the given path is a valid Java specification.
    *
    * @param pathToJava Path to the Java executable
-   * @return <code>true</code> if the path is valid.
+   * @return {@code true} if the path is valid.
    * @author Griefed
    */
   private boolean checkJavaPath(String pathToJava) {
 
-    if (pathToJava.length() == 0) {
+    if (pathToJava.isEmpty()) {
       return false;
     }
 
@@ -1010,12 +1009,11 @@ public final class ApplicationProperties extends Properties {
   }
 
   /**
-   * Test for a valid Java specification by trying to run <code>java -version</code>. If the command
-   * goes through without errors, it is considered a correct specification.
+   * Test for a valid Java specification by trying to run {@code java -version}. If the command goes
+   * through without errors, it is considered a correct specification.
    *
    * @param pathToJava Path to the java executable/binary.
-   * @return <code>true</code> if the specified file is a valid Java
-   * executable/binary.
+   * @return {@code true} if the specified file is a valid Java executable/binary.
    * @author Griefed
    */
   private boolean testJava(String pathToJava) {
@@ -1064,7 +1062,7 @@ public final class ApplicationProperties extends Properties {
 
     try {
 
-      if (pathToJava.length() > 0) {
+      if (!pathToJava.isEmpty()) {
 
         if (checkJavaPath(pathToJava)) {
 
@@ -1127,7 +1125,7 @@ public final class ApplicationProperties extends Properties {
   }
 
   /**
-   * Set whether to automatically update the <code>SPC_JAVA_SPC</code>-placeholder in the script
+   * Set whether to automatically update the {@code SPC_JAVA_SPC}-placeholder in the script
    * variables table with a Java path matching the required Java version for the Minecraft server.
    *
    * @author Griefed
@@ -1447,7 +1445,7 @@ public final class ApplicationProperties extends Properties {
    * Getter for the version of ServerPackCreator.<br> If a JAR-file compiled from a release-job from
    * a CI/CD-pipeline is used, it should contain a VERSION.txt-file which contains the version of
    * said release. If a non-release-version is used, from a regular pipeline or local dev-build,
-   * then this will be set to <code>dev</code>.
+   * then this will be set to {@code dev}.
    *
    * @return String. Returns the version of ServerPackCreator.
    * @author Griefed
@@ -1539,7 +1537,7 @@ public final class ApplicationProperties extends Properties {
 
   /**
    * Acquire the default fallback list of clientside-only mods. If
-   * <code>de.griefed.serverpackcreator.serverpack.autodiscovery.filter</code> is set to
+   * {@code de.griefed.serverpackcreator.serverpack.autodiscovery.filter} is set to
    * {@link ExclusionFilter#REGEX}, a regex fallback list is returned.
    *
    * @return The fallback list of clientside-only mods.
@@ -1617,9 +1615,9 @@ public final class ApplicationProperties extends Properties {
 
   /**
    * Getter for whether the search for available PreReleases is enabled or disabled.<br> Depending
-   * on <code>de.griefed.serverpackcreator.versioncheck.prerelease</code>, returns <code>
-   * true</code> if checks for available PreReleases are enabled, <code>false</code> if no checks
-   * for available PreReleases should be made.
+   * on {@code de.griefed.serverpackcreator.versioncheck.prerelease}, returns {@code true} if checks
+   * for available PreReleases are enabled, {@code false} if no checks for available PreReleases
+   * should be made.
    *
    * @return Boolean. Whether checks for available PreReleases are enabled.
    * @author Griefed
@@ -1641,10 +1639,10 @@ public final class ApplicationProperties extends Properties {
    * List of files to be excluded from ZIP-archives. Current filters are:
    *
    * <ul>
-   *   <li><code>MINECRAFT_VERSION</code> - Will be replaced with the Minecraft version of the
+   *   <li>{@code MINECRAFT_VERSION} - Will be replaced with the Minecraft version of the
    *       server pack
-   *   <li><code>MODLOADER</code> - Will be replaced with the modloader of the server pack
-   *   <li><code>MODLOADER_VERSION</code> - Will be replaced with the modloader version of the
+   *   <li>{@code MODLOADER} - Will be replaced with the modloader of the server pack
+   *   <li>{@code MODLOADER_VERSION} - Will be replaced with the modloader version of the
    *       server pack
    * </ul>
    * <p>
@@ -1661,7 +1659,7 @@ public final class ApplicationProperties extends Properties {
   /**
    * Whether the exclusion of files from the ZIP-archive of the server pack is enabled.
    *
-   * @return <code>true</code> if the exclusion is enabled.
+   * @return {@code true} if the exclusion is enabled.
    * @author Griefed
    */
   public boolean isZipFileExclusionEnabled() {
@@ -1671,17 +1669,17 @@ public final class ApplicationProperties extends Properties {
   /**
    * Is auto excluding of clientside-only mods enabled.
    *
-   * @return <code>true</code> if autodiscovery is enabled.
+   * @return {@code true} if autodiscovery is enabled.
    */
   public boolean isAutoExcludingModsEnabled() {
     return autoExcludingModsEnabled;
   }
 
   /**
-   * Update the fallback clientside-only modlist of our <code>serverpackcreator.properties</code>
-   * from the main-repository or one of its mirrors.
+   * Update the fallback clientside-only modlist of our {@code serverpackcreator.properties} from
+   * the main-repository or one of its mirrors.
    *
-   * @return <code>true</code> if the fallback-property was updated.
+   * @return {@code true} if the fallback-property was updated.
    * @author Griefed
    */
   public boolean updateFallback() {
@@ -1774,7 +1772,7 @@ public final class ApplicationProperties extends Properties {
   /**
    * Is the Dark Theme currently active?
    *
-   * @return <code>true</code> if the Dark Theme is active, otherwise false.
+   * @return {@code true} if the Dark Theme is active, otherwise false.
    * @author Griefed
    */
   public boolean isDarkTheme() {
@@ -1784,7 +1782,7 @@ public final class ApplicationProperties extends Properties {
   /**
    * Set the current theme to Dark Theme or Light Theme.
    *
-   * @param dark <code>true</code> to activate Dark Theme, <code>false</code> otherwise.
+   * @param dark {@code true} to activate Dark Theme, {@code false} otherwise.
    * @author Griefed
    */
   public void setTheme(boolean dark) {
@@ -1816,7 +1814,7 @@ public final class ApplicationProperties extends Properties {
   /**
    * Whether overwriting of already existing server packs is enabled.
    *
-   * @return <code>true</code> if it is enabled.
+   * @return {@code true} if it is enabled.
    * @author Griefed
    */
   public boolean isServerPacksOverwriteEnabled() {
@@ -1826,7 +1824,7 @@ public final class ApplicationProperties extends Properties {
   /**
    * Whether cleanup procedures after server pack generation are enabled.
    *
-   * @return <code>true</code> if it is enabled.
+   * @return {@code true} if it is enabled.
    * @author Griefed
    */
   public boolean isServerPackCleanupEnabled() {
@@ -1857,7 +1855,7 @@ public final class ApplicationProperties extends Properties {
    * Whether Minecraft pre-releases and snapshots are available to the user in, for example, the
    * GUI.
    *
-   * @return <code>true</code> if they are available.
+   * @return {@code true} if they are available.
    * @author Griefed
    */
   public boolean enableMinecraftPreReleases() {
@@ -1900,10 +1898,10 @@ public final class ApplicationProperties extends Properties {
 
 
   /**
-   * Whether to automatically update the <code>SPC_JAVA_SPC</code>-placeholder in the script
-   * variables table with a Java path matching the required Java version for the Minecraft server.
+   * Whether to automatically update the {@code SPC_JAVA_SPC}-placeholder in the script variables
+   * table with a Java path matching the required Java version for the Minecraft server.
    *
-   * @return <code>true</code> if enabled.
+   * @return {@code true} if enabled.
    * @author Griefed
    */
   public boolean isJavaScriptAutoupdateEnabled() {

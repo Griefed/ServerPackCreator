@@ -40,8 +40,8 @@ public final class ListUtilities {
   }
 
   /**
-   * Encapsulate every element of the passed String List in quotes. Returns the list as <code>
-   * ["element1","element2","element3"</code> etc.
+   * Encapsulate every element of the passed String List in quotes. Returns the list as
+   * {@code ["element1","element2","element3"} etc.
    *
    * @param listToEncapsulate The String List of which to encapsulate every element in.
    * @return String. Returns a concatenated String with all elements of the passed list
@@ -99,8 +99,8 @@ public final class ListUtilities {
   }
 
   /**
-   * Clean a given String List of any entry consisting only of whitespace or a length of <code>0
-   * </code>.
+   * Clean a given String List of any entry consisting only of whitespace or a length of
+   * {@code 0 }.
    *
    * @param listToCleanUp List String. The list from which to delete all entries consisting only of
    *                      whitespace or with a length of zero.
@@ -108,7 +108,7 @@ public final class ListUtilities {
    * @author Griefed
    */
   public List<String> cleanList(List<String> listToCleanUp) {
-    listToCleanUp.removeIf(entry -> entry.matches("\\s+") || entry.length() == 0);
+    listToCleanUp.removeIf(entry -> entry.matches("\\s+") || entry.isEmpty());
     return listToCleanUp;
   }
 

@@ -36,12 +36,12 @@ final class FabricInstaller {
 
   private final String URL_TEMPLATE_INSTALLER =
       "https://maven.fabricmc.net/net/fabricmc/fabric-installer/%s/fabric-installer-%s.jar";
-  private final List<String> installers = new ArrayList<>();
+  private final List<String> installers = new ArrayList<>(100);
+  private final HashMap<String, URL> installerUrlMeta = new HashMap<>(100);
   private String latestInstaller;
   private String releaseInstaller;
   private URL latestInstallerUrl;
   private URL releaseInstallerUrl;
-  private HashMap<String, URL> installerUrlMeta;
 
   /**
    * Create a new instance of the Fabric Installer.
@@ -88,7 +88,7 @@ final class FabricInstaller {
               .item(0)
               .getNodeValue());
     }
-    this.installerUrlMeta = new HashMap<>();
+    this.installerUrlMeta.clear();
     this.installers.forEach(
         version -> {
           try {
@@ -100,7 +100,7 @@ final class FabricInstaller {
   }
 
   /**
-   * Update this {@link FabricInstaller} with information from the given {@link Document}.
+   * Update with information from the given {@link Document}.
    *
    * @param installerManifest Installer information.
    * @author Griefed
@@ -144,7 +144,7 @@ final class FabricInstaller {
               .item(0)
               .getNodeValue());
     }
-    this.installerUrlMeta = new HashMap<>();
+    this.installerUrlMeta.clear();
     this.installers.forEach(
         version -> {
           try {

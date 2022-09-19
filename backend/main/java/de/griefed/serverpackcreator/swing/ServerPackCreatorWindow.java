@@ -308,7 +308,7 @@ public final class ServerPackCreatorWindow extends JFrame {
    * open where the user can select their Java-executable/binary. If "No" is selected, the user is
    * warned about the consequences of not setting the Javapath.
    *
-   * @return <code>true</code> if Java is available or was configured by the user.
+   * @return {@code true} if Java is available or was configured by the user.
    * @author Griefed
    */
   boolean checkJava() {
