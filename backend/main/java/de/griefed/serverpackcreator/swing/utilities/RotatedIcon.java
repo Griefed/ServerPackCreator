@@ -118,8 +118,8 @@ public class RotatedIcon implements Icon {
    */
   public RotatedIcon(Icon icon, double degrees, boolean circularIcon) {
     this(icon, Rotate.ABOUT_CENTER);
-    setDegrees(degrees);
-    setCircularIcon(circularIcon);
+    this.degrees = degrees;
+    this.circularIcon = circularIcon;
   }
 
   /**

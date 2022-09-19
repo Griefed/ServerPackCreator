@@ -32,7 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
- * <code>quilt.mod.json</code>-based scanning of Fabric-Minecraft mods.
+ * {@code quilt.mod.json}-based scanning of Fabric-Minecraft mods.
  *
  * @author Griefed
  */
@@ -53,13 +53,11 @@ public final class QuiltScanner extends JsonBasedScanner implements
   }
 
   /**
-   * Scan the <code>quilt.mod.json</code>-files in mod JAR-files of a given directory for their
-   * sideness.<br> If <code>minecraft.environment</code> specifies <code>client</code>, and is not
-   * listed as a dependency for another mod, it is added and therefore later on excluded from the
-   * server pack.
+   * Scan the {@code quilt.mod.json}-files in mod JAR-files of a given directory for their
+   * sideness.<br> If {@code minecraft.environment} specifies {@code client}, and is not listed as a
+   * dependency for another mod, it is added and therefore later on excluded from the server pack.
    *
-   * @param filesInModsDir A list of files in which to check the
-   *                       <code>fabric.mod.json</code>-files.
+   * @param filesInModsDir A list of files in which to check the {@code fabric.mod.json}-files.
    * @return List of mods not to include in server pack based on fabric.mod.json-content.
    * @author Griefed
    */

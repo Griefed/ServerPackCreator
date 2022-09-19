@@ -31,7 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  * RestController for everything server pack related, like downloads.<br> All requests are in
- * <code>/api/v1/packs</code>.
+ * {@code /api/v1/packs}.
  *
  * @author Griefed
  */
@@ -90,8 +90,7 @@ public class ServerPackController {
    * GET request for voting whether a server pack works or not.
    *
    * @param voting The vote, consisting of the id of the server pack and whether the vote should be
-   *               incremented or decremented. Example <code>42,up</code> or
-   *               <code>23,down</code>.
+   *               incremented or decremented. Example {@code 42,up} or {@code 23,down}.
    * @return ResponseEntity OK/BadRequest/NotFound
    * @author Griefed
    */

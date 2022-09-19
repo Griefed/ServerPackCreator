@@ -2,10 +2,51 @@ version: "1.0"
 linter: jetbrains/qodana-jvm-community:2022.2
 profile:
   name: qodana.recommended
+include:
+  - name: ArrayEquality
+  - name: AwaitWithoutCorrespondingSignal
+  - name: CallToSimpleGetterInClass
+  - name: CallToSimpleSetterInClass
+  - name: ClassNameDiffersFromFileName
+  - name: CollectionsMustHaveInitialCapacity
+  - name: DanglingJavadoc
+  - name: Deprecation
+  - name: DevKitPropertiesQuotesValidation
+  - name: ExtendsThread
+  - name: GroovyEmptyFinallyBlock
+  - name: GroovyEmptyTryBlock
+  - name: GroovyPointlessBoolean
+  - name: GroovyReturnFromFinallyBlock
+  - name: HtmlTagCanBeJavadocTag
+  - name: IfCanBeSwitch
+  - name: InstanceofChain
+  - name: InstanceVariableUninitializedUse
+  - name: IOStreamConstructor
+  - name: JavadocBlankLines
+  - name: JavadocHtmlLint
+  - name: JavadocLinkAsPlainText
+  - name: MissingJavadoc
+  - name: MissingPackageInfo
+  - name: NegatedEqualityExpression
+  - name: NonFinalFieldOfException
+  - name: NotifyWithoutCorrespondingWait
+  - name: ObjectEquality
+  - name: ReplaceCollectionCountWithSize
+  - name: ReplaceNotNullAssertionWithElvisReturn
+  - name: SizeReplaceableByIsEmpty
+  - name: StaticVariableUninitializedUse
+  - name: StringBufferField
+  - name: StringEquality
+  - name: StringEqualsEmptyString
+  - name: SystemGC
+  - name: UnnecessaryJavaDocLink
+  - name: UseOfObsoleteDateTimeApi
+  - name: WaitWithoutCorrespondingNotify
 exclude:
+  - name: FieldMayBeStatic
+  - name: SystemOutErr
   - name: All
     paths:
-      - frontend
       - .github
       - .gitlab
       - .gradle
@@ -13,6 +54,7 @@ exclude:
       - .jpb
       - .runConfigurations
       - build
+      - frontend
       - gradle
       - img
       - lang
@@ -21,23 +63,8 @@ exclude:
       - manifests
       - plugins
       - root
-      - server-packs
       - server_files
+      - server-packs
       - testruns
       - work
-  - name: FieldMayBeStatic
-  - name: SystemOutErr
-include:
-  - name: ArrayEquality
-  - name: Deprecation
-  - name: DevKitPropertiesQuotesValidation
-  - name: GroovyPointlessBoolean
-  - name: IfCanBeSwitch
-  - name: InstanceofChain
-  - name: InstanceVariableUninitializedUse
-  - name: NegatedEqualityExpression
-  - name: ObjectEquality
-  - name: StaticVariableUninitializedUse
-  - name: StringEquality
-  - name: StringEqualsEmptyString
-  - name: UseOfObsoleteDateTimeApi
+      - qodana

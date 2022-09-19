@@ -56,18 +56,17 @@ public class ArtemisConfig implements ArtemisConfigurationCustomizer {
 
   /**
    * Customize our configuration.<br> Set the default consumer windows size to 0.<br> Set the
-   * maximum disk usage from our property <code>
-   * de.griefed.serverpackcreator.spring.artemis.queue.max_disk_usage</code>.<br> Set the address
-   * to
-   * <code>tasks.background</code>.<br> Set the queue configuration to
-   * <code>tasks.background</code>.<br> Set the name to <code>tasks.background</code>.<br> Set the
-   * last value key to <code>unique_id</code>.<br> Set the routing type to
-   * {@link RoutingType#ANYCAST}.<br> Add our queue configuration..<br> All of this ensures that any
-   * message added will be deduplicated and worked on one by one. No messages should, at any time,
-   * be processed in parallel. Whilst working on them in parallel would increase the speed at which
-   * multiple serer packs are generated, we want to make sure neither the CurseForge API, nor the
-   * system our webservice is running on receives a heavy load. Economically speaking, we are trying
-   * to be nice neighbours and not claim too many resources for ourselves.
+   * maximum disk usage from our property
+   * {@code de.griefed.serverpackcreator.spring.artemis.queue.max_disk_usage}.<br> Set the address
+   * to {@code tasks.background}.<br> Set the queue configuration to {@code tasks.background}.<br>
+   * Set the name to {@code tasks.background}.<br> Set the last value key to {@code unique_id}.<br>
+   * Set the routing type to {@link RoutingType#ANYCAST}.<br> Add our queue configuration..<br> All
+   * of this ensures that any message added will be deduplicated and worked on one by one. No
+   * messages should, at any time, be processed in parallel. Whilst working on them in parallel
+   * would increase the speed at which multiple serer packs are generated, we want to make sure
+   * neither the CurseForge API, nor the system our webservice is running on receives a heavy load.
+   * Economically speaking, we are trying to be nice neighbours and not claim too many resources for
+   * ourselves.
    *
    * @param configuration Artemis configuration.
    * @author Griefed

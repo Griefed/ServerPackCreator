@@ -26,37 +26,37 @@ public class ApplicationPropertiesTest {
 
     applicationProperties = new ApplicationProperties(
         new File("backend/test/resources/testresources/properties/filters/contains.properties"),
-        fileUtilities, systemUtilities,listUtilities);
+        fileUtilities, systemUtilities, listUtilities);
 
     Assertions.assertEquals(ExclusionFilter.CONTAIN, applicationProperties.exclusionFilter());
 
     applicationProperties = new ApplicationProperties(
         new File("backend/test/resources/testresources/properties/filters/either.properties"),
-        fileUtilities, systemUtilities,listUtilities);
+        fileUtilities, systemUtilities, listUtilities);
 
     Assertions.assertEquals(ExclusionFilter.EITHER, applicationProperties.exclusionFilter());
 
     applicationProperties = new ApplicationProperties(
         new File("backend/test/resources/testresources/properties/filters/end.properties"),
-        fileUtilities, systemUtilities,listUtilities);
+        fileUtilities, systemUtilities, listUtilities);
 
     Assertions.assertEquals(ExclusionFilter.END, applicationProperties.exclusionFilter());
 
     applicationProperties = new ApplicationProperties(
         new File("backend/test/resources/testresources/properties/filters/regex.properties"),
-        fileUtilities, systemUtilities,listUtilities);
+        fileUtilities, systemUtilities, listUtilities);
 
     Assertions.assertEquals(ExclusionFilter.REGEX, applicationProperties.exclusionFilter());
 
     applicationProperties = new ApplicationProperties(
         new File("backend/test/resources/testresources/properties/filters/start.properties"),
-        fileUtilities, systemUtilities,listUtilities);
+        fileUtilities, systemUtilities, listUtilities);
 
     Assertions.assertEquals(ExclusionFilter.START, applicationProperties.exclusionFilter());
 
     applicationProperties = new ApplicationProperties(
         new File("backend/test/resources/serverpackcreator.properties"), fileUtilities,
-        systemUtilities,listUtilities);
+        systemUtilities, listUtilities);
 
     Assertions.assertNotNull(applicationProperties.java());
     Assertions.assertTrue(new File(applicationProperties.java()).exists());

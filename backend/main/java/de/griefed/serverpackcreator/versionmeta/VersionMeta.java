@@ -175,7 +175,7 @@ public final class VersionMeta extends Manifests {
    * Check all our manifests, those being Minecraft, Forge, Fabric and Fabric Installer, for whether
    * updated manifests are available, by comparing their locally stored ones against freshly
    * downloaded ones. If a manifest does not exist yet, it is downloaded to the specified file with
-   * which this instance of {@link VersionMeta} was created.
+   * which this instance of the version meta was created.
    *
    * @author Griefed
    */
@@ -398,7 +398,7 @@ public final class VersionMeta extends Manifests {
    * Update the Minecraft, Forge and Fabric metas. Usually called when the manifest files have been
    * refreshed.
    *
-   * @return Instance of {@link VersionMeta}.
+   * @return The instance of of this version meta, updated.
    * @throws ParserConfigurationException indicates a serious configuration error.
    * @throws IOException                  if any IO errors occur.
    * @throws SAXException                 if any parse errors occur.

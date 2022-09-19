@@ -340,7 +340,7 @@ public class TextIcon implements Icon, PropertyChangeListener {
 
       for (int i = 0; i < text.length(); i++) {
 
-        int offsetX = Math.round((getIconWidth() - stringWidths[i]) / 2.0f);
+        int offsetX = Math.round((iconWidth - stringWidths[i]) / 2.0f);
         g2.drawString(strings[i], x + offsetX, y + offsetY);
         offsetY += incrementY;
       }

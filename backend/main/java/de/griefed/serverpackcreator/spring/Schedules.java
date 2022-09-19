@@ -76,11 +76,11 @@ public class Schedules {
   }
 
   /**
-   * Check the database every <code>de.griefed.serverpackcreator.spring.schedules.database.cleanup
-   * </code> for validity. <br>
+   * Check the database every
+   * {@code de.griefed.serverpackcreator.spring.schedules.database.cleanup } for validity. <br>
    * Deletes entries from the database which are older than 1 week and have 0 downloads. <br>
-   * Deletes entries whose status is <code>Available</code> but no server pack ZIP-archive can be
-   * found. <br>
+   * Deletes entries whose status is {@code Available} but no server pack ZIP-archive can be found.
+   * <br>
    *
    * @author Griefed
    */

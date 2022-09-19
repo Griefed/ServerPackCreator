@@ -49,16 +49,14 @@ public final class TomlScanner implements Scanner<TreeSet<File>, Collection<File
   }
 
   /**
-   * Scan the <code>mods.toml</code>-files in mod JAR-files of a given directory for their
-   * sideness.
+   * Scan the {@code mods.toml}-files in mod JAR-files of a given directory for their sideness.
    * <br>
-   * If <code>[[mods]]</code> specifies <code>side=BOTH|SERVER</code>, it is added.<br> If
-   * <code>[[dependencies.modId]]</code> for Forge|Minecraft specifies <code>side=BOTH|SERVER
-   * </code>, it is added.<br>
-   * Any modId of a dependency specifying <code>side=BOTH|SERVER</code> is added.<br> If no sideness
-   * can be found for a given mod, it is added to prevent false positives.
+   * If {@code [[mods]]} specifies {@code side=BOTH|SERVER}, it is added.<br> If
+   * {@code [[dependencies.modId]]} for Forge|Minecraft specifies {@code side=BOTH|SERVER }, it is
+   * added.<br> Any modId of a dependency specifying {@code side=BOTH|SERVER} is added.<br> If no
+   * sideness can be found for a given mod, it is added to prevent false positives.
    *
-   * @param filesInModsDir A list of files in which to check the <code>mods.toml</code>-files.
+   * @param filesInModsDir A list of files in which to check the {@code mods.toml}-files.
    * @return Mods not to include in server pack based on mods.toml-configuration.
    * @author Griefed
    */
@@ -125,7 +123,7 @@ public final class TomlScanner implements Scanner<TreeSet<File>, Collection<File
   private TreeSet<String> getModIdsRequiredOnServer(CommentedConfig config)
       throws ScanningException {
 
-    ArrayList<Map<String, Object>> configs = new ArrayList<>();
+    ArrayList<Map<String, Object>> configs = new ArrayList<>(100);
     TreeSet<String> ids = new TreeSet<>();
 
     if (config.valueMap().get("mods") == null) {
@@ -185,11 +183,10 @@ public final class TomlScanner implements Scanner<TreeSet<File>, Collection<File
 
   /**
    * Acquire a list of ids of dependencies required by the passed mod in order to run on a modded
-   * server. Only if all dependencies in this mod specify <code>CLIENT</code> for either
-   * <code>forge
-   * </code> or <code>minecraft</code> is a dependency not added to the list of required
-   * dependencies. Otherwise, all modIds mentioned in the dependencies of this mod, which are
-   * neither <code>forge</code> nor <code>minecraft</code> get added to the list.
+   * server. Only if all dependencies in this mod specify {@code CLIENT} for either {@code forge }
+   * or {@code minecraft} is a dependency not added to the list of required dependencies. Otherwise,
+   * all modIds mentioned in the dependencies of this mod, which are neither {@code forge} nor
+   * {@code minecraft} get added to the list.
    *
    * @param config Base-config of the toml of the mod which contains all information.
    * @return Set of ids of mods required as dependencies.
@@ -321,7 +318,7 @@ public final class TomlScanner implements Scanner<TreeSet<File>, Collection<File
       throw new ScanningException("No dependencies specified.");
     }
 
-    Map<String, ArrayList<CommentedConfig>> dependencies = new HashMap<>();
+    Map<String, ArrayList<CommentedConfig>> dependencies = new HashMap<>(100);
 
     if (config.valueMap().get("dependencies") instanceof ArrayList) {
 
@@ -346,7 +343,7 @@ public final class TomlScanner implements Scanner<TreeSet<File>, Collection<File
    * Acquire the modId from the passed config.
    *
    * @param config Mod- or dependency-config which contains the modId.
-   * @return <code>modId</code> from the passed config, in lower-case letters.
+   * @return {@code modId} from the passed config, in lower-case letters.
    */
   private String getModId(CommentedConfig config) {
     return config.valueMap().get("modId").toString().toLowerCase();
@@ -356,7 +353,7 @@ public final class TomlScanner implements Scanner<TreeSet<File>, Collection<File
    * Acquire the side of the config of the passed dependency.
    *
    * @param config Mod- or dependency-config which contains the modId.
-   * @return <code>side</code> from the passed config, in upper-case letters.
+   * @return {@code side} from the passed config, in upper-case letters.
    */
   private String getSide(CommentedConfig config) {
     return config.valueMap().get("side").toString().toUpperCase();

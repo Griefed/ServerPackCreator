@@ -50,8 +50,7 @@ public final class MinecraftClient {
    * @param version               The Minecraft version.
    * @param type                  Either {@link Type#RELEASE} or {@link Type#SNAPSHOT}.
    * @param url                   Url to this versions manifest.
-   * @param forgeMeta             To acquire Forge instances for this {@link MinecraftClient}
-   *                              version.
+   * @param forgeMeta             To acquire Forge instances for this client version.
    * @param objectMapper          Object mapper for JSON parsing.
    * @param utilities             Instance of commonly used utilities.
    * @param applicationProperties ServerPackCreator settings.
@@ -77,8 +76,7 @@ public final class MinecraftClient {
    * @param type                  Either {@link Type#RELEASE} or {@link Type#SNAPSHOT}.
    * @param url                   Url to this versions manifest.
    * @param server                Instance of {@link MinecraftServer}
-   * @param forgeMeta             To acquire Forge instances for this {@link MinecraftClient}
-   *                              version.
+   * @param forgeMeta             To acquire Forge instances for this client version.
    * @param utilities             Instance of commonly used utilities.
    * @param applicationProperties ServerPackCreator settings.
    * @author Griefed
@@ -96,7 +94,7 @@ public final class MinecraftClient {
   }
 
   /**
-   * The Minecraft version of this {@link MinecraftClient} instance.
+   * The Minecraft version of this client.
    *
    * @return Minecraft version.
    * @author Griefed

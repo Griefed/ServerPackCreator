@@ -7,14 +7,13 @@ import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
 public class ApplicationAddonsTest {
 
   private static final Logger LOG = LogManager.getLogger(ApplicationAddonsTest.class);
-  String[] args = new String[]{"--setup", "backend/test/resources/serverpackcreator.properties"};
+
   static {
     try {
       FileUtils.copyDirectory(
@@ -24,6 +23,7 @@ public class ApplicationAddonsTest {
     }
   }
 
+  String[] args = new String[]{"--setup", "backend/test/resources/serverpackcreator.properties"};
   ApplicationAddons applicationAddons;
 
   ApplicationAddonsTest() throws IOException, ParserConfigurationException, SAXException {

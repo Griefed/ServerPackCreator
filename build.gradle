@@ -72,13 +72,13 @@ dependencies {
   implementation 'org.xerial:sqlite-jdbc:3.39.3.0'
   implementation 'org.pf4j:pf4j:3.7.0'
   implementation 'com.github.vatbub:mslinks:1.0.5'
+
   annotationProcessor 'org.jetbrains:annotations:23.0.0'
 
   implementation 'org.apache.logging.log4j:log4j-core:2.18.0'
   implementation 'org.apache.logging.log4j:log4j-api:2.18.0'
   implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.18.0'
   implementation 'org.apache.logging.log4j:log4j-web:2.18.0'
-  implementation 'org.apache.logging.log4j:log4j-jul:2.18.0'
   implementation 'org.jgroups:jgroups:5.2.6.Final'
 
   // GUI
@@ -97,10 +97,9 @@ dependencies {
   developmentOnly 'org.springframework.boot:spring-boot-devtools:2.7.3'
 
   // Testing
-  testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.0'
-  testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.0'
+  testImplementation 'org.junit.jupiter:junit-jupiter:5.9.0'
+  testImplementation 'org.junit.platform:junit-platform-suite:1.9.0'
   testImplementation 'org.springframework.boot:spring-boot-starter-test:2.7.3'
-  testImplementation 'org.junit.platform:junit-platform-commons:1.9.0'
 }
 
 licenseReport {

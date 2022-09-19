@@ -36,7 +36,7 @@ public final class FabricIntermediaries {
 
   private final ObjectMapper OBJECT_MAPPER;
   private final File INTERMEDIARY_MANIFEST;
-  private final HashMap<String, FabricIntermediary> INTERMEDIARIES = new HashMap<>();
+  private final HashMap<String, FabricIntermediary> INTERMEDIARIES = new HashMap<>(100);
 
   /**
    * Instantiate Fabric intermediaries.
@@ -94,7 +94,7 @@ public final class FabricIntermediaries {
    * that the given Minecraft version is supported.
    *
    * @param minecraftVersion The Minecraft version to check for.
-   * @return <code>true</code> if intermediaries are present.
+   * @return {@code true} if intermediaries are present.
    */
   public boolean areIntermediariesPresent(String minecraftVersion) {
     return getIntermediary(minecraftVersion).isPresent();

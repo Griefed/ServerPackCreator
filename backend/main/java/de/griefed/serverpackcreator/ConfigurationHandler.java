@@ -94,8 +94,8 @@ public final class ConfigurationHandler {
   }
 
   /**
-   * Check the passed configuration-file. If any check returns <code>true</code> then the server
-   * pack will not be created. In order to find out which check failed, the user has to check their
+   * Check the passed configuration-file. If any check returns {@code true} then the server pack
+   * will not be created. In order to find out which check failed, the user has to check their
    * serverpackcreator.log in the logs-directory.<br> Does not create a modpack if a CurseForge
    * project and file is specified.
    *
@@ -110,7 +110,7 @@ public final class ConfigurationHandler {
    *                          you.
    * @param quietCheck        Whether the configuration should be printed to the console and logs.
    *                          Pass false to quietly check the configuration.
-   * @return <code>false</code> if the configuration has passed all tests.
+   * @return {@code false} if the configuration has passed all tests.
    * @author Griefed
    */
   public boolean checkConfiguration(
@@ -123,8 +123,8 @@ public final class ConfigurationHandler {
   }
 
   /**
-   * Check the passed configuration-file. If any check returns <code>true</code> then the server
-   * pack will not be created. In order to find out which check failed, the user has to check their
+   * Check the passed configuration-file. If any check returns {@code true} then the server pack
+   * will not be created. In order to find out which check failed, the user has to check their
    * serverpackcreator.log in the logs-directory.
    *
    * @param configFile The configuration file to check. Must either be an existing file to load a
@@ -132,7 +132,7 @@ public final class ConfigurationHandler {
    *                   model.
    * @param quietCheck Whether the configuration should be printed to the console and logs. Pass
    *                   false to quietly check the configuration.
-   * @return <code>false</code> if the configuration has passed all tests.
+   * @return {@code false} if the configuration has passed all tests.
    * @author Griefed
    */
   public boolean checkConfiguration(@NotNull final File configFile, boolean quietCheck) {
@@ -145,8 +145,8 @@ public final class ConfigurationHandler {
   }
 
   /**
-   * Check the passed configuration-file. If any check returns <code>true</code> then the server
-   * pack will not be created. In order to find out which check failed, the user has to check their
+   * Check the passed configuration-file. If any check returns {@code true} then the server pack
+   * will not be created. In order to find out which check failed, the user has to check their
    * serverpackcreator.log in the logs-directory.
    *
    * @param configFile         The configuration file to check. Must either be an existing file to
@@ -157,7 +157,7 @@ public final class ConfigurationHandler {
    *                           otherwise altered by this method.
    * @param quietCheck         Whether the configuration should be printed to the console and logs.
    *                           Pass false to quietly check the configuration.
-   * @return <code>false</code> if the configuration has passed all tests.
+   * @return {@code false} if the configuration has passed all tests.
    * @author Griefed
    */
   public boolean checkConfiguration(
@@ -171,16 +171,16 @@ public final class ConfigurationHandler {
   }
 
   /**
-   * Check the passed {@link ConfigurationModel}. If any check returns <code>true</code> then the
-   * server pack will not be created. In order to find out which check failed, the user has to check
-   * their serverpackcreator.log in the logs-directory.
+   * Check the passed {@link ConfigurationModel}. If any check returns {@code true} then the server
+   * pack will not be created. In order to find out which check failed, the user has to check their
+   * serverpackcreator.log in the logs-directory.
    *
    * @param configurationModel Instance of a configuration of a modpack. Can be used to further
    *                           display or use any information within, as it may be changed or
    *                           otherwise altered by this method.
    * @param quietCheck         Whether the configuration should be printed to the console and logs.
    *                           Pass false to quietly check the configuration.
-   * @return <code>false</code> if the configuration has passed all tests.
+   * @return {@code false} if the configuration has passed all tests.
    * @author Griefed
    */
   public boolean checkConfiguration(
@@ -192,8 +192,8 @@ public final class ConfigurationHandler {
   }
 
   /**
-   * Check the passed configuration-file. If any check returns <code>true</code> then the server
-   * pack will not be created. In order to find out which check failed, the user has to check their
+   * Check the passed configuration-file. If any check returns {@code true} then the server pack
+   * will not be created. In order to find out which check failed, the user has to check their
    * serverpackcreator.log in the logs-directory.
    *
    * @param configFile         The configuration file to check. Must either be an existing file to
@@ -210,7 +210,7 @@ public final class ConfigurationHandler {
    *                           you.
    * @param quietCheck         Whether the configuration should be printed to the console and logs.
    *                           Pass false to quietly check the configuration.
-   * @return <code>false</code> if the configuration has passed all tests.
+   * @return {@code false} if the configuration has passed all tests.
    * @author Griefed
    */
   public boolean checkConfiguration(
@@ -250,13 +250,13 @@ public final class ConfigurationHandler {
   }
 
   /**
-   * Check the passed {@link ConfigurationModel}. If any check returns <code>true</code> then the
-   * server pack will not be created. In order to find out which check failed, the user has to check
-   * their serverpackcreator.log in the logs-directory.<br> The passed String List
-   * <code>encounteredErrors</code> can be used to display the errors, if any were encountered, in
-   * a UI or be printed into the console or whatever have you.<br> The passed
-   * {@link ConfigurationModel} can be used to further display or use any information within, as it
-   * may be changed or otherwise altered by this method.
+   * Check the passed {@link ConfigurationModel}. If any check returns {@code true} then the server
+   * pack will not be created. In order to find out which check failed, the user has to check their
+   * serverpackcreator.log in the logs-directory.<br> The passed String List
+   * {@code encounteredErrors} can be used to display the errors, if any were encountered, in a UI
+   * or be printed into the console or whatever have you.<br> The passed {@link ConfigurationModel}
+   * can be used to further display or use any information within, as it may be changed or otherwise
+   * altered by this method.
    *
    * @param configurationModel Instance of a configuration of a modpack. Can be used to further
    *                           display or use any information within, as it may be changed or
@@ -269,7 +269,7 @@ public final class ConfigurationHandler {
    *                           you.
    * @param quietCheck         Whether the configuration should be printed to the console and logs.
    *                           Pass false to quietly check the configuration.
-   * @return <code>false</code> if all checks are passed.
+   * @return {@code false} if all checks are passed.
    * @author Griefed
    */
   public boolean checkConfiguration(
@@ -302,7 +302,7 @@ public final class ConfigurationHandler {
               I18N.getMessage("configuration.log.error.servericon"),
               configurationModel.getServerIconPath()));
 
-    } else if (configurationModel.getServerIconPath().length() > 0
+    } else if (!configurationModel.getServerIconPath().isEmpty()
         && new File(configurationModel.getServerIconPath()).exists()
         && !UTILITIES.FileUtils().checkReadPermission(configurationModel.getServerIconPath())) {
 
@@ -331,7 +331,7 @@ public final class ConfigurationHandler {
               I18N.getMessage("configuration.log.error.serverproperties"),
               configurationModel.getServerPropertiesPath()));
 
-    } else if (configurationModel.getServerPropertiesPath().length() > 0
+    } else if (!configurationModel.getServerPropertiesPath().isEmpty()
         && new File(configurationModel.getServerPropertiesPath()).exists()
         && !UTILITIES.FileUtils()
         .checkReadPermission(configurationModel.getServerPropertiesPath())) {
@@ -454,15 +454,14 @@ public final class ConfigurationHandler {
 
   /**
    * If the in the configuration specified modpack dir is an existing directory, checks are made for
-   * valid configuration of: directories to copy to server pack,<br> if includeServerInstallation
-   * is
-   * <code>true</code>) path to Java executable/binary, Minecraft version, modloader and modloader
+   * valid configuration of: directories to copy to server pack, if includeServerInstallation is
+   * {@code true} path to Java executable/binary, Minecraft version, modloader and modloader
    * version.
    *
    * @param configurationModel An instance of {@link ConfigurationModel} which contains the
    *                           configuration of the modpack.
    * @param encounteredErrors  A list to which all encountered errors are saved to.
-   * @return <code>true</code> if an error is found during configuration check.
+   * @return {@code true} if an error is found during configuration check.
    * @author Griefed
    */
   public boolean isDir(final ConfigurationModel configurationModel,
@@ -489,14 +488,14 @@ public final class ConfigurationHandler {
 
   /**
    * Checks the specified ZIP-archive for validity. In order for a modpack ZIP-archive to be
-   * considered valid, it needs to contain the <code>mods</code> and <code>config</code> folders at
-   * minimum. If any of <code>manifest.json</code>, <code>minecraftinstance.json</code> or <code>
-   * config.json</code> are available, gather as much information from them as possible.
+   * considered valid, it needs to contain the {@code mods} and {@code config} folders at minimum.
+   * If any of {@code manifest.json}, {@code minecraftinstance.json} or {@code config.json} are
+   * available, gather as much information from them as possible.
    *
    * @param configurationModel Instance of {@link ConfigurationModel} with a server pack
    *                           configuration.
    * @param encounteredErrors  A list of errors encountered during configuration checks.
-   * @return <code>false</code> when no errors were encountered.
+   * @return {@code false} when no errors were encountered.
    * @throws IOException if an error occurred trying to move the server pack directory.
    * @author Griefed
    */
@@ -638,8 +637,8 @@ public final class ConfigurationHandler {
    * @param configurationModel The ConfigurationModel to update.
    * @param encounteredErrors  A list of errors encountered during configuration checks, to be added
    *                           to in case an error is encountered during manifest checks.
-   * @return The name of the modpack currently being checked. <code>null</code> if the name could
-   * not be acquired.
+   * @return The name of the modpack currently being checked. {@code null} if the name could not be
+   * acquired.
    * @author Griefed
    */
   public String checkManifests(String destination, final ConfigurationModel configurationModel,
@@ -807,8 +806,8 @@ public final class ConfigurationHandler {
   /**
    * Check whether a server pack for the given destination already exists and get an incrementor
    * based on whether one exists, how many, or none exist. Think if this as the incrementation
-   * Windows does when a file of the same name is copied. <code>foo.bar</code> becomes <code>foo
-   * (1).bar</code> etc.
+   * Windows does when a file of the same name is copied. {@code foo.bar} becomes
+   * {@code foo (1).bar} etc.
    *
    * @param packName          The name of the modpack.
    * @param wouldBeServerPack The name of the server pack about to be generated.
@@ -889,7 +888,7 @@ public final class ConfigurationHandler {
    * @param pathToZip         Path to the ZIP-file to check.
    * @param encounteredErrors List of encountered errors for further processing, like printing to
    *                          logs or display in GUI or whatever you want, really.
-   * @return Boolean. <code>false</code> if the ZIP-archive is considered valid.
+   * @return Boolean. {@code false} if the ZIP-archive is considered valid.
    * @author Griefed
    */
   public boolean checkZipArchive(Path pathToZip, final List<String> encounteredErrors) {
@@ -964,21 +963,21 @@ public final class ConfigurationHandler {
    * {@link ConfigurationModel}, are present:
    *
    * <ol>
-   *   <li><code>SPC_SERVERPACKCREATOR_VERSION_SPC</code> : <code>
-   *       ServerPackCreator version with which the scripts were created</code>
-   *   <li><code>SPC_MINECRAFT_VERSION_SPC</code> : <code>Minecraft version of the modpack</code>
-   *   <li><code>SPC_MINECRAFT_SERVER_URL_SPC</code> : <code>Download-URL to the Minecraft server
-   *       </code>
-   *   <li><code>SPC_MODLOADER_SPC</code> : <code>The modloader of the modpack</code>
-   *   <li><code>SPC_MODLOADER_VERSION_SPC</code> : <code>The modloader version of the modpack
-   *       </code>
-   *   <li><code>SPC_JAVA_ARGS_SPC</code> : <code>The JVM args to be used to run the server</code>
-   *   <li><code>SPC_JAVA_SPC</code> : <code>
-   *       Path to the java installation to be used to run the server</code>
-   *   <li><code>SPC_FABRIC_INSTALLER_VERSION_SPC</code> : <code>
-   *       Most recent version of the Fabric installer at the time of creating the scripts</code>
-   *   <li><code>SPC_QUILT_INSTALLER_VERSION_SPC</code> : <code>
-   *       Most recent version of the Quilt installer at the time of creating the scripts</code>
+   *   <li>{@code SPC_SERVERPACKCREATOR_VERSION_SPC} : {@code
+   *       ServerPackCreator version with which the scripts were created}
+   *   <li>{@code SPC_MINECRAFT_VERSION_SPC} : {@code Minecraft version of the modpack}
+   *   <li>{@code SPC_MINECRAFT_SERVER_URL_SPC} : {@code Download-URL to the Minecraft server
+   *       }
+   *   <li>{@code SPC_MODLOADER_SPC} : {@code The modloader of the modpack}
+   *   <li>{@code SPC_MODLOADER_VERSION_SPC} : {@code The modloader version of the modpack
+   *       }
+   *   <li>{@code SPC_JAVA_ARGS_SPC} : {@code The JVM args to be used to run the server}
+   *   <li>{@code SPC_JAVA_SPC} : {@code
+   *       Path to the java installation to be used to run the server}
+   *   <li>{@code SPC_FABRIC_INSTALLER_VERSION_SPC} : {@code
+   *       Most recent version of the Fabric installer at the time of creating the scripts}
+   *   <li>{@code SPC_QUILT_INSTALLER_VERSION_SPC} : {@code
+   *       Most recent version of the Quilt installer at the time of creating the scripts}
    * </ol>
    *
    * @param configurationModel Model in which to ensure the default key-value pairs are present.
@@ -1044,7 +1043,7 @@ public final class ConfigurationHandler {
 
     LOG.info("Checking configuration for links...");
 
-    if (configurationModel.getModpackDir().length() > 0
+    if (!configurationModel.getModpackDir().isEmpty()
         && UTILITIES.FileUtils().isLink(configurationModel.getModpackDir())) {
       try {
         configurationModel.setModpackDir(
@@ -1057,7 +1056,7 @@ public final class ConfigurationHandler {
       }
     }
 
-    if (configurationModel.getServerIconPath().length() > 0
+    if (!configurationModel.getServerIconPath().isEmpty()
         && UTILITIES.FileUtils().isLink(configurationModel.getServerIconPath())) {
       try {
         configurationModel.setServerIconPath(
@@ -1070,7 +1069,7 @@ public final class ConfigurationHandler {
       }
     }
 
-    if (configurationModel.getServerPropertiesPath().length() > 0
+    if (!configurationModel.getServerPropertiesPath().isEmpty()
         && UTILITIES.FileUtils().isLink(configurationModel.getServerPropertiesPath())) {
       try {
         configurationModel.setServerPropertiesPath(
@@ -1228,7 +1227,7 @@ public final class ConfigurationHandler {
    * @author Griefed
    */
   public boolean checkModpackDir(String modpackDir) {
-    return checkModpackDir(modpackDir, new ArrayList<>());
+    return checkModpackDir(modpackDir, new ArrayList<>(5));
   }
 
   /**
@@ -1271,13 +1270,13 @@ public final class ConfigurationHandler {
   /**
    * Checks whether the passed list of directories which are supposed to be in the modpack directory
    * is empty, or whether all directories in the list exist in the modpack directory. If the user
-   * specified a <code>source/file;destination/file</code>-combination, it is checked whether the
+   * specified a {@code source/file;destination/file}-combination, it is checked whether the
    * specified source-file exists on the host.
    *
-   * @param directoriesToCopy List String. The list of directories, or <code>
-   *                          source/file;destination/file</code>-combinations, to check for
-   *                          existence. <code> source/file;destination/file</code>-combinations
-   *                          must be absolute paths to the source-file.
+   * @param directoriesToCopy List String. The list of directories, or
+   *                          {@code source/file;destination/file}-combinations, to check for
+   *                          existence. {@code  source/file;destination/file}-combinations must be
+   *                          absolute paths to the source-file.
    * @param modpackDir        String. The path to the modpack directory in which to check for
    *                          existence of the passed list of directories.
    * @return Boolean. Returns true if every directory was found in the modpack directory. If any
@@ -1285,7 +1284,7 @@ public final class ConfigurationHandler {
    * @author Griefed
    */
   public boolean checkCopyDirs(final List<String> directoriesToCopy, String modpackDir) {
-    return checkCopyDirs(directoriesToCopy, modpackDir, new ArrayList<>());
+    return checkCopyDirs(directoriesToCopy, modpackDir, new ArrayList<>(5));
   }
 
   /**
@@ -1293,13 +1292,13 @@ public final class ConfigurationHandler {
    * is empty and prints a message to the console and serverpackcreator.log if it is.<br> Checks
    * whether all directories in the list exist in the modpack directory and prints a message to the
    * console and serverpackcreator.log if any one of the directories could not be found. If the user
-   * specified a <code>source/file;destination/file</code>-combination, it is checked whether the
+   * specified a {@code source/file;destination/file}-combination, it is checked whether the
    * specified source-file exists on the host.
    *
-   * @param directoriesToCopy List String. The list of directories, or <code>
-   *                          source/file;destination/file</code>-combinations, to check for
-   *                          existence. <code> source/file;destination/file</code>-combinations
-   *                          must be absolute paths to the source-file.
+   * @param directoriesToCopy List String. The list of directories, or
+   *                          {@code source/file;destination/file}-combinations, to check for
+   *                          existence. {@code  source/file;destination/file}-combinations must be
+   *                          absolute paths to the source-file.
    * @param modpackDir        String. The path to the modpack directory in which to check for
    *                          existence of the passed list of directories.
    * @param encounteredErrors List String. A list to which all encountered errors are saved to.
@@ -1312,7 +1311,7 @@ public final class ConfigurationHandler {
       final List<String> encounteredErrors) {
     boolean configCorrect = true;
 
-    directoriesToCopy.removeIf(entry -> entry.matches("^\\s+$") || entry.length() == 0);
+    directoriesToCopy.removeIf(entry -> entry.matches("^\\s+$") || entry.isEmpty());
 
     if (directoriesToCopy.isEmpty()) {
 
@@ -1608,7 +1607,7 @@ public final class ConfigurationHandler {
    * Check whether the given path is a valid Java specification.
    *
    * @param pathToJava Path to the Java executable
-   * @return Boolean. Returns <code>true</code> if the path is valid.
+   * @return Boolean. Returns {@code true} if the path is valid.
    * @author Griefed
    * @deprecated Will be removed in Milestone 4. Java path settings have moved to the global
    * ApplicationProperties, because the Java path setting is used for modloader installation by
@@ -1617,7 +1616,7 @@ public final class ConfigurationHandler {
   @Deprecated
   public boolean checkJavaPath(String pathToJava) {
 
-    if (pathToJava.length() == 0) {
+    if (pathToJava.isEmpty()) {
       return false;
     }
 
@@ -1649,12 +1648,11 @@ public final class ConfigurationHandler {
   }
 
   /**
-   * Test for a valid Java specification by trying to run <code>java -version</code>. If the command
-   * goes through without errors, it is considered a correct specification.
+   * Test for a valid Java specification by trying to run {@code java -version}. If the command goes
+   * through without errors, it is considered a correct specification.
    *
    * @param pathToJava Path to the java executable/binary.
-   * @return <code>true</code> if the specified file is a valid Java
-   * executable/binary.
+   * @return {@code true} if the specified file is a valid Java executable/binary.
    * @author Griefed
    * @deprecated Will be removed in Milestone 4. Java path settings have moved to the global
    * ApplicationProperties, because the Java path setting is used for modloader installation by
@@ -1711,7 +1709,7 @@ public final class ConfigurationHandler {
 
     try {
 
-      if (pathToJava.length() > 0) {
+      if (!pathToJava.isEmpty()) {
 
         if (checkJavaPath(pathToJava)) {
 
@@ -1786,7 +1784,7 @@ public final class ConfigurationHandler {
   public boolean checkModloaderVersion(
       String modloader, String modloaderVersion, String minecraftVersion) {
 
-    return checkModloaderVersion(modloader, modloaderVersion, minecraftVersion, new ArrayList<>());
+    return checkModloaderVersion(modloader, modloaderVersion, minecraftVersion, new ArrayList<>(5));
   }
 
   /**

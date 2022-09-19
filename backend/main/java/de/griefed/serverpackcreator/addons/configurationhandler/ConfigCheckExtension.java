@@ -53,8 +53,7 @@ public interface ConfigCheckExtension extends ExtensionInformation {
    *                              ServerPackCreator.
    * @param packSpecificConfigs   Modpack and server pack specific configurations for this addon,
    *                              conveniently provided by ServerPackCreator.
-   * @return <code>true</code> if an error was encountered. <code>false</code> if the checks were
-   * successful.
+   * @return {@code true} if an error was encountered. {@code false} if the checks were successful.
    * @throws Exception if any unexpected error is encountered during the execution of this method.
    * @author Griefed
    */

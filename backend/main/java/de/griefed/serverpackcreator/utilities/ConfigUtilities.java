@@ -308,8 +308,8 @@ public final class ConfigUtilities {
    *                             pack.
    * @param serverPropertiesPath The path to the custom server.properties to be used in the server
    *                             pack.
-   * @param scriptSettings       Custom settings for start script creation. <code>KEY</code>s are
-   *                             the placeholder, <code>VALUE</code>s are the values with which the
+   * @param scriptSettings       Custom settings for start script creation. {@code KEY}s are the
+   *                             placeholder, {@code VALUE}s are the values with which the
    *                             placeholders are to be replaced.
    * @author Griefed
    */
@@ -377,7 +377,7 @@ public final class ConfigUtilities {
   }
 
   /**
-   * <strong><code>instance.json</code></strong>
+   * <strong>{@code instance.json}</strong>
    *
    * <p>Update the given ConfigurationModel with values gathered from a ATLauncher manifest.
    *
@@ -411,10 +411,10 @@ public final class ConfigUtilities {
   }
 
   /**
-   * <strong><code>modrinth.index.json</code></strong>
+   * <strong>{@code modrinth.index.json}</strong>
    *
-   * <p>Update the given ConfigurationModel with values gathered from a Modrinth <code>
-   * modrinth.index.json</code>-manifest.
+   * <p>Update the given ConfigurationModel with values gathered from a Modrinth {@code
+   * modrinth.index.json}-manifest.
    *
    * @param configurationModel The model to update.
    * @param manifest           The manifest file.
@@ -454,7 +454,7 @@ public final class ConfigUtilities {
   }
 
   /**
-   * <strong><code>manifest.json</code></strong>
+   * <strong>{@code manifest.json}</strong>
    *
    * <p>Update the given ConfigurationModel with values gathered from the downloaded CurseForge
    * modpack. A manifest.json-file is usually created when a modpack is exported through launchers
@@ -490,7 +490,7 @@ public final class ConfigUtilities {
   }
 
   /**
-   * <strong><code>minecraftinstance.json</code></strong>
+   * <strong>{@code minecraftinstance.json}</strong>
    *
    * <p>Update the given ConfigurationModel with values gathered from the minecraftinstance.json of
    * the modpack. A minecraftinstance.json is usually created by Overwolf's CurseForge launcher.
@@ -523,7 +523,7 @@ public final class ConfigUtilities {
   }
 
   /**
-   * <strong><code>config.json</code></strong>
+   * <strong>{@code config.json}</strong>
    *
    * <p>Update the given ConfigurationModel with values gathered from the modpacks config.json. A
    * config.json is usually created by GDLauncher.
@@ -556,7 +556,7 @@ public final class ConfigUtilities {
   }
 
   /**
-   * <strong><code>mmc-pack.json</code></strong>
+   * <strong>{@code mmc-pack.json}</strong>
    *
    * <p>Update the given ConfigurationModel with values gathered from the modpacks mmc-pack.json. A
    * mmc-pack.json is usually created by the MultiMC launcher.
@@ -598,7 +598,7 @@ public final class ConfigUtilities {
   }
 
   /**
-   * <strong><code>instance.cfg</code></strong>
+   * <strong>{@code instance.cfg}</strong>
    *
    * <p>Acquire the name of the modpack/instance of a MultiMC modpack from the modpacks
    * instance.cfg, which is usually created by the MultiMC launcher.
@@ -689,8 +689,8 @@ public final class ConfigUtilities {
   /**
    * Checks whether the projectID for the Jumploader mod is present in the list of mods required by
    * the CurseForge modpack. If Jumploader is found, the modloader for the new configuration-file
-   * will be set to Fabric. If <code>modLoaders</code> in the manifest specifies Fabric, use that to
-   * set the modloader and its version.
+   * will be set to Fabric. If {@code modLoaders} in the manifest specifies Fabric, use that to set
+   * the modloader and its version.
    *
    * @param modpackJson JSonNode. JsonNode containing all information about the CurseForge modpack.
    * @return Boolean. Returns true if Jumploader is found.

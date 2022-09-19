@@ -45,7 +45,7 @@ public final class FabricMeta extends Manifests implements Meta {
   private final FabricLoaderDetails FABRIC_LOADER_DETAILS;
   private final FabricInstaller FABRIC_INSTALLER;
   private final FabricIntermediaries FABRIC_INTERMEDIARIES;
-  private final HashMap<String, FabricDetails> LOADER_DETAILS = new HashMap<>();
+  private final HashMap<String, FabricDetails> LOADER_DETAILS = new HashMap<>(100);
 
   /**
    * Create a new Fabric Meta instance, giving you access to available loader and installer

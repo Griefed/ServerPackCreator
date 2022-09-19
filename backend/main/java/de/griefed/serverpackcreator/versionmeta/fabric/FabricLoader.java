@@ -30,7 +30,7 @@ import org.w3c.dom.Document;
  */
 final class FabricLoader {
 
-  private final List<String> loaders = new ArrayList<>();
+  private final List<String> loaders = new ArrayList<>(100);
   private String latest;
   private String release;
 

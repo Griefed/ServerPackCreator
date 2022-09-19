@@ -235,7 +235,7 @@ public class TabCreateServerPack extends JPanel {
   private final IconTextField TEXTFIELD_SERVERICONPATH = new IconTextField("");
   private final IconTextField TEXTFIELD_SERVERPROPERTIESPATH = new IconTextField("");
   private final File DIRECTORY_CHOOSER = new File(".");
-  private final List<ExtensionConfigPanel> CONFIG_PANELS = new ArrayList<>();
+  private final List<ExtensionConfigPanel> CONFIG_PANELS = new ArrayList<>(10);
   private final ScriptSettings SCRIPT_VARIABLES;
   private final JLabel REQUIRED_JAVA_VERSION = new JLabel("");
   private final JLabel STATUS_LABEL_LINE_0;
@@ -1269,7 +1269,7 @@ public class TabCreateServerPack extends JPanel {
 
   /**
    * Open the server.properties-file in the local editor. If no file is specified by the user, the
-   * default server.properties in <code>server_files</code> will be opened.
+   * default server.properties in {@code server_files} will be opened.
    *
    * @param actionEvent The event which triggers this action.
    * @author Griefed
@@ -1461,9 +1461,9 @@ public class TabCreateServerPack extends JPanel {
   private void validateModpackDir() {
     SwingUtilities.invokeLater(() -> {
 
-      List<String> errorsTEXTFIELD_MODPACKDIRECTORY = new ArrayList<>();
+      List<String> errors = new ArrayList<>(20);
       if (CONFIGURATIONHANDLER.checkModpackDir(
-          getModpackDirectory(), errorsTEXTFIELD_MODPACKDIRECTORY)) {
+          getModpackDirectory(), errors)) {
 
         TEXTFIELD_MODPACKDIRECTORY.setIcon(null);
         TEXTFIELD_MODPACKDIRECTORY.setToolTipText(
@@ -1476,9 +1476,9 @@ public class TabCreateServerPack extends JPanel {
         TEXTFIELD_MODPACKDIRECTORY.setForeground(getThemeErrorColor());
         TEXTFIELD_MODPACKDIRECTORY.setIcon(ERROR_ICON_MODPACKDIRECTORY);
         ERROR_ICON_MODPACKDIRECTORY.setDescription(
-            String.join(",", errorsTEXTFIELD_MODPACKDIRECTORY));
+            String.join(",", errors));
         TEXTFIELD_MODPACKDIRECTORY.setToolTipText(
-            String.join(",", errorsTEXTFIELD_MODPACKDIRECTORY));
+            String.join(",", errors));
       }
     });
   }
@@ -1538,7 +1538,7 @@ public class TabCreateServerPack extends JPanel {
    */
   private void validateCopyDirs() {
     SwingUtilities.invokeLater(() -> {
-      List<String> errors = new ArrayList<>();
+      List<String> errors = new ArrayList<>(10);
 
       if (!getCopyDirectories().matches("^.*,\\s*\\\\*$")
           && CONFIGURATIONHANDLER.checkCopyDirs(
@@ -1720,7 +1720,8 @@ public class TabCreateServerPack extends JPanel {
    * @author Griefed
    */
   private void setModloaderVersionsModel() {
-    setModloaderVersionsModel(COMBOBOX_MINECRAFTVERSIONS.getSelectedItem().toString());
+    setModloaderVersionsModel(
+        Objects.requireNonNull(COMBOBOX_MINECRAFTVERSIONS.getSelectedItem()).toString());
   }
 
   /**
@@ -1784,7 +1785,8 @@ public class TabCreateServerPack extends JPanel {
    * @author Griefed
    */
   private void actionEventComboBoxMinecraftVersion(ActionEvent event) {
-    setModloaderVersionsModel(COMBOBOX_MINECRAFTVERSIONS.getSelectedItem().toString());
+    setModloaderVersionsModel(
+        Objects.requireNonNull(COMBOBOX_MINECRAFTVERSIONS.getSelectedItem()).toString());
     updateRequiredJavaVersion();
     checkMinecraftServer();
   }
@@ -1835,7 +1837,8 @@ public class TabCreateServerPack extends JPanel {
    * @author Griefed
    */
   public void checkMinecraftServer() {
-    if (!VERSIONMETA.minecraft().getServer(COMBOBOX_MINECRAFTVERSIONS.getSelectedItem().toString())
+    if (!VERSIONMETA.minecraft().getServer(
+            Objects.requireNonNull(COMBOBOX_MINECRAFTVERSIONS.getSelectedItem()).toString())
         .isPresent()) {
 
       JOptionPane.showMessageDialog(
@@ -1873,7 +1876,7 @@ public class TabCreateServerPack extends JPanel {
    * @author Griefed
    */
   private void actionEventComboBoxModloaders(ActionEvent event) {
-    setModloader(COMBOBOX_MODLOADERS.getSelectedItem().toString());
+    setModloader(Objects.requireNonNull(COMBOBOX_MODLOADERS.getSelectedItem()).toString());
   }
 
   /**
@@ -2084,7 +2087,7 @@ public class TabCreateServerPack extends JPanel {
 
     JFileChooser clientModsChooser = new JFileChooser();
 
-    if (getModpackDirectory().length() > 0
+    if (!getModpackDirectory().isEmpty()
         && new File(getModpackDirectory()).isDirectory()
         && new File(getModpackDirectory() + "/mods").isDirectory()) {
 
@@ -2133,7 +2136,7 @@ public class TabCreateServerPack extends JPanel {
 
     JFileChooser copyDirsChooser = new JFileChooser();
 
-    if (getModpackDirectory().length() > 0
+    if (!getModpackDirectory().isEmpty()
         && new File(getModpackDirectory()).isDirectory()) {
 
       copyDirsChooser.setCurrentDirectory(new File(getModpackDirectory()));
@@ -2234,7 +2237,7 @@ public class TabCreateServerPack extends JPanel {
    * @return Map containing lists of CommentedConfigs mapped to the corresponding pluginID.
    */
   private HashMap<String, ArrayList<CommentedConfig>> getConfigPanelConfigs() {
-    HashMap<String, ArrayList<CommentedConfig>> configs = new HashMap<>();
+    HashMap<String, ArrayList<CommentedConfig>> configs = new HashMap<>(10);
     if (!CONFIG_PANELS.isEmpty()) {
       CONFIG_PANELS.forEach(
           panel -> configs.put(panel.pluginID(), panel.serverPackExtensionConfig())
@@ -2335,7 +2338,7 @@ public class TabCreateServerPack extends JPanel {
 
             updateStatus(I18N.getMessage("createserverpack.gui.buttongenerateserverpack.fail"));
 
-            if (encounteredErrors.size() > 0) {
+            if (!encounteredErrors.isEmpty()) {
 
               StringBuilder errors = new StringBuilder();
 
@@ -2362,9 +2365,6 @@ public class TabCreateServerPack extends JPanel {
           tailer.stop();
 
           ready();
-
-          System.gc();
-          System.runFinalization();
 
           executorService.shutdownNow();
         });
@@ -2620,7 +2620,7 @@ public class TabCreateServerPack extends JPanel {
    * @author Griefed
    */
   public String getMinecraftVersion() {
-    return COMBOBOX_MINECRAFTVERSIONS.getSelectedItem().toString();
+    return Objects.requireNonNull(COMBOBOX_MINECRAFTVERSIONS.getSelectedItem()).toString();
   }
 
   /**
@@ -2646,7 +2646,7 @@ public class TabCreateServerPack extends JPanel {
    * @author Griefed
    */
   public String getModloader() {
-    return COMBOBOX_MODLOADERS.getSelectedItem().toString();
+    return Objects.requireNonNull(COMBOBOX_MODLOADERS.getSelectedItem()).toString();
   }
 
   /**
@@ -2689,7 +2689,7 @@ public class TabCreateServerPack extends JPanel {
    * @author Griefed
    */
   public String getModloaderVersion() {
-    return COMBOBOX_MODLOADER_VERSIONS.getSelectedItem().toString();
+    return Objects.requireNonNull(COMBOBOX_MODLOADER_VERSIONS.getSelectedItem()).toString();
   }
 
   /**
@@ -2843,7 +2843,7 @@ public class TabCreateServerPack extends JPanel {
   /**
    * Is the modloader server installation desired?
    *
-   * @return <code>true</code> if it is.
+   * @return {@code true} if it is.
    * @author Griefed
    */
   public boolean isServerInstallationTicked() {
@@ -2853,7 +2853,7 @@ public class TabCreateServerPack extends JPanel {
   /**
    * Is the inclusion of a server-icon.png desired?
    *
-   * @return <code>true</code> if it is.
+   * @return {@code true} if it is.
    * @author Griefed
    */
   public boolean isServerIconInclusionTicked() {
@@ -2863,7 +2863,7 @@ public class TabCreateServerPack extends JPanel {
   /**
    * Is the inclusion of a server.properties-file desired?
    *
-   * @return <code>true</code> if it is.
+   * @return {@code true} if it is.
    * @author Griefed
    */
   public boolean isServerPropertiesInclusionTicked() {
@@ -2873,7 +2873,7 @@ public class TabCreateServerPack extends JPanel {
   /**
    * Is the creation of a server pack ZIP-archive desired?
    *
-   * @return <code>true</code> if it is.
+   * @return {@code true} if it is.
    * @author Griefed
    */
   public boolean isZipCreationTicked() {

@@ -36,7 +36,7 @@ public final class JsonUtilities {
    * @param jsonNode   The JsonNode from which to acquire the text.
    * @param matches    The text to check for a match.
    * @param childNodes The nested nodes in the JsonNode to acquire the text from, in order.
-   * @return <code>true</code> if the texts match.
+   * @return {@code true} if the texts match.
    * @throws NullPointerException if the requested element is not present in the JsonNode.
    * @author Griefed
    */
@@ -52,7 +52,7 @@ public final class JsonUtilities {
    * @param jsonNode         The JsonNode from which to acquire the text.
    * @param equalsIgnoreCase The text to check with whether it is equal, case-insensitive.
    * @param childNodes       The nested nodes in the JsonNode to acquire the text from, in order.
-   * @return <code>true</code> if the texts are equal, case-insensitive.
+   * @return {@code true} if the texts are equal, case-insensitive.
    * @throws NullPointerException if the requested element is not present in the JsonNode.
    * @author Griefed
    */
@@ -66,7 +66,7 @@ public final class JsonUtilities {
    *
    * @param jsonNode   The JsonNode from which to acquire the text.
    * @param childNodes The nested nodes in the JsonNode to acquire the text from, in order.
-   * @return <code>true</code> if the text in the requested node is empty.
+   * @return {@code true} if the text in the requested node is empty.
    * @throws NullPointerException if the requested element is not present in the JsonNode.
    * @author Griefed
    */
@@ -80,8 +80,7 @@ public final class JsonUtilities {
    *
    * @param jsonNode   The JsonNode from which to acquire the boolean.
    * @param childNodes The nested nodes in the JsonNode to acquire the boolean from, in order.
-   * @return <code>true</code> or <code>false</code>, based on the boolean in the specified child
-   * node(s).
+   * @return {@code true} or {@code false}, based on the boolean in the specified child node(s).
    * @throws JsonException        if the specified node(s) contain no boolean or the requested value
    *                              is not a parsable boolean value.
    * @throws NullPointerException if the requested element is not present in the JsonNode.
@@ -126,7 +125,7 @@ public final class JsonUtilities {
    * @param contains   The text to check with whether the node contains it.
    * @param childNodes The child node(s) from which to acquire the text for contain-checks from, in
    *                   order.
-   * @return <code>true</code> if the child node contains the specified text.
+   * @return {@code true} if the child node contains the specified text.
    * @throws NullPointerException if the requested element is not present in the JsonNode.
    * @author Griefed
    */

@@ -120,7 +120,7 @@ public class ZipService {
    *                                pack from a ZIP-archive. See
    *                                {@link ZipController#requestGenerationFromZip(String, String,
    *                                String, String, String)}.
-   * @return <code>true</code> if the task was submitted.
+   * @return {@code true} if the task was submitted.
    * @author Griefed
    */
   protected String submitGenerationTask(String zipGenerationProperties) {

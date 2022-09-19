@@ -115,7 +115,7 @@ public final class FileUtilities {
    * @author Griefed
    */
   public FileType checkFileType(String file) {
-    if (file.length() == 0) {
+    if (file.isEmpty()) {
       return FileType.INVALID;
     }
     return checkFileType(new File(file));
@@ -154,7 +154,7 @@ public final class FileUtilities {
    * Check if the given file is a UNIX symlink or Windows lnk.
    *
    * @param file The file to check.
-   * @return <code>true</code> if the given file is a UNIX symlink or Windows lnk.
+   * @return {@code true} if the given file is a UNIX symlink or Windows lnk.
    * @author Griefed
    */
   public boolean isLink(String file) {
@@ -165,7 +165,7 @@ public final class FileUtilities {
    * Check if the given file is a UNIX symlink or Windows lnk.
    *
    * @param file The file to check.
-   * @return <code>true</code> if the given file is a UNIX symlink or Windows lnk.
+   * @return {@code true} if the given file is a UNIX symlink or Windows lnk.
    * @author Griefed
    */
   public boolean isLink(File file) {
@@ -258,7 +258,7 @@ public final class FileUtilities {
    * Check the given file or directory for read- and write-permission.
    *
    * @param fileOrDirectory File or directory.
-   * @return <code>true</code> if both read- and write-permissions are set.
+   * @return {@code true} if both read- and write-permissions are set.
    * @throws InvalidPathException if the path string cannot be converted to a Path.
    * @author Griefed
    */
@@ -270,7 +270,7 @@ public final class FileUtilities {
    * Check the given file or directory for read- and write-permission.
    *
    * @param fileOrDirectory File or directory.
-   * @return <code>true</code> if both read- and write-permissions are set.
+   * @return {@code true} if both read- and write-permissions are set.
    * @throws InvalidPathException if a {@code Path} object cannot be constructed from the abstract
    *                              path (see
    *                              {@link java.nio.file.FileSystem#getPath FileSystem.getPath})
@@ -284,7 +284,7 @@ public final class FileUtilities {
    * Check the given file or directory for read- and write-permission.
    *
    * @param fileOrDirectory File or directory.
-   * @return <code>true</code> if both read- and write-permissions are set.
+   * @return {@code true} if both read- and write-permissions are set.
    * @author Griefed
    */
   public boolean checkPermissions(Path fileOrDirectory) {
@@ -295,7 +295,7 @@ public final class FileUtilities {
    * Check the given file or directory for read-permission.
    *
    * @param fileOrDirectory File or directory.
-   * @return <code>true</code> if read-permissions are set.
+   * @return {@code true} if read-permissions are set.
    * @author Griefed
    */
   public boolean checkReadPermission(String fileOrDirectory) {
@@ -306,7 +306,7 @@ public final class FileUtilities {
    * Check the given file or directory for read-permission.
    *
    * @param fileOrDirectory File or directory.
-   * @return <code>true</code> if read-permissions are set.
+   * @return {@code true} if read-permissions are set.
    * @author Griefed
    */
   public boolean checkReadPermission(File fileOrDirectory) {
@@ -317,7 +317,7 @@ public final class FileUtilities {
    * Check the given file or directory for read-permission.
    *
    * @param fileOrDirectory File or directory.
-   * @return <code>true</code> if read-permissions are set.
+   * @return {@code true} if read-permissions are set.
    * @author Griefed
    */
   public boolean checkReadPermission(Path fileOrDirectory) {
@@ -341,7 +341,7 @@ public final class FileUtilities {
    * Check the given file or directory for write-permission.
    *
    * @param fileOrDirectory File or directory.
-   * @return <code>true</code> if write-permissions are set.
+   * @return {@code true} if write-permissions are set.
    * @author Griefed
    */
   public boolean checkWritePermission(String fileOrDirectory) {
@@ -352,7 +352,7 @@ public final class FileUtilities {
    * Check the given file or directory for write-permission.
    *
    * @param fileOrDirectory File or directory.
-   * @return <code>true</code> if write-permissions are set.
+   * @return {@code true} if write-permissions are set.
    * @author Griefed
    */
   public boolean checkWritePermission(File fileOrDirectory) {
@@ -363,7 +363,7 @@ public final class FileUtilities {
    * Check the given file or directory for write-permission.
    *
    * @param fileOrDirectory File or directory.
-   * @return <code>true</code> if write-permissions are set.
+   * @return {@code true} if write-permissions are set.
    * @author Griefed
    */
   public boolean checkWritePermission(Path fileOrDirectory) {

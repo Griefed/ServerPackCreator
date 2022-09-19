@@ -34,7 +34,7 @@ import org.xml.sax.SAXException;
 public final class LegacyFabricInstaller extends Manifests {
 
   private final File MANIFEST;
-  private final List<String> ALL = new ArrayList<>();
+  private final List<String> ALL = new ArrayList<>(100);
   private final String INSTALLER_URL_TEMPLATE = "https://maven.legacyfabric.net/net/legacyfabric/fabric-installer/%s/fabric-installer-%s.jar";
   private String latest;
   private String release;

@@ -50,15 +50,14 @@ import org.springframework.stereotype.Component;
  * {@link #initialize()}. Then use {@link #getMessage(String)} to use a language key from the
  * resource bundle corresponding to the specified locale. If no locale is provided during the launch
  * of ServerPackCreator, en_US is used by default.<br> All localization properties-files need to be
- * stored in the <code>de/griefed/resources/lang/
- * </code>-directory and be named using following pattern: lang_{language code in
- * lowercase}_{country code in lowercase}. For example: <code>lang_en_us.properties</code>.<br>
- * Currently, only supports Strings to be used in localized fields.<br> By default,
- * ServerPackCreator tries to load language definitions from the local filesystem, in the
- * <code>lang</code>-folder. If no file can be found for the specified locale, ServerPackCreator
- * tries to load language definitions from inside the JAR-file, from the resource bundles. If the
- * specified key can not be retrieved when calling {@link #getMessage(String)}, a default is
- * retrieved from the lang_en_us-bundle inside the JAR-file by default.
+ * stored in the {@code de/griefed/resources/lang/ }-directory and be named using following pattern:
+ * lang_{language code in lowercase}_{country code in lowercase}. For example:
+ * {@code lang_en_us.properties}.<br> Currently, only supports Strings to be used in localized
+ * fields.<br> By default, ServerPackCreator tries to load language definitions from the local
+ * filesystem, in the {@code lang}-folder. If no file can be found for the specified locale,
+ * ServerPackCreator tries to load language definitions from inside the JAR-file, from the resource
+ * bundles. If the specified key can not be retrieved when calling {@link #getMessage(String)}, a
+ * default is retrieved from the lang_en_us-bundle inside the JAR-file by default.
  *
  * @author whitebear60
  * @author Griefed
@@ -72,7 +71,7 @@ public final class I18n {
   private final ResourceBundle FALLBACKRESOURCES =
       ResourceBundle.getBundle(
           "de/griefed/resources/lang/lang_en_us", new Locale("en", "us"), new UTF8Control());
-  private final Map<String, String> CURRENT_LANGUAGE = new HashMap<>();
+  private final Map<String, String> CURRENT_LANGUAGE = new HashMap<>(2);
   private final File PROPERTIESFILE = new File("serverpackcreator.properties");
   private final String MAP_PATH_LANGUAGE = "language";
   private final String MAP_PATH_COUNTRY = "country";
@@ -86,7 +85,7 @@ public final class I18n {
    * Constructor for our I18n using the locale set in the {@link ApplicationProperties}-instance
    * passed to this constructor. If initialization with the provided
    * {@link ApplicationProperties}-instance fails, the I18n is initialized with the default locale
-   * <code> en_us</code>.
+   * {@code  en_us}.
    *
    * @param injectedApplicationProperties Instance of {@link ApplicationProperties} required for
    *                                      various different things.
@@ -100,8 +99,7 @@ public final class I18n {
   /**
    * Constructor for our I18n with a given locale. If initialization with the provided locale fails,
    * the I18n is initialized with the locale set in the instance of {@link ApplicationProperties}.
-   * If this also fails, the default locale <code>en_us
-   * </code> is used.
+   * If this also fails, the default locale {@code en_us } is used.
    *
    * @param injectedApplicationProperties Instance of {@link ApplicationProperties} required for
    *                                      various different things.

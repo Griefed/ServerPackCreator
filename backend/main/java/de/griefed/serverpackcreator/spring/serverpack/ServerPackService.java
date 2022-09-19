@@ -142,7 +142,7 @@ public class ServerPackService {
    * @author Griefed
    */
   public List<ServerPackModel> getServerPacks() {
-    List<ServerPackModel> serverPackModels = new ArrayList<>();
+    List<ServerPackModel> serverPackModels = new ArrayList<>(100);
     SERVERPACKREPOSITORY.findAll().forEach(serverPackModels::add);
     return serverPackModels;
   }

@@ -30,8 +30,8 @@ import mdlaf.utils.MaterialColors;
 
 /**
  * This is the light-theme which ServerPackCreator uses. It is based on {@link MaterialLiteTheme}
- * via <code>extends</code> which allows us to use the base light-theme as a starting point but
- * changing every aspect of it in whatever way we like.
+ * via {@code extends} which allows us to use the base light-theme as a starting point but changing
+ * every aspect of it in whatever way we like.
  *
  * @author Griefed
  */

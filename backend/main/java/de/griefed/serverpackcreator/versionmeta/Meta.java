@@ -158,7 +158,7 @@ public interface Meta {
    * Check whether a URL to an installer is available for the specified version.
    *
    * @param version The modloader version for which to check for installer availability.
-   * @return <code>true</code> if available.
+   * @return {@code true} if available.
    * @author Griefed
    */
   boolean isInstallerUrlAvailable(String version);
@@ -177,7 +177,7 @@ public interface Meta {
    * Check whether the specified version is available/correct/valid.
    *
    * @param version The version to check.
-   * @return <code>true</code> if the specified version is available/correct/valid.
+   * @return {@code true} if the specified version is available/correct/valid.
    * @author Griefed
    */
   boolean isVersionValid(String version);
@@ -186,7 +186,7 @@ public interface Meta {
    * Check whether the given Minecraft version is supported by this modloader.
    *
    * @param minecraftVersion The Minecraft version for which to check for support.
-   * @return <code>true</code> if the specified Minecraft version is supported.
+   * @return {@code true} if the specified Minecraft version is supported.
    * @author Griefed
    */
   boolean isMinecraftSupported(String minecraftVersion);

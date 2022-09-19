@@ -49,13 +49,13 @@ final class MinecraftClientMeta extends Manifests {
 
   private final ForgeMeta FORGE_META;
   private final File MINECRAFT_MANIFEST;
-  private final List<MinecraftClient> RELEASES = new ArrayList<>();
-  private final List<MinecraftClient> SNAPSHOTS = new ArrayList<>();
-  private final List<MinecraftClient> ALL = new ArrayList<>();
+  private final List<MinecraftClient> RELEASES = new ArrayList<>(100);
+  private final List<MinecraftClient> SNAPSHOTS = new ArrayList<>(200);
+  private final List<MinecraftClient> ALL = new ArrayList<>(300);
 
   private MinecraftClient latestRelease;
   private MinecraftClient latestSnapshot;
-  private HashMap<String, MinecraftClient> meta = new HashMap<>();
+  private HashMap<String, MinecraftClient> meta = new HashMap<>(300);
 
   /**
    * Create a new Minecraft Client Meta.
@@ -88,7 +88,7 @@ final class MinecraftClientMeta extends Manifests {
 
     RELEASES.clear();
     SNAPSHOTS.clear();
-    meta = new HashMap<>();
+    meta = new HashMap<>(100);
 
     JsonNode minecraftManifest = getJson(MINECRAFT_MANIFEST, OBJECTMAPPER);
 
@@ -221,7 +221,7 @@ final class MinecraftClientMeta extends Manifests {
    * Get the {@link MinecraftClient} meta.<br> key: {@link String} Minecraft version<br> value:
    * {@link MinecraftClient} for said Minecraft version
    *
-   * @return Map containing the {@link MinecraftClientMeta}.
+   * @return Map containing the client meta.
    * @author Griefed
    */
   HashMap<String, MinecraftClient> meta() {

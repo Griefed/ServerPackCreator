@@ -95,7 +95,7 @@ public class ZipController {
   @PostMapping("/upload")
   public ResponseEntity<String> handleFileUpload(@RequestParam("file") final MultipartFile file)
       throws IOException {
-    List<String> encounteredErrors = new ArrayList<>();
+    List<String> encounteredErrors = new ArrayList<>(5);
 
     Path pathToZip = ZIPSERVICE.saveUploadedFile(file);
 
@@ -130,11 +130,8 @@ public class ZipController {
 
   /**
    * Request the generation of a server pack from a previously uploaded ZIP-archive, which passed
-   * validation checks, and from a barebones configuration, including:<br>
-   * <code>clientMods</code><br>
-   * <code>minecraftVersion</code><br>
-   * <code>modLoader</code><br>
-   * <code>modLoaderVersion</code><br>
+   * validation checks, and from a barebones configuration, including:<br> {@code clientMods}<br>
+   * {@code minecraftVersion}<br> {@code modLoader}<br> {@code modLoaderVersion}<br>
    *
    * @param zipName          The name of the previously uploaded ZIP-archive.
    * @param clientMods       A comma separated list of clientside-only mods to exclude from the
@@ -153,7 +150,7 @@ public class ZipController {
       @PathVariable("modLoader") String modLoader,
       @PathVariable("modLoaderVersion") String modLoaderVersion) {
 
-    if (clientMods.length() == 0) {
+    if (clientMods.isEmpty()) {
       clientMods = UTILITIES.StringUtils().buildString(APPLICATIONPROPERTIES.getListFallbackMods());
     }
 

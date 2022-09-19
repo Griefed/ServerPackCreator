@@ -98,8 +98,8 @@ abstract class JsonBasedScanner {
   }
 
   /**
-   * Check every file and fill the <code>clientMods</code> and <code>modDependencies</code> sets
-   * with ids of mods which are clientside-only or dependencies of a mod.
+   * Check every file and fill the {@code clientMods} and {@code modDependencies} sets with ids of
+   * mods which are clientside-only or dependencies of a mod.
    *
    * @param filesInModsDir  Collection of files to check.
    * @param clientMods      Set of clientside-only mod-ids.

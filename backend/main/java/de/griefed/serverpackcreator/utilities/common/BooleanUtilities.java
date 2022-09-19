@@ -40,20 +40,14 @@ public final class BooleanUtilities {
   /**
    * Converts various strings to booleans, by using regex, to allow for more variations in input.
    * <br>
-   * <strong>Converted to <code>TRUE</code> are:<br>
-   * </strong> <code>[Tt]rue</code><br>
-   * <code>1</code><br>
-   * <code>[Yy]es</code><br>
-   * <code>[Yy]</code><br>
-   * Language Key <code>cli.input.true</code><br> Language Key <code>cli.input.yes</code><br>
-   * Language Key <code>cli.input.yes.short</code><br>
-   * <strong>Converted to <code>FALSE</code> are:<br>
-   * </strong> <code>[Ff]alse</code><br>
-   * <code>0</code><br>
-   * <code>[Nn]o</code><br>
-   * <code>[Nn]</code><br>
-   * Language Key <code>cli.input.false</code><br> Language Key <code>cli.input.no</code><br>
-   * Language Key <code>cli.input.no.short</code><br>
+   * <strong>Converted to {@code TRUE} are:<br>
+   * </strong> {@code [Tt]rue}<br>
+   * {@code 1}<br> {@code [Yy]es}<br> {@code [Yy]}<br> Language Key {@code cli.input.true}<br>
+   * Language Key {@code cli.input.yes}<br> Language Key {@code cli.input.yes.short}<br>
+   * <strong>Converted to {@code FALSE} are:<br>
+   * </strong> {@code [Ff]alse}<br>
+   * {@code 0}<br> {@code [Nn]o}<br> {@code [Nn]}<br> Language Key {@code cli.input.false}<br>
+   * Language Key {@code cli.input.no}<br> Language Key {@code cli.input.no.short}<br>
    *
    * @param stringBoolean The string which should be converted to boolean if it matches certain
    *                      patterns.
@@ -82,9 +76,9 @@ public final class BooleanUtilities {
   }
 
   /**
-   * Prompts the user to enter values which will then be converted to booleans, either <code>TRUE
-   * </code> or <code>FALSE</code>. This prevents any non-boolean values from being written to the
-   * new configuration file.
+   * Prompts the user to enter values which will then be converted to booleans, either {@code TRUE }
+   * or {@code FALSE}. This prevents any non-boolean values from being written to the new
+   * configuration file.
    *
    * @return Boolean. True or False, depending on user input.
    * @author whitebear60
@@ -99,9 +93,9 @@ public final class BooleanUtilities {
   }
 
   /**
-   * Prompts the user to enter values which will then be converted to booleans, either <code>TRUE
-   * </code> or <code>FALSE</code>. This prevents any non-boolean values from being written to the
-   * new configuration file.
+   * Prompts the user to enter values which will then be converted to booleans, either {@code TRUE }
+   * or {@code FALSE}. This prevents any non-boolean values from being written to the new
+   * configuration file.
    *
    * @param scanner Used for reading the users input.
    * @return Boolean. True or False, depending on user input.
@@ -113,8 +107,8 @@ public final class BooleanUtilities {
   }
 
   /**
-   * Print a small help text to tell the user which values are accepted as <code>true</code> and
-   * which values are accepted as <code>false</code>.
+   * Print a small help text to tell the user which values are accepted as {@code true} and which
+   * values are accepted as {@code false}.
    *
    * @author Griefed
    */

@@ -123,7 +123,7 @@ public class BeanConfiguration {
 
   /**
    * Bean for starting up our Spring Boot Application, serving as our...<br>
-   * <code>starts chanting</code><br>
+   * {@code starts chanting}<br>
    * <strong>public-static-void-main-string-args-public-static-void-main-string-args-public-static-void-main-string-args</strong>
    * <br>
    * <br>
@@ -138,9 +138,9 @@ public class BeanConfiguration {
   }
 
   /**
-   * {@link ObjectMapper}-bean for use in various JSON-related things. Disabled <code>
-   * DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES</code>, enabled <code>
-   * DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY</code>.
+   * {@link ObjectMapper}-bean for use in various JSON-related things. Disabled
+   * {@code DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES}, enabled
+   * {@code DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY}.
    *
    * @return Objectmapper for JSON parsing.
    * @author Griefed
@@ -153,7 +153,7 @@ public class BeanConfiguration {
   }
 
   /**
-   * {@link TomlParser} for parsing <code>.toml</code>-files.
+   * {@link TomlParser} for parsing {@code .toml}-files.
    *
    * @return Tomlparser for Toml parsing.
    * @author Griefed

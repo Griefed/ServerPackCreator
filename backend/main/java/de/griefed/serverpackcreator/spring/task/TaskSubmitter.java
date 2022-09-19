@@ -72,9 +72,8 @@ public class TaskSubmitter {
   }
 
   /**
-   * Convert and send a scan-task to our JMS. Set the <code>type</code> to <code>scan</code> and
-   * the
-   * <code>unique id</code> to tasks unique id which contains the CurseForge project and file id
+   * Convert and send a scan-task to our JMS. Set the {@code type} to {@code scan} and the
+   * {@code unique id} to tasks unique id which contains the CurseForge project and file id
    * combination.
    *
    * @param task The task to be submitted to the scan-queue.
@@ -94,9 +93,9 @@ public class TaskSubmitter {
   }
 
   /**
-   * Convert and send a generation-task to our JMS. Set the <code>type</code> to <code>generation
-   * </code> and the <code>unique id</code> to tasks unique id which contains the CurseForge
-   * project and file id combination.
+   * Convert and send a generation-task to our JMS. Set the {@code type} to {@code generation } and
+   * the {@code unique id} to tasks unique id which contains the CurseForge project and file id
+   * combination.
    *
    * @param task The task to be submitted to the generation-queue.
    * @author Griefed
