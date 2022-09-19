@@ -1,3 +1,31 @@
+## [3.14.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.14.1...3.14.2) (2022-09-18)
+
+
+### 🔩 Dependencies
+
+* Update SQLite JDBC to 3.39.3.0 and Material UI Swing to 1.1.4 ([8b4a2d1](https://git.griefed.de/Griefed/ServerPackCreator/commit/8b4a2d18c4389fcff6a9066cf83128851ce76e64))
+
+
+### 🦊 CI/CD
+
+* **Qodana:** Set env variables so opening of problems in IDE works, as per https://youtrack.jetbrains.com/issue/QD-3373 ([2440e70](https://git.griefed.de/Griefed/ServerPackCreator/commit/2440e700cadad4e8fe4d7726d059620b4a4cf515))
+
+
+### 🧪 Tests
+
+* **Start scripts:** Adjust check for Java args according to recent fix. ([f8fa163](https://git.griefed.de/Griefed/ServerPackCreator/commit/f8fa163bee5f509ff51941b67689d192ea73be77))
+
+
+### 🛠 Fixes
+
+* **Fallback mods:** Remove AdvancementPlaques from default list. Check for update of fallback lists on startup so users are always up to date. ([29f60c4](https://git.griefed.de/Griefed/ServerPackCreator/commit/29f60c4427d986b3f71e13e5444e3e2fc3f72233))
+* **PowerShell template:** Replace `Args` with `JavaArgs` as `Args` is a reserved variable in PowerShell scripts. ([34d1277](https://git.griefed.de/Griefed/ServerPackCreator/commit/34d12772dcce288ebd249a25a3ab2e4ab514070e))
+
+
+### Other
+
+* Update README and CHANGELOG in resources. Exclude test paths from Qodana ([0a4fae7](https://git.griefed.de/Griefed/ServerPackCreator/commit/0a4fae70f022e7d0dfa8fb11aae89c1f0adcf3e3))
+
 ## [3.14.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.14.0...3.14.1) (2022-09-15)
 
 
