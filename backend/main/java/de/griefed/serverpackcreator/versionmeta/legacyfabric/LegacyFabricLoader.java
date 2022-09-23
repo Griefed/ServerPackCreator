@@ -21,11 +21,10 @@ package de.griefed.serverpackcreator.versionmeta.legacyfabric;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
-import java.io.IOException;
 
 final class LegacyFabricLoader extends LegacyFabricVersioning {
 
-  LegacyFabricLoader(File manifest, ObjectMapper mapper) throws IOException {
+  LegacyFabricLoader(File manifest, ObjectMapper mapper) {
     super(manifest, mapper);
   }
 }

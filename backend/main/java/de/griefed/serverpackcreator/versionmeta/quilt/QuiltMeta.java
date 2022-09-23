@@ -20,7 +20,7 @@
 package de.griefed.serverpackcreator.versionmeta.quilt;
 
 import com.google.common.collect.Lists;
-import de.griefed.serverpackcreator.versionmeta.Manifests;
+import de.griefed.serverpackcreator.versionmeta.ManifestParser;
 import de.griefed.serverpackcreator.versionmeta.Meta;
 import de.griefed.serverpackcreator.versionmeta.fabric.FabricIntermediaries;
 import java.io.File;
@@ -36,10 +36,8 @@ import org.xml.sax.SAXException;
  *
  * @author Griefed
  */
-public final class QuiltMeta extends Manifests implements Meta {
+public final class QuiltMeta extends ManifestParser implements Meta {
 
-  private final File QUILT_MANIFEST;
-  private final File QUILT_INSTALLER_MANIFEST;
   private final QuiltLoader QUILT_LOADER;
   private final QuiltInstaller QUILT_INSTALLER;
   private final FabricIntermediaries FABRIC_INTERMEDIARIES;
@@ -51,25 +49,20 @@ public final class QuiltMeta extends Manifests implements Meta {
    * @param quiltManifest                Quilt manifest file.
    * @param quiltInstallerManifest       Quilt-installer manifest file.
    * @param injectedFabricIntermediaries Fabric-Intermediaries for further compatibility tests.
-   * @throws ParserConfigurationException indicates a serious configuration error.
-   * @throws IOException                  if any IO errors occur.
-   * @throws SAXException                 if any parse errors occur.
    * @author Griefed
    */
   public QuiltMeta(File quiltManifest, File quiltInstallerManifest,
-      FabricIntermediaries injectedFabricIntermediaries)
-      throws ParserConfigurationException, IOException, SAXException {
-    QUILT_MANIFEST = quiltManifest;
-    QUILT_INSTALLER_MANIFEST = quiltInstallerManifest;
-    QUILT_LOADER = new QuiltLoader(getXml(QUILT_MANIFEST));
-    QUILT_INSTALLER = new QuiltInstaller(getXml(QUILT_INSTALLER_MANIFEST));
+      FabricIntermediaries injectedFabricIntermediaries) {
+
+    QUILT_LOADER = new QuiltLoader(quiltManifest);
+    QUILT_INSTALLER = new QuiltInstaller(quiltInstallerManifest);
     FABRIC_INTERMEDIARIES = injectedFabricIntermediaries;
   }
 
   @Override
   public void update() throws IOException, ParserConfigurationException, SAXException {
-    QUILT_LOADER.update(getXml(QUILT_MANIFEST));
-    QUILT_INSTALLER.update(getXml(QUILT_INSTALLER_MANIFEST));
+    QUILT_LOADER.update();
+    QUILT_INSTALLER.update();
   }
 
   @Override

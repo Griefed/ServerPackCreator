@@ -19,24 +19,30 @@
  */
 package de.griefed.serverpackcreator.versionmeta.quilt;
 
+import de.griefed.serverpackcreator.versionmeta.ManifestParser;
+import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import javax.xml.parsers.ParserConfigurationException;
 import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
 /**
  * Information about the Quilt installer.
  *
  * @author Griefed
  */
-final class QuiltInstaller {
+final class QuiltInstaller extends ManifestParser {
 
   private final String URL_TEMPLATE_INSTALLER =
       "https://maven.quiltmc.org/repository/release/org/quiltmc/quilt-installer/%s/quilt-installer-%s.jar";
   private final List<String> installers = new ArrayList<>(100);
   private final HashMap<String, URL> installerUrlMeta = new HashMap<>(100);
+  private final File MANIFEST;
   private String latestInstaller;
   private String releaseInstaller;
   private URL latestInstallerUrl;
@@ -48,106 +54,63 @@ final class QuiltInstaller {
    * @param installerManifest Quilt installer information.
    * @author Griefed
    */
-  QuiltInstaller(Document installerManifest) {
-    this.latestInstaller =
-        installerManifest
-            .getElementsByTagName("latest")
-            .item(0)
-            .getChildNodes()
-            .item(0)
-            .getNodeValue();
-    this.releaseInstaller =
-        installerManifest
-            .getElementsByTagName("release")
-            .item(0)
-            .getChildNodes()
-            .item(0)
-            .getNodeValue();
-    try {
-      this.latestInstallerUrl =
-          new URL(
-              String.format(URL_TEMPLATE_INSTALLER, this.latestInstaller, this.latestInstaller));
-    } catch (MalformedURLException ignored) {
-
-    }
-    try {
-      this.releaseInstallerUrl =
-          new URL(
-              String.format(URL_TEMPLATE_INSTALLER, this.releaseInstaller, this.releaseInstaller));
-    } catch (MalformedURLException ignored) {
-
-    }
-    this.installers.clear();
-    for (int i = 0; i < installerManifest.getElementsByTagName("version").getLength(); i++) {
-      installers.add(
-          installerManifest
-              .getElementsByTagName("version")
-              .item(i)
-              .getChildNodes()
-              .item(0)
-              .getNodeValue());
-    }
-    this.installerUrlMeta.clear();
-    this.installers.forEach(
-        version -> {
-          try {
-            this.installerUrlMeta.put(version, installerUrl(version));
-          } catch (MalformedURLException ignored) {
-
-          }
-        });
+  QuiltInstaller(File installerManifest) {
+    MANIFEST = installerManifest;
   }
 
   /**
-   * Update with information from the given {@link Document}.
+   * Update the Quilt installer versions by parsing the Fabric loader manifest.
    *
-   * @param installerManifest New installer information.
    * @author Griefed
    */
-  void update(Document installerManifest) {
-    this.latestInstaller =
-        installerManifest
+  void update() throws ParserConfigurationException, IOException, SAXException {
+    Document document = getXml(MANIFEST);
+
+    latestInstaller =
+        document
             .getElementsByTagName("latest")
             .item(0)
             .getChildNodes()
             .item(0)
             .getNodeValue();
-    this.releaseInstaller =
-        installerManifest
+
+    releaseInstaller =
+        document
             .getElementsByTagName("release")
             .item(0)
             .getChildNodes()
             .item(0)
             .getNodeValue();
     try {
-      this.latestInstallerUrl =
+      latestInstallerUrl =
           new URL(
-              String.format(URL_TEMPLATE_INSTALLER, this.latestInstaller, this.latestInstaller));
+              String.format(URL_TEMPLATE_INSTALLER, latestInstaller, latestInstaller));
     } catch (MalformedURLException ignored) {
 
     }
     try {
-      this.releaseInstallerUrl =
+      releaseInstallerUrl =
           new URL(
-              String.format(URL_TEMPLATE_INSTALLER, this.releaseInstaller, this.releaseInstaller));
+              String.format(URL_TEMPLATE_INSTALLER, releaseInstaller, releaseInstaller));
     } catch (MalformedURLException ignored) {
 
     }
-    this.installers.clear();
-    for (int i = 0; i < installerManifest.getElementsByTagName("version").getLength(); i++) {
+    installers.clear();
+    for (int i = 0; i < document.getElementsByTagName("version").getLength(); i++) {
       installers.add(
-          installerManifest
+          document
               .getElementsByTagName("version")
               .item(i)
               .getChildNodes()
               .item(0)
               .getNodeValue());
     }
-    this.installerUrlMeta.clear();
-    this.installers.forEach(
+
+    installerUrlMeta.clear();
+    installers.forEach(
         version -> {
           try {
-            this.installerUrlMeta.put(version, installerUrl(version));
+            installerUrlMeta.put(version, installerUrl(version));
           } catch (MalformedURLException ignored) {
 
           }

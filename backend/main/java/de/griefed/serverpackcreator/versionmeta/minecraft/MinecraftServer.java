@@ -23,7 +23,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.utilities.common.Utilities;
-import de.griefed.serverpackcreator.versionmeta.Manifests;
+import de.griefed.serverpackcreator.versionmeta.ManifestParser;
 import de.griefed.serverpackcreator.versionmeta.Type;
 import java.io.File;
 import java.io.IOException;
@@ -36,7 +36,7 @@ import java.util.Optional;
  *
  * @author Griefed
  */
-public final class MinecraftServer extends Manifests {
+public final class MinecraftServer extends ManifestParser {
 
   private final Utilities UTILITIES;
   private final ObjectMapper OBJECT_MAPPER;
@@ -82,7 +82,7 @@ public final class MinecraftServer extends Manifests {
     }
 
     try {
-      this.serverJson = getJson(MANIFEST_FILE, OBJECT_MAPPER);
+      serverJson = getJson(MANIFEST_FILE, OBJECT_MAPPER);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

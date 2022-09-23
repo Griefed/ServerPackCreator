@@ -19,56 +19,62 @@
  */
 package de.griefed.serverpackcreator.versionmeta.fabric;
 
+import de.griefed.serverpackcreator.versionmeta.ManifestParser;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import javax.xml.parsers.ParserConfigurationException;
 import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
 /**
  * Information about releases of the Fabric loader.
  *
  * @author Griefed
  */
-final class FabricLoader {
+final class FabricLoader extends ManifestParser {
 
   private final List<String> loaders = new ArrayList<>(100);
+  private final File MANIFEST;
   private String latest;
   private String release;
 
   /**
    * Create a new instance of the Fabric Loader.
    *
-   * @param loaderManifest Fabrics manifest.
+   * @param loaderManifest The manifest used when updating available versions.
    * @author Griefed
    */
-  FabricLoader(Document loaderManifest) {
-    update(loaderManifest);
+  FabricLoader(File loaderManifest) {
+    MANIFEST = loaderManifest;
   }
 
   /**
-   * Update the latest, release and releases information.
+   * Update the Fabric loader versions by parsing the Fabric loader manifest.
    *
-   * @param loaderManifest Fabrics manifest.
    * @author Griefed
    */
-  void update(Document loaderManifest) {
-    this.latest =
-        loaderManifest
+  void update() throws ParserConfigurationException, IOException, SAXException {
+    Document document = getXml(MANIFEST);
+    latest =
+        document
             .getElementsByTagName("latest")
             .item(0)
             .getChildNodes()
             .item(0)
             .getNodeValue();
-    this.release =
-        loaderManifest
+    release =
+        document
             .getElementsByTagName("release")
             .item(0)
             .getChildNodes()
             .item(0)
             .getNodeValue();
-    this.loaders.clear();
-    for (int i = 0; i < loaderManifest.getElementsByTagName("version").getLength(); i++) {
+    loaders.clear();
+    for (int i = 0; i < document.getElementsByTagName("version").getLength(); i++) {
       loaders.add(
-          loaderManifest
+          document
               .getElementsByTagName("version")
               .item(i)
               .getChildNodes()

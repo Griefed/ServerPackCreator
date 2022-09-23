@@ -21,7 +21,7 @@ package de.griefed.serverpackcreator.versionmeta.forge;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
-import de.griefed.serverpackcreator.versionmeta.Manifests;
+import de.griefed.serverpackcreator.versionmeta.ManifestParser;
 import de.griefed.serverpackcreator.versionmeta.Type;
 import de.griefed.serverpackcreator.versionmeta.minecraft.MinecraftMeta;
 import java.io.File;
@@ -36,7 +36,7 @@ import java.util.Optional;
  *
  * @author Griefed
  */
-public final class ForgeMeta extends Manifests {
+public final class ForgeMeta extends ManifestParser {
 
   private final File FORGE_MANIFEST;
   private final ObjectMapper OBJECTMAPPER;
@@ -51,8 +51,8 @@ public final class ForgeMeta extends Manifests {
    * @author Griefed
    */
   public ForgeMeta(File forgeManifest, ObjectMapper objectMapper) {
-    this.FORGE_MANIFEST = forgeManifest;
-    this.OBJECTMAPPER = objectMapper;
+    FORGE_MANIFEST = forgeManifest;
+    OBJECTMAPPER = objectMapper;
   }
 
   /**
@@ -65,9 +65,9 @@ public final class ForgeMeta extends Manifests {
    * @author Griefed
    */
   public void initialize(MinecraftMeta injectedMinecraftMeta) throws IOException {
-    if (this.forgeLoader == null) {
-      this.forgeLoader =
-          new ForgeLoader(getJson(FORGE_MANIFEST, OBJECTMAPPER), injectedMinecraftMeta);
+    if (forgeLoader == null) {
+      forgeLoader =
+          new ForgeLoader(FORGE_MANIFEST, OBJECTMAPPER, injectedMinecraftMeta);
     }
   }
 
@@ -80,7 +80,7 @@ public final class ForgeMeta extends Manifests {
    * @author Griefed
    */
   public void update() throws IOException {
-    this.forgeLoader.update(getJson(FORGE_MANIFEST, OBJECTMAPPER));
+    this.forgeLoader.update();
   }
 
   /**

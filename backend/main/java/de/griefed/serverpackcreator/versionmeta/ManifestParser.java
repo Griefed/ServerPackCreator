@@ -24,14 +24,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.net.URL;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-public abstract class Manifests {
+public abstract class ManifestParser {
 
   /**
    * Reads the file into a {@link Document} and {@link Document#normalize()} it.
@@ -69,6 +71,24 @@ public abstract class Manifests {
     return xml;
   }
 
+  /**
+   * Reads the string into a {@link Document} and {@link Document#normalize()} it.
+   *
+   * @param string The xml-string to parse into a Document.
+   * @return The parsed and normalized document.
+   * @throws ParserConfigurationException indicates a serious configuration error.
+   * @throws IOException                  if any IO errors occur.
+   * @throws SAXException                 if any parse errors occur.
+   * @author Griefed
+   */
+  public Document getXml(String string)
+      throws ParserConfigurationException, IOException, SAXException {
+
+    Document xml = getDocumentBuilder().parse(new InputSource(new StringReader(string)));
+    xml.normalize();
+    return xml;
+  }
+
   private DocumentBuilder getDocumentBuilder() throws ParserConfigurationException {
     return DocumentBuilderFactory.newInstance().newDocumentBuilder();
   }
@@ -84,6 +104,19 @@ public abstract class Manifests {
    */
   protected JsonNode getJson(InputStream inputStream, ObjectMapper mapper) throws IOException {
     return mapper.readTree(inputStream);
+  }
+
+  /**
+   * Acquire a {@link JsonNode} from the given json string.
+   *
+   * @param string The string to read.
+   * @param mapper ObjectMapper for reading and parsing JSON.
+   * @return JSON data from the specified file.
+   * @throws IOException when the file could not be parsed/read into a {@link JsonNode}.
+   * @author Griefed
+   */
+  protected JsonNode getJson(String string, ObjectMapper mapper) throws IOException {
+    return mapper.readTree(string);
   }
 
   /**

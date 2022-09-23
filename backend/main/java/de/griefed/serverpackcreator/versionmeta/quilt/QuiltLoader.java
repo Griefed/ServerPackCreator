@@ -19,17 +19,23 @@
  */
 package de.griefed.serverpackcreator.versionmeta.quilt;
 
+import de.griefed.serverpackcreator.versionmeta.ManifestParser;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import javax.xml.parsers.ParserConfigurationException;
 import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
 /**
  * Information about releases of the Quilt loader.
  *
  * @author Griefed
  */
-final class QuiltLoader {
+final class QuiltLoader extends ManifestParser {
 
+  private final File MANIFEST;
   private final List<String> loaders = new ArrayList<>(100);
   private String latest;
   private String release;
@@ -37,62 +43,41 @@ final class QuiltLoader {
   /**
    * Create a new Quilt Loader instance.
    *
-   * @param loaderManifest Quilts manifest.
+   * @param loaderManifest The manifest used when updating available versions.
    * @author Griefed
    */
-  QuiltLoader(Document loaderManifest) {
-
-    this.latest =
-        loaderManifest
-            .getElementsByTagName("latest")
-            .item(0)
-            .getChildNodes()
-            .item(0)
-            .getNodeValue();
-    this.release =
-        loaderManifest
-            .getElementsByTagName("release")
-            .item(0)
-            .getChildNodes()
-            .item(0)
-            .getNodeValue();
-    this.loaders.clear();
-    for (int i = 0; i < loaderManifest.getElementsByTagName("version").getLength(); i++) {
-      loaders.add(
-          loaderManifest
-              .getElementsByTagName("version")
-              .item(i)
-              .getChildNodes()
-              .item(0)
-              .getNodeValue());
-    }
+  QuiltLoader(File loaderManifest) {
+    MANIFEST = loaderManifest;
   }
 
   /**
-   * Update the latest, release and releases information.
+   * Update the Quilt loader versions by parsing the Fabric loader manifest.
    *
-   * @param loaderManifest Quilts manifest.
    * @author Griefed
    */
-  void update(Document loaderManifest) {
-    this.latest =
-        loaderManifest
+  void update() throws ParserConfigurationException, IOException, SAXException {
+    Document document = getXml(MANIFEST);
+
+    latest =
+        document
             .getElementsByTagName("latest")
             .item(0)
             .getChildNodes()
             .item(0)
             .getNodeValue();
-    this.release =
-        loaderManifest
+
+    release =
+        document
             .getElementsByTagName("release")
             .item(0)
             .getChildNodes()
             .item(0)
             .getNodeValue();
-    this.loaders.clear();
-    for (int i = 0; i < loaderManifest.getElementsByTagName("version").getLength(); i++) {
+    loaders.clear();
+
+    for (int i = 0; i < document.getElementsByTagName("version").getLength(); i++) {
       loaders.add(
-          loaderManifest
+          document
               .getElementsByTagName("version")
               .item(i)
               .getChildNodes()

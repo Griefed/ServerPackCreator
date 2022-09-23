@@ -1676,20 +1676,81 @@ public class TabCreateServerPack extends JPanel {
   }
 
   /**
-   * Checks whether the checkbox for the modloader-server installation is selected and a
-   * Java-installation is configured. If the checkbox is ticked and no Java is available, a message
-   * is displayed, warning the user that Javapath needs to be defined for the modloader-server
-   * installation to work. If "Yes" is clicked, a filechooser will open where the user can select
-   * their Java-executable/binary. If "No" is selected, the user is warned about the consequences of
-   * not setting the Javapath.
+   * Whenever the state of the server-installation checkbox changes, the global Java setting is
+   * checked for validity, as well as the current combination of Minecraft version, modloader and
+   * modloader version server-installer is available.<br><br>
+   * <p>
+   * If the checkbox is ticked and no Java is available, a message is displayed, warning the user
+   * that Javapath needs to be defined for the modloader-server installation to work. If "Yes" is
+   * clicked, a filechooser will open where the user can select their Java-executable/binary. If
+   * "No" is selected, the user is warned about the consequences of not setting the
+   * Javapath.<br><br>
+   * <p>
+   * If the installer for the current combination of the aforementioned versions can not be reached,
+   * or is otherwise unavailable, the user is informed about SPC not being able to install it, thus
+   * clearing the selection of the checkbox.
    *
    * @param actionEvent The event which triggers this method.
    * @author Griefed
    */
   private void actionEventCheckBoxServer(ActionEvent actionEvent) {
-    if (isServerInstallationTicked() && !SERVERPACKCREATORWINDOW.checkJava()) {
-      setServerInstallationSelection(false);
+    checkServer();
+  }
+
+  /**
+   * If the checkbox is ticked and no Java is available, a message is displayed, warning the user
+   * that Javapath needs to be defined for the modloader-server installation to work. If "Yes" is
+   * clicked, a filechooser will open where the user can select their Java-executable/binary. If
+   * "No" is selected, the user is warned about the consequences of not setting the
+   * Javapath.<br><br>
+   * <p>
+   * If the installer for the current combination of the aforementioned versions can not be reached,
+   * or is otherwise unavailable, the user is informed about SPC not being able to install it, thus
+   * clearing the selection of the checkbox.
+   *
+   * @return {@code true} if, and only if, no problem was encountered.
+   * @author Griefed
+   */
+  private boolean checkServer() {
+    boolean okay = true;
+    if (isServerInstallationTicked()) {
+
+      if (!SERVERPACKCREATORWINDOW.checkJava()) {
+        setServerInstallationSelection(false);
+        okay = false;
+      }
+
+      if (!SERVERPACKHANDLER.serverDownloadable(
+          COMBOBOX_MINECRAFTVERSIONS.getSelectedItem().toString(),
+          COMBOBOX_MODLOADERS.getSelectedItem().toString(),
+          COMBOBOX_MODLOADER_VERSIONS.getSelectedItem().toString())
+      ) {
+
+        JOptionPane.showMessageDialog(
+            this,
+            String.format(
+                I18N.getMessage(
+                    "createserverpack.gui.createserverpack.checkboxserver.unavailable.message"),
+                COMBOBOX_MODLOADERS.getSelectedItem().toString(),
+                COMBOBOX_MINECRAFTVERSIONS.getSelectedItem().toString(),
+                COMBOBOX_MODLOADERS.getSelectedItem().toString(),
+                COMBOBOX_MODLOADER_VERSIONS.getSelectedItem().toString(),
+                COMBOBOX_MODLOADERS.getSelectedItem().toString()
+            ) + "    ",
+            String.format(
+                I18N.getMessage(
+                    "createserverpack.gui.createserverpack.checkboxserver.unavailable.title"),
+                COMBOBOX_MINECRAFTVERSIONS.getSelectedItem().toString(),
+                COMBOBOX_MODLOADERS.getSelectedItem().toString(),
+                COMBOBOX_MODLOADER_VERSIONS.getSelectedItem().toString()),
+            JOptionPane.WARNING_MESSAGE,
+            ISSUE_ICON);
+
+        setServerInstallationSelection(false);
+        okay = false;
+      }
     }
+    return okay;
   }
 
   /**
@@ -2276,6 +2337,11 @@ public class TabCreateServerPack extends JPanel {
         () -> {
 
           ConfigurationModel configurationModel = currentConfigAsModel();
+
+          if (!checkServer()) {
+            configurationModel.setIncludeServerInstallation(false);
+          }
+
           List<String> encounteredErrors = new ArrayList<>(100);
 
           if (!CONFIGURATIONHANDLER.checkConfiguration(

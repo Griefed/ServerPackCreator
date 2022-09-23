@@ -56,7 +56,7 @@ public final class UpdateChecker {
     try {
       this.gitHub = new GitHubChecker("Griefed/ServerPackCreator").refresh();
     } catch (IOException ex) {
-      LOG.error("The GitHub user/repository you set resulted in a malformed URL.", ex);
+      LOG.error("Either GitHub is currently unreachable, or the GitHub user/repository you set resulted in a malformed URL. " + ex.getMessage());
       this.gitHub = null;
     }
 
@@ -64,14 +64,14 @@ public final class UpdateChecker {
       this.gitLab =
           new GitLabChecker("https://gitlab.com/api/v4/projects/32677538/releases").refresh();
     } catch (IOException ex) {
-      LOG.error("The GitLab URL you set resulted in a malformed URL.", ex);
+      LOG.error("Either GitLab is currently unreachable, or the GitLab URL you set resulted in a malformed URL." + ex.getMessage());
       this.gitLab = null;
     }
     try {
       this.gitGriefed =
           new GitLabChecker("https://git.griefed.de/api/v4/projects/63/releases").refresh();
     } catch (IOException ex) {
-      LOG.error("The GitGriefed URL you set resulted in a malformed URL.", ex);
+      LOG.error("Either Git.Griefed is currently unavailable, or the Git.Griefed URL you set resulted in a malformed URL." + ex.getMessage());
       this.gitGriefed = null;
     }
   }
@@ -82,54 +82,32 @@ public final class UpdateChecker {
    * @author Griefed
    */
   public void refresh() {
-    try {
-      this.gitHub.refresh();
-    } catch (Exception ex) {
-      LOG.error("Error refreshing GitHub.", ex);
-      this.gitHub = null;
+    if (gitHub != null) {
+      try {
+        gitHub.refresh();
+      } catch (Exception ex) {
+        LOG.error("Error refreshing GitHub.", ex);
+        gitHub = null;
+      }
     }
-    try {
-      this.gitLab.refresh();
-    } catch (Exception ex) {
-      LOG.error("Error refreshing GitLab.", ex);
-      this.gitLab = null;
+
+    if (gitLab != null) {
+      try {
+        gitLab.refresh();
+      } catch (Exception ex) {
+        LOG.error("Error refreshing GitLab.", ex);
+        gitLab = null;
+      }
     }
-    try {
-      this.gitGriefed.refresh();
-    } catch (Exception ex) {
-      LOG.error("Error refreshing GitGriefed.", ex);
-      this.gitGriefed = null;
+
+    if (gitGriefed != null) {
+      try {
+        gitGriefed.refresh();
+      } catch (Exception ex) {
+        LOG.error("Error refreshing GitGriefed.", ex);
+        gitGriefed = null;
+      }
     }
-  }
-
-  /**
-   * Getter for the instance of our {@link GitHubChecker}.
-   *
-   * @return A GitHub checker for the specified repo.
-   * @author Griefed
-   */
-  public GitHubChecker getGitHub() {
-    return gitHub;
-  }
-
-  /**
-   * Getter for the instance of our {@link GitLabChecker} for GitLab.
-   *
-   * @return A GitLab checker for the specified repo.
-   * @author Griefed
-   */
-  public GitLabChecker getGitLab() {
-    return gitLab;
-  }
-
-  /**
-   * Getter for the instance of our {@link GitLabChecker} for GitGriefed.
-   *
-   * @return A GitLab Checker for the specified repo.
-   * @author Griefed
-   */
-  public GitLabChecker getGitGriefed() {
-    return gitGriefed;
   }
 
   /**

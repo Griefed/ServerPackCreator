@@ -28,6 +28,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.InetAddress;
 import java.net.ProtocolException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -360,5 +361,27 @@ public final class WebUtilities {
   public int getResponseCode(URL url) throws IOException {
     HttpURLConnection connection = (HttpURLConnection) url.openConnection();
     return connection.getResponseCode();
+  }
+
+  /**
+   * Check the availability of the host of the given URL and whether the URL gives a status code of
+   * 200. Only when both the host is available and the URL returns a status code of 200 does this
+   * method return {@code true}.
+   *
+   * @param url The URL of which to check for host-availability.
+   * @return {@code true} if, and only if, the host is available and the URL returns the status code 200..
+   */
+  public boolean isReachable(URL url) {
+    boolean available;
+    try {
+      available = InetAddress.getByName(url.getHost()).isReachable(5000)
+          && ((HttpURLConnection) url.openConnection()).getResponseCode() == 200;
+    } catch (IOException e) {
+      available = false;
+    }
+    if (!available) {
+      LOG.warn("Could not successfully connect to " + url);
+    }
+    return available;
   }
 }

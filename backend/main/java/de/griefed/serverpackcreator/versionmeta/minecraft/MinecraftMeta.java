@@ -55,10 +55,15 @@ public final class MinecraftMeta {
   public MinecraftMeta(
       File minecraftManifest, ForgeMeta injectedForgeMeta, ObjectMapper objectMapper,
       Utilities utilities, ApplicationProperties applicationProperties) {
-    MINECRAFT_CLIENT_META =
-        new MinecraftClientMeta(minecraftManifest, injectedForgeMeta, objectMapper, utilities,
-            applicationProperties);
-    MINECRAFT_SERVER_META = new MinecraftServerMeta(this.MINECRAFT_CLIENT_META);
+
+    MINECRAFT_CLIENT_META = new MinecraftClientMeta(
+        minecraftManifest,
+        injectedForgeMeta,
+        objectMapper,
+        utilities,
+        applicationProperties);
+
+    MINECRAFT_SERVER_META = new MinecraftServerMeta(MINECRAFT_CLIENT_META);
   }
 
   /**

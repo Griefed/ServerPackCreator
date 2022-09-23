@@ -43,7 +43,7 @@ final class MinecraftServerMeta {
    * @author Griefed
    */
   MinecraftServerMeta(MinecraftClientMeta minecraftClientMeta) {
-    this.MINECRAFT_CLIENT_META = minecraftClientMeta;
+    MINECRAFT_CLIENT_META = minecraftClientMeta;
   }
 
   /**
@@ -53,19 +53,19 @@ final class MinecraftServerMeta {
    */
   void update() {
 
-    this.RELEASES.clear();
-    MINECRAFT_CLIENT_META.releases().forEach(client -> this.RELEASES.add(client.server()));
+    RELEASES.clear();
+    MINECRAFT_CLIENT_META.releases().forEach(client -> RELEASES.add(client.server()));
 
-    this.SNAPSHOTS.clear();
-    MINECRAFT_CLIENT_META.snapshots().forEach(client -> this.SNAPSHOTS.add(client.server()));
+    SNAPSHOTS.clear();
+    MINECRAFT_CLIENT_META.snapshots().forEach(client -> SNAPSHOTS.add(client.server()));
 
-    this.meta.clear();
+    meta.clear();
     MINECRAFT_CLIENT_META
         .releases()
-        .forEach(client -> this.meta.put(client.version(), client.server()));
+        .forEach(client -> meta.put(client.version(), client.server()));
     MINECRAFT_CLIENT_META
         .snapshots()
-        .forEach(client -> this.meta.put(client.version(), client.server()));
+        .forEach(client -> meta.put(client.version(), client.server()));
   }
 
   /**

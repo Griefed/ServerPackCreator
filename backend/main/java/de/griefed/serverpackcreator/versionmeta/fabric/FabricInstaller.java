@@ -19,23 +19,29 @@
  */
 package de.griefed.serverpackcreator.versionmeta.fabric;
 
+import de.griefed.serverpackcreator.versionmeta.ManifestParser;
+import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+import javax.xml.parsers.ParserConfigurationException;
 import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
 /**
  * Information about the Fabric installer.
  *
  * @author Griefed
  */
-final class FabricInstaller {
+final class FabricInstaller extends ManifestParser {
 
   private final String URL_TEMPLATE_INSTALLER =
       "https://maven.fabricmc.net/net/fabricmc/fabric-installer/%s/fabric-installer-%s.jar";
+  private final File MANIFEST;
   private final List<String> installers = new ArrayList<>(100);
   private final HashMap<String, URL> installerUrlMeta = new HashMap<>(100);
   private String latestInstaller;
@@ -46,109 +52,64 @@ final class FabricInstaller {
   /**
    * Create a new instance of the Fabric Installer.
    *
-   * @param installerManifest Fabric installer information
+   * @param manifest Fabric installer information
    * @author Griefed
    */
-  FabricInstaller(Document installerManifest) {
-    this.latestInstaller =
-        installerManifest
-            .getElementsByTagName("latest")
-            .item(0)
-            .getChildNodes()
-            .item(0)
-            .getNodeValue();
-    this.releaseInstaller =
-        installerManifest
-            .getElementsByTagName("release")
-            .item(0)
-            .getChildNodes()
-            .item(0)
-            .getNodeValue();
-    try {
-      this.latestInstallerUrl =
-          new URL(
-              String.format(URL_TEMPLATE_INSTALLER, this.latestInstaller, this.latestInstaller));
-    } catch (MalformedURLException ignored) {
-
-    }
-    try {
-      this.releaseInstallerUrl =
-          new URL(
-              String.format(URL_TEMPLATE_INSTALLER, this.releaseInstaller, this.releaseInstaller));
-    } catch (MalformedURLException ignored) {
-
-    }
-    this.installers.clear();
-    for (int i = 0; i < installerManifest.getElementsByTagName("version").getLength(); i++) {
-      installers.add(
-          installerManifest
-              .getElementsByTagName("version")
-              .item(i)
-              .getChildNodes()
-              .item(0)
-              .getNodeValue());
-    }
-    this.installerUrlMeta.clear();
-    this.installers.forEach(
-        version -> {
-          try {
-            this.installerUrlMeta.put(version, installerUrl(version));
-          } catch (MalformedURLException ignored) {
-
-          }
-        });
+  FabricInstaller(File manifest) {
+    MANIFEST = manifest;
   }
 
   /**
-   * Update with information from the given {@link Document}.
+   * Update the Fabric installer version by parsing the Fabric installer manifest.
    *
-   * @param installerManifest Installer information.
    * @author Griefed
    */
-  void update(Document installerManifest) {
-    this.latestInstaller =
-        installerManifest
+  void update() throws ParserConfigurationException, IOException, SAXException {
+    Document document = getXml(MANIFEST);
+
+    latestInstaller =
+        document
             .getElementsByTagName("latest")
             .item(0)
             .getChildNodes()
             .item(0)
             .getNodeValue();
-    this.releaseInstaller =
-        installerManifest
+    releaseInstaller =
+        document
             .getElementsByTagName("release")
             .item(0)
             .getChildNodes()
             .item(0)
             .getNodeValue();
     try {
-      this.latestInstallerUrl =
+      latestInstallerUrl =
           new URL(
-              String.format(URL_TEMPLATE_INSTALLER, this.latestInstaller, this.latestInstaller));
+              String.format(URL_TEMPLATE_INSTALLER, latestInstaller, latestInstaller));
     } catch (MalformedURLException ignored) {
 
     }
     try {
-      this.releaseInstallerUrl =
+      releaseInstallerUrl =
           new URL(
-              String.format(URL_TEMPLATE_INSTALLER, this.releaseInstaller, this.releaseInstaller));
+              String.format(URL_TEMPLATE_INSTALLER, releaseInstaller, releaseInstaller));
     } catch (MalformedURLException ignored) {
 
     }
-    this.installers.clear();
-    for (int i = 0; i < installerManifest.getElementsByTagName("version").getLength(); i++) {
+    installers.clear();
+    for (int i = 0; i < document.getElementsByTagName("version").getLength(); i++) {
       installers.add(
-          installerManifest
+          document
               .getElementsByTagName("version")
               .item(i)
               .getChildNodes()
               .item(0)
               .getNodeValue());
     }
-    this.installerUrlMeta.clear();
-    this.installers.forEach(
+    installerUrlMeta.clear();
+    installers.forEach(
         version -> {
           try {
-            this.installerUrlMeta.put(version, installerUrl(version));
+            installerUrlMeta.put(version, installerUrl(version));
           } catch (MalformedURLException ignored) {
 
           }

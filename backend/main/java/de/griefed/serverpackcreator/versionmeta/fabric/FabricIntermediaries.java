@@ -43,15 +43,11 @@ public final class FabricIntermediaries {
    *
    * @param intermediaryManifest Fabric Intermediary manifest-file.
    * @param objectMapper         Object mapper for JSON parsing.
-   * @throws IOException when the manifest could not be read.
    * @author Griefed
    */
-  public FabricIntermediaries(File intermediaryManifest, ObjectMapper objectMapper)
-      throws IOException {
-
-    this.INTERMEDIARY_MANIFEST = intermediaryManifest;
-    this.OBJECT_MAPPER = objectMapper;
-    update();
+  public FabricIntermediaries(File intermediaryManifest, ObjectMapper objectMapper) {
+    INTERMEDIARY_MANIFEST = intermediaryManifest;
+    OBJECT_MAPPER = objectMapper;
   }
 
   /**

@@ -38,7 +38,7 @@ final class FabricLoaderDetails {
    * @author Griefed
    */
   FabricLoaderDetails(ObjectMapper objectMapper) {
-    this.OBJECT_MAPPER = objectMapper;
+    OBJECT_MAPPER = objectMapper;
   }
 
   /**
