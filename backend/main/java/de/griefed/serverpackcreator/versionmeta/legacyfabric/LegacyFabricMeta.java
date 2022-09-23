@@ -21,7 +21,7 @@ package de.griefed.serverpackcreator.versionmeta.legacyfabric;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
-import de.griefed.serverpackcreator.versionmeta.Manifests;
+import de.griefed.serverpackcreator.versionmeta.ManifestParser;
 import de.griefed.serverpackcreator.versionmeta.Meta;
 import java.io.File;
 import java.io.IOException;
@@ -32,15 +32,14 @@ import java.util.Optional;
 import javax.xml.parsers.ParserConfigurationException;
 import org.xml.sax.SAXException;
 
-public final class LegacyFabricMeta extends Manifests implements Meta {
+public final class LegacyFabricMeta extends ManifestParser implements Meta {
 
   private final LegacyFabricGame GAME_VERSIONS;
   private final LegacyFabricLoader LOADER_VERSIONS;
   private final LegacyFabricInstaller INSTALLER_VERSIONS;
 
   public LegacyFabricMeta(File gameVersionsManifest, File loaderVersionsManifest,
-      File installerVersionsManifest, ObjectMapper mapper)
-      throws IOException, ParserConfigurationException, SAXException {
+      File installerVersionsManifest, ObjectMapper mapper) {
 
     GAME_VERSIONS = new LegacyFabricGame(gameVersionsManifest, mapper);
     LOADER_VERSIONS = new LegacyFabricLoader(loaderVersionsManifest, mapper);

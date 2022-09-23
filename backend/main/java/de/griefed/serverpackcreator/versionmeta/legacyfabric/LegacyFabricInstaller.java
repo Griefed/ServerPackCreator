@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.versionmeta.legacyfabric;
 
-import de.griefed.serverpackcreator.versionmeta.Manifests;
+import de.griefed.serverpackcreator.versionmeta.ManifestParser;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -31,7 +31,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
-public final class LegacyFabricInstaller extends Manifests {
+public final class LegacyFabricInstaller extends ManifestParser {
 
   private final File MANIFEST;
   private final List<String> ALL = new ArrayList<>(100);
@@ -39,11 +39,8 @@ public final class LegacyFabricInstaller extends Manifests {
   private String latest;
   private String release;
 
-  public LegacyFabricInstaller(File installerVersionsManifest)
-      throws ParserConfigurationException, IOException, SAXException {
-
+  public LegacyFabricInstaller(File installerVersionsManifest) {
     MANIFEST = installerVersionsManifest;
-    update();
   }
 
   /**
@@ -54,7 +51,7 @@ public final class LegacyFabricInstaller extends Manifests {
   void update() throws ParserConfigurationException, IOException, SAXException {
     Document installerManifest = getXml(MANIFEST);
 
-    this.latest =
+    latest =
         installerManifest
             .getElementsByTagName("latest")
             .item(0)
@@ -62,7 +59,7 @@ public final class LegacyFabricInstaller extends Manifests {
             .item(0)
             .getNodeValue();
 
-    this.release =
+    release =
         installerManifest
             .getElementsByTagName("release")
             .item(0)
@@ -70,7 +67,7 @@ public final class LegacyFabricInstaller extends Manifests {
             .item(0)
             .getNodeValue();
 
-    this.ALL.clear();
+    ALL.clear();
 
     for (int i = 0; i < installerManifest.getElementsByTagName("version").getLength(); i++) {
       ALL.add(

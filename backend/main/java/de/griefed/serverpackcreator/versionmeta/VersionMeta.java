@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.utilities.common.Utilities;
+import de.griefed.serverpackcreator.utilities.common.WebUtilities;
 import de.griefed.serverpackcreator.versionmeta.fabric.FabricIntermediaries;
 import de.griefed.serverpackcreator.versionmeta.fabric.FabricMeta;
 import de.griefed.serverpackcreator.versionmeta.forge.ForgeMeta;
@@ -30,13 +31,10 @@ import de.griefed.serverpackcreator.versionmeta.legacyfabric.LegacyFabricMeta;
 import de.griefed.serverpackcreator.versionmeta.minecraft.MinecraftMeta;
 import de.griefed.serverpackcreator.versionmeta.quilt.QuiltMeta;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.nio.channels.Channels;
-import java.nio.channels.FileChannel;
-import java.nio.channels.ReadableByteChannel;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import javax.xml.parsers.ParserConfigurationException;
 import org.apache.commons.io.FileUtils;
@@ -44,6 +42,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StreamUtils;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -53,7 +52,7 @@ import org.xml.sax.SAXException;
  * @author Griefed
  */
 @Service
-public final class VersionMeta extends Manifests {
+public final class VersionMeta extends ManifestParser {
 
   private static final Logger LOG = LogManager.getLogger(VersionMeta.class);
 
@@ -97,6 +96,7 @@ public final class VersionMeta extends Manifests {
   private final QuiltMeta QUIL_META;
   private final FabricIntermediaries FABRIC_INTERMEDIARIES;
   private final LegacyFabricMeta LEGACY_FABRIC_META;
+  private final WebUtilities WEB_UTILITIES;
 
   /**
    * Constructor.
@@ -147,21 +147,43 @@ public final class VersionMeta extends Manifests {
     QUILT_MANIFEST = quiltManifest;
     QUILT_INSTALLER_MANIFEST = quiltInstallerManifest;
     OBJECT_MAPPER = injectedObjectMapper;
+    WEB_UTILITIES = injectedUtilities.WebUtils();
 
     checkManifests();
 
-    FORGE_META = new ForgeMeta(FORGE_MANIFEST, OBJECT_MAPPER);
-    MINECRAFT_META = new MinecraftMeta(MINECRAFT_MANIFEST, FORGE_META, OBJECT_MAPPER,
+    FORGE_META = new ForgeMeta(
+        FORGE_MANIFEST,
+        OBJECT_MAPPER);
+
+    MINECRAFT_META = new MinecraftMeta(
+        MINECRAFT_MANIFEST,
+        FORGE_META,
+        OBJECT_MAPPER,
         injectedUtilities,
         injectedApplicationProperties);
-    FABRIC_INTERMEDIARIES = new FabricIntermediaries(FABRIC_INTERMEDIARIES_MANIFEST, OBJECT_MAPPER);
-    LEGACY_FABRIC_META = new LegacyFabricMeta(LEGACY_FABRIC_GAME_MANIFEST,
-        LEGACY_FABRIC_LOADER_MANIFEST, LEGACY_FABRIC_INSTALLER_MANIFEST, OBJECT_MAPPER);
-    FABRIC_META =
-        new FabricMeta(
-            FABRIC_MANIFEST, FABRIC_INSTALLER_MANIFEST, FABRIC_INTERMEDIARIES, OBJECT_MAPPER);
+
+    FABRIC_INTERMEDIARIES = new FabricIntermediaries(
+        FABRIC_INTERMEDIARIES_MANIFEST,
+        OBJECT_MAPPER);
+
+    LEGACY_FABRIC_META = new LegacyFabricMeta(
+        LEGACY_FABRIC_GAME_MANIFEST,
+        LEGACY_FABRIC_LOADER_MANIFEST,
+        LEGACY_FABRIC_INSTALLER_MANIFEST,
+        OBJECT_MAPPER);
+
+    FABRIC_META = new FabricMeta(
+        FABRIC_MANIFEST,
+        FABRIC_INSTALLER_MANIFEST,
+        FABRIC_INTERMEDIARIES,
+        OBJECT_MAPPER);
+
     FORGE_META.initialize(MINECRAFT_META);
-    QUIL_META = new QuiltMeta(QUILT_MANIFEST, QUILT_INSTALLER_MANIFEST, FABRIC_INTERMEDIARIES);
+
+    QUIL_META = new QuiltMeta(
+        QUILT_MANIFEST,
+        QUILT_INSTALLER_MANIFEST,
+        FABRIC_INTERMEDIARIES);
 
     MINECRAFT_META.update();
     FABRIC_INTERMEDIARIES.update();
@@ -180,21 +202,55 @@ public final class VersionMeta extends Manifests {
    * @author Griefed
    */
   private void checkManifests() {
-    checkManifest(MINECRAFT_MANIFEST, MINECRAFT_MANIFEST_URL, Type.MINECRAFT);
-    checkManifest(FORGE_MANIFEST, FORGE_MANIFEST_URL, Type.FORGE);
+    checkManifest(
+        MINECRAFT_MANIFEST,
+        MINECRAFT_MANIFEST_URL,
+        Type.MINECRAFT);
+
+    checkManifest(
+        FORGE_MANIFEST,
+        FORGE_MANIFEST_URL,
+        Type.FORGE);
+
     checkManifest(
         FABRIC_INTERMEDIARIES_MANIFEST,
         FABRIC_INTERMEDIARIES_MANIFEST_URL,
         Type.FABRIC_INTERMEDIARIES);
-    checkManifest(LEGACY_FABRIC_GAME_MANIFEST, LEGACY_FABRIC_GAME_MANIFEST_URL, Type.LEGACY_FABRIC);
-    checkManifest(LEGACY_FABRIC_LOADER_MANIFEST, LEGACY_FABRIC_LOADER_MANIFEST_URL,
+
+    checkManifest(
+        LEGACY_FABRIC_GAME_MANIFEST,
+        LEGACY_FABRIC_GAME_MANIFEST_URL,
         Type.LEGACY_FABRIC);
-    checkManifest(LEGACY_FABRIC_INSTALLER_MANIFEST, LEGACY_FABRIC_INSTALLER_MANIFEST_URL,
+
+    checkManifest(
+        LEGACY_FABRIC_LOADER_MANIFEST,
+        LEGACY_FABRIC_LOADER_MANIFEST_URL,
         Type.LEGACY_FABRIC);
-    checkManifest(FABRIC_MANIFEST, FABRIC_MANIFEST_URL, Type.FABRIC);
-    checkManifest(FABRIC_INSTALLER_MANIFEST, FABRIC_INSTALLER_MANIFEST_URL, Type.FABRIC_INSTALLER);
-    checkManifest(QUILT_MANIFEST, QUILT_MANIFEST_URL, Type.QUILT);
-    checkManifest(QUILT_INSTALLER_MANIFEST, QUILT_INSTALLER_MANIFEST_URL, Type.QUILT_INSTALLER);
+
+    checkManifest(
+        LEGACY_FABRIC_INSTALLER_MANIFEST,
+        LEGACY_FABRIC_INSTALLER_MANIFEST_URL,
+        Type.LEGACY_FABRIC);
+
+    checkManifest(
+        FABRIC_MANIFEST,
+        FABRIC_MANIFEST_URL,
+        Type.FABRIC);
+
+    checkManifest(
+        FABRIC_INSTALLER_MANIFEST,
+        FABRIC_INSTALLER_MANIFEST_URL,
+        Type.FABRIC_INSTALLER);
+
+    checkManifest(
+        QUILT_MANIFEST,
+        QUILT_MANIFEST_URL,
+        Type.QUILT);
+
+    checkManifest(
+        QUILT_INSTALLER_MANIFEST,
+        QUILT_INSTALLER_MANIFEST_URL,
+        Type.QUILT_INSTALLER);
   }
 
   /**
@@ -210,34 +266,45 @@ public final class VersionMeta extends Manifests {
    * @author Griefed
    */
   private void checkManifest(File manifestToCheck, URL urlToManifest, Type manifestType) {
-    if (manifestToCheck.exists()) {
-
+    if (manifestToCheck.isFile()) {
+      if (!WEB_UTILITIES.isReachable(urlToManifest)) {
+        LOG.warn("Can not connect to " + urlToManifest + " to check for update(s) of " + manifestToCheck + ".");
+        return;
+      }
       try (InputStream existing = Files.newInputStream(manifestToCheck.toPath());
           InputStream newManifest = urlToManifest.openStream()) {
 
         int countOldFile = 0;
         int countNewFile = 0;
 
+        String oldContent = StreamUtils.copyToString(
+            existing,
+            StandardCharsets.UTF_8);
+
+        String newContent = StreamUtils.copyToString(
+            newManifest,
+            StandardCharsets.UTF_8);
+
         switch (manifestType) {
           case MINECRAFT:
-            countOldFile = getJson(existing, OBJECT_MAPPER).get("versions").size();
-            countNewFile = getJson(newManifest, OBJECT_MAPPER).get("versions").size();
+            countOldFile = getJson(oldContent, OBJECT_MAPPER).get("versions").size();
+            countNewFile = getJson(newContent, OBJECT_MAPPER).get("versions").size();
 
             break;
 
           case FORGE:
-            for (JsonNode mcVer : getJson(existing, OBJECT_MAPPER)) {
+            for (JsonNode mcVer : getJson(oldContent, OBJECT_MAPPER)) {
               countOldFile += mcVer.size();
             }
-            for (JsonNode mcVer : getJson(newManifest, OBJECT_MAPPER)) {
+            for (JsonNode mcVer : getJson(newContent, OBJECT_MAPPER)) {
               countNewFile += mcVer.size();
             }
 
             break;
 
           case FABRIC_INTERMEDIARIES:
-            countOldFile = getJson(existing, OBJECT_MAPPER).size();
-            countNewFile = getJson(newManifest, OBJECT_MAPPER).size();
+            countOldFile = getJson(oldContent, OBJECT_MAPPER).size();
+            countNewFile = getJson(newContent, OBJECT_MAPPER).size();
 
             break;
 
@@ -245,21 +312,21 @@ public final class VersionMeta extends Manifests {
           case FABRIC_INSTALLER:
           case QUILT:
           case QUILT_INSTALLER:
-            countOldFile = getXml(existing).getElementsByTagName("version").getLength();
-            countNewFile = getXml(newManifest).getElementsByTagName("version").getLength();
+            countOldFile = getXml(oldContent).getElementsByTagName("version").getLength();
+            countNewFile = getXml(newContent).getElementsByTagName("version").getLength();
 
             break;
 
           case LEGACY_FABRIC:
             if (manifestToCheck.getName().endsWith(".json")) {
 
-              countOldFile = getJson(existing, OBJECT_MAPPER).size();
-              countNewFile = getJson(newManifest, OBJECT_MAPPER).size();
+              countOldFile = getJson(oldContent, OBJECT_MAPPER).size();
+              countNewFile = getJson(newContent, OBJECT_MAPPER).size();
 
             } else {
 
-              Document oldXML = getXml(existing);
-              Document newXML = getXml(newManifest);
+              Document oldXML = getXml(oldContent);
+              Document newXML = getXml(newContent);
 
               countOldFile = oldXML.getElementsByTagName("version").getLength();
               countNewFile = newXML.getElementsByTagName("version").getLength();
@@ -291,7 +358,7 @@ public final class VersionMeta extends Manifests {
 
           LOG.info("Refreshing " + manifestToCheck + ".");
 
-          updateManifest(manifestToCheck, urlToManifest);
+          updateManifest(manifestToCheck, newContent);
 
         } else {
 
@@ -305,8 +372,14 @@ public final class VersionMeta extends Manifests {
       }
 
     } else {
-
-      updateManifest(manifestToCheck, urlToManifest);
+      if (!WEB_UTILITIES.isReachable(urlToManifest)) {
+        LOG.error("CRITICAL!" + manifestToCheck + " not present and " + urlToManifest + " unreachable. Exiting...");
+        LOG.error("ServerPackCreator should have provided default manifests. Please report this on GitHub at https://github.com/Griefed/ServerPackCreator/issues/new?assignees=Griefed&labels=bug&template=bug-report.yml&title=%5BBug%5D%3A+");
+        LOG.error("Make sure you include this log when reporting an error! Please....");
+        System.exit(1);
+      } else {
+        updateManifest(manifestToCheck, urlToManifest);
+      }
     }
   }
 
@@ -314,64 +387,37 @@ public final class VersionMeta extends Manifests {
    * Ensures we always have the latest manifest for version validation available.
    *
    * @param manifestToRefresh The manifest file to update.
-   * @param urlToManifest    The URL to the file which is to be downloaded.
+   * @param content           The content to write to the new manifest.
    * @author whitebear60
    * @author Griefed
    */
-  private void updateManifest(File manifestToRefresh, URL urlToManifest) {
-
+  private void updateManifest(File manifestToRefresh, String content) throws IOException {
     try {
       FileUtils.createParentDirectories(manifestToRefresh);
     } catch (IOException ignored) {
 
     }
+    FileUtils.writeStringToFile(manifestToRefresh, content, StandardCharsets.UTF_8);
+  }
 
-    ReadableByteChannel readableByteChannel = null;
-    FileOutputStream fileOutputStream = null;
-    FileChannel fileChannel = null;
+  /**
+   * Ensures we always have the latest manifest for version validation available.
+   *
+   * @param manifestToRefresh The manifest file to update.
+   * @param urlToManifest     The URL to the file which is to be downloaded.
+   * @author whitebear60
+   * @author Griefed
+   */
+  private void updateManifest(File manifestToRefresh, URL urlToManifest) {
+    try (InputStream stream = urlToManifest.openStream()) {
 
-    try {
+      String manifestText = StreamUtils.copyToString(stream,
+          StandardCharsets.UTF_8);
 
-      readableByteChannel = Channels.newChannel(urlToManifest.openStream());
-
-      fileOutputStream = new FileOutputStream(manifestToRefresh);
-
-      fileChannel = fileOutputStream.getChannel();
-
-      fileChannel.transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
+      updateManifest(manifestToRefresh, manifestText);
 
     } catch (IOException ex) {
-
       LOG.error("An error occurred refreshing " + manifestToRefresh + ".", ex);
-
-    } finally {
-
-      try {
-        //noinspection ConstantConditions
-        fileOutputStream.flush();
-      } catch (Exception ignored) {
-
-      }
-
-      try {
-        fileOutputStream.close();
-      } catch (Exception ignored) {
-
-      }
-
-      try {
-        //noinspection ConstantConditions
-        readableByteChannel.close();
-      } catch (Exception ignored) {
-
-      }
-
-      try {
-        //noinspection ConstantConditions
-        fileChannel.close();
-      } catch (Exception ignored) {
-
-      }
     }
   }
 

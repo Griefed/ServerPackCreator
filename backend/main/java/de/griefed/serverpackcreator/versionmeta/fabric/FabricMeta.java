@@ -21,7 +21,7 @@ package de.griefed.serverpackcreator.versionmeta.fabric;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
-import de.griefed.serverpackcreator.versionmeta.Manifests;
+import de.griefed.serverpackcreator.versionmeta.ManifestParser;
 import de.griefed.serverpackcreator.versionmeta.Meta;
 import java.io.File;
 import java.io.IOException;
@@ -37,7 +37,7 @@ import org.xml.sax.SAXException;
  *
  * @author Griefed
  */
-public final class FabricMeta extends Manifests implements Meta {
+public final class FabricMeta extends ManifestParser implements Meta {
 
   private final File FABRIC_MANIFEST;
   private final File FABRIC_INSTALLER_MANIFEST;
@@ -55,30 +55,26 @@ public final class FabricMeta extends Manifests implements Meta {
    * @param fabricInstallerManifest      Fabric-installer manifest file.
    * @param injectedFabricIntermediaries Fabric Intermediary instance.
    * @param objectMapper                 Object mapper for JSON parsing.
-   * @throws ParserConfigurationException indicates a serious configuration error.
-   * @throws IOException                  if any IO errors occur.
-   * @throws SAXException                 if any parse errors occur.
    * @author Griefed
    */
   public FabricMeta(
       File fabricManifest,
       File fabricInstallerManifest,
       FabricIntermediaries injectedFabricIntermediaries,
-      ObjectMapper objectMapper)
-      throws IOException, ParserConfigurationException, SAXException {
+      ObjectMapper objectMapper) {
 
-    this.FABRIC_LOADER_DETAILS = new FabricLoaderDetails(objectMapper);
-    this.FABRIC_MANIFEST = fabricManifest;
-    this.FABRIC_INSTALLER_MANIFEST = fabricInstallerManifest;
-    this.FABRIC_LOADER = new FabricLoader(getXml(this.FABRIC_MANIFEST));
-    this.FABRIC_INTERMEDIARIES = injectedFabricIntermediaries;
-    this.FABRIC_INSTALLER = new FabricInstaller(getXml(this.FABRIC_INSTALLER_MANIFEST));
+    FABRIC_LOADER_DETAILS = new FabricLoaderDetails(objectMapper);
+    FABRIC_MANIFEST = fabricManifest;
+    FABRIC_INSTALLER_MANIFEST = fabricInstallerManifest;
+    FABRIC_LOADER = new FabricLoader(FABRIC_MANIFEST);
+    FABRIC_INTERMEDIARIES = injectedFabricIntermediaries;
+    FABRIC_INSTALLER = new FabricInstaller(FABRIC_INSTALLER_MANIFEST);
   }
 
   @Override
   public void update() throws ParserConfigurationException, IOException, SAXException {
-    this.FABRIC_LOADER.update(getXml(this.FABRIC_MANIFEST));
-    this.FABRIC_INSTALLER.update(getXml(this.FABRIC_INSTALLER_MANIFEST));
+    FABRIC_LOADER.update();
+    FABRIC_INSTALLER.update();
   }
 
   @Override

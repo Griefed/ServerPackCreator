@@ -318,7 +318,7 @@ public class MainMenuBar extends Component {
         new JMenuItem(I18N.getMessage("menubar.gui.menuitem.modloaderlog"));
     JMenuItem view_OpenAddonLog = new JMenuItem(I18N.getMessage("menubar.gui.menuitem.addonlog"));
 
-    JMenuItem about_OpenAboutWindowMenuItem =
+    //JMenuItem about_OpenAboutWindowMenuItem =
         new JMenuItem(I18N.getMessage("menubar.gui.menuitem.about"));
     JMenuItem about_OpenGitHubPageMenuItem =
         new JMenuItem(I18N.getMessage("menubar.gui.menuitem.repository"));
@@ -362,7 +362,7 @@ public class MainMenuBar extends Component {
     view_OpenModloaderInstallerLog.addActionListener(this::openModloaderInstallerLog);
     view_OpenAddonLog.addActionListener(this::openAddonsLog);
 
-    about_OpenAboutWindowMenuItem.addActionListener(this::openAboutSPCMenuItem);
+    //about_OpenAboutWindowMenuItem.addActionListener(this::openAboutSPCMenuItem);
     about_OpenGitHubPageMenuItem.addActionListener(this::openGitHubMenuItem);
     about_OpenGitHubIssuesPageMenuItem.addActionListener(this::openIssuesMenuItem);
     about_OpenReleasesPageMenuItem.addActionListener(this::openReleaseMenuItem);
@@ -402,7 +402,7 @@ public class MainMenuBar extends Component {
     viewMenu.add(view_OpenModloaderInstallerLog);
     viewMenu.add(view_OpenAddonLog);
 
-    aboutMenu.add(about_OpenAboutWindowMenuItem);
+    //aboutMenu.add(about_OpenAboutWindowMenuItem);
     aboutMenu.add(about_CheckForUpdates);
     aboutMenu.add(new JSeparator());
     aboutMenu.add(about_OpenWikiHelpMenuItem);

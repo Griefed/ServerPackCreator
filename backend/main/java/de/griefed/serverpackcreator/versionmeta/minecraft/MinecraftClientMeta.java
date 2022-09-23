@@ -23,7 +23,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.utilities.common.Utilities;
-import de.griefed.serverpackcreator.versionmeta.Manifests;
+import de.griefed.serverpackcreator.versionmeta.ManifestParser;
 import de.griefed.serverpackcreator.versionmeta.Type;
 import de.griefed.serverpackcreator.versionmeta.forge.ForgeMeta;
 import java.io.File;
@@ -40,7 +40,7 @@ import org.apache.logging.log4j.Logger;
  *
  * @author Griefed
  */
-final class MinecraftClientMeta extends Manifests {
+final class MinecraftClientMeta extends ManifestParser {
 
   private static final Logger LOG = LogManager.getLogger(MinecraftClientMeta.class);
   private final ObjectMapper OBJECTMAPPER;
@@ -71,6 +71,7 @@ final class MinecraftClientMeta extends Manifests {
   MinecraftClientMeta(
       File minecraftManifest, ForgeMeta injectedForgeMeta, ObjectMapper objectMapper,
       Utilities utilities, ApplicationProperties applicationProperties) {
+
     APPLICATIONPROPERTIES = applicationProperties;
     UTILITIES = utilities;
     MINECRAFT_MANIFEST = minecraftManifest;
@@ -106,7 +107,7 @@ final class MinecraftClientMeta extends Manifests {
                       minecraftVersion.get("id").asText(),
                       Type.RELEASE,
                       new URL(minecraftVersion.get("url").asText()),
-                      this.FORGE_META,
+                      FORGE_META,
                       OBJECTMAPPER,
                       UTILITIES,
                       APPLICATIONPROPERTIES);
@@ -127,7 +128,7 @@ final class MinecraftClientMeta extends Manifests {
                       minecraftVersion.get("id").asText(),
                       Type.SNAPSHOT,
                       new URL(minecraftVersion.get("url").asText()),
-                      this.FORGE_META,
+                      FORGE_META,
                       OBJECTMAPPER,
                       UTILITIES,
                       APPLICATIONPROPERTIES);
@@ -153,16 +154,17 @@ final class MinecraftClientMeta extends Manifests {
             Type.RELEASE,
             meta.get(minecraftManifest.get("latest").get("release").asText()).url(),
             meta.get(minecraftManifest.get("latest").get("release").asText()).server(),
-            this.FORGE_META,
+            FORGE_META,
             UTILITIES,
             APPLICATIONPROPERTIES);
+
     this.latestSnapshot =
         new MinecraftClient(
             minecraftManifest.get("latest").get("snapshot").asText(),
             Type.SNAPSHOT,
             meta.get(minecraftManifest.get("latest").get("snapshot").asText()).url(),
             meta.get(minecraftManifest.get("latest").get("snapshot").asText()).server(),
-            this.FORGE_META,
+            FORGE_META,
             UTILITIES,
             APPLICATIONPROPERTIES);
   }

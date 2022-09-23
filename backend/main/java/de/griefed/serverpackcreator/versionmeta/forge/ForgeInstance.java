@@ -50,14 +50,18 @@ public final class ForgeInstance {
    */
   public ForgeInstance(String minecraftVersion, String forgeVersion, MinecraftMeta minecraftMeta)
       throws MalformedURLException {
-    this.MINECRAFT_VERSION = minecraftVersion;
-    this.FORGE_VERSION = forgeVersion;
-    this.INSTALLER_URL =
-        new URL(
-            String.format(
-                "https://files.minecraftforge.net/maven/net/minecraftforge/forge/%s-%s/forge-%s-%s-installer.jar",
-                minecraftVersion, forgeVersion, minecraftVersion, forgeVersion));
-    this.MINECRAFT_META = minecraftMeta;
+
+    MINECRAFT_VERSION = minecraftVersion;
+    FORGE_VERSION = forgeVersion;
+    INSTALLER_URL = new URL(
+        String.format(
+            "https://files.minecraftforge.net/maven/net/minecraftforge/forge/%s-%s/forge-%s-%s-installer.jar",
+            minecraftVersion,
+            forgeVersion,
+            minecraftVersion,
+            forgeVersion));
+
+    MINECRAFT_META = minecraftMeta;
   }
 
   /**

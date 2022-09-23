@@ -1138,6 +1138,43 @@ public final class ServerPackHandler {
   }
 
   /**
+   * Check whether the installer for the given combination of Minecraft version, modloader and
+   * modloader version is available/reachable.
+   *
+   * @param mcVersion        The Minecraft version.
+   * @param modloader        The modloader.
+   * @param modloaderVersion The modloader version.
+   * @return {@code true} if the installer can be downloaded.
+   * @author Griefed
+   */
+  public boolean serverDownloadable(String mcVersion, String modloader, String modloaderVersion) {
+    switch (modloader) {
+
+      case "Fabric":
+        return UTILITIES.WebUtils().isReachable(VERSIONMETA.fabric().releaseInstallerUrl());
+
+      case "Forge":
+        return VERSIONMETA.forge().getForgeInstance(mcVersion, modloaderVersion).isPresent()
+            && UTILITIES.WebUtils().isReachable(
+            VERSIONMETA.forge().getForgeInstance(mcVersion, modloaderVersion).get()
+                .installerUrl());
+
+      case "Quilt":
+        return UTILITIES.WebUtils().isReachable(VERSIONMETA.quilt().releaseInstallerUrl());
+
+      case "LegacyFabric":
+        try {
+          return UTILITIES.WebUtils().isReachable(VERSIONMETA.legacyFabric().releaseInstallerUrl());
+        } catch (MalformedURLException e) {
+          return false;
+        }
+
+      default:
+        return false;
+    }
+  }
+
+  /**
    * Installs the modloader server for the specified modloader, modloader version and Minecraft
    * version.
    *
@@ -1156,11 +1193,15 @@ public final class ServerPackHandler {
       String modLoaderVersion,
       String destination) {
 
+    if (!serverDownloadable(minecraftVersion, modLoader, modLoaderVersion)) {
+      LOG.error("The servers for " + minecraftVersion + ", " + modLoader + " " + modLoaderVersion
+          + " are currently unreachable. Skipping server installation.");
+    }
+
     List<String> commandArguments = new ArrayList<>(10);
     commandArguments.add(APPLICATIONPROPERTIES.java());
 
     commandArguments.add("-jar");
-
     Process process = null;
     BufferedReader bufferedReader = null;
 
@@ -1168,9 +1209,10 @@ public final class ServerPackHandler {
       case "Fabric":
         LOG_INSTALLER.info("Starting Fabric installation.");
 
-        if (UTILITIES.WebUtils()
-            .downloadFile(String.format("%s/fabric-installer.jar", destination),
-                VERSIONMETA.fabric().releaseInstallerUrl())) {
+        if (UTILITIES.WebUtils().downloadFile(
+            String.format("%s/fabric-installer.jar", destination),
+            VERSIONMETA.fabric().releaseInstallerUrl())
+        ) {
 
           LOG.info("Fabric installer successfully downloaded.");
 
@@ -1186,21 +1228,18 @@ public final class ServerPackHandler {
 
           LOG.error(
               "Something went wrong during the installation of Fabric. Maybe the Fabric servers are down or unreachable? Skipping...");
+          return;
         }
         break;
 
       case "Forge":
         LOG_INSTALLER.info("Starting Forge installation.");
 
-        if (VERSIONMETA.forge().getForgeInstance(minecraftVersion, modLoaderVersion).isPresent()
-            && UTILITIES.WebUtils()
-            .downloadFile(
-                String.format("%s/forge-installer.jar", destination),
-                VERSIONMETA
-                    .forge()
-                    .getForgeInstance(minecraftVersion, modLoaderVersion)
-                    .get()
-                    .installerUrl())) {
+        if (UTILITIES.WebUtils().downloadFile(
+            String.format("%s/forge-installer.jar", destination),
+            VERSIONMETA.forge().getForgeInstance(minecraftVersion, modLoaderVersion).get()
+                .installerUrl())
+        ) {
 
           LOG.info("Forge installer successfully downloaded.");
 
@@ -1211,15 +1250,17 @@ public final class ServerPackHandler {
 
           LOG.error(
               "Something went wrong during the installation of Forge. Maybe the Forge servers are down or unreachable? Skipping...");
+          return;
         }
         break;
 
       case "Quilt":
         LOG_INSTALLER.info("Starting Quilt installation.");
 
-        if (UTILITIES.WebUtils()
-            .downloadFile(String.format("%s/quilt-installer.jar", destination),
-                VERSIONMETA.quilt().releaseInstallerUrl())) {
+        if (UTILITIES.WebUtils().downloadFile(
+            String.format("%s/quilt-installer.jar", destination),
+            VERSIONMETA.quilt().releaseInstallerUrl())
+        ) {
 
           LOG.info("Quilt installer successfully downloaded.");
 
@@ -1234,6 +1275,7 @@ public final class ServerPackHandler {
 
           LOG.error(
               "Something went wrong during the installation of Quilt. Maybe the Quilt servers are down or unreachable? Skipping...");
+          return;
         }
         break;
 
@@ -1259,6 +1301,7 @@ public final class ServerPackHandler {
 
             LOG.error(
                 "Something went wrong during the installation of LegacyFabric. Maybe the LegacyFabric servers are down or unreachable? Skipping...");
+            return;
           }
         } catch (MalformedURLException ex) {
           LOG.error("Couldn't acquire LegacyFabric installer URL.", ex);

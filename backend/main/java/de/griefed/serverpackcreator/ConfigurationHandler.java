@@ -985,49 +985,60 @@ public final class ConfigurationHandler {
    */
   public void ensureScriptSettingsDefaults(final ConfigurationModel configurationModel) {
 
-    if (!VERSIONMETA.minecraft().getServer(configurationModel.getMinecraftVersion()).isPresent()
-        || !VERSIONMETA
-        .minecraft()
-        .getServer(configurationModel.getMinecraftVersion())
-        .get()
-        .url()
-        .isPresent()) {
+    if (!VERSIONMETA.minecraft()
+        .getServer(configurationModel.getMinecraftVersion()).isPresent()
+        || !VERSIONMETA.minecraft()
+        .getServer(configurationModel.getMinecraftVersion()).get().url().isPresent()
+    ) {
 
-      configurationModel.getScriptSettings().put("SPC_MINECRAFT_SERVER_URL_SPC", "");
+      configurationModel.getScriptSettings().put(
+          "SPC_MINECRAFT_SERVER_URL_SPC",
+          "");
 
     } else {
+
       configurationModel.getScriptSettings().put(
           "SPC_MINECRAFT_SERVER_URL_SPC",
           VERSIONMETA
-              .minecraft()
-              .getServer(configurationModel.getMinecraftVersion())
-              .get()
-              .url()
-              .get()
-              .toString());
+              .minecraft().getServer(configurationModel.getMinecraftVersion()).get()
+              .url().get().toString());
     }
 
     configurationModel.getScriptSettings().put(
-        "SPC_SERVERPACKCREATOR_VERSION_SPC", APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION());
-    configurationModel.getScriptSettings()
-        .put("SPC_MINECRAFT_VERSION_SPC", configurationModel.getMinecraftVersion());
+        "SPC_SERVERPACKCREATOR_VERSION_SPC",
+        APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION());
 
-    configurationModel.getScriptSettings()
-        .put("SPC_MODLOADER_SPC", configurationModel.getModLoader());
-    configurationModel.getScriptSettings()
-        .put("SPC_MODLOADER_VERSION_SPC", configurationModel.getModLoaderVersion());
-    configurationModel.getScriptSettings()
-        .put("SPC_JAVA_ARGS_SPC", configurationModel.getJavaArgs());
+    configurationModel.getScriptSettings().put(
+        "SPC_MINECRAFT_VERSION_SPC",
+        configurationModel.getMinecraftVersion());
+
+    configurationModel.getScriptSettings().put(
+        "SPC_MODLOADER_SPC",
+        configurationModel.getModLoader());
+
+    configurationModel.getScriptSettings().put(
+        "SPC_MODLOADER_VERSION_SPC",
+        configurationModel.getModLoaderVersion());
+
+    configurationModel.getScriptSettings().put(
+        "SPC_JAVA_ARGS_SPC",
+        configurationModel.getJavaArgs());
 
     if (!configurationModel.getScriptSettings().containsKey("SPC_JAVA_SPC")) {
+
       configurationModel.getScriptSettings().put("SPC_JAVA_SPC", "java");
     }
 
     configurationModel.getScriptSettings().put(
-        "SPC_FABRIC_INSTALLER_VERSION_SPC", VERSIONMETA.fabric().releaseInstaller());
+        "SPC_FABRIC_INSTALLER_VERSION_SPC",
+        VERSIONMETA.fabric().releaseInstaller());
+
     configurationModel.getScriptSettings().put(
-        "SPC_QUILT_INSTALLER_VERSION_SPC", VERSIONMETA.quilt().releaseInstaller());
-    configurationModel.getScriptSettings().put("SPC_LEGACYFABRIC_INSTALLER_VERSION_SPC",
+        "SPC_QUILT_INSTALLER_VERSION_SPC",
+        VERSIONMETA.quilt().releaseInstaller());
+
+    configurationModel.getScriptSettings().put(
+        "SPC_LEGACYFABRIC_INSTALLER_VERSION_SPC",
         VERSIONMETA.legacyFabric().releaseInstaller());
   }
 

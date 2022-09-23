@@ -59,6 +59,7 @@ public final class MinecraftClient {
   MinecraftClient(
       String version, Type type, URL url, ForgeMeta forgeMeta, ObjectMapper objectMapper,
       Utilities utilities, ApplicationProperties applicationProperties) {
+
     APPLICATIONPROPERTIES = applicationProperties;
     UTILITIES = utilities;
     VERSION = version;
@@ -84,6 +85,7 @@ public final class MinecraftClient {
   MinecraftClient(
       String version, Type type, URL url, MinecraftServer server, ForgeMeta forgeMeta,
       Utilities utilities, ApplicationProperties applicationProperties) {
+
     APPLICATIONPROPERTIES = applicationProperties;
     UTILITIES = utilities;
     VERSION = version;

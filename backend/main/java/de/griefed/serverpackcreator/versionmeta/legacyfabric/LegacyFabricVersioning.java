@@ -20,13 +20,13 @@
 package de.griefed.serverpackcreator.versionmeta.legacyfabric;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.griefed.serverpackcreator.versionmeta.Manifests;
+import de.griefed.serverpackcreator.versionmeta.ManifestParser;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-abstract class LegacyFabricVersioning extends Manifests {
+abstract class LegacyFabricVersioning extends ManifestParser {
 
   private final List<String> RELEASES = new ArrayList<>(100);
   private final List<String> SNAPSHOTS = new ArrayList<>(100);
@@ -34,16 +34,15 @@ abstract class LegacyFabricVersioning extends Manifests {
   private final ObjectMapper MAPPER;
   private final File MANIFEST;
 
-  LegacyFabricVersioning(File manifest, ObjectMapper mapper) throws IOException {
+  LegacyFabricVersioning(File manifest, ObjectMapper mapper) {
     MAPPER = mapper;
     MANIFEST = manifest;
-    update();
   }
 
   /**
    * Update all lists of available versions with new information gathered from the manifest.
    *
-   * @throws IOException
+   * @throws IOException When the manifest could not be read.
    */
   void update() throws IOException {
     RELEASES.clear();

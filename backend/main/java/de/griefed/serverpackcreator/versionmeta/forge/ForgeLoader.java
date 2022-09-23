@@ -20,7 +20,11 @@
 package de.griefed.serverpackcreator.versionmeta.forge;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import de.griefed.serverpackcreator.versionmeta.ManifestParser;
 import de.griefed.serverpackcreator.versionmeta.minecraft.MinecraftMeta;
+import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,13 +38,14 @@ import org.apache.logging.log4j.Logger;
  *
  * @author Griefed
  */
-final class ForgeLoader {
+final class ForgeLoader extends ManifestParser {
 
   private static final Logger LOG = LogManager.getLogger(ForgeLoader.class);
-
+  private final ObjectMapper MAPPER;
   private final MinecraftMeta MINECRAFT_META;
   private final List<String> minecraftVersions = new ArrayList<>(100);
   private final List<String> forgeVersions = new ArrayList<>(100);
+  private final File MANIFEST;
 
   /**
    * 1-n Minecraft version to Forge versions.<br> {@code key}: Minecraft version.<br> {@code value}:
@@ -68,18 +73,18 @@ final class ForgeLoader {
    * @param injectedMinecraftMeta Meta for retroactively updating the previously passed meta.
    * @author Griefed
    */
-  ForgeLoader(JsonNode forgemanifest, MinecraftMeta injectedMinecraftMeta) {
-    this.MINECRAFT_META = injectedMinecraftMeta;
-    update(forgemanifest);
+  ForgeLoader(File forgemanifest, ObjectMapper mapper, MinecraftMeta injectedMinecraftMeta) {
+    MANIFEST = forgemanifest;
+    MAPPER = mapper;
+    MINECRAFT_META = injectedMinecraftMeta;
   }
 
   /**
    * Update the available Forge loader information.
    *
-   * @param forgeManifest Node containing information about available Forge versions.
    * @author Griefed
    */
-  void update(JsonNode forgeManifest) {
+  void update() throws IOException {
 
     minecraftVersions.clear();
     forgeVersions.clear();
@@ -87,6 +92,7 @@ final class ForgeLoader {
     forgeToMinecraftMeta = new HashMap<>(200);
     instanceMeta = new HashMap<>(200);
 
+    JsonNode forgeManifest = getJson(MANIFEST, MAPPER);
     forgeManifest
         .fieldNames()
         .forEachRemaining(
