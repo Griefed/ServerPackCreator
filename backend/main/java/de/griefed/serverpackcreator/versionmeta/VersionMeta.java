@@ -22,6 +22,7 @@ package de.griefed.serverpackcreator.versionmeta;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.griefed.serverpackcreator.ApplicationProperties;
+import de.griefed.serverpackcreator.utilities.common.JarUtilities;
 import de.griefed.serverpackcreator.utilities.common.Utilities;
 import de.griefed.serverpackcreator.utilities.common.WebUtilities;
 import de.griefed.serverpackcreator.versionmeta.fabric.FabricIntermediaries;
@@ -97,6 +98,7 @@ public final class VersionMeta extends ManifestParser {
   private final FabricIntermediaries FABRIC_INTERMEDIARIES;
   private final LegacyFabricMeta LEGACY_FABRIC_META;
   private final WebUtilities WEB_UTILITIES;
+  private final JarUtilities JAR_UTILITIES;
 
   /**
    * Constructor.
@@ -148,6 +150,7 @@ public final class VersionMeta extends ManifestParser {
     QUILT_INSTALLER_MANIFEST = quiltInstallerManifest;
     OBJECT_MAPPER = injectedObjectMapper;
     WEB_UTILITIES = injectedUtilities.WebUtils();
+    JAR_UTILITIES = injectedUtilities.JarUtils();
 
     checkManifests();
 
@@ -268,7 +271,9 @@ public final class VersionMeta extends ManifestParser {
   private void checkManifest(File manifestToCheck, URL urlToManifest, Type manifestType) {
     if (manifestToCheck.isFile()) {
       if (!WEB_UTILITIES.isReachable(urlToManifest)) {
-        LOG.warn("Can not connect to " + urlToManifest + " to check for update(s) of " + manifestToCheck + ".");
+        LOG.warn(
+            "Can not connect to " + urlToManifest + " to check for update(s) of " + manifestToCheck
+                + ".");
         return;
       }
       try (InputStream existing = Files.newInputStream(manifestToCheck.toPath());
@@ -365,16 +370,30 @@ public final class VersionMeta extends ManifestParser {
           LOG.info("Manifest " + manifestToCheck + " does not need to be refreshed.");
         }
 
-      } catch (ParserConfigurationException | SAXException | IOException |
+      } catch (SAXException ex) {
+
+        JAR_UTILITIES.copyFileFromJar(
+            "de/griefed/resources/manifests/" + manifestToCheck.getName(),
+            manifestToCheck,
+            true,
+            VersionMeta.class
+        );
+        LOG.error("Unexpected end of file in XML-manifest. Restoring default "
+            + manifestToCheck.getPath());
+
+      } catch (ParserConfigurationException | IOException |
                InvalidTypeException ex) {
 
         LOG.error("Couldn't refresh manifest " + manifestToCheck, ex);
+
       }
 
     } else {
       if (!WEB_UTILITIES.isReachable(urlToManifest)) {
-        LOG.error("CRITICAL!" + manifestToCheck + " not present and " + urlToManifest + " unreachable. Exiting...");
-        LOG.error("ServerPackCreator should have provided default manifests. Please report this on GitHub at https://github.com/Griefed/ServerPackCreator/issues/new?assignees=Griefed&labels=bug&template=bug-report.yml&title=%5BBug%5D%3A+");
+        LOG.error("CRITICAL!" + manifestToCheck + " not present and " + urlToManifest
+            + " unreachable. Exiting...");
+        LOG.error(
+            "ServerPackCreator should have provided default manifests. Please report this on GitHub at https://github.com/Griefed/ServerPackCreator/issues/new?assignees=Griefed&labels=bug&template=bug-report.yml&title=%5BBug%5D%3A+");
         LOG.error("Make sure you include this log when reporting an error! Please....");
         System.exit(1);
       } else {
