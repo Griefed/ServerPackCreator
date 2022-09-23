@@ -1,3 +1,10 @@
+## [3.14.4-beta.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.14.3...3.14.4-beta.1) (2022-09-23)
+
+
+### 🛠 Fixes
+
+* **VersionMeta:** Update manifests from strings instead of InputStream to hopefully prevent LegacyFabric API or any other API completely taking down the VersionMeta instantiation and manifest refreshing. Check internet connection before trying to reach out. ([d45969f](https://git.griefed.de/Griefed/ServerPackCreator/commit/d45969f09098ce81b60286d3a58d65250b0cc1c0))
+
 ## [3.14.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.14.2...3.14.3) (2022-09-23)
 
 
