@@ -1,3 +1,15 @@
+## [3.14.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.14.2...3.14.3) (2022-09-23)
+
+
+### 🛠 Fixes
+
+* **VersionMeta:** Open a new stream to manifest URL to acquire manifest content when an update is viable ([5e9e58a](https://git.griefed.de/Griefed/ServerPackCreator/commit/5e9e58a31b0c6aa44198bf283440d9e92a16d506))
+
+
+### Other
+
+* **Docs and CI:** Cleanup some documentation and Qodana config ([4fd7d3d](https://git.griefed.de/Griefed/ServerPackCreator/commit/4fd7d3df691fbf576e70ee1cfc8c4a85bd1cb41c))
+
 ## [3.14.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.14.1...3.14.2) (2022-09-18)
 
 
