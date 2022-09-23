@@ -291,7 +291,7 @@ public final class VersionMeta extends Manifests {
 
           LOG.info("Refreshing " + manifestToCheck + ".");
 
-          updateManifest(manifestToCheck, newManifest);
+          updateManifest(manifestToCheck, urlToManifest);
 
         } else {
 
@@ -314,30 +314,11 @@ public final class VersionMeta extends Manifests {
    * Ensures we always have the latest manifest for version validation available.
    *
    * @param manifestToRefresh The manifest file to update.
-   * @param urlToManifest     The URL to the file which is to be downloaded.
+   * @param urlToManifest    The URL to the file which is to be downloaded.
    * @author whitebear60
    * @author Griefed
    */
   private void updateManifest(File manifestToRefresh, URL urlToManifest) {
-    try {
-
-      updateManifest(manifestToRefresh, urlToManifest.openStream());
-    } catch (IOException ex) {
-
-      LOG.error("An error occurred getting the inputstream for  " + manifestToRefresh + ", from "
-          + urlToManifest + ".", ex);
-    }
-  }
-
-  /**
-   * Ensures we always have the latest manifest for version validation available.
-   *
-   * @param manifestToRefresh The manifest file to update.
-   * @param manifestStream    The URL to the file which is to be downloaded.
-   * @author whitebear60
-   * @author Griefed
-   */
-  private void updateManifest(File manifestToRefresh, InputStream manifestStream) {
 
     try {
       FileUtils.createParentDirectories(manifestToRefresh);
@@ -351,7 +332,7 @@ public final class VersionMeta extends Manifests {
 
     try {
 
-      readableByteChannel = Channels.newChannel(manifestStream);
+      readableByteChannel = Channels.newChannel(urlToManifest.openStream());
 
       fileOutputStream = new FileOutputStream(manifestToRefresh);
 
