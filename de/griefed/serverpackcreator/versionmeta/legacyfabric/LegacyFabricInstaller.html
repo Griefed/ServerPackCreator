@@ -98,7 +98,7 @@ var activeTableTab = "activeTableTab";
 <li>java.lang.Object</li>
 <li>
 <ul class="inheritance">
-<li><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Manifests.html" title="class in de.griefed.serverpackcreator.versionmeta">de.griefed.serverpackcreator.versionmeta.Manifests</a></li>
+<li><a href="../../../../../de/griefed/serverpackcreator/versionmeta/ManifestParser.html" title="class in de.griefed.serverpackcreator.versionmeta">de.griefed.serverpackcreator.versionmeta.ManifestParser</a></li>
 <li>
 <ul class="inheritance">
 <li>de.griefed.serverpackcreator.versionmeta.legacyfabric.LegacyFabricInstaller</li>
@@ -113,7 +113,7 @@ var activeTableTab = "activeTableTab";
 <hr>
 <br>
 <pre>public final class <span class="typeNameLabel">LegacyFabricInstaller</span>
-extends <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Manifests.html" title="class in de.griefed.serverpackcreator.versionmeta">Manifests</a></pre>
+extends <a href="../../../../../de/griefed/serverpackcreator/versionmeta/ManifestParser.html" title="class in de.griefed.serverpackcreator.versionmeta">ManifestParser</a></pre>
 </li>
 </ul>
 </div>
@@ -187,11 +187,11 @@ extends <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Manifes
 </tr>
 </table>
 <ul class="blockList">
-<li class="blockList"><a name="methods.inherited.from.class.de.griefed.serverpackcreator.versionmeta.Manifests">
+<li class="blockList"><a name="methods.inherited.from.class.de.griefed.serverpackcreator.versionmeta.ManifestParser">
 <!--   -->
 </a>
-<h3>Methods inherited from class&nbsp;de.griefed.serverpackcreator.versionmeta.<a href="../../../../../de/griefed/serverpackcreator/versionmeta/Manifests.html" title="class in de.griefed.serverpackcreator.versionmeta">Manifests</a></h3>
-<code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Manifests.html#getJson-java.io.File-com.fasterxml.jackson.databind.ObjectMapper-">getJson</a>, <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Manifests.html#getJson-java.io.InputStream-com.fasterxml.jackson.databind.ObjectMapper-">getJson</a>, <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Manifests.html#getJson-java.net.URL-com.fasterxml.jackson.databind.ObjectMapper-">getJson</a>, <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Manifests.html#getXml-java.io.File-">getXml</a>, <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Manifests.html#getXml-java.io.InputStream-">getXml</a></code></li>
+<h3>Methods inherited from class&nbsp;de.griefed.serverpackcreator.versionmeta.<a href="../../../../../de/griefed/serverpackcreator/versionmeta/ManifestParser.html" title="class in de.griefed.serverpackcreator.versionmeta">ManifestParser</a></h3>
+<code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/ManifestParser.html#getJson-java.io.File-com.fasterxml.jackson.databind.ObjectMapper-">getJson</a>, <a href="../../../../../de/griefed/serverpackcreator/versionmeta/ManifestParser.html#getJson-java.io.InputStream-com.fasterxml.jackson.databind.ObjectMapper-">getJson</a>, <a href="../../../../../de/griefed/serverpackcreator/versionmeta/ManifestParser.html#getJson-java.lang.String-com.fasterxml.jackson.databind.ObjectMapper-">getJson</a>, <a href="../../../../../de/griefed/serverpackcreator/versionmeta/ManifestParser.html#getJson-java.net.URL-com.fasterxml.jackson.databind.ObjectMapper-">getJson</a>, <a href="../../../../../de/griefed/serverpackcreator/versionmeta/ManifestParser.html#getXml-java.io.File-">getXml</a>, <a href="../../../../../de/griefed/serverpackcreator/versionmeta/ManifestParser.html#getXml-java.io.InputStream-">getXml</a>, <a href="../../../../../de/griefed/serverpackcreator/versionmeta/ManifestParser.html#getXml-java.lang.String-">getXml</a></code></li>
 </ul>
 <ul class="blockList">
 <li class="blockList"><a name="methods.inherited.from.class.java.lang.Object">
@@ -220,16 +220,7 @@ extends <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Manifes
 <ul class="blockListLast">
 <li class="blockList">
 <h4>LegacyFabricInstaller</h4>
-<pre>public&nbsp;LegacyFabricInstaller(java.io.File&nbsp;installerVersionsManifest)
-                      throws javax.xml.parsers.ParserConfigurationException,
-                             java.io.IOException,
-                             org.xml.sax.SAXException</pre>
-<dl>
-<dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>javax.xml.parsers.ParserConfigurationException</code></dd>
-<dd><code>java.io.IOException</code></dd>
-<dd><code>org.xml.sax.SAXException</code></dd>
-</dl>
+<pre>public&nbsp;LegacyFabricInstaller(java.io.File&nbsp;installerVersionsManifest)</pre>
 </li>
 </ul>
 </li>

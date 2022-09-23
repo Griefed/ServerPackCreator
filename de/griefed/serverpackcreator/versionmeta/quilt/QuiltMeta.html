@@ -98,7 +98,7 @@ var activeTableTab = "activeTableTab";
 <li>java.lang.Object</li>
 <li>
 <ul class="inheritance">
-<li><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Manifests.html" title="class in de.griefed.serverpackcreator.versionmeta">de.griefed.serverpackcreator.versionmeta.Manifests</a></li>
+<li><a href="../../../../../de/griefed/serverpackcreator/versionmeta/ManifestParser.html" title="class in de.griefed.serverpackcreator.versionmeta">de.griefed.serverpackcreator.versionmeta.ManifestParser</a></li>
 <li>
 <ul class="inheritance">
 <li>de.griefed.serverpackcreator.versionmeta.quilt.QuiltMeta</li>
@@ -117,7 +117,7 @@ var activeTableTab = "activeTableTab";
 <hr>
 <br>
 <pre>public final class <span class="typeNameLabel">QuiltMeta</span>
-extends <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Manifests.html" title="class in de.griefed.serverpackcreator.versionmeta">Manifests</a>
+extends <a href="../../../../../de/griefed/serverpackcreator/versionmeta/ManifestParser.html" title="class in de.griefed.serverpackcreator.versionmeta">ManifestParser</a>
 implements <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html" title="interface in de.griefed.serverpackcreator.versionmeta">Meta</a></pre>
 <div class="block">Quilt meta containing information about available Quilt versions and installers.</div>
 </li>
@@ -277,11 +277,11 @@ implements <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta
 </tr>
 </table>
 <ul class="blockList">
-<li class="blockList"><a name="methods.inherited.from.class.de.griefed.serverpackcreator.versionmeta.Manifests">
+<li class="blockList"><a name="methods.inherited.from.class.de.griefed.serverpackcreator.versionmeta.ManifestParser">
 <!--   -->
 </a>
-<h3>Methods inherited from class&nbsp;de.griefed.serverpackcreator.versionmeta.<a href="../../../../../de/griefed/serverpackcreator/versionmeta/Manifests.html" title="class in de.griefed.serverpackcreator.versionmeta">Manifests</a></h3>
-<code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Manifests.html#getJson-java.io.File-com.fasterxml.jackson.databind.ObjectMapper-">getJson</a>, <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Manifests.html#getJson-java.io.InputStream-com.fasterxml.jackson.databind.ObjectMapper-">getJson</a>, <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Manifests.html#getJson-java.net.URL-com.fasterxml.jackson.databind.ObjectMapper-">getJson</a>, <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Manifests.html#getXml-java.io.File-">getXml</a>, <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Manifests.html#getXml-java.io.InputStream-">getXml</a></code></li>
+<h3>Methods inherited from class&nbsp;de.griefed.serverpackcreator.versionmeta.<a href="../../../../../de/griefed/serverpackcreator/versionmeta/ManifestParser.html" title="class in de.griefed.serverpackcreator.versionmeta">ManifestParser</a></h3>
+<code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/ManifestParser.html#getJson-java.io.File-com.fasterxml.jackson.databind.ObjectMapper-">getJson</a>, <a href="../../../../../de/griefed/serverpackcreator/versionmeta/ManifestParser.html#getJson-java.io.InputStream-com.fasterxml.jackson.databind.ObjectMapper-">getJson</a>, <a href="../../../../../de/griefed/serverpackcreator/versionmeta/ManifestParser.html#getJson-java.lang.String-com.fasterxml.jackson.databind.ObjectMapper-">getJson</a>, <a href="../../../../../de/griefed/serverpackcreator/versionmeta/ManifestParser.html#getJson-java.net.URL-com.fasterxml.jackson.databind.ObjectMapper-">getJson</a>, <a href="../../../../../de/griefed/serverpackcreator/versionmeta/ManifestParser.html#getXml-java.io.File-">getXml</a>, <a href="../../../../../de/griefed/serverpackcreator/versionmeta/ManifestParser.html#getXml-java.io.InputStream-">getXml</a>, <a href="../../../../../de/griefed/serverpackcreator/versionmeta/ManifestParser.html#getXml-java.lang.String-">getXml</a></code></li>
 </ul>
 <ul class="blockList">
 <li class="blockList"><a name="methods.inherited.from.class.java.lang.Object">
@@ -312,10 +312,7 @@ implements <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta
 <h4>QuiltMeta</h4>
 <pre>public&nbsp;QuiltMeta(java.io.File&nbsp;quiltManifest,
                  java.io.File&nbsp;quiltInstallerManifest,
-                 <a href="../../../../../de/griefed/serverpackcreator/versionmeta/fabric/FabricIntermediaries.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric">FabricIntermediaries</a>&nbsp;injectedFabricIntermediaries)
-          throws javax.xml.parsers.ParserConfigurationException,
-                 java.io.IOException,
-                 org.xml.sax.SAXException</pre>
+                 <a href="../../../../../de/griefed/serverpackcreator/versionmeta/fabric/FabricIntermediaries.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric">FabricIntermediaries</a>&nbsp;injectedFabricIntermediaries)</pre>
 <div class="block">Create a new Quilt Meta instance, giving you access to available loader and installer versions,
  as well as URLs to installer for further processing.</div>
 <dl>
@@ -323,10 +320,6 @@ implements <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta
 <dd><code>quiltManifest</code> - Quilt manifest file.</dd>
 <dd><code>quiltInstallerManifest</code> - Quilt-installer manifest file.</dd>
 <dd><code>injectedFabricIntermediaries</code> - Fabric-Intermediaries for further compatibility tests.</dd>
-<dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>javax.xml.parsers.ParserConfigurationException</code> - indicates a serious configuration error.</dd>
-<dd><code>java.io.IOException</code> - if any IO errors occur.</dd>
-<dd><code>org.xml.sax.SAXException</code> - if any parse errors occur.</dd>
 </dl>
 </li>
 </ul>

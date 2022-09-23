@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -237,12 +237,21 @@ extends java.lang.Object</pre>
 </td>
 </tr>
 <tr id="i11" class="rowColor">
+<td class="colFirst"><code>boolean</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html#serverDownloadable-java.lang.String-java.lang.String-java.lang.String-">serverDownloadable</a></span>(java.lang.String&nbsp;mcVersion,
+                  java.lang.String&nbsp;modloader,
+                  java.lang.String&nbsp;modloaderVersion)</code>
+<div class="block">Check whether the installer for the given combination of Minecraft version, modloader and
+ modloader version is available/reachable.</div>
+</td>
+</tr>
+<tr id="i12" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html#zipBuilder-de.griefed.serverpackcreator.ConfigurationModel-">zipBuilder</a></span>(<a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel)</code>
 <div class="block">Creates a ZIP-archive of the server pack previously generated.</div>
 </td>
 </tr>
-<tr id="i12" class="altColor">
+<tr id="i13" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html#zipBuilder-java.lang.String-boolean-java.lang.String-java.lang.String-java.lang.String-">zipBuilder</a></span>(java.lang.String&nbsp;minecraftVersion,
           boolean&nbsp;includeServerInstallation,
@@ -518,6 +527,27 @@ public&nbsp;ServerPackHandler(<a href="../../../de/griefed/serverpackcreator/App
 <dd><code>configurationModel</code> - Contains the used modloader, Minecraft version, modloader version,
                            path to the java executable/binary and modpack directory in order to
                            acquire the destination at which to install the server.</dd>
+</dl>
+</li>
+</ul>
+<a name="serverDownloadable-java.lang.String-java.lang.String-java.lang.String-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>serverDownloadable</h4>
+<pre>public&nbsp;boolean&nbsp;serverDownloadable(java.lang.String&nbsp;mcVersion,
+                                  java.lang.String&nbsp;modloader,
+                                  java.lang.String&nbsp;modloaderVersion)</pre>
+<div class="block">Check whether the installer for the given combination of Minecraft version, modloader and
+ modloader version is available/reachable.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>mcVersion</code> - The Minecraft version.</dd>
+<dd><code>modloader</code> - The modloader.</dd>
+<dd><code>modloaderVersion</code> - The modloader version.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd><code>true</code> if the installer can be downloaded.</dd>
 </dl>
 </li>
 </ul>

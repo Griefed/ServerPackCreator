@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -201,12 +201,19 @@ extends java.lang.Object</pre>
 </td>
 </tr>
 <tr id="i8" class="altColor">
+<td class="colFirst"><code>boolean</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/WebUtilities.html#isReachable-java.net.URL-">isReachable</a></span>(java.net.URL&nbsp;url)</code>
+<div class="block">Check the availability of the host of the given URL and whether the URL gives a status code of
+ 200.</div>
+</td>
+</tr>
+<tr id="i9" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/WebUtilities.html#openLinkInBrowser-java.net.URI-">openLinkInBrowser</a></span>(java.net.URI&nbsp;uri)</code>
 <div class="block">Open the given uri in a browser.</div>
 </td>
 </tr>
-<tr id="i9" class="rowColor">
+<tr id="i10" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/WebUtilities.html#openLinkInBrowser-java.net.URL-">openLinkInBrowser</a></span>(java.net.URL&nbsp;url)</code>
 <div class="block">Open the given url in a browser.</div>
@@ -424,7 +431,7 @@ extends java.lang.Object</pre>
 <a name="getResponseCode-java.net.URL-">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>getResponseCode</h4>
 <pre>public&nbsp;int&nbsp;getResponseCode(java.net.URL&nbsp;url)
@@ -437,6 +444,24 @@ extends java.lang.Object</pre>
 <dd>The response.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code>java.io.IOException</code> - if the URL could not be called or a communication error occurred.</dd>
+</dl>
+</li>
+</ul>
+<a name="isReachable-java.net.URL-">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>isReachable</h4>
+<pre>public&nbsp;boolean&nbsp;isReachable(java.net.URL&nbsp;url)</pre>
+<div class="block">Check the availability of the host of the given URL and whether the URL gives a status code of
+ 200. Only when both the host is available and the URL returns a status code of 200 does this
+ method return <code>true</code>.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>url</code> - The URL of which to check for host-availability.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd><code>true</code> if, and only if, the host is available and the URL returns the status code 200..</dd>
 </dl>
 </li>
 </ul>
