@@ -64,15 +64,16 @@ public final class JarUtilities {
    * @param fileToCopy      File. The source-file in the JAR you wish to copy outside the JAR.
    * @param replaceIfExists Boolean. Whether to replace the file, if it already exists.
    * @param classToCopyFrom Class. The class of the JAR from which you want to copy from.
+   * @param directory       The directory where the file should be copied to.
    * @author Griefed
    */
   public void copyFileFromJar(String fileToCopy, boolean replaceIfExists,
-      Class<?> classToCopyFrom) {
+      Class<?> classToCopyFrom, String directory) {
 
     if (replaceIfExists) {
-      FileUtils.deleteQuietly(new File(fileToCopy));
+      FileUtils.deleteQuietly(new File(directory, fileToCopy));
     }
-    copyFileFromJar(fileToCopy, classToCopyFrom);
+    copyFileFromJar(fileToCopy, classToCopyFrom, directory);
   }
 
   /**
@@ -83,18 +84,19 @@ public final class JarUtilities {
    *
    * @param fileToCopy      The source-file in the JAR you wish to copy outside the JAR.
    * @param identifierClass The class of the JAR from which to get the resource.
+   * @param directory       The directory to copy the file to.
    * @return {@code true} if the file was created, {@code false} otherwise.
    * @author Griefed
    */
-  public boolean copyFileFromJar(String fileToCopy, Class<?> identifierClass) {
+  public boolean copyFileFromJar(String fileToCopy, Class<?> identifierClass, String directory) {
 
-    if (!new File(fileToCopy).exists()) {
+    if (!new File(directory, fileToCopy).exists()) {
 
       try {
 
         FileUtils.copyInputStreamToFile(
             Objects.requireNonNull(identifierClass.getResourceAsStream("/" + fileToCopy)),
-            new File(fileToCopy));
+            new File(directory, fileToCopy));
 
         return true;
 
@@ -188,40 +190,42 @@ public final class JarUtilities {
    * installation used.<br> osArch - Architecture of the system.<br> osName - Name of the operating
    * system.<br> osVersion - Version of the operating system.<br>
    *
+   * @param classInJar The class in the jar for which you want to acquire the information for.
+   * @return HashMap String-String. A hashmap containing key-value-pairs with information about the
+   * JAR-file and system.
+   * @author Griefed
+   */
+  public HashMap<String, String> jarInformation(Class<?> classInJar) {
+    return jarInformation(getApplicationHomeForClass(classInJar));
+  }
+
+  /**
+   * Retrieve information about the environment for the given instance of {@link ApplicationHome},
+   * stored in a {@link HashMap}.<br> Available key-value-pairs:<br> jarPath - The path to the
+   * JAR-file.<br> jarName - The name of the JAR-file.<br> javaVersion - The version of the Java
+   * installation used.<br> osArch - Architecture of the system.<br> osName - Name of the operating
+   * system.<br> osVersion - Version of the operating system.<br>
+   *
    * @param applicationHome Instance of {@link ApplicationHome} from which to gather information
    *                        about the JAR-file and system.
    * @return HashMap String-String. A hashmap containing key-value-pairs with information about the
    * JAR-file and system.
    * @author Griefed
    */
-  public HashMap<String, String> systemInformation(ApplicationHome applicationHome) {
+  public HashMap<String, String> jarInformation(ApplicationHome applicationHome) {
 
     HashMap<String, String> sysInfo = new HashMap<>(10);
 
     try {
-      sysInfo.put("jarPath", applicationHome.getSource().toString().replace("\\", "/"));
+      sysInfo.put("jarPath", applicationHome.getSource().toString());
     } catch (Exception ex) {
-      sysInfo.put("jarPath", applicationHome.getDir().toString().replace("\\", "/"));
+      sysInfo.put("jarPath", applicationHome.getDir().toString());
     }
 
     try {
-      sysInfo.put(
-          "jarName",
-          applicationHome
-              .getSource()
-              .toString()
-              .replace("\\", "/")
-              .substring(
-                  applicationHome.getSource().toString().replace("\\", "/").lastIndexOf("/") + 1));
+      sysInfo.put("jarName", applicationHome.getSource().getName());
     } catch (Exception ex) {
-      sysInfo.put(
-          "jarName",
-          applicationHome
-              .getDir()
-              .toString()
-              .replace("\\", "/")
-              .substring(
-                  applicationHome.getDir().toString().replace("\\", "/").lastIndexOf("/") + 1));
+      sysInfo.put("jarName", applicationHome.getDir().getName());
     }
 
     sysInfo.put("javaVersion", System.getProperty("java.version"));
@@ -241,9 +245,7 @@ public final class JarUtilities {
    * @author Griefed
    */
   private JarFile retrieveJarFromClass(Class<?> classToRetrieveJarFor) throws IOException {
-    return new JarFile(
-        new File(
-            new ApplicationHome(classToRetrieveJarFor).getSource().toString().replace("\\", "/")));
+    return new JarFile(new ApplicationHome(classToRetrieveJarFor).getSource());
   }
 
   /**
@@ -284,9 +286,10 @@ public final class JarUtilities {
       throws IOException {
 
     HashMap<String, String> systemInformation =
-        systemInformation(getApplicationHomeForClass(classToRetrieveHomeFor));
+        jarInformation(classToRetrieveHomeFor);
 
-    if (!new File(systemInformation.get("jarName")).isFile()) {
+    File source = new File(systemInformation.get("jarPath"));
+    if (!source.isFile() && source.isDirectory()) {
       // Dev environment
       copyFolderFromJar(classToRetrieveHomeFor, directoryToCopy, destinationDirectory, fileEnding);
     } else {
@@ -339,9 +342,8 @@ public final class JarUtilities {
 
         File destination =
             new File(
-                destinationDirectory
-                    + "/"
-                    + entryName.replace(jarDirectoryPrefix, "").replace(directoryToCopy, ""));
+                destinationDirectory,
+                entryName.replace(jarDirectoryPrefix, "").replace(directoryToCopy, ""));
 
         LOG.debug("Destination: " + destination);
 
@@ -446,11 +448,9 @@ public final class JarUtilities {
               .listFiles(fileFilter);
 
       assert files != null;
-      for (File value : files) {
 
-        String file = value.toString().replace("\\", "/");
-
-        filesFromJar.add(file.substring(file.lastIndexOf("/") + 1));
+      for (File file : files) {
+        filesFromJar.add(file.getName());
       }
 
     } catch (URISyntaxException ex) {
@@ -467,13 +467,13 @@ public final class JarUtilities {
 
     filesFromJar.forEach(
         file -> {
-          if (!new File(destination + "/" + file).exists()) {
+          if (!new File(destination, file).exists()) {
 
             try (InputStream inputStream =
                 classToCopyFrom.getResourceAsStream(source + "/" + file)) {
 
               assert inputStream != null;
-              FileUtils.copyInputStreamToFile(inputStream, new File(destination + "/" + file));
+              FileUtils.copyInputStreamToFile(inputStream, new File(destination, file));
 
               LOG.debug("Copying from JAR: " + file);
             } catch (IOException ex) {

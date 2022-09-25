@@ -440,8 +440,6 @@ public final class ConfigurationEditor {
 
     } while (!UTILITIES.BooleanUtils().readBoolean(scanner));
 
-    modpackDir = modpackDir.replace("\\", "/");
-
     printToFileAndConsole("You entered: " + modpackDir);
     printToFileAndConsole();
 
@@ -715,8 +713,6 @@ public final class ConfigurationEditor {
 
     } while (!UTILITIES.BooleanUtils().readBoolean(scanner));
 
-    serverIconPath = serverIconPath.replace("\\", "/");
-
     printToFileAndConsole("You entered: " + serverIconPath);
     printToFileAndConsole();
 
@@ -750,8 +746,6 @@ public final class ConfigurationEditor {
       printToFileAndConsole("Answer: ", false);
 
     } while (!UTILITIES.BooleanUtils().readBoolean(scanner));
-
-    serverPropertiesPath = serverPropertiesPath.replace("\\", "/");
 
     printToFileAndConsole("You entered: " + serverPropertiesPath);
     printToFileAndConsole();
@@ -981,7 +975,7 @@ public final class ConfigurationEditor {
 
     } else {
 
-      configurationModel.save(APPLICATIONPROPERTIES.DEFAULT_CONFIG());
+      configurationModel.save(APPLICATIONPROPERTIES.defaultConfig());
       printToFileAndConsole(
           "Your configuration has been saved as 'serverpackcreator.conf'.");
 

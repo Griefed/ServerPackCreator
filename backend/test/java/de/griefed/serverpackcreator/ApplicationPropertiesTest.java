@@ -2,19 +2,19 @@ package de.griefed.serverpackcreator;
 
 import de.griefed.serverpackcreator.ApplicationProperties.ExclusionFilter;
 import de.griefed.serverpackcreator.utilities.common.FileUtilities;
+import de.griefed.serverpackcreator.utilities.common.JarUtilities;
 import de.griefed.serverpackcreator.utilities.common.ListUtilities;
 import de.griefed.serverpackcreator.utilities.common.SystemUtilities;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class ApplicationPropertiesTest {
+
   private final FileUtilities fileUtilities = new FileUtilities();
   private final SystemUtilities systemUtilities = new SystemUtilities();
   private final ListUtilities listUtilities = new ListUtilities();
+  private final JarUtilities jarUtilities = new JarUtilities();
 
   ApplicationPropertiesTest() {
 
@@ -26,156 +26,200 @@ public class ApplicationPropertiesTest {
 
     applicationProperties = new ApplicationProperties(
         new File("backend/test/resources/testresources/properties/filters/contains.properties"),
-        fileUtilities, systemUtilities, listUtilities);
+        fileUtilities, systemUtilities, listUtilities,jarUtilities);
 
-    Assertions.assertEquals(ExclusionFilter.CONTAIN, applicationProperties.exclusionFilter());
+    Assertions.assertEquals(
+        ExclusionFilter.CONTAIN,
+        applicationProperties.exclusionFilter());
 
     applicationProperties = new ApplicationProperties(
         new File("backend/test/resources/testresources/properties/filters/either.properties"),
-        fileUtilities, systemUtilities, listUtilities);
+        fileUtilities, systemUtilities, listUtilities,jarUtilities);
 
-    Assertions.assertEquals(ExclusionFilter.EITHER, applicationProperties.exclusionFilter());
+    Assertions.assertEquals(
+        ExclusionFilter.EITHER,
+        applicationProperties.exclusionFilter());
 
     applicationProperties = new ApplicationProperties(
         new File("backend/test/resources/testresources/properties/filters/end.properties"),
-        fileUtilities, systemUtilities, listUtilities);
+        fileUtilities, systemUtilities, listUtilities,jarUtilities);
 
-    Assertions.assertEquals(ExclusionFilter.END, applicationProperties.exclusionFilter());
+    Assertions.assertEquals(
+        ExclusionFilter.END,
+        applicationProperties.exclusionFilter());
 
     applicationProperties = new ApplicationProperties(
         new File("backend/test/resources/testresources/properties/filters/regex.properties"),
-        fileUtilities, systemUtilities, listUtilities);
+        fileUtilities, systemUtilities, listUtilities,jarUtilities);
 
-    Assertions.assertEquals(ExclusionFilter.REGEX, applicationProperties.exclusionFilter());
+    Assertions.assertEquals(
+        ExclusionFilter.REGEX,
+        applicationProperties.exclusionFilter());
 
     applicationProperties = new ApplicationProperties(
         new File("backend/test/resources/testresources/properties/filters/start.properties"),
-        fileUtilities, systemUtilities, listUtilities);
+        fileUtilities, systemUtilities, listUtilities,jarUtilities);
 
-    Assertions.assertEquals(ExclusionFilter.START, applicationProperties.exclusionFilter());
+    Assertions.assertEquals(
+        ExclusionFilter.START,
+        applicationProperties.exclusionFilter());
 
     applicationProperties = new ApplicationProperties(
         new File("backend/test/resources/serverpackcreator.properties"), fileUtilities,
-        systemUtilities, listUtilities);
+        systemUtilities, listUtilities,jarUtilities);
 
     Assertions.assertNotNull(applicationProperties.java());
     Assertions.assertTrue(new File(applicationProperties.java()).exists());
 
-    Assertions.assertNotNull(applicationProperties.FALLBACK_CLIENTSIDE_MODS());
-    Assertions.assertNotNull(applicationProperties.FALLBACK_REGEX_CLIENTSIDE_MODS());
-
-    Assertions.assertNotNull(applicationProperties.getDefaultListFallbackMods());
-    applicationProperties.setProperty(
-        "de.griefed.serverpackcreator.configuration.fallbackmodslist", "bla");
-    applicationProperties.updateFallback();
-    Assertions.assertNotEquals(
-        applicationProperties.getProperty(
-            "de.griefed.serverpackcreator.configuration.fallbackmodslist"),
-        "bla");
-
-    Assertions.assertNotNull(applicationProperties.DEFAULT_CONFIG());
+    Assertions.assertNotNull(applicationProperties.serverPackCreatorPropertiesFile());
     Assertions.assertEquals(
-        applicationProperties.DEFAULT_CONFIG(), new File("serverpackcreator.conf"));
+        new File(new File("").getAbsolutePath() + File.separator + "serverpackcreator.properties"),
+        applicationProperties.serverPackCreatorPropertiesFile()
+    );
 
-    Assertions.assertNotNull(applicationProperties.DEFAULT_SERVER_PROPERTIES());
+    Assertions.assertNotNull(applicationProperties.minecraftServerManifestsDirectory());
     Assertions.assertEquals(
-        applicationProperties.DEFAULT_SERVER_PROPERTIES(), new File("server.properties"));
+        new File(new File("").getAbsolutePath() + File.separator + "manifests" + File.separator + "mcserver"),
+        applicationProperties.minecraftServerManifestsDirectory()
+    );
 
-    Assertions.assertNotNull(applicationProperties.DEFAULT_SERVER_ICON());
+    Assertions.assertNotNull(applicationProperties.fabricIntermediariesManifest());
     Assertions.assertEquals(
-        applicationProperties.DEFAULT_SERVER_ICON(), new File("server-icon.png"));
+        new File(new File("").getAbsolutePath() + File.separator + "manifests" + File.separator + "fabric-intermediaries-manifest.json"),
+        applicationProperties.fabricIntermediariesManifest()
+    );
 
-    Assertions.assertNotNull(applicationProperties.MINECRAFT_VERSION_MANIFEST());
+    Assertions.assertNotNull(applicationProperties.legacyFabricGameManifest());
     Assertions.assertEquals(
-        applicationProperties.MINECRAFT_VERSION_MANIFEST(), new File("minecraft-manifest.json"));
+        new File(new File("").getAbsolutePath() + File.separator + "manifests" + File.separator + "legacy-fabric-game-manifest.json"),
+        applicationProperties.legacyFabricGameManifest()
+    );
 
-    Assertions.assertNotNull(applicationProperties.FORGE_VERSION_MANIFEST());
+    Assertions.assertNotNull(applicationProperties.legacyFabricLoaderManifest());
     Assertions.assertEquals(
-        applicationProperties.FORGE_VERSION_MANIFEST(), new File("forge-manifest.json"));
+        new File(new File("").getAbsolutePath() + File.separator + "manifests" + File.separator + "legacy-fabric-loader-manifest.json"),
+        applicationProperties.legacyFabricLoaderManifest()
+    );
 
-    Assertions.assertNotNull(applicationProperties.FABRIC_VERSION_MANIFEST());
+    Assertions.assertNotNull(applicationProperties.legacyFabricInstallerManifest());
     Assertions.assertEquals(
-        applicationProperties.FABRIC_VERSION_MANIFEST(), new File("fabric-manifest.xml"));
+        new File(
+            new File("").getAbsolutePath() + File.separator + "manifests" + File.separator + "legacy-fabric-installer-manifest.xml"),
+        applicationProperties.legacyFabricInstallerManifest()
+    );
 
-    Assertions.assertNotNull(applicationProperties.LEGACY_FABRIC_GAME_MANIFEST());
+    Assertions.assertNotNull(applicationProperties.fabricInstallerManifest());
     Assertions.assertEquals(
-        applicationProperties.LEGACY_FABRIC_GAME_MANIFEST(),
-        new File("legacy-fabric-game-manifest.json"));
+        new File(
+            new File("").getAbsolutePath() + File.separator + "manifests" + File.separator + "fabric-installer-manifest.xml"),
+        applicationProperties.fabricInstallerManifest()
+    );
 
-    Assertions.assertNotNull(applicationProperties.LEGACY_FABRIC_LOADER_MANIFEST());
+    Assertions.assertNotNull(applicationProperties.quiltVersionManifest());
     Assertions.assertEquals(
-        applicationProperties.LEGACY_FABRIC_LOADER_MANIFEST(),
-        new File("legacy-fabric-loader-manifest.json"));
+        new File(new File("").getAbsolutePath() + File.separator + "manifests" + File.separator + "quilt-manifest.xml"),
+        applicationProperties.quiltVersionManifest()
+    );
 
-    Assertions.assertNotNull(applicationProperties.LEGACY_FABRIC_INSTALLER_MANIFEST());
+    Assertions.assertNotNull(applicationProperties.quiltInstallerManifest());
     Assertions.assertEquals(
-        applicationProperties.LEGACY_FABRIC_INSTALLER_MANIFEST(),
-        new File("legacy-fabric-installer-manifest.xml"));
+        new File(new File("").getAbsolutePath() + File.separator + "manifests" + File.separator + "quilt-installer-manifest.xml"),
+        applicationProperties.quiltInstallerManifest()
+    );
 
-    Assertions.assertNotNull(applicationProperties.FABRIC_INSTALLER_VERSION_MANIFEST());
+    Assertions.assertNotNull(applicationProperties.forgeVersionManifest());
     Assertions.assertEquals(
-        applicationProperties.FABRIC_INSTALLER_VERSION_MANIFEST(),
-        new File("fabric-installer-manifest.xml"));
+        new File(new File("").getAbsolutePath() + File.separator + "manifests" + File.separator + "forge-manifest.json"),
+        applicationProperties.forgeVersionManifest()
+    );
 
-    Assertions.assertNotNull(applicationProperties.LEGACY_FABRIC_GAME_MANIFEST_LOCATION());
+    Assertions.assertNotNull(applicationProperties.fabricVersionManifest());
     Assertions.assertEquals(
-        applicationProperties.LEGACY_FABRIC_GAME_MANIFEST_LOCATION(),
-        new File("./manifests/legacy-fabric-game-manifest.json"));
+        new File(new File("").getAbsolutePath() + File.separator + "manifests" + File.separator + "fabric-manifest.xml"),
+        applicationProperties.fabricVersionManifest()
+    );
 
-    Assertions.assertNotNull(applicationProperties.LEGACY_FABRIC_LOADER_MANIFEST_LOCATION());
+    Assertions.assertNotNull(applicationProperties.minecraftVersionManifest());
     Assertions.assertEquals(
-        applicationProperties.LEGACY_FABRIC_LOADER_MANIFEST_LOCATION(),
-        new File("./manifests/legacy-fabric-loader-manifest.json"));
+        new File(new File("").getAbsolutePath() + File.separator + "manifests" + File.separator + "minecraft-manifest.json"),
+        applicationProperties.minecraftVersionManifest()
+    );
 
-    Assertions.assertNotNull(applicationProperties.LEGACY_FABRIC_INSTALLER_MANIFEST_LOCATION());
+    Assertions.assertNotNull(applicationProperties.manifestsDirectory());
     Assertions.assertEquals(
-        applicationProperties.LEGACY_FABRIC_INSTALLER_MANIFEST_LOCATION(),
-        new File("./manifests/legacy-fabric-installer-manifest.xml"));
+        new File(new File("").getAbsolutePath() + File.separator + "manifests"),
+        applicationProperties.manifestsDirectory()
+    );
 
-    Assertions.assertNotNull(applicationProperties.QUILT_VERSION_MANIFEST());
+    Assertions.assertNotNull(applicationProperties.workDirectory());
     Assertions.assertEquals(
-        applicationProperties.QUILT_VERSION_MANIFEST(), new File("quilt-manifest.xml"));
+        new File(new File("").getAbsolutePath() + File.separator + "work"),
+        applicationProperties.workDirectory()
+    );
 
-    Assertions.assertNotNull(applicationProperties.QUILT_INSTALLER_VERSION_MANIFEST());
+    Assertions.assertNotNull(applicationProperties.modpacksDirectory());
     Assertions.assertEquals(
-        applicationProperties.QUILT_INSTALLER_VERSION_MANIFEST(),
-        new File("quilt-installer-manifest.xml"));
+        new File(new File("").getAbsolutePath() + File.separator + "work" + File.separator + "temp/modpacks"),
+        applicationProperties.modpacksDirectory()
+    );
 
-    Assertions.assertNotNull(applicationProperties.SERVERPACKCREATOR_DATABASE());
+    Assertions.assertNotNull(applicationProperties.tempDirectory());
     Assertions.assertEquals(
-        applicationProperties.SERVERPACKCREATOR_DATABASE(), new File("serverpackcreator.db"));
+        new File(new File("").getAbsolutePath() + File.separator + "work" + File.separator + "temp"),
+        applicationProperties.tempDirectory()
+    );
 
-    Assertions.assertNotNull(applicationProperties.MINECRAFT_VERSION_MANIFEST_LOCATION());
+    Assertions.assertNotNull(applicationProperties.logsDirectory());
     Assertions.assertEquals(
-        applicationProperties.MINECRAFT_VERSION_MANIFEST_LOCATION(),
-        new File("./manifests/minecraft-manifest.json"));
+        new File(new File("").getAbsolutePath() + File.separator + "logs"),
+        applicationProperties.logsDirectory()
+    );
 
-    Assertions.assertNotNull(applicationProperties.FORGE_VERSION_MANIFEST_LOCATION());
+    Assertions.assertNotNull(applicationProperties.defaultConfig());
     Assertions.assertEquals(
-        applicationProperties.FORGE_VERSION_MANIFEST_LOCATION(),
-        new File("./manifests/forge-manifest.json"));
+        new File(new File("").getAbsolutePath() + File.separator + "serverpackcreator.conf"),
+        applicationProperties.defaultConfig());
 
-    Assertions.assertNotNull(applicationProperties.FABRIC_VERSION_MANIFEST_LOCATION());
+    Assertions.assertNotNull(applicationProperties.defaultServerProperties());
     Assertions.assertEquals(
-        applicationProperties.FABRIC_VERSION_MANIFEST_LOCATION(),
-        new File("./manifests/fabric-manifest.xml"));
+        new File(new File("").getAbsolutePath() + File.separator + "server_files" + File.separator + "server.properties"),
+        applicationProperties.defaultServerProperties());
 
-    Assertions.assertNotNull(applicationProperties.FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION());
+    Assertions.assertNotNull(applicationProperties.defaultServerIcon());
     Assertions.assertEquals(
-        applicationProperties.FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION(),
-        new File("./manifests/fabric-installer-manifest.xml"));
+        new File(new File("").getAbsolutePath() + File.separator + "server_files" + File.separator + "server-icon.png"),
+        applicationProperties.defaultServerIcon());
 
-    Assertions.assertNotNull(applicationProperties.QUILT_VERSION_MANIFEST_LOCATION());
+    Assertions.assertNotNull(applicationProperties.serverPackCreatorDatabase());
     Assertions.assertEquals(
-        applicationProperties.QUILT_VERSION_MANIFEST_LOCATION(),
-        new File("./manifests/quilt-manifest.xml"));
+        new File(new File("").getAbsolutePath() + File.separator + "serverpackcreator.db"),
+        applicationProperties.serverPackCreatorDatabase());
 
-    Assertions.assertNotNull(applicationProperties.QUILT_INSTALLER_VERSION_MANIFEST_LOCATION());
+    Assertions.assertNotNull(applicationProperties.homeDirectory());
     Assertions.assertEquals(
-        applicationProperties.QUILT_INSTALLER_VERSION_MANIFEST_LOCATION(),
-        new File("./manifests/quilt-installer-manifest.xml"));
+        new File(new File("").getAbsolutePath()),
+        applicationProperties.homeDirectory()
+    );
 
-    Assertions.assertNotNull(applicationProperties.getDirectoryServerPacks());
+    Assertions.assertNotNull(applicationProperties.serverFilesDirectory());
+    Assertions.assertEquals(
+        new File(new File("").getAbsolutePath() + File.separator + "server_files"),
+        applicationProperties.serverFilesDirectory()
+    );
+
+    Assertions.assertNotNull(applicationProperties.addonsDirectory());
+    Assertions.assertEquals(
+        new File(new File("").getAbsolutePath() + File.separator + "plugins"),
+        applicationProperties.addonsDirectory()
+    );
+
+    Assertions.assertNotNull(applicationProperties.addonConfigsDirectory());
+    Assertions.assertEquals(
+        new File(new File("").getAbsolutePath() + File.separator + "plugins" + File.separator + "config"),
+        applicationProperties.addonConfigsDirectory()
+    );
+
+    Assertions.assertNotNull(applicationProperties.serverPacksDirectory());
 
     Assertions.assertNotNull(applicationProperties.getDirectoriesToExclude());
     applicationProperties.addDirectoryToExclude("test");
@@ -186,6 +230,6 @@ public class ApplicationPropertiesTest {
 
     Assertions.assertEquals(90, applicationProperties.getQueueMaxDiskUsage());
 
-    Assertions.assertEquals("dev", applicationProperties.SERVERPACKCREATOR_VERSION());
+    Assertions.assertEquals("dev", applicationProperties.serverPackCreatorVersion());
   }
 }

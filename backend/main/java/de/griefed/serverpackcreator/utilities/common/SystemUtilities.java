@@ -59,7 +59,7 @@ public final class SystemUtilities {
     String javaPath = "Couldn't acquire JavaPath";
 
     if (new File(System.getProperty("java.home")).exists()) {
-      javaPath = String.format("%s/bin/java", System.getProperty("java.home").replace("\\", "/"));
+      javaPath = String.format("%s/bin/java", System.getProperty("java.home"));
 
       if (!javaPath.startsWith("/")) {
         for (String letter : DRIVES) {

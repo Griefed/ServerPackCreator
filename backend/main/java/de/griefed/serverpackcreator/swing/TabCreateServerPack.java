@@ -234,7 +234,7 @@ public class TabCreateServerPack extends JPanel {
   private final IconTextField TEXTFIELD_SERVERPACKSUFFIX = new IconTextField("");
   private final IconTextField TEXTFIELD_SERVERICONPATH = new IconTextField("");
   private final IconTextField TEXTFIELD_SERVERPROPERTIESPATH = new IconTextField("");
-  private final File DIRECTORY_CHOOSER = new File(".");
+  private final File DIRECTORY_CHOOSER = new File(new File("").getAbsolutePath());
   private final List<ExtensionConfigPanel> CONFIG_PANELS = new ArrayList<>(10);
   private final ScriptSettings SCRIPT_VARIABLES;
   private final JLabel REQUIRED_JAVA_VERSION = new JLabel("");
@@ -881,7 +881,7 @@ public class TabCreateServerPack extends JPanel {
     CREATESERVERPACKPANEL.add(labelModloader, gridBagConstraints);
 
     COMBOBOX_MODLOADERS.setModel(
-        new DefaultComboBoxModel<>(APPLICATIONPROPERTIES.SUPPORTED_MODLOADERS()));
+        new DefaultComboBoxModel<>(APPLICATIONPROPERTIES.supportedModloaders()));
     if (COMBOBOX_MODLOADERS.getSelectedItem() == null) {
       COMBOBOX_MODLOADERS.setSelectedIndex(0);
     }
@@ -1264,7 +1264,7 @@ public class TabCreateServerPack extends JPanel {
     setLayout(new BorderLayout());
     add(tabCreateserverpacktabScrollPanel, BorderLayout.CENTER);
 
-    loadConfig(new File("serverpackcreator.conf"));
+    loadConfig(APPLICATIONPROPERTIES.defaultConfig());
   }
 
   /**
@@ -1279,7 +1279,7 @@ public class TabCreateServerPack extends JPanel {
       UTILITIES.FileUtils().openFile(getServerPropertiesPath());
     } else {
       UTILITIES.FileUtils()
-          .openFile("server_files/" + APPLICATIONPROPERTIES.DEFAULT_SERVER_PROPERTIES());
+          .openFile(APPLICATIONPROPERTIES.defaultServerProperties());
     }
   }
 
@@ -1431,7 +1431,7 @@ public class TabCreateServerPack extends JPanel {
    * @author Griefed
    */
   protected void openServerPacksFolder(ActionEvent actionEvent) {
-    UTILITIES.FileUtils().openFolder(APPLICATIONPROPERTIES.getDirectoryServerPacks());
+    UTILITIES.FileUtils().openFolder(APPLICATIONPROPERTIES.serverPacksDirectory());
   }
 
   /**
@@ -1604,7 +1604,7 @@ public class TabCreateServerPack extends JPanel {
           SERVER_ICON_PREVIEW.setToolTipText(
               I18N.getMessage("createserverpack.gui.createserverpack.servericon.preview"));
           SERVER_ICON_PREVIEW.setIcon(new ImageIcon(ImageIO.read(
-                  new File("server_files/server-icon.png"))
+                  APPLICATIONPROPERTIES.defaultServerIcon())
               .getScaledInstance(48, 48, Image.SCALE_SMOOTH)));
         } catch (IOException ex) {
           LOG.error("Error generating server icon preview.", ex);
@@ -1974,18 +1974,14 @@ public class TabCreateServerPack extends JPanel {
     modpackDirChooser.setPreferredSize(CHOOSERDIMENSION);
 
     if (modpackDirChooser.showOpenDialog(SERVERPACKCREATORWINDOW) == JFileChooser.APPROVE_OPTION) {
-      try {
 
-        setModpackDirectory(modpackDirChooser.getSelectedFile().getCanonicalPath());
-        updateGuiFromSelectedModpack();
+      setModpackDirectory(modpackDirChooser.getSelectedFile().getPath());
+      updateGuiFromSelectedModpack();
 
-        LOG.debug(
-            "Selected modpack directory: "
-                + modpackDirChooser.getSelectedFile().getCanonicalPath().replace("\\", "/"));
+      LOG.debug(
+          "Selected modpack directory: "
+              + modpackDirChooser.getSelectedFile().getPath());
 
-      } catch (IOException ex) {
-        LOG.error("Error getting directory from modpack directory chooser.", ex);
-      }
     }
   }
 
@@ -1997,34 +1993,34 @@ public class TabCreateServerPack extends JPanel {
           ConfigurationModel configurationModel = new ConfigurationModel();
           boolean updated = false;
 
-          if (new File(getModpackDirectory() + "/manifest.json").isFile()) {
+          if (new File(getModpackDirectory(), "manifest.json").isFile()) {
             CONFIG_UTILITIES.updateConfigModelFromCurseManifest(configurationModel,
-                new File(getModpackDirectory() + "/manifest.json"));
+                new File(getModpackDirectory(), "manifest.json"));
             updated = true;
 
-          } else if (new File(getModpackDirectory() + "/minecraftinstance.json").isFile()) {
+          } else if (new File(getModpackDirectory(), "minecraftinstance.json").isFile()) {
             CONFIG_UTILITIES.updateConfigModelFromMinecraftInstance(configurationModel,
-                new File(getModpackDirectory() + "/minecraftinstance.json"));
+                new File(getModpackDirectory(), "minecraftinstance.json"));
             updated = true;
 
-          } else if (new File(getModpackDirectory() + "/modrinth.index.json").isFile()) {
+          } else if (new File(getModpackDirectory(), "modrinth.index.json").isFile()) {
             CONFIG_UTILITIES.updateConfigModelFromModrinthManifest(configurationModel,
-                new File(getModpackDirectory() + "/modrinth.index.json"));
+                new File(getModpackDirectory(), "modrinth.index.json"));
             updated = true;
 
-          } else if (new File(getModpackDirectory() + "/instance.json").isFile()) {
+          } else if (new File(getModpackDirectory(), "instance.json").isFile()) {
             CONFIG_UTILITIES.updateConfigModelFromATLauncherInstance(configurationModel,
-                new File(getModpackDirectory() + "/instance.json"));
+                new File(getModpackDirectory(), "instance.json"));
             updated = true;
 
-          } else if (new File(getModpackDirectory() + "/config.json").isFile()) {
+          } else if (new File(getModpackDirectory(), "config.json").isFile()) {
             CONFIG_UTILITIES.updateConfigModelFromConfigJson(configurationModel,
-                new File(getModpackDirectory() + "/config.json"));
+                new File(getModpackDirectory(), "config.json"));
             updated = true;
 
-          } else if (new File(getModpackDirectory() + "/mmc-pack.json").isFile()) {
+          } else if (new File(getModpackDirectory(), "mmc-pack.json").isFile()) {
             CONFIG_UTILITIES.updateConfigModelFromMMCPack(configurationModel,
-                new File(getModpackDirectory() + "/mmc-pack.json"));
+                new File(getModpackDirectory(), "mmc-pack.json"));
             updated = true;
           }
 
@@ -2094,12 +2090,8 @@ public class TabCreateServerPack extends JPanel {
 
     if (serverIconChooser.showOpenDialog(SERVERPACKCREATORWINDOW) == JFileChooser.APPROVE_OPTION) {
 
-      try {
-        setServerIconPath(serverIconChooser.getSelectedFile().getCanonicalPath());
+      setServerIconPath(serverIconChooser.getSelectedFile().getAbsolutePath());
 
-      } catch (IOException ex) {
-        LOG.error("Error getting the icon-file for the server pack.", ex);
-      }
     }
   }
 
@@ -2128,12 +2120,8 @@ public class TabCreateServerPack extends JPanel {
     if (serverPropertiesChooser.showOpenDialog(SERVERPACKCREATORWINDOW)
         == JFileChooser.APPROVE_OPTION) {
 
-      try {
-        setServerPropertiesPath(serverPropertiesChooser.getSelectedFile().getCanonicalPath());
+      setServerPropertiesPath(serverPropertiesChooser.getSelectedFile().getAbsolutePath());
 
-      } catch (IOException ex) {
-        LOG.error("Error getting the properties-file for the server pack.", ex);
-      }
     }
   }
 
@@ -2150,10 +2138,10 @@ public class TabCreateServerPack extends JPanel {
 
     if (!getModpackDirectory().isEmpty()
         && new File(getModpackDirectory()).isDirectory()
-        && new File(getModpackDirectory() + "/mods").isDirectory()) {
+        && new File(getModpackDirectory(), "mods").isDirectory()) {
 
       clientModsChooser.setCurrentDirectory(
-          new File(getModpackDirectory() + "/mods"));
+          new File(getModpackDirectory(), "mods"));
     } else {
       clientModsChooser.setCurrentDirectory(DIRECTORY_CHOOSER);
     }
@@ -2316,7 +2304,7 @@ public class TabCreateServerPack extends JPanel {
 
     Tailer tailer =
         Tailer.create(
-            new File("./logs/serverpackcreator.log"),
+            new File(APPLICATIONPROPERTIES.logsDirectory(), "serverpackcreator.log"),
             new TailerListenerAdapter() {
               public void handle(String line) {
                 if (!line.contains("DEBUG")) {
@@ -2352,7 +2340,7 @@ public class TabCreateServerPack extends JPanel {
             updateStatus(
                 I18N.getMessage("createserverpack.log.info.buttoncreateserverpack.checked"));
 
-            configurationModel.save(APPLICATIONPROPERTIES.DEFAULT_CONFIG());
+            configurationModel.save(APPLICATIONPROPERTIES.defaultConfig());
 
             LOG.info("Starting ServerPackCreator run.");
 
@@ -2363,7 +2351,7 @@ public class TabCreateServerPack extends JPanel {
 
               SERVERPACKHANDLER.run(configurationModel);
 
-              loadConfig(APPLICATIONPROPERTIES.DEFAULT_CONFIG());
+              loadConfig(APPLICATIONPROPERTIES.defaultConfig());
 
               updateStatus(
                   I18N.getMessage("createserverpack.log.info.buttoncreateserverpack.ready"));
@@ -2625,7 +2613,7 @@ public class TabCreateServerPack extends JPanel {
    * @author Griefed
    */
   public String getServerIconPath() {
-    return TEXTFIELD_SERVERICONPATH.getText().replace("\\", "/");
+    return TEXTFIELD_SERVERICONPATH.getText();
   }
 
   /**
@@ -2635,7 +2623,7 @@ public class TabCreateServerPack extends JPanel {
    * @author Griefed
    */
   public void setServerIconPath(String path) {
-    TEXTFIELD_SERVERICONPATH.setText(path.replace("\\", "/"));
+    TEXTFIELD_SERVERICONPATH.setText(path);
   }
 
   /**
@@ -2645,7 +2633,7 @@ public class TabCreateServerPack extends JPanel {
    * @author Griefed
    */
   public String getServerPropertiesPath() {
-    return TEXTFIELD_SERVERPROPERTIESPATH.getText().replace("\\", "/");
+    return TEXTFIELD_SERVERPROPERTIESPATH.getText();
   }
 
   /**
@@ -2655,7 +2643,7 @@ public class TabCreateServerPack extends JPanel {
    * @author Griefed
    */
   public void setServerPropertiesPath(String path) {
-    TEXTFIELD_SERVERPROPERTIESPATH.setText(path.replace("\\", "/"));
+    TEXTFIELD_SERVERPROPERTIESPATH.setText(path);
   }
 
   /**
@@ -2824,7 +2812,7 @@ public class TabCreateServerPack extends JPanel {
   public void setCopyDirectories(List<String> directoriesAndFiles) {
     TEXTAREA_COPYDIRECTORIES.setText(
         UTILITIES.StringUtils()
-            .buildString(directoriesAndFiles.toString().replace("\\", "/")));
+            .buildString(directoriesAndFiles.toString()));
   }
 
   /**
@@ -2845,7 +2833,7 @@ public class TabCreateServerPack extends JPanel {
    * @author Griefed
    */
   public String getModpackDirectory() {
-    return TEXTFIELD_MODPACKDIRECTORY.getText().replace("\\", "/");
+    return TEXTFIELD_MODPACKDIRECTORY.getText();
   }
 
   /**
@@ -2855,7 +2843,7 @@ public class TabCreateServerPack extends JPanel {
    * @author Griefed
    */
   public void setModpackDirectory(String directory) {
-    TEXTFIELD_MODPACKDIRECTORY.setText(directory.replace("\\", "/"));
+    TEXTFIELD_MODPACKDIRECTORY.setText(directory);
   }
 
   /**

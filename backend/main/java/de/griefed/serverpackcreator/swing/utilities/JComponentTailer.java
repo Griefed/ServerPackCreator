@@ -22,6 +22,7 @@ package de.griefed.serverpackcreator.swing.utilities;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.io.File;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -61,5 +62,5 @@ public abstract class JComponentTailer extends JPanel {
     add(scrollPane, constraints);
   }
 
-  protected abstract void createTailer();
+  protected abstract void createTailer(File logsDirectory);
 }

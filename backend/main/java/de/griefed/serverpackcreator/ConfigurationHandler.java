@@ -505,19 +505,9 @@ public final class ConfigurationHandler {
     boolean configHasError = false;
 
     // modpackDir points at a ZIP-file. Get the path to the would be modpack directory.
-    String destination =
-        String.format(
-            "./work/modpacks/%s",
-            configurationModel
-                .getModpackDir()
-                .substring(configurationModel.getModpackDir().lastIndexOf("/") + 1)
-                .substring(
-                    0,
-                    configurationModel
-                        .getModpackDir()
-                        .substring(configurationModel.getModpackDir().lastIndexOf("/") + 1)
-                        .length()
-                        - 4));
+    String modpackName = new File(configurationModel.getModpackDir()).getName()
+        .replace("\\.[Zz][Ii][Pp]", "");
+    String destination = APPLICATIONPROPERTIES.modpacksDirectory() + File.separator + modpackName;
 
     if (checkZipArchive(Paths.get(configurationModel.getModpackDir()), encounteredErrors)) {
       return true;
@@ -556,36 +546,34 @@ public final class ConfigurationHandler {
       packName = destination;
     }
 
-    packName = UTILITIES.StringUtils().pathSecureTextAlternative(packName.replace("\\", "/"));
+    packName = new File(UTILITIES.StringUtils().pathSecureTextAlternative(packName)).getPath();
 
     // Get the path to the would-be-server-pack with the new destination.
     String wouldBeServerPack =
-        new File(
-            String.format(
-                "%s/%s",
-                APPLICATIONPROPERTIES.getDirectoryServerPacks(),
-                packName.substring(packName.lastIndexOf("/") + 1)
-                    + configurationModel.getServerPackSuffix()))
-            .getAbsolutePath()
-            .replace("\\", "/");
+        new File(APPLICATIONPROPERTIES.serverPacksDirectory(), new File(packName).getName()
+            + configurationModel.getServerPackSuffix())
+            .getCanonicalPath();
 
     // Check whether a server pack for the new destination already exists.
     // If it does, we need to change it to avoid overwriting any existing files.
     packName = packName + "_" + getIncrementation(packName, wouldBeServerPack);
 
     // Finally, move to new destination to avoid overwriting of server pack
-    FileUtils.moveDirectory(new File(destination), new File(packName));
+    FileUtils.moveDirectory(new File(destination),
+        new File(APPLICATIONPROPERTIES.modpacksDirectory(), new File(packName).getName()));
 
     // Last but not least, use the newly acquired packname as the modpack directory.
     configurationModel.setModpackDir(packName);
 
     // Does the modpack contain a server-icon or server.properties? If so, include
     // them in the server pack.
-    if (new File(packName + "/server-icon.png").exists()) {
-      configurationModel.setServerIconPath(packName + "/server-icon.png");
+    File file = new File(packName, "server-icon.png");
+    if (file.exists()) {
+      configurationModel.setServerIconPath(file.getAbsolutePath());
     }
-    if (new File(packName + "/server.properties").exists()) {
-      configurationModel.setServerPropertiesPath(packName + "/server.properties");
+    file = new File(packName, "server.properties");
+    if (file.exists()) {
+      configurationModel.setServerPropertiesPath(file.getAbsolutePath());
     }
 
     return configHasError;
@@ -626,7 +614,7 @@ public final class ConfigurationHandler {
         destination = destination + "_" + incrementation;
       }
     }
-    return destination;
+    return new File(destination).getPath();
   }
 
   /**
@@ -645,12 +633,12 @@ public final class ConfigurationHandler {
       List<String> encounteredErrors) {
     String packName = null;
 
-    if (new File(String.format("%s/manifest.json", destination)).exists()) {
+    if (new File(destination, "manifest.json").exists()) {
 
       try {
 
         CONFIGUTILITIES.updateConfigModelFromCurseManifest(
-            configurationModel, new File(String.format("%s/manifest.json", destination)));
+            configurationModel, new File(destination, "manifest.json"));
 
         packName = updatePackName(configurationModel, "name");
 
@@ -663,11 +651,11 @@ public final class ConfigurationHandler {
       }
 
       // Check minecraftinstance.json usually created by Overwolf's CurseForge launcher.
-    } else if (new File(String.format("%s/minecraftinstance.json", destination)).exists()) {
+    } else if (new File(destination, "minecraftinstance.json").exists()) {
 
       try {
         CONFIGUTILITIES.updateConfigModelFromMinecraftInstance(
-            configurationModel, new File(String.format("%s/minecraftinstance.json", destination)));
+            configurationModel, new File(destination, "minecraftinstance.json"));
 
         packName = updatePackName(configurationModel, "name");
 
@@ -680,11 +668,11 @@ public final class ConfigurationHandler {
       }
 
       // Check modrinth.index.json usually available if the modpack is from Modrinth
-    } else if (new File(String.format("%s/modrinth.index.json", destination)).exists()) {
+    } else if (new File(destination, "modrinth.index.json").exists()) {
 
       try {
         CONFIGUTILITIES.updateConfigModelFromModrinthManifest(
-            configurationModel, new File(String.format("%s/modrinth.index.json", destination)));
+            configurationModel, new File(destination, "modrinth.index.json"));
 
         packName = updatePackName(configurationModel, "name");
 
@@ -697,11 +685,11 @@ public final class ConfigurationHandler {
       }
 
       // Check instance.json usually created by ATLauncher
-    } else if (new File(String.format("%s/instance.json", destination)).exists()) {
+    } else if (new File(destination, "instance.json").exists()) {
 
       try {
         CONFIGUTILITIES.updateConfigModelFromATLauncherInstance(
-            configurationModel, new File(String.format("%s/instance.json", destination)));
+            configurationModel, new File(destination, "instance.json"));
 
         // If JSON was acquired, get the name of the modpack and overwrite newDestination using
         // modpack name.
@@ -723,11 +711,11 @@ public final class ConfigurationHandler {
       }
 
       // Check the config.json usually created by GDLauncher.
-    } else if (new File(String.format("%s/config.json", destination)).exists()) {
+    } else if (new File(destination, "config.json").exists()) {
 
       try {
         CONFIGUTILITIES.updateConfigModelFromConfigJson(
-            configurationModel, new File(String.format("%s/config.json", destination)));
+            configurationModel, new File(destination, "config.json"));
 
         // If JSON was acquired, get the name of the modpack and overwrite newDestination using
         // modpack name.
@@ -743,11 +731,11 @@ public final class ConfigurationHandler {
       }
 
       // Check mmc-pack.json usually created by MultiMC.
-    } else if (new File(String.format("%s/mmc-pack.json", destination)).exists()) {
+    } else if (new File(destination, "mmc-pack.json").exists()) {
 
       try {
         CONFIGUTILITIES.updateConfigModelFromMMCPack(
-            configurationModel, new File(String.format("%s/mmc-pack.json", destination)));
+            configurationModel, new File(destination, "mmc-pack.json"));
 
       } catch (IOException ex) {
 
@@ -759,11 +747,11 @@ public final class ConfigurationHandler {
 
       try {
 
-        if (new File(String.format("%s/instance.cfg", destination)).exists()) {
+        if (new File(destination, "instance.cfg").exists()) {
 
           String name =
               CONFIGUTILITIES.updateDestinationFromInstanceCfg(
-                  new File(String.format("%s/instance.cfg", destination)));
+                  new File(destination, "instance.cfg"));
 
           if (name != null) {
             packName = name;
@@ -791,11 +779,8 @@ public final class ConfigurationHandler {
   private String updatePackName(final ConfigurationModel configurationModel, String... childNodes) {
     try {
 
-      return
-          String.format(
-              "./work/modpacks/%s",
-              UTILITIES.JsonUtilities()
-                  .getNestedText(configurationModel.getModpackJson(), childNodes));
+      return APPLICATIONPROPERTIES.modpacksDirectory() + File.separator + UTILITIES.JsonUtilities()
+          .getNestedText(configurationModel.getModpackJson(), childNodes);
 
     } catch (NullPointerException npe) {
 
@@ -1006,7 +991,7 @@ public final class ConfigurationHandler {
 
     configurationModel.getScriptSettings().put(
         "SPC_SERVERPACKCREATOR_VERSION_SPC",
-        APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION());
+        APPLICATIONPROPERTIES.serverPackCreatorVersion());
 
     configurationModel.getScriptSettings().put(
         "SPC_MINECRAFT_VERSION_SPC",
@@ -1117,12 +1102,12 @@ public final class ConfigurationHandler {
             }
 
           } else if (UTILITIES.FileUtils()
-              .isLink(configurationModel.getModpackDir() + "/" + entries[0])) {
+              .isLink(configurationModel.getModpackDir() + File.separator + entries[0])) {
             try {
               copyDirs.set(
                   i,
                   UTILITIES.FileUtils()
-                      .resolveLink(configurationModel.getModpackDir() + "/" + entries[0])
+                      .resolveLink(configurationModel.getModpackDir() + File.separator + entries[0])
                       + ";"
                       + entries[1]);
 
@@ -1151,7 +1136,8 @@ public final class ConfigurationHandler {
             }
 
           } else if (UTILITIES.FileUtils()
-              .isLink(configurationModel.getModpackDir() + "/" + copyDirs.get(i).substring(1))) {
+              .isLink(configurationModel.getModpackDir() + File.separator + copyDirs.get(i)
+                  .substring(1))) {
 
             try {
               copyDirs.set(
@@ -1160,7 +1146,7 @@ public final class ConfigurationHandler {
                       .resolveLink(
                           "!"
                               + configurationModel.getModpackDir()
-                              + "/"
+                              + File.separator
                               + copyDirs.get(i).substring(1)));
 
               LOG.info("Resolved copy-directories link to: " + copyDirs.get(i));
@@ -1185,12 +1171,13 @@ public final class ConfigurationHandler {
           }
 
         } else if (UTILITIES.FileUtils()
-            .isLink(configurationModel.getModpackDir() + "/" + copyDirs.get(i))) {
+            .isLink(configurationModel.getModpackDir() + File.separator + copyDirs.get(i))) {
           try {
             copyDirs.set(
                 i,
                 UTILITIES.FileUtils()
-                    .resolveLink(configurationModel.getModpackDir() + "/" + copyDirs.get(i)));
+                    .resolveLink(
+                        configurationModel.getModpackDir() + File.separator + copyDirs.get(i)));
 
             LOG.info("Resolved copy-directories link to: " + copyDirs.get(i));
             copyDirChanges = true;
@@ -1363,12 +1350,12 @@ public final class ConfigurationHandler {
           String[] sourceFileDestinationFileCombination = directory.split(";");
 
           File sourceFileToCheck =
-              new File(String.format("%s/%s", modpackDir, sourceFileDestinationFileCombination[0]));
+              new File(modpackDir, sourceFileDestinationFileCombination[0]);
 
-          if (!new File(String.format("%s/%s", modpackDir, sourceFileDestinationFileCombination[0]))
+          if (!new File(modpackDir, sourceFileDestinationFileCombination[0])
               .isFile()
               && !new File(
-              String.format("%s/%s", modpackDir, sourceFileDestinationFileCombination[0]))
+              modpackDir, sourceFileDestinationFileCombination[0])
               .isDirectory()
               && !new File(sourceFileDestinationFileCombination[0]).isFile()
               && !new File(sourceFileDestinationFileCombination[0]).isDirectory()) {
@@ -1388,47 +1375,40 @@ public final class ConfigurationHandler {
 
           } else {
 
-            if (new File(
-                String.format("%s/%s", modpackDir, sourceFileDestinationFileCombination[0]))
-                .exists()
+            if (new File(modpackDir, sourceFileDestinationFileCombination[0]).exists()
                 && !UTILITIES.FileUtils()
                 .checkReadPermission(
-                    String.format(
-                        "%s/%s", modpackDir, sourceFileDestinationFileCombination[0]))) {
+                    modpackDir + File.separator + sourceFileDestinationFileCombination[0])) {
 
               configCorrect = false;
 
               LOG.error(
-                  "No read-permission for "
-                      + String.format(
-                      "%s/%s", modpackDir, sourceFileDestinationFileCombination[0]));
+                  "No read-permission for " + modpackDir + File.separator
+                      + sourceFileDestinationFileCombination[0]);
 
               /* This log is meant to be read by the user, therefore we allow translation. */
               encounteredErrors.add(
                   String.format(
                       I18N.getMessage("configuration.log.error.checkcopydirs.read"),
-                      String.format("%s/%s", modpackDir, sourceFileDestinationFileCombination[0])));
+                      modpackDir + File.separator + sourceFileDestinationFileCombination[0]));
 
-            } else if (new File(
-                String.format("%s/%s", modpackDir, sourceFileDestinationFileCombination[0]))
+            } else if (new File(modpackDir, sourceFileDestinationFileCombination[0])
                 .exists()
                 && !UTILITIES.FileUtils()
                 .checkReadPermission(
-                    String.format(
-                        "%s/%s", modpackDir, sourceFileDestinationFileCombination[0]))) {
+                    modpackDir + File.separator + sourceFileDestinationFileCombination[0])) {
 
               configCorrect = false;
 
               LOG.error(
-                  "No read-permission for "
-                      + String.format(
-                      "%s/%s", modpackDir, sourceFileDestinationFileCombination[0]));
+                  "No read-permission for " + modpackDir + File.separator
+                      + sourceFileDestinationFileCombination[0]);
 
               /* This log is meant to be read by the user, therefore we allow translation. */
               encounteredErrors.add(
                   String.format(
                       I18N.getMessage("configuration.log.error.checkcopydirs.read"),
-                      String.format("%s/%s", modpackDir, sourceFileDestinationFileCombination[0])));
+                      modpackDir + File.separator + sourceFileDestinationFileCombination[0]));
 
             } else if (new File(sourceFileDestinationFileCombination[0]).exists()
                 && !UTILITIES.FileUtils()
@@ -1445,16 +1425,14 @@ public final class ConfigurationHandler {
                       sourceFileDestinationFileCombination[0]));
             }
 
-            if (new File(
-                String.format("%s/%s", modpackDir, sourceFileDestinationFileCombination[0]))
+            if (new File(modpackDir, sourceFileDestinationFileCombination[0])
                 .isDirectory()) {
 
               //noinspection ConstantConditions
               for (File file :
-                  new File(
-                      String.format(
-                          "%s/%s", modpackDir, sourceFileDestinationFileCombination[0]))
+                  new File(modpackDir, sourceFileDestinationFileCombination[0])
                       .listFiles()) {
+
                 if (!UTILITIES.FileUtils().checkReadPermission(file)) {
                   configCorrect = false;
 
@@ -1488,8 +1466,7 @@ public final class ConfigurationHandler {
           // Add an entry to the list of directories/files to exclude if it starts with !
         } else if (directory.startsWith("!")) {
 
-          File fileOrDirectory =
-              new File(String.format("%s/%s", modpackDir, directory.substring(1)));
+          File fileOrDirectory = new File(modpackDir, directory.substring(1));
 
           if (fileOrDirectory.isFile()) {
 
@@ -1507,7 +1484,7 @@ public final class ConfigurationHandler {
           // Check if the entry exists
         } else {
 
-          File dirToCheck = new File(String.format("%s/%s", modpackDir, directory));
+          File dirToCheck = new File(modpackDir, directory);
 
           if (!dirToCheck.exists()
               && !new File(directory).exists()

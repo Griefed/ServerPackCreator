@@ -158,15 +158,15 @@ public class ConfigurationModel {
 
     setClientMods(config.getOrElse("clientMods", Collections.singletonList("")));
     setCopyDirs(config.getOrElse("copyDirs", Collections.singletonList("")));
-    modpackDir = config.getOrElse("modpackDir", "").replace("\\", "/");
+    modpackDir = config.getOrElse("modpackDir", "");
     minecraftVersion = config.getOrElse("minecraftVersion", "");
     modLoader = config.getOrElse("modLoader", "");
     modLoaderVersion = config.getOrElse("modLoaderVersion", "");
     javaArgs = config.getOrElse("javaArgs", "");
     serverPackSuffix = utilities.StringUtils()
         .pathSecureText(config.getOrElse("serverPackSuffix", ""));
-    serverIconPath = config.getOrElse("serverIconPath", "").replace("\\", "/");
-    serverPropertiesPath = config.getOrElse("serverPropertiesPath", "").replace("\\", "/");
+    serverIconPath = config.getOrElse("serverIconPath", "");
+    serverPropertiesPath = config.getOrElse("serverPropertiesPath", "");
 
     includeServerInstallation = config.getOrElse("includeServerInstallation", false);
     includeServerIcon = config.getOrElse("includeServerIcon", false);
@@ -410,7 +410,6 @@ public class ConfigurationModel {
     newCopyDirs.removeIf(
         entry ->
             entry.equalsIgnoreCase("server_pack") || entry.matches("\\s+") || entry.isEmpty());
-    newCopyDirs.replaceAll(entry -> entry.replace("\\", "/"));
     this.copyDirs.addAll(newCopyDirs);
   }
 
@@ -431,7 +430,7 @@ public class ConfigurationModel {
    * @author Griefed
    */
   public void setModpackDir(String newModpackDir) {
-    this.modpackDir = newModpackDir.replace("\\", "/");
+    this.modpackDir = newModpackDir;
   }
 
   /**
@@ -708,7 +707,7 @@ public class ConfigurationModel {
    * @author Griefed
    */
   public void setServerIconPath(String serverIconPath) {
-    this.serverIconPath = serverIconPath.replace("\\", "/");
+    this.serverIconPath = serverIconPath;
   }
 
   /**
@@ -728,7 +727,7 @@ public class ConfigurationModel {
    * @author Griefed
    */
   public void setServerPropertiesPath(String serverPropertiesPath) {
-    this.serverPropertiesPath = serverPropertiesPath.replace("\\", "/");
+    this.serverPropertiesPath = serverPropertiesPath;
   }
 
   /**

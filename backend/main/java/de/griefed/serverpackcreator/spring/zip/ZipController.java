@@ -27,7 +27,6 @@ import de.griefed.serverpackcreator.utilities.common.Utilities;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.io.FileUtils;
@@ -100,7 +99,7 @@ public class ZipController {
     Path pathToZip = ZIPSERVICE.saveUploadedFile(file);
 
     if (CONFIGURATIONHANDLER.checkZipArchive(
-        Paths.get(pathToZip.toString().replace("\\", "/")), encounteredErrors)) {
+        pathToZip, encounteredErrors)) {
 
       FileUtils.deleteQuietly(new File(pathToZip.toString()));
 

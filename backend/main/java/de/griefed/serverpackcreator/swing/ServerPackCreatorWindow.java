@@ -147,7 +147,7 @@ public final class ServerPackCreatorWindow extends JFrame {
 
     setTitle(injectedI18n.getMessage("createserverpack.gui.createandshowgui")
         + " - "
-        + APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION());
+        + APPLICATIONPROPERTIES.serverPackCreatorVersion());
 
     TAB_CREATESERVERPACK =
         new TabCreateServerPack(
@@ -166,11 +166,13 @@ public final class ServerPackCreatorWindow extends JFrame {
     TabServerPackCreatorLog TAB_LOG_SERVERPACKCREATOR =
         new TabServerPackCreatorLog(
             injectedI18n.getMessage(
-                "createserverpack.gui.tabbedpane.serverpackcreatorlog.tooltip"));
+                "createserverpack.gui.tabbedpane.serverpackcreatorlog.tooltip"),
+            APPLICATIONPROPERTIES.logsDirectory());
 
     TabAddonsHandlerLog TAB_LOG_ADDONSHANDLER =
         new TabAddonsHandlerLog(
-            injectedI18n.getMessage("createserverpack.gui.tabbedpane.addonshandlerlog.tip"));
+            injectedI18n.getMessage("createserverpack.gui.tabbedpane.addonshandlerlog.tip"),
+            APPLICATIONPROPERTIES.logsDirectory());
 
     BACKGROUNDPANEL = new BackgroundPanel(bufferedImage, BackgroundPanel.TILED, 0.0f, 0.0f);
 
@@ -350,14 +352,14 @@ public final class ServerPackCreatorWindow extends JFrame {
   void chooseJava() {
     JFileChooser javaChooser = new JFileChooser();
 
-    if (new File(String.format("%s/bin/", System.getProperty("java.home").replace("\\", "/")))
+    if (new File(String.format("%s/bin/", System.getProperty("java.home")))
         .isDirectory()) {
 
       javaChooser.setCurrentDirectory(
-          new File(String.format("%s/bin/", System.getProperty("java.home").replace("\\", "/"))));
+          new File(String.format("%s/bin/", System.getProperty("java.home"))));
 
     } else {
-      javaChooser.setCurrentDirectory(new File("."));
+      javaChooser.setCurrentDirectory(APPLICATIONPROPERTIES.homeDirectory());
     }
 
     javaChooser.setDialogTitle(I18N.getMessage("createserverpack.gui.buttonjavapath.tile"));
@@ -367,17 +369,14 @@ public final class ServerPackCreatorWindow extends JFrame {
     javaChooser.setPreferredSize(new Dimension(750, 450));
 
     if (javaChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-      try {
-        APPLICATIONPROPERTIES.setJavaPath(
-            javaChooser.getSelectedFile().getCanonicalPath().replace("\\", "/"));
 
-        LOG.debug(
-            "Set path to Java executable to: "
-                + javaChooser.getSelectedFile().getCanonicalPath().replace("\\", "/"));
+      APPLICATIONPROPERTIES.setJavaPath(
+          javaChooser.getSelectedFile().getPath());
 
-      } catch (IOException ex) {
-        LOG.error("Couldn't set java executable path.", ex);
-      }
+      LOG.debug(
+          "Set path to Java executable to: "
+              + javaChooser.getSelectedFile().getPath());
+
     }
   }
 }

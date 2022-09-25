@@ -66,7 +66,7 @@ public final class MinecraftServer extends ManifestParser {
     MANIFEST_URL = mcUrl;
     VERSION = mcVersion;
     MANIFEST_FILE = new File(
-        applicationProperties.MINECRAFT_SERVER_MANIFEST_LOCATION() + VERSION + ".json");
+        applicationProperties.minecraftServerManifestsDirectory(), VERSION + ".json");
     TYPE = mcType;
     OBJECT_MAPPER = objectMapper;
   }

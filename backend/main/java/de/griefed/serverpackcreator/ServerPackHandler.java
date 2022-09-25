@@ -167,18 +167,13 @@ public final class ServerPackHandler {
    */
   public String getServerPackDestination(final ConfigurationModel configurationModel) {
 
-    String serverPackToBe =
-        configurationModel
-            .getModpackDir()
-            .substring(configurationModel.getModpackDir().lastIndexOf("/") + 1)
-            + configurationModel.getServerPackSuffix();
+    String serverPackToBe = new File(configurationModel.getModpackDir()).getName()
+        + configurationModel.getServerPackSuffix();
 
     serverPackToBe = serverPackToBe.replace(" ", "_");
 
-    return new File(
-        String.format("%s/%s", APPLICATIONPROPERTIES.getDirectoryServerPacks(), serverPackToBe))
-        .getAbsolutePath()
-        .replace("\\", "/");
+    return new File(APPLICATIONPROPERTIES.serverPacksDirectory(), serverPackToBe)
+        .getPath();
   }
 
   /**
@@ -314,7 +309,7 @@ public final class ServerPackHandler {
   public void provideImprovedFabricServerLauncher(
       String minecraftVersion, String fabricVersion, String destination) {
 
-    String fileDestination = String.format("%s/fabric-server-launcher.jar", destination);
+    String fileDestination = destination + File.separator + "fabric-server-launcher.jar";
 
     if (VERSIONMETA.fabric().improvedLauncherUrl(minecraftVersion, fabricVersion).isPresent()
         && UTILITIES.WebUtils()
@@ -327,8 +322,8 @@ public final class ServerPackHandler {
       try (BufferedWriter writer =
           new BufferedWriter(
               new FileWriter(
-                  String.valueOf(
-                      Paths.get(String.format("%s/SERVER_PACK_INFO.txt", destination)))))) {
+                  new File(destination, "SERVER_PACK_INFO.txt")))
+      ) {
 
         // Improved Fabric server launcher info
         writer.write(
@@ -385,7 +380,7 @@ public final class ServerPackHandler {
 
       LOG.info("Found old server_pack.zip. Cleaning up...");
 
-      FileUtils.deleteQuietly(new File(String.format("%s_server_pack.zip", destination)));
+      FileUtils.deleteQuietly(new File(destination + "_server_pack.zip"));
     }
   }
 
@@ -423,7 +418,7 @@ public final class ServerPackHandler {
 
       try {
         String fileEnding = template.toString().substring(template.toString().lastIndexOf(".") + 1);
-        File destinationScript = new File(destination + "/start." + fileEnding);
+        File destinationScript = new File(destination, "start." + fileEnding);
 
         String scriptContent = FileUtils.readFileToString(template, StandardCharsets.UTF_8);
 
@@ -495,7 +490,7 @@ public final class ServerPackHandler {
 
     } catch (IOException ex) {
 
-      LOG.error(String.format("Failed to create directory %s", destination));
+      LOG.error("Failed to create directory " + destination);
     }
 
     if (directoriesToCopy.size() == 1 && directoriesToCopy.get(0).equals("lazy_mode")) {
@@ -524,7 +519,7 @@ public final class ServerPackHandler {
 
         if (exclude.startsWith("!")) {
 
-          exclusions.add(exclude.substring(1).replace("\\", "/"));
+          exclusions.add(exclude.substring(1));
           return true;
 
         } else {
@@ -536,8 +531,8 @@ public final class ServerPackHandler {
 
       for (String directory : directoriesToCopy) {
 
-        String clientDir = String.format("%s/%s", modpackDir, directory).replace("\\", "/");
-        String serverDir = String.format("%s/%s", destination, directory).replace("\\", "/");
+        String clientDir = (modpackDir + File.separator + directory);
+        String serverDir = (destination + File.separator + directory);
 
         LOG.info("Gathering " + directory + " file(s) and folder(s).");
 
@@ -575,14 +570,14 @@ public final class ServerPackHandler {
 
             serverPackFiles.add(
                 new ServerPackFile(
-                    mod.getAbsolutePath(), String.format("%s/%s", serverDir, mod.getName())));
+                    mod.getPath(), serverDir + File.separator + mod.getName()));
           }
 
         } else if (new File(directory).isFile()) {
 
           serverPackFiles.add(
               new ServerPackFile(
-                  directory, String.format("%s/%s", destination, new File(directory).getName())));
+                  directory, destination + File.separator + new File(directory).getName()));
 
         } else if (new File(directory).isDirectory()) {
 
@@ -599,9 +594,11 @@ public final class ServerPackHandler {
       serverPackFiles.removeIf(
           serverPackFile -> {
             if (excludeFileOrDirectory(
-                serverPackFile.SOURCE_PATH.toString().replace("\\", "/"), exclusions)) {
+                serverPackFile.SOURCE_PATH.toString(), exclusions)) {
+
               LOG.debug("Excluding file/directory: " + serverPackFile.SOURCE_PATH);
               return true;
+
             } else {
               return false;
             }
@@ -661,22 +658,22 @@ public final class ServerPackHandler {
 
     List<ServerPackFile> serverPackFiles = new ArrayList<>(100);
 
-    if (new File(String.format("%s/%s", modpackDir, combination[0])).isFile()) {
+    if (new File(modpackDir, combination[0]).isFile()) {
 
       serverPackFiles.add(
           new ServerPackFile(
-              String.format("%s/%s", modpackDir, combination[0]),
-              String.format("%s/%s", destination, combination[1])));
+              modpackDir + File.separator + combination[0],
+              destination + File.separator + combination[1]));
 
-    } else if (new File(String.format("%s/%s", modpackDir, combination[0])).isDirectory()) {
+    } else if (new File(modpackDir, combination[0]).isDirectory()) {
 
       serverPackFiles.addAll(
-          getDirectoryFiles(String.format("%s/%s", modpackDir, combination[0]), destination));
+          getDirectoryFiles(modpackDir + File.separator + combination[0], destination));
 
     } else if (new File(combination[0]).isFile()) {
 
       serverPackFiles.add(
-          new ServerPackFile(combination[0], String.format("%s/%s", destination, combination[1])));
+          new ServerPackFile(combination[0], destination + File.separator + combination[1]));
 
     } else if (new File(combination[0]).isDirectory()) {
 
@@ -705,7 +702,7 @@ public final class ServerPackHandler {
               serverPackFiles.add(
                   new ServerPackFile(
                       file,
-                      Paths.get(String.format("%s/%s", destination, new File(source).getName()))
+                      Paths.get(destination + File.separator + new File(source).getName())
                           .resolve(Paths.get(source).relativize(file))));
             } catch (UnsupportedOperationException ex) {
 
@@ -744,7 +741,7 @@ public final class ServerPackHandler {
               serverPackFiles.add(
                   new ServerPackFile(
                       file,
-                      Paths.get(String.format("%s/%s", destination, directory.substring(6)))
+                      Paths.get(destination + File.separator + directory.substring(6))
                           .resolve(Paths.get(clientDir).relativize(file))));
             } catch (UnsupportedOperationException ex) {
               LOG.error("Couldn't gather file " + file + " from directory " + clientDir + ".", ex);
@@ -772,7 +769,7 @@ public final class ServerPackHandler {
    * @author Griefed
    */
   public List<File> getModsToInclude(final ConfigurationModel configurationModel) {
-    return getModsToInclude(configurationModel.getModpackDir() + "/mods",
+    return getModsToInclude(configurationModel.getModpackDir() + File.separator + "mods",
         configurationModel.getClientMods(), configurationModel.getMinecraftVersion(),
         configurationModel.getModLoader());
   }
@@ -967,7 +964,7 @@ public final class ServerPackHandler {
   private boolean excludeFileOrDirectory(String fileToCheckFor, final TreeSet<String> exclusions) {
     boolean isPresentInList = false;
     for (String entry : exclusions) {
-      if (fileToCheckFor.replace("\\", "/").contains(entry)) {
+      if (fileToCheckFor.replace("\\", "/").contains(entry.replace("\\", "/"))) {
         isPresentInList = true;
         break;
       }
@@ -997,8 +994,8 @@ public final class ServerPackHandler {
 
     LOG.info("Copying server-icon.png...");
 
-    File iconFile =
-        new File(String.format("%s/%s", destination, APPLICATIONPROPERTIES.DEFAULT_SERVER_ICON()));
+    File customIcon =
+        new File(destination, APPLICATIONPROPERTIES.defaultServerIcon().getName());
 
     if (new File(pathToServerIcon).exists()) {
 
@@ -1014,7 +1011,7 @@ public final class ServerPackHandler {
 
           try {
 
-            FileUtils.copyFile(new File(pathToServerIcon), iconFile);
+            FileUtils.copyFile(new File(pathToServerIcon), customIcon);
 
           } catch (IOException e) {
             LOG.error("An error occurred trying to copy the server-icon.", e);
@@ -1033,7 +1030,7 @@ public final class ServerPackHandler {
 
           // Save our scaled image to disk.
           try {
-            ImageIO.write(outputImage, "png", iconFile);
+            ImageIO.write(outputImage, "png", customIcon);
 
           } catch (IOException ex) {
 
@@ -1052,8 +1049,8 @@ public final class ServerPackHandler {
       try {
 
         FileUtils.copyFile(
-            new File(String.format("server_files/%s", APPLICATIONPROPERTIES.DEFAULT_SERVER_ICON())),
-            iconFile);
+            APPLICATIONPROPERTIES.defaultServerIcon(),
+            customIcon);
 
       } catch (IOException ex) {
         LOG.error("An error occurred trying to copy the server-icon.", ex);
@@ -1088,14 +1085,13 @@ public final class ServerPackHandler {
 
     LOG.info("Copying server.properties...");
 
-    File defaultProperties =
-        new File(
-            String.format("%s/%s", destination, APPLICATIONPROPERTIES.DEFAULT_SERVER_PROPERTIES()));
+    File customProperties =
+        new File(destination, APPLICATIONPROPERTIES.defaultServerProperties().getName());
 
     if (new File(pathToServerProperties).exists()) {
       try {
 
-        FileUtils.copyFile(new File(pathToServerProperties), defaultProperties);
+        FileUtils.copyFile(new File(pathToServerProperties), customProperties);
 
       } catch (IOException ex) {
         LOG.error("An error occurred trying to copy the server.properties-file.", ex);
@@ -1107,11 +1103,8 @@ public final class ServerPackHandler {
 
       try {
 
-        FileUtils.copyFile(
-            new File(
-                String.format(
-                    "server_files/%s", APPLICATIONPROPERTIES.DEFAULT_SERVER_PROPERTIES())),
-            defaultProperties);
+        FileUtils.copyFile(APPLICATIONPROPERTIES.defaultServerProperties(),
+            customProperties);
 
       } catch (IOException ex) {
         LOG.error("An error occurred trying to copy the server.properties-file.", ex);
@@ -1209,10 +1202,9 @@ public final class ServerPackHandler {
       case "Fabric":
         LOG_INSTALLER.info("Starting Fabric installation.");
 
-        if (UTILITIES.WebUtils().downloadFile(
-            String.format("%s/fabric-installer.jar", destination),
-            VERSIONMETA.fabric().releaseInstallerUrl())
-        ) {
+        if (UTILITIES.WebUtils()
+            .downloadFile(destination + File.separator + "fabric-installer.jar",
+                VERSIONMETA.fabric().releaseInstallerUrl())) {
 
           LOG.info("Fabric installer successfully downloaded.");
 
@@ -1236,8 +1228,11 @@ public final class ServerPackHandler {
         LOG_INSTALLER.info("Starting Forge installation.");
 
         if (UTILITIES.WebUtils().downloadFile(
-            String.format("%s/forge-installer.jar", destination),
-            VERSIONMETA.forge().getForgeInstance(minecraftVersion, modLoaderVersion).get()
+            destination + File.separator + "forge-installer.jar",
+            VERSIONMETA
+                .forge()
+                .getForgeInstance(minecraftVersion, modLoaderVersion)
+                .get()
                 .installerUrl())
         ) {
 
@@ -1257,8 +1252,7 @@ public final class ServerPackHandler {
       case "Quilt":
         LOG_INSTALLER.info("Starting Quilt installation.");
 
-        if (UTILITIES.WebUtils().downloadFile(
-            String.format("%s/quilt-installer.jar", destination),
+        if (UTILITIES.WebUtils().downloadFile(destination + File.separator + "quilt-installer.jar",
             VERSIONMETA.quilt().releaseInstallerUrl())
         ) {
 
@@ -1283,8 +1277,9 @@ public final class ServerPackHandler {
         LOG_INSTALLER.info("Starting Legacy Fabric installation.");
 
         try {
+
           if (UTILITIES.WebUtils()
-              .downloadFile(String.format("%s/legacyfabric-installer.jar", destination),
+              .downloadFile(destination + File.separator + "legacyfabric-installer.jar",
                   VERSIONMETA.legacyFabric().releaseInstallerUrl())) {
 
             LOG.info("LegacyFabric installer successfully downloaded.");
@@ -1387,6 +1382,28 @@ public final class ServerPackHandler {
       }
     }
 
+    if (modLoader.equalsIgnoreCase("Forge")) {
+      try {
+        Path path =
+            Paths.get(
+                destination + File.separator + "forge-" + minecraftVersion + "-" + modLoaderVersion
+                    + ".jar");
+
+        if (new File(
+            destination + File.separator + "forge-" + minecraftVersion + "-" + modLoaderVersion
+                + ".jar")
+            .exists()) {
+
+          Files.copy(path, Paths.get(destination + File.separator + "forge.jar"), REPLACE_EXISTING);
+          FileUtils.deleteQuietly(path.toFile());
+        }
+
+      } catch (IOException ex) {
+        LOG.error("Could not rename forge-" + minecraftVersion + "-" + modLoaderVersion
+            + ".jar to forge.jar", ex);
+      }
+    }
+
     if (APPLICATIONPROPERTIES.isServerPackCleanupEnabled()) {
       cleanUpServerPack(minecraftVersion, modLoaderVersion, destination);
     } else {
@@ -1449,7 +1466,7 @@ public final class ServerPackHandler {
                   filesToExclude.add(
                       new File(
                           destination
-                              + "/"
+                              + File.separator
                               + entry
                               .replace("MINECRAFT_VERSION", minecraftVersion)
                               .replace("MODLOADER", modloader)
@@ -1465,13 +1482,13 @@ public final class ServerPackHandler {
 
     String comment =
         "Server pack made with ServerPackCreator "
-            + APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION()
+            + APPLICATIONPROPERTIES.serverPackCreatorVersion()
             + " by Griefed.";
 
     zipParameters.setIncludeRootFolder(false);
     zipParameters.setFileComment(comment);
 
-    try (ZipFile zip = new ZipFile(String.format("%s_server_pack.zip", destination))) {
+    try (ZipFile zip = new ZipFile(destination + "_server_pack.zip")) {
 
       zip.addFolder(new File(destination), zipParameters);
       zip.setComment(comment);
@@ -1524,32 +1541,15 @@ public final class ServerPackHandler {
 
     LOG.info("Cleanup after modloader server installation.");
 
-    FileUtils.deleteQuietly(new File(destination + "/fabric-installer.jar"));
-    FileUtils.deleteQuietly(new File(destination + "/forge-installer.jar"));
-    FileUtils.deleteQuietly(new File(destination + "/quilt-installer.jar"));
-    FileUtils.deleteQuietly(new File(destination + "/installer.log"));
-    FileUtils.deleteQuietly(new File(destination + "/forge-installer.jar.log"));
-    FileUtils.deleteQuietly(new File(destination + "/legacyfabric-installer.jar"));
-    FileUtils.deleteQuietly(Paths.get(destination + "/run.bat").toFile());
-    FileUtils.deleteQuietly(Paths.get(destination + "/run.sh").toFile());
-    FileUtils.deleteQuietly(Paths.get(destination + "/user_jvm_args.txt").toFile());
-
-    try {
-      Path path =
-          Paths.get(
-              String.format(destination + "/forge-%s-%s.jar", minecraftVersion, modLoaderVersion));
-
-      if (new File(
-          String.format(destination + "/forge-%s-%s.jar", minecraftVersion, modLoaderVersion))
-          .exists()) {
-
-        Files.copy(path, Paths.get(destination + "/forge.jar"), REPLACE_EXISTING);
-        FileUtils.deleteQuietly(path.toFile());
-      }
-
-    } catch (IOException ignored) {
-
-    }
+    FileUtils.deleteQuietly(new File(destination, "fabric-installer.jar"));
+    FileUtils.deleteQuietly(new File(destination, "forge-installer.jar"));
+    FileUtils.deleteQuietly(new File(destination, "quilt-installer.jar"));
+    FileUtils.deleteQuietly(new File(destination, "installer.log"));
+    FileUtils.deleteQuietly(new File(destination, "forge-installer.jar.log"));
+    FileUtils.deleteQuietly(new File(destination, "legacyfabric-installer.jar"));
+    FileUtils.deleteQuietly(new File(destination, "run.bat"));
+    FileUtils.deleteQuietly(new File(destination, "run.sh"));
+    FileUtils.deleteQuietly(new File(destination, "user_jvm_args.txt"));
   }
 
   /**

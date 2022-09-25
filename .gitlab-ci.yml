@@ -161,6 +161,8 @@ Gradle Test:
       - build
       - frontend/dist
     expire_in: 1 week
+    reports:
+       junit: build/test-results/test/**/TEST-*.xml
   cache:
     - key:
         files:
@@ -586,9 +588,9 @@ Qodana:
     - key:
         files:
           - qodana.yml
+          - build.gradle
       paths:
         - qodana/cache
-      policy: pull-push
 
 pages:
   stage: Documentation

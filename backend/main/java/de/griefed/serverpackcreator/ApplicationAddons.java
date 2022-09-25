@@ -89,10 +89,6 @@ public final class ApplicationAddons extends JarPluginManager {
     VERSIONMETA = injectedVersionMeta;
     UTILITIES = injectedUtilities;
 
-    LOG.info(
-        "Addon directory: "
-            + new File(System.getProperty("pf4j.pluginsDir", "plugins")).getAbsolutePath());
-
     loadPlugins();
 
     startPlugins();
@@ -133,15 +129,17 @@ public final class ApplicationAddons extends JarPluginManager {
     getPlugins().forEach(
         plugin -> {
 
-          String path = "./plugins/config";
           String addonConfig = plugin.getPluginId() + ".toml";
-          File addonConfigFile = new File(path + "/" + addonConfig);
+          File addonConfigFile = new File(
+              APPLICATIONPROPERTIES.addonConfigsDirectory(),
+              addonConfig);
 
           if (!addonConfigFile.exists()) {
 
             try (ZipFile addonJar = new ZipFile(plugin.getPluginPath().toFile())) {
 
-              addonJar.extractFile("config.toml", path, addonConfig);
+              addonJar.extractFile("config.toml",
+                  APPLICATIONPROPERTIES.addonConfigsDirectory().toString(), addonConfig);
 
             } catch (Exception ex) {
               LOG.error(
