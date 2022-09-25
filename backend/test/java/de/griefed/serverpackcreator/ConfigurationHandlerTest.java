@@ -278,7 +278,7 @@ class ConfigurationHandlerTest {
         versionMeta.minecraft().getServer(configurationModel.getMinecraftVersion()).get().url()
             .get().toString(),
         configurationModel.getScriptSettings().get("SPC_MINECRAFT_SERVER_URL_SPC"));
-    Assertions.assertEquals(applicationProperties.SERVERPACKCREATOR_VERSION(),
+    Assertions.assertEquals(applicationProperties.serverPackCreatorVersion(),
         configurationModel.getScriptSettings().get("SPC_SERVERPACKCREATOR_VERSION_SPC"));
     Assertions.assertEquals(versionMeta.fabric().releaseInstaller(),
         configurationModel.getScriptSettings().get("SPC_FABRIC_INSTALLER_VERSION_SPC"));

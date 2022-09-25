@@ -244,7 +244,7 @@ public final class FileUtilities {
       throws InvalidFileTypeException, IOException, InvalidLinkException, ShellLinkException {
     switch (fileType) {
       case SYMLINK:
-        return file.getCanonicalPath();
+        return file.getPath();
 
       case LINK:
         return new ShellLink(file).resolveTarget();
@@ -389,16 +389,28 @@ public final class FileUtilities {
    * @param folder The folder to open.
    * @author Griefed
    */
-  public void openFolder(String folder) {
+  public void openFolder(File folder) {
     if (GraphicsEnvironment.isHeadless()) {
       LOG.error("Graphics environment not supported.");
     } else {
-      try {
-        Desktop.getDesktop().open(new File(folder));
-      } catch (IOException ex) {
-        LOG.error("Error opening file explorer for " + folder + ".", ex);
+      if (Desktop.getDesktop().isSupported(Desktop.Action.OPEN)) {
+        try {
+          Desktop.getDesktop().open(folder);
+        } catch (IOException ex) {
+          LOG.error("Error opening file explorer for " + folder + ".", ex);
+        }
       }
     }
+  }
+
+  /**
+   * Open the specified folder in the file explorer.
+   *
+   * @param folder The folder to open.
+   * @author Griefed
+   */
+  public void openFolder(String folder) {
+    openFolder(new File(folder));
   }
 
   /**
@@ -408,12 +420,22 @@ public final class FileUtilities {
    * @author Griefed
    */
   public void openFile(String fileToOpen) {
+    openFile(new File(fileToOpen));
+  }
+
+  /**
+   * Open the specified file in an editor.
+   *
+   * @param fileToOpen The file to open.
+   * @author Griefed
+   */
+  public void openFile(File fileToOpen) {
     if (GraphicsEnvironment.isHeadless()) {
       LOG.error("Graphics environment not supported.");
     } else {
       try {
         if (Desktop.getDesktop().isSupported(Desktop.Action.EDIT)) {
-          Desktop.getDesktop().open(new File(fileToOpen));
+          Desktop.getDesktop().open(fileToOpen);
         }
       } catch (IOException ex) {
         LOG.error("Error opening file.", ex);

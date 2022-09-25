@@ -19,6 +19,7 @@
  */
 package de.griefed.serverpackcreator.spring.task;
 
+import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.ConfigurationHandler;
 import de.griefed.serverpackcreator.ServerPackHandler;
 import de.griefed.serverpackcreator.spring.serverpack.ServerPackModel;
@@ -53,6 +54,7 @@ public class TaskHandler {
 
   private static final Logger LOG = LogManager.getLogger(TaskHandler.class);
 
+  private final ApplicationProperties APPLICATIONPROPERTIES;
   private final ConfigurationHandler CONFIGURATIONHANDLER;
   private final ServerPackHandler SERVERPACKHANDLER;
   private final ServerPackService SERVERPACKSERVICE;
@@ -61,20 +63,24 @@ public class TaskHandler {
   /**
    * Constructor responsible for our DI.
    *
-   * @param injectedConfigurationHandler Instance of {@link ConfigurationHandler}.
-   * @param injectedServerPackHandler    Instance of {@link ServerPackHandler}.
-   * @param injectedServerPackService    Instance of {@link ServerPackService}.
+   * @param injectedApplicationProperties Instance of {@link ApplicationProperties}.
+   * @param injectedConfigurationHandler  Instance of {@link ConfigurationHandler}.
+   * @param injectedServerPackHandler     Instance of {@link ServerPackHandler}.
+   * @param injectedServerPackService     Instance of {@link ServerPackService}.
    * @author Griefed
    */
   @Autowired
   public TaskHandler(
+      ApplicationProperties injectedApplicationProperties,
       ConfigurationHandler injectedConfigurationHandler,
       ServerPackHandler injectedServerPackHandler,
       ServerPackService injectedServerPackService) {
-    this.CONFIGURATIONHANDLER = injectedConfigurationHandler;
-    this.SERVERPACKHANDLER = injectedServerPackHandler;
-    this.SERVERPACKSERVICE = injectedServerPackService;
-    this.STOPWATCH_SCANS = new StopWatch();
+
+    APPLICATIONPROPERTIES = injectedApplicationProperties;
+    CONFIGURATIONHANDLER = injectedConfigurationHandler;
+    SERVERPACKHANDLER = injectedServerPackHandler;
+    SERVERPACKSERVICE = injectedServerPackService;
+    STOPWATCH_SCANS = new StopWatch();
   }
 
   /**
@@ -121,7 +127,8 @@ public class TaskHandler {
 
       serverPackModel.setFileDiskName(parameters[0]);
 
-      serverPackModel.setModpackDir("./work/modpacks/" + parameters[0]);
+      serverPackModel.setModpackDir(
+          APPLICATIONPROPERTIES.modpacksDirectory() + File.separator + parameters[0]);
       serverPackModel.setMinecraftVersion(parameters[2]);
       serverPackModel.setModLoader(parameters[3]);
       serverPackModel.setModLoaderVersion(parameters[4]);
@@ -139,10 +146,7 @@ public class TaskHandler {
 
         if (!CONFIGURATIONHANDLER.checkConfiguration(serverPackModel, encounteredErrors, false)) {
 
-          serverPackModel.setFileName(
-              serverPackModel
-                  .getModpackDir()
-                  .substring(serverPackModel.getModpackDir().lastIndexOf("/") + 1));
+          serverPackModel.setFileName(new File(serverPackModel.getModpackDir()).getName());
 
           SERVERPACKSERVICE.insert(serverPackModel);
 
@@ -178,7 +182,8 @@ public class TaskHandler {
 
       } finally {
 
-        FileUtils.deleteQuietly(new File("./work/modpacks/" + parameters[0]));
+        FileUtils.deleteQuietly(
+            new File(APPLICATIONPROPERTIES.modpacksDirectory(), parameters[0]));
 
         STOPWATCH_SCANS.stop();
 

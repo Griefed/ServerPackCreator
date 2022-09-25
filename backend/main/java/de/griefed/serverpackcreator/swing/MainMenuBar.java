@@ -319,7 +319,7 @@ public class MainMenuBar extends Component {
     JMenuItem view_OpenAddonLog = new JMenuItem(I18N.getMessage("menubar.gui.menuitem.addonlog"));
 
     //JMenuItem about_OpenAboutWindowMenuItem =
-        new JMenuItem(I18N.getMessage("menubar.gui.menuitem.about"));
+    new JMenuItem(I18N.getMessage("menubar.gui.menuitem.about"));
     JMenuItem about_OpenGitHubPageMenuItem =
         new JMenuItem(I18N.getMessage("menubar.gui.menuitem.repository"));
     JMenuItem about_OpenGitHubIssuesPageMenuItem =
@@ -466,7 +466,7 @@ public class MainMenuBar extends Component {
 
     Optional<Update> update =
         UPDATECHECKER.checkForUpdate(
-            APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION(),
+            APPLICATIONPROPERTIES.serverPackCreatorVersion(),
             APPLICATIONPROPERTIES.checkForAvailablePreReleases());
 
     if (update.isPresent()) {
@@ -754,7 +754,9 @@ public class MainMenuBar extends Component {
     if (new File(TAB_CREATESERVERPACK.getServerPropertiesPath()).isFile()) {
       UTILITIES.FileUtils().openFile(TAB_CREATESERVERPACK.getServerPropertiesPath());
     } else {
-      UTILITIES.FileUtils().openFile("./server_files/server.properties");
+      UTILITIES.FileUtils()
+          .openFile(
+              APPLICATIONPROPERTIES.serverFilesDirectory() + File.separator + "server.properties");
     }
   }
 
@@ -771,7 +773,9 @@ public class MainMenuBar extends Component {
     if (new File(TAB_CREATESERVERPACK.getServerIconPath()).isFile()) {
       UTILITIES.FileUtils().openFile(TAB_CREATESERVERPACK.getServerIconPath());
     } else {
-      UTILITIES.FileUtils().openFile("./server_files/server-icon.png");
+      UTILITIES.FileUtils()
+          .openFile(
+              APPLICATIONPROPERTIES.serverFilesDirectory() + File.separator + "server-icon.png");
     }
   }
 
@@ -797,7 +801,7 @@ public class MainMenuBar extends Component {
     LOG.debug("Clicked Save As...");
 
     configChooser = new JFileChooser();
-    configChooser.setCurrentDirectory(new File("."));
+    configChooser.setCurrentDirectory(APPLICATIONPROPERTIES.homeDirectory());
     configChooser.setDialogTitle("Store current configuration");
     configChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
     configChooser.setFileFilter(
@@ -809,28 +813,23 @@ public class MainMenuBar extends Component {
 
     if (configChooser.showOpenDialog(SERVERPACKCREATORWINDOW) == JFileChooser.APPROVE_OPTION) {
 
-      try {
+      if (configChooser.getSelectedFile().getPath().endsWith(".conf")) {
 
-        if (configChooser.getSelectedFile().getCanonicalPath().endsWith(".conf")) {
+        TAB_CREATESERVERPACK.saveConfig(
+            new File(configChooser.getSelectedFile().getPath()));
+        LOG.debug(
+            "Saved configuration to: " + configChooser.getSelectedFile().getPath());
 
-          TAB_CREATESERVERPACK.saveConfig(
-              new File(configChooser.getSelectedFile().getCanonicalPath()));
-          LOG.debug(
-              "Saved configuration to: " + configChooser.getSelectedFile().getCanonicalPath());
+      } else {
 
-        } else {
-
-          TAB_CREATESERVERPACK.saveConfig(
-              new File(configChooser.getSelectedFile().getCanonicalPath() + ".conf"));
-          LOG.debug(
-              "Saved configuration to: "
-                  + configChooser.getSelectedFile().getCanonicalPath()
-                  + ".conf");
-        }
-
-      } catch (IOException ex) {
-        LOG.error("Error loading configuration from selected file.", ex);
+        TAB_CREATESERVERPACK.saveConfig(
+            new File(configChooser.getSelectedFile().getPath() + ".conf"));
+        LOG.debug(
+            "Saved configuration to: "
+                + configChooser.getSelectedFile().getPath()
+                + ".conf");
       }
+
     }
   }
 
@@ -847,7 +846,7 @@ public class MainMenuBar extends Component {
   private void saveConfigToFileMenuItem(ActionEvent actionEvent) {
     LOG.debug("Clicked Save.");
     LOG.debug("Saving serverpackcreator.conf");
-    TAB_CREATESERVERPACK.saveConfig(new File("./serverpackcreator.conf"));
+    TAB_CREATESERVERPACK.saveConfig(APPLICATIONPROPERTIES.defaultConfig());
 
     if (lastLoadedConfigurationFile != null && APPLICATIONPROPERTIES.getSaveLoadedConfiguration()) {
       LOG.debug("Saving " + lastLoadedConfigurationFile.getName());
@@ -870,7 +869,7 @@ public class MainMenuBar extends Component {
         UIManager.setLookAndFeel(LAF_DARK);
         MaterialLookAndFeel.changeTheme(DARKTHEME);
         APPLICATIONPROPERTIES.setTheme(true);
-        APPLICATIONPROPERTIES.saveToDisk(APPLICATIONPROPERTIES.SERVERPACKCREATOR_PROPERTIES());
+        APPLICATIONPROPERTIES.saveToDisk(APPLICATIONPROPERTIES.serverPackCreatorPropertiesFile());
 
       } catch (UnsupportedLookAndFeelException ex) {
         LOG.error("Couldn't change theme.", ex);
@@ -880,7 +879,7 @@ public class MainMenuBar extends Component {
         UIManager.setLookAndFeel(LAF_LIGHT);
         MaterialLookAndFeel.changeTheme(LIGHTTHEME);
         APPLICATIONPROPERTIES.setTheme(false);
-        APPLICATIONPROPERTIES.saveToDisk(APPLICATIONPROPERTIES.SERVERPACKCREATOR_PROPERTIES());
+        APPLICATIONPROPERTIES.saveToDisk(APPLICATIONPROPERTIES.serverPackCreatorPropertiesFile());
 
       } catch (UnsupportedLookAndFeelException ex) {
         LOG.error("Couldn't change theme.", ex);
@@ -904,7 +903,7 @@ public class MainMenuBar extends Component {
     LOG.debug("Clicked load configuration from file.");
 
     configChooser = new JFileChooser();
-    configChooser.setCurrentDirectory(new File("."));
+    configChooser.setCurrentDirectory(APPLICATIONPROPERTIES.homeDirectory());
     configChooser.setDialogTitle(I18N.getMessage("createserverpack.gui.buttonloadconfig.title"));
     configChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
     configChooser.setFileFilter(
@@ -921,7 +920,7 @@ public class MainMenuBar extends Component {
         /* This log is meant to be read by the user, therefore we allow translation. */
         LOG.info(
             "Loading from configuration file: "
-                + configChooser.getSelectedFile().getCanonicalPath());
+                + configChooser.getSelectedFile().getPath());
 
         File specifiedConfigFile;
         try {
@@ -930,7 +929,7 @@ public class MainMenuBar extends Component {
         } catch (InvalidFileTypeException ex) {
           LOG.error("Could not resolve link/symlink. Using entry from user input for checks.", ex);
           specifiedConfigFile =
-              new File(configChooser.getSelectedFile().getCanonicalPath().replace("\\", "/"));
+              new File(configChooser.getSelectedFile().getPath());
         }
 
         TAB_CREATESERVERPACK.loadConfig(specifiedConfigFile);
@@ -953,7 +952,7 @@ public class MainMenuBar extends Component {
    */
   private void openPluginsDirectoryMenuItem(ActionEvent actionEvent) {
     LOG.debug("Clicked open plugins directory.");
-    UTILITIES.FileUtils().openFolder(APPLICATIONPROPERTIES.DIRECTORY_PLUGINS());
+    UTILITIES.FileUtils().openFolder(APPLICATIONPROPERTIES.addonsDirectory());
   }
 
   /**
@@ -978,7 +977,7 @@ public class MainMenuBar extends Component {
    */
   private void openSPCDirectoryMenuItem(ActionEvent actionEvent) {
     LOG.debug("Clicked open installation directory.");
-    UTILITIES.FileUtils().openFolder(".");
+    UTILITIES.FileUtils().openFolder(APPLICATIONPROPERTIES.homeDirectory());
   }
 
   /**
@@ -990,7 +989,7 @@ public class MainMenuBar extends Component {
    */
   private void openServerPacksDirectoryMenuItem(ActionEvent actionEvent) {
     LOG.debug("Clicked open server packs directory.");
-    UTILITIES.FileUtils().openFolder(APPLICATIONPROPERTIES.getDirectoryServerPacks());
+    UTILITIES.FileUtils().openFolder(APPLICATIONPROPERTIES.serverPacksDirectory());
   }
 
   /**
@@ -1002,7 +1001,7 @@ public class MainMenuBar extends Component {
    */
   private void openServerFilesDirectoryMenuItem(ActionEvent actionEvent) {
     LOG.debug("Clicked open server files directory.");
-    UTILITIES.FileUtils().openFolder(APPLICATIONPROPERTIES.DIRECTORY_SERVER_FILES());
+    UTILITIES.FileUtils().openFolder(APPLICATIONPROPERTIES.serverFilesDirectory());
   }
 
   /**

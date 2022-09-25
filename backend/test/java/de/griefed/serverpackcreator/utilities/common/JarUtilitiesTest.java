@@ -16,7 +16,7 @@ public class JarUtilitiesTest {
 
   @Test
   void copyFileFromJarTest() {
-    jarUtilities.copyFileFromJar("banner.txt", JarUtilitiesTest.class);
+    jarUtilities.copyFileFromJar("banner.txt", JarUtilitiesTest.class, new File("").getAbsolutePath());
     Assertions.assertTrue(new File("banner.txt").exists());
   }
 
@@ -28,7 +28,7 @@ public class JarUtilitiesTest {
   @Test
   void systemInformationTest() {
     HashMap<String, String> system =
-        jarUtilities.systemInformation(
+        jarUtilities.jarInformation(
             jarUtilities.getApplicationHomeForClass(JarUtilitiesTest.class));
     Assertions.assertNotNull(system);
     Assertions.assertNotNull(system.get("jarPath"));

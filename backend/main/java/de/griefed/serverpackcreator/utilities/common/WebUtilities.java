@@ -73,7 +73,7 @@ public final class WebUtilities {
    */
   public boolean downloadAndReplaceFile(File destinationFile, URL downloadURL) {
     return downloadAndReplaceFile(
-        destinationFile.getAbsoluteFile().toString().replace("\\", "/"), downloadURL);
+        destinationFile.getPath(), downloadURL);
   }
 
   /**
@@ -104,7 +104,7 @@ public final class WebUtilities {
    */
   public boolean downloadFile(File destinationFile, URL downloadURL) {
     return downloadFile(
-        destinationFile.getAbsoluteFile().toString().replace("\\", "/"), downloadURL);
+        destinationFile.getPath(), downloadURL);
   }
 
   /**
@@ -134,7 +134,7 @@ public final class WebUtilities {
 
       readableByteChannel = Channels.newChannel(downloadURL.openStream());
 
-      fileOutputStream = new FileOutputStream(fileDestination.replace("\\", "/"));
+      fileOutputStream = new FileOutputStream(fileDestination);
 
       fileChannel = fileOutputStream.getChannel();
 
@@ -369,7 +369,8 @@ public final class WebUtilities {
    * method return {@code true}.
    *
    * @param url The URL of which to check for host-availability.
-   * @return {@code true} if, and only if, the host is available and the URL returns the status code 200..
+   * @return {@code true} if, and only if, the host is available and the URL returns the status code
+   * 200..
    */
   public boolean isReachable(URL url) {
     boolean available;

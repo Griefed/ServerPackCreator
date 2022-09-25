@@ -21,6 +21,7 @@ package de.griefed.serverpackcreator;
 
 import de.griefed.serverpackcreator.utilities.common.FileUtilities;
 import de.griefed.serverpackcreator.utilities.common.InvalidFileTypeException;
+import de.griefed.serverpackcreator.utilities.common.JarUtilities;
 import de.griefed.serverpackcreator.utilities.common.ListUtilities;
 import de.griefed.serverpackcreator.utilities.common.SystemUtilities;
 import java.io.BufferedReader;
@@ -55,241 +56,50 @@ import org.springframework.stereotype.Component;
  */
 @SuppressWarnings("FieldCanBeLocal")
 @Component
-public final class ApplicationProperties extends Properties {
+public final class ApplicationProperties {
 
   private static final Logger LOG = LogManager.getLogger(ApplicationProperties.class);
+  private final Properties PROPERTIES = new Properties();
   private final FileUtilities FILE_UTILITIES;
   private final SystemUtilities SYSTEM_UTILITIES;
   private final ListUtilities LIST_UTILITIES;
-  /**
-   * Default properties.
-   */
+  private final JarUtilities JAR_UTILITIES;
+  private final JarInformation JAR_INFORMATION;
   private final String SERVERPACKCREATOR_PROPERTIES = "serverpackcreator.properties";
-  /**
-   * Default properties file.
-   */
-  private final File SERVERPACKCREATOR_PROPERTIES_FILE = new File(SERVERPACKCREATOR_PROPERTIES);
-  /**
-   * Default fallback clientside-only mods.
-   */
   private final String FALLBACK_MODS_DEFAULT_ASSTRING =
       "3dskinlayers-,Absolutely-Not-A-Zoom-Mod-,AdvancedChat-,AdvancedChatCore-,AdvancedChatHUD-,AdvancedCompas-,Ambience,AmbientEnvironment-,AmbientSounds_,AreYouBlind-,Armor Status HUD-,ArmorSoundTweak-,BH-Menu-,Batty's Coordinates PLUS Mod,BetterAdvancements-,BetterAnimationsCollection-,BetterDarkMode-,BetterF3-,BetterFoliage-,BetterPingDisplay-,BetterPlacement-,BetterTaskbar-,BetterThirdPerson,BetterTitleScreen-,Blur-,BorderlessWindow-,CTM-,ChunkAnimator-,ClientTweaks_,Controller Support-,Controlling-,CraftPresence-,CustomCursorMod-,CustomMainMenu-,DefaultOptions_,DefaultSettings-,DeleteWorldsToTrash-,DetailArmorBar-,Ding-,DistantHorizons-,DripSounds-,Durability101-,DurabilityNotifier-,DynamicSurroundings-,DynamicSurroundingsHuds-,EffectsLeft-,EiraMoticons_,EnchantmentDescriptions-,EnhancedVisuals_,EquipmentCompare-,FPS-Monitor-,FabricCustomCursorMod-,Fallingleaves-,FancySpawnEggs,FancyVideo-API-,FirstPersonMod,FogTweaker-,ForgeCustomCursorMod-,FpsReducer-,FpsReducer2-,FullscreenWindowed-,GameMenuModOption-,HealthOverlay-,HorseStatsMod-,InventoryEssentials_,InventoryHud_[1.17.1].forge-,InventorySpam-,InventoryTweaks-,ItemBorders-,ItemPhysicLite_,ItemStitchingFix-,JBRA-Client-,JustEnoughCalculation-,JustEnoughEffects-,JustEnoughProfessions-,JustEnoughResources-,LLOverlayReloaded-,LOTRDRP-,LegendaryTooltips,LegendaryTooltips-,LightOverlay-,MoBends,MouseTweaks-,MyServerIsCompatible-,Neat ,Neat-,NekosEnchantedBooks-,NoAutoJump-,NoFog-,Notes-,NotifMod-,OldJavaWarning-,OptiFine,OptiFine_,OptiForge,OptiForge-,PackMenu-,PackModeMenu-,PickUpNotifier-,Ping-,PresenceFootsteps-,RPG-HUD-,ReAuth-,ResourceLoader-,ResourcePackOrganizer,ShoulderSurfing-,ShulkerTooltip-,SimpleDiscordRichPresence-,SimpleWorldTimer-,SoundFilters-,SpawnerFix-,TRansliterationLib-,TipTheScales-,Tips-,Toast Control-,Toast-Control-,ToastControl-,TravelersTitles-,VoidFog-,WindowedFullscreen-,WorldNameRandomizer-,[1.12.2]DamageIndicatorsMod-,[1.12.2]bspkrscore-,antighost-,anviltooltipmod-,appleskin-,armorchroma-,armorpointspp-,auditory-,authme-,auto-reconnect-,autojoin-,autoreconnect-,axolotl-item-fix-,backtools-,bannerunlimited-,beenfo-1.19-,better-recipe-book-,betterbiomeblend-,bhmenu-,blur-,borderless-mining-,catalogue-,charmonium-,chat_heads-,cherishedworlds-,cirback-1.0-,classicbar-,clickadv-,clienttweaks-,combat_music-,configured-,controllable-,cullleaves-,cullparticles-,custom-crosshair-mod-,customdiscordrpc-,darkness-,dashloader-,defaultoptions-,desiredservers-,discordrpc-,drippyloadingscreen-,drippyloadingscreen_,dynamic-fps-,dynamic-music-,dynamiclights-,dynmus-,effective-,eggtab-,eguilib-,eiramoticons-,enchantment-lore-,entity-texture-features-,entityculling-,exhaustedstamina-,extremesoundmuffler-,fabricemotes-,fancymenu_,fancymenu_video_extension,findme-,flickerfix-,fm_audio_extension_,forgemod_VoxelMap-,freelook-,galacticraft-rpc-,gamestagesviewer-,grid-,helium-,hiddenrecipebook_,infinitemusic-,inventoryprofiles,invtweaks-,itemzoom,itlt-,jeed-,jehc-,jeiintegration_,just-enough-harvestcraft-,justenoughbeacons-,justenoughdrags-,justzoom_,keymap-,keywizard-,konkrete_,konkrete_forge_,lazydfu-,light-overlay-,lightfallclient-,loadmyresources_,lock_minecart_view-,lootbeams-,lwl-,magnesium_extras-,maptooltip-,massunbind,mcbindtype-,mcwifipnp-,medievalmusic-,mightyarchitect-,mindful-eating-,minetogether-,mobplusplus-,modcredits-,modernworldcreation_,modmenu-,modnametooltip-,modnametooltip_,moreoverlays-,mousewheelie-,movement-vision-,multihotbar-,music-duration-reducer-,musicdr-,neiRecipeHandlers-,ngrok-lan-expose-mod-,nopotionshift_,notenoughanimations-,oculus-,ornaments-,overloadedarmorbar-,panorama-,paperdoll-,phosphor-,preciseblockplacing-,realm-of-lost-souls-,rebrand-,replanter-,rubidium-,rubidium_extras-,screenshot-to-clipboard-,shutupexperimentalsettings-,shutupmodelloader-,signtools-,simple-rpc-,simpleautorun-,smartcursor-,smoothboot-,smoothfocus-,sounddeviceoptions-,soundreloader-,spoticraft-,tconplanner-,timestamps-,tooltipscroller-,torchoptimizer-,torohealth-,totaldarkness,toughnessbar-,wisla-,xlifeheartcolors-,yisthereautojump-";
-  /**
-   * Default fallback clientside-only mods list.
-   */
   private final TreeSet<String> FALLBACK_CLIENTSIDE_MODS =
       new TreeSet<>(Arrays.asList(FALLBACK_MODS_DEFAULT_ASSTRING.split(",")));
-  /**
-   * List of mods which should be excluded from server packs.
-   */
   private final TreeSet<String> FALLBACK_MODS = new TreeSet<>(FALLBACK_CLIENTSIDE_MODS);
-  /**
-   * Default fallback clientside-only mods, regex.
-   */
   private final String FALLBACK_MODS_DEFAULT_REGEX_ASSTRING =
       "^3dskinlayers-.*$,^Absolutely-Not-A-Zoom-Mod-.*$,^AdvancedChat-.*$,^AdvancedChatCore-.*$,^AdvancedChatHUD-.*$,^AdvancedCompas-.*$,^Ambience.*$,^AmbientEnvironment-.*$,^AmbientSounds_.*$,^AreYouBlind-.*$,^Armor Status HUD-.*$,^ArmorSoundTweak-.*$,^BH-Menu-.*$,^Batty's Coordinates PLUS Mod.*$,^BetterAdvancements-.*$,^BetterAnimationsCollection-.*$,^BetterDarkMode-.*$,^BetterF3-.*$,^BetterFoliage-.*$,^BetterPingDisplay-.*$,^BetterPlacement-.*$,^BetterTaskbar-.*$,^BetterThirdPerson.*$,^BetterTitleScreen-.*$,^Blur-.*$,^BorderlessWindow-.*$,^CTM-.*$,^ChunkAnimator-.*$,^ClientTweaks_.*$,^Controller Support-.*$,^Controlling-.*$,^CraftPresence-.*$,^CustomCursorMod-.*$,^CustomMainMenu-.*$,^DefaultOptions_.*$,^DefaultSettings-.*$,^DeleteWorldsToTrash-.*$,^DetailArmorBar-.*$,^Ding-.*$,^DistantHorizons-.*$,^DripSounds-.*$,^Durability101-.*$,^DurabilityNotifier-.*$,^DynamicSurroundings-.*$,^DynamicSurroundingsHuds-.*$,^EffectsLeft-.*$,^EiraMoticons_.*$,^EnchantmentDescriptions-.*$,^EnhancedVisuals_.*$,^EquipmentCompare-.*$,^FPS-Monitor-.*$,^FabricCustomCursorMod-.*$,^Fallingleaves-.*$,^FancySpawnEggs.*$,^FancyVideo-API-.*$,^FirstPersonMod.*$,^FogTweaker-.*$,^ForgeCustomCursorMod-.*$,^FpsReducer-.*$,^FpsReducer2-.*$,^FullscreenWindowed-.*$,^GameMenuModOption-.*$,^HealthOverlay-.*$,^HorseStatsMod-.*$,^InventoryEssentials_.*$,^InventoryHud_[1.17.1].forge-.*$,^InventorySpam-.*$,^InventoryTweaks-.*$,^ItemBorders-.*$,^ItemPhysicLite_.*$,^ItemStitchingFix-.*$,^JBRA-Client-.*$,^JustEnoughCalculation-.*$,^JustEnoughEffects-.*$,^JustEnoughProfessions-.*$,^JustEnoughResources-.*$,^LLOverlayReloaded-.*$,^LOTRDRP-.*$,^LegendaryTooltips-.*$,^LegendaryTooltips.*$,^LightOverlay-.*$,^MoBends.*$,^MouseTweaks-.*$,^MyServerIsCompatible-.*$,^Neat .*$,^Neat-.*$,^NekosEnchantedBooks-.*$,^NoAutoJump-.*$,^NoFog-.*$,^Notes-.*$,^NotifMod-.*$,^OldJavaWarning-.*$,^OptiFine.*$,^OptiFine_.*$,^OptiForge-.*$,^OptiForge.*$,^PackMenu-.*$,^PackModeMenu-.*$,^PickUpNotifier-.*$,^Ping-.*$,^PresenceFootsteps-.*$,^RPG-HUD-.*$,^ReAuth-.*$,^ResourceLoader-.*$,^ResourcePackOrganizer.*$,^ShoulderSurfing-.*$,^ShulkerTooltip-.*$,^SimpleDiscordRichPresence-.*$,^SimpleWorldTimer-.*$,^SoundFilters-.*$,^SpawnerFix-.*$,^TRansliterationLib-.*$,^TipTheScales-.*$,^Tips-.*$,^Toast Control-.*$,^Toast-Control-.*$,^ToastControl-.*$,^TravelersTitles-.*$,^VoidFog-.*$,^WindowedFullscreen-.*$,^WorldNameRandomizer-.*$,^[1.12.2]DamageIndicatorsMod-.*$,^[1.12.2]bspkrscore-.*$,^antighost-.*$,^anviltooltipmod-.*$,^appleskin-.*$,^armorchroma-.*$,^armorpointspp-.*$,^auditory-.*$,^authme-.*$,^auto-reconnect-.*$,^autojoin-.*$,^autoreconnect-.*$,^axolotl-item-fix-.*$,^backtools-.*$,^bannerunlimited-.*$,^beenfo-1.19-.*$,^better-recipe-book-.*$,^betterbiomeblend-.*$,^bhmenu-.*$,^blur-.*$,^borderless-mining-.*$,^catalogue-.*$,^charmonium-.*$,^chat_heads-.*$,^cherishedworlds-.*$,^cirback-1.0-.*$,^classicbar-.*$,^clickadv-.*$,^clienttweaks-.*$,^combat_music-.*$,^configured-.*$,^controllable-.*$,^cullleaves-.*$,^cullparticles-.*$,^custom-crosshair-mod-.*$,^customdiscordrpc-.*$,^darkness-.*$,^dashloader-.*$,^defaultoptions-.*$,^desiredservers-.*$,^discordrpc-.*$,^drippyloadingscreen-.*$,^drippyloadingscreen_.*$,^dynamic-fps-.*$,^dynamic-music-.*$,^dynamiclights-.*$,^dynmus-.*$,^effective-.*$,^eggtab-.*$,^eguilib-.*$,^eiramoticons-.*$,^enchantment-lore-.*$,^entity-texture-features-.*$,^entityculling-.*$,^exhaustedstamina-.*$,^extremesoundmuffler-.*$,^fabricemotes-.*$,^fancymenu_.*$,^fancymenu_video_extension.*$,^findme-.*$,^flickerfix-.*$,^fm_audio_extension_.*$,^forgemod_VoxelMap-.*$,^freelook-.*$,^galacticraft-rpc-.*$,^gamestagesviewer-.*$,^grid-.*$,^helium-.*$,^hiddenrecipebook_.*$,^infinitemusic-.*$,^inventoryprofiles.*$,^invtweaks-.*$,^itemzoom.*$,^itlt-.*$,^jeed-.*$,^jehc-.*$,^jeiintegration_.*$,^just-enough-harvestcraft-.*$,^justenoughbeacons-.*$,^justenoughdrags-.*$,^justzoom_.*$,^keymap-.*$,^keywizard-.*$,^konkrete_.*$,^konkrete_forge_.*$,^lazydfu-.*$,^light-overlay-.*$,^lightfallclient-.*$,^loadmyresources_.*$,^lock_minecart_view-.*$,^lootbeams-.*$,^lwl-.*$,^magnesium_extras-.*$,^maptooltip-.*$,^massunbind.*$,^mcbindtype-.*$,^mcwifipnp-.*$,^medievalmusic-.*$,^mightyarchitect-.*$,^mindful-eating-.*$,^minetogether-.*$,^mobplusplus-.*$,^modcredits-.*$,^modernworldcreation_.*$,^modmenu-.*$,^modnametooltip-.*$,^modnametooltip_.*$,^moreoverlays-.*$,^mousewheelie-.*$,^movement-vision-.*$,^multihotbar-.*$,^music-duration-reducer-.*$,^musicdr-.*$,^neiRecipeHandlers-.*$,^ngrok-lan-expose-mod-.*$,^nopotionshift_.*$,^notenoughanimations-.*$,^oculus-.*$,^ornaments-.*$,^overloadedarmorbar-.*$,^panorama-.*$,^paperdoll-.*$,^phosphor-.*$,^preciseblockplacing-.*$,^realm-of-lost-souls-.*$,^rebrand-.*$,^replanter-.*$,^rubidium-.*$,^rubidium_extras-.*$,^screenshot-to-clipboard-.*$,^shutupexperimentalsettings-.*$,^shutupmodelloader-.*$,^signtools-.*$,^simple-rpc-.*$,^simpleautorun-.*$,^smartcursor-.*$,^smoothboot-.*$,^smoothfocus-.*$,^sounddeviceoptions-.*$,^soundreloader-.*$,^spoticraft-.*$,^tconplanner-.*$,^timestamps-.*$,^tooltipscroller-.*$,^torchoptimizer-.*$,^torohealth-.*$,^totaldarkness.*$,^toughnessbar-.*$,^wisla-.*$,^xlifeheartcolors-.*$,^yisthereautojump-.*$";
-  /**
-   * Default fallback clientside-only mods list, regex.
-   */
   private final TreeSet<String> FALLBACK_REGEX_CLIENTSIDE_MODS =
       new TreeSet<>(Arrays.asList(FALLBACK_MODS_DEFAULT_REGEX_ASSTRING.split(",")));
-  /**
-   * List of mods which should be excluded from server packs, in regex format.
-   */
   private final TreeSet<String> FALLBACK_MODS_REGEX = new TreeSet<>(FALLBACK_REGEX_CLIENTSIDE_MODS);
-  /**
-   * ServerPackCreator version.
-   */
   private final String SERVERPACKCREATOR_VERSION;
-  /**
-   * Supported modloaders.
-   */
   private final String[] SUPPORTED_MODLOADERS = new String[]{"Fabric", "Forge", "Quilt",
       "LegacyFabric"};
-  /**
-   * Default directories to include in the server pack.
-   */
   private final String FALLBACK_DIRECTORIES_INCLUDE_ASSTRING = "mods,config,kubejs,defaultconfigs,scripts";
-  /**
-   * Default list of directories to include in the server pack.
-   */
   private final TreeSet<String> FALLBACK_DIRECTORIES_INCLUDE =
       new TreeSet<>(Arrays.asList(FALLBACK_DIRECTORIES_INCLUDE_ASSTRING.split(",")));
-  /**
-   * List of directories which must not be excluded from server packs. Default is mods, config,
-   * defaultconfigs, scripts, saves, seeds, libraries.
-   */
   private final TreeSet<String> DIRECTORIES_TO_INCLUDE = new TreeSet<>(
       FALLBACK_DIRECTORIES_INCLUDE);
-  /**
-   * Default directories to exclude from the server pack.
-   */
   private final String FALLBACK_DIRECTORIES_EXCLUDE_ASSTRING =
       "overrides,packmenu,resourcepacks,server_pack,fancymenu,libraries,downloads,logs,profileImage,resourcepacks,screenshots,shaderpacks,tv-cache,asm";
-  /**
-   * Default list of directories to exclude from the server pack.
-   */
   private final TreeSet<String> FALLBACK_DIRECTORIES_EXCLUDE =
       new TreeSet<>(Arrays.asList(FALLBACK_DIRECTORIES_EXCLUDE_ASSTRING.split(",")));
-  /**
-   * List of directories which should be excluded from server packs. Default is overrides, packmenu,
-   * resourcepacks, server_pack, fancymenu.
-   */
   private final TreeSet<String> DIRECTORIES_TO_EXCLUDE = new TreeSet<>(
       FALLBACK_DIRECTORIES_EXCLUDE);
-  /**
-   * Default files to exclude from a server pack ZIP-archive.
-   */
   private final String FALLBACK_FILES_EXCLUDE_ZIP_ASSTRING =
       "minecraft_server.MINECRAFT_VERSION.jar,server.jar,libraries/net/minecraft/server/MINECRAFT_VERSION/server-MINECRAFT_VERSION.jar";
-  /**
-   * Default list of files to exclude from a server pack ZIP-archive.
-   */
   private final TreeSet<String> FALLBACK_FILES_EXCLUDE_ZIP =
       new TreeSet<>(Arrays.asList(FALLBACK_FILES_EXCLUDE_ZIP_ASSTRING.split(",")));
-  /**
-   * List of files to be excluded from ZIP-archives.
-   */
   private final TreeSet<String> FILES_TO_EXCLUDE_FROM_ZIP = new TreeSet<>(
       FALLBACK_FILES_EXCLUDE_ZIP);
-  /**
-   * Default shell-script template.
-   */
   private final String DEFAULT_SHELL_TEMPLATE = "default_template.sh";
-  /**
-   * Default PowerShell script template.
-   */
   private final String DEFAULT_POWERSHELL_TEMPLATE = "default_template.ps1";
-  /**
-   * Default script templates list as string.
-   */
   private final String FALLBACK_SCRIPT_TEMPLATES_ASSTRING =
       DEFAULT_SHELL_TEMPLATE + "," + DEFAULT_POWERSHELL_TEMPLATE;
-  /**
-   * Default list of script templates in the server_files-directory.
-   */
-  private final TreeSet<File> FALLBACK_SCRIPT_TEMPLATES =
-      new TreeSet<>(
-          Arrays.asList(
-              new File("server_files/" + DEFAULT_SHELL_TEMPLATE),
-              new File("server_files/" + DEFAULT_POWERSHELL_TEMPLATE)));
-  /**
-   * List of templates used for start-script creation.
-   */
-  private final TreeSet<File> SCRIPT_TEMPLATES = new TreeSet<>(FALLBACK_SCRIPT_TEMPLATES);
-  /**
-   * Default configuration file from which to load a server pack configuration.
-   */
-  private final File DEFAULT_CONFIG = new File("serverpackcreator.conf");
-  /**
-   * Default properties file for a Minecraft server.
-   */
-  private final File DEFAULT_SERVER_PROPERTIES = new File("server.properties");
-  /**
-   * Default server-icon for a Minecraft server.
-   */
-  private final File DEFAULT_SERVER_ICON = new File("server-icon.png");
-  /**
-   * Minecraft version manifest file.
-   */
-  private final File MINECRAFT_VERSION_MANIFEST = new File("minecraft-manifest.json");
-  /**
-   * Forge version manifest file.
-   */
-  private final File FORGE_VERSION_MANIFEST = new File("forge-manifest.json");
-  /**
-   * Fabric version manifest file.
-   */
-  private final File FABRIC_VERSION_MANIFEST = new File("fabric-manifest.xml");
-  private final File FABRIC_INTERMEDIARIES_MANIFEST = new File(
-      "fabric-intermediaries-manifest.json");
-  /**
-   * Storage location of manifests used by the VersionMeta.
-   */
-  private final String MANIFEST_LOCATION = "./manifests/";
-  private final String MINECRAFT_SERVER_MANIFESTS_LOCATION = MANIFEST_LOCATION + "mcserver/";
-  /**
-   * Fabric intermediaries manifest file.
-   */
-  private final File FABRIC_INTERMEDIARIES_MANIFEST_LOCATION =
-      new File(MANIFEST_LOCATION + FABRIC_INTERMEDIARIES_MANIFEST.getName());
-  /**
-   * Fabric installer version manifest file.
-   */
-  private final File FABRIC_INSTALLER_VERSION_MANIFEST = new File("fabric-installer-manifest.xml");
-  /**
-   * Quilt version manifest file.
-   */
-  private final File QUILT_VERSION_MANIFEST = new File("quilt-manifest.xml");
-  /**
-   * Quilt installer version manifest file.
-   */
-  private final File QUILT_INSTALLER_VERSION_MANIFEST = new File("quilt-installer-manifest.xml");
-  /**
-   * ServerPackCreator webservice database file.
-   */
-  private final File SERVERPACKCREATOR_DATABASE = new File("serverpackcreator.db");
-  /**
-   * Storage location for Minecraft version manifest file.
-   */
-  private final File MINECRAFT_VERSION_MANIFEST_LOCATION =
-      new File(MANIFEST_LOCATION + MINECRAFT_VERSION_MANIFEST.getName());
-  /**
-   * Storage location for Forge version manifest file.
-   */
-  private final File FORGE_VERSION_MANIFEST_LOCATION = new File(
-      MANIFEST_LOCATION + "forge-manifest.json");
-  /**
-   * Storage location for Fabric version manifest file.
-   */
-  private final File FABRIC_VERSION_MANIFEST_LOCATION = new File(
-      MANIFEST_LOCATION + "fabric-manifest.xml");
-  /**
-   * Legacy Fabric Game version manifest file.
-   */
-  private final File LEGACY_FABRIC_GAME_MANIFEST = new File("legacy-fabric-game-manifest.json");
-  /**
-   * Legacy Fabric Loader version manifest file.
-   */
-  private final File LEGACY_FABRIC_LOADER_MANIFEST = new File("legacy-fabric-loader-manifest.json");
-  /**
-   * Legacy Fabric Installer version manifest file.
-   */
-  private final File LEGACY_FABRIC_INSTALLER_MANIFEST = new File(
-      "legacy-fabric-installer-manifest.xml");
-  /**
-   * Storage location for Legacy Fabric Game version manifest file.
-   */
-  private final File LEGACY_FABRIC_GAME_MANIFEST_LOCATION = new File(
-      MANIFEST_LOCATION + LEGACY_FABRIC_GAME_MANIFEST.getName());
-  /**
-   * Storage location for Legacy Fabric Loader version manifest file.
-   */
-  private final File LEGACY_FABRIC_LOADER_MANIFEST_LOCATION = new File(
-      MANIFEST_LOCATION + LEGACY_FABRIC_LOADER_MANIFEST.getName());
-  /**
-   * Storage location for Legacy Fabric Installer version manifest file.
-   */
-  private final File LEGACY_FABRIC_INSTALLER_MANIFEST_LOCATION = new File(
-      MANIFEST_LOCATION + LEGACY_FABRIC_INSTALLER_MANIFEST.getName());
-  /**
-   * Storage location for Fabric installer version manifest file.
-   */
-  private final File FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION =
-      new File(MANIFEST_LOCATION + FABRIC_INSTALLER_VERSION_MANIFEST.getName());
-  /**
-   * Storage location for Quilt version manifest file.
-   */
-  private final File QUILT_VERSION_MANIFEST_LOCATION = new File(
-      MANIFEST_LOCATION + QUILT_VERSION_MANIFEST.getName());
-  /**
-   * Storage location for Quilt installer version manifest file.
-   */
-  private final File QUILT_INSTALLER_VERSION_MANIFEST_LOCATION =
-      new File(MANIFEST_LOCATION + QUILT_INSTALLER_VERSION_MANIFEST.getName());
-  /**
-   * Default Aikars flags.
-   */
   private final String AIKARS_FLAGS =
       "-Xms4G -Xmx4G -XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200 "
           + "-XX:+UnlockExperimentalVMOptions -XX:+DisableExplicitGC -XX:+AlwaysPreTouch -XX:G1NewSizePercent=30 "
@@ -297,11 +107,6 @@ public final class ApplicationProperties extends Properties {
           + "-XX:G1MixedGCCountTarget=4 -XX:InitiatingHeapOccupancyPercent=15 -XX:G1MixedGCLiveThresholdPercent=90 "
           + "-XX:G1RSetUpdatingPauseTimePercent=5 -XX:SurvivorRatio=32 -XX:+PerfDisableSharedMem "
           + "-XX:MaxTenuringThreshold=1 -Dusing.aikars.flags=https://mcflags.emc.gs -Daikars.new.flags=true";
-  /**
-   * Map containing any Java paths from properties with the format
-   * {@code de.griefed.serverpackcreator.script.javaN} where N is the version of the Java
-   * installation.
-   */
   private final HashMap<String, String> JAVA_PATHS = new HashMap<>(256);
   private final String PROPERTY_VERSIONCHECK_PRERELEASE = "de.griefed.serverpackcreator.versioncheck.prerelease";
   private final String PROPERTY_LANGUAGE = "de.griefed.serverpackcreator.language";
@@ -330,74 +135,59 @@ public final class ApplicationProperties extends Properties {
   private final String PROPERTY_JAVA = "de.griefed.serverpackcreator.java";
   private final String PROPERTY_SCRIPT_JAVA = "de.griefed.serverpackcreator.script.java";
   private final String PROPERTY_SCRIPT_JAVA_AUTOUPDATE = "de.griefed.serverpackcreator.script.java.autoupdate";
-  /**
-   * The directory in which server packs will be generated and stored in, as well as server pack
-   * ZIP-archives. Default is ./server-packs
-   */
+  private final String PROPERTY_HOME_DIRECTORY = "de.griefed.serverpackcreator.home";
   private String directoryServerPacks = "server-packs";
-  /**
-   * When running as a webservice: Maximum disk usage in % at which JMS/Artemis will stop storing
-   * message in the queue saved on disk. Default is 90%.
-   */
   private int queueMaxDiskUsage = 90;
-  /**
-   * Whether the manually loaded configuration file should be saved as well as the default
-   * serverpackcreator.conf. Setting this to true will make ServerPackCreator save
-   * serverpackcreator.conf as well as the last loaded configuration-file. Default is false.
-   */
   private boolean saveLoadedConfiguration = false;
-  /**
-   * Whether ServerPackCreator should check for available PreReleases. Set to {@code true} to get
-   * notified about available PreReleases. Set to {@code false} if you only want stable releases.
-   */
   private boolean checkForPreReleases = false;
-  /**
-   * Aikars flags recommended for running a Minecraft server, from <a
-   * href=https://aikar.co/mcflags.html>aikar.co</a>
-   */
   private String aikarsFlags = AIKARS_FLAGS;
-  /**
-   * Whether the exclusion of files from the server pack is enabled.
-   */
   private boolean isZipFileExclusionEnabled = true;
-  /**
-   * Whether clientside-only mods should automatically be excluded *
-   */
   private boolean autoExcludingModsEnabled = true;
-  /**
-   * Whether overwriting of already existing server packs is enabled
-   */
   private boolean serverPacksOverwriteEnabled = true;
-  /**
-   * Whether cleanup procedures of server packs after generation are enabled. See
-   * {@code ServerPackHandler#cleanUpServerPack(...)} for details.
-   */
   private boolean serverPackCleanupEnabled = true;
-  /**
-   * The language currently being used.
-   */
   private String language = "en_us";
-  /**
-   * URL to the hastebin server documents endpoint.
-   */
   private String hasteBinServerUrl = "https://haste.zneix.eu/documents";
-  /**
-   * Whether pre-releases and snapshots should be available to the user.
-   */
   private boolean minecraftPreReleases = false;
-  /**
-   * In which way user-specified clientside-only mods should be excluded.
-   */
   private ExclusionFilter exclusionFilter = ExclusionFilter.START;
-  /**
-   * The path to a viable Java executable or binary for use in modloader server installation.
-   */
   private String javaPath = "java";
-  /**
-   * Whether to automatically update the {@code SPC_JAVA_SPC}-placeholder in the script variables
-   * table with a Java path matching the required Java version for the Minecraft server.
-   */
   private boolean javaScriptAutoupdate = true;
+  private File serverPackCreatorPropertiesFile = null;
+  private File minecraftServerManifestsDirectory = null;
+  private File fabricIntermediariesManifest = null;
+  private File legacyFabricGameManifest = null;
+  private File legacyFabricLoaderManifest = null;
+  private File legacyFabricInstallerManifest = null;
+  private File fabricInstallerManifest = null;
+  private File quiltVersionManifest = null;
+  private File quiltInstallerManifest = null;
+  private File forgeVersionManifest = null;
+  private File fabricVersionManifest = null;
+  private File minecraftVersionManifest = null;
+  private File manifestsDirectory = null;
+  private File workDirectory = null;
+  private File modpacksDirectory = null;
+  private File tempDirectory = null;
+  private File defaultConfig = null;
+  private File defaultServerProperties = null;
+  private File defaultServerIcon = null;
+  private File serverPackCreatorDatabase = null;
+  /**
+   * The home-directory of ServerPackCreator in which all files reside in.
+   */
+  private File homeDirectory;
+  /**
+   * Default list of script templates in the server_files-directory.
+   */
+  private final TreeSet<File> FALLBACK_SCRIPT_TEMPLATES =
+      new TreeSet<>(
+          Arrays.asList(
+              new File(serverFilesDirectory(), DEFAULT_SHELL_TEMPLATE),
+              new File(serverFilesDirectory(), DEFAULT_POWERSHELL_TEMPLATE)));
+  /**
+   * List of templates used for start-script creation.
+   */
+  private final TreeSet<File> SCRIPT_TEMPLATES = new TreeSet<>(FALLBACK_SCRIPT_TEMPLATES);
+  private File langDirectory = null;
 
   /**
    * Initialize an instance of our application properties using the default
@@ -407,15 +197,19 @@ public final class ApplicationProperties extends Properties {
    * @param systemUtilities Instance of {@link SystemUtilities} to acquire the Java path
    *                        automatically.
    * @param listUtilities   Used to print the configured fallback modlists in chunks.
+   * @param jarUtilities    Instance of {@link JarUtilities} used to acquire .exe or JAR-, as well
+   *                        as system information.
    * @author Griefed
    */
   @Autowired
   public ApplicationProperties(
       FileUtilities fileUtilities,
       SystemUtilities systemUtilities,
-      ListUtilities listUtilities) {
+      ListUtilities listUtilities,
+      JarUtilities jarUtilities) {
 
-    this(new File("serverpackcreator.properties"), fileUtilities, systemUtilities, listUtilities);
+    this(new File("serverpackcreator.properties"), fileUtilities, systemUtilities, listUtilities,
+        jarUtilities);
   }
 
   /**
@@ -426,19 +220,22 @@ public final class ApplicationProperties extends Properties {
    * @param systemUtilities Instance of {@link SystemUtilities} to acquire the Java path
    *                        automatically.
    * @param listUtilities   Used to print the configured fallback modlists in chunks.
+   * @param jarUtilities    Instance of {@link JarUtilities} used to acquire .exe or JAR-, as well
+   *                        as system information.
    * @author Griefed
    */
   public ApplicationProperties(
       File propertiesFile,
       FileUtilities fileUtilities,
       SystemUtilities systemUtilities,
-      ListUtilities listUtilities) {
-
-    super();
+      ListUtilities listUtilities,
+      JarUtilities jarUtilities) {
 
     FILE_UTILITIES = fileUtilities;
     SYSTEM_UTILITIES = systemUtilities;
     LIST_UTILITIES = listUtilities;
+    JAR_UTILITIES = jarUtilities;
+    JAR_INFORMATION = new JarInformation();
 
     String version = ApplicationProperties.class.getPackage().getImplementationVersion();
     if (version != null) {
@@ -456,7 +253,7 @@ public final class ApplicationProperties extends Properties {
    * @author Griefed
    */
   public void loadProperties() {
-    loadProperties(SERVERPACKCREATOR_PROPERTIES_FILE);
+    loadProperties(new File(SERVERPACKCREATOR_PROPERTIES));
   }
 
   /**
@@ -470,16 +267,31 @@ public final class ApplicationProperties extends Properties {
     // Load the properties file from the classpath, providing default values.
     try (InputStream inputStream =
         new ClassPathResource(SERVERPACKCREATOR_PROPERTIES).getInputStream()) {
-      load(inputStream);
+
+      PROPERTIES.load(inputStream);
     } catch (IOException ex) {
       LOG.error("Couldn't read properties file.", ex);
     }
 
-    // If our properties-file exists, load it to ensure we always have base settings available.
-    if (SERVERPACKCREATOR_PROPERTIES_FILE.exists()) {
+    // If out properties-file exists in SPCs home directory, load it.
+    if (new File(JAR_INFORMATION.JAR_FOLDER, SERVERPACKCREATOR_PROPERTIES).exists()) {
+
       try (InputStream inputStream =
-          Files.newInputStream(SERVERPACKCREATOR_PROPERTIES_FILE.toPath())) {
-        load(inputStream);
+          Files.newInputStream(
+              new File(JAR_INFORMATION.JAR_FOLDER, SERVERPACKCREATOR_PROPERTIES).toPath())) {
+
+        PROPERTIES.load(inputStream);
+      } catch (IOException ex) {
+        LOG.error("Couldn't read properties file.", ex);
+      }
+    }
+
+    // If our properties-file in the directory from which the user is executing SPC exists, load it.
+    if (new File(SERVERPACKCREATOR_PROPERTIES).exists()) {
+      try (InputStream inputStream =
+          Files.newInputStream(new File(SERVERPACKCREATOR_PROPERTIES).toPath())) {
+
+        PROPERTIES.load(inputStream);
       } catch (IOException ex) {
         LOG.error("Couldn't read properties file.", ex);
       }
@@ -490,13 +302,15 @@ public final class ApplicationProperties extends Properties {
       try (InputStream inputStream =
           Files.newInputStream(propertiesFile.toPath())) {
 
-        load(inputStream);
-        LOG.info("Loading file: " + propertiesFile.getAbsolutePath());
+        PROPERTIES.load(inputStream);
+        LOG.info("Loading file: " + propertiesFile.getPath());
 
       } catch (IOException ex) {
         LOG.error("Couldn't read properties file.", ex);
       }
     }
+
+    setHome();
 
     if (updateFallback()) {
       LOG.info("Fallback lists updated.");
@@ -544,7 +358,7 @@ public final class ApplicationProperties extends Properties {
 
     setAutoUpdateScriptVariablesJavaPlaceholder();
 
-    saveToDisk(SERVERPACKCREATOR_PROPERTIES_FILE);
+    saveToDisk(serverPackCreatorPropertiesFile());
   }
 
   /**
@@ -555,7 +369,7 @@ public final class ApplicationProperties extends Properties {
    * @author Griefed
    */
   private String defineProperty(String key, String value) {
-    setProperty(key, value);
+    PROPERTIES.setProperty(key, value);
     return value;
   }
 
@@ -570,10 +384,10 @@ public final class ApplicationProperties extends Properties {
    * @author Griefed
    */
   private String acquireProperty(String key, String defaultValue) {
-    if (getProperty(key) == null) {
+    if (PROPERTIES.getProperty(key) == null) {
       return defineProperty(key, defaultValue);
     } else {
-      return getProperty(key, defaultValue);
+      return PROPERTIES.getProperty(key, defaultValue);
     }
   }
 
@@ -640,19 +454,46 @@ public final class ApplicationProperties extends Properties {
   }
 
   /**
+   * Set ServerPackCreators home-directory. If ServerPackCreator is run for the first time on a
+   * given machine, the current containing directory will be used and saved as the
+   * home-directory.<br> If ServerPackCreator has been run before, and the home-directory-property
+   * is set, then that directory will be used as ServerPackCreators continued home-directory.
+   *
+   * @author Griefed
+   */
+  private void setHome() {
+    //TODO Replace with user home-directory acquisition in MS4 as per GH#438
+    if (PROPERTIES.containsKey(PROPERTY_HOME_DIRECTORY) && new File(
+        PROPERTIES.getProperty(PROPERTY_HOME_DIRECTORY)).isDirectory()) {
+      homeDirectory = new File(PROPERTIES.getProperty(PROPERTY_HOME_DIRECTORY));
+    } else {
+      if (JAR_INFORMATION.JAR_FILE.isDirectory() || JAR_INFORMATION.JAR_FOLDER.toString().matches(".*build.classes.java.*")) {
+        homeDirectory = new File(new File("").getAbsolutePath());
+      } else {
+        homeDirectory = JAR_INFORMATION.JAR_FOLDER;
+      }
+
+      PROPERTIES.setProperty(PROPERTY_HOME_DIRECTORY, homeDirectory.getAbsolutePath());
+    }
+    LOG.info("Home directory: " + homeDirectory);
+  }
+
+  /**
    * Set the directory where the generated server packs will be stored in.
    *
    * @author Griefed
    */
   private void setServerPacksDir() {
     if (new File(acquireProperty(PROPERTY_CONFIGURATION_DIRECTORIES_SERVERPACKS,
-        "server-packs")).exists()) {
-      directoryServerPacks = acquireProperty(PROPERTY_CONFIGURATION_DIRECTORIES_SERVERPACKS,
-          "server-packs");
+        homeDirectory + File.separator + "server-packs")).isDirectory()) {
+      directoryServerPacks = new File(
+          PROPERTIES.getProperty(PROPERTY_CONFIGURATION_DIRECTORIES_SERVERPACKS)).getPath();
     } else {
       LOG.error("Invalid server-packs directory specified. Defaulting to 'server-packs'.");
-      directoryServerPacks = "server-packs";
+      directoryServerPacks = new File(
+          homeDirectory, "server-packs").getPath();
     }
+    PROPERTIES.setProperty(PROPERTY_CONFIGURATION_DIRECTORIES_SERVERPACKS, directoryServerPacks);
     LOG.info("Server packs directory set to: " + directoryServerPacks);
   }
 
@@ -664,13 +505,14 @@ public final class ApplicationProperties extends Properties {
   private void setFallbackModsList() {
     FALLBACK_MODS.addAll(getListProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST,
         FALLBACK_MODS_DEFAULT_ASSTRING));
-    setProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST, String.join(",", FALLBACK_MODS));
+    PROPERTIES.setProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST,
+        String.join(",", FALLBACK_MODS));
     LOG.info("Fallback modslist set to:");
     LIST_UTILITIES.printListToLogChunked(new ArrayList<>(FALLBACK_MODS), 5, "    ", true);
 
     FALLBACK_MODS_REGEX.addAll(getListProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST_REGEX,
         FALLBACK_MODS_DEFAULT_REGEX_ASSTRING));
-    setProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST_REGEX,
+    PROPERTIES.setProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST_REGEX,
         String.join(",", FALLBACK_MODS_REGEX));
     LOG.info("Fallback regex modslist set to:");
     LIST_UTILITIES.printListToLogChunked(new ArrayList<>(FALLBACK_MODS_REGEX), 5, "    ", true);
@@ -788,7 +630,8 @@ public final class ApplicationProperties extends Properties {
   private void setScriptTemplates() {
     SCRIPT_TEMPLATES.clear();
     SCRIPT_TEMPLATES.addAll(getFileListProperty(PROPERTY_SERVERPACK_SCRIPT_TEMPLATE,
-        FALLBACK_SCRIPT_TEMPLATES_ASSTRING, "server_files/"));
+        FALLBACK_SCRIPT_TEMPLATES_ASSTRING,
+        homeDirectory + File.separator + "server_files" + File.separator));
     LOG.info("Using script templates:");
     SCRIPT_TEMPLATES.forEach(template -> LOG.info("    " + template.getPath()));
   }
@@ -803,15 +646,16 @@ public final class ApplicationProperties extends Properties {
 
     // Legacy declaration which may still be present in some serverpackcreator.properties-files.
     try {
-      if (getProperty(PROPERTY_SERVERPACK_AUTODISCOVERY_ENABLED_LEGACY).matches("(true|false)")) {
+      if (PROPERTIES.getProperty(PROPERTY_SERVERPACK_AUTODISCOVERY_ENABLED_LEGACY)
+          .matches("(true|false)")) {
         autoExcludingModsEnabled =
             Boolean.parseBoolean(
-                getProperty(PROPERTY_SERVERPACK_AUTODISCOVERY_ENABLED_LEGACY));
+                PROPERTIES.getProperty(PROPERTY_SERVERPACK_AUTODISCOVERY_ENABLED_LEGACY));
 
-        setProperty(PROPERTY_SERVERPACK_AUTODISCOVERY_ENABLED,
+        PROPERTIES.setProperty(PROPERTY_SERVERPACK_AUTODISCOVERY_ENABLED,
             String.valueOf(autoExcludingModsEnabled));
 
-        remove(PROPERTY_SERVERPACK_AUTODISCOVERY_ENABLED_LEGACY);
+        PROPERTIES.remove(PROPERTY_SERVERPACK_AUTODISCOVERY_ENABLED_LEGACY);
 
         LOG.info(
             "Migrated '" + PROPERTY_SERVERPACK_AUTODISCOVERY_ENABLED_LEGACY + "' to '"
@@ -912,7 +756,7 @@ public final class ApplicationProperties extends Properties {
     } catch (NullPointerException ignored) {
 
     } finally {
-      setProperty(PROPERTY_SERVERPACK_AUTODISCOVERY_FILTER, exclusionFilter.toString());
+      PROPERTIES.setProperty(PROPERTY_SERVERPACK_AUTODISCOVERY_FILTER, exclusionFilter.toString());
     }
     LOG.info("User specified clientside-only mod exclusion filter set to: " + exclusionFilter);
   }
@@ -925,10 +769,10 @@ public final class ApplicationProperties extends Properties {
    * @author Griefed
    */
   private void setJavaPath() {
-    if (checkJavaPath(getProperty(PROPERTY_JAVA, ""))) {
-      javaPath = getProperty(PROPERTY_JAVA);
+    if (checkJavaPath(PROPERTIES.getProperty(PROPERTY_JAVA, ""))) {
+      javaPath = PROPERTIES.getProperty(PROPERTY_JAVA);
     } else {
-      setProperty(PROPERTY_JAVA, getJavaPath(""));
+      PROPERTIES.setProperty(PROPERTY_JAVA, getJavaPath(""));
       javaPath = acquireProperty(PROPERTY_JAVA, getJavaPath(""));
     }
     LOG.info("Java path set to: " + javaPath);
@@ -944,7 +788,7 @@ public final class ApplicationProperties extends Properties {
    */
   public void setJavaPath(String javaPath) {
     this.javaPath = getJavaPath(javaPath);
-    saveToDisk(SERVERPACKCREATOR_PROPERTIES_FILE);
+    saveToDisk(serverPackCreatorPropertiesFile());
   }
 
   /**
@@ -1104,17 +948,17 @@ public final class ApplicationProperties extends Properties {
    */
   private void setJavaScriptsVariablePaths() {
     for (int i = 8; i < 256; i++) {
-      if (checkJavaPath(getProperty(PROPERTY_SCRIPT_JAVA + i, ""))) {
+      if (checkJavaPath(PROPERTIES.getProperty(PROPERTY_SCRIPT_JAVA + i, ""))) {
 
         if (JAVA_PATHS.containsKey(String.valueOf(i))) {
           JAVA_PATHS.replace(String.valueOf(i),
-              getProperty(PROPERTY_SCRIPT_JAVA + i).replace("\\", "/"));
+              PROPERTIES.getProperty(PROPERTY_SCRIPT_JAVA + i));
         } else {
           JAVA_PATHS.put(String.valueOf(i),
-              getProperty(PROPERTY_SCRIPT_JAVA + i).replace("\\", "/"));
+              PROPERTIES.getProperty(PROPERTY_SCRIPT_JAVA + i));
         }
 
-        setProperty(PROPERTY_SCRIPT_JAVA + i, JAVA_PATHS.get(String.valueOf(i)));
+        PROPERTIES.setProperty(PROPERTY_SCRIPT_JAVA + i, JAVA_PATHS.get(String.valueOf(i)));
       }
     }
 
@@ -1137,18 +981,233 @@ public final class ApplicationProperties extends Properties {
   }
 
   /**
-   * Default list of script templates, used in case not a single one was configured.
+   * Default properties file.
    *
-   * <ul>
-   *   <li>default_template.sh
-   *   <li>default_template.ps1
-   * </ul>
-   *
-   * @return Default script templates.
+   * @return serverpackcreator.properties
    * @author Griefed
    */
-  public List<File> FALLBACK_SCRIPT_TEMPLATES() {
-    return new ArrayList<>(FALLBACK_SCRIPT_TEMPLATES);
+  public File serverPackCreatorPropertiesFile() {
+    if (serverPackCreatorPropertiesFile == null) {
+      serverPackCreatorPropertiesFile = new File(
+          homeDirectory, SERVERPACKCREATOR_PROPERTIES);
+    }
+    return serverPackCreatorPropertiesFile;
+  }
+
+  /**
+   * Directory for Minecraft server manifests.
+   *
+   * @return manifests/mcserver
+   * @author Griefed
+   */
+  public File minecraftServerManifestsDirectory() {
+    if (minecraftServerManifestsDirectory == null) {
+      minecraftServerManifestsDirectory = new File(
+          manifestsDirectory(), "mcserver");
+    }
+    return minecraftServerManifestsDirectory;
+  }
+
+  /**
+   * Fabric intermediaries manifest file.
+   *
+   * @return manifests/fabric-intermediaries-manifest.json
+   * @author Griefed
+   */
+  public File fabricIntermediariesManifest() {
+    if (fabricIntermediariesManifest == null) {
+      fabricIntermediariesManifest = new File(
+          manifestsDirectory(), "fabric-intermediaries-manifest.json");
+    }
+    return fabricIntermediariesManifest;
+  }
+
+  /**
+   * Storage location for Legacy Fabric Game version manifest file.
+   *
+   * @return manifests/legacy-fabric-game-manifest.json
+   * @author Griefed
+   */
+  public File legacyFabricGameManifest() {
+    if (legacyFabricGameManifest == null) {
+      legacyFabricGameManifest = new File(
+          manifestsDirectory(), "legacy-fabric-game-manifest.json");
+    }
+    return legacyFabricGameManifest;
+  }
+
+  /**
+   * Storage location for Legacy Fabric Loader version manifest file.
+   *
+   * @return manifests/legacy-fabric-loader-manifest.json
+   * @author Griefed
+   */
+  public File legacyFabricLoaderManifest() {
+    if (legacyFabricLoaderManifest == null) {
+      legacyFabricLoaderManifest = new File(
+          manifestsDirectory(), "legacy-fabric-loader-manifest.json");
+    }
+    return legacyFabricLoaderManifest;
+  }
+
+  /**
+   * Storage location for Legacy Fabric Installer version manifest file.
+   *
+   * @return manifests/legacy-fabric-installer-manifest.xml
+   * @author Griefed
+   */
+  public File legacyFabricInstallerManifest() {
+    if (legacyFabricInstallerManifest == null) {
+      legacyFabricInstallerManifest = new File(
+          manifestsDirectory(), "legacy-fabric-installer-manifest.xml");
+    }
+    return legacyFabricInstallerManifest;
+  }
+
+  /**
+   * Storage location for Fabric installer version manifest file.
+   *
+   * @return manifests/fabric-installer-manifest.xml
+   * @author Griefed
+   */
+  public File fabricInstallerManifest() {
+    if (fabricInstallerManifest == null) {
+      fabricInstallerManifest = new File(
+          manifestsDirectory(), "fabric-installer-manifest.xml");
+    }
+    return fabricInstallerManifest;
+  }
+
+  /**
+   * Storage location for Quilt version manifest file.
+   *
+   * @return manifests/quilt-manifest.xml
+   * @author Griefed
+   */
+  public File quiltVersionManifest() {
+    if (quiltVersionManifest == null) {
+      quiltVersionManifest = new File(
+          manifestsDirectory(), "quilt-manifest.xml");
+    }
+    return quiltVersionManifest;
+  }
+
+  /**
+   * Storage location for Quilt installer version manifest file.
+   *
+   * @return manifests/quilt-installer-manifest.xml
+   * @author Griefed
+   */
+  public File quiltInstallerManifest() {
+    if (quiltInstallerManifest == null) {
+      quiltInstallerManifest = new File(
+          manifestsDirectory(), "quilt-installer-manifest.xml");
+    }
+    return quiltInstallerManifest;
+  }
+
+  /**
+   * Storage location for Forge version manifest file.
+   *
+   * @return manifests/forge-manifest.json
+   * @author Griefed
+   */
+  public File forgeVersionManifest() {
+    if (forgeVersionManifest == null) {
+      forgeVersionManifest = new File(
+          manifestsDirectory(), "forge-manifest.json");
+    }
+    return forgeVersionManifest;
+  }
+
+  /**
+   * Storage location for Fabric version manifest file.
+   *
+   * @return manifests/fabric-manifest.xml
+   * @author Griefed
+   */
+  public File fabricVersionManifest() {
+    if (fabricVersionManifest == null) {
+      fabricVersionManifest = new File(
+          manifestsDirectory(), "fabric-manifest.xml");
+    }
+    return fabricVersionManifest;
+  }
+
+  /**
+   * Storage location for Minecraft version manifest file.
+   *
+   * @return manifests/minecraft-manifest.json
+   * @author Griefed
+   */
+  public File minecraftVersionManifest() {
+    if (minecraftVersionManifest == null) {
+      minecraftVersionManifest = new File(
+          manifestsDirectory(), "minecraft-manifest.json");
+    }
+    return minecraftVersionManifest;
+  }
+
+  /**
+   * Directory in which Minecraft and modloader manifests are stored in
+   *
+   * @return manifests
+   * @author Griefed
+   */
+  public File manifestsDirectory() {
+    if (manifestsDirectory == null) {
+      manifestsDirectory = new File(homeDirectory, "manifests");
+    }
+    return manifestsDirectory;
+  }
+
+  /**
+   * Work directory in which to store temporary and ongoing-process related files.
+   *
+   * @return work
+   * @author Griefed
+   */
+  public File workDirectory() {
+    if (workDirectory == null) {
+      workDirectory = new File(homeDirectory, "work");
+    }
+    return workDirectory;
+  }
+
+  /**
+   * Modpacks directory in which uploaded modpack ZIP-archives and extracted modpacks are stored.
+   *
+   * @return work/temp/modpacks
+   * @author Griefed
+   */
+  public File modpacksDirectory() {
+    if (modpacksDirectory == null) {
+      modpacksDirectory = new File(tempDirectory(), "modpacks");
+    }
+    return modpacksDirectory;
+  }
+
+  /**
+   * The temp-directory, in the work-directory. For storing...temporary...files and stuff.
+   *
+   * @return work/temp
+   * @author Griefed
+   */
+  public File tempDirectory() {
+    if (tempDirectory == null) {
+      tempDirectory = new File(workDirectory(), "temp");
+    }
+    return tempDirectory;
+  }
+
+  /**
+   * The logs-directory.
+   *
+   * @return logs
+   * @author Griefed
+   */
+  public File logsDirectory() {
+    return new File(homeDirectory, "logs");
   }
 
   /**
@@ -1157,7 +1216,7 @@ public final class ApplicationProperties extends Properties {
    * @return The default shell-script template.
    * @author Griefed
    */
-  public File DEFAULT_SHELL_TEMPLATE() {
+  public File defaultShellTemplate() {
     return new File(DEFAULT_SHELL_TEMPLATE);
   }
 
@@ -1167,7 +1226,7 @@ public final class ApplicationProperties extends Properties {
    * @return The default PowerShell-script template.
    * @author Griefed
    */
-  public File DEFAULT_POWERSHELL_TEMPLATE() {
+  public File defaultPowershellTemplate() {
     return new File(DEFAULT_POWERSHELL_TEMPLATE);
   }
 
@@ -1182,44 +1241,16 @@ public final class ApplicationProperties extends Properties {
   }
 
   /**
-   * Properties file used by ServerPackCreator, containing the configuration for this instance of
-   * it.
-   *
-   * @return serverpackcreator.properties-file.
-   * @author Griefed
-   */
-  public File SERVERPACKCREATOR_PROPERTIES() {
-    return SERVERPACKCREATOR_PROPERTIES_FILE;
-  }
-
-  /**
-   * List of fallback clientside-only mods.
-   *
-   * @return List of fallback clientside-only mods.
-   * @author Griefed
-   */
-  public List<String> FALLBACK_CLIENTSIDE_MODS() {
-    return new ArrayList<>(FALLBACK_CLIENTSIDE_MODS);
-  }
-
-  /**
-   * Regex-list of fallback clientside-only mods.
-   *
-   * @return Regex list of fallback clientside-only mods.
-   * @author Griefed
-   */
-  public List<String> FALLBACK_REGEX_CLIENTSIDE_MODS() {
-    return new ArrayList<>(FALLBACK_REGEX_CLIENTSIDE_MODS);
-  }
-
-  /**
    * Default configuration-file for a server pack generation.
    *
    * @return serverpackcreator.conf-file.
    * @author Griefed
    */
-  public File DEFAULT_CONFIG() {
-    return DEFAULT_CONFIG;
+  public File defaultConfig() {
+    if (defaultConfig == null) {
+      defaultConfig = new File(homeDirectory, "serverpackcreator.conf");
+    }
+    return defaultConfig;
   }
 
   /**
@@ -1228,8 +1259,12 @@ public final class ApplicationProperties extends Properties {
    * @return server.properties-file.
    * @author Griefed
    */
-  public File DEFAULT_SERVER_PROPERTIES() {
-    return DEFAULT_SERVER_PROPERTIES;
+  public File defaultServerProperties() {
+    if (defaultServerProperties == null) {
+      defaultServerProperties = new File(
+          serverFilesDirectory(), "server.properties");
+    }
+    return defaultServerProperties;
   }
 
   /**
@@ -1238,68 +1273,11 @@ public final class ApplicationProperties extends Properties {
    * @return server-icon.png-file.
    * @author Griefed
    */
-  public File DEFAULT_SERVER_ICON() {
-    return DEFAULT_SERVER_ICON;
-  }
-
-  /**
-   * Minecraft version manifest-file.
-   *
-   * @return minecraft-manifest.json-file.
-   * @author Griefed
-   */
-  public File MINECRAFT_VERSION_MANIFEST() {
-    return MINECRAFT_VERSION_MANIFEST;
-  }
-
-  /**
-   * Forge version manifest-file.
-   *
-   * @return forge-manifest.json-file.
-   * @author Griefed
-   */
-  public File FORGE_VERSION_MANIFEST() {
-    return FORGE_VERSION_MANIFEST;
-  }
-
-  /**
-   * Fabric version manifest-file.
-   *
-   * @return fabric-manifest.xml-file
-   * @author Griefed
-   */
-  public File FABRIC_VERSION_MANIFEST() {
-    return FABRIC_VERSION_MANIFEST;
-  }
-
-  /**
-   * Fabric installer version manifest-file.
-   *
-   * @return fabric-installer-manifest.xml-file.
-   * @author Griefed
-   */
-  public File FABRIC_INSTALLER_VERSION_MANIFEST() {
-    return FABRIC_INSTALLER_VERSION_MANIFEST;
-  }
-
-  /**
-   * Quilt version manifest-file.
-   *
-   * @return quilt-manifest.xml-file
-   * @author Griefed
-   */
-  public File QUILT_VERSION_MANIFEST() {
-    return QUILT_VERSION_MANIFEST;
-  }
-
-  /**
-   * Quilt installer version manifest-file.
-   *
-   * @return quilt-installer-manifest.xml-file.
-   * @author Griefed
-   */
-  public File QUILT_INSTALLER_VERSION_MANIFEST() {
-    return QUILT_INSTALLER_VERSION_MANIFEST;
+  public File defaultServerIcon() {
+    if (defaultServerIcon == null) {
+      defaultServerIcon = new File(serverFilesDirectory(), "server-icon.png");
+    }
+    return defaultServerIcon;
   }
 
   /**
@@ -1308,137 +1286,35 @@ public final class ApplicationProperties extends Properties {
    * @return serverpackcreator.db-file.
    * @author Griefed
    */
-  public File SERVERPACKCREATOR_DATABASE() {
-    return SERVERPACKCREATOR_DATABASE;
+  public File serverPackCreatorDatabase() {
+    if (serverPackCreatorDatabase == null) {
+      serverPackCreatorDatabase = new File(
+          homeDirectory, "serverpackcreator.db");
+    }
+    return serverPackCreatorDatabase;
   }
 
   /**
-   * Path to the Minecraft version manifest-file, as a file.
+   * ServerPackCreators home directory, in which all important files and folders are stored in.
    *
-   * @return ./manifests/minecraft-manifest.json
+   * @return home-directory of SPC.
    * @author Griefed
    */
-  public File MINECRAFT_VERSION_MANIFEST_LOCATION() {
-    return MINECRAFT_VERSION_MANIFEST_LOCATION;
+  public File homeDirectory() {
+    return homeDirectory;
   }
 
   /**
-   * Path to the Forge version manifest-file, as a file.
+   * ServerPackCreators language-directory, containing all language-properties.
    *
-   * @return ./manifests/forge-manifest.json
+   * @return lang
    * @author Griefed
    */
-  public File FORGE_VERSION_MANIFEST_LOCATION() {
-    return FORGE_VERSION_MANIFEST_LOCATION;
-  }
-
-  /**
-   * Path to the Fabric version manifest-file, as a file.
-   *
-   * @return ./manifests/fabric-manifest.xml
-   * @author Griefed
-   */
-  public File FABRIC_VERSION_MANIFEST_LOCATION() {
-    return FABRIC_VERSION_MANIFEST_LOCATION;
-  }
-
-  /**
-   * Path to the Fabric intermediaries manifest-file, as a file.
-   *
-   * @return ./manifests/fabric-intermediaries-manifest.json
-   */
-  public File FABRIC_INTERMEDIARIES_MANIFEST_LOCATION() {
-    return FABRIC_INTERMEDIARIES_MANIFEST_LOCATION;
-  }
-
-  /**
-   * Path to the Fabric installer version manifest-file, as a file.
-   *
-   * @return ./manifests/fabric-installer-manifest.xml
-   * @author Griefed
-   */
-  public File FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION() {
-    return FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION;
-  }
-
-  /**
-   * Path to the Quilt version manifest-file, as a file.
-   *
-   * @return ./manifests/quilt-manifest.xml
-   * @author Griefed
-   */
-  public File QUILT_VERSION_MANIFEST_LOCATION() {
-    return QUILT_VERSION_MANIFEST_LOCATION;
-  }
-
-  /**
-   * Path to the Quilt installer version manifest-file, as a file.
-   *
-   * @return ./manifests/quilt-installer-manifest.xml
-   * @author Griefed
-   */
-  public File QUILT_INSTALLER_VERSION_MANIFEST_LOCATION() {
-    return QUILT_INSTALLER_VERSION_MANIFEST_LOCATION;
-  }
-
-  /**
-   * Legacy Fabric Game version manifest-file.
-   *
-   * @return legacy-fabric-game-manifest.json-file
-   * @author Griefed
-   */
-  public File LEGACY_FABRIC_GAME_MANIFEST() {
-    return LEGACY_FABRIC_GAME_MANIFEST;
-  }
-
-  /**
-   * Legacy Fabric Loader version manifest-file.
-   *
-   * @return legacy-fabric-game-manifest.json-file
-   * @author Griefed
-   */
-  public File LEGACY_FABRIC_LOADER_MANIFEST() {
-    return LEGACY_FABRIC_LOADER_MANIFEST;
-  }
-
-  /**
-   * Legacy Fabric Installer version manifest-file.
-   *
-   * @return legacy-fabric-installer-manifest.xml-file
-   * @author Griefed
-   */
-  public File LEGACY_FABRIC_INSTALLER_MANIFEST() {
-    return LEGACY_FABRIC_INSTALLER_MANIFEST;
-  }
-
-  /**
-   * Path to the Legacy Fabric Game version manifest-file, as a file.
-   *
-   * @return ./manifests/legacy-fabric-game-manifest.json
-   * @author Griefed
-   */
-  public File LEGACY_FABRIC_GAME_MANIFEST_LOCATION() {
-    return LEGACY_FABRIC_GAME_MANIFEST_LOCATION;
-  }
-
-  /**
-   * Path to the Legacy Fabric Loader version manifest-file, as a file.
-   *
-   * @return ./manifests/legacy-fabric-loader-manifest.json
-   * @author Griefed
-   */
-  public File LEGACY_FABRIC_LOADER_MANIFEST_LOCATION() {
-    return LEGACY_FABRIC_LOADER_MANIFEST_LOCATION;
-  }
-
-  /**
-   * Path to the Legacy Fabric Installer version manifest-file, as a file.
-   *
-   * @return ./manifests/legacy-fabric-installer-manifest.xml
-   * @author Griefed
-   */
-  public File LEGACY_FABRIC_INSTALLER_MANIFEST_LOCATION() {
-    return LEGACY_FABRIC_INSTALLER_MANIFEST_LOCATION;
+  public File langDirectory() {
+    if (langDirectory == null) {
+      langDirectory = new File(homeDirectory, "lang");
+    }
+    return langDirectory;
   }
 
   /**
@@ -1450,7 +1326,7 @@ public final class ApplicationProperties extends Properties {
    * @return String. Returns the version of ServerPackCreator.
    * @author Griefed
    */
-  public String SERVERPACKCREATOR_VERSION() {
+  public String serverPackCreatorVersion() {
     return SERVERPACKCREATOR_VERSION;
   }
 
@@ -1460,7 +1336,7 @@ public final class ApplicationProperties extends Properties {
    * @return Array of modloaders supported by ServerPackCreator.
    * @author Griefed
    */
-  public String[] SUPPORTED_MODLOADERS() {
+  public String[] supportedModloaders() {
     return SUPPORTED_MODLOADERS;
   }
 
@@ -1468,71 +1344,42 @@ public final class ApplicationProperties extends Properties {
    * Directory where server-files are stored in, for example the default server-icon and
    * server.properties.
    *
-   * @return server-files directory.
+   * @return server_files
    * @author Griefed
    */
-  public String DIRECTORY_SERVER_FILES() {
-    return "server_files";
+  public File serverFilesDirectory() {
+    return new File(homeDirectory, "server_files");
   }
 
   /**
    * Directory where plugins are stored in.
    *
-   * @return plugins directory.
+   * @return plugins
    * @author Griefed
    */
-  public String DIRECTORY_PLUGINS() {
-    return "plugins";
+  public File addonsDirectory() {
+    return new File(homeDirectory, "plugins");
   }
 
   /**
    * Directory where plugin configurations are stored in.
    *
-   * @return plugin configurations directory.
+   * @return plugins/config
    * @author Griefed
    */
-  public String DIRECTORY_PLUGINS_CONFIG() {
-    return DIRECTORY_PLUGINS() + "/config";
+  public File addonConfigsDirectory() {
+    return new File(addonsDirectory(), "config");
   }
 
   /**
-   * Directory where version manifests reside in.
-   *
-   * @return Directory where manifests reside in.
-   * @author Griefed
-   */
-  public String MANIFEST_LOCATION() {
-    return MANIFEST_LOCATION;
-  }
-
-  /**
-   * Directory where Minecraft server manifests reside in.
-   *
-   * @return Directory where Minecraft server manifests reside in.
-   * @author Griefed
-   */
-  public String MINECRAFT_SERVER_MANIFEST_LOCATION() {
-    return MINECRAFT_SERVER_MANIFESTS_LOCATION;
-  }
-
-  /**
-   * Getter for the directory in which the server packs are stored/generated in.
+   * Getter for the directory in which the server packs are stored/generated in.<br> Default:
+   * server-packs/...
    *
    * @return String. Returns the directory in which the server packs are stored/generated in.
    * @author Griefed
    */
-  public String getDirectoryServerPacks() {
-    return directoryServerPacks;
-  }
-
-  /**
-   * Acquire the default fallback list of clientside-only mods.
-   *
-   * @return Returns the fallback list of clientside-only mods.
-   * @author Griefed
-   */
-  public List<String> getDefaultListFallbackMods() {
-    return new ArrayList<>(FALLBACK_MODS);
+  public File serverPacksDirectory() {
+    return new File(directoryServerPacks);
   }
 
   /**
@@ -1549,16 +1396,6 @@ public final class ApplicationProperties extends Properties {
     } else {
       return new ArrayList<>(FALLBACK_MODS);
     }
-  }
-
-  /**
-   * Getter for the regex fallback list of clientside-only mods.
-   *
-   * @return The regex fallback list of clientside-only mods.
-   * @author Griefed
-   */
-  public List<String> getListFallbackModsRegex() {
-    return new ArrayList<>(FALLBACK_MODS_REGEX);
   }
 
   /**
@@ -1727,16 +1564,17 @@ public final class ApplicationProperties extends Properties {
     if (properties != null) {
 
       if (properties.getProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST) != null &&
-          !getProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST)
+          !PROPERTIES.getProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST)
               .equals(properties.getProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST))
       ) {
 
-        setProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST,
+        PROPERTIES.setProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST,
             properties.getProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST));
 
         FALLBACK_MODS.clear();
         FALLBACK_MODS.addAll(
-            Arrays.asList(getProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST).split(",")));
+            Arrays.asList(
+                PROPERTIES.getProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST).split(",")));
 
         LOG.info(
             "The fallback-list for clientside only mods has been updated to: " + FALLBACK_MODS);
@@ -1744,16 +1582,17 @@ public final class ApplicationProperties extends Properties {
       }
 
       if (properties.getProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST_REGEX) != null
-          && !getProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST_REGEX).equals(
+          && !PROPERTIES.getProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST_REGEX).equals(
           properties.getProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST_REGEX))
       ) {
 
-        setProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST_REGEX,
+        PROPERTIES.setProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST_REGEX,
             properties.getProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST_REGEX));
 
         FALLBACK_MODS_REGEX.clear();
         FALLBACK_MODS_REGEX.addAll(
-            Arrays.asList(getProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST_REGEX).split(",")));
+            Arrays.asList(
+                PROPERTIES.getProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST_REGEX).split(",")));
 
         LOG.info("The fallback regex-list for clientside only mods has been updated to: "
             + FALLBACK_MODS_REGEX);
@@ -1763,7 +1602,7 @@ public final class ApplicationProperties extends Properties {
     }
 
     if (updated) {
-      saveToDisk(SERVERPACKCREATOR_PROPERTIES_FILE);
+      saveToDisk(serverPackCreatorPropertiesFile());
     }
 
     return updated;
@@ -1790,7 +1629,7 @@ public final class ApplicationProperties extends Properties {
       defineProperty(
           PROPERTY_GUI_DARKMODE, "true");
     } else {
-      setProperty(
+      PROPERTIES.setProperty(
           PROPERTY_GUI_DARKMODE, "false");
     }
   }
@@ -1804,7 +1643,7 @@ public final class ApplicationProperties extends Properties {
   public void saveToDisk(File propertiesFile) {
     try (OutputStream outputStream =
         Files.newOutputStream(propertiesFile.toPath())) {
-      store(outputStream,
+      PROPERTIES.store(outputStream,
           "For details about each property, see https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-Help#serverpackcreatorproperties");
     } catch (IOException ex) {
       LOG.error("Couldn't write properties-file.", ex);
@@ -1839,6 +1678,18 @@ public final class ApplicationProperties extends Properties {
    */
   public String getLanguage() {
     return language;
+  }
+
+  /**
+   * Overwrite the language used so the next run of ServerPackCreator uses that language setting.
+   *
+   * @param locale The language to set for the next run.
+   * @author Griefed
+   */
+  public void setLanguage(String locale) {
+    language = locale;
+    PROPERTIES.setProperty(PROPERTY_LANGUAGE, language);
+    LOG.info("Language set to: " + language);
   }
 
   /**
@@ -1908,6 +1759,86 @@ public final class ApplicationProperties extends Properties {
     return javaScriptAutoupdate;
   }
 
+  /**
+   * The folder containing the ServerPackCreator.exe or JAR-file.
+   *
+   * @return Folder containing the ServerPackCreator.exe or JAR-file.
+   * @author Griefed
+   */
+  public File getJarFolder() {
+    return JAR_INFORMATION.JAR_FOLDER;
+  }
+
+  /**
+   * The .exe or JAR-file of ServerPackCreator.
+   *
+   * @return The .exe or JAR-file of ServerPackCreator.
+   * @author Griefed
+   */
+  public File getJarFile() {
+    return JAR_INFORMATION.JAR_FILE;
+  }
+
+  /**
+   * The name of the .exe or JAR-file.
+   *
+   * @return The name of the .exe or JAR-file.
+   * @author Griefed
+   */
+  public String getJarName() {
+    return JAR_INFORMATION.JAR_NAME;
+  }
+
+  /**
+   * The Java version used to run ServerPackCreator.
+   *
+   * @return Java version.
+   * @author Griefed
+   */
+  public String getJavaVersion() {
+    return JAR_INFORMATION.JAVA_VERSION;
+  }
+
+  /**
+   * Architecture of the operating system on which ServerPackCreator is running on.
+   *
+   * @return Arch.
+   * @author Griefed
+   */
+  public String getOSArch() {
+    return JAR_INFORMATION.OS_ARCH;
+  }
+
+  /**
+   * The name of the operating system on which ServerPackCreator is running on.
+   *
+   * @return OS name.
+   * @author Griefed
+   */
+  public String getOSName() {
+    return JAR_INFORMATION.OS_NAME;
+  }
+
+  /**
+   * The version of the OS on which ServerPackCreator is running on.
+   *
+   * @return Version of the OS.
+   * @author Griefed
+   */
+  public String getOSVersion() {
+    return JAR_INFORMATION.OS_VERSION;
+  }
+
+  /**
+   * Whether a .exe or JAR-file was used for running ServerPackCreator.
+   *
+   * @return {@code true} if a .exe was/is used.
+   * @author Griefed
+   */
+  public boolean isExe() {
+    return JAR_INFORMATION.IS_EXE;
+  }
+
   public enum ExclusionFilter {
     /**
      * Does the name of a mod start with the user specified string?
@@ -1933,5 +1864,34 @@ public final class ApplicationProperties extends Properties {
      * Does any of the above hit for the user specified string/regex?
      */
     EITHER
+  }
+
+  /**
+   * Stores values gathered by {@link JarUtilities#jarInformation(Class)} for easy access.
+   */
+  private class JarInformation {
+
+    private final File JAR_FOLDER;
+    private final File JAR_FILE;
+    private final String JAR_NAME;
+    private final String JAVA_VERSION;
+    private final String OS_ARCH;
+    private final String OS_NAME;
+    private final String OS_VERSION;
+    private final boolean IS_EXE;
+
+    private JarInformation() {
+      HashMap<String, String> sysInfo = new HashMap<>(10);
+      sysInfo.putAll(JAR_UTILITIES.jarInformation(ApplicationProperties.class));
+
+      JAR_FILE = new File(sysInfo.get("jarPath"));
+      JAR_FOLDER = JAR_FILE.getParentFile();
+      JAR_NAME = sysInfo.get("jarName");
+      JAVA_VERSION = sysInfo.get("javaVersion");
+      OS_ARCH = sysInfo.get("osArch");
+      OS_NAME = sysInfo.get("osName");
+      OS_VERSION = sysInfo.get("osVersion");
+      IS_EXE = JAR_NAME.endsWith(".exe");
+    }
   }
 }

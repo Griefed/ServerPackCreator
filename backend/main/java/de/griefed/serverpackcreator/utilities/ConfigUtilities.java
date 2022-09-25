@@ -634,7 +634,7 @@ public final class ConfigUtilities {
    */
   private JsonNode getJson(File jsonFile) throws IOException {
     return OBJECT_MAPPER.readTree(
-        Files.readAllBytes(Paths.get(jsonFile.getAbsolutePath().replace("\\", "/"))));
+        Files.readAllBytes(Paths.get(jsonFile.getPath())));
   }
 
   /**

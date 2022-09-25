@@ -58,7 +58,6 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Optional;
@@ -94,14 +93,11 @@ import org.xml.sax.SAXException;
 public class ServerPackCreator {
 
   private static final Logger LOG = LogManager.getLogger(ServerPackCreator.class);
-  private static final String[] SETUP = new String[]{"--setup"};
   private static ServerPackCreator serverPackCreator = null;
   private final String[] ARGS;
   private final CommandlineParser COMMANDLINE_PARSER;
   private final ApplicationProperties APPLICATIONPROPERTIES;
   private final I18n I18N;
-  private final File LOG4J2XML = new File("log4j2.xml");
-  private final File SERVERPACKCREATOR_PROPERTIES = new File("serverpackcreator.properties");
   private final ObjectMapper OBJECT_MAPPER =
       new ObjectMapper()
           .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
@@ -141,17 +137,33 @@ public class ServerPackCreator {
   public ServerPackCreator(String[] args) {
     ARGS = args;
     COMMANDLINE_PARSER = new CommandlineParser(args);
+
     if (COMMANDLINE_PARSER.propertiesFile().isPresent()) {
-      APPLICATIONPROPERTIES = new ApplicationProperties(COMMANDLINE_PARSER.propertiesFile().get(),
-          getFileUtilities(), getSystemUtilities(), getListUtilities());
+
+      APPLICATIONPROPERTIES = new ApplicationProperties(
+          COMMANDLINE_PARSER.propertiesFile().get(),
+          getFileUtilities(),
+          getSystemUtilities(),
+          getListUtilities(),
+          getJarUtilities());
+
     } else {
-      APPLICATIONPROPERTIES = new ApplicationProperties(getFileUtilities(), getSystemUtilities(),
-          getListUtilities());
+
+      APPLICATIONPROPERTIES = new ApplicationProperties(
+          getFileUtilities(),
+          getSystemUtilities(),
+          getListUtilities(),
+          getJarUtilities());
     }
 
     if (COMMANDLINE_PARSER.getLanguageToUse().isPresent()) {
-      I18N = new I18n(APPLICATIONPROPERTIES, COMMANDLINE_PARSER.getLanguageToUse().get());
+
+      I18N = new I18n(
+          APPLICATIONPROPERTIES,
+          COMMANDLINE_PARSER.getLanguageToUse().get());
+
     } else {
+
       I18N = new I18n(APPLICATIONPROPERTIES);
     }
   }
@@ -166,7 +178,7 @@ public class ServerPackCreator {
    * @author Griefed
    */
   public synchronized static ServerPackCreator getInstance() {
-    return getInstance(SETUP);
+    return getInstance(new String[]{"--setup"});
   }
 
   /**
@@ -181,9 +193,12 @@ public class ServerPackCreator {
    */
   public synchronized static ServerPackCreator getInstance(String[] args) {
     if (serverPackCreator == null) {
+
       serverPackCreator = new ServerPackCreator(args);
+
       try {
         serverPackCreator.run(Mode.SETUP);
+
       } catch (IOException | ParserConfigurationException | SAXException ex) {
         LOG.error("Something went horribly wrong trying to run the ServerPackCreator setup.", ex);
       }
@@ -206,6 +221,7 @@ public class ServerPackCreator {
    */
   public static void main(String[] args)
       throws IOException, ParserConfigurationException, SAXException {
+
     serverPackCreator = new ServerPackCreator(args);
     serverPackCreator.run();
   }
@@ -319,16 +335,16 @@ public class ServerPackCreator {
     if (this.versionMeta == null) {
       this.versionMeta =
           new VersionMeta(
-              APPLICATIONPROPERTIES.MINECRAFT_VERSION_MANIFEST_LOCATION(),
-              APPLICATIONPROPERTIES.FORGE_VERSION_MANIFEST_LOCATION(),
-              APPLICATIONPROPERTIES.FABRIC_VERSION_MANIFEST_LOCATION(),
-              APPLICATIONPROPERTIES.FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION(),
-              APPLICATIONPROPERTIES.FABRIC_INTERMEDIARIES_MANIFEST_LOCATION(),
-              APPLICATIONPROPERTIES.QUILT_VERSION_MANIFEST_LOCATION(),
-              APPLICATIONPROPERTIES.QUILT_INSTALLER_VERSION_MANIFEST_LOCATION(),
-              APPLICATIONPROPERTIES.LEGACY_FABRIC_GAME_MANIFEST_LOCATION(),
-              APPLICATIONPROPERTIES.LEGACY_FABRIC_LOADER_MANIFEST_LOCATION(),
-              APPLICATIONPROPERTIES.LEGACY_FABRIC_INSTALLER_MANIFEST_LOCATION(),
+              APPLICATIONPROPERTIES.minecraftVersionManifest(),
+              APPLICATIONPROPERTIES.forgeVersionManifest(),
+              APPLICATIONPROPERTIES.fabricVersionManifest(),
+              APPLICATIONPROPERTIES.fabricInstallerManifest(),
+              APPLICATIONPROPERTIES.fabricIntermediariesManifest(),
+              APPLICATIONPROPERTIES.quiltVersionManifest(),
+              APPLICATIONPROPERTIES.quiltInstallerManifest(),
+              APPLICATIONPROPERTIES.legacyFabricGameManifest(),
+              APPLICATIONPROPERTIES.legacyFabricLoaderManifest(),
+              APPLICATIONPROPERTIES.legacyFabricInstallerManifest(),
               OBJECT_MAPPER,
               getUtilities(),
               APPLICATIONPROPERTIES);
@@ -338,18 +354,28 @@ public class ServerPackCreator {
 
   public synchronized ConfigUtilities getConfigUtilities() {
     if (this.configUtilities == null) {
-      this.configUtilities = new ConfigUtilities(getUtilities(), APPLICATIONPROPERTIES,
+
+      this.configUtilities = new ConfigUtilities(
+          getUtilities(),
+          APPLICATIONPROPERTIES,
           OBJECT_MAPPER);
+
     }
     return configUtilities;
   }
 
   public synchronized ConfigurationHandler getConfigurationHandler()
       throws IOException, ParserConfigurationException, SAXException {
+
     if (this.configurationHandler == null) {
+
       this.configurationHandler =
           new ConfigurationHandler(
-              I18N, getVersionMeta(), APPLICATIONPROPERTIES, getUtilities(), getConfigUtilities(),
+              I18N,
+              getVersionMeta(),
+              APPLICATIONPROPERTIES,
+              getUtilities(),
+              getConfigUtilities(),
               getApplicationAddons());
     }
     return configurationHandler;
@@ -357,16 +383,23 @@ public class ServerPackCreator {
 
   public synchronized ApplicationAddons getApplicationAddons()
       throws IOException, ParserConfigurationException, SAXException {
+
     if (this.applicationAddons == null) {
-      this.applicationAddons = new ApplicationAddons(getTomlParser(), APPLICATIONPROPERTIES,
-          getVersionMeta(), getUtilities());
+
+      this.applicationAddons = new ApplicationAddons(
+          getTomlParser(),
+          APPLICATIONPROPERTIES,
+          getVersionMeta(),
+          getUtilities());
     }
     return applicationAddons;
   }
 
   public synchronized ServerPackHandler getServerPackHandler()
       throws IOException, ParserConfigurationException, SAXException {
+
     if (this.serverPackHandler == null) {
+
       this.serverPackHandler =
           new ServerPackHandler(
               APPLICATIONPROPERTIES,
@@ -379,58 +412,83 @@ public class ServerPackCreator {
   }
 
   public synchronized ServerPackCreatorSplash getServerPackCreatorSplash() {
+
     if (this.serverPackCreatorSplash == null) {
+
       this.serverPackCreatorSplash = new ServerPackCreatorSplash(
-          APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION());
+          APPLICATIONPROPERTIES.serverPackCreatorVersion());
     }
     return serverPackCreatorSplash;
   }
 
   public synchronized UpdateChecker getUpdateChecker() {
+
     if (this.updateChecker == null) {
+
       this.updateChecker = new UpdateChecker();
     }
     return updateChecker;
   }
 
   public synchronized ModScanner getModScanner() {
+
     if (this.modScanner == null) {
-      this.modScanner = new ModScanner(getAnnotationScanner(), getFabricScanner(),
-          getQuiltScanner(), getTomlScanner());
+
+      this.modScanner = new ModScanner(
+          getAnnotationScanner(),
+          getFabricScanner(),
+          getQuiltScanner(),
+          getTomlScanner());
     }
     return modScanner;
   }
 
   public synchronized AnnotationScanner getAnnotationScanner() {
+
     if (this.annotationScanner == null) {
-      this.annotationScanner = new AnnotationScanner(OBJECT_MAPPER, getUtilities());
+
+      this.annotationScanner = new AnnotationScanner(
+          OBJECT_MAPPER,
+          getUtilities());
     }
     return annotationScanner;
   }
 
   public synchronized FabricScanner getFabricScanner() {
+
     if (this.fabricScanner == null) {
-      this.fabricScanner = new FabricScanner(OBJECT_MAPPER, getUtilities());
+
+      this.fabricScanner = new FabricScanner(
+          OBJECT_MAPPER,
+          getUtilities());
     }
     return fabricScanner;
   }
 
   public synchronized QuiltScanner getQuiltScanner() {
+
     if (this.quiltScanner == null) {
-      this.quiltScanner = new QuiltScanner(OBJECT_MAPPER, getUtilities());
+
+      this.quiltScanner = new QuiltScanner(
+          OBJECT_MAPPER,
+          getUtilities());
     }
     return quiltScanner;
   }
 
   public synchronized TomlParser getTomlParser() {
+
     if (this.tomlParser == null) {
+
       this.tomlParser = new TomlParser();
     }
     return tomlParser;
   }
 
   public synchronized TomlScanner getTomlScanner() {
+
     if (this.tomlScanner == null) {
+
       this.tomlScanner = new TomlScanner(getTomlParser());
     }
     return tomlScanner;
@@ -438,7 +496,9 @@ public class ServerPackCreator {
 
   public synchronized ConfigurationEditor getConfigurationEditor()
       throws IOException, ParserConfigurationException, SAXException {
+
     if (this.configurationEditor == null) {
+
       this.configurationEditor = new ConfigurationEditor(
           getConfigurationHandler(),
           APPLICATIONPROPERTIES,
@@ -451,7 +511,9 @@ public class ServerPackCreator {
 
   public synchronized ServerPackCreatorWindow getServerPackCreatorGui()
       throws IOException, ParserConfigurationException, SAXException {
+
     if (this.serverPackCreatorGui == null) {
+
       this.serverPackCreatorGui = new ServerPackCreatorWindow(
           I18N,
           getConfigurationHandler(),
@@ -526,14 +588,19 @@ public class ServerPackCreator {
       case GUI:
         showSplashScreen();
         stageOne();
+
         getServerPackCreatorSplash().update(20);
         stageTwo();
+
         getServerPackCreatorSplash().update(40);
         stageThree();
+
         getServerPackCreatorSplash().update(60);
         Executors.newSingleThreadExecutor().execute(this::stageFour);
+
         getServerPackCreatorSplash().update(80);
         runGui();
+
         break;
 
       case SETUP:
@@ -556,43 +623,57 @@ public class ServerPackCreator {
    */
   private void stageOne() {
 
-    System.setProperty("log4j2.formatMsgNoLookups", "true");
     System.setProperty("file.encoding", StandardCharsets.UTF_8.name());
 
-    HashMap<String, String> systemInformation =
-        getUtilities().JarUtils()
-            .systemInformation(
-                getUtilities().JarUtils().getApplicationHomeForClass(ServerPackCreator.class));
+    if (!getUtilities().FileUtils().checkPermissions(APPLICATIONPROPERTIES.getJarFolder())) {
 
-    LOG.debug("System information jarPath: " + systemInformation.get("jarPath"));
-    LOG.debug("System information jarName: " + systemInformation.get("jarName"));
-
-    if (!getUtilities().FileUtils()
-        .checkPermissions(new File(systemInformation.get("jarPath")).getParentFile())) {
-
-      LOG.error(
-          "One or more file or directory has no read- or write-permission. This may lead to corrupted server packs! Check the permissions of the ServerPackCreator base directory!");
+      LOG.error("One or more file or directory has no read- or write-permission."
+          + " This may lead to corrupted server packs!"
+          + " Check the permissions of the ServerPackCreator base directory!");
     }
 
-    getUtilities().JarUtils().copyFileFromJar(LOG4J2XML.getName(), ServerPackCreator.class);
+    getUtilities().JarUtils().copyFileFromJar(
+        "README.md",
+        true,
+        ServerPackCreator.class,
+        APPLICATIONPROPERTIES.homeDirectory().toString());
 
-    if (!SERVERPACKCREATOR_PROPERTIES.exists()) {
-      getUtilities().JarUtils()
-          .copyFileFromJar(SERVERPACKCREATOR_PROPERTIES.getName(), ServerPackCreator.class);
-    }
+    getUtilities().JarUtils().copyFileFromJar(
+        "HELP.md",
+        true,
+        ServerPackCreator.class,
+        APPLICATIONPROPERTIES.homeDirectory().toString());
 
+    getUtilities().JarUtils().copyFileFromJar(
+        "CHANGELOG.md",
+        true,
+        ServerPackCreator.class,
+        APPLICATIONPROPERTIES.homeDirectory().toString());
+
+    getUtilities().JarUtils().copyFileFromJar(
+        "LICENSE",
+        true,
+        ServerPackCreator.class,
+        APPLICATIONPROPERTIES.homeDirectory().toString());
+
+    String prefix;
+    String source;
     try {
 
-      String prefix = "BOOT-INF/classes";
-      String langSource = "/de/griefed/resources/lang";
+      prefix = "BOOT-INF/classes";
+      source = "/de/griefed/resources/lang";
 
-      if (systemInformation.get("jarName").endsWith(".exe")) {
+      if (APPLICATIONPROPERTIES.isExe()) {
         prefix = "";
-        langSource = "de/griefed/resources/lang";
+        source = "de/griefed/resources/lang";
       }
 
-      getUtilities().JarUtils()
-          .copyFolderFromJar(ServerPackCreator.class, langSource, "lang", prefix, ".properties");
+      getUtilities().JarUtils().copyFolderFromJar(
+          ServerPackCreator.class,
+          source,
+          APPLICATIONPROPERTIES.langDirectory().toString(),
+          prefix,
+          ".properties");
 
     } catch (IOException ex) {
       LOG.error("Error copying \"/de/griefed/resources/lang\" from the JAR-file.");
@@ -600,41 +681,54 @@ public class ServerPackCreator {
 
     try {
 
-      String prefix = "BOOT-INF/classes";
-      String manifestSource = "/de/griefed/resources/manifests";
+      prefix = "BOOT-INF/classes";
+      source = "/de/griefed/resources/manifests";
 
-      if (systemInformation.get("jarName").endsWith(".exe")) {
+      if (APPLICATIONPROPERTIES.isExe()) {
         prefix = "";
-        manifestSource = "de/griefed/resources/manifests";
+        source = "de/griefed/resources/manifests";
       }
 
-      getUtilities().JarUtils()
-          .copyFolderFromJar(
-              ServerPackCreator.class,
-              manifestSource,
-              "manifests",
-              prefix,
-              "");
+      getUtilities().JarUtils().copyFolderFromJar(
+          ServerPackCreator.class,
+          source,
+          APPLICATIONPROPERTIES.manifestsDirectory().toString(),
+          prefix,
+          "");
 
     } catch (IOException ex) {
       LOG.error("Error copying \"/de/griefed/resources/manifests\" from the JAR-file.");
     }
 
-    getUtilities().FileUtils().createDirectories(Paths.get("./server_files"));
-    getUtilities().FileUtils().createDirectories(Paths.get("./work"));
-    getUtilities().FileUtils().createDirectories(Paths.get("./work/temp"));
-    getUtilities().FileUtils().createDirectories(Paths.get("./work/modpacks"));
-    getUtilities().FileUtils().createDirectories(Paths.get("./server-packs"));
-    getUtilities().FileUtils()
-        .createDirectories(Paths.get(System.getProperty("pf4j.pluginsDir", "./plugins")));
-    getUtilities().FileUtils().createDirectories(Paths.get("./plugins/config"));
+    getUtilities().FileUtils().createDirectories(
+        Paths.get(APPLICATIONPROPERTIES.serverFilesDirectory().toString()));
 
-    if (!new File(System.getProperty("pf4j.pluginsDir", "./plugins") + "/disabled.txt").exists()) {
+    getUtilities().FileUtils().createDirectories(
+        Paths.get(APPLICATIONPROPERTIES.workDirectory().toString()));
+
+    getUtilities().FileUtils().createDirectories(
+        Paths.get(APPLICATIONPROPERTIES.tempDirectory().toString()));
+
+    getUtilities().FileUtils().createDirectories(
+        Paths.get(APPLICATIONPROPERTIES.modpacksDirectory().toString()));
+
+    getUtilities().FileUtils().createDirectories(
+        Paths.get(APPLICATIONPROPERTIES.serverPacksDirectory().toString()));
+
+    getUtilities().FileUtils().createDirectories(
+        Paths.get(APPLICATIONPROPERTIES.addonsDirectory().toString()));
+
+    getUtilities().FileUtils().createDirectories(
+        Paths.get(APPLICATIONPROPERTIES.addonConfigsDirectory().toString()));
+
+    if (!new File(APPLICATIONPROPERTIES.addonsDirectory(), "disabled.txt").isFile()) {
       try (BufferedWriter writer =
           new BufferedWriter(
               new FileWriter(
-                  Paths.get(System.getProperty("pf4j.pluginsDir", "./plugins"))
-                      + "/disabled.txt"))) {
+                  new File(
+                      APPLICATIONPROPERTIES.addonsDirectory(),
+                      "disabled.txt")))
+      ) {
 
         writer.write("########################################\n");
         writer.write("#...Load all plugins except these......#\n");
@@ -648,12 +742,15 @@ public class ServerPackCreator {
     }
 
     boolean config = checkForConfig();
-    boolean serverProperties =
-        checkServerFilesFile(APPLICATIONPROPERTIES.DEFAULT_SERVER_PROPERTIES());
-    boolean serverIcon = checkServerFilesFile(APPLICATIONPROPERTIES.DEFAULT_SERVER_ICON());
 
-    overwriteServerFilesFile(APPLICATIONPROPERTIES.DEFAULT_SHELL_TEMPLATE());
-    overwriteServerFilesFile(APPLICATIONPROPERTIES.DEFAULT_POWERSHELL_TEMPLATE());
+    boolean serverProperties = checkServerFilesFile(
+        APPLICATIONPROPERTIES.defaultServerProperties());
+
+    boolean serverIcon = checkServerFilesFile(
+        APPLICATIONPROPERTIES.defaultServerIcon());
+
+    overwriteServerFilesFile(APPLICATIONPROPERTIES.defaultShellTemplate());
+    overwriteServerFilesFile(APPLICATIONPROPERTIES.defaultPowershellTemplate());
 
     if (config || serverProperties || serverIcon) {
 
@@ -669,16 +766,10 @@ public class ServerPackCreator {
 
     // Print system information to console and logs.
     LOG.debug("Gathering system information to include in log to make debugging easier.");
-    APPLICATIONPROPERTIES.setProperty(
-        "homeDir",
-        systemInformation
-            .get("jarPath")
-            .substring(0, systemInformation.get("jarPath").replace("\\", "/").lastIndexOf("/"))
-            .replace("\\", "/"));
 
-    if (APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION().contains("dev")
-        || APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION().contains("alpha")
-        || APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION().contains("beta")) {
+    if (APPLICATIONPROPERTIES.serverPackCreatorVersion().contains("dev")
+        || APPLICATIONPROPERTIES.serverPackCreatorVersion().contains("alpha")
+        || APPLICATIONPROPERTIES.serverPackCreatorVersion().contains("beta")) {
 
       LOG.debug("Warning user about possible data loss.");
       LOG.warn("################################################################");
@@ -689,15 +780,16 @@ public class ServerPackCreator {
       LOG.warn("#....................YOU HAVE BEEN WARNED!.....................#");
       LOG.warn("################################################################");
     }
-
-    LOG.info("SYSTEM INFORMATION:");
-    LOG.info("ServerPackCreator version: " + APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION());
-    LOG.info("JAR Path:        " + systemInformation.get("jarPath"));
-    LOG.info("JAR Name:        " + systemInformation.get("jarName"));
-    LOG.info("Java version:    " + systemInformation.get("javaVersion"));
-    LOG.info("OS architecture: " + systemInformation.get("osArch"));
-    LOG.info("OS name:         " + systemInformation.get("osName"));
-    LOG.info("OS version:      " + systemInformation.get("osVersion"));
+    LOG.info("SYSTEM AND SPC INFORMATION:");
+    LOG.info("ServerPackCreator version: " + APPLICATIONPROPERTIES.serverPackCreatorVersion());
+    LOG.info("ServerPackCreator home:    " + APPLICATIONPROPERTIES.homeDirectory());
+    LOG.info("JAR Folder:                " + APPLICATIONPROPERTIES.getJarFolder());
+    LOG.info("JAR Path:                  " + APPLICATIONPROPERTIES.getJarFile());
+    LOG.info("JAR Name:                  " + APPLICATIONPROPERTIES.getJarName());
+    LOG.info("Java version:              " + APPLICATIONPROPERTIES.getJavaVersion());
+    LOG.info("OS architecture:           " + APPLICATIONPROPERTIES.getOSArch());
+    LOG.info("OS name:                   " + APPLICATIONPROPERTIES.getOSName());
+    LOG.info("OS version:                " + APPLICATIONPROPERTIES.getOSVersion());
     LOG.info("Include this information when reporting an issue on GitHub.");
   }
 
@@ -741,7 +833,9 @@ public class ServerPackCreator {
 
     LOG.debug("Setting up FileWatcher...");
 
-    FileAlterationObserver fileAlterationObserver = new FileAlterationObserver(new File("."));
+    FileAlterationObserver fileAlterationObserver = new FileAlterationObserver(
+        APPLICATIONPROPERTIES.homeDirectory());
+
     FileAlterationListener fileAlterationListener =
         new FileAlterationListener() {
           @Override
@@ -770,33 +864,35 @@ public class ServerPackCreator {
 
           @Override
           public void onFileDelete(File file) {
-            if (!file.toString().replace("\\", "/").startsWith("./server-packs")
-                && !file.toString().replace("\\", "/").startsWith("./work/modpacks")) {
+            if (!file.toString()
+                .contains(APPLICATIONPROPERTIES.serverPacksDirectory().toString())
+                && !file.toString()
+                .contains(APPLICATIONPROPERTIES.modpacksDirectory().toString())) {
 
-              if (check(file, APPLICATIONPROPERTIES.SERVERPACKCREATOR_PROPERTIES())) {
+              if (check(file, APPLICATIONPROPERTIES.serverPackCreatorPropertiesFile())) {
 
-                createFile(APPLICATIONPROPERTIES.SERVERPACKCREATOR_PROPERTIES());
+                createFile(APPLICATIONPROPERTIES.serverPackCreatorPropertiesFile());
                 APPLICATIONPROPERTIES.loadProperties();
                 LOG.info("Restored serverpackcreator.properties and loaded defaults.");
 
-              } else if (check(file, APPLICATIONPROPERTIES.DEFAULT_SERVER_PROPERTIES())) {
+              } else if (check(file, APPLICATIONPROPERTIES.defaultServerProperties())) {
 
-                checkServerFilesFile(APPLICATIONPROPERTIES.DEFAULT_SERVER_PROPERTIES());
+                checkServerFilesFile(APPLICATIONPROPERTIES.defaultServerProperties());
                 LOG.info("Restored default server.properties.");
 
-              } else if (check(file, APPLICATIONPROPERTIES.DEFAULT_SERVER_ICON())) {
+              } else if (check(file, APPLICATIONPROPERTIES.defaultServerIcon())) {
 
-                checkServerFilesFile(APPLICATIONPROPERTIES.DEFAULT_SERVER_ICON());
+                checkServerFilesFile(APPLICATIONPROPERTIES.defaultServerIcon());
                 LOG.info("Restored default server-icon.png.");
 
-              } else if (check(file, APPLICATIONPROPERTIES.DEFAULT_SHELL_TEMPLATE())) {
+              } else if (check(file, APPLICATIONPROPERTIES.defaultShellTemplate())) {
 
-                checkServerFilesFile(APPLICATIONPROPERTIES.DEFAULT_SHELL_TEMPLATE());
+                checkServerFilesFile(APPLICATIONPROPERTIES.defaultShellTemplate());
                 LOG.info("Restored default_template.sh.");
 
-              } else if (check(file, APPLICATIONPROPERTIES.DEFAULT_POWERSHELL_TEMPLATE())) {
+              } else if (check(file, APPLICATIONPROPERTIES.defaultPowershellTemplate())) {
 
-                checkServerFilesFile(APPLICATIONPROPERTIES.DEFAULT_POWERSHELL_TEMPLATE());
+                checkServerFilesFile(APPLICATIONPROPERTIES.defaultPowershellTemplate());
                 LOG.info("Restored default_template.ps1.");
               }
             }
@@ -807,17 +903,13 @@ public class ServerPackCreator {
           }
 
           private boolean check(File watched, File toCreate) {
-            return watched
-                .toString()
-                .replace("\\", "/")
-                .substring(watched.toString().replace("\\", "/").lastIndexOf("/") + 1)
-                .equals(toCreate.toString());
+            return watched.getName().equals(toCreate.getName());
           }
 
           private void createFile(File toCreate) {
 
             getUtilities().JarUtils()
-                .copyFileFromJar(toCreate.getName(), ServerPackCreator.class);
+                .copyFileFromJar(toCreate.getName(), ServerPackCreator.class, toCreate.getParent());
           }
         };
 
@@ -1007,7 +1099,7 @@ public class ServerPackCreator {
    * @author Griefed
    */
   private void runHeadless() throws IOException, ParserConfigurationException, SAXException {
-    if (!APPLICATIONPROPERTIES.DEFAULT_CONFIG().exists()) {
+    if (!APPLICATIONPROPERTIES.defaultConfig().exists()) {
 
       LOG.warn("No serverpackcreator.conf found...");
       LOG.info(
@@ -1020,7 +1112,7 @@ public class ServerPackCreator {
       ConfigurationModel configurationModel = new ConfigurationModel();
 
       if (getConfigurationHandler().checkConfiguration(
-          APPLICATIONPROPERTIES.DEFAULT_CONFIG(), configurationModel, false)) {
+          APPLICATIONPROPERTIES.defaultConfig(), configurationModel, false)) {
         System.exit(1);
       }
 
@@ -1050,13 +1142,13 @@ public class ServerPackCreator {
    */
   public boolean checkForConfig() {
 
-    if (!APPLICATIONPROPERTIES.DEFAULT_CONFIG().exists()
+    if (!APPLICATIONPROPERTIES.defaultConfig().exists()
         && COMMANDLINE_PARSER.getModeToRunIn() != Mode.CLI
         && COMMANDLINE_PARSER.getModeToRunIn() != Mode.CGEN) {
 
       return getUtilities().JarUtils().copyFileFromJar(
-          "de/griefed/resources/" + APPLICATIONPROPERTIES.DEFAULT_CONFIG().getName(),
-          APPLICATIONPROPERTIES.DEFAULT_CONFIG(), ServerPackCreator.class);
+          "de/griefed/resources/" + APPLICATIONPROPERTIES.defaultConfig().getName(),
+          APPLICATIONPROPERTIES.defaultConfig(), ServerPackCreator.class);
 
     }
     return false;
@@ -1072,9 +1164,12 @@ public class ServerPackCreator {
    * @author Griefed
    */
   public boolean checkServerFilesFile(File fileToCheckFor) {
-    return getUtilities().JarUtils()
-        .copyFileFromJar("de/griefed/resources/server_files/" + fileToCheckFor,
-            new File("./server_files/" + fileToCheckFor), ServerPackCreator.class);
+    return getUtilities().JarUtils().copyFileFromJar(
+        "de/griefed/resources/server_files/" + fileToCheckFor.getName(),
+        new File(
+            APPLICATIONPROPERTIES.serverFilesDirectory(),
+            fileToCheckFor.getName()),
+        ServerPackCreator.class);
   }
 
   /**
@@ -1086,7 +1181,10 @@ public class ServerPackCreator {
    * @author Griefed
    */
   public void overwriteServerFilesFile(File fileToOverwrite) {
-    FileUtils.deleteQuietly(new File(String.format("server_files/%s", fileToOverwrite.getName())));
+    FileUtils.deleteQuietly(new File(
+        APPLICATIONPROPERTIES.serverFilesDirectory(),
+        fileToOverwrite.getName()));
+
     checkServerFilesFile(fileToOverwrite);
   }
 
@@ -1098,9 +1196,8 @@ public class ServerPackCreator {
   public void checkDatabase() {
     Connection connection = null;
     try {
-      connection =
-          DriverManager.getConnection(
-              "jdbc:sqlite:" + APPLICATIONPROPERTIES.SERVERPACKCREATOR_DATABASE());
+      connection = DriverManager.getConnection(
+          "jdbc:sqlite:" + APPLICATIONPROPERTIES.serverPackCreatorDatabase());
 
       DatabaseMetaData databaseMetaData = connection.getMetaData();
       LOG.debug("Database driver name: " + databaseMetaData.getDriverName());
@@ -1130,10 +1227,9 @@ public class ServerPackCreator {
   public void updateCheck() {
     getUpdateChecker().refresh();
 
-    Optional<Update> update =
-        getUpdateChecker().checkForUpdate(
-            APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION(),
-            APPLICATIONPROPERTIES.checkForAvailablePreReleases());
+    Optional<Update> update = getUpdateChecker().checkForUpdate(
+        APPLICATIONPROPERTIES.serverPackCreatorVersion(),
+        APPLICATIONPROPERTIES.checkForAvailablePreReleases());
 
     System.out.println();
     if (update.isPresent()) {
@@ -1356,6 +1452,7 @@ public class ServerPackCreator {
        */
       if (argsList.contains(Mode.LANG.argument())
           && argsList.size() >= argsList.indexOf(Mode.LANG.argument()) + 1) {
+
         this.LANG = argsList.get(argsList.indexOf(Mode.LANG.argument()) + 1);
       } else {
         this.LANG = "en_us";
@@ -1365,6 +1462,7 @@ public class ServerPackCreator {
        * Check whether the user wanted us to print the help-text.
        */
       if (argsList.contains(Mode.HELP.argument())) {
+
         this.MODE = Mode.HELP;
         return;
       }
@@ -1373,6 +1471,7 @@ public class ServerPackCreator {
        * Check whether the user wants to check for update availability.
        */
       if (argsList.contains(Mode.UPDATE.argument())) {
+
         this.MODE = Mode.UPDATE;
         return;
       }
@@ -1381,6 +1480,7 @@ public class ServerPackCreator {
        * Check whether the user wants to generate a new serverpackcreator.conf from the commandline.
        */
       if (argsList.contains(Mode.CGEN.argument())) {
+
         this.MODE = Mode.CGEN;
         return;
       }
@@ -1389,9 +1489,12 @@ public class ServerPackCreator {
        * Check whether the user wants to run in commandline-mode or whether a GUI would not be supported.
        */
       if (argsList.contains(Mode.CLI.argument())) {
+
         this.MODE = Mode.CLI;
         return;
+
       } else if (GraphicsEnvironment.isHeadless()) {
+
         this.MODE = Mode.CLI;
         return;
       }
@@ -1400,6 +1503,7 @@ public class ServerPackCreator {
        * Check whether the user wants ServerPackCreator to run as a webservice.
        */
       if (argsList.contains(Mode.WEB.argument())) {
+
         this.MODE = Mode.WEB;
         return;
       }
@@ -1408,6 +1512,7 @@ public class ServerPackCreator {
        * Check whether the user wants to use ServerPackCreators GUI.
        */
       if (argsList.contains(Mode.GUI.argument())) {
+
         this.MODE = Mode.GUI;
         return;
       }
@@ -1416,6 +1521,7 @@ public class ServerPackCreator {
        * Check whether the user wants to set up and prepare the environment for subsequent runs.
        */
       if (argsList.contains(Mode.SETUP.argument())) {
+
         if (argsList.size() > 1
             && new File(argsList.get(argsList.indexOf(Mode.SETUP.argument()) + 1)).isFile()) {
 

@@ -56,7 +56,9 @@ public final class UpdateChecker {
     try {
       this.gitHub = new GitHubChecker("Griefed/ServerPackCreator").refresh();
     } catch (IOException ex) {
-      LOG.error("Either GitHub is currently unreachable, or the GitHub user/repository you set resulted in a malformed URL. " + ex.getMessage());
+      LOG.error(
+          "Either GitHub is currently unreachable, or the GitHub user/repository you set resulted in a malformed URL. "
+              + ex.getMessage());
       this.gitHub = null;
     }
 
@@ -64,14 +66,18 @@ public final class UpdateChecker {
       this.gitLab =
           new GitLabChecker("https://gitlab.com/api/v4/projects/32677538/releases").refresh();
     } catch (IOException ex) {
-      LOG.error("Either GitLab is currently unreachable, or the GitLab URL you set resulted in a malformed URL." + ex.getMessage());
+      LOG.error(
+          "Either GitLab is currently unreachable, or the GitLab URL you set resulted in a malformed URL."
+              + ex.getMessage());
       this.gitLab = null;
     }
     try {
       this.gitGriefed =
           new GitLabChecker("https://git.griefed.de/api/v4/projects/63/releases").refresh();
     } catch (IOException ex) {
-      LOG.error("Either Git.Griefed is currently unavailable, or the Git.Griefed URL you set resulted in a malformed URL." + ex.getMessage());
+      LOG.error(
+          "Either Git.Griefed is currently unavailable, or the Git.Griefed URL you set resulted in a malformed URL."
+              + ex.getMessage());
       this.gitGriefed = null;
     }
   }

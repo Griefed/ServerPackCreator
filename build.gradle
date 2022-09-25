@@ -169,41 +169,60 @@ tasks.register('copyDist', Copy) {
   dependsOn tasks.named('installQuasar')
   dependsOn tasks.named('assembleFrontend')
 
-  // Delete old files
-  def frontendResources = "backend/main/resources/static"
-
-  file(frontendResources).list().each {
+  file("backend/main/resources/static").list().each {
     f ->
-      delete "${frontendResources}/${f}"
+      delete "${"backend/main/resources/static"}/${f}"
   }
-
   copy {
     from layout.projectDirectory.dir("frontend/dist/spa")
     into layout.projectDirectory.dir("backend/main/resources/static")
   }
+
   copy {
     from layout.projectDirectory.file("LICENSE")
     into layout.projectDirectory.dir("backend/main/resources")
   }
+
+  file("backend/main/resources/README.md").delete()
   copy {
     from layout.projectDirectory.file("README.md")
     into layout.projectDirectory.dir("backend/main/resources")
   }
+
+  file("backend/main/resources/HELP.md").delete()
+  copy {
+    from layout.projectDirectory.file("HELP.md")
+    into layout.projectDirectory.dir("backend/main/resources")
+  }
+
+  file("backend/main/resources/CHANGELOG.md").delete()
   copy {
     from layout.projectDirectory.file("CHANGELOG.md")
     into layout.projectDirectory.dir("backend/main/resources")
   }
+
   copy {
     from layout.projectDirectory.file("CONTRIBUTING.md")
     into layout.projectDirectory.dir("backend/main/resources")
   }
+
   copy {
     from layout.projectDirectory.file("CODE_OF_CONDUCT.md")
     into layout.projectDirectory.dir("backend/main/resources")
   }
+
+  file("backend/main/resources/de/griefed/resources/manifests").list().each {
+    f ->
+      delete "${"backend/main/resources/de/griefed/resources/manifests"}/${f}"
+  }
   copy {
     from layout.projectDirectory.dir("manifests")
     into layout.projectDirectory.dir("backend/main/resources/de/griefed/resources/manifests")
+  }
+
+  file("backend/main/resources/licenses").list().each {
+    f ->
+      delete "${"backend/main/resources/licenses"}/${f}"
   }
   copy {
     from layout.projectDirectory.dir("licenses")

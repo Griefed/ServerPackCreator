@@ -25,11 +25,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -172,8 +170,8 @@ public final class I18n {
       throw new IncorrectLanguageException(locale);
     }
 
-    try (FileInputStream fileInputStream =
-        new FileInputStream(String.format("lang/lang_%s.properties", locale))) {
+    try (FileInputStream fileInputStream = new FileInputStream(
+        new File(APPLICATIONPROPERTIES.langDirectory(), "lang_" + locale + ".properties"))) {
 
       filesystemResources =
           new PropertyResourceBundle(
@@ -191,7 +189,7 @@ public final class I18n {
 
         filesystemResources =
             ResourceBundle.getBundle(
-                String.format("de/griefed/resources/lang/lang_%s", locale),
+                "de/griefed/resources/lang/lang_" + locale,
                 new Locale(
                     CURRENT_LANGUAGE.get(MAP_PATH_LANGUAGE).toLowerCase(),
                     CURRENT_LANGUAGE.get(MAP_PATH_COUNTRY).toUpperCase()),
@@ -215,7 +213,7 @@ public final class I18n {
 
       jarResources =
           ResourceBundle.getBundle(
-              String.format("de/griefed/resources/lang/lang_%s", locale),
+              "de/griefed/resources/lang/lang_" + locale,
               new Locale(
                   CURRENT_LANGUAGE.get(MAP_PATH_LANGUAGE).toLowerCase(),
                   CURRENT_LANGUAGE.get(MAP_PATH_COUNTRY).toUpperCase()),
@@ -229,7 +227,7 @@ public final class I18n {
       jarResources = FALLBACKRESOURCES;
     }
 
-    if (APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION().equals("dev")) {
+    if (APPLICATIONPROPERTIES.serverPackCreatorVersion().equals("dev")) {
       LOG.info(getMessage("encoding.check"));
       System.out.println(getMessage("encoding.check"));
     }
@@ -324,12 +322,10 @@ public final class I18n {
    */
   void writeLocaleToFile(String locale) {
     if (!APPLICATIONPROPERTIES.getLanguage().equals(locale)) {
-      try (OutputStream outputStream = Files.newOutputStream(PROPERTIESFILE.toPath())) {
-        APPLICATIONPROPERTIES.setProperty("de.griefed.serverpackcreator.language", locale);
-        APPLICATIONPROPERTIES.store(outputStream, null);
-      } catch (IOException ex) {
-        LOG.error("Couldn't write properties-file.", ex);
-      }
+
+      APPLICATIONPROPERTIES.setLanguage(locale);
+      APPLICATIONPROPERTIES.saveToDisk(APPLICATIONPROPERTIES.serverPackCreatorPropertiesFile());
+
     }
   }
 

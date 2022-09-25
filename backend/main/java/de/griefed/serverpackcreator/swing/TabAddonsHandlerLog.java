@@ -41,19 +41,20 @@ public class TabAddonsHandlerLog extends JComponentTailer {
    * <p>Receives an instance of {@link I18n} or creates one if the received one is null. Required
    * for use of localization.
    *
-   * @param tooltip The tooltip text for this tailer.
+   * @param tooltip       The tooltip text for this tailer.
+   * @param logsDirectory The directory in which the logs reside in.
    * @author Griefed
    */
-  public TabAddonsHandlerLog(String tooltip) {
+  public TabAddonsHandlerLog(String tooltip, File logsDirectory) {
     super(tooltip);
-    createTailer();
+    createTailer(logsDirectory);
   }
 
   /**
    * @author Griefed
    */
   @Override
-  protected void createTailer() {
+  protected void createTailer(File logsDirectory) {
     class MyTailerListener extends TailerListenerAdapter {
 
       public void handle(String line) {
@@ -63,7 +64,7 @@ public class TabAddonsHandlerLog extends JComponentTailer {
       }
     }
     TailerListener tailerListener = new MyTailerListener();
-    Tailer tailer = new Tailer(new File("./logs/addons.log"), tailerListener, 100);
+    Tailer tailer = new Tailer(new File(logsDirectory, "addons.log"), tailerListener, 100);
     Thread thread = new Thread(tailer);
     thread.setDaemon(true);
     thread.start();

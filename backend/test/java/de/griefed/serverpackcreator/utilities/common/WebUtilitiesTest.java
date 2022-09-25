@@ -13,7 +13,7 @@ public class WebUtilitiesTest {
 
   WebUtilitiesTest() {
     webUtilities = new WebUtilities(
-        new ApplicationProperties(new FileUtilities(), new SystemUtilities(), new ListUtilities()));
+        new ApplicationProperties(new FileUtilities(), new SystemUtilities(), new ListUtilities(), new JarUtilities()));
   }
 
   @Test

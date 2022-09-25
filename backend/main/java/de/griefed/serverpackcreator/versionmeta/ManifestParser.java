@@ -26,9 +26,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import org.apache.commons.io.FileUtils;
+import org.springframework.util.StreamUtils;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -48,9 +51,7 @@ public abstract class ManifestParser {
   public Document getXml(File manifest)
       throws ParserConfigurationException, IOException, SAXException {
 
-    Document xml = getDocumentBuilder().parse(manifest);
-    xml.normalize();
-    return xml;
+    return getXml(FileUtils.readFileToString(manifest, StandardCharsets.UTF_8));
   }
 
   /**
@@ -66,9 +67,8 @@ public abstract class ManifestParser {
   public Document getXml(InputStream manifest)
       throws ParserConfigurationException, IOException, SAXException {
 
-    Document xml = getDocumentBuilder().parse(manifest);
-    xml.normalize();
-    return xml;
+    return getXml(StreamUtils.copyToString(manifest,
+        StandardCharsets.UTF_8));
   }
 
   /**
@@ -103,7 +103,8 @@ public abstract class ManifestParser {
    * @author Griefed
    */
   protected JsonNode getJson(InputStream inputStream, ObjectMapper mapper) throws IOException {
-    return mapper.readTree(inputStream);
+    return getJson(StreamUtils.copyToString(inputStream,
+        StandardCharsets.UTF_8), mapper);
   }
 
   /**
@@ -129,7 +130,7 @@ public abstract class ManifestParser {
    * @author Griefed
    */
   protected JsonNode getJson(File file, ObjectMapper mapper) throws IOException {
-    return mapper.readTree(file);
+    return getJson(FileUtils.readFileToString(file, StandardCharsets.UTF_8), mapper);
   }
 
   /**

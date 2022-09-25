@@ -52,7 +52,7 @@ public class BeanConfiguration {
    */
   @Bean
   public File minecraftManifest() {
-    return APPLICATIONPROPERTIES.MINECRAFT_VERSION_MANIFEST_LOCATION();
+    return APPLICATIONPROPERTIES.minecraftVersionManifest();
   }
 
   /**
@@ -63,7 +63,7 @@ public class BeanConfiguration {
    */
   @Bean
   public File forgeManifest() {
-    return APPLICATIONPROPERTIES.FORGE_VERSION_MANIFEST_LOCATION();
+    return APPLICATIONPROPERTIES.forgeVersionManifest();
   }
 
   /**
@@ -74,7 +74,7 @@ public class BeanConfiguration {
    */
   @Bean
   public File fabricManifest() {
-    return APPLICATIONPROPERTIES.FABRIC_VERSION_MANIFEST_LOCATION();
+    return APPLICATIONPROPERTIES.fabricVersionManifest();
   }
 
   /**
@@ -85,7 +85,7 @@ public class BeanConfiguration {
    */
   @Bean
   public File fabricIntermediariesManifest() {
-    return APPLICATIONPROPERTIES.FABRIC_INTERMEDIARIES_MANIFEST_LOCATION();
+    return APPLICATIONPROPERTIES.fabricIntermediariesManifest();
   }
 
   /**
@@ -96,7 +96,7 @@ public class BeanConfiguration {
    */
   @Bean
   public File fabricInstallerManifest() {
-    return APPLICATIONPROPERTIES.FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION();
+    return APPLICATIONPROPERTIES.fabricInstallerManifest();
   }
 
   /**
@@ -107,7 +107,7 @@ public class BeanConfiguration {
    */
   @Bean
   public File quiltManifest() {
-    return APPLICATIONPROPERTIES.QUILT_VERSION_MANIFEST_LOCATION();
+    return APPLICATIONPROPERTIES.quiltVersionManifest();
   }
 
   /**
@@ -118,7 +118,7 @@ public class BeanConfiguration {
    */
   @Bean
   public File quiltInstallerManifest() {
-    return APPLICATIONPROPERTIES.QUILT_INSTALLER_VERSION_MANIFEST_LOCATION();
+    return APPLICATIONPROPERTIES.quiltInstallerManifest();
   }
 
   /**
@@ -171,7 +171,7 @@ public class BeanConfiguration {
    */
   @Bean
   public File legacyFabricGameManifest() {
-    return APPLICATIONPROPERTIES.LEGACY_FABRIC_GAME_MANIFEST_LOCATION();
+    return APPLICATIONPROPERTIES.legacyFabricGameManifest();
   }
 
   /**
@@ -182,7 +182,7 @@ public class BeanConfiguration {
    */
   @Bean
   public File legacyFabricLoaderManifest() {
-    return APPLICATIONPROPERTIES.LEGACY_FABRIC_LOADER_MANIFEST_LOCATION();
+    return APPLICATIONPROPERTIES.legacyFabricLoaderManifest();
   }
 
   /**
@@ -193,6 +193,6 @@ public class BeanConfiguration {
    */
   @Bean
   public File legacyFabricInstallerManifest() {
-    return APPLICATIONPROPERTIES.LEGACY_FABRIC_INSTALLER_MANIFEST_LOCATION();
+    return APPLICATIONPROPERTIES.legacyFabricInstallerManifest();
   }
 }

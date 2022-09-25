@@ -68,11 +68,11 @@ public class ApplicationPropertiesController {
         .encapsulateListElements(APPLICATIONPROPERTIES.getDirectoriesToExclude())
         + ","
         + "\"serverPackCreatorVersion\":\""
-        + APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION()
+        + APPLICATIONPROPERTIES.serverPackCreatorVersion()
         + "\","
         + "\"supportedModloaders\":"
         + UTILITIES.ListUtils()
-        .encapsulateListElements(Arrays.asList(APPLICATIONPROPERTIES.SUPPORTED_MODLOADERS()))
+        .encapsulateListElements(Arrays.asList(APPLICATIONPROPERTIES.supportedModloaders()))
         + "}";
   }
 }
