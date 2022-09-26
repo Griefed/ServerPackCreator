@@ -374,15 +374,32 @@ public final class WebUtilities {
    */
   public boolean isReachable(URL url) {
     boolean available;
+
+    HttpURLConnection connection = null;
+
     try {
-      available = InetAddress.getByName(url.getHost()).isReachable(5000)
-          && ((HttpURLConnection) url.openConnection()).getResponseCode() == 200;
+
+      String host = url.getHost();
+      LOG.debug("URL:  " + url);
+      LOG.debug("Host: " + host);
+
+      connection = (HttpURLConnection) url.openConnection();
+      available = connection.getResponseCode() == 200;
+
     } catch (IOException e) {
+
       available = false;
+
+    } finally {
+      if (connection != null) {
+        connection.disconnect();
+      }
     }
+
     if (!available) {
       LOG.warn("Could not successfully connect to " + url);
     }
+
     return available;
   }
 }
