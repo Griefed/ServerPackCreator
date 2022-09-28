@@ -313,6 +313,7 @@ public class MainMenuBar extends Component {
         new JMenuItem(I18N.getMessage("menubar.gui.menuitem.serverpacksdir"));
     JMenuItem view_OpenServerFilesDirectoryMenuItem =
         new JMenuItem(I18N.getMessage("menubar.gui.menuitem.serverfilesdir"));
+    JMenuItem view_MigrationMessagesItem = new JMenuItem(I18N.getMessage("menubar.gui.migration"));
     JMenuItem view_OpenSPCLog = new JMenuItem(I18N.getMessage("menubar.gui.menuitem.spclog"));
     JMenuItem view_OpenModloaderInstallerLog =
         new JMenuItem(I18N.getMessage("menubar.gui.menuitem.modloaderlog"));
@@ -358,6 +359,7 @@ public class MainMenuBar extends Component {
     view_OpenServerFilesDirectoryMenuItem.addActionListener(this::openServerFilesDirectoryMenuItem);
     view_OpenAddonsDirectoryMenuItem.addActionListener(this::openPluginsDirectoryMenuItem);
     view_ExampleAddonRepositoryMenuItem.addActionListener(this::viewExampleAddonMenuItem);
+    view_MigrationMessagesItem.addActionListener(this::viewMigrationMessagesItem);
     view_OpenSPCLog.addActionListener(this::openSPClog);
     view_OpenModloaderInstallerLog.addActionListener(this::openModloaderInstallerLog);
     view_OpenAddonLog.addActionListener(this::openAddonsLog);
@@ -398,9 +400,15 @@ public class MainMenuBar extends Component {
     viewMenu.add(new JSeparator());
     viewMenu.add(view_ExampleAddonRepositoryMenuItem);
     viewMenu.add(new JSeparator());
+    viewMenu.add(view_MigrationMessagesItem);
+    viewMenu.add(new JSeparator());
     viewMenu.add(view_OpenSPCLog);
     viewMenu.add(view_OpenModloaderInstallerLog);
     viewMenu.add(view_OpenAddonLog);
+
+    if (!SERVERPACKCREATORWINDOW.migrationMessagesAvailable()) {
+      view_MigrationMessagesItem.setEnabled(false);
+    }
 
     //aboutMenu.add(about_OpenAboutWindowMenuItem);
     aboutMenu.add(about_CheckForUpdates);
@@ -425,24 +433,53 @@ public class MainMenuBar extends Component {
     return MENUBAR;
   }
 
+  /**
+   * View the most recent migration messages, if any are available.
+   * @param actionEvent The event which triggered this method.
+   * @author Griefed
+   */
+  private void viewMigrationMessagesItem(ActionEvent actionEvent) {
+    SERVERPACKCREATORWINDOW.displayMigrationMessages();
+  }
+
+  /**
+   * Open the addons.log in the users default editor.
+   * @param actionEvent The event which triggered this method.
+   * @author Griefed
+   */
   private void openAddonsLog(ActionEvent actionEvent) {
     LOG.debug("Clicked open Addons-log.");
 
-    UTILITIES.FileUtils().openFile("logs/addons.log");
+    UTILITIES.FileUtils().openFile(new File(APPLICATIONPROPERTIES.logsDirectory(),"addons.log"));
   }
 
+  /**
+   * Open the modloader_installer.log in the users default editor.
+   * @param actionEvent The event which triggered this method.
+   * @author Griefed
+   */
   private void openModloaderInstallerLog(ActionEvent actionEvent) {
     LOG.debug("Clicked open Modloader-Installer-log.");
 
-    UTILITIES.FileUtils().openFile("logs/modloader_installer.log");
+    UTILITIES.FileUtils().openFile(new File(APPLICATIONPROPERTIES.logsDirectory(),"modloader_installer.log"));
   }
 
+  /**
+   * Open the serverpackcreator.log in the users default editor.
+   * @param actionEvent The event which triggered this method.
+   * @author Griefed
+   */
   private void openSPClog(ActionEvent actionEvent) {
     LOG.debug("Clicked open ServerPackCreator-log.");
 
-    UTILITIES.FileUtils().openFile("logs/serverpackcreator.log");
+    UTILITIES.FileUtils().openFile(new File(APPLICATIONPROPERTIES.logsDirectory(),"serverpackcreator.log"));
   }
 
+  /**
+   * Check for update availability and display information about the available update, if any.
+   * @param actionEvent The event which triggered this method.
+   * @author Griefed
+   */
   private void checkForUpdates(ActionEvent actionEvent) {
     LOG.debug("Clicked Check for Updates");
 
@@ -646,9 +683,9 @@ public class MainMenuBar extends Component {
   private void uploadServerPackCreatorLogToHasteBinMenuItem(ActionEvent actionEvent) {
     LOG.debug("Clicked Upload ServerPackCreator Log to HasteBin.");
 
-    if (UTILITIES.WebUtils().hasteBinPreChecks(new File("logs/serverpackcreator.log"))) {
+    if (UTILITIES.WebUtils().hasteBinPreChecks(new File(APPLICATIONPROPERTIES.logsDirectory(), "serverpackcreator.log"))) {
       String urltoHasteBin =
-          UTILITIES.WebUtils().createHasteBinFromFile(new File("logs/serverpackcreator.log"));
+          UTILITIES.WebUtils().createHasteBinFromFile(new File(APPLICATIONPROPERTIES.logsDirectory(), "serverpackcreator.log"));
       String textContent = String.format("URL: %s", urltoHasteBin);
 
       try {
@@ -674,10 +711,10 @@ public class MainMenuBar extends Component {
   private void uploadConfigurationToHasteBinMenuItem(ActionEvent actionEvent) {
     LOG.debug("Clicked Upload Configuration to HasteBin.");
 
-    if (UTILITIES.WebUtils().hasteBinPreChecks(new File("serverpackcreator.conf"))) {
+    if (UTILITIES.WebUtils().hasteBinPreChecks(new File(APPLICATIONPROPERTIES.homeDirectory(),"serverpackcreator.conf"))) {
 
       String urltoHasteBin =
-          UTILITIES.WebUtils().createHasteBinFromFile(new File("serverpackcreator.conf"));
+          UTILITIES.WebUtils().createHasteBinFromFile(new File(APPLICATIONPROPERTIES.homeDirectory(),"serverpackcreator.conf"));
       String textContent = String.format("URL: %s", urltoHasteBin);
 
       try {
@@ -755,8 +792,8 @@ public class MainMenuBar extends Component {
       UTILITIES.FileUtils().openFile(TAB_CREATESERVERPACK.getServerPropertiesPath());
     } else {
       UTILITIES.FileUtils()
-          .openFile(
-              APPLICATIONPROPERTIES.serverFilesDirectory() + File.separator + "server.properties");
+          .openFile(new File(
+              APPLICATIONPROPERTIES.serverFilesDirectory(), "server.properties"));
     }
   }
 
@@ -774,8 +811,8 @@ public class MainMenuBar extends Component {
       UTILITIES.FileUtils().openFile(TAB_CREATESERVERPACK.getServerIconPath());
     } else {
       UTILITIES.FileUtils()
-          .openFile(
-              APPLICATIONPROPERTIES.serverFilesDirectory() + File.separator + "server-icon.png");
+          .openFile(new File(
+              APPLICATIONPROPERTIES.serverFilesDirectory(), "server-icon.png"));
     }
   }
 

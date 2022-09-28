@@ -22,6 +22,7 @@ package de.griefed.serverpackcreator.swing;
 import de.griefed.serverpackcreator.ApplicationAddons;
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.ConfigurationHandler;
+import de.griefed.serverpackcreator.MigrationManager.MigrationMessage;
 import de.griefed.serverpackcreator.ServerPackHandler;
 import de.griefed.serverpackcreator.i18n.I18n;
 import de.griefed.serverpackcreator.swing.themes.DarkTheme;
@@ -39,6 +40,7 @@ import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Random;
@@ -48,6 +50,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -76,6 +79,9 @@ public final class ServerPackCreatorWindow extends JFrame {
   private final ImageIcon ISSUE_ICON = new ImageIcon(ImageIO.read(Objects.requireNonNull(
           TabCreateServerPack.class.getResource("/de/griefed/resources/gui/issue.png")))
       .getScaledInstance(48, 48, Image.SCALE_SMOOTH));
+  private final ImageIcon INFO_ICON = new ImageIcon(ImageIO.read(Objects.requireNonNull(
+          TabCreateServerPack.class.getResource("/de/griefed/resources/gui/info.png")))
+      .getScaledInstance(48, 48, Image.SCALE_SMOOTH));
   private final Dimension DIMENSION_WINDOW = new Dimension(1200, 800);
   private final I18n I18N;
   private final ApplicationProperties APPLICATIONPROPERTIES;
@@ -88,6 +94,8 @@ public final class ServerPackCreatorWindow extends JFrame {
   private final TabCreateServerPack TAB_CREATESERVERPACK;
   private final JTabbedPane TABBEDPANE;
   private final MainMenuBar MENUBAR;
+  private final JScrollPane SCROLL_MIGRATION;
+  private final boolean MIGRATIONS_MADE;
 
   /**
    * <strong>Constructor</strong>
@@ -118,6 +126,7 @@ public final class ServerPackCreatorWindow extends JFrame {
    * @param injectedServerPackCreatorSplash Instance of {@link ServerPackCreatorSplash}.
    * @param injectedApplicationAddons       Instance of {@link ApplicationAddons}.
    * @param injectedConfigUtilities         Instance of {@link ConfigUtilities}.
+   * @param migrationMessages               List of migration messages to display to the user.
    * @throws IOException if the {@link VersionMeta} could not be instantiated.
    * @author Griefed
    */
@@ -131,7 +140,8 @@ public final class ServerPackCreatorWindow extends JFrame {
       UpdateChecker injectedUpdateChecker,
       ServerPackCreatorSplash injectedServerPackCreatorSplash,
       ApplicationAddons injectedApplicationAddons,
-      ConfigUtilities injectedConfigUtilities)
+      ConfigUtilities injectedConfigUtilities,
+      List<MigrationMessage> migrationMessages)
       throws IOException {
 
     SERVERPACKCREATORSPLASH = injectedServerPackCreatorSplash;
@@ -203,6 +213,8 @@ public final class ServerPackCreatorWindow extends JFrame {
 
     TABBEDPANE.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 
+    MIGRATIONS_MADE = migrationMessages.size() > 0;
+
     MENUBAR =
         new MainMenuBar(
             injectedI18n,
@@ -218,6 +230,21 @@ public final class ServerPackCreatorWindow extends JFrame {
             injectedUtilities);
 
     setJMenuBar(MENUBAR.createMenuBar());
+
+    StringBuilder messages = new StringBuilder();
+    messages.append("<html>");
+    for (MigrationMessage message : migrationMessages) {
+      messages.append(message.get()).append("<br>");
+    }
+    messages.append("</html>");
+
+    JLabel LABEL_MIGRATION = new JLabel(messages.toString().replace("\n","<br>"));
+    SCROLL_MIGRATION = new JScrollPane(
+        LABEL_MIGRATION,
+        JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+        JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
+    );
+    SCROLL_MIGRATION.setMaximumSize(DIMENSION_WINDOW);
   }
 
   /**
@@ -302,6 +329,7 @@ public final class ServerPackCreatorWindow extends JFrame {
     TAB_CREATESERVERPACK.validateInputFields();
     TAB_CREATESERVERPACK.updatePanelTheme();
     MENUBAR.displayUpdateDialog();
+    displayMigrationMessages();
   }
 
   /**
@@ -377,6 +405,31 @@ public final class ServerPackCreatorWindow extends JFrame {
           "Set path to Java executable to: "
               + javaChooser.getSelectedFile().getPath());
 
+    }
+  }
+
+  /**
+   * Whether any migration were made.
+   * @return {@code true} if migrations were made and therefor migration messages are available.
+   * @author Griefed
+   */
+  boolean migrationMessagesAvailable() {
+    return MIGRATIONS_MADE;
+  }
+
+  /**
+   * Display the available migration messages.
+   * @author Griefed
+   */
+  void displayMigrationMessages() {
+    if (MIGRATIONS_MADE) {
+      JOptionPane.showMessageDialog(
+          null,
+          SCROLL_MIGRATION,
+          I18N.getMessage("migration.message.title"),
+          JOptionPane.INFORMATION_MESSAGE,
+          INFO_ICON
+      );
     }
   }
 }

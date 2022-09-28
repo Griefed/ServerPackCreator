@@ -93,7 +93,8 @@ import org.xml.sax.SAXException;
 public class ServerPackCreator {
 
   private static final Logger LOG = LogManager.getLogger(ServerPackCreator.class);
-  private static ServerPackCreator serverPackCreator = null;
+  private static final String[] SETUP = new String[]{"--setup"};
+  private static volatile ServerPackCreator serverPackCreator = null;
   private final String[] ARGS;
   private final CommandlineParser COMMANDLINE_PARSER;
   private final ApplicationProperties APPLICATIONPROPERTIES;
@@ -126,6 +127,7 @@ public class ServerPackCreator {
   private TomlScanner tomlScanner = null;
   private ConfigurationEditor configurationEditor = null;
   private ServerPackCreatorWindow serverPackCreatorGui = null;
+  private MigrationManager migrationManager = null;
 
   /**
    * Initialize ServerPackCreator and determine the {@link Mode} to run in.
@@ -178,7 +180,7 @@ public class ServerPackCreator {
    * @author Griefed
    */
   public synchronized static ServerPackCreator getInstance() {
-    return getInstance(new String[]{"--setup"});
+    return getInstance(SETUP);
   }
 
   /**
@@ -242,19 +244,19 @@ public class ServerPackCreator {
    * @return All arguments with which ServerPackCreator was started.
    * @author Griefed
    */
-  public synchronized String[] getArgs() {
+  public String[] getArgs() {
     return ARGS;
   }
 
-  public synchronized I18n getI18n() {
+  public I18n getI18n() {
     return I18N;
   }
 
-  public synchronized ObjectMapper getObjectMapper() {
+  public ObjectMapper getObjectMapper() {
     return OBJECT_MAPPER;
   }
 
-  public synchronized ApplicationProperties getApplicationProperties() {
+  public ApplicationProperties getApplicationProperties() {
     return APPLICATIONPROPERTIES;
   }
 
@@ -315,8 +317,8 @@ public class ServerPackCreator {
   }
 
   public synchronized Utilities getUtilities() {
-    if (this.utilities == null) {
-      this.utilities = new Utilities(
+    if (utilities == null) {
+      utilities = new Utilities(
           getBooleanUtilities(),
           getFileUtilities(),
           getJarUtilities(),
@@ -330,10 +332,17 @@ public class ServerPackCreator {
     return utilities;
   }
 
+  public synchronized MigrationManager getMigrationManager() {
+    if (migrationManager == null) {
+      migrationManager = new MigrationManager(APPLICATIONPROPERTIES, I18N);
+    }
+    return migrationManager;
+  }
+
   public synchronized VersionMeta getVersionMeta()
       throws IOException, ParserConfigurationException, SAXException {
-    if (this.versionMeta == null) {
-      this.versionMeta =
+    if (versionMeta == null) {
+      versionMeta =
           new VersionMeta(
               APPLICATIONPROPERTIES.minecraftVersionManifest(),
               APPLICATIONPROPERTIES.forgeVersionManifest(),
@@ -353,9 +362,9 @@ public class ServerPackCreator {
   }
 
   public synchronized ConfigUtilities getConfigUtilities() {
-    if (this.configUtilities == null) {
+    if (configUtilities == null) {
 
-      this.configUtilities = new ConfigUtilities(
+      configUtilities = new ConfigUtilities(
           getUtilities(),
           APPLICATIONPROPERTIES,
           OBJECT_MAPPER);
@@ -367,9 +376,9 @@ public class ServerPackCreator {
   public synchronized ConfigurationHandler getConfigurationHandler()
       throws IOException, ParserConfigurationException, SAXException {
 
-    if (this.configurationHandler == null) {
+    if (configurationHandler == null) {
 
-      this.configurationHandler =
+      configurationHandler =
           new ConfigurationHandler(
               I18N,
               getVersionMeta(),
@@ -384,9 +393,9 @@ public class ServerPackCreator {
   public synchronized ApplicationAddons getApplicationAddons()
       throws IOException, ParserConfigurationException, SAXException {
 
-    if (this.applicationAddons == null) {
+    if (applicationAddons == null) {
 
-      this.applicationAddons = new ApplicationAddons(
+      applicationAddons = new ApplicationAddons(
           getTomlParser(),
           APPLICATIONPROPERTIES,
           getVersionMeta(),
@@ -398,9 +407,9 @@ public class ServerPackCreator {
   public synchronized ServerPackHandler getServerPackHandler()
       throws IOException, ParserConfigurationException, SAXException {
 
-    if (this.serverPackHandler == null) {
+    if (serverPackHandler == null) {
 
-      this.serverPackHandler =
+      serverPackHandler =
           new ServerPackHandler(
               APPLICATIONPROPERTIES,
               getVersionMeta(),
@@ -413,9 +422,9 @@ public class ServerPackCreator {
 
   public synchronized ServerPackCreatorSplash getServerPackCreatorSplash() {
 
-    if (this.serverPackCreatorSplash == null) {
+    if (serverPackCreatorSplash == null) {
 
-      this.serverPackCreatorSplash = new ServerPackCreatorSplash(
+      serverPackCreatorSplash = new ServerPackCreatorSplash(
           APPLICATIONPROPERTIES.serverPackCreatorVersion());
     }
     return serverPackCreatorSplash;
@@ -423,18 +432,18 @@ public class ServerPackCreator {
 
   public synchronized UpdateChecker getUpdateChecker() {
 
-    if (this.updateChecker == null) {
+    if (updateChecker == null) {
 
-      this.updateChecker = new UpdateChecker();
+      updateChecker = new UpdateChecker();
     }
     return updateChecker;
   }
 
   public synchronized ModScanner getModScanner() {
 
-    if (this.modScanner == null) {
+    if (modScanner == null) {
 
-      this.modScanner = new ModScanner(
+      modScanner = new ModScanner(
           getAnnotationScanner(),
           getFabricScanner(),
           getQuiltScanner(),
@@ -445,9 +454,9 @@ public class ServerPackCreator {
 
   public synchronized AnnotationScanner getAnnotationScanner() {
 
-    if (this.annotationScanner == null) {
+    if (annotationScanner == null) {
 
-      this.annotationScanner = new AnnotationScanner(
+      annotationScanner = new AnnotationScanner(
           OBJECT_MAPPER,
           getUtilities());
     }
@@ -456,9 +465,9 @@ public class ServerPackCreator {
 
   public synchronized FabricScanner getFabricScanner() {
 
-    if (this.fabricScanner == null) {
+    if (fabricScanner == null) {
 
-      this.fabricScanner = new FabricScanner(
+      fabricScanner = new FabricScanner(
           OBJECT_MAPPER,
           getUtilities());
     }
@@ -467,9 +476,9 @@ public class ServerPackCreator {
 
   public synchronized QuiltScanner getQuiltScanner() {
 
-    if (this.quiltScanner == null) {
+    if (quiltScanner == null) {
 
-      this.quiltScanner = new QuiltScanner(
+      quiltScanner = new QuiltScanner(
           OBJECT_MAPPER,
           getUtilities());
     }
@@ -478,18 +487,18 @@ public class ServerPackCreator {
 
   public synchronized TomlParser getTomlParser() {
 
-    if (this.tomlParser == null) {
+    if (tomlParser == null) {
 
-      this.tomlParser = new TomlParser();
+      tomlParser = new TomlParser();
     }
     return tomlParser;
   }
 
   public synchronized TomlScanner getTomlScanner() {
 
-    if (this.tomlScanner == null) {
+    if (tomlScanner == null) {
 
-      this.tomlScanner = new TomlScanner(getTomlParser());
+      tomlScanner = new TomlScanner(getTomlParser());
     }
     return tomlScanner;
   }
@@ -497,9 +506,9 @@ public class ServerPackCreator {
   public synchronized ConfigurationEditor getConfigurationEditor()
       throws IOException, ParserConfigurationException, SAXException {
 
-    if (this.configurationEditor == null) {
+    if (configurationEditor == null) {
 
-      this.configurationEditor = new ConfigurationEditor(
+      configurationEditor = new ConfigurationEditor(
           getConfigurationHandler(),
           APPLICATIONPROPERTIES,
           getUtilities(),
@@ -512,9 +521,9 @@ public class ServerPackCreator {
   public synchronized ServerPackCreatorWindow getServerPackCreatorGui()
       throws IOException, ParserConfigurationException, SAXException {
 
-    if (this.serverPackCreatorGui == null) {
+    if (serverPackCreatorGui == null) {
 
-      this.serverPackCreatorGui = new ServerPackCreatorWindow(
+      serverPackCreatorGui = new ServerPackCreatorWindow(
           I18N,
           getConfigurationHandler(),
           getServerPackHandler(),
@@ -524,7 +533,8 @@ public class ServerPackCreator {
           getUpdateChecker(),
           getServerPackCreatorSplash(),
           getApplicationAddons(),
-          getConfigUtilities());
+          getConfigUtilities(),
+          getMigrationManager().getMigrationMessages());
     }
     return serverPackCreatorGui;
   }
@@ -767,9 +777,7 @@ public class ServerPackCreator {
     // Print system information to console and logs.
     LOG.debug("Gathering system information to include in log to make debugging easier.");
 
-    if (APPLICATIONPROPERTIES.serverPackCreatorVersion().contains("dev")
-        || APPLICATIONPROPERTIES.serverPackCreatorVersion().contains("alpha")
-        || APPLICATIONPROPERTIES.serverPackCreatorVersion().contains("beta")) {
+    if (APPLICATIONPROPERTIES.serverPackCreatorVersion().matches(".*(alpha|beta|dev).*")) {
 
       LOG.debug("Warning user about possible data loss.");
       LOG.warn("################################################################");
@@ -791,6 +799,8 @@ public class ServerPackCreator {
     LOG.info("OS name:                   " + APPLICATIONPROPERTIES.getOSName());
     LOG.info("OS version:                " + APPLICATIONPROPERTIES.getOSVersion());
     LOG.info("Include this information when reporting an issue on GitHub.");
+
+    getMigrationManager().migrate();
   }
 
   /**
@@ -1394,7 +1404,7 @@ public class ServerPackCreator {
     private final String ARGUMENT;
 
     Mode(String cliArg) {
-      this.ARGUMENT = cliArg;
+      ARGUMENT = cliArg;
     }
 
     /**
@@ -1453,9 +1463,9 @@ public class ServerPackCreator {
       if (argsList.contains(Mode.LANG.argument())
           && argsList.size() >= argsList.indexOf(Mode.LANG.argument()) + 1) {
 
-        this.LANG = argsList.get(argsList.indexOf(Mode.LANG.argument()) + 1);
+        LANG = argsList.get(argsList.indexOf(Mode.LANG.argument()) + 1);
       } else {
-        this.LANG = "en_us";
+        LANG = "en_us";
       }
 
       /*
@@ -1463,7 +1473,7 @@ public class ServerPackCreator {
        */
       if (argsList.contains(Mode.HELP.argument())) {
 
-        this.MODE = Mode.HELP;
+        MODE = Mode.HELP;
         return;
       }
 
@@ -1472,7 +1482,7 @@ public class ServerPackCreator {
        */
       if (argsList.contains(Mode.UPDATE.argument())) {
 
-        this.MODE = Mode.UPDATE;
+        MODE = Mode.UPDATE;
         return;
       }
 
@@ -1481,7 +1491,7 @@ public class ServerPackCreator {
        */
       if (argsList.contains(Mode.CGEN.argument())) {
 
-        this.MODE = Mode.CGEN;
+        MODE = Mode.CGEN;
         return;
       }
 
@@ -1490,12 +1500,12 @@ public class ServerPackCreator {
        */
       if (argsList.contains(Mode.CLI.argument())) {
 
-        this.MODE = Mode.CLI;
+        MODE = Mode.CLI;
         return;
 
       } else if (GraphicsEnvironment.isHeadless()) {
 
-        this.MODE = Mode.CLI;
+        MODE = Mode.CLI;
         return;
       }
 
@@ -1504,7 +1514,7 @@ public class ServerPackCreator {
        */
       if (argsList.contains(Mode.WEB.argument())) {
 
-        this.MODE = Mode.WEB;
+        MODE = Mode.WEB;
         return;
       }
 
@@ -1513,7 +1523,7 @@ public class ServerPackCreator {
        */
       if (argsList.contains(Mode.GUI.argument())) {
 
-        this.MODE = Mode.GUI;
+        MODE = Mode.GUI;
         return;
       }
 
@@ -1529,7 +1539,7 @@ public class ServerPackCreator {
 
         }
 
-        this.MODE = Mode.SETUP;
+        MODE = Mode.SETUP;
         return;
       }
 
@@ -1537,14 +1547,14 @@ public class ServerPackCreator {
        * Last but not least, failsafe-check whether a GUI would be supported.
        */
       if (!GraphicsEnvironment.isHeadless()) {
-        this.MODE = Mode.GUI;
+        MODE = Mode.GUI;
         return;
       }
 
       /*
        * If all else fails, exit ServerPackCreator.
        */
-      this.MODE = Mode.EXIT;
+      MODE = Mode.EXIT;
     }
 
     /**

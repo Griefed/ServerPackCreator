@@ -1,3 +1,22 @@
+/* Copyright (C) 2022  Griefed
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
+ * USA
+ *
+ * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
+ */
 package de.griefed.serverpackcreator;
 
 import de.griefed.serverpackcreator.utilities.common.JarUtilities;
@@ -29,12 +48,9 @@ import org.springframework.util.StreamUtils;
  */
 @Plugin(name = "ServerPackCreatorConfigFactory", category = "ConfigurationFactory")
 @Order(50)
-public class LoggingConfig extends ConfigurationFactory {
+public final class LoggingConfig extends ConfigurationFactory {
 
   private final String[] SUFFIXES = new String[]{".xml"};
-  private final JarUtilities JAR_UTILS = new JarUtilities();
-  private final HashMap<String, String> SYSINFO = JAR_UTILS.jarInformation(LoggingConfig.class);
-  private final File HOME;
   private final File LOG4J2XML;
 
   /**
@@ -49,6 +65,8 @@ public class LoggingConfig extends ConfigurationFactory {
     super();
 
     File props = null;
+    JarUtilities JAR_UTILS = new JarUtilities();
+    HashMap<String, String> SYSINFO = JAR_UTILS.jarInformation(LoggingConfig.class);
     if (new File("serverpackcreator.properties").isFile()) {
 
       props = new File("serverpackcreator.properties");
@@ -63,6 +81,7 @@ public class LoggingConfig extends ConfigurationFactory {
 
     }
 
+    File HOME;
     if (props != null) {
 
       Properties properties = new Properties();
@@ -96,21 +115,19 @@ public class LoggingConfig extends ConfigurationFactory {
     }
 
     LOG4J2XML = new File(HOME, "log4j2.xml");
+    String path = new File(HOME, "logs").getAbsolutePath();
+    String oldLogs = "<Property name=\"log-path\">logs</Property>";
+    String newLogs = "<Property name=\"log-path\">" + path + "</Property>";
 
     if (!LOG4J2XML.isFile()) {
       try (InputStream stream = ServerPackCreator.class.getResourceAsStream("/log4j2.xml")) {
 
         String log4j = StreamUtils.copyToString(stream, StandardCharsets.UTF_8);
-
-        log4j = log4j.replace(
-            "<Property name=\"log-path\">logs</Property>",
-            "<Property name=\"log-path\">" + new File(HOME, "logs").getAbsolutePath()
-                + "</Property>");
-
+        log4j = log4j.replace(oldLogs,newLogs);
         FileUtils.writeStringToFile(LOG4J2XML, log4j, StandardCharsets.UTF_8);
 
       } catch (IOException ex) {
-        ex.printStackTrace();
+        System.out.println("Error reading/writing log4j2.xml. " + ex);
       }
     }
 
@@ -150,7 +167,7 @@ public class LoggingConfig extends ConfigurationFactory {
                 LOG4J2XML)
         );
       } catch (IOException ex) {
-        ex.printStackTrace();
+        System.out.println("Couldn't parse logfj2.xml. " + ex);
       }
 
     } else if (new File(new File("").getAbsolutePath(), "log4j2.xml").isFile()) {
@@ -164,7 +181,7 @@ public class LoggingConfig extends ConfigurationFactory {
                 config)
         );
       } catch (IOException ex) {
-        ex.printStackTrace();
+        System.out.println("Couldn't parse logfj2.xml. " + ex);
       }
     }
 
@@ -174,7 +191,7 @@ public class LoggingConfig extends ConfigurationFactory {
           new ConfigurationSource(
               Objects.requireNonNull(LoggingConfig.class.getResourceAsStream("/log4j2.xml"))));
     } catch (IOException ex) {
-      ex.printStackTrace();
+      System.out.println("Couldn't parse logfj2.xml. " + ex);
     }
 
     return new CustomXmlConfiguration(loggerContext, source);
@@ -186,7 +203,7 @@ public class LoggingConfig extends ConfigurationFactory {
    * @author Griefed
    */
   @SuppressWarnings("InnerClassMayBeStatic")
-  public class CustomXmlConfiguration extends XmlConfiguration {
+  public final class CustomXmlConfiguration extends XmlConfiguration {
 
     /**
      * Setup the XML configuration with the passed context and config source. For the config source

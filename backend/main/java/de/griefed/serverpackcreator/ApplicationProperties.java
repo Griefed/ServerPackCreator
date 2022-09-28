@@ -136,6 +136,7 @@ public final class ApplicationProperties {
   private final String PROPERTY_SCRIPT_JAVA = "de.griefed.serverpackcreator.script.java";
   private final String PROPERTY_SCRIPT_JAVA_AUTOUPDATE = "de.griefed.serverpackcreator.script.java.autoupdate";
   private final String PROPERTY_HOME_DIRECTORY = "de.griefed.serverpackcreator.home";
+  private final String PROPERTY_OLD_VERSION = "de.griefed.serverpackcreator.version.old";
   private String directoryServerPacks = "server-packs";
   private int queueMaxDiskUsage = 90;
   private boolean saveLoadedConfiguration = false;
@@ -1747,6 +1748,25 @@ public final class ApplicationProperties {
     }
   }
 
+  /**
+   * Set the old version of ServerPackCreator used to perform necessary migrations between the old and the
+   * current version.
+   * @param version Old version used before upgrading to the current version.
+   * @author Griefed
+   */
+  void setOldVersion(String version) {
+    PROPERTIES.setProperty(PROPERTY_OLD_VERSION,version);
+    saveToDisk(serverPackCreatorPropertiesFile());
+  }
+
+  /**
+   * Get the old version of ServerPackCreator used to perform necessary migrations between the old and the
+   * current version.
+   * @return Old version used before updating. Empty if this is the first run of ServerPackCreator.
+   */
+  String oldVersion() {
+    return PROPERTIES.getProperty(PROPERTY_OLD_VERSION,"");
+  }
 
   /**
    * Whether to automatically update the {@code SPC_JAVA_SPC}-placeholder in the script variables
