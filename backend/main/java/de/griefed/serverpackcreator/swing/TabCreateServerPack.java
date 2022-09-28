@@ -234,7 +234,6 @@ public class TabCreateServerPack extends JPanel {
   private final IconTextField TEXTFIELD_SERVERPACKSUFFIX = new IconTextField("");
   private final IconTextField TEXTFIELD_SERVERICONPATH = new IconTextField("");
   private final IconTextField TEXTFIELD_SERVERPROPERTIESPATH = new IconTextField("");
-  private final File DIRECTORY_CHOOSER = new File(new File("").getAbsolutePath());
   private final List<ExtensionConfigPanel> CONFIG_PANELS = new ArrayList<>(10);
   private final ScriptSettings SCRIPT_VARIABLES;
   private final JLabel REQUIRED_JAVA_VERSION = new JLabel("");
@@ -1714,6 +1713,14 @@ public class TabCreateServerPack extends JPanel {
   private boolean checkServer() {
     boolean okay = true;
     if (isServerInstallationTicked()) {
+      String mcVersion = Objects.requireNonNull(
+          COMBOBOX_MINECRAFTVERSIONS.getSelectedItem()).toString();
+
+      String modloader = Objects.requireNonNull(
+          COMBOBOX_MODLOADERS.getSelectedItem()).toString();
+
+      String modloaderVersion = Objects.requireNonNull(
+          COMBOBOX_MODLOADER_VERSIONS.getSelectedItem()).toString();
 
       if (!SERVERPACKCREATORWINDOW.checkJava()) {
         setServerInstallationSelection(false);
@@ -1721,9 +1728,9 @@ public class TabCreateServerPack extends JPanel {
       }
 
       if (!SERVERPACKHANDLER.serverDownloadable(
-          COMBOBOX_MINECRAFTVERSIONS.getSelectedItem().toString(),
-          COMBOBOX_MODLOADERS.getSelectedItem().toString(),
-          COMBOBOX_MODLOADER_VERSIONS.getSelectedItem().toString())
+          mcVersion,
+          modloader,
+          modloaderVersion)
       ) {
 
         JOptionPane.showMessageDialog(
@@ -1731,18 +1738,18 @@ public class TabCreateServerPack extends JPanel {
             String.format(
                 I18N.getMessage(
                     "createserverpack.gui.createserverpack.checkboxserver.unavailable.message"),
-                COMBOBOX_MODLOADERS.getSelectedItem().toString(),
-                COMBOBOX_MINECRAFTVERSIONS.getSelectedItem().toString(),
-                COMBOBOX_MODLOADERS.getSelectedItem().toString(),
-                COMBOBOX_MODLOADER_VERSIONS.getSelectedItem().toString(),
-                COMBOBOX_MODLOADERS.getSelectedItem().toString()
+                modloader,
+                mcVersion,
+                modloader,
+                modloaderVersion,
+                modloader
             ) + "    ",
             String.format(
                 I18N.getMessage(
                     "createserverpack.gui.createserverpack.checkboxserver.unavailable.title"),
-                COMBOBOX_MINECRAFTVERSIONS.getSelectedItem().toString(),
-                COMBOBOX_MODLOADERS.getSelectedItem().toString(),
-                COMBOBOX_MODLOADER_VERSIONS.getSelectedItem().toString()),
+                mcVersion,
+                modloader,
+                modloaderVersion),
             JOptionPane.WARNING_MESSAGE,
             ISSUE_ICON);
 
@@ -1960,7 +1967,7 @@ public class TabCreateServerPack extends JPanel {
           new File(new File(getModpackDirectory()).getParent()));
 
     } else {
-      modpackDirChooser.setCurrentDirectory(DIRECTORY_CHOOSER);
+      modpackDirChooser.setCurrentDirectory(APPLICATIONPROPERTIES.homeDirectory());
     }
     modpackDirChooser.setDialogTitle(
         I18N.getMessage("createserverpack.gui.buttonmodpackdir.title"));
@@ -2073,7 +2080,7 @@ public class TabCreateServerPack extends JPanel {
 
     JFileChooser serverIconChooser = new JFileChooser();
 
-    serverIconChooser.setCurrentDirectory(DIRECTORY_CHOOSER);
+    serverIconChooser.setCurrentDirectory(APPLICATIONPROPERTIES.homeDirectory());
     serverIconChooser.setDialogTitle(
         I18N.getMessage("createserverpack.gui.createserverpack.chooser.icon.title"));
     serverIconChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
@@ -2105,7 +2112,7 @@ public class TabCreateServerPack extends JPanel {
 
     JFileChooser serverPropertiesChooser = new JFileChooser();
 
-    serverPropertiesChooser.setCurrentDirectory(DIRECTORY_CHOOSER);
+    serverPropertiesChooser.setCurrentDirectory(APPLICATIONPROPERTIES.homeDirectory());
     serverPropertiesChooser.setDialogTitle(
         I18N.getMessage("createserverpack.gui.createserverpack.chooser.properties.title"));
     serverPropertiesChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
@@ -2143,7 +2150,7 @@ public class TabCreateServerPack extends JPanel {
       clientModsChooser.setCurrentDirectory(
           new File(getModpackDirectory(), "mods"));
     } else {
-      clientModsChooser.setCurrentDirectory(DIRECTORY_CHOOSER);
+      clientModsChooser.setCurrentDirectory(APPLICATIONPROPERTIES.homeDirectory());
     }
 
     clientModsChooser.setDialogTitle(
@@ -2190,7 +2197,7 @@ public class TabCreateServerPack extends JPanel {
 
       copyDirsChooser.setCurrentDirectory(new File(getModpackDirectory()));
     } else {
-      copyDirsChooser.setCurrentDirectory(DIRECTORY_CHOOSER);
+      copyDirsChooser.setCurrentDirectory(APPLICATIONPROPERTIES.homeDirectory());
     }
 
     copyDirsChooser.setDialogTitle(I18N.getMessage("createserverpack.gui.buttoncopydirs.title"));
