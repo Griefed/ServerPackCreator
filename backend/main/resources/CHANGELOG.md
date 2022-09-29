@@ -1,3 +1,10 @@
+## [3.14.5](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.14.4...3.14.5) (2022-09-26)
+
+
+### 🛠 Fixes
+
+* **Host availability checks:** Do not use InetAddress.isReachable as the ICMP implementation ususally requires administrative rights. Establish a http connection and check for status code 200 instead. ([8312bb8](https://git.griefed.de/Griefed/ServerPackCreator/commit/8312bb81a4d54aa8d7af63794866c7eab4bd81ca))
+
 ## [3.14.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.14.3...3.14.4) (2022-09-23)
 
 
