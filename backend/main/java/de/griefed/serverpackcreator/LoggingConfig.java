@@ -123,7 +123,7 @@ public final class LoggingConfig extends ConfigurationFactory {
       try (InputStream stream = ServerPackCreator.class.getResourceAsStream("/log4j2.xml")) {
 
         String log4j = StreamUtils.copyToString(stream, StandardCharsets.UTF_8);
-        log4j = log4j.replace(oldLogs,newLogs);
+        log4j = log4j.replace(oldLogs, newLogs);
         FileUtils.writeStringToFile(LOG4J2XML, log4j, StandardCharsets.UTF_8);
 
       } catch (IOException ex) {

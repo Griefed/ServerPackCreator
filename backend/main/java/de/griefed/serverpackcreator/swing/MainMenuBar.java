@@ -435,6 +435,7 @@ public class MainMenuBar extends Component {
 
   /**
    * View the most recent migration messages, if any are available.
+   *
    * @param actionEvent The event which triggered this method.
    * @author Griefed
    */
@@ -444,39 +445,45 @@ public class MainMenuBar extends Component {
 
   /**
    * Open the addons.log in the users default editor.
+   *
    * @param actionEvent The event which triggered this method.
    * @author Griefed
    */
   private void openAddonsLog(ActionEvent actionEvent) {
     LOG.debug("Clicked open Addons-log.");
 
-    UTILITIES.FileUtils().openFile(new File(APPLICATIONPROPERTIES.logsDirectory(),"addons.log"));
+    UTILITIES.FileUtils().openFile(new File(APPLICATIONPROPERTIES.logsDirectory(), "addons.log"));
   }
 
   /**
    * Open the modloader_installer.log in the users default editor.
+   *
    * @param actionEvent The event which triggered this method.
    * @author Griefed
    */
   private void openModloaderInstallerLog(ActionEvent actionEvent) {
     LOG.debug("Clicked open Modloader-Installer-log.");
 
-    UTILITIES.FileUtils().openFile(new File(APPLICATIONPROPERTIES.logsDirectory(),"modloader_installer.log"));
+    UTILITIES.FileUtils()
+        .openFile(new File(APPLICATIONPROPERTIES.logsDirectory(), "modloader_installer.log"));
   }
 
   /**
    * Open the serverpackcreator.log in the users default editor.
+   *
    * @param actionEvent The event which triggered this method.
    * @author Griefed
    */
   private void openSPClog(ActionEvent actionEvent) {
     LOG.debug("Clicked open ServerPackCreator-log.");
 
-    UTILITIES.FileUtils().openFile(new File(APPLICATIONPROPERTIES.logsDirectory(),"serverpackcreator.log"));
+    UTILITIES.FileUtils()
+        .openFile(new File(APPLICATIONPROPERTIES.logsDirectory(), "serverpackcreator.log"));
   }
 
   /**
    * Check for update availability and display information about the available update, if any.
+   *
    * @param actionEvent The event which triggered this method.
    * @author Griefed
    */
@@ -683,9 +690,11 @@ public class MainMenuBar extends Component {
   private void uploadServerPackCreatorLogToHasteBinMenuItem(ActionEvent actionEvent) {
     LOG.debug("Clicked Upload ServerPackCreator Log to HasteBin.");
 
-    if (UTILITIES.WebUtils().hasteBinPreChecks(new File(APPLICATIONPROPERTIES.logsDirectory(), "serverpackcreator.log"))) {
+    if (UTILITIES.WebUtils().hasteBinPreChecks(
+        new File(APPLICATIONPROPERTIES.logsDirectory(), "serverpackcreator.log"))) {
       String urltoHasteBin =
-          UTILITIES.WebUtils().createHasteBinFromFile(new File(APPLICATIONPROPERTIES.logsDirectory(), "serverpackcreator.log"));
+          UTILITIES.WebUtils().createHasteBinFromFile(
+              new File(APPLICATIONPROPERTIES.logsDirectory(), "serverpackcreator.log"));
       String textContent = String.format("URL: %s", urltoHasteBin);
 
       try {
@@ -711,10 +720,12 @@ public class MainMenuBar extends Component {
   private void uploadConfigurationToHasteBinMenuItem(ActionEvent actionEvent) {
     LOG.debug("Clicked Upload Configuration to HasteBin.");
 
-    if (UTILITIES.WebUtils().hasteBinPreChecks(new File(APPLICATIONPROPERTIES.homeDirectory(),"serverpackcreator.conf"))) {
+    if (UTILITIES.WebUtils().hasteBinPreChecks(
+        new File(APPLICATIONPROPERTIES.homeDirectory(), "serverpackcreator.conf"))) {
 
       String urltoHasteBin =
-          UTILITIES.WebUtils().createHasteBinFromFile(new File(APPLICATIONPROPERTIES.homeDirectory(),"serverpackcreator.conf"));
+          UTILITIES.WebUtils().createHasteBinFromFile(
+              new File(APPLICATIONPROPERTIES.homeDirectory(), "serverpackcreator.conf"));
       String textContent = String.format("URL: %s", urltoHasteBin);
 
       try {

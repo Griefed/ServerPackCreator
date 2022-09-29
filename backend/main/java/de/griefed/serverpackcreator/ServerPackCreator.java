@@ -22,6 +22,7 @@ package de.griefed.serverpackcreator;
 import com.electronwill.nightconfig.toml.TomlParser;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.griefed.serverpackcreator.MigrationManager.MigrationMessage;
 import de.griefed.serverpackcreator.i18n.I18n;
 import de.griefed.serverpackcreator.i18n.IncorrectLanguageException;
 import de.griefed.serverpackcreator.modscanning.AnnotationScanner;
@@ -774,6 +775,15 @@ public class ServerPackCreator {
       LOG.info("Setup completed.");
     }
 
+    getMigrationManager().migrate();
+
+    for (MigrationMessage message : getMigrationManager().getMigrationMessages()) {
+      for (String part : message.get().split("\n")) {
+        LOG.info(part);
+      }
+      LOG.info("");
+    }
+
     // Print system information to console and logs.
     LOG.debug("Gathering system information to include in log to make debugging easier.");
 
@@ -799,8 +809,6 @@ public class ServerPackCreator {
     LOG.info("OS name:                   " + APPLICATIONPROPERTIES.getOSName());
     LOG.info("OS version:                " + APPLICATIONPROPERTIES.getOSVersion());
     LOG.info("Include this information when reporting an issue on GitHub.");
-
-    getMigrationManager().migrate();
   }
 
   /**

@@ -33,9 +33,11 @@ import de.griefed.serverpackcreator.utilities.UpdateChecker;
 import de.griefed.serverpackcreator.utilities.common.Utilities;
 import de.griefed.serverpackcreator.versionmeta.VersionMeta;
 import java.awt.BorderLayout;
+import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Toolkit;
+import java.awt.Window;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -52,9 +54,15 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultStyledDocument;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
 import mdlaf.MaterialLookAndFeel;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -83,6 +91,7 @@ public final class ServerPackCreatorWindow extends JFrame {
           TabCreateServerPack.class.getResource("/de/griefed/resources/gui/info.png")))
       .getScaledInstance(48, 48, Image.SCALE_SMOOTH));
   private final Dimension DIMENSION_WINDOW = new Dimension(1200, 800);
+  private final Dimension DIMENSION_MIGRATION = new Dimension(800, 400);
   private final I18n I18N;
   private final ApplicationProperties APPLICATIONPROPERTIES;
   private final ServerPackCreatorSplash SERVERPACKCREATORSPLASH;
@@ -94,7 +103,7 @@ public final class ServerPackCreatorWindow extends JFrame {
   private final TabCreateServerPack TAB_CREATESERVERPACK;
   private final JTabbedPane TABBEDPANE;
   private final MainMenuBar MENUBAR;
-  private final JScrollPane SCROLL_MIGRATION;
+  private final String MIGRATION_MESSAGE;
   private final boolean MIGRATIONS_MADE;
 
   /**
@@ -232,19 +241,10 @@ public final class ServerPackCreatorWindow extends JFrame {
     setJMenuBar(MENUBAR.createMenuBar());
 
     StringBuilder messages = new StringBuilder();
-    messages.append("<html>");
     for (MigrationMessage message : migrationMessages) {
-      messages.append(message.get()).append("<br>");
+      messages.append(message.get()).append("\n");
     }
-    messages.append("</html>");
-
-    JLabel LABEL_MIGRATION = new JLabel(messages.toString().replace("\n","<br>"));
-    SCROLL_MIGRATION = new JScrollPane(
-        LABEL_MIGRATION,
-        JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-        JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
-    );
-    SCROLL_MIGRATION.setMaximumSize(DIMENSION_WINDOW);
+    MIGRATION_MESSAGE = messages.toString();
   }
 
   /**
@@ -410,6 +410,7 @@ public final class ServerPackCreatorWindow extends JFrame {
 
   /**
    * Whether any migration were made.
+   *
    * @return {@code true} if migrations were made and therefor migration messages are available.
    * @author Griefed
    */
@@ -419,13 +420,50 @@ public final class ServerPackCreatorWindow extends JFrame {
 
   /**
    * Display the available migration messages.
+   *
    * @author Griefed
    */
   void displayMigrationMessages() {
+
+    StyledDocument styledDocument = new DefaultStyledDocument();
+    SimpleAttributeSet simpleAttributeSet = new SimpleAttributeSet();
+    JTextPane jTextPane = new JTextPane(styledDocument);
+    StyleConstants.setBold(simpleAttributeSet, true);
+    StyleConstants.setFontSize(simpleAttributeSet, 14);
+    jTextPane.setCharacterAttributes(simpleAttributeSet, true);
+    StyleConstants.setAlignment(simpleAttributeSet, StyleConstants.ALIGN_LEFT);
+    styledDocument.setParagraphAttributes(
+        0, styledDocument.getLength(), simpleAttributeSet, false);
+    jTextPane.addHierarchyListener(
+        e1 -> {
+          Window window = SwingUtilities.getWindowAncestor(jTextPane);
+          if (window instanceof Dialog) {
+            Dialog dialog = (Dialog) window;
+            if (!dialog.isResizable()) {
+              dialog.setResizable(true);
+            }
+          }
+        });
+
+    JScrollPane scrollPane = new JScrollPane(
+        jTextPane,
+        JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+        JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
+    );
+    scrollPane.setPreferredSize(DIMENSION_MIGRATION);
+
+    try {
+      styledDocument.insertString(0, MIGRATION_MESSAGE, simpleAttributeSet);
+    } catch (BadLocationException ex) {
+      LOG.error("Error inserting text into aboutDocument.", ex);
+    }
+
+    jTextPane.setEditable(false);
+
     if (MIGRATIONS_MADE) {
       JOptionPane.showMessageDialog(
           null,
-          SCROLL_MIGRATION,
+          scrollPane,
           I18N.getMessage("migration.message.title"),
           JOptionPane.INFORMATION_MESSAGE,
           INFO_ICON

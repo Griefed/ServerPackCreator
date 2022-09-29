@@ -227,7 +227,7 @@ public final class MigrationManager {
   /**
    * Check if the first version is newer than or the same as the second one.
    *
-   * @param current          The old version used.
+   * @param current      The old version used.
    * @param checkAgainst The current version being used.
    * @return {@code true} if the current version is newer than or the same as the previously used
    * version.
@@ -243,7 +243,7 @@ public final class MigrationManager {
    * Compare two integer arrays of semantic version against each other and determine whether we have
    * a new version or the same one at hand.
    *
-   * @param current          The old version numbers.
+   * @param current      The old version numbers.
    * @param checkAgainst The new version numbers to check whether they represent an older version.
    * @return {@code true} if the version numbers checked against represent a newer version or the
    * same.
@@ -384,6 +384,7 @@ public final class MigrationManager {
   /**
    * A migration message include any and all information for a particular migration which has taken
    * place during the startup of ServerPackCreator. It contains the
+   *
    * @author Griefed
    */
   @SuppressWarnings("InnerClassMayBeStatic")
@@ -423,6 +424,7 @@ public final class MigrationManager {
     public String toString() {
       String header = "From " + FROM + " to " + TO + " the following changes were made:\n";
       StringBuilder content = new StringBuilder();
+      content.append(header).append("\n");
       for (int i = 0; i < CHANGES.size(); i++) {
         content.append("  (").append(i + 1).append("): ").append(CHANGES.get(i)).append("\n");
       }
@@ -465,7 +467,7 @@ public final class MigrationManager {
 
           String message = String.format(
               I18N.getMessage("migrationmanager.migration.threepointonefilepointzero.directory")
-              ,APPLICATIONPROPERTIES.logsDirectory());
+              , APPLICATIONPROPERTIES.logsDirectory());
 
           changes.add(message);
         }
@@ -475,14 +477,16 @@ public final class MigrationManager {
           log4j = log4j.replace("<Configuration status=\"WARN\">",
               "<Configuration monitorInterval=\"30\">");
 
-          changes.add(I18N.getMessage("migrationmanager.migration.threepointonefilepointzero.interval"));
+          changes.add(
+              I18N.getMessage("migrationmanager.migration.threepointonefilepointzero.interval"));
 
         }
 
         if (changed) {
 
           FileUtils.writeStringToFile(log4J2Xml, log4j, StandardCharsets.UTF_8);
-          changes.add(I18N.getMessage("migrationmanager.migration.threepointonefilepointzero.restart"));
+          changes.add(
+              I18N.getMessage("migrationmanager.migration.threepointonefilepointzero.restart"));
         }
 
         if (!changes.isEmpty()) {

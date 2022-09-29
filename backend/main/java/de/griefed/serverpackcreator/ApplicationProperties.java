@@ -468,7 +468,8 @@ public final class ApplicationProperties {
         PROPERTIES.getProperty(PROPERTY_HOME_DIRECTORY)).isDirectory()) {
       homeDirectory = new File(PROPERTIES.getProperty(PROPERTY_HOME_DIRECTORY));
     } else {
-      if (JAR_INFORMATION.JAR_FILE.isDirectory() || JAR_INFORMATION.JAR_FOLDER.toString().matches(".*build.classes.java.*")) {
+      if (JAR_INFORMATION.JAR_FILE.isDirectory() || JAR_INFORMATION.JAR_FOLDER.toString()
+          .matches(".*build.classes.java.*")) {
         homeDirectory = new File(new File("").getAbsolutePath());
       } else {
         homeDirectory = JAR_INFORMATION.JAR_FOLDER;
@@ -1749,23 +1750,25 @@ public final class ApplicationProperties {
   }
 
   /**
-   * Set the old version of ServerPackCreator used to perform necessary migrations between the old and the
-   * current version.
+   * Set the old version of ServerPackCreator used to perform necessary migrations between the old
+   * and the current version.
+   *
    * @param version Old version used before upgrading to the current version.
    * @author Griefed
    */
   void setOldVersion(String version) {
-    PROPERTIES.setProperty(PROPERTY_OLD_VERSION,version);
+    PROPERTIES.setProperty(PROPERTY_OLD_VERSION, version);
     saveToDisk(serverPackCreatorPropertiesFile());
   }
 
   /**
-   * Get the old version of ServerPackCreator used to perform necessary migrations between the old and the
-   * current version.
+   * Get the old version of ServerPackCreator used to perform necessary migrations between the old
+   * and the current version.
+   *
    * @return Old version used before updating. Empty if this is the first run of ServerPackCreator.
    */
   String oldVersion() {
-    return PROPERTIES.getProperty(PROPERTY_OLD_VERSION,"");
+    return PROPERTIES.getProperty(PROPERTY_OLD_VERSION, "");
   }
 
   /**
