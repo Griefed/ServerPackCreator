@@ -544,6 +544,8 @@ public final class ApplicationProperties extends Properties {
 
     setAutoUpdateScriptVariablesJavaPlaceholder();
 
+    setProperty("de.griefed.serverpackcreator.version.old",SERVERPACKCREATOR_VERSION);
+
     saveToDisk(SERVERPACKCREATOR_PROPERTIES_FILE);
   }
 
