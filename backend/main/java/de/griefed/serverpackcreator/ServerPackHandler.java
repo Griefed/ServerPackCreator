@@ -22,7 +22,6 @@ package de.griefed.serverpackcreator;
 import static java.nio.file.StandardCopyOption.COPY_ATTRIBUTES;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
-import de.griefed.serverpackcreator.i18n.I18n;
 import de.griefed.serverpackcreator.modscanning.ModScanner;
 import de.griefed.serverpackcreator.spring.serverpack.ServerPackModel;
 import de.griefed.serverpackcreator.utilities.common.Utilities;
@@ -51,7 +50,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.TreeSet;
 import java.util.stream.Stream;
 import javax.imageio.ImageIO;
@@ -62,18 +60,41 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.time.StopWatch;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
- * Create a server pack from a modpack by copying all specified or required files from the modpack
- * to the server pack as well as installing the modloader server for the specified modloader,
- * modloader version and Minecraft version. Create a ZIP-archive of the server pack, excluding the
- * Minecraft server JAR, for immediate upload to CurseForge or other platforms.
+ * Everything revolving around creating a server pack. The intended workflow is to create a
+ * {@link ConfigurationModel} and run it through any of the available
+ * {@link ConfigurationHandler#checkConfiguration(ConfigurationModel, boolean)}-variants, and then
+ * call {@link #run(ConfigurationModel)} with the previously checked configuration model. You may
+ * run with an unchecked configuration model, but no guarantees or promises, yes not even support,
+ * is given for running a model without checking it first.<br> This class also gives you access to
+ * the methods which are responsible for creating the server pack, in case you want to do things
+ * manually.<br>The methods in question are:<br>
+ * <ul>
+ *   <li>{@link #cleanupEnvironment(boolean, ConfigurationModel)} and {@link #cleanupEnvironment(boolean, String)} </li>
+ *   <li>{@link ApplicationAddons#runPreZipExtensions(ConfigurationModel, String)}</li>
+ *   <li>{@link #copyFiles(ConfigurationModel)} and {@link #copyFiles(String, List, List, String, String, String)}</li>
+ *   <li>{@link #provideImprovedFabricServerLauncher(ConfigurationModel)} and {@link #provideImprovedFabricServerLauncher(String, String, String)} if Fabric is the chosen Modloader</li>
+ *   <li>{@link #copyIcon(ConfigurationModel)} and {@link #copyIcon(String, String)}</li>
+ *   <li>{@link #copyProperties(ConfigurationModel)} and {@link #copyProperties(String, String)}</li>
+ *   <li>{@link ApplicationAddons#runPreZipExtensions(ConfigurationModel, String)}</li>
+ *   <li>{@link #zipBuilder(ConfigurationModel)} and {@link #zipBuilder(String, boolean, String, String, String)}</li>
+ *   <li>{@link #createStartScripts(ConfigurationModel, boolean)} and {@link #createStartScripts(HashMap, String, boolean)}</li>
+ *   <li>{@link #installServer(ConfigurationModel)} and {@link #installServer(String, String, String, String)}</li>
+ *   <li>{@link ApplicationAddons#runPostGenExtensions(ConfigurationModel, String)}</li>
+ * </ul>
+ * <br> If you want to execute extensions, see
+ * {@link ApplicationAddons#runPreGenExtensions(ConfigurationModel, String)}},
+ * {@link ApplicationAddons#runPreZipExtensions(ConfigurationModel, String)}} and
+ * {@link ApplicationAddons#runPostGenExtensions(ConfigurationModel, String)}.
  *
  * @author Griefed
  */
+@SuppressWarnings("unused")
 @Component
 public final class ServerPackHandler {
 
@@ -89,34 +110,28 @@ public final class ServerPackHandler {
   private final String[] MOD_FILE_ENDINGS = new String[]{"jar", "disabled"};
 
   /**
-   * <strong>Constructor</strong>
+   * Create a new instance to create server packs.
    *
-   * <p>Used for Dependency Injection.
-   *
-   * <p>Receives an instance of {@link I18n} or creates one if the received one is null. Required
-   * for use of localization.
-   *
-   * <p>
-   *
-   * @param injectedApplicationProperties Instance of {@link Properties} required for various
-   *                                      different things.
-   * @param injectedVersionMeta           Instance of {@link VersionMeta} required for everything
-   *                                      version related.
-   * @param injectedUtilities             Instance of {@link Utilities}.
-   * @param injectedApplicationAddons     Instance of {@link ApplicationAddons}.
-   * @param injectedModScanner            Instance of {@link ModScanner} required to determine
-   *                                      sideness of mods.
-   * @throws IOException if the {@link VersionMeta} could not be instantiated.
+   * @param injectedApplicationProperties Base settings of ServerPackCreator needed for server pack
+   *                                      generation, such as access to the directories, script
+   *                                      templates and so on.
+   * @param injectedVersionMeta           Meta for modloader and version specific checks and
+   *                                      information gathering, such as modloader installer
+   *                                      downloads.
+   * @param injectedUtilities             Common utilities used across ServerPackCreator.
+   * @param injectedApplicationAddons     Any addons which a user may want to execute during the
+   *                                      generation of a server pack.
+   * @param injectedModScanner            In case a user enabled automatic sideness detection, this
+   *                                      will exclude clientside-only mods from a server pack.
    * @author Griefed
    */
   @Autowired
   public ServerPackHandler(
-      final ApplicationProperties injectedApplicationProperties,
-      final VersionMeta injectedVersionMeta,
-      final Utilities injectedUtilities,
-      final ApplicationAddons injectedApplicationAddons,
-      final ModScanner injectedModScanner)
-      throws IOException {
+      @NotNull final ApplicationProperties injectedApplicationProperties,
+      @NotNull final VersionMeta injectedVersionMeta,
+      @NotNull final Utilities injectedUtilities,
+      @NotNull final ApplicationAddons injectedApplicationAddons,
+      @NotNull final ModScanner injectedModScanner) {
 
     this.APPLICATIONPROPERTIES = injectedApplicationProperties;
     this.VERSIONMETA = injectedVersionMeta;
@@ -126,15 +141,17 @@ public final class ServerPackHandler {
   }
 
   /**
-   * Create a server pack from a given instance of {@link ServerPackModel} via webUI.
+   * Create a server pack from a given instance of {@link ServerPackModel} when running as a
+   * webservice.
    *
    * @param serverPackModel An instance of {@link ServerPackModel} which contains the configuration
    *                        of the modpack.
-   * @return Returns the passed {@link ServerPackModel} which got altered during the creation of
-   * said server pack.
+   * @return The passed {@link ServerPackModel} which got altered during the creation of said server
+   * pack.
    * @author Griefed
    */
-  public synchronized ServerPackModel run(@NotNull final ServerPackModel serverPackModel) {
+  @Contract("_ -> param1")
+  public @NotNull ServerPackModel run(@NotNull final ServerPackModel serverPackModel) {
 
     String destination = getServerPackDestination(serverPackModel);
 
@@ -158,14 +175,16 @@ public final class ServerPackHandler {
    * which the server pack will be created has all its spaces replaces with underscores, so
    * {@code Survive Create Prosper 4 - 5.0.1} would become {@code Survive_Create_Prosper_4_-_5.0.1 }
    * Even though it is the year 2022, spaces in paths can and do still cause trouble. Such as for
-   * Powershell scripts. Powershell throws a complete fit if the path contains spaces....
+   * Powershell scripts. Powershell throws a complete fit if the path contains spaces....soooooo, we
+   * remove them. Better safe than sorry.
    *
    * @param configurationModel Model containing the modpack directory of the modpack from which the
    *                           server pack will be generated.
    * @return The complete path to the directory in which the server pack will be generated.
    * @author Griefed
    */
-  public String getServerPackDestination(final ConfigurationModel configurationModel) {
+  public @NotNull String getServerPackDestination(
+      @NotNull final ConfigurationModel configurationModel) {
 
     String serverPackToBe = new File(configurationModel.getModpackDir()).getName()
         + configurationModel.getServerPackSuffix();
@@ -182,10 +201,10 @@ public final class ServerPackHandler {
    * @param configurationModel An instance of {@link ConfigurationModel} which contains the
    *                           configuration of the modpack from which the server pack is to be
    *                           created.
-   * @return Boolean. Returns true if the server pack was successfully generated.
+   * @return {@code true} if the server pack was successfully generated.
    * @author Griefed
    */
-  public synchronized boolean run(@NotNull final ConfigurationModel configurationModel) {
+  public boolean run(@NotNull final ConfigurationModel configurationModel) {
 
     String destination = getServerPackDestination(configurationModel);
 
@@ -289,7 +308,8 @@ public final class ServerPackHandler {
    *                           which to acquire the improved Fabric Server Launcher.
    * @author Griefed
    */
-  public void provideImprovedFabricServerLauncher(final ConfigurationModel configurationModel) {
+  public void provideImprovedFabricServerLauncher(
+      @NotNull final ConfigurationModel configurationModel) {
 
     provideImprovedFabricServerLauncher(configurationModel.getMinecraftVersion(),
         configurationModel.getModLoaderVersion(), getServerPackDestination(configurationModel));
@@ -307,7 +327,8 @@ public final class ServerPackHandler {
    * @author Griefed
    */
   public void provideImprovedFabricServerLauncher(
-      String minecraftVersion, String fabricVersion, String destination) {
+      @NotNull String minecraftVersion, @NotNull String fabricVersion,
+      @NotNull String destination) {
 
     String fileDestination = destination + File.separator + "fabric-server-launcher.jar";
 
@@ -351,26 +372,29 @@ public final class ServerPackHandler {
 
   /**
    * Deletes all files, directories and ZIP-archives of previously generated server packs to ensure
-   * newly generated server pack is as clean as possible.
+   * newly generated server pack is as clean as possible. This will completely empty the server pack
+   * directory, so use with caution!
    *
    * @param deleteZip          Whether to delete the server pack ZIP-archive.
    * @param configurationModel ConfigurationModel containing the modpack directory from which the
    *                           destination of the server pack is acquired.
    * @author Griefed
    */
-  private void cleanupEnvironment(boolean deleteZip, ConfigurationModel configurationModel) {
+  public void cleanupEnvironment(boolean deleteZip,
+      @NotNull ConfigurationModel configurationModel) {
     cleanupEnvironment(deleteZip, getServerPackDestination(configurationModel));
   }
 
   /**
    * Deletes all files, directories and ZIP-archives of previously generated server packs to ensure
-   * newly generated server pack is as clean as possible.
+   * newly generated server pack is as clean as possible. This will completely empty the server pack
+   * directory, so use with caution!
    *
    * @param deleteZip   Whether to delete the server pack ZIP-archive.
    * @param destination The destination at which to clean up in.
    * @author Griefed
    */
-  private void cleanupEnvironment(boolean deleteZip, String destination) {
+  public void cleanupEnvironment(boolean deleteZip, @NotNull String destination) {
 
     LOG.info("Found old server_pack. Cleaning up...");
 
@@ -385,7 +409,8 @@ public final class ServerPackHandler {
   }
 
   /**
-   * Create start-scripts for the generated server pack.
+   * Create start-scripts for the generated server pack using the templates the user has defined for
+   * their instance of ServerPackCreator in {@link ApplicationProperties#scriptTemplates()}.
    *
    * @param configurationModel Configuration model containing modpack specific values. keys to be
    *                           replaced with their respective values in the start scripts, as well
@@ -396,13 +421,15 @@ public final class ServerPackHandler {
    *                           for a server pack about to be zipped.
    * @author Griefed
    */
-  public void createStartScripts(final ConfigurationModel configurationModel, boolean isLocal) {
+  public void createStartScripts(@NotNull final ConfigurationModel configurationModel,
+      boolean isLocal) {
     createStartScripts(configurationModel.getScriptSettings(),
         getServerPackDestination(configurationModel), isLocal);
   }
 
   /**
-   * Create start-scripts for the generated server pack.
+   * Create start-scripts for the generated server pack using the templates the user has defined for
+   * their instance of ServerPackCreator in {@link ApplicationProperties#scriptTemplates()}.
    *
    * @param scriptSettings Key-value pairs to replace in the script. A given key in the script is
    *                       replaced with its value.
@@ -412,7 +439,8 @@ public final class ServerPackHandler {
    *                       server pack about to be zipped.
    * @author Griefed
    */
-  public void createStartScripts(final HashMap<String, String> scriptSettings, String destination,
+  public void createStartScripts(@NotNull final HashMap<String, String> scriptSettings,
+      @NotNull String destination,
       boolean isLocal) {
     for (File template : APPLICATIONPROPERTIES.scriptTemplates()) {
 
@@ -448,7 +476,10 @@ public final class ServerPackHandler {
    * Copies all specified directories and mods, excluding clientside-only mods, from the modpack
    * directory into the server pack directory. If a {@code source/file;destination/file}
    * -combination is provided, the specified source-file is copied to the specified
-   * destination-file.
+   * destination-file. One of the reasons as to why it is recommended to run a given
+   * ConfigurationModel through the ConfigurationHandler first, is because the ConfigurationHandler
+   * will resolve links to their actual files first before then correcting the given
+   * ConfigurationModel.
    *
    * @param configurationModel ConfigurationModel containing the modpack directory, list of
    *                           directories and files to copy, list of clientside-only mods to
@@ -456,7 +487,7 @@ public final class ServerPackHandler {
    *                           and the modloader used by the modpack and server pack.
    * @author Griefed
    */
-  private void copyFiles(final ConfigurationModel configurationModel) {
+  public void copyFiles(@NotNull final ConfigurationModel configurationModel) {
     copyFiles(configurationModel.getModpackDir(), configurationModel.getCopyDirs(),
         configurationModel.getClientMods(), configurationModel.getMinecraftVersion(),
         getServerPackDestination(configurationModel), configurationModel.getModLoader());
@@ -466,7 +497,10 @@ public final class ServerPackHandler {
    * Copies all specified directories and mods, excluding clientside-only mods, from the modpack
    * directory into the server pack directory. If a {@code source/file;destination/file}
    * -combination is provided, the specified source-file is copied to the specified
-   * destination-file.
+   * destination-file. One of the reasons as to why it is recommended to run a given
+   * ConfigurationModel through the ConfigurationHandler first, is because the ConfigurationHandler
+   * will resolve links to their actual files first before then correcting the given
+   * ConfigurationModel.
    *
    * @param modpackDir        Files and directories are copied into the server_pack directory inside
    *                          the modpack directory.
@@ -474,39 +508,38 @@ public final class ServerPackHandler {
    * @param clientMods        List of clientside-only mods to exclude from the server pack.
    * @param minecraftVersion  The Minecraft version the modpack uses.
    * @param destination       The destination where the files should be copied to.
+   * @param modloader         The modloader used for mod sideness detection.
    * @author Griefed
    */
-  private void copyFiles(
-      String modpackDir,
-      final List<String> directoriesToCopy,
-      final List<String> clientMods,
-      String minecraftVersion,
-      String destination,
-      String modloader) {
+  public void copyFiles(
+      @NotNull String modpackDir,
+      @NotNull final List<String> directoriesToCopy,
+      @NotNull final List<String> clientMods,
+      @NotNull String minecraftVersion,
+      @NotNull String destination,
+      @NotNull String modloader) {
 
     try {
-
       Files.createDirectories(Paths.get(destination));
-
     } catch (IOException ex) {
-
       LOG.error("Failed to create directory " + destination);
     }
 
     if (directoriesToCopy.size() == 1 && directoriesToCopy.get(0).equals("lazy_mode")) {
 
-      LOG.warn("!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!");
+      LOG.warn(
+          "!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!");
       LOG.warn(
           "Lazy mode specified. This will copy the WHOLE modpack to the server pack. No exceptions.");
-      LOG.warn("You will not receive any support for a server pack generated this way.");
+      LOG.warn(
+          "You will not receive any support for a server pack generated this way.");
       LOG.warn(
           "Do not open an issue on GitHub if this configuration errors or results in a broken server pack.");
-      LOG.warn("!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!");
+      LOG.warn(
+          "!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!");
 
       try {
-
         FileUtils.copyDirectory(new File(modpackDir), new File(destination));
-
       } catch (IOException ex) {
         LOG.error("An error occurred copying the modpack to the server pack in lazy mode.", ex);
       }
@@ -514,14 +547,11 @@ public final class ServerPackHandler {
     } else {
 
       TreeSet<String> exclusions = new TreeSet<>(APPLICATIONPROPERTIES.getDirectoriesToExclude());
-
       directoriesToCopy.removeIf(exclude -> {
 
         if (exclude.startsWith("!")) {
-
           exclusions.add(exclude.substring(1));
           return true;
-
         } else {
           return false;
         }
@@ -567,17 +597,18 @@ public final class ServerPackHandler {
           }
 
           for (File mod : getModsToInclude(clientDir, clientMods, minecraftVersion, modloader)) {
-
             serverPackFiles.add(
                 new ServerPackFile(
-                    mod.getPath(), serverDir + File.separator + mod.getName()));
+                    mod,
+                    new File(serverDir, mod.getName())));
           }
 
         } else if (new File(directory).isFile()) {
 
           serverPackFiles.add(
               new ServerPackFile(
-                  directory, destination + File.separator + new File(directory).getName()));
+                  new File(directory),
+                  new File(destination, new File(directory).getName())));
 
         } else if (new File(directory).isDirectory()) {
 
@@ -593,12 +624,9 @@ public final class ServerPackHandler {
 
       serverPackFiles.removeIf(
           serverPackFile -> {
-            if (excludeFileOrDirectory(
-                serverPackFile.SOURCE_PATH.toString(), exclusions)) {
-
+            if (excludeFileOrDirectory(serverPackFile.SOURCE_PATH.toString(), exclusions)) {
               LOG.debug("Excluding file/directory: " + serverPackFile.SOURCE_PATH);
               return true;
-
             } else {
               return false;
             }
@@ -625,8 +653,8 @@ public final class ServerPackHandler {
 
   /**
    * Gather a list of all files from an explicit source;destination-combination. If the source is a
-   * file, a singular {@link ServerPackFile} is returned. If the source is a directory, then
-   * {@link ServerPackFile}s for all files in said directory are returned.
+   * file, a singular {@link ServerPackFile} is returned. If the source is a directory, then all
+   * files in said directory are returned.
    *
    * @param combination        Array containing a source-file/directory;destination-file/directory
    *                           combination.
@@ -635,16 +663,18 @@ public final class ServerPackHandler {
    * @return List of {@link ServerPackFile}.
    * @author Griefed
    */
-  private List<ServerPackFile> getExplicitFiles(final String[] combination,
-      final ConfigurationModel configurationModel) {
+  private @NotNull List<ServerPackFile> getExplicitFiles(
+      @NotNull final String[] combination,
+      @NotNull final ConfigurationModel configurationModel) {
+
     return getExplicitFiles(combination, configurationModel.getModpackDir(),
         getServerPackDestination(configurationModel));
   }
 
   /**
    * Gather a list of all files from an explicit source;destination-combination. If the source is a
-   * file, a singular {@link ServerPackFile} is returned. If the source is a directory, then
-   * {@link ServerPackFile}s for all files in said directory are returned.
+   * file, a singular {@link ServerPackFile} is returned. If the source is a directory, then all
+   * files in said directory are returned.
    *
    * @param combination Array containing a source-file/directory;destination-file/directory
    *                    combination.
@@ -653,8 +683,10 @@ public final class ServerPackHandler {
    * @return List of {@link ServerPackFile}.
    * @author Griefed
    */
-  private List<ServerPackFile> getExplicitFiles(
-      final String[] combination, String modpackDir, String destination) {
+  private @NotNull List<ServerPackFile> getExplicitFiles(
+      @NotNull final String @NotNull [] combination,
+      @NotNull String modpackDir,
+      @NotNull String destination) {
 
     List<ServerPackFile> serverPackFiles = new ArrayList<>(100);
 
@@ -662,18 +694,22 @@ public final class ServerPackHandler {
 
       serverPackFiles.add(
           new ServerPackFile(
-              modpackDir + File.separator + combination[0],
-              destination + File.separator + combination[1]));
+              new File(modpackDir, combination[0]),
+              new File(destination, combination[1])));
 
     } else if (new File(modpackDir, combination[0]).isDirectory()) {
 
       serverPackFiles.addAll(
-          getDirectoryFiles(modpackDir + File.separator + combination[0], destination));
+          getDirectoryFiles(
+              modpackDir + File.separator + combination[0],
+              destination));
 
     } else if (new File(combination[0]).isFile()) {
 
       serverPackFiles.add(
-          new ServerPackFile(combination[0], destination + File.separator + combination[1]));
+          new ServerPackFile(
+              new File(combination[0]),
+              new File(destination, combination[1])));
 
     } else if (new File(combination[0]).isDirectory()) {
 
@@ -684,34 +720,35 @@ public final class ServerPackHandler {
   }
 
   /**
-   * Gather {@link ServerPackFile}s for a given directory, recursively.
+   * Recursively acquire all files and directories inside the given directory as a list of
+   * {@link ServerPackFile}.
    *
    * @param source      The source-directory.
    * @param destination The server pack-directory.
    * @return List of files and folders of the server pack.
    * @author Griefed
    */
-  private List<ServerPackFile> getDirectoryFiles(String source, String destination) {
+  private @NotNull List<ServerPackFile> getDirectoryFiles(
+      @NotNull String source,
+      @NotNull String destination) {
+
     List<ServerPackFile> serverPackFiles = new ArrayList<>(100);
     try (Stream<Path> files = Files.walk(Paths.get(source))) {
 
       files.forEach(
           file -> {
             try {
+              serverPackFiles.add(new ServerPackFile(
+                  file,
+                  Paths.get(destination + File.separator + new File(source).getName())
+                      .resolve(Paths.get(source).relativize(file))));
 
-              serverPackFiles.add(
-                  new ServerPackFile(
-                      file,
-                      Paths.get(destination + File.separator + new File(source).getName())
-                          .resolve(Paths.get(source).relativize(file))));
             } catch (UnsupportedOperationException ex) {
-
               LOG.error("Couldn't gather file " + file + " from directory " + source + ".", ex);
             }
           });
 
     } catch (IOException ex) {
-
       LOG.error("An error occurred gathering files to copy to the server pack.", ex);
     }
 
@@ -719,7 +756,8 @@ public final class ServerPackHandler {
   }
 
   /**
-   * Gather all files in the specified save-directory and create {@link ServerPackFile}s from it.
+   * Recursively acquire all files and directories inside the given save-directory as a list of
+   * {@link ServerPackFile}.
    *
    * @param clientDir   Target directory in the server pack. Usually the name of the world.
    * @param directory   The save-directory.
@@ -727,29 +765,28 @@ public final class ServerPackHandler {
    * @return List of {@link ServerPackFile}.
    * @author Griefed
    */
-  private List<ServerPackFile> getSaveFiles(
-      String clientDir, String directory, String destination) {
+  private @NotNull List<ServerPackFile> getSaveFiles(
+      @NotNull String clientDir,
+      @NotNull String directory,
+      @NotNull String destination) {
 
     List<ServerPackFile> serverPackFiles = new ArrayList<>(2000);
 
     try (Stream<Path> files = Files.walk(Paths.get(clientDir))) {
-
       files.forEach(
           file -> {
             try {
+              serverPackFiles.add(new ServerPackFile(
+                  file,
+                  Paths.get(destination + File.separator + directory.substring(6))
+                      .resolve(Paths.get(clientDir).relativize(file))));
 
-              serverPackFiles.add(
-                  new ServerPackFile(
-                      file,
-                      Paths.get(destination + File.separator + directory.substring(6))
-                          .resolve(Paths.get(clientDir).relativize(file))));
             } catch (UnsupportedOperationException ex) {
               LOG.error("Couldn't gather file " + file + " from directory " + clientDir + ".", ex);
             }
           });
 
     } catch (IOException ex) {
-
       LOG.error("An error occurred during the copy-procedure to the server pack.", ex);
     }
 
@@ -768,7 +805,10 @@ public final class ServerPackHandler {
    * @return A list of all mods to include in the server pack.
    * @author Griefed
    */
-  public List<File> getModsToInclude(final ConfigurationModel configurationModel) {
+  @Contract("_ -> new")
+  public @NotNull List<File> getModsToInclude(
+      @NotNull final ConfigurationModel configurationModel) {
+
     return getModsToInclude(configurationModel.getModpackDir() + File.separator + "mods",
         configurationModel.getClientMods(), configurationModel.getMinecraftVersion(),
         configurationModel.getModLoader());
@@ -789,16 +829,22 @@ public final class ServerPackHandler {
    * @return A list of all mods to include in the server pack.
    * @author Griefed
    */
-  public List<File> getModsToInclude(
-      String modsDir,
-      final List<String> userSpecifiedClientMods,
-      String minecraftVersion,
-      String modloader) {
+  @Contract("_, _, _, _ -> new")
+  public @NotNull List<File> getModsToInclude(
+      @NotNull String modsDir,
+      @NotNull final List<String> userSpecifiedClientMods,
+      @NotNull String minecraftVersion,
+      @NotNull String modloader) {
 
     LOG.info("Preparing a list of mods to include in server pack...");
 
     Collection<File> filesInModsDir =
-        new ArrayList<>(FileUtils.listFiles(new File(modsDir), MOD_FILE_ENDINGS, true));
+        new ArrayList<>(
+            FileUtils.listFiles(
+                new File(modsDir),
+                MOD_FILE_ENDINGS,
+                true));
+
     TreeSet<File> modsInModpack = new TreeSet<>(filesInModsDir);
     List<File> autodiscoveredClientMods = new ArrayList<>(100);
 
@@ -856,8 +902,9 @@ public final class ServerPackHandler {
    * @param modsInModpack            All mods in the modpack.
    * @author Griefed
    */
-  private void excludeMods(final List<File> autodiscoveredClientMods,
-      final TreeSet<File> modsInModpack) {
+  private void excludeMods(
+      @NotNull final List<File> autodiscoveredClientMods,
+      @NotNull final TreeSet<File> modsInModpack) {
 
     if (!autodiscoveredClientMods.isEmpty()) {
 
@@ -888,17 +935,16 @@ public final class ServerPackHandler {
    *                                modpack.
    * @author Griefed
    */
-  private void excludeUserSpecifiedMod(final List<String> userSpecifiedExclusions,
-      final TreeSet<File> modsInModpack) {
+  private void excludeUserSpecifiedMod(
+      @NotNull final List<String> userSpecifiedExclusions,
+      @NotNull final TreeSet<File> modsInModpack) {
 
     if (!userSpecifiedExclusions.isEmpty()) {
-
       LOG.info("Performing " + APPLICATIONPROPERTIES.exclusionFilter()
           + "-type checks for user-specified clientside-only mod exclusion.");
       for (String userSpecifiedExclusion : userSpecifiedExclusions) {
         exclude(userSpecifiedExclusion, modsInModpack);
       }
-
     } else {
       LOG.warn("User specified no clientside-only mods.");
     }
@@ -906,12 +952,16 @@ public final class ServerPackHandler {
 
   /**
    * Go through the mods in the modpack and exclude any of the user-specified clientside-only mods
-   * according to the filter method set in the serverpackcreator.properties.
+   * according to the filter method set in the serverpackcreator.properties. For available filters,
+   * see {@link de.griefed.serverpackcreator.ApplicationProperties.ExclusionFilter}.
    *
    * @param userSpecifiedExclusion The client mod to check whether it needs to be excluded.
    * @param modsInModpack          All mods in the modpack.
    */
-  private void exclude(String userSpecifiedExclusion, final TreeSet<File> modsInModpack) {
+  private void exclude(
+      @NotNull String userSpecifiedExclusion,
+      @NotNull final TreeSet<File> modsInModpack) {
+
     modsInModpack.removeIf(
         mod -> {
           boolean excluded;
@@ -957,14 +1007,21 @@ public final class ServerPackHandler {
    * pack.
    *
    * @param fileToCheckFor The string to check for.
-   * @return Boolean. Returns true if the file is found in the list of directories to exclude, false
+   * @return {@code true} if the file is found in the list of directories to exclude, false
    * if not.
    * @author Griefed
    */
-  private boolean excludeFileOrDirectory(String fileToCheckFor, final TreeSet<String> exclusions) {
+  private boolean excludeFileOrDirectory(
+      @NotNull String fileToCheckFor,
+      @NotNull final TreeSet<String> exclusions) {
+
     boolean isPresentInList = false;
     for (String entry : exclusions) {
-      if (fileToCheckFor.replace("\\", "/").contains(entry.replace("\\", "/"))) {
+      if (fileToCheckFor
+          .replace("\\", "/")
+          .contains(
+              entry.replace("\\", "/"))) {
+
         isPresentInList = true;
         break;
       }
@@ -973,24 +1030,28 @@ public final class ServerPackHandler {
   }
 
   /**
-   * Copies the server-icon.png into server_pack.
+   * Copies the server-icon.png into server pack. The sever-icon is automatically scaled to a
+   * resolution of 64x64 pixels.
    *
    * @param configurationModel Containing the modpack directory to acquire the destination of the
    *                           server pack and the path to the server icon to copy.
    * @author Griefed
    */
-  private void copyIcon(final ConfigurationModel configurationModel) {
+  public void copyIcon(@NotNull final ConfigurationModel configurationModel) {
     copyIcon(getServerPackDestination(configurationModel), configurationModel.getServerIconPath());
   }
 
   /**
-   * Copies the server-icon.png into server_pack.
+   * Copies the server-icon.png into server pack. The sever-icon is automatically scaled to a
+   * resolution of 64x64 pixels.
    *
    * @param destination      The destination where the icon should be copied to.
    * @param pathToServerIcon The path to the custom server-icon.
    * @author Griefed
    */
-  private void copyIcon(String destination, String pathToServerIcon) {
+  public void copyIcon(
+      @NotNull String destination,
+      @NotNull String pathToServerIcon) {
 
     LOG.info("Copying server-icon.png...");
 
@@ -1004,15 +1065,12 @@ public final class ServerPackHandler {
       Image scaledImage = null;
 
       try {
-
         originalImage = ImageIO.read(new File(pathToServerIcon));
 
         if (originalImage.getHeight() == 64 && originalImage.getWidth() == 64) {
 
           try {
-
             FileUtils.copyFile(new File(pathToServerIcon), customIcon);
-
           } catch (IOException e) {
             LOG.error("An error occurred trying to copy the server-icon.", e);
           }
@@ -1020,20 +1078,27 @@ public final class ServerPackHandler {
         } else {
 
           // Scale our image to 64x64
-          scaledImage = originalImage.getScaledInstance(64, 64, Image.SCALE_SMOOTH);
+          scaledImage = originalImage.getScaledInstance(
+              64,
+              64,
+              Image.SCALE_SMOOTH);
+
           BufferedImage outputImage =
               new BufferedImage(
                   scaledImage.getWidth(null),
                   scaledImage.getHeight(null),
                   BufferedImage.TYPE_INT_ARGB);
-          outputImage.getGraphics().drawImage(scaledImage, 0, 0, null);
+
+          outputImage.getGraphics().drawImage(
+              scaledImage,
+              0,
+              0,
+              null);
 
           // Save our scaled image to disk.
           try {
             ImageIO.write(outputImage, "png", customIcon);
-
           } catch (IOException ex) {
-
             LOG.error("Error scaling image.", ex);
           }
         }
@@ -1047,52 +1112,51 @@ public final class ServerPackHandler {
       LOG.info("No custom icon specified or the file doesn't exist.");
 
       try {
-
         FileUtils.copyFile(
             APPLICATIONPROPERTIES.defaultServerIcon(),
             customIcon);
-
       } catch (IOException ex) {
         LOG.error("An error occurred trying to copy the server-icon.", ex);
       }
 
     } else {
-
       LOG.error("The specified server-icon does not exist: " + pathToServerIcon);
     }
   }
 
   /**
-   * Copies the server.properties into server_pack.
+   * Copies the server.properties into server pack.
    *
    * @param configurationModel Containing the modpack directory to acquire the destination of the
    *                           server pack and the path to the server properties to copy.
    * @author Griefed
    */
-  private void copyProperties(final ConfigurationModel configurationModel) {
+  public void copyProperties(@NotNull final ConfigurationModel configurationModel) {
     copyProperties(getServerPackDestination(configurationModel),
         configurationModel.getServerPropertiesPath());
   }
 
   /**
-   * Copies the server.properties into server_pack.
+   * Copies the server.properties into server pack.
    *
    * @param destination            The destination where the properties should be copied to.
    * @param pathToServerProperties The path to the custom server.properties.
    * @author Griefed
    */
-  private void copyProperties(String destination, String pathToServerProperties) {
+  public void copyProperties(
+      @NotNull String destination,
+      @NotNull String pathToServerProperties) {
 
     LOG.info("Copying server.properties...");
 
     File customProperties =
-        new File(destination, APPLICATIONPROPERTIES.defaultServerProperties().getName());
+        new File(
+            destination,
+            APPLICATIONPROPERTIES.defaultServerProperties().getName());
 
     if (new File(pathToServerProperties).exists()) {
       try {
-
         FileUtils.copyFile(new File(pathToServerProperties), customProperties);
-
       } catch (IOException ex) {
         LOG.error("An error occurred trying to copy the server.properties-file.", ex);
       }
@@ -1102,16 +1166,13 @@ public final class ServerPackHandler {
       LOG.info("No custom properties specified or the file doesn't exist.");
 
       try {
-
         FileUtils.copyFile(APPLICATIONPROPERTIES.defaultServerProperties(),
             customProperties);
-
       } catch (IOException ex) {
         LOG.error("An error occurred trying to copy the server.properties-file.", ex);
       }
 
     } else {
-
       LOG.error("The specified server.properties does not exist: " + pathToServerProperties);
     }
   }
@@ -1125,7 +1186,7 @@ public final class ServerPackHandler {
    *                           acquire the destination at which to install the server.
    * @author Griefed
    */
-  public void installServer(final ConfigurationModel configurationModel) {
+  public void installServer(@NotNull final ConfigurationModel configurationModel) {
     installServer(configurationModel.getModLoader(), configurationModel.getMinecraftVersion(),
         configurationModel.getModLoaderVersion(), getServerPackDestination(configurationModel));
   }
@@ -1140,7 +1201,12 @@ public final class ServerPackHandler {
    * @return {@code true} if the installer can be downloaded.
    * @author Griefed
    */
-  public boolean serverDownloadable(String mcVersion, String modloader, String modloaderVersion) {
+  @SuppressWarnings("BooleanMethodIsAlwaysInverted")
+  public boolean serverDownloadable(
+      @NotNull String mcVersion,
+      @NotNull String modloader,
+      @NotNull String modloaderVersion) {
+
     switch (modloader) {
 
       case "Fabric":
@@ -1181,10 +1247,10 @@ public final class ServerPackHandler {
    * @author Griefed
    */
   public void installServer(
-      String modLoader,
-      String minecraftVersion,
-      String modLoaderVersion,
-      String destination) {
+      @NotNull String modLoader,
+      @NotNull String minecraftVersion,
+      @NotNull String modLoaderVersion,
+      @NotNull String destination) {
 
     if (!serverDownloadable(minecraftVersion, modLoader, modLoaderVersion)) {
       LOG.error("The servers for " + minecraftVersion + ", " + modLoader + " " + modLoaderVersion
@@ -1423,7 +1489,7 @@ public final class ServerPackHandler {
    *                           modpack and server pack and the modloader version.
    * @author Griefed
    */
-  public void zipBuilder(final ConfigurationModel configurationModel) {
+  public void zipBuilder(@NotNull final ConfigurationModel configurationModel) {
     zipBuilder(configurationModel.getMinecraftVersion(),
         configurationModel.getIncludeServerInstallation(),
         getServerPackDestination(configurationModel),
@@ -1446,11 +1512,11 @@ public final class ServerPackHandler {
    * @author Griefed
    */
   public void zipBuilder(
-      String minecraftVersion,
+      @NotNull String minecraftVersion,
       boolean includeServerInstallation,
-      String destination,
-      String modloader,
-      String modloaderVersion) {
+      @NotNull String destination,
+      @NotNull String modloader,
+      @NotNull String modloaderVersion) {
 
     LOG.info("Creating zip archive of serverpack...");
 
@@ -1465,9 +1531,8 @@ public final class ServerPackHandler {
               entry ->
                   filesToExclude.add(
                       new File(
-                          destination
-                              + File.separator
-                              + entry
+                          destination,
+                          entry
                               .replace("MINECRAFT_VERSION", minecraftVersion)
                               .replace("MODLOADER", modloader)
                               .replace("MODLOADER_VERSION", modloaderVersion))));
@@ -1520,7 +1585,7 @@ public final class ServerPackHandler {
    *                           modpack directory to acquire the destination of the server pack.
    * @author Griefed
    */
-  private void cleanUpServerPack(final ConfigurationModel configurationModel) {
+  private void cleanUpServerPack(@NotNull final ConfigurationModel configurationModel) {
     cleanUpServerPack(configurationModel.getMinecraftVersion(),
         configurationModel.getModLoaderVersion(), getServerPackDestination(configurationModel));
   }
@@ -1537,7 +1602,9 @@ public final class ServerPackHandler {
    * @author Griefed
    */
   private void cleanUpServerPack(
-      String minecraftVersion, String modLoaderVersion, String destination) {
+      @NotNull String minecraftVersion,
+      @NotNull String modLoaderVersion,
+      @NotNull String destination) {
 
     LOG.info("Cleanup after modloader server installation.");
 
@@ -1574,26 +1641,13 @@ public final class ServerPackHandler {
      * @param destinationFile The destination file/directory in the server pack.
      * @author Griefed
      */
-    public ServerPackFile(File sourceFile, File destinationFile) throws InvalidPathException {
+    public ServerPackFile(@NotNull File sourceFile, @NotNull File destinationFile)
+        throws InvalidPathException {
+
       this.SOURCE_FILE = sourceFile;
       this.SOURCE_PATH = sourceFile.toPath();
       this.DESTINATION_FILE = destinationFile;
       this.DESTINATION_PATH = destinationFile.toPath();
-    }
-
-    /**
-     * Construct a new ServerPackFile from two {@link String}-objects, a source and a destination.
-     *
-     * @param sourceFile      The source file/directory. Usually a file/directory in a modpack.
-     * @param destinationFile The destination file/directory in the server pack.
-     * @author Griefed
-     */
-    public ServerPackFile(String sourceFile, String destinationFile)
-        throws NullPointerException, InvalidPathException {
-      this.SOURCE_FILE = new File(sourceFile);
-      this.SOURCE_PATH = SOURCE_FILE.toPath();
-      this.DESTINATION_FILE = new File(destinationFile);
-      this.DESTINATION_PATH = DESTINATION_FILE.toPath();
     }
 
     /**
@@ -1603,8 +1657,9 @@ public final class ServerPackHandler {
      * @param destinationPath The destination file/directory in the server pack.
      * @author Griefed
      */
-    public ServerPackFile(Path sourcePath, Path destinationPath)
+    public ServerPackFile(@NotNull Path sourcePath, @NotNull Path destinationPath)
         throws UnsupportedOperationException {
+
       this.SOURCE_FILE = sourcePath.toFile();
       this.SOURCE_PATH = sourcePath;
       this.DESTINATION_FILE = destinationPath.toFile();
@@ -1705,8 +1760,9 @@ public final class ServerPackHandler {
      * {@link String}-combination, separated by a {@code ;}
      * @author Griefed
      */
+    @Contract(pure = true)
     @Override
-    public String toString() {
+    public @NotNull String toString() {
       return SOURCE_PATH + ";" + DESTINATION_PATH;
     }
   }
