@@ -201,7 +201,7 @@ public class ServerPackCreator {
    * instance, if one was initialized already.
    * @author Griefed
    */
-  public synchronized static ServerPackCreator getInstance() {
+  public synchronized static @NotNull ServerPackCreator getInstance() {
     return getInstance(SETUP);
   }
 
@@ -216,7 +216,7 @@ public class ServerPackCreator {
    * @return ServerPackCreator-instance with the specified argument.
    * @author Griefed
    */
-  public synchronized static ServerPackCreator getInstance(String[] args) {
+  public synchronized static @NotNull ServerPackCreator getInstance(String[] args) {
     if (serverPackCreator == null) {
       serverPackCreator = new ServerPackCreator(args);
       try {
@@ -279,7 +279,7 @@ public class ServerPackCreator {
    * @return All arguments with which ServerPackCreator was started.
    * @author Griefed
    */
-  public String[] getArgs() {
+  public @NotNull String @NotNull [] getArgs() {
     return ARGS;
   }
 
@@ -290,7 +290,7 @@ public class ServerPackCreator {
    * @return Instance of ServerPackCreators Internationalization used in this instance.
    * @author Griefed
    */
-  public I18n getI18n() {
+  public @NotNull I18n getI18n() {
     return I18N;
   }
 
@@ -307,7 +307,7 @@ public class ServerPackCreator {
    * @return Json-ObjectMapper to parse and read JSON.
    * @author Griefed
    */
-  public ObjectMapper getObjectMapper() {
+  public @NotNull ObjectMapper getObjectMapper() {
     return OBJECT_MAPPER;
   }
 
@@ -318,7 +318,7 @@ public class ServerPackCreator {
    * @return ApplicationProperties used across this ServerPackCreator-instance.
    * @author Griefed
    */
-  public ApplicationProperties getApplicationProperties() {
+  public @NotNull ApplicationProperties getApplicationProperties() {
     return APPLICATIONPROPERTIES;
   }
 
@@ -328,7 +328,7 @@ public class ServerPackCreator {
    * @return Common boolean utilities used across ServerPackCreator.
    * @author Griefed
    */
-  public synchronized BooleanUtilities getBooleanUtilities() {
+  public synchronized @NotNull BooleanUtilities getBooleanUtilities() {
     if (booleanUtilities == null) {
       booleanUtilities = new BooleanUtilities();
     }
@@ -341,7 +341,7 @@ public class ServerPackCreator {
    * @return Common file utilities used across ServerPackCreator.
    * @author Griefed
    */
-  public synchronized FileUtilities getFileUtilities() {
+  public synchronized @NotNull FileUtilities getFileUtilities() {
     if (fileUtilities == null) {
       fileUtilities = new FileUtilities();
     }
@@ -354,7 +354,7 @@ public class ServerPackCreator {
    * @return Common JAR-utilities used across ServerPackCreator.
    * @author Griefed
    */
-  public synchronized JarUtilities getJarUtilities() {
+  public synchronized @NotNull JarUtilities getJarUtilities() {
     if (jarUtilities == null) {
       jarUtilities = new JarUtilities();
     }
@@ -367,7 +367,7 @@ public class ServerPackCreator {
    * @return Common JSON utilities used across ServerPackCreator.
    * @author Griefed
    */
-  public synchronized JsonUtilities getJsonUtilities() {
+  public synchronized @NotNull JsonUtilities getJsonUtilities() {
     if (jsonUtilities == null) {
       jsonUtilities = new JsonUtilities();
     }
@@ -380,7 +380,7 @@ public class ServerPackCreator {
    * @return Common list utilities used across ServerPackCreator.
    * @author Griefed
    */
-  public synchronized ListUtilities getListUtilities() {
+  public synchronized @NotNull ListUtilities getListUtilities() {
     if (listUtilities == null) {
       listUtilities = new ListUtilities();
     }
@@ -393,7 +393,7 @@ public class ServerPackCreator {
    * @return Common String utilities used across ServerPackCreator.
    * @author Griefed
    */
-  public synchronized StringUtilities getStringUtilities() {
+  public synchronized @NotNull StringUtilities getStringUtilities() {
     if (stringUtilities == null) {
       stringUtilities = new StringUtilities();
     }
@@ -406,7 +406,7 @@ public class ServerPackCreator {
    * @return Common system utilities used across ServerPackCreator.
    * @author Griefed
    */
-  public synchronized SystemUtilities getSystemUtilities() {
+  public synchronized @NotNull SystemUtilities getSystemUtilities() {
     if (systemUtilities == null) {
       systemUtilities = new SystemUtilities();
     }
@@ -419,7 +419,7 @@ public class ServerPackCreator {
    * @return Common web utilities used across ServerPackCreator.
    * @author Griefed
    */
-  public synchronized WebUtilities getWebUtilities() {
+  public synchronized @NotNull WebUtilities getWebUtilities() {
     if (webUtilities == null) {
       webUtilities = new WebUtilities(APPLICATIONPROPERTIES);
     }
@@ -432,7 +432,7 @@ public class ServerPackCreator {
    * @return Collection of common utilities used across ServerPackCreator.
    * @author Griefed
    */
-  public synchronized Utilities getUtilities() {
+  public synchronized @NotNull Utilities getUtilities() {
     if (utilities == null) {
       utilities = new Utilities(
           getBooleanUtilities(),
@@ -455,7 +455,7 @@ public class ServerPackCreator {
    * @return MigrationManager responsible for checking and executing any required migration-steps.
    * @author Griefed
    */
-  public synchronized MigrationManager getMigrationManager() {
+  public synchronized @NotNull MigrationManager getMigrationManager() {
     if (migrationManager == null) {
       migrationManager = new MigrationManager(APPLICATIONPROPERTIES, I18N);
     }
@@ -472,7 +472,7 @@ public class ServerPackCreator {
    * @throws SAXException                 When xml-manifests couldn't be read.
    * @author Griefed
    */
-  public synchronized VersionMeta getVersionMeta()
+  public synchronized @NotNull VersionMeta getVersionMeta()
       throws IOException, ParserConfigurationException, SAXException {
     if (versionMeta == null) {
       versionMeta =
@@ -500,7 +500,7 @@ public class ServerPackCreator {
    * @return Common config utilities used across ServerPackCreator.
    * @author Griefed
    */
-  public synchronized ConfigUtilities getConfigUtilities() {
+  public synchronized @NotNull ConfigUtilities getConfigUtilities() {
     if (configUtilities == null) {
 
       configUtilities = new ConfigUtilities(
@@ -525,7 +525,7 @@ public class ServerPackCreator {
    *                                      an error occured during the parsing of a manifest.
    * @author Griefed
    */
-  public synchronized ConfigurationHandler getConfigurationHandler()
+  public synchronized @NotNull ConfigurationHandler getConfigurationHandler()
       throws IOException, ParserConfigurationException, SAXException {
 
     if (configurationHandler == null) {
@@ -556,7 +556,7 @@ public class ServerPackCreator {
    *                                      an error occurred during the parsing of a manifest.
    * @author Griefed
    */
-  public synchronized ApplicationAddons getApplicationAddons()
+  public synchronized @NotNull ApplicationAddons getApplicationAddons()
       throws IOException, ParserConfigurationException, SAXException {
 
     if (applicationAddons == null) {
@@ -581,7 +581,7 @@ public class ServerPackCreator {
    * @throws SAXException                 When the {@link VersionMeta} had to be instantiated, but
    *                                      an error occurred during the parsing of a manifest.
    */
-  public synchronized ServerPackHandler getServerPackHandler()
+  public synchronized @NotNull ServerPackHandler getServerPackHandler()
       throws IOException, ParserConfigurationException, SAXException {
 
     if (serverPackHandler == null) {
@@ -604,7 +604,7 @@ public class ServerPackCreator {
    * @return Boot splash screen displayed during startup.
    * @author Griefed
    */
-  public synchronized ServerPackCreatorSplash getServerPackCreatorSplash() {
+  public synchronized @NotNull ServerPackCreatorSplash getServerPackCreatorSplash() {
     if (GraphicsEnvironment.isHeadless()) {
       throw new RuntimeException("Graphical environment not supported!");
     }
@@ -624,7 +624,7 @@ public class ServerPackCreator {
    * @return This instances update checker to perform update checks and information acquirement.
    * @author Griefed
    */
-  public synchronized UpdateChecker getUpdateChecker() {
+  public synchronized @NotNull UpdateChecker getUpdateChecker() {
     if (updateChecker == null) {
       updateChecker = new UpdateChecker();
     }
@@ -639,7 +639,7 @@ public class ServerPackCreator {
    * mod.
    * @author Griefed
    */
-  public synchronized ModScanner getModScanner() {
+  public synchronized @NotNull ModScanner getModScanner() {
     if (modScanner == null) {
 
       modScanner = new ModScanner(
@@ -659,7 +659,7 @@ public class ServerPackCreator {
    * and older.
    * @author Griefed
    */
-  public synchronized AnnotationScanner getAnnotationScanner() {
+  public synchronized @NotNull AnnotationScanner getAnnotationScanner() {
     if (annotationScanner == null) {
 
       annotationScanner = new AnnotationScanner(
@@ -675,7 +675,7 @@ public class ServerPackCreator {
    * @return Scanner to determine the sideness of Fabric mods.
    * @author Griefed
    */
-  public synchronized FabricScanner getFabricScanner() {
+  public synchronized @NotNull FabricScanner getFabricScanner() {
     if (fabricScanner == null) {
 
       fabricScanner = new FabricScanner(
@@ -691,7 +691,7 @@ public class ServerPackCreator {
    * @return Scanner to determine the sideness of Quilt mods.
    * @author Griefed
    */
-  public synchronized QuiltScanner getQuiltScanner() {
+  public synchronized @NotNull QuiltScanner getQuiltScanner() {
     if (quiltScanner == null) {
 
       quiltScanner = new QuiltScanner(
@@ -708,7 +708,7 @@ public class ServerPackCreator {
    * @return Toml parser to read and parse {@code .toml}-files.
    * @author Griefed
    */
-  public synchronized TomlParser getTomlParser() {
+  public synchronized @NotNull TomlParser getTomlParser() {
     if (tomlParser == null) {
       tomlParser = new TomlParser();
     }
@@ -722,7 +722,7 @@ public class ServerPackCreator {
    * @return Scanner to determine the sideness of Forge mods for Minecraft 1.13.x and newer.
    * @author Griefed
    */
-  public synchronized TomlScanner getTomlScanner() {
+  public synchronized @NotNull TomlScanner getTomlScanner() {
     if (tomlScanner == null) {
       tomlScanner = new TomlScanner(getTomlParser());
     }
@@ -742,7 +742,7 @@ public class ServerPackCreator {
    *                                      an error occurred during the parsing of a manifest.
    * @author Griefed
    */
-  public synchronized ConfigurationEditor getConfigurationEditor()
+  public synchronized @NotNull ConfigurationEditor getConfigurationEditor()
       throws IOException, ParserConfigurationException, SAXException {
 
     if (configurationEditor == null) {
@@ -770,7 +770,7 @@ public class ServerPackCreator {
    *                                      an error occurred during the parsing of a manifest.
    * @author Griefed
    */
-  public synchronized ServerPackCreatorWindow getServerPackCreatorGui()
+  public synchronized @NotNull ServerPackCreatorWindow getServerPackCreatorGui()
       throws IOException, ParserConfigurationException, SAXException {
 
     if (GraphicsEnvironment.isHeadless()) {
@@ -804,8 +804,8 @@ public class ServerPackCreator {
    * @return Application context of Spring Boot.
    * @author Griefed
    */
-  public synchronized ConfigurableApplicationContext getSpringBootApplicationContext(
-      String[] args) {
+  public synchronized @NotNull ConfigurableApplicationContext getSpringBootApplicationContext(
+      @NotNull String @NotNull [] args) {
     if (springBootApplicationContext == null) {
       springBootApplicationContext = SpringApplication.run(ServerPackCreator.class, args);
     }
@@ -1818,7 +1818,7 @@ public class ServerPackCreator {
      * @return Textual representation of this mode.
      * @author Griefed
      */
-    public String argument() {
+    public @NotNull String argument() {
       return ARGUMENT;
     }
   }
@@ -1982,7 +1982,7 @@ public class ServerPackCreator {
      * @return Mode in which ServerPackCreator should be run in.
      * @author Griefed
      */
-    protected Mode getModeToRunIn() {
+    protected @NotNull Mode getModeToRunIn() {
       return MODE;
     }
 
@@ -1993,7 +1993,7 @@ public class ServerPackCreator {
      * {@link Optional}.
      * @author Griefed
      */
-    protected Optional<String> getLanguageToUse() {
+    protected @NotNull Optional<String> getLanguageToUse() {
       return Optional.ofNullable(LANG);
     }
 
@@ -2005,7 +2005,7 @@ public class ServerPackCreator {
      * @return The specified properties-file, wrapped in an Optional.
      * @author Griefed
      */
-    public Optional<File> propertiesFile() {
+    public @NotNull Optional<File> propertiesFile() {
       return Optional.ofNullable(propertiesFile);
     }
   }
