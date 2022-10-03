@@ -164,7 +164,7 @@ public final class ServerPackHandler {
         Double.parseDouble(
             String.valueOf(
                 FileUtils.sizeOfAsBigInteger(new File(destination + "_server_pack.zip"))
-                    .divide(BigInteger.valueOf(1048576)))));
+                         .divide(BigInteger.valueOf(1048576)))));
     serverPackModel.setPath(destination + "_server_pack.zip");
 
     return serverPackModel;
@@ -301,91 +301,6 @@ public final class ServerPackHandler {
   }
 
   /**
-   * Download and provide the improved Fabric Server Launcher, if it is available for the given
-   * Minecraft and Fabric version.
-   *
-   * @param configurationModel ConfigurationModel containing the Minecraft and Fabric version for
-   *                           which to acquire the improved Fabric Server Launcher.
-   * @author Griefed
-   */
-  public void provideImprovedFabricServerLauncher(
-      @NotNull final ConfigurationModel configurationModel) {
-
-    provideImprovedFabricServerLauncher(configurationModel.getMinecraftVersion(),
-        configurationModel.getModLoaderVersion(), getServerPackDestination(configurationModel));
-  }
-
-  /**
-   * Download and provide the improved Fabric Server Launcher, if it is available for the given
-   * Minecraft and Fabric version.
-   *
-   * @param minecraftVersion The Minecraft version the modpack uses and the Fabric Server Launcher
-   *                         should be downloaded for.
-   * @param fabricVersion    The modloader version the modpack uses and the Fabric Server Launcher
-   *                         should be downloaded for.
-   * @param destination      The destination of the server pack.
-   * @author Griefed
-   */
-  public void provideImprovedFabricServerLauncher(
-      @NotNull String minecraftVersion, @NotNull String fabricVersion,
-      @NotNull String destination) {
-
-    String fileDestination = destination + File.separator + "fabric-server-launcher.jar";
-
-    if (VERSIONMETA.fabric().improvedLauncherUrl(minecraftVersion, fabricVersion).isPresent()
-        && UTILITIES.WebUtils()
-        .downloadFile(
-            fileDestination,
-            VERSIONMETA.fabric().improvedLauncherUrl(minecraftVersion, fabricVersion).get())) {
-
-      LOG.info("Successfully provided improved Fabric Server Launcher.");
-
-      try (BufferedWriter writer =
-          new BufferedWriter(
-              new FileWriter(
-                  new File(destination, "SERVER_PACK_INFO.txt")))
-      ) {
-
-        // Improved Fabric server launcher info
-        writer.write(
-            "If you are using this server pack on a managed server, meaning you can not execute scripts, please use the fabric-server-launcher.jar instead of the fabric-server-launch.jar. Note the extra \"er\" at the end of \"launcher\".\n");
-        writer.write(
-            "This is the improved Fabric Server Launcher, which will take care of downloading and installing the Minecraft server and any and all libraries needed for running the Fabric server.\n");
-        writer.write("\n");
-        writer.write(
-            "The downside of this method is the occasional incompatibility of mods with the Fabric version, as the new Fabric Server Launcher always uses the latest available Fabric version.\n");
-        writer.write(
-            "If a mod is incompatible with said latest Fabric version, contact the mod-author and ask them to remedy the situation.\n");
-        writer.write("The official Fabric Discord had the following to add to this:\n");
-        writer.write(
-            "    Fabric loader however is cross version, so unless there is a mod incompatibility (which usually involves the mod being broken / using non-api internals)\n");
-        writer.write(
-            "    there is no good reason to use anything but the latest. I.e. the latest loader on any Minecraft version works with the new server launcher.");
-
-      } catch (Exception ex) {
-        LOG.error(
-            "Error downloading the improved Fabric server launcher. Maybe it doesn't exist for the specified Minecraft and Fabric version?",
-            ex);
-      }
-    }
-  }
-
-  /**
-   * Deletes all files, directories and ZIP-archives of previously generated server packs to ensure
-   * newly generated server pack is as clean as possible. This will completely empty the server pack
-   * directory, so use with caution!
-   *
-   * @param deleteZip          Whether to delete the server pack ZIP-archive.
-   * @param configurationModel ConfigurationModel containing the modpack directory from which the
-   *                           destination of the server pack is acquired.
-   * @author Griefed
-   */
-  public void cleanupEnvironment(boolean deleteZip,
-      @NotNull ConfigurationModel configurationModel) {
-    cleanupEnvironment(deleteZip, getServerPackDestination(configurationModel));
-  }
-
-  /**
    * Deletes all files, directories and ZIP-archives of previously generated server packs to ensure
    * newly generated server pack is as clean as possible. This will completely empty the server pack
    * directory, so use with caution!
@@ -394,7 +309,8 @@ public final class ServerPackHandler {
    * @param destination The destination at which to clean up in.
    * @author Griefed
    */
-  public void cleanupEnvironment(boolean deleteZip, @NotNull String destination) {
+  public void cleanupEnvironment(boolean deleteZip,
+                                 @NotNull String destination) {
 
     LOG.info("Found old server_pack. Cleaning up...");
 
@@ -405,70 +321,6 @@ public final class ServerPackHandler {
       LOG.info("Found old server_pack.zip. Cleaning up...");
 
       FileUtils.deleteQuietly(new File(destination + "_server_pack.zip"));
-    }
-  }
-
-  /**
-   * Create start-scripts for the generated server pack using the templates the user has defined for
-   * their instance of ServerPackCreator in {@link ApplicationProperties#scriptTemplates()}.
-   *
-   * @param configurationModel Configuration model containing modpack specific values. keys to be
-   *                           replaced with their respective values in the start scripts, as well
-   *                           as the modpack directory from which the destination of the server
-   *                           pack is acquired.
-   * @param isLocal            Whether the start scripts should be created for a locally usable
-   *                           server pack. Use {@code false} if the start scripts should be created
-   *                           for a server pack about to be zipped.
-   * @author Griefed
-   */
-  public void createStartScripts(@NotNull final ConfigurationModel configurationModel,
-      boolean isLocal) {
-    createStartScripts(configurationModel.getScriptSettings(),
-        getServerPackDestination(configurationModel), isLocal);
-  }
-
-  /**
-   * Create start-scripts for the generated server pack using the templates the user has defined for
-   * their instance of ServerPackCreator in {@link ApplicationProperties#scriptTemplates()}.
-   *
-   * @param scriptSettings Key-value pairs to replace in the script. A given key in the script is
-   *                       replaced with its value.
-   * @param destination    The destination where the scripts should be created in.
-   * @param isLocal        Whether the start scripts should be created for a locally usable server
-   *                       pack. Use {@code false} if the start scripts should be created for a
-   *                       server pack about to be zipped.
-   * @author Griefed
-   */
-  public void createStartScripts(@NotNull final HashMap<String, String> scriptSettings,
-      @NotNull String destination,
-      boolean isLocal) {
-    for (File template : APPLICATIONPROPERTIES.scriptTemplates()) {
-
-      try {
-        String fileEnding = template.toString().substring(template.toString().lastIndexOf(".") + 1);
-        File destinationScript = new File(destination, "start." + fileEnding);
-
-        String scriptContent = FileUtils.readFileToString(template, StandardCharsets.UTF_8);
-
-        for (Map.Entry<String, String> entry : scriptSettings.entrySet()) {
-          if (isLocal && entry.getKey().equals("SPC_JAVA_SPC")) {
-
-            scriptContent = scriptContent.replace(entry.getKey(), entry.getValue());
-
-          } else if (!isLocal && entry.getKey().equals("SPC_JAVA_SPC")) {
-
-            scriptContent = scriptContent.replace(entry.getKey(), "java");
-
-          } else {
-            scriptContent = scriptContent.replace(entry.getKey(), entry.getValue());
-          }
-        }
-
-        FileUtils.writeStringToFile(destinationScript, scriptContent, StandardCharsets.ISO_8859_1);
-
-      } catch (Exception ex) {
-        LOG.error("File not accessible: " + template + ".", ex);
-      }
     }
   }
 
@@ -489,8 +341,101 @@ public final class ServerPackHandler {
    */
   public void copyFiles(@NotNull final ConfigurationModel configurationModel) {
     copyFiles(configurationModel.getModpackDir(), configurationModel.getCopyDirs(),
-        configurationModel.getClientMods(), configurationModel.getMinecraftVersion(),
-        getServerPackDestination(configurationModel), configurationModel.getModLoader());
+              configurationModel.getClientMods(), configurationModel.getMinecraftVersion(),
+              getServerPackDestination(configurationModel), configurationModel.getModLoader());
+  }
+
+  /**
+   * Download and provide the improved Fabric Server Launcher, if it is available for the given
+   * Minecraft and Fabric version.
+   *
+   * @param configurationModel ConfigurationModel containing the Minecraft and Fabric version for
+   *                           which to acquire the improved Fabric Server Launcher.
+   * @author Griefed
+   */
+  public void provideImprovedFabricServerLauncher(
+      @NotNull final ConfigurationModel configurationModel) {
+
+    provideImprovedFabricServerLauncher(configurationModel.getMinecraftVersion(),
+                                        configurationModel.getModLoaderVersion(),
+                                        getServerPackDestination(configurationModel));
+  }
+
+  /**
+   * Copies the server-icon.png into server pack. The sever-icon is automatically scaled to a
+   * resolution of 64x64 pixels.
+   *
+   * @param configurationModel Containing the modpack directory to acquire the destination of the
+   *                           server pack and the path to the server icon to copy.
+   * @author Griefed
+   */
+  public void copyIcon(@NotNull final ConfigurationModel configurationModel) {
+    copyIcon(getServerPackDestination(configurationModel), configurationModel.getServerIconPath());
+  }
+
+  /**
+   * Copies the server.properties into server pack.
+   *
+   * @param configurationModel Containing the modpack directory to acquire the destination of the
+   *                           server pack and the path to the server properties to copy.
+   * @author Griefed
+   */
+  public void copyProperties(@NotNull final ConfigurationModel configurationModel) {
+    copyProperties(getServerPackDestination(configurationModel),
+                   configurationModel.getServerPropertiesPath());
+  }
+
+  /**
+   * Create start-scripts for the generated server pack using the templates the user has defined for
+   * their instance of ServerPackCreator in {@link ApplicationProperties#scriptTemplates()}.
+   *
+   * @param configurationModel Configuration model containing modpack specific values. keys to be
+   *                           replaced with their respective values in the start scripts, as well
+   *                           as the modpack directory from which the destination of the server
+   *                           pack is acquired.
+   * @param isLocal            Whether the start scripts should be created for a locally usable
+   *                           server pack. Use {@code false} if the start scripts should be created
+   *                           for a server pack about to be zipped.
+   * @author Griefed
+   */
+  public void createStartScripts(@NotNull final ConfigurationModel configurationModel,
+                                 boolean isLocal) {
+    createStartScripts(configurationModel.getScriptSettings(),
+                       getServerPackDestination(configurationModel), isLocal);
+  }
+
+  /**
+   * Creates a ZIP-archive of the server pack previously generated. Depending on
+   * {@link ApplicationProperties#isZipFileExclusionEnabled()}, files will be excluded. To customize
+   * the files which will be excluded, see
+   * {@link ApplicationProperties#getFilesToExcludeFromZipArchive()}
+   *
+   * @param configurationModel Contains the Minecraft version used by the modpack and server pack,
+   *                           whether the modloader server was installed, the modpack directory to
+   *                           acquire the destination of the server pack, the modloader used by the
+   *                           modpack and server pack and the modloader version.
+   * @author Griefed
+   */
+  public void zipBuilder(@NotNull final ConfigurationModel configurationModel) {
+    zipBuilder(configurationModel.getMinecraftVersion(),
+               configurationModel.getIncludeServerInstallation(),
+               getServerPackDestination(configurationModel),
+               configurationModel.getModLoader(), configurationModel.getModLoaderVersion());
+  }
+
+  /**
+   * Installs the modloader server for the specified modloader, modloader version and Minecraft
+   * version.
+   *
+   * @param configurationModel Contains the used modloader, Minecraft version, modloader version,
+   *                           path to the java executable/binary and modpack directory in order to
+   *                           acquire the destination at which to install the server.
+   * @author Griefed
+   */
+  public void installServer(@NotNull final ConfigurationModel configurationModel) {
+    installServer(configurationModel.getModLoader(), configurationModel.getMinecraftVersion(),
+                  configurationModel.getModLoaderVersion(),
+                  getServerPackDestination(configurationModel));
   }
 
   /**
@@ -652,392 +597,60 @@ public final class ServerPackHandler {
   }
 
   /**
-   * Gather a list of all files from an explicit source;destination-combination. If the source is a
-   * file, a singular {@link ServerPackFile} is returned. If the source is a directory, then all
-   * files in said directory are returned.
+   * Download and provide the improved Fabric Server Launcher, if it is available for the given
+   * Minecraft and Fabric version.
    *
-   * @param combination        Array containing a source-file/directory;destination-file/directory
-   *                           combination.
-   * @param configurationModel ConfigurationModel containing the modpack directory so the
-   *                           destination of the server pack can be acquired.
-   * @return List of {@link ServerPackFile}.
+   * @param minecraftVersion The Minecraft version the modpack uses and the Fabric Server Launcher
+   *                         should be downloaded for.
+   * @param fabricVersion    The modloader version the modpack uses and the Fabric Server Launcher
+   *                         should be downloaded for.
+   * @param destination      The destination of the server pack.
    * @author Griefed
    */
-  private @NotNull List<ServerPackFile> getExplicitFiles(
-      @NotNull final String[] combination,
-      @NotNull final ConfigurationModel configurationModel) {
-
-    return getExplicitFiles(combination, configurationModel.getModpackDir(),
-        getServerPackDestination(configurationModel));
-  }
-
-  /**
-   * Gather a list of all files from an explicit source;destination-combination. If the source is a
-   * file, a singular {@link ServerPackFile} is returned. If the source is a directory, then all
-   * files in said directory are returned.
-   *
-   * @param combination Array containing a source-file/directory;destination-file/directory
-   *                    combination.
-   * @param modpackDir  The modpack-directory.
-   * @param destination The destination, normally the server pack-directory.
-   * @return List of {@link ServerPackFile}.
-   * @author Griefed
-   */
-  private @NotNull List<ServerPackFile> getExplicitFiles(
-      @NotNull final String @NotNull [] combination,
-      @NotNull String modpackDir,
-      @NotNull String destination) {
-
-    List<ServerPackFile> serverPackFiles = new ArrayList<>(100);
-
-    if (new File(modpackDir, combination[0]).isFile()) {
-
-      serverPackFiles.add(
-          new ServerPackFile(
-              new File(modpackDir, combination[0]),
-              new File(destination, combination[1])));
-
-    } else if (new File(modpackDir, combination[0]).isDirectory()) {
-
-      serverPackFiles.addAll(
-          getDirectoryFiles(
-              modpackDir + File.separator + combination[0],
-              destination));
-
-    } else if (new File(combination[0]).isFile()) {
-
-      serverPackFiles.add(
-          new ServerPackFile(
-              new File(combination[0]),
-              new File(destination, combination[1])));
-
-    } else if (new File(combination[0]).isDirectory()) {
-
-      serverPackFiles.addAll(getDirectoryFiles(combination[0], destination));
-    }
-
-    return serverPackFiles;
-  }
-
-  /**
-   * Recursively acquire all files and directories inside the given directory as a list of
-   * {@link ServerPackFile}.
-   *
-   * @param source      The source-directory.
-   * @param destination The server pack-directory.
-   * @return List of files and folders of the server pack.
-   * @author Griefed
-   */
-  private @NotNull List<ServerPackFile> getDirectoryFiles(
-      @NotNull String source,
-      @NotNull String destination) {
-
-    List<ServerPackFile> serverPackFiles = new ArrayList<>(100);
-    try (Stream<Path> files = Files.walk(Paths.get(source))) {
-
-      files.forEach(
-          file -> {
-            try {
-              serverPackFiles.add(new ServerPackFile(
-                  file,
-                  Paths.get(destination + File.separator + new File(source).getName())
-                      .resolve(Paths.get(source).relativize(file))));
-
-            } catch (UnsupportedOperationException ex) {
-              LOG.error("Couldn't gather file " + file + " from directory " + source + ".", ex);
-            }
-          });
-
-    } catch (IOException ex) {
-      LOG.error("An error occurred gathering files to copy to the server pack.", ex);
-    }
-
-    return serverPackFiles;
-  }
-
-  /**
-   * Recursively acquire all files and directories inside the given save-directory as a list of
-   * {@link ServerPackFile}.
-   *
-   * @param clientDir   Target directory in the server pack. Usually the name of the world.
-   * @param directory   The save-directory.
-   * @param destination The destination of the server pack.
-   * @return List of {@link ServerPackFile}.
-   * @author Griefed
-   */
-  private @NotNull List<ServerPackFile> getSaveFiles(
-      @NotNull String clientDir,
-      @NotNull String directory,
-      @NotNull String destination) {
-
-    List<ServerPackFile> serverPackFiles = new ArrayList<>(2000);
-
-    try (Stream<Path> files = Files.walk(Paths.get(clientDir))) {
-      files.forEach(
-          file -> {
-            try {
-              serverPackFiles.add(new ServerPackFile(
-                  file,
-                  Paths.get(destination + File.separator + directory.substring(6))
-                      .resolve(Paths.get(clientDir).relativize(file))));
-
-            } catch (UnsupportedOperationException ex) {
-              LOG.error("Couldn't gather file " + file + " from directory " + clientDir + ".", ex);
-            }
-          });
-
-    } catch (IOException ex) {
-      LOG.error("An error occurred during the copy-procedure to the server pack.", ex);
-    }
-
-    return serverPackFiles;
-  }
-
-  /**
-   * Generates a list of all mods to include in the server pack. If the user specified
-   * clientside-mods to exclude, and/or if the automatic exclusion of clientside-only mods is
-   * active, they will be excluded, too.
-   *
-   * @param configurationModel The configurationModel containing the modpack directory, list of
-   *                           clientside-only mods to exclude, Minecraft version used by the
-   *                           modpack and server pack and the modloader used by the modpack and
-   *                           server pack.
-   * @return A list of all mods to include in the server pack.
-   * @author Griefed
-   */
-  @Contract("_ -> new")
-  public @NotNull List<File> getModsToInclude(
-      @NotNull final ConfigurationModel configurationModel) {
-
-    return getModsToInclude(configurationModel.getModpackDir() + File.separator + "mods",
-        configurationModel.getClientMods(), configurationModel.getMinecraftVersion(),
-        configurationModel.getModLoader());
-  }
-
-  /**
-   * Generates a list of all mods to include in the server pack. If the user specified
-   * clientside-mods to exclude, and/or if the automatic exclusion of clientside-only mods is
-   * active, they will be excluded, too.
-   *
-   * @param modsDir                 String. The mods-directory of the modpack of which to generate a
-   *                                list of all its contents.
-   * @param userSpecifiedClientMods List String. A list of all clientside-only mods.
-   * @param minecraftVersion        String. The Minecraft version the modpack uses. When the
-   *                                modloader is Forge, this determines whether Annotations or Tomls
-   *                                are scanned.
-   * @param modloader               {@link String} The modloader the modpack uses.
-   * @return A list of all mods to include in the server pack.
-   * @author Griefed
-   */
-  @Contract("_, _, _, _ -> new")
-  public @NotNull List<File> getModsToInclude(
-      @NotNull String modsDir,
-      @NotNull final List<String> userSpecifiedClientMods,
+  public void provideImprovedFabricServerLauncher(
       @NotNull String minecraftVersion,
-      @NotNull String modloader) {
+      @NotNull String fabricVersion,
+      @NotNull String destination) {
 
-    LOG.info("Preparing a list of mods to include in server pack...");
+    String fileDestination = destination + File.separator + "fabric-server-launcher.jar";
 
-    Collection<File> filesInModsDir =
-        new ArrayList<>(
-            FileUtils.listFiles(
-                new File(modsDir),
-                MOD_FILE_ENDINGS,
-                true));
+    if (VERSIONMETA.fabric().improvedLauncherUrl(minecraftVersion, fabricVersion).isPresent()
+        && UTILITIES.WebUtils()
+                    .downloadFile(
+                        fileDestination,
+                        VERSIONMETA.fabric().improvedLauncherUrl(minecraftVersion, fabricVersion)
+                                   .get())) {
 
-    TreeSet<File> modsInModpack = new TreeSet<>(filesInModsDir);
-    List<File> autodiscoveredClientMods = new ArrayList<>(100);
+      LOG.info("Successfully provided improved Fabric Server Launcher.");
 
-    // Check whether scanning mods for sideness is activated.
-    if (APPLICATIONPROPERTIES.isAutoExcludingModsEnabled()) {
+      try (BufferedWriter writer =
+          new BufferedWriter(
+              new FileWriter(
+                  new File(destination, "SERVER_PACK_INFO.txt")))
+      ) {
 
-      STOPWATCH_SCANS.start();
-      // If Minecraft version is 1.12 or newer, scan Tomls, else scan annotations.
+        // Improved Fabric server launcher info
+        writer.write(
+            "If you are using this server pack on a managed server, meaning you can not execute scripts, please use the fabric-server-launcher.jar instead of the fabric-server-launch.jar. Note the extra \"er\" at the end of \"launcher\".\n");
+        writer.write(
+            "This is the improved Fabric Server Launcher, which will take care of downloading and installing the Minecraft server and any and all libraries needed for running the Fabric server.\n");
+        writer.write("\n");
+        writer.write(
+            "The downside of this method is the occasional incompatibility of mods with the Fabric version, as the new Fabric Server Launcher always uses the latest available Fabric version.\n");
+        writer.write(
+            "If a mod is incompatible with said latest Fabric version, contact the mod-author and ask them to remedy the situation.\n");
+        writer.write("The official Fabric Discord had the following to add to this:\n");
+        writer.write(
+            "    Fabric loader however is cross version, so unless there is a mod incompatibility (which usually involves the mod being broken / using non-api internals)\n");
+        writer.write(
+            "    there is no good reason to use anything but the latest. I.e. the latest loader on any Minecraft version works with the new server launcher.");
 
-      switch (modloader) {
-        case "LegacyFabric":
-        case "Fabric":
-          autodiscoveredClientMods.addAll(MODSCANNER.fabric().scan(filesInModsDir));
-          break;
-
-        case "Forge":
-          if (Integer.parseInt(minecraftVersion.split("\\.")[1]) > 12) {
-            autodiscoveredClientMods.addAll(MODSCANNER.tomls().scan(filesInModsDir));
-          } else {
-            autodiscoveredClientMods.addAll(MODSCANNER.annotations().scan(filesInModsDir));
-          }
-          break;
-
-        case "Quilt":
-          TreeSet<File> discoMods = new TreeSet<>();
-          discoMods.addAll(MODSCANNER.fabric().scan(filesInModsDir));
-          discoMods.addAll(MODSCANNER.quilt().scan(filesInModsDir));
-          autodiscoveredClientMods.addAll(discoMods);
-          discoMods.clear();
-      }
-
-      // Exclude scanned mods from copying if said functionality is enabled.
-      excludeMods(autodiscoveredClientMods, modsInModpack);
-
-      STOPWATCH_SCANS.stop();
-      LOG.debug(
-          "Scanning and excluding of " + filesInModsDir.size() + " mods took " + STOPWATCH_SCANS);
-      STOPWATCH_SCANS.reset();
-
-    } else {
-      LOG.info("Automatic clientside-only mod detection disabled.");
-    }
-
-    // Exclude user-specified mods from copying.
-    excludeUserSpecifiedMod(userSpecifiedClientMods, modsInModpack);
-
-    return new ArrayList<>(modsInModpack);
-  }
-
-  /**
-   * Exclude every automatically discovered clientside-only mod from the list of mods in the
-   * modpack.
-   *
-   * @param autodiscoveredClientMods Automatically discovered clientside-only mods in the modpack.
-   * @param modsInModpack            All mods in the modpack.
-   * @author Griefed
-   */
-  private void excludeMods(
-      @NotNull final List<File> autodiscoveredClientMods,
-      @NotNull final TreeSet<File> modsInModpack) {
-
-    if (!autodiscoveredClientMods.isEmpty()) {
-
-      LOG.info("Automatically detected mods: " + autodiscoveredClientMods.size());
-
-      for (File discoveredMod : autodiscoveredClientMods) {
-        modsInModpack.removeIf(
-            mod -> {
-              if (mod.getName().contains(discoveredMod.getName())) {
-                LOG.warn("Automatically excluding mod: " + discoveredMod.getName());
-                return true;
-              } else {
-                return false;
-              }
-            });
-      }
-    } else {
-      LOG.info("No clientside-only mods detected.");
-    }
-  }
-
-  /**
-   * Exclude user-specified mods from the server pack.
-   *
-   * @param userSpecifiedExclusions User-specified clientside-only mods to exclude from the server
-   *                                pack.
-   * @param modsInModpack           Every mod ending with {@code jar} or {@code disabled} in the
-   *                                modpack.
-   * @author Griefed
-   */
-  private void excludeUserSpecifiedMod(
-      @NotNull final List<String> userSpecifiedExclusions,
-      @NotNull final TreeSet<File> modsInModpack) {
-
-    if (!userSpecifiedExclusions.isEmpty()) {
-      LOG.info("Performing " + APPLICATIONPROPERTIES.exclusionFilter()
-          + "-type checks for user-specified clientside-only mod exclusion.");
-      for (String userSpecifiedExclusion : userSpecifiedExclusions) {
-        exclude(userSpecifiedExclusion, modsInModpack);
-      }
-    } else {
-      LOG.warn("User specified no clientside-only mods.");
-    }
-  }
-
-  /**
-   * Go through the mods in the modpack and exclude any of the user-specified clientside-only mods
-   * according to the filter method set in the serverpackcreator.properties. For available filters,
-   * see {@link de.griefed.serverpackcreator.ApplicationProperties.ExclusionFilter}.
-   *
-   * @param userSpecifiedExclusion The client mod to check whether it needs to be excluded.
-   * @param modsInModpack          All mods in the modpack.
-   */
-  private void exclude(
-      @NotNull String userSpecifiedExclusion,
-      @NotNull final TreeSet<File> modsInModpack) {
-
-    modsInModpack.removeIf(
-        mod -> {
-          boolean excluded;
-          String check = mod.getName();
-
-          switch (APPLICATIONPROPERTIES.exclusionFilter()) {
-
-            case END:
-              excluded = check.endsWith(userSpecifiedExclusion);
-              break;
-
-            case CONTAIN:
-              excluded = check.contains(userSpecifiedExclusion);
-              break;
-
-            case REGEX:
-              excluded = check.matches(userSpecifiedExclusion);
-              break;
-
-            case EITHER:
-              excluded = check.startsWith(userSpecifiedExclusion) || check.endsWith(
-                  userSpecifiedExclusion)
-                  || check.contains(userSpecifiedExclusion) || check.matches(
-                  userSpecifiedExclusion);
-              break;
-
-            case START:
-            default:
-              excluded = check.startsWith(userSpecifiedExclusion);
-          }
-
-          if (excluded) {
-            LOG.debug(
-                "Removed " + mod.getName() + " as per user-specified check: "
-                    + userSpecifiedExclusion);
-          }
-          return excluded;
-        });
-  }
-
-  /**
-   * Check whether the given file is present in the list of directories to exclude from the server
-   * pack.
-   *
-   * @param fileToCheckFor The string to check for.
-   * @return {@code true} if the file is found in the list of directories to exclude, false if not.
-   * @author Griefed
-   */
-  private boolean excludeFileOrDirectory(
-      @NotNull String fileToCheckFor,
-      @NotNull final TreeSet<String> exclusions) {
-
-    boolean isPresentInList = false;
-    for (String entry : exclusions) {
-      if (fileToCheckFor
-          .replace("\\", "/")
-          .contains(
-              entry.replace("\\", "/"))) {
-
-        isPresentInList = true;
-        break;
+      } catch (Exception ex) {
+        LOG.error(
+            "Error downloading the improved Fabric server launcher. Maybe it doesn't exist for the specified Minecraft and Fabric version?",
+            ex);
       }
     }
-    return isPresentInList;
-  }
-
-  /**
-   * Copies the server-icon.png into server pack. The sever-icon is automatically scaled to a
-   * resolution of 64x64 pixels.
-   *
-   * @param configurationModel Containing the modpack directory to acquire the destination of the
-   *                           server pack and the path to the server icon to copy.
-   * @author Griefed
-   */
-  public void copyIcon(@NotNull final ConfigurationModel configurationModel) {
-    copyIcon(getServerPackDestination(configurationModel), configurationModel.getServerIconPath());
   }
 
   /**
@@ -1126,18 +739,6 @@ public final class ServerPackHandler {
   /**
    * Copies the server.properties into server pack.
    *
-   * @param configurationModel Containing the modpack directory to acquire the destination of the
-   *                           server pack and the path to the server properties to copy.
-   * @author Griefed
-   */
-  public void copyProperties(@NotNull final ConfigurationModel configurationModel) {
-    copyProperties(getServerPackDestination(configurationModel),
-        configurationModel.getServerPropertiesPath());
-  }
-
-  /**
-   * Copies the server.properties into server pack.
-   *
    * @param destination            The destination where the properties should be copied to.
    * @param pathToServerProperties The path to the custom server.properties.
    * @author Griefed
@@ -1166,7 +767,7 @@ public final class ServerPackHandler {
 
       try {
         FileUtils.copyFile(APPLICATIONPROPERTIES.defaultServerProperties(),
-            customProperties);
+                           customProperties);
       } catch (IOException ex) {
         LOG.error("An error occurred trying to copy the server.properties-file.", ex);
       }
@@ -1177,59 +778,130 @@ public final class ServerPackHandler {
   }
 
   /**
-   * Installs the modloader server for the specified modloader, modloader version and Minecraft
-   * version.
+   * Create start-scripts for the generated server pack using the templates the user has defined for
+   * their instance of ServerPackCreator in {@link ApplicationProperties#scriptTemplates()}.
    *
-   * @param configurationModel Contains the used modloader, Minecraft version, modloader version,
-   *                           path to the java executable/binary and modpack directory in order to
-   *                           acquire the destination at which to install the server.
+   * @param scriptSettings Key-value pairs to replace in the script. A given key in the script is
+   *                       replaced with its value.
+   * @param destination    The destination where the scripts should be created in.
+   * @param isLocal        Whether the start scripts should be created for a locally usable server
+   *                       pack. Use {@code false} if the start scripts should be created for a
+   *                       server pack about to be zipped.
    * @author Griefed
    */
-  public void installServer(@NotNull final ConfigurationModel configurationModel) {
-    installServer(configurationModel.getModLoader(), configurationModel.getMinecraftVersion(),
-        configurationModel.getModLoaderVersion(), getServerPackDestination(configurationModel));
+  public void createStartScripts(@NotNull final HashMap<String, String> scriptSettings,
+                                 @NotNull String destination,
+                                 boolean isLocal) {
+    for (File template : APPLICATIONPROPERTIES.scriptTemplates()) {
+
+      try {
+        String fileEnding = template.toString().substring(template.toString().lastIndexOf(".") + 1);
+        File destinationScript = new File(destination, "start." + fileEnding);
+
+        String scriptContent = FileUtils.readFileToString(template, StandardCharsets.UTF_8);
+
+        for (Map.Entry<String, String> entry : scriptSettings.entrySet()) {
+          if (isLocal && entry.getKey().equals("SPC_JAVA_SPC")) {
+
+            scriptContent = scriptContent.replace(entry.getKey(), entry.getValue());
+
+          } else if (!isLocal && entry.getKey().equals("SPC_JAVA_SPC")) {
+
+            scriptContent = scriptContent.replace(entry.getKey(), "java");
+
+          } else {
+            scriptContent = scriptContent.replace(entry.getKey(), entry.getValue());
+          }
+        }
+
+        FileUtils.writeStringToFile(destinationScript, scriptContent, StandardCharsets.ISO_8859_1);
+
+      } catch (Exception ex) {
+        LOG.error("File not accessible: " + template + ".", ex);
+      }
+    }
   }
 
   /**
-   * Check whether the installer for the given combination of Minecraft version, modloader and
-   * modloader version is available/reachable.
+   * Creates a ZIP-archive of specified directory. Depending on
+   * {@link ApplicationProperties#isZipFileExclusionEnabled()}, files will be excluded. To customize
+   * the files which will be excluded, see
+   * {@link ApplicationProperties#getFilesToExcludeFromZipArchive()}. The created ZIP-archive will
+   * be stored alongside the specified destination, with {@code _server_pack.zip} appended to its
+   * name.
    *
-   * @param mcVersion        The Minecraft version.
-   * @param modloader        The modloader.
-   * @param modloaderVersion The modloader version.
-   * @return {@code true} if the installer can be downloaded.
+   * @param minecraftVersion          Determines the name of the Minecraft server JAR to exclude
+   *                                  from the ZIP-archive if the modloader is Forge.
+   * @param includeServerInstallation Determines whether the Minecraft server JAR info should be
+   *                                  printed.
+   * @param destination               The destination where the ZIP-archive should be created in.
+   * @param modloader                 The modloader the modpack and server pack use.
+   * @param modloaderVersion          The modloader version the modpack and server pack use.
    * @author Griefed
    */
-  @SuppressWarnings("BooleanMethodIsAlwaysInverted")
-  public boolean serverDownloadable(
-      @NotNull String mcVersion,
+  public void zipBuilder(
+      @NotNull String minecraftVersion,
+      boolean includeServerInstallation,
+      @NotNull String destination,
       @NotNull String modloader,
       @NotNull String modloaderVersion) {
 
-    switch (modloader) {
+    LOG.info("Creating zip archive of serverpack...");
 
-      case "Fabric":
-        return UTILITIES.WebUtils().isReachable(VERSIONMETA.fabric().releaseInstallerUrl());
+    ZipParameters zipParameters = new ZipParameters();
 
-      case "Forge":
-        return VERSIONMETA.forge().getForgeInstance(mcVersion, modloaderVersion).isPresent()
-            && UTILITIES.WebUtils().isReachable(
-            VERSIONMETA.forge().getForgeInstance(mcVersion, modloaderVersion).get()
-                .installerUrl());
+    List<File> filesToExclude = new ArrayList<>(100);
+    if (APPLICATIONPROPERTIES.isZipFileExclusionEnabled()) {
 
-      case "Quilt":
-        return UTILITIES.WebUtils().isReachable(VERSIONMETA.quilt().releaseInstallerUrl());
+      APPLICATIONPROPERTIES
+          .getFilesToExcludeFromZipArchive()
+          .forEach(
+              entry ->
+                  filesToExclude.add(
+                      new File(
+                          destination,
+                          entry
+                              .replace("MINECRAFT_VERSION", minecraftVersion)
+                              .replace("MODLOADER", modloader)
+                              .replace("MODLOADER_VERSION", modloaderVersion))));
 
-      case "LegacyFabric":
-        try {
-          return UTILITIES.WebUtils().isReachable(VERSIONMETA.legacyFabric().releaseInstallerUrl());
-        } catch (MalformedURLException e) {
-          return false;
-        }
+      ExcludeFileFilter excludeFileFilter = filesToExclude::contains;
+      zipParameters.setExcludeFileFilter(excludeFileFilter);
 
-      default:
-        return false;
+    } else {
+
+      LOG.info("File exclusion from ZIP-archives deactivated.");
     }
+
+    String comment =
+        "Server pack made with ServerPackCreator "
+            + APPLICATIONPROPERTIES.serverPackCreatorVersion()
+            + " by Griefed.";
+
+    zipParameters.setIncludeRootFolder(false);
+    zipParameters.setFileComment(comment);
+
+    try (ZipFile zip = new ZipFile(destination + "_server_pack.zip")) {
+
+      zip.addFolder(new File(destination), zipParameters);
+      zip.setComment(comment);
+
+    } catch (IOException ex) {
+
+      LOG.error("There was an error during zip creation.", ex);
+    }
+
+    if (includeServerInstallation) {
+
+      LOG.warn(
+          "!!!-------NOTE: The minecraft_server.jar will not be included in the zip-archive.-------!!!");
+      LOG.warn(
+          "!!!-Mojang strictly prohibits the distribution of their software through third parties.-!!!");
+      LOG.warn(
+          "!!!---Tell your users to execute the download scripts to get the Minecraft server jar.--!!!");
+    }
+
+    LOG.info("Finished creation of zip archive.");
   }
 
   /**
@@ -1253,7 +925,7 @@ public final class ServerPackHandler {
 
     if (!serverDownloadable(minecraftVersion, modLoader, modLoaderVersion)) {
       LOG.error("The servers for " + minecraftVersion + ", " + modLoader + " " + modLoaderVersion
-          + " are currently unreachable. Skipping server installation.");
+                    + " are currently unreachable. Skipping server installation.");
     }
 
     List<String> commandArguments = new ArrayList<>(10);
@@ -1268,8 +940,8 @@ public final class ServerPackHandler {
         LOG_INSTALLER.info("Starting Fabric installation.");
 
         if (UTILITIES.WebUtils()
-            .downloadFile(destination + File.separator + "fabric-installer.jar",
-                VERSIONMETA.fabric().releaseInstallerUrl())) {
+                     .downloadFile(destination + File.separator + "fabric-installer.jar",
+                                   VERSIONMETA.fabric().releaseInstallerUrl())) {
 
           LOG.info("Fabric installer successfully downloaded.");
 
@@ -1318,7 +990,7 @@ public final class ServerPackHandler {
         LOG_INSTALLER.info("Starting Quilt installation.");
 
         if (UTILITIES.WebUtils().downloadFile(destination + File.separator + "quilt-installer.jar",
-            VERSIONMETA.quilt().releaseInstallerUrl())
+                                              VERSIONMETA.quilt().releaseInstallerUrl())
         ) {
 
           LOG.info("Quilt installer successfully downloaded.");
@@ -1344,8 +1016,8 @@ public final class ServerPackHandler {
         try {
 
           if (UTILITIES.WebUtils()
-              .downloadFile(destination + File.separator + "legacyfabric-installer.jar",
-                  VERSIONMETA.legacyFabric().releaseInstallerUrl())) {
+                       .downloadFile(destination + File.separator + "legacyfabric-installer.jar",
+                                     VERSIONMETA.legacyFabric().releaseInstallerUrl())) {
 
             LOG.info("LegacyFabric installer successfully downloaded.");
 
@@ -1466,7 +1138,7 @@ public final class ServerPackHandler {
 
       } catch (IOException ex) {
         LOG.error("Could not rename forge-" + minecraftVersion + "-" + modLoaderVersion
-            + ".jar to forge.jar", ex);
+                      + ".jar to forge.jar", ex);
       }
     }
 
@@ -1478,118 +1150,273 @@ public final class ServerPackHandler {
   }
 
   /**
-   * Creates a ZIP-archive of the server pack previously generated. Depending on
-   * {@link ApplicationProperties#isZipFileExclusionEnabled()}, files will be excluded. To customize
-   * the files which will be excluded, see
-   * {@link ApplicationProperties#getFilesToExcludeFromZipArchive()}
+   * Gather a list of all files from an explicit source;destination-combination. If the source is a
+   * file, a singular {@link ServerPackFile} is returned. If the source is a directory, then all
+   * files in said directory are returned.
    *
-   * @param configurationModel Contains the Minecraft version used by the modpack and server pack,
-   *                           whether the modloader server was installed, the modpack directory to
-   *                           acquire the destination of the server pack, the modloader used by the
-   *                           modpack and server pack and the modloader version.
+   * @param combination Array containing a source-file/directory;destination-file/directory
+   *                    combination.
+   * @param modpackDir  The modpack-directory.
+   * @param destination The destination, normally the server pack-directory.
+   * @return List of {@link ServerPackFile}.
    * @author Griefed
    */
-  public void zipBuilder(@NotNull final ConfigurationModel configurationModel) {
-    zipBuilder(configurationModel.getMinecraftVersion(),
-        configurationModel.getIncludeServerInstallation(),
-        getServerPackDestination(configurationModel),
-        configurationModel.getModLoader(), configurationModel.getModLoaderVersion());
+  private @NotNull List<ServerPackFile> getExplicitFiles(
+      @NotNull final String @NotNull [] combination,
+      @NotNull String modpackDir,
+      @NotNull String destination) {
+
+    List<ServerPackFile> serverPackFiles = new ArrayList<>(100);
+
+    if (new File(modpackDir, combination[0]).isFile()) {
+
+      serverPackFiles.add(
+          new ServerPackFile(
+              new File(modpackDir, combination[0]),
+              new File(destination, combination[1])));
+
+    } else if (new File(modpackDir, combination[0]).isDirectory()) {
+
+      serverPackFiles.addAll(
+          getDirectoryFiles(
+              modpackDir + File.separator + combination[0],
+              destination));
+
+    } else if (new File(combination[0]).isFile()) {
+
+      serverPackFiles.add(
+          new ServerPackFile(
+              new File(combination[0]),
+              new File(destination, combination[1])));
+
+    } else if (new File(combination[0]).isDirectory()) {
+
+      serverPackFiles.addAll(getDirectoryFiles(combination[0], destination));
+    }
+
+    return serverPackFiles;
   }
 
   /**
-   * Creates a ZIP-archive of specified directory. Depending on
-   * {@link ApplicationProperties#isZipFileExclusionEnabled()}, files will be excluded. To customize
-   * the files which will be excluded, see
-   * {@link ApplicationProperties#getFilesToExcludeFromZipArchive()}. The created ZIP-archive will
-   * be stored alongside the specified destination, with {@code _server_pack.zip} appended to its
-   * name.
+   * Recursively acquire all files and directories inside the given save-directory as a list of
+   * {@link ServerPackFile}.
    *
-   * @param minecraftVersion          Determines the name of the Minecraft server JAR to exclude
-   *                                  from the ZIP-archive if the modloader is Forge.
-   * @param includeServerInstallation Determines whether the Minecraft server JAR info should be
-   *                                  printed.
-   * @param destination               The destination where the ZIP-archive should be created in.
-   * @param modloader                 The modloader the modpack and server pack use.
-   * @param modloaderVersion          The modloader version the modpack and server pack use.
+   * @param clientDir   Target directory in the server pack. Usually the name of the world.
+   * @param directory   The save-directory.
+   * @param destination The destination of the server pack.
+   * @return List of {@link ServerPackFile}.
    * @author Griefed
    */
-  public void zipBuilder(
+  private @NotNull List<ServerPackFile> getSaveFiles(
+      @NotNull String clientDir,
+      @NotNull String directory,
+      @NotNull String destination) {
+
+    List<ServerPackFile> serverPackFiles = new ArrayList<>(2000);
+
+    try (Stream<Path> files = Files.walk(Paths.get(clientDir))) {
+      files.forEach(
+          file -> {
+            try {
+              serverPackFiles.add(new ServerPackFile(
+                  file,
+                  Paths.get(destination + File.separator + directory.substring(6))
+                       .resolve(Paths.get(clientDir).relativize(file))));
+
+            } catch (UnsupportedOperationException ex) {
+              LOG.error("Couldn't gather file " + file + " from directory " + clientDir + ".", ex);
+            }
+          });
+
+    } catch (IOException ex) {
+      LOG.error("An error occurred during the copy-procedure to the server pack.", ex);
+    }
+
+    return serverPackFiles;
+  }
+
+  /**
+   * Generates a list of all mods to include in the server pack. If the user specified
+   * clientside-mods to exclude, and/or if the automatic exclusion of clientside-only mods is
+   * active, they will be excluded, too.
+   *
+   * @param modsDir                 String. The mods-directory of the modpack of which to generate a
+   *                                list of all its contents.
+   * @param userSpecifiedClientMods List String. A list of all clientside-only mods.
+   * @param minecraftVersion        String. The Minecraft version the modpack uses. When the
+   *                                modloader is Forge, this determines whether Annotations or Tomls
+   *                                are scanned.
+   * @param modloader               {@link String} The modloader the modpack uses.
+   * @return A list of all mods to include in the server pack.
+   * @author Griefed
+   */
+  @Contract("_, _, _, _ -> new")
+  public @NotNull List<File> getModsToInclude(
+      @NotNull String modsDir,
+      @NotNull final List<String> userSpecifiedClientMods,
       @NotNull String minecraftVersion,
-      boolean includeServerInstallation,
-      @NotNull String destination,
+      @NotNull String modloader) {
+
+    LOG.info("Preparing a list of mods to include in server pack...");
+
+    Collection<File> filesInModsDir =
+        new ArrayList<>(
+            FileUtils.listFiles(
+                new File(modsDir),
+                MOD_FILE_ENDINGS,
+                true));
+
+    TreeSet<File> modsInModpack = new TreeSet<>(filesInModsDir);
+    List<File> autodiscoveredClientMods = new ArrayList<>(100);
+
+    // Check whether scanning mods for sideness is activated.
+    if (APPLICATIONPROPERTIES.isAutoExcludingModsEnabled()) {
+
+      STOPWATCH_SCANS.start();
+      // If Minecraft version is 1.12 or newer, scan Tomls, else scan annotations.
+
+      switch (modloader) {
+        case "LegacyFabric":
+        case "Fabric":
+          autodiscoveredClientMods.addAll(MODSCANNER.fabric().scan(filesInModsDir));
+          break;
+
+        case "Forge":
+          if (Integer.parseInt(minecraftVersion.split("\\.")[1]) > 12) {
+            autodiscoveredClientMods.addAll(MODSCANNER.tomls().scan(filesInModsDir));
+          } else {
+            autodiscoveredClientMods.addAll(MODSCANNER.annotations().scan(filesInModsDir));
+          }
+          break;
+
+        case "Quilt":
+          TreeSet<File> discoMods = new TreeSet<>();
+          discoMods.addAll(MODSCANNER.fabric().scan(filesInModsDir));
+          discoMods.addAll(MODSCANNER.quilt().scan(filesInModsDir));
+          autodiscoveredClientMods.addAll(discoMods);
+          discoMods.clear();
+      }
+
+      // Exclude scanned mods from copying if said functionality is enabled.
+      excludeMods(autodiscoveredClientMods, modsInModpack);
+
+      STOPWATCH_SCANS.stop();
+      LOG.debug(
+          "Scanning and excluding of " + filesInModsDir.size() + " mods took " + STOPWATCH_SCANS);
+      STOPWATCH_SCANS.reset();
+
+    } else {
+      LOG.info("Automatic clientside-only mod detection disabled.");
+    }
+
+    // Exclude user-specified mods from copying.
+    excludeUserSpecifiedMod(userSpecifiedClientMods, modsInModpack);
+
+    return new ArrayList<>(modsInModpack);
+  }
+
+  /**
+   * Recursively acquire all files and directories inside the given directory as a list of
+   * {@link ServerPackFile}.
+   *
+   * @param source      The source-directory.
+   * @param destination The server pack-directory.
+   * @return List of files and folders of the server pack.
+   * @author Griefed
+   */
+  private @NotNull List<ServerPackFile> getDirectoryFiles(
+      @NotNull String source,
+      @NotNull String destination) {
+
+    List<ServerPackFile> serverPackFiles = new ArrayList<>(100);
+    try (Stream<Path> files = Files.walk(Paths.get(source))) {
+
+      files.forEach(
+          file -> {
+            try {
+              serverPackFiles.add(new ServerPackFile(
+                  file,
+                  Paths.get(destination + File.separator + new File(source).getName())
+                       .resolve(Paths.get(source).relativize(file))));
+
+            } catch (UnsupportedOperationException ex) {
+              LOG.error("Couldn't gather file " + file + " from directory " + source + ".", ex);
+            }
+          });
+
+    } catch (IOException ex) {
+      LOG.error("An error occurred gathering files to copy to the server pack.", ex);
+    }
+
+    return serverPackFiles;
+  }
+
+  /**
+   * Check whether the given file is present in the list of directories to exclude from the server
+   * pack.
+   *
+   * @param fileToCheckFor The string to check for.
+   * @return {@code true} if the file is found in the list of directories to exclude, false if not.
+   * @author Griefed
+   */
+  private boolean excludeFileOrDirectory(
+      @NotNull String fileToCheckFor,
+      @NotNull final TreeSet<String> exclusions) {
+
+    boolean isPresentInList = false;
+    for (String entry : exclusions) {
+      if (fileToCheckFor
+          .replace("\\", "/")
+          .contains(
+              entry.replace("\\", "/"))) {
+
+        isPresentInList = true;
+        break;
+      }
+    }
+    return isPresentInList;
+  }
+
+  /**
+   * Check whether the installer for the given combination of Minecraft version, modloader and
+   * modloader version is available/reachable.
+   *
+   * @param mcVersion        The Minecraft version.
+   * @param modloader        The modloader.
+   * @param modloaderVersion The modloader version.
+   * @return {@code true} if the installer can be downloaded.
+   * @author Griefed
+   */
+  @SuppressWarnings("BooleanMethodIsAlwaysInverted")
+  public boolean serverDownloadable(
+      @NotNull String mcVersion,
       @NotNull String modloader,
       @NotNull String modloaderVersion) {
 
-    LOG.info("Creating zip archive of serverpack...");
+    switch (modloader) {
 
-    ZipParameters zipParameters = new ZipParameters();
+      case "Fabric":
+        return UTILITIES.WebUtils().isReachable(VERSIONMETA.fabric().releaseInstallerUrl());
 
-    List<File> filesToExclude = new ArrayList<>(100);
-    if (APPLICATIONPROPERTIES.isZipFileExclusionEnabled()) {
+      case "Forge":
+        return VERSIONMETA.forge().getForgeInstance(mcVersion, modloaderVersion).isPresent()
+            && UTILITIES.WebUtils().isReachable(
+            VERSIONMETA.forge().getForgeInstance(mcVersion, modloaderVersion).get()
+                       .installerUrl());
 
-      APPLICATIONPROPERTIES
-          .getFilesToExcludeFromZipArchive()
-          .forEach(
-              entry ->
-                  filesToExclude.add(
-                      new File(
-                          destination,
-                          entry
-                              .replace("MINECRAFT_VERSION", minecraftVersion)
-                              .replace("MODLOADER", modloader)
-                              .replace("MODLOADER_VERSION", modloaderVersion))));
+      case "Quilt":
+        return UTILITIES.WebUtils().isReachable(VERSIONMETA.quilt().releaseInstallerUrl());
 
-      ExcludeFileFilter excludeFileFilter = filesToExclude::contains;
-      zipParameters.setExcludeFileFilter(excludeFileFilter);
+      case "LegacyFabric":
+        try {
+          return UTILITIES.WebUtils().isReachable(VERSIONMETA.legacyFabric().releaseInstallerUrl());
+        } catch (MalformedURLException e) {
+          return false;
+        }
 
-    } else {
-
-      LOG.info("File exclusion from ZIP-archives deactivated.");
+      default:
+        return false;
     }
-
-    String comment =
-        "Server pack made with ServerPackCreator "
-            + APPLICATIONPROPERTIES.serverPackCreatorVersion()
-            + " by Griefed.";
-
-    zipParameters.setIncludeRootFolder(false);
-    zipParameters.setFileComment(comment);
-
-    try (ZipFile zip = new ZipFile(destination + "_server_pack.zip")) {
-
-      zip.addFolder(new File(destination), zipParameters);
-      zip.setComment(comment);
-
-    } catch (IOException ex) {
-
-      LOG.error("There was an error during zip creation.", ex);
-    }
-
-    if (includeServerInstallation) {
-
-      LOG.warn(
-          "!!!-------NOTE: The minecraft_server.jar will not be included in the zip-archive.-------!!!");
-      LOG.warn(
-          "!!!-Mojang strictly prohibits the distribution of their software through third parties.-!!!");
-      LOG.warn(
-          "!!!---Tell your users to execute the download scripts to get the Minecraft server jar.--!!!");
-    }
-
-    LOG.info("Finished creation of zip archive.");
-  }
-
-  /**
-   * Cleans up the server_pack directory by deleting left-over files from modloader installations
-   * and version checking.
-   *
-   * @param configurationModel Containing the Minecraft version used by the modpack and server pack,
-   *                           the modloader version used by the modpack and server pack and the
-   *                           modpack directory to acquire the destination of the server pack.
-   * @author Griefed
-   */
-  private void cleanUpServerPack(@NotNull final ConfigurationModel configurationModel) {
-    cleanUpServerPack(configurationModel.getMinecraftVersion(),
-        configurationModel.getModLoaderVersion(), getServerPackDestination(configurationModel));
   }
 
   /**
@@ -1622,6 +1449,186 @@ public final class ServerPackHandler {
   }
 
   /**
+   * Exclude every automatically discovered clientside-only mod from the list of mods in the
+   * modpack.
+   *
+   * @param autodiscoveredClientMods Automatically discovered clientside-only mods in the modpack.
+   * @param modsInModpack            All mods in the modpack.
+   * @author Griefed
+   */
+  private void excludeMods(
+      @NotNull final List<File> autodiscoveredClientMods,
+      @NotNull final TreeSet<File> modsInModpack) {
+
+    if (!autodiscoveredClientMods.isEmpty()) {
+
+      LOG.info("Automatically detected mods: " + autodiscoveredClientMods.size());
+
+      for (File discoveredMod : autodiscoveredClientMods) {
+        modsInModpack.removeIf(
+            mod -> {
+              if (mod.getName().contains(discoveredMod.getName())) {
+                LOG.warn("Automatically excluding mod: " + discoveredMod.getName());
+                return true;
+              } else {
+                return false;
+              }
+            });
+      }
+    } else {
+      LOG.info("No clientside-only mods detected.");
+    }
+  }
+
+  /**
+   * Exclude user-specified mods from the server pack.
+   *
+   * @param userSpecifiedExclusions User-specified clientside-only mods to exclude from the server
+   *                                pack.
+   * @param modsInModpack           Every mod ending with {@code jar} or {@code disabled} in the
+   *                                modpack.
+   * @author Griefed
+   */
+  private void excludeUserSpecifiedMod(
+      @NotNull final List<String> userSpecifiedExclusions,
+      @NotNull final TreeSet<File> modsInModpack) {
+
+    if (!userSpecifiedExclusions.isEmpty()) {
+      LOG.info("Performing " + APPLICATIONPROPERTIES.exclusionFilter()
+                   + "-type checks for user-specified clientside-only mod exclusion.");
+      for (String userSpecifiedExclusion : userSpecifiedExclusions) {
+        exclude(userSpecifiedExclusion, modsInModpack);
+      }
+    } else {
+      LOG.warn("User specified no clientside-only mods.");
+    }
+  }
+
+  /**
+   * Go through the mods in the modpack and exclude any of the user-specified clientside-only mods
+   * according to the filter method set in the serverpackcreator.properties. For available filters,
+   * see {@link de.griefed.serverpackcreator.ApplicationProperties.ExclusionFilter}.
+   *
+   * @param userSpecifiedExclusion The client mod to check whether it needs to be excluded.
+   * @param modsInModpack          All mods in the modpack.
+   */
+  private void exclude(
+      @NotNull String userSpecifiedExclusion,
+      @NotNull final TreeSet<File> modsInModpack) {
+
+    modsInModpack.removeIf(
+        mod -> {
+          boolean excluded;
+          String check = mod.getName();
+
+          switch (APPLICATIONPROPERTIES.exclusionFilter()) {
+
+            case END:
+              excluded = check.endsWith(userSpecifiedExclusion);
+              break;
+
+            case CONTAIN:
+              excluded = check.contains(userSpecifiedExclusion);
+              break;
+
+            case REGEX:
+              excluded = check.matches(userSpecifiedExclusion);
+              break;
+
+            case EITHER:
+              excluded = check.startsWith(userSpecifiedExclusion) || check.endsWith(
+                  userSpecifiedExclusion)
+                  || check.contains(userSpecifiedExclusion) || check.matches(
+                  userSpecifiedExclusion);
+              break;
+
+            case START:
+            default:
+              excluded = check.startsWith(userSpecifiedExclusion);
+          }
+
+          if (excluded) {
+            LOG.debug(
+                "Removed " + mod.getName() + " as per user-specified check: "
+                    + userSpecifiedExclusion);
+          }
+          return excluded;
+        });
+  }
+
+  /**
+   * Deletes all files, directories and ZIP-archives of previously generated server packs to ensure
+   * newly generated server pack is as clean as possible. This will completely empty the server pack
+   * directory, so use with caution!
+   *
+   * @param deleteZip          Whether to delete the server pack ZIP-archive.
+   * @param configurationModel ConfigurationModel containing the modpack directory from which the
+   *                           destination of the server pack is acquired.
+   * @author Griefed
+   */
+  public void cleanupEnvironment(boolean deleteZip,
+                                 @NotNull ConfigurationModel configurationModel) {
+    cleanupEnvironment(deleteZip, getServerPackDestination(configurationModel));
+  }
+
+  /**
+   * Gather a list of all files from an explicit source;destination-combination. If the source is a
+   * file, a singular {@link ServerPackFile} is returned. If the source is a directory, then all
+   * files in said directory are returned.
+   *
+   * @param combination        Array containing a source-file/directory;destination-file/directory
+   *                           combination.
+   * @param configurationModel ConfigurationModel containing the modpack directory so the
+   *                           destination of the server pack can be acquired.
+   * @return List of {@link ServerPackFile}.
+   * @author Griefed
+   */
+  private @NotNull List<ServerPackFile> getExplicitFiles(
+      @NotNull final String[] combination,
+      @NotNull final ConfigurationModel configurationModel) {
+
+    return getExplicitFiles(combination, configurationModel.getModpackDir(),
+                            getServerPackDestination(configurationModel));
+  }
+
+  /**
+   * Generates a list of all mods to include in the server pack. If the user specified
+   * clientside-mods to exclude, and/or if the automatic exclusion of clientside-only mods is
+   * active, they will be excluded, too.
+   *
+   * @param configurationModel The configurationModel containing the modpack directory, list of
+   *                           clientside-only mods to exclude, Minecraft version used by the
+   *                           modpack and server pack and the modloader used by the modpack and
+   *                           server pack.
+   * @return A list of all mods to include in the server pack.
+   * @author Griefed
+   */
+  @Contract("_ -> new")
+  public @NotNull List<File> getModsToInclude(
+      @NotNull final ConfigurationModel configurationModel) {
+
+    return getModsToInclude(configurationModel.getModpackDir() + File.separator + "mods",
+                            configurationModel.getClientMods(),
+                            configurationModel.getMinecraftVersion(),
+                            configurationModel.getModLoader());
+  }
+
+  /**
+   * Cleans up the server_pack directory by deleting left-over files from modloader installations
+   * and version checking.
+   *
+   * @param configurationModel Containing the Minecraft version used by the modpack and server pack,
+   *                           the modloader version used by the modpack and server pack and the
+   *                           modpack directory to acquire the destination of the server pack.
+   * @author Griefed
+   */
+  private void cleanUpServerPack(@NotNull final ConfigurationModel configurationModel) {
+    cleanUpServerPack(configurationModel.getMinecraftVersion(),
+                      configurationModel.getModLoaderVersion(),
+                      getServerPackDestination(configurationModel));
+  }
+
+  /**
    * A ServerPackFile represents a source-destination-combination of two files/directories. The
    * source is the file/directory, usually in the modpack, whilst the destination is the file to
    * which the source is supposed to be copied to in the server pack.
@@ -1643,7 +1650,8 @@ public final class ServerPackHandler {
      * @param destinationFile The destination file/directory in the server pack.
      * @author Griefed
      */
-    public ServerPackFile(@NotNull File sourceFile, @NotNull File destinationFile)
+    public ServerPackFile(@NotNull File sourceFile,
+                          @NotNull File destinationFile)
         throws InvalidPathException {
 
       this.SOURCE_FILE = sourceFile;
@@ -1659,7 +1667,8 @@ public final class ServerPackHandler {
      * @param destinationPath The destination file/directory in the server pack.
      * @author Griefed
      */
-    public ServerPackFile(@NotNull Path sourcePath, @NotNull Path destinationPath)
+    public ServerPackFile(@NotNull Path sourcePath,
+                          @NotNull Path destinationPath)
         throws UnsupportedOperationException {
 
       this.SOURCE_FILE = sourcePath.toFile();

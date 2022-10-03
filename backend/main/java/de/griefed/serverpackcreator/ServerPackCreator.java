@@ -191,6 +191,58 @@ public class ServerPackCreator {
   }
 
   /**
+   * This instances common file utilities used across ServerPackCreator.
+   *
+   * @return Common file utilities used across ServerPackCreator.
+   * @author Griefed
+   */
+  public synchronized @NotNull FileUtilities getFileUtilities() {
+    if (fileUtilities == null) {
+      fileUtilities = new FileUtilities();
+    }
+    return fileUtilities;
+  }
+
+  /**
+   * This instances common system utilities used across ServerPackCreator.
+   *
+   * @return Common system utilities used across ServerPackCreator.
+   * @author Griefed
+   */
+  public synchronized @NotNull SystemUtilities getSystemUtilities() {
+    if (systemUtilities == null) {
+      systemUtilities = new SystemUtilities();
+    }
+    return systemUtilities;
+  }
+
+  /**
+   * This instances common list utilities used across ServerPackCreator.
+   *
+   * @return Common list utilities used across ServerPackCreator.
+   * @author Griefed
+   */
+  public synchronized @NotNull ListUtilities getListUtilities() {
+    if (listUtilities == null) {
+      listUtilities = new ListUtilities();
+    }
+    return listUtilities;
+  }
+
+  /**
+   * This instances common JAR-utilities used across ServerPackCreator.
+   *
+   * @return Common JAR-utilities used across ServerPackCreator.
+   * @author Griefed
+   */
+  public synchronized @NotNull JarUtilities getJarUtilities() {
+    if (jarUtilities == null) {
+      jarUtilities = new JarUtilities();
+    }
+    return jarUtilities;
+  }
+
+  /**
    * Acquire an instance of ServerPackCreator using the {@code --setup}-argument so a prepared
    * environment is present after acquiring the instance. If a new instance of ServerPackCreator is
    * created as the result of calling this method, then the setup is run to ensure a properly
@@ -259,16 +311,19 @@ public class ServerPackCreator {
 
     LOG.debug("Property sources:");
     springBootApplicationContext.getEnvironment().getPropertySources()
-        .forEach(property -> LOG.debug("    " + property.getName() + ": " + property.getSource()));
+                                .forEach(property -> LOG.debug(
+                                    "    " + property.getName() + ": " + property.getSource()));
 
     LOG.debug("System properties:");
     for (Entry<String, Object> entry : springBootApplicationContext.getEnvironment()
-        .getSystemProperties().entrySet()) {
+                                                                   .getSystemProperties()
+                                                                   .entrySet()) {
       LOG.debug("    Key: " + entry.getKey() + " - Value: " + entry.getValue());
     }
     LOG.debug("System environment:");
     for (Map.Entry<String, Object> entry : springBootApplicationContext.getEnvironment()
-        .getSystemEnvironment().entrySet()) {
+                                                                       .getSystemEnvironment()
+                                                                       .entrySet()) {
       LOG.debug("    Key: " + entry.getKey() + " - Value: " + entry.getValue());
     }
   }
@@ -336,32 +391,6 @@ public class ServerPackCreator {
   }
 
   /**
-   * This instances common file utilities used across ServerPackCreator.
-   *
-   * @return Common file utilities used across ServerPackCreator.
-   * @author Griefed
-   */
-  public synchronized @NotNull FileUtilities getFileUtilities() {
-    if (fileUtilities == null) {
-      fileUtilities = new FileUtilities();
-    }
-    return fileUtilities;
-  }
-
-  /**
-   * This instances common JAR-utilities used across ServerPackCreator.
-   *
-   * @return Common JAR-utilities used across ServerPackCreator.
-   * @author Griefed
-   */
-  public synchronized @NotNull JarUtilities getJarUtilities() {
-    if (jarUtilities == null) {
-      jarUtilities = new JarUtilities();
-    }
-    return jarUtilities;
-  }
-
-  /**
    * This instances common JSON utilities used across ServerPackCreator.
    *
    * @return Common JSON utilities used across ServerPackCreator.
@@ -375,19 +404,6 @@ public class ServerPackCreator {
   }
 
   /**
-   * This instances common list utilities used across ServerPackCreator.
-   *
-   * @return Common list utilities used across ServerPackCreator.
-   * @author Griefed
-   */
-  public synchronized @NotNull ListUtilities getListUtilities() {
-    if (listUtilities == null) {
-      listUtilities = new ListUtilities();
-    }
-    return listUtilities;
-  }
-
-  /**
    * This instances common String utilities used across ServerPackCreator.
    *
    * @return Common String utilities used across ServerPackCreator.
@@ -398,19 +414,6 @@ public class ServerPackCreator {
       stringUtilities = new StringUtilities();
     }
     return stringUtilities;
-  }
-
-  /**
-   * This instances common system utilities used across ServerPackCreator.
-   *
-   * @return Common system utilities used across ServerPackCreator.
-   * @author Griefed
-   */
-  public synchronized @NotNull SystemUtilities getSystemUtilities() {
-    if (systemUtilities == null) {
-      systemUtilities = new SystemUtilities();
-    }
-    return systemUtilities;
   }
 
   /**
@@ -949,8 +952,8 @@ public class ServerPackCreator {
     if (!getUtilities().FileUtils().checkPermissions(APPLICATIONPROPERTIES.getJarFolder())) {
 
       LOG.error("One or more file or directory has no read- or write-permission."
-          + " This may lead to corrupted server packs!"
-          + " Check the permissions of the ServerPackCreator base directory!");
+                    + " This may lead to corrupted server packs!"
+                    + " Check the permissions of the ServerPackCreator base directory!");
     }
 
     getUtilities().JarUtils().copyFileFromJar(
@@ -1214,9 +1217,9 @@ public class ServerPackCreator {
           @Override
           public void onFileDelete(File file) {
             if (!file.toString()
-                .contains(APPLICATIONPROPERTIES.serverPacksDirectory().toString())
+                     .contains(APPLICATIONPROPERTIES.serverPacksDirectory().toString())
                 && !file.toString()
-                .contains(APPLICATIONPROPERTIES.modpacksDirectory().toString())) {
+                        .contains(APPLICATIONPROPERTIES.modpacksDirectory().toString())) {
 
               if (check(file, APPLICATIONPROPERTIES.serverPackCreatorPropertiesFile())) {
 
@@ -1251,14 +1254,16 @@ public class ServerPackCreator {
           public void onStop(FileAlterationObserver observer) {
           }
 
-          private boolean check(File watched, File toCreate) {
+          private boolean check(File watched,
+                                File toCreate) {
             return watched.getName().equals(toCreate.getName());
           }
 
           private void createFile(File toCreate) {
 
             getUtilities().JarUtils()
-                .copyFileFromJar(toCreate.getName(), ServerPackCreator.class, toCreate.getParent());
+                          .copyFileFromJar(toCreate.getName(), ServerPackCreator.class,
+                                           toCreate.getParent());
           }
         };
 
