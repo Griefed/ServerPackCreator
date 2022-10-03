@@ -7,6 +7,7 @@ import org.springframework.context.annotation.PropertySources;
 
 @SpringBootTest(classes = WebServiceTest.class)
 @PropertySources({
+    @PropertySource("classpath:application.properties"),
     @PropertySource("classpath:serverpackcreator.properties"),
     @PropertySource("file:./backend/test/resources/serverpackcreator.properties")
 })

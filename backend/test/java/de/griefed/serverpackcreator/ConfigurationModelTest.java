@@ -120,7 +120,7 @@ public class ConfigurationModelTest {
       Assertions.assertEquals(config.get("list"), list);
     });
 
-    File afterFile = new File("after.conf");
+    File afterFile = new File(ServerPackCreator.getInstance(args).getApplicationProperties().homeDirectory(), "after.conf");
     configurationModel.save(afterFile);
 
     ConfigurationModel after = new ConfigurationModel(

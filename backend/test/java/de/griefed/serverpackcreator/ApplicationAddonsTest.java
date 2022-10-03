@@ -24,24 +24,17 @@ public class ApplicationAddonsTest {
   }
 
   String[] args = new String[]{"--setup", "backend/test/resources/serverpackcreator.properties"};
-  ApplicationAddons applicationAddons;
-
-  ApplicationAddonsTest() throws IOException, ParserConfigurationException, SAXException {
-    applicationAddons = new ApplicationAddons(
-        ServerPackCreator.getInstance(args).getTomlParser(),
-        ServerPackCreator.getInstance(args).getApplicationProperties(),
-        ServerPackCreator.getInstance(args).getVersionMeta(),
-        ServerPackCreator.getInstance(args).getUtilities());
-  }
 
   @Test
-  void test() {
-    Assertions.assertNotNull(applicationAddons);
-    Assertions.assertTrue(applicationAddons.postGenExtensions().size() > 0);
-    Assertions.assertTrue(applicationAddons.tabExtensions().size() > 0);
-    Assertions.assertTrue(applicationAddons.preGenExtensions().size() > 0);
-    Assertions.assertTrue(applicationAddons.preZipExtensions().size() > 0);
-    Assertions.assertTrue(applicationAddons.configCheckExtensions().size() > 0);
-    Assertions.assertTrue(applicationAddons.configPanelExtensions().size() > 0);
+  void test() throws IOException, ParserConfigurationException, SAXException {
+    Assertions.assertNotNull(ServerPackCreator.getInstance(args).getApplicationAddons());
+    ServerPackCreator.getInstance(args).getApplicationAddons().loadPlugins();
+    ServerPackCreator.getInstance(args).getApplicationAddons().startPlugins();
+    Assertions.assertTrue(ServerPackCreator.getInstance(args).getApplicationAddons().postGenExtensions().size() > 0);
+    Assertions.assertTrue(ServerPackCreator.getInstance(args).getApplicationAddons().tabExtensions().size() > 0);
+    Assertions.assertTrue(ServerPackCreator.getInstance(args).getApplicationAddons().preGenExtensions().size() > 0);
+    Assertions.assertTrue(ServerPackCreator.getInstance(args).getApplicationAddons().preZipExtensions().size() > 0);
+    Assertions.assertTrue(ServerPackCreator.getInstance(args).getApplicationAddons().configCheckExtensions().size() > 0);
+    Assertions.assertTrue(ServerPackCreator.getInstance(args).getApplicationAddons().configPanelExtensions().size() > 0);
   }
 }

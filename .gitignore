@@ -210,4 +210,4 @@ backend/main/resources/VERSION.txt
 /after.conf
 /server-packs_server_pack.zip
 qodana
-D
+tests

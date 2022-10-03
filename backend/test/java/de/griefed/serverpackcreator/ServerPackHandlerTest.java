@@ -33,14 +33,14 @@ class ServerPackHandlerTest {
     try {
       FileUtils.copyFile(
           new File("backend/test/resources/custom_template.ps1"),
-          new File("server_files/custom_template.ps1"));
+          new File("tests/server_files/custom_template.ps1"));
     } catch (IOException e) {
       LOG.error("Error copying file.", e);
     }
     try {
       FileUtils.copyFile(
           new File("backend/test/resources/custom_template.sh"),
-          new File("server_files/custom_template.sh"));
+          new File("tests/server_files/custom_template.sh"));
     } catch (IOException e) {
       LOG.error("Error copying file.", e);
     }
@@ -49,12 +49,14 @@ class ServerPackHandlerTest {
   private final ConfigurationHandler configurationHandler;
   private final ServerPackHandler serverPackHandler;
   private final VersionMeta versionMeta;
+  private final ApplicationProperties applicationProperties;
   String[] args = new String[]{"--setup", "backend/test/resources/serverpackcreator.properties"};
 
   ServerPackHandlerTest() throws IOException, ParserConfigurationException, SAXException {
     versionMeta = ServerPackCreator.getInstance(args).getVersionMeta();
     configurationHandler = ServerPackCreator.getInstance(args).getConfigurationHandler();
     serverPackHandler = ServerPackCreator.getInstance(args).getServerPackHandler();
+    applicationProperties = ServerPackCreator.getInstance(args).getApplicationProperties();
   }
 
   @Test
@@ -65,25 +67,41 @@ class ServerPackHandlerTest {
         configurationModel,
         true);
     Assertions.assertTrue(serverPackHandler.run(configurationModel));
-    Assertions.assertTrue(new File("server-packs/forge_tests/libraries").isDirectory());
-    Assertions.assertTrue(new File("server-packs/forge_tests/config").isDirectory());
-    Assertions.assertTrue(new File("server-packs/forge_tests/defaultconfigs").isDirectory());
-    Assertions.assertTrue(new File("server-packs/forge_tests/mods").isDirectory());
-    Assertions.assertTrue(new File("server-packs/forge_tests/scripts").isDirectory());
-    Assertions.assertTrue(new File("server-packs/forge_tests/seeds").isDirectory());
+    Assertions.assertTrue(new File(applicationProperties.serverPacksDirectory(),
+        "forge_tests/libraries").isDirectory());
     Assertions.assertTrue(
-        new File("server-packs/forge_tests/minecraft_server.1.16.5.jar").exists());
-    Assertions.assertTrue(new File("server-packs/forge_tests/forge.jar").exists());
-    Assertions.assertTrue(new File("server-packs/forge_tests/server.properties").exists());
-    Assertions.assertTrue(new File("server-packs/forge_tests/server-icon.png").exists());
-    Assertions.assertTrue(new File("server-packs/forge_tests/start.ps1").exists());
-    Assertions.assertTrue(new File("server-packs/forge_tests/start.sh").exists());
-    Assertions.assertTrue(new File("server-packs/forge_tests/exclude_me").exists());
+        new File(applicationProperties.serverPacksDirectory(), "forge_tests/config").isDirectory());
+    Assertions.assertTrue(new File(applicationProperties.serverPacksDirectory(),
+        "forge_tests/defaultconfigs").isDirectory());
+    Assertions.assertTrue(
+        new File(applicationProperties.serverPacksDirectory(), "forge_tests/mods").isDirectory());
+    Assertions.assertTrue(new File(applicationProperties.serverPacksDirectory(),
+        "forge_tests/scripts").isDirectory());
+    Assertions.assertTrue(
+        new File(applicationProperties.serverPacksDirectory(), "forge_tests/seeds").isDirectory());
+    Assertions.assertTrue(
+        new File(applicationProperties.serverPacksDirectory(),
+            "forge_tests/minecraft_server.1.16.5.jar").exists());
+    Assertions.assertTrue(
+        new File(applicationProperties.serverPacksDirectory(), "forge_tests/forge.jar").exists());
+    Assertions.assertTrue(new File(applicationProperties.serverPacksDirectory(),
+        "forge_tests/server.properties").exists());
+    Assertions.assertTrue(new File(applicationProperties.serverPacksDirectory(),
+        "forge_tests/server-icon.png").exists());
+    Assertions.assertTrue(
+        new File(applicationProperties.serverPacksDirectory(), "forge_tests/start.ps1").exists());
+    Assertions.assertTrue(
+        new File(applicationProperties.serverPacksDirectory(), "forge_tests/start.sh").exists());
+    Assertions.assertTrue(
+        new File(applicationProperties.serverPacksDirectory(), "forge_tests/exclude_me").exists());
     Assertions.assertTrue(new File(
-        "server-packs/forge_tests/exclude_me/exclude_me_some_more/ICANSEEMYHOUSEFROMHEEEEEEEEEEEEERE").exists());
-    Assertions.assertTrue(new File("server-packs/forge_tests_server_pack.zip").exists());
+        applicationProperties.serverPacksDirectory(),
+        "forge_tests/exclude_me/exclude_me_some_more/ICANSEEMYHOUSEFROMHEEEEEEEEEEEEERE").exists());
+    Assertions.assertTrue(new File(applicationProperties.serverPacksDirectory(),
+        "forge_tests_server_pack.zip").exists());
 
-    ZipFile zip = new ZipFile("server-packs/forge_tests_server_pack.zip");
+    ZipFile zip = new ZipFile(
+        new File(applicationProperties.serverPacksDirectory(), "forge_tests_server_pack.zip"));
 
     Assertions.assertTrue(IOUtils.toString(zip.getInputStream(zip.getFileHeader("start.sh")),
         StandardCharsets.UTF_8).contains("JAVA=\"java\""), "Default Java setting not present!");
@@ -94,7 +112,8 @@ class ServerPackHandlerTest {
 
     zip.close();
 
-    String ps1 = FileUtils.readFileToString(new File("server-packs/forge_tests/start.ps1"),
+    String ps1 = FileUtils.readFileToString(
+        new File(applicationProperties.serverPacksDirectory(), "forge_tests/start.ps1"),
         StandardCharsets.UTF_8);
     Assertions.assertTrue(ps1.contains("$JavaArgs = \"" + configurationModel.getJavaArgs()));
     Assertions.assertTrue(
@@ -114,7 +133,8 @@ class ServerPackHandlerTest {
     Assertions.assertTrue(ps1.contains("$MinecraftServerUrl = \"" + versionMeta.minecraft()
         .getServer(configurationModel.getMinecraftVersion()).get().url().get()));
 
-    String shell = FileUtils.readFileToString(new File("server-packs/forge_tests/start.sh"),
+    String shell = FileUtils.readFileToString(
+        new File(applicationProperties.serverPacksDirectory(), "forge_tests/start.sh"),
         StandardCharsets.UTF_8);
     Assertions.assertTrue(shell.contains("ARGS=\"" + configurationModel.getJavaArgs()));
     Assertions.assertTrue(
@@ -157,26 +177,33 @@ class ServerPackHandlerTest {
         "Custom script settings not present!");
 
     Assertions.assertFalse(
-        new File("server-packs/forge_tests/exclude_me/I_dont_want_to_be_included.file").exists());
+        new File(applicationProperties.serverPacksDirectory(),
+            "forge_tests/exclude_me/I_dont_want_to_be_included.file").exists());
     Assertions.assertFalse(new File(
-        "server-packs/forge_tests/exclude_me/exclude_me_some_more/I_dont_want_to_be_included.file").exists());
+        applicationProperties.serverPacksDirectory(),
+        "forge_tests/exclude_me/exclude_me_some_more/I_dont_want_to_be_included.file").exists());
     Assertions.assertFalse(new File(
-        "server-packs/forge_tests/exclude_me/exclude_me_some_more/some_more_dirs_to_exclude").exists());
+        applicationProperties.serverPacksDirectory(),
+        "forge_tests/exclude_me/exclude_me_some_more/some_more_dirs_to_exclude").exists());
     Assertions.assertFalse(new File(
-        "server-packs/forge_tests/exclude_me/exclude_me_some_more/some_more_dirs_to_exclude/I_dont_want_to_be_included.file").exists());
+        applicationProperties.serverPacksDirectory(),
+        "forge_tests/exclude_me/exclude_me_some_more/some_more_dirs_to_exclude/I_dont_want_to_be_included.file").exists());
     Assertions.assertFalse(new File(
-        "server-packs/forge_tests/exclude_me/exclude_me_some_more/dont_include_me_either.ogg").exists());
+        applicationProperties.serverPacksDirectory(),
+        "forge_tests/exclude_me/exclude_me_some_more/dont_include_me_either.ogg").exists());
 
     try {
       Files.copy(
           Paths.get("./backend/test/resources/testresources/server_pack.zip"),
-          Paths.get("server-packs/forge_tests_server_pack.zip"),
+          new File(applicationProperties.serverPacksDirectory(),
+              "forge_tests_server_pack.zip").toPath(),
           REPLACE_EXISTING);
     } catch (Exception ignored) {
     }
 
     try (InputStream inputStream =
-        Files.newInputStream(Paths.get("server-packs/forge_tests/server.properties"))) {
+        Files.newInputStream(new File(applicationProperties.serverPacksDirectory(),
+            "forge_tests/server.properties").toPath())) {
       Properties properties = new Properties();
       properties.load(inputStream);
       Assertions.assertTrue(Boolean.parseBoolean(properties.getProperty("allow-flight")));
@@ -276,10 +303,11 @@ class ServerPackHandlerTest {
     try {
       FileUtils.copyDirectory(
           new File("./backend/test/resources/legacyfabric_tests"),
-          new File("./backend/test/resources/legacyfabric_tests_copy"));
+          new File(applicationProperties.modpacksDirectory(), "legacyfabric_tests_copy"));
     } catch (Exception ignored) {
     }
-    configurationModel.setModpackDir("./backend/test/resources/legacyfabric_tests_copy");
+    configurationModel.setModpackDir(
+        applicationProperties.modpacksDirectory() + File.separator + "legacyfabric_tests_copy");
     configurationModel.setModLoader("LegacyFabric");
     configurationModel.setModLoaderVersion("0.13.3");
     configurationModel.setMinecraftVersion("1.12.2");
@@ -287,20 +315,26 @@ class ServerPackHandlerTest {
     configurationHandler.checkConfiguration(configurationModel, false);
     serverPackHandler.run(configurationModel);
     Assertions.assertTrue(
-        new File("server-packs/legacyfabric_tests_copy_server_pack.zip").isFile());
-    Assertions.assertTrue(new File("server-packs/legacyfabric_tests_copy/server.jar").isFile());
+        new File(applicationProperties.serverPacksDirectory(),
+            "legacyfabric_tests_copy_server_pack.zip").isFile());
+    Assertions.assertTrue(new File(applicationProperties.serverPacksDirectory(),
+        "legacyfabric_tests_copy/server.jar").isFile());
     Assertions.assertTrue(
-        new File("server-packs/legacyfabric_tests_copy/fabric-server-launch.jar").isFile());
-    Assertions.assertTrue(new File("server-packs/legacyfabric_tests_copy/start.ps1").isFile());
-    Assertions.assertTrue(new File("server-packs/legacyfabric_tests_copy/start.sh").isFile());
+        new File(applicationProperties.serverPacksDirectory(),
+            "legacyfabric_tests_copy/fabric-server-launch.jar").isFile());
+    Assertions.assertTrue(new File(applicationProperties.serverPacksDirectory(),
+        "legacyfabric_tests_copy/start.ps1").isFile());
+    Assertions.assertTrue(new File(applicationProperties.serverPacksDirectory(),
+        "legacyfabric_tests_copy/start.sh").isFile());
 
     try {
       FileUtils.copyDirectory(
           new File("./backend/test/resources/quilt_tests"),
-          new File("./backend/test/resources/quilt_tests_copy"));
+          new File(applicationProperties.modpacksDirectory(), "quilt_tests_copy"));
     } catch (Exception ignored) {
     }
-    configurationModel.setModpackDir("./backend/test/resources/quilt_tests_copy");
+    configurationModel.setModpackDir(
+        applicationProperties.modpacksDirectory() + File.separator + "quilt_tests_copy");
     configurationModel.setClientMods(clientMods);
     configurationModel.setCopyDirs(copyDirs);
     configurationModel.setIncludeServerInstallation(true);
@@ -313,20 +347,26 @@ class ServerPackHandlerTest {
     configurationModel.setJavaArgs("");
     configurationHandler.checkConfiguration(configurationModel, false);
     serverPackHandler.run(configurationModel);
-    Assertions.assertTrue(new File("server-packs/quilt_tests_copy_server_pack.zip").isFile());
-    Assertions.assertTrue(new File("server-packs/quilt_tests_copy/server.jar").isFile());
+    Assertions.assertTrue(new File(applicationProperties.serverPacksDirectory(),
+        "quilt_tests_copy_server_pack.zip").isFile());
+    Assertions.assertTrue(new File(applicationProperties.serverPacksDirectory(),
+        "quilt_tests_copy/server.jar").isFile());
     Assertions.assertTrue(
-        new File("server-packs/quilt_tests_copy/quilt-server-launch.jar").isFile());
-    Assertions.assertTrue(new File("server-packs/quilt_tests_copy/start.ps1").isFile());
-    Assertions.assertTrue(new File("server-packs/quilt_tests_copy/start.sh").isFile());
+        new File(applicationProperties.serverPacksDirectory(),
+            "quilt_tests_copy/quilt-server-launch.jar").isFile());
+    Assertions.assertTrue(new File(applicationProperties.serverPacksDirectory(),
+        "quilt_tests_copy/start.ps1").isFile());
+    Assertions.assertTrue(new File(applicationProperties.serverPacksDirectory(),
+        "quilt_tests_copy/start.sh").isFile());
 
     try {
       FileUtils.copyDirectory(
           new File("./backend/test/resources/fabric_tests"),
-          new File("./backend/test/resources/fabric_tests_copy"));
+          new File(applicationProperties.modpacksDirectory(), "fabric_tests_copy"));
     } catch (Exception ignored) {
     }
-    configurationModel.setModpackDir("./backend/test/resources/fabric_tests_copy");
+    configurationModel.setModpackDir(
+        applicationProperties.modpacksDirectory() + File.separator + "fabric_tests_copy");
     configurationModel.setClientMods(clientMods);
     configurationModel.setCopyDirs(copyDirs);
     configurationModel.setIncludeServerInstallation(true);
@@ -339,14 +379,20 @@ class ServerPackHandlerTest {
     configurationModel.setJavaArgs("");
     configurationHandler.checkConfiguration(configurationModel, false);
     serverPackHandler.run(configurationModel);
-    Assertions.assertTrue(new File("server-packs/fabric_tests_copy_server_pack.zip").isFile());
-    Assertions.assertTrue(new File("server-packs/fabric_tests_copy/server.jar").isFile());
+    Assertions.assertTrue(new File(applicationProperties.serverPacksDirectory(),
+        "fabric_tests_copy_server_pack.zip").isFile());
+    Assertions.assertTrue(new File(applicationProperties.serverPacksDirectory(),
+        "fabric_tests_copy/server.jar").isFile());
     Assertions.assertTrue(
-        new File("server-packs/fabric_tests_copy/fabric-server-launch.jar").isFile());
+        new File(applicationProperties.serverPacksDirectory(),
+            "fabric_tests_copy/fabric-server-launch.jar").isFile());
     Assertions.assertTrue(
-        new File("server-packs/fabric_tests_copy/fabric-server-launcher.jar").isFile());
-    Assertions.assertTrue(new File("server-packs/fabric_tests_copy/start.ps1").isFile());
-    Assertions.assertTrue(new File("server-packs/fabric_tests_copy/start.sh").isFile());
+        new File(applicationProperties.serverPacksDirectory(),
+            "fabric_tests_copy/fabric-server-launcher.jar").isFile());
+    Assertions.assertTrue(new File(applicationProperties.serverPacksDirectory(),
+        "fabric_tests_copy/start.ps1").isFile());
+    Assertions.assertTrue(new File(applicationProperties.serverPacksDirectory(),
+        "fabric_tests_copy/start.sh").isFile());
   }
 
   @Test
@@ -383,10 +429,10 @@ class ServerPackHandlerTest {
     try {
       FileUtils.copyDirectory(
           new File("./backend/test/resources/fabric_tests"),
-          new File("./backend/test/resources/fabric_tests_copy"));
+          new File(applicationProperties.modpacksDirectory(), "fabric_tests_copy"));
     } catch (Exception ignored) {
     }
-    serverPackModel.setModpackDir("./backend/test/resources/fabric_tests_copy");
+    serverPackModel.setModpackDir(applicationProperties.modpacksDirectory() + File.separator + "fabric_tests_copy");
     serverPackModel.setClientMods(clientMods);
     serverPackModel.setCopyDirs(copyDirs);
     serverPackModel.setIncludeServerInstallation(true);
@@ -399,60 +445,7 @@ class ServerPackHandlerTest {
     serverPackModel.setJavaArgs("");
     configurationHandler.checkConfiguration(serverPackModel, false);
     Assertions.assertNotNull(serverPackHandler.run(serverPackModel));
-    Assertions.assertTrue(new File("server-packs/fabric_tests_copy_server_pack.zip").isFile());
-  }
-
-  @Test
-  void zipBuilderTest() {
-    Path path = Paths.get("./backend/test/resources/testresources/server_pack.zip");
-
-    try {
-      Files.createDirectories(Paths.get("server-packs/fabric_tests"));
-    } catch (Exception ignored) {
-    }
-
-    String minecraftVersion = "1.16.5";
-    String modpackDir = "./backend/test/resources/fabric_tests";
-    serverPackHandler.zipBuilder(minecraftVersion, true, modpackDir, "Forge", "36.2.25");
-    Assertions.assertTrue(new File(modpackDir + "_server_pack.zip").exists());
-    try {
-      Files.copy(
-          path,
-          Paths.get("./backend/test/resources/fabric_tests/server_pack.zip"),
-          REPLACE_EXISTING);
-    } catch (Exception ignored) {
-    }
-
-    try {
-      Files.createDirectories(Paths.get("server-packs/forge_tests"));
-    } catch (Exception ignored) {
-    }
-    minecraftVersion = "1.16.5";
-    modpackDir = "./backend/test/resources/forge_tests";
-    serverPackHandler.zipBuilder(minecraftVersion, true, modpackDir, "Forge", "36.2.25");
-    Assertions.assertTrue(new File(modpackDir + "_server_pack.zip").exists());
-    try {
-      Files.copy(
-          path,
-          Paths.get("./backend/test/resources/forge_tests/server_pack.zip"),
-          REPLACE_EXISTING);
-    } catch (Exception ignored) {
-    }
-
-    try {
-      Files.createDirectories(Paths.get("server-packs/quilt_tests"));
-    } catch (Exception ignored) {
-    }
-    minecraftVersion = "1.16.5";
-    modpackDir = "./backend/test/resources/quilt_tests";
-    serverPackHandler.zipBuilder(minecraftVersion, true, modpackDir, "Forge", "36.2.25");
-    Assertions.assertTrue(new File(modpackDir + "_server_pack.zip").exists());
-    try {
-      Files.copy(
-          path,
-          Paths.get("./backend/test/resources/quilt_tests/server_pack.zip"),
-          REPLACE_EXISTING);
-    } catch (Exception ignored) {
-    }
+    Assertions.assertTrue(new File(applicationProperties.serverPacksDirectory(),
+        "fabric_tests_copy_server_pack.zip").isFile());
   }
 }

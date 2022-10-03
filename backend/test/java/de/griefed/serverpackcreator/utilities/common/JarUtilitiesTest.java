@@ -16,8 +16,8 @@ public class JarUtilitiesTest {
 
   @Test
   void copyFileFromJarTest() {
-    jarUtilities.copyFileFromJar("banner.txt", JarUtilitiesTest.class, new File("").getAbsolutePath());
-    Assertions.assertTrue(new File("banner.txt").exists());
+    jarUtilities.copyFileFromJar("banner.txt", JarUtilitiesTest.class, new File("tests").getAbsolutePath());
+    Assertions.assertTrue(new File("tests/banner.txt").isFile());
   }
 
   @Test
@@ -47,20 +47,18 @@ public class JarUtilitiesTest {
 
   @Test
   void copyFolderFromJarTest() {
-    new File("testruns").mkdir();
     try {
       jarUtilities.copyFolderFromJar(
           JarUtilitiesTest.class,
-          "/de/griefed/resources/lang",
-          "testruns/langTest",
+          "/de/griefed/resources/manifests",
+          "tests/manifestTest",
           "",
-          ".properties");
+          "xml|json");
     } catch (Exception ignored) {
     }
-    Assertions.assertTrue(new File("testruns/langTest").isDirectory());
-    Assertions.assertTrue(new File("testruns/langTest/lang_de_de.properties").exists());
-    Assertions.assertTrue(new File("testruns/langTest/lang_en_us.properties").exists());
-    Assertions.assertTrue(new File("testruns/langTest/lang_uk_ua.properties").exists());
-    FileUtils.deleteQuietly(new File("testruns/langTest"));
+    Assertions.assertTrue(new File("tests/manifestTest").isDirectory());
+    Assertions.assertTrue(new File("tests/manifestTest/fabric-installer-manifest.xml").isFile());
+    Assertions.assertTrue(new File("tests/manifestTest/mcserver").isDirectory());
+    Assertions.assertTrue(new File("tests/manifestTest/mcserver/1.8.2.json").isFile());
   }
 }

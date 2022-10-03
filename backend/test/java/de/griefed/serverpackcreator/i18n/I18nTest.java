@@ -19,7 +19,7 @@ public class I18nTest {
   String[] args = new String[]{"--setup", "backend/test/resources/serverpackcreator.properties"};
 
   I18nTest() {
-    FileUtils.deleteQuietly(new File("lang"));
+
   }
 
   @Test
@@ -27,7 +27,7 @@ public class I18nTest {
     ApplicationProperties applicationProperties = ServerPackCreator.getInstance(
             args)
         .getApplicationProperties();
-    FileUtils.deleteQuietly(new File("lang"));
+
     I18n i18n = new I18n(applicationProperties);
     Assertions.assertEquals("English (United States)", i18n.getMessage("localeUnlocalizedName"));
 
@@ -45,7 +45,7 @@ public class I18nTest {
 
     try {
       FileUtils.copyDirectory(
-          new File("backend/test/resources/testresources/languages/langMissing"), new File("lang"));
+          new File("backend/test/resources/testresources/languages/langMissing"), new File("tests/lang"));
     } catch (Exception ignored) {
     }
 
@@ -57,7 +57,7 @@ public class I18nTest {
       FileUtils.copyFile(
           new File(
               "backend/test/resources/testresources/languages/langMissing/lang_ef_gh.properties"),
-          new File("lang/lang_ef_gh.properties"));
+          new File("tests/lang/lang_ef_gh.properties"));
     } catch (Exception ignored) {
     }
 

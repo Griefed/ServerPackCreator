@@ -85,9 +85,8 @@ public class ConfigUtilitiesTest {
             true,
             new HashMap<>(),
             new HashMap<>()
-        ).save(new File("./serverpackcreatorfabric.conf")));
-    Assertions.assertTrue(new File("./serverpackcreatorfabric.conf").exists());
-    new File("./serverpackcreatorfabric.conf").delete();
+        ).save(new File("tests/serverpackcreatorfabric.conf")));
+    Assertions.assertTrue(new File("tests/serverpackcreatorfabric.conf").exists());
   }
 
   @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -154,9 +153,8 @@ public class ConfigUtilitiesTest {
             true,
             new HashMap<>(),
             new HashMap<>()
-        ).save(new File("./serverpackcreatorforge.conf")));
-    Assertions.assertTrue(new File("./serverpackcreatorforge.conf").exists());
-    new File("./serverpackcreatorforge.conf").delete();
+        ).save(new File("tests/serverpackcreatorforge.conf")));
+    Assertions.assertTrue(new File("tests/serverpackcreatorforge.conf").exists());
   }
 
   @Test
@@ -199,8 +197,8 @@ public class ConfigUtilitiesTest {
     configurationModel.setModLoader("Forge");
     configurationModel.setModLoaderVersion("36.1.2");
     configurationModel.setJavaArgs("tf3g4jz89agz843fag8z49a3zg8ap3jg8zap9vagv3z8j");
-    Assertions.assertNotNull(configurationModel.save(new File("somefile.conf")));
-    Assertions.assertTrue(new File("somefile.conf").exists());
+    Assertions.assertNotNull(configurationModel.save(new File("tests/somefile.conf")));
+    Assertions.assertTrue(new File("tests/somefile.conf").exists());
   }
 
   @Test
@@ -221,47 +219,6 @@ public class ConfigUtilitiesTest {
   @Test
   void setModLoaderCaseTestFabricCorrected() {
     Assertions.assertEquals("Fabric", configUtilities.getModLoaderCase("hufwhafasfabricfagrsg"));
-  }
-
-  @Test
-  void printConfigTest() {
-    String modpackDir = "backend/test/resources/forge_tests";
-    List<String> clientMods =
-        new ArrayList<>(
-            Arrays.asList(
-                "AmbientSounds",
-                "BackTools",
-                "BetterAdvancement",
-                "BetterPing",
-                "cherished",
-                "ClientTweaks",
-                "Controlling",
-                "DefaultOptions",
-                "durability",
-                "DynamicSurroundings",
-                "itemzoom",
-                "jei-professions",
-                "jeiintegration",
-                "JustEnoughResources",
-                "MouseTweaks",
-                "Neat",
-                "OldJavaWarning",
-                "PackMenu",
-                "preciseblockplacing",
-                "SimpleDiscordRichPresence",
-                "SpawnerFix",
-                "TipTheScales",
-                "WorldNameRandomizer"));
-    List<String> copyDirs =
-        new ArrayList<>(Arrays.asList("config", "mods", "scripts", "seeds", "defaultconfigs"));
-    boolean includeServerInstallation = true;
-    String minecraftVersion = "1.16.5";
-    String modLoader = "Forge";
-    String modLoaderVersion = "36.1.2";
-    String javaArgs = "tf3g4jz89agz843fag8z49a3zg8ap3jg8zap9vagv3z8j";
-    boolean includeServerIcon = true;
-    boolean includeServerProperties = true;
-    boolean includeZipCreation = true;
   }
 
   @Test

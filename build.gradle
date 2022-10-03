@@ -68,17 +68,17 @@ dependencies {
   implementation 'commons-io:commons-io:2.11.0'
   implementation 'commons-lang:commons-lang:2.6'
 
-  implementation 'net.lingala.zip4j:zip4j:2.11.1'
+  implementation 'net.lingala.zip4j:zip4j:2.11.2'
   implementation 'org.xerial:sqlite-jdbc:3.39.3.0'
   implementation 'org.pf4j:pf4j:3.7.0'
   implementation 'com.github.vatbub:mslinks:1.0.5'
 
   annotationProcessor 'org.jetbrains:annotations:23.0.0'
 
-  implementation 'org.apache.logging.log4j:log4j-core:2.18.0'
-  implementation 'org.apache.logging.log4j:log4j-api:2.18.0'
-  implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.18.0'
-  implementation 'org.apache.logging.log4j:log4j-web:2.18.0'
+  implementation 'org.apache.logging.log4j:log4j-core:2.19.0'
+  implementation 'org.apache.logging.log4j:log4j-api:2.19.0'
+  implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.19.0'
+  implementation 'org.apache.logging.log4j:log4j-web:2.19.0'
   implementation 'org.jgroups:jgroups:5.2.6.Final'
 
   // GUI
@@ -254,35 +254,26 @@ launch4j {
 
 clean {
   cleanFrontend
-  delete(
-      'lang',
-      'fabric-installer-manifest.xml',
-      'fabric-manifest.xml',
-      'forge-manifest.json',
-      'log4j2.xml',
-      'minecraft-manifest.json',
-      'quilt-installer-manifest.xml',
-      'quilt-manifest.xml',
-      'plugins',
-      'server-packs',
-      'server_files',
-      'work',
-      'banner.txt',
-      'serverpackcreator.conf',
-      'serverpackcreator.db',
-      'serverpackcreator.properties',
-      'somefile.conf',
-      'after.conf'
-  )
+  delete('log4j2.xml')
+  file("tests").list().each {
+    f ->
+      delete "${"tests"}/${f}"
+  }
+}
+
+test.doFirst {
+  mkdir("tests")
 }
 
 test {
   useJUnitPlatform()
 
   testLogging {
-    events "passed",
+    events (
+        "passed",
         "skipped",
         "failed"
+    )
   }
 }
 
