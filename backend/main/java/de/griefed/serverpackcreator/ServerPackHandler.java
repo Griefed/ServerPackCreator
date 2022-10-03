@@ -1007,8 +1007,7 @@ public final class ServerPackHandler {
    * pack.
    *
    * @param fileToCheckFor The string to check for.
-   * @return {@code true} if the file is found in the list of directories to exclude, false
-   * if not.
+   * @return {@code true} if the file is found in the list of directories to exclude, false if not.
    * @author Griefed
    */
   private boolean excludeFileOrDirectory(
@@ -1329,7 +1328,7 @@ public final class ServerPackHandler {
           commandArguments.add("server");
           commandArguments.add(minecraftVersion);
           commandArguments.add("--download-server");
-          commandArguments.add("--install-dir=.");
+          commandArguments.add("--install-dir=" + new File(destination).getAbsolutePath());
 
         } else {
 
@@ -1389,6 +1388,7 @@ public final class ServerPackHandler {
           new ProcessBuilder(commandArguments).directory(new File(destination));
 
       LOG.debug("ProcessBuilder command: " + processBuilder.command());
+      LOG.debug("Executing in: " + new File(destination));
 
       processBuilder.redirectErrorStream(true);
       process = processBuilder.start();
@@ -1497,10 +1497,12 @@ public final class ServerPackHandler {
   }
 
   /**
-   * Creates a ZIP-archive of the server pack previously generated. Depending on
+   * Creates a ZIP-archive of specified directory. Depending on
    * {@link ApplicationProperties#isZipFileExclusionEnabled()}, files will be excluded. To customize
    * the files which will be excluded, see
-   * {@link ApplicationProperties#getFilesToExcludeFromZipArchive()}
+   * {@link ApplicationProperties#getFilesToExcludeFromZipArchive()}. The created ZIP-archive will
+   * be stored alongside the specified destination, with {@code _server_pack.zip} appended to its
+   * name.
    *
    * @param minecraftVersion          Determines the name of the Minecraft server JAR to exclude
    *                                  from the ZIP-archive if the modloader is Forge.
