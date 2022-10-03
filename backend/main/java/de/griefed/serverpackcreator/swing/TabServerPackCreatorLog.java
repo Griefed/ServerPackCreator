@@ -45,7 +45,8 @@ public class TabServerPackCreatorLog extends JComponentTailer {
    * @param logsDirectory The directory in which the logs reside in.
    * @author Griefed
    */
-  public TabServerPackCreatorLog(String tooltip, File logsDirectory) {
+  public TabServerPackCreatorLog(String tooltip,
+                                 File logsDirectory) {
     super(tooltip);
 
     createTailer(logsDirectory);
@@ -69,7 +70,7 @@ public class TabServerPackCreatorLog extends JComponentTailer {
     }
     TailerListener tailerListener = new MyTailerListener();
     Tailer tailer = new Tailer(new File(logsDirectory, "serverpackcreator.log"), tailerListener,
-        200);
+                               200);
     Thread thread = new Thread(tailer);
     thread.setDaemon(true);
     thread.start();

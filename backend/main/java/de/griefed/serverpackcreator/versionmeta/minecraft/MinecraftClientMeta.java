@@ -69,8 +69,11 @@ final class MinecraftClientMeta extends ManifestParser {
    * @author Griefed
    */
   MinecraftClientMeta(
-      File minecraftManifest, ForgeMeta injectedForgeMeta, ObjectMapper objectMapper,
-      Utilities utilities, ApplicationProperties applicationProperties) {
+      File minecraftManifest,
+      ForgeMeta injectedForgeMeta,
+      ObjectMapper objectMapper,
+      Utilities utilities,
+      ApplicationProperties applicationProperties) {
 
     APPLICATIONPROPERTIES = applicationProperties;
     UTILITIES = utilities;

@@ -48,7 +48,9 @@ public final class ForgeInstance {
    *                               not be created.
    * @author Griefed
    */
-  public ForgeInstance(String minecraftVersion, String forgeVersion, MinecraftMeta minecraftMeta)
+  public ForgeInstance(String minecraftVersion,
+                       String forgeVersion,
+                       MinecraftMeta minecraftMeta)
       throws MalformedURLException {
 
     MINECRAFT_VERSION = minecraftVersion;

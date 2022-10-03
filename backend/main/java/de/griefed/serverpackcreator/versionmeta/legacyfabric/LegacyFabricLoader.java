@@ -24,7 +24,8 @@ import java.io.File;
 
 final class LegacyFabricLoader extends LegacyFabricVersioning {
 
-  LegacyFabricLoader(File manifest, ObjectMapper mapper) {
+  LegacyFabricLoader(File manifest,
+                     ObjectMapper mapper) {
     super(manifest, mapper);
   }
 }

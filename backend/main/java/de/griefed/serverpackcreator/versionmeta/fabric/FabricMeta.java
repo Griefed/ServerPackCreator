@@ -88,6 +88,16 @@ public final class FabricMeta extends ManifestParser implements Meta {
   }
 
   @Override
+  public String latestInstaller() {
+    return FABRIC_INSTALLER.latestInstallerVersion();
+  }
+
+  @Override
+  public String releaseInstaller() {
+    return FABRIC_INSTALLER.releaseInstallerVersion();
+  }
+
+  @Override
   public List<String> loaderVersionsListAscending() {
     return FABRIC_LOADER.loaders();
   }
@@ -105,16 +115,6 @@ public final class FabricMeta extends ManifestParser implements Meta {
   @Override
   public String[] loaderVersionsArrayDescending() {
     return Lists.reverse(FABRIC_LOADER.loaders()).toArray(new String[0]);
-  }
-
-  @Override
-  public String latestInstaller() {
-    return FABRIC_INSTALLER.latestInstallerVersion();
-  }
-
-  @Override
-  public String releaseInstaller() {
-    return FABRIC_INSTALLER.releaseInstallerVersion();
   }
 
   @Override
@@ -157,6 +157,16 @@ public final class FabricMeta extends ManifestParser implements Meta {
     return Optional.ofNullable(FABRIC_INSTALLER.meta().get(fabricVersion));
   }
 
+  @Override
+  public boolean isVersionValid(String fabricVersion) {
+    return FABRIC_LOADER.loaders().contains(fabricVersion);
+  }
+
+  @Override
+  public boolean isMinecraftSupported(String minecraftVersion) {
+    return FABRIC_INTERMEDIARIES.getIntermediary(minecraftVersion).isPresent();
+  }
+
   /**
    * Get the {@link URL} to the Fabric launcher for the specified Minecraft and Fabric version.
    *
@@ -165,13 +175,9 @@ public final class FabricMeta extends ManifestParser implements Meta {
    * @return URL to the Fabric launcher for the specified Minecraft and Fabric version.
    * @author Griefed
    */
-  public Optional<URL> improvedLauncherUrl(String minecraftVersion, String fabricVersion) {
+  public Optional<URL> improvedLauncherUrl(String minecraftVersion,
+                                           String fabricVersion) {
     return FABRIC_INSTALLER.improvedLauncherUrl(minecraftVersion, fabricVersion);
-  }
-
-  @Override
-  public boolean isVersionValid(String fabricVersion) {
-    return FABRIC_LOADER.loaders().contains(fabricVersion);
   }
 
   /**
@@ -183,7 +189,8 @@ public final class FabricMeta extends ManifestParser implements Meta {
    * {@link Optional}.
    * @author Griefed
    */
-  public Optional<FabricDetails> getLoaderDetails(String minecraftVersion, String fabricVersion) {
+  public Optional<FabricDetails> getLoaderDetails(String minecraftVersion,
+                                                  String fabricVersion) {
     String key = minecraftVersion + "-" + fabricVersion;
 
     if (LOADER_DETAILS.containsKey(key)) {
@@ -200,10 +207,5 @@ public final class FabricMeta extends ManifestParser implements Meta {
 
       return Optional.empty();
     }
-  }
-
-  @Override
-  public boolean isMinecraftSupported(String minecraftVersion) {
-    return FABRIC_INTERMEDIARIES.getIntermediary(minecraftVersion).isPresent();
   }
 }

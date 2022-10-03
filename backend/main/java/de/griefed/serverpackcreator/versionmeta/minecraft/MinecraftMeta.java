@@ -53,8 +53,11 @@ public final class MinecraftMeta {
    * @author Griefed
    */
   public MinecraftMeta(
-      File minecraftManifest, ForgeMeta injectedForgeMeta, ObjectMapper objectMapper,
-      Utilities utilities, ApplicationProperties applicationProperties) {
+      File minecraftManifest,
+      ForgeMeta injectedForgeMeta,
+      ObjectMapper objectMapper,
+      Utilities utilities,
+      ApplicationProperties applicationProperties) {
 
     MINECRAFT_CLIENT_META = new MinecraftClientMeta(
         minecraftManifest,
@@ -98,6 +101,29 @@ public final class MinecraftMeta {
   }
 
   /**
+   * Get a specific Minecraft client as a {@link MinecraftClient} wrapped in an {@link Optional}.
+   *
+   * @param minecraftVersion Minecraft version.
+   * @return Client wrapped in an {@link Optional}
+   * @author Griefed
+   */
+  public Optional<MinecraftClient> getClient(String minecraftVersion) {
+    return Optional.ofNullable(MINECRAFT_CLIENT_META.meta().get(minecraftVersion));
+  }
+
+  /**
+   * Get the array of available Minecraft version of the {@link Type#RELEASE} in
+   * {@link Type#DESCENDING} order.
+   *
+   * @return Array of all available Minecraft {@link Type#RELEASE} versions in
+   * {@link Type#DESCENDING} order.
+   * @author Griefed
+   */
+  public String[] releaseVersionsArrayDescending() {
+    return releaseVersionsDescending().toArray(new String[0]);
+  }
+
+  /**
    * Get the list of available Minecraft version of the {@link Type#RELEASE} in
    * {@link Type#DESCENDING} order.
    *
@@ -109,6 +135,29 @@ public final class MinecraftMeta {
     List<String> list = new ArrayList<>(100);
     releasesDescending().forEach(client -> list.add(client.version()));
     return list;
+  }
+
+  /**
+   * Get a list of all available {@link MinecraftClient} of the {@link Type#RELEASE}, in ascending
+   * order.
+   *
+   * @return Release client-list
+   * @author Griefed
+   */
+  public List<MinecraftClient> releasesDescending() {
+    return MINECRAFT_CLIENT_META.releases();
+  }
+
+  /**
+   * Get the array of available Minecraft version of the {@link Type#RELEASE} in
+   * {@link Type#ASCENDING} order.
+   *
+   * @return Array of all available Minecraft {@link Type#RELEASE} versions in
+   * {@link Type#ASCENDING} order.
+   * @author Griefed
+   */
+  public String[] releaseVersionsArrayAscending() {
+    return releaseVersionsAscending().toArray(new String[0]);
   }
 
   /**
@@ -126,27 +175,15 @@ public final class MinecraftMeta {
   }
 
   /**
-   * Get the array of available Minecraft version of the {@link Type#RELEASE} in
+   * Get the array of available Minecraft version of the {@link Type#SNAPSHOT} in
    * {@link Type#DESCENDING} order.
    *
-   * @return Array of all available Minecraft {@link Type#RELEASE} versions in
+   * @return Array of all available Minecraft {@link Type#SNAPSHOT} versions in
    * {@link Type#DESCENDING} order.
    * @author Griefed
    */
-  public String[] releaseVersionsArrayDescending() {
-    return releaseVersionsDescending().toArray(new String[0]);
-  }
-
-  /**
-   * Get the array of available Minecraft version of the {@link Type#RELEASE} in
-   * {@link Type#ASCENDING} order.
-   *
-   * @return Array of all available Minecraft {@link Type#RELEASE} versions in
-   * {@link Type#ASCENDING} order.
-   * @author Griefed
-   */
-  public String[] releaseVersionsArrayAscending() {
-    return releaseVersionsAscending().toArray(new String[0]);
+  public String[] snapshotVersionsArrayDescending() {
+    return snapshotVersionsDescending().toArray(new String[0]);
   }
 
   /**
@@ -164,29 +201,14 @@ public final class MinecraftMeta {
   }
 
   /**
-   * Get the list of available Minecraft version of the {@link Type#SNAPSHOT} in
-   * {@link Type#ASCENDING} order.
+   * Get a list of all available {@link MinecraftClient} of the {@link Type#SNAPSHOT}, in ascending
+   * order.
    *
-   * @return List of all available Minecraft {@link Type#SNAPSHOT} versions in
-   * {@link Type#ASCENDING} order.
+   * @return Snapshot client-list
    * @author Griefed
    */
-  public List<String> snapshotVersionsAscending() {
-    List<String> list = new ArrayList<>(100);
-    snapshotsDescending().forEach(client -> list.add(client.version()));
-    return Lists.reverse(list);
-  }
-
-  /**
-   * Get the array of available Minecraft version of the {@link Type#SNAPSHOT} in
-   * {@link Type#DESCENDING} order.
-   *
-   * @return Array of all available Minecraft {@link Type#SNAPSHOT} versions in
-   * {@link Type#DESCENDING} order.
-   * @author Griefed
-   */
-  public String[] snapshotVersionsArrayDescending() {
-    return snapshotVersionsDescending().toArray(new String[0]);
+  public List<MinecraftClient> snapshotsDescending() {
+    return MINECRAFT_CLIENT_META.snapshots();
   }
 
   /**
@@ -202,6 +224,20 @@ public final class MinecraftMeta {
   }
 
   /**
+   * Get the list of available Minecraft version of the {@link Type#SNAPSHOT} in
+   * {@link Type#ASCENDING} order.
+   *
+   * @return List of all available Minecraft {@link Type#SNAPSHOT} versions in
+   * {@link Type#ASCENDING} order.
+   * @author Griefed
+   */
+  public List<String> snapshotVersionsAscending() {
+    List<String> list = new ArrayList<>(100);
+    snapshotsDescending().forEach(client -> list.add(client.version()));
+    return Lists.reverse(list);
+  }
+
+  /**
    * Get an array of all available Minecraft versions of the {@link Type#RELEASE} and
    * {@link Type#SNAPSHOT} in {@link Type#DESCENDING} order.
    *
@@ -212,16 +248,13 @@ public final class MinecraftMeta {
     return allVersionsDescending().toArray(new String[0]);
   }
 
-  /**
-   * Get an array of all available Minecraft versions of the {@link Type#RELEASE} and
-   * {@link Type#SNAPSHOT} in {@link Type#ASCENDING} order.
-   *
-   * @return All available Minecraft versions in ascending order.
-   * @author Griefed
+  /*
+   * #==============================================================================================================#
+   * #..............................................................................................................#
+   * #...................................................CLIENTS....................................................#
+   * #..............................................................................................................#
+   * #==============================================================================================================#
    */
-  public String[] allVersionsArrayAscending() {
-    return allVersionsAscending().toArray(new String[0]);
-  }
 
   /**
    * Get a list of all available Minecraft versions of the {@link Type#RELEASE} and
@@ -237,6 +270,28 @@ public final class MinecraftMeta {
   }
 
   /**
+   * Get all available Minecraft releases, both releases and pre-releases or snapshots, in
+   * {@link Type#DESCENDING} order.
+   *
+   * @return All available Minecraft releases in descending order.
+   * @author Griefed
+   */
+  public List<MinecraftClient> allDescending() {
+    return MINECRAFT_CLIENT_META.all();
+  }
+
+  /**
+   * Get an array of all available Minecraft versions of the {@link Type#RELEASE} and
+   * {@link Type#SNAPSHOT} in {@link Type#ASCENDING} order.
+   *
+   * @return All available Minecraft versions in ascending order.
+   * @author Griefed
+   */
+  public String[] allVersionsArrayAscending() {
+    return allVersionsAscending().toArray(new String[0]);
+  }
+
+  /**
    * Get a list of all available Minecraft versions of the {@link Type#RELEASE} and
    * {@link Type#SNAPSHOT} in {@link Type#ASCENDING} order.
    *
@@ -249,13 +304,16 @@ public final class MinecraftMeta {
     return versions;
   }
 
-  /*
-   * #==============================================================================================================#
-   * #..............................................................................................................#
-   * #...................................................CLIENTS....................................................#
-   * #..............................................................................................................#
-   * #==============================================================================================================#
+  /**
+   * Get all available Minecraft releases, both releases and pre-releases or snapshots, in
+   * {@link Type#ASCENDING} order.
+   *
+   * @return All available Minecraft releases in ascending order.
+   * @author Griefed
    */
+  public List<MinecraftClient> allAscending() {
+    return Lists.reverse(MINECRAFT_CLIENT_META.all());
+  }
 
   /**
    * Get the latest Minecraft release as a {@link MinecraftClient}.
@@ -275,39 +333,6 @@ public final class MinecraftMeta {
    */
   public MinecraftClient latestSnapshot() {
     return MINECRAFT_CLIENT_META.latestSnapshot();
-  }
-
-  /**
-   * Get a specific Minecraft client as a {@link MinecraftClient} wrapped in an {@link Optional}.
-   *
-   * @param minecraftVersion Minecraft version.
-   * @return Client wrapped in an {@link Optional}
-   * @author Griefed
-   */
-  public Optional<MinecraftClient> getClient(String minecraftVersion) {
-    return Optional.ofNullable(MINECRAFT_CLIENT_META.meta().get(minecraftVersion));
-  }
-
-  /**
-   * Get a list of all available {@link MinecraftClient} of the {@link Type#RELEASE}, in ascending
-   * order.
-   *
-   * @return Release client-list
-   * @author Griefed
-   */
-  public List<MinecraftClient> releasesDescending() {
-    return MINECRAFT_CLIENT_META.releases();
-  }
-
-  /**
-   * Get a list of all available {@link MinecraftClient} of the {@link Type#RELEASE}, in descending
-   * order.
-   *
-   * @return Release client-list
-   * @author Griefed
-   */
-  public List<MinecraftClient> releasesAscending() {
-    return Lists.reverse(MINECRAFT_CLIENT_META.releases());
   }
 
   /**
@@ -333,25 +358,14 @@ public final class MinecraftMeta {
   }
 
   /**
-   * Get a list of all available {@link MinecraftClient} of the {@link Type#SNAPSHOT}, in ascending
+   * Get a list of all available {@link MinecraftClient} of the {@link Type#RELEASE}, in descending
    * order.
    *
-   * @return Snapshot client-list
+   * @return Release client-list
    * @author Griefed
    */
-  public List<MinecraftClient> snapshotsDescending() {
-    return MINECRAFT_CLIENT_META.snapshots();
-  }
-
-  /**
-   * Get a list of all available {@link MinecraftClient} of the {@link Type#SNAPSHOT}, in descending
-   * order.
-   *
-   * @return Snapshot client-list
-   * @author Griefed
-   */
-  public List<MinecraftClient> snapshotsAscending() {
-    return Lists.reverse(MINECRAFT_CLIENT_META.snapshots());
+  public List<MinecraftClient> releasesAscending() {
+    return Lists.reverse(MINECRAFT_CLIENT_META.releases());
   }
 
   /**
@@ -377,25 +391,14 @@ public final class MinecraftMeta {
   }
 
   /**
-   * Get all available Minecraft releases, both releases and pre-releases or snapshots, in
-   * {@link Type#DESCENDING} order.
+   * Get a list of all available {@link MinecraftClient} of the {@link Type#SNAPSHOT}, in descending
+   * order.
    *
-   * @return All available Minecraft releases in descending order.
+   * @return Snapshot client-list
    * @author Griefed
    */
-  public List<MinecraftClient> allDescending() {
-    return MINECRAFT_CLIENT_META.all();
-  }
-
-  /**
-   * Get all available Minecraft releases, both releases and pre-releases or snapshots, in
-   * {@link Type#ASCENDING} order.
-   *
-   * @return All available Minecraft releases in ascending order.
-   * @author Griefed
-   */
-  public List<MinecraftClient> allAscending() {
-    return Lists.reverse(MINECRAFT_CLIENT_META.all());
+  public List<MinecraftClient> snapshotsAscending() {
+    return Lists.reverse(MINECRAFT_CLIENT_META.snapshots());
   }
 
   /**
@@ -429,6 +432,17 @@ public final class MinecraftMeta {
    */
 
   /**
+   * Check whether a {@link MinecraftServer} is available for the specified Minecraft-version.
+   *
+   * @param minecraftVersion The Minecraft-version.
+   * @return {@code true} if a {@link MinecraftServer} is available.
+   * @author Griefed
+   */
+  public boolean checkServerAvailability(String minecraftVersion) {
+    return getServer(minecraftVersion).isPresent();
+  }
+
+  /**
    * Get a specific {@link MinecraftServer} for the specified Minecraft-version, wrapped in an
    * {@link Optional}.
    *
@@ -448,17 +462,6 @@ public final class MinecraftMeta {
     }
 
     return Optional.empty();
-  }
-
-  /**
-   * Check whether a {@link MinecraftServer} is available for the specified Minecraft-version.
-   *
-   * @param minecraftVersion The Minecraft-version.
-   * @return {@code true} if a {@link MinecraftServer} is available.
-   * @author Griefed
-   */
-  public boolean checkServerAvailability(String minecraftVersion) {
-    return getServer(minecraftVersion).isPresent();
   }
 
   /**
@@ -484,28 +487,6 @@ public final class MinecraftMeta {
   }
 
   /**
-   * Get a list of all available {@link MinecraftServer} of the {@link Type#RELEASE}, in
-   * {@link Type#DESCENDING} order.
-   *
-   * @return Server-list
-   * @author Griefed
-   */
-  public List<MinecraftServer> releasesServersDescending() {
-    return MINECRAFT_SERVER_META.releases();
-  }
-
-  /**
-   * Get a list of all available {@link MinecraftServer} of the {@link Type#RELEASE}, in
-   * {@link Type#ASCENDING} order.
-   *
-   * @return Server-list
-   * @author Griefed
-   */
-  public List<MinecraftServer> releasesServersAscending() {
-    return Lists.reverse(MINECRAFT_SERVER_META.releases());
-  }
-
-  /**
    * Get an array of all available {@link MinecraftServer} of the {@link Type#RELEASE}, in
    * {@link Type#DESCENDING} order.
    *
@@ -514,6 +495,17 @@ public final class MinecraftMeta {
    */
   public MinecraftServer[] releasesServersArrayDescending() {
     return releasesServersDescending().toArray(new MinecraftServer[0]);
+  }
+
+  /**
+   * Get a list of all available {@link MinecraftServer} of the {@link Type#RELEASE}, in
+   * {@link Type#DESCENDING} order.
+   *
+   * @return Server-list
+   * @author Griefed
+   */
+  public List<MinecraftServer> releasesServersDescending() {
+    return MINECRAFT_SERVER_META.releases();
   }
 
   /**
@@ -528,25 +520,14 @@ public final class MinecraftMeta {
   }
 
   /**
-   * Get a list of all available {@link MinecraftServer} of the {@link Type#SNAPSHOT}, in
-   * {@link Type#DESCENDING} order.
+   * Get a list of all available {@link MinecraftServer} of the {@link Type#RELEASE}, in
+   * {@link Type#ASCENDING} order.
    *
    * @return Server-list
    * @author Griefed
    */
-  public List<MinecraftServer> snapshotsServersDescending() {
-    return MINECRAFT_SERVER_META.snapshots();
-  }
-
-  /**
-   * Get a list of all available {@link MinecraftServer} of the {@link Type#SNAPSHOT}, in descending
-   * order.
-   *
-   * @return Server-list
-   * @author Griefed
-   */
-  public List<MinecraftServer> snapshotsServersAscending() {
-    return Lists.reverse(MINECRAFT_SERVER_META.snapshots());
+  public List<MinecraftServer> releasesServersAscending() {
+    return Lists.reverse(MINECRAFT_SERVER_META.releases());
   }
 
   /**
@@ -561,6 +542,17 @@ public final class MinecraftMeta {
   }
 
   /**
+   * Get a list of all available {@link MinecraftServer} of the {@link Type#SNAPSHOT}, in
+   * {@link Type#DESCENDING} order.
+   *
+   * @return Server-list
+   * @author Griefed
+   */
+  public List<MinecraftServer> snapshotsServersDescending() {
+    return MINECRAFT_SERVER_META.snapshots();
+  }
+
+  /**
    * Get an array of all available {@link MinecraftServer} of the {@link Type#SNAPSHOT}, in
    * descending order.
    *
@@ -569,5 +561,16 @@ public final class MinecraftMeta {
    */
   public MinecraftServer[] snapshotsServersArrayAscending() {
     return snapshotsServersAscending().toArray(new MinecraftServer[0]);
+  }
+
+  /**
+   * Get a list of all available {@link MinecraftServer} of the {@link Type#SNAPSHOT}, in descending
+   * order.
+   *
+   * @return Server-list
+   * @author Griefed
+   */
+  public List<MinecraftServer> snapshotsServersAscending() {
+    return Lists.reverse(MINECRAFT_SERVER_META.snapshots());
   }
 }

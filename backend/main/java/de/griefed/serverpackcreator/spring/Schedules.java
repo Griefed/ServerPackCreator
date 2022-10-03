@@ -56,23 +56,11 @@ public class Schedules {
    * @author Griefed
    */
   @Autowired
-  public Schedules(ServerPackService injectedServerPackService, VersionMeta injectedVersionMeta) {
+  public Schedules(ServerPackService injectedServerPackService,
+                   VersionMeta injectedVersionMeta) {
 
     this.SERVERPACKSERVICE = injectedServerPackService;
     this.VERSIONMETA = injectedVersionMeta;
-  }
-
-  private void deletePack(ServerPackModel pack) {
-    LOG.info("Deleting archive " + pack.getPath());
-    FileUtils.deleteQuietly(new File(pack.getPath()));
-
-    LOG.info(
-        "Deleting folder " + pack.getPath().replace("_server_pack-zip", ""));
-    FileUtils.deleteQuietly(
-        new File(pack.getPath().replace("_server_pack-zip", "")));
-
-    LOG.info("Cleaned server pack " + pack.getId() + " from database.");
-    SERVERPACKSERVICE.deleteServerPack(pack.getId());
   }
 
   /**
@@ -115,6 +103,19 @@ public class Schedules {
 
       LOG.info("Database cleanup completed.");
     }
+  }
+
+  private void deletePack(ServerPackModel pack) {
+    LOG.info("Deleting archive " + pack.getPath());
+    FileUtils.deleteQuietly(new File(pack.getPath()));
+
+    LOG.info(
+        "Deleting folder " + pack.getPath().replace("_server_pack-zip", ""));
+    FileUtils.deleteQuietly(
+        new File(pack.getPath().replace("_server_pack-zip", "")));
+
+    LOG.info("Cleaned server pack " + pack.getId() + " from database.");
+    SERVERPACKSERVICE.deleteServerPack(pack.getId());
   }
 
   @Scheduled(cron = "${de.griefed.serverpackcreator.spring.schedules.files.cleanup}")

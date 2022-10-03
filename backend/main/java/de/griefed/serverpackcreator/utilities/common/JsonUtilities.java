@@ -40,9 +40,44 @@ public final class JsonUtilities {
    * @throws NullPointerException if the requested element is not present in the JsonNode.
    * @author Griefed
    */
-  public boolean nestedTextMatches(JsonNode jsonNode, String matches, String... childNodes)
+  public boolean nestedTextMatches(JsonNode jsonNode,
+                                   String matches,
+                                   String... childNodes)
       throws NullPointerException {
     return getNestedText(jsonNode, childNodes).matches(matches);
+  }
+
+  /**
+   * Get the text from nested child node(s).
+   *
+   * @param jsonNode   The JsonNode from which to acquire the text from.
+   * @param childNodes The child nodes which contain the requested text, in order.
+   * @return The text from the requested child node(s).
+   * @throws NullPointerException if the requested element is not present in the JsonNode.
+   * @author Griefed
+   */
+  public String getNestedText(JsonNode jsonNode,
+                              String... childNodes) throws NullPointerException {
+    return getNestedElement(jsonNode, childNodes).asText();
+  }
+
+  /**
+   * Get a nested element from a JsonNode.
+   *
+   * @param jsonNode   The JsonNode from which to acquire the nested element.
+   * @param childNodes The nested elements, in order.
+   * @return The nested element from the JsonNode.
+   * @throws NullPointerException if the requested element is not present in the JsonNode.
+   * @author Griefed
+   */
+  public JsonNode getNestedElement(JsonNode jsonNode,
+                                   String... childNodes)
+      throws NullPointerException {
+    JsonNode child = jsonNode;
+    for (String nested : childNodes) {
+      child = child.get(nested);
+    }
+    return child;
   }
 
   /**
@@ -56,8 +91,9 @@ public final class JsonUtilities {
    * @throws NullPointerException if the requested element is not present in the JsonNode.
    * @author Griefed
    */
-  public boolean nestedTextEqualsIgnoreCase(JsonNode jsonNode, String equalsIgnoreCase,
-      String... childNodes) throws NullPointerException {
+  public boolean nestedTextEqualsIgnoreCase(JsonNode jsonNode,
+                                            String equalsIgnoreCase,
+                                            String... childNodes) throws NullPointerException {
     return getNestedText(jsonNode, childNodes).equalsIgnoreCase(equalsIgnoreCase);
   }
 
@@ -70,7 +106,8 @@ public final class JsonUtilities {
    * @throws NullPointerException if the requested element is not present in the JsonNode.
    * @author Griefed
    */
-  public boolean nestedTextIsEmpty(JsonNode jsonNode, String... childNodes)
+  public boolean nestedTextIsEmpty(JsonNode jsonNode,
+                                   String... childNodes)
       throws NullPointerException {
     return getNestedText(jsonNode, childNodes).isEmpty();
   }
@@ -86,7 +123,8 @@ public final class JsonUtilities {
    * @throws NullPointerException if the requested element is not present in the JsonNode.
    * @author Griefed
    */
-  public boolean getNestedBoolean(JsonNode jsonNode, String... childNodes)
+  public boolean getNestedBoolean(JsonNode jsonNode,
+                                  String... childNodes)
       throws NullPointerException, JsonException {
     String bool = getNestedText(jsonNode, childNodes);
 
@@ -113,7 +151,9 @@ public final class JsonUtilities {
    * @throws NullPointerException if the requested element is not present in the JsonNode.
    * @author Griefed
    */
-  public String[] getNestedTexts(JsonNode jsonNode, String split, String... childNodes)
+  public String[] getNestedTexts(JsonNode jsonNode,
+                                 String split,
+                                 String... childNodes)
       throws NullPointerException {
     return getNestedText(jsonNode, childNodes).split(split);
   }
@@ -129,23 +169,11 @@ public final class JsonUtilities {
    * @throws NullPointerException if the requested element is not present in the JsonNode.
    * @author Griefed
    */
-  public boolean nestedTextContains(JsonNode jsonNode, String contains, String... childNodes)
+  public boolean nestedTextContains(JsonNode jsonNode,
+                                    String contains,
+                                    String... childNodes)
       throws NullPointerException {
     return getNestedText(jsonNode, childNodes).contains(contains);
-  }
-
-
-  /**
-   * Get the text from nested child node(s).
-   *
-   * @param jsonNode   The JsonNode from which to acquire the text from.
-   * @param childNodes The child nodes which contain the requested text, in order.
-   * @return The text from the requested child node(s).
-   * @throws NullPointerException if the requested element is not present in the JsonNode.
-   * @author Griefed
-   */
-  public String getNestedText(JsonNode jsonNode, String... childNodes) throws NullPointerException {
-    return getNestedElement(jsonNode, childNodes).asText();
   }
 
   /**
@@ -160,27 +188,10 @@ public final class JsonUtilities {
    *                              JsonNode.
    * @author Griefed
    */
-  public Iterator<String> getFieldNames(JsonNode jsonNode, String... childNodes)
+  public Iterator<String> getFieldNames(JsonNode jsonNode,
+                                        String... childNodes)
       throws NullPointerException {
     return getNestedElement(jsonNode, childNodes).fieldNames();
-  }
-
-  /**
-   * Get a nested element from a JsonNode.
-   *
-   * @param jsonNode   The JsonNode from which to acquire the nested element.
-   * @param childNodes The nested elements, in order.
-   * @return The nested element from the JsonNode.
-   * @throws NullPointerException if the requested element is not present in the JsonNode.
-   * @author Griefed
-   */
-  public JsonNode getNestedElement(JsonNode jsonNode, String... childNodes)
-      throws NullPointerException {
-    JsonNode child = jsonNode;
-    for (String nested : childNodes) {
-      child = child.get(nested);
-    }
-    return child;
   }
 
 }

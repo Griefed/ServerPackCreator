@@ -38,8 +38,10 @@ public final class LegacyFabricMeta extends ManifestParser implements Meta {
   private final LegacyFabricLoader LOADER_VERSIONS;
   private final LegacyFabricInstaller INSTALLER_VERSIONS;
 
-  public LegacyFabricMeta(File gameVersionsManifest, File loaderVersionsManifest,
-      File installerVersionsManifest, ObjectMapper mapper) {
+  public LegacyFabricMeta(File gameVersionsManifest,
+                          File loaderVersionsManifest,
+                          File installerVersionsManifest,
+                          ObjectMapper mapper) {
 
     GAME_VERSIONS = new LegacyFabricGame(gameVersionsManifest, mapper);
     LOADER_VERSIONS = new LegacyFabricLoader(loaderVersionsManifest, mapper);

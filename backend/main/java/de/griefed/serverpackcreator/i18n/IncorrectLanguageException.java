@@ -51,7 +51,8 @@ public final class IncorrectLanguageException extends Exception {
    * @param cause   The cause of the exception.
    * @author whitebear60
    */
-  public IncorrectLanguageException(String message, Throwable cause) {
+  public IncorrectLanguageException(String message,
+                                    Throwable cause) {
     super(message, cause);
   }
 

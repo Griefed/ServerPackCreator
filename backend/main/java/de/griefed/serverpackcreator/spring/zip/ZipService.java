@@ -133,7 +133,7 @@ public class ZipService {
         || !new File(APPLICATIONPROPERTIES.modpacksDirectory(), parameters[0]).isFile()) {
 
       LOG.info("ZIP-archive " + APPLICATIONPROPERTIES.modpacksDirectory() + "/" + parameters[0]
-          + " not found.");
+                   + " not found.");
 
       return NOTIFICATIONRESPONSE.zipResponse(
           "ZIP-archive not found.", 5000, "error", "negative", parameters[0], false);

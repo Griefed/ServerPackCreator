@@ -50,7 +50,8 @@ final class FabricLoaderDetails {
    * {@link Optional}.
    * @author Griefed
    */
-  Optional<FabricDetails> getDetails(String minecraftVersion, String modloaderVersion) {
+  Optional<FabricDetails> getDetails(String minecraftVersion,
+                                     String modloaderVersion) {
     try {
       return Optional.of(
           OBJECT_MAPPER.readValue(

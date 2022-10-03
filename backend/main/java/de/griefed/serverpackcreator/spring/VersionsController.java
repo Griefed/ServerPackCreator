@@ -51,7 +51,8 @@ public class VersionsController {
    * @author Griefed
    */
   @Autowired
-  public VersionsController(VersionMeta injectedVersionMeta, Utilities injectedUtilities) {
+  public VersionsController(VersionMeta injectedVersionMeta,
+                            Utilities injectedUtilities) {
     this.VERSIONMETA = injectedVersionMeta;
     this.UTILITIES = injectedUtilities;
   }
@@ -66,12 +67,13 @@ public class VersionsController {
   public ResponseEntity<String> getAvailableMinecraftVersions() {
 
     return ResponseEntity.ok()
-        .header("Content-Type", "application/json")
-        .body(
-            "{\"minecraft\":"
-                + UTILITIES.ListUtils()
-                .encapsulateListElements(VERSIONMETA.minecraft().releaseVersionsDescending())
-                + "}");
+                         .header("Content-Type", "application/json")
+                         .body(
+                             "{\"minecraft\":"
+                                 + UTILITIES.ListUtils()
+                                            .encapsulateListElements(
+                                                VERSIONMETA.minecraft().releaseVersionsDescending())
+                                 + "}");
   }
 
   /**
@@ -88,16 +90,17 @@ public class VersionsController {
     if (VERSIONMETA.forge().availableForgeVersionsDescending(minecraftVersion).isPresent()) {
 
       return ResponseEntity.ok()
-          .header("Content-Type", "application/json")
-          .body(
-              "{\"forge\":"
-                  + UTILITIES.ListUtils()
-                  .encapsulateListElements(
-                      VERSIONMETA
-                          .forge()
-                          .availableForgeVersionsDescending(minecraftVersion)
-                          .get())
-                  + "}");
+                           .header("Content-Type", "application/json")
+                           .body(
+                               "{\"forge\":"
+                                   + UTILITIES.ListUtils()
+                                              .encapsulateListElements(
+                                                  VERSIONMETA
+                                                      .forge()
+                                                      .availableForgeVersionsDescending(
+                                                          minecraftVersion)
+                                                      .get())
+                                   + "}");
 
     } else {
 
@@ -115,12 +118,13 @@ public class VersionsController {
   public ResponseEntity<String> getAvailableFabricVersions() {
 
     return ResponseEntity.ok()
-        .header("Content-Type", "application/json")
-        .body(
-            "{\"fabric\":"
-                + UTILITIES.ListUtils()
-                .encapsulateListElements(VERSIONMETA.fabric().loaderVersionsListDescending())
-                + "}");
+                         .header("Content-Type", "application/json")
+                         .body(
+                             "{\"fabric\":"
+                                 + UTILITIES.ListUtils()
+                                            .encapsulateListElements(
+                                                VERSIONMETA.fabric().loaderVersionsListDescending())
+                                 + "}");
   }
 
   /**
@@ -134,16 +138,16 @@ public class VersionsController {
   public ResponseEntity<String> getAvailableFabricInstallerVersions() {
 
     return ResponseEntity.ok()
-        .header("Content-Type", "application/json")
-        .body(
-            "{"
-                + "\"release\":\""
-                + VERSIONMETA.fabric().releaseInstaller()
-                + "\","
-                + "\"latest\":\""
-                + VERSIONMETA.fabric().releaseInstaller()
-                + "\""
-                + "}");
+                         .header("Content-Type", "application/json")
+                         .body(
+                             "{"
+                                 + "\"release\":\""
+                                 + VERSIONMETA.fabric().releaseInstaller()
+                                 + "\","
+                                 + "\"latest\":\""
+                                 + VERSIONMETA.fabric().releaseInstaller()
+                                 + "\""
+                                 + "}");
   }
 
   /**
@@ -156,12 +160,13 @@ public class VersionsController {
   public ResponseEntity<String> getAvailableQuiltVersions() {
 
     return ResponseEntity.ok()
-        .header("Content-Type", "application/json")
-        .body(
-            "{\"quilt\":"
-                + UTILITIES.ListUtils()
-                .encapsulateListElements(VERSIONMETA.quilt().loaderVersionsListDescending())
-                + "}");
+                         .header("Content-Type", "application/json")
+                         .body(
+                             "{\"quilt\":"
+                                 + UTILITIES.ListUtils()
+                                            .encapsulateListElements(
+                                                VERSIONMETA.quilt().loaderVersionsListDescending())
+                                 + "}");
   }
 
   /**
@@ -175,15 +180,15 @@ public class VersionsController {
   public ResponseEntity<String> getAvailableQuiltInstallerVersions() {
 
     return ResponseEntity.ok()
-        .header("Content-Type", "application/json")
-        .body(
-            "{"
-                + "\"release\":\""
-                + VERSIONMETA.quilt().releaseInstaller()
-                + "\","
-                + "\"latest\":\""
-                + VERSIONMETA.quilt().releaseInstaller()
-                + "\""
-                + "}");
+                         .header("Content-Type", "application/json")
+                         .body(
+                             "{"
+                                 + "\"release\":\""
+                                 + VERSIONMETA.quilt().releaseInstaller()
+                                 + "\","
+                                 + "\"latest\":\""
+                                 + VERSIONMETA.quilt().releaseInstaller()
+                                 + "\""
+                                 + "}");
   }
 }

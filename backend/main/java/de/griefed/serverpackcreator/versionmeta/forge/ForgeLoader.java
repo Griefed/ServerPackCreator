@@ -73,7 +73,9 @@ final class ForgeLoader extends ManifestParser {
    * @param injectedMinecraftMeta Meta for retroactively updating the previously passed meta.
    * @author Griefed
    */
-  ForgeLoader(File forgemanifest, ObjectMapper mapper, MinecraftMeta injectedMinecraftMeta) {
+  ForgeLoader(File forgemanifest,
+              ObjectMapper mapper,
+              MinecraftMeta injectedMinecraftMeta) {
     MANIFEST = forgemanifest;
     MAPPER = mapper;
     MINECRAFT_META = injectedMinecraftMeta;

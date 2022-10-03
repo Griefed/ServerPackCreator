@@ -199,7 +199,8 @@ final class FabricInstaller extends ManifestParser {
    * @return URL to the improved Fabric launcher, wrapped in an {@link Optional}.
    * @author Griefed
    */
-  Optional<URL> improvedLauncherUrl(String minecraftVersion, String fabricVersion) {
+  Optional<URL> improvedLauncherUrl(String minecraftVersion,
+                                    String fabricVersion) {
     try {
       return Optional.of(
           new URL(

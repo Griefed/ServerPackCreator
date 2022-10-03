@@ -127,7 +127,8 @@ public final class UpdateChecker {
    * @return The update, if available, as well as the download URL.
    * @author Griefed
    */
-  public Optional<Update> checkForUpdate(@NotNull String version, Boolean preReleaseCheck) {
+  public Optional<Update> checkForUpdate(@NotNull String version,
+                                         Boolean preReleaseCheck) {
 
     if (version.equalsIgnoreCase("dev")) {
       return Optional.empty();

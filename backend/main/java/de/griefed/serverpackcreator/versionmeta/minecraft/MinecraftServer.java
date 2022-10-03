@@ -59,8 +59,12 @@ public final class MinecraftServer extends ManifestParser {
    * @param applicationProperties ServerPackCreator settings.
    * @author Griefed
    */
-  MinecraftServer(String mcVersion, Type mcType, URL mcUrl, ObjectMapper objectMapper,
-      Utilities utilities, ApplicationProperties applicationProperties) {
+  MinecraftServer(String mcVersion,
+                  Type mcType,
+                  URL mcUrl,
+                  ObjectMapper objectMapper,
+                  Utilities utilities,
+                  ApplicationProperties applicationProperties) {
 
     UTILITIES = utilities;
     MANIFEST_URL = mcUrl;
@@ -69,23 +73,6 @@ public final class MinecraftServer extends ManifestParser {
         applicationProperties.minecraftServerManifestsDirectory(), VERSION + ".json");
     TYPE = mcType;
     OBJECT_MAPPER = objectMapper;
-  }
-
-  /**
-   * Read and store the server manifest.
-   *
-   * @author Griefed
-   */
-  private void setServerJson() {
-    if (!MANIFEST_FILE.exists()) {
-      UTILITIES.WebUtils().downloadFile(MANIFEST_FILE, MANIFEST_URL);
-    }
-
-    try {
-      serverJson = getJson(MANIFEST_FILE, OBJECT_MAPPER);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
   }
 
   /**
@@ -123,6 +110,23 @@ public final class MinecraftServer extends ManifestParser {
       return Optional.of(new URL(serverJson.get("downloads").get("server").get("url").asText()));
     } catch (Exception e) {
       return Optional.empty();
+    }
+  }
+
+  /**
+   * Read and store the server manifest.
+   *
+   * @author Griefed
+   */
+  private void setServerJson() {
+    if (!MANIFEST_FILE.exists()) {
+      UTILITIES.WebUtils().downloadFile(MANIFEST_FILE, MANIFEST_URL);
+    }
+
+    try {
+      serverJson = getJson(MANIFEST_FILE, OBJECT_MAPPER);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
   }
 

@@ -81,15 +81,18 @@ public final class ServerPackCreatorWindow extends JFrame {
               ServerPackCreatorWindow.class.getResource("/de/griefed/resources/gui/banner.png")));
   private final Image ICON_SERVERPACKCREATOR =
       Toolkit.getDefaultToolkit()
-          .getImage(
-              Objects.requireNonNull(
-                  ServerPackCreatorWindow.class.getResource("/de/griefed/resources/gui/app.png")));
+             .getImage(
+                 Objects.requireNonNull(
+                     ServerPackCreatorWindow.class.getResource(
+                         "/de/griefed/resources/gui/app.png")));
   private final ImageIcon ISSUE_ICON = new ImageIcon(ImageIO.read(Objects.requireNonNull(
-          TabCreateServerPack.class.getResource("/de/griefed/resources/gui/issue.png")))
-      .getScaledInstance(48, 48, Image.SCALE_SMOOTH));
+                                                                TabCreateServerPack.class.getResource("/de/griefed/resources/gui/issue.png")))
+                                                            .getScaledInstance(48, 48,
+                                                                               Image.SCALE_SMOOTH));
   private final ImageIcon INFO_ICON = new ImageIcon(ImageIO.read(Objects.requireNonNull(
-          TabCreateServerPack.class.getResource("/de/griefed/resources/gui/info.png")))
-      .getScaledInstance(48, 48, Image.SCALE_SMOOTH));
+                                                               TabCreateServerPack.class.getResource("/de/griefed/resources/gui/info.png")))
+                                                           .getScaledInstance(48, 48,
+                                                                              Image.SCALE_SMOOTH));
   private final Dimension DIMENSION_WINDOW = new Dimension(1200, 800);
   private final Dimension DIMENSION_MIGRATION = new Dimension(800, 400);
   private final I18n I18N;
@@ -165,8 +168,8 @@ public final class ServerPackCreatorWindow extends JFrame {
                     "/de/griefed/resources/gui/tile" + new Random().nextInt(4) + ".jpg")));
 
     setTitle(injectedI18n.getMessage("createserverpack.gui.createandshowgui")
-        + " - "
-        + APPLICATIONPROPERTIES.serverPackCreatorVersion());
+                 + " - "
+                 + APPLICATIONPROPERTIES.serverPackCreatorVersion());
 
     TAB_CREATESERVERPACK =
         new TabCreateServerPack(
@@ -333,6 +336,59 @@ public final class ServerPackCreatorWindow extends JFrame {
   }
 
   /**
+   * Display the available migration messages.
+   *
+   * @author Griefed
+   */
+  void displayMigrationMessages() {
+
+    StyledDocument styledDocument = new DefaultStyledDocument();
+    SimpleAttributeSet simpleAttributeSet = new SimpleAttributeSet();
+    JTextPane jTextPane = new JTextPane(styledDocument);
+    StyleConstants.setBold(simpleAttributeSet, true);
+    StyleConstants.setFontSize(simpleAttributeSet, 14);
+    jTextPane.setCharacterAttributes(simpleAttributeSet, true);
+    StyleConstants.setAlignment(simpleAttributeSet, StyleConstants.ALIGN_LEFT);
+    styledDocument.setParagraphAttributes(
+        0, styledDocument.getLength(), simpleAttributeSet, false);
+    jTextPane.addHierarchyListener(
+        e1 -> {
+          Window window = SwingUtilities.getWindowAncestor(jTextPane);
+          if (window instanceof Dialog) {
+            Dialog dialog = (Dialog) window;
+            if (!dialog.isResizable()) {
+              dialog.setResizable(true);
+            }
+          }
+        });
+
+    JScrollPane scrollPane = new JScrollPane(
+        jTextPane,
+        JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+        JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
+    );
+    scrollPane.setPreferredSize(DIMENSION_MIGRATION);
+
+    try {
+      styledDocument.insertString(0, MIGRATION_MESSAGE, simpleAttributeSet);
+    } catch (BadLocationException ex) {
+      LOG.error("Error inserting text into aboutDocument.", ex);
+    }
+
+    jTextPane.setEditable(false);
+
+    if (MIGRATIONS_MADE) {
+      JOptionPane.showMessageDialog(
+          null,
+          scrollPane,
+          I18N.getMessage("migration.message.title"),
+          JOptionPane.INFORMATION_MESSAGE,
+          INFO_ICON
+      );
+    }
+  }
+
+  /**
    * If no Java is available, a message is displayed, warning the user that Javapath needs to be
    * defined for the modloader-server installation to work. If "Yes" is clicked, a filechooser will
    * open where the user can select their Java-executable/binary. If "No" is selected, the user is
@@ -416,58 +472,5 @@ public final class ServerPackCreatorWindow extends JFrame {
    */
   boolean migrationMessagesAvailable() {
     return MIGRATIONS_MADE;
-  }
-
-  /**
-   * Display the available migration messages.
-   *
-   * @author Griefed
-   */
-  void displayMigrationMessages() {
-
-    StyledDocument styledDocument = new DefaultStyledDocument();
-    SimpleAttributeSet simpleAttributeSet = new SimpleAttributeSet();
-    JTextPane jTextPane = new JTextPane(styledDocument);
-    StyleConstants.setBold(simpleAttributeSet, true);
-    StyleConstants.setFontSize(simpleAttributeSet, 14);
-    jTextPane.setCharacterAttributes(simpleAttributeSet, true);
-    StyleConstants.setAlignment(simpleAttributeSet, StyleConstants.ALIGN_LEFT);
-    styledDocument.setParagraphAttributes(
-        0, styledDocument.getLength(), simpleAttributeSet, false);
-    jTextPane.addHierarchyListener(
-        e1 -> {
-          Window window = SwingUtilities.getWindowAncestor(jTextPane);
-          if (window instanceof Dialog) {
-            Dialog dialog = (Dialog) window;
-            if (!dialog.isResizable()) {
-              dialog.setResizable(true);
-            }
-          }
-        });
-
-    JScrollPane scrollPane = new JScrollPane(
-        jTextPane,
-        JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-        JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
-    );
-    scrollPane.setPreferredSize(DIMENSION_MIGRATION);
-
-    try {
-      styledDocument.insertString(0, MIGRATION_MESSAGE, simpleAttributeSet);
-    } catch (BadLocationException ex) {
-      LOG.error("Error inserting text into aboutDocument.", ex);
-    }
-
-    jTextPane.setEditable(false);
-
-    if (MIGRATIONS_MADE) {
-      JOptionPane.showMessageDialog(
-          null,
-          scrollPane,
-          I18N.getMessage("migration.message.title"),
-          JOptionPane.INFORMATION_MESSAGE,
-          INFO_ICON
-      );
-    }
   }
 }

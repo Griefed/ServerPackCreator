@@ -24,7 +24,8 @@ import java.io.File;
 
 final class LegacyFabricGame extends LegacyFabricVersioning {
 
-  LegacyFabricGame(File manifest, ObjectMapper mapper) {
+  LegacyFabricGame(File manifest,
+                   ObjectMapper mapper) {
     super(manifest, mapper);
   }
 }

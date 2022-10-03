@@ -55,23 +55,6 @@ public abstract class ManifestParser {
   }
 
   /**
-   * Reads the inputstream into a {@link Document} and {@link Document#normalize()} it.
-   *
-   * @param manifest The xml-inputstream to parse into a Document.
-   * @return The parsed and normalized document.
-   * @throws ParserConfigurationException indicates a serious configuration error.
-   * @throws IOException                  if any IO errors occur.
-   * @throws SAXException                 if any parse errors occur.
-   * @author Griefed
-   */
-  public Document getXml(InputStream manifest)
-      throws ParserConfigurationException, IOException, SAXException {
-
-    return getXml(StreamUtils.copyToString(manifest,
-        StandardCharsets.UTF_8));
-  }
-
-  /**
    * Reads the string into a {@link Document} and {@link Document#normalize()} it.
    *
    * @param string The xml-string to parse into a Document.
@@ -94,6 +77,23 @@ public abstract class ManifestParser {
   }
 
   /**
+   * Reads the inputstream into a {@link Document} and {@link Document#normalize()} it.
+   *
+   * @param manifest The xml-inputstream to parse into a Document.
+   * @return The parsed and normalized document.
+   * @throws ParserConfigurationException indicates a serious configuration error.
+   * @throws IOException                  if any IO errors occur.
+   * @throws SAXException                 if any parse errors occur.
+   * @author Griefed
+   */
+  public Document getXml(InputStream manifest)
+      throws ParserConfigurationException, IOException, SAXException {
+
+    return getXml(StreamUtils.copyToString(manifest,
+                                           StandardCharsets.UTF_8));
+  }
+
+  /**
    * Acquire a {@link JsonNode} from the given json inputstream.
    *
    * @param inputStream The inputstream to read.
@@ -102,9 +102,10 @@ public abstract class ManifestParser {
    * @throws IOException when the file could not be parsed/read into a {@link JsonNode}.
    * @author Griefed
    */
-  protected JsonNode getJson(InputStream inputStream, ObjectMapper mapper) throws IOException {
+  protected JsonNode getJson(InputStream inputStream,
+                             ObjectMapper mapper) throws IOException {
     return getJson(StreamUtils.copyToString(inputStream,
-        StandardCharsets.UTF_8), mapper);
+                                            StandardCharsets.UTF_8), mapper);
   }
 
   /**
@@ -116,7 +117,8 @@ public abstract class ManifestParser {
    * @throws IOException when the file could not be parsed/read into a {@link JsonNode}.
    * @author Griefed
    */
-  protected JsonNode getJson(String string, ObjectMapper mapper) throws IOException {
+  protected JsonNode getJson(String string,
+                             ObjectMapper mapper) throws IOException {
     return mapper.readTree(string);
   }
 
@@ -129,7 +131,8 @@ public abstract class ManifestParser {
    * @throws IOException when the file could not be parsed/read into a {@link JsonNode}.
    * @author Griefed
    */
-  protected JsonNode getJson(File file, ObjectMapper mapper) throws IOException {
+  protected JsonNode getJson(File file,
+                             ObjectMapper mapper) throws IOException {
     return getJson(FileUtils.readFileToString(file, StandardCharsets.UTF_8), mapper);
   }
 
@@ -142,7 +145,8 @@ public abstract class ManifestParser {
    * @throws IOException when the file could not be parsed/read into a {@link JsonNode}.
    * @author Griefed
    */
-  protected JsonNode getJson(URL url, ObjectMapper mapper) throws IOException {
+  protected JsonNode getJson(URL url,
+                             ObjectMapper mapper) throws IOException {
     return mapper.readTree(url);
   }
 }

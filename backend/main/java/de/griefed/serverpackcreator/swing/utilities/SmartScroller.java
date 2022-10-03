@@ -121,17 +121,6 @@ public class SmartScroller implements AdjustmentListener {
   }
 
   /**
-   * Convenience constructor.<br> Scroll direction is VERTICAL.
-   *
-   * @param scrollPane       the scroll pane to monitor
-   * @param viewportPosition valid values are START and END
-   * @author Rob Camick
-   */
-  public SmartScroller(JScrollPane scrollPane, int viewportPosition) {
-    this(scrollPane, VERTICAL, viewportPosition);
-  }
-
-  /**
    * Specify how the SmartScroller will function.
    *
    * @param scrollPane       the scroll pane to monitor
@@ -141,7 +130,9 @@ public class SmartScroller implements AdjustmentListener {
    *                         added. Valid values are START and END
    * @author Rob Camick
    */
-  public SmartScroller(JScrollPane scrollPane, int scrollDirection, int viewportPosition) {
+  public SmartScroller(JScrollPane scrollPane,
+                       int scrollDirection,
+                       int viewportPosition) {
     if (scrollDirection != HORIZONTAL && scrollDirection != VERTICAL) {
       throw new IllegalArgumentException("invalid scroll direction specified");
     }
@@ -170,6 +161,18 @@ public class SmartScroller implements AdjustmentListener {
       DefaultCaret caret = (DefaultCaret) textComponent.getCaret();
       caret.setUpdatePolicy(DefaultCaret.NEVER_UPDATE);
     }
+  }
+
+  /**
+   * Convenience constructor.<br> Scroll direction is VERTICAL.
+   *
+   * @param scrollPane       the scroll pane to monitor
+   * @param viewportPosition valid values are START and END
+   * @author Rob Camick
+   */
+  public SmartScroller(JScrollPane scrollPane,
+                       int viewportPosition) {
+    this(scrollPane, VERTICAL, viewportPosition);
   }
 
   @Override

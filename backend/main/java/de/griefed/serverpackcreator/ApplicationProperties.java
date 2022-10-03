@@ -43,14 +43,15 @@ import java.util.Properties;
 import java.util.TreeSet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
 /**
- * Our properties-class. Extends {@link java.util.Properties}. Sets up default properties loaded
- * from the local serverpackcreator.properties and allows reloading of said properties if the file
- * has changed.
+ * Base settings of ServerPackCreator, such as working directories, default list of clientside-only
+ * mods, default list of directories to include in a server pack, script templates, java paths and
+ * much more.
  *
  * @author Griefed
  */
@@ -137,7 +138,7 @@ public final class ApplicationProperties {
   private final String PROPERTY_SCRIPT_JAVA_AUTOUPDATE = "de.griefed.serverpackcreator.script.java.autoupdate";
   private final String PROPERTY_HOME_DIRECTORY = "de.griefed.serverpackcreator.home";
   private final String PROPERTY_OLD_VERSION = "de.griefed.serverpackcreator.version.old";
-  private String directoryServerPacks = "server-packs";
+  private File directoryServerPacks;
   private int queueMaxDiskUsage = 90;
   private boolean saveLoadedConfiguration = false;
   private boolean checkForPreReleases = false;
@@ -204,12 +205,16 @@ public final class ApplicationProperties {
    */
   @Autowired
   public ApplicationProperties(
-      FileUtilities fileUtilities,
-      SystemUtilities systemUtilities,
-      ListUtilities listUtilities,
-      JarUtilities jarUtilities) {
+      @NotNull FileUtilities fileUtilities,
+      @NotNull SystemUtilities systemUtilities,
+      @NotNull ListUtilities listUtilities,
+      @NotNull JarUtilities jarUtilities) {
 
-    this(new File("serverpackcreator.properties"), fileUtilities, systemUtilities, listUtilities,
+    this(
+        new File("serverpackcreator.properties"),
+        fileUtilities,
+        systemUtilities,
+        listUtilities,
         jarUtilities);
   }
 
@@ -226,11 +231,11 @@ public final class ApplicationProperties {
    * @author Griefed
    */
   public ApplicationProperties(
-      File propertiesFile,
-      FileUtilities fileUtilities,
-      SystemUtilities systemUtilities,
-      ListUtilities listUtilities,
-      JarUtilities jarUtilities) {
+      @NotNull File propertiesFile,
+      @NotNull FileUtilities fileUtilities,
+      @NotNull SystemUtilities systemUtilities,
+      @NotNull ListUtilities listUtilities,
+      @NotNull JarUtilities jarUtilities) {
 
     FILE_UTILITIES = fileUtilities;
     SYSTEM_UTILITIES = systemUtilities;
@@ -264,7 +269,7 @@ public final class ApplicationProperties {
    *                       configuration.
    * @author Griefed
    */
-  private void loadProperties(File propertiesFile) {
+  private void loadProperties(@NotNull File propertiesFile) {
     // Load the properties file from the classpath, providing default values.
     try (InputStream inputStream =
         new ClassPathResource(SERVERPACKCREATOR_PROPERTIES).getInputStream()) {
@@ -363,36 +368,6 @@ public final class ApplicationProperties {
   }
 
   /**
-   * Set a property in our ApplicationProperties.
-   *
-   * @param key   The key in which to store the property.
-   * @param value The value to store in the specified key.
-   * @author Griefed
-   */
-  private String defineProperty(String key, String value) {
-    PROPERTIES.setProperty(key, value);
-    return value;
-  }
-
-  /**
-   * Get a property from our ApplicationProperties. If the property is not available, it is created
-   * with the specified value, thus allowing subsequent calls.
-   *
-   * @param key          The key of the property to acquire.
-   * @param defaultValue The default value for the specified key in case the key is not present or
-   *                     empty.
-   * @return The value stored in the specified key.
-   * @author Griefed
-   */
-  private String acquireProperty(String key, String defaultValue) {
-    if (PROPERTIES.getProperty(key) == null) {
-      return defineProperty(key, defaultValue);
-    } else {
-      return PROPERTIES.getProperty(key, defaultValue);
-    }
-  }
-
-  /**
    * Get a list from our properties.
    *
    * @param key          The key of the property which holds the comma-separated list.
@@ -400,7 +375,8 @@ public final class ApplicationProperties {
    * @return The requested list.
    * @author Griefed
    */
-  private List<String> getListProperty(String key, String defaultValue) {
+  private @NotNull List<String> getListProperty(@NotNull String key,
+                                                @NotNull String defaultValue) {
     if (acquireProperty(key, defaultValue).contains(",")) {
       return new ArrayList<>(Arrays.asList(acquireProperty(key, defaultValue).split(",")));
     } else {
@@ -416,7 +392,9 @@ public final class ApplicationProperties {
    * @return The requested integer.
    * @author Griefed
    */
-  private int getIntProperty(String key, int defaultValue) {
+  @SuppressWarnings("SameParameterValue")
+  private int getIntProperty(@NotNull String key,
+                             int defaultValue) {
     try {
       return Integer.parseInt(acquireProperty(key, String.valueOf(defaultValue)));
     } catch (NumberFormatException ex) {
@@ -434,7 +412,10 @@ public final class ApplicationProperties {
    * @return The requested list of files.
    * @author Griefed
    */
-  private List<File> getFileListProperty(String key, String defaultValue, String filePrefix) {
+  @SuppressWarnings("SameParameterValue")
+  private @NotNull List<File> getFileListProperty(@NotNull String key,
+                                                  @NotNull String defaultValue,
+                                                  @NotNull String filePrefix) {
     List<File> files = new ArrayList<>(10);
     for (String entry : getListProperty(key, defaultValue)) {
       files.add(new File(filePrefix + entry));
@@ -450,7 +431,8 @@ public final class ApplicationProperties {
    * @return The requested integer.
    * @author Griefed
    */
-  private boolean getBoolProperty(String key, boolean defaultValue) {
+  private boolean getBoolProperty(@NotNull String key,
+                                  boolean defaultValue) {
     return Boolean.parseBoolean(acquireProperty(key, String.valueOf(defaultValue)));
   }
 
@@ -469,7 +451,8 @@ public final class ApplicationProperties {
       homeDirectory = new File(PROPERTIES.getProperty(PROPERTY_HOME_DIRECTORY));
     } else {
       if (JAR_INFORMATION.JAR_FILE.isDirectory() || JAR_INFORMATION.JAR_FOLDER.toString()
-          .matches(".*build.classes.java.*")) {
+                                                                              .matches(
+                                                                                  ".*build.classes.java.*")) {
         homeDirectory = new File(new File("").getAbsolutePath());
       } else {
         homeDirectory = JAR_INFORMATION.JAR_FOLDER;
@@ -486,16 +469,19 @@ public final class ApplicationProperties {
    * @author Griefed
    */
   private void setServerPacksDir() {
-    if (new File(acquireProperty(PROPERTY_CONFIGURATION_DIRECTORIES_SERVERPACKS,
-        homeDirectory + File.separator + "server-packs")).isDirectory()) {
+    if (new File(
+        PROPERTIES.getProperty(PROPERTY_CONFIGURATION_DIRECTORIES_SERVERPACKS)).isDirectory()) {
+
       directoryServerPacks = new File(
-          PROPERTIES.getProperty(PROPERTY_CONFIGURATION_DIRECTORIES_SERVERPACKS)).getPath();
+          PROPERTIES.getProperty(PROPERTY_CONFIGURATION_DIRECTORIES_SERVERPACKS));
+
     } else {
       LOG.error("Invalid server-packs directory specified. Defaulting to 'server-packs'.");
       directoryServerPacks = new File(
-          homeDirectory, "server-packs").getPath();
+          homeDirectory, "server-packs");
     }
-    PROPERTIES.setProperty(PROPERTY_CONFIGURATION_DIRECTORIES_SERVERPACKS, directoryServerPacks);
+    PROPERTIES.setProperty(PROPERTY_CONFIGURATION_DIRECTORIES_SERVERPACKS,
+                           directoryServerPacks.getAbsolutePath());
     LOG.info("Server packs directory set to: " + directoryServerPacks);
   }
 
@@ -506,16 +492,16 @@ public final class ApplicationProperties {
    */
   private void setFallbackModsList() {
     FALLBACK_MODS.addAll(getListProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST,
-        FALLBACK_MODS_DEFAULT_ASSTRING));
+                                         FALLBACK_MODS_DEFAULT_ASSTRING));
     PROPERTIES.setProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST,
-        String.join(",", FALLBACK_MODS));
+                           String.join(",", FALLBACK_MODS));
     LOG.info("Fallback modslist set to:");
     LIST_UTILITIES.printListToLogChunked(new ArrayList<>(FALLBACK_MODS), 5, "    ", true);
 
     FALLBACK_MODS_REGEX.addAll(getListProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST_REGEX,
-        FALLBACK_MODS_DEFAULT_REGEX_ASSTRING));
+                                               FALLBACK_MODS_DEFAULT_REGEX_ASSTRING));
     PROPERTIES.setProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST_REGEX,
-        String.join(",", FALLBACK_MODS_REGEX));
+                           String.join(",", FALLBACK_MODS_REGEX));
     LOG.info("Fallback regex modslist set to:");
     LIST_UTILITIES.printListToLogChunked(new ArrayList<>(FALLBACK_MODS_REGEX), 5, "    ", true);
   }
@@ -527,7 +513,7 @@ public final class ApplicationProperties {
    */
   private void setDirsToExcludeList() {
     getListProperty(PROPERTY_CONFIGURATION_DIRECTORIES_SHOULDEXCLUDE,
-        FALLBACK_DIRECTORIES_EXCLUDE_ASSTRING).forEach(
+                    FALLBACK_DIRECTORIES_EXCLUDE_ASSTRING).forEach(
         this::addDirectoryToExclude
     );
     LOG.info("Directories to exclude set to: " + DIRECTORIES_TO_EXCLUDE);
@@ -541,7 +527,7 @@ public final class ApplicationProperties {
    */
   private void setDirsToIncludeList() {
     DIRECTORIES_TO_INCLUDE.addAll(getListProperty(PROPERTY_CONFIGURATION_DIRECTORIES_MUSTINCLUDE,
-        FALLBACK_DIRECTORIES_INCLUDE_ASSTRING));
+                                                  FALLBACK_DIRECTORIES_INCLUDE_ASSTRING));
     LOG.info("Directories which must always be included set to: " + DIRECTORIES_TO_INCLUDE);
   }
 
@@ -609,7 +595,7 @@ public final class ApplicationProperties {
    */
   private void setFilesToExcludeFromZip() {
     FILES_TO_EXCLUDE_FROM_ZIP.addAll(getListProperty(PROPERTY_SERVERPACK_ZIP_EXCLUDE,
-        FALLBACK_FILES_EXCLUDE_ZIP_ASSTRING));
+                                                     FALLBACK_FILES_EXCLUDE_ZIP_ASSTRING));
     LOG.info(
         "Files which must be excluded from ZIP-archives set to: " + FILES_TO_EXCLUDE_FROM_ZIP);
   }
@@ -632,8 +618,9 @@ public final class ApplicationProperties {
   private void setScriptTemplates() {
     SCRIPT_TEMPLATES.clear();
     SCRIPT_TEMPLATES.addAll(getFileListProperty(PROPERTY_SERVERPACK_SCRIPT_TEMPLATE,
-        FALLBACK_SCRIPT_TEMPLATES_ASSTRING,
-        homeDirectory + File.separator + "server_files" + File.separator));
+                                                FALLBACK_SCRIPT_TEMPLATES_ASSTRING,
+                                                homeDirectory + File.separator + "server_files"
+                                                    + File.separator));
     LOG.info("Using script templates:");
     SCRIPT_TEMPLATES.forEach(template -> LOG.info("    " + template.getPath()));
   }
@@ -649,13 +636,13 @@ public final class ApplicationProperties {
     // Legacy declaration which may still be present in some serverpackcreator.properties-files.
     try {
       if (PROPERTIES.getProperty(PROPERTY_SERVERPACK_AUTODISCOVERY_ENABLED_LEGACY)
-          .matches("(true|false)")) {
+                    .matches("(true|false)")) {
         autoExcludingModsEnabled =
             Boolean.parseBoolean(
                 PROPERTIES.getProperty(PROPERTY_SERVERPACK_AUTODISCOVERY_ENABLED_LEGACY));
 
         PROPERTIES.setProperty(PROPERTY_SERVERPACK_AUTODISCOVERY_ENABLED,
-            String.valueOf(autoExcludingModsEnabled));
+                               String.valueOf(autoExcludingModsEnabled));
 
         PROPERTIES.remove(PROPERTY_SERVERPACK_AUTODISCOVERY_ENABLED_LEGACY);
 
@@ -710,7 +697,7 @@ public final class ApplicationProperties {
    */
   private void setHasteBinServerUrl() {
     hasteBinServerUrl = acquireProperty(PROPERTY_CONFIGURATION_HASTEBINSERVER,
-        "https://haste.zneix.eu/documents");
+                                        "https://haste.zneix.eu/documents");
     LOG.info("HasteBin documents endpoint set to: " + hasteBinServerUrl);
   }
 
@@ -788,108 +775,9 @@ public final class ApplicationProperties {
    * @param javaPath The new Java path to store.
    * @author Griefed
    */
-  public void setJavaPath(String javaPath) {
+  public void setJavaPath(@NotNull String javaPath) {
     this.javaPath = getJavaPath(javaPath);
     saveToDisk(serverPackCreatorPropertiesFile());
-  }
-
-  /**
-   * Getter for the path to the Java executable/binary.
-   *
-   * @return String. Returns the path to the Java executable/binary.
-   * @author Griefed
-   */
-  public String java() {
-    return javaPath;
-  }
-
-  /**
-   * Whether a viable path to a Java executable or binary has been configured for
-   * ServerPackCreator.
-   *
-   * @return {@code true} if a viable path has been set.
-   * @author Griefed
-   */
-  public boolean javaAvailable() {
-    return checkJavaPath(javaPath);
-  }
-
-  /**
-   * Check whether the given path is a valid Java specification.
-   *
-   * @param pathToJava Path to the Java executable
-   * @return {@code true} if the path is valid.
-   * @author Griefed
-   */
-  private boolean checkJavaPath(String pathToJava) {
-
-    if (pathToJava.isEmpty()) {
-      return false;
-    }
-
-    FileUtilities.FileType type = FILE_UTILITIES.checkFileType(pathToJava);
-
-    switch (type) {
-      case FILE:
-        return testJava(pathToJava);
-
-      case LINK:
-      case SYMLINK:
-        try {
-
-          return testJava(FILE_UTILITIES.resolveLink(new File(pathToJava)));
-
-        } catch (InvalidFileTypeException | IOException ex) {
-          LOG.error("Could not read Java link/symlink.", ex);
-        }
-
-        return false;
-
-      case DIRECTORY:
-        LOG.error("Directory specified. Path to Java must lead to a lnk, symlink or file.");
-
-      case INVALID:
-      default:
-        return false;
-    }
-  }
-
-  /**
-   * Test for a valid Java specification by trying to run {@code java -version}. If the command goes
-   * through without errors, it is considered a correct specification.
-   *
-   * @param pathToJava Path to the java executable/binary.
-   * @return {@code true} if the specified file is a valid Java executable/binary.
-   * @author Griefed
-   */
-  private boolean testJava(String pathToJava) {
-    boolean testSuccessful;
-    try {
-      ProcessBuilder processBuilder =
-          new ProcessBuilder(new ArrayList<>(Arrays.asList(pathToJava, "-version")));
-
-      processBuilder.redirectErrorStream(true);
-
-      Process process = processBuilder.start();
-
-      BufferedReader bufferedReader =
-          new BufferedReader(new InputStreamReader(process.getInputStream()));
-
-      while (bufferedReader.readLine() != null && !bufferedReader.readLine().equals("null")) {
-        System.out.println(bufferedReader.readLine());
-      }
-
-      bufferedReader.close();
-      process.destroyForcibly();
-
-      testSuccessful = true;
-    } catch (IOException e) {
-
-      LOG.error("Invalid Java specified.");
-      testSuccessful = false;
-    }
-
-    return testSuccessful;
   }
 
   /**
@@ -902,7 +790,7 @@ public final class ApplicationProperties {
    * will try to acquire the path automatically.
    * @author Griefed
    */
-  private String getJavaPath(String pathToJava) {
+  private @NotNull String getJavaPath(@NotNull String pathToJava) {
 
     String checkedJavaPath;
 
@@ -944,6 +832,135 @@ public final class ApplicationProperties {
   }
 
   /**
+   * Store the ApplicationProperties to disk, overwriting the existing one.
+   *
+   * @param propertiesFile The file to store the properties to.
+   * @author Griefed
+   */
+  public void saveToDisk(@NotNull File propertiesFile) {
+    try (OutputStream outputStream =
+        Files.newOutputStream(propertiesFile.toPath())) {
+      PROPERTIES.store(outputStream,
+                       "For details about each property, see https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-Help#serverpackcreatorproperties");
+    } catch (IOException ex) {
+      LOG.error("Couldn't write properties-file.", ex);
+    }
+  }
+
+  /**
+   * Default properties file.
+   *
+   * @return serverpackcreator.properties
+   * @author Griefed
+   */
+  public @NotNull File serverPackCreatorPropertiesFile() {
+    if (serverPackCreatorPropertiesFile == null) {
+      serverPackCreatorPropertiesFile = new File(
+          homeDirectory, SERVERPACKCREATOR_PROPERTIES);
+    }
+    return serverPackCreatorPropertiesFile;
+  }
+
+  /**
+   * Check whether the given path is a valid Java specification.
+   *
+   * @param pathToJava Path to the Java executable
+   * @return {@code true} if the path is valid.
+   * @author Griefed
+   */
+  private boolean checkJavaPath(@NotNull String pathToJava) {
+
+    if (pathToJava.isEmpty()) {
+      return false;
+    }
+
+    FileUtilities.FileType type = FILE_UTILITIES.checkFileType(pathToJava);
+
+    switch (type) {
+      case FILE:
+        return testJava(pathToJava);
+
+      case LINK:
+      case SYMLINK:
+        try {
+
+          return testJava(FILE_UTILITIES.resolveLink(new File(pathToJava)));
+
+        } catch (InvalidFileTypeException | IOException ex) {
+          LOG.error("Could not read Java link/symlink.", ex);
+        }
+
+        return false;
+
+      case DIRECTORY:
+        LOG.error("Directory specified. Path to Java must lead to a lnk, symlink or file.");
+
+      case INVALID:
+      default:
+        return false;
+    }
+  }
+
+  /**
+   * Test for a valid Java specification by trying to run {@code java -version}. If the command goes
+   * through without errors, it is considered a correct specification.
+   *
+   * @param pathToJava Path to the java executable/binary.
+   * @return {@code true} if the specified file is a valid Java executable/binary.
+   * @author Griefed
+   */
+  private boolean testJava(@NotNull String pathToJava) {
+    boolean testSuccessful;
+    try {
+      ProcessBuilder processBuilder =
+          new ProcessBuilder(new ArrayList<>(Arrays.asList(pathToJava, "-version")));
+
+      processBuilder.redirectErrorStream(true);
+
+      Process process = processBuilder.start();
+
+      BufferedReader bufferedReader =
+          new BufferedReader(new InputStreamReader(process.getInputStream()));
+
+      while (bufferedReader.readLine() != null && !bufferedReader.readLine().equals("null")) {
+        System.out.println(bufferedReader.readLine());
+      }
+
+      bufferedReader.close();
+      process.destroyForcibly();
+
+      testSuccessful = true;
+    } catch (IOException e) {
+
+      LOG.error("Invalid Java specified.");
+      testSuccessful = false;
+    }
+
+    return testSuccessful;
+  }
+
+  /**
+   * Getter for the path to the Java executable/binary.
+   *
+   * @return String. Returns the path to the Java executable/binary.
+   * @author Griefed
+   */
+  public String java() {
+    return javaPath;
+  }
+
+  /**
+   * Whether a viable path to a Java executable or binary has been configured for
+   * ServerPackCreator.
+   *
+   * @return {@code true} if a viable path has been set.
+   * @author Griefed
+   */
+  public boolean javaAvailable() {
+    return checkJavaPath(javaPath);
+  }
+
+  /**
    * Sets the path to the Java 17 executable/binary.
    *
    * @author Griefed
@@ -954,10 +971,10 @@ public final class ApplicationProperties {
 
         if (JAVA_PATHS.containsKey(String.valueOf(i))) {
           JAVA_PATHS.replace(String.valueOf(i),
-              PROPERTIES.getProperty(PROPERTY_SCRIPT_JAVA + i));
+                             PROPERTIES.getProperty(PROPERTY_SCRIPT_JAVA + i));
         } else {
           JAVA_PATHS.put(String.valueOf(i),
-              PROPERTIES.getProperty(PROPERTY_SCRIPT_JAVA + i));
+                         PROPERTIES.getProperty(PROPERTY_SCRIPT_JAVA + i));
         }
 
         PROPERTIES.setProperty(PROPERTY_SCRIPT_JAVA + i, JAVA_PATHS.get(String.valueOf(i)));
@@ -979,21 +996,7 @@ public final class ApplicationProperties {
   private void setAutoUpdateScriptVariablesJavaPlaceholder() {
     javaScriptAutoupdate = getBoolProperty(PROPERTY_SCRIPT_JAVA_AUTOUPDATE, true);
     LOG.info("Automatically update SPC_JAVA_SPC-placeholder in script variables table set to: "
-        + javaScriptAutoupdate);
-  }
-
-  /**
-   * Default properties file.
-   *
-   * @return serverpackcreator.properties
-   * @author Griefed
-   */
-  public File serverPackCreatorPropertiesFile() {
-    if (serverPackCreatorPropertiesFile == null) {
-      serverPackCreatorPropertiesFile = new File(
-          homeDirectory, SERVERPACKCREATOR_PROPERTIES);
-    }
-    return serverPackCreatorPropertiesFile;
+                 + javaScriptAutoupdate);
   }
 
   /**
@@ -1002,7 +1005,7 @@ public final class ApplicationProperties {
    * @return manifests/mcserver
    * @author Griefed
    */
-  public File minecraftServerManifestsDirectory() {
+  public @NotNull File minecraftServerManifestsDirectory() {
     if (minecraftServerManifestsDirectory == null) {
       minecraftServerManifestsDirectory = new File(
           manifestsDirectory(), "mcserver");
@@ -1011,12 +1014,32 @@ public final class ApplicationProperties {
   }
 
   /**
+   * Directory to which default/fallback manifests are copied to during the startup of
+   * ServerPackCreator.
+   * <p>
+   * When the {@link de.griefed.serverpackcreator.versionmeta.VersionMeta} is initialized, the
+   * manifests copied to this directory will provide ServerPackCreator with the information required
+   * to check and create your server packs.
+   * <p>
+   * By default, this is the {@code manifests}-directory inside ServerPackCreators home-directory.
+   *
+   * @return manifests
+   * @author Griefed
+   */
+  public @NotNull File manifestsDirectory() {
+    if (manifestsDirectory == null) {
+      manifestsDirectory = new File(homeDirectory, "manifests");
+    }
+    return manifestsDirectory;
+  }
+
+  /**
    * Fabric intermediaries manifest file.
    *
    * @return manifests/fabric-intermediaries-manifest.json
    * @author Griefed
    */
-  public File fabricIntermediariesManifest() {
+  public @NotNull File fabricIntermediariesManifest() {
     if (fabricIntermediariesManifest == null) {
       fabricIntermediariesManifest = new File(
           manifestsDirectory(), "fabric-intermediaries-manifest.json");
@@ -1030,7 +1053,7 @@ public final class ApplicationProperties {
    * @return manifests/legacy-fabric-game-manifest.json
    * @author Griefed
    */
-  public File legacyFabricGameManifest() {
+  public @NotNull File legacyFabricGameManifest() {
     if (legacyFabricGameManifest == null) {
       legacyFabricGameManifest = new File(
           manifestsDirectory(), "legacy-fabric-game-manifest.json");
@@ -1044,7 +1067,7 @@ public final class ApplicationProperties {
    * @return manifests/legacy-fabric-loader-manifest.json
    * @author Griefed
    */
-  public File legacyFabricLoaderManifest() {
+  public @NotNull File legacyFabricLoaderManifest() {
     if (legacyFabricLoaderManifest == null) {
       legacyFabricLoaderManifest = new File(
           manifestsDirectory(), "legacy-fabric-loader-manifest.json");
@@ -1058,7 +1081,7 @@ public final class ApplicationProperties {
    * @return manifests/legacy-fabric-installer-manifest.xml
    * @author Griefed
    */
-  public File legacyFabricInstallerManifest() {
+  public @NotNull File legacyFabricInstallerManifest() {
     if (legacyFabricInstallerManifest == null) {
       legacyFabricInstallerManifest = new File(
           manifestsDirectory(), "legacy-fabric-installer-manifest.xml");
@@ -1072,7 +1095,7 @@ public final class ApplicationProperties {
    * @return manifests/fabric-installer-manifest.xml
    * @author Griefed
    */
-  public File fabricInstallerManifest() {
+  public @NotNull File fabricInstallerManifest() {
     if (fabricInstallerManifest == null) {
       fabricInstallerManifest = new File(
           manifestsDirectory(), "fabric-installer-manifest.xml");
@@ -1086,7 +1109,7 @@ public final class ApplicationProperties {
    * @return manifests/quilt-manifest.xml
    * @author Griefed
    */
-  public File quiltVersionManifest() {
+  public @NotNull File quiltVersionManifest() {
     if (quiltVersionManifest == null) {
       quiltVersionManifest = new File(
           manifestsDirectory(), "quilt-manifest.xml");
@@ -1100,7 +1123,7 @@ public final class ApplicationProperties {
    * @return manifests/quilt-installer-manifest.xml
    * @author Griefed
    */
-  public File quiltInstallerManifest() {
+  public @NotNull File quiltInstallerManifest() {
     if (quiltInstallerManifest == null) {
       quiltInstallerManifest = new File(
           manifestsDirectory(), "quilt-installer-manifest.xml");
@@ -1114,7 +1137,7 @@ public final class ApplicationProperties {
    * @return manifests/forge-manifest.json
    * @author Griefed
    */
-  public File forgeVersionManifest() {
+  public @NotNull File forgeVersionManifest() {
     if (forgeVersionManifest == null) {
       forgeVersionManifest = new File(
           manifestsDirectory(), "forge-manifest.json");
@@ -1128,7 +1151,7 @@ public final class ApplicationProperties {
    * @return manifests/fabric-manifest.xml
    * @author Griefed
    */
-  public File fabricVersionManifest() {
+  public @NotNull File fabricVersionManifest() {
     if (fabricVersionManifest == null) {
       fabricVersionManifest = new File(
           manifestsDirectory(), "fabric-manifest.xml");
@@ -1142,7 +1165,7 @@ public final class ApplicationProperties {
    * @return manifests/minecraft-manifest.json
    * @author Griefed
    */
-  public File minecraftVersionManifest() {
+  public @NotNull File minecraftVersionManifest() {
     if (minecraftVersionManifest == null) {
       minecraftVersionManifest = new File(
           manifestsDirectory(), "minecraft-manifest.json");
@@ -1151,38 +1174,15 @@ public final class ApplicationProperties {
   }
 
   /**
-   * Directory in which Minecraft and modloader manifests are stored in
-   *
-   * @return manifests
-   * @author Griefed
-   */
-  public File manifestsDirectory() {
-    if (manifestsDirectory == null) {
-      manifestsDirectory = new File(homeDirectory, "manifests");
-    }
-    return manifestsDirectory;
-  }
-
-  /**
-   * Work directory in which to store temporary and ongoing-process related files.
-   *
-   * @return work
-   * @author Griefed
-   */
-  public File workDirectory() {
-    if (workDirectory == null) {
-      workDirectory = new File(homeDirectory, "work");
-    }
-    return workDirectory;
-  }
-
-  /**
    * Modpacks directory in which uploaded modpack ZIP-archives and extracted modpacks are stored.
+   * <p>
+   * By default, this is the {@code modpacks}-directory inside the {@code temp}-directory inside
+   * ServerPackCreators home-directory.
    *
    * @return work/temp/modpacks
    * @author Griefed
    */
-  public File modpacksDirectory() {
+  public @NotNull File modpacksDirectory() {
     if (modpacksDirectory == null) {
       modpacksDirectory = new File(tempDirectory(), "modpacks");
     }
@@ -1190,16 +1190,49 @@ public final class ApplicationProperties {
   }
 
   /**
-   * The temp-directory, in the work-directory. For storing...temporary...files and stuff.
+   * Temp-directory storing files and folders required temporarily during the run of a server pack
+   * generation or other operations.
+   * <p>
+   * One example would be when running ServerPackCreator as a webservice and uploading a zipped
+   * modpack for the automatic creation of a server pack from said modpack.
+   * <p>
+   * Any file and/or directory inside the work-directory is considered {@code safe-to-delete},
+   * meaning that it can safely be emptied when ServerPackCreator is not running, without running
+   * the risk of corrupting anything. It is not recommended to empty this directory whilst
+   * ServerPackCreator is running, as in that case, it may interfere with any currently running
+   * operation.
+   * <p>
+   * By default, this directory is {@code work/temp} inside ServerPackCreators home-directory.
    *
    * @return work/temp
    * @author Griefed
    */
-  public File tempDirectory() {
+  public @NotNull File tempDirectory() {
     if (tempDirectory == null) {
       tempDirectory = new File(workDirectory(), "temp");
     }
     return tempDirectory;
+  }
+
+  /**
+   * Work-directory for storing temporary, non-critical, files and directories.
+   * <p>
+   * Any file and/or directory inside the work-directory is considered {@code safe-to-delete},
+   * meaning that it can safely be emptied when ServerPackCreator is not running, without running
+   * the risk of corrupting anything. It is not recommended to empty this directory whilst
+   * ServerPackCreator is running, as in that case, it may interfere with any currently running
+   * operation.
+   * <p>
+   * By default, this is the {@code work}-directory inside ServerPackCreators home-directory.
+   *
+   * @return work
+   * @author Griefed
+   */
+  public @NotNull File workDirectory() {
+    if (workDirectory == null) {
+      workDirectory = new File(homeDirectory, "work");
+    }
+    return workDirectory;
   }
 
   /**
@@ -1208,7 +1241,7 @@ public final class ApplicationProperties {
    * @return logs
    * @author Griefed
    */
-  public File logsDirectory() {
+  public @NotNull File logsDirectory() {
     return new File(homeDirectory, "logs");
   }
 
@@ -1218,7 +1251,7 @@ public final class ApplicationProperties {
    * @return The default shell-script template.
    * @author Griefed
    */
-  public File defaultShellTemplate() {
+  public @NotNull File defaultShellTemplate() {
     return new File(DEFAULT_SHELL_TEMPLATE);
   }
 
@@ -1228,7 +1261,7 @@ public final class ApplicationProperties {
    * @return The default PowerShell-script template.
    * @author Griefed
    */
-  public File defaultPowershellTemplate() {
+  public @NotNull File defaultPowershellTemplate() {
     return new File(DEFAULT_POWERSHELL_TEMPLATE);
   }
 
@@ -1238,7 +1271,7 @@ public final class ApplicationProperties {
    * @return Configured script templates.
    * @author Griefed
    */
-  public List<File> scriptTemplates() {
+  public @NotNull List<File> scriptTemplates() {
     return new ArrayList<>(SCRIPT_TEMPLATES);
   }
 
@@ -1248,7 +1281,7 @@ public final class ApplicationProperties {
    * @return serverpackcreator.conf-file.
    * @author Griefed
    */
-  public File defaultConfig() {
+  public @NotNull File defaultConfig() {
     if (defaultConfig == null) {
       defaultConfig = new File(homeDirectory, "serverpackcreator.conf");
     }
@@ -1261,7 +1294,7 @@ public final class ApplicationProperties {
    * @return server.properties-file.
    * @author Griefed
    */
-  public File defaultServerProperties() {
+  public @NotNull File defaultServerProperties() {
     if (defaultServerProperties == null) {
       defaultServerProperties = new File(
           serverFilesDirectory(), "server.properties");
@@ -1270,12 +1303,31 @@ public final class ApplicationProperties {
   }
 
   /**
+   * Directory in which default server-files are stored in.
+   * <p>
+   * Default server-files are, for example, the {@code server.properties}, {@code server-icon.png},
+   * {@code default_template.sh} and {@code default_template.ps1}.
+   * <p>
+   * The properties and icon are placeholders and/or templates for the user to change to their
+   * liking, should they so desire. The script-templates serve as a one-size-fits-all template for
+   * supporting {@code Forge}, {@code Fabric}, {@code LegacyFabric} and {@code Quilt}.
+   * <p>
+   * By default, this directory is {@code server_files} inside ServerPackCreators home-directory.
+   *
+   * @return server_files
+   * @author Griefed
+   */
+  public @NotNull File serverFilesDirectory() {
+    return new File(homeDirectory, "server_files");
+  }
+
+  /**
    * Default server-icon.png-file used by Minecraft servers.
    *
    * @return server-icon.png-file.
    * @author Griefed
    */
-  public File defaultServerIcon() {
+  public @NotNull File defaultServerIcon() {
     if (defaultServerIcon == null) {
       defaultServerIcon = new File(serverFilesDirectory(), "server-icon.png");
     }
@@ -1288,7 +1340,7 @@ public final class ApplicationProperties {
    * @return serverpackcreator.db-file.
    * @author Griefed
    */
-  public File serverPackCreatorDatabase() {
+  public @NotNull File serverPackCreatorDatabase() {
     if (serverPackCreatorDatabase == null) {
       serverPackCreatorDatabase = new File(
           homeDirectory, "serverpackcreator.db");
@@ -1298,21 +1350,34 @@ public final class ApplicationProperties {
 
   /**
    * ServerPackCreators home directory, in which all important files and folders are stored in.
+   * <p>
+   * Stored in {@code serverpackcreator.properties} under the
+   * {@code de.griefed.serverpackcreator.home}- property.
+   * <p>
+   * Every operation is based on this home-directory, with the exception being the
+   * {@link #serverPacksDirectory()}, which can be configured independently of ServerPackCreators
+   * home-directory.
    *
    * @return home-directory of SPC.
    * @author Griefed
    */
-  public File homeDirectory() {
+  public @NotNull File homeDirectory() {
     return homeDirectory;
   }
 
   /**
-   * ServerPackCreators language-directory, containing all language-properties.
+   * Directory in which the language-properties for internationalization are stored in.
+   * <p>
+   * These are copied from the JAR-file to this directory during the startup of ServerPackCreator.
+   * Users may edit them to their liking or use them as examples for adding additional languages to
+   * ServerPackCreator.
+   * <p>
+   * By default, this is the {@code lang}-directory inside ServerPackCreators home-directory.
    *
    * @return lang
    * @author Griefed
    */
-  public File langDirectory() {
+  public @NotNull File langDirectory() {
     if (langDirectory == null) {
       langDirectory = new File(homeDirectory, "lang");
     }
@@ -1328,7 +1393,7 @@ public final class ApplicationProperties {
    * @return String. Returns the version of ServerPackCreator.
    * @author Griefed
    */
-  public String serverPackCreatorVersion() {
+  public @NotNull String serverPackCreatorVersion() {
     return SERVERPACKCREATOR_VERSION;
   }
 
@@ -1338,50 +1403,59 @@ public final class ApplicationProperties {
    * @return Array of modloaders supported by ServerPackCreator.
    * @author Griefed
    */
-  public String[] supportedModloaders() {
+  public @NotNull String @NotNull [] supportedModloaders() {
     return SUPPORTED_MODLOADERS;
   }
 
   /**
-   * Directory where server-files are stored in, for example the default server-icon and
-   * server.properties.
-   *
-   * @return server_files
-   * @author Griefed
-   */
-  public File serverFilesDirectory() {
-    return new File(homeDirectory, "server_files");
-  }
-
-  /**
-   * Directory where plugins are stored in.
-   *
-   * @return plugins
-   * @author Griefed
-   */
-  public File addonsDirectory() {
-    return new File(homeDirectory, "plugins");
-  }
-
-  /**
-   * Directory where plugin configurations are stored in.
+   * Directory in which addon-specific configurations are stored in.
+   * <p>
+   * When ServerPackCreator starts and loads all available addons, it will also extract an addons
+   * config-file, if available. This file will be stored inside the config-directory using the ID of
+   * the addon as its name, with {@code .toml} appended to it. Think of this like the
+   * config-directory in a modded Minecraft server. Do the names of the config-files there look
+   * familiar to the mods they belong to? Well, they should!
+   * <p>
+   * By default, this is the {@code config}-directory inside the {@code plugins}-directory inside
+   * ServerPackCreators home-directory.
    *
    * @return plugins/config
    * @author Griefed
    */
-  public File addonConfigsDirectory() {
+  public @NotNull File addonConfigsDirectory() {
     return new File(addonsDirectory(), "config");
   }
 
   /**
-   * Getter for the directory in which the server packs are stored/generated in.<br> Default:
-   * server-packs/...
+   * Directory in which addons for ServerPackCreator are to be placed in.
+   * <p>
+   * This directory not only holds any potential addons for ServerPackCreator, but also contains the
+   * directory in which addon-specific config-files are stored in, as well as the
+   * {@code disabled.txt}-file, which allows a user to disable any installed addon.
+   * <p>
+   * By default, this is the {@code plugins}-directory inside the ServerPackCreator home-directory.
    *
-   * @return String. Returns the directory in which the server packs are stored/generated in.
+   * @return plugins
    * @author Griefed
    */
-  public File serverPacksDirectory() {
-    return new File(directoryServerPacks);
+  public @NotNull File addonsDirectory() {
+    return new File(homeDirectory, "plugins");
+  }
+
+  /**
+   * Directory in which generated server packs, or server packs being generated, are stored in, as
+   * well as their ZIP-archives, if created.
+   * <p>
+   * By default, this directory will be the {@code server-packs}-directory in the home-directory of
+   * ServerPackCreator, but it can be configured using the property
+   * {@code de.griefed.serverpackcreator.configuration.directories.serverpacks} and can even be
+   * configured to be completely independent of ServerPackCreators home-directory.
+   *
+   * @return Directory in which the server packs are stored/generated in.
+   * @author Griefed
+   */
+  public @NotNull File serverPacksDirectory() {
+    return directoryServerPacks;
   }
 
   /**
@@ -1392,7 +1466,7 @@ public final class ApplicationProperties {
    * @return The fallback list of clientside-only mods.
    * @author Griefed
    */
-  public List<String> getListFallbackMods() {
+  public @NotNull List<String> getListFallbackMods() {
     if (exclusionFilter.equals(ExclusionFilter.REGEX)) {
       return new ArrayList<>(FALLBACK_MODS_REGEX);
     } else {
@@ -1406,7 +1480,7 @@ public final class ApplicationProperties {
    * @return List containing default directories to include in a server pack.
    * @author Griefed
    */
-  public List<String> getDirectoriesToInclude() {
+  public @NotNull List<String> getDirectoriesToInclude() {
     return new ArrayList<>(DIRECTORIES_TO_INCLUDE);
   }
 
@@ -1416,7 +1490,7 @@ public final class ApplicationProperties {
    * @return Returns the list of directories to exclude from server packs.
    * @author Griefed
    */
-  public List<String> getDirectoriesToExclude() {
+  public @NotNull List<String> getDirectoriesToExclude() {
     return new ArrayList<>(DIRECTORIES_TO_EXCLUDE);
   }
 
@@ -1426,7 +1500,7 @@ public final class ApplicationProperties {
    * @param entry The directory to add to the list of directories to exclude from server packs.
    * @author Griefed
    */
-  public void addDirectoryToExclude(String entry) {
+  public void addDirectoryToExclude(@NotNull String entry) {
     if (!DIRECTORIES_TO_INCLUDE.contains(entry) && DIRECTORIES_TO_EXCLUDE.add(entry)) {
       LOG.debug("Adding " + entry + " to list of files or directories to exclude.");
     }
@@ -1470,7 +1544,7 @@ public final class ApplicationProperties {
    *
    * @return Aikars flags.
    */
-  public String getAikarsFlags() {
+  public @NotNull String getAikarsFlags() {
     return aikarsFlags;
   }
 
@@ -1491,7 +1565,7 @@ public final class ApplicationProperties {
    * @return Files and folders to exclude from the ZIP archive of a server pack.
    * @author Griefed
    */
-  public List<String> getFilesToExcludeFromZipArchive() {
+  public @NotNull List<String> getFilesToExcludeFromZipArchive() {
     return new ArrayList<>(FILES_TO_EXCLUDE_FROM_ZIP);
   }
 
@@ -1567,11 +1641,11 @@ public final class ApplicationProperties {
 
       if (properties.getProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST) != null &&
           !PROPERTIES.getProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST)
-              .equals(properties.getProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST))
+                     .equals(properties.getProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST))
       ) {
 
         PROPERTIES.setProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST,
-            properties.getProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST));
+                               properties.getProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST));
 
         FALLBACK_MODS.clear();
         FALLBACK_MODS.addAll(
@@ -1589,7 +1663,8 @@ public final class ApplicationProperties {
       ) {
 
         PROPERTIES.setProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST_REGEX,
-            properties.getProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST_REGEX));
+                               properties.getProperty(
+                                   PROPERTY_CONFIGURATION_FALLBACKMODSLIST_REGEX));
 
         FALLBACK_MODS_REGEX.clear();
         FALLBACK_MODS_REGEX.addAll(
@@ -1597,7 +1672,7 @@ public final class ApplicationProperties {
                 PROPERTIES.getProperty(PROPERTY_CONFIGURATION_FALLBACKMODSLIST_REGEX).split(",")));
 
         LOG.info("The fallback regex-list for clientside only mods has been updated to: "
-            + FALLBACK_MODS_REGEX);
+                     + FALLBACK_MODS_REGEX);
         updated = true;
       }
 
@@ -1621,6 +1696,38 @@ public final class ApplicationProperties {
   }
 
   /**
+   * Get a property from our ApplicationProperties. If the property is not available, it is created
+   * with the specified value, thus allowing subsequent calls.
+   *
+   * @param key          The key of the property to acquire.
+   * @param defaultValue The default value for the specified key in case the key is not present or
+   *                     empty.
+   * @return The value stored in the specified key.
+   * @author Griefed
+   */
+  private @NotNull String acquireProperty(@NotNull String key,
+                                          @NotNull String defaultValue) {
+    if (PROPERTIES.getProperty(key) == null) {
+      return defineProperty(key, defaultValue);
+    } else {
+      return PROPERTIES.getProperty(key, defaultValue);
+    }
+  }
+
+  /**
+   * Set a property in our ApplicationProperties.
+   *
+   * @param key   The key in which to store the property.
+   * @param value The value to store in the specified key.
+   * @author Griefed
+   */
+  private @NotNull String defineProperty(@NotNull String key,
+                                         @NotNull String value) {
+    PROPERTIES.setProperty(key, value);
+    return value;
+  }
+
+  /**
    * Set the current theme to Dark Theme or Light Theme.
    *
    * @param dark {@code true} to activate Dark Theme, {@code false} otherwise.
@@ -1633,22 +1740,6 @@ public final class ApplicationProperties {
     } else {
       PROPERTIES.setProperty(
           PROPERTY_GUI_DARKMODE, "false");
-    }
-  }
-
-  /**
-   * Store the ApplicationProperties to disk, overwriting the existing one.
-   *
-   * @param propertiesFile The file to store the properties to.
-   * @author Griefed
-   */
-  public void saveToDisk(File propertiesFile) {
-    try (OutputStream outputStream =
-        Files.newOutputStream(propertiesFile.toPath())) {
-      PROPERTIES.store(outputStream,
-          "For details about each property, see https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-Help#serverpackcreatorproperties");
-    } catch (IOException ex) {
-      LOG.error("Couldn't write properties-file.", ex);
     }
   }
 
@@ -1678,7 +1769,7 @@ public final class ApplicationProperties {
    * @return The language currently set and used.
    * @author Griefed
    */
-  public String getLanguage() {
+  public @NotNull String getLanguage() {
     return language;
   }
 
@@ -1688,7 +1779,7 @@ public final class ApplicationProperties {
    * @param locale The language to set for the next run.
    * @author Griefed
    */
-  public void setLanguage(String locale) {
+  public void setLanguage(@NotNull String locale) {
     language = locale;
     PROPERTIES.setProperty(PROPERTY_LANGUAGE, language);
     LOG.info("Language set to: " + language);
@@ -1700,7 +1791,7 @@ public final class ApplicationProperties {
    * @return URL to the HasteBin server documents endpoint.
    * @author Griefed
    */
-  public String getHasteBinServerUrl() {
+  public @NotNull String getHasteBinServerUrl() {
     return hasteBinServerUrl;
   }
 
@@ -1728,7 +1819,7 @@ public final class ApplicationProperties {
    *
    * @return The filter method by which to exclude user-specified clientside-only mods.
    */
-  public ExclusionFilter exclusionFilter() {
+  public @NotNull ExclusionFilter exclusionFilter() {
     return exclusionFilter;
   }
 
@@ -1740,7 +1831,7 @@ public final class ApplicationProperties {
    * @return The path to the Java executable/binary, if available.
    * @author Griefed
    */
-  public Optional<String> javaPath(int javaVersion) {
+  public @NotNull Optional<String> javaPath(int javaVersion) {
     if (JAVA_PATHS.containsKey(String.valueOf(javaVersion)) && new File(
         JAVA_PATHS.get(String.valueOf(javaVersion))).isFile()) {
       return Optional.of(JAVA_PATHS.get(String.valueOf(javaVersion)));
@@ -1756,7 +1847,7 @@ public final class ApplicationProperties {
    * @param version Old version used before upgrading to the current version.
    * @author Griefed
    */
-  void setOldVersion(String version) {
+  void setOldVersion(@NotNull String version) {
     PROPERTIES.setProperty(PROPERTY_OLD_VERSION, version);
     saveToDisk(serverPackCreatorPropertiesFile());
   }
@@ -1767,7 +1858,7 @@ public final class ApplicationProperties {
    *
    * @return Old version used before updating. Empty if this is the first run of ServerPackCreator.
    */
-  String oldVersion() {
+  @NotNull String oldVersion() {
     return PROPERTIES.getProperty(PROPERTY_OLD_VERSION, "");
   }
 
@@ -1788,7 +1879,7 @@ public final class ApplicationProperties {
    * @return Folder containing the ServerPackCreator.exe or JAR-file.
    * @author Griefed
    */
-  public File getJarFolder() {
+  public @NotNull File getJarFolder() {
     return JAR_INFORMATION.JAR_FOLDER;
   }
 
@@ -1798,7 +1889,7 @@ public final class ApplicationProperties {
    * @return The .exe or JAR-file of ServerPackCreator.
    * @author Griefed
    */
-  public File getJarFile() {
+  public @NotNull File getJarFile() {
     return JAR_INFORMATION.JAR_FILE;
   }
 
@@ -1808,7 +1899,7 @@ public final class ApplicationProperties {
    * @return The name of the .exe or JAR-file.
    * @author Griefed
    */
-  public String getJarName() {
+  public @NotNull String getJarName() {
     return JAR_INFORMATION.JAR_NAME;
   }
 
@@ -1818,7 +1909,7 @@ public final class ApplicationProperties {
    * @return Java version.
    * @author Griefed
    */
-  public String getJavaVersion() {
+  public @NotNull String getJavaVersion() {
     return JAR_INFORMATION.JAVA_VERSION;
   }
 
@@ -1828,7 +1919,7 @@ public final class ApplicationProperties {
    * @return Arch.
    * @author Griefed
    */
-  public String getOSArch() {
+  public @NotNull String getOSArch() {
     return JAR_INFORMATION.OS_ARCH;
   }
 
@@ -1838,7 +1929,7 @@ public final class ApplicationProperties {
    * @return OS name.
    * @author Griefed
    */
-  public String getOSName() {
+  public @NotNull String getOSName() {
     return JAR_INFORMATION.OS_NAME;
   }
 
@@ -1848,7 +1939,7 @@ public final class ApplicationProperties {
    * @return Version of the OS.
    * @author Griefed
    */
-  public String getOSVersion() {
+  public @NotNull String getOSVersion() {
     return JAR_INFORMATION.OS_VERSION;
   }
 

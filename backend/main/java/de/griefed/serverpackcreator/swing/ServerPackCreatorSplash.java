@@ -115,14 +115,14 @@ public class ServerPackCreatorSplash {
     this.PROGRESS_BAR.setBackground(Color.WHITE);
     this.PROGRESS_BAR.setUI(
         new BasicProgressBarUI() {
-          // Text-colour when bar is NOT covering the loading-text
-          protected Color getSelectionBackground() {
-            return primary;
-          }
-
           // Text-colour when the bar IS covering the loading-text
           protected Color getSelectionForeground() {
             return c0FFEE;
+          }
+
+          // Text-colour when bar is NOT covering the loading-text
+          protected Color getSelectionBackground() {
+            return primary;
           }
         });
     this.PROGRESS_BAR.setForeground(primary);
@@ -158,10 +158,10 @@ public class ServerPackCreatorSplash {
       EXIT.setIcon(
           new ImageIcon(
               ImageIO.read(
-                      Objects.requireNonNull(
-                          ServerPackCreatorWindow.class.getResource(
-                              "/de/griefed/resources/gui/error.png")))
-                  .getScaledInstance(buttonSize, buttonSize, Image.SCALE_SMOOTH)));
+                         Objects.requireNonNull(
+                             ServerPackCreatorWindow.class.getResource(
+                                 "/de/griefed/resources/gui/error.png")))
+                     .getScaledInstance(buttonSize, buttonSize, Image.SCALE_SMOOTH)));
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
@@ -176,26 +176,26 @@ public class ServerPackCreatorSplash {
 
     this.SPLASH_WINDOW.setIconImage(
         Toolkit.getDefaultToolkit()
-            .getImage(
-                Objects.requireNonNull(
-                    ServerPackCreatorWindow.class.getResource(
-                        "/de/griefed/resources/gui/app.png"))));
+               .getImage(
+                   Objects.requireNonNull(
+                       ServerPackCreatorWindow.class.getResource(
+                           "/de/griefed/resources/gui/app.png"))));
 
     this.SPLASH_WINDOW.setVisible(true);
   }
 
-  public void update(int progress) {
-    this.PROGRESS_TEXT.setText(RETICULATING_SPLINES.reticulate());
-    this.PROGRESS_TEXT.setHorizontalAlignment(SwingConstants.CENTER);
-    this.PROGRESS_BAR.setValue(progress);
+  public void exit(ActionEvent actionEvent) {
+    close();
+    System.exit(0);
   }
 
   public void close() {
     this.SPLASH_WINDOW.dispose();
   }
 
-  public void exit(ActionEvent actionEvent) {
-    close();
-    System.exit(0);
+  public void update(int progress) {
+    this.PROGRESS_TEXT.setText(RETICULATING_SPLINES.reticulate());
+    this.PROGRESS_TEXT.setHorizontalAlignment(SwingConstants.CENTER);
+    this.PROGRESS_BAR.setValue(progress);
   }
 }

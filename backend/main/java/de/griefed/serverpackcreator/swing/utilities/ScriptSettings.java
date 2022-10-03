@@ -87,16 +87,16 @@ public class ScriptSettings extends JTable {
    */
   public ScriptSettings(I18n i18n) {
     this(new DefaultTableModel(
-            new Object[]{
-                i18n.getMessage(
-                    "createserverpack.gui.createserverpack.scriptsettings.table.column.variable"),
-                i18n.getMessage(
-                    "createserverpack.gui.createserverpack.scriptsettings.table.column.value"),
-                i18n.getMessage(
-                    "createserverpack.gui.createserverpack.scriptsettings.table.column.clear")},
-            100),
-        null,
-        null);
+             new Object[]{
+                 i18n.getMessage(
+                     "createserverpack.gui.createserverpack.scriptsettings.table.column.variable"),
+                 i18n.getMessage(
+                     "createserverpack.gui.createserverpack.scriptsettings.table.column.value"),
+                 i18n.getMessage(
+                     "createserverpack.gui.createserverpack.scriptsettings.table.column.clear")},
+             100),
+         null,
+         null);
   }
 
   /**
@@ -111,7 +111,9 @@ public class ScriptSettings extends JTable {
    * @param cm the column model for the table
    * @param sm the row selection model for the table
    */
-  public ScriptSettings(TableModel dm, TableColumnModel cm, ListSelectionModel sm) {
+  public ScriptSettings(TableModel dm,
+                        TableColumnModel cm,
+                        ListSelectionModel sm) {
     super(dm, cm, sm);
     try {
       Action delete = new AbstractAction() {
@@ -134,9 +136,22 @@ public class ScriptSettings extends JTable {
   }
 
   /**
+   * Sets the Select All property for all event types
+   *
+   * @param isSelectAllForEdit Whether to select all for editing
+   */
+  public void setSelectAllForEdit(boolean isSelectAllForEdit) {
+    isSelectAllForMouseEvent = isSelectAllForEdit;
+    isSelectAllForActionEvent = isSelectAllForEdit;
+    isSelectAllForKeyEvent = isSelectAllForEdit;
+  }
+
+  /**
    * Override to provide Select All editing functionality
    */
-  public boolean editCellAt(int row, int column, EventObject e) {
+  public boolean editCellAt(int row,
+                            int column,
+                            EventObject e) {
     boolean result = super.editCellAt(row, column, e);
 
     if (isSelectAllForMouseEvent
@@ -188,17 +203,6 @@ public class ScriptSettings extends JTable {
   }
 
   /**
-   * Sets the Select All property for all event types
-   *
-   * @param isSelectAllForEdit Whether to select all for editing
-   */
-  public void setSelectAllForEdit(boolean isSelectAllForEdit) {
-    isSelectAllForMouseEvent = isSelectAllForEdit;
-    isSelectAllForActionEvent = isSelectAllForEdit;
-    isSelectAllForKeyEvent = isSelectAllForEdit;
-  }
-
-  /**
    * Set the Select All property when editing is invoked by the mouse
    *
    * @param isSelectAllForMouseEvent Whether to select all for editing
@@ -243,6 +247,20 @@ public class ScriptSettings extends JTable {
   }
 
   /**
+   * Clear the table of all data. Only leave SPC_JAVA_SPC behind.
+   *
+   * @author Griefed
+   */
+  public void clearData() {
+    for (int row = 0; row < getModel().getRowCount(); row++) {
+      getModel().setValueAt("", row, 0);
+      getModel().setValueAt("", row, 1);
+    }
+    getModel().setValueAt("SPC_JAVA_SPC", 0, 0);
+    getModel().setValueAt("java", 0, 1);
+  }
+
+  /**
    * Get the data from the table as a map. Column 1 (Placeholder) will be mapped to the maps
    * {@code KEY}, column 2 (Value) will be mapped to the maps {@code VALUE}. Rows are ignored of
    * they do not contain values for both columns.
@@ -263,20 +281,6 @@ public class ScriptSettings extends JTable {
       }
     }
     return data;
-  }
-
-  /**
-   * Clear the table of all data. Only leave SPC_JAVA_SPC behind.
-   *
-   * @author Griefed
-   */
-  public void clearData() {
-    for (int row = 0; row < getModel().getRowCount(); row++) {
-      getModel().setValueAt("", row, 0);
-      getModel().setValueAt("", row, 1);
-    }
-    getModel().setValueAt("SPC_JAVA_SPC", 0, 0);
-    getModel().setValueAt("java", 0, 1);
   }
 
   @SuppressWarnings("InnerClassMayBeStatic")
@@ -301,15 +305,17 @@ public class ScriptSettings extends JTable {
      * @param column the column to which the button renderer/editor is added
      * @throws IOException if the icon for the delete button can not be initialized.
      */
-    public ButtonColumn(JTable table, Action action, int column) throws IOException {
+    public ButtonColumn(JTable table,
+                        Action action,
+                        int column) throws IOException {
       this.table = table;
       this.action = action;
 
       Icon delete = new ImageIcon(
           ImageIO.read(
-                  Objects.requireNonNull(
-                      ScriptSettings.class.getResource("/de/griefed/resources/gui/delete.png")))
-              .getScaledInstance(32, 32, Image.SCALE_SMOOTH));
+                     Objects.requireNonNull(
+                         ScriptSettings.class.getResource("/de/griefed/resources/gui/delete.png")))
+                 .getScaledInstance(32, 32, Image.SCALE_SMOOTH));
       renderButton = new JButton(delete);
       editButton = new JButton(delete);
       editButton.setFocusPainted(false);
@@ -335,7 +341,11 @@ public class ScriptSettings extends JTable {
 
     @Override
     public Component getTableCellEditorComponent(
-        JTable table, Object value, boolean isSelected, int row, int column) {
+        JTable table,
+        Object value,
+        boolean isSelected,
+        int row,
+        int column) {
 
       this.editorValue = value;
       return editButton;
@@ -347,7 +357,12 @@ public class ScriptSettings extends JTable {
     }
 
     public Component getTableCellRendererComponent(
-        JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+        JTable table,
+        Object value,
+        boolean isSelected,
+        boolean hasFocus,
+        int row,
+        int column) {
 
       if (isSelected) {
         renderButton.setForeground(table.getSelectionForeground());
@@ -379,6 +394,9 @@ public class ScriptSettings extends JTable {
       action.actionPerformed(event);
     }
 
+    public void mouseClicked(MouseEvent e) {
+    }
+
     /**
      * When the mouse is pressed the editor is invoked. If you then drag the mouse to another cell
      * before releasing it, the editor is still active. Make sure editing is stopped when the mouse
@@ -395,9 +413,6 @@ public class ScriptSettings extends JTable {
         table.getCellEditor().stopCellEditing();
       }
       isButtonColumnEditor = false;
-    }
-
-    public void mouseClicked(MouseEvent e) {
     }
 
     public void mouseEntered(MouseEvent e) {

@@ -38,44 +38,6 @@ public final class BooleanUtilities {
   }
 
   /**
-   * Converts various strings to booleans, by using regex, to allow for more variations in input.
-   * <br>
-   * <strong>Converted to {@code TRUE} are:<br>
-   * </strong> {@code [Tt]rue}<br>
-   * {@code 1}<br> {@code [Yy]es}<br> {@code [Yy]}<br> Language Key {@code cli.input.true}<br>
-   * Language Key {@code cli.input.yes}<br> Language Key {@code cli.input.yes.short}<br>
-   * <strong>Converted to {@code FALSE} are:<br>
-   * </strong> {@code [Ff]alse}<br>
-   * {@code 0}<br> {@code [Nn]o}<br> {@code [Nn]}<br> Language Key {@code cli.input.false}<br>
-   * Language Key {@code cli.input.no}<br> Language Key {@code cli.input.no.short}<br>
-   *
-   * @param stringBoolean The string which should be converted to boolean if it matches certain
-   *                      patterns.
-   * @return Boolean. Returns the corresponding boolean if match with pattern was found. If no match
-   * is found, assume and return false.
-   * @author Griefed
-   */
-  public boolean convert(String stringBoolean) {
-
-    if (stringBoolean.matches("1")
-        || stringBoolean.matches("[Yy][Ee][Ss]")
-        || stringBoolean.matches("[Yy]")
-        || stringBoolean.equalsIgnoreCase("true")) {
-      return true;
-
-    } else if (stringBoolean.matches("0")
-        || stringBoolean.matches("[Nn][Oo]]")
-        || stringBoolean.matches("[Nn]")
-        || stringBoolean.equalsIgnoreCase("false")) {
-      return false;
-
-    } else {
-      LOG.warn("Warning. Couldn't parse boolean. Assuming false.");
-      return false;
-    }
-  }
-
-  /**
    * Prompts the user to enter values which will then be converted to booleans, either {@code TRUE }
    * or {@code FALSE}. This prevents any non-boolean values from being written to the new
    * configuration file.
@@ -114,5 +76,43 @@ public final class BooleanUtilities {
    */
   private void printBoolMenu() {
     System.out.println("True: 1, Yes, Y, true -|- False: 0, No, N, false");
+  }
+
+  /**
+   * Converts various strings to booleans, by using regex, to allow for more variations in input.
+   * <br>
+   * <strong>Converted to {@code TRUE} are:<br>
+   * </strong> {@code [Tt]rue}<br>
+   * {@code 1}<br> {@code [Yy]es}<br> {@code [Yy]}<br> Language Key {@code cli.input.true}<br>
+   * Language Key {@code cli.input.yes}<br> Language Key {@code cli.input.yes.short}<br>
+   * <strong>Converted to {@code FALSE} are:<br>
+   * </strong> {@code [Ff]alse}<br>
+   * {@code 0}<br> {@code [Nn]o}<br> {@code [Nn]}<br> Language Key {@code cli.input.false}<br>
+   * Language Key {@code cli.input.no}<br> Language Key {@code cli.input.no.short}<br>
+   *
+   * @param stringBoolean The string which should be converted to boolean if it matches certain
+   *                      patterns.
+   * @return Boolean. Returns the corresponding boolean if match with pattern was found. If no match
+   * is found, assume and return false.
+   * @author Griefed
+   */
+  public boolean convert(String stringBoolean) {
+
+    if (stringBoolean.matches("1")
+        || stringBoolean.matches("[Yy][Ee][Ss]")
+        || stringBoolean.matches("[Yy]")
+        || stringBoolean.equalsIgnoreCase("true")) {
+      return true;
+
+    } else if (stringBoolean.matches("0")
+        || stringBoolean.matches("[Nn][Oo]]")
+        || stringBoolean.matches("[Nn]")
+        || stringBoolean.equalsIgnoreCase("false")) {
+      return false;
+
+    } else {
+      LOG.warn("Warning. Couldn't parse boolean. Assuming false.");
+      return false;
+    }
   }
 }

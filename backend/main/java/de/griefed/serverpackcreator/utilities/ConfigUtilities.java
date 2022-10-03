@@ -73,39 +73,6 @@ public final class ConfigUtilities {
   }
 
   /**
-   * Ensures the modloader is normalized to first letter upper case and rest lower case. Basically
-   * allows the user to input Forge or Fabric in any combination of upper- and lowercase and
-   * ServerPackCreator will still be able to work with the users input.
-   *
-   * @param modloader The String to check for case-insensitive cases of either Forge or Fabric.
-   * @return String. Returns a normalized String of the specified modloader.
-   * @author Griefed
-   */
-  public String getModLoaderCase(String modloader) {
-
-    if (modloader.equalsIgnoreCase("Forge")) {
-
-      return "Forge";
-
-    } else if (modloader.equalsIgnoreCase("Fabric")) {
-
-      return "Fabric";
-
-    } else if (modloader.toLowerCase().contains("forge")) {
-
-      return "Forge";
-
-    } else if (modloader.toLowerCase().contains("fabric")) {
-
-      return "Fabric";
-
-    } else {
-
-      return "Forge";
-    }
-  }
-
-  /**
    * Convenience method to write a new configuration file with the {@link ConfigurationModel} passed
    * to it. If the given file already exists, it is replaced.
    *
@@ -117,7 +84,8 @@ public final class ConfigUtilities {
    * @deprecated Use {@link ConfigurationModel#save(File)} instead.
    */
   @Deprecated
-  public boolean writeConfigToFile(ConfigurationModel configurationModel, File fileName) {
+  public boolean writeConfigToFile(ConfigurationModel configurationModel,
+                                   File fileName) {
     return writeConfigToFile(
         configurationModel.getModpackDir(),
         configurationModel.getClientMods(),
@@ -206,10 +174,10 @@ public final class ConfigUtilities {
             modpackDir.replace("\\", "/"),
             "# List of client-only mods to delete from serverpack.\n# No need to include version specifics. Must be the filenames of the mods, not their project names on CurseForge!\n# Example: [AmbientSounds-,ClientTweaks-,PackMenu-,BetterAdvancement-,jeiintegration-]",
             UTILITIES.ListUtils()
-                .encapsulateListElements(UTILITIES.ListUtils().cleanList(clientMods)),
+                     .encapsulateListElements(UTILITIES.ListUtils().cleanList(clientMods)),
             "# Name of directories or files to include in serverpack.\n# When specifying \"saves/world_name\", \"world_name\" will be copied to the base directory of the serverpack\n# for immediate use with the server. Automatically set when projectID,fileID for modpackDir has been specified.\n# Example: [config,mods,scripts]",
             UTILITIES.ListUtils()
-                .encapsulateListElements(UTILITIES.ListUtils().cleanList(copyDirs)),
+                     .encapsulateListElements(UTILITIES.ListUtils().cleanList(copyDirs)),
             "# Path to a custom server-icon.png-file to include in the server pack.",
             serverIconPath,
             "# Path to a custom server.properties-file to include in the server pack.",
@@ -387,7 +355,8 @@ public final class ConfigUtilities {
    * @author Griefed
    */
   public void updateConfigModelFromATLauncherInstance(
-      ConfigurationModel configurationModel, File manifest) throws IOException {
+      ConfigurationModel configurationModel,
+      File manifest) throws IOException {
 
     configurationModel.setModpackJson(getJson(manifest));
 
@@ -411,6 +380,19 @@ public final class ConfigUtilities {
   }
 
   /**
+   * Acquire a {@link JsonNode} from the given json file.
+   *
+   * @param jsonFile The file to read.
+   * @return JSON data from the specified file.
+   * @throws IOException when the file could not be parsed/read into a {@link JsonNode}.
+   * @author Griefed
+   */
+  private JsonNode getJson(File jsonFile) throws IOException {
+    return OBJECT_MAPPER.readTree(
+        Files.readAllBytes(Paths.get(jsonFile.getPath())));
+  }
+
+  /**
    * <strong>{@code modrinth.index.json}</strong>
    *
    * <p>Update the given ConfigurationModel with values gathered from a Modrinth {@code
@@ -422,7 +404,8 @@ public final class ConfigUtilities {
    * @author Griefed
    */
   public void updateConfigModelFromModrinthManifest(
-      ConfigurationModel configurationModel, File manifest) throws IOException {
+      ConfigurationModel configurationModel,
+      File manifest) throws IOException {
 
     configurationModel.setModpackJson(getJson(manifest));
 
@@ -467,7 +450,8 @@ public final class ConfigUtilities {
    * @author Griefed
    */
   public void updateConfigModelFromCurseManifest(
-      ConfigurationModel configurationModel, File manifest) throws IOException {
+      ConfigurationModel configurationModel,
+      File manifest) throws IOException {
 
     configurationModel.setModpackJson(getJson(manifest));
 
@@ -502,7 +486,8 @@ public final class ConfigUtilities {
    * @author Griefed
    */
   public void updateConfigModelFromMinecraftInstance(
-      ConfigurationModel configurationModel, File minecraftInstance) throws IOException {
+      ConfigurationModel configurationModel,
+      File minecraftInstance) throws IOException {
 
     configurationModel.setModpackJson(getJson(minecraftInstance));
 
@@ -523,6 +508,39 @@ public final class ConfigUtilities {
   }
 
   /**
+   * Ensures the modloader is normalized to first letter upper case and rest lower case. Basically
+   * allows the user to input Forge or Fabric in any combination of upper- and lowercase and
+   * ServerPackCreator will still be able to work with the users input.
+   *
+   * @param modloader The String to check for case-insensitive cases of either Forge or Fabric.
+   * @return String. Returns a normalized String of the specified modloader.
+   * @author Griefed
+   */
+  public String getModLoaderCase(String modloader) {
+
+    if (modloader.equalsIgnoreCase("Forge")) {
+
+      return "Forge";
+
+    } else if (modloader.equalsIgnoreCase("Fabric")) {
+
+      return "Fabric";
+
+    } else if (modloader.toLowerCase().contains("forge")) {
+
+      return "Forge";
+
+    } else if (modloader.toLowerCase().contains("fabric")) {
+
+      return "Fabric";
+
+    } else {
+
+      return "Forge";
+    }
+  }
+
+  /**
    * <strong>{@code config.json}</strong>
    *
    * <p>Update the given ConfigurationModel with values gathered from the modpacks config.json. A
@@ -534,7 +552,8 @@ public final class ConfigUtilities {
    * @throws IOException when the config.json-file could not be parsed.
    * @author Griefed
    */
-  public void updateConfigModelFromConfigJson(ConfigurationModel configurationModel, File config)
+  public void updateConfigModelFromConfigJson(ConfigurationModel configurationModel,
+                                              File config)
       throws IOException {
 
     configurationModel.setModpackJson(getJson(config));
@@ -567,7 +586,8 @@ public final class ConfigUtilities {
    * @throws IOException when the mmc-pack.json-file could not be parsed.
    * @author Griefed
    */
-  public void updateConfigModelFromMMCPack(ConfigurationModel configurationModel, File mmcPack)
+  public void updateConfigModelFromMMCPack(ConfigurationModel configurationModel,
+                                           File mmcPack)
       throws IOException {
 
     configurationModel.setModpackJson(getJson(mmcPack));
@@ -622,19 +642,6 @@ public final class ConfigUtilities {
     }
 
     return name;
-  }
-
-  /**
-   * Acquire a {@link JsonNode} from the given json file.
-   *
-   * @param jsonFile The file to read.
-   * @return JSON data from the specified file.
-   * @throws IOException when the file could not be parsed/read into a {@link JsonNode}.
-   * @author Griefed
-   */
-  private JsonNode getJson(File jsonFile) throws IOException {
-    return OBJECT_MAPPER.readTree(
-        Files.readAllBytes(Paths.get(jsonFile.getPath())));
   }
 
   /**
@@ -761,78 +768,6 @@ public final class ConfigUtilities {
   }
 
   /**
-   * Acquire a list of all files in a ZIP-file.
-   *
-   * @param zipFile The ZIP-archive to get the list of files from.
-   * @return List of all files in the ZIP-file.
-   * @throws IllegalArgumentException         if the pre-conditions for the uri parameter are not
-   *                                          met, or the env parameter does not contain properties
-   *                                          required by the provider, or a property value is
-   *                                          invalid.
-   * @throws FileSystemAlreadyExistsException if the file system has already been created.
-   * @throws ProviderNotFoundException        if a provider supporting the URI scheme is not
-   *                                          installed.
-   * @throws IOException                      if an I/O error occurs creating the file system.
-   * @throws SecurityException                if a security manager is installed, and it denies an
-   *                                          unspecified permission required by the file system
-   *                                          provider implementation.
-   * @author Griefed
-   */
-  public List<String> getFilesInModpackZip(ZipFile zipFile)
-      throws IllegalArgumentException, FileSystemAlreadyExistsException, ProviderNotFoundException,
-      IOException, SecurityException {
-
-    List<String> files = new ArrayList<>(100);
-
-    zipFile
-        .getFileHeaders()
-        .forEach(
-            fileHeader -> {
-              if (!fileHeader.isDirectory()) {
-                files.add(fileHeader.getFileName());
-              }
-            });
-
-    return files;
-  }
-
-  /**
-   * Acquire a list of all directories in a ZIP-file.
-   *
-   * @param zipFile The ZIP-archive to get the list of files from.
-   * @return List of all directories in the ZIP-file.
-   * @throws IllegalArgumentException         if the pre-conditions for the uri parameter are not
-   *                                          met, or the env parameter does not contain properties
-   *                                          required by the provider, or a property value is
-   *                                          invalid.
-   * @throws FileSystemAlreadyExistsException if the file system has already been created.
-   * @throws ProviderNotFoundException        if a provider supporting the URI scheme is not
-   *                                          installed.
-   * @throws IOException                      if an I/O error occurs creating the file system.
-   * @throws SecurityException                if a security manager is installed, and it denies an
-   *                                          unspecified permission required by the file system
-   *                                          provider implementation.
-   * @author Griefed
-   */
-  public List<String> getDirectoriesInModpackZip(ZipFile zipFile)
-      throws IllegalArgumentException, FileSystemAlreadyExistsException, ProviderNotFoundException,
-      IOException, SecurityException {
-
-    List<String> directories = new ArrayList<>(100);
-
-    zipFile
-        .getFileHeaders()
-        .forEach(
-            fileHeader -> {
-              if (fileHeader.isDirectory()) {
-                directories.add(fileHeader.getFileName());
-              }
-            });
-
-    return directories;
-  }
-
-  /**
    * Acquire a list of all files and directories in a ZIP-file.
    *
    * @param zipFile The ZIP-archive to get the list of files from.
@@ -873,5 +808,77 @@ public final class ConfigUtilities {
             });
 
     return filesAndDirectories;
+  }
+
+  /**
+   * Acquire a list of all directories in a ZIP-file.
+   *
+   * @param zipFile The ZIP-archive to get the list of files from.
+   * @return List of all directories in the ZIP-file.
+   * @throws IllegalArgumentException         if the pre-conditions for the uri parameter are not
+   *                                          met, or the env parameter does not contain properties
+   *                                          required by the provider, or a property value is
+   *                                          invalid.
+   * @throws FileSystemAlreadyExistsException if the file system has already been created.
+   * @throws ProviderNotFoundException        if a provider supporting the URI scheme is not
+   *                                          installed.
+   * @throws IOException                      if an I/O error occurs creating the file system.
+   * @throws SecurityException                if a security manager is installed, and it denies an
+   *                                          unspecified permission required by the file system
+   *                                          provider implementation.
+   * @author Griefed
+   */
+  public List<String> getDirectoriesInModpackZip(ZipFile zipFile)
+      throws IllegalArgumentException, FileSystemAlreadyExistsException, ProviderNotFoundException,
+      IOException, SecurityException {
+
+    List<String> directories = new ArrayList<>(100);
+
+    zipFile
+        .getFileHeaders()
+        .forEach(
+            fileHeader -> {
+              if (fileHeader.isDirectory()) {
+                directories.add(fileHeader.getFileName());
+              }
+            });
+
+    return directories;
+  }
+
+  /**
+   * Acquire a list of all files in a ZIP-file.
+   *
+   * @param zipFile The ZIP-archive to get the list of files from.
+   * @return List of all files in the ZIP-file.
+   * @throws IllegalArgumentException         if the pre-conditions for the uri parameter are not
+   *                                          met, or the env parameter does not contain properties
+   *                                          required by the provider, or a property value is
+   *                                          invalid.
+   * @throws FileSystemAlreadyExistsException if the file system has already been created.
+   * @throws ProviderNotFoundException        if a provider supporting the URI scheme is not
+   *                                          installed.
+   * @throws IOException                      if an I/O error occurs creating the file system.
+   * @throws SecurityException                if a security manager is installed, and it denies an
+   *                                          unspecified permission required by the file system
+   *                                          provider implementation.
+   * @author Griefed
+   */
+  public List<String> getFilesInModpackZip(ZipFile zipFile)
+      throws IllegalArgumentException, FileSystemAlreadyExistsException, ProviderNotFoundException,
+      IOException, SecurityException {
+
+    List<String> files = new ArrayList<>(100);
+
+    zipFile
+        .getFileHeaders()
+        .forEach(
+            fileHeader -> {
+              if (!fileHeader.isDirectory()) {
+                files.add(fileHeader.getFileName());
+              }
+            });
+
+    return files;
   }
 }

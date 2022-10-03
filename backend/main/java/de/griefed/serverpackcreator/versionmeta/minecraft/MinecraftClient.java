@@ -57,8 +57,13 @@ public final class MinecraftClient {
    * @author Griefed
    */
   MinecraftClient(
-      String version, Type type, URL url, ForgeMeta forgeMeta, ObjectMapper objectMapper,
-      Utilities utilities, ApplicationProperties applicationProperties) {
+      String version,
+      Type type,
+      URL url,
+      ForgeMeta forgeMeta,
+      ObjectMapper objectMapper,
+      Utilities utilities,
+      ApplicationProperties applicationProperties) {
 
     APPLICATIONPROPERTIES = applicationProperties;
     UTILITIES = utilities;
@@ -67,7 +72,7 @@ public final class MinecraftClient {
     URL = url;
     FORGE_META = forgeMeta;
     MINECRAFT_SERVER = new MinecraftServer(version, type, url, objectMapper, UTILITIES,
-        APPLICATIONPROPERTIES);
+                                           APPLICATIONPROPERTIES);
   }
 
   /**
@@ -83,8 +88,13 @@ public final class MinecraftClient {
    * @author Griefed
    */
   MinecraftClient(
-      String version, Type type, URL url, MinecraftServer server, ForgeMeta forgeMeta,
-      Utilities utilities, ApplicationProperties applicationProperties) {
+      String version,
+      Type type,
+      URL url,
+      MinecraftServer server,
+      ForgeMeta forgeMeta,
+      Utilities utilities,
+      ApplicationProperties applicationProperties) {
 
     APPLICATIONPROPERTIES = applicationProperties;
     UTILITIES = utilities;

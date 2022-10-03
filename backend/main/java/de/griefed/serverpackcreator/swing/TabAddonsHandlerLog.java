@@ -45,7 +45,8 @@ public class TabAddonsHandlerLog extends JComponentTailer {
    * @param logsDirectory The directory in which the logs reside in.
    * @author Griefed
    */
-  public TabAddonsHandlerLog(String tooltip, File logsDirectory) {
+  public TabAddonsHandlerLog(String tooltip,
+                             File logsDirectory) {
     super(tooltip);
     createTailer(logsDirectory);
   }

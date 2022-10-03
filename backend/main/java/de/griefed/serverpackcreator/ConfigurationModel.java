@@ -36,10 +36,24 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import org.jetbrains.annotations.NotNull;
 
 /**
- * Class containing all fields and therefore all information either gathered from a configuration
- * file, stored by the creation of a modpack from CurseForge or passed otherwise.
+ * A ConfigurationModel contains the settings required by
+ * {@link ServerPackHandler#run(ConfigurationModel)} to create a server pack. A configuration model
+ * usually consists of:
+ * <ul>
+ *   <li>Modpack directory</li>
+ *   <li>Minecraft version</li>
+ *   <li>Modloader</li>
+ *   <li>Modloader version</li>
+ *   <li>Java args for the start scripts</li>
+ *   <li>Files and directories to copy to the server pack</li>
+ *   <li>Whether to pre-install the modloader server</li>
+ *   <li>Whether to include a server-icon</li>
+ *   <li>Whether to include a server.properties</li>
+ *   <li>Whether to create a ZIP-archive</li>
+ * </ul>
  *
  * @author Griefed
  */
@@ -67,7 +81,7 @@ public class ConfigurationModel {
   private String fileDiskName;
 
   /**
-   * Constructor for our ConfigurationModel.
+   * Create an empty configuration model. Customize it before using it!
    *
    * @author Griefed
    */
@@ -100,22 +114,22 @@ public class ConfigurationModel {
    * @author Griefed
    */
   public ConfigurationModel(
-      List<String> clientMods,
-      List<String> copyDirs,
-      String modpackDir,
-      String minecraftVersion,
-      String modLoader,
-      String modLoaderVersion,
-      String javaArgs,
-      String serverPackSuffix,
-      String serverIconPath,
-      String serverPropertiesPath,
+      @NotNull List<String> clientMods,
+      @NotNull List<String> copyDirs,
+      @NotNull String modpackDir,
+      @NotNull String minecraftVersion,
+      @NotNull String modLoader,
+      @NotNull String modLoaderVersion,
+      @NotNull String javaArgs,
+      @NotNull String serverPackSuffix,
+      @NotNull String serverIconPath,
+      @NotNull String serverPropertiesPath,
       boolean includeServerInstallation,
       boolean includeServerIcon,
       boolean includeServerProperties,
       boolean includeZipCreation,
-      HashMap<String, String> scriptSettings,
-      HashMap<String, ArrayList<CommentedConfig>> addonsConfigs) {
+      @NotNull HashMap<String, String> scriptSettings,
+      @NotNull HashMap<String, ArrayList<CommentedConfig>> addonsConfigs) {
 
     this.clientMods.addAll(clientMods);
     this.copyDirs.addAll(copyDirs);
@@ -145,7 +159,8 @@ public class ConfigurationModel {
    *                                Night-Config.
    * @author Griefed
    */
-  public ConfigurationModel(Utilities utilities, File configFile)
+  public ConfigurationModel(@NotNull Utilities utilities,
+                            @NotNull File configFile)
       throws FileNotFoundException, NoFormatFoundException {
 
     if (!configFile.exists()) {
@@ -164,7 +179,7 @@ public class ConfigurationModel {
     modLoaderVersion = config.getOrElse("modLoaderVersion", "");
     javaArgs = config.getOrElse("javaArgs", "");
     serverPackSuffix = utilities.StringUtils()
-        .pathSecureText(config.getOrElse("serverPackSuffix", ""));
+                                .pathSecureText(config.getOrElse("serverPackSuffix", ""));
     serverIconPath = config.getOrElse("serverIconPath", "");
     serverPropertiesPath = config.getOrElse("serverPropertiesPath", "");
 
@@ -175,7 +190,7 @@ public class ConfigurationModel {
 
     try {
       for (Map.Entry<String, Object> entry : ((CommentedConfig) config.get("addons")).valueMap()
-          .entrySet()) {
+                                                                                     .entrySet()) {
         addonsConfigs.put(entry.getKey(), (ArrayList<CommentedConfig>) entry.getValue());
       }
     } catch (Exception ignored) {
@@ -184,7 +199,7 @@ public class ConfigurationModel {
 
     try {
       for (Map.Entry<String, Object> entry : ((CommentedConfig) config.get("scripts")).valueMap()
-          .entrySet()) {
+                                                                                      .entrySet()) {
         scriptSettings.put(entry.getKey(), entry.getValue().toString());
       }
     } catch (Exception ignored) {
@@ -205,95 +220,101 @@ public class ConfigurationModel {
    * @return The configuration for further operations.
    * @author Griefed
    */
-  public ConfigurationModel save(File destination) {
+  public ConfigurationModel save(@NotNull File destination) {
 
     CommentedConfig conf = TomlFormat.instance().createConfig();
     conf.set("includeServerInstallation",
-        includeServerInstallation);
+             includeServerInstallation);
     conf.setComment("includeServerInstallation",
-        " Whether to install a Forge/Fabric/Quilt server for the serverpack. Must be true or false.\n Default value is true.");
+                    " Whether to install a Forge/Fabric/Quilt server for the serverpack. Must be true or false.\n Default value is true.");
 
     conf.setComment("serverIconPath",
-        "\n Path to a custom server-icon.png-file to include in the server pack.");
+                    "\n Path to a custom server-icon.png-file to include in the server pack.");
     conf.set("serverIconPath", serverIconPath);
 
     conf.setComment("copyDirs",
-        "\n Name of directories or files to include in serverpack.\n When specifying \"saves/world_name\", \"world_name\" will be copied to the base directory of the serverpack\n for immediate use with the server. Automatically set when projectID,fileID for modpackDir has been specified.\n Example: [config,mods,scripts]");
+                    "\n Name of directories or files to include in serverpack.\n When specifying \"saves/world_name\", \"world_name\" will be copied to the base directory of the serverpack\n for immediate use with the server. Automatically set when projectID,fileID for modpackDir has been specified.\n Example: [config,mods,scripts]");
     conf.set("copyDirs", copyDirs);
 
     conf.setComment("serverPackSuffix",
-        "\n Suffix to append to the server pack to be generated. Can be left blank/empty.");
+                    "\n Suffix to append to the server pack to be generated. Can be left blank/empty.");
     conf.set("serverPackSuffix", serverPackSuffix);
 
     conf.setComment("clientMods",
-        "\n List of client-only mods to delete from serverpack.\n No need to include version specifics. Must be the filenames of the mods, not their project names on CurseForge!\n Example: [AmbientSounds-,ClientTweaks-,PackMenu-,BetterAdvancement-,jeiintegration-]");
+                    "\n List of client-only mods to delete from serverpack.\n No need to include version specifics. Must be the filenames of the mods, not their project names on CurseForge!\n Example: [AmbientSounds-,ClientTweaks-,PackMenu-,BetterAdvancement-,jeiintegration-]");
     conf.set("clientMods", clientMods);
 
     conf.setComment("serverPropertiesPath",
-        "\n Path to a custom server.properties-file to include in the server pack.");
+                    "\n Path to a custom server.properties-file to include in the server pack.");
     conf.set("serverPropertiesPath", serverPropertiesPath);
 
     conf.setComment("includeServerProperties",
-        "\n Include a server.properties in your serverpack. Must be true or false.\n If no server.properties is provided but is set to true, a default one will be provided.\n Default value is true.");
+                    "\n Include a server.properties in your serverpack. Must be true or false.\n If no server.properties is provided but is set to true, a default one will be provided.\n Default value is true.");
     conf.set("includeServerProperties", includeServerProperties);
 
     conf.setComment("javaArgs",
-        "\n Java arguments to set in the start-scripts for the generated server pack. Default value is \"empty\".\n Leave as \"empty\" to not have Java arguments in your start-scripts.");
+                    "\n Java arguments to set in the start-scripts for the generated server pack. Default value is \"empty\".\n Leave as \"empty\" to not have Java arguments in your start-scripts.");
     conf.set("javaArgs", javaArgs);
 
     conf.setComment("modpackDir",
-        "\n Path to your modpack. Can be either relative or absolute.\n Example: \"./Some Modpack\" or \"C:/Minecraft/Some Modpack\"");
+                    "\n Path to your modpack. Can be either relative or absolute.\n Example: \"./Some Modpack\" or \"C:/Minecraft/Some Modpack\"");
     conf.set("modpackDir", modpackDir);
 
     conf.setComment("includeServerIcon",
-        "\n Include a server-icon.png in your serverpack. Must be true or false\n Default value is true.");
+                    "\n Include a server-icon.png in your serverpack. Must be true or false\n Default value is true.");
     conf.set("includeServerIcon", includeServerIcon);
 
     conf.setComment("includeZipCreation",
-        "\n Create zip-archive of serverpack. Must be true or false.\n Default value is true.");
+                    "\n Create zip-archive of serverpack. Must be true or false.\n Default value is true.");
     conf.set("includeZipCreation", includeZipCreation);
 
     conf.setComment("modLoaderVersion",
-        "\n The version of the modloader you want to install. Example for Fabric=\"0.7.3\", example for Forge=\"36.0.15\".\n Automatically set when projectID,fileID for modpackDir has been specified.\n Only needed if includeServerInstallation is true.");
+                    "\n The version of the modloader you want to install. Example for Fabric=\"0.7.3\", example for Forge=\"36.0.15\".\n Automatically set when projectID,fileID for modpackDir has been specified.\n Only needed if includeServerInstallation is true.");
     conf.set("modLoaderVersion", modLoaderVersion);
 
     conf.setComment("minecraftVersion",
-        "\n Which Minecraft version to use. Example: \"1.16.5\".\n Automatically set when projectID,fileID for modpackDir has been specified.\n Only needed if includeServerInstallation is true.");
+                    "\n Which Minecraft version to use. Example: \"1.16.5\".\n Automatically set when projectID,fileID for modpackDir has been specified.\n Only needed if includeServerInstallation is true.");
     conf.set("minecraftVersion", minecraftVersion);
 
     conf.setComment("modLoader",
-        "\n Which modloader to install. Must be either \"Forge\", \"Fabric\", \"Quilt\" or \"LegacyFabric\".\n Automatically set when projectID,fileID for modpackDir has been specified.\n Only needed if includeServerInstallation is true.");
+                    "\n Which modloader to install. Must be either \"Forge\", \"Fabric\", \"Quilt\" or \"LegacyFabric\".\n Automatically set when projectID,fileID for modpackDir has been specified.\n Only needed if includeServerInstallation is true.");
     conf.set("modLoader", modLoader);
 
     Config addons = TomlFormat.newConfig();
     addons.valueMap().putAll(addonsConfigs);
 
     conf.setComment("addons",
-        "\n Configurations for any and all addons installed and used by this configuration.");
+                    "\n Configurations for any and all addons installed and used by this configuration.");
     conf.setComment("addons", " Settings related to addons. An addon is identified by its ID.");
     conf.set("addons", addons);
 
     Config scripts = TomlFormat.newConfig();
     for (Map.Entry<String, String> entry : scriptSettings.entrySet()) {
       if (!entry.getKey()
-          .equals("SPC_SERVERPACKCREATOR_VERSION_SPC") && !entry.getKey()
-          .equals("SPC_MINECRAFT_VERSION_SPC") && !entry.getKey()
-          .equals("SPC_MODLOADER_SPC") && !entry.getKey()
-          .equals("SPC_MODLOADER_VERSION_SPC") && !entry.getKey()
-          .equals("SPC_JAVA_ARGS_SPC") && !entry.getKey()
-          .equals("SPC_FABRIC_INSTALLER_VERSION_SPC") && !entry.getKey()
-          .equals("SPC_QUILT_INSTALLER_VERSION_SPC") && !entry.getKey()
-          .equals("SPC_LEGACYFABRIC_INSTALLER_VERSION_SPC") && !entry.getKey()
-          .equals("SPC_MINECRAFT_SERVER_URL_SPC")) {
+                .equals("SPC_SERVERPACKCREATOR_VERSION_SPC") && !entry.getKey()
+                                                                      .equals(
+                                                                          "SPC_MINECRAFT_VERSION_SPC")
+          && !entry.getKey()
+                   .equals("SPC_MODLOADER_SPC") && !entry.getKey()
+                                                         .equals("SPC_MODLOADER_VERSION_SPC")
+          && !entry.getKey()
+                   .equals("SPC_JAVA_ARGS_SPC") && !entry.getKey()
+                                                         .equals("SPC_FABRIC_INSTALLER_VERSION_SPC")
+          && !entry.getKey()
+                   .equals("SPC_QUILT_INSTALLER_VERSION_SPC") && !entry.getKey()
+                                                                       .equals(
+                                                                           "SPC_LEGACYFABRIC_INSTALLER_VERSION_SPC")
+          && !entry.getKey()
+                   .equals("SPC_MINECRAFT_SERVER_URL_SPC")) {
         scripts.set(entry.getKey(), entry.getValue());
       }
     }
     conf.setComment("scripts",
-        "\n Key-value pairs for start scripts. A given key in a start script is replaced with the value.");
+                    "\n Key-value pairs for start scripts. A given key in a start script is replaced with the value.");
     conf.add("scripts", scripts);
 
     TomlFormat.instance().createWriter()
-        .write(conf, destination, WritingMode.REPLACE, StandardCharsets.UTF_8);
+              .write(conf, destination, WritingMode.REPLACE, StandardCharsets.UTF_8);
 
     return this;
   }
@@ -314,7 +335,7 @@ public class ConfigurationModel {
    * @param addonsConfigs The new configurations for various addons.
    * @author Griefed
    */
-  void setAddonsConfigs(HashMap<String, ArrayList<CommentedConfig>> addonsConfigs) {
+  void setAddonsConfigs(@NotNull HashMap<String, ArrayList<CommentedConfig>> addonsConfigs) {
     this.addonsConfigs.clear();
     this.addonsConfigs.putAll(addonsConfigs);
   }
@@ -328,7 +349,7 @@ public class ConfigurationModel {
    * @return A list of configuration for the specified addon.
    * @author Griefed
    */
-  public Optional<ArrayList<CommentedConfig>> getAddonConfigs(String addonId) {
+  public Optional<ArrayList<CommentedConfig>> getAddonConfigs(@NotNull String addonId) {
     return Optional.ofNullable(addonsConfigs.get(addonId));
   }
 
@@ -340,7 +361,7 @@ public class ConfigurationModel {
    * @return A list of configurations for the specified addon ID.
    * @author Griefed
    */
-  public ArrayList<CommentedConfig> getOrCreateAddonConfigList(String addonId) {
+  public ArrayList<CommentedConfig> getOrCreateAddonConfigList(@NotNull String addonId) {
     if (!addonsConfigs.containsKey(addonId)) {
       addonsConfigs.put(addonId, new ArrayList<>(100));
     }
@@ -363,7 +384,7 @@ public class ConfigurationModel {
    * @param serverPackSuffix The suffix of the server pack to be generated.
    * @author Griefed
    */
-  public void setServerPackSuffix(String serverPackSuffix) {
+  public void setServerPackSuffix(@NotNull String serverPackSuffix) {
     this.serverPackSuffix = serverPackSuffix;
   }
 
@@ -383,7 +404,7 @@ public class ConfigurationModel {
    * @param newClientMods The new list of clientside-only mods to store.
    * @author Griefed
    */
-  public void setClientMods(List<String> newClientMods) {
+  public void setClientMods(@NotNull List<String> newClientMods) {
     this.clientMods.clear();
     newClientMods.removeIf(entry -> entry.matches("\\s+") || entry.isEmpty());
     this.clientMods.addAll(newClientMods);
@@ -405,7 +426,7 @@ public class ConfigurationModel {
    * @param newCopyDirs The new list of directories to include in server pack to store.
    * @author Griefed
    */
-  public void setCopyDirs(List<String> newCopyDirs) {
+  public void setCopyDirs(@NotNull List<String> newCopyDirs) {
     this.copyDirs.clear();
     newCopyDirs.removeIf(
         entry ->
@@ -429,7 +450,7 @@ public class ConfigurationModel {
    * @param newModpackDir The new modpack directory path to store.
    * @author Griefed
    */
-  public void setModpackDir(String newModpackDir) {
+  public void setModpackDir(@NotNull String newModpackDir) {
     this.modpackDir = newModpackDir;
   }
 
@@ -449,7 +470,7 @@ public class ConfigurationModel {
    * @param newMinecraftVersion The new Minecraft version to store.
    * @author Griefed
    */
-  public void setMinecraftVersion(String newMinecraftVersion) {
+  public void setMinecraftVersion(@NotNull String newMinecraftVersion) {
     this.minecraftVersion = newMinecraftVersion;
   }
 
@@ -469,7 +490,8 @@ public class ConfigurationModel {
    * @param newModLoader The new modloader to store.
    * @author Griefed
    */
-  public void setModLoader(String newModLoader) {
+  public void setModLoader(@NotNull String newModLoader) {
+    //TODO replace with enum
     if (newModLoader.toLowerCase().matches("^forge$")) {
 
       this.modLoader = "Forge";
@@ -504,7 +526,7 @@ public class ConfigurationModel {
    * @param newModLoaderVersion The new modloader version to store.
    * @author Griefed
    */
-  public void setModLoaderVersion(String newModLoaderVersion) {
+  public void setModLoaderVersion(@NotNull String newModLoaderVersion) {
     this.modLoaderVersion = newModLoaderVersion;
   }
 
@@ -604,7 +626,7 @@ public class ConfigurationModel {
    * @param javaArgs Sets the Java arguments with which the start-scripts will be generated.
    * @author Griefed
    */
-  public void setJavaArgs(String javaArgs) {
+  public void setJavaArgs(@NotNull String javaArgs) {
     this.javaArgs = javaArgs;
   }
 
@@ -626,7 +648,7 @@ public class ConfigurationModel {
    * @param modpackJson JsonNode. The JsonNode containing all information about the modpack.
    * @author Griefed
    */
-  public void setModpackJson(JsonNode modpackJson) {
+  public void setModpackJson(@NotNull JsonNode modpackJson) {
     this.modpackJson = modpackJson;
   }
 
@@ -646,7 +668,7 @@ public class ConfigurationModel {
    * @param projectName The name of the CurseForge project.
    * @author Griefed
    */
-  public void setProjectName(String projectName) {
+  public void setProjectName(@NotNull String projectName) {
     this.projectName = projectName;
   }
 
@@ -666,7 +688,7 @@ public class ConfigurationModel {
    * @param fileName The name of the CurseForge project file.
    * @author Griefed
    */
-  public void setFileName(String fileName) {
+  public void setFileName(@NotNull String fileName) {
     this.fileName = fileName;
   }
 
@@ -686,7 +708,7 @@ public class ConfigurationModel {
    * @param fileName The disk-name of the CurseForge project file.
    * @author Griefed
    */
-  public void setFileDiskName(String fileName) {
+  public void setFileDiskName(@NotNull String fileName) {
     this.fileDiskName = fileName;
   }
 
@@ -706,7 +728,7 @@ public class ConfigurationModel {
    * @param serverIconPath The path to the server-icon.png to include in the server pack.
    * @author Griefed
    */
-  public void setServerIconPath(String serverIconPath) {
+  public void setServerIconPath(@NotNull String serverIconPath) {
     this.serverIconPath = serverIconPath;
   }
 
@@ -726,7 +748,7 @@ public class ConfigurationModel {
    * @param serverPropertiesPath The path to the server.properties to include in the server pack.
    * @author Griefed
    */
-  public void setServerPropertiesPath(String serverPropertiesPath) {
+  public void setServerPropertiesPath(@NotNull String serverPropertiesPath) {
     this.serverPropertiesPath = serverPropertiesPath;
   }
 
@@ -747,7 +769,7 @@ public class ConfigurationModel {
    * @param settings Key-value pairs to be used in script creation.
    * @author Griefed
    */
-  public void setScriptSettings(HashMap<String, String> settings) {
+  public void setScriptSettings(@NotNull HashMap<String, String> settings) {
     this.scriptSettings.clear();
     this.scriptSettings.putAll(settings);
   }

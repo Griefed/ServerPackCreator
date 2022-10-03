@@ -108,6 +108,7 @@ public final class LoggingConfig extends ConfigurationFactory {
 
     } else {
       if (new File(SYSINFO.get("jarPath")).isDirectory()) {
+        // Dev environment
         HOME = new File("").getAbsoluteFile();
       } else {
         HOME = new File(SYSINFO.get("jarPath")).getParentFile();
@@ -156,7 +157,8 @@ public final class LoggingConfig extends ConfigurationFactory {
    * @author Griefed
    */
   @Override
-  public Configuration getConfiguration(LoggerContext loggerContext, ConfigurationSource source) {
+  public Configuration getConfiguration(LoggerContext loggerContext,
+                                        ConfigurationSource source) {
 
     if (LOG4J2XML.isFile()) {
       try {
@@ -217,7 +219,8 @@ public final class LoggingConfig extends ConfigurationFactory {
      *                      ConfigurationSource)}.
      * @author Griefed
      */
-    public CustomXmlConfiguration(LoggerContext loggerContext, ConfigurationSource configSource) {
+    public CustomXmlConfiguration(LoggerContext loggerContext,
+                                  ConfigurationSource configSource) {
       super(loggerContext, configSource);
     }
 

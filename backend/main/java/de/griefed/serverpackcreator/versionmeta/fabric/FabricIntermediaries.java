@@ -45,7 +45,8 @@ public final class FabricIntermediaries {
    * @param objectMapper         Object mapper for JSON parsing.
    * @author Griefed
    */
-  public FabricIntermediaries(File intermediaryManifest, ObjectMapper objectMapper) {
+  public FabricIntermediaries(File intermediaryManifest,
+                              ObjectMapper objectMapper) {
     INTERMEDIARY_MANIFEST = intermediaryManifest;
     OBJECT_MAPPER = objectMapper;
   }
@@ -75,17 +76,6 @@ public final class FabricIntermediaries {
   }
 
   /**
-   * Get a specific intermediary, wrapped in an {@link Optional}.
-   *
-   * @param minecraftVersion Minecraft version.
-   * @return A specific intermediary, wrapped in an {@link Optional}.
-   * @author Griefed
-   */
-  public Optional<FabricIntermediary> getIntermediary(String minecraftVersion) {
-    return Optional.ofNullable(INTERMEDIARIES.get(minecraftVersion));
-  }
-
-  /**
    * Check whether Fabric Intermediaries for the given Minecraft version are present, indicating
    * that the given Minecraft version is supported.
    *
@@ -94,5 +84,16 @@ public final class FabricIntermediaries {
    */
   public boolean areIntermediariesPresent(String minecraftVersion) {
     return getIntermediary(minecraftVersion).isPresent();
+  }
+
+  /**
+   * Get a specific intermediary, wrapped in an {@link Optional}.
+   *
+   * @param minecraftVersion Minecraft version.
+   * @return A specific intermediary, wrapped in an {@link Optional}.
+   * @author Griefed
+   */
+  public Optional<FabricIntermediary> getIntermediary(String minecraftVersion) {
+    return Optional.ofNullable(INTERMEDIARIES.get(minecraftVersion));
   }
 }

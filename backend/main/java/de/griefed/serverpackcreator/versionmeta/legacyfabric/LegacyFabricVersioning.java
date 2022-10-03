@@ -34,7 +34,8 @@ abstract class LegacyFabricVersioning extends ManifestParser {
   private final ObjectMapper MAPPER;
   private final File MANIFEST;
 
-  LegacyFabricVersioning(File manifest, ObjectMapper mapper) {
+  LegacyFabricVersioning(File manifest,
+                         ObjectMapper mapper) {
     MAPPER = mapper;
     MANIFEST = manifest;
   }

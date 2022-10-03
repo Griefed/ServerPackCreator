@@ -268,7 +268,9 @@ public final class VersionMeta extends ManifestParser {
    *                        {@link Type#FABRIC_INSTALLER}.
    * @author Griefed
    */
-  private void checkManifest(File manifestToCheck, URL urlToManifest, Type manifestType) {
+  private void checkManifest(File manifestToCheck,
+                             URL urlToManifest,
+                             Type manifestType) {
     if (manifestToCheck.isFile()) {
       if (!WEB_UTILITIES.isReachable(urlToManifest)) {
         LOG.warn(
@@ -339,10 +341,11 @@ public final class VersionMeta extends ManifestParser {
               if (countOldFile == countNewFile) {
 
                 if (!oldXML.getElementsByTagName("version").item(0).getChildNodes().item(0)
-                    .getNodeValue()
-                    .equals(
-                        newXML.getElementsByTagName("version").item(0).getChildNodes().item(0)
-                            .getNodeValue())) {
+                           .getNodeValue()
+                           .equals(
+                               newXML.getElementsByTagName("version").item(0).getChildNodes()
+                                     .item(0)
+                                     .getNodeValue())) {
 
                   countNewFile += 1;
                 }
@@ -379,7 +382,7 @@ public final class VersionMeta extends ManifestParser {
             VersionMeta.class
         );
         LOG.error("Unexpected end of file in XML-manifest. Restoring default "
-            + manifestToCheck.getPath());
+                      + manifestToCheck.getPath());
 
       } catch (ParserConfigurationException | IOException |
                InvalidTypeException ex) {
@@ -391,7 +394,7 @@ public final class VersionMeta extends ManifestParser {
     } else {
       if (!WEB_UTILITIES.isReachable(urlToManifest)) {
         LOG.error("CRITICAL!" + manifestToCheck + " not present and " + urlToManifest
-            + " unreachable. Exiting...");
+                      + " unreachable. Exiting...");
         LOG.error(
             "ServerPackCreator should have provided default manifests. Please report this on GitHub at https://github.com/Griefed/ServerPackCreator/issues/new?assignees=Griefed&labels=bug&template=bug-report.yml&title=%5BBug%5D%3A+");
         LOG.error("Make sure you include this log when reporting an error! Please....");
@@ -410,7 +413,8 @@ public final class VersionMeta extends ManifestParser {
    * @author whitebear60
    * @author Griefed
    */
-  private void updateManifest(File manifestToRefresh, String content) throws IOException {
+  private void updateManifest(File manifestToRefresh,
+                              String content) throws IOException {
     try {
       FileUtils.createParentDirectories(manifestToRefresh);
     } catch (IOException ignored) {
@@ -427,11 +431,12 @@ public final class VersionMeta extends ManifestParser {
    * @author whitebear60
    * @author Griefed
    */
-  private void updateManifest(File manifestToRefresh, URL urlToManifest) {
+  private void updateManifest(File manifestToRefresh,
+                              URL urlToManifest) {
     try (InputStream stream = urlToManifest.openStream()) {
 
       String manifestText = StreamUtils.copyToString(stream,
-          StandardCharsets.UTF_8);
+                                                     StandardCharsets.UTF_8);
 
       updateManifest(manifestToRefresh, manifestText);
 

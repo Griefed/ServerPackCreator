@@ -51,8 +51,9 @@ public final class QuiltMeta extends ManifestParser implements Meta {
    * @param injectedFabricIntermediaries Fabric-Intermediaries for further compatibility tests.
    * @author Griefed
    */
-  public QuiltMeta(File quiltManifest, File quiltInstallerManifest,
-      FabricIntermediaries injectedFabricIntermediaries) {
+  public QuiltMeta(File quiltManifest,
+                   File quiltInstallerManifest,
+                   FabricIntermediaries injectedFabricIntermediaries) {
 
     QUILT_LOADER = new QuiltLoader(quiltManifest);
     QUILT_INSTALLER = new QuiltInstaller(quiltInstallerManifest);
@@ -76,6 +77,16 @@ public final class QuiltMeta extends ManifestParser implements Meta {
   }
 
   @Override
+  public String latestInstaller() {
+    return QUILT_INSTALLER.latestInstallerVersion();
+  }
+
+  @Override
+  public String releaseInstaller() {
+    return QUILT_INSTALLER.releaseInstallerVersion();
+  }
+
+  @Override
   public List<String> loaderVersionsListAscending() {
     return QUILT_LOADER.loaders();
   }
@@ -93,16 +104,6 @@ public final class QuiltMeta extends ManifestParser implements Meta {
   @Override
   public String[] loaderVersionsArrayDescending() {
     return Lists.reverse(QUILT_LOADER.loaders()).toArray(new String[0]);
-  }
-
-  @Override
-  public String latestInstaller() {
-    return QUILT_INSTALLER.latestInstallerVersion();
-  }
-
-  @Override
-  public String releaseInstaller() {
-    return QUILT_INSTALLER.releaseInstallerVersion();
   }
 
   @Override

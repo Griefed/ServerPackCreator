@@ -70,7 +70,8 @@ public final class WebUtilities {
    * @return Boolean. Returns true if the file could be found on the hosts filesystem.
    * @author Griefed
    */
-  public boolean downloadAndReplaceFile(File destinationFile, URL downloadURL) {
+  public boolean downloadAndReplaceFile(File destinationFile,
+                                        URL downloadURL) {
     return downloadAndReplaceFile(
         destinationFile.getPath(), downloadURL);
   }
@@ -86,24 +87,10 @@ public final class WebUtilities {
    * @return Boolean. Returns true if the file could be found on the hosts filesystem.
    * @author Griefed
    */
-  public boolean downloadAndReplaceFile(String fileDestination, URL downloadURL) {
+  public boolean downloadAndReplaceFile(String fileDestination,
+                                        URL downloadURL) {
     FileUtils.deleteQuietly(new File(fileDestination));
     return downloadFile(fileDestination, downloadURL);
-  }
-
-  /**
-   * Download the file from the specified URL to the specified destination. The destination should
-   * end in a valid filename. Any directories up to the specified file will be created.
-   *
-   * @param destinationFile File. The file to store the web-resource in. Examples:<br>
-   *                        /tmp/some_folder/foo.bar<br> C:/temp/some_folder/bar.foo
-   * @param downloadURL     URL. The URL to the file you want to download.
-   * @return Boolean. Returns true if the file could be found on the hosts filesystem.
-   * @author Griefed
-   */
-  public boolean downloadFile(File destinationFile, URL downloadURL) {
-    return downloadFile(
-        destinationFile.getPath(), downloadURL);
   }
 
   /**
@@ -117,7 +104,8 @@ public final class WebUtilities {
    * @return Boolean. Returns true if the file could be found on the hosts filesystem.
    * @author Griefed
    */
-  public boolean downloadFile(String fileDestination, URL downloadURL) {
+  public boolean downloadFile(String fileDestination,
+                              URL downloadURL) {
 
     try {
       FileUtils.createParentDirectories(new File(fileDestination));
@@ -141,7 +129,7 @@ public final class WebUtilities {
 
     } catch (IOException ex) {
       LOG.error("An error occurred downloading " + fileDestination + " from " + downloadURL + ".",
-          ex);
+                ex);
     } finally {
 
       try {
@@ -173,6 +161,22 @@ public final class WebUtilities {
     }
 
     return new File(fileDestination).exists();
+  }
+
+  /**
+   * Download the file from the specified URL to the specified destination. The destination should
+   * end in a valid filename. Any directories up to the specified file will be created.
+   *
+   * @param destinationFile File. The file to store the web-resource in. Examples:<br>
+   *                        /tmp/some_folder/foo.bar<br> C:/temp/some_folder/bar.foo
+   * @param downloadURL     URL. The URL to the file you want to download.
+   * @return Boolean. Returns true if the file could be found on the hosts filesystem.
+   * @author Griefed
+   */
+  public boolean downloadFile(File destinationFile,
+                              URL downloadURL) {
+    return downloadFile(
+        destinationFile.getPath(), downloadURL);
   }
 
   /**

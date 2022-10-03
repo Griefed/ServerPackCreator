@@ -104,7 +104,8 @@ public final class I18n {
    * @param locale                        String. The locale to initialize with.
    * @author Griefed
    */
-  public I18n(ApplicationProperties injectedApplicationProperties, String locale) {
+  public I18n(ApplicationProperties injectedApplicationProperties,
+              String locale) {
     this.APPLICATIONPROPERTIES = injectedApplicationProperties;
 
     try {
@@ -115,19 +116,6 @@ public final class I18n {
     } catch (IncorrectLanguageException ex) {
       LOG.error("The specified language is not supported: " + locale, ex);
       initialize();
-    }
-  }
-
-  /**
-   * Initialize the I18n with en_us as the locale.
-   *
-   * @author whitebear60
-   */
-  public void initialize() {
-    try {
-      initialize("en_us");
-    } catch (IncorrectLanguageException e) {
-      LOG.error("Error during default localization initialization.");
     }
   }
 
@@ -234,6 +222,38 @@ public final class I18n {
   }
 
   /**
+   * Writes the specified locale from -lang your_locale to a lang.properties file to ensure every
+   * subsequent start of serverpackcreator is executed using said locale. This method should
+   * <strong>not</strong> call {@link #getMessage(String)}, as the initialization of said manager
+   * is called from here. Therefore, localized strings are not yet available.
+   *
+   * @param locale The locale the user specified when they ran serverpackcreator with -lang
+   *               -your_locale.
+   * @author Griefed
+   */
+  void writeLocaleToFile(String locale) {
+    if (!APPLICATIONPROPERTIES.getLanguage().equals(locale)) {
+
+      APPLICATIONPROPERTIES.setLanguage(locale);
+      APPLICATIONPROPERTIES.saveToDisk(APPLICATIONPROPERTIES.serverPackCreatorPropertiesFile());
+
+    }
+  }
+
+  /**
+   * Initialize the I18n with en_us as the locale.
+   *
+   * @author whitebear60
+   */
+  public void initialize() {
+    try {
+      initialize("en_us");
+    } catch (IncorrectLanguageException e) {
+      LOG.error("Error during default localization initialization.");
+    }
+  }
+
+  /**
    * Acquires a localized String for the provided language key from the initialized locale resource.
    * If the specified langkey can not be found in the lang-file loaded, a fallback from the
    * en_us-definitions is used.
@@ -310,30 +330,15 @@ public final class I18n {
     return text;
   }
 
-  /**
-   * Writes the specified locale from -lang your_locale to a lang.properties file to ensure every
-   * subsequent start of serverpackcreator is executed using said locale. This method should
-   * <strong>not</strong> call {@link #getMessage(String)}, as the initialization of said manager
-   * is called from here. Therefore, localized strings are not yet available.
-   *
-   * @param locale The locale the user specified when they ran serverpackcreator with -lang
-   *               -your_locale.
-   * @author Griefed
-   */
-  void writeLocaleToFile(String locale) {
-    if (!APPLICATIONPROPERTIES.getLanguage().equals(locale)) {
-
-      APPLICATIONPROPERTIES.setLanguage(locale);
-      APPLICATIONPROPERTIES.saveToDisk(APPLICATIONPROPERTIES.serverPackCreatorPropertiesFile());
-
-    }
-  }
-
   @SuppressWarnings("InnerClassMayBeStatic")
   private class UTF8Control extends Control {
 
     public ResourceBundle newBundle(
-        String baseName, Locale locale, String format, ClassLoader loader, boolean reload)
+        String baseName,
+        Locale locale,
+        String format,
+        ClassLoader loader,
+        boolean reload)
         throws IOException {
       // The below is a copy of the default implementation.
       String bundleName = toBundleName(baseName, locale);

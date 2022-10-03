@@ -92,8 +92,8 @@ public abstract class ExtensionTab extends JPanel {
       if (ADDON_CONFIG.isPresent() && CONFIG_FILE.isPresent()) {
 
         TomlFormat.instance().createWriter()
-            .write(ADDON_CONFIG.get(), CONFIG_FILE.get(), WritingMode.REPLACE,
-                StandardCharsets.UTF_8);
+                  .write(ADDON_CONFIG.get(), CONFIG_FILE.get(), WritingMode.REPLACE,
+                         StandardCharsets.UTF_8);
 
         LOG_ADDONS.info("Configuration saved.");
 

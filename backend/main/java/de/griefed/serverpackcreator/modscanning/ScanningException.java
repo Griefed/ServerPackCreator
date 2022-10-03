@@ -21,7 +21,8 @@ package de.griefed.serverpackcreator.modscanning;
 
 final class ScanningException extends Exception {
 
-  public ScanningException(String errorMessage, Throwable error) {
+  public ScanningException(String errorMessage,
+                           Throwable error) {
     super(errorMessage, error);
   }
 
