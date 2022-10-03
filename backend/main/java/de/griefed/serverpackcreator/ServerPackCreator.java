@@ -994,7 +994,7 @@ public class ServerPackCreator {
           source,
           APPLICATIONPROPERTIES.langDirectory().toString(),
           prefix,
-          ".properties");
+          "properties");
 
     } catch (IOException ex) {
       LOG.error("Error copying \"/de/griefed/resources/lang\" from the JAR-file.");
@@ -1015,7 +1015,7 @@ public class ServerPackCreator {
           source,
           APPLICATIONPROPERTIES.manifestsDirectory().toString(),
           prefix,
-          "");
+          "xml|json");
 
     } catch (IOException ex) {
       LOG.error("Error copying \"/de/griefed/resources/manifests\" from the JAR-file.");

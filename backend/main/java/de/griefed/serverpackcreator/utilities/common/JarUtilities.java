@@ -21,13 +21,13 @@ package de.griefed.serverpackcreator.utilities.common;
 
 import de.griefed.serverpackcreator.ServerPackCreator;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -36,6 +36,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -317,7 +319,9 @@ public final class JarUtilities {
    *                             In order to correctly scan for source, we need to remove that
    *                             prefix, so we receive a path that looks like a regular path inside
    *                             a JAR-file.
-   * @param fileEnding           The file-ending to filter for.
+   * @param fileEnding           The file-ending to filter for. If you want to filter for multiple
+   *                             file-endings, separate them using {@code |}. Do not include the
+   *                             {@code .}.
    * @throws IOException Thrown if no streams of the files can be created, indicating that they are
    *                     inaccessible for some reason.
    * @author Griefed
@@ -338,7 +342,7 @@ public final class JarUtilities {
 
       if (entryName.replace(jarDirectoryPrefix, "").startsWith(directoryToCopy + "/")
           && !entry.isDirectory()
-          && entryName.endsWith(fileEnding)) {
+          && entryName.matches(".*\\.(" + fileEnding + ")")) {
 
         File destination =
             new File(
@@ -436,25 +440,23 @@ public final class JarUtilities {
   private void copyFolderFromJar(
       Class<?> classToCopyFrom, String source, String destination, String fileEnding) {
 
-    FileFilter fileFilter = pathname -> pathname.toString().endsWith(fileEnding);
-
-    File[] files;
     List<String> filesFromJar = new ArrayList<>(1000);
 
-    try {
+    try (Stream<Path> files = Files.walk(
+        Paths.get(Objects.requireNonNull(classToCopyFrom.getResource(source)).toURI()))) {
 
-      files =
-          new File(Objects.requireNonNull(classToCopyFrom.getResource(source)).toURI())
-              .listFiles(fileFilter);
+      List<Path> paths = files.collect(Collectors.toList());
 
-      assert files != null;
-
-      for (File file : files) {
-        filesFromJar.add(file.getName());
+      for (Path path : paths) {
+        String fileName = path.toString().replace("\\", "/");
+        if (fileName.matches(".*\\.(" + fileEnding + ")") && !fileName.endsWith(source)) {
+          filesFromJar.add(
+              fileName.substring(fileName.lastIndexOf(source) + source.length() + 1));
+        }
       }
 
-    } catch (URISyntaxException ex) {
-      LOG.error("Error retrieving file list from JAR.", ex);
+    } catch (IOException | URISyntaxException ex) {
+      LOG.error("Error walking source-directory.", ex);
     }
 
     try {
