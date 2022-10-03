@@ -33,26 +33,46 @@ import java.util.TreeSet;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
 /**
- * Checks the previous version of ServerPackCreator used versus the currently being used version and
- * determines the updates in between the two, so we can then execute any necessary migrations. Every
- * version in between may or may not have necessary migration steps needed to be taken care of
- * before safely moving to the new version in full. Methods in this class follow a very specific
- * naming-scheme, so we can resolve the update steps against these methods in order execute the ones
- * we require.
+ * The migration manager of ServerPackCreator is responsible for determining update-steps between a
+ * given old version and a given new version. The determined steps between updates are then executed
+ * in order to ensure a users environment is up-to-date, even when skipping multiple versions when
+ * updating.
+ * <p>
+ * This does not guarantee a safe update when updating between major versions, as major versions
+ * tend to contain breaking changes, and depending on those changes there will still be a need for
+ * the user to ensure they can safely update. One example would be major version 3 to major version
+ * 4, where the Java version required by ServerPackCreator will rise from Java 8 to Java 17 or
+ * later.<br> Aas this is not something ServerPackCreator can take care of, it is a good example for
+ * a migration which this manager can not take care of.
+ * <p>
+ * Other migrations, such as updating the {@code log4j2.xml} and the logs-directory inside said file
+ * can and will be taken care of.
+ * <p>
+ * Some migrations will require the user to restart ServerPackCreator for the executed migrations to
+ * take full effect. A given migration method which executes such migrations should register a
+ * migration message informing the user about the need to restart SPC.
+ * <p>
+ * Migration messages are displayed in a dialog when using the GUI as well as printed to the
+ * serverpackcreator.log.
+ *
+ * @author Griefed
  */
 @SuppressWarnings("unused")
 public final class MigrationManager {
 
   private static final Logger LOG = LogManager.getLogger(MigrationManager.class);
   private final MigrationMethods MIGRATION_METHODS = new MigrationMethods();
+  private final List<MigrationMessage> MIGRATION_MESSAGES = new ArrayList<>();
   private final ApplicationProperties APPLICATIONPROPERTIES;
   private final I18n I18N;
-  private final List<MigrationMessage> MIGRATION_MESSAGES = new ArrayList<>();
   private String previous;
 
-  MigrationManager(ApplicationProperties applicationProperties, I18n i18n) {
+  MigrationManager(
+      @NotNull ApplicationProperties applicationProperties,
+      @NotNull I18n i18n) {
     APPLICATIONPROPERTIES = applicationProperties;
     I18N = i18n;
   }
@@ -66,6 +86,7 @@ public final class MigrationManager {
     String old = APPLICATIONPROPERTIES.oldVersion();
     String current = APPLICATIONPROPERTIES.serverPackCreatorVersion();
 
+    //noinspection ConstantConditions
     if (old == null || old.isEmpty()) {
       LOG.info("No old version received. Assuming first time run.");
       APPLICATIONPROPERTIES.setOldVersion(current);
@@ -79,16 +100,18 @@ public final class MigrationManager {
       LOG.info("No migrations to execute. Upgrading from alpha, beta or dev version.");
       return;
     }
-    if (isOlder(old, current)) {
+    if (isOlder(old,
+                current)) {
       LOG.info("No migrations to execute. User went back a version. From " + old + " to " + current
-          + ".");
+                   + ".");
       return;
     }
     if (old.equals(current)) {
       LOG.info("No migrations to execute. User has not updated.");
     }
 
-    List<Method> migrationMethods = getMigrationMethods(old, current);
+    List<Method> migrationMethods = getMigrationMethods(old,
+                                                        current);
     if (!migrationMethods.isEmpty()) {
 
       previous = old;
@@ -100,10 +123,12 @@ public final class MigrationManager {
               method.invoke(MIGRATION_METHODS);
             } catch (IllegalAccessException ex) {
               LOG.error("Could not access migration-method: " + method.getName()
-                  + ". Please report this on GitHub and include the logs!", ex);
+                            + ". Please report this on GitHub and include the logs!",
+                        ex);
             } catch (InvocationTargetException ex) {
               LOG.error("Could not invoke migration-method: " + method.getName()
-                  + ". Please report this on GitHub and include the logs!", ex);
+                            + ". Please report this on GitHub and include the logs!",
+                        ex);
             }
           }
       );
@@ -114,6 +139,21 @@ public final class MigrationManager {
   }
 
   /**
+   * Check if the first version is older than the second one.
+   *
+   * @param old          The old version used.
+   * @param checkAgainst The current version being used.
+   * @return {@code true} if the current version is older than the previously used version.
+   * @author Griefed
+   */
+  private boolean isOlder(@NotNull String old,
+                          @NotNull String checkAgainst) {
+    return older(
+        semantics(old),
+        semantics(checkAgainst));
+  }
+
+  /**
    * Acquire the list of migration-methods to execute based on the current version being used. All
    * methods which match a version newer than the passed one are executed.
    *
@@ -121,7 +161,10 @@ public final class MigrationManager {
    * @return Methods to execute to ensure proper migration between version updates.
    * @author Griefed
    */
-  private List<Method> getMigrationMethods(String oldVersion, String currentVersion) {
+  private @NotNull List<Method> getMigrationMethods(
+      @NotNull String oldVersion,
+      @NotNull String currentVersion) {
+
     List<Method> run = new ArrayList<>(100);
 
     Method[] methods = MIGRATION_METHODS.getClass().getDeclaredMethods();
@@ -130,13 +173,16 @@ public final class MigrationManager {
 
     for (Method method : methods) {
       String methodVersion = toSemantic(method.getName());
-      methodMap.put(methodVersion, method);
+      methodMap.put(methodVersion,
+                    method);
       methodVersions.add(methodVersion);
     }
 
     for (String methodVersion : methodVersions) {
 
-      if (isNewer(oldVersion, methodVersion) && isOlderOrSame(currentVersion, methodVersion)) {
+      if (isNewer(oldVersion,
+                  methodVersion) && isOlderOrSame(currentVersion,
+                                                  methodVersion)) {
 
         run.add(methodMap.get(methodVersion));
       }
@@ -145,114 +191,37 @@ public final class MigrationManager {
   }
 
   /**
-   * Get the major, minor and patch numbers of a version.
+   * Convert a text-based version to a semantic representation, usable in version comparisons.
    *
-   * @param version The version of which to get the major, minor and patch number array.
-   * @return Array containing the major, minor and patch numbers.
+   * @param textVersion The text-based version to convert to the semantic format.
+   * @return Semantic representation of the text-based version.
    * @author Griefed
    */
-  private Integer[] semantics(String version) {
-    return Arrays.stream(version.split("\\."))
-        .map(Integer::valueOf).toArray(Integer[]::new);
-  }
-
-  /**
-   * Check if the first version is older than or the same as the second one.
-   *
-   * @param old          The old version used.
-   * @param checkAgainst The current version being used.
-   * @return {@code true} if the current version is older than or the same as the previously used
-   * version.
-   * @author Griefed
-   */
-  private boolean isOlderOrSame(String old, String checkAgainst) {
-    return oldOrSame(
-        semantics(old),
-        semantics(checkAgainst));
-  }
-
-  /**
-   * Check if the first version is older than the second one.
-   *
-   * @param old          The old version used.
-   * @param checkAgainst The current version being used.
-   * @return {@code true} if the current version is older than the previously used version.
-   * @author Griefed
-   */
-  private boolean isOlder(String old, String checkAgainst) {
-    return older(
-        semantics(old),
-        semantics(checkAgainst));
-  }
-
-  /**
-   * Check if the first version is newer than the second one.
-   *
-   * @param old          The current version being used.
-   * @param checkAgainst The version the migration-method represents.
-   * @return {@code true} if the migration-method version is newer than the current version.
-   * @author Griefed
-   */
-  private boolean isNewer(String old, String checkAgainst) {
-    return newer(
-        semantics(old),
-        semantics(checkAgainst));
-  }
-
-  /**
-   * Compare two integer arrays of semantic version against each other and determine whether we have
-   * a new version at hand.
-   *
-   * @param old          The old version numbers.
-   * @param checkAgainst The new version numbers to check whether they represent a newer version.
-   * @return {@code true} if the version numbers checked against represent a newer version.
-   * @author Griefed
-   */
-  private boolean newer(Integer[] old, Integer[] checkAgainst) {
-    // Method MAJOR bigger?
-    if (checkAgainst[0] > old[0]) {
-      return true;
-    }
-
-    // Method MAJOR version equal and method MINOR bigger?
-    if (checkAgainst[0].equals(old[0]) && checkAgainst[1] > old[1]) {
-      return true;
-    }
-
-    // Method MAJOR equal, method MINOR equal, method PATCH bigger?
-    return checkAgainst[0].equals(old[0]) && checkAgainst[1].equals(old[1])
-        && checkAgainst[2] > old[2];
-  }
-
-  /**
-   * Check if the first version is newer than or the same as the second one.
-   *
-   * @param current      The old version used.
-   * @param checkAgainst The current version being used.
-   * @return {@code true} if the current version is newer than or the same as the previously used
-   * version.
-   * @author Griefed
-   */
-  private boolean isNewerOrSame(String current, String checkAgainst) {
-    return newOrSame(
-        semantics(current),
-        semantics(checkAgainst));
-  }
-
-  /**
-   * Compare two integer arrays of semantic version against each other and determine whether we have
-   * a new version or the same one at hand.
-   *
-   * @param current      The old version numbers.
-   * @param checkAgainst The new version numbers to check whether they represent an older version.
-   * @return {@code true} if the version numbers checked against represent a newer version or the
-   * same.
-   * @author Griefed
-   */
-  private boolean newOrSame(Integer[] current, Integer[] checkAgainst) {
-    return checkAgainst[0] >= current[0]
-        && checkAgainst[1] >= current[1]
-        && checkAgainst[2] >= current[2];
+  private @NotNull String toSemantic(@NotNull String textVersion) {
+    textVersion = textVersion
+        .replace("Zero",
+                 "0")
+        .replace("One",
+                 "1")
+        .replace("Two",
+                 "2")
+        .replace("Three",
+                 "3")
+        .replace("Four",
+                 "4")
+        .replace("Five",
+                 "5")
+        .replace("Six",
+                 "6")
+        .replace("Seven",
+                 "7")
+        .replace("Eight",
+                 "8")
+        .replace("Nine",
+                 "9")
+        .replace("Point",
+                 ".");
+    return textVersion;
   }
 
   /**
@@ -264,7 +233,8 @@ public final class MigrationManager {
    * @return {@code true} if the version numbers checked against represent an older version.
    * @author Griefed
    */
-  private boolean older(Integer[] old, Integer[] checkAgainst) {
+  private boolean older(@NotNull Integer @NotNull [] old,
+                        @NotNull Integer @NotNull [] checkAgainst) {
     // Current MAJOR version smaller?
     if (checkAgainst[0] < old[0]) {
       return true;
@@ -281,6 +251,75 @@ public final class MigrationManager {
   }
 
   /**
+   * Get the major, minor and patch numbers of a version.
+   *
+   * @param version The version of which to get the major, minor and patch number array.
+   * @return Array containing the major, minor and patch numbers.
+   * @author Griefed
+   */
+  private @NotNull Integer @NotNull [] semantics(@NotNull String version) {
+    return Arrays.stream(version.split("\\."))
+                 .map(Integer::valueOf).toArray(Integer[]::new);
+  }
+
+  /**
+   * Check if the first version is newer than the second one.
+   *
+   * @param old          The current version being used.
+   * @param checkAgainst The version the migration-method represents.
+   * @return {@code true} if the migration-method version is newer than the current version.
+   * @author Griefed
+   */
+  private boolean isNewer(@NotNull String old,
+                          @NotNull String checkAgainst) {
+    return newer(
+        semantics(old),
+        semantics(checkAgainst));
+  }
+
+  /**
+   * Check if the first version is older than or the same as the second one.
+   *
+   * @param old          The old version used.
+   * @param checkAgainst The current version being used.
+   * @return {@code true} if the current version is older than or the same as the previously used
+   * version.
+   * @author Griefed
+   */
+  private boolean isOlderOrSame(@NotNull String old,
+                                @NotNull String checkAgainst) {
+    return oldOrSame(
+        semantics(old),
+        semantics(checkAgainst));
+  }
+
+  /**
+   * Compare two integer arrays of semantic version against each other and determine whether we have
+   * a new version at hand.
+   *
+   * @param old          The old version numbers.
+   * @param checkAgainst The new version numbers to check whether they represent a newer version.
+   * @return {@code true} if the version numbers checked against represent a newer version.
+   * @author Griefed
+   */
+  private boolean newer(@NotNull Integer @NotNull [] old,
+                        @NotNull Integer @NotNull [] checkAgainst) {
+    // Method MAJOR bigger?
+    if (checkAgainst[0] > old[0]) {
+      return true;
+    }
+
+    // Method MAJOR version equal and method MINOR bigger?
+    if (checkAgainst[0].equals(old[0]) && checkAgainst[1] > old[1]) {
+      return true;
+    }
+
+    // Method MAJOR equal, method MINOR equal, method PATCH bigger?
+    return checkAgainst[0].equals(old[0]) && checkAgainst[1].equals(old[1])
+        && checkAgainst[2] > old[2];
+  }
+
+  /**
    * Compare two integer arrays of semantic version against each other and determine whether we have
    * an old version or the same one at hand.
    *
@@ -290,10 +329,44 @@ public final class MigrationManager {
    * same.
    * @author Griefed
    */
-  private boolean oldOrSame(Integer[] old, Integer[] checkAgainst) {
+  private boolean oldOrSame(@NotNull Integer @NotNull [] old,
+                            @NotNull Integer @NotNull [] checkAgainst) {
     return checkAgainst[0] <= old[0]
         && checkAgainst[1] <= old[1]
         && checkAgainst[2] <= old[2];
+  }
+
+  /**
+   * Check if the first version is newer than or the same as the second one.
+   *
+   * @param current      The old version used.
+   * @param checkAgainst The current version being used.
+   * @return {@code true} if the current version is newer than or the same as the previously used
+   * version.
+   * @author Griefed
+   */
+  private boolean isNewerOrSame(@NotNull String current,
+                                @NotNull String checkAgainst) {
+    return newOrSame(
+        semantics(current),
+        semantics(checkAgainst));
+  }
+
+  /**
+   * Compare two integer arrays of semantic version against each other and determine whether we have
+   * a new version or the same one at hand.
+   *
+   * @param current      The old version numbers.
+   * @param checkAgainst The new version numbers to check whether they represent an older version.
+   * @return {@code true} if the version numbers checked against represent a newer version or the
+   * same.
+   * @author Griefed
+   */
+  private boolean newOrSame(@NotNull Integer @NotNull [] current,
+                            @NotNull Integer @NotNull [] checkAgainst) {
+    return checkAgainst[0] >= current[0]
+        && checkAgainst[1] >= current[1]
+        && checkAgainst[2] >= current[2];
   }
 
   /**
@@ -303,7 +376,7 @@ public final class MigrationManager {
    * @return The semantic version converted to text-based representation.
    * @author Griefed
    */
-  private String toText(String version) {
+  private @NotNull String toText(@NotNull String version) {
     StringBuilder textVersion = new StringBuilder();
 
     for (char character : version.toCharArray()) {
@@ -347,29 +420,6 @@ public final class MigrationManager {
   }
 
   /**
-   * Convert a text-based version to a semantic representation, usable in version comparisons.
-   *
-   * @param textVersion The text-based version to convert to the semantic format.
-   * @return Semantic representation of the text-based version.
-   * @author Griefed
-   */
-  private String toSemantic(String textVersion) {
-    textVersion = textVersion
-        .replace("Zero", "0")
-        .replace("One", "1")
-        .replace("Two", "2")
-        .replace("Three", "3")
-        .replace("Four", "4")
-        .replace("Five", "5")
-        .replace("Six", "6")
-        .replace("Seven", "7")
-        .replace("Eight", "8")
-        .replace("Nine", "9")
-        .replace("Point", ".");
-    return textVersion;
-  }
-
-  /**
    * A list of migration messages, if any, to display in logs, GUI or any other place you can think
    * of. A migration message includes the versions from which and to which version the migration
    * took place, as well as a list of changes made during it, if any.
@@ -377,7 +427,7 @@ public final class MigrationManager {
    * @return A list of migrations that took place.
    * @author Griefed
    */
-  public List<MigrationMessage> getMigrationMessages() {
+  public @NotNull List<MigrationMessage> getMigrationMessages() {
     return MIGRATION_MESSAGES;
   }
 
@@ -394,21 +444,23 @@ public final class MigrationManager {
     private final String TO;
     private final List<String> CHANGES = new ArrayList<>();
 
-    private MigrationMessage(String from, String to, List<String> changes) {
+    private MigrationMessage(@NotNull String from,
+                             @NotNull String to,
+                             @NotNull List<String> changes) {
       FROM = from;
       TO = to;
       CHANGES.addAll(changes);
     }
 
-    public String fromVersion() {
+    public @NotNull String fromVersion() {
       return FROM;
     }
 
-    public String toVersion() {
+    public @NotNull String toVersion() {
       return TO;
     }
 
-    public List<String> changes() {
+    public @NotNull List<String> changes() {
       return CHANGES;
     }
 
@@ -416,12 +468,12 @@ public final class MigrationManager {
       return CHANGES.size();
     }
 
-    public String get() {
+    public @NotNull String get() {
       return toString();
     }
 
     @Override
-    public String toString() {
+    public @NotNull String toString() {
       String header = "From " + FROM + " to " + TO + " the following changes were made:\n";
       StringBuilder content = new StringBuilder();
       content.append(header).append("\n");
@@ -450,24 +502,28 @@ public final class MigrationManager {
       try {
         List<String> changes = new ArrayList<>();
 
-        File log4J2Xml = new File(APPLICATIONPROPERTIES.homeDirectory(), "log4j2.xml");
+        File log4J2Xml = new File(APPLICATIONPROPERTIES.homeDirectory(),
+                                  "log4j2.xml");
         String oldLogs = "<Property name=\"log-path\">logs</Property>";
         String newLogs =
             "<Property name=\"log-path\">"
                 + APPLICATIONPROPERTIES.logsDirectory()
                 + "</Property>";
 
-        String log4j = FileUtils.readFileToString(log4J2Xml, StandardCharsets.UTF_8);
+        String log4j = FileUtils.readFileToString(log4J2Xml,
+                                                  StandardCharsets.UTF_8);
 
         boolean changed = false;
         if (log4j.contains(oldLogs)) {
 
           changed = true;
-          log4j = log4j.replace(oldLogs, newLogs);
+          log4j = log4j.replace(oldLogs,
+                                newLogs);
 
           String message = String.format(
               I18N.getMessage("migrationmanager.migration.threepointonefilepointzero.directory")
-              , APPLICATIONPROPERTIES.logsDirectory());
+              ,
+              APPLICATIONPROPERTIES.logsDirectory());
 
           changes.add(message);
         }
@@ -475,7 +531,7 @@ public final class MigrationManager {
         if (log4j.contains("<Configuration status=\"WARN\">")) {
           changed = true;
           log4j = log4j.replace("<Configuration status=\"WARN\">",
-              "<Configuration monitorInterval=\"30\">");
+                                "<Configuration monitorInterval=\"30\">");
 
           changes.add(
               I18N.getMessage("migrationmanager.migration.threepointonefilepointzero.interval"));
@@ -484,7 +540,9 @@ public final class MigrationManager {
 
         if (changed) {
 
-          FileUtils.writeStringToFile(log4J2Xml, log4j, StandardCharsets.UTF_8);
+          FileUtils.writeStringToFile(log4J2Xml,
+                                      log4j,
+                                      StandardCharsets.UTF_8);
           changes.add(
               I18N.getMessage("migrationmanager.migration.threepointonefilepointzero.restart"));
         }
@@ -496,7 +554,8 @@ public final class MigrationManager {
               changes));
         }
       } catch (IOException ex) {
-        LOG.error("Error reading/writing log4j2.xml.", ex);
+        LOG.error("Error reading/writing log4j2.xml.",
+                  ex);
       }
     }
   }
