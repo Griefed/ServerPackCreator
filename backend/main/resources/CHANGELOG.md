@@ -1,3 +1,10 @@
+## [3.14.6](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.14.5...3.14.6) (2022-09-29)
+
+
+### 🦊 CI/CD
+
+* **Maintenance Release:** Writes the current version to your serverpackcreator.properties to `de.griefed.serverpackcreator.version.old`, so following version can execute migrations properly.  If you've used SPC before, please update to this version and run it at least once. ([f0de921](https://git.griefed.de/Griefed/ServerPackCreator/commit/f0de921622b73cad9837f74cb13af3cad20a0615))
+
 ## [3.14.5](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.14.4...3.14.5) (2022-09-26)
 
 
