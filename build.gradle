@@ -183,19 +183,16 @@ tasks.register('copyDist', Copy) {
     into layout.projectDirectory.dir("backend/main/resources")
   }
 
-  file("backend/main/resources/README.md").delete()
   copy {
     from layout.projectDirectory.file("README.md")
     into layout.projectDirectory.dir("backend/main/resources")
   }
 
-  file("backend/main/resources/HELP.md").delete()
   copy {
     from layout.projectDirectory.file("HELP.md")
     into layout.projectDirectory.dir("backend/main/resources")
   }
 
-  file("backend/main/resources/CHANGELOG.md").delete()
   copy {
     from layout.projectDirectory.file("CHANGELOG.md")
     into layout.projectDirectory.dir("backend/main/resources")
@@ -211,10 +208,6 @@ tasks.register('copyDist', Copy) {
     into layout.projectDirectory.dir("backend/main/resources")
   }
 
-  file("backend/main/resources/de/griefed/resources/manifests").list().each {
-    f ->
-      delete "${"backend/main/resources/de/griefed/resources/manifests"}/${f}"
-  }
   copy {
     from layout.projectDirectory.dir("manifests")
     into layout.projectDirectory.dir("backend/main/resources/de/griefed/resources/manifests")
@@ -274,6 +267,12 @@ test {
         "skipped",
         "failed"
     )
+  }
+  doLast {
+    copy {
+      from layout.projectDirectory.dir("tests/manifests")
+      into layout.projectDirectory.dir("manifests")
+    }
   }
 }
 
