@@ -848,9 +848,11 @@ public final class ApplicationProperties {
   }
 
   /**
-   * Default properties file.
+   * The {@code serverpackcreator.properties}-file which both resulted from starting
+   * ServerPackCreator and provided the settings, properties and configurations for the currently
+   * running instance.
    *
-   * @return serverpackcreator.properties
+   * @return serverpackcreator.properties in ServerPackCreators home-directory.
    * @author Griefed
    */
   public @NotNull File serverPackCreatorPropertiesFile() {

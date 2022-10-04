@@ -78,8 +78,6 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.context.annotation.PropertySources;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.xml.sax.SAXException;
 
@@ -98,11 +96,6 @@ import org.xml.sax.SAXException;
  */
 @SpringBootApplication
 @EnableScheduling
-@PropertySources({
-    @PropertySource("classpath:application.properties"),
-    @PropertySource("classpath:serverpackcreator.properties"),
-    @PropertySource("file:./serverpackcreator.properties")
-})
 public class ServerPackCreator {
 
   private static final Logger LOG = LogManager.getLogger(ServerPackCreator.class);
@@ -307,7 +300,19 @@ public class ServerPackCreator {
    */
   public synchronized void web(String[] args) {
 
-    LOG.debug("Application name: " + getSpringBootApplicationContext(args).getApplicationName());
+    String[] springArgs = new String[args.length + 1];
+    System.arraycopy(args, 0, springArgs, 0, args.length);
+
+    springArgs[springArgs.length - 1] = "--spring.config.location="
+        + "classpath:application.properties,"
+        + "classpath:serverpackcreator.properties,"
+        + "file:" + APPLICATIONPROPERTIES.serverPackCreatorPropertiesFile().getAbsolutePath() + ","
+        + "optional:file:./serverpackcreator.properties";
+
+    LOG.debug("Running webservice with args:" + Arrays.toString(springArgs));
+
+    LOG.debug(
+        "Application name: " + getSpringBootApplicationContext(springArgs).getApplicationName());
 
     LOG.debug("Property sources:");
     springBootApplicationContext.getEnvironment().getPropertySources()
