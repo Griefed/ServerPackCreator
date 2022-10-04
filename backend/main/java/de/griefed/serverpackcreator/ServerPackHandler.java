@@ -491,7 +491,7 @@ public final class ServerPackHandler {
 
     } else {
 
-      TreeSet<String> exclusions = new TreeSet<>(APPLICATIONPROPERTIES.getDirectoriesToExclude());
+      TreeSet<String> exclusions = new TreeSet<>();
       directoriesToCopy.removeIf(exclude -> {
 
         if (exclude.startsWith("!")) {
@@ -568,14 +568,11 @@ public final class ServerPackHandler {
       LOG.info("Ensuring files and/or directories are properly excluded.");
 
       serverPackFiles.removeIf(
-          serverPackFile -> {
-            if (excludeFileOrDirectory(serverPackFile.SOURCE_PATH.toString(), exclusions)) {
-              LOG.debug("Excluding file/directory: " + serverPackFile.SOURCE_PATH);
-              return true;
-            } else {
-              return false;
-            }
-          });
+          serverPackFile ->
+              excludeFileOrDirectory(
+                  modpackDir,
+                  serverPackFile.SOURCE_FILE,
+                  exclusions));
 
       LOG.info("Copying files to the server pack. This may take a while...");
 
@@ -1352,30 +1349,41 @@ public final class ServerPackHandler {
   }
 
   /**
-   * Check whether the given file is present in the list of directories to exclude from the server
-   * pack.
+   * Check whether the given file or directory should be excluded from the server pack.
    *
-   * @param fileToCheckFor The string to check for.
-   * @return {@code true} if the file is found in the list of directories to exclude, false if not.
+   * @param modpackDir     The directory where the modpack resides in. Used to filter out any
+   *                       unwanted directories using
+   *                       {@link ApplicationProperties#getDirectoriesToExclude()}.
+   * @param fileToCheckFor The file or directory to check whether it should be excluded from the
+   *                       server pack.
+   * @param exclusions     Files or directories determined by ServerPackCreator to be excluded from
+   *                       the server pack
+   * @return {@code true} if the file or directory was determined to be excluded from the server
+   * pack.
    * @author Griefed
    */
   private boolean excludeFileOrDirectory(
-      @NotNull String fileToCheckFor,
-      @NotNull final TreeSet<String> exclusions) {
+      String modpackDir,
+      File fileToCheckFor,
+      final TreeSet<String> exclusions) {
 
-    boolean isPresentInList = false;
-    for (String entry : exclusions) {
-      if (fileToCheckFor
-          .replace("\\", "/")
-          .contains(
-              entry.replace("\\", "/"))) {
+    exclusions.addAll(APPLICATIONPROPERTIES.getDirectoriesToExclude());
 
-        isPresentInList = true;
-        break;
+    for (String exclusion : exclusions) {
+      if (exclusion.matches("^\\.[0-9a-zA-Z]+$") && fileToCheckFor.getAbsolutePath()
+                                                                  .endsWith(exclusion)) {
+        LOG.debug("Excluding file/directory: " + fileToCheckFor.getAbsolutePath());
+        return true;
+      } else if (fileToCheckFor.getAbsolutePath()
+                               .startsWith(new File(modpackDir, exclusion).getAbsolutePath())) {
+        LOG.debug("Excluding file/directory: " + fileToCheckFor.getAbsolutePath());
+        return true;
       }
     }
-    return isPresentInList;
+
+    return false;
   }
+
 
   /**
    * Check whether the installer for the given combination of Minecraft version, modloader and
