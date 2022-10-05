@@ -205,7 +205,8 @@ public class BeanConfiguration {
    * DocumentBuilder for working with XML data.
    *
    * @return DocumentBuilder for working with XML data.
-   * @throws ParserConfigurationException if a DocumentBuilder cannot be created which satisfies the configuration requested.
+   * @throws ParserConfigurationException if a DocumentBuilder cannot be created which satisfies the
+   *                                      configuration requested.
    * @author Griefed
    */
   @Bean

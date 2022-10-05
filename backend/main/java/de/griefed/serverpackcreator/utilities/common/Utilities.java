@@ -45,7 +45,8 @@ public final class Utilities {
 
   @Autowired
   public Utilities(ApplicationProperties injectedApplicationProperties,
-                   ObjectMapper injectedObjectMapper, DocumentBuilder documentBuilder) {
+                   ObjectMapper injectedObjectMapper,
+                   DocumentBuilder documentBuilder) {
     BOOLEAN_UTILITIES = new BooleanUtilities();
     FILE_UTILITIES = new FileUtilities();
     JAR_UTILITIES = new JarUtilities();
@@ -109,5 +110,8 @@ public final class Utilities {
   public JsonUtilities JsonUtilities() {
     return JSON_UTILITIES;
   }
-  public XmlUtilities XmlUtilities() {return XML_UTILITIES;}
+
+  public XmlUtilities XmlUtilities() {
+    return XML_UTILITIES;
+  }
 }
