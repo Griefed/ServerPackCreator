@@ -310,7 +310,7 @@ public final class ServerPackHandler {
    * @author Griefed
    */
   public void cleanupEnvironment(boolean deleteZip,
-                                 @NotNull String destination) {
+                                 @NotNull final String destination) {
 
     LOG.info("Found old server_pack. Cleaning up...");
 
@@ -457,12 +457,12 @@ public final class ServerPackHandler {
    * @author Griefed
    */
   public void copyFiles(
-      @NotNull String modpackDir,
+      @NotNull final String modpackDir,
       @NotNull final List<String> directoriesToCopy,
       @NotNull final List<String> clientMods,
-      @NotNull String minecraftVersion,
-      @NotNull String destination,
-      @NotNull String modloader) {
+      @NotNull final String minecraftVersion,
+      @NotNull final String destination,
+      @NotNull final String modloader) {
 
     try {
       Files.createDirectories(Paths.get(destination));
@@ -605,9 +605,9 @@ public final class ServerPackHandler {
    * @author Griefed
    */
   public void provideImprovedFabricServerLauncher(
-      @NotNull String minecraftVersion,
-      @NotNull String fabricVersion,
-      @NotNull String destination) {
+      @NotNull final String minecraftVersion,
+      @NotNull final String fabricVersion,
+      @NotNull final String destination) {
 
     String fileDestination = destination + File.separator + "fabric-server-launcher.jar";
 
@@ -659,8 +659,8 @@ public final class ServerPackHandler {
    * @author Griefed
    */
   public void copyIcon(
-      @NotNull String destination,
-      @NotNull String pathToServerIcon) {
+      @NotNull final String destination,
+      @NotNull final String pathToServerIcon) {
 
     LOG.info("Copying server-icon.png...");
 
@@ -741,8 +741,8 @@ public final class ServerPackHandler {
    * @author Griefed
    */
   public void copyProperties(
-      @NotNull String destination,
-      @NotNull String pathToServerProperties) {
+      @NotNull final String destination,
+      @NotNull final String pathToServerProperties) {
 
     LOG.info("Copying server.properties...");
 
@@ -787,7 +787,7 @@ public final class ServerPackHandler {
    * @author Griefed
    */
   public void createStartScripts(@NotNull final HashMap<String, String> scriptSettings,
-                                 @NotNull String destination,
+                                 @NotNull final String destination,
                                  boolean isLocal) {
     for (File template : APPLICATIONPROPERTIES.scriptTemplates()) {
 
@@ -837,11 +837,11 @@ public final class ServerPackHandler {
    * @author Griefed
    */
   public void zipBuilder(
-      @NotNull String minecraftVersion,
+      @NotNull final String minecraftVersion,
       boolean includeServerInstallation,
-      @NotNull String destination,
-      @NotNull String modloader,
-      @NotNull String modloaderVersion) {
+      @NotNull final String destination,
+      @NotNull final String modloader,
+      @NotNull final String modloaderVersion) {
 
     LOG.info("Creating zip archive of serverpack...");
 
@@ -915,10 +915,10 @@ public final class ServerPackHandler {
    * @author Griefed
    */
   public void installServer(
-      @NotNull String modLoader,
-      @NotNull String minecraftVersion,
-      @NotNull String modLoaderVersion,
-      @NotNull String destination) {
+      @NotNull final String modLoader,
+      @NotNull final String minecraftVersion,
+      @NotNull final String modLoaderVersion,
+      @NotNull final String destination) {
 
     if (!serverDownloadable(minecraftVersion, modLoader, modLoaderVersion)) {
       LOG.error("The servers for " + minecraftVersion + ", " + modLoader + " " + modLoaderVersion
@@ -1160,8 +1160,8 @@ public final class ServerPackHandler {
    */
   private @NotNull List<ServerPackFile> getExplicitFiles(
       @NotNull final String @NotNull [] combination,
-      @NotNull String modpackDir,
-      @NotNull String destination) {
+      @NotNull final String modpackDir,
+      @NotNull final String destination) {
 
     List<ServerPackFile> serverPackFiles = new ArrayList<>(100);
 
@@ -1205,9 +1205,9 @@ public final class ServerPackHandler {
    * @author Griefed
    */
   private @NotNull List<ServerPackFile> getSaveFiles(
-      @NotNull String clientDir,
-      @NotNull String directory,
-      @NotNull String destination) {
+      @NotNull final String clientDir,
+      @NotNull final String directory,
+      @NotNull final String destination) {
 
     List<ServerPackFile> serverPackFiles = new ArrayList<>(2000);
 
@@ -1249,10 +1249,10 @@ public final class ServerPackHandler {
    */
   @Contract("_, _, _, _ -> new")
   public @NotNull List<File> getModsToInclude(
-      @NotNull String modsDir,
+      @NotNull final String modsDir,
       @NotNull final List<String> userSpecifiedClientMods,
-      @NotNull String minecraftVersion,
-      @NotNull String modloader) {
+      @NotNull final String minecraftVersion,
+      @NotNull final String modloader) {
 
     LOG.info("Preparing a list of mods to include in server pack...");
 
@@ -1322,8 +1322,8 @@ public final class ServerPackHandler {
    * @author Griefed
    */
   private @NotNull List<ServerPackFile> getDirectoryFiles(
-      @NotNull String source,
-      @NotNull String destination) {
+      @NotNull final String source,
+      @NotNull final String destination) {
 
     List<ServerPackFile> serverPackFiles = new ArrayList<>(100);
     try (Stream<Path> files = Files.walk(Paths.get(source))) {
@@ -1363,9 +1363,9 @@ public final class ServerPackHandler {
    * @author Griefed
    */
   private boolean excludeFileOrDirectory(
-      String modpackDir,
-      File fileToCheckFor,
-      final TreeSet<String> exclusions) {
+      @NotNull final String modpackDir,
+      @NotNull final File fileToCheckFor,
+      @NotNull final TreeSet<String> exclusions) {
 
     exclusions.addAll(APPLICATIONPROPERTIES.getDirectoriesToExclude());
 
@@ -1397,9 +1397,9 @@ public final class ServerPackHandler {
    */
   @SuppressWarnings("BooleanMethodIsAlwaysInverted")
   public boolean serverDownloadable(
-      @NotNull String mcVersion,
-      @NotNull String modloader,
-      @NotNull String modloaderVersion) {
+      @NotNull final String mcVersion,
+      @NotNull final String modloader,
+      @NotNull final String modloaderVersion) {
 
     switch (modloader) {
 
@@ -1439,9 +1439,9 @@ public final class ServerPackHandler {
    * @author Griefed
    */
   private void cleanUpServerPack(
-      @NotNull String minecraftVersion,
-      @NotNull String modLoaderVersion,
-      @NotNull String destination) {
+      @NotNull final String minecraftVersion,
+      @NotNull final String modLoaderVersion,
+      @NotNull final String destination) {
 
     LOG.info("Cleanup after modloader server installation.");
 
@@ -1521,7 +1521,7 @@ public final class ServerPackHandler {
    * @param modsInModpack          All mods in the modpack.
    */
   private void exclude(
-      @NotNull String userSpecifiedExclusion,
+      @NotNull final String userSpecifiedExclusion,
       @NotNull final TreeSet<File> modsInModpack) {
 
     modsInModpack.removeIf(
@@ -1575,7 +1575,7 @@ public final class ServerPackHandler {
    * @author Griefed
    */
   public void cleanupEnvironment(boolean deleteZip,
-                                 @NotNull ConfigurationModel configurationModel) {
+                                 @NotNull final ConfigurationModel configurationModel) {
     cleanupEnvironment(deleteZip, getServerPackDestination(configurationModel));
   }
 

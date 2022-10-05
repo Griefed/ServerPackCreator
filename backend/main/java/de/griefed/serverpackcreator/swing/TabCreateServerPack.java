@@ -38,7 +38,6 @@ import de.griefed.serverpackcreator.swing.utilities.RotatedIcon;
 import de.griefed.serverpackcreator.swing.utilities.ScriptSettings;
 import de.griefed.serverpackcreator.swing.utilities.SimpleDocumentListener;
 import de.griefed.serverpackcreator.swing.utilities.TextIcon;
-import de.griefed.serverpackcreator.utilities.ConfigUtilities;
 import de.griefed.serverpackcreator.utilities.ReticulatingSplines;
 import de.griefed.serverpackcreator.utilities.common.Utilities;
 import de.griefed.serverpackcreator.versionmeta.VersionMeta;
@@ -119,7 +118,6 @@ public class TabCreateServerPack extends JPanel {
   private final ServerPackHandler SERVERPACKHANDLER;
   private final VersionMeta VERSIONMETA;
   private final Utilities UTILITIES;
-  private final ConfigUtilities CONFIG_UTILITIES;
   private final ApplicationProperties APPLICATIONPROPERTIES;
   private final DarkTheme DARKTHEME;
   private final LightTheme LIGHTTHEME;
@@ -277,7 +275,6 @@ public class TabCreateServerPack extends JPanel {
    * @param injectedDarkTheme              Instance of {@link DarkTheme}.
    * @param injectedLightTheme             Instance of {@link LightTheme}.
    * @param injectedApplicationAddons      Instance of {@link ApplicationAddons}.
-   * @param injectedConfigUtilities        Instance of {@link ConfigUtilities}.
    * @throws IOException if the {@link VersionMeta} could not be instantiated.
    * @author Griefed
    */
@@ -291,8 +288,7 @@ public class TabCreateServerPack extends JPanel {
       Utilities injectedUtilities,
       DarkTheme injectedDarkTheme,
       LightTheme injectedLightTheme,
-      ApplicationAddons injectedApplicationAddons,
-      ConfigUtilities injectedConfigUtilities)
+      ApplicationAddons injectedApplicationAddons)
       throws IOException {
 
     DARKTHEME = injectedDarkTheme;
@@ -304,7 +300,6 @@ public class TabCreateServerPack extends JPanel {
     CONFIGURATIONHANDLER = injectedConfigurationHandler;
     SERVERPACKHANDLER = injectedServerPackHandler;
     SERVERPACKCREATORWINDOW = injectedServerPackCreatorFrame;
-    CONFIG_UTILITIES = injectedConfigUtilities;
 
     SERVERPACKGENERATEDTEXTPANE.setOpaque(false);
     SERVERPACKGENERATEDTEXTPANE.setEditable(false);
@@ -1941,39 +1936,42 @@ public class TabCreateServerPack extends JPanel {
           boolean updated = false;
 
           if (new File(getModpackDirectory(), "manifest.json").isFile()) {
-            CONFIG_UTILITIES.updateConfigModelFromCurseManifest(configurationModel,
-                                                                new File(getModpackDirectory(),
-                                                                         "manifest.json"));
+            CONFIGURATIONHANDLER.updateConfigModelFromCurseManifest(configurationModel,
+                                                                    new File(getModpackDirectory(),
+                                                                             "manifest.json"));
             updated = true;
 
           } else if (new File(getModpackDirectory(), "minecraftinstance.json").isFile()) {
-            CONFIG_UTILITIES.updateConfigModelFromMinecraftInstance(configurationModel,
-                                                                    new File(getModpackDirectory(),
-                                                                             "minecraftinstance.json"));
+            CONFIGURATIONHANDLER.updateConfigModelFromMinecraftInstance(configurationModel,
+                                                                        new File(
+                                                                            getModpackDirectory(),
+                                                                            "minecraftinstance.json"));
             updated = true;
 
           } else if (new File(getModpackDirectory(), "modrinth.index.json").isFile()) {
-            CONFIG_UTILITIES.updateConfigModelFromModrinthManifest(configurationModel,
-                                                                   new File(getModpackDirectory(),
-                                                                            "modrinth.index.json"));
+            CONFIGURATIONHANDLER.updateConfigModelFromModrinthManifest(configurationModel,
+                                                                       new File(
+                                                                           getModpackDirectory(),
+                                                                           "modrinth.index.json"));
             updated = true;
 
           } else if (new File(getModpackDirectory(), "instance.json").isFile()) {
-            CONFIG_UTILITIES.updateConfigModelFromATLauncherInstance(configurationModel,
-                                                                     new File(getModpackDirectory(),
-                                                                              "instance.json"));
+            CONFIGURATIONHANDLER.updateConfigModelFromATLauncherInstance(configurationModel,
+                                                                         new File(
+                                                                             getModpackDirectory(),
+                                                                             "instance.json"));
             updated = true;
 
           } else if (new File(getModpackDirectory(), "config.json").isFile()) {
-            CONFIG_UTILITIES.updateConfigModelFromConfigJson(configurationModel,
-                                                             new File(getModpackDirectory(),
-                                                                      "config.json"));
+            CONFIGURATIONHANDLER.updateConfigModelFromConfigJson(configurationModel,
+                                                                 new File(getModpackDirectory(),
+                                                                          "config.json"));
             updated = true;
 
           } else if (new File(getModpackDirectory(), "mmc-pack.json").isFile()) {
-            CONFIG_UTILITIES.updateConfigModelFromMMCPack(configurationModel,
-                                                          new File(getModpackDirectory(),
-                                                                   "mmc-pack.json"));
+            CONFIGURATIONHANDLER.updateConfigModelFromMMCPack(configurationModel,
+                                                              new File(getModpackDirectory(),
+                                                                       "mmc-pack.json"));
             updated = true;
           }
 

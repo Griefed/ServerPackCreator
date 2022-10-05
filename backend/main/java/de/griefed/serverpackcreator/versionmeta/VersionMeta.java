@@ -22,9 +22,7 @@ package de.griefed.serverpackcreator.versionmeta;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.griefed.serverpackcreator.ApplicationProperties;
-import de.griefed.serverpackcreator.utilities.common.JarUtilities;
 import de.griefed.serverpackcreator.utilities.common.Utilities;
-import de.griefed.serverpackcreator.utilities.common.WebUtilities;
 import de.griefed.serverpackcreator.versionmeta.fabric.FabricIntermediaries;
 import de.griefed.serverpackcreator.versionmeta.fabric.FabricMeta;
 import de.griefed.serverpackcreator.versionmeta.forge.ForgeMeta;
@@ -53,11 +51,10 @@ import org.xml.sax.SAXException;
  * @author Griefed
  */
 @Service
-public final class VersionMeta extends ManifestParser {
+public final class VersionMeta {
 
   private static final Logger LOG = LogManager.getLogger(VersionMeta.class);
 
-  private final ObjectMapper OBJECT_MAPPER;
   private final File MINECRAFT_MANIFEST;
   private final File FORGE_MANIFEST;
   private final File FABRIC_MANIFEST;
@@ -97,8 +94,7 @@ public final class VersionMeta extends ManifestParser {
   private final QuiltMeta QUIL_META;
   private final FabricIntermediaries FABRIC_INTERMEDIARIES;
   private final LegacyFabricMeta LEGACY_FABRIC_META;
-  private final WebUtilities WEB_UTILITIES;
-  private final JarUtilities JAR_UTILITIES;
+  private final Utilities UTILITIES;
 
   /**
    * Constructor.
@@ -114,7 +110,7 @@ public final class VersionMeta extends ManifestParser {
    * @param legacyFabricGameManifest      Fabric Legacy Game manifest file.
    * @param legacyFabricLoaderManifest    Fabric Legacy Loader manifest file.
    * @param legacyFabricInstallerManifest Fabric Legacy Installer manifest file.
-   * @param injectedUtilities             Instance of commonly used utilities.
+   * @param injectedUtilities             Commonly used utilities across ServerPackCreator.
    * @param injectedApplicationProperties ServerPackCreator settings.
    * @throws ParserConfigurationException indicates a serious configuration error.
    * @throws IOException                  if any IO errors occur.
@@ -148,45 +144,44 @@ public final class VersionMeta extends ManifestParser {
     FABRIC_INSTALLER_MANIFEST = fabricInstallerManifest;
     QUILT_MANIFEST = quiltManifest;
     QUILT_INSTALLER_MANIFEST = quiltInstallerManifest;
-    OBJECT_MAPPER = injectedObjectMapper;
-    WEB_UTILITIES = injectedUtilities.WebUtils();
-    JAR_UTILITIES = injectedUtilities.JarUtils();
+    UTILITIES = injectedUtilities;
 
     checkManifests();
 
     FORGE_META = new ForgeMeta(
         FORGE_MANIFEST,
-        OBJECT_MAPPER);
+        UTILITIES);
 
     MINECRAFT_META = new MinecraftMeta(
         MINECRAFT_MANIFEST,
         FORGE_META,
-        OBJECT_MAPPER,
         injectedUtilities,
         injectedApplicationProperties);
 
     FABRIC_INTERMEDIARIES = new FabricIntermediaries(
         FABRIC_INTERMEDIARIES_MANIFEST,
-        OBJECT_MAPPER);
+        injectedObjectMapper);
 
     LEGACY_FABRIC_META = new LegacyFabricMeta(
         LEGACY_FABRIC_GAME_MANIFEST,
         LEGACY_FABRIC_LOADER_MANIFEST,
         LEGACY_FABRIC_INSTALLER_MANIFEST,
-        OBJECT_MAPPER);
+        UTILITIES);
 
     FABRIC_META = new FabricMeta(
         FABRIC_MANIFEST,
         FABRIC_INSTALLER_MANIFEST,
         FABRIC_INTERMEDIARIES,
-        OBJECT_MAPPER);
+        injectedObjectMapper,
+        UTILITIES);
 
     FORGE_META.initialize(MINECRAFT_META);
 
     QUIL_META = new QuiltMeta(
         QUILT_MANIFEST,
         QUILT_INSTALLER_MANIFEST,
-        FABRIC_INTERMEDIARIES);
+        FABRIC_INTERMEDIARIES,
+        UTILITIES);
 
     MINECRAFT_META.update();
     FABRIC_INTERMEDIARIES.update();
@@ -272,7 +267,7 @@ public final class VersionMeta extends ManifestParser {
                              URL urlToManifest,
                              Type manifestType) {
     if (manifestToCheck.isFile()) {
-      if (!WEB_UTILITIES.isReachable(urlToManifest)) {
+      if (!UTILITIES.WebUtils().isReachable(urlToManifest)) {
         LOG.warn(
             "Can not connect to " + urlToManifest + " to check for update(s) of " + manifestToCheck
                 + ".");
@@ -294,24 +289,24 @@ public final class VersionMeta extends ManifestParser {
 
         switch (manifestType) {
           case MINECRAFT:
-            countOldFile = getJson(oldContent, OBJECT_MAPPER).get("versions").size();
-            countNewFile = getJson(newContent, OBJECT_MAPPER).get("versions").size();
+            countOldFile = UTILITIES.JsonUtilities().getJson(oldContent).get("versions").size();
+            countNewFile = UTILITIES.JsonUtilities().getJson(newContent).get("versions").size();
 
             break;
 
           case FORGE:
-            for (JsonNode mcVer : getJson(oldContent, OBJECT_MAPPER)) {
+            for (JsonNode mcVer : UTILITIES.JsonUtilities().getJson(oldContent)) {
               countOldFile += mcVer.size();
             }
-            for (JsonNode mcVer : getJson(newContent, OBJECT_MAPPER)) {
+            for (JsonNode mcVer : UTILITIES.JsonUtilities().getJson(newContent)) {
               countNewFile += mcVer.size();
             }
 
             break;
 
           case FABRIC_INTERMEDIARIES:
-            countOldFile = getJson(oldContent, OBJECT_MAPPER).size();
-            countNewFile = getJson(newContent, OBJECT_MAPPER).size();
+            countOldFile = UTILITIES.JsonUtilities().getJson(oldContent).size();
+            countNewFile = UTILITIES.JsonUtilities().getJson(newContent).size();
 
             break;
 
@@ -319,21 +314,23 @@ public final class VersionMeta extends ManifestParser {
           case FABRIC_INSTALLER:
           case QUILT:
           case QUILT_INSTALLER:
-            countOldFile = getXml(oldContent).getElementsByTagName("version").getLength();
-            countNewFile = getXml(newContent).getElementsByTagName("version").getLength();
+            countOldFile = UTILITIES.XmlUtilities().getXml(oldContent)
+                                    .getElementsByTagName("version").getLength();
+            countNewFile = UTILITIES.XmlUtilities().getXml(newContent)
+                                    .getElementsByTagName("version").getLength();
 
             break;
 
           case LEGACY_FABRIC:
             if (manifestToCheck.getName().endsWith(".json")) {
 
-              countOldFile = getJson(oldContent, OBJECT_MAPPER).size();
-              countNewFile = getJson(newContent, OBJECT_MAPPER).size();
+              countOldFile = UTILITIES.JsonUtilities().getJson(oldContent).size();
+              countNewFile = UTILITIES.JsonUtilities().getJson(newContent).size();
 
             } else {
 
-              Document oldXML = getXml(oldContent);
-              Document newXML = getXml(newContent);
+              Document oldXML = UTILITIES.XmlUtilities().getXml(oldContent);
+              Document newXML = UTILITIES.XmlUtilities().getXml(newContent);
 
               countOldFile = oldXML.getElementsByTagName("version").getLength();
               countNewFile = newXML.getElementsByTagName("version").getLength();
@@ -375,7 +372,7 @@ public final class VersionMeta extends ManifestParser {
 
       } catch (SAXException ex) {
 
-        JAR_UTILITIES.copyFileFromJar(
+        UTILITIES.JarUtils().copyFileFromJar(
             "de/griefed/resources/manifests/" + manifestToCheck.getName(),
             manifestToCheck,
             true,
@@ -392,7 +389,7 @@ public final class VersionMeta extends ManifestParser {
       }
 
     } else {
-      if (!WEB_UTILITIES.isReachable(urlToManifest)) {
+      if (!UTILITIES.WebUtils().isReachable(urlToManifest)) {
         LOG.error("CRITICAL!" + manifestToCheck + " not present and " + urlToManifest
                       + " unreachable. Exiting...");
         LOG.error(

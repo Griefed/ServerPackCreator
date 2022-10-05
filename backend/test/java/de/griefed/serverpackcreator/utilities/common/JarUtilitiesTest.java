@@ -2,7 +2,6 @@ package de.griefed.serverpackcreator.utilities.common;
 
 import java.io.File;
 import java.util.HashMap;
-import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -16,7 +15,8 @@ public class JarUtilitiesTest {
 
   @Test
   void copyFileFromJarTest() {
-    jarUtilities.copyFileFromJar("banner.txt", JarUtilitiesTest.class, new File("tests").getAbsolutePath());
+    jarUtilities.copyFileFromJar("banner.txt", JarUtilitiesTest.class,
+                                 new File("tests").getAbsolutePath());
     Assertions.assertTrue(new File("tests/banner.txt").isFile());
   }
 

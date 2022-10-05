@@ -30,11 +30,19 @@ public class ApplicationAddonsTest {
     Assertions.assertNotNull(ServerPackCreator.getInstance(args).getApplicationAddons());
     ServerPackCreator.getInstance(args).getApplicationAddons().loadPlugins();
     ServerPackCreator.getInstance(args).getApplicationAddons().startPlugins();
-    Assertions.assertTrue(ServerPackCreator.getInstance(args).getApplicationAddons().postGenExtensions().size() > 0);
-    Assertions.assertTrue(ServerPackCreator.getInstance(args).getApplicationAddons().tabExtensions().size() > 0);
-    Assertions.assertTrue(ServerPackCreator.getInstance(args).getApplicationAddons().preGenExtensions().size() > 0);
-    Assertions.assertTrue(ServerPackCreator.getInstance(args).getApplicationAddons().preZipExtensions().size() > 0);
-    Assertions.assertTrue(ServerPackCreator.getInstance(args).getApplicationAddons().configCheckExtensions().size() > 0);
-    Assertions.assertTrue(ServerPackCreator.getInstance(args).getApplicationAddons().configPanelExtensions().size() > 0);
+    Assertions.assertTrue(
+        ServerPackCreator.getInstance(args).getApplicationAddons().postGenExtensions().size() > 0);
+    Assertions.assertTrue(
+        ServerPackCreator.getInstance(args).getApplicationAddons().tabExtensions().size() > 0);
+    Assertions.assertTrue(
+        ServerPackCreator.getInstance(args).getApplicationAddons().preGenExtensions().size() > 0);
+    Assertions.assertTrue(
+        ServerPackCreator.getInstance(args).getApplicationAddons().preZipExtensions().size() > 0);
+    Assertions.assertTrue(
+        ServerPackCreator.getInstance(args).getApplicationAddons().configCheckExtensions().size()
+            > 0);
+    Assertions.assertTrue(
+        ServerPackCreator.getInstance(args).getApplicationAddons().configPanelExtensions().size()
+            > 0);
   }
 }

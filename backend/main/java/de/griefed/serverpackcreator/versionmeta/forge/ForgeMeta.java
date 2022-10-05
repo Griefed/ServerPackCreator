@@ -19,9 +19,8 @@
  */
 package de.griefed.serverpackcreator.versionmeta.forge;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
-import de.griefed.serverpackcreator.versionmeta.ManifestParser;
+import de.griefed.serverpackcreator.utilities.common.Utilities;
 import de.griefed.serverpackcreator.versionmeta.Type;
 import de.griefed.serverpackcreator.versionmeta.minecraft.MinecraftMeta;
 import java.io.File;
@@ -36,10 +35,10 @@ import java.util.Optional;
  *
  * @author Griefed
  */
-public final class ForgeMeta extends ManifestParser {
+public final class ForgeMeta {
 
   private final File FORGE_MANIFEST;
-  private final ObjectMapper OBJECTMAPPER;
+  private final Utilities UTILITIES;
 
   private ForgeLoader forgeLoader;
 
@@ -47,13 +46,13 @@ public final class ForgeMeta extends ManifestParser {
    * Create a new Forge Meta, using a manifest file.
    *
    * @param forgeManifest The manifest from which to acquire version information.
-   * @param objectMapper  Object mapper for JSON parsing.
+   * @param utilities     Commonly used utilities across ServerPackCreator.
    * @author Griefed
    */
   public ForgeMeta(File forgeManifest,
-                   ObjectMapper objectMapper) {
+                   Utilities utilities) {
     FORGE_MANIFEST = forgeManifest;
-    OBJECTMAPPER = objectMapper;
+    UTILITIES = utilities;
   }
 
   /**
@@ -68,7 +67,7 @@ public final class ForgeMeta extends ManifestParser {
   public void initialize(MinecraftMeta injectedMinecraftMeta) throws IOException {
     if (forgeLoader == null) {
       forgeLoader =
-          new ForgeLoader(FORGE_MANIFEST, OBJECTMAPPER, injectedMinecraftMeta);
+          new ForgeLoader(FORGE_MANIFEST, UTILITIES, injectedMinecraftMeta);
     }
   }
 

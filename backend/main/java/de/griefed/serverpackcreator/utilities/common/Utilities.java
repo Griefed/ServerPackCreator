@@ -19,7 +19,9 @@
  */
 package de.griefed.serverpackcreator.utilities.common;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import de.griefed.serverpackcreator.ApplicationProperties;
+import javax.xml.parsers.DocumentBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -39,9 +41,11 @@ public final class Utilities {
   private final SystemUtilities SYSTEM_UTILITIES;
   private final WebUtilities WEB_UTILITIES;
   private final JsonUtilities JSON_UTILITIES;
+  private final XmlUtilities XML_UTILITIES;
 
   @Autowired
-  public Utilities(ApplicationProperties injectedApplicationProperties) {
+  public Utilities(ApplicationProperties injectedApplicationProperties,
+                   ObjectMapper injectedObjectMapper, DocumentBuilder documentBuilder) {
     BOOLEAN_UTILITIES = new BooleanUtilities();
     FILE_UTILITIES = new FileUtilities();
     JAR_UTILITIES = new JarUtilities();
@@ -49,7 +53,8 @@ public final class Utilities {
     STRING_UTILITIES = new StringUtilities();
     SYSTEM_UTILITIES = new SystemUtilities();
     WEB_UTILITIES = new WebUtilities(injectedApplicationProperties);
-    JSON_UTILITIES = new JsonUtilities();
+    JSON_UTILITIES = new JsonUtilities(injectedObjectMapper);
+    XML_UTILITIES = new XmlUtilities(documentBuilder);
   }
 
   public Utilities(
@@ -60,7 +65,8 @@ public final class Utilities {
       StringUtilities stringUtilities,
       SystemUtilities systemUtilities,
       WebUtilities webUtilities,
-      JsonUtilities jsonUtilities) {
+      JsonUtilities jsonUtilities,
+      XmlUtilities xmlUtilities) {
     BOOLEAN_UTILITIES = booleanUtilities;
     FILE_UTILITIES = fileUtilities;
     JAR_UTILITIES = jarUtilities;
@@ -69,6 +75,7 @@ public final class Utilities {
     SYSTEM_UTILITIES = systemUtilities;
     WEB_UTILITIES = webUtilities;
     JSON_UTILITIES = jsonUtilities;
+    XML_UTILITIES = xmlUtilities;
   }
 
   public BooleanUtilities BooleanUtils() {
@@ -102,4 +109,5 @@ public final class Utilities {
   public JsonUtilities JsonUtilities() {
     return JSON_UTILITIES;
   }
+  public XmlUtilities XmlUtilities() {return XML_UTILITIES;}
 }

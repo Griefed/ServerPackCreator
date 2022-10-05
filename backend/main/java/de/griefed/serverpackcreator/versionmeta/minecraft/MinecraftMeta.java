@@ -19,7 +19,6 @@
  */
 package de.griefed.serverpackcreator.versionmeta.minecraft;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.utilities.common.Utilities;
@@ -47,22 +46,19 @@ public final class MinecraftMeta {
    * @param minecraftManifest     Minecraft manifest file.
    * @param injectedForgeMeta     To acquire Forge instances for this {@link MinecraftClient}
    *                              version.
-   * @param objectMapper          Object mapper for JSON parsing.
-   * @param utilities             Instance of commonly used utilities.
+   * @param utilities             Commonly used utilities across ServerPackCreator.
    * @param applicationProperties ServerPackCreator settings.
    * @author Griefed
    */
   public MinecraftMeta(
       File minecraftManifest,
       ForgeMeta injectedForgeMeta,
-      ObjectMapper objectMapper,
       Utilities utilities,
       ApplicationProperties applicationProperties) {
 
     MINECRAFT_CLIENT_META = new MinecraftClientMeta(
         minecraftManifest,
         injectedForgeMeta,
-        objectMapper,
         utilities,
         applicationProperties);
 

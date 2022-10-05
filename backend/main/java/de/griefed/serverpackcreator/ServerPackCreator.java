@@ -33,7 +33,6 @@ import de.griefed.serverpackcreator.modscanning.QuiltScanner;
 import de.griefed.serverpackcreator.modscanning.TomlScanner;
 import de.griefed.serverpackcreator.swing.ServerPackCreatorSplash;
 import de.griefed.serverpackcreator.swing.ServerPackCreatorWindow;
-import de.griefed.serverpackcreator.utilities.ConfigUtilities;
 import de.griefed.serverpackcreator.utilities.ConfigurationEditor;
 import de.griefed.serverpackcreator.utilities.UpdateChecker;
 import de.griefed.serverpackcreator.utilities.common.BooleanUtilities;
@@ -45,6 +44,7 @@ import de.griefed.serverpackcreator.utilities.common.StringUtilities;
 import de.griefed.serverpackcreator.utilities.common.SystemUtilities;
 import de.griefed.serverpackcreator.utilities.common.Utilities;
 import de.griefed.serverpackcreator.utilities.common.WebUtilities;
+import de.griefed.serverpackcreator.utilities.common.XmlUtilities;
 import de.griefed.serverpackcreator.versionmeta.VersionMeta;
 import de.griefed.versionchecker.Update;
 import java.awt.GraphicsEnvironment;
@@ -67,6 +67,8 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Scanner;
 import java.util.concurrent.Executors;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.monitor.FileAlterationListener;
@@ -75,6 +77,7 @@ import org.apache.commons.io.monitor.FileAlterationObserver;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -118,9 +121,10 @@ public class ServerPackCreator {
   private StringUtilities stringUtilities = null;
   private SystemUtilities systemUtilities = null;
   private WebUtilities webUtilities = null;
+  private DocumentBuilder documentBuilder = null;
+  private XmlUtilities xmlUtilities = null;
   private Utilities utilities = null;
   private VersionMeta versionMeta = null;
-  private ConfigUtilities configUtilities = null;
   private ConfigurationHandler configurationHandler = null;
   private ApplicationAddons applicationAddons = null;
   private ServerPackHandler serverPackHandler = null;
@@ -403,9 +407,39 @@ public class ServerPackCreator {
    */
   public synchronized @NotNull JsonUtilities getJsonUtilities() {
     if (jsonUtilities == null) {
-      jsonUtilities = new JsonUtilities();
+      jsonUtilities = new JsonUtilities(getObjectMapper());
     }
     return jsonUtilities;
+  }
+
+  /**
+   * This instances common XML utilities used across ServerPackCreator.
+   *
+   * @return Common XML utilities used across ServerPackCreator.
+   * @author Griefed
+   */
+  public synchronized @NotNull XmlUtilities getXmlUtilities() {
+    if (xmlUtilities == null) {
+      xmlUtilities = new XmlUtilities(getDocumentBuilder());
+    }
+    return xmlUtilities;
+  }
+
+  /**
+   * This instances DocumentBuilder for working with XML-data.
+   *
+   * @return DocumentBuilder for working with XML.
+   * @author Griefed
+   */
+  public synchronized @Nullable DocumentBuilder getDocumentBuilder() {
+    if (documentBuilder == null) {
+      try {
+        documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+      } catch (ParserConfigurationException e) {
+        throw new RuntimeException(e);
+      }
+    }
+    return documentBuilder;
   }
 
   /**
@@ -450,7 +484,8 @@ public class ServerPackCreator {
           getStringUtilities(),
           getSystemUtilities(),
           getWebUtilities(),
-          getJsonUtilities()
+          getJsonUtilities(),
+          getXmlUtilities()
       );
     }
     return utilities;
@@ -503,24 +538,6 @@ public class ServerPackCreator {
   }
 
   /**
-   * This instances common config utilities used across ServerPackCreator.
-   *
-   * @return Common config utilities used across ServerPackCreator.
-   * @author Griefed
-   */
-  public synchronized @NotNull ConfigUtilities getConfigUtilities() {
-    if (configUtilities == null) {
-
-      configUtilities = new ConfigUtilities(
-          getUtilities(),
-          APPLICATIONPROPERTIES,
-          OBJECT_MAPPER);
-
-    }
-    return configUtilities;
-  }
-
-  /**
    * This instances ConfigurationHandler for checking a given {@link ConfigurationModel} for
    * validity, so a server pack can safely be created from it.
    *
@@ -544,7 +561,6 @@ public class ServerPackCreator {
               getVersionMeta(),
               APPLICATIONPROPERTIES,
               getUtilities(),
-              getConfigUtilities(),
               getApplicationAddons());
     }
     return configurationHandler;
@@ -759,8 +775,7 @@ public class ServerPackCreator {
           getConfigurationHandler(),
           APPLICATIONPROPERTIES,
           getUtilities(),
-          getVersionMeta(),
-          getConfigUtilities());
+          getVersionMeta());
     }
     return configurationEditor;
   }
@@ -797,7 +812,6 @@ public class ServerPackCreator {
           getUpdateChecker(),
           getServerPackCreatorSplash(),
           getApplicationAddons(),
-          getConfigUtilities(),
           getMigrationManager().getMigrationMessages());
     }
     return serverPackCreatorGui;
@@ -1130,7 +1144,7 @@ public class ServerPackCreator {
   }
 
   /**
-   * Initialize {@link VersionMeta}, {@link ConfigUtilities}, {@link ConfigurationHandler}.
+   * Initialize {@link VersionMeta}, {@link ConfigurationHandler}.
    *
    * @throws IOException                  When the {@link VersionMeta} had to be instantiated, but
    *                                      an error occurred during the parsing of a manifest.
@@ -1142,7 +1156,6 @@ public class ServerPackCreator {
    */
   private void stageTwo() throws IOException, ParserConfigurationException, SAXException {
     getVersionMeta();
-    getConfigUtilities();
     getConfigurationHandler();
   }
 

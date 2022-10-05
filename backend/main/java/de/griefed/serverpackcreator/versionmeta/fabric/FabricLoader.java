@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.versionmeta.fabric;
 
-import de.griefed.serverpackcreator.versionmeta.ManifestParser;
+import de.griefed.serverpackcreator.utilities.common.Utilities;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -33,8 +33,9 @@ import org.xml.sax.SAXException;
  *
  * @author Griefed
  */
-final class FabricLoader extends ManifestParser {
+final class FabricLoader {
 
+  private final Utilities UTILITIES;
   private final List<String> loaders = new ArrayList<>(100);
   private final File MANIFEST;
   private String latest;
@@ -44,10 +45,13 @@ final class FabricLoader extends ManifestParser {
    * Create a new instance of the Fabric Loader.
    *
    * @param loaderManifest The manifest used when updating available versions.
+   * @param utilities      Commonly used utilities across ServerPackCreator.
    * @author Griefed
    */
-  FabricLoader(File loaderManifest) {
+  FabricLoader(File loaderManifest,
+               Utilities utilities) {
     MANIFEST = loaderManifest;
+    UTILITIES = utilities;
   }
 
   /**
@@ -56,7 +60,7 @@ final class FabricLoader extends ManifestParser {
    * @author Griefed
    */
   void update() throws ParserConfigurationException, IOException, SAXException {
-    Document document = getXml(MANIFEST);
+    Document document = UTILITIES.XmlUtilities().getXml(MANIFEST);
     latest =
         document
             .getElementsByTagName("latest")

@@ -41,7 +41,7 @@ public class VersionMetaTest {
     Assertions.assertEquals(
         versionMeta.minecraft().releaseVersionsArrayDescending()[0],
         versionMeta.minecraft()
-            .releaseVersionsArrayAscending()[
+                   .releaseVersionsArrayAscending()[
             versionMeta.minecraft().releaseVersionsArrayAscending().length - 1]);
     Assertions.assertNotNull(versionMeta.minecraft().releaseVersionsArrayAscending());
     Assertions.assertEquals(
@@ -50,7 +50,7 @@ public class VersionMetaTest {
     Assertions.assertEquals(
         versionMeta.minecraft().releaseVersionsArrayAscending()[0],
         versionMeta.minecraft()
-            .releaseVersionsArrayDescending()[
+                   .releaseVersionsArrayDescending()[
             versionMeta.minecraft().releaseVersionsArrayDescending().length - 1]);
     versionMeta
         .minecraft()
@@ -84,7 +84,7 @@ public class VersionMetaTest {
     Assertions.assertEquals(
         versionMeta.minecraft().snapshotVersionsArrayDescending()[0],
         versionMeta.minecraft()
-            .snapshotVersionsArrayAscending()[
+                   .snapshotVersionsArrayAscending()[
             versionMeta.minecraft().snapshotVersionsArrayAscending().length - 1]);
     Assertions.assertNotNull(versionMeta.minecraft().snapshotVersionsArrayAscending());
     Assertions.assertEquals(
@@ -93,7 +93,7 @@ public class VersionMetaTest {
     Assertions.assertEquals(
         versionMeta.minecraft().snapshotVersionsArrayAscending()[0],
         versionMeta.minecraft()
-            .snapshotVersionsArrayDescending()[
+                   .snapshotVersionsArrayDescending()[
             versionMeta.minecraft().snapshotVersionsArrayDescending().length - 1]);
     versionMeta
         .minecraft()
@@ -130,7 +130,7 @@ public class VersionMetaTest {
     Assertions.assertEquals(
         versionMeta.minecraft().releasesArrayAscending()[0],
         versionMeta.minecraft()
-            .releasesArrayDescending()[
+                   .releasesArrayDescending()[
             versionMeta.minecraft().releasesArrayDescending().length - 1]);
     Assertions.assertNotNull(versionMeta.minecraft().snapshotsDescending());
     Assertions.assertNotNull(versionMeta.minecraft().snapshotsAscending());
@@ -141,7 +141,7 @@ public class VersionMetaTest {
     Assertions.assertEquals(
         versionMeta.minecraft().snapshotsArrayDescending()[0],
         versionMeta.minecraft()
-            .snapshotsArrayAscending()[
+                   .snapshotsArrayAscending()[
             versionMeta.minecraft().snapshotsArrayAscending().length - 1]);
     Assertions.assertNotNull(versionMeta.minecraft().snapshotsArrayAscending());
     Assertions.assertEquals(
@@ -150,7 +150,7 @@ public class VersionMetaTest {
     Assertions.assertEquals(
         versionMeta.minecraft().snapshotsArrayAscending()[0],
         versionMeta.minecraft()
-            .snapshotsArrayDescending()[
+                   .snapshotsArrayDescending()[
             versionMeta.minecraft().snapshotsArrayDescending().length - 1]);
     Assertions.assertNotNull(versionMeta.minecraft().getServer("1.16.5").get());
     Assertions.assertTrue(versionMeta.minecraft().checkServerAvailability("1.16.5"));
@@ -176,7 +176,7 @@ public class VersionMetaTest {
     Assertions.assertEquals(
         versionMeta.minecraft().releasesServersArrayDescending()[0],
         versionMeta.minecraft()
-            .releasesServersArrayAscending()[
+                   .releasesServersArrayAscending()[
             versionMeta.minecraft().releasesServersArrayAscending().length - 1]);
     Assertions.assertNotNull(versionMeta.minecraft().releasesServersArrayAscending());
     Assertions.assertEquals(
@@ -185,7 +185,7 @@ public class VersionMetaTest {
     Assertions.assertEquals(
         versionMeta.minecraft().releasesServersArrayAscending()[0],
         versionMeta.minecraft()
-            .releasesServersArrayDescending()[
+                   .releasesServersArrayDescending()[
             versionMeta.minecraft().releasesServersArrayDescending().length - 1]);
     Assertions.assertNotNull(versionMeta.minecraft().snapshotsServersDescending());
     Assertions.assertNotNull(versionMeta.minecraft().snapshotsServersAscending());
@@ -196,7 +196,7 @@ public class VersionMetaTest {
     Assertions.assertEquals(
         versionMeta.minecraft().snapshotsServersArrayDescending()[0],
         versionMeta.minecraft()
-            .snapshotsServersArrayAscending()[
+                   .snapshotsServersArrayAscending()[
             versionMeta.minecraft().snapshotsServersArrayAscending().length - 1]);
     Assertions.assertNotNull(versionMeta.minecraft().snapshotsServersArrayAscending());
     Assertions.assertEquals(
@@ -205,7 +205,7 @@ public class VersionMetaTest {
     Assertions.assertEquals(
         versionMeta.minecraft().snapshotsServersArrayAscending()[0],
         versionMeta.minecraft()
-            .snapshotsServersArrayDescending()[
+                   .snapshotsServersArrayDescending()[
             versionMeta.minecraft().snapshotsServersArrayDescending().length - 1]);
 
     versionMeta.minecraft().snapshotsAscending().forEach(
@@ -310,7 +310,7 @@ public class VersionMetaTest {
     Assertions.assertEquals(
         versionMeta.forge().minecraftVersionsArrayAscending()[0],
         versionMeta.forge()
-            .minecraftVersionsArrayDescending()[
+                   .minecraftVersionsArrayDescending()[
             versionMeta.forge().minecraftVersionsArrayDescending().length - 1]);
     Assertions.assertNotNull(versionMeta.forge().minecraftVersionsArrayDescending());
     Assertions.assertEquals(
@@ -319,7 +319,7 @@ public class VersionMetaTest {
     Assertions.assertEquals(
         versionMeta.forge().minecraftVersionsArrayDescending()[0],
         versionMeta.forge()
-            .minecraftVersionsArrayAscending()[
+                   .minecraftVersionsArrayAscending()[
             versionMeta.forge().minecraftVersionsArrayAscending().length - 1]);
     Assertions.assertNotNull(versionMeta.forge().availableForgeVersionsAscending("1.16.5").get());
     Assertions.assertTrue(
@@ -388,7 +388,7 @@ public class VersionMetaTest {
     Assertions.assertEquals(
         versionMeta.fabric().installerVersionsArrayAscending()[0],
         versionMeta.fabric()
-            .installerVersionsArrayDescending()[
+                   .installerVersionsArrayDescending()[
             versionMeta.fabric().installerVersionsArrayDescending().length - 1]);
     Assertions.assertNotNull(versionMeta.fabric().installerVersionsArrayDescending());
     Assertions.assertEquals(
@@ -397,7 +397,7 @@ public class VersionMetaTest {
     Assertions.assertEquals(
         versionMeta.fabric().installerVersionsArrayDescending()[0],
         versionMeta.fabric()
-            .installerVersionsArrayAscending()[
+                   .installerVersionsArrayAscending()[
             versionMeta.fabric().installerVersionsArrayAscending().length - 1]);
     Assertions.assertNotNull(versionMeta.fabric().latestInstallerUrl());
     Assertions.assertNotNull(versionMeta.fabric().releaseInstallerUrl());
@@ -435,7 +435,7 @@ public class VersionMetaTest {
     Assertions.assertEquals(
         versionMeta.quilt().installerVersionsArrayAscending()[0],
         versionMeta.quilt()
-            .installerVersionsArrayDescending()[
+                   .installerVersionsArrayDescending()[
             versionMeta.quilt().installerVersionsArrayDescending().length - 1]);
     Assertions.assertNotNull(versionMeta.quilt().installerVersionsArrayDescending());
     Assertions.assertEquals(
@@ -444,7 +444,7 @@ public class VersionMetaTest {
     Assertions.assertEquals(
         versionMeta.quilt().installerVersionsArrayDescending()[0],
         versionMeta.quilt()
-            .installerVersionsArrayAscending()[
+                   .installerVersionsArrayAscending()[
             versionMeta.quilt().installerVersionsArrayAscending().length - 1]);
     Assertions.assertNotNull(versionMeta.quilt().latestInstallerUrl());
     Assertions.assertNotNull(versionMeta.quilt().releaseInstallerUrl());
@@ -482,7 +482,7 @@ public class VersionMetaTest {
     Assertions.assertEquals(
         versionMeta.legacyFabric().installerVersionsArrayAscending()[0],
         versionMeta.legacyFabric()
-            .installerVersionsArrayDescending()[
+                   .installerVersionsArrayDescending()[
             versionMeta.legacyFabric().installerVersionsArrayDescending().length - 1]);
     Assertions.assertNotNull(versionMeta.legacyFabric().installerVersionsArrayDescending());
     Assertions.assertEquals(
@@ -491,7 +491,7 @@ public class VersionMetaTest {
     Assertions.assertEquals(
         versionMeta.legacyFabric().installerVersionsArrayDescending()[0],
         versionMeta.legacyFabric()
-            .installerVersionsArrayAscending()[
+                   .installerVersionsArrayAscending()[
             versionMeta.legacyFabric().installerVersionsArrayAscending().length - 1]);
     Assertions.assertNotNull(versionMeta.legacyFabric().latestInstallerUrl());
     Assertions.assertNotNull(versionMeta.legacyFabric().releaseInstallerUrl());

@@ -17,26 +17,35 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.versionmeta;
+package de.griefed.serverpackcreator.utilities.common;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.apache.commons.io.FileUtils;
+import org.springframework.stereotype.Component;
 import org.springframework.util.StreamUtils;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-public abstract class ManifestParser {
+/**
+ * Commonly used XML utilities.
+ *
+ * @author Griefed
+ */
+@Component
+public class XmlUtilities {
+
+  private final DocumentBuilder DOCUMENTBUILDER;
+
+  public XmlUtilities(DocumentBuilder documentBuilder) {
+    DOCUMENTBUILDER = documentBuilder;
+  }
 
   /**
    * Reads the file into a {@link Document} and {@link Document#normalize()} it.
@@ -67,13 +76,9 @@ public abstract class ManifestParser {
   public Document getXml(String string)
       throws ParserConfigurationException, IOException, SAXException {
 
-    Document xml = getDocumentBuilder().parse(new InputSource(new StringReader(string)));
+    Document xml = DOCUMENTBUILDER.parse(new InputSource(new StringReader(string)));
     xml.normalize();
     return xml;
-  }
-
-  private DocumentBuilder getDocumentBuilder() throws ParserConfigurationException {
-    return DocumentBuilderFactory.newInstance().newDocumentBuilder();
   }
 
   /**
@@ -91,62 +96,5 @@ public abstract class ManifestParser {
 
     return getXml(StreamUtils.copyToString(manifest,
                                            StandardCharsets.UTF_8));
-  }
-
-  /**
-   * Acquire a {@link JsonNode} from the given json inputstream.
-   *
-   * @param inputStream The inputstream to read.
-   * @param mapper      ObjectMapper for reading and parsing JSON.
-   * @return JSON data from the specified file.
-   * @throws IOException when the file could not be parsed/read into a {@link JsonNode}.
-   * @author Griefed
-   */
-  protected JsonNode getJson(InputStream inputStream,
-                             ObjectMapper mapper) throws IOException {
-    return getJson(StreamUtils.copyToString(inputStream,
-                                            StandardCharsets.UTF_8), mapper);
-  }
-
-  /**
-   * Acquire a {@link JsonNode} from the given json string.
-   *
-   * @param string The string to read.
-   * @param mapper ObjectMapper for reading and parsing JSON.
-   * @return JSON data from the specified file.
-   * @throws IOException when the file could not be parsed/read into a {@link JsonNode}.
-   * @author Griefed
-   */
-  protected JsonNode getJson(String string,
-                             ObjectMapper mapper) throws IOException {
-    return mapper.readTree(string);
-  }
-
-  /**
-   * Acquire a {@link JsonNode} from the given json file.
-   *
-   * @param file   The file to read.
-   * @param mapper ObjectMapper for reading and parsing JSON.
-   * @return JSON data from the specified file.
-   * @throws IOException when the file could not be parsed/read into a {@link JsonNode}.
-   * @author Griefed
-   */
-  protected JsonNode getJson(File file,
-                             ObjectMapper mapper) throws IOException {
-    return getJson(FileUtils.readFileToString(file, StandardCharsets.UTF_8), mapper);
-  }
-
-  /**
-   * Acquire a {@link JsonNode} from the given URL.
-   *
-   * @param url    URL to the data which contains your JSON.
-   * @param mapper ObjectMapper for reading and parsing JSON.
-   * @return JSON data from the specified file.
-   * @throws IOException when the file could not be parsed/read into a {@link JsonNode}.
-   * @author Griefed
-   */
-  protected JsonNode getJson(URL url,
-                             ObjectMapper mapper) throws IOException {
-    return mapper.readTree(url);
   }
 }

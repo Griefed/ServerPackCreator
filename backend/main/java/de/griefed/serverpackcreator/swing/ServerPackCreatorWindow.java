@@ -28,7 +28,6 @@ import de.griefed.serverpackcreator.i18n.I18n;
 import de.griefed.serverpackcreator.swing.themes.DarkTheme;
 import de.griefed.serverpackcreator.swing.themes.LightTheme;
 import de.griefed.serverpackcreator.swing.utilities.BackgroundPanel;
-import de.griefed.serverpackcreator.utilities.ConfigUtilities;
 import de.griefed.serverpackcreator.utilities.UpdateChecker;
 import de.griefed.serverpackcreator.utilities.common.Utilities;
 import de.griefed.serverpackcreator.versionmeta.VersionMeta;
@@ -137,7 +136,6 @@ public final class ServerPackCreatorWindow extends JFrame {
    * @param injectedUpdateChecker           Instance of {@link UpdateChecker}.
    * @param injectedServerPackCreatorSplash Instance of {@link ServerPackCreatorSplash}.
    * @param injectedApplicationAddons       Instance of {@link ApplicationAddons}.
-   * @param injectedConfigUtilities         Instance of {@link ConfigUtilities}.
    * @param migrationMessages               List of migration messages to display to the user.
    * @throws IOException if the {@link VersionMeta} could not be instantiated.
    * @author Griefed
@@ -152,7 +150,6 @@ public final class ServerPackCreatorWindow extends JFrame {
       UpdateChecker injectedUpdateChecker,
       ServerPackCreatorSplash injectedServerPackCreatorSplash,
       ApplicationAddons injectedApplicationAddons,
-      ConfigUtilities injectedConfigUtilities,
       List<MigrationMessage> migrationMessages)
       throws IOException {
 
@@ -182,8 +179,7 @@ public final class ServerPackCreatorWindow extends JFrame {
             injectedUtilities,
             DARKTHEME,
             LIGHTTHEME,
-            injectedApplicationAddons,
-            injectedConfigUtilities);
+            injectedApplicationAddons);
 
     TabServerPackCreatorLog TAB_LOG_SERVERPACKCREATOR =
         new TabServerPackCreatorLog(

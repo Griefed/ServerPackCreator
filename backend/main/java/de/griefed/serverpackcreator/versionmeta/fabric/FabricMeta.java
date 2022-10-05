@@ -21,7 +21,7 @@ package de.griefed.serverpackcreator.versionmeta.fabric;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
-import de.griefed.serverpackcreator.versionmeta.ManifestParser;
+import de.griefed.serverpackcreator.utilities.common.Utilities;
 import de.griefed.serverpackcreator.versionmeta.Meta;
 import java.io.File;
 import java.io.IOException;
@@ -37,10 +37,8 @@ import org.xml.sax.SAXException;
  *
  * @author Griefed
  */
-public final class FabricMeta extends ManifestParser implements Meta {
+public final class FabricMeta implements Meta {
 
-  private final File FABRIC_MANIFEST;
-  private final File FABRIC_INSTALLER_MANIFEST;
   private final FabricLoader FABRIC_LOADER;
   private final FabricLoaderDetails FABRIC_LOADER_DETAILS;
   private final FabricInstaller FABRIC_INSTALLER;
@@ -55,20 +53,20 @@ public final class FabricMeta extends ManifestParser implements Meta {
    * @param fabricInstallerManifest      Fabric-installer manifest file.
    * @param injectedFabricIntermediaries Fabric Intermediary instance.
    * @param objectMapper                 Object mapper for JSON parsing.
+   * @param utilities                    Commonly used utilities across ServerPackCreator.
    * @author Griefed
    */
   public FabricMeta(
       File fabricManifest,
       File fabricInstallerManifest,
       FabricIntermediaries injectedFabricIntermediaries,
-      ObjectMapper objectMapper) {
+      ObjectMapper objectMapper,
+      Utilities utilities) {
 
     FABRIC_LOADER_DETAILS = new FabricLoaderDetails(objectMapper);
-    FABRIC_MANIFEST = fabricManifest;
-    FABRIC_INSTALLER_MANIFEST = fabricInstallerManifest;
-    FABRIC_LOADER = new FabricLoader(FABRIC_MANIFEST);
+    FABRIC_LOADER = new FabricLoader(fabricManifest, utilities);
     FABRIC_INTERMEDIARIES = injectedFabricIntermediaries;
-    FABRIC_INSTALLER = new FabricInstaller(FABRIC_INSTALLER_MANIFEST);
+    FABRIC_INSTALLER = new FabricInstaller(fabricInstallerManifest, utilities);
   }
 
   @Override

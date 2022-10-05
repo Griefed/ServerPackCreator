@@ -25,8 +25,8 @@ public class I18nTest {
   @Test
   void localeTest() {
     ApplicationProperties applicationProperties = ServerPackCreator.getInstance(
-            args)
-        .getApplicationProperties();
+                                                                       args)
+                                                                   .getApplicationProperties();
 
     I18n i18n = new I18n(applicationProperties);
     Assertions.assertEquals("English (United States)", i18n.getMessage("localeUnlocalizedName"));
@@ -45,7 +45,8 @@ public class I18nTest {
 
     try {
       FileUtils.copyDirectory(
-          new File("backend/test/resources/testresources/languages/langMissing"), new File("tests/lang"));
+          new File("backend/test/resources/testresources/languages/langMissing"),
+          new File("tests/lang"));
     } catch (Exception ignored) {
     }
 
@@ -64,7 +65,7 @@ public class I18nTest {
     LOG.info("customLanguageTest() ef_gh");
     i18n = new I18n(
         new ApplicationProperties(new FileUtilities(), new SystemUtilities(), new ListUtilities(),
-            new JarUtilities()),
+                                  new JarUtilities()),
         "ef_gh");
     Assertions.assertEquals("I bims 1 Sprache", i18n.getMessage("localeUnlocalizedName"));
   }

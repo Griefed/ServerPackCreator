@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.versionmeta.legacyfabric;
 
-import de.griefed.serverpackcreator.versionmeta.ManifestParser;
+import de.griefed.serverpackcreator.utilities.common.Utilities;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -31,16 +31,27 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
-public final class LegacyFabricInstaller extends ManifestParser {
+public final class LegacyFabricInstaller {
 
+  private final Utilities UTILITIES;
   private final File MANIFEST;
   private final List<String> ALL = new ArrayList<>(100);
   private final String INSTALLER_URL_TEMPLATE = "https://maven.legacyfabric.net/net/legacyfabric/fabric-installer/%s/fabric-installer-%s.jar";
   private String latest;
   private String release;
 
-  public LegacyFabricInstaller(File installerVersionsManifest) {
+  /**
+   * New instance holding information about the LegacyFabric installer and versions.
+   *
+   * @param installerVersionsManifest Manifest containing information about LegacyFabric installer
+   *                                  versions.
+   * @param utilities                 Commonly used utilities across ServerPackCreator.
+   * @author Griefed
+   */
+  public LegacyFabricInstaller(File installerVersionsManifest,
+                               Utilities utilities) {
     MANIFEST = installerVersionsManifest;
+    UTILITIES = utilities;
   }
 
   /**
@@ -49,7 +60,7 @@ public final class LegacyFabricInstaller extends ManifestParser {
    * @throws IOException when the manifest could not be parsed.
    */
   void update() throws ParserConfigurationException, IOException, SAXException {
-    Document installerManifest = getXml(MANIFEST);
+    Document installerManifest = UTILITIES.XmlUtilities().getXml(MANIFEST);
 
     latest =
         installerManifest

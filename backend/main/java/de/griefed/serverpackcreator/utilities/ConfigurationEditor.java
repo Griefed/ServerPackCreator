@@ -52,7 +52,6 @@ public final class ConfigurationEditor {
   private final ApplicationProperties APPLICATIONPROPERTIES;
   private final VersionMeta VERSIONMETA;
   private final Utilities UTILITIES;
-  private final ConfigUtilities CONFIGUTILITIES;
   private final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern(
       "yyyy-MM-dd_HH-mm-ss");
   private File logFile;
@@ -61,13 +60,11 @@ public final class ConfigurationEditor {
       ConfigurationHandler injectedConfigurationHandler,
       ApplicationProperties injectedApplicationProperties,
       Utilities injectedUtilities,
-      VersionMeta injectedVersionMeta,
-      ConfigUtilities injectedConfigUtilities) {
+      VersionMeta injectedVersionMeta) {
 
     this.APPLICATIONPROPERTIES = injectedApplicationProperties;
     this.VERSIONMETA = injectedVersionMeta;
     this.UTILITIES = injectedUtilities;
-    this.CONFIGUTILITIES = injectedConfigUtilities;
     this.CONFIGURATIONHANDLER = injectedConfigurationHandler;
   }
 
@@ -157,7 +154,7 @@ public final class ConfigurationEditor {
 
     do {
 
-      CONFIGUTILITIES.printConfigurationModel(configurationModel);
+      CONFIGURATIONHANDLER.printConfigurationModel(configurationModel);
       printEditMenu();
 
       selection = getDecision(scanner, 0, 18);
@@ -228,7 +225,7 @@ public final class ConfigurationEditor {
           break;
 
         case 16:
-          CONFIGUTILITIES.printConfigurationModel(configurationModel);
+          CONFIGURATIONHANDLER.printConfigurationModel(configurationModel);
           break;
 
         case 17:
@@ -393,7 +390,7 @@ public final class ConfigurationEditor {
       configurationModel.setServerPackSuffix(getServerPackSuffix(scanner));
 
       // ---------------------------------------------------PRINT CONFIG TO CONSOLE AND LOG---------
-      CONFIGUTILITIES.printConfigurationModel(configurationModel);
+      CONFIGURATIONHANDLER.printConfigurationModel(configurationModel);
 
       printToFileAndConsole("Are you satisfied with this config?");
       printToFileAndConsole("Answer: ", false);
@@ -816,7 +813,7 @@ public final class ConfigurationEditor {
 
     } while (!CONFIGURATIONHANDLER.checkModloader(modLoader));
 
-    modLoader = CONFIGUTILITIES.getModLoaderCase(modLoader);
+    modLoader = CONFIGURATIONHANDLER.getModLoaderCase(modLoader);
 
     printToFileAndConsole("You entered: " + modLoader);
     printToFileAndConsole();

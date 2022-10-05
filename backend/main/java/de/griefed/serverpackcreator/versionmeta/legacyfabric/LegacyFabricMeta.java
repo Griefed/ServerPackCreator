@@ -19,9 +19,8 @@
  */
 package de.griefed.serverpackcreator.versionmeta.legacyfabric;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
-import de.griefed.serverpackcreator.versionmeta.ManifestParser;
+import de.griefed.serverpackcreator.utilities.common.Utilities;
 import de.griefed.serverpackcreator.versionmeta.Meta;
 import java.io.File;
 import java.io.IOException;
@@ -32,20 +31,28 @@ import java.util.Optional;
 import javax.xml.parsers.ParserConfigurationException;
 import org.xml.sax.SAXException;
 
-public final class LegacyFabricMeta extends ManifestParser implements Meta {
+public final class LegacyFabricMeta implements Meta {
 
   private final LegacyFabricGame GAME_VERSIONS;
   private final LegacyFabricLoader LOADER_VERSIONS;
   private final LegacyFabricInstaller INSTALLER_VERSIONS;
 
+  /**
+   * LegacyFabric meta providing game, loader and installer version information.
+   *
+   * @param gameVersionsManifest      Game version manifest.
+   * @param loaderVersionsManifest    Loader version manifest.
+   * @param installerVersionsManifest Installer version manifest.
+   * @param utilities                 Commonly used utilities across ServerPackCreator.
+   */
   public LegacyFabricMeta(File gameVersionsManifest,
                           File loaderVersionsManifest,
                           File installerVersionsManifest,
-                          ObjectMapper mapper) {
+                          Utilities utilities) {
 
-    GAME_VERSIONS = new LegacyFabricGame(gameVersionsManifest, mapper);
-    LOADER_VERSIONS = new LegacyFabricLoader(loaderVersionsManifest, mapper);
-    INSTALLER_VERSIONS = new LegacyFabricInstaller(installerVersionsManifest);
+    GAME_VERSIONS = new LegacyFabricGame(gameVersionsManifest, utilities);
+    LOADER_VERSIONS = new LegacyFabricLoader(loaderVersionsManifest, utilities);
+    INSTALLER_VERSIONS = new LegacyFabricInstaller(installerVersionsManifest, utilities);
   }
 
   @Override

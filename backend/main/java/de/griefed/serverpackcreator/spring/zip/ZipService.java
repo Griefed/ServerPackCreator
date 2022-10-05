@@ -23,7 +23,6 @@ import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.ConfigurationHandler;
 import de.griefed.serverpackcreator.spring.NotificationResponse;
 import de.griefed.serverpackcreator.spring.task.TaskSubmitter;
-import de.griefed.serverpackcreator.utilities.ConfigUtilities;
 import de.griefed.serverpackcreator.versionmeta.VersionMeta;
 import java.io.File;
 import java.io.IOException;
@@ -51,7 +50,6 @@ public class ZipService {
   private final ConfigurationHandler CONFIGURATIONHANDLER;
   private final NotificationResponse NOTIFICATIONRESPONSE;
   private final VersionMeta VERSIONMETA;
-  private final ConfigUtilities CONFIGUTILITIES;
 
   /**
    * Constructor responsible for DI.
@@ -61,7 +59,6 @@ public class ZipService {
    * @param injectedConfigurationHandler  Instance of {@link ConfigurationHandler}.
    * @param injectedNotificationResponse  Instance of {@link NotificationResponse}.
    * @param injectedVersionMeta           Instance of {@link VersionMeta}.
-   * @param injectedConfigUtilities       Instance of {@link ConfigUtilities}.
    * @author Griefed
    */
   @Autowired
@@ -70,15 +67,13 @@ public class ZipService {
       TaskSubmitter injectedTaskSubmitter,
       ConfigurationHandler injectedConfigurationHandler,
       NotificationResponse injectedNotificationResponse,
-      VersionMeta injectedVersionMeta,
-      ConfigUtilities injectedConfigUtilities) {
+      VersionMeta injectedVersionMeta) {
 
     APPLICATIONPROPERTIES = injectedApplicationProperties;
     TASKSUBMITTER = injectedTaskSubmitter;
     CONFIGURATIONHANDLER = injectedConfigurationHandler;
     NOTIFICATIONRESPONSE = injectedNotificationResponse;
     VERSIONMETA = injectedVersionMeta;
-    CONFIGUTILITIES = injectedConfigUtilities;
   }
 
   /**
@@ -151,7 +146,7 @@ public class ZipService {
     if (CONFIGURATIONHANDLER.checkModloader(parameters[3])) {
 
       // Check Forge
-      if (CONFIGUTILITIES.getModLoaderCase(parameters[3]).equals("Forge")) {
+      if (CONFIGURATIONHANDLER.getModLoaderCase(parameters[3]).equals("Forge")) {
 
         if (!VERSIONMETA.forge().checkForgeAndMinecraftVersion(parameters[2], parameters[4])) {
           LOG.info(

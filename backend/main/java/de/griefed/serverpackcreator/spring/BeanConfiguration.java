@@ -25,6 +25,9 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.griefed.serverpackcreator.ApplicationProperties;
 import java.io.File;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -196,5 +199,17 @@ public class BeanConfiguration {
   @Bean
   public File legacyFabricInstallerManifest() {
     return APPLICATIONPROPERTIES.legacyFabricInstallerManifest();
+  }
+
+  /**
+   * DocumentBuilder for working with XML data.
+   *
+   * @return DocumentBuilder for working with XML data.
+   * @throws ParserConfigurationException if a DocumentBuilder cannot be created which satisfies the configuration requested.
+   * @author Griefed
+   */
+  @Bean
+  public DocumentBuilder documentBuilder() throws ParserConfigurationException {
+    return DocumentBuilderFactory.newInstance().newDocumentBuilder();
   }
 }

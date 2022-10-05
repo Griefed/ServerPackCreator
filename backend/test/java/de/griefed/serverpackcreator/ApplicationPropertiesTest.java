@@ -79,7 +79,7 @@ public class ApplicationPropertiesTest {
 
     Assertions.assertNotNull(applicationProperties.manifestsDirectory());
     Assertions.assertEquals(
-        new File(applicationProperties.homeDirectory(),"manifests"),
+        new File(applicationProperties.homeDirectory(), "manifests"),
         applicationProperties.manifestsDirectory()
     );
 
@@ -92,36 +92,36 @@ public class ApplicationPropertiesTest {
     Assertions.assertNotNull(applicationProperties.fabricIntermediariesManifest());
     Assertions.assertEquals(
         new File(applicationProperties.homeDirectory(),
-            "manifests" + File.separator + "fabric-intermediaries-manifest.json"),
+                 "manifests" + File.separator + "fabric-intermediaries-manifest.json"),
         applicationProperties.fabricIntermediariesManifest()
     );
 
     Assertions.assertNotNull(applicationProperties.legacyFabricGameManifest());
     Assertions.assertEquals(
         new File(applicationProperties.homeDirectory(),
-            "manifests" + File.separator + "legacy-fabric-game-manifest.json"),
+                 "manifests" + File.separator + "legacy-fabric-game-manifest.json"),
         applicationProperties.legacyFabricGameManifest()
     );
 
     Assertions.assertNotNull(applicationProperties.legacyFabricLoaderManifest());
     Assertions.assertEquals(
         new File(applicationProperties.homeDirectory(),
-            "manifests" + File.separator + "legacy-fabric-loader-manifest.json"),
+                 "manifests" + File.separator + "legacy-fabric-loader-manifest.json"),
         applicationProperties.legacyFabricLoaderManifest()
     );
 
     Assertions.assertNotNull(applicationProperties.legacyFabricInstallerManifest());
     Assertions.assertEquals(
         new File(applicationProperties.homeDirectory(),
-            "manifests" + File.separator + "legacy-fabric-installer-manifest.xml"),
+                 "manifests" + File.separator + "legacy-fabric-installer-manifest.xml"),
         applicationProperties.legacyFabricInstallerManifest()
     );
 
     Assertions.assertNotNull(applicationProperties.fabricInstallerManifest());
     Assertions.assertEquals(
         new File(
-            applicationProperties.homeDirectory(),"manifests" + File.separator
-                + "fabric-installer-manifest.xml"),
+            applicationProperties.homeDirectory(), "manifests" + File.separator
+            + "fabric-installer-manifest.xml"),
         applicationProperties.fabricInstallerManifest()
     );
 
@@ -134,28 +134,28 @@ public class ApplicationPropertiesTest {
 
     Assertions.assertNotNull(applicationProperties.quiltInstallerManifest());
     Assertions.assertEquals(
-        new File(applicationProperties.homeDirectory(),"manifests" + File.separator
+        new File(applicationProperties.homeDirectory(), "manifests" + File.separator
             + "quilt-installer-manifest.xml"),
         applicationProperties.quiltInstallerManifest()
     );
 
     Assertions.assertNotNull(applicationProperties.forgeVersionManifest());
     Assertions.assertEquals(
-        new File(applicationProperties.homeDirectory(),"manifests" + File.separator
+        new File(applicationProperties.homeDirectory(), "manifests" + File.separator
             + "forge-manifest.json"),
         applicationProperties.forgeVersionManifest()
     );
 
     Assertions.assertNotNull(applicationProperties.fabricVersionManifest());
     Assertions.assertEquals(
-        new File(applicationProperties.homeDirectory(),"manifests" + File.separator
+        new File(applicationProperties.homeDirectory(), "manifests" + File.separator
             + "fabric-manifest.xml"),
         applicationProperties.fabricVersionManifest()
     );
 
     Assertions.assertNotNull(applicationProperties.minecraftVersionManifest());
     Assertions.assertEquals(
-        new File(applicationProperties.homeDirectory(),"manifests" + File.separator
+        new File(applicationProperties.homeDirectory(), "manifests" + File.separator
             + "minecraft-manifest.json"),
         applicationProperties.minecraftVersionManifest()
     );
@@ -178,7 +178,6 @@ public class ApplicationPropertiesTest {
         new File(applicationProperties.tempDirectory(), "modpacks"),
         applicationProperties.modpacksDirectory()
     );
-
 
     Assertions.assertNotNull(applicationProperties.logsDirectory());
     Assertions.assertEquals(
@@ -204,7 +203,7 @@ public class ApplicationPropertiesTest {
 
     Assertions.assertNotNull(applicationProperties.defaultServerIcon());
     Assertions.assertEquals(
-        new File(applicationProperties.serverFilesDirectory(),"server-icon.png"),
+        new File(applicationProperties.serverFilesDirectory(), "server-icon.png"),
         applicationProperties.defaultServerIcon());
 
     Assertions.assertNotNull(applicationProperties.serverPackCreatorDatabase());
@@ -220,7 +219,7 @@ public class ApplicationPropertiesTest {
 
     Assertions.assertNotNull(applicationProperties.addonConfigsDirectory());
     Assertions.assertEquals(
-        new File(applicationProperties.addonsDirectory(),"config"),
+        new File(applicationProperties.addonsDirectory(), "config"),
         applicationProperties.addonConfigsDirectory()
     );
 
