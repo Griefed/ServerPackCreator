@@ -24,6 +24,7 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 import de.griefed.serverpackcreator.modscanning.ModScanner;
 import de.griefed.serverpackcreator.spring.serverpack.ServerPackModel;
+import de.griefed.serverpackcreator.utilities.SimpleStopWatch;
 import de.griefed.serverpackcreator.utilities.common.Utilities;
 import de.griefed.serverpackcreator.versionmeta.VersionMeta;
 import java.awt.Image;
@@ -57,7 +58,6 @@ import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.model.ExcludeFileFilter;
 import net.lingala.zip4j.model.ZipParameters;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.time.StopWatch;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Contract;
@@ -106,7 +106,7 @@ public final class ServerPackHandler {
   private final ApplicationProperties APPLICATIONPROPERTIES;
   private final Utilities UTILITIES;
   private final ApplicationAddons APPLICATIONADDONS;
-  private final StopWatch STOPWATCH_SCANS = new StopWatch();
+  private final SimpleStopWatch STOPWATCH_SCANS = new SimpleStopWatch();
   private final String[] MOD_FILE_ENDINGS = new String[]{"jar", "disabled"};
 
   /**
@@ -1297,10 +1297,8 @@ public final class ServerPackHandler {
       // Exclude scanned mods from copying if said functionality is enabled.
       excludeMods(autodiscoveredClientMods, modsInModpack);
 
-      STOPWATCH_SCANS.stop();
       LOG.debug(
-          "Scanning and excluding of " + filesInModsDir.size() + " mods took " + STOPWATCH_SCANS);
-      STOPWATCH_SCANS.reset();
+          "Scanning and excluding of " + filesInModsDir.size() + " mods took " + STOPWATCH_SCANS.stop().getTime());
 
     } else {
       LOG.info("Automatic clientside-only mod detection disabled.");

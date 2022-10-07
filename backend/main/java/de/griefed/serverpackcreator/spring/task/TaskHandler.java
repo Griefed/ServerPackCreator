@@ -25,12 +25,12 @@ import de.griefed.serverpackcreator.ServerPackHandler;
 import de.griefed.serverpackcreator.spring.serverpack.ServerPackModel;
 import de.griefed.serverpackcreator.spring.serverpack.ServerPackService;
 import de.griefed.serverpackcreator.spring.zip.GenerateZip;
+import de.griefed.serverpackcreator.utilities.SimpleStopWatch;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.time.StopWatch;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,7 +58,7 @@ public class TaskHandler {
   private final ConfigurationHandler CONFIGURATIONHANDLER;
   private final ServerPackHandler SERVERPACKHANDLER;
   private final ServerPackService SERVERPACKSERVICE;
-  private final StopWatch STOPWATCH_SCANS;
+  private final SimpleStopWatch STOPWATCH_SCANS;
 
   /**
    * Constructor responsible for our DI.
@@ -80,7 +80,7 @@ public class TaskHandler {
     CONFIGURATIONHANDLER = injectedConfigurationHandler;
     SERVERPACKHANDLER = injectedServerPackHandler;
     SERVERPACKSERVICE = injectedServerPackService;
-    STOPWATCH_SCANS = new StopWatch();
+    STOPWATCH_SCANS = new SimpleStopWatch();
   }
 
   /**
@@ -137,7 +137,6 @@ public class TaskHandler {
 
       ServerPackModel pack;
 
-      STOPWATCH_SCANS.reset();
       STOPWATCH_SCANS.start();
 
       List<String> encounteredErrors = new ArrayList<>(100);
@@ -185,11 +184,7 @@ public class TaskHandler {
         FileUtils.deleteQuietly(
             new File(APPLICATIONPROPERTIES.modpacksDirectory(), parameters[0]));
 
-        STOPWATCH_SCANS.stop();
-
-        LOG.info("Generation took " + STOPWATCH_SCANS);
-
-        STOPWATCH_SCANS.reset();
+        LOG.info("Generation took " + STOPWATCH_SCANS.stop().getTime());
       }
 
     } else {

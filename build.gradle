@@ -65,8 +65,6 @@ dependencies {
   // Backend
   implementation 'de.griefed:versionchecker:1.1.0'
   implementation 'com.electronwill.night-config:toml:3.6.6'
-  implementation 'commons-io:commons-io:2.11.0'
-  implementation 'commons-lang:commons-lang:2.6'
 
   implementation 'net.lingala.zip4j:zip4j:2.11.2'
   implementation 'org.xerial:sqlite-jdbc:3.39.3.0'
@@ -86,20 +84,20 @@ dependencies {
   implementation 'de.griefed:larsonscanner:1.0.4'
 
   // WEB
-  implementation 'org.springframework.boot:spring-boot-starter-web:2.7.3'
-  implementation 'org.springframework.boot:spring-boot-starter-log4j2:2.7.3'
+  implementation 'org.springframework.boot:spring-boot-starter-web:2.7.4'
+  implementation 'org.springframework.boot:spring-boot-starter-log4j2:2.7.4'
   implementation 'org.apache.activemq:artemis-jms-server:2.19.1'
-  implementation 'org.springframework.boot:spring-boot-starter-data-jpa:2.7.3'
-  implementation 'org.springframework.boot:spring-boot-starter-artemis:2.7.3'
+  implementation 'org.springframework.boot:spring-boot-starter-data-jpa:2.7.4'
+  implementation 'org.springframework.boot:spring-boot-starter-artemis:2.7.4'
   implementation 'com.github.gwenn:sqlite-dialect:0.1.2'
 
   // Dev tools
-  developmentOnly 'org.springframework.boot:spring-boot-devtools:2.7.3'
+  developmentOnly 'org.springframework.boot:spring-boot-devtools:2.7.4'
 
   // Testing
   testImplementation 'org.junit.jupiter:junit-jupiter:5.9.0'
   testImplementation 'org.junit.platform:junit-platform-suite:1.9.0'
-  testImplementation 'org.springframework.boot:spring-boot-starter-test:2.7.3'
+  testImplementation 'org.springframework.boot:spring-boot-starter-test:2.7.4'
 }
 
 licenseReport {
