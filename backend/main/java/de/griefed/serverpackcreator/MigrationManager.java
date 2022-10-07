@@ -169,7 +169,7 @@ public final class MigrationManager {
 
     Method[] methods = MIGRATION_METHODS.getClass().getDeclaredMethods();
     HashMap<String, Method> methodMap = new HashMap<>(100);
-    TreeSet<String> methodVersions = new TreeSet<>(100);
+    TreeSet<String> methodVersions = new TreeSet<>();
 
     for (Method method : methods) {
       String methodVersion = toSemantic(method.getName());
