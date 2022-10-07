@@ -961,13 +961,11 @@ public final class ServerPackHandler {
       case "Forge":
         LOG_INSTALLER.info("Starting Forge installation.");
 
-        if (UTILITIES.WebUtils().downloadFile(
+        if (VERSIONMETA.forge().getForgeInstance(minecraftVersion, modLoaderVersion).isPresent()
+            && UTILITIES.WebUtils().downloadFile(
             destination + File.separator + "forge-installer.jar",
-            VERSIONMETA
-                .forge()
-                .getForgeInstance(minecraftVersion, modLoaderVersion)
-                .get()
-                .installerUrl())
+            VERSIONMETA.forge().getForgeInstance(minecraftVersion, modLoaderVersion).get()
+                       .installerUrl())
         ) {
 
           LOG.info("Forge installer successfully downloaded.");
@@ -1298,7 +1296,8 @@ public final class ServerPackHandler {
       excludeMods(autodiscoveredClientMods, modsInModpack);
 
       LOG.debug(
-          "Scanning and excluding of " + filesInModsDir.size() + " mods took " + STOPWATCH_SCANS.stop().getTime());
+          "Scanning and excluding of " + filesInModsDir.size() + " mods took "
+              + STOPWATCH_SCANS.stop().getTime());
 
     } else {
       LOG.info("Automatic clientside-only mod detection disabled.");

@@ -221,7 +221,7 @@ public final class ServerPackCreatorWindow extends JFrame {
 
     TABBEDPANE.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 
-    MIGRATIONS_MADE = migrationMessages.size() > 0;
+    MIGRATIONS_MADE = !migrationMessages.isEmpty();
 
     MENUBAR =
         new MainMenuBar(

@@ -65,7 +65,7 @@ public final class MigrationManager {
 
   private static final Logger LOG = LogManager.getLogger(MigrationManager.class);
   private final MigrationMethods MIGRATION_METHODS = new MigrationMethods();
-  private final List<MigrationMessage> MIGRATION_MESSAGES = new ArrayList<>();
+  private final List<MigrationMessage> MIGRATION_MESSAGES = new ArrayList<>(10);
   private final ApplicationProperties APPLICATIONPROPERTIES;
   private final I18n I18N;
   private String previous;
@@ -168,8 +168,8 @@ public final class MigrationManager {
     List<Method> run = new ArrayList<>(100);
 
     Method[] methods = MIGRATION_METHODS.getClass().getDeclaredMethods();
-    HashMap<String, Method> methodMap = new HashMap<>();
-    TreeSet<String> methodVersions = new TreeSet<>();
+    HashMap<String, Method> methodMap = new HashMap<>(100);
+    TreeSet<String> methodVersions = new TreeSet<>(100);
 
     for (Method method : methods) {
       String methodVersion = toSemantic(method.getName());
@@ -442,7 +442,7 @@ public final class MigrationManager {
 
     private final String FROM;
     private final String TO;
-    private final List<String> CHANGES = new ArrayList<>();
+    private final List<String> CHANGES = new ArrayList<>(20);
 
     private MigrationMessage(@NotNull String from,
                              @NotNull String to,
@@ -500,7 +500,7 @@ public final class MigrationManager {
      */
     private void ThreePointOneFivePointZero() {
       try {
-        List<String> changes = new ArrayList<>();
+        List<String> changes = new ArrayList<>(10);
 
         File log4J2Xml = new File(APPLICATIONPROPERTIES.homeDirectory(),
                                   "log4j2.xml");

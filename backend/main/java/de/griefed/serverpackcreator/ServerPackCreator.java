@@ -407,7 +407,7 @@ public class ServerPackCreator {
    */
   public synchronized @NotNull JsonUtilities getJsonUtilities() {
     if (jsonUtilities == null) {
-      jsonUtilities = new JsonUtilities(getObjectMapper());
+      jsonUtilities = new JsonUtilities(OBJECT_MAPPER);
     }
     return jsonUtilities;
   }
