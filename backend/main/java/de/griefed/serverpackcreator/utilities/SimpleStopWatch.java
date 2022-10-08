@@ -89,26 +89,19 @@ public class SimpleStopWatch {
   }
 
   /**
-   * Get the elapsed time in nanoseconds. Depending on the state of the stopwatch, two values or an
-   * {@link IllegalStateException} may be thrown.
-   * <ol>
-   *   <li>Stopwatch is still running: The elapsed time up to the point of calling this method is returned.</li>
-   *   <li>Stopwatch started and stopped: The elapsed time between the start and stop is returned.</li>
-   *   <li>Any other state: An {@link IllegalStateException} is thrown.</li>
-   * </ol>
+   * Get the elapsed time of this stopwatch, formatted using {@code %2dh:%02dm:%02ds:%04dms}.
+   * <p>
+   * The stopwatch must be started and stopped before calling this method, {@link #getTime()}, or
+   * {@link #getTime(String)}. If any of the aforementioned methods are called, but the stopwatch
+   * was not started and stopped yet first, an {@link IllegalStateException} will be thrown.
    *
-   * @return The elapsed time in milliseconds.
-   * @throws IllegalStateException when the stopwatch is in an invalid state for time-retrieval.
+   * @return The elapsed time of a stopwatch run, formatted using {@code %2d:%02d:%02d}.
+   * @throws IllegalStateException if the stopwatch was started, but not stopped yet.
    * @author Griefed
    */
-  private long getElapsedNanoseconds() throws IllegalStateException {
-    if (started && !stopped) {
-      return System.nanoTime() - start;
-    } else if (!started && stopped) {
-      return elapsed;
-    } else {
-      throw new IllegalStateException("Stopwatch is not running, or has not been run yet.");
-    }
+  @Override
+  public @NotNull String toString() throws IllegalStateException {
+    return getTime();
   }
 
   /**
@@ -150,18 +143,25 @@ public class SimpleStopWatch {
   }
 
   /**
-   * Get the elapsed time of this stopwatch, formatted using {@code %2dh:%02dm:%02ds:%04dms}.
-   * <p>
-   * The stopwatch must be started and stopped before calling this method, {@link #getTime()}, or
-   * {@link #getTime(String)}. If any of the aforementioned methods are called, but the stopwatch
-   * was not started and stopped yet first, an {@link IllegalStateException} will be thrown.
+   * Get the elapsed time in nanoseconds. Depending on the state of the stopwatch, two values or an
+   * {@link IllegalStateException} may be thrown.
+   * <ol>
+   *   <li>Stopwatch is still running: The elapsed time up to the point of calling this method is returned.</li>
+   *   <li>Stopwatch started and stopped: The elapsed time between the start and stop is returned.</li>
+   *   <li>Any other state: An {@link IllegalStateException} is thrown.</li>
+   * </ol>
    *
-   * @return The elapsed time of a stopwatch run, formatted using {@code %2d:%02d:%02d}.
-   * @throws IllegalStateException if the stopwatch was started, but not stopped yet.
+   * @return The elapsed time in nanoseconds.
+   * @throws IllegalStateException when the stopwatch is in an invalid state for time-retrieval.
    * @author Griefed
    */
-  @Override
-  public @NotNull String toString() throws IllegalStateException {
-    return getTime();
+  public long getElapsedNanoseconds() throws IllegalStateException {
+    if (started && !stopped) {
+      return System.nanoTime() - start;
+    } else if (!started && stopped) {
+      return elapsed;
+    } else {
+      throw new IllegalStateException("Stopwatch is not running, or has not been run yet.");
+    }
   }
 }
