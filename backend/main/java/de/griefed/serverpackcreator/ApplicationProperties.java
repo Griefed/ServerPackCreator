@@ -173,21 +173,12 @@ public final class ApplicationProperties {
   private File defaultServerProperties = null;
   private File defaultServerIcon = null;
   private File serverPackCreatorDatabase = null;
-  /**
-   * The home-directory of ServerPackCreator in which all files reside in.
-   */
   private File homeDirectory;
-  /**
-   * Default list of script templates in the server_files-directory.
-   */
   private final TreeSet<File> FALLBACK_SCRIPT_TEMPLATES =
       new TreeSet<>(
           Arrays.asList(
               new File(serverFilesDirectory(), DEFAULT_SHELL_TEMPLATE),
               new File(serverFilesDirectory(), DEFAULT_POWERSHELL_TEMPLATE)));
-  /**
-   * List of templates used for start-script creation.
-   */
   private final TreeSet<File> SCRIPT_TEMPLATES = new TreeSet<>(FALLBACK_SCRIPT_TEMPLATES);
   private File langDirectory = null;
 
@@ -1002,7 +993,18 @@ public final class ApplicationProperties {
   }
 
   /**
-   * Directory for Minecraft server manifests.
+   * Directory to which Minecraft server manifests are copied during the startup of
+   * ServerPackCreator.
+   * <p>
+   * When the {@link de.griefed.serverpackcreator.versionmeta.VersionMeta} is initialized, the
+   * manifests copied to this directory will provide ServerPackCreator with the information required
+   * to check and create your server packs.
+   * <p>
+   * The Minecraft server manifests contain information about the Java version required, the
+   * download-URL of the server-JAR and much more.
+   * <p>
+   * By default, this is the {@code mcserver}-directory inside the {@code manifests}-directory
+   * inside ServerPackCreators home-directory.
    *
    * @return manifests/mcserver
    * @author Griefed
@@ -1036,7 +1038,11 @@ public final class ApplicationProperties {
   }
 
   /**
-   * Fabric intermediaries manifest file.
+   * The Fabric intermediaries manifest containing all required information about Fabrics
+   * intermediaries. These intermediaries are used by Quilt, Fabric and LegacyFabric.
+   * <p>
+   * By default, the {@code fabric-intermediaries-manifest.json}-file resides in the
+   * {@code manifests}-directory inside ServerPackCreators home-directory.
    *
    * @return manifests/fabric-intermediaries-manifest.json
    * @author Griefed
@@ -1050,7 +1056,11 @@ public final class ApplicationProperties {
   }
 
   /**
-   * Storage location for Legacy Fabric Game version manifest file.
+   * The LegacyFabric game version manifest containing information about which Minecraft version
+   * LegacyFabric is available for.
+   * <p>
+   * By default, the {@code legacy-fabric-game-manifest.json}-file resides in the
+   * {@code manifests}-directory inside ServerPackCreators home-directory.
    *
    * @return manifests/legacy-fabric-game-manifest.json
    * @author Griefed
@@ -1064,7 +1074,10 @@ public final class ApplicationProperties {
   }
 
   /**
-   * Storage location for Legacy Fabric Loader version manifest file.
+   * LegacyFabric loader manifest containing information about Fabric loader maven versions.
+   * <p>
+   * By default, the {@code legacy-fabric-loader-manifest.json}-file resides in the
+   * {@code manifests}-directory inside ServerPackCreators home-directory.
    *
    * @return manifests/legacy-fabric-loader-manifest.json
    * @author Griefed
@@ -1078,7 +1091,11 @@ public final class ApplicationProperties {
   }
 
   /**
-   * Storage location for Legacy Fabric Installer version manifest file.
+   * LegacyFabric installer manifest containing information about available LegacyFabric installers
+   * with which to install a server.
+   * <p>
+   * By default, the {@code legacy-fabric-installer-manifest.xml}-file resides in the
+   * {@code manifests}-directory inside ServerPackCreators home-directory.
    *
    * @return manifests/legacy-fabric-installer-manifest.xml
    * @author Griefed
@@ -1092,7 +1109,11 @@ public final class ApplicationProperties {
   }
 
   /**
-   * Storage location for Fabric installer version manifest file.
+   * Fabric installer manifest containing information about available Fabric installers with which
+   * to install a server.
+   * <p>
+   * By default, the {@code fabric-installer-manifest.xml}-file resides in the
+   * {@code manifests}-directory inside ServerPackCreators home-directory.
    *
    * @return manifests/fabric-installer-manifest.xml
    * @author Griefed
@@ -1106,7 +1127,10 @@ public final class ApplicationProperties {
   }
 
   /**
-   * Storage location for Quilt version manifest file.
+   * Quilt version manifest containing information about available Quilt loader versions.
+   * <p>
+   * By default, the {@code quilt-manifest.xml}-file resides in the {@code manifests}-directory
+   * inside ServerPackCreators home-directory.
    *
    * @return manifests/quilt-manifest.xml
    * @author Griefed
@@ -1120,7 +1144,11 @@ public final class ApplicationProperties {
   }
 
   /**
-   * Storage location for Quilt installer version manifest file.
+   * Quilt installer manifest containing information about available Quilt installers with which to
+   * install a server.
+   * <p>
+   * By default, the {@code quilt-installer-manifest.xml}-file resides in the
+   * {@code manifests}-directory inside ServerPackCreators home-directory.
    *
    * @return manifests/quilt-installer-manifest.xml
    * @author Griefed
@@ -1134,7 +1162,10 @@ public final class ApplicationProperties {
   }
 
   /**
-   * Storage location for Forge version manifest file.
+   * Forge version manifest containing information about available Forge loader versions.
+   * <p>
+   * By default, the {@code forge-manifest.json}-file resides in the {@code manifests}-directory
+   * inside ServerPackCreators home-directory.
    *
    * @return manifests/forge-manifest.json
    * @author Griefed
@@ -1148,7 +1179,10 @@ public final class ApplicationProperties {
   }
 
   /**
-   * Storage location for Fabric version manifest file.
+   * Fabric version manifest containing information about available Fabric loader versions.
+   * <p>
+   * By default, the {@code fabric-manifest.xml}-file resides in the {@code manifests}-directory
+   * inside ServerPackCreators home-directory.
    *
    * @return manifests/fabric-manifest.xml
    * @author Griefed
@@ -1162,7 +1196,10 @@ public final class ApplicationProperties {
   }
 
   /**
-   * Storage location for Minecraft version manifest file.
+   * Minecraft version manifest containing information about available Minecraft versions.
+   * <p>
+   * By default, the {@code minecraft-manifest.json}-file resides in the {@code manifests}-directory
+   * inside ServerPackCreators home-directory.
    *
    * @return manifests/minecraft-manifest.json
    * @author Griefed
@@ -1238,7 +1275,8 @@ public final class ApplicationProperties {
   }
 
   /**
-   * The logs-directory.
+   * Storage location for logs created by ServerPackCreator. This is the {@code logs}-directory
+   * inside ServerPackCreators home-directory.
    *
    * @return logs
    * @author Griefed
@@ -1248,7 +1286,10 @@ public final class ApplicationProperties {
   }
 
   /**
-   * The default shell-script template.
+   * The default shell-template for the modded server start scripts. The file returned by this
+   * method does not represent the script-template in the {@code server_files}-directory. If you
+   * wish access the configured script templates inside the {@code server_files}-directory, use
+   * {@link #scriptTemplates()}.
    *
    * @return The default shell-script template.
    * @author Griefed
@@ -1258,7 +1299,10 @@ public final class ApplicationProperties {
   }
 
   /**
-   * The default PowerShell-script template.
+   * The default PowerShell-template for the modded server start scripts. The file returned by this
+   * method does not represent the script-template in the {@code server_files}-directory. If you
+   * wish access the configured script templates inside the {@code server_files}-directory, use
+   * {@link #scriptTemplates()}.
    *
    * @return The default PowerShell-script template.
    * @author Griefed
@@ -1268,9 +1312,10 @@ public final class ApplicationProperties {
   }
 
   /**
-   * Configured list of script templates.
+   * Configured list of script templates. Every script template resides inside the
+   * {@code server_files}-directory.
    *
-   * @return Configured script templates.
+   * @return server_files/script templates
    * @author Griefed
    */
   public @NotNull List<File> scriptTemplates() {
@@ -1278,9 +1323,10 @@ public final class ApplicationProperties {
   }
 
   /**
-   * Default configuration-file for a server pack generation.
+   * Default configuration-file for a server pack generation inside ServerPackCreators
+   * home-directory.
    *
-   * @return serverpackcreator.conf-file.
+   * @return home-directory/serverpackcreator.conf
    * @author Griefed
    */
   public @NotNull File defaultConfig() {
@@ -1291,9 +1337,10 @@ public final class ApplicationProperties {
   }
 
   /**
-   * Default server.properties-file used by Minecraft servers.
+   * Default server.properties-file used by Minecraft servers. This file resides in the
+   * {@code server_files}-directory inside ServerPackCreators home-directory.
    *
-   * @return server.properties-file.
+   * @return server_files/server.properties
    * @author Griefed
    */
   public @NotNull File defaultServerProperties() {
@@ -1324,9 +1371,10 @@ public final class ApplicationProperties {
   }
 
   /**
-   * Default server-icon.png-file used by Minecraft servers.
+   * Default server-icon.png-file used by Minecraft servers. This file resides in the
+   * {@code server_files}-directory inside ServerPackCreators home-directory.
    *
-   * @return server-icon.png-file.
+   * @return server_files/server-icon.png
    * @author Griefed
    */
   public @NotNull File defaultServerIcon() {
@@ -1337,9 +1385,10 @@ public final class ApplicationProperties {
   }
 
   /**
-   * ServerPackCreator-database when running as a webservice.
+   * ServerPackCreator-database when running as a webservice. Resides inside ServerPackCreators
+   * home-directory.
    *
-   * @return serverpackcreator.db-file.
+   * @return home-directory/serverpackcreator.db
    * @author Griefed
    */
   public @NotNull File serverPackCreatorDatabase() {
@@ -1400,7 +1449,7 @@ public final class ApplicationProperties {
   }
 
   /**
-   * String-array of modloaders supported by ServerPackCreator.
+   * Modloaders supported by ServerPackCreator.
    *
    * @return Array of modloaders supported by ServerPackCreator.
    * @author Griefed
@@ -1983,7 +2032,18 @@ public final class ApplicationProperties {
   }
 
   /**
-   * Stores values gathered by {@link JarUtilities#jarInformation(Class)} for easy access.
+   * Stores values gathered by {@link JarUtilities#jarInformation(Class)} for easy access. Values
+   * stored and provided by this class are:
+   * <ul>
+   *   <li>The directory in which the exe or JAR reside in</li>
+   *   <li>The file used to start ServerPackCreator. Either a exe or a JAR</li>
+   *   <li>The filename of the exe or JAR</li>
+   *   <li>The Java version with which ServerPackCreator is being used</li>
+   *   <li>The operating systems architecture</li>
+   *   <li>The operating systems name</li>
+   *   <li>The operating systems version</li>
+   *   <li>Whether a exe is being used for running ServerPackCreator</li>
+   * </ul>
    */
   private class JarInformation {
 
