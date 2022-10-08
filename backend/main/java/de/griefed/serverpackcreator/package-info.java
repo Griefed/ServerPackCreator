@@ -19,14 +19,36 @@
  */
 
 /**
- * The ServerPackCreator core.<br> The heart and soul, if you will.<br> The classes inside this
- * package are responsible for turning your modpack into a server pack. Especially the
- * {@link de.griefed.serverpackcreator.ServerPackHandler}, which receives a configuration and then
- * creates the actual server pack for you.<br><br>A regular run of ServerPackCreator is
+ * Core-package of ServerPackCreator.
+ * <p>
+ * Server packs are created using {@link de.griefed.serverpackcreator.ConfigurationModel}, which can
+ * be checked for errors using
+ * {@link
+ * de.griefed.serverpackcreator.ConfigurationHandler#checkConfiguration(de.griefed.serverpackcreator.ConfigurationModel,
+ * boolean)} and any of the available variants. Afterwards, when the checks of the given
+ * configuration model return no errors, it is fed into
+ * {@link
+ * de.griefed.serverpackcreator.ServerPackHandler#run(de.griefed.serverpackcreator.ConfigurationModel)},
+ * which creates finally creates your server pack.
+ * <p>
+ * In other words, the intended workflow is as follows:
  * <ol>
- *   <li>Load or create a configuration. <p>See {@link de.griefed.serverpackcreator.ConfigurationModel#ConfigurationModel(de.griefed.serverpackcreator.utilities.common.Utilities, java.io.File)}<br>and {@link de.griefed.serverpackcreator.ConfigurationHandler#checkConfiguration}<br>or {@link de.griefed.serverpackcreator.ConfigurationHandler#checkConfiguration(java.io.File, de.griefed.serverpackcreator.ConfigurationModel, java.util.List, boolean)}</p></li>
- *   <li>Run ServerPackCreator with the configuration. See {@link de.griefed.serverpackcreator.ServerPackHandler#run(de.griefed.serverpackcreator.ConfigurationModel)}</li>
+ *   <li>Create a {@link de.griefed.serverpackcreator.ConfigurationModel}.</li>
+ *   <li>Check it using {@link de.griefed.serverpackcreator.ConfigurationHandler#checkConfiguration(de.griefed.serverpackcreator.ConfigurationModel, boolean)} or variants.</li>
+ *   <li>Create the server pack using {@link de.griefed.serverpackcreator.ServerPackHandler#run(de.griefed.serverpackcreator.ConfigurationModel)}.</li>
  * </ol>
+ * <p>
+ * Should you wish to customize your instance of ServerPackCreator, see {@link de.griefed.serverpackcreator.ApplicationProperties}.
+ * If you wish to enhance your instance of ServerPackCreator with addons, see {@link de.griefed.serverpackcreator.ApplicationAddons}
+ * and
+ * <ul>
+ *   <li>{@link de.griefed.serverpackcreator.addons.configurationhandler.ConfigCheckExtension}</li>
+ *   <li>{@link de.griefed.serverpackcreator.addons.serverpackhandler.PreGenExtension}</li>
+ *   <li>{@link de.griefed.serverpackcreator.addons.serverpackhandler.PreZipExtension}</li>
+ *   <li>{@link de.griefed.serverpackcreator.addons.serverpackhandler.PostGenExtension}</li>
+ *   <li>{@link de.griefed.serverpackcreator.addons.swinggui.ConfigPanelExtension} and {@link de.griefed.serverpackcreator.addons.swinggui.ExtensionConfigPanel}</li>
+ *   <li>{@link de.griefed.serverpackcreator.addons.swinggui.TabExtension} and {@link de.griefed.serverpackcreator.addons.swinggui.ExtensionTab}</li>
+ * </ul>
  *
  * @author Griefed
  */

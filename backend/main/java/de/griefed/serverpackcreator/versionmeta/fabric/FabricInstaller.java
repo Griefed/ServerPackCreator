@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.versionmeta.fabric;
 
-import de.griefed.serverpackcreator.versionmeta.ManifestParser;
+import de.griefed.serverpackcreator.utilities.common.Utilities;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -37,8 +37,9 @@ import org.xml.sax.SAXException;
  *
  * @author Griefed
  */
-final class FabricInstaller extends ManifestParser {
+final class FabricInstaller {
 
+  private final Utilities UTILITIES;
   private final String URL_TEMPLATE_INSTALLER =
       "https://maven.fabricmc.net/net/fabricmc/fabric-installer/%s/fabric-installer-%s.jar";
   private final File MANIFEST;
@@ -52,11 +53,14 @@ final class FabricInstaller extends ManifestParser {
   /**
    * Create a new instance of the Fabric Installer.
    *
-   * @param manifest Fabric installer information
+   * @param manifest  Fabric installer information
+   * @param utilities Commonly used utilities across ServerPackCreator.
    * @author Griefed
    */
-  FabricInstaller(File manifest) {
+  FabricInstaller(File manifest,
+                  Utilities utilities) {
     MANIFEST = manifest;
+    UTILITIES = utilities;
   }
 
   /**
@@ -65,7 +69,7 @@ final class FabricInstaller extends ManifestParser {
    * @author Griefed
    */
   void update() throws ParserConfigurationException, IOException, SAXException {
-    Document document = getXml(MANIFEST);
+    Document document = UTILITIES.XmlUtilities().getXml(MANIFEST);
 
     latestInstaller =
         document
@@ -199,7 +203,8 @@ final class FabricInstaller extends ManifestParser {
    * @return URL to the improved Fabric launcher, wrapped in an {@link Optional}.
    * @author Griefed
    */
-  Optional<URL> improvedLauncherUrl(String minecraftVersion, String fabricVersion) {
+  Optional<URL> improvedLauncherUrl(String minecraftVersion,
+                                    String fabricVersion) {
     try {
       return Optional.of(
           new URL(

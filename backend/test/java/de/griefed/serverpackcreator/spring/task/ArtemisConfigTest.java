@@ -1,4 +1,4 @@
-package de.griefed.serverpackcreator.spring.jms;
+package de.griefed.serverpackcreator.spring.task;
 
 import de.griefed.serverpackcreator.ServerPackCreator;
 import de.griefed.serverpackcreator.ServerPackCreator.Mode;

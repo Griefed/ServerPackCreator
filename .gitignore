@@ -209,3 +209,5 @@ backend/main/resources/VERSION.txt
 /quilt-manifest.xml
 /after.conf
 /server-packs_server_pack.zip
+qodana
+tests

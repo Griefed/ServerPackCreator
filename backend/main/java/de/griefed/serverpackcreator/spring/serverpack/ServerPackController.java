@@ -81,8 +81,8 @@ public class ServerPackController {
     } else {
 
       return ResponseEntity.ok()
-          .header("Content-Type", "application/json")
-          .body(SERVERPACKSERVICE.getServerPacks());
+                           .header("Content-Type", "application/json")
+                           .body(SERVERPACKSERVICE.getServerPacks());
     }
   }
 

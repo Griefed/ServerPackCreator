@@ -27,6 +27,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Class containing all fields and therefore all information gathered from a submitted CurseForge
@@ -161,7 +162,7 @@ public class ServerPackModel extends ConfigurationModel {
    * @author Griefed
    */
   @Override
-  public void setProjectName(String projectName) {
+  public void setProjectName(@NotNull String projectName) {
     this.projectName = projectName;
   }
 
@@ -185,7 +186,7 @@ public class ServerPackModel extends ConfigurationModel {
    * @author Griefed
    */
   @Override
-  public void setFileName(String fileName) {
+  public void setFileName(@NotNull String fileName) {
     this.fileName = fileName;
   }
 
@@ -209,7 +210,7 @@ public class ServerPackModel extends ConfigurationModel {
    * @author Griefed
    */
   @Override
-  public void setFileDiskName(String fileDiskName) {
+  public void setFileDiskName(@NotNull String fileDiskName) {
     this.fileDiskName = fileDiskName;
   }
 

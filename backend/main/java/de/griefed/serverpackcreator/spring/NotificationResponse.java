@@ -71,7 +71,12 @@ public class NotificationResponse {
    * @author Griefed
    */
   public String zipResponse(
-      String message, int timeout, String icon, String colour, String file, boolean success) {
+      String message,
+      int timeout,
+      String icon,
+      String colour,
+      String file,
+      boolean success) {
     return "{"
         + "\"timeout\": "
         + timeout

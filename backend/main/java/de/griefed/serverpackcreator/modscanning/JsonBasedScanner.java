@@ -56,7 +56,9 @@ abstract class JsonBasedScanner {
    * @throws NullPointerException  if the jar does not contain the specified entry.
    * @author Griefed
    */
-  JsonNode getJarJson(File file, String entryInJar, ObjectMapper objectMapper)
+  JsonNode getJarJson(File file,
+                      String entryInJar,
+                      ObjectMapper objectMapper)
       throws NullPointerException, IOException, SecurityException, IllegalStateException {
 
     JarFile jarFile = new JarFile(file);
@@ -79,7 +81,8 @@ abstract class JsonBasedScanner {
    * @param clientMods      A set of modIds of clientside-only mods.
    * @author Griefed
    */
-  void cleanupClientMods(TreeSet<String> modDependencies, TreeSet<String> clientMods) {
+  void cleanupClientMods(TreeSet<String> modDependencies,
+                         TreeSet<String> clientMods) {
     for (String dependency : modDependencies) {
 
       clientMods.removeIf(mod -> {
@@ -107,7 +110,8 @@ abstract class JsonBasedScanner {
    * @author Griefed
    */
   abstract void checkForClientModsAndDeps(Collection<File> filesInModsDir,
-      TreeSet<String> clientMods, TreeSet<String> modDependencies);
+                                          TreeSet<String> clientMods,
+                                          TreeSet<String> modDependencies);
 
   /**
    * Get a list of mod-jars which can safely be excluded from the server pack.
@@ -118,5 +122,6 @@ abstract class JsonBasedScanner {
    * server pack.
    * @author Griefed
    */
-  abstract TreeSet<File> getModsDelta(Collection<File> filesInModsDir, TreeSet<String> clientMods);
+  abstract TreeSet<File> getModsDelta(Collection<File> filesInModsDir,
+                                      TreeSet<String> clientMods);
 }

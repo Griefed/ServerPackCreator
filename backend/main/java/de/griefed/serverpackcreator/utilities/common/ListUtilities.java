@@ -122,8 +122,10 @@ public final class ListUtilities {
    * @param printIndexes Whether to print the indexes of the entries.
    * @author Griefed
    */
-  public void printListToConsoleChunked(List<String> list, int chunkSize, String prefix,
-      boolean printIndexes) {
+  public void printListToConsoleChunked(List<String> list,
+                                        int chunkSize,
+                                        String prefix,
+                                        boolean printIndexes) {
     StringBuilder text = new StringBuilder();
     for (int i = 0; i < list.size(); i++) {
       text.delete(0, text.length());
@@ -157,8 +159,10 @@ public final class ListUtilities {
    * @param printIndexes Whether to print the indexes of the entries.
    * @author Griefed
    */
-  public void printListToLogChunked(List<String> list, int chunkSize, String prefix,
-      boolean printIndexes) {
+  public void printListToLogChunked(List<String> list,
+                                    int chunkSize,
+                                    String prefix,
+                                    boolean printIndexes) {
     StringBuilder text = new StringBuilder();
     for (int i = 0; i < list.size(); i++) {
       text.delete(0, text.length());

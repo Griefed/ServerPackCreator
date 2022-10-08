@@ -20,8 +20,10 @@
 package de.griefed.serverpackcreator;
 
 import com.electronwill.nightconfig.toml.TomlParser;
+import com.fasterxml.jackson.core.json.JsonReadFeature;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.griefed.serverpackcreator.MigrationManager.MigrationMessage;
 import de.griefed.serverpackcreator.i18n.I18n;
 import de.griefed.serverpackcreator.i18n.IncorrectLanguageException;
 import de.griefed.serverpackcreator.modscanning.AnnotationScanner;
@@ -31,7 +33,6 @@ import de.griefed.serverpackcreator.modscanning.QuiltScanner;
 import de.griefed.serverpackcreator.modscanning.TomlScanner;
 import de.griefed.serverpackcreator.swing.ServerPackCreatorSplash;
 import de.griefed.serverpackcreator.swing.ServerPackCreatorWindow;
-import de.griefed.serverpackcreator.utilities.ConfigUtilities;
 import de.griefed.serverpackcreator.utilities.ConfigurationEditor;
 import de.griefed.serverpackcreator.utilities.UpdateChecker;
 import de.griefed.serverpackcreator.utilities.common.BooleanUtilities;
@@ -43,6 +44,7 @@ import de.griefed.serverpackcreator.utilities.common.StringUtilities;
 import de.griefed.serverpackcreator.utilities.common.SystemUtilities;
 import de.griefed.serverpackcreator.utilities.common.Utilities;
 import de.griefed.serverpackcreator.utilities.common.WebUtilities;
+import de.griefed.serverpackcreator.utilities.common.XmlUtilities;
 import de.griefed.serverpackcreator.versionmeta.VersionMeta;
 import de.griefed.versionchecker.Update;
 import java.awt.GraphicsEnvironment;
@@ -58,12 +60,15 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.InputMismatchException;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Scanner;
 import java.util.concurrent.Executors;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.monitor.FileAlterationListener;
@@ -71,41 +76,43 @@ import org.apache.commons.io.monitor.FileAlterationMonitor;
 import org.apache.commons.io.monitor.FileAlterationObserver;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.context.annotation.PropertySources;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.xml.sax.SAXException;
 
 /**
- * Launch-class of ServerPackCreator which determines the mode to run in, takes care of
- * initialization and dependency injection and, finally, running ServerPackCreator.
+ * Main-class of ServerPackCreator. Run either via {@link #main(String[])}, or
+ * {@link #getInstance(String[])}, or {@link #getInstance()} to work with ServerPackCreator. For
+ * available arguments to initialize and run SPC with, check {@link Mode} and
+ * {@link CommandlineParser} for how the initialization is prioritized. An instance of SPC will have
+ * the base amount of class-instances available to it. If a given instance of a class is null, then
+ * calling the appropriate getter will ensure a new instance is initialized first, hence the huge
+ * amount of {@code synchronized}-methods.<br><br> When running as a web-service, Spring Boot will
+ * read and parse the {@code serverpackcreator.properties}-file to set Spring Boot properties. So if
+ * you want to change Spring Boot specific properties, that's the file to do that in.
  *
  * @author Griefed
  */
 @SpringBootApplication
 @EnableScheduling
-@PropertySources({
-    @PropertySource("classpath:application.properties"),
-    @PropertySource("classpath:serverpackcreator.properties"),
-    @PropertySource("file:./serverpackcreator.properties")
-})
 public class ServerPackCreator {
 
   private static final Logger LOG = LogManager.getLogger(ServerPackCreator.class);
   private static final String[] SETUP = new String[]{"--setup"};
-  private static ServerPackCreator serverPackCreator = null;
+  private static volatile ServerPackCreator serverPackCreator = null;
   private final String[] ARGS;
   private final CommandlineParser COMMANDLINE_PARSER;
   private final ApplicationProperties APPLICATIONPROPERTIES;
   private final I18n I18N;
-  private final File LOG4J2XML = new File("log4j2.xml");
-  private final File SERVERPACKCREATOR_PROPERTIES = new File("serverpackcreator.properties");
   private final ObjectMapper OBJECT_MAPPER =
       new ObjectMapper()
           .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-          .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
+          .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+          .enable(JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS.mappedFeature());
   private BooleanUtilities booleanUtilities = null;
   private FileUtilities fileUtilities = null;
   private JarUtilities jarUtilities = null;
@@ -114,9 +121,10 @@ public class ServerPackCreator {
   private StringUtilities stringUtilities = null;
   private SystemUtilities systemUtilities = null;
   private WebUtilities webUtilities = null;
+  private DocumentBuilder documentBuilder = null;
+  private XmlUtilities xmlUtilities = null;
   private Utilities utilities = null;
   private VersionMeta versionMeta = null;
-  private ConfigUtilities configUtilities = null;
   private ConfigurationHandler configurationHandler = null;
   private ApplicationAddons applicationAddons = null;
   private ServerPackHandler serverPackHandler = null;
@@ -130,56 +138,134 @@ public class ServerPackCreator {
   private TomlScanner tomlScanner = null;
   private ConfigurationEditor configurationEditor = null;
   private ServerPackCreatorWindow serverPackCreatorGui = null;
+  private MigrationManager migrationManager = null;
+  private ConfigurableApplicationContext springBootApplicationContext = null;
 
   /**
-   * Initialize ServerPackCreator and determine the {@link Mode} to run in.
+   * Initialize ServerPackCreator and determine the {@link Mode} to run in from the passed entries
+   * in the String-array. A new instance of SPC will initialize an instance of
+   * {@link ApplicationProperties}, required for just about everything, as well as {@link I18n} for
+   * localization purposes. {@link FileUtilities}, {@link SystemUtilities}, {@link ListUtilities}
+   * and {@link JarUtilities} are also setup, so feel free to use them right away.
    *
    * @param args Commandline arguments with which ServerPackCreator is run. Determines which mode
-   *             ServerPackCreator will enter and which locale is used.
+   *             ServerPackCreator will enter and which locale is used. In order to see which
+   *             argument results in which mode, see {@link Mode}.
    * @author Griefed
    */
-  public ServerPackCreator(String[] args) {
+  public ServerPackCreator(@NotNull String[] args) {
     ARGS = args;
     COMMANDLINE_PARSER = new CommandlineParser(args);
+
     if (COMMANDLINE_PARSER.propertiesFile().isPresent()) {
-      APPLICATIONPROPERTIES = new ApplicationProperties(COMMANDLINE_PARSER.propertiesFile().get(),
-          getFileUtilities(), getSystemUtilities(), getListUtilities());
+
+      APPLICATIONPROPERTIES = new ApplicationProperties(
+          COMMANDLINE_PARSER.propertiesFile().get(),
+          getFileUtilities(),
+          getSystemUtilities(),
+          getListUtilities(),
+          getJarUtilities());
+
     } else {
-      APPLICATIONPROPERTIES = new ApplicationProperties(getFileUtilities(), getSystemUtilities(),
-          getListUtilities());
+
+      APPLICATIONPROPERTIES = new ApplicationProperties(
+          getFileUtilities(),
+          getSystemUtilities(),
+          getListUtilities(),
+          getJarUtilities());
     }
 
     if (COMMANDLINE_PARSER.getLanguageToUse().isPresent()) {
-      I18N = new I18n(APPLICATIONPROPERTIES, COMMANDLINE_PARSER.getLanguageToUse().get());
+
+      I18N = new I18n(
+          APPLICATIONPROPERTIES,
+          COMMANDLINE_PARSER.getLanguageToUse().get());
+
     } else {
+
       I18N = new I18n(APPLICATIONPROPERTIES);
     }
+  }
+
+  /**
+   * This instances common file utilities used across ServerPackCreator.
+   *
+   * @return Common file utilities used across ServerPackCreator.
+   * @author Griefed
+   */
+  public synchronized @NotNull FileUtilities getFileUtilities() {
+    if (fileUtilities == null) {
+      fileUtilities = new FileUtilities();
+    }
+    return fileUtilities;
+  }
+
+  /**
+   * This instances common system utilities used across ServerPackCreator.
+   *
+   * @return Common system utilities used across ServerPackCreator.
+   * @author Griefed
+   */
+  public synchronized @NotNull SystemUtilities getSystemUtilities() {
+    if (systemUtilities == null) {
+      systemUtilities = new SystemUtilities();
+    }
+    return systemUtilities;
+  }
+
+  /**
+   * This instances common list utilities used across ServerPackCreator.
+   *
+   * @return Common list utilities used across ServerPackCreator.
+   * @author Griefed
+   */
+  public synchronized @NotNull ListUtilities getListUtilities() {
+    if (listUtilities == null) {
+      listUtilities = new ListUtilities();
+    }
+    return listUtilities;
+  }
+
+  /**
+   * This instances common JAR-utilities used across ServerPackCreator.
+   *
+   * @return Common JAR-utilities used across ServerPackCreator.
+   * @author Griefed
+   */
+  public synchronized @NotNull JarUtilities getJarUtilities() {
+    if (jarUtilities == null) {
+      jarUtilities = new JarUtilities();
+    }
+    return jarUtilities;
   }
 
   /**
    * Acquire an instance of ServerPackCreator using the {@code --setup}-argument so a prepared
    * environment is present after acquiring the instance. If a new instance of ServerPackCreator is
    * created as the result of calling this method, then the setup is run to ensure a properly
-   * prepared environment.
+   * prepared environment, otherwise the already existing instance of ServerPackCreator is returned,
+   * allowing you to do your operations.
    *
-   * @return ServerPackCreator-instance using the {@code --setup}-argument.
+   * @return ServerPackCreator-instance using the {@code --setup}-argument, or the already existing
+   * instance, if one was initialized already.
    * @author Griefed
    */
-  public synchronized static ServerPackCreator getInstance() {
+  public synchronized static @NotNull ServerPackCreator getInstance() {
     return getInstance(SETUP);
   }
 
   /**
    * Acquire an instance of ServerPackCreator using the specified argument. If a new instance of
    * ServerPackCreator is created as the result of calling this method, then the setup is run to
-   * ensure a properly prepared environment.
+   * ensure a properly prepared environment. Afterwards, the instance of ServerPackCreator is
+   * returned.
    *
    * @param args Arguments with which to instantiate ServerPackCreator. Possible arguments can be
    *             found at {@link Mode}.
    * @return ServerPackCreator-instance with the specified argument.
    * @author Griefed
    */
-  public synchronized static ServerPackCreator getInstance(String[] args) {
+  public synchronized static @NotNull ServerPackCreator getInstance(String[] args) {
     if (serverPackCreator == null) {
       serverPackCreator = new ServerPackCreator(args);
       try {
@@ -211,96 +297,186 @@ public class ServerPackCreator {
   }
 
   /**
-   * Start Spring Boot app, providing our Apache Tomcat and serving our frontend.
+   * Run the ServerPackCreator webservice and provide Spring Boot with arguments.
    *
    * @param args Arguments passed from invocation in {@link #main(String[])}.
    * @author Griefed
    */
-  public static void web(String[] args) {
-    SpringApplication.run(ServerPackCreator.class, args);
+  public synchronized void web(String[] args) {
+
+    String[] springArgs = new String[args.length + 1];
+    System.arraycopy(args, 0, springArgs, 0, args.length);
+
+    springArgs[springArgs.length - 1] = "--spring.config.location="
+        + "classpath:application.properties,"
+        + "classpath:serverpackcreator.properties,"
+        + "file:" + APPLICATIONPROPERTIES.serverPackCreatorPropertiesFile().getAbsolutePath() + ","
+        + "optional:file:./serverpackcreator.properties";
+
+    LOG.debug("Running webservice with args:" + Arrays.toString(springArgs));
+
+    LOG.debug(
+        "Application name: " + getSpringBootApplicationContext(springArgs).getApplicationName());
+
+    LOG.debug("Property sources:");
+    springBootApplicationContext.getEnvironment().getPropertySources()
+                                .forEach(property -> LOG.debug(
+                                    "    " + property.getName() + ": " + property.getSource()));
+
+    LOG.debug("System properties:");
+    for (Entry<String, Object> entry : springBootApplicationContext.getEnvironment()
+                                                                   .getSystemProperties()
+                                                                   .entrySet()) {
+      LOG.debug("    Key: " + entry.getKey() + " - Value: " + entry.getValue());
+    }
+    LOG.debug("System environment:");
+    for (Map.Entry<String, Object> entry : springBootApplicationContext.getEnvironment()
+                                                                       .getSystemEnvironment()
+                                                                       .entrySet()) {
+      LOG.debug("    Key: " + entry.getKey() + " - Value: " + entry.getValue());
+    }
   }
 
   /**
-   * The arguments with which ServerPackCreator was started.
+   * This instances arguments with which ServerPackCreator was started.
    *
    * @return All arguments with which ServerPackCreator was started.
    * @author Griefed
    */
-  public synchronized String[] getArgs() {
+  public @NotNull String @NotNull [] getArgs() {
     return ARGS;
   }
 
-  public synchronized I18n getI18n() {
+  /**
+   * This instances internationalization used in the GUI and error messages displayed in the very
+   * same.
+   *
+   * @return Instance of ServerPackCreators Internationalization used in this instance.
+   * @author Griefed
+   */
+  public @NotNull I18n getI18n() {
     return I18N;
   }
 
-  public synchronized ObjectMapper getObjectMapper() {
+  /**
+   * This instances JSON-ObjectMapper used across ServerPackCreator with which this instance was
+   * initialized. By default, the ObjectMapper used across ServerPackCreator has the following
+   * features set:
+   * <ul>
+   *   <li>disabled: {@link DeserializationFeature#FAIL_ON_UNKNOWN_PROPERTIES}</li>
+   *   <li>enabled: {@link DeserializationFeature#ACCEPT_SINGLE_VALUE_AS_ARRAY}</li>
+   *   <li>enabled: {@link JsonReadFeature#ALLOW_UNESCAPED_CONTROL_CHARS}</li>
+   * </ul>
+   *
+   * @return Json-ObjectMapper to parse and read JSON.
+   * @author Griefed
+   */
+  public @NotNull ObjectMapper getObjectMapper() {
     return OBJECT_MAPPER;
   }
 
-  public synchronized ApplicationProperties getApplicationProperties() {
+  /**
+   * This instances settings used across ServerPackCreator, such as the working-directories, files
+   * and other settings.
+   *
+   * @return ApplicationProperties used across this ServerPackCreator-instance.
+   * @author Griefed
+   */
+  public @NotNull ApplicationProperties getApplicationProperties() {
     return APPLICATIONPROPERTIES;
   }
 
-  public synchronized BooleanUtilities getBooleanUtilities() {
+  /**
+   * This instances common boolean utilities used across ServerPackCreator.
+   *
+   * @return Common boolean utilities used across ServerPackCreator.
+   * @author Griefed
+   */
+  public synchronized @NotNull BooleanUtilities getBooleanUtilities() {
     if (booleanUtilities == null) {
       booleanUtilities = new BooleanUtilities();
     }
     return booleanUtilities;
   }
 
-  public synchronized FileUtilities getFileUtilities() {
-    if (fileUtilities == null) {
-      fileUtilities = new FileUtilities();
-    }
-    return fileUtilities;
-  }
-
-  public synchronized JarUtilities getJarUtilities() {
-    if (jarUtilities == null) {
-      jarUtilities = new JarUtilities();
-    }
-    return jarUtilities;
-  }
-
-  public synchronized JsonUtilities getJsonUtilities() {
+  /**
+   * This instances common JSON utilities used across ServerPackCreator.
+   *
+   * @return Common JSON utilities used across ServerPackCreator.
+   * @author Griefed
+   */
+  public synchronized @NotNull JsonUtilities getJsonUtilities() {
     if (jsonUtilities == null) {
-      jsonUtilities = new JsonUtilities();
+      jsonUtilities = new JsonUtilities(OBJECT_MAPPER);
     }
     return jsonUtilities;
   }
 
-  public synchronized ListUtilities getListUtilities() {
-    if (listUtilities == null) {
-      listUtilities = new ListUtilities();
+  /**
+   * This instances common XML utilities used across ServerPackCreator.
+   *
+   * @return Common XML utilities used across ServerPackCreator.
+   * @author Griefed
+   */
+  public synchronized @NotNull XmlUtilities getXmlUtilities() {
+    if (xmlUtilities == null) {
+      xmlUtilities = new XmlUtilities(getDocumentBuilder());
     }
-    return listUtilities;
+    return xmlUtilities;
   }
 
-  public synchronized StringUtilities getStringUtilities() {
+  /**
+   * This instances DocumentBuilder for working with XML-data.
+   *
+   * @return DocumentBuilder for working with XML.
+   * @author Griefed
+   */
+  public synchronized @Nullable DocumentBuilder getDocumentBuilder() {
+    if (documentBuilder == null) {
+      try {
+        documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+      } catch (ParserConfigurationException e) {
+        throw new RuntimeException(e);
+      }
+    }
+    return documentBuilder;
+  }
+
+  /**
+   * This instances common String utilities used across ServerPackCreator.
+   *
+   * @return Common String utilities used across ServerPackCreator.
+   * @author Griefed
+   */
+  public synchronized @NotNull StringUtilities getStringUtilities() {
     if (stringUtilities == null) {
       stringUtilities = new StringUtilities();
     }
     return stringUtilities;
   }
 
-  public synchronized SystemUtilities getSystemUtilities() {
-    if (systemUtilities == null) {
-      systemUtilities = new SystemUtilities();
-    }
-    return systemUtilities;
-  }
-
-  public synchronized WebUtilities getWebUtilities() {
+  /**
+   * This instances common web utilities used across ServerPackCreator.
+   *
+   * @return Common web utilities used across ServerPackCreator.
+   * @author Griefed
+   */
+  public synchronized @NotNull WebUtilities getWebUtilities() {
     if (webUtilities == null) {
       webUtilities = new WebUtilities(APPLICATIONPROPERTIES);
     }
     return webUtilities;
   }
 
-  public synchronized Utilities getUtilities() {
-    if (this.utilities == null) {
-      this.utilities = new Utilities(
+  /**
+   * This instances collection of common utilities used across ServerPackCreator.
+   *
+   * @return Collection of common utilities used across ServerPackCreator.
+   * @author Griefed
+   */
+  public synchronized @NotNull Utilities getUtilities() {
+    if (utilities == null) {
+      utilities = new Utilities(
           getBooleanUtilities(),
           getFileUtilities(),
           getJarUtilities(),
@@ -308,27 +484,52 @@ public class ServerPackCreator {
           getStringUtilities(),
           getSystemUtilities(),
           getWebUtilities(),
-          getJsonUtilities()
+          getJsonUtilities(),
+          getXmlUtilities()
       );
     }
     return utilities;
   }
 
-  public synchronized VersionMeta getVersionMeta()
+  /**
+   * This instances MigrationManager responsible for checking and executing any required
+   * migration-steps between version upgrades.
+   *
+   * @return MigrationManager responsible for checking and executing any required migration-steps.
+   * @author Griefed
+   */
+  public synchronized @NotNull MigrationManager getMigrationManager() {
+    if (migrationManager == null) {
+      migrationManager = new MigrationManager(APPLICATIONPROPERTIES, I18N);
+    }
+    return migrationManager;
+  }
+
+  /**
+   * This instances version meta used for checking version-correctness of Minecraft and supported
+   * modloaders, as well as gathering information about Minecraft servers and modloader installers.
+   *
+   * @return Meta used for checking version-correctness of Minecraft and supported modloaders.
+   * @throws IOException                  When manifests couldn't be parsed.
+   * @throws ParserConfigurationException When xml-manifests couldn't be read.
+   * @throws SAXException                 When xml-manifests couldn't be read.
+   * @author Griefed
+   */
+  public synchronized @NotNull VersionMeta getVersionMeta()
       throws IOException, ParserConfigurationException, SAXException {
-    if (this.versionMeta == null) {
-      this.versionMeta =
+    if (versionMeta == null) {
+      versionMeta =
           new VersionMeta(
-              APPLICATIONPROPERTIES.MINECRAFT_VERSION_MANIFEST_LOCATION(),
-              APPLICATIONPROPERTIES.FORGE_VERSION_MANIFEST_LOCATION(),
-              APPLICATIONPROPERTIES.FABRIC_VERSION_MANIFEST_LOCATION(),
-              APPLICATIONPROPERTIES.FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION(),
-              APPLICATIONPROPERTIES.FABRIC_INTERMEDIARIES_MANIFEST_LOCATION(),
-              APPLICATIONPROPERTIES.QUILT_VERSION_MANIFEST_LOCATION(),
-              APPLICATIONPROPERTIES.QUILT_INSTALLER_VERSION_MANIFEST_LOCATION(),
-              APPLICATIONPROPERTIES.LEGACY_FABRIC_GAME_MANIFEST_LOCATION(),
-              APPLICATIONPROPERTIES.LEGACY_FABRIC_LOADER_MANIFEST_LOCATION(),
-              APPLICATIONPROPERTIES.LEGACY_FABRIC_INSTALLER_MANIFEST_LOCATION(),
+              APPLICATIONPROPERTIES.minecraftVersionManifest(),
+              APPLICATIONPROPERTIES.forgeVersionManifest(),
+              APPLICATIONPROPERTIES.fabricVersionManifest(),
+              APPLICATIONPROPERTIES.fabricInstallerManifest(),
+              APPLICATIONPROPERTIES.fabricIntermediariesManifest(),
+              APPLICATIONPROPERTIES.quiltVersionManifest(),
+              APPLICATIONPROPERTIES.quiltInstallerManifest(),
+              APPLICATIONPROPERTIES.legacyFabricGameManifest(),
+              APPLICATIONPROPERTIES.legacyFabricLoaderManifest(),
+              APPLICATIONPROPERTIES.legacyFabricInstallerManifest(),
               OBJECT_MAPPER,
               getUtilities(),
               APPLICATIONPROPERTIES);
@@ -336,38 +537,80 @@ public class ServerPackCreator {
     return versionMeta;
   }
 
-  public synchronized ConfigUtilities getConfigUtilities() {
-    if (this.configUtilities == null) {
-      this.configUtilities = new ConfigUtilities(getUtilities(), APPLICATIONPROPERTIES,
-          OBJECT_MAPPER);
-    }
-    return configUtilities;
-  }
-
-  public synchronized ConfigurationHandler getConfigurationHandler()
+  /**
+   * This instances ConfigurationHandler for checking a given {@link ConfigurationModel} for
+   * validity, so a server pack can safely be created from it.
+   *
+   * @return Handler for config checking.
+   * @throws IOException                  When the {@link VersionMeta} had to be instantiated, but
+   *                                      an error occured during the parsing of a manifest.
+   * @throws ParserConfigurationException When the {@link VersionMeta} had to be instantiated, but
+   *                                      an error occured during the parsing of a manifest.
+   * @throws SAXException                 When the {@link VersionMeta} had to be instantiated, but
+   *                                      an error occured during the parsing of a manifest.
+   * @author Griefed
+   */
+  public synchronized @NotNull ConfigurationHandler getConfigurationHandler()
       throws IOException, ParserConfigurationException, SAXException {
-    if (this.configurationHandler == null) {
-      this.configurationHandler =
+
+    if (configurationHandler == null) {
+
+      configurationHandler =
           new ConfigurationHandler(
-              I18N, getVersionMeta(), APPLICATIONPROPERTIES, getUtilities(), getConfigUtilities(),
+              I18N,
+              getVersionMeta(),
+              APPLICATIONPROPERTIES,
+              getUtilities(),
               getApplicationAddons());
     }
     return configurationHandler;
   }
 
-  public synchronized ApplicationAddons getApplicationAddons()
+  /**
+   * This instances addon manager for ServerPackCreator-addons, if any are installed. This gives you
+   * access to the available extensions, should any be available in your instance of
+   * ServerPackCreator.
+   *
+   * @return Addon manager for ServerPackCreator-addons, if any are installed.
+   * @throws IOException                  When the {@link VersionMeta} had to be instantiated, but
+   *                                      an error occurred during the parsing of a manifest.
+   * @throws ParserConfigurationException When the {@link VersionMeta} had to be instantiated, but
+   *                                      an error occurred during the parsing of a manifest.
+   * @throws SAXException                 When the {@link VersionMeta} had to be instantiated, but
+   *                                      an error occurred during the parsing of a manifest.
+   * @author Griefed
+   */
+  public synchronized @NotNull ApplicationAddons getApplicationAddons()
       throws IOException, ParserConfigurationException, SAXException {
-    if (this.applicationAddons == null) {
-      this.applicationAddons = new ApplicationAddons(getTomlParser(), APPLICATIONPROPERTIES,
-          getVersionMeta(), getUtilities());
+
+    if (applicationAddons == null) {
+
+      applicationAddons = new ApplicationAddons(
+          getTomlParser(),
+          APPLICATIONPROPERTIES,
+          getVersionMeta(),
+          getUtilities());
     }
     return applicationAddons;
   }
 
-  public synchronized ServerPackHandler getServerPackHandler()
+  /**
+   * This instances ServerPackHandler used to turn a {@link ConfigurationModel} into a server pack.
+   *
+   * @return The ServerPackHandler with which config models can be used to create server packs.
+   * @throws IOException                  When the {@link VersionMeta} had to be instantiated, but
+   *                                      an error occurred during the parsing of a manifest.
+   * @throws ParserConfigurationException When the {@link VersionMeta} had to be instantiated, but
+   *                                      an error occurred during the parsing of a manifest.
+   * @throws SAXException                 When the {@link VersionMeta} had to be instantiated, but
+   *                                      an error occurred during the parsing of a manifest.
+   */
+  public synchronized @NotNull ServerPackHandler getServerPackHandler()
       throws IOException, ParserConfigurationException, SAXException {
-    if (this.serverPackHandler == null) {
-      this.serverPackHandler =
+
+    if (serverPackHandler == null) {
+
+      serverPackHandler =
           new ServerPackHandler(
               APPLICATIONPROPERTIES,
               getVersionMeta(),
@@ -378,81 +621,188 @@ public class ServerPackCreator {
     return serverPackHandler;
   }
 
-  public synchronized ServerPackCreatorSplash getServerPackCreatorSplash() {
-    if (this.serverPackCreatorSplash == null) {
-      this.serverPackCreatorSplash = new ServerPackCreatorSplash(
-          APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION());
+  /**
+   * Splash screen displayed during the boot up of ServerPackCreator if a graphical environment is
+   * supported and SPC is started in GUI-mode.
+   *
+   * @return Boot splash screen displayed during startup.
+   * @author Griefed
+   */
+  public synchronized @NotNull ServerPackCreatorSplash getServerPackCreatorSplash() {
+    if (GraphicsEnvironment.isHeadless()) {
+      throw new RuntimeException("Graphical environment not supported!");
+    }
+
+    if (serverPackCreatorSplash == null) {
+
+      serverPackCreatorSplash = new ServerPackCreatorSplash(
+          APPLICATIONPROPERTIES.serverPackCreatorVersion());
     }
     return serverPackCreatorSplash;
   }
 
-  public synchronized UpdateChecker getUpdateChecker() {
-    if (this.updateChecker == null) {
-      this.updateChecker = new UpdateChecker();
+  /**
+   * This instances update checker to inform the user about any potentially available update,
+   * including links to said update, if any.
+   *
+   * @return This instances update checker to perform update checks and information acquirement.
+   * @author Griefed
+   */
+  public synchronized @NotNull UpdateChecker getUpdateChecker() {
+    if (updateChecker == null) {
+      updateChecker = new UpdateChecker();
     }
     return updateChecker;
   }
 
-  public synchronized ModScanner getModScanner() {
-    if (this.modScanner == null) {
-      this.modScanner = new ModScanner(getAnnotationScanner(), getFabricScanner(),
-          getQuiltScanner(), getTomlScanner());
+  /**
+   * This instances modscanner to determine the sideness of a given Forge, Fabric, LegacyFabric or
+   * Quilt mod.
+   *
+   * @return Modscanner to determine the sideness of a given Forge, Fabric, LegacyFabric or Quilt
+   * mod.
+   * @author Griefed
+   */
+  public synchronized @NotNull ModScanner getModScanner() {
+    if (modScanner == null) {
+
+      modScanner = new ModScanner(
+          getAnnotationScanner(),
+          getFabricScanner(),
+          getQuiltScanner(),
+          getTomlScanner());
     }
     return modScanner;
   }
 
-  public synchronized AnnotationScanner getAnnotationScanner() {
-    if (this.annotationScanner == null) {
-      this.annotationScanner = new AnnotationScanner(OBJECT_MAPPER, getUtilities());
+  /**
+   * This instances annotation scanner used to determine the sideness of Forge mods for Minecraft
+   * 1.12.2 and older.
+   *
+   * @return Annotation scanner used to determine the sideness of Forge mods for Minecraft 1.12.2
+   * and older.
+   * @author Griefed
+   */
+  public synchronized @NotNull AnnotationScanner getAnnotationScanner() {
+    if (annotationScanner == null) {
+
+      annotationScanner = new AnnotationScanner(
+          OBJECT_MAPPER,
+          getUtilities());
     }
     return annotationScanner;
   }
 
-  public synchronized FabricScanner getFabricScanner() {
-    if (this.fabricScanner == null) {
-      this.fabricScanner = new FabricScanner(OBJECT_MAPPER, getUtilities());
+  /**
+   * This instances scanner to determine the sideness of Fabric mods.
+   *
+   * @return Scanner to determine the sideness of Fabric mods.
+   * @author Griefed
+   */
+  public synchronized @NotNull FabricScanner getFabricScanner() {
+    if (fabricScanner == null) {
+
+      fabricScanner = new FabricScanner(
+          OBJECT_MAPPER,
+          getUtilities());
     }
     return fabricScanner;
   }
 
-  public synchronized QuiltScanner getQuiltScanner() {
-    if (this.quiltScanner == null) {
-      this.quiltScanner = new QuiltScanner(OBJECT_MAPPER, getUtilities());
+  /**
+   * This instances scanner to determine the sideness of Quilt mods.
+   *
+   * @return Scanner to determine the sideness of Quilt mods.
+   * @author Griefed
+   */
+  public synchronized @NotNull QuiltScanner getQuiltScanner() {
+    if (quiltScanner == null) {
+
+      quiltScanner = new QuiltScanner(
+          OBJECT_MAPPER,
+          getUtilities());
     }
     return quiltScanner;
   }
 
-  public synchronized TomlParser getTomlParser() {
-    if (this.tomlParser == null) {
-      this.tomlParser = new TomlParser();
+  /**
+   * This instances toml parser to read and parse various {@code .toml}-files during modscanning,
+   * addon- and extension config loading and provisioning, serverpackcreator.conf reading and more.
+   *
+   * @return Toml parser to read and parse {@code .toml}-files.
+   * @author Griefed
+   */
+  public synchronized @NotNull TomlParser getTomlParser() {
+    if (tomlParser == null) {
+      tomlParser = new TomlParser();
     }
     return tomlParser;
   }
 
-  public synchronized TomlScanner getTomlScanner() {
-    if (this.tomlScanner == null) {
-      this.tomlScanner = new TomlScanner(getTomlParser());
+  /**
+   * This instances toml scanner to determine the sideness of Forge mods for Minecraft 1.13.x and
+   * newer.
+   *
+   * @return Scanner to determine the sideness of Forge mods for Minecraft 1.13.x and newer.
+   * @author Griefed
+   */
+  public synchronized @NotNull TomlScanner getTomlScanner() {
+    if (tomlScanner == null) {
+      tomlScanner = new TomlScanner(getTomlParser());
     }
     return tomlScanner;
   }
 
-  public synchronized ConfigurationEditor getConfigurationEditor()
+  /**
+   * This instances configuration editor used when running in {@link Mode#CLI}. Bear in mind that
+   * the CLI config editor only provides limited functionality.
+   *
+   * @return Config editor to load, edit and save serverpackcreator.conf-files from the CLI.
+   * @throws IOException                  When the {@link VersionMeta} had to be instantiated, but
+   *                                      an error occurred during the parsing of a manifest.
+   * @throws ParserConfigurationException When the {@link VersionMeta} had to be instantiated, but
+   *                                      an error occurred during the parsing of a manifest.
+   * @throws SAXException                 When the {@link VersionMeta} had to be instantiated, but
+   *                                      an error occurred during the parsing of a manifest.
+   * @author Griefed
+   */
+  public synchronized @NotNull ConfigurationEditor getConfigurationEditor()
       throws IOException, ParserConfigurationException, SAXException {
-    if (this.configurationEditor == null) {
-      this.configurationEditor = new ConfigurationEditor(
+
+    if (configurationEditor == null) {
+
+      configurationEditor = new ConfigurationEditor(
           getConfigurationHandler(),
           APPLICATIONPROPERTIES,
           getUtilities(),
-          getVersionMeta(),
-          getConfigUtilities());
+          getVersionMeta());
     }
     return configurationEditor;
   }
 
-  public synchronized ServerPackCreatorWindow getServerPackCreatorGui()
+  /**
+   * This instances frame holding the GUI allowing the user to run and configure their server
+   * packs.
+   *
+   * @return Frame holding the GUI allowing the user to run and configure their server packs.
+   * @throws IOException                  When the {@link VersionMeta} had to be instantiated, but
+   *                                      an error occurred during the parsing of a manifest.
+   * @throws ParserConfigurationException When the {@link VersionMeta} had to be instantiated, but
+   *                                      an error occurred during the parsing of a manifest.
+   * @throws SAXException                 When the {@link VersionMeta} had to be instantiated, but
+   *                                      an error occurred during the parsing of a manifest.
+   * @author Griefed
+   */
+  public synchronized @NotNull ServerPackCreatorWindow getServerPackCreatorGui()
       throws IOException, ParserConfigurationException, SAXException {
-    if (this.serverPackCreatorGui == null) {
-      this.serverPackCreatorGui = new ServerPackCreatorWindow(
+
+    if (GraphicsEnvironment.isHeadless()) {
+      throw new RuntimeException("Graphical environment not supported!");
+    }
+
+    if (serverPackCreatorGui == null) {
+
+      serverPackCreatorGui = new ServerPackCreatorWindow(
           I18N,
           getConfigurationHandler(),
           getServerPackHandler(),
@@ -462,17 +812,37 @@ public class ServerPackCreator {
           getUpdateChecker(),
           getServerPackCreatorSplash(),
           getApplicationAddons(),
-          getConfigUtilities());
+          getMigrationManager().getMigrationMessages());
     }
     return serverPackCreatorGui;
   }
 
   /**
+   * This instances application context when running as a webservice. When no instance of the Spring
+   * Boot application context is available yet, it will be created and the Spring Boot application
+   * will be started with the given arguments.
+   *
+   * @param args CLI arguments to pass to Spring Boot when it has not yet been started.
+   * @return Application context of Spring Boot.
+   * @author Griefed
+   */
+  public synchronized @NotNull ConfigurableApplicationContext getSpringBootApplicationContext(
+      @NotNull String @NotNull [] args) {
+    if (springBootApplicationContext == null) {
+      springBootApplicationContext = SpringApplication.run(ServerPackCreator.class, args);
+    }
+    return springBootApplicationContext;
+  }
+
+  /**
    * Run ServerPackCreator with the mode acquired from {@link CommandlineParser}.
    *
-   * @throws ParserConfigurationException indicates a serious configuration error.
-   * @throws IOException                  if any IO errors occur.
-   * @throws SAXException                 if any parse errors occur.
+   * @throws IOException                  When the {@link VersionMeta} had to be instantiated, but
+   *                                      an error occurred during the parsing of a manifest.
+   * @throws ParserConfigurationException When the {@link VersionMeta} had to be instantiated, but
+   *                                      an error occurred during the parsing of a manifest.
+   * @throws SAXException                 When the {@link VersionMeta} had to be instantiated, but
+   *                                      an error occurred during the parsing of a manifest.
    * @author Griefed
    */
   public synchronized void run() throws IOException, ParserConfigurationException, SAXException {
@@ -483,12 +853,15 @@ public class ServerPackCreator {
    * Run ServerPackCreator in a specific {@link Mode}.
    *
    * @param modeToRunIn Mode to run in.
-   * @throws ParserConfigurationException indicates a serious configuration error.
-   * @throws IOException                  if any IO errors occur.
-   * @throws SAXException                 if any parse errors occur.
+   * @throws IOException                  When the {@link VersionMeta} had to be instantiated, but
+   *                                      an error occurred during the parsing of a manifest.
+   * @throws ParserConfigurationException When the {@link VersionMeta} had to be instantiated, but
+   *                                      an error occurred during the parsing of a manifest.
+   * @throws SAXException                 When the {@link VersionMeta} had to be instantiated, but
+   *                                      an error occurred during the parsing of a manifest.
    * @author Griefed
    */
-  public synchronized void run(Mode modeToRunIn)
+  public synchronized void run(@NotNull Mode modeToRunIn)
       throws IOException, ParserConfigurationException, SAXException {
 
     switch (modeToRunIn) {
@@ -498,7 +871,7 @@ public class ServerPackCreator {
         break;
 
       case UPDATE:
-        updateCheck();
+        updateCheck(false);
         continuedRunOptions();
         break;
 
@@ -526,14 +899,19 @@ public class ServerPackCreator {
       case GUI:
         showSplashScreen();
         stageOne();
+
         getServerPackCreatorSplash().update(20);
         stageTwo();
+
         getServerPackCreatorSplash().update(40);
         stageThree();
+
         getServerPackCreatorSplash().update(60);
         Executors.newSingleThreadExecutor().execute(this::stageFour);
+
         getServerPackCreatorSplash().update(80);
         runGui();
+
         break;
 
       case SETUP:
@@ -549,50 +927,96 @@ public class ServerPackCreator {
   }
 
   /**
-   * Stage one of starting ServerPackCreator. Initialize {@link Utilities} and create/copy the
-   * default-files required by ServerPackCreator.
+   * Stage one of starting ServerPackCreator.
+   * <p>
+   * Creates and prepares the environment for ServerPackCreator to run by creating required
+   * directories and copying required files from the JAR-file to the filesystem. Some of these files
+   * can and should be edited by a given user, others however, not.
+   *
+   * <ul>
+   *   <li>Checks the read- and write-permissions of ServerPackCreators base-directory. See {@link ApplicationProperties#homeDirectory()}.</li>
+   *   <li>Copies the {@code README.md} from the JAR to the home-directory.</li>
+   *   <li>Copies the {@code HELP.md} from the JAR to the home-directory.</li>
+   *   <li>Copies the {@code CHANGELOG.md} from the JAR to the home-directory.</li>
+   *   <li>Copies the {@code LICENSE} from the JAR to the home-directory.</li>
+   *   <li>Copies the default localization properties to the {@link ApplicationProperties#langDirectory()}.</li>
+   *   <li>Copies the fallback version-manifests to the {@link ApplicationProperties#manifestsDirectory()}.</li>
+   *   <li>Creates default directories:</li>
+   *   <ul>
+   *     <li>{@link ApplicationProperties#serverFilesDirectory()}</li>
+   *     <li>{@link ApplicationProperties#workDirectory()}</li>
+   *     <li>{@link ApplicationProperties#tempDirectory()}</li>
+   *     <li>{@link ApplicationProperties#modpacksDirectory()}</li>
+   *     <li>{@link ApplicationProperties#serverPacksDirectory()}</li>
+   *     <li>{@link ApplicationProperties#addonsDirectory()}</li>
+   *     <li>{@link ApplicationProperties#addonConfigsDirectory()}</li>
+   *   </ul>
+   *   <li>Example {@code disabled.txt}-file in {@link ApplicationProperties#addonsDirectory()}.</li>
+   *   <li>Creates an empty {@code serverpackcreator.conf}, if ServerPackCreators mode is not {@link Mode#CLI} or {@link Mode#CGEN}.</li>
+   *   <li>Creates the default {@code server.properties} if it doesn't exist.</li>
+   *   <li>Creates the default {@code server-icon.png} if it doesn't exist.</li>
+   *   <li>Creates the default PowerShell and Shell script templates or overwrites them if they already exist. </li>
+   *   <li>Determines whether this instance of ServerPackCreator was updated from a previous version.
+   *   <br>If an update was detected, and migrations are available for any of the steps of the update,
+   *   <br>they are executed, thus ensuring users are safe to update their instances.</li>
+   *   <li>Writes ServerPackCreator and system information to the console and logs, important for error reporting and debugging.</li>
+   * </ul>
    *
    * @author Griefed
    */
   private void stageOne() {
 
-    System.setProperty("log4j2.formatMsgNoLookups", "true");
     System.setProperty("file.encoding", StandardCharsets.UTF_8.name());
 
-    HashMap<String, String> systemInformation =
-        getUtilities().JarUtils()
-            .systemInformation(
-                getUtilities().JarUtils().getApplicationHomeForClass(ServerPackCreator.class));
+    if (!getUtilities().FileUtils().checkPermissions(APPLICATIONPROPERTIES.getJarFolder())) {
 
-    LOG.debug("System information jarPath: " + systemInformation.get("jarPath"));
-    LOG.debug("System information jarName: " + systemInformation.get("jarName"));
-
-    if (!getUtilities().FileUtils()
-        .checkPermissions(new File(systemInformation.get("jarPath")).getParentFile())) {
-
-      LOG.error(
-          "One or more file or directory has no read- or write-permission. This may lead to corrupted server packs! Check the permissions of the ServerPackCreator base directory!");
+      LOG.error("One or more file or directory has no read- or write-permission."
+                    + " This may lead to corrupted server packs!"
+                    + " Check the permissions of the ServerPackCreator base directory!");
     }
 
-    getUtilities().JarUtils().copyFileFromJar(LOG4J2XML.getName(), ServerPackCreator.class);
+    getUtilities().JarUtils().copyFileFromJar(
+        "README.md",
+        true,
+        ServerPackCreator.class,
+        APPLICATIONPROPERTIES.homeDirectory().toString());
 
-    if (!SERVERPACKCREATOR_PROPERTIES.exists()) {
-      getUtilities().JarUtils()
-          .copyFileFromJar(SERVERPACKCREATOR_PROPERTIES.getName(), ServerPackCreator.class);
-    }
+    getUtilities().JarUtils().copyFileFromJar(
+        "HELP.md",
+        true,
+        ServerPackCreator.class,
+        APPLICATIONPROPERTIES.homeDirectory().toString());
 
+    getUtilities().JarUtils().copyFileFromJar(
+        "CHANGELOG.md",
+        true,
+        ServerPackCreator.class,
+        APPLICATIONPROPERTIES.homeDirectory().toString());
+
+    getUtilities().JarUtils().copyFileFromJar(
+        "LICENSE",
+        true,
+        ServerPackCreator.class,
+        APPLICATIONPROPERTIES.homeDirectory().toString());
+
+    String prefix;
+    String source;
     try {
 
-      String prefix = "BOOT-INF/classes";
-      String langSource = "/de/griefed/resources/lang";
+      prefix = "BOOT-INF/classes";
+      source = "/de/griefed/resources/lang";
 
-      if (systemInformation.get("jarName").endsWith(".exe")) {
+      if (APPLICATIONPROPERTIES.isExe()) {
         prefix = "";
-        langSource = "de/griefed/resources/lang";
+        source = "de/griefed/resources/lang";
       }
 
-      getUtilities().JarUtils()
-          .copyFolderFromJar(ServerPackCreator.class, langSource, "lang", prefix, ".properties");
+      getUtilities().JarUtils().copyFolderFromJar(
+          ServerPackCreator.class,
+          source,
+          APPLICATIONPROPERTIES.langDirectory().toString(),
+          prefix,
+          "properties");
 
     } catch (IOException ex) {
       LOG.error("Error copying \"/de/griefed/resources/lang\" from the JAR-file.");
@@ -600,41 +1024,54 @@ public class ServerPackCreator {
 
     try {
 
-      String prefix = "BOOT-INF/classes";
-      String manifestSource = "/de/griefed/resources/manifests";
+      prefix = "BOOT-INF/classes";
+      source = "/de/griefed/resources/manifests";
 
-      if (systemInformation.get("jarName").endsWith(".exe")) {
+      if (APPLICATIONPROPERTIES.isExe()) {
         prefix = "";
-        manifestSource = "de/griefed/resources/manifests";
+        source = "de/griefed/resources/manifests";
       }
 
-      getUtilities().JarUtils()
-          .copyFolderFromJar(
-              ServerPackCreator.class,
-              manifestSource,
-              "manifests",
-              prefix,
-              "");
+      getUtilities().JarUtils().copyFolderFromJar(
+          ServerPackCreator.class,
+          source,
+          APPLICATIONPROPERTIES.manifestsDirectory().toString(),
+          prefix,
+          "xml|json");
 
     } catch (IOException ex) {
       LOG.error("Error copying \"/de/griefed/resources/manifests\" from the JAR-file.");
     }
 
-    getUtilities().FileUtils().createDirectories(Paths.get("./server_files"));
-    getUtilities().FileUtils().createDirectories(Paths.get("./work"));
-    getUtilities().FileUtils().createDirectories(Paths.get("./work/temp"));
-    getUtilities().FileUtils().createDirectories(Paths.get("./work/modpacks"));
-    getUtilities().FileUtils().createDirectories(Paths.get("./server-packs"));
-    getUtilities().FileUtils()
-        .createDirectories(Paths.get(System.getProperty("pf4j.pluginsDir", "./plugins")));
-    getUtilities().FileUtils().createDirectories(Paths.get("./plugins/config"));
+    getUtilities().FileUtils().createDirectories(
+        Paths.get(APPLICATIONPROPERTIES.serverFilesDirectory().toString()));
 
-    if (!new File(System.getProperty("pf4j.pluginsDir", "./plugins") + "/disabled.txt").exists()) {
+    getUtilities().FileUtils().createDirectories(
+        Paths.get(APPLICATIONPROPERTIES.workDirectory().toString()));
+
+    getUtilities().FileUtils().createDirectories(
+        Paths.get(APPLICATIONPROPERTIES.tempDirectory().toString()));
+
+    getUtilities().FileUtils().createDirectories(
+        Paths.get(APPLICATIONPROPERTIES.modpacksDirectory().toString()));
+
+    getUtilities().FileUtils().createDirectories(
+        Paths.get(APPLICATIONPROPERTIES.serverPacksDirectory().toString()));
+
+    getUtilities().FileUtils().createDirectories(
+        Paths.get(APPLICATIONPROPERTIES.addonsDirectory().toString()));
+
+    getUtilities().FileUtils().createDirectories(
+        Paths.get(APPLICATIONPROPERTIES.addonConfigsDirectory().toString()));
+
+    if (!new File(APPLICATIONPROPERTIES.addonsDirectory(), "disabled.txt").isFile()) {
       try (BufferedWriter writer =
           new BufferedWriter(
               new FileWriter(
-                  Paths.get(System.getProperty("pf4j.pluginsDir", "./plugins"))
-                      + "/disabled.txt"))) {
+                  new File(
+                      APPLICATIONPROPERTIES.addonsDirectory(),
+                      "disabled.txt")))
+      ) {
 
         writer.write("########################################\n");
         writer.write("#...Load all plugins except these......#\n");
@@ -648,12 +1085,15 @@ public class ServerPackCreator {
     }
 
     boolean config = checkForConfig();
-    boolean serverProperties =
-        checkServerFilesFile(APPLICATIONPROPERTIES.DEFAULT_SERVER_PROPERTIES());
-    boolean serverIcon = checkServerFilesFile(APPLICATIONPROPERTIES.DEFAULT_SERVER_ICON());
 
-    overwriteServerFilesFile(APPLICATIONPROPERTIES.DEFAULT_SHELL_TEMPLATE());
-    overwriteServerFilesFile(APPLICATIONPROPERTIES.DEFAULT_POWERSHELL_TEMPLATE());
+    boolean serverProperties = checkServerFilesFile(
+        APPLICATIONPROPERTIES.defaultServerProperties());
+
+    boolean serverIcon = checkServerFilesFile(
+        APPLICATIONPROPERTIES.defaultServerIcon());
+
+    overwriteServerFilesFile(APPLICATIONPROPERTIES.defaultShellTemplate());
+    overwriteServerFilesFile(APPLICATIONPROPERTIES.defaultPowershellTemplate());
 
     if (config || serverProperties || serverIcon) {
 
@@ -667,18 +1107,19 @@ public class ServerPackCreator {
       LOG.info("Setup completed.");
     }
 
+    getMigrationManager().migrate();
+
+    for (MigrationMessage message : getMigrationManager().getMigrationMessages()) {
+      for (String part : message.get().split("\n")) {
+        LOG.info(part);
+      }
+      LOG.info("");
+    }
+
     // Print system information to console and logs.
     LOG.debug("Gathering system information to include in log to make debugging easier.");
-    APPLICATIONPROPERTIES.setProperty(
-        "homeDir",
-        systemInformation
-            .get("jarPath")
-            .substring(0, systemInformation.get("jarPath").replace("\\", "/").lastIndexOf("/"))
-            .replace("\\", "/"));
 
-    if (APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION().contains("dev")
-        || APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION().contains("alpha")
-        || APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION().contains("beta")) {
+    if (APPLICATIONPROPERTIES.serverPackCreatorVersion().matches(".*(alpha|beta|dev).*")) {
 
       LOG.debug("Warning user about possible data loss.");
       LOG.warn("################################################################");
@@ -689,35 +1130,46 @@ public class ServerPackCreator {
       LOG.warn("#....................YOU HAVE BEEN WARNED!.....................#");
       LOG.warn("################################################################");
     }
-
-    LOG.info("SYSTEM INFORMATION:");
-    LOG.info("ServerPackCreator version: " + APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION());
-    LOG.info("JAR Path:        " + systemInformation.get("jarPath"));
-    LOG.info("JAR Name:        " + systemInformation.get("jarName"));
-    LOG.info("Java version:    " + systemInformation.get("javaVersion"));
-    LOG.info("OS architecture: " + systemInformation.get("osArch"));
-    LOG.info("OS name:         " + systemInformation.get("osName"));
-    LOG.info("OS version:      " + systemInformation.get("osVersion"));
+    LOG.info("SYSTEM AND SPC INFORMATION:");
+    LOG.info("ServerPackCreator version: " + APPLICATIONPROPERTIES.serverPackCreatorVersion());
+    LOG.info("ServerPackCreator home:    " + APPLICATIONPROPERTIES.homeDirectory());
+    LOG.info("JAR Folder:                " + APPLICATIONPROPERTIES.getJarFolder());
+    LOG.info("JAR Path:                  " + APPLICATIONPROPERTIES.getJarFile());
+    LOG.info("JAR Name:                  " + APPLICATIONPROPERTIES.getJarName());
+    LOG.info("Java version:              " + APPLICATIONPROPERTIES.getJavaVersion());
+    LOG.info("OS architecture:           " + APPLICATIONPROPERTIES.getOSArch());
+    LOG.info("OS name:                   " + APPLICATIONPROPERTIES.getOSName());
+    LOG.info("OS version:                " + APPLICATIONPROPERTIES.getOSVersion());
     LOG.info("Include this information when reporting an issue on GitHub.");
   }
 
   /**
-   * Initialize {@link VersionMeta}, {@link ConfigUtilities}, {@link ConfigurationHandler}.
+   * Initialize {@link VersionMeta}, {@link ConfigurationHandler}.
    *
-   * @throws IOException if the {@link VersionMeta} could not be instantiated.
+   * @throws IOException                  When the {@link VersionMeta} had to be instantiated, but
+   *                                      an error occurred during the parsing of a manifest.
+   * @throws ParserConfigurationException When the {@link VersionMeta} had to be instantiated, but
+   *                                      an error occurred during the parsing of a manifest.
+   * @throws SAXException                 When the {@link VersionMeta} had to be instantiated, but
+   *                                      an error occurred during the parsing of a manifest.
    * @author Griefed
    */
   private void stageTwo() throws IOException, ParserConfigurationException, SAXException {
     getVersionMeta();
-    getConfigUtilities();
     getConfigurationHandler();
   }
 
   /**
-   * Initialize {@link ApplicationAddons}, {@link ServerPackHandler} and our {@link UpdateChecker}
-   * if it is found to be {@code null}.
+   * Initialize {@link ApplicationAddons}, {@link ModScanner} (consisting of {@link TomlParser},
+   * {@link AnnotationScanner}, {@link FabricScanner},{@link TomlScanner},{@link QuiltScanner}),
+   * {@link ServerPackHandler} and {@link UpdateChecker}.
    *
-   * @throws IOException if the {@link VersionMeta} could not be instantiated.
+   * @throws IOException                  When the {@link VersionMeta} had to be instantiated, but
+   *                                      an error occurred during the parsing of a manifest.
+   * @throws ParserConfigurationException When the {@link VersionMeta} had to be instantiated, but
+   *                                      an error occurred during the parsing of a manifest.
+   * @throws SAXException                 When the {@link VersionMeta} had to be instantiated, but
+   *                                      an error occurred during the parsing of a manifest.
    * @author Griefed
    */
   private void stageThree() throws IOException, ParserConfigurationException, SAXException {
@@ -733,7 +1185,17 @@ public class ServerPackCreator {
   }
 
   /**
-   * Initialize our FileWatcher
+   * Initialize our FileWatcher to ensure that vital files get restored, should they be deleted
+   * whilst ServerPackCreator is running.
+   * <p>
+   * Files which will be restored are:
+   * <ul>
+   *   <li>serverpackcreator.properties</li>
+   *   <li>Default server.properties</li>
+   *   <li>Default server-icon.png</li>
+   *   <li>Default PowerShell script template</li>
+   *   <li>Default Shell script template</li>
+   * </ul>
    *
    * @author Griefed
    */
@@ -741,7 +1203,9 @@ public class ServerPackCreator {
 
     LOG.debug("Setting up FileWatcher...");
 
-    FileAlterationObserver fileAlterationObserver = new FileAlterationObserver(new File("."));
+    FileAlterationObserver fileAlterationObserver = new FileAlterationObserver(
+        APPLICATIONPROPERTIES.homeDirectory());
+
     FileAlterationListener fileAlterationListener =
         new FileAlterationListener() {
           @Override
@@ -770,33 +1234,35 @@ public class ServerPackCreator {
 
           @Override
           public void onFileDelete(File file) {
-            if (!file.toString().replace("\\", "/").startsWith("./server-packs")
-                && !file.toString().replace("\\", "/").startsWith("./work/modpacks")) {
+            if (!file.toString()
+                     .contains(APPLICATIONPROPERTIES.serverPacksDirectory().toString())
+                && !file.toString()
+                        .contains(APPLICATIONPROPERTIES.modpacksDirectory().toString())) {
 
-              if (check(file, APPLICATIONPROPERTIES.SERVERPACKCREATOR_PROPERTIES())) {
+              if (check(file, APPLICATIONPROPERTIES.serverPackCreatorPropertiesFile())) {
 
-                createFile(APPLICATIONPROPERTIES.SERVERPACKCREATOR_PROPERTIES());
+                createFile(APPLICATIONPROPERTIES.serverPackCreatorPropertiesFile());
                 APPLICATIONPROPERTIES.loadProperties();
                 LOG.info("Restored serverpackcreator.properties and loaded defaults.");
 
-              } else if (check(file, APPLICATIONPROPERTIES.DEFAULT_SERVER_PROPERTIES())) {
+              } else if (check(file, APPLICATIONPROPERTIES.defaultServerProperties())) {
 
-                checkServerFilesFile(APPLICATIONPROPERTIES.DEFAULT_SERVER_PROPERTIES());
+                checkServerFilesFile(APPLICATIONPROPERTIES.defaultServerProperties());
                 LOG.info("Restored default server.properties.");
 
-              } else if (check(file, APPLICATIONPROPERTIES.DEFAULT_SERVER_ICON())) {
+              } else if (check(file, APPLICATIONPROPERTIES.defaultServerIcon())) {
 
-                checkServerFilesFile(APPLICATIONPROPERTIES.DEFAULT_SERVER_ICON());
+                checkServerFilesFile(APPLICATIONPROPERTIES.defaultServerIcon());
                 LOG.info("Restored default server-icon.png.");
 
-              } else if (check(file, APPLICATIONPROPERTIES.DEFAULT_SHELL_TEMPLATE())) {
+              } else if (check(file, APPLICATIONPROPERTIES.defaultShellTemplate())) {
 
-                checkServerFilesFile(APPLICATIONPROPERTIES.DEFAULT_SHELL_TEMPLATE());
+                checkServerFilesFile(APPLICATIONPROPERTIES.defaultShellTemplate());
                 LOG.info("Restored default_template.sh.");
 
-              } else if (check(file, APPLICATIONPROPERTIES.DEFAULT_POWERSHELL_TEMPLATE())) {
+              } else if (check(file, APPLICATIONPROPERTIES.defaultPowershellTemplate())) {
 
-                checkServerFilesFile(APPLICATIONPROPERTIES.DEFAULT_POWERSHELL_TEMPLATE());
+                checkServerFilesFile(APPLICATIONPROPERTIES.defaultPowershellTemplate());
                 LOG.info("Restored default_template.ps1.");
               }
             }
@@ -806,18 +1272,16 @@ public class ServerPackCreator {
           public void onStop(FileAlterationObserver observer) {
           }
 
-          private boolean check(File watched, File toCreate) {
-            return watched
-                .toString()
-                .replace("\\", "/")
-                .substring(watched.toString().replace("\\", "/").lastIndexOf("/") + 1)
-                .equals(toCreate.toString());
+          private boolean check(File watched,
+                                File toCreate) {
+            return watched.getName().equals(toCreate.getName());
           }
 
           private void createFile(File toCreate) {
 
             getUtilities().JarUtils()
-                .copyFileFromJar(toCreate.getName(), ServerPackCreator.class);
+                          .copyFileFromJar(toCreate.getName(), ServerPackCreator.class,
+                                           toCreate.getParent());
           }
         };
 
@@ -835,7 +1299,8 @@ public class ServerPackCreator {
   }
 
   /**
-   * Show the splashscreen of ServerPackCreator, indicating that things are loading.
+   * Show the splashscreen of ServerPackCreator, indicating that things are loading and
+   * ServerPackCreator is starting.
    *
    * @author Griefed
    */
@@ -854,10 +1319,15 @@ public class ServerPackCreator {
   }
 
   /**
-   * Offer the user to continue using ServerPackCreator.
+   * Offer the user to continue using ServerPackCreator when running in {@link Mode#HELP},
+   * {@link Mode#UPDATE} or {@link Mode#CGEN}.
    *
-   * @throws IOException if an error occurs trying to run ServerPackCreator in {@link Mode#GUI},
-   *                     {@link Mode#CLI} or {@link Mode#WEB}
+   * @throws IOException                  When the {@link VersionMeta} had to be instantiated, but
+   *                                      an error occurred during the parsing of a manifest.
+   * @throws ParserConfigurationException When the {@link VersionMeta} had to be instantiated, but
+   *                                      an error occurred during the parsing of a manifest.
+   * @throws SAXException                 When the {@link VersionMeta} had to be instantiated, but
+   *                                      an error occurred during the parsing of a manifest.
    * @author Griefed
    */
   private void continuedRunOptions()
@@ -887,7 +1357,7 @@ public class ServerPackCreator {
             break;
 
           case 2:
-            updateCheck();
+            updateCheck(true);
             printMenu();
             selection = 100;
             break;
@@ -939,6 +1409,11 @@ public class ServerPackCreator {
     }
   }
 
+  /**
+   * Allow the user to change the locale used in localization.
+   *
+   * @author Griefed
+   */
   private void changeLocale() {
     System.out.println("What locale would you like to use?");
     System.out.println("(Locale format is en_us, de_de, uk_ua etc.)");
@@ -999,15 +1474,19 @@ public class ServerPackCreator {
   }
 
   /**
-   * Run ServerPackCreator in headless, CLI, mode. If no serverpackcreator.conf-file exists, it is
-   * created through {@link ConfigurationEditor#continuedRunOptions()} and subsequently used by a
-   * ServerPackCreator headless-run.
+   * Run ServerPackCreator in {@link Mode#CLI}. Requires a {@code serverpackcreator.conf}-file to be
+   * present.
    *
-   * @throws IOException if the {@link ConfigurationEditor} could not be instantiated.
+   * @throws IOException                  When the {@link VersionMeta} had to be instantiated, but
+   *                                      an error occurred during the parsing of a manifest.
+   * @throws ParserConfigurationException When the {@link VersionMeta} had to be instantiated, but
+   *                                      an error occurred during the parsing of a manifest.
+   * @throws SAXException                 When the {@link VersionMeta} had to be instantiated, but
+   *                                      an error occurred during the parsing of a manifest.
    * @author Griefed
    */
   private void runHeadless() throws IOException, ParserConfigurationException, SAXException {
-    if (!APPLICATIONPROPERTIES.DEFAULT_CONFIG().exists()) {
+    if (!APPLICATIONPROPERTIES.defaultConfig().exists()) {
 
       LOG.warn("No serverpackcreator.conf found...");
       LOG.info(
@@ -1020,7 +1499,7 @@ public class ServerPackCreator {
       ConfigurationModel configurationModel = new ConfigurationModel();
 
       if (getConfigurationHandler().checkConfiguration(
-          APPLICATIONPROPERTIES.DEFAULT_CONFIG(), configurationModel, false)) {
+          APPLICATIONPROPERTIES.defaultConfig(), configurationModel, false)) {
         System.exit(1);
       }
 
@@ -1031,8 +1510,15 @@ public class ServerPackCreator {
   }
 
   /**
-   * Create a new serverpackcreator.conf-file.
+   * Run in {@link Mode#CGEN} and allow the user to load, edit and create a
+   * {@code serverpackcreator.conf}-file using the CLI.
    *
+   * @throws IOException                  When the {@link VersionMeta} had to be instantiated, but
+   *                                      an error occurred during the parsing of a manifest.
+   * @throws ParserConfigurationException When the {@link VersionMeta} had to be instantiated, but
+   *                                      an error occurred during the parsing of a manifest.
+   * @throws SAXException                 When the {@link VersionMeta} had to be instantiated, but
+   *                                      an error occurred during the parsing of a manifest.
    * @author Griefed
    */
   private void runConfigurationEditor()
@@ -1041,52 +1527,57 @@ public class ServerPackCreator {
   }
 
   /**
-   * Check for old config file, if found rename to new name. If neither old nor new config file can
-   * be found, a new config file is generated.
+   * Check whether a {@code serverpackcreator.conf}-file exists. If it doesn't exist, and we are not
+   * running in {@link Mode#CLI} or {@link Mode#CGEN}, create an unconfigured default one which can
+   * then be loaded into the GUI.
    *
-   * @return Boolean. Returns true if the file was generated, so we can inform the user about said
-   * newly generated file.
+   * @return {@code true} if a {@code serverpackcreator.conf}-file was created.
    * @author Griefed
    */
   public boolean checkForConfig() {
 
-    if (!APPLICATIONPROPERTIES.DEFAULT_CONFIG().exists()
+    if (!APPLICATIONPROPERTIES.defaultConfig().exists()
         && COMMANDLINE_PARSER.getModeToRunIn() != Mode.CLI
         && COMMANDLINE_PARSER.getModeToRunIn() != Mode.CGEN) {
 
       return getUtilities().JarUtils().copyFileFromJar(
-          "de/griefed/resources/" + APPLICATIONPROPERTIES.DEFAULT_CONFIG().getName(),
-          APPLICATIONPROPERTIES.DEFAULT_CONFIG(), ServerPackCreator.class);
+          "de/griefed/resources/" + APPLICATIONPROPERTIES.defaultConfig().getName(),
+          APPLICATIONPROPERTIES.defaultConfig(), ServerPackCreator.class);
 
     }
     return false;
   }
 
   /**
-   * Checks for existence of defaults files. If it is not found, it is generated.
+   * Check whether the specified server-files file exists and create it if it doesn't.
    *
    * @param fileToCheckFor The file which is to be checked for whether it exists and if it doesn't,
    *                       should be created.
-   * @return {@code true} if the file was generated, so we can inform the user about said newly
-   * generated file.
+   * @return {@code true} if the file was generated.
    * @author Griefed
    */
-  public boolean checkServerFilesFile(File fileToCheckFor) {
-    return getUtilities().JarUtils()
-        .copyFileFromJar("de/griefed/resources/server_files/" + fileToCheckFor,
-            new File("./server_files/" + fileToCheckFor), ServerPackCreator.class);
+  public boolean checkServerFilesFile(@NotNull File fileToCheckFor) {
+    return getUtilities().JarUtils().copyFileFromJar(
+        "de/griefed/resources/server_files/" + fileToCheckFor.getName(),
+        new File(
+            APPLICATIONPROPERTIES.serverFilesDirectory(),
+            fileToCheckFor.getName()),
+        ServerPackCreator.class);
   }
 
   /**
-   * Delete and recreate a server-files file, so we always have the latest and greatest hits
-   * available on the host, and therefor, the user.
+   * Overwrite the specified server-files file, even when it exists. Used to ensure files like the
+   * default script templates are always up to date.
    *
    * @param fileToOverwrite The file which is to be overwritten. If it exists. it is first deleted,
    *                        then extracted from our JAR-file.
    * @author Griefed
    */
-  public void overwriteServerFilesFile(File fileToOverwrite) {
-    FileUtils.deleteQuietly(new File(String.format("server_files/%s", fileToOverwrite.getName())));
+  public void overwriteServerFilesFile(@NotNull File fileToOverwrite) {
+    FileUtils.deleteQuietly(new File(
+        APPLICATIONPROPERTIES.serverFilesDirectory(),
+        fileToOverwrite.getName()));
+
     checkServerFilesFile(fileToOverwrite);
   }
 
@@ -1098,9 +1589,8 @@ public class ServerPackCreator {
   public void checkDatabase() {
     Connection connection = null;
     try {
-      connection =
-          DriverManager.getConnection(
-              "jdbc:sqlite:" + APPLICATIONPROPERTIES.SERVERPACKCREATOR_DATABASE());
+      connection = DriverManager.getConnection(
+          "jdbc:sqlite:" + APPLICATIONPROPERTIES.serverPackCreatorDatabase());
 
       DatabaseMetaData databaseMetaData = connection.getMetaData();
       LOG.debug("Database driver name: " + databaseMetaData.getDriverName());
@@ -1123,30 +1613,58 @@ public class ServerPackCreator {
   }
 
   /**
-   * Check for update-availability and exit with status code 0.
+   * Check for update-availability. If an update is present, information about said update is
+   * printed to the console.
    *
+   * @param logToConsole Whether to log update information to console or to logs.
    * @author Griefed
    */
-  public void updateCheck() {
+  public void updateCheck(boolean logToConsole) {
     getUpdateChecker().refresh();
 
-    Optional<Update> update =
-        getUpdateChecker().checkForUpdate(
-            APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION(),
-            APPLICATIONPROPERTIES.checkForAvailablePreReleases());
+    Optional<Update> update = getUpdateChecker().checkForUpdate(
+        APPLICATIONPROPERTIES.serverPackCreatorVersion(),
+        APPLICATIONPROPERTIES.checkForAvailablePreReleases());
 
-    System.out.println();
-    if (update.isPresent()) {
-      System.out.println("Update available!");
-      System.out.println("    " + update.get().version());
-      System.out.println("    " + update.get().url());
+    if (logToConsole) {
+      System.out.println();
+      if (update.isPresent()) {
+        System.out.println("Update available!");
+        System.out.println("    " + update.get().version());
+        System.out.println("    " + update.get().url());
+      } else {
+        System.out.println("No updates available.");
+      }
     } else {
-      System.out.println("No updates available.");
+      if (update.isPresent()) {
+        LOG.info("Update available!");
+        LOG.info("    " + update.get().version());
+        LOG.info("    " + update.get().url());
+      } else {
+        LOG.info("No updates available.");
+      }
     }
+
   }
 
   /**
-   * Print the help to console and exit with status code 0.
+   * Prints the help-text to the console. The help text contains information about:
+   * <ul>
+   *   <li>running ServerPackCreator in different modes:</li>
+   *   <ul>
+   *     <li>{@link Mode#CGEN}</li>
+   *     <li>{@link Mode#UPDATE}</li>
+   *     <li>{@link Mode#CLI}</li>
+   *     <li>{@link Mode#WEB}</li>
+   *     <li>{@link Mode#GUI}</li>
+   *     <li>{@link Mode#SETUP}</li>
+   *   </ul>
+   *   <li>available languages</li>
+   *   <li>where to report issues</li>
+   *   <li>where to get support</li>
+   *   <li>where to find the wiki</li>
+   *   <li>how to support me</li>
+   * </ul>
    *
    * @author Griefed
    */
@@ -1183,14 +1701,6 @@ public class ServerPackCreator {
             + "#             written to the console so you can from work with it from there.\n"
             + "#             Note: Automatic updates are currently not planned nor supported, and neither are\n"
             + "#             downloads of any available updates to your system. You need to update manually.\n"
-            + "#");
-    System.out.println(
-        "#     -cgen : Only available for the commandline interface. This will start the generation of\n"
-            + "#             a new configuration file. You will be asked to enter information about your modpack\n"
-            + "#             step-by-step. Each setting you enter will be checked for errors before it is saved.\n"
-            + "#             If everything you enter is valid and without errors, it will be written to a new\n"
-            + "#             serverpackcreator.conf and ServerPackCreator will immediately start a run with said\n"
-            + "#             configuration file, generating a server pack for you.\n"
             + "#");
     System.out.println(
         "#     -cli  : Run ServerPackCreator in Command-line interface mode. Checks the serverpackcreator.conf\n"
@@ -1240,53 +1750,77 @@ public class ServerPackCreator {
   }
 
   /**
-   * Mode-priorities. Highest to lowest.
+   * Available mods of ServerPackCreator and their respective CLI-arguments required to be
+   * activated/used.
+   *
+   * @author Griefed
    */
   public enum Mode {
 
     /**
-     * Priority 0. Print ServerPackCreators help to commandline.
+     * <b>Priority 0</b>
+     * <p>
+     * Print ServerPackCreators help to commandline.
      */
     HELP("-help"),
 
     /**
-     * Priority 1. Check whether a newer version of ServerPackCreator is available.
+     * <b>Priority 1</b>
+     * <p>
+     * Check whether a newer version of ServerPackCreator is available.
      */
     UPDATE("-update"),
 
     /**
-     * Priority 2. Run ServerPackCreators configuration generation.
+     * <b>Priority 2</b>
+     * <p>
+     * Run ServerPackCreators configuration generation.
      */
     CGEN("-cgen"),
 
     /**
-     * Priority 3. Run ServerPackCreator in commandline-mode. If no graphical environment is
-     * supported, this is the default ServerPackCreator will enter, even when starting
-     * ServerPackCreator with no extra arguments at all.
+     * <b>Priority 3</b>
+     * <p>
+     * Run ServerPackCreator in commandline-mode. If no graphical environment is supported, this is
+     * the default ServerPackCreator will enter, even when starting ServerPackCreator with no extra
+     * arguments at all.
      */
     CLI("-cli"),
 
     /**
-     * Priority 4. Run ServerPackCreator as a webservice.
+     * <b>Priority 4</b>
+     * <p>
+     * Run ServerPackCreator as a webservice.
      */
     WEB("-web"),
 
     /**
-     * Priority 5. Run ServerPackCreator with our GUI. If a graphical environment is supported, this
-     * is the default ServerPackCreator will enter, even when starting ServerPackCreator with no
-     * extra arguments at all.
+     * <b>Priority 5</b>
+     * <p>
+     * Run ServerPackCreator with our GUI. If a graphical environment is supported, this is the
+     * default ServerPackCreator will enter, even when starting ServerPackCreator with no extra
+     * arguments at all.
      */
     GUI("-gui"),
 
     /**
-     * Priority 6 Set up and prepare the environment for subsequent runs of ServerPackCreator. This
-     * will create/copy all files needed for ServerPackCreator to function properly from inside its
+     * <b>Priority 6</b>
+     * <p>
+     * Set up and prepare the environment for subsequent runs of ServerPackCreator. This will
+     * create/copy all files needed for ServerPackCreator to function properly from inside its
      * JAR-file and setup everything else, too.
+     * <p>
+     * The {@code --setup}-argument also allows a user to specify a {@code properties}-file to load
+     * into {@link ApplicationProperties}. Values are loaded from the specified file and
+     * subsequently stored in the local {@code serverpackcreator.properties}-file inside
+     * ServerPackCreators home-directory.
      */
     SETUP("--setup"),
 
     /**
-     * Priority 7. Exit ServerPackCreator.
+     * <b>Priority 7</b>
+     * <p>
+     * Exit ServerPackCreator.
      */
     EXIT("exit"),
 
@@ -1297,8 +1831,8 @@ public class ServerPackCreator {
 
     private final String ARGUMENT;
 
-    Mode(String cliArg) {
-      this.ARGUMENT = cliArg;
+    Mode(@NotNull String cliArg) {
+      ARGUMENT = cliArg;
     }
 
     /**
@@ -1307,14 +1841,28 @@ public class ServerPackCreator {
      * @return Textual representation of this mode.
      * @author Griefed
      */
-    public String argument() {
+    public @NotNull String argument() {
       return ARGUMENT;
     }
   }
 
   /**
-   * Check the passed commandline-arguments with which ServerPackCreator was started and return the
-   * mode in which to run.
+   * The Commandline Parser checks the passed commandline arguments to determine the mode to run
+   * in.
+   * <p>
+   * CLI arguments are checked in order of their priority, which you can find in {@link Mode}.
+   * <p>
+   * After the mode has been determined, you can acquire it with
+   * {@link CommandlineParser#getModeToRunIn()}.
+   * <p>
+   * If a specific language was passed using the {@code -lang}-argument, you can get it with
+   * {@link CommandlineParser#getLanguageToUse()}.
+   * <p>
+   * If ServerPackCreator was run with the {@code --setup}-argument specifying a
+   * {@code properties}-file to load into {@link ApplicationProperties}, you can get said file via
+   * {@link CommandlineParser#propertiesFile()}. Values are loaded from the specified file and
+   * subsequently stored in the local {@code serverpackcreator.properties}-file inside
+   * ServerPackCreators home-directory.
    *
    * @author Griefed
    */
@@ -1345,7 +1893,7 @@ public class ServerPackCreator {
      *             Typically passed from {@link ServerPackCreator}.
      * @author Griefed
      */
-    public CommandlineParser(String[] args) {
+    public CommandlineParser(@NotNull String[] args) {
 
       final List<String> argsList = new ArrayList<>(Arrays.asList(args));
 
@@ -1356,16 +1904,18 @@ public class ServerPackCreator {
        */
       if (argsList.contains(Mode.LANG.argument())
           && argsList.size() >= argsList.indexOf(Mode.LANG.argument()) + 1) {
-        this.LANG = argsList.get(argsList.indexOf(Mode.LANG.argument()) + 1);
+
+        LANG = argsList.get(argsList.indexOf(Mode.LANG.argument()) + 1);
       } else {
-        this.LANG = "en_us";
+        LANG = "en_us";
       }
 
       /*
        * Check whether the user wanted us to print the help-text.
        */
       if (argsList.contains(Mode.HELP.argument())) {
-        this.MODE = Mode.HELP;
+
+        MODE = Mode.HELP;
         return;
       }
 
@@ -1373,7 +1923,8 @@ public class ServerPackCreator {
        * Check whether the user wants to check for update availability.
        */
       if (argsList.contains(Mode.UPDATE.argument())) {
-        this.MODE = Mode.UPDATE;
+
+        MODE = Mode.UPDATE;
         return;
       }
 
@@ -1381,7 +1932,8 @@ public class ServerPackCreator {
        * Check whether the user wants to generate a new serverpackcreator.conf from the commandline.
        */
       if (argsList.contains(Mode.CGEN.argument())) {
-        this.MODE = Mode.CGEN;
+
+        MODE = Mode.CGEN;
         return;
       }
 
@@ -1389,10 +1941,13 @@ public class ServerPackCreator {
        * Check whether the user wants to run in commandline-mode or whether a GUI would not be supported.
        */
       if (argsList.contains(Mode.CLI.argument())) {
-        this.MODE = Mode.CLI;
+
+        MODE = Mode.CLI;
         return;
+
       } else if (GraphicsEnvironment.isHeadless()) {
-        this.MODE = Mode.CLI;
+
+        MODE = Mode.CLI;
         return;
       }
 
@@ -1400,7 +1955,8 @@ public class ServerPackCreator {
        * Check whether the user wants ServerPackCreator to run as a webservice.
        */
       if (argsList.contains(Mode.WEB.argument())) {
-        this.MODE = Mode.WEB;
+
+        MODE = Mode.WEB;
         return;
       }
 
@@ -1408,7 +1964,8 @@ public class ServerPackCreator {
        * Check whether the user wants to use ServerPackCreators GUI.
        */
       if (argsList.contains(Mode.GUI.argument())) {
-        this.MODE = Mode.GUI;
+
+        MODE = Mode.GUI;
         return;
       }
 
@@ -1416,6 +1973,7 @@ public class ServerPackCreator {
        * Check whether the user wants to set up and prepare the environment for subsequent runs.
        */
       if (argsList.contains(Mode.SETUP.argument())) {
+
         if (argsList.size() > 1
             && new File(argsList.get(argsList.indexOf(Mode.SETUP.argument()) + 1)).isFile()) {
 
@@ -1423,7 +1981,7 @@ public class ServerPackCreator {
 
         }
 
-        this.MODE = Mode.SETUP;
+        MODE = Mode.SETUP;
         return;
       }
 
@@ -1431,14 +1989,14 @@ public class ServerPackCreator {
        * Last but not least, failsafe-check whether a GUI would be supported.
        */
       if (!GraphicsEnvironment.isHeadless()) {
-        this.MODE = Mode.GUI;
+        MODE = Mode.GUI;
         return;
       }
 
       /*
        * If all else fails, exit ServerPackCreator.
        */
-      this.MODE = Mode.EXIT;
+      MODE = Mode.EXIT;
     }
 
     /**
@@ -1447,7 +2005,7 @@ public class ServerPackCreator {
      * @return Mode in which ServerPackCreator should be run in.
      * @author Griefed
      */
-    protected Mode getModeToRunIn() {
+    protected @NotNull Mode getModeToRunIn() {
       return MODE;
     }
 
@@ -1458,7 +2016,7 @@ public class ServerPackCreator {
      * {@link Optional}.
      * @author Griefed
      */
-    protected Optional<String> getLanguageToUse() {
+    protected @NotNull Optional<String> getLanguageToUse() {
       return Optional.ofNullable(LANG);
     }
 
@@ -1470,7 +2028,7 @@ public class ServerPackCreator {
      * @return The specified properties-file, wrapped in an Optional.
      * @author Griefed
      */
-    public Optional<File> propertiesFile() {
+    public @NotNull Optional<File> propertiesFile() {
       return Optional.ofNullable(propertiesFile);
     }
   }

@@ -19,12 +19,20 @@
  */
 package de.griefed.serverpackcreator.versionmeta.legacyfabric;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import de.griefed.serverpackcreator.utilities.common.Utilities;
 import java.io.File;
 
 final class LegacyFabricLoader extends LegacyFabricVersioning {
 
-  LegacyFabricLoader(File manifest, ObjectMapper mapper) {
-    super(manifest, mapper);
+  /**
+   * Create a new instance holding information about LegacyFabric loader versions.
+   *
+   * @param manifest  The manifest containing game version information.
+   * @param utilities Commonly used utilities across ServerPackCreator.
+   * @author Griefed
+   */
+  LegacyFabricLoader(File manifest,
+                     Utilities utilities) {
+    super(manifest, utilities);
   }
 }

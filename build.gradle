@@ -65,20 +65,18 @@ dependencies {
   // Backend
   implementation 'de.griefed:versionchecker:1.1.0'
   implementation 'com.electronwill.night-config:toml:3.6.6'
-  implementation 'commons-io:commons-io:2.11.0'
-  implementation 'commons-lang:commons-lang:2.6'
 
-  implementation 'net.lingala.zip4j:zip4j:2.11.1'
+  implementation 'net.lingala.zip4j:zip4j:2.11.2'
   implementation 'org.xerial:sqlite-jdbc:3.39.3.0'
   implementation 'org.pf4j:pf4j:3.7.0'
   implementation 'com.github.vatbub:mslinks:1.0.5'
 
   annotationProcessor 'org.jetbrains:annotations:23.0.0'
 
-  implementation 'org.apache.logging.log4j:log4j-core:2.18.0'
-  implementation 'org.apache.logging.log4j:log4j-api:2.18.0'
-  implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.18.0'
-  implementation 'org.apache.logging.log4j:log4j-web:2.18.0'
+  implementation 'org.apache.logging.log4j:log4j-core:2.19.0'
+  implementation 'org.apache.logging.log4j:log4j-api:2.19.0'
+  implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.19.0'
+  implementation 'org.apache.logging.log4j:log4j-web:2.19.0'
   implementation 'org.jgroups:jgroups:5.2.6.Final'
 
   // GUI
@@ -86,20 +84,20 @@ dependencies {
   implementation 'de.griefed:larsonscanner:1.0.4'
 
   // WEB
-  implementation 'org.springframework.boot:spring-boot-starter-web:2.7.3'
-  implementation 'org.springframework.boot:spring-boot-starter-log4j2:2.7.3'
+  implementation 'org.springframework.boot:spring-boot-starter-web:2.7.4'
+  implementation 'org.springframework.boot:spring-boot-starter-log4j2:2.7.4'
   implementation 'org.apache.activemq:artemis-jms-server:2.19.1'
-  implementation 'org.springframework.boot:spring-boot-starter-data-jpa:2.7.3'
-  implementation 'org.springframework.boot:spring-boot-starter-artemis:2.7.3'
+  implementation 'org.springframework.boot:spring-boot-starter-data-jpa:2.7.4'
+  implementation 'org.springframework.boot:spring-boot-starter-artemis:2.7.4'
   implementation 'com.github.gwenn:sqlite-dialect:0.1.2'
 
   // Dev tools
-  developmentOnly 'org.springframework.boot:spring-boot-devtools:2.7.3'
+  developmentOnly 'org.springframework.boot:spring-boot-devtools:2.7.4'
 
   // Testing
   testImplementation 'org.junit.jupiter:junit-jupiter:5.9.0'
   testImplementation 'org.junit.platform:junit-platform-suite:1.9.0'
-  testImplementation 'org.springframework.boot:spring-boot-starter-test:2.7.3'
+  testImplementation 'org.springframework.boot:spring-boot-starter-test:2.7.4'
 }
 
 licenseReport {
@@ -169,41 +167,53 @@ tasks.register('copyDist', Copy) {
   dependsOn tasks.named('installQuasar')
   dependsOn tasks.named('assembleFrontend')
 
-  // Delete old files
-  def frontendResources = "backend/main/resources/static"
-
-  file(frontendResources).list().each {
+  file("backend/main/resources/static").list().each {
     f ->
-      delete "${frontendResources}/${f}"
+      delete "${"backend/main/resources/static"}/${f}"
   }
-
   copy {
     from layout.projectDirectory.dir("frontend/dist/spa")
     into layout.projectDirectory.dir("backend/main/resources/static")
   }
+
   copy {
     from layout.projectDirectory.file("LICENSE")
     into layout.projectDirectory.dir("backend/main/resources")
   }
+
   copy {
     from layout.projectDirectory.file("README.md")
     into layout.projectDirectory.dir("backend/main/resources")
   }
+
+  copy {
+    from layout.projectDirectory.file("HELP.md")
+    into layout.projectDirectory.dir("backend/main/resources")
+  }
+
   copy {
     from layout.projectDirectory.file("CHANGELOG.md")
     into layout.projectDirectory.dir("backend/main/resources")
   }
+
   copy {
     from layout.projectDirectory.file("CONTRIBUTING.md")
     into layout.projectDirectory.dir("backend/main/resources")
   }
+
   copy {
     from layout.projectDirectory.file("CODE_OF_CONDUCT.md")
     into layout.projectDirectory.dir("backend/main/resources")
   }
+
   copy {
     from layout.projectDirectory.dir("manifests")
     into layout.projectDirectory.dir("backend/main/resources/de/griefed/resources/manifests")
+  }
+
+  file("backend/main/resources/licenses").list().each {
+    f ->
+      delete "${"backend/main/resources/licenses"}/${f}"
   }
   copy {
     from layout.projectDirectory.dir("licenses")
@@ -235,35 +245,32 @@ launch4j {
 
 clean {
   cleanFrontend
-  delete(
-      'lang',
-      'fabric-installer-manifest.xml',
-      'fabric-manifest.xml',
-      'forge-manifest.json',
-      'log4j2.xml',
-      'minecraft-manifest.json',
-      'quilt-installer-manifest.xml',
-      'quilt-manifest.xml',
-      'plugins',
-      'server-packs',
-      'server_files',
-      'work',
-      'banner.txt',
-      'serverpackcreator.conf',
-      'serverpackcreator.db',
-      'serverpackcreator.properties',
-      'somefile.conf',
-      'after.conf'
-  )
+  delete('log4j2.xml')
+  file("tests").list().each {
+    f ->
+      delete "${"tests"}/${f}"
+  }
+}
+
+test.doFirst {
+  mkdir("tests")
 }
 
 test {
   useJUnitPlatform()
 
   testLogging {
-    events "passed",
+    events (
+        "passed",
         "skipped",
         "failed"
+    )
+  }
+  doLast {
+    copy {
+      from layout.projectDirectory.dir("tests/manifests")
+      into layout.projectDirectory.dir("manifests")
+    }
   }
 }
 
@@ -296,24 +303,7 @@ bootJar {
         "Implementation-Title": project.implTitle,
         "Application-Name": project.title
     )
-
   }
-  exclude(
-      'META-INF/org',
-      'META-INF/org/**',
-      'META-INF/versions',
-      'META-INF/versions/**',
-      'META-INF/DEPENDENCIES',
-      'META-INF/LICENSE',
-      'META-INF/NOTICE',
-      'META-INF/CHANGES',
-      'META-INF/LICENSE.txt',
-      'META-INF/NOTICE.txt',
-      'META-INF/README.md',
-      'Log4j-**',
-      'icon.png',
-      'profile_icon.png'
-  )
 }
 
 
@@ -343,23 +333,6 @@ jar {
         "Application-Name": project.title
     )
   }
-  // Exclude files and folders which would otherwise bloat our JAR-file up.
-  exclude(
-      'META-INF/org',
-      'META-INF/org/**',
-      'META-INF/versions',
-      'META-INF/versions/**',
-      'META-INF/DEPENDENCIES',
-      'META-INF/LICENSE',
-      'META-INF/NOTICE',
-      'META-INF/CHANGES',
-      'META-INF/LICENSE.txt',
-      'META-INF/NOTICE.txt',
-      'META-INF/README.md',
-      'Log4j-**',
-      'icon.png',
-      'profile_icon.png'
-  )
 }
 
 nexusPublishing {

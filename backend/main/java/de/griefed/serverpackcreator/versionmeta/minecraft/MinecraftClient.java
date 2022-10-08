@@ -19,7 +19,6 @@
  */
 package de.griefed.serverpackcreator.versionmeta.minecraft;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.utilities.common.Utilities;
 import de.griefed.serverpackcreator.versionmeta.Type;
@@ -51,14 +50,17 @@ public final class MinecraftClient {
    * @param type                  Either {@link Type#RELEASE} or {@link Type#SNAPSHOT}.
    * @param url                   Url to this versions manifest.
    * @param forgeMeta             To acquire Forge instances for this client version.
-   * @param objectMapper          Object mapper for JSON parsing.
-   * @param utilities             Instance of commonly used utilities.
+   * @param utilities             Commonly used utilities across ServerPackCreator.
    * @param applicationProperties ServerPackCreator settings.
    * @author Griefed
    */
   MinecraftClient(
-      String version, Type type, URL url, ForgeMeta forgeMeta, ObjectMapper objectMapper,
-      Utilities utilities, ApplicationProperties applicationProperties) {
+      String version,
+      Type type,
+      URL url,
+      ForgeMeta forgeMeta,
+      Utilities utilities,
+      ApplicationProperties applicationProperties) {
 
     APPLICATIONPROPERTIES = applicationProperties;
     UTILITIES = utilities;
@@ -66,8 +68,8 @@ public final class MinecraftClient {
     TYPE = type;
     URL = url;
     FORGE_META = forgeMeta;
-    MINECRAFT_SERVER = new MinecraftServer(version, type, url, objectMapper, UTILITIES,
-        APPLICATIONPROPERTIES);
+    MINECRAFT_SERVER = new MinecraftServer(version, type, url, UTILITIES,
+                                           APPLICATIONPROPERTIES);
   }
 
   /**
@@ -83,8 +85,13 @@ public final class MinecraftClient {
    * @author Griefed
    */
   MinecraftClient(
-      String version, Type type, URL url, MinecraftServer server, ForgeMeta forgeMeta,
-      Utilities utilities, ApplicationProperties applicationProperties) {
+      String version,
+      Type type,
+      URL url,
+      MinecraftServer server,
+      ForgeMeta forgeMeta,
+      Utilities utilities,
+      ApplicationProperties applicationProperties) {
 
     APPLICATIONPROPERTIES = applicationProperties;
     UTILITIES = utilities;

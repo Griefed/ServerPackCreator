@@ -92,7 +92,8 @@ public class RotatedIcon implements Icon {
    * @param icon   the Icon to rotate
    * @param rotate the direction of rotation
    */
-  public RotatedIcon(Icon icon, Rotate rotate) {
+  public RotatedIcon(Icon icon,
+                     Rotate rotate) {
     this.icon = icon;
     this.rotate = rotate;
   }
@@ -104,7 +105,8 @@ public class RotatedIcon implements Icon {
    * @param icon    the Icon to rotate
    * @param degrees the degrees of rotation
    */
-  public RotatedIcon(Icon icon, double degrees) {
+  public RotatedIcon(Icon icon,
+                     double degrees) {
     this(icon, degrees, false);
   }
 
@@ -116,7 +118,9 @@ public class RotatedIcon implements Icon {
    * @param degrees      the degrees of rotation
    * @param circularIcon treat the icon as circular so its size doesn't change
    */
-  public RotatedIcon(Icon icon, double degrees, boolean circularIcon) {
+  public RotatedIcon(Icon icon,
+                     double degrees,
+                     boolean circularIcon) {
     this(icon, Rotate.ABOUT_CENTER);
     this.degrees = degrees;
     this.circularIcon = circularIcon;
@@ -181,56 +185,6 @@ public class RotatedIcon implements Icon {
   }
 
   /**
-   * Gets the width of this icon.
-   *
-   * @return The width of the icon in pixels.
-   */
-  @Override
-  public int getIconWidth() {
-    if (rotate == Rotate.ABOUT_CENTER) {
-      if (circularIcon) {
-        return icon.getIconWidth();
-      } else {
-        double radians = Math.toRadians(degrees);
-        double sin = Math.abs(Math.sin(radians));
-        double cos = Math.abs(Math.cos(radians));
-        return (int) Math.floor(icon.getIconWidth() * cos + icon.getIconHeight() * sin);
-      }
-    } else if (rotate == Rotate.UPSIDE_DOWN) {
-      return icon.getIconWidth();
-    } else {
-      return icon.getIconHeight();
-    }
-  }
-
-  //
-  //  Implement the Icon Interface
-  //
-
-  /**
-   * Gets the height of this icon.
-   *
-   * @return The height of the icon in pixels.
-   */
-  @Override
-  public int getIconHeight() {
-    if (rotate == Rotate.ABOUT_CENTER) {
-      if (circularIcon) {
-        return icon.getIconHeight();
-      } else {
-        double radians = Math.toRadians(degrees);
-        double sin = Math.abs(Math.sin(radians));
-        double cos = Math.abs(Math.cos(radians));
-        return (int) Math.floor(icon.getIconHeight() * cos + icon.getIconWidth() * sin);
-      }
-    } else if (rotate == Rotate.UPSIDE_DOWN) {
-      return icon.getIconHeight();
-    } else {
-      return icon.getIconWidth();
-    }
-  }
-
-  /**
    * Paint the icons of this compound icon at the specified location
    *
    * @param c The component on which the icon is painted
@@ -239,7 +193,10 @@ public class RotatedIcon implements Icon {
    * @param y The Y coordinate of the icon's top-left corner
    */
   @Override
-  public void paintIcon(Component c, Graphics g, int x, int y) {
+  public void paintIcon(Component c,
+                        Graphics g,
+                        int x,
+                        int y) {
     Graphics2D g2 = (Graphics2D) g.create();
 
     int cWidth = icon.getIconWidth() / 2;
@@ -276,6 +233,56 @@ public class RotatedIcon implements Icon {
     }
 
     g2.dispose();
+  }
+
+  //
+  //  Implement the Icon Interface
+  //
+
+  /**
+   * Gets the width of this icon.
+   *
+   * @return The width of the icon in pixels.
+   */
+  @Override
+  public int getIconWidth() {
+    if (rotate == Rotate.ABOUT_CENTER) {
+      if (circularIcon) {
+        return icon.getIconWidth();
+      } else {
+        double radians = Math.toRadians(degrees);
+        double sin = Math.abs(Math.sin(radians));
+        double cos = Math.abs(Math.cos(radians));
+        return (int) Math.floor(icon.getIconWidth() * cos + icon.getIconHeight() * sin);
+      }
+    } else if (rotate == Rotate.UPSIDE_DOWN) {
+      return icon.getIconWidth();
+    } else {
+      return icon.getIconHeight();
+    }
+  }
+
+  /**
+   * Gets the height of this icon.
+   *
+   * @return The height of the icon in pixels.
+   */
+  @Override
+  public int getIconHeight() {
+    if (rotate == Rotate.ABOUT_CENTER) {
+      if (circularIcon) {
+        return icon.getIconHeight();
+      } else {
+        double radians = Math.toRadians(degrees);
+        double sin = Math.abs(Math.sin(radians));
+        double cos = Math.abs(Math.cos(radians));
+        return (int) Math.floor(icon.getIconHeight() * cos + icon.getIconWidth() * sin);
+      }
+    } else if (rotate == Rotate.UPSIDE_DOWN) {
+      return icon.getIconHeight();
+    } else {
+      return icon.getIconWidth();
+    }
   }
 
   public enum Rotate {

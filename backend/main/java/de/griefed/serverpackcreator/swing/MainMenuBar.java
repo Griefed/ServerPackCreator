@@ -115,9 +115,9 @@ public class MainMenuBar extends Component {
 
   private final ImageIcon INFO_ICON = new ImageIcon(
       ImageIO.read(
-              Objects.requireNonNull(
-                  MainMenuBar.class.getResource("/de/griefed/resources/gui/info.png")))
-          .getScaledInstance(48, 48, Image.SCALE_SMOOTH));
+                 Objects.requireNonNull(
+                     MainMenuBar.class.getResource("/de/griefed/resources/gui/info.png")))
+             .getScaledInstance(48, 48, Image.SCALE_SMOOTH));
   private final JMenuBar MENUBAR = new JMenuBar();
 
   private final String[] HASTEOPTIONS = new String[3];
@@ -313,13 +313,14 @@ public class MainMenuBar extends Component {
         new JMenuItem(I18N.getMessage("menubar.gui.menuitem.serverpacksdir"));
     JMenuItem view_OpenServerFilesDirectoryMenuItem =
         new JMenuItem(I18N.getMessage("menubar.gui.menuitem.serverfilesdir"));
+    JMenuItem view_MigrationMessagesItem = new JMenuItem(I18N.getMessage("menubar.gui.migration"));
     JMenuItem view_OpenSPCLog = new JMenuItem(I18N.getMessage("menubar.gui.menuitem.spclog"));
     JMenuItem view_OpenModloaderInstallerLog =
         new JMenuItem(I18N.getMessage("menubar.gui.menuitem.modloaderlog"));
     JMenuItem view_OpenAddonLog = new JMenuItem(I18N.getMessage("menubar.gui.menuitem.addonlog"));
 
     //JMenuItem about_OpenAboutWindowMenuItem =
-        new JMenuItem(I18N.getMessage("menubar.gui.menuitem.about"));
+    new JMenuItem(I18N.getMessage("menubar.gui.menuitem.about"));
     JMenuItem about_OpenGitHubPageMenuItem =
         new JMenuItem(I18N.getMessage("menubar.gui.menuitem.repository"));
     JMenuItem about_OpenGitHubIssuesPageMenuItem =
@@ -358,6 +359,7 @@ public class MainMenuBar extends Component {
     view_OpenServerFilesDirectoryMenuItem.addActionListener(this::openServerFilesDirectoryMenuItem);
     view_OpenAddonsDirectoryMenuItem.addActionListener(this::openPluginsDirectoryMenuItem);
     view_ExampleAddonRepositoryMenuItem.addActionListener(this::viewExampleAddonMenuItem);
+    view_MigrationMessagesItem.addActionListener(this::viewMigrationMessagesItem);
     view_OpenSPCLog.addActionListener(this::openSPClog);
     view_OpenModloaderInstallerLog.addActionListener(this::openModloaderInstallerLog);
     view_OpenAddonLog.addActionListener(this::openAddonsLog);
@@ -398,9 +400,15 @@ public class MainMenuBar extends Component {
     viewMenu.add(new JSeparator());
     viewMenu.add(view_ExampleAddonRepositoryMenuItem);
     viewMenu.add(new JSeparator());
+    viewMenu.add(view_MigrationMessagesItem);
+    viewMenu.add(new JSeparator());
     viewMenu.add(view_OpenSPCLog);
     viewMenu.add(view_OpenModloaderInstallerLog);
     viewMenu.add(view_OpenAddonLog);
+
+    if (!SERVERPACKCREATORWINDOW.migrationMessagesAvailable()) {
+      view_MigrationMessagesItem.setEnabled(false);
+    }
 
     //aboutMenu.add(about_OpenAboutWindowMenuItem);
     aboutMenu.add(about_CheckForUpdates);
@@ -425,24 +433,521 @@ public class MainMenuBar extends Component {
     return MENUBAR;
   }
 
-  private void openAddonsLog(ActionEvent actionEvent) {
-    LOG.debug("Clicked open Addons-log.");
-
-    UTILITIES.FileUtils().openFile("logs/addons.log");
+  /**
+   * Upon button-press, load default values for textfields so the user can start with a new
+   * configuration. Just as if ServerPackCreator was started without a serverpackcreator.conf being
+   * present.
+   *
+   * @param actionEvent The event which triggers this method.
+   * @author Griefed
+   */
+  private void newConfiguration(ActionEvent actionEvent) {
+    LOG.debug("Clearing GUI...");
+    TAB_CREATESERVERPACK.clearInterface();
+    lastLoadedConfigurationFile = null;
   }
 
-  private void openModloaderInstallerLog(ActionEvent actionEvent) {
-    LOG.debug("Clicked open Modloader-Installer-log.");
+  /**
+   * Upon button-press, open a file-selector to load a serverpackcreator.conf-file into
+   * ServerPackCreator.
+   *
+   * @param actionEvent The event which triggers this method.
+   * @author Griefed
+   */
+  private void loadConfigurationFromFileMenuItem(ActionEvent actionEvent) {
+    LOG.debug("Clicked load configuration from file.");
 
-    UTILITIES.FileUtils().openFile("logs/modloader_installer.log");
+    configChooser = new JFileChooser();
+    configChooser.setCurrentDirectory(APPLICATIONPROPERTIES.homeDirectory());
+    configChooser.setDialogTitle(I18N.getMessage("createserverpack.gui.buttonloadconfig.title"));
+    configChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+    configChooser.setFileFilter(
+        new FileNameExtensionFilter(
+            I18N.getMessage("createserverpack.gui.buttonloadconfig.filter"), "conf"));
+    configChooser.setAcceptAllFileFilterUsed(false);
+    configChooser.setMultiSelectionEnabled(false);
+    configChooser.setPreferredSize(CHOOSERDIMENSION);
+
+    if (configChooser.showOpenDialog(SERVERPACKCREATORWINDOW) == JFileChooser.APPROVE_OPTION) {
+
+      try {
+
+        /* This log is meant to be read by the user, therefore we allow translation. */
+        LOG.info(
+            "Loading from configuration file: "
+                + configChooser.getSelectedFile().getPath());
+
+        File specifiedConfigFile;
+        try {
+          specifiedConfigFile =
+              new File(UTILITIES.FileUtils().resolveLink(configChooser.getSelectedFile()));
+        } catch (InvalidFileTypeException ex) {
+          LOG.error("Could not resolve link/symlink. Using entry from user input for checks.", ex);
+          specifiedConfigFile =
+              new File(configChooser.getSelectedFile().getPath());
+        }
+
+        TAB_CREATESERVERPACK.loadConfig(specifiedConfigFile);
+        lastLoadedConfigurationFile = specifiedConfigFile;
+
+      } catch (IOException ex) {
+        LOG.error("Error loading configuration from selected file.", ex);
+      }
+
+      LOG.debug("Configuration successfully loaded.");
+    }
   }
 
+  /**
+   * Upon button-press, save the current configuration in the GUI to the serverpackcreator.conf-file
+   * in ServerPackCreators base directory. if
+   * {@code de.griefed.serverpackcreator.configuration.saveloadedconfig} is set to {@code true} and
+   * the field {@code lastLoadedConfigurationFile} is not null, the last loaded configuration-file
+   * is also saved to.
+   *
+   * @param actionEvent The event which triggers this method.
+   * @author Griefed
+   */
+  private void saveConfigToFileMenuItem(ActionEvent actionEvent) {
+    LOG.debug("Clicked Save.");
+    LOG.debug("Saving serverpackcreator.conf");
+    TAB_CREATESERVERPACK.saveConfig(APPLICATIONPROPERTIES.defaultConfig());
+
+    if (lastLoadedConfigurationFile != null && APPLICATIONPROPERTIES.getSaveLoadedConfiguration()) {
+      LOG.debug("Saving " + lastLoadedConfigurationFile.getName());
+      TAB_CREATESERVERPACK.saveConfig(lastLoadedConfigurationFile);
+    }
+  }
+
+  /**
+   * Upon button-press, open a Filechooser dialog which allows the user to specify a file in which
+   * the current configuration in the GUI will be saved to.
+   *
+   * @param actionEvent The event which triggers this method.
+   * @author Griefed
+   */
+  private void saveAsConfigToFileMenuItem(ActionEvent actionEvent) {
+    LOG.debug("Clicked Save As...");
+
+    configChooser = new JFileChooser();
+    configChooser.setCurrentDirectory(APPLICATIONPROPERTIES.homeDirectory());
+    configChooser.setDialogTitle("Store current configuration");
+    configChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+    configChooser.setFileFilter(
+        new FileNameExtensionFilter(
+            I18N.getMessage("createserverpack.gui.buttonloadconfig.filter"), "conf"));
+    configChooser.setAcceptAllFileFilterUsed(false);
+    configChooser.setMultiSelectionEnabled(false);
+    configChooser.setPreferredSize(CHOOSERDIMENSION);
+
+    if (configChooser.showOpenDialog(SERVERPACKCREATORWINDOW) == JFileChooser.APPROVE_OPTION) {
+
+      if (configChooser.getSelectedFile().getPath().endsWith(".conf")) {
+
+        TAB_CREATESERVERPACK.saveConfig(
+            new File(configChooser.getSelectedFile().getPath()));
+        LOG.debug(
+            "Saved configuration to: " + configChooser.getSelectedFile().getPath());
+
+      } else {
+
+        TAB_CREATESERVERPACK.saveConfig(
+            new File(configChooser.getSelectedFile().getPath() + ".conf"));
+        LOG.debug(
+            "Saved configuration to: "
+                + configChooser.getSelectedFile().getPath()
+                + ".conf");
+      }
+
+    }
+  }
+
+  /**
+   * Upon button-press, uploads the serverpackcreator.conf-file to HasteBin and display a dialog
+   * asking the user whether they want to open the URL in their default browser or copy the link to
+   * their clipboard.
+   *
+   * @param actionEvent The event which triggers this method.
+   * @author Griefed
+   */
+  private void uploadConfigurationToHasteBinMenuItem(ActionEvent actionEvent) {
+    LOG.debug("Clicked Upload Configuration to HasteBin.");
+
+    if (UTILITIES.WebUtils().hasteBinPreChecks(
+        new File(APPLICATIONPROPERTIES.homeDirectory(), "serverpackcreator.conf"))) {
+
+      String urltoHasteBin =
+          UTILITIES.WebUtils().createHasteBinFromFile(
+              new File(APPLICATIONPROPERTIES.homeDirectory(), "serverpackcreator.conf"));
+      String textContent = String.format("URL: %s", urltoHasteBin);
+
+      try {
+        CONFIG_DOCUMENT.insertString(0, textContent, CONFIG_ATTRIBUTESET);
+      } catch (BadLocationException ex) {
+        LOG.error("Error inserting text into aboutDocument.", ex);
+      }
+
+      displayUploadUrl(urltoHasteBin, CONFIG_WINDOW_TEXTPANE);
+    } else {
+      fileTooLargeDialog();
+    }
+  }
+
+  /**
+   * Upon button-press, uploads the serverpackcreator.log-file to HasteBin and display a dialog
+   * asking the user whether they want to open the URL in their default browser or copy the link to
+   * their clipboard. If the filesize exceeds 10 MB, a warning is displayed, telling the user about
+   * filesize limitations of HasteBin.
+   *
+   * @param actionEvent The event which triggers this method.
+   * @author Griefed
+   */
+  private void uploadServerPackCreatorLogToHasteBinMenuItem(ActionEvent actionEvent) {
+    LOG.debug("Clicked Upload ServerPackCreator Log to HasteBin.");
+
+    if (UTILITIES.WebUtils().hasteBinPreChecks(
+        new File(APPLICATIONPROPERTIES.logsDirectory(), "serverpackcreator.log"))) {
+      String urltoHasteBin =
+          UTILITIES.WebUtils().createHasteBinFromFile(
+              new File(APPLICATIONPROPERTIES.logsDirectory(), "serverpackcreator.log"));
+      String textContent = String.format("URL: %s", urltoHasteBin);
+
+      try {
+        SPCLOG_DOCUMENT.insertString(0, textContent, SPCLOG_ATTRIBUTESET);
+      } catch (BadLocationException ex) {
+        LOG.error("Error inserting text into aboutDocument.", ex);
+      }
+
+      displayUploadUrl(urltoHasteBin, SPCLOG_WINDOW_TEXTPANE);
+    } else {
+      fileTooLargeDialog();
+    }
+  }
+
+  /**
+   * Update the fallback clientside-only mods-list from the repositories.
+   *
+   * @param actionEvent The event which triggers this method.
+   * @author Grefed
+   */
+  private void updateFallbackModslist(ActionEvent actionEvent) {
+    LOG.debug("Running update check for fallback modslist...");
+    if (APPLICATIONPROPERTIES.updateFallback()) {
+      JOptionPane.showMessageDialog(
+          SERVERPACKCREATORWINDOW,
+          I18N.getMessage("menubar.gui.menuitem.updatefallback.updated"),
+          I18N.getMessage("menubar.gui.menuitem.updatefallback.title"),
+          JOptionPane.INFORMATION_MESSAGE,
+          INFO_ICON);
+    } else {
+      JOptionPane.showMessageDialog(
+          SERVERPACKCREATORWINDOW,
+          I18N.getMessage("menubar.gui.menuitem.updatefallback.nochange"),
+          I18N.getMessage("menubar.gui.menuitem.updatefallback.title"),
+          JOptionPane.INFORMATION_MESSAGE,
+          INFO_ICON);
+    }
+  }
+
+  /**
+   * Upon button-press, close ServerPackCreator gracefully.
+   *
+   * @param actionEvent The event which triggers this method.
+   * @author Griefed
+   */
+  private void exitMenuItem(ActionEvent actionEvent) {
+    LOG.debug("Clicked Exit.");
+    SERVERPACKCREATORWINDOW.dispatchEvent(CLOSEEVENT);
+  }
+
+  /**
+   * Upon button-press, change the current theme to either light or dark-mode, depending on which
+   * theme is currently active.
+   *
+   * @param actionEvent The event which triggers this method.
+   * @author Griefed
+   */
+  private void switchThemeMenuItem(ActionEvent actionEvent) {
+    LOG.debug("Clicked Toggle light/dark-mode.");
+
+    if (!APPLICATIONPROPERTIES.isDarkTheme()) {
+      try {
+        UIManager.setLookAndFeel(LAF_DARK);
+        MaterialLookAndFeel.changeTheme(DARKTHEME);
+        APPLICATIONPROPERTIES.setTheme(true);
+        APPLICATIONPROPERTIES.saveToDisk(APPLICATIONPROPERTIES.serverPackCreatorPropertiesFile());
+
+      } catch (UnsupportedLookAndFeelException ex) {
+        LOG.error("Couldn't change theme.", ex);
+      }
+    } else {
+      try {
+        UIManager.setLookAndFeel(LAF_LIGHT);
+        MaterialLookAndFeel.changeTheme(LIGHTTHEME);
+        APPLICATIONPROPERTIES.setTheme(false);
+        APPLICATIONPROPERTIES.saveToDisk(APPLICATIONPROPERTIES.serverPackCreatorPropertiesFile());
+
+      } catch (UnsupportedLookAndFeelException ex) {
+        LOG.error("Couldn't change theme.", ex);
+      }
+    }
+
+    SwingUtilities.updateComponentTreeUI(SERVERPACKCREATORWINDOW);
+    TABBEDPANE.setOpaque(true);
+    TAB_CREATESERVERPACK.validateInputFields();
+    TAB_CREATESERVERPACK.updatePanelTheme();
+  }
+
+  /**
+   * Upon button-press, open the server.properties-file, in the server-files directory, in the users
+   * default text-editor.
+   *
+   * @param actionEvent The event which triggers this method.
+   * @author Griefed
+   */
+  private void openInEditorServerProperties(ActionEvent actionEvent) {
+    LOG.debug("Clicked Open server.properties in Editor.");
+
+    if (new File(TAB_CREATESERVERPACK.getServerPropertiesPath()).isFile()) {
+      UTILITIES.FileUtils().openFile(TAB_CREATESERVERPACK.getServerPropertiesPath());
+    } else {
+      UTILITIES.FileUtils()
+               .openFile(new File(
+                   APPLICATIONPROPERTIES.serverFilesDirectory(), "server.properties"));
+    }
+  }
+
+  /**
+   * Upon button-press, open the server-icon.png-file, in the server-files directory, in the users
+   * default picture-viewer.
+   *
+   * @param actionEvent The event which triggers this method.
+   * @author Griefed
+   */
+  private void openServerIcon(ActionEvent actionEvent) {
+    LOG.debug("Clicked Open server-icon.png in Editor.");
+
+    if (new File(TAB_CREATESERVERPACK.getServerIconPath()).isFile()) {
+      UTILITIES.FileUtils().openFile(TAB_CREATESERVERPACK.getServerIconPath());
+    } else {
+      UTILITIES.FileUtils()
+               .openFile(new File(
+                   APPLICATIONPROPERTIES.serverFilesDirectory(), "server-icon.png"));
+    }
+  }
+
+  /**
+   * Upon button-press, open the base directory of ServerPackCreator in the users file-explorer.
+   *
+   * @param actionEvent The event which triggers this method.
+   * @author Griefed
+   */
+  private void openSPCDirectoryMenuItem(ActionEvent actionEvent) {
+    LOG.debug("Clicked open installation directory.");
+    UTILITIES.FileUtils().openFolder(APPLICATIONPROPERTIES.homeDirectory());
+  }
+
+  /**
+   * Upon button-press, open the folder containing generated server packs in the users
+   * file-explorer.
+   *
+   * @param actionEvent The event which triggers this method.
+   * @author Griefed
+   */
+  private void openServerPacksDirectoryMenuItem(ActionEvent actionEvent) {
+    LOG.debug("Clicked open server packs directory.");
+    UTILITIES.FileUtils().openFolder(APPLICATIONPROPERTIES.serverPacksDirectory());
+  }
+
+  /**
+   * Upon button-press, open the folder containing the server-icon.png and server.properties files
+   * in the users file-explorer.
+   *
+   * @param actionEvent The event which triggers this method.
+   * @author Griefed
+   */
+  private void openServerFilesDirectoryMenuItem(ActionEvent actionEvent) {
+    LOG.debug("Clicked open server files directory.");
+    UTILITIES.FileUtils().openFolder(APPLICATIONPROPERTIES.serverFilesDirectory());
+  }
+
+  /**
+   * Upon button-press, open the folder containing installed plugins for ServerPackCreator in the
+   * users file-explorer.
+   *
+   * @param actionEvent The event which triggers this method.
+   * @author Griefed
+   */
+  private void openPluginsDirectoryMenuItem(ActionEvent actionEvent) {
+    LOG.debug("Clicked open plugins directory.");
+    UTILITIES.FileUtils().openFolder(APPLICATIONPROPERTIES.addonsDirectory());
+  }
+
+  /**
+   * Upon button-press, open the example plugins repository-page on GitHub in the users default
+   * browser.
+   *
+   * @param actionEvent The event which triggers this method.
+   * @author Griefed
+   */
+  private void viewExampleAddonMenuItem(ActionEvent actionEvent) {
+    LOG.debug("Clicked view example addon");
+
+    UTILITIES.WebUtils()
+             .openLinkInBrowser(
+                 URI.create("https://github.com/Griefed/ServerPackCreatorExampleAddon"));
+  }
+
+  /**
+   * View the most recent migration messages, if any are available.
+   *
+   * @param actionEvent The event which triggered this method.
+   * @author Griefed
+   */
+  private void viewMigrationMessagesItem(ActionEvent actionEvent) {
+    SERVERPACKCREATORWINDOW.displayMigrationMessages();
+  }
+
+  /**
+   * Open the serverpackcreator.log in the users default editor.
+   *
+   * @param actionEvent The event which triggered this method.
+   * @author Griefed
+   */
   private void openSPClog(ActionEvent actionEvent) {
     LOG.debug("Clicked open ServerPackCreator-log.");
 
-    UTILITIES.FileUtils().openFile("logs/serverpackcreator.log");
+    UTILITIES.FileUtils()
+             .openFile(new File(APPLICATIONPROPERTIES.logsDirectory(), "serverpackcreator.log"));
   }
 
+  /**
+   * Open the modloader_installer.log in the users default editor.
+   *
+   * @param actionEvent The event which triggered this method.
+   * @author Griefed
+   */
+  private void openModloaderInstallerLog(ActionEvent actionEvent) {
+    LOG.debug("Clicked open Modloader-Installer-log.");
+
+    UTILITIES.FileUtils()
+             .openFile(new File(APPLICATIONPROPERTIES.logsDirectory(), "modloader_installer.log"));
+  }
+
+  /**
+   * Open the addons.log in the users default editor.
+   *
+   * @param actionEvent The event which triggered this method.
+   * @author Griefed
+   */
+  private void openAddonsLog(ActionEvent actionEvent) {
+    LOG.debug("Clicked open Addons-log.");
+
+    UTILITIES.FileUtils().openFile(new File(APPLICATIONPROPERTIES.logsDirectory(), "addons.log"));
+  }
+
+  /**
+   * Upon button-press, open the ServerPackCreator repository GitHub page in the users
+   * default-browser.
+   *
+   * @param actionEvent The event which triggers this method.
+   * @author Griefed
+   */
+  private void openGitHubMenuItem(ActionEvent actionEvent) {
+    LOG.debug("Clicked open GitHub repository link.");
+
+    UTILITIES.WebUtils()
+             .openLinkInBrowser(URI.create("https://github.com/Griefed/ServerPackCreator"));
+  }
+
+  /**
+   * Upon button-press, open ServerPackCreators issue-page on GitHub in the users default browser.
+   *
+   * @param actionEvent The event which triggers this method.
+   * @author Griefed
+   */
+  private void openIssuesMenuItem(ActionEvent actionEvent) {
+    LOG.debug("Clicked Open Issues page on GitHub.");
+
+    UTILITIES.WebUtils()
+             .openLinkInBrowser(URI.create("https://github.com/Griefed/ServerPackCreator/issues"));
+  }
+
+  /**
+   * Upon button-press, open the GitHub releases page in the users default-browser.
+   *
+   * @param actionEvent The event which triggers this method.
+   * @author Griefed
+   */
+  private void openReleaseMenuItem(ActionEvent actionEvent) {
+    LOG.debug("Clicked open releases link");
+
+    UTILITIES.WebUtils()
+             .openLinkInBrowser(
+                 URI.create("https://github.com/Griefed/ServerPackCreator/releases"));
+  }
+
+  /**
+   * Upon button-press, open the Discord invite-link to Griefed's Discord server in the users
+   * default browser.
+   *
+   * @param actionEvent The event which triggers this method.
+   * @author Griefed
+   */
+  private void openDiscordLinkMenuItem(ActionEvent actionEvent) {
+    LOG.debug("Clicked Join Discord.");
+
+    UTILITIES.WebUtils().openLinkInBrowser(URI.create("https://discord.griefed.de"));
+  }
+
+  /**
+   * Upon button-press, open the GitHub Sponsors page in the users default-browser.
+   *
+   * @param actionEvent The event which triggers this method.
+   * @author Griefed
+   */
+  private void openDonateMenuItem(ActionEvent actionEvent) {
+    LOG.debug("Clicked open donations link.");
+
+    UTILITIES.WebUtils().openLinkInBrowser(URI.create("https://github.com/sponsors/Griefed"));
+  }
+
+  /**
+   * Open the Help-section of the wiki in a browser.
+   *
+   * @param actionEvent The event which triggers this method.
+   * @author Griefed
+   */
+  private void openWikiHelpMenuItem(ActionEvent actionEvent) {
+    LOG.debug("Clicked Help.");
+
+    UTILITIES.WebUtils()
+             .openLinkInBrowser(
+                 URI.create(
+                     "https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-Help"));
+  }
+
+  /**
+   * Open the HowTo-section of the wiki in a browser.
+   *
+   * @param actionEvent The event which triggers this method.
+   * @author Griefed
+   */
+  private void openWikiHowToMenuItem(ActionEvent actionEvent) {
+    LOG.debug("Clicked Getting started.");
+
+    UTILITIES.WebUtils()
+             .openLinkInBrowser(
+                 URI.create(
+                     "https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-HowTo"));
+  }
+
+  /**
+   * Check for update availability and display information about the available update, if any.
+   *
+   * @param actionEvent The event which triggered this method.
+   * @author Griefed
+   */
   private void checkForUpdates(ActionEvent actionEvent) {
     LOG.debug("Clicked Check for Updates");
 
@@ -457,6 +962,56 @@ public class MainMenuBar extends Component {
   }
 
   /**
+   * Display the given URL in a text pane.
+   *
+   * @param urltoHasteBin   The URL, as a String, to display.
+   * @param displayTextPane The text pane to display the URL in.
+   * @author Griefed
+   */
+  private void displayUploadUrl(String urltoHasteBin,
+                                JTextPane displayTextPane) {
+    MATERIALTEXTPANEUI.installUI(displayTextPane);
+
+    switch (JOptionPane.showOptionDialog(
+        SERVERPACKCREATORWINDOW,
+        displayTextPane,
+        I18N.getMessage("createserverpack.gui.about.hastebin.dialog"),
+        JOptionPane.DEFAULT_OPTION,
+        JOptionPane.INFORMATION_MESSAGE,
+        ICON_HASTEBIN,
+        HASTEOPTIONS,
+        HASTEOPTIONS[0])) {
+      case 0:
+        UTILITIES.WebUtils().openLinkInBrowser(URI.create(urltoHasteBin));
+
+        break;
+
+      case 1:
+        CLIPBOARD.setContents(new StringSelection(urltoHasteBin), null);
+        break;
+
+      default:
+        break;
+    }
+  }
+
+  /**
+   * Opens a dialog informing the user that a file exceeds 10 MB in size.
+   *
+   * @author Griefed
+   */
+  private void fileTooLargeDialog() {
+    MATERIALTEXTPANEUI.installUI(FILETOOLARGE_WINDOW_TEXTPANE);
+    JOptionPane.showConfirmDialog(
+        SERVERPACKCREATORWINDOW,
+        I18N.getMessage("menubar.gui.filetoolarge"),
+        I18N.getMessage("menubar.gui.filetoolargetitle"),
+        JOptionPane.DEFAULT_OPTION,
+        JOptionPane.WARNING_MESSAGE,
+        ICON_HASTEBIN);
+  }
+
+  /**
    * If an initialize is available for ServerPackCreator, display a dialog asking the user whether
    *
    * @return {@code true} if an update was found and the dialog displayed.
@@ -466,7 +1021,7 @@ public class MainMenuBar extends Component {
 
     Optional<Update> update =
         UPDATECHECKER.checkForUpdate(
-            APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION(),
+            APPLICATIONPROPERTIES.serverPackCreatorVersion(),
             APPLICATIONPROPERTIES.checkForAvailablePreReleases());
 
     if (update.isPresent()) {
@@ -540,472 +1095,6 @@ public class MainMenuBar extends Component {
   }
 
   /**
-   * Update the fallback clientside-only mods-list from the repositories.
-   *
-   * @param actionEvent The event which triggers this method.
-   * @author Grefed
-   */
-  private void updateFallbackModslist(ActionEvent actionEvent) {
-    LOG.debug("Running update check for fallback modslist...");
-    if (APPLICATIONPROPERTIES.updateFallback()) {
-      JOptionPane.showMessageDialog(
-          SERVERPACKCREATORWINDOW,
-          I18N.getMessage("menubar.gui.menuitem.updatefallback.updated"),
-          I18N.getMessage("menubar.gui.menuitem.updatefallback.title"),
-          JOptionPane.INFORMATION_MESSAGE,
-          INFO_ICON);
-    } else {
-      JOptionPane.showMessageDialog(
-          SERVERPACKCREATORWINDOW,
-          I18N.getMessage("menubar.gui.menuitem.updatefallback.nochange"),
-          I18N.getMessage("menubar.gui.menuitem.updatefallback.title"),
-          JOptionPane.INFORMATION_MESSAGE,
-          INFO_ICON);
-    }
-  }
-
-  /**
-   * Open the Help-section of the wiki in a browser.
-   *
-   * @param actionEvent The event which triggers this method.
-   * @author Griefed
-   */
-  private void openWikiHelpMenuItem(ActionEvent actionEvent) {
-    LOG.debug("Clicked Help.");
-
-    UTILITIES.WebUtils()
-        .openLinkInBrowser(
-            URI.create(
-                "https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-Help"));
-  }
-
-  /**
-   * Open the HowTo-section of the wiki in a browser.
-   *
-   * @param actionEvent The event which triggers this method.
-   * @author Griefed
-   */
-  private void openWikiHowToMenuItem(ActionEvent actionEvent) {
-    LOG.debug("Clicked Getting started.");
-
-    UTILITIES.WebUtils()
-        .openLinkInBrowser(
-            URI.create(
-                "https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-HowTo"));
-  }
-
-  /**
-   * Upon button-press, load default values for textfields so the user can start with a new
-   * configuration. Just as if ServerPackCreator was started without a serverpackcreator.conf being
-   * present.
-   *
-   * @param actionEvent The event which triggers this method.
-   * @author Griefed
-   */
-  private void newConfiguration(ActionEvent actionEvent) {
-    LOG.debug("Clearing GUI...");
-    TAB_CREATESERVERPACK.clearInterface();
-    lastLoadedConfigurationFile = null;
-  }
-
-  /**
-   * Upon button-press, open the Discord invite-link to Griefed's Discord server in the users
-   * default browser.
-   *
-   * @param actionEvent The event which triggers this method.
-   * @author Griefed
-   */
-  private void openDiscordLinkMenuItem(ActionEvent actionEvent) {
-    LOG.debug("Clicked Join Discord.");
-
-    UTILITIES.WebUtils().openLinkInBrowser(URI.create("https://discord.griefed.de"));
-  }
-
-  /**
-   * Upon button-press, open ServerPackCreators issue-page on GitHub in the users default browser.
-   *
-   * @param actionEvent The event which triggers this method.
-   * @author Griefed
-   */
-  private void openIssuesMenuItem(ActionEvent actionEvent) {
-    LOG.debug("Clicked Open Issues page on GitHub.");
-
-    UTILITIES.WebUtils()
-        .openLinkInBrowser(URI.create("https://github.com/Griefed/ServerPackCreator/issues"));
-  }
-
-  /**
-   * Upon button-press, uploads the serverpackcreator.log-file to HasteBin and display a dialog
-   * asking the user whether they want to open the URL in their default browser or copy the link to
-   * their clipboard. If the filesize exceeds 10 MB, a warning is displayed, telling the user about
-   * filesize limitations of HasteBin.
-   *
-   * @param actionEvent The event which triggers this method.
-   * @author Griefed
-   */
-  private void uploadServerPackCreatorLogToHasteBinMenuItem(ActionEvent actionEvent) {
-    LOG.debug("Clicked Upload ServerPackCreator Log to HasteBin.");
-
-    if (UTILITIES.WebUtils().hasteBinPreChecks(new File("logs/serverpackcreator.log"))) {
-      String urltoHasteBin =
-          UTILITIES.WebUtils().createHasteBinFromFile(new File("logs/serverpackcreator.log"));
-      String textContent = String.format("URL: %s", urltoHasteBin);
-
-      try {
-        SPCLOG_DOCUMENT.insertString(0, textContent, SPCLOG_ATTRIBUTESET);
-      } catch (BadLocationException ex) {
-        LOG.error("Error inserting text into aboutDocument.", ex);
-      }
-
-      displayUploadUrl(urltoHasteBin, SPCLOG_WINDOW_TEXTPANE);
-    } else {
-      fileTooLargeDialog();
-    }
-  }
-
-  /**
-   * Upon button-press, uploads the serverpackcreator.conf-file to HasteBin and display a dialog
-   * asking the user whether they want to open the URL in their default browser or copy the link to
-   * their clipboard.
-   *
-   * @param actionEvent The event which triggers this method.
-   * @author Griefed
-   */
-  private void uploadConfigurationToHasteBinMenuItem(ActionEvent actionEvent) {
-    LOG.debug("Clicked Upload Configuration to HasteBin.");
-
-    if (UTILITIES.WebUtils().hasteBinPreChecks(new File("serverpackcreator.conf"))) {
-
-      String urltoHasteBin =
-          UTILITIES.WebUtils().createHasteBinFromFile(new File("serverpackcreator.conf"));
-      String textContent = String.format("URL: %s", urltoHasteBin);
-
-      try {
-        CONFIG_DOCUMENT.insertString(0, textContent, CONFIG_ATTRIBUTESET);
-      } catch (BadLocationException ex) {
-        LOG.error("Error inserting text into aboutDocument.", ex);
-      }
-
-      displayUploadUrl(urltoHasteBin, CONFIG_WINDOW_TEXTPANE);
-    } else {
-      fileTooLargeDialog();
-    }
-  }
-
-  /**
-   * Display the given URL in a text pane.
-   *
-   * @param urltoHasteBin   The URL, as a String, to display.
-   * @param displayTextPane The text pane to display the URL in.
-   * @author Griefed
-   */
-  private void displayUploadUrl(String urltoHasteBin, JTextPane displayTextPane) {
-    MATERIALTEXTPANEUI.installUI(displayTextPane);
-
-    switch (JOptionPane.showOptionDialog(
-        SERVERPACKCREATORWINDOW,
-        displayTextPane,
-        I18N.getMessage("createserverpack.gui.about.hastebin.dialog"),
-        JOptionPane.DEFAULT_OPTION,
-        JOptionPane.INFORMATION_MESSAGE,
-        ICON_HASTEBIN,
-        HASTEOPTIONS,
-        HASTEOPTIONS[0])) {
-      case 0:
-        UTILITIES.WebUtils().openLinkInBrowser(URI.create(urltoHasteBin));
-
-        break;
-
-      case 1:
-        CLIPBOARD.setContents(new StringSelection(urltoHasteBin), null);
-        break;
-
-      default:
-        break;
-    }
-  }
-
-  /**
-   * Opens a dialog informing the user that a file exceeds 10 MB in size.
-   *
-   * @author Griefed
-   */
-  private void fileTooLargeDialog() {
-    MATERIALTEXTPANEUI.installUI(FILETOOLARGE_WINDOW_TEXTPANE);
-    JOptionPane.showConfirmDialog(
-        SERVERPACKCREATORWINDOW,
-        I18N.getMessage("menubar.gui.filetoolarge"),
-        I18N.getMessage("menubar.gui.filetoolargetitle"),
-        JOptionPane.DEFAULT_OPTION,
-        JOptionPane.WARNING_MESSAGE,
-        ICON_HASTEBIN);
-  }
-
-  /**
-   * Upon button-press, open the server.properties-file, in the server-files directory, in the users
-   * default text-editor.
-   *
-   * @param actionEvent The event which triggers this method.
-   * @author Griefed
-   */
-  private void openInEditorServerProperties(ActionEvent actionEvent) {
-    LOG.debug("Clicked Open server.properties in Editor.");
-
-    if (new File(TAB_CREATESERVERPACK.getServerPropertiesPath()).isFile()) {
-      UTILITIES.FileUtils().openFile(TAB_CREATESERVERPACK.getServerPropertiesPath());
-    } else {
-      UTILITIES.FileUtils().openFile("./server_files/server.properties");
-    }
-  }
-
-  /**
-   * Upon button-press, open the server-icon.png-file, in the server-files directory, in the users
-   * default picture-viewer.
-   *
-   * @param actionEvent The event which triggers this method.
-   * @author Griefed
-   */
-  private void openServerIcon(ActionEvent actionEvent) {
-    LOG.debug("Clicked Open server-icon.png in Editor.");
-
-    if (new File(TAB_CREATESERVERPACK.getServerIconPath()).isFile()) {
-      UTILITIES.FileUtils().openFile(TAB_CREATESERVERPACK.getServerIconPath());
-    } else {
-      UTILITIES.FileUtils().openFile("./server_files/server-icon.png");
-    }
-  }
-
-  /**
-   * Upon button-press, close ServerPackCreator gracefully.
-   *
-   * @param actionEvent The event which triggers this method.
-   * @author Griefed
-   */
-  private void exitMenuItem(ActionEvent actionEvent) {
-    LOG.debug("Clicked Exit.");
-    SERVERPACKCREATORWINDOW.dispatchEvent(CLOSEEVENT);
-  }
-
-  /**
-   * Upon button-press, open a Filechooser dialog which allows the user to specify a file in which
-   * the current configuration in the GUI will be saved to.
-   *
-   * @param actionEvent The event which triggers this method.
-   * @author Griefed
-   */
-  private void saveAsConfigToFileMenuItem(ActionEvent actionEvent) {
-    LOG.debug("Clicked Save As...");
-
-    configChooser = new JFileChooser();
-    configChooser.setCurrentDirectory(new File("."));
-    configChooser.setDialogTitle("Store current configuration");
-    configChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-    configChooser.setFileFilter(
-        new FileNameExtensionFilter(
-            I18N.getMessage("createserverpack.gui.buttonloadconfig.filter"), "conf"));
-    configChooser.setAcceptAllFileFilterUsed(false);
-    configChooser.setMultiSelectionEnabled(false);
-    configChooser.setPreferredSize(CHOOSERDIMENSION);
-
-    if (configChooser.showOpenDialog(SERVERPACKCREATORWINDOW) == JFileChooser.APPROVE_OPTION) {
-
-      try {
-
-        if (configChooser.getSelectedFile().getCanonicalPath().endsWith(".conf")) {
-
-          TAB_CREATESERVERPACK.saveConfig(
-              new File(configChooser.getSelectedFile().getCanonicalPath()));
-          LOG.debug(
-              "Saved configuration to: " + configChooser.getSelectedFile().getCanonicalPath());
-
-        } else {
-
-          TAB_CREATESERVERPACK.saveConfig(
-              new File(configChooser.getSelectedFile().getCanonicalPath() + ".conf"));
-          LOG.debug(
-              "Saved configuration to: "
-                  + configChooser.getSelectedFile().getCanonicalPath()
-                  + ".conf");
-        }
-
-      } catch (IOException ex) {
-        LOG.error("Error loading configuration from selected file.", ex);
-      }
-    }
-  }
-
-  /**
-   * Upon button-press, save the current configuration in the GUI to the serverpackcreator.conf-file
-   * in ServerPackCreators base directory. if
-   * {@code de.griefed.serverpackcreator.configuration.saveloadedconfig} is set to {@code true} and
-   * the field {@code lastLoadedConfigurationFile} is not null, the last loaded configuration-file
-   * is also saved to.
-   *
-   * @param actionEvent The event which triggers this method.
-   * @author Griefed
-   */
-  private void saveConfigToFileMenuItem(ActionEvent actionEvent) {
-    LOG.debug("Clicked Save.");
-    LOG.debug("Saving serverpackcreator.conf");
-    TAB_CREATESERVERPACK.saveConfig(new File("./serverpackcreator.conf"));
-
-    if (lastLoadedConfigurationFile != null && APPLICATIONPROPERTIES.getSaveLoadedConfiguration()) {
-      LOG.debug("Saving " + lastLoadedConfigurationFile.getName());
-      TAB_CREATESERVERPACK.saveConfig(lastLoadedConfigurationFile);
-    }
-  }
-
-  /**
-   * Upon button-press, change the current theme to either light or dark-mode, depending on which
-   * theme is currently active.
-   *
-   * @param actionEvent The event which triggers this method.
-   * @author Griefed
-   */
-  private void switchThemeMenuItem(ActionEvent actionEvent) {
-    LOG.debug("Clicked Toggle light/dark-mode.");
-
-    if (!APPLICATIONPROPERTIES.isDarkTheme()) {
-      try {
-        UIManager.setLookAndFeel(LAF_DARK);
-        MaterialLookAndFeel.changeTheme(DARKTHEME);
-        APPLICATIONPROPERTIES.setTheme(true);
-        APPLICATIONPROPERTIES.saveToDisk(APPLICATIONPROPERTIES.SERVERPACKCREATOR_PROPERTIES());
-
-      } catch (UnsupportedLookAndFeelException ex) {
-        LOG.error("Couldn't change theme.", ex);
-      }
-    } else {
-      try {
-        UIManager.setLookAndFeel(LAF_LIGHT);
-        MaterialLookAndFeel.changeTheme(LIGHTTHEME);
-        APPLICATIONPROPERTIES.setTheme(false);
-        APPLICATIONPROPERTIES.saveToDisk(APPLICATIONPROPERTIES.SERVERPACKCREATOR_PROPERTIES());
-
-      } catch (UnsupportedLookAndFeelException ex) {
-        LOG.error("Couldn't change theme.", ex);
-      }
-    }
-
-    SwingUtilities.updateComponentTreeUI(SERVERPACKCREATORWINDOW);
-    TABBEDPANE.setOpaque(true);
-    TAB_CREATESERVERPACK.validateInputFields();
-    TAB_CREATESERVERPACK.updatePanelTheme();
-  }
-
-  /**
-   * Upon button-press, open a file-selector to load a serverpackcreator.conf-file into
-   * ServerPackCreator.
-   *
-   * @param actionEvent The event which triggers this method.
-   * @author Griefed
-   */
-  private void loadConfigurationFromFileMenuItem(ActionEvent actionEvent) {
-    LOG.debug("Clicked load configuration from file.");
-
-    configChooser = new JFileChooser();
-    configChooser.setCurrentDirectory(new File("."));
-    configChooser.setDialogTitle(I18N.getMessage("createserverpack.gui.buttonloadconfig.title"));
-    configChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-    configChooser.setFileFilter(
-        new FileNameExtensionFilter(
-            I18N.getMessage("createserverpack.gui.buttonloadconfig.filter"), "conf"));
-    configChooser.setAcceptAllFileFilterUsed(false);
-    configChooser.setMultiSelectionEnabled(false);
-    configChooser.setPreferredSize(CHOOSERDIMENSION);
-
-    if (configChooser.showOpenDialog(SERVERPACKCREATORWINDOW) == JFileChooser.APPROVE_OPTION) {
-
-      try {
-
-        /* This log is meant to be read by the user, therefore we allow translation. */
-        LOG.info(
-            "Loading from configuration file: "
-                + configChooser.getSelectedFile().getCanonicalPath());
-
-        File specifiedConfigFile;
-        try {
-          specifiedConfigFile =
-              new File(UTILITIES.FileUtils().resolveLink(configChooser.getSelectedFile()));
-        } catch (InvalidFileTypeException ex) {
-          LOG.error("Could not resolve link/symlink. Using entry from user input for checks.", ex);
-          specifiedConfigFile =
-              new File(configChooser.getSelectedFile().getCanonicalPath().replace("\\", "/"));
-        }
-
-        TAB_CREATESERVERPACK.loadConfig(specifiedConfigFile);
-        lastLoadedConfigurationFile = specifiedConfigFile;
-
-      } catch (IOException ex) {
-        LOG.error("Error loading configuration from selected file.", ex);
-      }
-
-      LOG.debug("Configuration successfully loaded.");
-    }
-  }
-
-  /**
-   * Upon button-press, open the folder containing installed plugins for ServerPackCreator in the
-   * users file-explorer.
-   *
-   * @param actionEvent The event which triggers this method.
-   * @author Griefed
-   */
-  private void openPluginsDirectoryMenuItem(ActionEvent actionEvent) {
-    LOG.debug("Clicked open plugins directory.");
-    UTILITIES.FileUtils().openFolder(APPLICATIONPROPERTIES.DIRECTORY_PLUGINS());
-  }
-
-  /**
-   * Upon button-press, open the example plugins repository-page on GitHub in the users default
-   * browser.
-   *
-   * @param actionEvent The event which triggers this method.
-   * @author Griefed
-   */
-  private void viewExampleAddonMenuItem(ActionEvent actionEvent) {
-    LOG.debug("Clicked view example addon");
-
-    UTILITIES.WebUtils()
-        .openLinkInBrowser(URI.create("https://github.com/Griefed/ServerPackCreatorExampleAddon"));
-  }
-
-  /**
-   * Upon button-press, open the base directory of ServerPackCreator in the users file-explorer.
-   *
-   * @param actionEvent The event which triggers this method.
-   * @author Griefed
-   */
-  private void openSPCDirectoryMenuItem(ActionEvent actionEvent) {
-    LOG.debug("Clicked open installation directory.");
-    UTILITIES.FileUtils().openFolder(".");
-  }
-
-  /**
-   * Upon button-press, open the folder containing generated server packs in the users
-   * file-explorer.
-   *
-   * @param actionEvent The event which triggers this method.
-   * @author Griefed
-   */
-  private void openServerPacksDirectoryMenuItem(ActionEvent actionEvent) {
-    LOG.debug("Clicked open server packs directory.");
-    UTILITIES.FileUtils().openFolder(APPLICATIONPROPERTIES.getDirectoryServerPacks());
-  }
-
-  /**
-   * Upon button-press, open the folder containing the server-icon.png and server.properties files
-   * in the users file-explorer.
-   *
-   * @param actionEvent The event which triggers this method.
-   * @author Griefed
-   */
-  private void openServerFilesDirectoryMenuItem(ActionEvent actionEvent) {
-    LOG.debug("Clicked open server files directory.");
-    UTILITIES.FileUtils().openFolder(APPLICATIONPROPERTIES.DIRECTORY_SERVER_FILES());
-  }
-
-  /**
    * Upon button-press, open an About-window containing information about ServerPackCreator.
    *
    * @param actionEvent The event which triggers this method.
@@ -1029,44 +1118,5 @@ public class MainMenuBar extends Component {
         I18N.getMessage("createserverpack.gui.createserverpack.about.title"),
         JOptionPane.INFORMATION_MESSAGE,
         HELPICON);
-  }
-
-  /**
-   * Upon button-press, open the ServerPackCreator repository GitHub page in the users
-   * default-browser.
-   *
-   * @param actionEvent The event which triggers this method.
-   * @author Griefed
-   */
-  private void openGitHubMenuItem(ActionEvent actionEvent) {
-    LOG.debug("Clicked open GitHub repository link.");
-
-    UTILITIES.WebUtils()
-        .openLinkInBrowser(URI.create("https://github.com/Griefed/ServerPackCreator"));
-  }
-
-  /**
-   * Upon button-press, open the GitHub Sponsors page in the users default-browser.
-   *
-   * @param actionEvent The event which triggers this method.
-   * @author Griefed
-   */
-  private void openDonateMenuItem(ActionEvent actionEvent) {
-    LOG.debug("Clicked open donations link.");
-
-    UTILITIES.WebUtils().openLinkInBrowser(URI.create("https://github.com/sponsors/Griefed"));
-  }
-
-  /**
-   * Upon button-press, open the GitHub releases page in the users default-browser.
-   *
-   * @param actionEvent The event which triggers this method.
-   * @author Griefed
-   */
-  private void openReleaseMenuItem(ActionEvent actionEvent) {
-    LOG.debug("Clicked open releases link");
-
-    UTILITIES.WebUtils()
-        .openLinkInBrowser(URI.create("https://github.com/Griefed/ServerPackCreator/releases"));
   }
 }

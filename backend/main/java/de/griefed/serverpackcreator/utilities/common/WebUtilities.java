@@ -28,7 +28,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.InetAddress;
 import java.net.ProtocolException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -71,9 +70,10 @@ public final class WebUtilities {
    * @return Boolean. Returns true if the file could be found on the hosts filesystem.
    * @author Griefed
    */
-  public boolean downloadAndReplaceFile(File destinationFile, URL downloadURL) {
+  public boolean downloadAndReplaceFile(File destinationFile,
+                                        URL downloadURL) {
     return downloadAndReplaceFile(
-        destinationFile.getAbsoluteFile().toString().replace("\\", "/"), downloadURL);
+        destinationFile.getPath(), downloadURL);
   }
 
   /**
@@ -87,24 +87,10 @@ public final class WebUtilities {
    * @return Boolean. Returns true if the file could be found on the hosts filesystem.
    * @author Griefed
    */
-  public boolean downloadAndReplaceFile(String fileDestination, URL downloadURL) {
+  public boolean downloadAndReplaceFile(String fileDestination,
+                                        URL downloadURL) {
     FileUtils.deleteQuietly(new File(fileDestination));
     return downloadFile(fileDestination, downloadURL);
-  }
-
-  /**
-   * Download the file from the specified URL to the specified destination. The destination should
-   * end in a valid filename. Any directories up to the specified file will be created.
-   *
-   * @param destinationFile File. The file to store the web-resource in. Examples:<br>
-   *                        /tmp/some_folder/foo.bar<br> C:/temp/some_folder/bar.foo
-   * @param downloadURL     URL. The URL to the file you want to download.
-   * @return Boolean. Returns true if the file could be found on the hosts filesystem.
-   * @author Griefed
-   */
-  public boolean downloadFile(File destinationFile, URL downloadURL) {
-    return downloadFile(
-        destinationFile.getAbsoluteFile().toString().replace("\\", "/"), downloadURL);
   }
 
   /**
@@ -118,7 +104,8 @@ public final class WebUtilities {
    * @return Boolean. Returns true if the file could be found on the hosts filesystem.
    * @author Griefed
    */
-  public boolean downloadFile(String fileDestination, URL downloadURL) {
+  public boolean downloadFile(String fileDestination,
+                              URL downloadURL) {
 
     try {
       FileUtils.createParentDirectories(new File(fileDestination));
@@ -134,7 +121,7 @@ public final class WebUtilities {
 
       readableByteChannel = Channels.newChannel(downloadURL.openStream());
 
-      fileOutputStream = new FileOutputStream(fileDestination.replace("\\", "/"));
+      fileOutputStream = new FileOutputStream(fileDestination);
 
       fileChannel = fileOutputStream.getChannel();
 
@@ -142,7 +129,7 @@ public final class WebUtilities {
 
     } catch (IOException ex) {
       LOG.error("An error occurred downloading " + fileDestination + " from " + downloadURL + ".",
-          ex);
+                ex);
     } finally {
 
       try {
@@ -174,6 +161,22 @@ public final class WebUtilities {
     }
 
     return new File(fileDestination).exists();
+  }
+
+  /**
+   * Download the file from the specified URL to the specified destination. The destination should
+   * end in a valid filename. Any directories up to the specified file will be created.
+   *
+   * @param destinationFile File. The file to store the web-resource in. Examples:<br>
+   *                        /tmp/some_folder/foo.bar<br> C:/temp/some_folder/bar.foo
+   * @param downloadURL     URL. The URL to the file you want to download.
+   * @return Boolean. Returns true if the file could be found on the hosts filesystem.
+   * @author Griefed
+   */
+  public boolean downloadFile(File destinationFile,
+                              URL downloadURL) {
+    return downloadFile(
+        destinationFile.getPath(), downloadURL);
   }
 
   /**
@@ -369,7 +372,8 @@ public final class WebUtilities {
    * method return {@code true}.
    *
    * @param url The URL of which to check for host-availability.
-   * @return {@code true} if, and only if, the host is available and the URL returns the status code 200..
+   * @return {@code true} if, and only if, the host is available and the URL returns the status code
+   * 200..
    */
   public boolean isReachable(URL url) {
     boolean available;

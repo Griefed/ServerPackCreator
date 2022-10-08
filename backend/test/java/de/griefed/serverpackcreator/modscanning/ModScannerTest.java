@@ -1,7 +1,6 @@
-package de.griefed.serverpackcreator.modscanner;
+package de.griefed.serverpackcreator.modscanning;
 
 import de.griefed.serverpackcreator.ServerPackCreator;
-import de.griefed.serverpackcreator.modscanning.ModScanner;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;

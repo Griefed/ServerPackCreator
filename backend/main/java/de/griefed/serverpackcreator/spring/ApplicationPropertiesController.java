@@ -51,7 +51,8 @@ public class ApplicationPropertiesController {
    */
   @Autowired
   public ApplicationPropertiesController(
-      ApplicationProperties injectedApplicationProperties, Utilities injectedUtilities) {
+      ApplicationProperties injectedApplicationProperties,
+      Utilities injectedUtilities) {
 
     this.APPLICATIONPROPERTIES = injectedApplicationProperties;
     this.UTILITIES = injectedUtilities;
@@ -65,14 +66,15 @@ public class ApplicationPropertiesController {
         + ","
         + "\"listDirectoriesExclude\":"
         + UTILITIES.ListUtils()
-        .encapsulateListElements(APPLICATIONPROPERTIES.getDirectoriesToExclude())
+                   .encapsulateListElements(APPLICATIONPROPERTIES.getDirectoriesToExclude())
         + ","
         + "\"serverPackCreatorVersion\":\""
-        + APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION()
+        + APPLICATIONPROPERTIES.serverPackCreatorVersion()
         + "\","
         + "\"supportedModloaders\":"
         + UTILITIES.ListUtils()
-        .encapsulateListElements(Arrays.asList(APPLICATIONPROPERTIES.SUPPORTED_MODLOADERS()))
+                   .encapsulateListElements(
+                       Arrays.asList(APPLICATIONPROPERTIES.supportedModloaders()))
         + "}";
   }
 }

@@ -20,10 +20,8 @@
 package de.griefed.serverpackcreator.versionmeta.minecraft;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.utilities.common.Utilities;
-import de.griefed.serverpackcreator.versionmeta.ManifestParser;
 import de.griefed.serverpackcreator.versionmeta.Type;
 import de.griefed.serverpackcreator.versionmeta.forge.ForgeMeta;
 import java.io.File;
@@ -40,19 +38,16 @@ import org.apache.logging.log4j.Logger;
  *
  * @author Griefed
  */
-final class MinecraftClientMeta extends ManifestParser {
+final class MinecraftClientMeta {
 
   private static final Logger LOG = LogManager.getLogger(MinecraftClientMeta.class);
-  private final ObjectMapper OBJECTMAPPER;
   private final Utilities UTILITIES;
   private final ApplicationProperties APPLICATIONPROPERTIES;
-
   private final ForgeMeta FORGE_META;
   private final File MINECRAFT_MANIFEST;
   private final List<MinecraftClient> RELEASES = new ArrayList<>(100);
   private final List<MinecraftClient> SNAPSHOTS = new ArrayList<>(200);
   private final List<MinecraftClient> ALL = new ArrayList<>(300);
-
   private MinecraftClient latestRelease;
   private MinecraftClient latestSnapshot;
   private HashMap<String, MinecraftClient> meta = new HashMap<>(300);
@@ -63,20 +58,20 @@ final class MinecraftClientMeta extends ManifestParser {
    * @param injectedForgeMeta     To acquire Forge instances for this {@link MinecraftClient}
    *                              version.
    * @param minecraftManifest     Minecraft manifest file.
-   * @param objectMapper          Object mapper for JSON parsing.
-   * @param utilities             Instance of commonly used utilities.
+   * @param utilities             Commonly used utilities across ServerPackCreator.
    * @param applicationProperties ServerPackCreator settings.
    * @author Griefed
    */
   MinecraftClientMeta(
-      File minecraftManifest, ForgeMeta injectedForgeMeta, ObjectMapper objectMapper,
-      Utilities utilities, ApplicationProperties applicationProperties) {
+      File minecraftManifest,
+      ForgeMeta injectedForgeMeta,
+      Utilities utilities,
+      ApplicationProperties applicationProperties) {
 
     APPLICATIONPROPERTIES = applicationProperties;
     UTILITIES = utilities;
     MINECRAFT_MANIFEST = minecraftManifest;
     FORGE_META = injectedForgeMeta;
-    OBJECTMAPPER = objectMapper;
   }
 
   /**
@@ -91,7 +86,7 @@ final class MinecraftClientMeta extends ManifestParser {
     SNAPSHOTS.clear();
     meta = new HashMap<>(100);
 
-    JsonNode minecraftManifest = getJson(MINECRAFT_MANIFEST, OBJECTMAPPER);
+    JsonNode minecraftManifest = UTILITIES.JsonUtilities().getJson(MINECRAFT_MANIFEST);
 
     minecraftManifest
         .get("versions")
@@ -108,7 +103,6 @@ final class MinecraftClientMeta extends ManifestParser {
                       Type.RELEASE,
                       new URL(minecraftVersion.get("url").asText()),
                       FORGE_META,
-                      OBJECTMAPPER,
                       UTILITIES,
                       APPLICATIONPROPERTIES);
 
@@ -129,7 +123,6 @@ final class MinecraftClientMeta extends ManifestParser {
                       Type.SNAPSHOT,
                       new URL(minecraftVersion.get("url").asText()),
                       FORGE_META,
-                      OBJECTMAPPER,
                       UTILITIES,
                       APPLICATIONPROPERTIES);
 

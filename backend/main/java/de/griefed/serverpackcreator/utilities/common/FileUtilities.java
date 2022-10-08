@@ -57,7 +57,8 @@ public final class FileUtilities {
    * @throws IOException Thrown if an error occurs when the file is moved.
    * @author Griefed
    */
-  public boolean replaceFile(File sourceFile, File destinationFile) throws IOException {
+  public boolean replaceFile(File sourceFile,
+                             File destinationFile) throws IOException {
 
     if (sourceFile.exists() && destinationFile.delete()) {
 
@@ -92,7 +93,8 @@ public final class FileUtilities {
    * @param destinationDirectory The directory into which the ZIP-archive will be unzipped into.
    * @author Griefed
    */
-  public void unzipArchive(String zipFile, String destinationDirectory) {
+  public void unzipArchive(String zipFile,
+                           String destinationDirectory) {
     LOG.info("Extracting ZIP-file: " + zipFile);
 
     try (ZipFile zip = new ZipFile(zipFile)) {
@@ -240,11 +242,12 @@ public final class FileUtilities {
    * @throws IOException              if the link could not be parsed.
    * @author Griefed
    */
-  private String resolveLink(File file, FileType fileType)
+  private String resolveLink(File file,
+                             FileType fileType)
       throws InvalidFileTypeException, IOException, InvalidLinkException, ShellLinkException {
     switch (fileType) {
       case SYMLINK:
-        return file.getCanonicalPath();
+        return file.getPath();
 
       case LINK:
         return new ShellLink(file).resolveTarget();
@@ -271,46 +274,10 @@ public final class FileUtilities {
    *
    * @param fileOrDirectory File or directory.
    * @return {@code true} if both read- and write-permissions are set.
-   * @throws InvalidPathException if a {@code Path} object cannot be constructed from the abstract
-   *                              path (see
-   *                              {@link java.nio.file.FileSystem#getPath FileSystem.getPath})
-   * @author Griefed
-   */
-  public boolean checkPermissions(File fileOrDirectory) throws InvalidPathException {
-    return checkPermissions(fileOrDirectory.toPath());
-  }
-
-  /**
-   * Check the given file or directory for read- and write-permission.
-   *
-   * @param fileOrDirectory File or directory.
-   * @return {@code true} if both read- and write-permissions are set.
    * @author Griefed
    */
   public boolean checkPermissions(Path fileOrDirectory) {
     return checkReadPermission(fileOrDirectory) && checkWritePermission(fileOrDirectory);
-  }
-
-  /**
-   * Check the given file or directory for read-permission.
-   *
-   * @param fileOrDirectory File or directory.
-   * @return {@code true} if read-permissions are set.
-   * @author Griefed
-   */
-  public boolean checkReadPermission(String fileOrDirectory) {
-    return checkReadPermission(Paths.get(fileOrDirectory));
-  }
-
-  /**
-   * Check the given file or directory for read-permission.
-   *
-   * @param fileOrDirectory File or directory.
-   * @return {@code true} if read-permissions are set.
-   * @author Griefed
-   */
-  public boolean checkReadPermission(File fileOrDirectory) {
-    return checkReadPermission(fileOrDirectory.toPath());
   }
 
   /**
@@ -344,28 +311,6 @@ public final class FileUtilities {
    * @return {@code true} if write-permissions are set.
    * @author Griefed
    */
-  public boolean checkWritePermission(String fileOrDirectory) {
-    return checkReadPermission(Paths.get(fileOrDirectory));
-  }
-
-  /**
-   * Check the given file or directory for write-permission.
-   *
-   * @param fileOrDirectory File or directory.
-   * @return {@code true} if write-permissions are set.
-   * @author Griefed
-   */
-  public boolean checkWritePermission(File fileOrDirectory) {
-    return checkReadPermission(fileOrDirectory.toPath());
-  }
-
-  /**
-   * Check the given file or directory for write-permission.
-   *
-   * @param fileOrDirectory File or directory.
-   * @return {@code true} if write-permissions are set.
-   * @author Griefed
-   */
   public boolean checkWritePermission(Path fileOrDirectory) {
 
     try {
@@ -384,19 +329,89 @@ public final class FileUtilities {
   }
 
   /**
+   * Check the given file or directory for read- and write-permission.
+   *
+   * @param fileOrDirectory File or directory.
+   * @return {@code true} if both read- and write-permissions are set.
+   * @throws InvalidPathException if a {@code Path} object cannot be constructed from the abstract
+   *                              path (see
+   *                              {@link java.nio.file.FileSystem#getPath FileSystem.getPath})
+   * @author Griefed
+   */
+  public boolean checkPermissions(File fileOrDirectory) throws InvalidPathException {
+    return checkPermissions(fileOrDirectory.toPath());
+  }
+
+  /**
+   * Check the given file or directory for read-permission.
+   *
+   * @param fileOrDirectory File or directory.
+   * @return {@code true} if read-permissions are set.
+   * @author Griefed
+   */
+  public boolean checkReadPermission(String fileOrDirectory) {
+    return checkReadPermission(Paths.get(fileOrDirectory));
+  }
+
+  /**
+   * Check the given file or directory for read-permission.
+   *
+   * @param fileOrDirectory File or directory.
+   * @return {@code true} if read-permissions are set.
+   * @author Griefed
+   */
+  public boolean checkReadPermission(File fileOrDirectory) {
+    return checkReadPermission(fileOrDirectory.toPath());
+  }
+
+  /**
+   * Check the given file or directory for write-permission.
+   *
+   * @param fileOrDirectory File or directory.
+   * @return {@code true} if write-permissions are set.
+   * @author Griefed
+   */
+  public boolean checkWritePermission(String fileOrDirectory) {
+    return checkReadPermission(Paths.get(fileOrDirectory));
+  }
+
+  /**
+   * Check the given file or directory for write-permission.
+   *
+   * @param fileOrDirectory File or directory.
+   * @return {@code true} if write-permissions are set.
+   * @author Griefed
+   */
+  public boolean checkWritePermission(File fileOrDirectory) {
+    return checkReadPermission(fileOrDirectory.toPath());
+  }
+
+  /**
    * Open the specified folder in the file explorer.
    *
    * @param folder The folder to open.
    * @author Griefed
    */
   public void openFolder(String folder) {
+    openFolder(new File(folder));
+  }
+
+  /**
+   * Open the specified folder in the file explorer.
+   *
+   * @param folder The folder to open.
+   * @author Griefed
+   */
+  public void openFolder(File folder) {
     if (GraphicsEnvironment.isHeadless()) {
       LOG.error("Graphics environment not supported.");
     } else {
-      try {
-        Desktop.getDesktop().open(new File(folder));
-      } catch (IOException ex) {
-        LOG.error("Error opening file explorer for " + folder + ".", ex);
+      if (Desktop.getDesktop().isSupported(Desktop.Action.OPEN)) {
+        try {
+          Desktop.getDesktop().open(folder);
+        } catch (IOException ex) {
+          LOG.error("Error opening file explorer for " + folder + ".", ex);
+        }
       }
     }
   }
@@ -408,12 +423,22 @@ public final class FileUtilities {
    * @author Griefed
    */
   public void openFile(String fileToOpen) {
+    openFile(new File(fileToOpen));
+  }
+
+  /**
+   * Open the specified file in an editor.
+   *
+   * @param fileToOpen The file to open.
+   * @author Griefed
+   */
+  public void openFile(File fileToOpen) {
     if (GraphicsEnvironment.isHeadless()) {
       LOG.error("Graphics environment not supported.");
     } else {
       try {
         if (Desktop.getDesktop().isSupported(Desktop.Action.EDIT)) {
-          Desktop.getDesktop().open(new File(fileToOpen));
+          Desktop.getDesktop().open(fileToOpen);
         }
       } catch (IOException ex) {
         LOG.error("Error opening file.", ex);

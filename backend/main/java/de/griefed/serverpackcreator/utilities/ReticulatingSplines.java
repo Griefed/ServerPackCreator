@@ -499,25 +499,13 @@ public final class ReticulatingSplines {
       };
 
   /**
-   * Retrieves the index of a random message in {@link #RETICULATING}.
+   * Retrieve a random message from {@link #RETICULATING}.
    *
-   * @return Integer. Returns a randomly generated index.
+   * @return String. Returns a random message.
    * @author Griefed
    */
-  private int getRandomIntReticulating() {
-    Random randInt = new Random();
-    return randInt.nextInt(RETICULATING.length);
-  }
-
-  /**
-   * Retrieve the index of a random string in {@link #SPLINES}.
-   *
-   * @return Integer. Returns a randomly generated index.
-   * @author Griefed
-   */
-  private int getRandomIntSplines() {
-    Random randInt = new Random();
-    return randInt.nextInt(SPLINES.length);
+  public String reticulate() {
+    return getReticulation();
   }
 
   /**
@@ -529,6 +517,28 @@ public final class ReticulatingSplines {
    */
   private String getReticulation() {
     return RETICULATING[getRandomIntReticulating()];
+  }
+
+  /**
+   * Retrieves the index of a random message in {@link #RETICULATING}.
+   *
+   * @return Integer. Returns a randomly generated index.
+   * @author Griefed
+   */
+  private int getRandomIntReticulating() {
+    Random randInt = new Random();
+    return randInt.nextInt(RETICULATING.length);
+  }
+
+  /**
+   * Retrieve a random message from {@link #SPLINES}. Kinda like a random Name generator.
+   *
+   * @param wordCount The number of words the resulting string should be made up of.
+   * @return String. Returns a randomly selected three-word long string from {@link #SPLINES}.
+   * @author Griefed
+   */
+  public String spline(int wordCount) {
+    return getSplines(wordCount);
   }
 
   /**
@@ -547,23 +557,13 @@ public final class ReticulatingSplines {
   }
 
   /**
-   * Retrieve a random message from {@link #RETICULATING}.
+   * Retrieve the index of a random string in {@link #SPLINES}.
    *
-   * @return String. Returns a random message.
+   * @return Integer. Returns a randomly generated index.
    * @author Griefed
    */
-  public String reticulate() {
-    return getReticulation();
-  }
-
-  /**
-   * Retrieve a random message from {@link #SPLINES}. Kinda like a random Name generator.
-   *
-   * @param wordCount The number of words the resulting string should be made up of.
-   * @return String. Returns a randomly selected three-word long string from {@link #SPLINES}.
-   * @author Griefed
-   */
-  public String spline(int wordCount) {
-    return getSplines(wordCount);
+  private int getRandomIntSplines() {
+    Random randInt = new Random();
+    return randInt.nextInt(SPLINES.length);
   }
 }

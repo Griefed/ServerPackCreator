@@ -19,7 +19,6 @@
  */
 package de.griefed.serverpackcreator.modscanning;
 
-import com.fasterxml.jackson.core.json.JsonReadFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.griefed.serverpackcreator.utilities.common.Utilities;
@@ -46,9 +45,9 @@ public final class FabricScanner extends JsonBasedScanner implements
   private final Utilities UTILITIES;
 
   @Autowired
-  public FabricScanner(ObjectMapper objectMapper, Utilities utilities) {
-    this.OBJECT_MAPPER = objectMapper.enable(
-        JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS.mappedFeature());
+  public FabricScanner(ObjectMapper objectMapper,
+                       Utilities utilities) {
+    this.OBJECT_MAPPER = objectMapper;
     this.UTILITIES = utilities;
   }
 
@@ -86,8 +85,9 @@ public final class FabricScanner extends JsonBasedScanner implements
   }
 
   @Override
-  void checkForClientModsAndDeps(Collection<File> filesInModsDir, TreeSet<String> clientMods,
-      TreeSet<String> modDependencies) {
+  void checkForClientModsAndDeps(Collection<File> filesInModsDir,
+                                 TreeSet<String> clientMods,
+                                 TreeSet<String> modDependencies) {
     for (File mod : filesInModsDir) {
       if (mod.getName().endsWith("jar")) {
 
@@ -102,7 +102,7 @@ public final class FabricScanner extends JsonBasedScanner implements
           // Get this mods' id/name
           try {
             if (UTILITIES.JsonUtilities()
-                .nestedTextEqualsIgnoreCase(modJson, "client", "environment")) {
+                         .nestedTextEqualsIgnoreCase(modJson, "client", "environment")) {
 
               clientMods.add(modId);
               LOG.debug("Added clientMod: " + modId);
@@ -114,16 +114,17 @@ public final class FabricScanner extends JsonBasedScanner implements
           // Get this mods dependencies
           try {
             UTILITIES.JsonUtilities().getFieldNames(modJson, "depends")
-                .forEachRemaining(dependency -> {
-                  if (!dependency.matches(DEPENDENCY_EXCLUSIONS)) {
-                    try {
-                      LOG.debug("Added dependency " + dependency
-                          + " for " + modId + " (" + mod.getName() + ").");
-                    } catch (NullPointerException ex) {
-                      LOG.debug("Added dependency " + dependency + " (" + mod.getName() + ").");
-                    }
-                  }
-                });
+                     .forEachRemaining(dependency -> {
+                       if (!dependency.matches(DEPENDENCY_EXCLUSIONS)) {
+                         try {
+                           LOG.debug("Added dependency " + dependency
+                                         + " for " + modId + " (" + mod.getName() + ").");
+                         } catch (NullPointerException ex) {
+                           LOG.debug(
+                               "Added dependency " + dependency + " (" + mod.getName() + ").");
+                         }
+                       }
+                     });
           } catch (NullPointerException ignored) {
 
           }
@@ -141,7 +142,8 @@ public final class FabricScanner extends JsonBasedScanner implements
   }
 
   @Override
-  TreeSet<File> getModsDelta(Collection<File> filesInModsDir, TreeSet<String> clientMods) {
+  TreeSet<File> getModsDelta(Collection<File> filesInModsDir,
+                             TreeSet<String> clientMods) {
     TreeSet<File> modsDelta = new TreeSet<>();
     for (File mod : filesInModsDir) {
 
@@ -159,7 +161,7 @@ public final class FabricScanner extends JsonBasedScanner implements
 
         try {
           if (UTILITIES.JsonUtilities()
-              .nestedTextEqualsIgnoreCase(modJson, "client", "environment")) {
+                       .nestedTextEqualsIgnoreCase(modJson, "client", "environment")) {
             if (clientMods.contains(modIdTocheck)) {
               addToDelta = true;
             }

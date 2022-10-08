@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.versionmeta.quilt;
 
-import de.griefed.serverpackcreator.versionmeta.ManifestParser;
+import de.griefed.serverpackcreator.utilities.common.Utilities;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -33,8 +33,9 @@ import org.xml.sax.SAXException;
  *
  * @author Griefed
  */
-final class QuiltLoader extends ManifestParser {
+final class QuiltLoader {
 
+  private final Utilities UTILITIES;
   private final File MANIFEST;
   private final List<String> loaders = new ArrayList<>(100);
   private String latest;
@@ -44,10 +45,13 @@ final class QuiltLoader extends ManifestParser {
    * Create a new Quilt Loader instance.
    *
    * @param loaderManifest The manifest used when updating available versions.
+   * @param utilities      Commonly used utilities across ServerPackCreator.
    * @author Griefed
    */
-  QuiltLoader(File loaderManifest) {
+  QuiltLoader(File loaderManifest,
+              Utilities utilities) {
     MANIFEST = loaderManifest;
+    UTILITIES = utilities;
   }
 
   /**
@@ -56,7 +60,7 @@ final class QuiltLoader extends ManifestParser {
    * @author Griefed
    */
   void update() throws ParserConfigurationException, IOException, SAXException {
-    Document document = getXml(MANIFEST);
+    Document document = UTILITIES.XmlUtilities().getXml(MANIFEST);
 
     latest =
         document

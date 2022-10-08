@@ -20,7 +20,7 @@
 package de.griefed.serverpackcreator.versionmeta.quilt;
 
 import com.google.common.collect.Lists;
-import de.griefed.serverpackcreator.versionmeta.ManifestParser;
+import de.griefed.serverpackcreator.utilities.common.Utilities;
 import de.griefed.serverpackcreator.versionmeta.Meta;
 import de.griefed.serverpackcreator.versionmeta.fabric.FabricIntermediaries;
 import java.io.File;
@@ -36,7 +36,7 @@ import org.xml.sax.SAXException;
  *
  * @author Griefed
  */
-public final class QuiltMeta extends ManifestParser implements Meta {
+public final class QuiltMeta implements Meta {
 
   private final QuiltLoader QUILT_LOADER;
   private final QuiltInstaller QUILT_INSTALLER;
@@ -49,13 +49,16 @@ public final class QuiltMeta extends ManifestParser implements Meta {
    * @param quiltManifest                Quilt manifest file.
    * @param quiltInstallerManifest       Quilt-installer manifest file.
    * @param injectedFabricIntermediaries Fabric-Intermediaries for further compatibility tests.
+   * @param utilities                    Commonly used utilities across ServerPackCreator.
    * @author Griefed
    */
-  public QuiltMeta(File quiltManifest, File quiltInstallerManifest,
-      FabricIntermediaries injectedFabricIntermediaries) {
+  public QuiltMeta(File quiltManifest,
+                   File quiltInstallerManifest,
+                   FabricIntermediaries injectedFabricIntermediaries,
+                   Utilities utilities) {
 
-    QUILT_LOADER = new QuiltLoader(quiltManifest);
-    QUILT_INSTALLER = new QuiltInstaller(quiltInstallerManifest);
+    QUILT_LOADER = new QuiltLoader(quiltManifest, utilities);
+    QUILT_INSTALLER = new QuiltInstaller(quiltInstallerManifest, utilities);
     FABRIC_INTERMEDIARIES = injectedFabricIntermediaries;
   }
 
@@ -76,6 +79,16 @@ public final class QuiltMeta extends ManifestParser implements Meta {
   }
 
   @Override
+  public String latestInstaller() {
+    return QUILT_INSTALLER.latestInstallerVersion();
+  }
+
+  @Override
+  public String releaseInstaller() {
+    return QUILT_INSTALLER.releaseInstallerVersion();
+  }
+
+  @Override
   public List<String> loaderVersionsListAscending() {
     return QUILT_LOADER.loaders();
   }
@@ -93,16 +106,6 @@ public final class QuiltMeta extends ManifestParser implements Meta {
   @Override
   public String[] loaderVersionsArrayDescending() {
     return Lists.reverse(QUILT_LOADER.loaders()).toArray(new String[0]);
-  }
-
-  @Override
-  public String latestInstaller() {
-    return QUILT_INSTALLER.latestInstallerVersion();
-  }
-
-  @Override
-  public String releaseInstaller() {
-    return QUILT_INSTALLER.releaseInstallerVersion();
   }
 
   @Override

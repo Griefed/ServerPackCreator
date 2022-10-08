@@ -114,7 +114,8 @@ public class TextIcon implements Icon, PropertyChangeListener {
    * @param component The component to which the icon will be added
    * @param text      The text to be rendered on the Icon
    */
-  public TextIcon(JComponent component, String text) {
+  public TextIcon(JComponent component,
+                  String text) {
     this(component, text, Layout.HORIZONTAL);
   }
 
@@ -126,112 +127,14 @@ public class TextIcon implements Icon, PropertyChangeListener {
    * @param layout    Specify the layout of the text. Must be one of the Layout enums: HORIZONTAL or
    *                  VERTICAL
    */
-  public TextIcon(JComponent component, String text, Layout layout) {
+  public TextIcon(JComponent component,
+                  String text,
+                  Layout layout) {
     this.component = component;
     this.layout = layout;
     setText(text);
 
     component.addPropertyChangeListener("font", this);
-  }
-
-  /**
-   * Get the Layout enum
-   *
-   * @return the Layout enum
-   */
-  public Layout getLayout() {
-    return layout;
-  }
-
-  /**
-   * Get the text String that will be rendered on the Icon
-   *
-   * @return the text of the Icon
-   */
-  public String getText() {
-    return text;
-  }
-
-  /**
-   * Set the text to be rendered on the Icon
-   *
-   * @param text The text to be rendered on the Icon
-   */
-  public void setText(String text) {
-    this.text = text;
-
-    calculateIconDimensions();
-  }
-
-  /**
-   * Get the Font used to render the text. This will default to the Font of the component unless the
-   * Font has been overridden by using the setFont() method.
-   *
-   * @return The Font used to render the text
-   */
-  public Font getFont() {
-    if (font == null) {
-      return component.getFont();
-    } else {
-      return font;
-    }
-  }
-
-  /**
-   * Set the Font to be used for rendering the text
-   *
-   * @param font The Font to be used for rendering the text
-   */
-  public void setFont(Font font) {
-    this.font = font;
-
-    calculateIconDimensions();
-  }
-
-  /**
-   * Get the foreground Color used to render the text. This will default to the foreground Color of
-   * the component unless the foreground Color has been overridden by using the setForeground()
-   * method.
-   *
-   * @return The Color used to render the text
-   */
-  public Color getForeground() {
-    if (foreground == null) {
-      return component.getForeground();
-    } else {
-      return foreground;
-    }
-  }
-
-  /**
-   * Set the foreground Color to be used for rendering the text
-   *
-   * @param foreground The foreground Color to be used for rendering the text
-   */
-  public void setForeground(Color foreground) {
-    this.foreground = foreground;
-    component.repaint();
-  }
-
-  /**
-   * Get the padding used when rendering the text
-   *
-   * @return The padding specified in pixels
-   */
-  public int getPadding() {
-    return padding;
-  }
-
-  /**
-   * By default, the size of the Icon is based on the size of the rendered text. You can specify
-   * some padding to be added to the start and end of the text when it is rendered.
-   *
-   * @param padding The padding amount in pixels
-   */
-  public void setPadding(int padding) {
-    this.padding = padding;
-
-    calculateIconDimensions();
   }
 
   /**
@@ -275,26 +178,78 @@ public class TextIcon implements Icon, PropertyChangeListener {
   }
 
   /**
-   * Gets the width of this icon.
+   * Get the Font used to render the text. This will default to the Font of the component unless the
+   * Font has been overridden by using the setFont() method.
    *
-   * @return the width of the icon in pixels.
+   * @return The Font used to render the text
    */
-  @Override
-  public int getIconWidth() {
-    return iconWidth;
+  public Font getFont() {
+    if (font == null) {
+      return component.getFont();
+    } else {
+      return font;
+    }
   }
-  //
-  //  Implement the Icon Interface
-  //
 
   /**
-   * Gets the height of this icon.
+   * Set the Font to be used for rendering the text
    *
-   * @return the height of the icon in pixels.
+   * @param font The Font to be used for rendering the text
    */
-  @Override
-  public int getIconHeight() {
-    return iconHeight;
+  public void setFont(Font font) {
+    this.font = font;
+
+    calculateIconDimensions();
+  }
+
+  /**
+   * Get the Layout enum
+   *
+   * @return the Layout enum
+   */
+  public Layout getLayout() {
+    return layout;
+  }
+
+  /**
+   * Get the text String that will be rendered on the Icon
+   *
+   * @return the text of the Icon
+   */
+  public String getText() {
+    return text;
+  }
+
+  /**
+   * Set the text to be rendered on the Icon
+   *
+   * @param text The text to be rendered on the Icon
+   */
+  public void setText(String text) {
+    this.text = text;
+
+    calculateIconDimensions();
+  }
+
+  /**
+   * Get the padding used when rendering the text
+   *
+   * @return The padding specified in pixels
+   */
+  public int getPadding() {
+    return padding;
+  }
+
+  /**
+   * By default, the size of the Icon is based on the size of the rendered text. You can specify
+   * some padding to be added to the start and end of the text when it is rendered.
+   *
+   * @param padding The padding amount in pixels
+   */
+  public void setPadding(int padding) {
+    this.padding = padding;
+
+    calculateIconDimensions();
   }
 
   /**
@@ -306,7 +261,10 @@ public class TextIcon implements Icon, PropertyChangeListener {
    * @param y the Y coordinate of the icon's top-left corner
    */
   @Override
-  public void paintIcon(Component c, Graphics g, int x, int y) {
+  public void paintIcon(Component c,
+                        Graphics g,
+                        int x,
+                        int y) {
     Graphics2D g2 = (Graphics2D) g.create();
 
     //  The "desktophints" is supported in JDK6
@@ -347,6 +305,54 @@ public class TextIcon implements Icon, PropertyChangeListener {
     }
 
     g2.dispose();
+  }
+
+  /**
+   * Get the foreground Color used to render the text. This will default to the foreground Color of
+   * the component unless the foreground Color has been overridden by using the setForeground()
+   * method.
+   *
+   * @return The Color used to render the text
+   */
+  public Color getForeground() {
+    if (foreground == null) {
+      return component.getForeground();
+    } else {
+      return foreground;
+    }
+  }
+
+  /**
+   * Set the foreground Color to be used for rendering the text
+   *
+   * @param foreground The foreground Color to be used for rendering the text
+   */
+  public void setForeground(Color foreground) {
+    this.foreground = foreground;
+    component.repaint();
+  }
+  //
+  //  Implement the Icon Interface
+  //
+
+  /**
+   * Gets the width of this icon.
+   *
+   * @return the width of the icon in pixels.
+   */
+  @Override
+  public int getIconWidth() {
+    return iconWidth;
+  }
+
+  /**
+   * Gets the height of this icon.
+   *
+   * @return the height of the icon in pixels.
+   */
+  @Override
+  public int getIconHeight() {
+    return iconHeight;
   }
 
   //

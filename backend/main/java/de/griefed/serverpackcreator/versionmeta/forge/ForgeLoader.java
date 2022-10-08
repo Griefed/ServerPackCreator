@@ -20,8 +20,7 @@
 package de.griefed.serverpackcreator.versionmeta.forge;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import de.griefed.serverpackcreator.versionmeta.ManifestParser;
+import de.griefed.serverpackcreator.utilities.common.Utilities;
 import de.griefed.serverpackcreator.versionmeta.minecraft.MinecraftMeta;
 import java.io.File;
 import java.io.IOException;
@@ -38,10 +37,10 @@ import org.apache.logging.log4j.Logger;
  *
  * @author Griefed
  */
-final class ForgeLoader extends ManifestParser {
+final class ForgeLoader {
 
   private static final Logger LOG = LogManager.getLogger(ForgeLoader.class);
-  private final ObjectMapper MAPPER;
+  private final Utilities UTILITIES;
   private final MinecraftMeta MINECRAFT_META;
   private final List<String> minecraftVersions = new ArrayList<>(100);
   private final List<String> forgeVersions = new ArrayList<>(100);
@@ -70,12 +69,15 @@ final class ForgeLoader extends ManifestParser {
    * Create a new instance of the Forge Loader.
    *
    * @param forgemanifest         Node containing information about available Forge versions.
+   * @param utilities             Commonly used utilities across ServerPackCreator.
    * @param injectedMinecraftMeta Meta for retroactively updating the previously passed meta.
    * @author Griefed
    */
-  ForgeLoader(File forgemanifest, ObjectMapper mapper, MinecraftMeta injectedMinecraftMeta) {
+  ForgeLoader(File forgemanifest,
+              Utilities utilities,
+              MinecraftMeta injectedMinecraftMeta) {
     MANIFEST = forgemanifest;
-    MAPPER = mapper;
+    UTILITIES = utilities;
     MINECRAFT_META = injectedMinecraftMeta;
   }
 
@@ -92,7 +94,7 @@ final class ForgeLoader extends ManifestParser {
     forgeToMinecraftMeta = new HashMap<>(200);
     instanceMeta = new HashMap<>(200);
 
-    JsonNode forgeManifest = getJson(MANIFEST, MAPPER);
+    JsonNode forgeManifest = UTILITIES.JsonUtilities().getJson(MANIFEST);
     forgeManifest
         .fieldNames()
         .forEachRemaining(

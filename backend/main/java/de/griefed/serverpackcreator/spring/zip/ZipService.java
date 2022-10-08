@@ -19,14 +19,13 @@
  */
 package de.griefed.serverpackcreator.spring.zip;
 
+import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.ConfigurationHandler;
 import de.griefed.serverpackcreator.spring.NotificationResponse;
 import de.griefed.serverpackcreator.spring.task.TaskSubmitter;
-import de.griefed.serverpackcreator.utilities.ConfigUtilities;
 import de.griefed.serverpackcreator.versionmeta.VersionMeta;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import org.apache.logging.log4j.LogManager;
@@ -46,35 +45,35 @@ public class ZipService {
 
   private static final Logger LOG = LogManager.getLogger(ZipService.class);
 
+  private final ApplicationProperties APPLICATIONPROPERTIES;
   private final TaskSubmitter TASKSUBMITTER;
   private final ConfigurationHandler CONFIGURATIONHANDLER;
   private final NotificationResponse NOTIFICATIONRESPONSE;
   private final VersionMeta VERSIONMETA;
-  private final ConfigUtilities CONFIGUTILITIES;
 
   /**
    * Constructor responsible for DI.
    *
-   * @param injectedTaskSubmitter        Instance of {@link TaskSubmitter}.
-   * @param injectedConfigurationHandler Instance of {@link ConfigurationHandler}.
-   * @param injectedNotificationResponse Instance of {@link NotificationResponse}.
-   * @param injectedVersionMeta          Instance of {@link VersionMeta}.
-   * @param injectedConfigUtilities      Instance of {@link ConfigUtilities}.
+   * @param injectedApplicationProperties Instance of {@link ApplicationProperties}.
+   * @param injectedTaskSubmitter         Instance of {@link TaskSubmitter}.
+   * @param injectedConfigurationHandler  Instance of {@link ConfigurationHandler}.
+   * @param injectedNotificationResponse  Instance of {@link NotificationResponse}.
+   * @param injectedVersionMeta           Instance of {@link VersionMeta}.
    * @author Griefed
    */
   @Autowired
   public ZipService(
+      ApplicationProperties injectedApplicationProperties,
       TaskSubmitter injectedTaskSubmitter,
       ConfigurationHandler injectedConfigurationHandler,
       NotificationResponse injectedNotificationResponse,
-      VersionMeta injectedVersionMeta,
-      ConfigUtilities injectedConfigUtilities) {
+      VersionMeta injectedVersionMeta) {
 
-    this.TASKSUBMITTER = injectedTaskSubmitter;
-    this.CONFIGURATIONHANDLER = injectedConfigurationHandler;
-    this.NOTIFICATIONRESPONSE = injectedNotificationResponse;
-    this.VERSIONMETA = injectedVersionMeta;
-    this.CONFIGUTILITIES = injectedConfigUtilities;
+    APPLICATIONPROPERTIES = injectedApplicationProperties;
+    TASKSUBMITTER = injectedTaskSubmitter;
+    CONFIGURATIONHANDLER = injectedConfigurationHandler;
+    NOTIFICATIONRESPONSE = injectedNotificationResponse;
+    VERSIONMETA = injectedVersionMeta;
   }
 
   /**
@@ -86,20 +85,17 @@ public class ZipService {
    * @author Griefed
    */
   protected Path saveUploadedFile(final MultipartFile uploadedFile) throws IOException {
-    final byte[] fileBytes = uploadedFile.getBytes();
 
-    Path zipPath = Paths.get("work/modpacks/" + uploadedFile.getOriginalFilename());
+    Path zipPath = Paths.get(
+        APPLICATIONPROPERTIES.modpacksDirectory() + File.separator
+            + uploadedFile.getOriginalFilename());
 
     // Does a archive with the same name already exist?
     if (zipPath.toFile().isFile()) {
 
       int incrementation = 0;
 
-      String substring =
-          zipPath
-              .toString()
-              .replace("\\", "/")
-              .substring(0, zipPath.toString().replace("\\", "/").length() - 4);
+      String substring = zipPath.toString().substring(0, zipPath.toString().length() - 4);
 
       while (new File(substring + "_" + incrementation + ".zip").isFile()) {
         incrementation++;
@@ -108,7 +104,7 @@ public class ZipService {
       zipPath = Paths.get(substring + "_" + incrementation + ".zip");
     }
 
-    Files.write(zipPath, fileBytes);
+    uploadedFile.transferTo(zipPath);
 
     return zipPath;
   }
@@ -129,9 +125,10 @@ public class ZipService {
 
     // Check if the requested ZIP-archive exists.
     if (!parameters[0].substring(parameters[0].length() - 4).equalsIgnoreCase(".zip")
-        || !new File("work/modpacks/" + parameters[0]).isFile()) {
+        || !new File(APPLICATIONPROPERTIES.modpacksDirectory(), parameters[0]).isFile()) {
 
-      LOG.info("ZIP-archive work/modpacks/" + parameters[0] + " not found.");
+      LOG.info("ZIP-archive " + APPLICATIONPROPERTIES.modpacksDirectory() + "/" + parameters[0]
+                   + " not found.");
 
       return NOTIFICATIONRESPONSE.zipResponse(
           "ZIP-archive not found.", 5000, "error", "negative", parameters[0], false);
@@ -149,7 +146,7 @@ public class ZipService {
     if (CONFIGURATIONHANDLER.checkModloader(parameters[3])) {
 
       // Check Forge
-      if (CONFIGUTILITIES.getModLoaderCase(parameters[3]).equals("Forge")) {
+      if (CONFIGURATIONHANDLER.getModLoaderCase(parameters[3]).equals("Forge")) {
 
         if (!VERSIONMETA.forge().checkForgeAndMinecraftVersion(parameters[2], parameters[4])) {
           LOG.info(

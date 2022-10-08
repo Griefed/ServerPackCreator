@@ -21,7 +21,7 @@ For questions, you can always join my [Discord server](https://discord.griefed.d
 - Mirror: https://gitlab.com/Griefed/ServerPackCreator (Source code,releases,downloads)
 - Mirror: https://github.com/Griefed/ServerPackCreator (Source code,releases,downloads)
 - Mirror: https://gitea.com/Griefed/ServerPackCreator (Source code)
- 
+
 ---
 
 [![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/Griefed/ServerPackCreator?include_prereleases&label=Latest%20Release&logo=Github&style=for-the-badge&color=c0ffee&labelColor=325358)](https://github.com/Griefed/ServerPackCreator/releases/latest)
@@ -48,9 +48,21 @@ into the world of programming.
 
 And here we are.
 
-**Required:** Please be aware that ServerPackCreator requires a working internet connection in order to work. The first run will create all necessary files and folders in the directory in which you are running ServerPackCreator. Move it to a dedicated directory before using it!
+**Required:**
+Please be aware that ServerPackCreator requires a working internet connection in order to work properly.
+Features like letting ServerPackCreator install the modloader server, updating the fallback modslist, checking for updates etc.
+require internet. You *may* use SPC without a proper internet connection, but please keep in mind that functionality will be
+limited.
+The first run will create all necessary files and folders in the directory in which you are running ServerPackCreator.
+Move it to a dedicated directory before using it!
 
-**Note:** For more detailed information about all the different configuration options and possibilities of ServerPackCreator, take a look at the [Wiki](https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-Help)
+**Note:**
+For more detailed information about all the different configuration options and possibilities of ServerPackCreator, take a look at the [Wiki](https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-Help)
+of check out [HELP.md](HELP.md).
+
+**Advice:**
+When using alpha, beta or in-dev version of ServerPackCreator, it is advised to do so in a different directory than your
+regular ServerPackCreator installation.
 
 # Screenshots
 
@@ -91,7 +103,7 @@ Note: All three ways are supported by the **.jar**-file. Which one is started de
 
 ## Webservice:
 
-ServerPackCreator also has a webservice which you can run with the `-web`-argument. However, this webservice is still barebones and prone to massive improvements in a later milestone, so usage of said webservice-mode is not advised at this moment. 
+ServerPackCreator also has a webservice which you can run with the `-web`-argument. However, this webservice is still barebones and prone to massive improvements in a later milestone, so usage of said webservice-mode is not advised at this moment.
 
 ---
 
@@ -99,7 +111,7 @@ ServerPackCreator also has a webservice which you can run with the `-web`-argume
 
 - A list of known issues can be found in [Known Issues](https://github.com/Griefed/ServerPackCreator/issues/55).
 
-- If you want to report an issue, please make sure to follow the templates on [GitHub](https://github.com/Griefed/ServerPackCreator/issues/new/choose) and **provide as much information as detailed as possible**. The more information and details you provide for your issue at hand, the easier it is for me to investigate it! 
+- If you want to report an issue, please make sure to follow the templates on [GitHub](https://github.com/Griefed/ServerPackCreator/issues/new/choose) and **provide as much information as detailed as possible**. The more information and details you provide for your issue at hand, the easier it is for me to investigate it!
 
 - A wiki article containing useful hints, tips & tricks about, for and with ServerPackCreator can be found on [my Wiki's ServerPackCreator Help page](https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-Help)
 
@@ -125,7 +137,7 @@ ServerPackCreator also has a webservice which you can run with the `-web`-argume
     - **LegacyFabric**
     - **Quilt**
 6. Use Minecraft **snapshots** and **pre-releases**
-    - Per default, only regular releases enabled 
+    - Per default, only regular releases enabled
 7. Let ServerPackCreator **install the modloader-server** for your server pack, for immediate testing and debugging after generation!
 8. Let ServerPackCreator **generate a ZIP-archive**, for immediate upload to places like CurseForge (**after** you've tested your server pack, of course 😉)
 9. Configure **commandline arguments** with which to **start** the **Minecraft server**
@@ -153,7 +165,7 @@ I’ve placed numbers on the screenshot, and here’s what those sections do:
 1. Click the folder-button to browse to select the folder where the client pack/modpack lives.
 2. **Optional!** Specify a suffix for your server pack. It should honestly match the client pack version you’re distributing.
 3. Click this folder to navigate to the mods folder of your client pack. Here, you will CTRL select only those mods that run on a client exclusively. If the mod runs on a server, do not select it. Do not select everything, if you do that you’re failing right out the gate. Check the mod’s page to know for sure if it’s client only. If you are completely unsure which mod in your modpack should be selected, skip this step and keep the default list you see in the screenshot.
-4. After clicking this folder, you will choose those folders that must be included in your server pack for it to function properly. These should honestly at minimum be the **`mods`** and **`config`** directories. Without these, your server pack would not be compatible with your modpack. 
+4. After clicking this folder, you will choose those folders that must be included in your server pack for it to function properly. These should honestly at minimum be the **`mods`** and **`config`** directories. Without these, your server pack would not be compatible with your modpack.
 5. **Optional!** Click the folder-button to browse to an image file which should become the server icon of your server pack.
     1. A preview of the server-icon is displayed on the right
     2. If the server-icon setting is empty, the default icon will be displayed
@@ -163,8 +175,8 @@ I’ve placed numbers on the screenshot, and here’s what those sections do:
 9. Choose the exact version of the modloader you are using.
 10. In this section are options that you can toggle. I recommend to toggle them all on. It will pre-install the modloader server so you can immediately start and test/debug, include the server-icon.png (either you specified one, or a default will be used), include the server.properties (either you specified one, or a default will be used) and finally, create a ZIP-archive of your server pack.
 11. **Optional!** JVM arguments, also called Java flags, to start your server with. Have you heard of the so-called Aikars Flags? You can use them via the `Use Aikars Flags`-button, or set your own. Useful if your server pack needs a lot of RAM and you want your server pack users to not have to work with these values themselves.
-12. **Optional!** This table lets you edit the Java path used in the start scripts. This does nothing for the scripts in the ZIP-archive, so don't worry. If your modpack and server pack need a different Java version to run, you can set the path the that Java versions binary/executable here. 
-13. **Optional!** Even more optional that #5, #6, #11 and #12, under this menu is an option to save and load a custom configuration. Useful for if you have more than one mod pack for which you make server packs. Note: Regardless of what you do, a default configuration exists. 
+12. **Optional!** This table lets you edit the Java path used in the start scripts. This does nothing for the scripts in the ZIP-archive, so don't worry. If your modpack and server pack need a different Java version to run, you can set the path the that Java versions binary/executable here.
+13. **Optional!** Even more optional that #5, #6, #11 and #12, under this menu is an option to save and load a custom configuration. Useful for if you have more than one mod pack for which you make server packs. Note: Regardless of what you do, a default configuration exists.
 
 And finally hit the play button ("Generate") to build the server pack. Once it is done, the app will ask if you want to go there. You should do that, and activate one of the start-up scripts that matches your system.
 

@@ -107,33 +107,33 @@ public final class StringUtilities {
     }
 
     return text.replace("/", "")
-        .replace("<", "")
-        .replace(">", "")
-        .replace(":", "")
-        .replace("\"", "")
-        .replace("\\", "")
-        .replace("|", "")
-        .replace("?", "")
-        .replace("*", "")
-        .replace("#", "")
-        .replace("%", "")
-        .replace("&", "")
-        .replace("{", "")
-        .replace("}", "")
-        .replace("$", "")
-        .replace("!", "")
-        .replace("'", "")
-        .replace("@", "")
-        .replace("+", "")
-        .replace("´", "")
-        .replace("`", "")
-        .replace("=", "");
+               .replace("<", "")
+               .replace(">", "")
+               .replace(":", "")
+               .replace("\"", "")
+               .replace("\\", "")
+               .replace("|", "")
+               .replace("?", "")
+               .replace("*", "")
+               .replace("#", "")
+               .replace("%", "")
+               .replace("&", "")
+               .replace("{", "")
+               .replace("}", "")
+               .replace("$", "")
+               .replace("!", "")
+               .replace("'", "")
+               .replace("@", "")
+               .replace("+", "")
+               .replace("´", "")
+               .replace("`", "")
+               .replace("=", "");
   }
 
   /**
    * Remove commonly forbidden characters from the passed string, making the resulting String safe
    * to use for files, paths, directories etc. If the passed text ends with a
-   * SPACE{@code (&#32;&#32;)} or a DOT{@code (&#32;.&#32;)}, they are also removed.<br> Contraty to
+   * SPACE{@code (&#32;&#32;)} or a DOT{@code (&#32;.&#32;)}, they are also removed.<br> Contrary to
    * {@link #pathSecureText(String)}, this method does <strong>NOT</strong> remove
    * <strong>&#47;</strong> or <strong>&#92;</strong>.
    *
@@ -174,24 +174,24 @@ public final class StringUtilities {
     }
 
     return text.replace("<", "")
-        .replace(">", "")
-        .replace(":", "")
-        .replace("\"", "")
-        .replace("|", "")
-        .replace("?", "")
-        .replace("*", "")
-        .replace("#", "")
-        .replace("%", "")
-        .replace("&", "")
-        .replace("{", "")
-        .replace("}", "")
-        .replace("$", "")
-        .replace("!", "")
-        .replace("@", "")
-        .replace("+", "")
-        .replace("´", "")
-        .replace("`", "")
-        .replace("=", "");
+               .replace(">", "")
+               .replace(":", "")
+               .replace("\"", "")
+               .replace("|", "")
+               .replace("?", "")
+               .replace("*", "")
+               .replace("#", "")
+               .replace("%", "")
+               .replace("&", "")
+               .replace("{", "")
+               .replace("}", "")
+               .replace("$", "")
+               .replace("!", "")
+               .replace("@", "")
+               .replace("+", "")
+               .replace("´", "")
+               .replace("`", "")
+               .replace("=", "");
   }
 
   /**
