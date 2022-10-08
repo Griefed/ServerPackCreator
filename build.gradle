@@ -303,24 +303,7 @@ bootJar {
         "Implementation-Title": project.implTitle,
         "Application-Name": project.title
     )
-
   }
-  exclude(
-      'META-INF/org',
-      'META-INF/org/**',
-      'META-INF/versions',
-      'META-INF/versions/**',
-      'META-INF/DEPENDENCIES',
-      'META-INF/LICENSE',
-      'META-INF/NOTICE',
-      'META-INF/CHANGES',
-      'META-INF/LICENSE.txt',
-      'META-INF/NOTICE.txt',
-      'META-INF/README.md',
-      'Log4j-**',
-      'icon.png',
-      'profile_icon.png'
-  )
 }
 
 
@@ -350,23 +333,6 @@ jar {
         "Application-Name": project.title
     )
   }
-  // Exclude files and folders which would otherwise bloat our JAR-file up.
-  exclude(
-      'META-INF/org',
-      'META-INF/org/**',
-      'META-INF/versions',
-      'META-INF/versions/**',
-      'META-INF/DEPENDENCIES',
-      'META-INF/LICENSE',
-      'META-INF/NOTICE',
-      'META-INF/CHANGES',
-      'META-INF/LICENSE.txt',
-      'META-INF/NOTICE.txt',
-      'META-INF/README.md',
-      'Log4j-**',
-      'icon.png',
-      'profile_icon.png'
-  )
 }
 
 nexusPublishing {
