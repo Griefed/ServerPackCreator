@@ -58,7 +58,7 @@ public class GenerateZip extends Task {
   /**
    * Getter for the unique id of the submitted task.
    *
-   * @return String. Returns the unique id of the submitted task.
+   * @return Returns the unique id of the submitted task.
    * @author Griefed
    */
   @Override

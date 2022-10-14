@@ -446,7 +446,7 @@ public final class VersionMeta {
    * Update the Minecraft, Forge and Fabric metas. Usually called when the manifest files have been
    * refreshed.
    *
-   * @return The instance of of this version meta, updated.
+   * @return The instance of this version meta, updated.
    * @throws ParserConfigurationException indicates a serious configuration error.
    * @throws IOException                  if any IO errors occur.
    * @throws SAXException                 if any parse errors occur.

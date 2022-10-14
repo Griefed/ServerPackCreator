@@ -113,7 +113,7 @@ public class SmartScroller implements AdjustmentListener {
   /**
    * Convenience constructor.<br> Scroll direction is VERTICAL and viewport position is at the END.
    *
-   * @param scrollPane the scroll pane to monitor
+   * @param scrollPane The scroll pane to monitor
    * @author Rob Camick
    */
   public SmartScroller(JScrollPane scrollPane) {
@@ -123,10 +123,10 @@ public class SmartScroller implements AdjustmentListener {
   /**
    * Specify how the SmartScroller will function.
    *
-   * @param scrollPane       the scroll pane to monitor
-   * @param scrollDirection  indicates which JScrollBar to monitor. Valid values are HORIZONTAL and
+   * @param scrollPane       The scroll pane to monitor
+   * @param scrollDirection  Indicates which JScrollBar to monitor. Valid values are HORIZONTAL and
    *                         VERTICAL.
-   * @param viewportPosition indicates where the viewport will normally be positioned as data is
+   * @param viewportPosition Indicates where the viewport will normally be positioned as data is
    *                         added. Valid values are START and END
    * @author Rob Camick
    */
@@ -166,8 +166,8 @@ public class SmartScroller implements AdjustmentListener {
   /**
    * Convenience constructor.<br> Scroll direction is VERTICAL.
    *
-   * @param scrollPane       the scroll pane to monitor
-   * @param viewportPosition valid values are START and END
+   * @param scrollPane       The scroll pane to monitor
+   * @param viewportPosition Valid values are START and END
    * @author Rob Camick
    */
   public SmartScroller(JScrollPane scrollPane,

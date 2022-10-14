@@ -38,7 +38,7 @@ public class NotificationResponse {
    * @param icon     The icon to be displayed in the message.
    * @param colour   The colour of the message.
    * @param file     The file name, if available.
-   * @param success  To indicate a successfull event or not.
+   * @param success  To indicate a successful event or not.
    * @return The message formatted in JSON.
    * @author Griefed
    */
@@ -66,7 +66,7 @@ public class NotificationResponse {
    * @param icon    The icon to be displayed in the message.
    * @param colour  The colour of the message.
    * @param file    The file name, if available.
-   * @param success To indicate a successfull event or not.
+   * @param success To indicate a successful event or not.
    * @return The message formatted in JSON.
    * @author Griefed
    */

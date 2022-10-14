@@ -777,7 +777,7 @@ public final class ApplicationProperties {
    * is considered invalid, the system default is acquired and returned.
    *
    * @param pathToJava The path to check for whether it is a valid Java installation.
-   * @return String. Returns the path to the Java installation. If user input was incorrect, SPC
+   * @return Returns the path to the Java installation. If user input was incorrect, SPC
    * will try to acquire the path automatically.
    * @author Griefed
    */

@@ -127,7 +127,7 @@ public class ServerPackModel extends ConfigurationModel {
   /**
    * Getter for the database id of a server pack.
    *
-   * @return Integer. Returns the database of a server pack.
+   * @return Returns the database of a server pack.
    * @author Griefed
    */
   public int getId() {
@@ -147,7 +147,7 @@ public class ServerPackModel extends ConfigurationModel {
   /**
    * Getter for the name of the project of the server pack.
    *
-   * @return String. The project name of the server pack.
+   * @return The project name of the server pack.
    * @author Griefed
    */
   @Override
@@ -169,7 +169,7 @@ public class ServerPackModel extends ConfigurationModel {
   /**
    * Getter for the file display name of the project file from which the server pack was generated.
    *
-   * @return String. Returns the file display name of the project file from which the server pack
+   * @return Returns the file display name of the project file from which the server pack
    * was generated.
    * @author Griefed
    */
@@ -193,7 +193,7 @@ public class ServerPackModel extends ConfigurationModel {
   /**
    * Getter for the file disk name of the project file from which the server pack was generated.
    *
-   * @return String. The file disk name of the project file from which the server pack was
+   * @return The file disk name of the project file from which the server pack was
    * generated.
    * @author Griefed
    */
@@ -217,7 +217,7 @@ public class ServerPackModel extends ConfigurationModel {
   /**
    * Getter for the size of the generated server pack in MB.
    *
-   * @return Double. Returns the size of the generated server pack in MB.
+   * @return Returns the size of the generated server pack in MB.
    * @author Griefed
    */
   public double getSize() {
@@ -237,7 +237,7 @@ public class ServerPackModel extends ConfigurationModel {
   /**
    * Getter for the amount of downloads this server pack has received.
    *
-   * @return Integer. Returns the amount of downloads this server pack has received.
+   * @return Returns the amount of downloads this server pack has received.
    * @author Griefed
    */
   public int getDownloads() {

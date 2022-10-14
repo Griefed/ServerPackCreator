@@ -313,7 +313,7 @@ public class BackgroundPanel extends JPanel {
   /**
    * Override to provide a preferred size equal to the image size.
    *
-   * @return Dimension. Returns the dimension of the passed image.
+   * @return Returns the dimension of the passed image.
    * @author Rob Camick
    */
   @Override

@@ -371,7 +371,7 @@ public class ConfigurationModel {
   /**
    * Getter for the suffix of the server pack to be generated.
    *
-   * @return String. Returns the suffix for the server pack to be generated.
+   * @return Returns the suffix for the server pack to be generated.
    * @author Griefed
    */
   public String getServerPackSuffix() {
@@ -437,7 +437,7 @@ public class ConfigurationModel {
   /**
    * Getter for the path to the modpack directory.
    *
-   * @return String. Returns the path to the modpack directory.
+   * @return Returns the path to the modpack directory.
    * @author Griefed
    */
   public String getModpackDir() {
@@ -457,7 +457,7 @@ public class ConfigurationModel {
   /**
    * Getter for the version of Minecraft used by the modpack.
    *
-   * @return String. Returns the Minecraft version used in the modpack.
+   * @return Returns the Minecraft version used in the modpack.
    * @author Griefed
    */
   public String getMinecraftVersion() {
@@ -477,7 +477,7 @@ public class ConfigurationModel {
   /**
    * Getter for the modloader used by the modpack.
    *
-   * @return String. Returns the modloader used by the modpack.
+   * @return Returns the modloader used by the modpack.
    * @author Griefed
    */
   public String getModLoader() {
@@ -513,7 +513,7 @@ public class ConfigurationModel {
   /**
    * Getter for the version of the modloader used by the modpack.
    *
-   * @return String. Returns the version of the modloader used by the modpack.
+   * @return Returns the version of the modloader used by the modpack.
    * @author Griefed
    */
   public String getModLoaderVersion() {
@@ -533,7 +533,7 @@ public class ConfigurationModel {
   /**
    * Getter for whether the modloader server installation should be included.
    *
-   * @return Boolean. Returns whether the server installation should be included.
+   * @return {@code true} if the server should be installed.
    * @author Griefed
    */
   public boolean getIncludeServerInstallation() {
@@ -553,7 +553,7 @@ public class ConfigurationModel {
   /**
    * Getter for whether the server-icon.png should be included in the server pack.
    *
-   * @return Boolean. Returns whether the server-icon.png should be included in the server pack.
+   * @return {@code true} if the icon should be included.
    * @author Griefed
    */
   public boolean getIncludeServerIcon() {
@@ -573,7 +573,7 @@ public class ConfigurationModel {
   /**
    * Getter for whether the server.properties should be included in the server pack.
    *
-   * @return Boolean. Returns whether the server.properties should be included in the server pack.
+   * @return {@code true} if the properties should be included.
    * @author Griefed
    */
   public boolean getIncludeServerProperties() {
@@ -593,7 +593,7 @@ public class ConfigurationModel {
   /**
    * Getter for whether a ZIP-archive of the server pack should be created.
    *
-   * @return Boolean. Returns whether a ZIP-archive of the server pack should be created.
+   * @return {@code true} if the ZIP-archive should be created.
    * @author Griefed
    */
   public boolean getIncludeZipCreation() {
@@ -613,7 +613,7 @@ public class ConfigurationModel {
   /**
    * Getter for the Java arguments with which the start-scripts will be generated.
    *
-   * @return String. Returns the Java arguments with which the start-scripts will be generated.
+   * @return Returns the Java arguments with which the start-scripts will be generated.
    * @author Griefed
    */
   public String getJavaArgs() {
@@ -634,7 +634,7 @@ public class ConfigurationModel {
    * Getter for the JsonNode containing all information about the modpack. May be from various *
    * sources, so be careful when using this.
    *
-   * @return JsonNode. The JsonNode containing all information about the modpack.
+   * @return The JsonNode containing all information about the modpack.
    * @author Griefed
    */
   public JsonNode getModpackJson() {
@@ -655,7 +655,7 @@ public class ConfigurationModel {
   /**
    * Getter for the name of the CurseForge project.
    *
-   * @return String. The name of the CurseForge project.
+   * @return The name of the CurseForge project.
    * @author Griefed
    */
   public String getProjectName() {
@@ -675,7 +675,7 @@ public class ConfigurationModel {
   /**
    * Getter for the name of the CurseForge project file.
    *
-   * @return String. The name of the CurseForge project file.
+   * @return The name of the CurseForge project file.
    * @author Griefed
    */
   public String getFileName() {
@@ -695,7 +695,7 @@ public class ConfigurationModel {
   /**
    * Getter for the disk-name of the CurseForge project file.
    *
-   * @return String. The disk-name of the CurseForge project file.
+   * @return The disk-name of the CurseForge project file.
    * @author Griefed
    */
   public String getFileDiskName() {
@@ -715,7 +715,7 @@ public class ConfigurationModel {
   /**
    * Getter for the path to the server-icon.png to include in the server pack.
    *
-   * @return String. Returns the path to the server-icon.png.
+   * @return Returns the path to the server-icon.png.
    * @author Griefed
    */
   public String getServerIconPath() {

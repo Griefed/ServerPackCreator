@@ -130,7 +130,7 @@ public class VersionsController {
   /**
    * Get the Latest Fabric Installer and Release Fabric installer versions as a JSON object.
    *
-   * @return String, JSON. Returns the Latest Fabric Installer and Release Fabric Installer as a
+   * @return Returns the Latest Fabric Installer and Release Fabric Installer as a
    * JSON object.
    * @author Griefed
    */
@@ -172,7 +172,7 @@ public class VersionsController {
   /**
    * Get the Latest Fabric Installer and Release Fabric installer versions as a JSON object.
    *
-   * @return String, JSON. Returns the Latest Fabric Installer and Release Fabric Installer as a
+   * @return Returns the Latest Fabric Installer and Release Fabric Installer as a
    * JSON object.
    * @author Griefed
    */

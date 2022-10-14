@@ -2493,7 +2493,7 @@ public class TabCreateServerPack extends JPanel {
   /**
    * Getter for the currently set JVM flags / Java args.
    *
-   * @return String. Returns the currently set JVM flags / Java args.
+   * @return Returns the currently set JVM flags / Java args.
    * @author Griefed
    */
   public String getJavaArgs() {
@@ -2523,7 +2523,7 @@ public class TabCreateServerPack extends JPanel {
   /**
    * Getter for the text in the custom server-icon textfield.
    *
-   * @return String. Returns the text in the server-icon textfield.
+   * @return Returns the text in the server-icon textfield.
    * @author Griefed
    */
   public String getServerIconPath() {
@@ -2543,7 +2543,7 @@ public class TabCreateServerPack extends JPanel {
   /**
    * Getter for the text in the custom server.properties textfield
    *
-   * @return String. Returns the text in the server.properties textfield.
+   * @return Returns the text in the server.properties textfield.
    * @author Griefed
    */
   public String getServerPropertiesPath() {

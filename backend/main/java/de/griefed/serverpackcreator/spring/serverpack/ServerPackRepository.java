@@ -73,7 +73,7 @@ public interface ServerPackRepository extends CrudRepository<ServerPackModel, In
    * Count all server packs by a CurseForge project name.
    *
    * @param projectName The CurseForge project name with which to count all server packs.
-   * @return Integer. Returns the amount of server packs for the passed CurseForge project name.
+   * @return Returns the amount of server packs for the passed CurseForge project name.
    * @author Griefed
    */
   int countAllByProjectName(String projectName);
