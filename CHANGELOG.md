@@ -1,3 +1,20 @@
+## [3.15.0-beta.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.15.0-beta.1...3.15.0-beta.2) (2022-10-14)
+
+
+### :scissors: Refactor
+
+* **Gradle:** Replace sourceCompat and targetCompat with toolchain language version in preperation for MS4 ([21e8e6d](https://git.griefed.de/Griefed/ServerPackCreator/commit/21e8e6d60f6e14c5a5d89cf76a3859baf559a821))
+
+
+### 🚀 Features
+
+* Include or exclude files and directories based on regex-filters.  Thanks to @Jetpack-Cat ([1eec03c](https://git.griefed.de/Griefed/ServerPackCreator/commit/1eec03c66707ef5461a28bcf94700bcdbf8af3b5))
+
+
+### Other
+
+* Update license report ([e9457fc](https://git.griefed.de/Griefed/ServerPackCreator/commit/e9457fc93e5e12d463d0215a25fbfb86b04a7b53))
+
 ## [3.15.0-beta.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.14.5...3.15.0-beta.1) (2022-10-08)
 
 
