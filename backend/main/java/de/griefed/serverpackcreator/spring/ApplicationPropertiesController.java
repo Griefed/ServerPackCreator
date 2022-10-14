@@ -54,8 +54,8 @@ public class ApplicationPropertiesController {
       ApplicationProperties injectedApplicationProperties,
       Utilities injectedUtilities) {
 
-    this.APPLICATIONPROPERTIES = injectedApplicationProperties;
-    this.UTILITIES = injectedUtilities;
+    APPLICATIONPROPERTIES = injectedApplicationProperties;
+    UTILITIES = injectedUtilities;
   }
 
   @GetMapping(produces = "application/json")

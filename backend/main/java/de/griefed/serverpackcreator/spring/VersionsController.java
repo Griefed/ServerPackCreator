@@ -53,8 +53,8 @@ public class VersionsController {
   @Autowired
   public VersionsController(VersionMeta injectedVersionMeta,
                             Utilities injectedUtilities) {
-    this.VERSIONMETA = injectedVersionMeta;
-    this.UTILITIES = injectedUtilities;
+    VERSIONMETA = injectedVersionMeta;
+    UTILITIES = injectedUtilities;
   }
 
   /**

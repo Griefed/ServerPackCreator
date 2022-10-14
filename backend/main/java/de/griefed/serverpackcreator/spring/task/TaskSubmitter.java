@@ -54,7 +54,7 @@ public class TaskSubmitter {
    */
   @Autowired
   public TaskSubmitter(JmsTemplate injectedJmsTemplate) {
-    this.jmsTemplate = injectedJmsTemplate;
+    jmsTemplate = injectedJmsTemplate;
   }
 
   /**

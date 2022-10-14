@@ -57,7 +57,7 @@ public class SimpleStopWatch {
    *   <li>{@link #toString()}</li>
    * </ul>
    * to retrieve the elapsed time.
-   *
+   * @return This instance of {@link SimpleStopWatch}
    * @author Griefed
    */
   public @NotNull SimpleStopWatch start() {
@@ -73,7 +73,7 @@ public class SimpleStopWatch {
    * The stopwatch must have been started before calling this method, otherwise an
    * {@link IllegalStateException} will be thrown. Call {@link #start()} first!
    *
-   * @return The duration the stopwatch has run.
+   * @return This instance of {@link SimpleStopWatch}
    * @throws IllegalStateException if the stopwatch was stopped without having been started first.
    * @author Griefed
    */

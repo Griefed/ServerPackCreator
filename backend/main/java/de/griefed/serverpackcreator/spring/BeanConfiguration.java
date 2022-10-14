@@ -45,7 +45,7 @@ public class BeanConfiguration {
 
   @Autowired
   public BeanConfiguration(ApplicationProperties applicationProperties) {
-    this.APPLICATIONPROPERTIES = applicationProperties;
+    APPLICATIONPROPERTIES = applicationProperties;
   }
 
   /**

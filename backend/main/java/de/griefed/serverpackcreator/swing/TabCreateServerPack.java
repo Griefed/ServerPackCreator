@@ -1261,6 +1261,20 @@ public class TabCreateServerPack extends JPanel {
     add(tabCreateserverpacktabScrollPanel, BorderLayout.CENTER);
 
     loadConfig(APPLICATIONPROPERTIES.defaultConfig());
+
+    Tailer tailer =
+        Tailer.create(
+            new File(APPLICATIONPROPERTIES.logsDirectory(), "serverpackcreator.log"),
+            new TailerListenerAdapter() {
+              public void handle(String line) {
+                if (!line.contains("DEBUG")) {
+                  // labelGenerateServerPack.setText(line.substring(line.indexOf(") - ") + 4));
+                  updateStatus(line.substring(line.indexOf(") - ") + 4));
+                }
+              }
+            },
+            100,
+            false);
   }
 
   /**
@@ -2211,20 +2225,6 @@ public class TabCreateServerPack extends JPanel {
    */
   private void generate() {
 
-    Tailer tailer =
-        Tailer.create(
-            new File(APPLICATIONPROPERTIES.logsDirectory(), "serverpackcreator.log"),
-            new TailerListenerAdapter() {
-              public void handle(String line) {
-                if (!line.contains("DEBUG")) {
-                  // labelGenerateServerPack.setText(line.substring(line.indexOf(") - ") + 4));
-                  updateStatus(line.substring(line.indexOf(") - ") + 4));
-                }
-              }
-            },
-            100,
-            false);
-
     LOG.info("Checking entered configuration.");
 
     updateStatus(I18N.getMessage("createserverpack.log.info.buttoncreateserverpack.start"));
@@ -2326,8 +2326,6 @@ public class TabCreateServerPack extends JPanel {
           }
 
           encounteredErrors.clear();
-          tailer.stop();
-
           ready();
 
           executorService.shutdownNow();

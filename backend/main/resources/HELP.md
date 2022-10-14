@@ -443,6 +443,62 @@ If you've already prepared a `server.properties`-file for your server, then make
 set `serverProperties`|**"Path to custom properties"** to the location of said properties-file so it
 is automatically included in your server pack.
 
+## Including and excluding based on regex-filters (3.15.x and up)
+
+You can include and exclude files based on regex-filters. You can do this either in your
+modpack-directory, or any other directory on your computer.
+
+The most important part of this is the `==`.
+
+You can
+- **start** with `==`, which will result in regex-matches being checked in your **modpack-directory**
+- use a **relative** path, for example `kubejs/data==`, which will result in regex-matches
+being checked in the `kubejs/data`-directory in your **modpack-directory**
+- use an **absolute** path, for example `C:\some\path==` or `/home/user/path==`, which will result in
+regex-matches being performed in directories **outside** of your modpack-directory
+
+This way you can easily include and exclude multiple files at once. No need to tediously tell 
+ServerPackCreator each and every single file you want to exclude if you notice a pattern in them, or
+if they happen to be in the same directory, or similar situations!
+
+Keep in mind:
+
+Relative paths are carried over to your server pack!
+
+### Inclusion examples:
+
+- `==.*fancymenu.*` would result in anything having **fancymenu** in its name being included.
+    - `mods/fancymenu-...jar` to `mods/fancymenu-...jar` in your server pack
+    - `config/fancymenu.config` to `config/fancymenu.config` in your server pack
+    - etc.
+- `kubejs==.*.js` would result in every **js**-file from the **kubejs**-directory being included.
+    - `kubejs/data` to `kubejs/data` in your server pack
+    - `kubejs/config` to `kubejs/config` in your server pack
+    - etc.
+- `C:\Minecraft\Maps==server.*` would result in every file/directory starting with **server** from
+a directory **outside** of your modpack-directory being included in your server pack.
+    - `server_spawn_world` and every file in it to `server_spawn_world` in your server pack
+    - etc.
+- `/home/griefed/maps==world.*` would result in every file/directory starting with **world** from
+a directory **outside** of your modpack-directory being included in your server pack.
+    - `world_27.10.2020` and every file in it to `world_27.10.2020` in your server pack
+    - etc.
+
+### Exclusion examples:
+
+- `!==.*fancymenu.*` would result in anything having **fancymenu** in its name being excluded.
+    - `mods/fancymenu-...jar`
+    - `config/fancymenu.config`
+    - etc.
+- `!kubejs==.*.png` would result in every **png**-file from the **kubejs**-directory being excluded.
+    - `kubejs/assets/packmenu/textures/gui/bh_me_logo.png`
+    - `kubejs/assets/drippy/BH_ME_Artboard_32.png` 
+    - etc.
+- `!C:\Minecraft\Maps==.*serverconfig.*` would result in any file/folder containing **serverconfig**
+being excluded. Useful for including worlds, but having them start with fresh server configs!
+- `!/home/griefed/maps==.*config.*` would result in any file/folder containing **config**
+being excluded. Useful for including worlds, but having them start with fresh configs!
+
 ## Adding modpack-external files and folders to your server pack
 
 You can add files/folder to your server pack which reside *outside* of the modpack from which you

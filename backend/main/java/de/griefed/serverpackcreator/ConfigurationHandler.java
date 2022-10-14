@@ -39,6 +39,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.PatternSyntaxException;
+import java.util.stream.Stream;
 import net.lingala.zip4j.ZipFile;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
@@ -447,7 +451,24 @@ public final class ConfigurationHandler {
 
       for (int i = 0; i < copyDirs.size(); i++) {
 
-        if (copyDirs.get(i).contains(";")) {
+        if (!copyDirs.get(i).startsWith("==") && copyDirs.get(i).contains("==")
+            && copyDirs.get(i).split("==").length == 2) {
+
+          String[] entries = copyDirs.get(i).split("==");
+
+          if (UTILITIES.FileUtils().isLink(entries[0])) {
+            try {
+              copyDirs.set(i, UTILITIES.FileUtils().resolveLink(entries[0]) + "==" + entries[1]);
+
+              LOG.info("Resolved regex-directory link to: " + copyDirs.get(i));
+              copyDirChanges = true;
+
+            } catch (InvalidFileTypeException | IOException ex) {
+              LOG.error("Couldn't resolve link for copy-directories entry: " + copyDirs.get(i), ex);
+            }
+          }
+
+        } else if (copyDirs.get(i).contains(";")) {
           // Source;Destination-combination
 
           String[] entries = copyDirs.get(i).split(";");
@@ -460,7 +481,7 @@ public final class ConfigurationHandler {
               copyDirChanges = true;
 
             } catch (InvalidFileTypeException | IOException ex) {
-              LOG.error("Couldn't resolve link for copy-directories entry.", ex);
+              LOG.error("Couldn't resolve link for copy-directories entry: " + copyDirs.get(i), ex);
             }
 
           } else if (UTILITIES.FileUtils()
@@ -479,14 +500,33 @@ public final class ConfigurationHandler {
               copyDirChanges = true;
 
             } catch (InvalidFileTypeException | IOException ex) {
-              LOG.error("Couldn't resolve link for copy-directories entry.", ex);
+              LOG.error("Couldn't resolve link for copy-directories entry: " + copyDirs.get(i), ex);
             }
           }
 
         } else if (copyDirs.get(i).startsWith("!")) {
-          // File exclusion
 
-          if (UTILITIES.FileUtils().isLink(copyDirs.get(i).substring(1))) {
+          if (copyDirs.get(i).contains("==")
+              && copyDirs.get(i).substring(1).split("==").length == 2) {
+
+            String[] entries = copyDirs.get(i).split("==");
+
+            if (UTILITIES.FileUtils().isLink(entries[0].substring(1))) {
+              try {
+                copyDirs.set(i,
+                             "!" + UTILITIES.FileUtils().resolveLink(entries[0].substring(1)) + "=="
+                                 + entries[1]);
+
+                LOG.info("Resolved regex-directory link to: " + copyDirs.get(i));
+                copyDirChanges = true;
+
+              } catch (InvalidFileTypeException | IOException ex) {
+                LOG.error("Couldn't resolve link for copy-directories entry: " + copyDirs.get(i),
+                          ex);
+              }
+            }
+
+          } else if (UTILITIES.FileUtils().isLink(copyDirs.get(i).substring(1))) {
 
             try {
               copyDirs.set(
@@ -496,7 +536,7 @@ public final class ConfigurationHandler {
               copyDirChanges = true;
 
             } catch (InvalidFileTypeException | IOException ex) {
-              LOG.error("Couldn't resolve link for copy-directories entry.", ex);
+              LOG.error("Couldn't resolve link for copy-directories entry: " + copyDirs.get(i), ex);
             }
 
           } else if (UTILITIES.FileUtils()
@@ -518,7 +558,7 @@ public final class ConfigurationHandler {
               copyDirChanges = true;
 
             } catch (InvalidFileTypeException | IOException ex) {
-              LOG.error("Couldn't resolve link for copy-directories entry.", ex);
+              LOG.error("Couldn't resolve link for copy-directories entry: " + copyDirs.get(i), ex);
             }
           }
 
@@ -982,13 +1022,13 @@ public final class ConfigurationHandler {
    * specified a {@code source/file;destination/file}-combination, it is checked whether the
    * specified source-file exists on the host.
    *
-   * @param directoriesToCopy List String. The list of directories, or
+   * @param directoriesToCopy The list of directories, or
    *                          {@code source/file;destination/file}-combinations, to check for
    *                          existence. {@code  source/file;destination/file}-combinations must be
    *                          absolute paths to the source-file.
-   * @param modpackDir        String. The path to the modpack directory in which to check for
-   *                          existence of the passed list of directories.
-   * @param encounteredErrors List String. A list to which all encountered errors are saved to.
+   * @param modpackDir        The path to the modpack directory in which to check for existence of
+   *                          the passed list of directories.
+   * @param encounteredErrors A list to which all encountered errors are saved to.
    * @return Boolean. Returns true if every directory was found in the modpack directory. If any
    * single one was not found, false is returned.
    * @author Griefed
@@ -1158,19 +1198,34 @@ public final class ConfigurationHandler {
           // Add an entry to the list of directories/files to exclude if it starts with !
         } else if (directory.startsWith("!")) {
 
-          File fileOrDirectory = new File(modpackDir, directory.substring(1));
+          if (directory.substring(1).contains("==")) {
 
-          if (fileOrDirectory.isFile()) {
-
-            LOG.warn("File " + directory.substring(1) + " will be ignored.");
-
-          } else if (fileOrDirectory.isDirectory()) {
-
-            LOG.warn("Directory " + directory.substring(1) + " will be ignored.");
+            if (!checkRegex(modpackDir, directory, true, encounteredErrors)) {
+              configCorrect = false;
+            }
 
           } else {
 
-            LOG.debug("What? " + fileOrDirectory + " is neither a file nor directory.");
+            File fileOrDirectory = new File(modpackDir, directory.substring(1));
+
+            if (fileOrDirectory.isFile()) {
+
+              LOG.warn("File " + directory.substring(1) + " will be ignored.");
+
+            } else if (fileOrDirectory.isDirectory()) {
+
+              LOG.warn("Directory " + directory.substring(1) + " will be ignored.");
+
+            } else {
+
+              LOG.debug("What? " + fileOrDirectory + " is neither a file nor directory.");
+            }
+          }
+
+        } else if (directory.contains("==")) {
+
+          if (!checkRegex(modpackDir, directory, false, encounteredErrors)) {
+            configCorrect = false;
           }
 
           // Check if the entry exists
@@ -1258,6 +1313,242 @@ public final class ConfigurationHandler {
       }
     }
     return configCorrect;
+  }
+
+  /**
+   * Check the given entry for valid regex. In order for an entry to be valid, it must
+   * <ol>
+   *   <li>Contain {@code ==}</li>
+   *   <li>Optionally start with {@code ==}. When starting with {@code ==}</li>
+   *   <li><ul>
+   *     <li>The left side of {@code ==} must specify an existing directory</li>
+   *     <li>The right side of {@code ==} must be the regex to match files and/or directories</li>
+   *   </ul></li>
+   * </ol>
+   *
+   * @param modpackDir The modpacks directory which will be checked when the entry starts with
+   *                   {@code ==}
+   * @param entry      The regex, or file/directory and regex, combination.
+   * @param exclusion  Whether the checks are for exclusions ({@code true}) or files and/or
+   *                   directories, or inclusions ({@code false}).
+   * @return {@code true} when no errors were encountered.
+   * @author Griefed
+   */
+  public boolean checkRegex(@NotNull final String modpackDir,
+                            @NotNull final String entry,
+                            boolean exclusion) {
+    return checkRegex(modpackDir, entry, exclusion, new ArrayList<>(1));
+  }
+
+  /**
+   * Check the given entry for valid regex. In order for an entry to be valid, it must
+   * <ul>
+   *   <li>Contain {@code ==}</li>
+   *   <li>Optionally start with {@code ==}. When starting with {@code ==}</li>
+   *   <li><ul>
+   *     <li>The left side of {@code ==} must specify an existing directory</li>
+   *     <li>The right side of {@code ==} must be the regex to match files and/or directories</li>
+   *   </ul></li>
+   * </ul>
+   *
+   * @param modpackDir        The modpacks directory which will be checked when the entry starts
+   *                          with {@code ==}
+   * @param entry             The regex, or file/directory and regex, combination.
+   * @param exclusion         Whether the checks are for exclusions ({@code true}) or files and/or
+   *                          directories, or inclusions ({@code false}).
+   * @param encounteredErrors A list to which all encountered errors are saved to.
+   * @return {@code true} when no errors were encountered.
+   * @author Griefed
+   */
+  public boolean checkRegex(@NotNull final String modpackDir,
+                            @NotNull final String entry,
+                            boolean exclusion,
+                            @NotNull final List<String> encounteredErrors) {
+    try {
+      if (exclusion) {
+        return exclusionRegexCheck(modpackDir, entry, encounteredErrors);
+      } else {
+        return inclusionRegexCheck(modpackDir, entry, encounteredErrors);
+      }
+    } catch (PatternSyntaxException ex) {
+      LOG.error(
+          "Invalid regex specified: " + entry + ". Error near regex-index " + ex.getIndex() + ".");
+      encounteredErrors.add(I18N.getMessage(String.format(
+          I18N.getMessage(""),
+          entry,
+          ex.getIndex())));
+      return false;
+    }
+  }
+
+  /**
+   * Exclusion regex checks when the entry is prefixed with an {@code !}.
+   *
+   * @param modpackDir        The modpacks directory which will be checked when the entry starts
+   *                          with {@code ==}
+   * @param entry             The regex, or file/directory and regex, combination.
+   * @param encounteredErrors A list to which all encountered errors are saved to.
+   * @return {@code true} if the specified entry matched existing file(s) or directories.
+   * @author Griefed
+   */
+  private boolean exclusionRegexCheck(@NotNull final String modpackDir,
+                                      @NotNull final String entry,
+                                      @NotNull final List<String> encounteredErrors) {
+    /*
+     * Check for matches in modpack directory
+     */
+    if (entry.startsWith("!==") && entry.length() > 3) {
+
+      File source = new File(modpackDir);
+      regexWalk(source, entry);
+      return true;
+
+    } else if (entry.contains("==") && entry.split("==").length == 2) {
+
+      String[] sourceRegex = entry.split("==");
+
+      /*
+       * Matches inside modpack-directory
+       */
+      if (new File(modpackDir, sourceRegex[0].substring(1)).isDirectory()) {
+
+        File source = new File(modpackDir, sourceRegex[0].substring(1));
+        regexWalk(source, sourceRegex[1]);
+        return true;
+
+        /*
+         * Matches inside directory outside modpack-directory
+         */
+      } else if (new File(sourceRegex[0].substring(1)).isDirectory()) {
+
+        File source = new File(sourceRegex[0].substring(1));
+        regexWalk(source, sourceRegex[1]);
+        return true;
+
+      } else {
+
+        encounteredErrors.add(String.format(
+            I18N.getMessage("configuration.log.error.checkcopydirs.checkforregex"),
+            sourceRegex[0]));
+        return false;
+      }
+
+    } else {
+
+      encounteredErrors.add(
+          I18N.getMessage("configuration.log.error.checkcopydirs.checkforregex.invalid"));
+      return false;
+    }
+  }
+
+  /**
+   * Inclusion regex checks.
+   *
+   * @param modpackDir        The modpacks directory which will be checked when the entry starts
+   *                          with {@code ==}
+   * @param entry             The regex, or file/directory and regex, combination.
+   * @param encounteredErrors A list to which all encountered errors are saved to.
+   * @return {@code true} if the specified entry matched existing file(s) or directories.
+   * @author Griefed
+   */
+  private boolean inclusionRegexCheck(@NotNull final String modpackDir,
+                                      @NotNull final String entry,
+                                      @NotNull final List<String> encounteredErrors) {
+    AtomicInteger counter = new AtomicInteger();
+    AtomicReference<String> toMatch = new AtomicReference<>();
+
+    /*
+     * Check for matches in modpack directory
+     */
+    if (entry.startsWith("==") && entry.length() > 2) {
+
+      File source = new File(modpackDir);
+      regexWalk(source, entry);
+      return true;
+
+      /*
+       * Check for matches in the specified directory
+       */
+    } else if (entry.contains("==") && entry.split("==").length == 2) {
+
+      String[] sourceRegex = entry.split("==");
+
+      /*
+       * Matches inside modpack-directory
+       */
+      if (new File(modpackDir, sourceRegex[0]).isDirectory()) {
+
+        File source = new File(modpackDir, sourceRegex[0]);
+        regexWalk(source, sourceRegex[1]);
+        return true;
+
+        /*
+         * Matches inside directory outside modpack-directory
+         */
+      } else if (new File(sourceRegex[0]).isDirectory()) {
+
+        File source = new File(sourceRegex[0]);
+        regexWalk(source, sourceRegex[1]);
+        return true;
+
+
+      } else {
+
+        encounteredErrors.add(String.format(
+            I18N.getMessage("configuration.log.error.checkcopydirs.checkforregex"),
+            sourceRegex[0]));
+        return false;
+      }
+
+    } else {
+
+      encounteredErrors.add(
+          I18N.getMessage("configuration.log.error.checkcopydirs.checkforregex.invalid"));
+      return false;
+    }
+  }
+
+  /**
+   * Walk through each file in the specified source-directory and perform regex-matches using the
+   * specified regex. The number of matches found is printed to the logs.
+   *
+   * @param source The source directory to walk through and perform regex-matches on.
+   * @param regex  The regex to use for finding matches within the specified source-directory.
+   * @author Griefed
+   */
+  private void regexWalk(@NotNull final File source,
+                         @NotNull final String regex) {
+    AtomicInteger counter = new AtomicInteger();
+    AtomicReference<String> toMatch = new AtomicReference<>();
+
+    try (Stream<Path> files = Files.walk(source.toPath())) {
+      files.forEach(
+          file -> {
+
+            toMatch.set(file.toFile().getAbsolutePath().replace(
+                source.getAbsolutePath(),
+                ""));
+
+            if (toMatch.get().startsWith(File.separator)) {
+              toMatch.set(toMatch.get().substring(1));
+            }
+
+            if (toMatch.get().matches(regex)) {
+              counter.addAndGet(1);
+            }
+          }
+      );
+    } catch (IOException ex) {
+      LOG.error("Could not check your regex entry \""
+                    + regex
+                    + "\" in directory \""
+                    + source, ex);
+    }
+
+    LOG.info("Regex \""
+                 + regex
+                 + "\" matched "
+                 + counter + " files/folders.");
   }
 
   /**

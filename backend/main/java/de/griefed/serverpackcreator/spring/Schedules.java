@@ -59,8 +59,8 @@ public class Schedules {
   public Schedules(ServerPackService injectedServerPackService,
                    VersionMeta injectedVersionMeta) {
 
-    this.SERVERPACKSERVICE = injectedServerPackService;
-    this.VERSIONMETA = injectedVersionMeta;
+    SERVERPACKSERVICE = injectedServerPackService;
+    VERSIONMETA = injectedVersionMeta;
   }
 
   /**

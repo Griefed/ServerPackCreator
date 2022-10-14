@@ -76,11 +76,11 @@ public class ZipController {
       ApplicationProperties injectedApplicationProperties,
       Utilities injectedUtilities) {
 
-    this.ZIPSERVICE = injectedZipService;
-    this.CONFIGURATIONHANDLER = injectedConfigurationHandler;
-    this.NOTIFICATIONRESPONSE = injectedNotificationResponse;
-    this.APPLICATIONPROPERTIES = injectedApplicationProperties;
-    this.UTILITIES = injectedUtilities;
+    ZIPSERVICE = injectedZipService;
+    CONFIGURATIONHANDLER = injectedConfigurationHandler;
+    NOTIFICATIONRESPONSE = injectedNotificationResponse;
+    APPLICATIONPROPERTIES = injectedApplicationProperties;
+    UTILITIES = injectedUtilities;
   }
 
   /**

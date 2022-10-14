@@ -181,36 +181,6 @@ tasks.register('copyDist', Copy) {
   }
 
   copy {
-    from layout.projectDirectory.file("LICENSE")
-    into layout.projectDirectory.dir("backend/main/resources")
-  }
-
-  copy {
-    from layout.projectDirectory.file("README.md")
-    into layout.projectDirectory.dir("backend/main/resources")
-  }
-
-  copy {
-    from layout.projectDirectory.file("HELP.md")
-    into layout.projectDirectory.dir("backend/main/resources")
-  }
-
-  copy {
-    from layout.projectDirectory.file("CHANGELOG.md")
-    into layout.projectDirectory.dir("backend/main/resources")
-  }
-
-  copy {
-    from layout.projectDirectory.file("CONTRIBUTING.md")
-    into layout.projectDirectory.dir("backend/main/resources")
-  }
-
-  copy {
-    from layout.projectDirectory.file("CODE_OF_CONDUCT.md")
-    into layout.projectDirectory.dir("backend/main/resources")
-  }
-
-  copy {
     from layout.projectDirectory.dir("manifests")
     into layout.projectDirectory.dir("backend/main/resources/de/griefed/resources/manifests")
   }

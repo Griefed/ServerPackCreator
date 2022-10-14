@@ -52,6 +52,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 import javax.imageio.ImageIO;
 import net.lingala.zip4j.ZipFile;
@@ -60,7 +61,6 @@ import net.lingala.zip4j.model.ZipParameters;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -133,11 +133,11 @@ public final class ServerPackHandler {
       @NotNull final ApplicationAddons injectedApplicationAddons,
       @NotNull final ModScanner injectedModScanner) {
 
-    this.APPLICATIONPROPERTIES = injectedApplicationProperties;
-    this.VERSIONMETA = injectedVersionMeta;
-    this.UTILITIES = injectedUtilities;
-    this.APPLICATIONADDONS = injectedApplicationAddons;
-    this.MODSCANNER = injectedModScanner;
+    APPLICATIONPROPERTIES = injectedApplicationProperties;
+    VERSIONMETA = injectedVersionMeta;
+    UTILITIES = injectedUtilities;
+    APPLICATIONADDONS = injectedApplicationAddons;
+    MODSCANNER = injectedModScanner;
   }
 
   /**
@@ -150,7 +150,6 @@ public final class ServerPackHandler {
    * pack.
    * @author Griefed
    */
-  @Contract("_ -> param1")
   public @NotNull ServerPackModel run(@NotNull final ServerPackModel serverPackModel) {
 
     String destination = getServerPackDestination(serverPackModel);
@@ -506,8 +505,8 @@ public final class ServerPackHandler {
 
       for (String directory : directoriesToCopy) {
 
-        String clientDir = (modpackDir + File.separator + directory);
-        String serverDir = (destination + File.separator + directory);
+        String clientDir = modpackDir + File.separator + directory;
+        String serverDir = destination + File.separator + directory;
 
         LOG.info("Gathering " + directory + " file(s) and folder(s).");
 
@@ -547,6 +546,14 @@ public final class ServerPackHandler {
                     mod,
                     new File(serverDir, mod.getName())));
           }
+
+          /*
+           * The user wants to add files to the server pack based on a regex-filter.
+           * Every match will be added.
+           */
+        } else if (directory.contains("==")) {
+
+          serverPackFiles.addAll(getRegexMatches(modpackDir, destination, directory));
 
         } else if (new File(directory).isFile()) {
 
@@ -1193,13 +1200,117 @@ public final class ServerPackHandler {
   }
 
   /**
+   * Acquire all files and directories for the given regex in a list of {@link ServerPackFile} for a
+   * given regex-entry from the configuration models copyDirs.
+   *
+   * @param modpackDir  The path to the modpack directory in which to check for existence of the
+   *                    passed list of directories.
+   * @param destination The destination where the files should be copied to.
+   * @param entry       The regex, or file/directory and regex, combination.
+   * @return List of {@link ServerPackFile} which will be included in the server pack.
+   * @author Griefed
+   */
+  private @NotNull List<ServerPackFile> getRegexMatches(
+      @NotNull final String modpackDir,
+      @NotNull final String destination,
+      @NotNull final String entry) {
+
+    List<ServerPackFile> serverPackFiles = new ArrayList<>(100);
+
+    if (entry.startsWith("==") && entry.length() > 2) {
+
+      regexWalk(new File(modpackDir),
+                destination,
+                entry.substring(2),
+                serverPackFiles);
+
+    } else if (entry.contains("==") && entry.split("==").length == 2) {
+
+      String[] regexinclusion = entry.split("==");
+
+      if (new File(modpackDir, regexinclusion[0]).isDirectory()) {
+
+        regexWalk(new File(
+                      modpackDir,
+                      regexinclusion[0]),
+                  destination,
+                  regexinclusion[1],
+                  serverPackFiles);
+
+      } else if (new File(regexinclusion[0]).isDirectory()) {
+
+        regexWalk(new File(regexinclusion[0]),
+                  destination,
+                  regexinclusion[1],
+                  serverPackFiles);
+      }
+
+    }
+    return serverPackFiles;
+  }
+
+  /**
+   * Walk through the specified directory and add a {@link ServerPackFile} for every file/folder
+   * which matches the given regex.
+   *
+   * @param source          The source-directory to walk through and perform regex-matches in.
+   * @param destination     The destination-directory where a matched file should be copied to,
+   *                        usually the server pack directory.
+   * @param regex           Regex with which to perform matches against files in the
+   *                        source-directory.
+   * @param serverPackFiles List of files to copy to the server pack to which any matched file will
+   *                        be added to.
+   * @author Griefed
+   */
+  private void regexWalk(
+      @NotNull final File source,
+      @NotNull final String destination,
+      @NotNull final String regex,
+      @NotNull final List<ServerPackFile> serverPackFiles) {
+
+    AtomicReference<String> toMatch = new AtomicReference<>();
+    try (Stream<Path> files = Files.walk(source.toPath())) {
+      files.forEach(
+          file -> {
+            toMatch.set(file.toFile().getAbsolutePath().replace(
+                source.getAbsolutePath(),
+                ""));
+
+            if (toMatch.get().startsWith(File.separator)) {
+              toMatch.set(toMatch.get().substring(1));
+            }
+
+            if (toMatch.get().matches(regex)) {
+
+              Path add = Paths.get(destination + File.separator + source.getName())
+                              .resolve(source.toPath().relativize(file));
+              serverPackFiles.add(
+                  new ServerPackFile(
+                      file,
+                      add));
+              LOG.debug("Including through regex-match:");
+              LOG.debug("    SOURCE: " + file);
+              LOG.debug("    DESTINATION: " + add);
+            }
+          }
+      );
+    } catch (IOException ex) {
+      LOG.error("Couldn't gather all files from "
+                    + source.getAbsolutePath()
+                    + " for filter \""
+                    + regex
+                    + "\".", ex);
+    }
+  }
+
+  /**
    * Recursively acquire all files and directories inside the given save-directory as a list of
    * {@link ServerPackFile}.
    *
    * @param clientDir   Target directory in the server pack. Usually the name of the world.
    * @param directory   The save-directory.
    * @param destination The destination of the server pack.
-   * @return List of {@link ServerPackFile}.
+   * @return List of {@link ServerPackFile} which will be included in the server pack.
    * @author Griefed
    */
   private @NotNull List<ServerPackFile> getSaveFiles(
@@ -1245,12 +1356,10 @@ public final class ServerPackHandler {
    * @return A list of all mods to include in the server pack.
    * @author Griefed
    */
-  @Contract("_, _, _, _ -> new")
-  public @NotNull List<File> getModsToInclude(
-      @NotNull final String modsDir,
-      @NotNull final List<String> userSpecifiedClientMods,
-      @NotNull final String minecraftVersion,
-      @NotNull final String modloader) {
+  public @NotNull List<File> getModsToInclude(@NotNull final String modsDir,
+                                              @NotNull final List<String> userSpecifiedClientMods,
+                                              @NotNull final String minecraftVersion,
+                                              @NotNull final String modloader) {
 
     LOG.info("Preparing a list of mods to include in server pack...");
 
@@ -1328,10 +1437,11 @@ public final class ServerPackHandler {
       files.forEach(
           file -> {
             try {
-              serverPackFiles.add(new ServerPackFile(
-                  file,
-                  Paths.get(destination + File.separator + new File(source).getName())
-                       .resolve(Paths.get(source).relativize(file))));
+              serverPackFiles.add(
+                  new ServerPackFile(
+                      file,
+                      Paths.get(destination + File.separator + new File(source).getName())
+                           .resolve(Paths.get(source).relativize(file))));
 
             } catch (UnsupportedOperationException ex) {
               LOG.error("Couldn't gather file " + file + " from directory " + source + ".", ex);
@@ -1367,10 +1477,70 @@ public final class ServerPackHandler {
     exclusions.addAll(APPLICATIONPROPERTIES.getDirectoriesToExclude());
 
     for (String exclusion : exclusions) {
-      if (exclusion.matches("^\\.[0-9a-zA-Z]+$") && fileToCheckFor.getAbsolutePath()
-                                                                  .endsWith(exclusion)) {
+
+      // Exclude based on regex matches. Scary stuff.
+      if (exclusion.contains("==")) {
+
+        // Tell a user to use !==.* and watch the world burn, hehehe.
+        if (exclusion.startsWith("==") && fileToCheckFor.getAbsolutePath()
+                                                        .matches(exclusion.substring(2))) {
+
+          LOG.debug("Excluding file/directory: " + fileToCheckFor.getAbsolutePath());
+          return true;
+
+        } else if (exclusion.split("==").length == 2) {
+
+          String[] regexclusion = exclusion.split("==");
+          String toMatch;
+
+          if (new File(modpackDir, regexclusion[0]).isDirectory()) {
+
+            toMatch = fileToCheckFor.getAbsolutePath().replace(
+                new File(modpackDir, regexclusion[0]).getAbsolutePath(),
+                "");
+
+            if (toMatch.startsWith(File.separator)) {
+              toMatch = toMatch.substring(1);
+            }
+
+            if (toMatch.matches(regexclusion[1])) {
+              LOG.debug("Excluding file/directory: " + fileToCheckFor.getAbsolutePath());
+              return true;
+            }
+
+          } else if (new File(regexclusion[0]).isDirectory()) {
+
+            toMatch = fileToCheckFor.getAbsolutePath().replace(
+                new File(regexclusion[0]).getAbsolutePath(),
+                "");
+
+            if (toMatch.startsWith(File.separator)) {
+              toMatch = toMatch.substring(1);
+            }
+
+            if (toMatch.matches(regexclusion[1])) {
+              LOG.debug("Excluding file/directory: " + fileToCheckFor.getAbsolutePath());
+              return true;
+            }
+          }
+
+          if (fileToCheckFor.getAbsolutePath()
+                            .startsWith(new File(regexclusion[0]).getAbsolutePath())
+              && fileToCheckFor.getAbsolutePath()
+                               .replace(new File(regexclusion[0]).getAbsolutePath(), "")
+                               .matches(regexclusion[1])) {
+            LOG.debug("Excluding file/directory: " + fileToCheckFor.getAbsolutePath());
+            return true;
+          }
+        }
+
+        // Exclude files with a specific file-ending.
+      } else if (exclusion.matches("^\\.[0-9a-zA-Z]+$") && fileToCheckFor.getAbsolutePath()
+                                                                         .endsWith(exclusion)) {
         LOG.debug("Excluding file/directory: " + fileToCheckFor.getAbsolutePath());
         return true;
+
+        // Exclude specific file/directory inside modpack from server pack
       } else if (fileToCheckFor.getAbsolutePath()
                                .startsWith(new File(modpackDir, exclusion).getAbsolutePath())) {
         LOG.debug("Excluding file/directory: " + fileToCheckFor.getAbsolutePath());
@@ -1380,7 +1550,6 @@ public final class ServerPackHandler {
 
     return false;
   }
-
 
   /**
    * Check whether the installer for the given combination of Minecraft version, modloader and
@@ -1608,7 +1777,6 @@ public final class ServerPackHandler {
    * @return A list of all mods to include in the server pack.
    * @author Griefed
    */
-  @Contract("_ -> new")
   public @NotNull List<File> getModsToInclude(
       @NotNull final ConfigurationModel configurationModel) {
 
@@ -1749,6 +1917,11 @@ public final class ServerPackHandler {
      */
     public void copy() throws SecurityException, UnsupportedOperationException, IOException {
       try {
+        try {
+          FileUtils.createParentDirectories(DESTINATION_FILE);
+        } catch (IOException ignored) {
+
+        }
         if (!SOURCE_FILE.isDirectory()) {
 
           FileUtils.copyFile(
@@ -1776,7 +1949,6 @@ public final class ServerPackHandler {
      * {@link String}-combination, separated by a {@code ;}
      * @author Griefed
      */
-    @Contract(pure = true)
     @Override
     public @NotNull String toString() {
       return SOURCE_PATH + ";" + DESTINATION_PATH;

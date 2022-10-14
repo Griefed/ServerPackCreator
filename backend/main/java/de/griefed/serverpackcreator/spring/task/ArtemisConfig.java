@@ -51,7 +51,7 @@ public class ArtemisConfig implements ArtemisConfigurationCustomizer {
    */
   @Autowired
   public ArtemisConfig(ApplicationProperties injectedApplicationProperties) {
-    this.APPLICATIONPROPERTIES = injectedApplicationProperties;
+    APPLICATIONPROPERTIES = injectedApplicationProperties;
   }
 
   /**
