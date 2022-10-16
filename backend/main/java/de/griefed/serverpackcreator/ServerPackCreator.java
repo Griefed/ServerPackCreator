@@ -177,9 +177,11 @@ public class ServerPackCreator {
 
     if (COMMANDLINE_PARSER.getLanguageToUse().isPresent()) {
 
+      APPLICATIONPROPERTIES.writeLocaleToFile(COMMANDLINE_PARSER.LANG);
+
       I18N = new I18n(
           APPLICATIONPROPERTIES,
-          COMMANDLINE_PARSER.getLanguageToUse().get());
+          COMMANDLINE_PARSER.LANG);
 
     } else {
 

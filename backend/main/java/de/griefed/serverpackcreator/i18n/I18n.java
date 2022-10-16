@@ -70,7 +70,6 @@ public final class I18n {
       ResourceBundle.getBundle(
           "de/griefed/resources/lang/lang_en_us", new Locale("en", "us"), new UTF8Control());
   private final Map<String, String> CURRENT_LANGUAGE = new HashMap<>(2);
-  private final File PROPERTIESFILE = new File("serverpackcreator.properties");
   private final String MAP_PATH_LANGUAGE = "language";
   private final String MAP_PATH_COUNTRY = "country";
   private final List<String> SUPPORTED_LANGUAGES =
@@ -111,7 +110,6 @@ public final class I18n {
     try {
 
       initialize(locale);
-      writeLocaleToFile(locale);
 
     } catch (IncorrectLanguageException ex) {
       LOG.error("The specified language is not supported: " + locale, ex);
@@ -218,25 +216,6 @@ public final class I18n {
     if (APPLICATIONPROPERTIES.serverPackCreatorVersion().equals("dev")) {
       LOG.info(getMessage("encoding.check"));
       System.out.println(getMessage("encoding.check"));
-    }
-  }
-
-  /**
-   * Writes the specified locale from -lang your_locale to a lang.properties file to ensure every
-   * subsequent start of serverpackcreator is executed using said locale. This method should
-   * <strong>not</strong> call {@link #getMessage(String)}, as the initialization of said manager
-   * is called from here. Therefore, localized strings are not yet available.
-   *
-   * @param locale The locale the user specified when they ran serverpackcreator with -lang
-   *               -your_locale.
-   * @author Griefed
-   */
-  void writeLocaleToFile(String locale) {
-    if (!APPLICATIONPROPERTIES.getLanguage().equals(locale)) {
-
-      APPLICATIONPROPERTIES.setLanguage(locale);
-      APPLICATIONPROPERTIES.saveToDisk(APPLICATIONPROPERTIES.serverPackCreatorPropertiesFile());
-
     }
   }
 

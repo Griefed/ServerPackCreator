@@ -80,13 +80,13 @@ public final class ApplicationProperties {
   private final String SERVERPACKCREATOR_VERSION;
   private final String[] SUPPORTED_MODLOADERS = new String[]{"Fabric", "Forge", "Quilt",
       "LegacyFabric"};
-  private final String FALLBACK_DIRECTORIES_INCLUDE_ASSTRING = "mods,config,kubejs,defaultconfigs,scripts";
+  private final String FALLBACK_DIRECTORIES_INCLUDE_ASSTRING = "addonpacks,blueprints,config,configs,customnpcs,defaultconfigs,global_data_packs,global_packs,kubejs,maps,mods,openloader,scripts,shrines-saves,structures,structurize,worldshape,Zoestria";
   private final TreeSet<String> FALLBACK_DIRECTORIES_INCLUDE =
       new TreeSet<>(Arrays.asList(FALLBACK_DIRECTORIES_INCLUDE_ASSTRING.split(",")));
   private final TreeSet<String> DIRECTORIES_TO_INCLUDE = new TreeSet<>(
       FALLBACK_DIRECTORIES_INCLUDE);
   private final String FALLBACK_DIRECTORIES_EXCLUDE_ASSTRING =
-      "overrides,packmenu,resourcepacks,server_pack,fancymenu,libraries,downloads,logs,profileImage,resourcepacks,screenshots,shaderpacks,tv-cache,asm";
+      "animation,asm,cache,changelogs,craftpresence,crash-reports,downloads,icons,libraries,local,logs,overrides,packmenu,profileImage,profileImage,resourcepacks,screenshots,server_pack,shaderpacks,simple-rpc,tv-cache";
   private final TreeSet<String> FALLBACK_DIRECTORIES_EXCLUDE =
       new TreeSet<>(Arrays.asList(FALLBACK_DIRECTORIES_EXCLUDE_ASSTRING.split(",")));
   private final TreeSet<String> DIRECTORIES_TO_EXCLUDE = new TreeSet<>(
@@ -777,8 +777,8 @@ public final class ApplicationProperties {
    * is considered invalid, the system default is acquired and returned.
    *
    * @param pathToJava The path to check for whether it is a valid Java installation.
-   * @return Returns the path to the Java installation. If user input was incorrect, SPC
-   * will try to acquire the path automatically.
+   * @return Returns the path to the Java installation. If user input was incorrect, SPC will try to
+   * acquire the path automatically.
    * @author Griefed
    */
   private @NotNull String getJavaPath(@NotNull String pathToJava) {
@@ -1320,6 +1320,23 @@ public final class ApplicationProperties {
    */
   public @NotNull List<File> scriptTemplates() {
     return new ArrayList<>(SCRIPT_TEMPLATES);
+  }
+
+  /**
+   * Writes the specified locale from -lang your_locale to a lang.properties file to ensure every
+   * subsequent start of serverpackcreator is executed using said locale.
+   *
+   * @param locale The locale the user specified when they ran serverpackcreator with -lang
+   *               -your_locale.
+   * @author Griefed
+   */
+  void writeLocaleToFile(String locale) {
+    if (!getLanguage().equals(locale)) {
+
+      setLanguage(locale);
+      saveToDisk(serverPackCreatorPropertiesFile());
+
+    }
   }
 
   /**
