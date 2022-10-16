@@ -17,7 +17,7 @@ public class ApplicationAddonsTest {
   static {
     try {
       FileUtils.copyDirectory(
-          new File("backend/test/resources/testresources/addons"), new File("plugins"));
+          new File("backend/test/resources/testresources/addons"), new File("tests/plugins"));
     } catch (IOException e) {
       LOG.error("Error copying file.", e);
     }

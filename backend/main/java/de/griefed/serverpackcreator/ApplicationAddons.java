@@ -86,7 +86,8 @@ public final class ApplicationAddons extends JarPluginManager {
       @NotNull ApplicationProperties injectedApplicationProperties,
       @NotNull VersionMeta injectedVersionMeta,
       @NotNull Utilities injectedUtilities) {
-    super();
+
+    super(injectedApplicationProperties.addonsDirectory().toPath());
 
     APPLICATIONPROPERTIES = injectedApplicationProperties;
     VERSIONMETA = injectedVersionMeta;
