@@ -67,17 +67,22 @@ public final class LoggingConfig extends ConfigurationFactory {
     File props = null;
     JarUtilities JAR_UTILS = new JarUtilities();
     HashMap<String, String> SYSINFO = JAR_UTILS.jarInformation(LoggingConfig.class);
-    if (new File("serverpackcreator.properties").isFile()) {
 
-      props = new File("serverpackcreator.properties");
-
-    } else if (new File(SYSINFO.get("jarPath"), "serverpackcreator.properties").isFile()) {
+    if (new File(SYSINFO.get("jarPath"), "serverpackcreator.properties").isFile()) {
 
       props = new File(SYSINFO.get("jarPath"), "serverpackcreator.properties");
+
+    } else if (new File("serverpackcreator.properties").isFile()) {
+
+      props = new File("serverpackcreator.properties");
 
     } else if (new File(new File("").getAbsolutePath(), "serverpackcreator.properties").isFile()) {
 
       props = new File(new File("").getAbsolutePath(), "serverpackcreator.properties");
+
+    } else if (new File(new File("tests").getAbsolutePath(),"serverpackcreator.properties").isFile()) {
+
+      props = new File(new File("tests").getAbsolutePath(),"serverpackcreator.properties");
 
     }
 
@@ -96,7 +101,8 @@ public final class LoggingConfig extends ConfigurationFactory {
 
         } else {
           if (new File(SYSINFO.get("jarPath")).isDirectory()) {
-            HOME = new File(new File("").getAbsolutePath());
+            // Dev environment
+            HOME = new File(new File("tests").getAbsolutePath());
           } else {
             HOME = new File(SYSINFO.get("jarPath")).getParentFile();
           }
@@ -109,7 +115,7 @@ public final class LoggingConfig extends ConfigurationFactory {
     } else {
       if (new File(SYSINFO.get("jarPath")).isDirectory()) {
         // Dev environment
-        HOME = new File("").getAbsoluteFile();
+        HOME = new File("tests").getAbsoluteFile();
       } else {
         HOME = new File(SYSINFO.get("jarPath")).getParentFile();
       }
