@@ -80,7 +80,7 @@ public final class ApplicationProperties {
   private final String SERVERPACKCREATOR_VERSION;
   private final String[] SUPPORTED_MODLOADERS = new String[]{"Fabric", "Forge", "Quilt",
       "LegacyFabric"};
-  private final String FALLBACK_DIRECTORIES_INCLUDE_ASSTRING = "addonpacks,blueprints,config,configs,customnpcs,defaultconfigs,global_data_packs,global_packs,kubejs,maps,mods,openloader,scripts,shrines-saves,structures,structurize,worldshape,Zoestria";
+  private final String FALLBACK_DIRECTORIES_INCLUDE_ASSTRING = "addonpacks,blueprints,config,configs,customnpcs,defaultconfigs,global_data_packs,global_packs,kubejs,maps,mods,openloader,scripts,schematics,shrines-saves,structures,structurize,worldshape,Zoestria";
   private final TreeSet<String> FALLBACK_DIRECTORIES_INCLUDE =
       new TreeSet<>(Arrays.asList(FALLBACK_DIRECTORIES_INCLUDE_ASSTRING.split(",")));
   private final TreeSet<String> DIRECTORIES_TO_INCLUDE = new TreeSet<>(
