@@ -32,15 +32,15 @@ public class ServerPackCreatorTest {
                  "server-packs").isDirectory());
     Assertions.assertTrue(
         new File(ServerPackCreator.getInstance(args).getApplicationProperties().homeDirectory(),
-                 "server_files/server.properties").exists());
+                 "server_files/server.properties").isFile());
     Assertions.assertTrue(
         new File(ServerPackCreator.getInstance(args).getApplicationProperties().homeDirectory(),
-                 "server_files/server-icon.png").exists());
+                 "server_files/server-icon.png").isFile());
     Assertions.assertTrue(
         new File(ServerPackCreator.getInstance(args).getApplicationProperties().homeDirectory(),
-                 "server_files/default_template.ps1").exists());
+                 "server_files/default_template.ps1").isFile());
     Assertions.assertTrue(
         new File(ServerPackCreator.getInstance(args).getApplicationProperties().homeDirectory(),
-                 "server_files/default_template.sh").exists());
+                 "server_files/default_template.sh").isFile());
   }
 }

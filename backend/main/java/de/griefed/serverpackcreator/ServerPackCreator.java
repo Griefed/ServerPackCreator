@@ -53,7 +53,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
@@ -1046,25 +1045,25 @@ public class ServerPackCreator {
     }
 
     getUtilities().FileUtils().createDirectories(
-        Paths.get(APPLICATIONPROPERTIES.serverFilesDirectory().toString()));
+        APPLICATIONPROPERTIES.serverFilesDirectory().toPath());
 
     getUtilities().FileUtils().createDirectories(
-        Paths.get(APPLICATIONPROPERTIES.workDirectory().toString()));
+        APPLICATIONPROPERTIES.workDirectory().toPath());
 
     getUtilities().FileUtils().createDirectories(
-        Paths.get(APPLICATIONPROPERTIES.tempDirectory().toString()));
+        APPLICATIONPROPERTIES.tempDirectory().toPath());
 
     getUtilities().FileUtils().createDirectories(
-        Paths.get(APPLICATIONPROPERTIES.modpacksDirectory().toString()));
+        APPLICATIONPROPERTIES.modpacksDirectory().toPath());
 
     getUtilities().FileUtils().createDirectories(
-        Paths.get(APPLICATIONPROPERTIES.serverPacksDirectory().toString()));
+        APPLICATIONPROPERTIES.serverPacksDirectory().toPath());
 
     getUtilities().FileUtils().createDirectories(
-        Paths.get(APPLICATIONPROPERTIES.addonsDirectory().toString()));
+        APPLICATIONPROPERTIES.addonsDirectory().toPath());
 
     getUtilities().FileUtils().createDirectories(
-        Paths.get(APPLICATIONPROPERTIES.addonConfigsDirectory().toString()));
+        APPLICATIONPROPERTIES.addonConfigsDirectory().toPath());
 
     if (!new File(APPLICATIONPROPERTIES.addonsDirectory(), "disabled.txt").isFile()) {
       try (BufferedWriter writer =
