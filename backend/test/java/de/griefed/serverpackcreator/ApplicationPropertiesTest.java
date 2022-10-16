@@ -226,8 +226,6 @@ public class ApplicationPropertiesTest {
     Assertions.assertNotNull(applicationProperties.serverPacksDirectory());
 
     Assertions.assertNotNull(applicationProperties.getDirectoriesToExclude());
-    applicationProperties.addDirectoryToExclude("test");
-    Assertions.assertTrue(applicationProperties.getDirectoriesToExclude().contains("test"));
 
     Assertions.assertFalse(applicationProperties.getSaveLoadedConfiguration());
     Assertions.assertFalse(applicationProperties.checkForAvailablePreReleases());

@@ -173,6 +173,8 @@ public final class ApplicationProperties {
   private File defaultServerProperties = null;
   private File defaultServerIcon = null;
   private File serverPackCreatorDatabase = null;
+  private File addonsConfigsDirectory = null;
+  private File addonsDirectory = null;
   private File homeDirectory;
   private final TreeSet<File> FALLBACK_SCRIPT_TEMPLATES =
       new TreeSet<>(
@@ -460,17 +462,18 @@ public final class ApplicationProperties {
    * @author Griefed
    */
   private void setServerPacksDir() {
-    if (new File(
-        PROPERTIES.getProperty(PROPERTY_CONFIGURATION_DIRECTORIES_SERVERPACKS)).isDirectory()) {
+    if (PROPERTIES.getProperty(PROPERTY_CONFIGURATION_DIRECTORIES_SERVERPACKS).isEmpty()
+        || PROPERTIES.getProperty(PROPERTY_CONFIGURATION_DIRECTORIES_SERVERPACKS)
+                     .matches("^(?:\\./)?server-packs$")) {
 
-      directoryServerPacks = new File(
-          PROPERTIES.getProperty(PROPERTY_CONFIGURATION_DIRECTORIES_SERVERPACKS));
-
-    } else {
-      LOG.error("Invalid server-packs directory specified. Defaulting to 'server-packs'.");
       directoryServerPacks = new File(
           homeDirectory, "server-packs");
+
+    } else {
+      directoryServerPacks = new File(
+          PROPERTIES.getProperty(PROPERTY_CONFIGURATION_DIRECTORIES_SERVERPACKS));
     }
+
     PROPERTIES.setProperty(PROPERTY_CONFIGURATION_DIRECTORIES_SERVERPACKS,
                            directoryServerPacks.getAbsolutePath());
     LOG.info("Server packs directory set to: " + directoryServerPacks);
@@ -1491,7 +1494,10 @@ public final class ApplicationProperties {
    * @author Griefed
    */
   public @NotNull File addonConfigsDirectory() {
-    return new File(addonsDirectory(), "config");
+    if (addonsConfigsDirectory == null) {
+      addonsConfigsDirectory = new File(addonsDirectory(), "config");
+    }
+    return addonsConfigsDirectory;
   }
 
   /**
@@ -1507,7 +1513,10 @@ public final class ApplicationProperties {
    * @author Griefed
    */
   public @NotNull File addonsDirectory() {
-    return new File(homeDirectory, "plugins");
+    if (addonsDirectory == null) {
+      addonsDirectory = new File(homeDirectory, "plugins");
+    }
+    return addonsDirectory;
   }
 
   /**
@@ -1568,7 +1577,7 @@ public final class ApplicationProperties {
    * @param entry The directory to add to the list of directories to exclude from server packs.
    * @author Griefed
    */
-  public void addDirectoryToExclude(@NotNull String entry) {
+  private void addDirectoryToExclude(@NotNull String entry) {
     if (!DIRECTORIES_TO_INCLUDE.contains(entry) && DIRECTORIES_TO_EXCLUDE.add(entry)) {
       LOG.debug("Adding " + entry + " to list of files or directories to exclude.");
     }
