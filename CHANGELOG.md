@@ -1,3 +1,33 @@
+## [3.15.0-beta.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.15.0-beta.3...3.15.0-beta.4) (2022-10-17)
+
+
+### :scissors: Refactor
+
+* Pass lang-directory and locale, or only lang-directory, to I18N constructor. We do not need the full-on ApplicationProperties in the I18N class. ([58cf3c5](https://git.griefed.de/Griefed/ServerPackCreator/commit/58cf3c5c5d945bfd0bb8bc9c9c19db6bf825cef3))
+* Properly call setLanguage ([846339d](https://git.griefed.de/Griefed/ServerPackCreator/commit/846339d28fea6e798734b6725c8378aa575023be))
+* Replace getLanguage-call with simple call to language field. ([22e2905](https://git.griefed.de/Griefed/ServerPackCreator/commit/22e29056534908b4528daa41fe8527a4a9f836f4))
+
+
+### 📔 Docs
+
+* Add latest property-information ([418d50b](https://git.griefed.de/Griefed/ServerPackCreator/commit/418d50bfc962ebfc80d1fcf59ea2e06763538014))
+
+
+### 🦊 CI/CD
+
+* Retry once if a testjob fails ([8b28b06](https://git.griefed.de/Griefed/ServerPackCreator/commit/8b28b06a414b3695fabe1da83ed44c3c3aeb70e4))
+
+
+### 🛠 Fixes
+
+* Ensure Tomcat directories and serverpackcreator.db reside in ServerPackCreators home-directory. ([a98e080](https://git.griefed.de/Griefed/ServerPackCreator/commit/a98e080c366389a99a7923368713fd26b25cb526))
+
+
+### Other
+
+* Update Quilt manifest ([5ecb76b](https://git.griefed.de/Griefed/ServerPackCreator/commit/5ecb76b80c003e9ad09cdb01ed5e555c0e82f59c))
+* Update Quilt manifest ([dfb5e4c](https://git.griefed.de/Griefed/ServerPackCreator/commit/dfb5e4c17ecef44b463aa975a04f382851744e2b))
+
 ## [3.15.0-beta.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.15.0-beta.2...3.15.0-beta.3) (2022-10-17)
 
 
