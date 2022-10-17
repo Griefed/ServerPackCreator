@@ -27,6 +27,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Optional;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Representation of a Minecraft server, containing information about its Minecraft-version,
@@ -55,11 +57,11 @@ public final class MinecraftServer {
    * @param applicationProperties ServerPackCreator settings.
    * @author Griefed
    */
-  MinecraftServer(String mcVersion,
-                  Type mcType,
-                  URL mcUrl,
-                  Utilities utilities,
-                  ApplicationProperties applicationProperties) {
+  MinecraftServer(@NotNull String mcVersion,
+                  @NotNull Type mcType,
+                  @NotNull URL mcUrl,
+                  @NotNull Utilities utilities,
+                  @NotNull ApplicationProperties applicationProperties) {
 
     UTILITIES = utilities;
     MANIFEST_URL = mcUrl;
@@ -75,7 +77,8 @@ public final class MinecraftServer {
    * @return Version.
    * @author Griefed
    */
-  public String version() {
+  @Contract(pure = true)
+  public @NotNull String version() {
     return VERSION;
   }
 
@@ -86,7 +89,8 @@ public final class MinecraftServer {
    * @return Type.
    * @author Griefed
    */
-  public Type type() {
+  @Contract(pure = true)
+  public @NotNull Type type() {
     return TYPE;
   }
 
@@ -96,7 +100,7 @@ public final class MinecraftServer {
    * @return URL.
    * @author Griefed
    */
-  public Optional<URL> url() {
+  public @NotNull Optional<URL> url() {
     if (serverJson == null) {
       setServerJson();
     }
@@ -130,7 +134,7 @@ public final class MinecraftServer {
    * @return Java version.
    * @author Griefed
    */
-  public Optional<Byte> javaVersion() {
+  public @NotNull Optional<Byte> javaVersion() {
     if (serverJson == null) {
       setServerJson();
     }

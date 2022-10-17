@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.Scanner;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 
 /**
@@ -36,6 +38,7 @@ public final class ListUtilities {
 
   private static final Logger LOG = LogManager.getLogger(ListUtilities.class);
 
+  @Contract(pure = true)
   public ListUtilities() {
   }
 
@@ -44,11 +47,10 @@ public final class ListUtilities {
    * {@code ["element1","element2","element3"} etc.
    *
    * @param listToEncapsulate The String List of which to encapsulate every element in.
-   * @return String. Returns a concatenated String with all elements of the passed list
-   * encapsulated.
+   * @return Returns a concatenated String with all elements of the passed list encapsulated.
    * @author Griefed
    */
-  public String encapsulateListElements(List<String> listToEncapsulate) {
+  public @NotNull String encapsulateListElements(@NotNull List<String> listToEncapsulate) {
 
     if (listToEncapsulate.isEmpty()) {
       return "[]";
@@ -71,10 +73,10 @@ public final class ListUtilities {
    * Prompts the user to enter the values which will make up a String List in the new configuration
    * file. If the user enters an empty line, the method is exited and the String List returned.
    *
-   * @return String List. Returns the list of values entered by the user.
+   * @return Returns the list of values entered by the user.
    * @author whitebear60
    */
-  public List<String> readStringList() {
+  public @NotNull List<String> readStringList() {
 
     Scanner readerArray = new Scanner(System.in);
 
@@ -102,12 +104,13 @@ public final class ListUtilities {
    * Clean a given String List of any entry consisting only of whitespace or a length of
    * {@code 0 }.
    *
-   * @param listToCleanUp List String. The list from which to delete all entries consisting only of
-   *                      whitespace or with a length of zero.
-   * @return List String. Returns the cleaned up list.
+   * @param listToCleanUp The list from which to delete all entries consisting only of whitespace or
+   *                      with a length of zero.
+   * @return Returns the cleaned up list.
    * @author Griefed
    */
-  public List<String> cleanList(List<String> listToCleanUp) {
+  @Contract("_ -> param1")
+  public @NotNull List<String> cleanList(@NotNull List<String> listToCleanUp) {
     listToCleanUp.removeIf(entry -> entry.matches("\\s+") || entry.isEmpty());
     return listToCleanUp;
   }
@@ -122,9 +125,9 @@ public final class ListUtilities {
    * @param printIndexes Whether to print the indexes of the entries.
    * @author Griefed
    */
-  public void printListToConsoleChunked(List<String> list,
+  public void printListToConsoleChunked(@NotNull List<String> list,
                                         int chunkSize,
-                                        String prefix,
+                                        @NotNull String prefix,
                                         boolean printIndexes) {
     StringBuilder text = new StringBuilder();
     for (int i = 0; i < list.size(); i++) {
@@ -159,9 +162,9 @@ public final class ListUtilities {
    * @param printIndexes Whether to print the indexes of the entries.
    * @author Griefed
    */
-  public void printListToLogChunked(List<String> list,
+  public void printListToLogChunked(@NotNull List<String> list,
                                     int chunkSize,
-                                    String prefix,
+                                    @NotNull String prefix,
                                     boolean printIndexes) {
     StringBuilder text = new StringBuilder();
     for (int i = 0; i < list.size(); i++) {

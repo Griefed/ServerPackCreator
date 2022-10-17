@@ -31,6 +31,8 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Information about available Forge loader versions in correlation to Minecraft versions.
@@ -73,9 +75,9 @@ final class ForgeLoader {
    * @param injectedMinecraftMeta Meta for retroactively updating the previously passed meta.
    * @author Griefed
    */
-  ForgeLoader(File forgemanifest,
-              Utilities utilities,
-              MinecraftMeta injectedMinecraftMeta) {
+  ForgeLoader(@NotNull File forgemanifest,
+              @NotNull Utilities utilities,
+              @NotNull MinecraftMeta injectedMinecraftMeta) {
     MANIFEST = forgemanifest;
     UTILITIES = utilities;
     MINECRAFT_META = injectedMinecraftMeta;
@@ -171,7 +173,8 @@ final class ForgeLoader {
    * @return List of the available Minecraft versions for Forge.
    * @author Griefed
    */
-  List<String> minecraftVersions() {
+  @Contract(pure = true)
+  @NotNull List<String> minecraftVersions() {
     return minecraftVersions;
   }
 
@@ -181,7 +184,8 @@ final class ForgeLoader {
    * @return List of the available Forge versions.
    * @author Griefed
    */
-  List<String> forgeVersions() {
+  @Contract(pure = true)
+  @NotNull List<String> forgeVersions() {
     return forgeVersions;
   }
 
@@ -193,7 +197,8 @@ final class ForgeLoader {
    * @return Map containing the version meta.
    * @author Griefed
    */
-  HashMap<String, List<String>> versionMeta() {
+  @Contract(pure = true)
+  @NotNull HashMap<String, List<String>> versionMeta() {
     return versionMeta;
   }
 
@@ -204,7 +209,8 @@ final class ForgeLoader {
    * @return Map with Forge-to-Minecraft-version mappings.
    * @author Griefed
    */
-  HashMap<String, String> forgeToMinecraftMeta() {
+  @Contract(pure = true)
+  @NotNull HashMap<String, String> forgeToMinecraftMeta() {
     return forgeToMinecraftMeta;
   }
 
@@ -216,7 +222,8 @@ final class ForgeLoader {
    * @return Map with Minecraft-Forge-version-to-ForgeInstance mapping.
    * @author Griefed
    */
-  HashMap<String, ForgeInstance> instanceMeta() {
+  @Contract(pure = true)
+  @NotNull HashMap<String, ForgeInstance> instanceMeta() {
     return instanceMeta;
   }
 }

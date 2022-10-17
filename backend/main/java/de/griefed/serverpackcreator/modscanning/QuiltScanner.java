@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.TreeSet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -45,10 +46,10 @@ public final class QuiltScanner extends JsonBasedScanner implements
   private final Utilities UTILITIES;
 
   @Autowired
-  public QuiltScanner(ObjectMapper objectMapper,
-                      Utilities utilities) {
-    this.OBJECT_MAPPER = objectMapper;
-    this.UTILITIES = utilities;
+  public QuiltScanner(@NotNull ObjectMapper objectMapper,
+                      @NotNull Utilities utilities) {
+    OBJECT_MAPPER = objectMapper;
+    UTILITIES = utilities;
   }
 
   /**
@@ -61,7 +62,7 @@ public final class QuiltScanner extends JsonBasedScanner implements
    * @author Griefed
    */
   @Override
-  public TreeSet<File> scan(Collection<File> filesInModsDir) {
+  public @NotNull TreeSet<File> scan(@NotNull Collection<File> filesInModsDir) {
     LOG.info("Scanning Quilt mods for sideness...");
 
     TreeSet<String> modDependencies = new TreeSet<>();
@@ -85,9 +86,9 @@ public final class QuiltScanner extends JsonBasedScanner implements
   }
 
   @Override
-  void checkForClientModsAndDeps(Collection<File> filesInModsDir,
-                                 TreeSet<String> clientMods,
-                                 TreeSet<String> modDependencies) {
+  void checkForClientModsAndDeps(@NotNull Collection<File> filesInModsDir,
+                                 @NotNull TreeSet<String> clientMods,
+                                 @NotNull TreeSet<String> modDependencies) {
     for (File mod : filesInModsDir) {
       if (mod.getName().endsWith("jar")) {
 
@@ -167,8 +168,8 @@ public final class QuiltScanner extends JsonBasedScanner implements
   }
 
   @Override
-  TreeSet<File> getModsDelta(Collection<File> filesInModsDir,
-                             TreeSet<String> clientMods) {
+  @NotNull TreeSet<File> getModsDelta(@NotNull Collection<File> filesInModsDir,
+                                      @NotNull TreeSet<String> clientMods) {
     TreeSet<File> modsDelta = new TreeSet<>();
 
     // After removing dependencies from the list of potential clientside mods, we can remove any mod

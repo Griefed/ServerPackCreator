@@ -57,8 +57,7 @@ public class ServerPackController {
    * GET request for downloading a server pack by the id in the database.
    *
    * @param id The id of the server pack in the database.
-   * @return Gives the requester the requested file as a download, if it
-   * was found.
+   * @return Gives the requester the requested file as a download, if it was found.
    * @author Griefed
    */
   @GetMapping(value = "/download/{id}", produces = "application/zip")

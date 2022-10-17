@@ -27,6 +27,7 @@ import de.griefed.serverpackcreator.utilities.common.Utilities;
 import de.griefed.serverpackcreator.versionmeta.VersionMeta;
 import java.util.ArrayList;
 import java.util.Optional;
+import org.jetbrains.annotations.NotNull;
 
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 interface ServerPackHandlerBase extends ExtensionInformation {
@@ -48,13 +49,13 @@ interface ServerPackHandlerBase extends ExtensionInformation {
    * @author Griefed
    */
   void run(
-      final VersionMeta versionMeta,
-      final Utilities utilities,
-      final ApplicationProperties applicationProperties,
-      final ConfigurationModel configurationModel,
-      final String destination,
-      final Optional<CommentedConfig> addonConfig,
-      final ArrayList<CommentedConfig> packSpecificConfigs)
+      final @NotNull VersionMeta versionMeta,
+      final @NotNull Utilities utilities,
+      final @NotNull ApplicationProperties applicationProperties,
+      final @NotNull ConfigurationModel configurationModel,
+      final @NotNull String destination,
+      final @NotNull Optional<CommentedConfig> addonConfig,
+      final @NotNull ArrayList<CommentedConfig> packSpecificConfigs)
       throws Exception;
 
 }

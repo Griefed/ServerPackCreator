@@ -32,6 +32,8 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Class to extend from if you want to add your own tabs to the ServerPackCreator GUI.
@@ -65,11 +67,11 @@ public abstract class ExtensionTab extends JPanel {
    *                              an Optional.
    */
   protected ExtensionTab(
-      final VersionMeta versionMeta,
-      final ApplicationProperties applicationProperties,
-      final Utilities utilities,
-      final Optional<CommentedConfig> addonConfig,
-      final Optional<File> configFile) {
+      final @NotNull VersionMeta versionMeta,
+      final @NotNull ApplicationProperties applicationProperties,
+      final @NotNull Utilities utilities,
+      final @NotNull Optional<CommentedConfig> addonConfig,
+      final @NotNull Optional<File> configFile) {
 
     super();
     VERSIONMETA = versionMeta;
@@ -110,7 +112,8 @@ public abstract class ExtensionTab extends JPanel {
    * @return The version meta used by ServerPackCreator
    * @author Griefed
    */
-  protected final VersionMeta getVersionMeta() {
+  @Contract(pure = true)
+  protected final @NotNull VersionMeta getVersionMeta() {
     return VERSIONMETA;
   }
 
@@ -123,7 +126,8 @@ public abstract class ExtensionTab extends JPanel {
    * ServerPackCreator.
    * @author Griefed
    */
-  protected final ApplicationProperties getApplicationProperties() {
+  @Contract(pure = true)
+  protected final @NotNull ApplicationProperties getApplicationProperties() {
     return APPLICATIONPROPERTIES;
   }
 
@@ -133,7 +137,8 @@ public abstract class ExtensionTab extends JPanel {
    * @return Utilities used across ServerPackCreator.
    * @author Griefed
    */
-  protected final Utilities getUtilities() {
+  @Contract(pure = true)
+  protected final @NotNull Utilities getUtilities() {
     return UTILITIES;
   }
 }

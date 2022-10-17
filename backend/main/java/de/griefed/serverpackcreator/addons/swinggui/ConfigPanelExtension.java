@@ -27,6 +27,7 @@ import de.griefed.serverpackcreator.utilities.common.Utilities;
 import de.griefed.serverpackcreator.versionmeta.VersionMeta;
 import java.util.Optional;
 import javax.swing.JPanel;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Extension point for addons which add additional {@link JPanel}s in a given server pack tab,
@@ -67,12 +68,12 @@ public interface ConfigPanelExtension extends ExtensionInformation {
    * when using an addon.
    * @author Griefed
    */
-  ExtensionConfigPanel getPanel(
-      final VersionMeta versionMeta,
-      final ApplicationProperties applicationProperties,
-      final Utilities utilities,
-      final TabCreateServerPack tabCreateServerPack,
-      final Optional<CommentedConfig> addonConfig,
-      final String extensionName,
-      final String pluginID);
+  @NotNull ExtensionConfigPanel getPanel(
+      final @NotNull VersionMeta versionMeta,
+      final @NotNull ApplicationProperties applicationProperties,
+      final @NotNull Utilities utilities,
+      final @NotNull TabCreateServerPack tabCreateServerPack,
+      final @NotNull Optional<CommentedConfig> addonConfig,
+      final @NotNull String extensionName,
+      final @NotNull String pluginID);
 }

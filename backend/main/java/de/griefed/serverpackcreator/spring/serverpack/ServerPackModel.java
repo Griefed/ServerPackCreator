@@ -169,8 +169,8 @@ public class ServerPackModel extends ConfigurationModel {
   /**
    * Getter for the file display name of the project file from which the server pack was generated.
    *
-   * @return Returns the file display name of the project file from which the server pack
-   * was generated.
+   * @return Returns the file display name of the project file from which the server pack was
+   * generated.
    * @author Griefed
    */
   @Override
@@ -193,8 +193,7 @@ public class ServerPackModel extends ConfigurationModel {
   /**
    * Getter for the file disk name of the project file from which the server pack was generated.
    *
-   * @return The file disk name of the project file from which the server pack was
-   * generated.
+   * @return The file disk name of the project file from which the server pack was generated.
    * @author Griefed
    */
   @Override

@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * LegacyFabric version parent-class, implemented by {@link LegacyFabricGame} and
@@ -42,8 +43,8 @@ abstract class LegacyFabricVersioning {
    * @param manifest  The manifest holding the version information for this LegacyFabric type.
    * @param utilities Commonly used utilities across ServerPackCreator.
    */
-  LegacyFabricVersioning(File manifest,
-                         Utilities utilities) {
+  LegacyFabricVersioning(@NotNull File manifest,
+                         @NotNull Utilities utilities) {
     UTILITIES = utilities;
     MANIFEST = manifest;
   }
@@ -75,7 +76,7 @@ abstract class LegacyFabricVersioning {
    * @return Release versions.
    * @author Griefed
    */
-  List<String> releases() {
+  @NotNull List<String> releases() {
     return RELEASES;
   }
 
@@ -85,7 +86,7 @@ abstract class LegacyFabricVersioning {
    * @return Snapshot/pre-release versions.
    * @author Griefed
    */
-  List<String> snapshots() {
+  @NotNull List<String> snapshots() {
     return SNAPSHOTS;
   }
 
@@ -95,7 +96,7 @@ abstract class LegacyFabricVersioning {
    * @return All versions.
    * @author Griefed
    */
-  List<String> all() {
+  @NotNull List<String> all() {
     return ALL;
   }
 

@@ -43,6 +43,7 @@ import java.util.Properties;
 import java.util.TreeSet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
@@ -389,7 +390,7 @@ public final class ApplicationProperties {
    * @author Griefed
    */
   private void checkTomcatLogsDirectory() {
-    PROPERTIES.setProperty("server.tomcat.accesslog.directory",logsDirectory().getAbsolutePath());
+    PROPERTIES.setProperty("server.tomcat.accesslog.directory", logsDirectory().getAbsolutePath());
   }
 
   /**
@@ -399,16 +400,18 @@ public final class ApplicationProperties {
    * @author Griefed
    */
   private void checkTomcatBaseDirectory() {
-    PROPERTIES.setProperty("server.tomcat.basedir",homeDirectory.getAbsolutePath());
+    PROPERTIES.setProperty("server.tomcat.basedir", homeDirectory.getAbsolutePath());
   }
 
   /**
    * Check and, if needed, change the path to the Artemis-data-directory for the webservice, to be
    * placed in ServerPackCreators home-directory.
+   *
    * @author Griefed
    */
   private void checkArtemisDataDirectory() {
-    PROPERTIES.setProperty("spring.artemis.embedded.data-directory",new File(workDirectory(),"artemis").getAbsolutePath());
+    PROPERTIES.setProperty("spring.artemis.embedded.data-directory",
+                           new File(workDirectory(), "artemis").getAbsolutePath());
   }
 
   /**
@@ -988,10 +991,11 @@ public final class ApplicationProperties {
   /**
    * Getter for the path to the Java executable/binary.
    *
-   * @return String. Returns the path to the Java executable/binary.
+   * @return Returns the path to the Java executable/binary.
    * @author Griefed
    */
-  public String java() {
+  @Contract(pure = true)
+  public @NotNull String java() {
     return javaPath;
   }
 
@@ -1334,6 +1338,7 @@ public final class ApplicationProperties {
    * @return logs
    * @author Griefed
    */
+  @Contract(" -> new")
   public @NotNull File logsDirectory() {
     return new File(homeDirectory, "logs");
   }
@@ -1347,6 +1352,7 @@ public final class ApplicationProperties {
    * @return The default shell-script template.
    * @author Griefed
    */
+  @Contract(" -> new")
   public @NotNull File defaultShellTemplate() {
     return new File(DEFAULT_SHELL_TEMPLATE);
   }
@@ -1360,6 +1366,7 @@ public final class ApplicationProperties {
    * @return The default PowerShell-script template.
    * @author Griefed
    */
+  @Contract(" -> new")
   public @NotNull File defaultPowershellTemplate() {
     return new File(DEFAULT_POWERSHELL_TEMPLATE);
   }
@@ -1371,6 +1378,7 @@ public final class ApplicationProperties {
    * @return server_files/script templates
    * @author Griefed
    */
+  @Contract(value = " -> new", pure = true)
   public @NotNull List<File> scriptTemplates() {
     return new ArrayList<>(SCRIPT_TEMPLATES);
   }
@@ -1434,6 +1442,7 @@ public final class ApplicationProperties {
    * @return server_files
    * @author Griefed
    */
+  @Contract(" -> new")
   public @NotNull File serverFilesDirectory() {
     return new File(homeDirectory, "server_files");
   }
@@ -1480,6 +1489,7 @@ public final class ApplicationProperties {
    * @return home-directory of SPC.
    * @author Griefed
    */
+  @Contract(pure = true)
   public @NotNull File homeDirectory() {
     return homeDirectory;
   }
@@ -1509,9 +1519,10 @@ public final class ApplicationProperties {
    * said release. If a non-release-version is used, from a regular pipeline or local dev-build,
    * then this will be set to {@code dev}.
    *
-   * @return String. Returns the version of ServerPackCreator.
+   * @return Returns the version of ServerPackCreator.
    * @author Griefed
    */
+  @Contract(pure = true)
   public @NotNull String serverPackCreatorVersion() {
     return SERVERPACKCREATOR_VERSION;
   }
@@ -1522,6 +1533,7 @@ public final class ApplicationProperties {
    * @return Array of modloaders supported by ServerPackCreator.
    * @author Griefed
    */
+  @Contract(pure = true)
   public @NotNull String @NotNull [] supportedModloaders() {
     return SUPPORTED_MODLOADERS;
   }
@@ -1579,6 +1591,7 @@ public final class ApplicationProperties {
    * @return Directory in which the server packs are stored/generated in.
    * @author Griefed
    */
+  @Contract(pure = true)
   public @NotNull File serverPacksDirectory() {
     return directoryServerPacks;
   }
@@ -1591,6 +1604,7 @@ public final class ApplicationProperties {
    * @return The fallback list of clientside-only mods.
    * @author Griefed
    */
+  @Contract(" -> new")
   public @NotNull List<String> getListFallbackMods() {
     if (exclusionFilter.equals(ExclusionFilter.REGEX)) {
       return new ArrayList<>(FALLBACK_MODS_REGEX);
@@ -1605,6 +1619,7 @@ public final class ApplicationProperties {
    * @return List containing default directories to include in a server pack.
    * @author Griefed
    */
+  @Contract(value = " -> new", pure = true)
   public @NotNull List<String> getDirectoriesToInclude() {
     return new ArrayList<>(DIRECTORIES_TO_INCLUDE);
   }
@@ -1615,6 +1630,7 @@ public final class ApplicationProperties {
    * @return Returns the list of directories to exclude from server packs.
    * @author Griefed
    */
+  @Contract(value = " -> new", pure = true)
   public @NotNull List<String> getDirectoriesToExclude() {
     return new ArrayList<>(DIRECTORIES_TO_EXCLUDE);
   }
@@ -1634,9 +1650,10 @@ public final class ApplicationProperties {
   /**
    * Getter for whether the last loaded configuration file should be saved to as well.
    *
-   * @return Boolean. Whether the last loaded configuration file should be saved to as well.
+   * @return Whether the last loaded configuration file should be saved to as well.
    * @author Griefed
    */
+  @Contract(pure = true)
   public boolean getSaveLoadedConfiguration() {
     return saveLoadedConfiguration;
   }
@@ -1644,9 +1661,10 @@ public final class ApplicationProperties {
   /**
    * Getter for the maximum disk usage at which JMS/Artemis will stop storing queues on disk.
    *
-   * @return Integer. The maximum disk usage at which JMS/Artemis will stop storing queues on disk.
+   * @return The maximum disk usage at which JMS/Artemis will stop storing queues on disk.
    * @author Griefed
    */
+  @Contract(pure = true)
   public int getQueueMaxDiskUsage() {
     return queueMaxDiskUsage;
   }
@@ -1657,9 +1675,10 @@ public final class ApplicationProperties {
    * for available PreReleases are enabled, {@code false} if no checks for available PreReleases
    * should be made.
    *
-   * @return Boolean. Whether checks for available PreReleases are enabled.
+   * @return Whether checks for available PreReleases are enabled.
    * @author Griefed
    */
+  @Contract(pure = true)
   public boolean checkForAvailablePreReleases() {
     return checkForPreReleases;
   }
@@ -1669,6 +1688,7 @@ public final class ApplicationProperties {
    *
    * @return Aikars flags.
    */
+  @Contract(pure = true)
   public @NotNull String getAikarsFlags() {
     return aikarsFlags;
   }
@@ -1690,6 +1710,7 @@ public final class ApplicationProperties {
    * @return Files and folders to exclude from the ZIP archive of a server pack.
    * @author Griefed
    */
+  @Contract(value = " -> new", pure = true)
   public @NotNull List<String> getFilesToExcludeFromZipArchive() {
     return new ArrayList<>(FILES_TO_EXCLUDE_FROM_ZIP);
   }
@@ -1700,6 +1721,7 @@ public final class ApplicationProperties {
    * @return {@code true} if the exclusion is enabled.
    * @author Griefed
    */
+  @Contract(pure = true)
   public boolean isZipFileExclusionEnabled() {
     return isZipFileExclusionEnabled;
   }
@@ -1709,6 +1731,7 @@ public final class ApplicationProperties {
    *
    * @return {@code true} if autodiscovery is enabled.
    */
+  @Contract(pure = true)
   public boolean isAutoExcludingModsEnabled() {
     return autoExcludingModsEnabled;
   }
@@ -1846,6 +1869,7 @@ public final class ApplicationProperties {
    * @param value The value to store in the specified key.
    * @author Griefed
    */
+  @Contract("_, _ -> param2")
   private @NotNull String defineProperty(@NotNull String key,
                                          @NotNull String value) {
     PROPERTIES.setProperty(key, value);
@@ -1874,6 +1898,7 @@ public final class ApplicationProperties {
    * @return {@code true} if it is enabled.
    * @author Griefed
    */
+  @Contract(pure = true)
   public boolean isServerPacksOverwriteEnabled() {
     return serverPacksOverwriteEnabled;
   }
@@ -1884,6 +1909,7 @@ public final class ApplicationProperties {
    * @return {@code true} if it is enabled.
    * @author Griefed
    */
+  @Contract(pure = true)
   public boolean isServerPackCleanupEnabled() {
     return serverPackCleanupEnabled;
   }
@@ -1894,6 +1920,7 @@ public final class ApplicationProperties {
    * @return The language currently set and used.
    * @author Griefed
    */
+  @Contract(pure = true)
   public @NotNull String getLanguage() {
     return language;
   }
@@ -1916,6 +1943,7 @@ public final class ApplicationProperties {
    * @return URL to the HasteBin server documents endpoint.
    * @author Griefed
    */
+  @Contract(pure = true)
   public @NotNull String getHasteBinServerUrl() {
     return hasteBinServerUrl;
   }
@@ -1927,6 +1955,7 @@ public final class ApplicationProperties {
    * @return {@code true} if they are available.
    * @author Griefed
    */
+  @Contract(pure = true)
   public boolean enableMinecraftPreReleases() {
     return minecraftPreReleases;
   }
@@ -1944,6 +1973,7 @@ public final class ApplicationProperties {
    *
    * @return The filter method by which to exclude user-specified clientside-only mods.
    */
+  @Contract(pure = true)
   public @NotNull ExclusionFilter exclusionFilter() {
     return exclusionFilter;
   }
@@ -1994,6 +2024,7 @@ public final class ApplicationProperties {
    * @return {@code true} if enabled.
    * @author Griefed
    */
+  @Contract(pure = true)
   public boolean isJavaScriptAutoupdateEnabled() {
     return javaScriptAutoupdate;
   }
@@ -2004,6 +2035,7 @@ public final class ApplicationProperties {
    * @return Folder containing the ServerPackCreator.exe or JAR-file.
    * @author Griefed
    */
+  @Contract(pure = true)
   public @NotNull File getJarFolder() {
     return JAR_INFORMATION.JAR_FOLDER;
   }
@@ -2014,6 +2046,7 @@ public final class ApplicationProperties {
    * @return The .exe or JAR-file of ServerPackCreator.
    * @author Griefed
    */
+  @Contract(pure = true)
   public @NotNull File getJarFile() {
     return JAR_INFORMATION.JAR_FILE;
   }
@@ -2024,6 +2057,7 @@ public final class ApplicationProperties {
    * @return The name of the .exe or JAR-file.
    * @author Griefed
    */
+  @Contract(pure = true)
   public @NotNull String getJarName() {
     return JAR_INFORMATION.JAR_NAME;
   }
@@ -2034,6 +2068,7 @@ public final class ApplicationProperties {
    * @return Java version.
    * @author Griefed
    */
+  @Contract(pure = true)
   public @NotNull String getJavaVersion() {
     return JAR_INFORMATION.JAVA_VERSION;
   }
@@ -2044,6 +2079,7 @@ public final class ApplicationProperties {
    * @return Arch.
    * @author Griefed
    */
+  @Contract(pure = true)
   public @NotNull String getOSArch() {
     return JAR_INFORMATION.OS_ARCH;
   }
@@ -2054,6 +2090,7 @@ public final class ApplicationProperties {
    * @return OS name.
    * @author Griefed
    */
+  @Contract(pure = true)
   public @NotNull String getOSName() {
     return JAR_INFORMATION.OS_NAME;
   }
@@ -2064,6 +2101,7 @@ public final class ApplicationProperties {
    * @return Version of the OS.
    * @author Griefed
    */
+  @Contract(pure = true)
   public @NotNull String getOSVersion() {
     return JAR_INFORMATION.OS_VERSION;
   }
@@ -2074,6 +2112,7 @@ public final class ApplicationProperties {
    * @return {@code true} if a .exe was/is used.
    * @author Griefed
    */
+  @Contract(pure = true)
   public boolean isExe() {
     return JAR_INFORMATION.IS_EXE;
   }

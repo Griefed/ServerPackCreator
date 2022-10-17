@@ -31,6 +31,8 @@ import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Template ConfigPanel for use in {@link ConfigPanelExtension} extensions.
@@ -74,13 +76,13 @@ public abstract class ExtensionConfigPanel extends JPanel {
    * @author Griefed
    */
   protected ExtensionConfigPanel(
-      final VersionMeta versionMeta,
-      final ApplicationProperties applicationProperties,
-      final Utilities utilities,
-      final TabCreateServerPack tabCreateServerPack,
-      final Optional<CommentedConfig> addonConfig,
-      final String extensionName,
-      final String pluginID) {
+      final @NotNull VersionMeta versionMeta,
+      final @NotNull ApplicationProperties applicationProperties,
+      final @NotNull Utilities utilities,
+      final @NotNull TabCreateServerPack tabCreateServerPack,
+      final @NotNull Optional<CommentedConfig> addonConfig,
+      final @NotNull String extensionName,
+      final @NotNull String pluginID) {
 
     super();
     VERSIONMETA = versionMeta;
@@ -99,7 +101,8 @@ public abstract class ExtensionConfigPanel extends JPanel {
    * @return The global addon configuration, wrapped in an Optional.
    * @author Griefed
    */
-  protected final Optional<CommentedConfig> getAddonConfig() {
+  @Contract(pure = true)
+  protected final @NotNull Optional<CommentedConfig> getAddonConfig() {
     return ADDON_CONFIG;
   }
 
@@ -111,7 +114,8 @@ public abstract class ExtensionConfigPanel extends JPanel {
    * @return The ID of the addon which provides this extension implementation.
    * @author Griefed
    */
-  public final String pluginID() {
+  @Contract(pure = true)
+  public final @NotNull String pluginID() {
     return EXTENSION_ID;
   }
 
@@ -123,7 +127,7 @@ public abstract class ExtensionConfigPanel extends JPanel {
    * extensions.
    * @author Griefed
    */
-  public abstract ArrayList<CommentedConfig> serverPackExtensionConfig();
+  public abstract @NotNull ArrayList<CommentedConfig> serverPackExtensionConfig();
 
   /**
    * Pass the extension configuration to the configuration panel so it can then, in turn, load the
@@ -134,7 +138,7 @@ public abstract class ExtensionConfigPanel extends JPanel {
    * @author Griefed
    */
   public abstract void setServerPackExtensionConfig(
-      ArrayList<CommentedConfig> serverPackExtensionConfig);
+      @NotNull ArrayList<CommentedConfig> serverPackExtensionConfig);
 
   /**
    * Get the tab in which this ConfigPanel resides in, giving you access to various fields for
@@ -143,7 +147,8 @@ public abstract class ExtensionConfigPanel extends JPanel {
    * @return The server pack config tab in which this ConfigPanel resides in.
    * @author Griefed
    */
-  protected final TabCreateServerPack getTabCreateServerPack() {
+  @Contract(pure = true)
+  protected final @NotNull TabCreateServerPack getTabCreateServerPack() {
     return SERVERPACK_CONFIGURATION_TAB;
   }
 
@@ -154,7 +159,8 @@ public abstract class ExtensionConfigPanel extends JPanel {
    * @return The version meta used by ServerPackCreator
    * @author Griefed
    */
-  protected final VersionMeta getVersionMeta() {
+  @Contract(pure = true)
+  protected final @NotNull VersionMeta getVersionMeta() {
     return VERSIONMETA;
   }
 
@@ -167,7 +173,8 @@ public abstract class ExtensionConfigPanel extends JPanel {
    * ServerPackCreator.
    * @author Griefed
    */
-  protected final ApplicationProperties getApplicationProperties() {
+  @Contract(pure = true)
+  protected final @NotNull ApplicationProperties getApplicationProperties() {
     return APPLICATIONPROPERTIES;
   }
 
@@ -177,7 +184,8 @@ public abstract class ExtensionConfigPanel extends JPanel {
    * @return Utilities used across ServerPackCreator.
    * @author Griefed
    */
-  protected final Utilities getUtilities() {
+  @Contract(pure = true)
+  protected final @NotNull Utilities getUtilities() {
     return UTILITIES;
   }
 

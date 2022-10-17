@@ -75,6 +75,7 @@ import org.apache.commons.io.monitor.FileAlterationMonitor;
 import org.apache.commons.io.monitor.FileAlterationObserver;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.boot.SpringApplication;
@@ -303,7 +304,7 @@ public class ServerPackCreator {
    * @param args Arguments passed from invocation in {@link #main(String[])}.
    * @author Griefed
    */
-  public synchronized void web(String[] args) {
+  public synchronized void web(String @NotNull [] args) {
 
     String[] springArgs = new String[args.length + 1];
     System.arraycopy(args, 0, springArgs, 0, args.length);
@@ -1209,32 +1210,38 @@ public class ServerPackCreator {
 
     FileAlterationListener fileAlterationListener =
         new FileAlterationListener() {
+          @Contract(pure = true)
           @Override
           public void onStart(FileAlterationObserver observer) {
           }
 
+          @Contract(pure = true)
           @Override
           public void onDirectoryCreate(File directory) {
           }
 
+          @Contract(pure = true)
           @Override
           public void onDirectoryChange(File directory) {
           }
 
+          @Contract(pure = true)
           @Override
           public void onDirectoryDelete(File directory) {
           }
 
+          @Contract(pure = true)
           @Override
           public void onFileCreate(File file) {
           }
 
+          @Contract(pure = true)
           @Override
           public void onFileChange(File file) {
           }
 
           @Override
-          public void onFileDelete(File file) {
+          public void onFileDelete(@NotNull File file) {
             if (!file.toString()
                      .contains(APPLICATIONPROPERTIES.serverPacksDirectory().toString())
                 && !file.toString()
@@ -1269,16 +1276,17 @@ public class ServerPackCreator {
             }
           }
 
+          @Contract(pure = true)
           @Override
           public void onStop(FileAlterationObserver observer) {
           }
 
-          private boolean check(File watched,
-                                File toCreate) {
+          private boolean check(@NotNull File watched,
+                                @NotNull File toCreate) {
             return watched.getName().equals(toCreate.getName());
           }
 
-          private void createFile(File toCreate) {
+          private void createFile(@NotNull File toCreate) {
 
             getUtilities().JarUtils()
                           .copyFileFromJar(toCreate.getName(), ServerPackCreator.class,
@@ -1568,7 +1576,7 @@ public class ServerPackCreator {
 
   /**
    * Overwrite the specified server-files file, even when it exists. Used to ensure files like the
-   * default script templates are always up to date.
+   * default script templates are always up-to-date.
    *
    * @param fileToOverwrite The file which is to be overwritten. If it exists. it is first deleted,
    *                        then extracted from our JAR-file.
@@ -1832,6 +1840,7 @@ public class ServerPackCreator {
 
     private final String ARGUMENT;
 
+    @Contract(pure = true)
     Mode(@NotNull String cliArg) {
       ARGUMENT = cliArg;
     }
@@ -1842,6 +1851,7 @@ public class ServerPackCreator {
      * @return Textual representation of this mode.
      * @author Griefed
      */
+    @Contract(pure = true)
     public @NotNull String argument() {
       return ARGUMENT;
     }

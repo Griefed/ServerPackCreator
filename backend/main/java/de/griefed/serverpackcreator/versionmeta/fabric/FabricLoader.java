@@ -25,6 +25,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.xml.parsers.ParserConfigurationException;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -48,8 +50,8 @@ final class FabricLoader {
    * @param utilities      Commonly used utilities across ServerPackCreator.
    * @author Griefed
    */
-  FabricLoader(File loaderManifest,
-               Utilities utilities) {
+  FabricLoader(@NotNull File loaderManifest,
+               @NotNull Utilities utilities) {
     MANIFEST = loaderManifest;
     UTILITIES = utilities;
   }
@@ -93,7 +95,8 @@ final class FabricLoader {
    * @return The latest Fabric loader version.
    * @author Griefed
    */
-  String latestLoaderVersion() {
+  @Contract(pure = true)
+  @NotNull String latestLoaderVersion() {
     return latest;
   }
 
@@ -103,7 +106,8 @@ final class FabricLoader {
    * @return The release Fabric loader version.
    * @author Griefed
    */
-  String releaseLoaderVersion() {
+  @Contract(pure = true)
+  @NotNull String releaseLoaderVersion() {
     return release;
   }
 
@@ -113,7 +117,8 @@ final class FabricLoader {
    * @return List of the available Fabric loader versions.
    * @author Griefed
    */
-  List<String> loaders() {
+  @Contract(pure = true)
+  @NotNull List<String> loaders() {
     return loaders;
   }
 }

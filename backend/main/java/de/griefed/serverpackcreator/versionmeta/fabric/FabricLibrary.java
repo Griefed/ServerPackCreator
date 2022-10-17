@@ -19,6 +19,8 @@
  */
 package de.griefed.serverpackcreator.versionmeta.fabric;
 
+import org.jetbrains.annotations.Contract;
+
 /**
  * Library information.
  *
@@ -29,6 +31,7 @@ public final class FabricLibrary {
   private String name;
   private String url;
 
+  @Contract(pure = true)
   FabricLibrary() {
   }
 
@@ -38,6 +41,7 @@ public final class FabricLibrary {
    * @return Library-name.
    * @author Griefed
    */
+  @Contract(pure = true)
   public String getName() {
     return name;
   }
@@ -48,6 +52,7 @@ public final class FabricLibrary {
    * @return Library-URL as a String.
    * @author Griefed
    */
+  @Contract(pure = true)
   public String getUrl() {
     return url;
   }

@@ -19,48 +19,20 @@
  */
 package de.griefed.serverpackcreator.i18n;
 
+import org.jetbrains.annotations.NotNull;
+
 /**
- * <strong>Table of Exceptions</strong><br>
- * {@link #IncorrectLanguageException()}<br> {@link #IncorrectLanguageException(String)}<br>
- * {@link #IncorrectLanguageException(Throwable)}<br>
- * {@link #IncorrectLanguageException(String, Throwable)}
- *
- * <p>Provides exceptions to {@link I18n}
+ * Exceptions thrown when an error occurs whilst working with I18N.
  *
  * @author whitebear60
  */
 public final class IncorrectLanguageException extends Exception {
 
   /**
-   * @author whitebear60
-   */
-  public IncorrectLanguageException() {
-    super("Incorrect language specified");
-  }
-
-  /**
    * @param message The exception message.
    * @author whitebear60
    */
-  public IncorrectLanguageException(String message) {
+  public IncorrectLanguageException(@NotNull String message) {
     super(message);
-  }
-
-  /**
-   * @param message The exception message.
-   * @param cause   The cause of the exception.
-   * @author whitebear60
-   */
-  public IncorrectLanguageException(String message,
-                                    Throwable cause) {
-    super(message, cause);
-  }
-
-  /**
-   * @param cause The cause of the exception.
-   * @author whitebear60
-   */
-  public IncorrectLanguageException(Throwable cause) {
-    super(cause);
   }
 }

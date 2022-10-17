@@ -47,6 +47,7 @@ import net.lingala.zip4j.ZipFile;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -87,6 +88,7 @@ public final class ConfigurationHandler {
    *                                      add additional checks to a given configuration check.
    * @author Griefed
    */
+  @Contract(pure = true)
   @Autowired
   public ConfigurationHandler(
       I18n injectedI18n,
@@ -609,7 +611,7 @@ public final class ConfigurationHandler {
    *
    * @param iconOrPropertiesPath The path to the custom server-icon.png or server.properties file to
    *                             check.
-   * @return Boolean. True if the file exists or an empty String was passed, false if a file was
+   * @return {@code true} if the file exists or an empty String was passed, false if a file was
    * specified, but the file was not found.
    * @author Griefed
    */
@@ -758,8 +760,7 @@ public final class ConfigurationHandler {
    * Checks whether either Forge or Fabric were specified as the modloader.
    *
    * @param modloader Check as case-insensitive for Forge or Fabric.
-   * @return Boolean. Returns true if the specified modloader is either Forge or Fabric. False if
-   * neither.
+   * @return {@code true} if the specified modloader is either Forge or Fabric. False if neither.
    * @author Griefed
    */
   public boolean checkModloader(@NotNull final String modloader) {
@@ -783,11 +784,11 @@ public final class ConfigurationHandler {
    * Check the given Minecraft and modloader versions for the specified modloader and update the
    * passed error-list should any error be encountered.
    *
-   * @param modloader         String. The passed modloader which determines whether the check for
-   *                          Forge or Fabric is called.
-   * @param modloaderVersion  String. The version of the modloader which is checked against the
+   * @param modloader         The passed modloader which determines whether the check for Forge or
+   *                          Fabric is called.
+   * @param modloaderVersion  The version of the modloader which is checked against the
    *                          corresponding modloaders manifest.
-   * @param minecraftVersion  String. The version of Minecraft used for checking the Forge version.
+   * @param minecraftVersion  The version of Minecraft used for checking the Forge version.
    * @param encounteredErrors List of encountered errors to add to in case of errors.
    * @return {@code true} if the specified modloader version was found in the corresponding
    * manifest.
@@ -910,8 +911,8 @@ public final class ConfigurationHandler {
   /**
    * Print all encountered errors to logs.
    *
-   * @param encounteredErrors List String. A list of all errors which were encountered during a
-   *                          configuration check.
+   * @param encounteredErrors A list of all errors which were encountered during a configuration
+   *                          check.
    * @author Griefed
    */
   private void printEncounteredErrors(@NotNull final List<String> encounteredErrors) {
@@ -1029,8 +1030,8 @@ public final class ConfigurationHandler {
    * @param modpackDir        The path to the modpack directory in which to check for existence of
    *                          the passed list of directories.
    * @param encounteredErrors A list to which all encountered errors are saved to.
-   * @return Boolean. Returns true if every directory was found in the modpack directory. If any
-   * single one was not found, false is returned.
+   * @return {@code true} if every directory was found in the modpack directory. If any single one
+   * was not found, false is returned.
    * @author Griefed
    */
   public boolean checkCopyDirs(
@@ -1316,249 +1317,13 @@ public final class ConfigurationHandler {
   }
 
   /**
-   * Check the given entry for valid regex. In order for an entry to be valid, it must
-   * <ol>
-   *   <li>Contain {@code ==}</li>
-   *   <li>Optionally start with {@code ==}. When starting with {@code ==}</li>
-   *   <li><ul>
-   *     <li>The left side of {@code ==} must specify an existing directory</li>
-   *     <li>The right side of {@code ==} must be the regex to match files and/or directories</li>
-   *   </ul></li>
-   * </ol>
-   *
-   * @param modpackDir The modpacks directory which will be checked when the entry starts with
-   *                   {@code ==}
-   * @param entry      The regex, or file/directory and regex, combination.
-   * @param exclusion  Whether the checks are for exclusions ({@code true}) or files and/or
-   *                   directories, or inclusions ({@code false}).
-   * @return {@code true} when no errors were encountered.
-   * @author Griefed
-   */
-  public boolean checkRegex(@NotNull final String modpackDir,
-                            @NotNull final String entry,
-                            boolean exclusion) {
-    return checkRegex(modpackDir, entry, exclusion, new ArrayList<>(1));
-  }
-
-  /**
-   * Check the given entry for valid regex. In order for an entry to be valid, it must
-   * <ul>
-   *   <li>Contain {@code ==}</li>
-   *   <li>Optionally start with {@code ==}. When starting with {@code ==}</li>
-   *   <li><ul>
-   *     <li>The left side of {@code ==} must specify an existing directory</li>
-   *     <li>The right side of {@code ==} must be the regex to match files and/or directories</li>
-   *   </ul></li>
-   * </ul>
-   *
-   * @param modpackDir        The modpacks directory which will be checked when the entry starts
-   *                          with {@code ==}
-   * @param entry             The regex, or file/directory and regex, combination.
-   * @param exclusion         Whether the checks are for exclusions ({@code true}) or files and/or
-   *                          directories, or inclusions ({@code false}).
-   * @param encounteredErrors A list to which all encountered errors are saved to.
-   * @return {@code true} when no errors were encountered.
-   * @author Griefed
-   */
-  public boolean checkRegex(@NotNull final String modpackDir,
-                            @NotNull final String entry,
-                            boolean exclusion,
-                            @NotNull final List<String> encounteredErrors) {
-    try {
-      if (exclusion) {
-        return exclusionRegexCheck(modpackDir, entry, encounteredErrors);
-      } else {
-        return inclusionRegexCheck(modpackDir, entry, encounteredErrors);
-      }
-    } catch (PatternSyntaxException ex) {
-      LOG.error(
-          "Invalid regex specified: " + entry + ". Error near regex-index " + ex.getIndex() + ".");
-      encounteredErrors.add(I18N.getMessage(String.format(
-          I18N.getMessage(""),
-          entry,
-          ex.getIndex())));
-      return false;
-    }
-  }
-
-  /**
-   * Exclusion regex checks when the entry is prefixed with an {@code !}.
-   *
-   * @param modpackDir        The modpacks directory which will be checked when the entry starts
-   *                          with {@code ==}
-   * @param entry             The regex, or file/directory and regex, combination.
-   * @param encounteredErrors A list to which all encountered errors are saved to.
-   * @return {@code true} if the specified entry matched existing file(s) or directories.
-   * @author Griefed
-   */
-  private boolean exclusionRegexCheck(@NotNull final String modpackDir,
-                                      @NotNull final String entry,
-                                      @NotNull final List<String> encounteredErrors) {
-    /*
-     * Check for matches in modpack directory
-     */
-    if (entry.startsWith("!==") && entry.length() > 3) {
-
-      File source = new File(modpackDir);
-      regexWalk(source, entry);
-      return true;
-
-    } else if (entry.contains("==") && entry.split("==").length == 2) {
-
-      String[] sourceRegex = entry.split("==");
-
-      /*
-       * Matches inside modpack-directory
-       */
-      if (new File(modpackDir, sourceRegex[0].substring(1)).isDirectory()) {
-
-        File source = new File(modpackDir, sourceRegex[0].substring(1));
-        regexWalk(source, sourceRegex[1]);
-        return true;
-
-        /*
-         * Matches inside directory outside modpack-directory
-         */
-      } else if (new File(sourceRegex[0].substring(1)).isDirectory()) {
-
-        File source = new File(sourceRegex[0].substring(1));
-        regexWalk(source, sourceRegex[1]);
-        return true;
-
-      } else {
-
-        encounteredErrors.add(String.format(
-            I18N.getMessage("configuration.log.error.checkcopydirs.checkforregex"),
-            sourceRegex[0]));
-        return false;
-      }
-
-    } else {
-
-      encounteredErrors.add(
-          I18N.getMessage("configuration.log.error.checkcopydirs.checkforregex.invalid"));
-      return false;
-    }
-  }
-
-  /**
-   * Inclusion regex checks.
-   *
-   * @param modpackDir        The modpacks directory which will be checked when the entry starts
-   *                          with {@code ==}
-   * @param entry             The regex, or file/directory and regex, combination.
-   * @param encounteredErrors A list to which all encountered errors are saved to.
-   * @return {@code true} if the specified entry matched existing file(s) or directories.
-   * @author Griefed
-   */
-  private boolean inclusionRegexCheck(@NotNull final String modpackDir,
-                                      @NotNull final String entry,
-                                      @NotNull final List<String> encounteredErrors) {
-    AtomicInteger counter = new AtomicInteger();
-    AtomicReference<String> toMatch = new AtomicReference<>();
-
-    /*
-     * Check for matches in modpack directory
-     */
-    if (entry.startsWith("==") && entry.length() > 2) {
-
-      File source = new File(modpackDir);
-      regexWalk(source, entry);
-      return true;
-
-      /*
-       * Check for matches in the specified directory
-       */
-    } else if (entry.contains("==") && entry.split("==").length == 2) {
-
-      String[] sourceRegex = entry.split("==");
-
-      /*
-       * Matches inside modpack-directory
-       */
-      if (new File(modpackDir, sourceRegex[0]).isDirectory()) {
-
-        File source = new File(modpackDir, sourceRegex[0]);
-        regexWalk(source, sourceRegex[1]);
-        return true;
-
-        /*
-         * Matches inside directory outside modpack-directory
-         */
-      } else if (new File(sourceRegex[0]).isDirectory()) {
-
-        File source = new File(sourceRegex[0]);
-        regexWalk(source, sourceRegex[1]);
-        return true;
-
-
-      } else {
-
-        encounteredErrors.add(String.format(
-            I18N.getMessage("configuration.log.error.checkcopydirs.checkforregex"),
-            sourceRegex[0]));
-        return false;
-      }
-
-    } else {
-
-      encounteredErrors.add(
-          I18N.getMessage("configuration.log.error.checkcopydirs.checkforregex.invalid"));
-      return false;
-    }
-  }
-
-  /**
-   * Walk through each file in the specified source-directory and perform regex-matches using the
-   * specified regex. The number of matches found is printed to the logs.
-   *
-   * @param source The source directory to walk through and perform regex-matches on.
-   * @param regex  The regex to use for finding matches within the specified source-directory.
-   * @author Griefed
-   */
-  private void regexWalk(@NotNull final File source,
-                         @NotNull final String regex) {
-    AtomicInteger counter = new AtomicInteger();
-    AtomicReference<String> toMatch = new AtomicReference<>();
-
-    try (Stream<Path> files = Files.walk(source.toPath())) {
-      files.forEach(
-          file -> {
-
-            toMatch.set(file.toFile().getAbsolutePath().replace(
-                source.getAbsolutePath(),
-                ""));
-
-            if (toMatch.get().startsWith(File.separator)) {
-              toMatch.set(toMatch.get().substring(1));
-            }
-
-            if (toMatch.get().matches(regex)) {
-              counter.addAndGet(1);
-            }
-          }
-      );
-    } catch (IOException ex) {
-      LOG.error("Could not check your regex entry \""
-                    + regex
-                    + "\" in directory \""
-                    + source, ex);
-    }
-
-    LOG.info("Regex \""
-                 + regex
-                 + "\" matched "
-                 + counter + " files/folders.");
-  }
-
-  /**
    * Check a given ZIP-archives contents. If the ZIP-archive only contains one directory, or if it
    * contains neither the mods nor the config directories, consider it invalid.
    *
    * @param pathToZip         Path to the ZIP-file to check.
    * @param encounteredErrors List of encountered errors for further processing, like printing to
    *                          logs or display in GUI or whatever you want, really.
-   * @return Boolean. {@code false} if the ZIP-archive is considered valid.
+   * @return {@code false} if the ZIP-archive is considered valid.
    * @author Griefed
    */
   public boolean checkZipArchive(@NotNull final Path pathToZip,
@@ -1792,17 +1557,15 @@ public final class ConfigurationHandler {
 
         // If JSON was acquired, get the name of the modpack and overwrite newDestination using
         // modpack name.
-        if (UTILITIES.JsonUtilities()
-                     .getNestedText(configurationModel.getModpackJson(), "launcher", "name")
-            == null) {
-          packName = UTILITIES.JsonUtilities()
-                              .getNestedText(configurationModel.getModpackJson(), "launcher",
-                                             "pack");
-        } else {
-          packName = UTILITIES.JsonUtilities()
-                              .getNestedText(configurationModel.getModpackJson(), "launcher",
-                                             "name");
-        }
+        UTILITIES.JsonUtilities().getNestedText(
+            configurationModel.getModpackJson(),
+            "launcher",
+            "name");
+
+        packName = UTILITIES.JsonUtilities().getNestedText(
+            configurationModel.getModpackJson(),
+            "launcher",
+            "name");
 
       } catch (IOException ex) {
 
@@ -2032,6 +1795,47 @@ public final class ConfigurationHandler {
   }
 
   /**
+   * Check the given entry for valid regex. In order for an entry to be valid, it must
+   * <ul>
+   *   <li>Contain {@code ==}</li>
+   *   <li>Optionally start with {@code ==}. When starting with {@code ==}</li>
+   *   <li><ul>
+   *     <li>The left side of {@code ==} must specify an existing directory</li>
+   *     <li>The right side of {@code ==} must be the regex to match files and/or directories</li>
+   *   </ul></li>
+   * </ul>
+   *
+   * @param modpackDir        The modpacks directory which will be checked when the entry starts
+   *                          with {@code ==}
+   * @param entry             The regex, or file/directory and regex, combination.
+   * @param exclusion         Whether the checks are for exclusions ({@code true}) or files and/or
+   *                          directories, or inclusions ({@code false}).
+   * @param encounteredErrors A list to which all encountered errors are saved to.
+   * @return {@code true} when no errors were encountered.
+   * @author Griefed
+   */
+  public boolean checkRegex(@NotNull final String modpackDir,
+                            @NotNull final String entry,
+                            boolean exclusion,
+                            @NotNull final List<String> encounteredErrors) {
+    try {
+      if (exclusion) {
+        return exclusionRegexCheck(modpackDir, entry, encounteredErrors);
+      } else {
+        return inclusionRegexCheck(modpackDir, entry, encounteredErrors);
+      }
+    } catch (PatternSyntaxException ex) {
+      LOG.error(
+          "Invalid regex specified: " + entry + ". Error near regex-index " + ex.getIndex() + ".");
+      encounteredErrors.add(I18N.getMessage(String.format(
+          I18N.getMessage(""),
+          entry,
+          ex.getIndex())));
+      return false;
+    }
+  }
+
+  /**
    * Acquire a list of directories in the base-directory of a ZIP-file.
    *
    * @param zipFile The ZIP-archive to get the list of files from.
@@ -2076,7 +1880,7 @@ public final class ConfigurationHandler {
    *
    * @param configurationModel An instance containing a configuration for a modpack from which to
    *                           create a server pack.
-   * @param manifest           File. The CurseForge manifest.json-file of the modpack to read.
+   * @param manifest           The CurseForge manifest.json-file of the modpack to read.
    * @throws IOException when the manifest.json-file could not be parsed.
    * @author Griefed
    */
@@ -2139,7 +1943,7 @@ public final class ConfigurationHandler {
    *
    * @param configurationModel An instance containing a configuration for a modpack from which to
    *                           create a server pack.
-   * @param minecraftInstance  File. The minecraftinstance.json-file of the modpack to read.
+   * @param minecraftInstance  The minecraftinstance.json-file of the modpack to read.
    * @throws IOException when the minecraftinstance.json-file could not be parsed.
    * @author Griefed
    */
@@ -2350,6 +2154,133 @@ public final class ConfigurationHandler {
   }
 
   /**
+   * Exclusion regex checks when the entry is prefixed with an {@code !}.
+   *
+   * @param modpackDir        The modpacks directory which will be checked when the entry starts
+   *                          with {@code ==}
+   * @param entry             The regex, or file/directory and regex, combination.
+   * @param encounteredErrors A list to which all encountered errors are saved to.
+   * @return {@code true} if the specified entry matched existing file(s) or directories.
+   * @author Griefed
+   */
+  private boolean exclusionRegexCheck(@NotNull final String modpackDir,
+                                      @NotNull final String entry,
+                                      @NotNull final List<String> encounteredErrors) {
+    /*
+     * Check for matches in modpack directory
+     */
+    if (entry.startsWith("!==") && entry.length() > 3) {
+
+      File source = new File(modpackDir);
+      regexWalk(source, entry);
+      return true;
+
+    } else if (entry.contains("==") && entry.split("==").length == 2) {
+
+      String[] sourceRegex = entry.split("==");
+
+      /*
+       * Matches inside modpack-directory
+       */
+      if (new File(modpackDir, sourceRegex[0].substring(1)).isDirectory()) {
+
+        File source = new File(modpackDir, sourceRegex[0].substring(1));
+        regexWalk(source, sourceRegex[1]);
+        return true;
+
+        /*
+         * Matches inside directory outside modpack-directory
+         */
+      } else if (new File(sourceRegex[0].substring(1)).isDirectory()) {
+
+        File source = new File(sourceRegex[0].substring(1));
+        regexWalk(source, sourceRegex[1]);
+        return true;
+
+      } else {
+
+        encounteredErrors.add(String.format(
+            I18N.getMessage("configuration.log.error.checkcopydirs.checkforregex"),
+            sourceRegex[0]));
+        return false;
+      }
+
+    } else {
+
+      encounteredErrors.add(
+          I18N.getMessage("configuration.log.error.checkcopydirs.checkforregex.invalid"));
+      return false;
+    }
+  }
+
+  /**
+   * Inclusion regex checks.
+   *
+   * @param modpackDir        The modpacks directory which will be checked when the entry starts
+   *                          with {@code ==}
+   * @param entry             The regex, or file/directory and regex, combination.
+   * @param encounteredErrors A list to which all encountered errors are saved to.
+   * @return {@code true} if the specified entry matched existing file(s) or directories.
+   * @author Griefed
+   */
+  private boolean inclusionRegexCheck(@NotNull final String modpackDir,
+                                      @NotNull final String entry,
+                                      @NotNull final List<String> encounteredErrors) {
+    AtomicInteger counter = new AtomicInteger();
+    AtomicReference<String> toMatch = new AtomicReference<>();
+
+    /*
+     * Check for matches in modpack directory
+     */
+    if (entry.startsWith("==") && entry.length() > 2) {
+
+      File source = new File(modpackDir);
+      regexWalk(source, entry);
+      return true;
+
+      /*
+       * Check for matches in the specified directory
+       */
+    } else if (entry.contains("==") && entry.split("==").length == 2) {
+
+      String[] sourceRegex = entry.split("==");
+
+      /*
+       * Matches inside modpack-directory
+       */
+      if (new File(modpackDir, sourceRegex[0]).isDirectory()) {
+
+        File source = new File(modpackDir, sourceRegex[0]);
+        regexWalk(source, sourceRegex[1]);
+        return true;
+
+        /*
+         * Matches inside directory outside modpack-directory
+         */
+      } else if (new File(sourceRegex[0]).isDirectory()) {
+
+        File source = new File(sourceRegex[0]);
+        regexWalk(source, sourceRegex[1]);
+        return true;
+
+
+      } else {
+
+        encounteredErrors.add(String.format(
+            I18N.getMessage("configuration.log.error.checkcopydirs.checkforregex"),
+            sourceRegex[0]));
+        return false;
+      }
+
+    } else {
+
+      encounteredErrors.add(
+          I18N.getMessage("configuration.log.error.checkcopydirs.checkforregex.invalid"));
+      return false;
+    }
+  }
+
+  /**
    * Ensures the modloader is normalized to first letter upper case and rest lower case. Basically
    * allows the user to input Forge or Fabric in any combination of upper- and lowercase and
    * ServerPackCreator will still be able to work with the users input.
@@ -2380,6 +2311,74 @@ public final class ConfigurationHandler {
 
       return "Forge";
     }
+  }
+
+  /**
+   * Walk through each file in the specified source-directory and perform regex-matches using the
+   * specified regex. The number of matches found is printed to the logs.
+   *
+   * @param source The source directory to walk through and perform regex-matches on.
+   * @param regex  The regex to use for finding matches within the specified source-directory.
+   * @author Griefed
+   */
+  private void regexWalk(@NotNull final File source,
+                         @NotNull final String regex) {
+    AtomicInteger counter = new AtomicInteger();
+    AtomicReference<String> toMatch = new AtomicReference<>();
+
+    try (Stream<Path> files = Files.walk(source.toPath())) {
+      files.forEach(
+          file -> {
+
+            toMatch.set(file.toFile().getAbsolutePath().replace(
+                source.getAbsolutePath(),
+                ""));
+
+            if (toMatch.get().startsWith(File.separator)) {
+              toMatch.set(toMatch.get().substring(1));
+            }
+
+            if (toMatch.get().matches(regex)) {
+              counter.addAndGet(1);
+            }
+          }
+      );
+    } catch (IOException ex) {
+      LOG.error("Could not check your regex entry \""
+                    + regex
+                    + "\" in directory \""
+                    + source, ex);
+    }
+
+    LOG.info("Regex \""
+                 + regex
+                 + "\" matched "
+                 + counter + " files/folders.");
+  }
+
+  /**
+   * Check the given entry for valid regex. In order for an entry to be valid, it must
+   * <ol>
+   *   <li>Contain {@code ==}</li>
+   *   <li>Optionally start with {@code ==}. When starting with {@code ==}</li>
+   *   <li><ul>
+   *     <li>The left side of {@code ==} must specify an existing directory</li>
+   *     <li>The right side of {@code ==} must be the regex to match files and/or directories</li>
+   *   </ul></li>
+   * </ol>
+   *
+   * @param modpackDir The modpacks directory which will be checked when the entry starts with
+   *                   {@code ==}
+   * @param entry      The regex, or file/directory and regex, combination.
+   * @param exclusion  Whether the checks are for exclusions ({@code true}) or files and/or
+   *                   directories, or inclusions ({@code false}).
+   * @return {@code true} when no errors were encountered.
+   * @author Griefed
+   */
+  public boolean checkRegex(@NotNull final String modpackDir,
+                            @NotNull final String entry,
+                            boolean exclusion) {
+    return checkRegex(modpackDir, entry, exclusion, new ArrayList<>(1));
   }
 
   /**

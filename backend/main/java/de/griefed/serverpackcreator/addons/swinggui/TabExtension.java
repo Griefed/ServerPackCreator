@@ -28,6 +28,7 @@ import java.io.File;
 import java.util.Optional;
 import javax.swing.Icon;
 import javax.swing.JPanel;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Extension point for addons which add additional {@link JPanel}s as additional tabs to the
@@ -54,12 +55,12 @@ public interface TabExtension extends ExtensionInformation {
    * @return Component to add to the ServerPackCreator GUI as a tab.
    * @author Griefed
    */
-  ExtensionTab getTab(
-      final VersionMeta versionMeta,
-      final ApplicationProperties applicationProperties,
-      final Utilities utilities,
-      final Optional<CommentedConfig> addonConfig,
-      final Optional<File> configFile);
+  @NotNull ExtensionTab getTab(
+      final @NotNull VersionMeta versionMeta,
+      final @NotNull ApplicationProperties applicationProperties,
+      final @NotNull Utilities utilities,
+      final @NotNull Optional<CommentedConfig> addonConfig,
+      final @NotNull Optional<File> configFile);
 
   /**
    * Get the {@link Icon} for this tab to display to the ServerPackCreator GUI.
@@ -67,7 +68,7 @@ public interface TabExtension extends ExtensionInformation {
    * @return Icon to be used by the added tab.
    * @author Griefed
    */
-  Icon getTabIcon();
+  @NotNull Icon getTabIcon();
 
   /**
    * Get the title of this tab to display in the ServerPackCreator GUI.
@@ -75,7 +76,7 @@ public interface TabExtension extends ExtensionInformation {
    * @return The title of this addons tabbed pane.
    * @author Griefed
    */
-  String getTabTitle();
+  @NotNull String getTabTitle();
 
   /**
    * Get the tooltip for this tab to display in the ServerPackCreator GUI.
@@ -83,5 +84,5 @@ public interface TabExtension extends ExtensionInformation {
    * @return The tooltip of this addons tabbed pane.
    * @author Griefed
    */
-  String getTabTooltip();
+  @NotNull String getTabTooltip();
 }

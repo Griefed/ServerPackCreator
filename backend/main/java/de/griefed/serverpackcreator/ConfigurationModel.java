@@ -346,7 +346,7 @@ public class ConfigurationModel {
    * your hearts content.
    *
    * @param addonId The ID of the addon.
-   * @return A list of configuration for the specified addon.
+   * @return Configuration for the specified addon.
    * @author Griefed
    */
   public Optional<ArrayList<CommentedConfig>> getAddonConfigs(@NotNull String addonId) {
@@ -358,7 +358,7 @@ public class ConfigurationModel {
    * the requested ID, one is created, so it can then be adjusted as you wish.
    *
    * @param addonId The ID identifying the addon for which to get the list of configurations.
-   * @return A list of configurations for the specified addon ID.
+   * @return Configurations for the specified addon ID.
    * @author Griefed
    */
   public ArrayList<CommentedConfig> getOrCreateAddonConfigList(@NotNull String addonId) {
@@ -371,7 +371,7 @@ public class ConfigurationModel {
   /**
    * Getter for the suffix of the server pack to be generated.
    *
-   * @return Returns the suffix for the server pack to be generated.
+   * @return Suffix for the server pack to be generated.
    * @author Griefed
    */
   public String getServerPackSuffix() {
@@ -391,7 +391,7 @@ public class ConfigurationModel {
   /**
    * Getter for a list of clientside-only mods to exclude from server pack.
    *
-   * @return Returns the list of clientside-only mods.
+   * @return Clientside-only mods.
    * @author Griefed
    */
   public List<String> getClientMods() {
@@ -413,7 +413,7 @@ public class ConfigurationModel {
   /**
    * Getter for the list of directories in the modpack to copy to the server pack.
    *
-   * @return Returns the list of directories to copy to the server pack.
+   * @return Directories to copy to the server pack.
    * @author Griefed
    */
   public List<String> getCopyDirs() {
@@ -437,7 +437,7 @@ public class ConfigurationModel {
   /**
    * Getter for the path to the modpack directory.
    *
-   * @return Returns the path to the modpack directory.
+   * @return Path to the modpack directory.
    * @author Griefed
    */
   public String getModpackDir() {
@@ -457,7 +457,7 @@ public class ConfigurationModel {
   /**
    * Getter for the version of Minecraft used by the modpack.
    *
-   * @return Returns the Minecraft version used in the modpack.
+   * @return Minecraft version used in the modpack.
    * @author Griefed
    */
   public String getMinecraftVersion() {
@@ -477,7 +477,7 @@ public class ConfigurationModel {
   /**
    * Getter for the modloader used by the modpack.
    *
-   * @return Returns the modloader used by the modpack.
+   * @return Modloader used by the modpack.
    * @author Griefed
    */
   public String getModLoader() {
@@ -491,7 +491,6 @@ public class ConfigurationModel {
    * @author Griefed
    */
   public void setModLoader(@NotNull String newModLoader) {
-    //TODO replace with enum
     if (newModLoader.toLowerCase().matches("^forge$")) {
 
       this.modLoader = "Forge";
@@ -513,7 +512,7 @@ public class ConfigurationModel {
   /**
    * Getter for the version of the modloader used by the modpack.
    *
-   * @return Returns the version of the modloader used by the modpack.
+   * @return The version of the modloader used by the modpack.
    * @author Griefed
    */
   public String getModLoaderVersion() {
@@ -645,7 +644,7 @@ public class ConfigurationModel {
    * Setter for the JsonNode containing all information about the modpack. May be from various
    * sources, so be careful when using this.
    *
-   * @param modpackJson JsonNode. The JsonNode containing all information about the modpack.
+   * @param modpackJson The JsonNode containing all information about the modpack.
    * @author Griefed
    */
   public void setModpackJson(@NotNull JsonNode modpackJson) {

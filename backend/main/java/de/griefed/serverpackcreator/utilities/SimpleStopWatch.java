@@ -57,6 +57,7 @@ public class SimpleStopWatch {
    *   <li>{@link #toString()}</li>
    * </ul>
    * to retrieve the elapsed time.
+   *
    * @return This instance of SimpleStopWatch
    * @author Griefed
    */

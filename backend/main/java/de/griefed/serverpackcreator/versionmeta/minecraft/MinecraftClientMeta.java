@@ -32,6 +32,8 @@ import java.util.HashMap;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Minecraft client meta containing informatiom about available Minecraft releases.
@@ -63,10 +65,10 @@ final class MinecraftClientMeta {
    * @author Griefed
    */
   MinecraftClientMeta(
-      File minecraftManifest,
-      ForgeMeta injectedForgeMeta,
-      Utilities utilities,
-      ApplicationProperties applicationProperties) {
+      @NotNull File minecraftManifest,
+      @NotNull ForgeMeta injectedForgeMeta,
+      @NotNull Utilities utilities,
+      @NotNull ApplicationProperties applicationProperties) {
 
     APPLICATIONPROPERTIES = applicationProperties;
     UTILITIES = utilities;
@@ -168,7 +170,8 @@ final class MinecraftClientMeta {
    * @return All available Minecraft releases.
    * @author Griefed
    */
-  List<MinecraftClient> all() {
+  @Contract(pure = true)
+  @NotNull List<MinecraftClient> all() {
     return ALL;
   }
 
@@ -178,7 +181,8 @@ final class MinecraftClientMeta {
    * @return Client-list of the {@link Type#RELEASE}.
    * @author Griefed
    */
-  List<MinecraftClient> releases() {
+  @Contract(pure = true)
+  @NotNull List<MinecraftClient> releases() {
     return RELEASES;
   }
 
@@ -188,7 +192,8 @@ final class MinecraftClientMeta {
    * @return Client-list of the {@link Type#SNAPSHOT}.
    * @author Griefed
    */
-  List<MinecraftClient> snapshots() {
+  @Contract(pure = true)
+  @NotNull List<MinecraftClient> snapshots() {
     return SNAPSHOTS;
   }
 
@@ -198,7 +203,8 @@ final class MinecraftClientMeta {
    * @return Latest release as a {@link MinecraftClient}
    * @author Griefed
    */
-  MinecraftClient latestRelease() {
+  @Contract(pure = true)
+  @NotNull MinecraftClient latestRelease() {
     return latestRelease;
   }
 
@@ -208,7 +214,8 @@ final class MinecraftClientMeta {
    * @return Latest snapshot as a {@link MinecraftClient}
    * @author Griefed
    */
-  MinecraftClient latestSnapshot() {
+  @Contract(pure = true)
+  @NotNull MinecraftClient latestSnapshot() {
     return latestSnapshot;
   }
 
@@ -219,7 +226,8 @@ final class MinecraftClientMeta {
    * @return Map containing the client meta.
    * @author Griefed
    */
-  HashMap<String, MinecraftClient> meta() {
+  @Contract(pure = true)
+  @NotNull HashMap<String, MinecraftClient> meta() {
     return meta;
   }
 }

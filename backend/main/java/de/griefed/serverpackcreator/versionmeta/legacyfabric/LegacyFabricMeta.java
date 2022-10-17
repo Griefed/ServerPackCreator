@@ -29,6 +29,8 @@ import java.net.URL;
 import java.util.List;
 import java.util.Optional;
 import javax.xml.parsers.ParserConfigurationException;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.xml.sax.SAXException;
 
 public final class LegacyFabricMeta implements Meta {
@@ -63,72 +65,77 @@ public final class LegacyFabricMeta implements Meta {
   }
 
   @Override
-  public String latestLoader() {
+  public @NotNull String latestLoader() {
     return LOADER_VERSIONS.all().get(0);
   }
 
   @Override
-  public String releaseLoader() {
+  public @NotNull String releaseLoader() {
     return LOADER_VERSIONS.releases().get(0);
   }
 
+  @Contract(pure = true)
   @Override
-  public String latestInstaller() {
+  public @NotNull String latestInstaller() {
     return INSTALLER_VERSIONS.latest();
   }
 
+  @Contract(pure = true)
   @Override
-  public String releaseInstaller() {
+  public @NotNull String releaseInstaller() {
     return INSTALLER_VERSIONS.release();
   }
 
   @Override
-  public List<String> loaderVersionsListAscending() {
+  public @NotNull List<String> loaderVersionsListAscending() {
     return LOADER_VERSIONS.all();
   }
 
   @Override
-  public List<String> loaderVersionsListDescending() {
+  public @NotNull List<String> loaderVersionsListDescending() {
     return Lists.reverse(LOADER_VERSIONS.all());
   }
 
   @Override
-  public String[] loaderVersionsArrayAscending() {
+  public String @NotNull [] loaderVersionsArrayAscending() {
     return loaderVersionsListAscending().toArray(new String[0]);
   }
 
   @Override
-  public String[] loaderVersionsArrayDescending() {
+  public String @NotNull [] loaderVersionsArrayDescending() {
     return loaderVersionsListDescending().toArray(new String[0]);
   }
 
+  @Contract(pure = true)
   @Override
-  public List<String> installerVersionsListAscending() {
+  public @NotNull List<String> installerVersionsListAscending() {
     return INSTALLER_VERSIONS.all();
   }
 
   @Override
-  public List<String> installerVersionsListDescending() {
+  public @NotNull List<String> installerVersionsListDescending() {
     return Lists.reverse(INSTALLER_VERSIONS.all());
   }
 
   @Override
-  public String[] installerVersionsArrayAscending() {
+  public String @NotNull [] installerVersionsArrayAscending() {
     return installerVersionsListAscending().toArray(new String[0]);
   }
 
   @Override
-  public String[] installerVersionsArrayDescending() {
+  public String @NotNull [] installerVersionsArrayDescending() {
     return installerVersionsListDescending().toArray(new String[0]);
   }
 
+  @Contract(" -> new")
   @Override
-  public URL latestInstallerUrl() throws MalformedURLException {
+  public @NotNull URL latestInstallerUrl() throws MalformedURLException {
     return INSTALLER_VERSIONS.latestURL();
   }
 
+  @Contract(" -> new")
   @Override
-  public URL releaseInstallerUrl() throws MalformedURLException {
+  public @NotNull URL releaseInstallerUrl() throws MalformedURLException {
     return INSTALLER_VERSIONS.releaseURL();
   }
 
@@ -142,7 +149,7 @@ public final class LegacyFabricMeta implements Meta {
   }
 
   @Override
-  public Optional<URL> getInstallerUrl(String version) throws MalformedURLException {
+  public @NotNull Optional<URL> getInstallerUrl(String version) throws MalformedURLException {
     return INSTALLER_VERSIONS.specificURL(version);
   }
 
@@ -162,7 +169,7 @@ public final class LegacyFabricMeta implements Meta {
    * @return All Legacy Fabric supported Minecraft versions.
    * @author Griefed
    */
-  public List<String> supportedMinecraftVersions() {
+  public @NotNull List<String> supportedMinecraftVersions() {
     return GAME_VERSIONS.all();
   }
 }

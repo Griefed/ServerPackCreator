@@ -28,6 +28,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import javax.xml.parsers.ParserConfigurationException;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -56,8 +58,8 @@ final class QuiltInstaller {
    * @param utilities         Commonly used utilities across ServerPackCreator.
    * @author Griefed
    */
-  QuiltInstaller(File installerManifest,
-                 Utilities utilities) {
+  QuiltInstaller(@NotNull File installerManifest,
+                 @NotNull Utilities utilities) {
     MANIFEST = installerManifest;
     UTILITIES = utilities;
   }
@@ -129,7 +131,9 @@ final class QuiltInstaller {
    * @throws MalformedURLException if the URL could not be formed.
    * @author Griefed
    */
-  private URL installerUrl(String quiltInstallerVersion) throws MalformedURLException {
+  @Contract("_ -> new")
+  private @NotNull URL installerUrl(@NotNull String quiltInstallerVersion)
+      throws MalformedURLException {
     return new URL(
         String.format(URL_TEMPLATE_INSTALLER, quiltInstallerVersion, quiltInstallerVersion));
   }
@@ -140,7 +144,8 @@ final class QuiltInstaller {
    * @return List of available Quilt installer versions.
    * @author Griefed
    */
-  List<String> installers() {
+  @Contract(pure = true)
+  @NotNull List<String> installers() {
     return installers;
   }
 
@@ -151,7 +156,8 @@ final class QuiltInstaller {
    * @return Map with the Quilt-Version-to-Installer-URL.
    * @author Griefed
    */
-  HashMap<String, URL> meta() {
+  @Contract(pure = true)
+  @NotNull HashMap<String, URL> meta() {
     return installerUrlMeta;
   }
 
@@ -161,7 +167,8 @@ final class QuiltInstaller {
    * @return The latest Quilt installer version.
    * @author Griefed
    */
-  String latestInstallerVersion() {
+  @Contract(pure = true)
+  @NotNull String latestInstallerVersion() {
     return latestInstaller;
   }
 
@@ -171,7 +178,8 @@ final class QuiltInstaller {
    * @return The release Quilt installer version.
    * @author Griefed
    */
-  String releaseInstallerVersion() {
+  @Contract(pure = true)
+  @NotNull String releaseInstallerVersion() {
     return releaseInstaller;
   }
 
@@ -181,7 +189,8 @@ final class QuiltInstaller {
    * @return URL to the latest Quilt installer.
    * @author Griefed
    */
-  URL latestInstallerUrl() {
+  @Contract(pure = true)
+  @NotNull URL latestInstallerUrl() {
     return latestInstallerUrl;
   }
 
@@ -191,7 +200,8 @@ final class QuiltInstaller {
    * @return URL to the release Quilt installer.
    * @author Griefed
    */
-  URL releaseInstallerUrl() {
+  @Contract(pure = true)
+  @NotNull URL releaseInstallerUrl() {
     return releaseInstallerUrl;
   }
 }

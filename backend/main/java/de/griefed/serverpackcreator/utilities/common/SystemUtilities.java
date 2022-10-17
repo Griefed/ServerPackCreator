@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 
 /**
@@ -52,7 +53,7 @@ public final class SystemUtilities {
    * @return String. The path to the systems default Java installation.
    * @author Griefed
    */
-  public String acquireJavaPathFromSystem() {
+  public @NotNull String acquireJavaPathFromSystem() {
 
     LOG.debug("Acquiring path to Java installation from system properties...");
 

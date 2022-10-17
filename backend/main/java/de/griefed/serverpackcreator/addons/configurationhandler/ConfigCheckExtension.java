@@ -28,6 +28,7 @@ import de.griefed.serverpackcreator.versionmeta.VersionMeta;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Extension point for configuration checks, so you can run your own checks on a given
@@ -58,12 +59,12 @@ public interface ConfigCheckExtension extends ExtensionInformation {
    * @author Griefed
    */
   boolean runCheck(
-      final VersionMeta versionMeta,
-      final ApplicationProperties applicationProperties,
-      final Utilities utilities,
-      final ConfigurationModel configurationModel,
-      final List<String> encounteredErrors,
-      final Optional<CommentedConfig> addonConfig,
-      final ArrayList<CommentedConfig> packSpecificConfigs)
+      final @NotNull VersionMeta versionMeta,
+      final @NotNull ApplicationProperties applicationProperties,
+      final @NotNull Utilities utilities,
+      final @NotNull ConfigurationModel configurationModel,
+      final @NotNull List<String> encounteredErrors,
+      final @NotNull Optional<CommentedConfig> addonConfig,
+      final @NotNull ArrayList<CommentedConfig> packSpecificConfigs)
       throws Exception;
 }

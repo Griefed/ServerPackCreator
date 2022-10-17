@@ -33,6 +33,7 @@ import java.util.TreeSet;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -329,6 +330,7 @@ public final class MigrationManager {
    * same.
    * @author Griefed
    */
+  @Contract(pure = true)
   private boolean oldOrSame(@NotNull Integer @NotNull [] old,
                             @NotNull Integer @NotNull [] checkAgainst) {
     return checkAgainst[0] <= old[0]
@@ -362,6 +364,7 @@ public final class MigrationManager {
    * same.
    * @author Griefed
    */
+  @Contract(pure = true)
   private boolean newOrSame(@NotNull Integer @NotNull [] current,
                             @NotNull Integer @NotNull [] checkAgainst) {
     return checkAgainst[0] >= current[0]
@@ -427,6 +430,7 @@ public final class MigrationManager {
    * @return A list of migrations that took place.
    * @author Griefed
    */
+  @Contract(pure = true)
   public @NotNull List<MigrationMessage> getMigrationMessages() {
     return MIGRATION_MESSAGES;
   }
@@ -452,18 +456,22 @@ public final class MigrationManager {
       CHANGES.addAll(changes);
     }
 
+    @Contract(pure = true)
     public @NotNull String fromVersion() {
       return FROM;
     }
 
+    @Contract(pure = true)
     public @NotNull String toVersion() {
       return TO;
     }
 
+    @Contract(pure = true)
     public @NotNull List<String> changes() {
       return CHANGES;
     }
 
+    @Contract(pure = true)
     public int count() {
       return CHANGES.size();
     }

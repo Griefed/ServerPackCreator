@@ -130,8 +130,7 @@ public class VersionsController {
   /**
    * Get the Latest Fabric Installer and Release Fabric installer versions as a JSON object.
    *
-   * @return Returns the Latest Fabric Installer and Release Fabric Installer as a
-   * JSON object.
+   * @return Returns the Latest Fabric Installer and Release Fabric Installer as a JSON object.
    * @author Griefed
    */
   @GetMapping(value = "/fabric/installer", produces = "application/json")
@@ -172,8 +171,7 @@ public class VersionsController {
   /**
    * Get the Latest Fabric Installer and Release Fabric installer versions as a JSON object.
    *
-   * @return Returns the Latest Fabric Installer and Release Fabric Installer as a
-   * JSON object.
+   * @return Returns the Latest Fabric Installer and Release Fabric Installer as a JSON object.
    * @author Griefed
    */
   @GetMapping(value = "/quilt/installer", produces = "application/json")

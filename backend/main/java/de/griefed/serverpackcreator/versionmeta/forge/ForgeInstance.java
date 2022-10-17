@@ -24,6 +24,8 @@ import de.griefed.serverpackcreator.versionmeta.minecraft.MinecraftMeta;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Optional;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * An instance of a complete Forge combination, containing a Minecraft version, related Forge
@@ -48,9 +50,9 @@ public final class ForgeInstance {
    *                               not be created.
    * @author Griefed
    */
-  public ForgeInstance(String minecraftVersion,
-                       String forgeVersion,
-                       MinecraftMeta minecraftMeta)
+  public ForgeInstance(@NotNull String minecraftVersion,
+                       @NotNull String forgeVersion,
+                       @NotNull MinecraftMeta minecraftMeta)
       throws MalformedURLException {
 
     MINECRAFT_VERSION = minecraftVersion;
@@ -72,7 +74,8 @@ public final class ForgeInstance {
    * @return Minecraft version.
    * @author Griefed
    */
-  public String minecraftVersion() {
+  @Contract(pure = true)
+  public @NotNull String minecraftVersion() {
     return MINECRAFT_VERSION;
   }
 
@@ -82,7 +85,8 @@ public final class ForgeInstance {
    * @return Forge version.
    * @author Griefed
    */
-  public String forgeVersion() {
+  @Contract(pure = true)
+  public @NotNull String forgeVersion() {
     return FORGE_VERSION;
   }
 
@@ -92,7 +96,8 @@ public final class ForgeInstance {
    * @return Download {@link URL} to the Forge server installer JAR-file.
    * @author Griefed
    */
-  public URL installerUrl() {
+  @Contract(pure = true)
+  public @NotNull URL installerUrl() {
     return INSTALLER_URL;
   }
 
@@ -103,7 +108,7 @@ public final class ForgeInstance {
    * @return Client wrapped in an {@link Optional}.
    * @author Griefed
    */
-  public Optional<MinecraftClient> minecraftClient() {
+  public @NotNull Optional<MinecraftClient> minecraftClient() {
     return MINECRAFT_META.getClient(this.MINECRAFT_VERSION);
   }
 }

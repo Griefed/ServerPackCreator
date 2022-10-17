@@ -39,6 +39,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StreamUtils;
@@ -119,19 +121,19 @@ public final class VersionMeta {
    */
   @Autowired
   public VersionMeta(
-      File minecraftManifest,
-      File forgeManifest,
-      File fabricManifest,
-      File fabricInstallerManifest,
-      File fabricIntermediariesManifest,
-      File quiltManifest,
-      File quiltInstallerManifest,
-      File legacyFabricGameManifest,
-      File legacyFabricLoaderManifest,
-      File legacyFabricInstallerManifest,
-      ObjectMapper injectedObjectMapper,
-      Utilities injectedUtilities,
-      ApplicationProperties injectedApplicationProperties)
+      @NotNull File minecraftManifest,
+      @NotNull File forgeManifest,
+      @NotNull File fabricManifest,
+      @NotNull File fabricInstallerManifest,
+      @NotNull File fabricIntermediariesManifest,
+      @NotNull File quiltManifest,
+      @NotNull File quiltInstallerManifest,
+      @NotNull File legacyFabricGameManifest,
+      @NotNull File legacyFabricLoaderManifest,
+      @NotNull File legacyFabricInstallerManifest,
+      @NotNull ObjectMapper injectedObjectMapper,
+      @NotNull Utilities injectedUtilities,
+      @NotNull ApplicationProperties injectedApplicationProperties)
       throws IOException, ParserConfigurationException, SAXException {
 
     MINECRAFT_MANIFEST = minecraftManifest;
@@ -263,9 +265,9 @@ public final class VersionMeta {
    *                        {@link Type#FABRIC_INSTALLER}.
    * @author Griefed
    */
-  private void checkManifest(File manifestToCheck,
-                             URL urlToManifest,
-                             Type manifestType) {
+  private void checkManifest(@NotNull File manifestToCheck,
+                             @NotNull URL urlToManifest,
+                             @NotNull Type manifestType) {
     if (manifestToCheck.isFile()) {
       if (!UTILITIES.WebUtils().isReachable(urlToManifest)) {
         LOG.warn(
@@ -410,8 +412,8 @@ public final class VersionMeta {
    * @author whitebear60
    * @author Griefed
    */
-  private void updateManifest(File manifestToRefresh,
-                              String content) throws IOException {
+  private void updateManifest(@NotNull File manifestToRefresh,
+                              @NotNull String content) throws IOException {
     try {
       FileUtils.createParentDirectories(manifestToRefresh);
     } catch (IOException ignored) {
@@ -428,8 +430,8 @@ public final class VersionMeta {
    * @author whitebear60
    * @author Griefed
    */
-  private void updateManifest(File manifestToRefresh,
-                              URL urlToManifest) {
+  private void updateManifest(@NotNull File manifestToRefresh,
+                              @NotNull URL urlToManifest) {
     try (InputStream stream = urlToManifest.openStream()) {
 
       String manifestText = StreamUtils.copyToString(stream,
@@ -452,7 +454,9 @@ public final class VersionMeta {
    * @throws SAXException                 if any parse errors occur.
    * @author Griefed
    */
-  public VersionMeta update() throws IOException, ParserConfigurationException, SAXException {
+  @Contract(" -> this")
+  public @NotNull VersionMeta update()
+      throws IOException, ParserConfigurationException, SAXException {
     checkManifests();
     MINECRAFT_META.update();
     FABRIC_INTERMEDIARIES.update();
@@ -469,7 +473,8 @@ public final class VersionMeta {
    * @return Instance of {@link MinecraftMeta}.
    * @author Griefed
    */
-  public MinecraftMeta minecraft() {
+  @Contract(pure = true)
+  public @NotNull MinecraftMeta minecraft() {
     return MINECRAFT_META;
   }
 
@@ -479,7 +484,8 @@ public final class VersionMeta {
    * @return Instance of {@link FabricMeta}.
    * @author Griefed
    */
-  public FabricMeta fabric() {
+  @Contract(pure = true)
+  public @NotNull FabricMeta fabric() {
     return FABRIC_META;
   }
 
@@ -489,7 +495,8 @@ public final class VersionMeta {
    * @return Instance of {@link ForgeMeta}.
    * @author Griefed
    */
-  public ForgeMeta forge() {
+  @Contract(pure = true)
+  public @NotNull ForgeMeta forge() {
     return FORGE_META;
   }
 
@@ -499,7 +506,8 @@ public final class VersionMeta {
    * @return Instance of {@link QuiltMeta}.
    * @author Griefed
    */
-  public QuiltMeta quilt() {
+  @Contract(pure = true)
+  public @NotNull QuiltMeta quilt() {
     return QUIL_META;
   }
 
@@ -508,7 +516,8 @@ public final class VersionMeta {
    *
    * @return Instance of {@link LegacyFabricMeta}.
    */
-  public LegacyFabricMeta legacyFabric() {
+  @Contract(pure = true)
+  public @NotNull LegacyFabricMeta legacyFabric() {
     return LEGACY_FABRIC_META;
   }
 }

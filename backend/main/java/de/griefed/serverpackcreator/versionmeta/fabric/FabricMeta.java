@@ -30,6 +30,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import javax.xml.parsers.ParserConfigurationException;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.xml.sax.SAXException;
 
 /**
@@ -57,11 +59,11 @@ public final class FabricMeta implements Meta {
    * @author Griefed
    */
   public FabricMeta(
-      File fabricManifest,
-      File fabricInstallerManifest,
-      FabricIntermediaries injectedFabricIntermediaries,
-      ObjectMapper objectMapper,
-      Utilities utilities) {
+      @NotNull File fabricManifest,
+      @NotNull File fabricInstallerManifest,
+      @NotNull FabricIntermediaries injectedFabricIntermediaries,
+      @NotNull ObjectMapper objectMapper,
+      @NotNull Utilities utilities) {
 
     FABRIC_LOADER_DETAILS = new FabricLoaderDetails(objectMapper);
     FABRIC_LOADER = new FabricLoader(fabricManifest, utilities);
@@ -75,93 +77,101 @@ public final class FabricMeta implements Meta {
     FABRIC_INSTALLER.update();
   }
 
+  @Contract(pure = true)
   @Override
-  public String latestLoader() {
+  public @NotNull String latestLoader() {
     return FABRIC_LOADER.latestLoaderVersion();
   }
 
+  @Contract(pure = true)
   @Override
-  public String releaseLoader() {
+  public @NotNull String releaseLoader() {
     return FABRIC_LOADER.releaseLoaderVersion();
   }
 
+  @Contract(pure = true)
   @Override
-  public String latestInstaller() {
+  public @NotNull String latestInstaller() {
     return FABRIC_INSTALLER.latestInstallerVersion();
   }
 
+  @Contract(pure = true)
   @Override
-  public String releaseInstaller() {
+  public @NotNull String releaseInstaller() {
     return FABRIC_INSTALLER.releaseInstallerVersion();
   }
 
+  @Contract(pure = true)
   @Override
-  public List<String> loaderVersionsListAscending() {
+  public @NotNull List<String> loaderVersionsListAscending() {
     return FABRIC_LOADER.loaders();
   }
 
   @Override
-  public List<String> loaderVersionsListDescending() {
+  public @NotNull List<String> loaderVersionsListDescending() {
     return Lists.reverse(FABRIC_LOADER.loaders());
   }
 
   @Override
-  public String[] loaderVersionsArrayAscending() {
+  public @NotNull String @NotNull [] loaderVersionsArrayAscending() {
     return FABRIC_LOADER.loaders().toArray(new String[0]);
   }
 
   @Override
-  public String[] loaderVersionsArrayDescending() {
+  public @NotNull String @NotNull [] loaderVersionsArrayDescending() {
     return Lists.reverse(FABRIC_LOADER.loaders()).toArray(new String[0]);
   }
 
+  @Contract(pure = true)
   @Override
-  public List<String> installerVersionsListAscending() {
+  public @NotNull List<String> installerVersionsListAscending() {
     return FABRIC_INSTALLER.installers();
   }
 
   @Override
-  public List<String> installerVersionsListDescending() {
+  public @NotNull List<String> installerVersionsListDescending() {
     return Lists.reverse(FABRIC_INSTALLER.installers());
   }
 
   @Override
-  public String[] installerVersionsArrayAscending() {
+  public @NotNull String @NotNull [] installerVersionsArrayAscending() {
     return FABRIC_INSTALLER.installers().toArray(new String[0]);
   }
 
   @Override
-  public String[] installerVersionsArrayDescending() {
+  public @NotNull String @NotNull [] installerVersionsArrayDescending() {
     return Lists.reverse(FABRIC_INSTALLER.installers()).toArray(new String[0]);
   }
 
+  @Contract(pure = true)
   @Override
-  public URL latestInstallerUrl() {
+  public @NotNull URL latestInstallerUrl() {
     return FABRIC_INSTALLER.latestInstallerUrl();
   }
 
+  @Contract(pure = true)
   @Override
-  public URL releaseInstallerUrl() {
+  public @NotNull URL releaseInstallerUrl() {
     return FABRIC_INSTALLER.releaseInstallerUrl();
   }
 
   @Override
-  public boolean isInstallerUrlAvailable(String fabricVersion) {
+  public boolean isInstallerUrlAvailable(@NotNull String fabricVersion) {
     return Optional.ofNullable(FABRIC_INSTALLER.meta().get(fabricVersion)).isPresent();
   }
 
   @Override
-  public Optional<URL> getInstallerUrl(String fabricVersion) {
+  public @NotNull Optional<URL> getInstallerUrl(@NotNull String fabricVersion) {
     return Optional.ofNullable(FABRIC_INSTALLER.meta().get(fabricVersion));
   }
 
   @Override
-  public boolean isVersionValid(String fabricVersion) {
+  public boolean isVersionValid(@NotNull String fabricVersion) {
     return FABRIC_LOADER.loaders().contains(fabricVersion);
   }
 
   @Override
-  public boolean isMinecraftSupported(String minecraftVersion) {
+  public boolean isMinecraftSupported(@NotNull String minecraftVersion) {
     return FABRIC_INTERMEDIARIES.getIntermediary(minecraftVersion).isPresent();
   }
 
@@ -173,8 +183,8 @@ public final class FabricMeta implements Meta {
    * @return URL to the Fabric launcher for the specified Minecraft and Fabric version.
    * @author Griefed
    */
-  public Optional<URL> improvedLauncherUrl(String minecraftVersion,
-                                           String fabricVersion) {
+  public @NotNull Optional<URL> improvedLauncherUrl(@NotNull String minecraftVersion,
+                                                    @NotNull String fabricVersion) {
     return FABRIC_INSTALLER.improvedLauncherUrl(minecraftVersion, fabricVersion);
   }
 
@@ -187,8 +197,8 @@ public final class FabricMeta implements Meta {
    * {@link Optional}.
    * @author Griefed
    */
-  public Optional<FabricDetails> getLoaderDetails(String minecraftVersion,
-                                                  String fabricVersion) {
+  public @NotNull Optional<FabricDetails> getLoaderDetails(@NotNull String minecraftVersion,
+                                                           @NotNull String fabricVersion) {
     String key = minecraftVersion + "-" + fabricVersion;
 
     if (LOADER_DETAILS.containsKey(key)) {

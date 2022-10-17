@@ -2729,7 +2729,7 @@ public class TabCreateServerPack extends JPanel {
 
       if (configurationModel.getCopyDirs().isEmpty()) {
 
-        setCopyDirectories(Arrays.asList("mods","config"));
+        setCopyDirectories(Arrays.asList("mods", "config"));
 
       } else {
 

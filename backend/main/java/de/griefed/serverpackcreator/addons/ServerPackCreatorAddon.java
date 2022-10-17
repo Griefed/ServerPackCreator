@@ -26,11 +26,33 @@ import java.net.URL;
 import java.util.Objects;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 import org.pf4j.Plugin;
 import org.pf4j.PluginManager;
 import org.pf4j.PluginRuntimeException;
 import org.pf4j.PluginWrapper;
 
+/**
+ * A ServerPackCreator addon provides additional functionality to ServerPackCreator via any of
+ * <ul>
+ *   <li>{@link de.griefed.serverpackcreator.addons.configurationhandler.ConfigCheckExtension}</li>
+ *   <li>{@link de.griefed.serverpackcreator.addons.serverpackhandler.PostGenExtension}</li>
+ *   <li>{@link de.griefed.serverpackcreator.addons.serverpackhandler.PreGenExtension}</li>
+ *   <li>{@link de.griefed.serverpackcreator.addons.serverpackhandler.PreZipExtension}</li>
+ *   <li>{@link de.griefed.serverpackcreator.addons.swinggui.ConfigPanelExtension}</li>
+ *   <li>{@link de.griefed.serverpackcreator.addons.swinggui.TabExtension}</li>
+ * </ul>
+ * and
+ * <ul>
+ *   <li>{@link de.griefed.serverpackcreator.addons.swinggui.ExtensionConfigPanel}</li>
+ *   <li>{@link de.griefed.serverpackcreator.addons.swinggui.ExtensionTab}</li>
+ * </ul>
+ * <p>
+ * For details on pf4j, the library used to realize the addon-functionality in ServerPackCreator, visit <a href="https://pf4j.org">pf4j.org</a>
+ *
+ * @author Griefed
+ */
+@SuppressWarnings("unused")
 public abstract class ServerPackCreatorAddon extends Plugin implements BaseInformation {
 
   protected static final Logger LOG_ADDONS = LogManager.getLogger("AddonsLogger");
@@ -40,7 +62,18 @@ public abstract class ServerPackCreatorAddon extends Plugin implements BaseInfor
   private final String AUTHOR;
   private final String VERSION;
 
-  public ServerPackCreatorAddon(final PluginWrapper wrapper) throws IOException {
+  /**
+   * Using the pre-made ServerPackCreatorAddon-class and extending it, you can save yourself the
+   * hassle of writing the code which provides ServerPackCreator with information about your addon.
+   * <p>
+   * The only thing you need to take care of is your {@code build.gradle} and the
+   * {@code Name},{@code Description},{@code Author} and {@code Version} fields.
+   *
+   * @param wrapper PluginWrapper provided by ServerPackCreator. Do not touch unless you know what
+   *                you are doing.
+   * @throws IOException if the addon could not be initialized.
+   */
+  public ServerPackCreatorAddon(@NotNull final PluginWrapper wrapper) throws IOException {
     super(wrapper);
 
     String classPath =
@@ -99,27 +132,27 @@ public abstract class ServerPackCreatorAddon extends Plugin implements BaseInfor
     LOG_ADDONS.info("Stopped: " + NAME + " (" + getId() + ")");
   }
 
-  public String getId() {
+  public @NotNull String getId() {
     return getWrapper().getPluginId();
   }
 
   @Override
-  public String getName() {
+  public @NotNull String getName() {
     return NAME;
   }
 
   @Override
-  public String getDescription() {
+  public @NotNull String getDescription() {
     return DESCRIPTION;
   }
 
   @Override
-  public String getAuthor() {
+  public @NotNull String getAuthor() {
     return AUTHOR;
   }
 
   @Override
-  public String getVersion() {
+  public @NotNull String getVersion() {
     return VERSION;
   }
 }

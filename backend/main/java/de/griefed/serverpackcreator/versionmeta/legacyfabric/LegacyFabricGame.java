@@ -21,6 +21,7 @@ package de.griefed.serverpackcreator.versionmeta.legacyfabric;
 
 import de.griefed.serverpackcreator.utilities.common.Utilities;
 import java.io.File;
+import org.jetbrains.annotations.NotNull;
 
 final class LegacyFabricGame extends LegacyFabricVersioning {
 
@@ -31,8 +32,8 @@ final class LegacyFabricGame extends LegacyFabricVersioning {
    * @param utilities Commonly used utilities across ServerPackCreator.
    * @author Griefed
    */
-  LegacyFabricGame(File manifest,
-                   Utilities utilities) {
+  LegacyFabricGame(@NotNull File manifest,
+                   @NotNull Utilities utilities) {
     super(manifest, utilities);
   }
 }

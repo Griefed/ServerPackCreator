@@ -29,6 +29,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import javax.xml.parsers.ParserConfigurationException;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -57,8 +59,8 @@ final class FabricInstaller {
    * @param utilities Commonly used utilities across ServerPackCreator.
    * @author Griefed
    */
-  FabricInstaller(File manifest,
-                  Utilities utilities) {
+  FabricInstaller(@NotNull File manifest,
+                  @NotNull Utilities utilities) {
     MANIFEST = manifest;
     UTILITIES = utilities;
   }
@@ -128,7 +130,9 @@ final class FabricInstaller {
    * @throws MalformedURLException if the URL could not be formed.
    * @author Griefed
    */
-  private URL installerUrl(String fabricInstallerVersion) throws MalformedURLException {
+  @Contract("_ -> new")
+  private @NotNull URL installerUrl(@NotNull String fabricInstallerVersion)
+      throws MalformedURLException {
     return new URL(
         String.format(URL_TEMPLATE_INSTALLER, fabricInstallerVersion, fabricInstallerVersion));
   }
@@ -139,7 +143,8 @@ final class FabricInstaller {
    * @return List of available Fabric installer versions.
    * @author Griefed
    */
-  List<String> installers() {
+  @Contract(pure = true)
+  @NotNull List<String> installers() {
     return installers;
   }
 
@@ -150,7 +155,8 @@ final class FabricInstaller {
    * @return Map with the Fabric-Version-to-Installer-URL.
    * @author Griefed
    */
-  HashMap<String, URL> meta() {
+  @Contract(pure = true)
+  @NotNull HashMap<String, URL> meta() {
     return installerUrlMeta;
   }
 
@@ -160,7 +166,8 @@ final class FabricInstaller {
    * @return The latest Fabric installer version.
    * @author Griefed
    */
-  String latestInstallerVersion() {
+  @Contract(pure = true)
+  @NotNull String latestInstallerVersion() {
     return latestInstaller;
   }
 
@@ -170,7 +177,8 @@ final class FabricInstaller {
    * @return The release Fabric installer version.
    * @author Griefed
    */
-  String releaseInstallerVersion() {
+  @Contract(pure = true)
+  @NotNull String releaseInstallerVersion() {
     return releaseInstaller;
   }
 
@@ -180,7 +188,8 @@ final class FabricInstaller {
    * @return URL to the latest Fabric installer.
    * @author Griefed
    */
-  URL latestInstallerUrl() {
+  @Contract(pure = true)
+  @NotNull URL latestInstallerUrl() {
     return latestInstallerUrl;
   }
 
@@ -190,7 +199,8 @@ final class FabricInstaller {
    * @return URL to the release Fabric installer.
    * @author Griefed
    */
-  URL releaseInstallerUrl() {
+  @Contract(pure = true)
+  @NotNull URL releaseInstallerUrl() {
     return releaseInstallerUrl;
   }
 
@@ -203,8 +213,8 @@ final class FabricInstaller {
    * @return URL to the improved Fabric launcher, wrapped in an {@link Optional}.
    * @author Griefed
    */
-  Optional<URL> improvedLauncherUrl(String minecraftVersion,
-                                    String fabricVersion) {
+  @NotNull Optional<URL> improvedLauncherUrl(@NotNull String minecraftVersion,
+                                             @NotNull String fabricVersion) {
     try {
       return Optional.of(
           new URL(

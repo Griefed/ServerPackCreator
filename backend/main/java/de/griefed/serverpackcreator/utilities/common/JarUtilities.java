@@ -41,6 +41,8 @@ import java.util.stream.Stream;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.boot.system.ApplicationHome;
 import org.springframework.stereotype.Component;
 
@@ -54,6 +56,7 @@ public final class JarUtilities {
 
   private static final Logger LOG = LogManager.getLogger(JarUtilities.class);
 
+  @Contract(pure = true)
   public JarUtilities() {
   }
 
@@ -63,17 +66,16 @@ public final class JarUtilities {
    * will result in the log4j2.xml file from inside the JAR-file to be copied to the outside of the
    * JAR-file as {@code log4j2.xml}
    *
-   * @param fileToCopy      File. The source-file in the JAR you wish to copy outside the JAR.
-   * @param replaceIfExists Boolean. Whether to replace the file, if it already exists.
-   * @param classToCopyFrom Class. The class of the JAR from which you want to copy from.
+   * @param fileToCopy      The source-file in the JAR you wish to copy outside the JAR.
+   * @param replaceIfExists Whether to replace the file, if it already exists.
+   * @param classToCopyFrom The class of the JAR from which you want to copy from.
    * @param directory       The directory where the file should be copied to.
    * @author Griefed
    */
-  public void copyFileFromJar(String fileToCopy,
+  public void copyFileFromJar(@NotNull String fileToCopy,
                               boolean replaceIfExists,
-                              Class<?> classToCopyFrom,
-                              String directory) {
-
+                              @NotNull Class<?> classToCopyFrom,
+                              @NotNull String directory) {
     if (replaceIfExists) {
       FileUtils.deleteQuietly(new File(directory, fileToCopy));
     }
@@ -92,10 +94,9 @@ public final class JarUtilities {
    * @return {@code true} if the file was created, {@code false} otherwise.
    * @author Griefed
    */
-  public boolean copyFileFromJar(String fileToCopy,
-                                 Class<?> identifierClass,
-                                 String directory) {
-
+  public boolean copyFileFromJar(@NotNull String fileToCopy,
+                                 @NotNull Class<?> identifierClass,
+                                 @NotNull String directory) {
     if (!new File(directory, fileToCopy).exists()) {
 
       try {
@@ -129,14 +130,13 @@ public final class JarUtilities {
    * @param fileToCopy      The source-file in the JAR you wish to copy outside the JAR.
    * @param destinationFile The file to which to copy to.
    * @param identifierClass The class of the JAR from which to get the resource.
-   * @param replaceIfExists Boolean. Whether to replace the file, if it already exists.
+   * @param replaceIfExists Whether to replace the file, if it already exists.
    * @author Griefed
    */
-  public void copyFileFromJar(String fileToCopy,
-                              File destinationFile,
+  public void copyFileFromJar(@NotNull String fileToCopy,
+                              @NotNull File destinationFile,
                               boolean replaceIfExists,
-                              Class<?> identifierClass) {
-
+                              @NotNull Class<?> identifierClass) {
     if (replaceIfExists) {
       FileUtils.deleteQuietly(destinationFile);
     }
@@ -155,10 +155,9 @@ public final class JarUtilities {
    * @return {@code true} if the file was created, {@code false} otherwise.
    * @author Griefed
    */
-  public boolean copyFileFromJar(String fileToCopy,
-                                 File destinationFile,
-                                 Class<?> identifierClass) {
-
+  public boolean copyFileFromJar(@NotNull String fileToCopy,
+                                 @NotNull File destinationFile,
+                                 @NotNull Class<?> identifierClass) {
     if (!destinationFile.exists()) {
 
       try {
@@ -211,11 +210,11 @@ public final class JarUtilities {
    * @author Griefed
    */
   public void copyFolderFromJar(
-      Class<?> classToRetrieveHomeFor,
-      String directoryToCopy,
-      String destinationDirectory,
-      String jarDirectoryPrefix,
-      String fileEnding)
+      @NotNull Class<?> classToRetrieveHomeFor,
+      @NotNull String directoryToCopy,
+      @NotNull String destinationDirectory,
+      @NotNull String jarDirectoryPrefix,
+      @NotNull String fileEnding)
       throws IOException {
 
     HashMap<String, String> systemInformation =
@@ -248,7 +247,7 @@ public final class JarUtilities {
    * JAR-file and system.
    * @author Griefed
    */
-  public HashMap<String, String> jarInformation(Class<?> classInJar) {
+  public @NotNull HashMap<String, String> jarInformation(@NotNull Class<?> classInJar) {
     return jarInformation(getApplicationHomeForClass(classInJar));
   }
 
@@ -265,10 +264,10 @@ public final class JarUtilities {
    * @author Griefed
    */
   private void copyFolderFromJar(
-      Class<?> classToCopyFrom,
-      String source,
-      String destination,
-      String fileEnding) {
+      @NotNull Class<?> classToCopyFrom,
+      @NotNull String source,
+      @NotNull String destination,
+      @NotNull String fileEnding) {
 
     List<String> filesFromJar = new ArrayList<>(1000);
 
@@ -337,11 +336,11 @@ public final class JarUtilities {
    * @author Griefed
    */
   private void copyFolderFromJar(
-      JarFile jarToCopyFrom,
-      String directoryToCopy,
-      String destinationDirectory,
-      String jarDirectoryPrefix,
-      String fileEnding)
+      @NotNull JarFile jarToCopyFrom,
+      @NotNull String directoryToCopy,
+      @NotNull String destinationDirectory,
+      @NotNull String jarDirectoryPrefix,
+      @NotNull String fileEnding)
       throws IOException {
 
     for (Enumeration<JarEntry> entries = jarToCopyFrom.entries(); entries.hasMoreElements(); ) {
@@ -439,11 +438,13 @@ public final class JarUtilities {
    * Retrieve the JAR-file for a given class.
    *
    * @param classToRetrieveJarFor The class to retrieve the JAR-file path for.
-   * @return JarFile. Returns the JarFile for the given class.
+   * @return Returns the JarFile for the given class.
    * @throws IOException Thrown if the JAR-file could not be determined or otherwise accessed.
    * @author Griefed
    */
-  private JarFile retrieveJarFromClass(Class<?> classToRetrieveJarFor) throws IOException {
+  @Contract("_ -> new")
+  private @NotNull JarFile retrieveJarFromClass(@NotNull Class<?> classToRetrieveJarFor)
+      throws IOException {
     return new JarFile(new ApplicationHome(classToRetrieveJarFor).getSource());
   }
 
@@ -456,11 +457,10 @@ public final class JarUtilities {
    *
    * @param applicationHome Instance of {@link ApplicationHome} from which to gather information
    *                        about the JAR-file and system.
-   * @return HashMap String-String. A hashmap containing key-value-pairs with information about the
-   * JAR-file and system.
+   * @return A hashmap containing key-value-pairs with information about the JAR-file and system.
    * @author Griefed
    */
-  public HashMap<String, String> jarInformation(ApplicationHome applicationHome) {
+  public @NotNull HashMap<String, String> jarInformation(@NotNull ApplicationHome applicationHome) {
 
     HashMap<String, String> sysInfo = new HashMap<>(10);
 
@@ -491,7 +491,8 @@ public final class JarUtilities {
    * @return An instance of {@link ApplicationHome} for the given class.
    * @author Griefed
    */
-  public ApplicationHome getApplicationHomeForClass(Class<?> classToRetrieveHomeFor) {
+  @Contract("_ -> new")
+  public @NotNull ApplicationHome getApplicationHomeForClass(@NotNull Class<?> classToRetrieveHomeFor) {
     return new ApplicationHome(classToRetrieveHomeFor);
   }
 }

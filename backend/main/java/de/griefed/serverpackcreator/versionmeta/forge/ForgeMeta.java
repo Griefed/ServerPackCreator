@@ -29,6 +29,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Forge meta containing information about available Forge releases.
@@ -49,8 +51,9 @@ public final class ForgeMeta {
    * @param utilities     Commonly used utilities across ServerPackCreator.
    * @author Griefed
    */
-  public ForgeMeta(File forgeManifest,
-                   Utilities utilities) {
+  @Contract(pure = true)
+  public ForgeMeta(@NotNull File forgeManifest,
+                   @NotNull Utilities utilities) {
     FORGE_MANIFEST = forgeManifest;
     UTILITIES = utilities;
   }
@@ -64,7 +67,7 @@ public final class ForgeMeta {
    *                     {@link com.fasterxml.jackson.databind.JsonNode}.
    * @author Griefed
    */
-  public void initialize(MinecraftMeta injectedMinecraftMeta) throws IOException {
+  public void initialize(@NotNull MinecraftMeta injectedMinecraftMeta) throws IOException {
     if (forgeLoader == null) {
       forgeLoader =
           new ForgeLoader(FORGE_MANIFEST, UTILITIES, injectedMinecraftMeta);
@@ -91,8 +94,8 @@ public final class ForgeMeta {
    * @return {@code true} if the given Minecraft and Forge versions are valid/supported/available.
    * @author Griefed
    */
-  public boolean checkForgeAndMinecraftVersion(String minecraftVersion,
-                                               String forgeVersion) {
+  public boolean checkForgeAndMinecraftVersion(@NotNull String minecraftVersion,
+                                               @NotNull String forgeVersion) {
     return checkMinecraftVersion(minecraftVersion) && checkForgeVersion(forgeVersion);
   }
 
@@ -103,7 +106,7 @@ public final class ForgeMeta {
    * @return {@code true} if the given Minecraft version is valid/supported/available.
    * @author Griefed
    */
-  public boolean checkMinecraftVersion(String minecraftVersion) {
+  public boolean checkMinecraftVersion(@NotNull String minecraftVersion) {
     return Optional.ofNullable(forgeLoader.versionMeta().get(minecraftVersion)).isPresent();
   }
 
@@ -114,7 +117,7 @@ public final class ForgeMeta {
    * @return {@code true} if the given Forge version is valid/supported/available.
    * @author Griefed
    */
-  public boolean checkForgeVersion(String forgeVersion) {
+  public boolean checkForgeVersion(@NotNull String forgeVersion) {
     return Optional.ofNullable(forgeLoader.forgeToMinecraftMeta().get(forgeVersion)).isPresent();
   }
 
@@ -126,8 +129,8 @@ public final class ForgeMeta {
    * @return {@code true} if Forge is available for the given Forge- and Minecraft version.
    * @author Griefed
    */
-  public boolean isForgeInstanceAvailable(String minecraftVersion,
-                                          String forgeVersion) {
+  public boolean isForgeInstanceAvailable(@NotNull String minecraftVersion,
+                                          @NotNull String forgeVersion) {
     return getForgeInstance(minecraftVersion, forgeVersion).isPresent();
   }
 
@@ -141,8 +144,8 @@ public final class ForgeMeta {
    * {@link Optional}
    * @author Griefed
    */
-  public Optional<ForgeInstance> getForgeInstance(String minecraftVersion,
-                                                  String forgeVersion) {
+  public @NotNull Optional<ForgeInstance> getForgeInstance(@NotNull String minecraftVersion,
+                                                           @NotNull String forgeVersion) {
     return Optional.ofNullable(
         forgeLoader.instanceMeta().get(minecraftVersion + "-" + forgeVersion));
   }
@@ -154,7 +157,7 @@ public final class ForgeMeta {
    * @return {@code true} if Forge is available for the given Forge version.
    * @author Griefed
    */
-  public boolean isForgeInstanceAvailable(String forgeVersion) {
+  public boolean isForgeInstanceAvailable(@NotNull String forgeVersion) {
     return getForgeInstance(forgeVersion).isPresent();
   }
 
@@ -165,7 +168,7 @@ public final class ForgeMeta {
    * @return Forge instance for the given Forge version, wrapped in an {@link Optional}
    * @author Griefed
    */
-  public Optional<ForgeInstance> getForgeInstance(String forgeVersion) {
+  public @NotNull Optional<ForgeInstance> getForgeInstance(@NotNull String forgeVersion) {
     if (!checkForgeVersion(forgeVersion)) {
       return Optional.empty();
     }
@@ -187,7 +190,7 @@ public final class ForgeMeta {
    * @return Minecraft version for the given Forge version, wrapped in an {@link Optional}.
    * @author Griefed
    */
-  public Optional<String> supportedMinecraftVersion(String forgeVersion) {
+  public @NotNull Optional<String> supportedMinecraftVersion(@NotNull String forgeVersion) {
     return Optional.ofNullable(forgeLoader.forgeToMinecraftMeta().get(forgeVersion));
   }
 
@@ -199,7 +202,7 @@ public final class ForgeMeta {
    * @return Forge instance-list for the given Minecraft version.
    * @author Griefed
    */
-  public Optional<List<ForgeInstance>> getForgeInstances(String minecraftVersion) {
+  public @NotNull Optional<List<ForgeInstance>> getForgeInstances(@NotNull String minecraftVersion) {
     List<ForgeInstance> list = new ArrayList<>(100);
     if (Optional.ofNullable(forgeLoader.versionMeta().get(minecraftVersion)).isPresent()) {
 
@@ -227,7 +230,7 @@ public final class ForgeMeta {
    * @return Latest Forge version for the given Minecraft version, wrapped in an {@link Optional}
    * @author Griefed
    */
-  public Optional<String> latestForgeVersion(String minecraftVersion) {
+  public @NotNull Optional<String> latestForgeVersion(@NotNull String minecraftVersion) {
     if (!checkMinecraftVersion(minecraftVersion)) {
       return Optional.empty();
     }
@@ -256,8 +259,8 @@ public final class ForgeMeta {
    * {@link Type#ASCENDING} or {@link Type#DESCENDING} order.
    * @author Griefed
    */
-  private Optional<List<String>> getForgeVersions(String minecraftVersion,
-                                                  Type order) {
+  private @NotNull Optional<List<String>> getForgeVersions(@NotNull String minecraftVersion,
+                                                           @NotNull Type order) {
     if (!checkMinecraftVersion(minecraftVersion)) {
       return Optional.empty();
     }
@@ -275,7 +278,7 @@ public final class ForgeMeta {
    * @return Oldest Forge version for the given Minecraft version, wrapped in {@link Optional}
    * @author Griefed
    */
-  public Optional<String> oldestForgeVersion(String minecraftVersion) {
+  public @NotNull Optional<String> oldestForgeVersion(@NotNull String minecraftVersion) {
     if (!checkMinecraftVersion(minecraftVersion)) {
       return Optional.empty();
     }
@@ -295,7 +298,7 @@ public final class ForgeMeta {
    * @return List of Forge supported Minecraft versions, in ascending order.
    * @author Griefed
    */
-  public List<String> minecraftVersionsAscending() {
+  public @NotNull List<String> minecraftVersionsAscending() {
     return supportedMinecraftVersionsList(Type.ASCENDING);
   }
 
@@ -309,7 +312,7 @@ public final class ForgeMeta {
    * {@link Type#DESCENDING} order.
    * @author Griefed
    */
-  private List<String> supportedMinecraftVersionsList(Type order) {
+  private @NotNull List<String> supportedMinecraftVersionsList(@NotNull Type order) {
     if (order == Type.DESCENDING) {
       return Lists.reverse(forgeLoader.minecraftVersions());
     } else {
@@ -323,7 +326,7 @@ public final class ForgeMeta {
    * @return List of Forge supported Minecraft versions, in descending order.
    * @author Griefed
    */
-  public List<String> minecraftVersionsDescending() {
+  public @NotNull List<String> minecraftVersionsDescending() {
     return supportedMinecraftVersionsList(Type.DESCENDING);
   }
 
@@ -333,7 +336,7 @@ public final class ForgeMeta {
    * @return Array of Forge supported Minecraft versions, in descending order.
    * @author Griefed
    */
-  public String[] minecraftVersionsArrayAscending() {
+  public @NotNull String @NotNull [] minecraftVersionsArrayAscending() {
     return supportedMinecraftVersionsList(Type.ASCENDING).toArray(new String[0]);
   }
 
@@ -343,7 +346,7 @@ public final class ForgeMeta {
    * @return Array of Forge supported Minecraft versions, in descending order.
    * @author Griefed
    */
-  public String[] minecraftVersionsArrayDescending() {
+  public @NotNull String @NotNull [] minecraftVersionsArrayDescending() {
     return supportedMinecraftVersionsList(Type.DESCENDING).toArray(new String[0]);
   }
 
@@ -353,7 +356,7 @@ public final class ForgeMeta {
    * @return List of available Forge versions.
    * @author Griefed
    */
-  public List<String> forgeVersions() {
+  public @NotNull List<String> forgeVersions() {
     return supportedForgeVersionsList(Type.ASCENDING);
   }
 
@@ -366,7 +369,7 @@ public final class ForgeMeta {
    * @return List Forge versions, in either {@link Type#ASCENDING} or {@link Type#DESCENDING} order.
    * @author Griefed
    */
-  private List<String> supportedForgeVersionsList(Type order) {
+  private @NotNull List<String> supportedForgeVersionsList(@NotNull Type order) {
     if (order == Type.DESCENDING) {
       return Lists.reverse(forgeLoader.forgeVersions());
     } else {
@@ -380,7 +383,7 @@ public final class ForgeMeta {
    * @return List of available Forge versions.
    * @author Griefed
    */
-  public List<String> forgeVersionsDescending() {
+  public @NotNull List<String> forgeVersionsDescending() {
     return supportedForgeVersionsList(Type.DESCENDING);
   }
 
@@ -390,7 +393,7 @@ public final class ForgeMeta {
    * @return Array of available Forge versions.
    * @author Griefed
    */
-  public String[] forgeVersionsArray() {
+  public @NotNull String @NotNull [] forgeVersionsArray() {
     return supportedForgeVersionsList(Type.ASCENDING).toArray(new String[0]);
   }
 
@@ -400,7 +403,7 @@ public final class ForgeMeta {
    * @return Array of available Forge versions.
    * @author Griefed
    */
-  public String[] forgeVersionsArrayDescending() {
+  public @NotNull String @NotNull [] forgeVersionsArrayDescending() {
     return supportedForgeVersionsList(Type.DESCENDING).toArray(new String[0]);
   }
 
@@ -413,7 +416,7 @@ public final class ForgeMeta {
    * wrapped in an {@link Optional}
    * @author Griefed
    */
-  public Optional<List<String>> availableForgeVersionsAscending(String minecraftVersion) {
+  public @NotNull Optional<List<String>> availableForgeVersionsAscending(@NotNull String minecraftVersion) {
     return getForgeVersions(minecraftVersion, Type.ASCENDING);
   }
 
@@ -426,7 +429,7 @@ public final class ForgeMeta {
    * wrapped in an {@link Optional}
    * @author Griefed
    */
-  public Optional<List<String>> availableForgeVersionsDescending(String minecraftVersion) {
+  public @NotNull Optional<List<String>> availableForgeVersionsDescending(@NotNull String minecraftVersion) {
     return getForgeVersions(minecraftVersion, Type.DESCENDING);
   }
 
@@ -439,7 +442,7 @@ public final class ForgeMeta {
    * wrapped in an {@link Optional}
    * @author Griefed
    */
-  public Optional<String[]> availableForgeVersionsArrayAscending(String minecraftVersion) {
+  public @NotNull Optional<String[]> availableForgeVersionsArrayAscending(@NotNull String minecraftVersion) {
     return getForgeVersionsArray(minecraftVersion, Type.ASCENDING);
   }
 
@@ -453,8 +456,8 @@ public final class ForgeMeta {
    * {@link Type#ASCENDING} or {@link Type#DESCENDING}, wrapped in an {@link Optional}.
    * @author Griefed
    */
-  private Optional<String[]> getForgeVersionsArray(String minecraftVersion,
-                                                   Type order) {
+  private @NotNull Optional<String[]> getForgeVersionsArray(@NotNull String minecraftVersion,
+                                                            Type order) {
     if (!checkMinecraftVersion(minecraftVersion)) {
       return Optional.empty();
     }
@@ -475,7 +478,7 @@ public final class ForgeMeta {
    * wrapped in an {@link Optional}
    * @author Griefed
    */
-  public Optional<String[]> availableForgeVersionsArrayDescending(String minecraftVersion) {
+  public @NotNull Optional<String[]> availableForgeVersionsArrayDescending(@NotNull String minecraftVersion) {
     return getForgeVersionsArray(minecraftVersion, Type.DESCENDING);
   }
 
@@ -486,7 +489,7 @@ public final class ForgeMeta {
    * @return Forge server installer URL for the given Forge version, wrapped in an {@link Optional}.
    * @author Griefed
    */
-  public Optional<URL> installerUrl(String forgeVersion) {
+  public @NotNull Optional<URL> installerUrl(@NotNull String forgeVersion) {
     if (!checkForgeVersion(forgeVersion)) {
       return Optional.empty();
     }

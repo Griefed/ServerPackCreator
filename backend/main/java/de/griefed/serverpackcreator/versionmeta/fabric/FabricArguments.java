@@ -19,6 +19,8 @@
  */
 package de.griefed.serverpackcreator.versionmeta.fabric;
 
+import org.jetbrains.annotations.Contract;
+
 /**
  * Arguments of this loader.
  *
@@ -28,6 +30,7 @@ public final class FabricArguments {
 
   private Object[] game;
 
+  @Contract(pure = true)
   FabricArguments() {
   }
 
@@ -37,6 +40,7 @@ public final class FabricArguments {
    * @return Object-array of arguments used.
    * @author Griefed
    */
+  @Contract(pure = true)
   public Object[] getGame() {
     return game;
   }

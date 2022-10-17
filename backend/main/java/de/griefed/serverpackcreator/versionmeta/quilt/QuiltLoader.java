@@ -25,6 +25,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.xml.parsers.ParserConfigurationException;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -48,8 +50,8 @@ final class QuiltLoader {
    * @param utilities      Commonly used utilities across ServerPackCreator.
    * @author Griefed
    */
-  QuiltLoader(File loaderManifest,
-              Utilities utilities) {
+  QuiltLoader(@NotNull File loaderManifest,
+              @NotNull Utilities utilities) {
     MANIFEST = loaderManifest;
     UTILITIES = utilities;
   }
@@ -96,7 +98,8 @@ final class QuiltLoader {
    * @return The latest Quilt loader version.
    * @author Griefed
    */
-  String latestLoaderVersion() {
+  @Contract(pure = true)
+  @NotNull String latestLoaderVersion() {
     return latest;
   }
 
@@ -106,7 +109,8 @@ final class QuiltLoader {
    * @return The release Quilt loader version.
    * @author Griefed
    */
-  String releaseLoaderVersion() {
+  @Contract(pure = true)
+  @NotNull String releaseLoaderVersion() {
     return release;
   }
 
@@ -116,7 +120,8 @@ final class QuiltLoader {
    * @return List of the available Quilt loader versions.
    * @author Griefed
    */
-  List<String> loaders() {
+  @Contract(pure = true)
+  @NotNull List<String> loaders() {
     return loaders;
   }
 }

@@ -33,6 +33,8 @@ import net.lingala.zip4j.ZipFile;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 
 /**
@@ -45,6 +47,7 @@ public final class FileUtilities {
 
   private static final Logger LOG = LogManager.getLogger(FileUtilities.class);
 
+  @Contract(pure = true)
   public FileUtilities() {
   }
 
@@ -57,8 +60,8 @@ public final class FileUtilities {
    * @throws IOException Thrown if an error occurs when the file is moved.
    * @author Griefed
    */
-  public boolean replaceFile(File sourceFile,
-                             File destinationFile) throws IOException {
+  public boolean replaceFile(@NotNull File sourceFile,
+                             @NotNull File destinationFile) throws IOException {
 
     if (sourceFile.exists() && destinationFile.delete()) {
 
@@ -78,7 +81,7 @@ public final class FileUtilities {
    * @param directory The directory to create.
    * @author Griefed
    */
-  public void createDirectories(Path directory) {
+  public void createDirectories(@NotNull Path directory) {
     try {
       Files.createDirectories(directory);
     } catch (IOException ex) {
@@ -89,12 +92,12 @@ public final class FileUtilities {
   /**
    * Unzips the downloaded modpack ZIP-archive to the specified directory.
    *
-   * @param zipFile              String. The path to the ZIP-archive which we want to unzip.
+   * @param zipFile              The path to the ZIP-archive which we want to unzip.
    * @param destinationDirectory The directory into which the ZIP-archive will be unzipped into.
    * @author Griefed
    */
-  public void unzipArchive(String zipFile,
-                           String destinationDirectory) {
+  public void unzipArchive(@NotNull String zipFile,
+                           @NotNull String destinationDirectory) {
     LOG.info("Extracting ZIP-file: " + zipFile);
 
     try (ZipFile zip = new ZipFile(zipFile)) {
@@ -116,7 +119,7 @@ public final class FileUtilities {
    * {@link FileType#SYMLINK}
    * @author Griefed
    */
-  public FileType checkFileType(String file) {
+  public @NotNull FileType checkFileType(@NotNull String file) {
     if (file.isEmpty()) {
       return FileType.INVALID;
     }
@@ -132,7 +135,7 @@ public final class FileUtilities {
    * {@link FileType#SYMLINK}
    * @author Griefed
    */
-  public FileType checkFileType(File file) {
+  public @NotNull FileType checkFileType(@NotNull File file) {
     if (file.getName().endsWith("lnk")) {
       return FileType.LINK;
     }
@@ -159,7 +162,7 @@ public final class FileUtilities {
    * @return {@code true} if the given file is a UNIX symlink or Windows lnk.
    * @author Griefed
    */
-  public boolean isLink(String file) {
+  public boolean isLink(@NotNull String file) {
     return isLink(new File(file));
   }
 
@@ -170,7 +173,7 @@ public final class FileUtilities {
    * @return {@code true} if the given file is a UNIX symlink or Windows lnk.
    * @author Griefed
    */
-  public boolean isLink(File file) {
+  public boolean isLink(@NotNull File file) {
     if (file.getName().endsWith("lnk")) {
       return true;
     }
@@ -188,7 +191,8 @@ public final class FileUtilities {
    * @throws InvalidFileTypeException if the specified file is neither a file, lnk nor symlink.
    * @author Griefed
    */
-  public String resolveLink(String link) throws InvalidFileTypeException, IOException {
+  public @NotNull String resolveLink(@NotNull String link)
+      throws InvalidFileTypeException, IOException {
     return resolveLink(new File(link));
   }
 
@@ -202,7 +206,8 @@ public final class FileUtilities {
    * @throws InvalidFileTypeException if the specified file is neither a file, lnk nor symlink.
    * @author Griefed
    */
-  public String resolveLink(File link) throws IOException, InvalidFileTypeException {
+  public @NotNull String resolveLink(@NotNull File link)
+      throws IOException, InvalidFileTypeException {
 
     FileType type = checkFileType(link);
 
@@ -242,8 +247,8 @@ public final class FileUtilities {
    * @throws IOException              if the link could not be parsed.
    * @author Griefed
    */
-  private String resolveLink(File file,
-                             FileType fileType)
+  private @NotNull String resolveLink(@NotNull File file,
+                                      @NotNull FileType fileType)
       throws InvalidFileTypeException, IOException, InvalidLinkException, ShellLinkException {
     switch (fileType) {
       case SYMLINK:
@@ -265,7 +270,7 @@ public final class FileUtilities {
    * @throws InvalidPathException if the path string cannot be converted to a Path.
    * @author Griefed
    */
-  public boolean checkPermissions(String fileOrDirectory) throws InvalidPathException {
+  public boolean checkPermissions(@NotNull String fileOrDirectory) throws InvalidPathException {
     return checkPermissions(Paths.get(fileOrDirectory));
   }
 
@@ -276,7 +281,7 @@ public final class FileUtilities {
    * @return {@code true} if both read- and write-permissions are set.
    * @author Griefed
    */
-  public boolean checkPermissions(Path fileOrDirectory) {
+  public boolean checkPermissions(@NotNull Path fileOrDirectory) {
     return checkReadPermission(fileOrDirectory) && checkWritePermission(fileOrDirectory);
   }
 
@@ -287,7 +292,7 @@ public final class FileUtilities {
    * @return {@code true} if read-permissions are set.
    * @author Griefed
    */
-  public boolean checkReadPermission(Path fileOrDirectory) {
+  public boolean checkReadPermission(@NotNull Path fileOrDirectory) {
 
     try {
       if (!Files.isReadable(fileOrDirectory)) {
@@ -311,7 +316,7 @@ public final class FileUtilities {
    * @return {@code true} if write-permissions are set.
    * @author Griefed
    */
-  public boolean checkWritePermission(Path fileOrDirectory) {
+  public boolean checkWritePermission(@NotNull Path fileOrDirectory) {
 
     try {
       if (!Files.isWritable(fileOrDirectory)) {
@@ -338,7 +343,7 @@ public final class FileUtilities {
    *                              {@link java.nio.file.FileSystem#getPath FileSystem.getPath})
    * @author Griefed
    */
-  public boolean checkPermissions(File fileOrDirectory) throws InvalidPathException {
+  public boolean checkPermissions(@NotNull File fileOrDirectory) throws InvalidPathException {
     return checkPermissions(fileOrDirectory.toPath());
   }
 
@@ -349,7 +354,7 @@ public final class FileUtilities {
    * @return {@code true} if read-permissions are set.
    * @author Griefed
    */
-  public boolean checkReadPermission(String fileOrDirectory) {
+  public boolean checkReadPermission(@NotNull String fileOrDirectory) {
     return checkReadPermission(Paths.get(fileOrDirectory));
   }
 
@@ -360,7 +365,7 @@ public final class FileUtilities {
    * @return {@code true} if read-permissions are set.
    * @author Griefed
    */
-  public boolean checkReadPermission(File fileOrDirectory) {
+  public boolean checkReadPermission(@NotNull File fileOrDirectory) {
     return checkReadPermission(fileOrDirectory.toPath());
   }
 
@@ -371,7 +376,7 @@ public final class FileUtilities {
    * @return {@code true} if write-permissions are set.
    * @author Griefed
    */
-  public boolean checkWritePermission(String fileOrDirectory) {
+  public boolean checkWritePermission(@NotNull String fileOrDirectory) {
     return checkReadPermission(Paths.get(fileOrDirectory));
   }
 
@@ -382,7 +387,7 @@ public final class FileUtilities {
    * @return {@code true} if write-permissions are set.
    * @author Griefed
    */
-  public boolean checkWritePermission(File fileOrDirectory) {
+  public boolean checkWritePermission(@NotNull File fileOrDirectory) {
     return checkReadPermission(fileOrDirectory.toPath());
   }
 
@@ -392,7 +397,7 @@ public final class FileUtilities {
    * @param folder The folder to open.
    * @author Griefed
    */
-  public void openFolder(String folder) {
+  public void openFolder(@NotNull String folder) {
     openFolder(new File(folder));
   }
 
@@ -402,7 +407,7 @@ public final class FileUtilities {
    * @param folder The folder to open.
    * @author Griefed
    */
-  public void openFolder(File folder) {
+  public void openFolder(@NotNull File folder) {
     if (GraphicsEnvironment.isHeadless()) {
       LOG.error("Graphics environment not supported.");
     } else {
@@ -422,7 +427,7 @@ public final class FileUtilities {
    * @param fileToOpen The file to open.
    * @author Griefed
    */
-  public void openFile(String fileToOpen) {
+  public void openFile(@NotNull String fileToOpen) {
     openFile(new File(fileToOpen));
   }
 
@@ -432,7 +437,7 @@ public final class FileUtilities {
    * @param fileToOpen The file to open.
    * @author Griefed
    */
-  public void openFile(File fileToOpen) {
+  public void openFile(@NotNull File fileToOpen) {
     if (GraphicsEnvironment.isHeadless()) {
       LOG.error("Graphics environment not supported.");
     } else {

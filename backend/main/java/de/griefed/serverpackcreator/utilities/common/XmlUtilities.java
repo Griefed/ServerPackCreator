@@ -27,6 +27,8 @@ import java.nio.charset.StandardCharsets;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.ParserConfigurationException;
 import org.apache.commons.io.FileUtils;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StreamUtils;
 import org.w3c.dom.Document;
@@ -43,7 +45,8 @@ public class XmlUtilities {
 
   private final DocumentBuilder DOCUMENTBUILDER;
 
-  public XmlUtilities(DocumentBuilder documentBuilder) {
+  @Contract(pure = true)
+  public XmlUtilities(@NotNull DocumentBuilder documentBuilder) {
     DOCUMENTBUILDER = documentBuilder;
   }
 
@@ -57,7 +60,7 @@ public class XmlUtilities {
    * @throws SAXException                 if any parse errors occur.
    * @author Griefed
    */
-  public Document getXml(File manifest)
+  public @NotNull Document getXml(@NotNull File manifest)
       throws ParserConfigurationException, IOException, SAXException {
 
     return getXml(FileUtils.readFileToString(manifest, StandardCharsets.UTF_8));
@@ -73,7 +76,7 @@ public class XmlUtilities {
    * @throws SAXException                 if any parse errors occur.
    * @author Griefed
    */
-  public Document getXml(String string)
+  public @NotNull Document getXml(@NotNull String string)
       throws ParserConfigurationException, IOException, SAXException {
 
     Document xml = DOCUMENTBUILDER.parse(new InputSource(new StringReader(string)));
@@ -91,7 +94,7 @@ public class XmlUtilities {
    * @throws SAXException                 if any parse errors occur.
    * @author Griefed
    */
-  public Document getXml(InputStream manifest)
+  public @NotNull Document getXml(@NotNull InputStream manifest)
       throws ParserConfigurationException, IOException, SAXException {
 
     return getXml(StreamUtils.copyToString(manifest,

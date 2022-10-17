@@ -43,6 +43,7 @@ import javax.swing.JTabbedPane;
 import net.lingala.zip4j.ZipFile;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.pf4j.ExtensionFactory;
 import org.pf4j.JarPluginManager;
@@ -330,8 +331,9 @@ public final class ApplicationAddons extends JarPluginManager {
     return getExtensions(ConfigCheckExtension.class);
   }
 
+  @Contract(" -> new")
   @Override
-  protected ExtensionFactory createExtensionFactory() {
+  protected @NotNull ExtensionFactory createExtensionFactory() {
     return new SingletonExtensionFactory(
         this,
         ConfigCheckExtension.class.getName(),

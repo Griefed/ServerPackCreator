@@ -20,6 +20,7 @@
 package de.griefed.serverpackcreator.utilities;
 
 import java.util.Random;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Just something fun to brighten the mood. This class provides a list of messages which some of you
@@ -504,7 +505,7 @@ public final class ReticulatingSplines {
    * @return String. Returns a random message.
    * @author Griefed
    */
-  public String reticulate() {
+  public @NotNull String reticulate() {
     return getReticulation();
   }
 
@@ -515,7 +516,7 @@ public final class ReticulatingSplines {
    * @return String. Returns the message at the index provided by the randomizer.
    * @author Griefed
    */
-  private String getReticulation() {
+  private @NotNull String getReticulation() {
     return RETICULATING[getRandomIntReticulating()];
   }
 
@@ -537,7 +538,7 @@ public final class ReticulatingSplines {
    * @return String. Returns a randomly selected three-word long string from {@link #SPLINES}.
    * @author Griefed
    */
-  public String spline(int wordCount) {
+  public @NotNull String spline(int wordCount) {
     return getSplines(wordCount);
   }
 
@@ -548,7 +549,7 @@ public final class ReticulatingSplines {
    * @return String. Returns a randomly selected three-word long string from {@link #SPLINES}.
    * @author Griefed
    */
-  private String getSplines(int wordCount) {
+  private @NotNull String getSplines(int wordCount) {
     StringBuilder stringBuilder = new StringBuilder();
     for (int i = 0; i < wordCount; i++) {
       stringBuilder.append(SPLINES[getRandomIntSplines()]);

@@ -36,6 +36,8 @@ import org.apache.logging.log4j.core.config.ConfigurationSource;
 import org.apache.logging.log4j.core.config.Order;
 import org.apache.logging.log4j.core.config.plugins.Plugin;
 import org.apache.logging.log4j.core.config.xml.XmlConfiguration;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.util.StreamUtils;
 
 /**
@@ -80,9 +82,10 @@ public final class LoggingConfig extends ConfigurationFactory {
 
       props = new File(new File("").getAbsolutePath(), "serverpackcreator.properties");
 
-    } else if (new File(new File("tests").getAbsolutePath(),"serverpackcreator.properties").isFile()) {
+    } else if (new File(new File("tests").getAbsolutePath(),
+                        "serverpackcreator.properties").isFile()) {
 
-      props = new File(new File("tests").getAbsolutePath(),"serverpackcreator.properties");
+      props = new File(new File("tests").getAbsolutePath(), "serverpackcreator.properties");
 
     }
 
@@ -141,6 +144,7 @@ public final class LoggingConfig extends ConfigurationFactory {
     System.setProperty("log4j2.formatMsgNoLookups", "true");
   }
 
+  @Contract(pure = true)
   @Override
   protected String[] getSupportedTypes() {
     return SUFFIXES;
@@ -162,9 +166,10 @@ public final class LoggingConfig extends ConfigurationFactory {
    * @return Custom configuration with proper logs-directory set.
    * @author Griefed
    */
+  @Contract("_, _ -> new")
   @Override
-  public Configuration getConfiguration(LoggerContext loggerContext,
-                                        ConfigurationSource source) {
+  public @NotNull Configuration getConfiguration(LoggerContext loggerContext,
+                                                 ConfigurationSource source) {
 
     if (LOG4J2XML.isFile()) {
       try {
