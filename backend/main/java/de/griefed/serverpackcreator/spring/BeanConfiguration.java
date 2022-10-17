@@ -213,4 +213,15 @@ public class BeanConfiguration {
   public DocumentBuilder documentBuilder() throws ParserConfigurationException {
     return DocumentBuilderFactory.newInstance().newDocumentBuilder();
   }
+
+  /**
+   * Directory in which our language-property-files reside in. These will be used to read i18n
+   * key-value-pairs from.
+   *
+   * @return The directory in which the language-property-files reside in.
+   */
+  @Bean
+  public File languagePropertiesDirectory() {
+    return APPLICATIONPROPERTIES.langDirectory();
+  }
 }

@@ -179,12 +179,12 @@ public class ServerPackCreator {
       APPLICATIONPROPERTIES.writeLocaleToFile(COMMANDLINE_PARSER.LANG);
 
       I18N = new I18n(
-          APPLICATIONPROPERTIES,
+          APPLICATIONPROPERTIES.langDirectory(),
           COMMANDLINE_PARSER.LANG);
 
     } else {
 
-      I18N = new I18n(APPLICATIONPROPERTIES);
+      I18N = new I18n(APPLICATIONPROPERTIES.langDirectory());
     }
   }
 

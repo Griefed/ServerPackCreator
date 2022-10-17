@@ -40,6 +40,7 @@ import java.util.ResourceBundle;
 import java.util.ResourceBundle.Control;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -65,16 +66,15 @@ public final class I18n {
 
   private static final Logger LOG = LogManager.getLogger(I18n.class);
 
-  private final ApplicationProperties APPLICATIONPROPERTIES;
-  private final ResourceBundle FALLBACKRESOURCES =
-      ResourceBundle.getBundle(
-          "de/griefed/resources/lang/lang_en_us", new Locale("en", "us"), new UTF8Control());
+  private final ResourceBundle FALLBACKRESOURCES = ResourceBundle.getBundle(
+      "de/griefed/resources/lang/lang_en_us",
+      new Locale("en", "us"), new UTF8Control());
   private final Map<String, String> CURRENT_LANGUAGE = new HashMap<>(2);
   private final String MAP_PATH_LANGUAGE = "language";
   private final String MAP_PATH_COUNTRY = "country";
   private final List<String> SUPPORTED_LANGUAGES =
       new ArrayList<>(Arrays.asList("en_us", "uk_ua", "de_de"));
-
+  private final File LANG_DIR;
   private ResourceBundle filesystemResources = null;
   private ResourceBundle jarResources = null;
 
@@ -84,13 +84,14 @@ public final class I18n {
    * {@link ApplicationProperties}-instance fails, the I18n is initialized with the default locale
    * {@code  en_us}.
    *
-   * @param injectedApplicationProperties Instance of {@link ApplicationProperties} required for
-   *                                      various different things.
+   * @param languagePropertiesDirectory Directory in which the language properties-files reside in.
+   *                                    Language key-value-pairs will be read and used from the
+   *                                    files in this directory.
    * @author Griefed
    */
   @Autowired
-  public I18n(ApplicationProperties injectedApplicationProperties) {
-    this(injectedApplicationProperties, injectedApplicationProperties.getLanguage());
+  public I18n(@NotNull File languagePropertiesDirectory) {
+    this(languagePropertiesDirectory, "en_us");
   }
 
   /**
@@ -98,19 +99,17 @@ public final class I18n {
    * the I18n is initialized with the locale set in the instance of {@link ApplicationProperties}.
    * If this also fails, the default locale {@code en_us } is used.
    *
-   * @param injectedApplicationProperties Instance of {@link ApplicationProperties} required for
-   *                                      various different things.
-   * @param locale                        String. The locale to initialize with.
+   * @param languagePropertiesDirectory Directory in which the language properties-files reside in.
+   *                                    Language key-value-pairs will be read and used from the
+   *                                    files in this directory.
+   * @param locale                      The locale to initialize with.
    * @author Griefed
    */
-  public I18n(ApplicationProperties injectedApplicationProperties,
-              String locale) {
-    this.APPLICATIONPROPERTIES = injectedApplicationProperties;
-
+  public I18n(@NotNull File languagePropertiesDirectory,
+              @NotNull String locale) {
+    LANG_DIR = languagePropertiesDirectory;
     try {
-
       initialize(locale);
-
     } catch (IncorrectLanguageException ex) {
       LOG.error("The specified language is not supported: " + locale, ex);
       initialize();
@@ -127,7 +126,7 @@ public final class I18n {
    * @author whitebear60
    * @author Griefed
    */
-  public void initialize(String locale) throws IncorrectLanguageException {
+  public void initialize(@NotNull String locale) throws IncorrectLanguageException {
 
     if (!SUPPORTED_LANGUAGES.contains(locale)) {
 
@@ -157,7 +156,7 @@ public final class I18n {
     }
 
     try (FileInputStream fileInputStream = new FileInputStream(
-        new File(APPLICATIONPROPERTIES.langDirectory(), "lang_" + locale + ".properties"))) {
+        new File(LANG_DIR, "lang_" + locale + ".properties"))) {
 
       filesystemResources =
           new PropertyResourceBundle(
@@ -213,10 +212,8 @@ public final class I18n {
       jarResources = FALLBACKRESOURCES;
     }
 
-    if (APPLICATIONPROPERTIES.serverPackCreatorVersion().equals("dev")) {
-      LOG.info(getMessage("encoding.check"));
-      System.out.println(getMessage("encoding.check"));
-    }
+    LOG.info(getMessage("encoding.check"));
+    System.out.println(getMessage("encoding.check"));
   }
 
   /**
@@ -242,7 +239,7 @@ public final class I18n {
    * @author whitebear60
    * @author Griefed
    */
-  public String getMessage(String languageKey) {
+  public @NotNull String getMessage(@NotNull String languageKey) {
 
     //noinspection UnusedAssignment
     String text = null;
@@ -313,10 +310,10 @@ public final class I18n {
   private class UTF8Control extends Control {
 
     public ResourceBundle newBundle(
-        String baseName,
-        Locale locale,
-        String format,
-        ClassLoader loader,
+        @NotNull String baseName,
+        @NotNull Locale locale,
+        @NotNull String format,
+        @NotNull ClassLoader loader,
         boolean reload)
         throws IOException {
       // The below is a copy of the default implementation.
