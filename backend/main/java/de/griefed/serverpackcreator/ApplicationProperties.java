@@ -1334,11 +1334,9 @@ public final class ApplicationProperties {
    * @author Griefed
    */
   void writeLocaleToFile(String locale) {
-    if (!getLanguage().equals(locale)) {
-
+    if (!language.equals(locale)) {
       setLanguage(locale);
       saveToDisk(serverPackCreatorPropertiesFile());
-
     }
   }
 
