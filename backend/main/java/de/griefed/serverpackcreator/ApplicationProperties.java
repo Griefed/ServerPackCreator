@@ -680,8 +680,7 @@ public final class ApplicationProperties {
    * @author Griefed
    */
   private void setLanguage() {
-    language = acquireProperty(PROPERTY_LANGUAGE, "en_us");
-    LOG.info("Language set to: " + language);
+    setLanguage(acquireProperty(PROPERTY_LANGUAGE, "en_us"));
   }
 
   /**
