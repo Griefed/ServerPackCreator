@@ -82,6 +82,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.util.StreamUtils;
 import org.xml.sax.SAXException;
 
 /**
@@ -1678,84 +1679,13 @@ public class ServerPackCreator {
    * @author Griefed
    */
   private void printHelp() {
-    // TODO move to file in resources. Read and print text from file
-    System.out.println(
-        "# How to use ServerPackCreator:\n"
-            + "#   java -jar ServerPackCreator.jar\n"
-            + "#     Simply running the JAR without extra arguments runs ServerPackCreator in GUI mode unless\n"
-            + "#     you are running in a headless environment. In the case of a headless environment, the CLI\n"
-            + "#     mode will automatically be used.\n"
-            + "#");
-    System.out.println("#   Extra arguments to use ServerPackCreator with:\n" + "#");
-    System.out.println(
-        "#     -lang : Allows you to use one of the available languages for ServerPackCreator. I can not\n"
-            + "#             guarantee that each of the following available languages is 100% translated.\n"
-            + "#             You best choice is en_us, or not specifying any as that is the default, because\n"
-            + "#             I write ServerPackCreator with english in mind. Available usages:\n"
-            + "#             -lang en_us\n"
-            + "#             -lang uk_ua\n"
-            + "#             -lang de_de\n"
-            + "#");
-    System.out.println(
-        "#     -cgen : Only available for the commandline interface. This will start the generation of\n"
-            + "#             a new configuration file. You will be asked to enter information about your modpack\n"
-            + "#             step-by-step. Each setting you enter will be checked for errors before it is saved.\n"
-            + "#             If everything you enter is valid and without errors, it will be written to a new\n"
-            + "#             serverpackcreator.conf and ServerPackCreator will immediately start a run with said\n"
-            + "#             configuration file, generating a server pack for you.\n"
-            + "#");
-    System.out.println(
-        "#   -update : Check whether a new version of ServerPackCreator is available for download.\n"
-            + "#             If an update is available, the version and link to the release of said update are\n"
-            + "#             written to the console so you can from work with it from there.\n"
-            + "#             Note: Automatic updates are currently not planned nor supported, and neither are\n"
-            + "#             downloads of any available updates to your system. You need to update manually.\n"
-            + "#");
-    System.out.println(
-        "#     -cli  : Run ServerPackCreator in Command-line interface mode. Checks the serverpackcreator.conf\n"
-            + "#             for errors and if none are found, starts the generation of a server pack with the configuration\n"
-            + "#             provided by your serverpackcreator.conf.\n"
-            + "#");
-    System.out.println(
-        "#     -web  : Run ServerPackCreator as a webservice available at http://localhost:8080. The webservice\n"
-            + "#             provides the same functionality as running ServerPackCreator in GUI mode (so no Commandline\n"
-            + "#             arguments and a non-headless environment) as well as a REST API which can be used in different ways.\n"
-            + "#             For more information about the REST API, please see the Java documentation:\n"
-            + "#              - GitHub Pages: https://griefed.github.io/ServerPackCreator/\n"
-            + "#              - GitLab Pages: https://griefed.pages.griefed.de/ServerPackCreator/\n"
-            + "#");
-    System.out.println(
-        "#      -gui : Run ServerPackCreator using the graphical user interface. If your environment supports\n"
-            + "#             graphics, i.e. is not headless, then this is the default mode in which ServerPackCreator\n"
-            + "#             started as when no arguments are used.\n"
-            + "#");
-    System.out.println(
-        "#   --setup : Set up and prepare the environment for subsequent runs of ServerPackCreator.\n"
-            + "#             This will create/copy all files needed for ServerPackCreator to function\n"
-            + "#             properly from inside its JAR-file and setup everything else, too.\n"
-            + "#");
-    System.out.println("# Support:\n" + "#");
-    System.out.println(
-        "#   Issues:  Encountered a bug, or want some part of the documentation to be improved on? Got a suggestion?\n"
-            + "#            Open an issue on GitHub at: https://github.com/Griefed/ServerPackCreator/issues\n"
-            + "#");
-    System.out.println(
-        "#   Discord: If you would like to chat with me, ask me questions, or see when there's something new\n"
-            + "#            regarding ServerPackCreator coming up, you can join my Discord server to stay up-to-date.\n"
-            + "#             - Discord link: https://discord.griefed.de\n"
-            + "#");
-    System.out.println(
-        "# Help/Wiki: If you want additional help on how to use ServerPackCreator, take a look at my wiki articles\n"
-            + "#            regarding ServerPackCreator and some of the more advanced things it can do.\n"
-            + "#             - Help:  https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-Help\n"
-            + "#             - HowTo: https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-HowTo\n"
-            + "#");
-    System.out.println(
-        "# Buy Me A Coffee:\n"
-            + "#   You like ServerPackCreator and would like to support me? By all means, every bit is very much\n"
-            + "#   appreciated and helps me pay for servers and food. Food is most important. And coffee. Food and Coffee.\n"
-            + "#   Those two get converted into code. Thank you very much!\n"
-            + "#     - Github Sponsors: https://github.com/sponsors/Griefed");
+    try {
+      System.out.println(StreamUtils.copyToString(
+          ServerPackCreator.class.getResourceAsStream("/de/griefed/resources/cli_help.txt"),
+          StandardCharsets.UTF_8));
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   /**
