@@ -153,6 +153,7 @@ Gradle Test:
     - echo "**** Renaming files to please the eye ****"
     - mv build/libs/${CI_PROJECT_NAME}.exe build/libs/ServerPackCreator-${CI_COMMIT_REF_NAME}.exe
     - mv build/libs/${CI_PROJECT_NAME}-dev.jar build/libs/ServerPackCreator-${CI_COMMIT_REF_NAME}.jar
+  retry: 1
   artifacts:
     when: always
     name: "$CI_COMMIT_BRANCH-$CI_COMMIT_SHORT_SHA-$CI_JOB_NAME"
@@ -192,6 +193,7 @@ Docker Test:
     - docker buildx build --no-cache --platform linux/amd64,linux/arm/v7,linux/arm64
       --build-arg VERSION=$CI_COMMIT_REF_NAME
       --file Dockerfile .
+  retry: 1
 #  rules:
 #    - if: '$CI_SERVER_HOST == "git.griefed.de"' # Remove once GitLab no longer throws javax.net.ssl.SSLHandshakeException: Remote host terminated the handshake
 
