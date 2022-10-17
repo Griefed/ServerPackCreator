@@ -1,3 +1,32 @@
+## [3.15.0-beta.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.15.0-beta.2...3.15.0-beta.3) (2022-10-17)
+
+
+### :scissors: Refactor
+
+* Default to mods and config when no values are present ([74b583f](https://git.griefed.de/Griefed/ServerPackCreator/commit/74b583fd38f86cff0fde0d5b52ee3c32376acafb))
+* Move writeLocale to ApplicationProperties as it is more appropriate to have there. Set new language only when run with -lang argument. ([7fe7e18](https://git.griefed.de/Griefed/ServerPackCreator/commit/7fe7e18ca7f1e7e3ebd3e427bbbadf3501240084))
+* Store addon-related values in fields to prevent unnecessary instantiations ([dec1cde](https://git.griefed.de/Griefed/ServerPackCreator/commit/dec1cdee74ddd2015fd23b059037c5056e71cf97))
+* Use toPath instead of unnecessarily complicated Paths.get ..toString ([4594e6c](https://git.griefed.de/Griefed/ServerPackCreator/commit/4594e6c899af470f66d175adb3417c4dc9eb37c5))
+
+
+### 📔 Docs
+
+* Remove link to containing class ([f563510](https://git.griefed.de/Griefed/ServerPackCreator/commit/f5635102f419c9ec2f5efa75b8a752ae5d4b7fd5))
+* Remove unnecessary type information ([6588f71](https://git.griefed.de/Griefed/ServerPackCreator/commit/6588f71eb645a62dabfb533133659d2dd73c9a59))
+
+
+### 🛠 Fixes
+
+* Ensure log4j-config is created in the correct directory even when running tests or in-dev ([5d71552](https://git.griefed.de/Griefed/ServerPackCreator/commit/5d7155224af1f40996d2144e2ee05203b27105db))
+* Pass addon-directory to prevent directory creation and usage outside of SPCs home-directory ([13aab5e](https://git.griefed.de/Griefed/ServerPackCreator/commit/13aab5e39164a6ebb90d41ad3976a5a0ce058f29))
+
+
+### Other
+
+* Add new entries to default dirs to include and exclude from server packs ([b2e097c](https://git.griefed.de/Griefed/ServerPackCreator/commit/b2e097c44c1004f41ba446a46cfd2c114506f87a))
+* Add schematics to list of suggested directories ([a1a8c18](https://git.griefed.de/Griefed/ServerPackCreator/commit/a1a8c1815dfed84d35bee08882353278d1b61455))
+* Update license report files ([f4dad99](https://git.griefed.de/Griefed/ServerPackCreator/commit/f4dad9911dbdfb479a51fbd1583728c8888fc837))
+
 ## [3.15.0-beta.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.14.5...3.15.0-beta.1) (2022-10-08)
 
 
