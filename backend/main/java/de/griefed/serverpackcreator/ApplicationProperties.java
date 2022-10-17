@@ -357,7 +357,58 @@ public final class ApplicationProperties {
 
     setAutoUpdateScriptVariablesJavaPlaceholder();
 
+    checkDatabaseProperty();
+
+    checkTomcatLogsDirectory();
+
+    checkTomcatBaseDirectory();
+
+    checkArtemisDataDirectory();
+
     saveToDisk(serverPackCreatorPropertiesFile());
+  }
+
+  /**
+   * Check and, if needed, change the path to the serverpackcreator-database for the webservice, to
+   * be placed in ServerPackCreators home-directory.
+   *
+   * @author Griefed
+   */
+  private void checkDatabaseProperty() {
+    String dbPath = PROPERTIES.getProperty("spring.datasource.url", "").replace("jdbc:sqlite:", "");
+    if (dbPath.isEmpty()) {
+      dbPath = "jdbc:sqlite:" + serverPackCreatorDatabase();
+    }
+    PROPERTIES.setProperty("spring.datasource.url", dbPath);
+  }
+
+  /**
+   * Check and, if needed, change the path to the Tomcat-logs-directory for the webservice, to be
+   * placed in ServerPackCreators home-directory.
+   *
+   * @author Griefed
+   */
+  private void checkTomcatLogsDirectory() {
+    PROPERTIES.setProperty("server.tomcat.accesslog.directory",logsDirectory().getAbsolutePath());
+  }
+
+  /**
+   * Check and, if needed, change the path to the Tomcat-base-directory for the webservice, to be
+   * placed in ServerPackCreators home-directory.
+   *
+   * @author Griefed
+   */
+  private void checkTomcatBaseDirectory() {
+    PROPERTIES.setProperty("server.tomcat.basedir",homeDirectory.getAbsolutePath());
+  }
+
+  /**
+   * Check and, if needed, change the path to the Artemis-data-directory for the webservice, to be
+   * placed in ServerPackCreators home-directory.
+   * @author Griefed
+   */
+  private void checkArtemisDataDirectory() {
+    PROPERTIES.setProperty("spring.artemis.embedded.data-directory",new File(workDirectory(),"artemis").getAbsolutePath());
   }
 
   /**
