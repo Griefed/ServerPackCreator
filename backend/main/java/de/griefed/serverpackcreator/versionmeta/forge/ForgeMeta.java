@@ -416,16 +416,9 @@ public final class ForgeMeta {
    * @author Griefed
    */
   public @NotNull Optional<URL> installerUrl(@NotNull String forgeVersion) {
-    if (!checkForgeVersion(forgeVersion)) {
-      return Optional.empty();
-    }
-
-    if (getForgeInstance(forgeVersion).isPresent()) {
-
-      return Optional.ofNullable(getForgeInstance(forgeVersion).get().installerUrl());
-
+    if (checkForgeVersion(forgeVersion) && getForgeInstance(forgeVersion).isPresent()) {
+      return Optional.of(getForgeInstance(forgeVersion).get().installerUrl());
     } else {
-
       return Optional.empty();
     }
   }
