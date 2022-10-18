@@ -149,17 +149,17 @@ public final class LegacyFabricMeta implements Meta {
   }
 
   @Override
-  public @NotNull Optional<URL> getInstallerUrl(String version) throws MalformedURLException {
+  public @NotNull Optional<URL> getInstallerUrl(@NotNull String version) throws MalformedURLException {
     return INSTALLER_VERSIONS.specificURL(version);
   }
 
   @Override
-  public boolean isVersionValid(String version) {
+  public boolean isVersionValid(@NotNull String version) {
     return LOADER_VERSIONS.all().contains(version);
   }
 
   @Override
-  public boolean isMinecraftSupported(String minecraftVersion) {
+  public boolean isMinecraftSupported(@NotNull String minecraftVersion) {
     return GAME_VERSIONS.all().contains(minecraftVersion);
   }
 
