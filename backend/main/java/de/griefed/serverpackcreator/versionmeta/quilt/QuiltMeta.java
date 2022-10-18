@@ -154,17 +154,17 @@ public final class QuiltMeta implements Meta {
   }
 
   @Override
-  public @NotNull Optional<URL> getInstallerUrl(String quiltVersion) {
+  public @NotNull Optional<URL> getInstallerUrl(@NotNull String quiltVersion) {
     return Optional.ofNullable(QUILT_INSTALLER.meta().get(quiltVersion));
   }
 
   @Override
-  public boolean isVersionValid(String quiltVersion) {
+  public boolean isVersionValid(@NotNull String quiltVersion) {
     return QUILT_LOADER.loaders().contains(quiltVersion);
   }
 
   @Override
-  public boolean isMinecraftSupported(String minecraftVersion) {
+  public boolean isMinecraftSupported(@NotNull String minecraftVersion) {
     return FABRIC_INTERMEDIARIES.areIntermediariesPresent(minecraftVersion);
   }
 }
