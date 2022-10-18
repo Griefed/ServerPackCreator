@@ -2891,11 +2891,11 @@ public class TabCreateServerPack extends JPanel {
       case 1:
         if (VERSIONMETA
             .forge()
-            .availableForgeVersionsArrayDescending(minecraftVersion)
+            .supportedForgeVersionsDescendingArray(minecraftVersion)
             .isPresent()) {
 
           COMBOBOX_MODLOADER_VERSIONS.setModel(new DefaultComboBoxModel<>(
-              VERSIONMETA.forge().availableForgeVersionsArrayDescending(minecraftVersion).get()));
+              VERSIONMETA.forge().supportedForgeVersionsDescendingArray(minecraftVersion).get()));
 
         } else {
           COMBOBOX_MODLOADER_VERSIONS.setModel(NO_VERSIONS);

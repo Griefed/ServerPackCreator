@@ -21,7 +21,6 @@ package de.griefed.serverpackcreator.versionmeta.forge;
 
 import com.google.common.collect.Lists;
 import de.griefed.serverpackcreator.utilities.common.Utilities;
-import de.griefed.serverpackcreator.versionmeta.Type;
 import de.griefed.serverpackcreator.versionmeta.minecraft.MinecraftMeta;
 import java.io.File;
 import java.io.IOException;
@@ -173,25 +172,14 @@ public final class ForgeMeta {
       return Optional.empty();
     }
 
-    if (supportedMinecraftVersion(forgeVersion).isPresent()) {
+    if (minecraftVersion(forgeVersion).isPresent()) {
 
-      return getForgeInstance(supportedMinecraftVersion(forgeVersion).get(), forgeVersion);
+      return getForgeInstance(minecraftVersion(forgeVersion).get(), forgeVersion);
 
     } else {
 
       return Optional.empty();
     }
-  }
-
-  /**
-   * Get the Minecraft version for a given Forge version, wrapped in an {@link Optional}.
-   *
-   * @param forgeVersion Forge version.
-   * @return Minecraft version for the given Forge version, wrapped in an {@link Optional}.
-   * @author Griefed
-   */
-  public @NotNull Optional<String> supportedMinecraftVersion(@NotNull String forgeVersion) {
-    return Optional.ofNullable(forgeLoader.forgeToMinecraftMeta().get(forgeVersion));
   }
 
   /**
@@ -230,44 +218,21 @@ public final class ForgeMeta {
    * @return Latest Forge version for the given Minecraft version, wrapped in an {@link Optional}
    * @author Griefed
    */
-  public @NotNull Optional<String> latestForgeVersion(@NotNull String minecraftVersion) {
+  public @NotNull Optional<String> newestForgeVersion(@NotNull String minecraftVersion) {
     if (!checkMinecraftVersion(minecraftVersion)) {
       return Optional.empty();
     }
 
-    if (getForgeVersions(minecraftVersion, Type.ASCENDING).isPresent()) {
+    if (supportedForgeVersionsAscending(minecraftVersion).isPresent()) {
 
       return Optional.of(
-          getForgeVersions(minecraftVersion, Type.ASCENDING)
+          supportedForgeVersionsAscending(minecraftVersion)
               .get()
-              .get(getForgeVersions(minecraftVersion, Type.ASCENDING).get().size() - 1));
+              .get(supportedForgeVersionsAscending(minecraftVersion).get().size() - 1));
 
     } else {
 
       return Optional.empty();
-    }
-  }
-
-  /**
-   * Get a list of available Forge version for a given Minecraft version, with either
-   * {@link Type#ASCENDING} or {@link Type#DESCENDING} order.
-   *
-   * @param minecraftVersion Minecraft version.
-   * @param order            The order of the resulting list. Either {@link Type#ASCENDING} or
-   *                         {@link Type#DESCENDING}.
-   * @return List of available Forge versions for the given Minecraft version, with either
-   * {@link Type#ASCENDING} or {@link Type#DESCENDING} order.
-   * @author Griefed
-   */
-  private @NotNull Optional<List<String>> getForgeVersions(@NotNull String minecraftVersion,
-                                                           @NotNull Type order) {
-    if (!checkMinecraftVersion(minecraftVersion)) {
-      return Optional.empty();
-    }
-    if (order == Type.DESCENDING) {
-      return Optional.ofNullable(Lists.reverse(forgeLoader.versionMeta().get(minecraftVersion)));
-    } else {
-      return Optional.ofNullable(forgeLoader.versionMeta().get(minecraftVersion));
     }
   }
 
@@ -282,9 +247,9 @@ public final class ForgeMeta {
     if (!checkMinecraftVersion(minecraftVersion)) {
       return Optional.empty();
     }
-    if (getForgeVersions(minecraftVersion, Type.ASCENDING).isPresent()) {
+    if (supportedForgeVersionsAscending(minecraftVersion).isPresent()) {
 
-      return Optional.ofNullable(getForgeVersions(minecraftVersion, Type.ASCENDING).get().get(0));
+      return Optional.ofNullable(supportedForgeVersionsAscending(minecraftVersion).get().get(0));
 
     } else {
 
@@ -293,193 +258,154 @@ public final class ForgeMeta {
   }
 
   /**
-   * Get the list of Forge supported Minecraft versions, in {@link Type#ASCENDING} order.
-   *
-   * @return List of Forge supported Minecraft versions, in ascending order.
-   * @author Griefed
-   */
-  public @NotNull List<String> minecraftVersionsAscending() {
-    return supportedMinecraftVersionsList(Type.ASCENDING);
-  }
-
-  /**
-   * Get the list of Forge supported Minecraft versions, with either {@link Type#ASCENDING} or
-   * {@link Type#DESCENDING} order.
-   *
-   * @param order The order of the resulting list. Either {@link Type#ASCENDING} or
-   *              {@link Type#DESCENDING}.
-   * @return List of Forge supported Minecraft versions, in either {@link Type#ASCENDING} or
-   * {@link Type#DESCENDING} order.
-   * @author Griefed
-   */
-  private @NotNull List<String> supportedMinecraftVersionsList(@NotNull Type order) {
-    if (order == Type.DESCENDING) {
-      return Lists.reverse(forgeLoader.minecraftVersions());
-    } else {
-      return forgeLoader.minecraftVersions();
-    }
-  }
-
-  /**
-   * Get the list of Forge supported Minecraft versions, in {@link Type#DESCENDING} order.
-   *
-   * @return List of Forge supported Minecraft versions, in descending order.
-   * @author Griefed
-   */
-  public @NotNull List<String> minecraftVersionsDescending() {
-    return supportedMinecraftVersionsList(Type.DESCENDING);
-  }
-
-  /**
-   * Get the array of Forge supported Minecraft versions, in {@link Type#ASCENDING} order.
-   *
-   * @return Array of Forge supported Minecraft versions, in descending order.
-   * @author Griefed
-   */
-  public @NotNull String @NotNull [] minecraftVersionsArrayAscending() {
-    return supportedMinecraftVersionsList(Type.ASCENDING).toArray(new String[0]);
-  }
-
-  /**
-   * Get the array of Forge supported Minecraft versions, in {@link Type#DESCENDING} order.
-   *
-   * @return Array of Forge supported Minecraft versions, in descending order.
-   * @author Griefed
-   */
-  public @NotNull String @NotNull [] minecraftVersionsArrayDescending() {
-    return supportedMinecraftVersionsList(Type.DESCENDING).toArray(new String[0]);
-  }
-
-  /**
-   * Get the list of available Forge versions, in {@link Type#ASCENDING} order.
+   * Get the list of available Forge versions, in ascending order.
    *
    * @return List of available Forge versions.
    * @author Griefed
    */
-  public @NotNull List<String> forgeVersions() {
-    return supportedForgeVersionsList(Type.ASCENDING);
+  public @NotNull List<String> forgeVersionsAscending() {
+    return forgeLoader.forgeVersions();
   }
 
   /**
-   * Get the list of available Forge versions, with either {@link Type#ASCENDING} or
-   * {@link Type#DESCENDING} order.
-   *
-   * @param order The order of the resulting list. Either {@link Type#ASCENDING} or
-   *              {@link Type#DESCENDING}.
-   * @return List Forge versions, in either {@link Type#ASCENDING} or {@link Type#DESCENDING} order.
-   * @author Griefed
-   */
-  private @NotNull List<String> supportedForgeVersionsList(@NotNull Type order) {
-    if (order == Type.DESCENDING) {
-      return Lists.reverse(forgeLoader.forgeVersions());
-    } else {
-      return forgeLoader.forgeVersions();
-    }
-  }
-
-  /**
-   * Get the list of available Forge versions, in {@link Type#DESCENDING} order.
+   * Get the list of available Forge versions, in descending order.
    *
    * @return List of available Forge versions.
    * @author Griefed
    */
   public @NotNull List<String> forgeVersionsDescending() {
-    return supportedForgeVersionsList(Type.DESCENDING);
+    return Lists.reverse(forgeLoader.forgeVersions());
   }
 
   /**
-   * Get the array of available Forge versions, in {@link Type#ASCENDING} order.
+   * Get the array of available Forge versions, in ascending order.
    *
    * @return Array of available Forge versions.
    * @author Griefed
    */
-  public @NotNull String @NotNull [] forgeVersionsArray() {
-    return supportedForgeVersionsList(Type.ASCENDING).toArray(new String[0]);
+  public @NotNull String @NotNull [] forgeVersionsAscendingArray() {
+    return forgeLoader.forgeVersions().toArray(new String[0]);
   }
 
   /**
-   * Get the array of available Forge versions, in {@link Type#DESCENDING} order.
+   * Get the array of available Forge versions, in descending order.
    *
    * @return Array of available Forge versions.
    * @author Griefed
    */
-  public @NotNull String @NotNull [] forgeVersionsArrayDescending() {
-    return supportedForgeVersionsList(Type.DESCENDING).toArray(new String[0]);
+  public @NotNull String @NotNull [] forgeVersionsDescendingArray() {
+    return Lists.reverse(forgeLoader.forgeVersions()).toArray(new String[0]);
   }
 
   /**
-   * Get a list of available Forge version for a given Minecraft version, in {@link Type#ASCENDING}
-   * order, wrapped in an {@link Optional}.
+   * Get a list of available Forge version for a given Minecraft version in ascending order.
    *
    * @param minecraftVersion Minecraft version.
-   * @return List of available Forge versions for the given Minecraft version, in ascending order,
-   * wrapped in an {@link Optional}
+   * @return List of available Forge versions for the given Minecraft version in ascending order.
    * @author Griefed
    */
-  public @NotNull Optional<List<String>> availableForgeVersionsAscending(@NotNull String minecraftVersion) {
-    return getForgeVersions(minecraftVersion, Type.ASCENDING);
+  public @NotNull Optional<List<String>> supportedForgeVersionsAscending(@NotNull String minecraftVersion) {
+    return Optional.ofNullable(forgeLoader.versionMeta().get(minecraftVersion));
   }
 
   /**
-   * Get a list of available Forge version for a given Minecraft version, in {@link Type#DESCENDING}
-   * order, wrapped in an {@link Optional}.
+   * Get a list of available Forge version for a given Minecraft version in descending order.
    *
    * @param minecraftVersion Minecraft version.
-   * @return List of available Forge versions for the given Minecraft version, in descending order,
-   * wrapped in an {@link Optional}
+   * @return List of available Forge versions for the given Minecraft version in descending order.
    * @author Griefed
    */
-  public @NotNull Optional<List<String>> availableForgeVersionsDescending(@NotNull String minecraftVersion) {
-    return getForgeVersions(minecraftVersion, Type.DESCENDING);
+  public @NotNull Optional<List<String>> supportedForgeVersionsDescending(@NotNull String minecraftVersion) {
+    if (!checkMinecraftVersion(minecraftVersion)) {
+      return Optional.empty();
+    }
+    return Optional.ofNullable(Lists.reverse(forgeLoader.versionMeta().get(minecraftVersion)));
   }
 
+
   /**
-   * Get an array of available Forge version for a given Minecraft version, in
-   * {@link Type#ASCENDING} order, wrapped in an {@link Optional}.
+   * Get an array of available Forge version for a given Minecraft version, in ascending order,
+   * wrapped in an {@link Optional}.
    *
    * @param minecraftVersion Minecraft version.
    * @return Array of available Forge versions for the given Minecraft version, in ascending order,
    * wrapped in an {@link Optional}
    * @author Griefed
    */
-  public @NotNull Optional<String[]> availableForgeVersionsArrayAscending(@NotNull String minecraftVersion) {
-    return getForgeVersionsArray(minecraftVersion, Type.ASCENDING);
-  }
-
-  /**
-   * Get an array of available Forge version for a given Minecraft version, either
-   * {@link Type#ASCENDING} or {@link Type#DESCENDING}, wrapped in an {@link Optional}.
-   *
-   * @param minecraftVersion Minecraft version.
-   * @param order            Either {@link Type#DESCENDING}, wrapped in an {@link Optional}.
-   * @return Array of available Forge versions for the given Minecraft version, either
-   * {@link Type#ASCENDING} or {@link Type#DESCENDING}, wrapped in an {@link Optional}.
-   * @author Griefed
-   */
-  private @NotNull Optional<String[]> getForgeVersionsArray(@NotNull String minecraftVersion,
-                                                            Type order) {
+  public @NotNull Optional<String[]> supportedForgeVersionsAscendingArray(@NotNull String minecraftVersion) {
     if (!checkMinecraftVersion(minecraftVersion)) {
       return Optional.empty();
     }
-    if (order == Type.DESCENDING) {
-      return Optional.of(
-          Lists.reverse(forgeLoader.versionMeta().get(minecraftVersion)).toArray(new String[0]));
-    } else {
-      return Optional.of(forgeLoader.versionMeta().get(minecraftVersion).toArray(new String[0]));
-    }
+    return Optional.of(forgeLoader.versionMeta().get(minecraftVersion).toArray(new String[0]));
   }
 
   /**
-   * Get an array of available Forge version for a given Minecraft version, in
-   * {@link Type#DESCENDING} order, wrapped in an {@link Optional}.
+   * Get an array of available Forge version for a given Minecraft version, in descending order,
+   * wrapped in an {@link Optional}.
    *
    * @param minecraftVersion Minecraft version.
    * @return Array of available Forge versions for the given Minecraft version, in descending order,
    * wrapped in an {@link Optional}
    * @author Griefed
    */
-  public @NotNull Optional<String[]> availableForgeVersionsArrayDescending(@NotNull String minecraftVersion) {
-    return getForgeVersionsArray(minecraftVersion, Type.DESCENDING);
+  public @NotNull Optional<String[]> supportedForgeVersionsDescendingArray(@NotNull String minecraftVersion) {
+    if (!checkMinecraftVersion(minecraftVersion)) {
+      return Optional.empty();
+    }
+    return Optional.of(
+        Lists.reverse(forgeLoader.versionMeta().get(minecraftVersion)).toArray(new String[0]));
+  }
+
+  /**
+   * Get the Minecraft version for a given Forge version, wrapped in an {@link Optional}.
+   *
+   * @param forgeVersion Forge version.
+   * @return Minecraft version for the given Forge version, wrapped in an {@link Optional}.
+   * @author Griefed
+   */
+  public @NotNull Optional<String> minecraftVersion(@NotNull String forgeVersion) {
+    return Optional.ofNullable(forgeLoader.forgeToMinecraftMeta().get(forgeVersion));
+  }
+
+  /**
+   * Get the list of Forge supported Minecraft versions, in ascending order.
+   *
+   * @return List of Forge supported Minecraft versions, in ascending order.
+   * @author Griefed
+   */
+  @Contract(pure = true)
+  public @NotNull List<String> supportedMinecraftVersionsAscending() {
+    return forgeLoader.minecraftVersions();
+  }
+
+  /**
+   * Get the list of Forge supported Minecraft versions, in descending order.
+   *
+   * @return List of Forge supported Minecraft versions, in descending order.
+   * @author Griefed
+   */
+  public @NotNull List<String> supportedMinecraftVersionsDescending() {
+    return Lists.reverse(forgeLoader.minecraftVersions());
+  }
+
+  /**
+   * Get the array of Forge supported Minecraft versions, in ascending order.
+   *
+   * @return Array of Forge supported Minecraft versions, in ascending order.
+   * @author Griefed
+   */
+  public @NotNull String @NotNull [] supportedMinecraftVersionsAscendingArray() {
+    return forgeLoader.minecraftVersions().toArray(new String[0]);
+  }
+
+  /**
+   * Get the array of Forge supported Minecraft versions, in descending order.
+   *
+   * @return Array of Forge supported Minecraft versions, in descending order.
+   * @author Griefed
+   */
+  public @NotNull String @NotNull [] supportedMinecraftVersionsDescendingArray() {
+    return Lists.reverse(forgeLoader.minecraftVersions()).toArray(new String[0]);
   }
 
   /**

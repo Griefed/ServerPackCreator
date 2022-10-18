@@ -87,7 +87,7 @@ public class VersionsController {
   public ResponseEntity<String> getAvailableForgeVersions(
       @PathVariable("minecraftversion") String minecraftVersion) {
 
-    if (VERSIONMETA.forge().availableForgeVersionsDescending(minecraftVersion).isPresent()) {
+    if (VERSIONMETA.forge().supportedForgeVersionsAscending(minecraftVersion).isPresent()) {
 
       return ResponseEntity.ok()
                            .header("Content-Type", "application/json")
@@ -97,8 +97,7 @@ public class VersionsController {
                                               .encapsulateListElements(
                                                   VERSIONMETA
                                                       .forge()
-                                                      .availableForgeVersionsDescending(
-                                                          minecraftVersion)
+                                                      .supportedForgeVersionsAscending(minecraftVersion)
                                                       .get())
                                    + "}");
 
