@@ -424,10 +424,12 @@ public final class AnnotationScanner extends JsonBasedScanner implements
             String modIdTocheck = getModId(child);
 
             // Add mod to list of clientmods if clientSideOnly is true
-            if (modIdTocheck != null && UTILITIES.JsonUtilities()
-                                                 .getNestedBoolean(child, "values",
-                                                                   "clientSideOnly",
-                                                                   "value")) {
+            if (UTILITIES.JsonUtilities()
+                         .getNestedBoolean(child,
+                                           "values",
+                                           "clientSideOnly",
+                                           "value")) {
+
               if (clientMods.contains(modIdTocheck)) {
                 addToDelta = true;
               }
