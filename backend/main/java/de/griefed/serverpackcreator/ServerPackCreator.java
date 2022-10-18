@@ -438,8 +438,8 @@ public class ServerPackCreator {
     if (documentBuilder == null) {
       try {
         documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-      } catch (ParserConfigurationException e) {
-        throw new RuntimeException(e);
+      } catch (ParserConfigurationException ex) {
+        LOG.error("Couldn't initialized DocumentBuilder.",ex);
       }
     }
     return documentBuilder;
