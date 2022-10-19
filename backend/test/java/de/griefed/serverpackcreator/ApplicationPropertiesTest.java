@@ -227,8 +227,8 @@ public class ApplicationPropertiesTest {
 
     Assertions.assertNotNull(applicationProperties.getDirectoriesToExclude());
 
-    Assertions.assertFalse(applicationProperties.getSaveLoadedConfiguration());
-    Assertions.assertFalse(applicationProperties.checkForAvailablePreReleases());
+    Assertions.assertFalse(applicationProperties.isSavingOfLoadedConfigurationsEnabled());
+    Assertions.assertFalse(applicationProperties.isCheckingForPreReleasesEnabled());
 
     Assertions.assertEquals(90, applicationProperties.getQueueMaxDiskUsage());
 

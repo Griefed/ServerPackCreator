@@ -971,7 +971,7 @@ public class ServerPackCreator {
 
     System.setProperty("file.encoding", StandardCharsets.UTF_8.name());
 
-    if (!getUtilities().FileUtils().checkPermissions(APPLICATIONPROPERTIES.getJarFolder())) {
+    if (!getUtilities().FileUtils().isReadWritePermissionSet(APPLICATIONPROPERTIES.getJarFolder())) {
 
       LOG.error("One or more file or directory has no read- or write-permission."
                     + " This may lead to corrupted server packs!"
@@ -1634,7 +1634,7 @@ public class ServerPackCreator {
 
     Optional<Update> update = getUpdateChecker().checkForUpdate(
         APPLICATIONPROPERTIES.serverPackCreatorVersion(),
-        APPLICATIONPROPERTIES.checkForAvailablePreReleases());
+        APPLICATIONPROPERTIES.isCheckingForPreReleasesEnabled());
 
     if (logToConsole) {
       System.out.println();

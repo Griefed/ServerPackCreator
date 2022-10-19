@@ -796,7 +796,7 @@ public final class ConfigurationEditor {
       printToFileAndConsole("Minecraft version: ", false);
       minecraftVersion = getNextLine(scanner);
 
-    } while (!VERSIONMETA.minecraft().checkMinecraftVersion(minecraftVersion));
+    } while (!VERSIONMETA.minecraft().isMinecraftVersionAvailable(minecraftVersion));
 
     printToFileAndConsole("You entered: " + minecraftVersion);
     printToFileAndConsole();

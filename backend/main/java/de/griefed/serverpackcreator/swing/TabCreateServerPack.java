@@ -845,7 +845,7 @@ public class TabCreateServerPack extends JPanel {
 
     CREATESERVERPACKPANEL.add(labelMinecraftVersion, gridBagConstraints);
 
-    if (APPLICATIONPROPERTIES.enableMinecraftPreReleases()) {
+    if (APPLICATIONPROPERTIES.isMinecraftPreReleasesAvailabilityEnabled()) {
       COMBOBOX_MINECRAFTVERSIONS.setModel(
           new DefaultComboBoxModel<>(VERSIONMETA.minecraft().allVersionsArrayDescending()));
     } else {
@@ -2749,10 +2749,10 @@ public class TabCreateServerPack extends JPanel {
       setModloader(configurationModel.getModLoader());
       setModloaderVersion(configurationModel.getModLoaderVersion());
 
-      setServerInstallationSelection(configurationModel.getIncludeServerInstallation());
-      setServerIconSelection(configurationModel.getIncludeServerIcon());
-      setServerPropertiesSelection(configurationModel.getIncludeServerProperties());
-      setServerZipArchiveSelection(configurationModel.getIncludeZipCreation());
+      setServerInstallationSelection(configurationModel.isServerInstallationDesired());
+      setServerIconSelection(configurationModel.isServerIconInclusionDesired());
+      setServerPropertiesSelection(configurationModel.isServerPropertiesInclusionDesired());
+      setServerZipArchiveSelection(configurationModel.isZipCreationDesired());
 
       setJavaArgs(configurationModel.getJavaArgs());
 

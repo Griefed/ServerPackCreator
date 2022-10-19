@@ -93,9 +93,9 @@ public final class ForgeMeta {
    * @return {@code true} if the given Minecraft and Forge versions are valid/supported/available.
    * @author Griefed
    */
-  public boolean checkForgeAndMinecraftVersion(@NotNull String minecraftVersion,
-                                               @NotNull String forgeVersion) {
-    return checkMinecraftVersion(minecraftVersion) && checkForgeVersion(forgeVersion);
+  public boolean isForgeAndMinecraftCombinationValid(@NotNull String minecraftVersion,
+                                                     @NotNull String forgeVersion) {
+    return isMinecraftVersionSupported(minecraftVersion) && isForgeVersionValid(forgeVersion);
   }
 
   /**
@@ -105,7 +105,7 @@ public final class ForgeMeta {
    * @return {@code true} if the given Minecraft version is valid/supported/available.
    * @author Griefed
    */
-  public boolean checkMinecraftVersion(@NotNull String minecraftVersion) {
+  public boolean isMinecraftVersionSupported(@NotNull String minecraftVersion) {
     return Optional.ofNullable(forgeLoader.versionMeta().get(minecraftVersion)).isPresent();
   }
 
@@ -116,7 +116,7 @@ public final class ForgeMeta {
    * @return {@code true} if the given Forge version is valid/supported/available.
    * @author Griefed
    */
-  public boolean checkForgeVersion(@NotNull String forgeVersion) {
+  public boolean isForgeVersionValid(@NotNull String forgeVersion) {
     return Optional.ofNullable(forgeLoader.forgeToMinecraftMeta().get(forgeVersion)).isPresent();
   }
 
@@ -168,7 +168,7 @@ public final class ForgeMeta {
    * @author Griefed
    */
   public @NotNull Optional<ForgeInstance> getForgeInstance(@NotNull String forgeVersion) {
-    if (!checkForgeVersion(forgeVersion)) {
+    if (!isForgeVersionValid(forgeVersion)) {
       return Optional.empty();
     }
 
@@ -219,7 +219,7 @@ public final class ForgeMeta {
    * @author Griefed
    */
   public @NotNull Optional<String> newestForgeVersion(@NotNull String minecraftVersion) {
-    if (!checkMinecraftVersion(minecraftVersion)) {
+    if (!isMinecraftVersionSupported(minecraftVersion)) {
       return Optional.empty();
     }
 
@@ -244,7 +244,7 @@ public final class ForgeMeta {
    * @author Griefed
    */
   public @NotNull Optional<String> oldestForgeVersion(@NotNull String minecraftVersion) {
-    if (!checkMinecraftVersion(minecraftVersion)) {
+    if (!isMinecraftVersionSupported(minecraftVersion)) {
       return Optional.empty();
     }
     if (supportedForgeVersionsAscending(minecraftVersion).isPresent()) {
@@ -316,7 +316,7 @@ public final class ForgeMeta {
    * @author Griefed
    */
   public @NotNull Optional<List<String>> supportedForgeVersionsDescending(@NotNull String minecraftVersion) {
-    if (!checkMinecraftVersion(minecraftVersion)) {
+    if (!isMinecraftVersionSupported(minecraftVersion)) {
       return Optional.empty();
     }
     return Optional.ofNullable(Lists.reverse(forgeLoader.versionMeta().get(minecraftVersion)));
@@ -333,7 +333,7 @@ public final class ForgeMeta {
    * @author Griefed
    */
   public @NotNull Optional<String[]> supportedForgeVersionsAscendingArray(@NotNull String minecraftVersion) {
-    if (!checkMinecraftVersion(minecraftVersion)) {
+    if (!isMinecraftVersionSupported(minecraftVersion)) {
       return Optional.empty();
     }
     return Optional.of(forgeLoader.versionMeta().get(minecraftVersion).toArray(new String[0]));
@@ -349,7 +349,7 @@ public final class ForgeMeta {
    * @author Griefed
    */
   public @NotNull Optional<String[]> supportedForgeVersionsDescendingArray(@NotNull String minecraftVersion) {
-    if (!checkMinecraftVersion(minecraftVersion)) {
+    if (!isMinecraftVersionSupported(minecraftVersion)) {
       return Optional.empty();
     }
     return Optional.of(
@@ -416,7 +416,7 @@ public final class ForgeMeta {
    * @author Griefed
    */
   public @NotNull Optional<URL> installerUrl(@NotNull String forgeVersion) {
-    if (checkForgeVersion(forgeVersion) && getForgeInstance(forgeVersion).isPresent()) {
+    if (isForgeVersionValid(forgeVersion) && getForgeInstance(forgeVersion).isPresent()) {
       return Optional.of(getForgeInstance(forgeVersion).get().installerUrl());
     } else {
       return Optional.empty();

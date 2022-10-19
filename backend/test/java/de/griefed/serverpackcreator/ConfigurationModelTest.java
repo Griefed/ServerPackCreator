@@ -73,10 +73,10 @@ public class ConfigurationModelTest {
     Assertions.assertEquals(configurationModel.getModLoaderVersion(), "14.23.5.2860");
     Assertions.assertEquals(configurationModel.getMinecraftVersion(), "1.12.2");
     Assertions.assertEquals(configurationModel.getModLoader(), "Forge");
-    Assertions.assertFalse(configurationModel.getIncludeServerInstallation());
-    Assertions.assertTrue(configurationModel.getIncludeServerProperties());
-    Assertions.assertTrue(configurationModel.getIncludeServerIcon());
-    Assertions.assertTrue(configurationModel.getIncludeZipCreation());
+    Assertions.assertFalse(configurationModel.isServerInstallationDesired());
+    Assertions.assertTrue(configurationModel.isServerPropertiesInclusionDesired());
+    Assertions.assertTrue(configurationModel.isServerIconInclusionDesired());
+    Assertions.assertTrue(configurationModel.isZipCreationDesired());
 
     Assertions.assertTrue(configurationModel.getScriptSettings().containsKey("SPC_JAVA_SPC"));
     Assertions.assertEquals(configurationModel.getScriptSettings().get("SPC_JAVA_SPC"),
@@ -137,10 +137,10 @@ public class ConfigurationModelTest {
     Assertions.assertEquals(after.getModLoaderVersion(), configurationModel.getModLoaderVersion());
     Assertions.assertEquals(after.getMinecraftVersion(), configurationModel.getMinecraftVersion());
     Assertions.assertEquals(after.getModLoader(), configurationModel.getModLoader());
-    Assertions.assertFalse(after.getIncludeServerInstallation());
-    Assertions.assertTrue(after.getIncludeServerProperties());
-    Assertions.assertTrue(after.getIncludeServerIcon());
-    Assertions.assertTrue(after.getIncludeZipCreation());
+    Assertions.assertFalse(after.isServerInstallationDesired());
+    Assertions.assertTrue(after.isServerPropertiesInclusionDesired());
+    Assertions.assertTrue(after.isServerIconInclusionDesired());
+    Assertions.assertTrue(after.isZipCreationDesired());
 
     Assertions.assertTrue(after.getScriptSettings().containsKey("SPC_FLYNN_LIVES_SPC"));
     Assertions.assertEquals(after.getScriptSettings().get("SPC_FLYNN_LIVES_SPC"),

@@ -242,7 +242,7 @@ public final class ServerPackHandler {
       }
 
       // If true, copy the server-icon.png from server_files to the server pack.
-      if (configurationModel.getIncludeServerIcon()) {
+      if (configurationModel.isServerIconInclusionDesired()) {
         copyIcon(configurationModel);
       } else {
 
@@ -250,7 +250,7 @@ public final class ServerPackHandler {
       }
 
       // If true, copy the server.properties from server_files to the server pack.
-      if (configurationModel.getIncludeServerProperties()) {
+      if (configurationModel.isServerPropertiesInclusionDesired()) {
         copyProperties(configurationModel);
       } else {
 
@@ -260,7 +260,7 @@ public final class ServerPackHandler {
       APPLICATIONADDONS.runPreZipExtensions(configurationModel, destination);
 
       // If true, create a ZIP-archive excluding the Minecraft server JAR of the server pack.
-      if (configurationModel.getIncludeZipCreation()) {
+      if (configurationModel.isZipCreationDesired()) {
 
         /*
          * Create the start scripts for this server pack. Ignores custom SPC_JAVA_SPC setting if one
@@ -284,7 +284,7 @@ public final class ServerPackHandler {
 
       // If true, Install the modloader software for the specified Minecraft version, modloader,
       // modloader version
-      if (configurationModel.getIncludeServerInstallation()) {
+      if (configurationModel.isServerInstallationDesired()) {
         installServer(configurationModel);
       } else {
 
@@ -419,7 +419,7 @@ public final class ServerPackHandler {
    */
   public void zipBuilder(@NotNull final ConfigurationModel configurationModel) {
     zipBuilder(configurationModel.getMinecraftVersion(),
-               configurationModel.getIncludeServerInstallation(),
+               configurationModel.isServerInstallationDesired(),
                getServerPackDestination(configurationModel),
                configurationModel.getModLoader(), configurationModel.getModLoaderVersion());
   }

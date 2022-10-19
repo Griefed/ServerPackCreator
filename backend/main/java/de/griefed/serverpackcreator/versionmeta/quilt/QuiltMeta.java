@@ -165,6 +165,6 @@ public final class QuiltMeta implements Meta {
 
   @Override
   public boolean isMinecraftSupported(@NotNull String minecraftVersion) {
-    return FABRIC_INTERMEDIARIES.areIntermediariesPresent(minecraftVersion);
+    return FABRIC_INTERMEDIARIES.isIntermediariesPresent(minecraftVersion);
   }
 }

@@ -25,8 +25,8 @@ public class VersionMetaTest {
 
   @Test
   void minecraft() {
-    Assertions.assertTrue(versionMeta.minecraft().checkMinecraftVersion("1.16.5"));
-    Assertions.assertFalse(versionMeta.minecraft().checkMinecraftVersion("1.16.7"));
+    Assertions.assertTrue(versionMeta.minecraft().isMinecraftVersionAvailable("1.16.5"));
+    Assertions.assertFalse(versionMeta.minecraft().isMinecraftVersionAvailable("1.16.7"));
     Assertions.assertNotNull(versionMeta.minecraft().latestRelease());
     Assertions.assertNotNull(versionMeta.minecraft().latestRelease().version());
     Assertions.assertNotNull(versionMeta.minecraft().latestRelease().server());
@@ -153,8 +153,8 @@ public class VersionMetaTest {
                    .snapshotsArrayDescending()[
             versionMeta.minecraft().snapshotsArrayDescending().length - 1]);
     Assertions.assertNotNull(versionMeta.minecraft().getServer("1.16.5").get());
-    Assertions.assertTrue(versionMeta.minecraft().checkServerAvailability("1.16.5"));
-    Assertions.assertFalse(versionMeta.minecraft().checkServerAvailability("1.16.6"));
+    Assertions.assertTrue(versionMeta.minecraft().isServerAvailable("1.16.5"));
+    Assertions.assertFalse(versionMeta.minecraft().isServerAvailable("1.16.6"));
     Assertions.assertNotNull(versionMeta.minecraft().latestReleaseServer());
     Assertions.assertNotNull(versionMeta.minecraft().latestSnapshotServer());
     Assertions.assertNotNull(versionMeta.minecraft().releasesServersDescending());
@@ -215,12 +215,12 @@ public class VersionMetaTest {
 
   @Test
   void forge() {
-    Assertions.assertTrue(versionMeta.forge().checkForgeVersion("40.0.45"));
-    Assertions.assertFalse(versionMeta.forge().checkForgeVersion("40.99.99"));
-    Assertions.assertTrue(versionMeta.forge().checkMinecraftVersion("1.16.5"));
-    Assertions.assertFalse(versionMeta.forge().checkMinecraftVersion("1.16.8"));
-    Assertions.assertTrue(versionMeta.forge().checkForgeAndMinecraftVersion("1.18.2", "40.0.45"));
-    Assertions.assertFalse(versionMeta.forge().checkForgeAndMinecraftVersion("1.18.21", "99.0.45"));
+    Assertions.assertTrue(versionMeta.forge().isForgeVersionValid("40.0.45"));
+    Assertions.assertFalse(versionMeta.forge().isForgeVersionValid("40.99.99"));
+    Assertions.assertTrue(versionMeta.forge().isMinecraftVersionSupported("1.16.5"));
+    Assertions.assertFalse(versionMeta.forge().isMinecraftVersionSupported("1.16.8"));
+    Assertions.assertTrue(versionMeta.forge().isForgeAndMinecraftCombinationValid("1.18.2", "40.0.45"));
+    Assertions.assertFalse(versionMeta.forge().isForgeAndMinecraftCombinationValid("1.18.21", "99.0.45"));
     Assertions.assertTrue(versionMeta.forge().isForgeInstanceAvailable("1.18.2", "40.0.45"));
     Assertions.assertFalse(versionMeta.forge().isForgeInstanceAvailable("1.182.2", "40.023.45"));
     Assertions.assertTrue(versionMeta.forge().isForgeInstanceAvailable("40.0.4"));

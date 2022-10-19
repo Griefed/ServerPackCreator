@@ -135,7 +135,7 @@ public class ZipService {
     }
 
     // Check the Minecraft version
-    if (!VERSIONMETA.minecraft().checkMinecraftVersion(parameters[2])) {
+    if (!VERSIONMETA.minecraft().isMinecraftVersionAvailable(parameters[2])) {
       LOG.info("Minecraft version " + parameters[2] + " incorrect.");
 
       return NOTIFICATIONRESPONSE.zipResponse(
@@ -148,7 +148,7 @@ public class ZipService {
       // Check Forge
       if (CONFIGURATIONHANDLER.getModLoaderCase(parameters[3]).equals("Forge")) {
 
-        if (!VERSIONMETA.forge().checkForgeAndMinecraftVersion(parameters[2], parameters[4])) {
+        if (!VERSIONMETA.forge().isForgeAndMinecraftCombinationValid(parameters[2], parameters[4])) {
           LOG.info(
               parameters[3] + " version " + parameters[2] + "-" + parameters[4] + " incorrect.");
           return NOTIFICATIONRESPONSE.zipResponse(

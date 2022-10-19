@@ -174,10 +174,10 @@ public final class ConfigurationHandler {
       configurationModel.setServerPackSuffix(fileConf.getServerPackSuffix());
       configurationModel.setServerIconPath(fileConf.getServerIconPath());
       configurationModel.setServerPropertiesPath(fileConf.getServerPropertiesPath());
-      configurationModel.setIncludeServerInstallation(fileConf.getIncludeServerInstallation());
-      configurationModel.setIncludeServerIcon(fileConf.getIncludeServerIcon());
-      configurationModel.setIncludeServerProperties(fileConf.getIncludeServerProperties());
-      configurationModel.setIncludeZipCreation(fileConf.getIncludeZipCreation());
+      configurationModel.setIncludeServerInstallation(fileConf.isServerInstallationDesired());
+      configurationModel.setIncludeServerIcon(fileConf.isServerIconInclusionDesired());
+      configurationModel.setIncludeServerProperties(fileConf.isServerPropertiesInclusionDesired());
+      configurationModel.setIncludeZipCreation(fileConf.isZipCreationDesired());
       configurationModel.setScriptSettings(fileConf.getScriptSettings());
       configurationModel.setAddonsConfigs(fileConf.getAddonsConfigs());
     } catch (Exception ex) {
@@ -247,7 +247,7 @@ public final class ConfigurationHandler {
 
     } else if (!configurationModel.getServerIconPath().isEmpty()
         && new File(configurationModel.getServerIconPath()).exists()
-        && !UTILITIES.FileUtils().checkReadPermission(configurationModel.getServerIconPath())) {
+        && !UTILITIES.FileUtils().isReadPermissionSet(configurationModel.getServerIconPath())) {
 
       configHasError = true;
 
@@ -277,7 +277,7 @@ public final class ConfigurationHandler {
     } else if (!configurationModel.getServerPropertiesPath().isEmpty()
         && new File(configurationModel.getServerPropertiesPath()).exists()
         && !UTILITIES.FileUtils()
-                     .checkReadPermission(configurationModel.getServerPropertiesPath())) {
+                     .isReadPermissionSet(configurationModel.getServerPropertiesPath())) {
 
       configHasError = true;
 
@@ -330,7 +330,7 @@ public final class ConfigurationHandler {
 
     if (checkModloader(configurationModel.getModLoader())) {
 
-      if (VERSIONMETA.minecraft().checkMinecraftVersion(configurationModel.getMinecraftVersion())) {
+      if (VERSIONMETA.minecraft().isMinecraftVersionAvailable(configurationModel.getMinecraftVersion())) {
 
         LOG.debug("minecraftVersion setting check passed.");
         LOG.debug("modLoader setting check passed.");
@@ -802,7 +802,7 @@ public final class ConfigurationHandler {
 
     switch (modloader) {
       case "Forge":
-        if (VERSIONMETA.forge().checkForgeAndMinecraftVersion(minecraftVersion, modloaderVersion)) {
+        if (VERSIONMETA.forge().isForgeAndMinecraftCombinationValid(minecraftVersion, modloaderVersion)) {
 
           return true;
 
@@ -894,13 +894,13 @@ public final class ConfigurationHandler {
         configurationModel.getModpackDir(),
         configurationModel.getClientMods(),
         configurationModel.getCopyDirs(),
-        configurationModel.getIncludeServerInstallation(),
+        configurationModel.isServerInstallationDesired(),
         configurationModel.getMinecraftVersion(),
         configurationModel.getModLoader(),
         configurationModel.getModLoaderVersion(),
-        configurationModel.getIncludeServerIcon(),
-        configurationModel.getIncludeServerProperties(),
-        configurationModel.getIncludeZipCreation(),
+        configurationModel.isServerIconInclusionDesired(),
+        configurationModel.isServerPropertiesInclusionDesired(),
+        configurationModel.isZipCreationDesired(),
         configurationModel.getJavaArgs(),
         configurationModel.getServerPackSuffix(),
         configurationModel.getServerIconPath(),
@@ -1108,7 +1108,7 @@ public final class ConfigurationHandler {
 
             if (new File(modpackDir, sourceFileDestinationFileCombination[0]).exists()
                 && !UTILITIES.FileUtils()
-                             .checkReadPermission(
+                             .isReadPermissionSet(
                                  modpackDir + File.separator
                                      + sourceFileDestinationFileCombination[0])) {
 
@@ -1127,7 +1127,7 @@ public final class ConfigurationHandler {
             } else if (new File(modpackDir, sourceFileDestinationFileCombination[0])
                 .exists()
                 && !UTILITIES.FileUtils()
-                             .checkReadPermission(
+                             .isReadPermissionSet(
                                  modpackDir + File.separator
                                      + sourceFileDestinationFileCombination[0])) {
 
@@ -1145,7 +1145,7 @@ public final class ConfigurationHandler {
 
             } else if (new File(sourceFileDestinationFileCombination[0]).exists()
                 && !UTILITIES.FileUtils()
-                             .checkReadPermission(sourceFileDestinationFileCombination[0])) {
+                             .isReadPermissionSet(sourceFileDestinationFileCombination[0])) {
 
               configCorrect = false;
 
@@ -1166,7 +1166,7 @@ public final class ConfigurationHandler {
                   new File(modpackDir, sourceFileDestinationFileCombination[0])
                       .listFiles()) {
 
-                if (!UTILITIES.FileUtils().checkReadPermission(file)) {
+                if (!UTILITIES.FileUtils().isReadPermissionSet(file)) {
                   configCorrect = false;
 
                   LOG.error("No read-permission for " + file);
@@ -1182,7 +1182,7 @@ public final class ConfigurationHandler {
 
               //noinspection ConstantConditions
               for (File file : new File(sourceFileDestinationFileCombination[0]).listFiles()) {
-                if (!UTILITIES.FileUtils().checkReadPermission(file)) {
+                if (!UTILITIES.FileUtils().isReadPermissionSet(file)) {
                   configCorrect = false;
 
                   LOG.error("No read-permission for " + file);
@@ -1253,7 +1253,7 @@ public final class ConfigurationHandler {
 
           } else {
 
-            if (dirToCheck.exists() && !UTILITIES.FileUtils().checkReadPermission(dirToCheck)) {
+            if (dirToCheck.exists() && !UTILITIES.FileUtils().isReadPermissionSet(dirToCheck)) {
 
               configCorrect = false;
 
@@ -1265,7 +1265,7 @@ public final class ConfigurationHandler {
                       I18N.getMessage("configuration.log.error.checkcopydirs.read"), dirToCheck));
 
             } else if (new File(directory).exists()
-                && !UTILITIES.FileUtils().checkReadPermission(directory)) {
+                && !UTILITIES.FileUtils().isReadPermissionSet(directory)) {
 
               configCorrect = false;
 
@@ -1281,7 +1281,7 @@ public final class ConfigurationHandler {
 
               //noinspection ConstantConditions
               for (File file : dirToCheck.listFiles()) {
-                if (!UTILITIES.FileUtils().checkReadPermission(file)) {
+                if (!UTILITIES.FileUtils().isReadPermissionSet(file)) {
                   configCorrect = false;
 
                   LOG.error("No read-permission for " + file);
@@ -1297,7 +1297,7 @@ public final class ConfigurationHandler {
 
               //noinspection ConstantConditions
               for (File file : new File(directory).listFiles()) {
-                if (!UTILITIES.FileUtils().checkReadPermission(file)) {
+                if (!UTILITIES.FileUtils().isReadPermissionSet(file)) {
                   configCorrect = false;
 
                   LOG.error("No read-permission for " + file);

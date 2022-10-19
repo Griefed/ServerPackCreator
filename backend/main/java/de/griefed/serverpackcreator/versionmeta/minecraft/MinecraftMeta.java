@@ -94,7 +94,7 @@ public final class MinecraftMeta {
    * @return {@code true} if a {@link MinecraftClient} is available.
    * @author Griefed
    */
-  public boolean checkMinecraftVersion(@NotNull String minecraftVersion) {
+  public boolean isMinecraftVersionAvailable(@NotNull String minecraftVersion) {
     return getClient(minecraftVersion).isPresent();
   }
 
@@ -441,7 +441,7 @@ public final class MinecraftMeta {
    * @return {@code true} if a {@link MinecraftServer} is available.
    * @author Griefed
    */
-  public boolean checkServerAvailability(@NotNull String minecraftVersion) {
+  public boolean isServerAvailable(@NotNull String minecraftVersion) {
     return getServer(minecraftVersion).isPresent();
   }
 

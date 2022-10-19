@@ -83,7 +83,7 @@ public final class FabricIntermediaries {
    * @param minecraftVersion The Minecraft version to check for.
    * @return {@code true} if intermediaries are present.
    */
-  public boolean areIntermediariesPresent(@NotNull String minecraftVersion) {
+  public boolean isIntermediariesPresent(@NotNull String minecraftVersion) {
     return getIntermediary(minecraftVersion).isPresent();
   }
 

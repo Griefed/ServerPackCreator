@@ -513,7 +513,7 @@ public class MainMenuBar extends Component {
     LOG.debug("Saving serverpackcreator.conf");
     TAB_CREATESERVERPACK.saveConfig(APPLICATIONPROPERTIES.defaultConfig());
 
-    if (lastLoadedConfigurationFile != null && APPLICATIONPROPERTIES.getSaveLoadedConfiguration()) {
+    if (lastLoadedConfigurationFile != null && APPLICATIONPROPERTIES.isSavingOfLoadedConfigurationsEnabled()) {
       LOG.debug("Saving " + lastLoadedConfigurationFile.getName());
       TAB_CREATESERVERPACK.saveConfig(lastLoadedConfigurationFile);
     }
@@ -1022,7 +1022,7 @@ public class MainMenuBar extends Component {
     Optional<Update> update =
         UPDATECHECKER.checkForUpdate(
             APPLICATIONPROPERTIES.serverPackCreatorVersion(),
-            APPLICATIONPROPERTIES.checkForAvailablePreReleases());
+            APPLICATIONPROPERTIES.isCheckingForPreReleasesEnabled());
 
     if (update.isPresent()) {
       String textContent = String.format(I18N.getMessage("update.dialog.new"), update.get().url());

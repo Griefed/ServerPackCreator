@@ -56,7 +56,7 @@ public final class FileUtilities {
    *
    * @param sourceFile      The source file.
    * @param destinationFile The destination file to be replaced by the source file.
-   * @return Boolean. Returns true if the file was sucessfully replaced.
+   * @return  Returns true if the file was sucessfully replaced.
    * @throws IOException Thrown if an error occurs when the file is moved.
    * @author Griefed
    */
@@ -270,8 +270,8 @@ public final class FileUtilities {
    * @throws InvalidPathException if the path string cannot be converted to a Path.
    * @author Griefed
    */
-  public boolean checkPermissions(@NotNull String fileOrDirectory) throws InvalidPathException {
-    return checkPermissions(Paths.get(fileOrDirectory));
+  public boolean isReadWritePermissionSet(@NotNull String fileOrDirectory) throws InvalidPathException {
+    return isReadWritePermissionSet(Paths.get(fileOrDirectory));
   }
 
   /**
@@ -281,8 +281,8 @@ public final class FileUtilities {
    * @return {@code true} if both read- and write-permissions are set.
    * @author Griefed
    */
-  public boolean checkPermissions(@NotNull Path fileOrDirectory) {
-    return checkReadPermission(fileOrDirectory) && checkWritePermission(fileOrDirectory);
+  public boolean isReadWritePermissionSet(@NotNull Path fileOrDirectory) {
+    return isReadPermissionSet(fileOrDirectory) && isWritePermissionSet(fileOrDirectory);
   }
 
   /**
@@ -292,7 +292,7 @@ public final class FileUtilities {
    * @return {@code true} if read-permissions are set.
    * @author Griefed
    */
-  public boolean checkReadPermission(@NotNull Path fileOrDirectory) {
+  public boolean isReadPermissionSet(@NotNull Path fileOrDirectory) {
 
     try {
       if (!Files.isReadable(fileOrDirectory)) {
@@ -316,7 +316,7 @@ public final class FileUtilities {
    * @return {@code true} if write-permissions are set.
    * @author Griefed
    */
-  public boolean checkWritePermission(@NotNull Path fileOrDirectory) {
+  public boolean isWritePermissionSet(@NotNull Path fileOrDirectory) {
 
     try {
       if (!Files.isWritable(fileOrDirectory)) {
@@ -343,8 +343,8 @@ public final class FileUtilities {
    *                              {@link java.nio.file.FileSystem#getPath FileSystem.getPath})
    * @author Griefed
    */
-  public boolean checkPermissions(@NotNull File fileOrDirectory) throws InvalidPathException {
-    return checkPermissions(fileOrDirectory.toPath());
+  public boolean isReadWritePermissionSet(@NotNull File fileOrDirectory) throws InvalidPathException {
+    return isReadWritePermissionSet(fileOrDirectory.toPath());
   }
 
   /**
@@ -354,8 +354,8 @@ public final class FileUtilities {
    * @return {@code true} if read-permissions are set.
    * @author Griefed
    */
-  public boolean checkReadPermission(@NotNull String fileOrDirectory) {
-    return checkReadPermission(Paths.get(fileOrDirectory));
+  public boolean isReadPermissionSet(@NotNull String fileOrDirectory) {
+    return isReadPermissionSet(Paths.get(fileOrDirectory));
   }
 
   /**
@@ -365,8 +365,8 @@ public final class FileUtilities {
    * @return {@code true} if read-permissions are set.
    * @author Griefed
    */
-  public boolean checkReadPermission(@NotNull File fileOrDirectory) {
-    return checkReadPermission(fileOrDirectory.toPath());
+  public boolean isReadPermissionSet(@NotNull File fileOrDirectory) {
+    return isReadPermissionSet(fileOrDirectory.toPath());
   }
 
   /**
@@ -376,8 +376,8 @@ public final class FileUtilities {
    * @return {@code true} if write-permissions are set.
    * @author Griefed
    */
-  public boolean checkWritePermission(@NotNull String fileOrDirectory) {
-    return checkReadPermission(Paths.get(fileOrDirectory));
+  public boolean isWritePermissionSet(@NotNull String fileOrDirectory) {
+    return isReadPermissionSet(Paths.get(fileOrDirectory));
   }
 
   /**
@@ -387,8 +387,8 @@ public final class FileUtilities {
    * @return {@code true} if write-permissions are set.
    * @author Griefed
    */
-  public boolean checkWritePermission(@NotNull File fileOrDirectory) {
-    return checkReadPermission(fileOrDirectory.toPath());
+  public boolean isWritePermissionSet(@NotNull File fileOrDirectory) {
+    return isReadPermissionSet(fileOrDirectory.toPath());
   }
 
   /**

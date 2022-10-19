@@ -139,21 +139,27 @@ public final class ApplicationProperties {
   private final String PROPERTY_SCRIPT_JAVA_AUTOUPDATE = "de.griefed.serverpackcreator.script.java.autoupdate";
   private final String PROPERTY_HOME_DIRECTORY = "de.griefed.serverpackcreator.home";
   private final String PROPERTY_OLD_VERSION = "de.griefed.serverpackcreator.version.old";
-  private File directoryServerPacks;
-  private int queueMaxDiskUsage = 90;
+  private final TreeSet<File> FALLBACK_SCRIPT_TEMPLATES =
+      new TreeSet<>(
+          Arrays.asList(
+              new File(serverFilesDirectory(), DEFAULT_SHELL_TEMPLATE),
+              new File(serverFilesDirectory(), DEFAULT_POWERSHELL_TEMPLATE)));
+  private final TreeSet<File> SCRIPT_TEMPLATES = new TreeSet<>(FALLBACK_SCRIPT_TEMPLATES);
+  private ExclusionFilter exclusionFilter = ExclusionFilter.START;
   private boolean saveLoadedConfiguration = false;
   private boolean checkForPreReleases = false;
-  private String aikarsFlags = AIKARS_FLAGS;
   private boolean isZipFileExclusionEnabled = true;
   private boolean autoExcludingModsEnabled = true;
   private boolean serverPacksOverwriteEnabled = true;
   private boolean serverPackCleanupEnabled = true;
+  private boolean minecraftPreReleases = false;
+  private boolean javaScriptAutoupdate = true;
+  private String aikarsFlags = AIKARS_FLAGS;
   private String language = "en_us";
   private String hasteBinServerUrl = "https://haste.zneix.eu/documents";
-  private boolean minecraftPreReleases = false;
-  private ExclusionFilter exclusionFilter = ExclusionFilter.START;
   private String javaPath = "java";
-  private boolean javaScriptAutoupdate = true;
+  private int queueMaxDiskUsage = 90;
+  private File directoryServerPacks;
   private File serverPackCreatorPropertiesFile = null;
   private File minecraftServerManifestsDirectory = null;
   private File fabricIntermediariesManifest = null;
@@ -177,12 +183,6 @@ public final class ApplicationProperties {
   private File addonsConfigsDirectory = null;
   private File addonsDirectory = null;
   private File homeDirectory;
-  private final TreeSet<File> FALLBACK_SCRIPT_TEMPLATES =
-      new TreeSet<>(
-          Arrays.asList(
-              new File(serverFilesDirectory(), DEFAULT_SHELL_TEMPLATE),
-              new File(serverFilesDirectory(), DEFAULT_POWERSHELL_TEMPLATE)));
-  private final TreeSet<File> SCRIPT_TEMPLATES = new TreeSet<>(FALLBACK_SCRIPT_TEMPLATES);
   private File langDirectory = null;
 
   /**
@@ -1654,7 +1654,7 @@ public final class ApplicationProperties {
    * @author Griefed
    */
   @Contract(pure = true)
-  public boolean getSaveLoadedConfiguration() {
+  public boolean isSavingOfLoadedConfigurationsEnabled() {
     return saveLoadedConfiguration;
   }
 
@@ -1679,7 +1679,7 @@ public final class ApplicationProperties {
    * @author Griefed
    */
   @Contract(pure = true)
-  public boolean checkForAvailablePreReleases() {
+  public boolean isCheckingForPreReleasesEnabled() {
     return checkForPreReleases;
   }
 
@@ -1956,7 +1956,7 @@ public final class ApplicationProperties {
    * @author Griefed
    */
   @Contract(pure = true)
-  public boolean enableMinecraftPreReleases() {
+  public boolean isMinecraftPreReleasesAvailabilityEnabled() {
     return minecraftPreReleases;
   }
 

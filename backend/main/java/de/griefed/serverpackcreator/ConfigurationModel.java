@@ -535,7 +535,7 @@ public class ConfigurationModel {
    * @return {@code true} if the server should be installed.
    * @author Griefed
    */
-  public boolean getIncludeServerInstallation() {
+  public boolean isServerInstallationDesired() {
     return includeServerInstallation;
   }
 
@@ -555,7 +555,7 @@ public class ConfigurationModel {
    * @return {@code true} if the icon should be included.
    * @author Griefed
    */
-  public boolean getIncludeServerIcon() {
+  public boolean isServerIconInclusionDesired() {
     return includeServerIcon;
   }
 
@@ -575,7 +575,7 @@ public class ConfigurationModel {
    * @return {@code true} if the properties should be included.
    * @author Griefed
    */
-  public boolean getIncludeServerProperties() {
+  public boolean isServerPropertiesInclusionDesired() {
     return includeServerProperties;
   }
 
@@ -595,7 +595,7 @@ public class ConfigurationModel {
    * @return {@code true} if the ZIP-archive should be created.
    * @author Griefed
    */
-  public boolean getIncludeZipCreation() {
+  public boolean isZipCreationDesired() {
     return includeZipCreation;
   }
 
