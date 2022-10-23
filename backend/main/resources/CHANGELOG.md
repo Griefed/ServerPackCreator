@@ -1,3 +1,10 @@
+## [3.14.7](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.14.6...3.14.7) (2022-10-04)
+
+
+### 🛠 Fixes
+
+* **File and Directory exclusion:** Correctly exclude files and directories as per user input and default list of directories to exclude from the server pack by matching the paths of files and directories. Thanks to @ModernGamingWorld for reporting this! ([df4eb1a](https://git.griefed.de/Griefed/ServerPackCreator/commit/df4eb1a8756e2d53ca1304efe55e7e97866c2b94))
+
 ## [3.14.6](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.14.5...3.14.6) (2022-09-29)
 
 
