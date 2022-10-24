@@ -112,6 +112,10 @@ public final class FabricScanner extends JsonBasedScanner implements
 
           }
 
+          if (modId.equals("chipped")) {
+            System.out.println("Hoi");
+          }
+
           // Get this mods dependencies
           try {
             UTILITIES.JsonUtilities().getFieldNames(modJson, "depends")
@@ -120,9 +124,9 @@ public final class FabricScanner extends JsonBasedScanner implements
                          try {
                            LOG.debug("Added dependency " + dependency
                                          + " for " + modId + " (" + mod.getName() + ").");
+                           modDependencies.add(dependency);
                          } catch (NullPointerException ex) {
-                           LOG.debug(
-                               "Added dependency " + dependency + " (" + mod.getName() + ").");
+                           LOG.debug("No dependencies for " + modId + " (" + mod.getName() + ").");
                          }
                        }
                      });

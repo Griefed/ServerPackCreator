@@ -130,10 +130,9 @@ public final class QuiltScanner extends JsonBasedScanner implements
                     LOG.debug("Added dependency " + UTILITIES.JsonUtilities()
                                                              .getNestedText(dependency, "id")
                                   + " for " + modId + " (" + mod.getName() + ").");
+                    modDependencies.add(UTILITIES.JsonUtilities().getNestedText(dependency, "id"));
                   } catch (NullPointerException ex) {
-                    LOG.debug("Added dependency " + UTILITIES.JsonUtilities()
-                                                             .getNestedText(dependency, "id") + " ("
-                                  + mod.getName() + ").");
+                    LOG.debug("No dependencies for " + modId + " (" + mod.getName() + ").");
                   }
                 }
               } else {
@@ -143,9 +142,9 @@ public final class QuiltScanner extends JsonBasedScanner implements
                   try {
                     LOG.debug("Added dependency " + dependency.asText()
                                   + " for " + modId + " (" + mod.getName() + ").");
+                    modDependencies.add(dependency.asText());
                   } catch (NullPointerException ex) {
-                    LOG.debug(
-                        "Added dependency " + dependency.asText() + " (" + mod.getName() + ").");
+                    LOG.debug("No dependencies for " + modId + " (" + mod.getName() + ").");
                   }
                 }
               }
