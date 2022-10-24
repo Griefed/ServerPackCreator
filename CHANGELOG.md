@@ -1,3 +1,41 @@
+## [3.15.0-beta.5](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.15.0-beta.4...3.15.0-beta.5) (2022-10-24)
+
+
+### :scissors: Refactor
+
+* Move help-argument text to file to make editing and formatting in future versions easier. ([42b74ab](https://git.griefed.de/Griefed/ServerPackCreator/commit/42b74ab9b057fa6a562850163cd9898fd27e2fc5))
+* Remove ASCENDING and DESCENDING types to clean up Forge and Minecraft metas. ([f21d9c0](https://git.griefed.de/Griefed/ServerPackCreator/commit/f21d9c0e2edb4df24caa5a78e0e1700f139daafc))
+* Remove unnecessary null-check ([c47611d](https://git.griefed.de/Griefed/ServerPackCreator/commit/c47611d10780170a4ff5f5523c924cb6a7e068a0))
+* Rename boolean related methods to reflect boolean naming schemes ([1123eee](https://git.griefed.de/Griefed/ServerPackCreator/commit/1123eee25a665cf5d7d179e6b851dc0c0767e7d5))
+* Simplify if-statement ([7f01bf8](https://git.griefed.de/Griefed/ServerPackCreator/commit/7f01bf882d7cfca8606d340ec87a945d52d98c85))
+* When running in a dev environment, ensure we have log level debug set ([bbbadd7](https://git.griefed.de/Griefed/ServerPackCreator/commit/bbbadd7be208f56bfd180ea806d88aae387e7a39))
+* Write proper error log in case a ParserConfiguration exception is thrown ([0556dce](https://git.griefed.de/Griefed/ServerPackCreator/commit/0556dce3f7983af3d77cb62a4e1accc2fb6c6f49))
+
+
+### 📔 Docs
+
+* Add NotNull and Contract annotations. Cleanups and removal of unnecessary type-information ([e7568a1](https://git.griefed.de/Griefed/ServerPackCreator/commit/e7568a1e4cfbabde9073093d794ba9b8db77b51a))
+* Add NotNull-annotations ([6cdb4c1](https://git.griefed.de/Griefed/ServerPackCreator/commit/6cdb4c14de44b99169f71f4551dbe5898c4ec802))
+* Add NotNull-annotations ([76c9e72](https://git.griefed.de/Griefed/ServerPackCreator/commit/76c9e72a5d836ef812b6013fecdb660bd1eb8e9f))
+
+
+### 🦊 CI/CD
+
+* No longer generate release on doc change ([0100f3b](https://git.griefed.de/Griefed/ServerPackCreator/commit/0100f3bf955c4c0bb4aa27f8f66d9d15b0962a18))
+
+
+### 🛠 Fixes
+
+* **Mod Sideness Scanning:** Do not exclude mods which are dependencies of other mods. Thanks to @TheButterbrotMan for the report! ([9271258](https://git.griefed.de/Griefed/ServerPackCreator/commit/9271258b3da10c460b6336bfec41697c4fb1ef78))
+
+
+### Other
+
+* Remove JustEnoughResources from fallback modslist. Thanks to Chorb for the report. ([6af7382](https://git.griefed.de/Griefed/ServerPackCreator/commit/6af73826477fae2141607b1a8e3f869bfca11696))
+* Update jgroups to 5.2.7 ([427ba05](https://git.griefed.de/Griefed/ServerPackCreator/commit/427ba05f219a4c65e357728affd20646daeb47d1))
+* Update manifests ([193a83f](https://git.griefed.de/Griefed/ServerPackCreator/commit/193a83ffcc6dc91826f4ea4506e45f5037276036))
+* Update quilt manifest....again? ([8774620](https://git.griefed.de/Griefed/ServerPackCreator/commit/87746206e04858c9d51aa4b9251d185380665208))
+
 ## [3.15.0-beta.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.15.0-beta.3...3.15.0-beta.4) (2022-10-17)
 
 
