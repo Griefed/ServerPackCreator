@@ -69,6 +69,7 @@ public final class LoggingConfig extends ConfigurationFactory {
     File props = null;
     JarUtilities JAR_UTILS = new JarUtilities();
     HashMap<String, String> SYSINFO = JAR_UTILS.jarInformation(LoggingConfig.class);
+    boolean dev = false;
 
     if (new File(SYSINFO.get("jarPath"), "serverpackcreator.properties").isFile()) {
 
@@ -81,11 +82,6 @@ public final class LoggingConfig extends ConfigurationFactory {
     } else if (new File(new File("").getAbsolutePath(), "serverpackcreator.properties").isFile()) {
 
       props = new File(new File("").getAbsolutePath(), "serverpackcreator.properties");
-
-    } else if (new File(new File("tests").getAbsolutePath(),
-                        "serverpackcreator.properties").isFile()) {
-
-      props = new File(new File("tests").getAbsolutePath(), "serverpackcreator.properties");
 
     }
 
@@ -118,7 +114,8 @@ public final class LoggingConfig extends ConfigurationFactory {
     } else {
       if (new File(SYSINFO.get("jarPath")).isDirectory()) {
         // Dev environment
-        HOME = new File("tests").getAbsoluteFile();
+        HOME = new File("").getAbsoluteFile();
+        dev = true;
       } else {
         HOME = new File(SYSINFO.get("jarPath")).getParentFile();
       }
@@ -134,6 +131,13 @@ public final class LoggingConfig extends ConfigurationFactory {
 
         String log4j = StreamUtils.copyToString(stream, StandardCharsets.UTF_8);
         log4j = log4j.replace(oldLogs, newLogs);
+
+        if (dev) {
+          log4j = log4j.replace(
+              "<Property name=\"log-level-spc\">INFO</Property>",
+              "<Property name=\"log-level-spc\">DEBUG</Property>");
+        }
+
         FileUtils.writeStringToFile(LOG4J2XML, log4j, StandardCharsets.UTF_8);
 
       } catch (IOException ex) {
