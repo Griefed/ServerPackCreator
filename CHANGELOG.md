@@ -1,3 +1,11 @@
+## [3.15.0-beta.6](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.15.0-beta.5...3.15.0-beta.6) (2022-10-25)
+
+
+### 🛠 Fixes
+
+* Remove [ and ] from paths to prevent potential errors in PowerShell scripts. ([f284a6b](https://git.griefed.de/Griefed/ServerPackCreator/commit/f284a6b3c8bbc2bd2a239cb98bf5fbdad549d82d))
+* Remove carriage return to successfully execute scripts on Linux. ([12ebafc](https://git.griefed.de/Griefed/ServerPackCreator/commit/12ebafca63fd3b11c5c46913a83d92bea358f83c))
+
 ## [3.15.0-beta.5](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.15.0-beta.4...3.15.0-beta.5) (2022-10-24)
 
 
