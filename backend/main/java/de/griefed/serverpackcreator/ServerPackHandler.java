@@ -190,7 +190,7 @@ public final class ServerPackHandler {
     String serverPackToBe = new File(configurationModel.getModpackDir()).getName()
         + configurationModel.getServerPackSuffix();
 
-    serverPackToBe = serverPackToBe.replace(" ", "_");
+    serverPackToBe = UTILITIES.StringUtils().pathSecureText(serverPackToBe.replace(" ", "_"));
 
     return new File(APPLICATIONPROPERTIES.serverPacksDirectory(), serverPackToBe)
         .getPath();
@@ -820,7 +820,10 @@ public final class ServerPackHandler {
           }
         }
 
-        FileUtils.writeStringToFile(destinationScript, scriptContent, StandardCharsets.ISO_8859_1);
+        FileUtils.writeStringToFile(
+            destinationScript,
+            scriptContent.replace("\r", ""),
+            StandardCharsets.UTF_8);
 
       } catch (Exception ex) {
         LOG.error("File not accessible: " + template + ".", ex);
