@@ -95,6 +95,8 @@ public final class StringUtilities {
    *   <li><b>&#180;</b>
    *   <li><b>&#96;</b>
    *   <li><b>&#61;</b>
+   *   <li><b>&#91;</b>
+   *   <li><b>&#93;</b>
    * </ul>
    *
    * <br>
@@ -130,7 +132,9 @@ public final class StringUtilities {
                .replace("+", "")
                .replace("´", "")
                .replace("`", "")
-               .replace("=", "");
+               .replace("=", "")
+               .replace("[", "")
+               .replace("]", "");
   }
 
   /**
@@ -162,6 +166,8 @@ public final class StringUtilities {
    *   <li><b>&#180;</b>
    *   <li><b>&#96;</b>
    *   <li><b>&#61;</b>
+   *   <li><b>&#91;</b>
+   *   <li><b>&#93;</b>
    * </ul>
    *
    * <br>
@@ -194,7 +200,9 @@ public final class StringUtilities {
                .replace("+", "")
                .replace("´", "")
                .replace("`", "")
-               .replace("=", "");
+               .replace("=", "")
+               .replace("[", "")
+               .replace("]", "");
   }
 
   /**
