@@ -1,14 +1,19 @@
 [
   {
-    "name": "fabric-loader",
+    "separator": ".",
+    "build": 10,
+    "maven": "net.fabricmc:fabric-loader:0.14.10",
+    "version": "0.14.10",
+    "stable": true
+  },
+  {
     "separator": ".",
     "build": 9,
     "maven": "net.fabricmc:fabric-loader:0.14.9",
     "version": "0.14.9",
-    "stable": true
+    "stable": false
   },
   {
-    "name": "fabric-loader",
     "separator": ".",
     "build": 8,
     "maven": "net.fabricmc:fabric-loader:0.14.8",
@@ -16,7 +21,6 @@
     "stable": false
   },
   {
-    "name": "fabric-loader",
     "separator": ".",
     "build": 7,
     "maven": "net.fabricmc:fabric-loader:0.14.7",
@@ -24,7 +28,6 @@
     "stable": false
   },
   {
-    "name": "fabric-loader",
     "separator": ".",
     "build": 6,
     "maven": "net.fabricmc:fabric-loader:0.14.6",
@@ -32,7 +35,6 @@
     "stable": false
   },
   {
-    "name": "fabric-loader",
     "separator": ".",
     "build": 5,
     "maven": "net.fabricmc:fabric-loader:0.14.5",
@@ -40,7 +42,6 @@
     "stable": false
   },
   {
-    "name": "fabric-loader",
     "separator": ".",
     "build": 4,
     "maven": "net.fabricmc:fabric-loader:0.14.4",
@@ -48,7 +49,6 @@
     "stable": false
   },
   {
-    "name": "fabric-loader",
     "separator": ".",
     "build": 3,
     "maven": "net.fabricmc:fabric-loader:0.14.3",
@@ -56,7 +56,6 @@
     "stable": false
   },
   {
-    "name": "fabric-loader",
     "separator": ".",
     "build": 2,
     "maven": "net.fabricmc:fabric-loader:0.14.2",
@@ -64,7 +63,6 @@
     "stable": false
   },
   {
-    "name": "fabric-loader",
     "separator": ".",
     "build": 1,
     "maven": "net.fabricmc:fabric-loader:0.14.1",
@@ -72,7 +70,6 @@
     "stable": false
   },
   {
-    "name": "fabric-loader",
     "separator": ".",
     "build": 0,
     "maven": "net.fabricmc:fabric-loader:0.14.0",
@@ -80,7 +77,6 @@
     "stable": false
   },
   {
-    "name": "fabric-loader",
     "separator": ".",
     "build": 3,
     "maven": "net.fabricmc:fabric-loader:0.13.3",
@@ -88,7 +84,6 @@
     "stable": false
   },
   {
-    "name": "fabric-loader",
     "separator": ".",
     "build": 2,
     "maven": "net.fabricmc:fabric-loader:0.13.2",
@@ -96,7 +91,6 @@
     "stable": false
   },
   {
-    "name": "fabric-loader",
     "separator": ".",
     "build": 1,
     "maven": "net.fabricmc:fabric-loader:0.13.1",
@@ -104,7 +98,6 @@
     "stable": false
   },
   {
-    "name": "fabric-loader",
     "separator": ".",
     "build": 0,
     "maven": "net.fabricmc:fabric-loader:0.13.0",

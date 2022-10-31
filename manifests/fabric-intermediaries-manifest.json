@@ -1,5 +1,15 @@
 [
   {
+    "maven": "net.fabricmc:intermediary:22w43a",
+    "version": "22w43a",
+    "stable": true
+  },
+  {
+    "maven": "net.fabricmc:intermediary:22w42a",
+    "version": "22w42a",
+    "stable": true
+  },
+  {
     "maven": "net.fabricmc:intermediary:1.19.2",
     "version": "1.19.2",
     "stable": true
