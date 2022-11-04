@@ -22,7 +22,7 @@ variables:
   QODANA_JOB_URL: $CI_JOB_URL
 
 services:
-  - name: ghcr.io/griefed/gitlab-ci-cd:2.2.1
+  - name: ghcr.io/griefed/gitlab-ci-cd:2.2.3
     alias: docker
 
 workflow:
@@ -178,7 +178,7 @@ Gradle Test:
 
 Docker Test:
   stage: Tests
-  image: ghcr.io/griefed/gitlab-ci-cd:2.2.1
+  image: ghcr.io/griefed/gitlab-ci-cd:2.2.3
   needs:
     - job: Gradle Test
       artifacts: true
@@ -195,7 +195,7 @@ Docker Test:
 
 Generate Release:
   stage: Release
-  image: ghcr.io/griefed/gitlab-ci-cd:2.2.1
+  image: ghcr.io/griefed/gitlab-ci-cd:2.2.3
   needs:
     - job: Gradle Test
       artifacts: false
@@ -461,7 +461,7 @@ Publish OSSRH:
 
 Build Docker Release:
   stage: Build Release
-  image: ghcr.io/griefed/gitlab-ci-cd:2.2.1
+  image: ghcr.io/griefed/gitlab-ci-cd:2.2.3
   needs:
     - job: Gradle Test
       artifacts: true
@@ -484,7 +484,7 @@ Build Docker Release:
 
 Build Docker PreRelease:
   stage: Build Release
-  image: ghcr.io/griefed/gitlab-ci-cd:2.2.1
+  image: ghcr.io/griefed/gitlab-ci-cd:2.2.3
   needs:
     - job: Gradle Test
       artifacts: true
