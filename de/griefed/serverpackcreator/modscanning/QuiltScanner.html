@@ -129,8 +129,8 @@ extends java.lang.Object</pre>
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/modscanning/QuiltScanner.html#QuiltScanner-com.fasterxml.jackson.databind.ObjectMapper-de.griefed.serverpackcreator.utilities.common.Utilities-">QuiltScanner</a></span>(com.fasterxml.jackson.databind.ObjectMapper&nbsp;objectMapper,
-            <a href="../../../../de/griefed/serverpackcreator/utilities/common/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.common">Utilities</a>&nbsp;utilities)</code>&nbsp;</td>
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/modscanning/QuiltScanner.html#QuiltScanner-com.fasterxml.jackson.databind.ObjectMapper-de.griefed.serverpackcreator.utilities.common.Utilities-">QuiltScanner</a></span>(@NotNull com.fasterxml.jackson.databind.ObjectMapper&nbsp;objectMapper,
+            @NotNull <a href="../../../../de/griefed/serverpackcreator/utilities/common/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.common">Utilities</a>&nbsp;utilities)</code>&nbsp;</td>
 </tr>
 </table>
 </li>
@@ -148,8 +148,8 @@ extends java.lang.Object</pre>
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr id="i0" class="altColor">
-<td class="colFirst"><code>java.util.TreeSet&lt;java.io.File&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/modscanning/QuiltScanner.html#scan-java.util.Collection-">scan</a></span>(java.util.Collection&lt;java.io.File&gt;&nbsp;filesInModsDir)</code>
+<td class="colFirst"><code>@NotNull java.util.TreeSet&lt;java.io.File&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/modscanning/QuiltScanner.html#scan-java.util.Collection-">scan</a></span>(@NotNull java.util.Collection&lt;java.io.File&gt;&nbsp;filesInModsDir)</code>
 <div class="block">Scan the <code>quilt.mod.json</code>-files in mod JAR-files of a given directory for their
  sideness.<br> If <code>minecraft.environment</code> specifies <code>client</code>, and is not listed as a
  dependency for another mod, it is added and therefore later on excluded from the server pack.</div>
@@ -184,8 +184,10 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>QuiltScanner</h4>
 <pre>@Autowired
-public&nbsp;QuiltScanner(com.fasterxml.jackson.databind.ObjectMapper&nbsp;objectMapper,
-                               <a href="../../../../de/griefed/serverpackcreator/utilities/common/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.common">Utilities</a>&nbsp;utilities)</pre>
+public&nbsp;QuiltScanner(@NotNull
+                               @NotNull com.fasterxml.jackson.databind.ObjectMapper&nbsp;objectMapper,
+                               @NotNull
+                               @NotNull <a href="../../../../de/griefed/serverpackcreator/utilities/common/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.common">Utilities</a>&nbsp;utilities)</pre>
 </li>
 </ul>
 </li>
@@ -202,7 +204,9 @@ public&nbsp;QuiltScanner(com.fasterxml.jackson.databind.ObjectMapper&nbsp;object
 <ul class="blockListLast">
 <li class="blockList">
 <h4>scan</h4>
-<pre>public&nbsp;java.util.TreeSet&lt;java.io.File&gt;&nbsp;scan(java.util.Collection&lt;java.io.File&gt;&nbsp;filesInModsDir)</pre>
+<pre>@NotNull
+public&nbsp;@NotNull java.util.TreeSet&lt;java.io.File&gt;&nbsp;scan(@NotNull
+                                                              @NotNull java.util.Collection&lt;java.io.File&gt;&nbsp;filesInModsDir)</pre>
 <div class="block">Scan the <code>quilt.mod.json</code>-files in mod JAR-files of a given directory for their
  sideness.<br> If <code>minecraft.environment</code> specifies <code>client</code>, and is not listed as a
  dependency for another mod, it is added and therefore later on excluded from the server pack.</div>

@@ -98,12 +98,7 @@ var activeTableTab = "activeTableTab";
 <li>java.lang.Object</li>
 <li>
 <ul class="inheritance">
-<li><a href="../../../../../de/griefed/serverpackcreator/versionmeta/ManifestParser.html" title="class in de.griefed.serverpackcreator.versionmeta">de.griefed.serverpackcreator.versionmeta.ManifestParser</a></li>
-<li>
-<ul class="inheritance">
 <li>de.griefed.serverpackcreator.versionmeta.forge.ForgeMeta</li>
-</ul>
-</li>
 </ul>
 </li>
 </ul>
@@ -113,7 +108,7 @@ var activeTableTab = "activeTableTab";
 <hr>
 <br>
 <pre>public final class <span class="typeNameLabel">ForgeMeta</span>
-extends <a href="../../../../../de/griefed/serverpackcreator/versionmeta/ManifestParser.html" title="class in de.griefed.serverpackcreator.versionmeta">ManifestParser</a></pre>
+extends java.lang.Object</pre>
 <div class="block">Forge meta containing information about available Forge releases.</div>
 </li>
 </ul>
@@ -133,8 +128,8 @@ extends <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Manifes
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html#ForgeMeta-java.io.File-com.fasterxml.jackson.databind.ObjectMapper-">ForgeMeta</a></span>(java.io.File&nbsp;forgeManifest,
-         com.fasterxml.jackson.databind.ObjectMapper&nbsp;objectMapper)</code>
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html#ForgeMeta-java.io.File-de.griefed.serverpackcreator.utilities.common.Utilities-">ForgeMeta</a></span>(@NotNull java.io.File&nbsp;forgeManifest,
+         @NotNull <a href="../../../../../de/griefed/serverpackcreator/utilities/common/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.common">Utilities</a>&nbsp;utilities)</code>
 <div class="block">Create a new Forge Meta, using a manifest file.</div>
 </td>
 </tr>
@@ -154,162 +149,160 @@ extends <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Manifes
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr id="i0" class="altColor">
-<td class="colFirst"><code>java.util.Optional&lt;java.lang.String[]&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html#availableForgeVersionsArrayAscending-java.lang.String-">availableForgeVersionsArrayAscending</a></span>(java.lang.String&nbsp;minecraftVersion)</code>
-<div class="block">Get an array of available Forge version for a given Minecraft version, in
- <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#ASCENDING"><code>Type.ASCENDING</code></a> order, wrapped in an <code>Optional</code>.</div>
+<td class="colFirst"><code>@NotNull java.util.List&lt;java.lang.String&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html#forgeVersionsAscending--">forgeVersionsAscending</a></span>()</code>
+<div class="block">Get the list of available Forge versions, in ascending order.</div>
 </td>
 </tr>
 <tr id="i1" class="rowColor">
-<td class="colFirst"><code>java.util.Optional&lt;java.lang.String[]&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html#availableForgeVersionsArrayDescending-java.lang.String-">availableForgeVersionsArrayDescending</a></span>(java.lang.String&nbsp;minecraftVersion)</code>
-<div class="block">Get an array of available Forge version for a given Minecraft version, in
- <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#DESCENDING"><code>Type.DESCENDING</code></a> order, wrapped in an <code>Optional</code>.</div>
+<td class="colFirst"><code>@NotNull java.lang.String[]</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html#forgeVersionsAscendingArray--">forgeVersionsAscendingArray</a></span>()</code>
+<div class="block">Get the array of available Forge versions, in ascending order.</div>
 </td>
 </tr>
 <tr id="i2" class="altColor">
-<td class="colFirst"><code>java.util.Optional&lt;java.util.List&lt;java.lang.String&gt;&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html#availableForgeVersionsAscending-java.lang.String-">availableForgeVersionsAscending</a></span>(java.lang.String&nbsp;minecraftVersion)</code>
-<div class="block">Get a list of available Forge version for a given Minecraft version, in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#ASCENDING"><code>Type.ASCENDING</code></a>
- order, wrapped in an <code>Optional</code>.</div>
+<td class="colFirst"><code>@NotNull java.util.List&lt;java.lang.String&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html#forgeVersionsDescending--">forgeVersionsDescending</a></span>()</code>
+<div class="block">Get the list of available Forge versions, in descending order.</div>
 </td>
 </tr>
 <tr id="i3" class="rowColor">
-<td class="colFirst"><code>java.util.Optional&lt;java.util.List&lt;java.lang.String&gt;&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html#availableForgeVersionsDescending-java.lang.String-">availableForgeVersionsDescending</a></span>(java.lang.String&nbsp;minecraftVersion)</code>
-<div class="block">Get a list of available Forge version for a given Minecraft version, in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#DESCENDING"><code>Type.DESCENDING</code></a>
- order, wrapped in an <code>Optional</code>.</div>
+<td class="colFirst"><code>@NotNull java.lang.String[]</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html#forgeVersionsDescendingArray--">forgeVersionsDescendingArray</a></span>()</code>
+<div class="block">Get the array of available Forge versions, in descending order.</div>
 </td>
 </tr>
 <tr id="i4" class="altColor">
-<td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html#checkForgeAndMinecraftVersion-java.lang.String-java.lang.String-">checkForgeAndMinecraftVersion</a></span>(java.lang.String&nbsp;minecraftVersion,
-                             java.lang.String&nbsp;forgeVersion)</code>
-<div class="block">Check whether the given Minecraft and Forge versions are valid/supported/available.</div>
-</td>
-</tr>
-<tr id="i5" class="rowColor">
-<td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html#checkForgeVersion-java.lang.String-">checkForgeVersion</a></span>(java.lang.String&nbsp;forgeVersion)</code>
-<div class="block">Check whether a given Forge version is valid/supported/available.</div>
-</td>
-</tr>
-<tr id="i6" class="altColor">
-<td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html#checkMinecraftVersion-java.lang.String-">checkMinecraftVersion</a></span>(java.lang.String&nbsp;minecraftVersion)</code>
-<div class="block">Check whether a given Minecraft version is valid/supported/available.</div>
-</td>
-</tr>
-<tr id="i7" class="rowColor">
-<td class="colFirst"><code>java.util.List&lt;java.lang.String&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html#forgeVersions--">forgeVersions</a></span>()</code>
-<div class="block">Get the list of available Forge versions, in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#ASCENDING"><code>Type.ASCENDING</code></a> order.</div>
-</td>
-</tr>
-<tr id="i8" class="altColor">
-<td class="colFirst"><code>java.lang.String[]</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html#forgeVersionsArray--">forgeVersionsArray</a></span>()</code>
-<div class="block">Get the array of available Forge versions, in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#ASCENDING"><code>Type.ASCENDING</code></a> order.</div>
-</td>
-</tr>
-<tr id="i9" class="rowColor">
-<td class="colFirst"><code>java.lang.String[]</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html#forgeVersionsArrayDescending--">forgeVersionsArrayDescending</a></span>()</code>
-<div class="block">Get the array of available Forge versions, in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#DESCENDING"><code>Type.DESCENDING</code></a> order.</div>
-</td>
-</tr>
-<tr id="i10" class="altColor">
-<td class="colFirst"><code>java.util.List&lt;java.lang.String&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html#forgeVersionsDescending--">forgeVersionsDescending</a></span>()</code>
-<div class="block">Get the list of available Forge versions, in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#DESCENDING"><code>Type.DESCENDING</code></a> order.</div>
-</td>
-</tr>
-<tr id="i11" class="rowColor">
-<td class="colFirst"><code>java.util.Optional&lt;<a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeInstance.html" title="class in de.griefed.serverpackcreator.versionmeta.forge">ForgeInstance</a>&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html#getForgeInstance-java.lang.String-">getForgeInstance</a></span>(java.lang.String&nbsp;forgeVersion)</code>
+<td class="colFirst"><code>@NotNull java.util.Optional&lt;<a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeInstance.html" title="class in de.griefed.serverpackcreator.versionmeta.forge">ForgeInstance</a>&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html#getForgeInstance-java.lang.String-">getForgeInstance</a></span>(@NotNull java.lang.String&nbsp;forgeVersion)</code>
 <div class="block">Get a <a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeInstance.html" title="class in de.griefed.serverpackcreator.versionmeta.forge"><code>ForgeInstance</code></a> for a given Forge version, wrapped in an <code>Optional</code>.</div>
 </td>
 </tr>
-<tr id="i12" class="altColor">
-<td class="colFirst"><code>java.util.Optional&lt;<a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeInstance.html" title="class in de.griefed.serverpackcreator.versionmeta.forge">ForgeInstance</a>&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html#getForgeInstance-java.lang.String-java.lang.String-">getForgeInstance</a></span>(java.lang.String&nbsp;minecraftVersion,
-                java.lang.String&nbsp;forgeVersion)</code>
+<tr id="i5" class="rowColor">
+<td class="colFirst"><code>@NotNull java.util.Optional&lt;<a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeInstance.html" title="class in de.griefed.serverpackcreator.versionmeta.forge">ForgeInstance</a>&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html#getForgeInstance-java.lang.String-java.lang.String-">getForgeInstance</a></span>(@NotNull java.lang.String&nbsp;minecraftVersion,
+                @NotNull java.lang.String&nbsp;forgeVersion)</code>
 <div class="block">Get a <a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeInstance.html" title="class in de.griefed.serverpackcreator.versionmeta.forge"><code>ForgeInstance</code></a> for a given Minecraft and Forge version, wrapped in an
  <code>Optional</code>.</div>
 </td>
 </tr>
-<tr id="i13" class="rowColor">
-<td class="colFirst"><code>java.util.Optional&lt;java.util.List&lt;<a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeInstance.html" title="class in de.griefed.serverpackcreator.versionmeta.forge">ForgeInstance</a>&gt;&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html#getForgeInstances-java.lang.String-">getForgeInstances</a></span>(java.lang.String&nbsp;minecraftVersion)</code>
+<tr id="i6" class="altColor">
+<td class="colFirst"><code>@NotNull java.util.Optional&lt;java.util.List&lt;<a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeInstance.html" title="class in de.griefed.serverpackcreator.versionmeta.forge">ForgeInstance</a>&gt;&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html#getForgeInstances-java.lang.String-">getForgeInstances</a></span>(@NotNull java.lang.String&nbsp;minecraftVersion)</code>
 <div class="block">Get a list of all available <a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeInstance.html" title="class in de.griefed.serverpackcreator.versionmeta.forge"><code>ForgeInstance</code></a> for a given Minecraft version, wrapped in an
  <code>Optional</code></div>
 </td>
 </tr>
-<tr id="i14" class="altColor">
+<tr id="i7" class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html#initialize-de.griefed.serverpackcreator.versionmeta.minecraft.MinecraftMeta-">initialize</a></span>(<a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft">MinecraftMeta</a>&nbsp;injectedMinecraftMeta)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html#initialize-de.griefed.serverpackcreator.versionmeta.minecraft.MinecraftMeta-">initialize</a></span>(@NotNull <a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft">MinecraftMeta</a>&nbsp;injectedMinecraftMeta)</code>
 <div class="block">Update this instances <code>ForgeLoader</code> with new information.</div>
 </td>
 </tr>
-<tr id="i15" class="rowColor">
-<td class="colFirst"><code>java.util.Optional&lt;java.net.URL&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html#installerUrl-java.lang.String-">installerUrl</a></span>(java.lang.String&nbsp;forgeVersion)</code>
+<tr id="i8" class="altColor">
+<td class="colFirst"><code>@NotNull java.util.Optional&lt;java.net.URL&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html#installerUrl-java.lang.String-">installerUrl</a></span>(@NotNull java.lang.String&nbsp;forgeVersion)</code>
 <div class="block">Get the Forge server installer URL for a given Forge version, wrapped in an <code>Optional</code>.</div>
 </td>
 </tr>
-<tr id="i16" class="altColor">
+<tr id="i9" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html#isForgeInstanceAvailable-java.lang.String-">isForgeInstanceAvailable</a></span>(java.lang.String&nbsp;forgeVersion)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html#isForgeAndMinecraftCombinationValid-java.lang.String-java.lang.String-">isForgeAndMinecraftCombinationValid</a></span>(@NotNull java.lang.String&nbsp;minecraftVersion,
+                                   @NotNull java.lang.String&nbsp;forgeVersion)</code>
+<div class="block">Check whether the given Minecraft and Forge versions are valid/supported/available.</div>
+</td>
+</tr>
+<tr id="i10" class="altColor">
+<td class="colFirst"><code>boolean</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html#isForgeInstanceAvailable-java.lang.String-">isForgeInstanceAvailable</a></span>(@NotNull java.lang.String&nbsp;forgeVersion)</code>
 <div class="block">Check whether Forge is available for a given Forge version</div>
 </td>
 </tr>
-<tr id="i17" class="rowColor">
+<tr id="i11" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html#isForgeInstanceAvailable-java.lang.String-java.lang.String-">isForgeInstanceAvailable</a></span>(java.lang.String&nbsp;minecraftVersion,
-                        java.lang.String&nbsp;forgeVersion)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html#isForgeInstanceAvailable-java.lang.String-java.lang.String-">isForgeInstanceAvailable</a></span>(@NotNull java.lang.String&nbsp;minecraftVersion,
+                        @NotNull java.lang.String&nbsp;forgeVersion)</code>
 <div class="block">Check whether Forge is available for a given Forge- and Minecraft version.</div>
 </td>
 </tr>
-<tr id="i18" class="altColor">
-<td class="colFirst"><code>java.util.Optional&lt;java.lang.String&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html#latestForgeVersion-java.lang.String-">latestForgeVersion</a></span>(java.lang.String&nbsp;minecraftVersion)</code>
+<tr id="i12" class="altColor">
+<td class="colFirst"><code>boolean</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html#isForgeVersionValid-java.lang.String-">isForgeVersionValid</a></span>(@NotNull java.lang.String&nbsp;forgeVersion)</code>
+<div class="block">Check whether a given Forge version is valid/supported/available.</div>
+</td>
+</tr>
+<tr id="i13" class="rowColor">
+<td class="colFirst"><code>boolean</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html#isMinecraftVersionSupported-java.lang.String-">isMinecraftVersionSupported</a></span>(@NotNull java.lang.String&nbsp;minecraftVersion)</code>
+<div class="block">Check whether a given Minecraft version is valid/supported/available.</div>
+</td>
+</tr>
+<tr id="i14" class="altColor">
+<td class="colFirst"><code>@NotNull java.util.Optional&lt;java.lang.String&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html#minecraftVersion-java.lang.String-">minecraftVersion</a></span>(@NotNull java.lang.String&nbsp;forgeVersion)</code>
+<div class="block">Get the Minecraft version for a given Forge version, wrapped in an <code>Optional</code>.</div>
+</td>
+</tr>
+<tr id="i15" class="rowColor">
+<td class="colFirst"><code>@NotNull java.util.Optional&lt;java.lang.String&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html#newestForgeVersion-java.lang.String-">newestForgeVersion</a></span>(@NotNull java.lang.String&nbsp;minecraftVersion)</code>
 <div class="block">Latest Forge version for a given Minecraft version, wrapped in <code>Optional</code></div>
 </td>
 </tr>
-<tr id="i19" class="rowColor">
-<td class="colFirst"><code>java.lang.String[]</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html#minecraftVersionsArrayAscending--">minecraftVersionsArrayAscending</a></span>()</code>
-<div class="block">Get the array of Forge supported Minecraft versions, in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#ASCENDING"><code>Type.ASCENDING</code></a> order.</div>
-</td>
-</tr>
-<tr id="i20" class="altColor">
-<td class="colFirst"><code>java.lang.String[]</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html#minecraftVersionsArrayDescending--">minecraftVersionsArrayDescending</a></span>()</code>
-<div class="block">Get the array of Forge supported Minecraft versions, in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#DESCENDING"><code>Type.DESCENDING</code></a> order.</div>
-</td>
-</tr>
-<tr id="i21" class="rowColor">
-<td class="colFirst"><code>java.util.List&lt;java.lang.String&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html#minecraftVersionsAscending--">minecraftVersionsAscending</a></span>()</code>
-<div class="block">Get the list of Forge supported Minecraft versions, in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#ASCENDING"><code>Type.ASCENDING</code></a> order.</div>
-</td>
-</tr>
-<tr id="i22" class="altColor">
-<td class="colFirst"><code>java.util.List&lt;java.lang.String&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html#minecraftVersionsDescending--">minecraftVersionsDescending</a></span>()</code>
-<div class="block">Get the list of Forge supported Minecraft versions, in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#DESCENDING"><code>Type.DESCENDING</code></a> order.</div>
-</td>
-</tr>
-<tr id="i23" class="rowColor">
-<td class="colFirst"><code>java.util.Optional&lt;java.lang.String&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html#oldestForgeVersion-java.lang.String-">oldestForgeVersion</a></span>(java.lang.String&nbsp;minecraftVersion)</code>
+<tr id="i16" class="altColor">
+<td class="colFirst"><code>@NotNull java.util.Optional&lt;java.lang.String&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html#oldestForgeVersion-java.lang.String-">oldestForgeVersion</a></span>(@NotNull java.lang.String&nbsp;minecraftVersion)</code>
 <div class="block">Oldest Forge version for a given Minecraft version, wrapped in <code>Optional</code></div>
 </td>
 </tr>
+<tr id="i17" class="rowColor">
+<td class="colFirst"><code>@NotNull java.util.Optional&lt;java.util.List&lt;java.lang.String&gt;&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html#supportedForgeVersionsAscending-java.lang.String-">supportedForgeVersionsAscending</a></span>(@NotNull java.lang.String&nbsp;minecraftVersion)</code>
+<div class="block">Get a list of available Forge version for a given Minecraft version in ascending order.</div>
+</td>
+</tr>
+<tr id="i18" class="altColor">
+<td class="colFirst"><code>@NotNull java.util.Optional&lt;java.lang.String[]&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html#supportedForgeVersionsAscendingArray-java.lang.String-">supportedForgeVersionsAscendingArray</a></span>(@NotNull java.lang.String&nbsp;minecraftVersion)</code>
+<div class="block">Get an array of available Forge version for a given Minecraft version, in ascending order,
+ wrapped in an <code>Optional</code>.</div>
+</td>
+</tr>
+<tr id="i19" class="rowColor">
+<td class="colFirst"><code>@NotNull java.util.Optional&lt;java.util.List&lt;java.lang.String&gt;&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html#supportedForgeVersionsDescending-java.lang.String-">supportedForgeVersionsDescending</a></span>(@NotNull java.lang.String&nbsp;minecraftVersion)</code>
+<div class="block">Get a list of available Forge version for a given Minecraft version in descending order.</div>
+</td>
+</tr>
+<tr id="i20" class="altColor">
+<td class="colFirst"><code>@NotNull java.util.Optional&lt;java.lang.String[]&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html#supportedForgeVersionsDescendingArray-java.lang.String-">supportedForgeVersionsDescendingArray</a></span>(@NotNull java.lang.String&nbsp;minecraftVersion)</code>
+<div class="block">Get an array of available Forge version for a given Minecraft version, in descending order,
+ wrapped in an <code>Optional</code>.</div>
+</td>
+</tr>
+<tr id="i21" class="rowColor">
+<td class="colFirst"><code>@NotNull java.util.List&lt;java.lang.String&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html#supportedMinecraftVersionsAscending--">supportedMinecraftVersionsAscending</a></span>()</code>
+<div class="block">Get the list of Forge supported Minecraft versions, in ascending order.</div>
+</td>
+</tr>
+<tr id="i22" class="altColor">
+<td class="colFirst"><code>@NotNull java.lang.String[]</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html#supportedMinecraftVersionsAscendingArray--">supportedMinecraftVersionsAscendingArray</a></span>()</code>
+<div class="block">Get the array of Forge supported Minecraft versions, in ascending order.</div>
+</td>
+</tr>
+<tr id="i23" class="rowColor">
+<td class="colFirst"><code>@NotNull java.util.List&lt;java.lang.String&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html#supportedMinecraftVersionsDescending--">supportedMinecraftVersionsDescending</a></span>()</code>
+<div class="block">Get the list of Forge supported Minecraft versions, in descending order.</div>
+</td>
+</tr>
 <tr id="i24" class="altColor">
-<td class="colFirst"><code>java.util.Optional&lt;java.lang.String&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html#supportedMinecraftVersion-java.lang.String-">supportedMinecraftVersion</a></span>(java.lang.String&nbsp;forgeVersion)</code>
-<div class="block">Get the Minecraft version for a given Forge version, wrapped in an <code>Optional</code>.</div>
+<td class="colFirst"><code>@NotNull java.lang.String[]</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html#supportedMinecraftVersionsDescendingArray--">supportedMinecraftVersionsDescendingArray</a></span>()</code>
+<div class="block">Get the array of Forge supported Minecraft versions, in descending order.</div>
 </td>
 </tr>
 <tr id="i25" class="rowColor">
@@ -319,13 +312,6 @@ extends <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Manifes
 </td>
 </tr>
 </table>
-<ul class="blockList">
-<li class="blockList"><a name="methods.inherited.from.class.de.griefed.serverpackcreator.versionmeta.ManifestParser">
-<!--   -->
-</a>
-<h3>Methods inherited from class&nbsp;de.griefed.serverpackcreator.versionmeta.<a href="../../../../../de/griefed/serverpackcreator/versionmeta/ManifestParser.html" title="class in de.griefed.serverpackcreator.versionmeta">ManifestParser</a></h3>
-<code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/ManifestParser.html#getJson-java.io.File-com.fasterxml.jackson.databind.ObjectMapper-">getJson</a>, <a href="../../../../../de/griefed/serverpackcreator/versionmeta/ManifestParser.html#getJson-java.io.InputStream-com.fasterxml.jackson.databind.ObjectMapper-">getJson</a>, <a href="../../../../../de/griefed/serverpackcreator/versionmeta/ManifestParser.html#getJson-java.lang.String-com.fasterxml.jackson.databind.ObjectMapper-">getJson</a>, <a href="../../../../../de/griefed/serverpackcreator/versionmeta/ManifestParser.html#getJson-java.net.URL-com.fasterxml.jackson.databind.ObjectMapper-">getJson</a>, <a href="../../../../../de/griefed/serverpackcreator/versionmeta/ManifestParser.html#getXml-java.io.File-">getXml</a>, <a href="../../../../../de/griefed/serverpackcreator/versionmeta/ManifestParser.html#getXml-java.io.InputStream-">getXml</a>, <a href="../../../../../de/griefed/serverpackcreator/versionmeta/ManifestParser.html#getXml-java.lang.String-">getXml</a></code></li>
-</ul>
 <ul class="blockList">
 <li class="blockList"><a name="methods.inherited.from.class.java.lang.Object">
 <!--   -->
@@ -347,19 +333,22 @@ extends <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Manifes
 <!--   -->
 </a>
 <h3>Constructor Detail</h3>
-<a name="ForgeMeta-java.io.File-com.fasterxml.jackson.databind.ObjectMapper-">
+<a name="ForgeMeta-java.io.File-de.griefed.serverpackcreator.utilities.common.Utilities-">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>ForgeMeta</h4>
-<pre>public&nbsp;ForgeMeta(java.io.File&nbsp;forgeManifest,
-                 com.fasterxml.jackson.databind.ObjectMapper&nbsp;objectMapper)</pre>
+<pre>@Contract(pure=true)
+public&nbsp;ForgeMeta(@NotNull
+                                      @NotNull java.io.File&nbsp;forgeManifest,
+                                      @NotNull
+                                      @NotNull <a href="../../../../../de/griefed/serverpackcreator/utilities/common/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.common">Utilities</a>&nbsp;utilities)</pre>
 <div class="block">Create a new Forge Meta, using a manifest file.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>forgeManifest</code> - The manifest from which to acquire version information.</dd>
-<dd><code>objectMapper</code> - Object mapper for JSON parsing.</dd>
+<dd><code>utilities</code> - Commonly used utilities across ServerPackCreator.</dd>
 </dl>
 </li>
 </ul>
@@ -377,7 +366,8 @@ extends <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Manifes
 <ul class="blockList">
 <li class="blockList">
 <h4>initialize</h4>
-<pre>public&nbsp;void&nbsp;initialize(<a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft">MinecraftMeta</a>&nbsp;injectedMinecraftMeta)
+<pre>public&nbsp;void&nbsp;initialize(@NotNull
+                       @NotNull <a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft">MinecraftMeta</a>&nbsp;injectedMinecraftMeta)
                 throws java.io.IOException</pre>
 <div class="block">Update this instances <code>ForgeLoader</code> with new information. Usually called after the Forge
  manifest has been refreshed.</div>
@@ -407,46 +397,16 @@ extends <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Manifes
 </dl>
 </li>
 </ul>
-<a name="checkForgeVersion-java.lang.String-">
+<a name="isForgeAndMinecraftCombinationValid-java.lang.String-java.lang.String-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>checkForgeVersion</h4>
-<pre>public&nbsp;boolean&nbsp;checkForgeVersion(java.lang.String&nbsp;forgeVersion)</pre>
-<div class="block">Check whether a given Forge version is valid/supported/available.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>forgeVersion</code> - Forge version.</dd>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>true</code> if the given Forge version is valid/supported/available.</dd>
-</dl>
-</li>
-</ul>
-<a name="checkMinecraftVersion-java.lang.String-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>checkMinecraftVersion</h4>
-<pre>public&nbsp;boolean&nbsp;checkMinecraftVersion(java.lang.String&nbsp;minecraftVersion)</pre>
-<div class="block">Check whether a given Minecraft version is valid/supported/available.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>minecraftVersion</code> - Minecraft version.</dd>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>true</code> if the given Minecraft version is valid/supported/available.</dd>
-</dl>
-</li>
-</ul>
-<a name="checkForgeAndMinecraftVersion-java.lang.String-java.lang.String-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>checkForgeAndMinecraftVersion</h4>
-<pre>public&nbsp;boolean&nbsp;checkForgeAndMinecraftVersion(java.lang.String&nbsp;minecraftVersion,
-                                             java.lang.String&nbsp;forgeVersion)</pre>
+<h4>isForgeAndMinecraftCombinationValid</h4>
+<pre>public&nbsp;boolean&nbsp;isForgeAndMinecraftCombinationValid(@NotNull
+                                                   @NotNull java.lang.String&nbsp;minecraftVersion,
+                                                   @NotNull
+                                                   @NotNull java.lang.String&nbsp;forgeVersion)</pre>
 <div class="block">Check whether the given Minecraft and Forge versions are valid/supported/available.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -457,14 +417,50 @@ extends <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Manifes
 </dl>
 </li>
 </ul>
+<a name="isMinecraftVersionSupported-java.lang.String-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>isMinecraftVersionSupported</h4>
+<pre>public&nbsp;boolean&nbsp;isMinecraftVersionSupported(@NotNull
+                                           @NotNull java.lang.String&nbsp;minecraftVersion)</pre>
+<div class="block">Check whether a given Minecraft version is valid/supported/available.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>minecraftVersion</code> - Minecraft version.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd><code>true</code> if the given Minecraft version is valid/supported/available.</dd>
+</dl>
+</li>
+</ul>
+<a name="isForgeVersionValid-java.lang.String-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>isForgeVersionValid</h4>
+<pre>public&nbsp;boolean&nbsp;isForgeVersionValid(@NotNull
+                                   @NotNull java.lang.String&nbsp;forgeVersion)</pre>
+<div class="block">Check whether a given Forge version is valid/supported/available.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>forgeVersion</code> - Forge version.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd><code>true</code> if the given Forge version is valid/supported/available.</dd>
+</dl>
+</li>
+</ul>
 <a name="isForgeInstanceAvailable-java.lang.String-java.lang.String-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>isForgeInstanceAvailable</h4>
-<pre>public&nbsp;boolean&nbsp;isForgeInstanceAvailable(java.lang.String&nbsp;minecraftVersion,
-                                        java.lang.String&nbsp;forgeVersion)</pre>
+<pre>public&nbsp;boolean&nbsp;isForgeInstanceAvailable(@NotNull
+                                        @NotNull java.lang.String&nbsp;minecraftVersion,
+                                        @NotNull
+                                        @NotNull java.lang.String&nbsp;forgeVersion)</pre>
 <div class="block">Check whether Forge is available for a given Forge- and Minecraft version.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -475,46 +471,17 @@ extends <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Manifes
 </dl>
 </li>
 </ul>
-<a name="isForgeInstanceAvailable-java.lang.String-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>isForgeInstanceAvailable</h4>
-<pre>public&nbsp;boolean&nbsp;isForgeInstanceAvailable(java.lang.String&nbsp;forgeVersion)</pre>
-<div class="block">Check whether Forge is available for a given Forge version</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>forgeVersion</code> - Forge version.</dd>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>true</code> if Forge is available for the given Forge version.</dd>
-</dl>
-</li>
-</ul>
-<a name="supportedMinecraftVersion-java.lang.String-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>supportedMinecraftVersion</h4>
-<pre>public&nbsp;java.util.Optional&lt;java.lang.String&gt;&nbsp;supportedMinecraftVersion(java.lang.String&nbsp;forgeVersion)</pre>
-<div class="block">Get the Minecraft version for a given Forge version, wrapped in an <code>Optional</code>.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>forgeVersion</code> - Forge version.</dd>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>Minecraft version for the given Forge version, wrapped in an <code>Optional</code>.</dd>
-</dl>
-</li>
-</ul>
 <a name="getForgeInstance-java.lang.String-java.lang.String-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>getForgeInstance</h4>
-<pre>public&nbsp;java.util.Optional&lt;<a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeInstance.html" title="class in de.griefed.serverpackcreator.versionmeta.forge">ForgeInstance</a>&gt;&nbsp;getForgeInstance(java.lang.String&nbsp;minecraftVersion,
-                                                          java.lang.String&nbsp;forgeVersion)</pre>
+<pre>@NotNull
+public&nbsp;@NotNull java.util.Optional&lt;<a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeInstance.html" title="class in de.griefed.serverpackcreator.versionmeta.forge">ForgeInstance</a>&gt;&nbsp;getForgeInstance(@NotNull
+                                                                            @NotNull java.lang.String&nbsp;minecraftVersion,
+                                                                            @NotNull
+                                                                            @NotNull java.lang.String&nbsp;forgeVersion)</pre>
 <div class="block">Get a <a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeInstance.html" title="class in de.griefed.serverpackcreator.versionmeta.forge"><code>ForgeInstance</code></a> for a given Minecraft and Forge version, wrapped in an
  <code>Optional</code>.</div>
 <dl>
@@ -527,13 +494,32 @@ extends <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Manifes
 </dl>
 </li>
 </ul>
+<a name="isForgeInstanceAvailable-java.lang.String-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>isForgeInstanceAvailable</h4>
+<pre>public&nbsp;boolean&nbsp;isForgeInstanceAvailable(@NotNull
+                                        @NotNull java.lang.String&nbsp;forgeVersion)</pre>
+<div class="block">Check whether Forge is available for a given Forge version</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>forgeVersion</code> - Forge version.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd><code>true</code> if Forge is available for the given Forge version.</dd>
+</dl>
+</li>
+</ul>
 <a name="getForgeInstance-java.lang.String-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>getForgeInstance</h4>
-<pre>public&nbsp;java.util.Optional&lt;<a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeInstance.html" title="class in de.griefed.serverpackcreator.versionmeta.forge">ForgeInstance</a>&gt;&nbsp;getForgeInstance(java.lang.String&nbsp;forgeVersion)</pre>
+<pre>@NotNull
+public&nbsp;@NotNull java.util.Optional&lt;<a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeInstance.html" title="class in de.griefed.serverpackcreator.versionmeta.forge">ForgeInstance</a>&gt;&nbsp;getForgeInstance(@NotNull
+                                                                            @NotNull java.lang.String&nbsp;forgeVersion)</pre>
 <div class="block">Get a <a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeInstance.html" title="class in de.griefed.serverpackcreator.versionmeta.forge"><code>ForgeInstance</code></a> for a given Forge version, wrapped in an <code>Optional</code>.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -549,7 +535,9 @@ extends <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Manifes
 <ul class="blockList">
 <li class="blockList">
 <h4>getForgeInstances</h4>
-<pre>public&nbsp;java.util.Optional&lt;java.util.List&lt;<a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeInstance.html" title="class in de.griefed.serverpackcreator.versionmeta.forge">ForgeInstance</a>&gt;&gt;&nbsp;getForgeInstances(java.lang.String&nbsp;minecraftVersion)</pre>
+<pre>@NotNull
+public&nbsp;@NotNull java.util.Optional&lt;java.util.List&lt;<a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeInstance.html" title="class in de.griefed.serverpackcreator.versionmeta.forge">ForgeInstance</a>&gt;&gt;&nbsp;getForgeInstances(@NotNull
+                                                                                             @NotNull java.lang.String&nbsp;minecraftVersion)</pre>
 <div class="block">Get a list of all available <a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeInstance.html" title="class in de.griefed.serverpackcreator.versionmeta.forge"><code>ForgeInstance</code></a> for a given Minecraft version, wrapped in an
  <code>Optional</code></div>
 <dl>
@@ -560,13 +548,15 @@ extends <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Manifes
 </dl>
 </li>
 </ul>
-<a name="latestForgeVersion-java.lang.String-">
+<a name="newestForgeVersion-java.lang.String-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>latestForgeVersion</h4>
-<pre>public&nbsp;java.util.Optional&lt;java.lang.String&gt;&nbsp;latestForgeVersion(java.lang.String&nbsp;minecraftVersion)</pre>
+<h4>newestForgeVersion</h4>
+<pre>@NotNull
+public&nbsp;@NotNull java.util.Optional&lt;java.lang.String&gt;&nbsp;newestForgeVersion(@NotNull
+                                                                                 @NotNull java.lang.String&nbsp;minecraftVersion)</pre>
 <div class="block">Latest Forge version for a given Minecraft version, wrapped in <code>Optional</code></div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -582,7 +572,9 @@ extends <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Manifes
 <ul class="blockList">
 <li class="blockList">
 <h4>oldestForgeVersion</h4>
-<pre>public&nbsp;java.util.Optional&lt;java.lang.String&gt;&nbsp;oldestForgeVersion(java.lang.String&nbsp;minecraftVersion)</pre>
+<pre>@NotNull
+public&nbsp;@NotNull java.util.Optional&lt;java.lang.String&gt;&nbsp;oldestForgeVersion(@NotNull
+                                                                                 @NotNull java.lang.String&nbsp;minecraftVersion)</pre>
 <div class="block">Oldest Forge version for a given Minecraft version, wrapped in <code>Optional</code></div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -592,70 +584,15 @@ extends <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Manifes
 </dl>
 </li>
 </ul>
-<a name="minecraftVersionsAscending--">
+<a name="forgeVersionsAscending--">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>minecraftVersionsAscending</h4>
-<pre>public&nbsp;java.util.List&lt;java.lang.String&gt;&nbsp;minecraftVersionsAscending()</pre>
-<div class="block">Get the list of Forge supported Minecraft versions, in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#ASCENDING"><code>Type.ASCENDING</code></a> order.</div>
-<dl>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>List of Forge supported Minecraft versions, in ascending order.</dd>
-</dl>
-</li>
-</ul>
-<a name="minecraftVersionsDescending--">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>minecraftVersionsDescending</h4>
-<pre>public&nbsp;java.util.List&lt;java.lang.String&gt;&nbsp;minecraftVersionsDescending()</pre>
-<div class="block">Get the list of Forge supported Minecraft versions, in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#DESCENDING"><code>Type.DESCENDING</code></a> order.</div>
-<dl>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>List of Forge supported Minecraft versions, in descending order.</dd>
-</dl>
-</li>
-</ul>
-<a name="minecraftVersionsArrayAscending--">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>minecraftVersionsArrayAscending</h4>
-<pre>public&nbsp;java.lang.String[]&nbsp;minecraftVersionsArrayAscending()</pre>
-<div class="block">Get the array of Forge supported Minecraft versions, in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#ASCENDING"><code>Type.ASCENDING</code></a> order.</div>
-<dl>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>Array of Forge supported Minecraft versions, in descending order.</dd>
-</dl>
-</li>
-</ul>
-<a name="minecraftVersionsArrayDescending--">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>minecraftVersionsArrayDescending</h4>
-<pre>public&nbsp;java.lang.String[]&nbsp;minecraftVersionsArrayDescending()</pre>
-<div class="block">Get the array of Forge supported Minecraft versions, in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#DESCENDING"><code>Type.DESCENDING</code></a> order.</div>
-<dl>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>Array of Forge supported Minecraft versions, in descending order.</dd>
-</dl>
-</li>
-</ul>
-<a name="forgeVersions--">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>forgeVersions</h4>
-<pre>public&nbsp;java.util.List&lt;java.lang.String&gt;&nbsp;forgeVersions()</pre>
-<div class="block">Get the list of available Forge versions, in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#ASCENDING"><code>Type.ASCENDING</code></a> order.</div>
+<h4>forgeVersionsAscending</h4>
+<pre>@NotNull
+public&nbsp;@NotNull java.util.List&lt;java.lang.String&gt;&nbsp;forgeVersionsAscending()</pre>
+<div class="block">Get the list of available Forge versions, in ascending order.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>List of available Forge versions.</dd>
@@ -668,87 +605,92 @@ extends <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Manifes
 <ul class="blockList">
 <li class="blockList">
 <h4>forgeVersionsDescending</h4>
-<pre>public&nbsp;java.util.List&lt;java.lang.String&gt;&nbsp;forgeVersionsDescending()</pre>
-<div class="block">Get the list of available Forge versions, in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#DESCENDING"><code>Type.DESCENDING</code></a> order.</div>
+<pre>@NotNull
+public&nbsp;@NotNull java.util.List&lt;java.lang.String&gt;&nbsp;forgeVersionsDescending()</pre>
+<div class="block">Get the list of available Forge versions, in descending order.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>List of available Forge versions.</dd>
 </dl>
 </li>
 </ul>
-<a name="forgeVersionsArray--">
+<a name="forgeVersionsAscendingArray--">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>forgeVersionsArray</h4>
-<pre>public&nbsp;java.lang.String[]&nbsp;forgeVersionsArray()</pre>
-<div class="block">Get the array of available Forge versions, in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#ASCENDING"><code>Type.ASCENDING</code></a> order.</div>
+<h4>forgeVersionsAscendingArray</h4>
+<pre>@NotNull
+public&nbsp;@NotNull java.lang.String[]&nbsp;forgeVersionsAscendingArray()</pre>
+<div class="block">Get the array of available Forge versions, in ascending order.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>Array of available Forge versions.</dd>
 </dl>
 </li>
 </ul>
-<a name="forgeVersionsArrayDescending--">
+<a name="forgeVersionsDescendingArray--">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>forgeVersionsArrayDescending</h4>
-<pre>public&nbsp;java.lang.String[]&nbsp;forgeVersionsArrayDescending()</pre>
-<div class="block">Get the array of available Forge versions, in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#DESCENDING"><code>Type.DESCENDING</code></a> order.</div>
+<h4>forgeVersionsDescendingArray</h4>
+<pre>@NotNull
+public&nbsp;@NotNull java.lang.String[]&nbsp;forgeVersionsDescendingArray()</pre>
+<div class="block">Get the array of available Forge versions, in descending order.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>Array of available Forge versions.</dd>
 </dl>
 </li>
 </ul>
-<a name="availableForgeVersionsAscending-java.lang.String-">
+<a name="supportedForgeVersionsAscending-java.lang.String-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>availableForgeVersionsAscending</h4>
-<pre>public&nbsp;java.util.Optional&lt;java.util.List&lt;java.lang.String&gt;&gt;&nbsp;availableForgeVersionsAscending(java.lang.String&nbsp;minecraftVersion)</pre>
-<div class="block">Get a list of available Forge version for a given Minecraft version, in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#ASCENDING"><code>Type.ASCENDING</code></a>
- order, wrapped in an <code>Optional</code>.</div>
+<h4>supportedForgeVersionsAscending</h4>
+<pre>@NotNull
+public&nbsp;@NotNull java.util.Optional&lt;java.util.List&lt;java.lang.String&gt;&gt;&nbsp;supportedForgeVersionsAscending(@NotNull
+                                                                                                              @NotNull java.lang.String&nbsp;minecraftVersion)</pre>
+<div class="block">Get a list of available Forge version for a given Minecraft version in ascending order.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>minecraftVersion</code> - Minecraft version.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>List of available Forge versions for the given Minecraft version, in ascending order,
- wrapped in an <code>Optional</code></dd>
+<dd>List of available Forge versions for the given Minecraft version in ascending order.</dd>
 </dl>
 </li>
 </ul>
-<a name="availableForgeVersionsDescending-java.lang.String-">
+<a name="supportedForgeVersionsDescending-java.lang.String-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>availableForgeVersionsDescending</h4>
-<pre>public&nbsp;java.util.Optional&lt;java.util.List&lt;java.lang.String&gt;&gt;&nbsp;availableForgeVersionsDescending(java.lang.String&nbsp;minecraftVersion)</pre>
-<div class="block">Get a list of available Forge version for a given Minecraft version, in <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#DESCENDING"><code>Type.DESCENDING</code></a>
- order, wrapped in an <code>Optional</code>.</div>
+<h4>supportedForgeVersionsDescending</h4>
+<pre>@NotNull
+public&nbsp;@NotNull java.util.Optional&lt;java.util.List&lt;java.lang.String&gt;&gt;&nbsp;supportedForgeVersionsDescending(@NotNull
+                                                                                                               @NotNull java.lang.String&nbsp;minecraftVersion)</pre>
+<div class="block">Get a list of available Forge version for a given Minecraft version in descending order.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>minecraftVersion</code> - Minecraft version.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>List of available Forge versions for the given Minecraft version, in descending order,
- wrapped in an <code>Optional</code></dd>
+<dd>List of available Forge versions for the given Minecraft version in descending order.</dd>
 </dl>
 </li>
 </ul>
-<a name="availableForgeVersionsArrayAscending-java.lang.String-">
+<a name="supportedForgeVersionsAscendingArray-java.lang.String-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>availableForgeVersionsArrayAscending</h4>
-<pre>public&nbsp;java.util.Optional&lt;java.lang.String[]&gt;&nbsp;availableForgeVersionsArrayAscending(java.lang.String&nbsp;minecraftVersion)</pre>
-<div class="block">Get an array of available Forge version for a given Minecraft version, in
- <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#ASCENDING"><code>Type.ASCENDING</code></a> order, wrapped in an <code>Optional</code>.</div>
+<h4>supportedForgeVersionsAscendingArray</h4>
+<pre>@NotNull
+public&nbsp;@NotNull java.util.Optional&lt;java.lang.String[]&gt;&nbsp;supportedForgeVersionsAscendingArray(@NotNull
+                                                                                                     @NotNull java.lang.String&nbsp;minecraftVersion)</pre>
+<div class="block">Get an array of available Forge version for a given Minecraft version, in ascending order,
+ wrapped in an <code>Optional</code>.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>minecraftVersion</code> - Minecraft version.</dd>
@@ -758,15 +700,17 @@ extends <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Manifes
 </dl>
 </li>
 </ul>
-<a name="availableForgeVersionsArrayDescending-java.lang.String-">
+<a name="supportedForgeVersionsDescendingArray-java.lang.String-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>availableForgeVersionsArrayDescending</h4>
-<pre>public&nbsp;java.util.Optional&lt;java.lang.String[]&gt;&nbsp;availableForgeVersionsArrayDescending(java.lang.String&nbsp;minecraftVersion)</pre>
-<div class="block">Get an array of available Forge version for a given Minecraft version, in
- <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Type.html#DESCENDING"><code>Type.DESCENDING</code></a> order, wrapped in an <code>Optional</code>.</div>
+<h4>supportedForgeVersionsDescendingArray</h4>
+<pre>@NotNull
+public&nbsp;@NotNull java.util.Optional&lt;java.lang.String[]&gt;&nbsp;supportedForgeVersionsDescendingArray(@NotNull
+                                                                                                      @NotNull java.lang.String&nbsp;minecraftVersion)</pre>
+<div class="block">Get an array of available Forge version for a given Minecraft version, in descending order,
+ wrapped in an <code>Optional</code>.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>minecraftVersion</code> - Minecraft version.</dd>
@@ -776,13 +720,94 @@ extends <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Manifes
 </dl>
 </li>
 </ul>
+<a name="minecraftVersion-java.lang.String-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>minecraftVersion</h4>
+<pre>@NotNull
+public&nbsp;@NotNull java.util.Optional&lt;java.lang.String&gt;&nbsp;minecraftVersion(@NotNull
+                                                                               @NotNull java.lang.String&nbsp;forgeVersion)</pre>
+<div class="block">Get the Minecraft version for a given Forge version, wrapped in an <code>Optional</code>.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>forgeVersion</code> - Forge version.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Minecraft version for the given Forge version, wrapped in an <code>Optional</code>.</dd>
+</dl>
+</li>
+</ul>
+<a name="supportedMinecraftVersionsAscending--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>supportedMinecraftVersionsAscending</h4>
+<pre>@Contract(pure=true)
+ @NotNull
+public&nbsp;@NotNull java.util.List&lt;java.lang.String&gt;&nbsp;supportedMinecraftVersionsAscending()</pre>
+<div class="block">Get the list of Forge supported Minecraft versions, in ascending order.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>List of Forge supported Minecraft versions, in ascending order.</dd>
+</dl>
+</li>
+</ul>
+<a name="supportedMinecraftVersionsDescending--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>supportedMinecraftVersionsDescending</h4>
+<pre>@NotNull
+public&nbsp;@NotNull java.util.List&lt;java.lang.String&gt;&nbsp;supportedMinecraftVersionsDescending()</pre>
+<div class="block">Get the list of Forge supported Minecraft versions, in descending order.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>List of Forge supported Minecraft versions, in descending order.</dd>
+</dl>
+</li>
+</ul>
+<a name="supportedMinecraftVersionsAscendingArray--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>supportedMinecraftVersionsAscendingArray</h4>
+<pre>@NotNull
+public&nbsp;@NotNull java.lang.String[]&nbsp;supportedMinecraftVersionsAscendingArray()</pre>
+<div class="block">Get the array of Forge supported Minecraft versions, in ascending order.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Array of Forge supported Minecraft versions, in ascending order.</dd>
+</dl>
+</li>
+</ul>
+<a name="supportedMinecraftVersionsDescendingArray--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>supportedMinecraftVersionsDescendingArray</h4>
+<pre>@NotNull
+public&nbsp;@NotNull java.lang.String[]&nbsp;supportedMinecraftVersionsDescendingArray()</pre>
+<div class="block">Get the array of Forge supported Minecraft versions, in descending order.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Array of Forge supported Minecraft versions, in descending order.</dd>
+</dl>
+</li>
+</ul>
 <a name="installerUrl-java.lang.String-">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>installerUrl</h4>
-<pre>public&nbsp;java.util.Optional&lt;java.net.URL&gt;&nbsp;installerUrl(java.lang.String&nbsp;forgeVersion)</pre>
+<pre>@NotNull
+public&nbsp;@NotNull java.util.Optional&lt;java.net.URL&gt;&nbsp;installerUrl(@NotNull
+                                                                       @NotNull java.lang.String&nbsp;forgeVersion)</pre>
 <div class="block">Get the Forge server installer URL for a given Forge version, wrapped in an <code>Optional</code>.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>

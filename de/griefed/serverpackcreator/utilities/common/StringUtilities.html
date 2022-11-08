@@ -147,20 +147,20 @@ extends java.lang.Object</pre>
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr id="i0" class="altColor">
-<td class="colFirst"><code>java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/StringUtilities.html#buildString-java.util.List-">buildString</a></span>(java.util.List&lt;java.lang.String&gt;&nbsp;strings)</code>
+<td class="colFirst"><code>@NotNull java.lang.String</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/StringUtilities.html#buildString-java.util.List-">buildString</a></span>(@NotNull java.util.List&lt;java.lang.String&gt;&nbsp;strings)</code>
 <div class="block">Converts a list of Strings, for example from a list, into a concatenated String.</div>
 </td>
 </tr>
 <tr id="i1" class="rowColor">
-<td class="colFirst"><code>java.lang.String</code></td>
+<td class="colFirst"><code>@NotNull java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/StringUtilities.html#buildString-java.lang.String...-">buildString</a></span>(java.lang.String...&nbsp;args)</code>
 <div class="block">Converts a sequence of Strings, for example from a list, into a concatenated String.</div>
 </td>
 </tr>
 <tr id="i2" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/StringUtilities.html#checkForIllegalCharacters-java.lang.String-">checkForIllegalCharacters</a></span>(java.lang.String&nbsp;text)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/StringUtilities.html#checkForIllegalCharacters-java.lang.String-">checkForIllegalCharacters</a></span>(@NotNull java.lang.String&nbsp;text)</code>
 <div class="block">Check the passed string whether it contains any of the following characters:
 
  
@@ -191,15 +191,15 @@ extends java.lang.Object</pre>
 </td>
 </tr>
 <tr id="i3" class="rowColor">
-<td class="colFirst"><code>java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/StringUtilities.html#pathSecureText-java.lang.String-">pathSecureText</a></span>(java.lang.String&nbsp;text)</code>
+<td class="colFirst"><code>@NotNull java.lang.String</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/StringUtilities.html#pathSecureText-java.lang.String-">pathSecureText</a></span>(@NotNull java.lang.String&nbsp;text)</code>
 <div class="block">Remove commonly forbidden characters from the passed string, making the resulting String safe
  to use for files, paths, directories etc.</div>
 </td>
 </tr>
 <tr id="i4" class="altColor">
-<td class="colFirst"><code>java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/StringUtilities.html#pathSecureTextAlternative-java.lang.String-">pathSecureTextAlternative</a></span>(java.lang.String&nbsp;text)</code>
+<td class="colFirst"><code>@NotNull java.lang.String</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/StringUtilities.html#pathSecureTextAlternative-java.lang.String-">pathSecureTextAlternative</a></span>(@NotNull java.lang.String&nbsp;text)</code>
 <div class="block">Remove commonly forbidden characters from the passed string, making the resulting String safe
  to use for files, paths, directories etc.</div>
 </td>
@@ -232,7 +232,8 @@ extends java.lang.Object</pre>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>StringUtilities</h4>
-<pre>public&nbsp;StringUtilities()</pre>
+<pre>@Contract(pure=true)
+public&nbsp;StringUtilities()</pre>
 </li>
 </ul>
 </li>
@@ -249,13 +250,15 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>buildString</h4>
-<pre>public&nbsp;java.lang.String&nbsp;buildString(java.util.List&lt;java.lang.String&gt;&nbsp;strings)</pre>
+<pre>@NotNull
+public&nbsp;@NotNull java.lang.String&nbsp;buildString(@NotNull
+                                                      @NotNull java.util.List&lt;java.lang.String&gt;&nbsp;strings)</pre>
 <div class="block">Converts a list of Strings, for example from a list, into a concatenated String.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>strings</code> - List of strings that will be concatenated into one string</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>String. Returns concatenated string that contains all provided values.</dd>
+<dd>Returns concatenated string that contains all provided values.</dd>
 </dl>
 </li>
 </ul>
@@ -265,13 +268,15 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>buildString</h4>
-<pre>public&nbsp;java.lang.String&nbsp;buildString(java.lang.String...&nbsp;args)</pre>
+<pre>@NotNull
+public&nbsp;@NotNull java.lang.String&nbsp;buildString(@NotNull
+                                                      java.lang.String...&nbsp;args)</pre>
 <div class="block">Converts a sequence of Strings, for example from a list, into a concatenated String.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>args</code> - Strings that will be concatenated into one string</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>String. Returns concatenated string that contains all provided values.</dd>
+<dd>Returns concatenated string that contains all provided values.</dd>
 </dl>
 </li>
 </ul>
@@ -281,7 +286,9 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>pathSecureText</h4>
-<pre>public&nbsp;java.lang.String&nbsp;pathSecureText(java.lang.String&nbsp;text)</pre>
+<pre>@NotNull
+public&nbsp;@NotNull java.lang.String&nbsp;pathSecureText(@NotNull
+                                                         @NotNull java.lang.String&nbsp;text)</pre>
 <div class="block">Remove commonly forbidden characters from the passed string, making the resulting String safe
  to use for files, paths, directories etc. If the passed text ends with a
  SPACE<code>(&amp;#32;&amp;#32;)</code> or a DOT<code>(&amp;#32;.&amp;#32;)</code>, they are also removed.<br>
@@ -310,6 +317,8 @@ extends java.lang.Object</pre>
    <li><b>&#180;</b>
    <li><b>&#96;</b>
    <li><b>&#61;</b>
+   <li><b>&#91;</b>
+   <li><b>&#93;</b>
  </ul>
 
  <br></div>
@@ -327,10 +336,12 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>pathSecureTextAlternative</h4>
-<pre>public&nbsp;java.lang.String&nbsp;pathSecureTextAlternative(java.lang.String&nbsp;text)</pre>
+<pre>@NotNull
+public&nbsp;@NotNull java.lang.String&nbsp;pathSecureTextAlternative(@NotNull
+                                                                    @NotNull java.lang.String&nbsp;text)</pre>
 <div class="block">Remove commonly forbidden characters from the passed string, making the resulting String safe
  to use for files, paths, directories etc. If the passed text ends with a
- SPACE<code>(&amp;#32;&amp;#32;)</code> or a DOT<code>(&amp;#32;.&amp;#32;)</code>, they are also removed.<br> Contraty to
+ SPACE<code>(&amp;#32;&amp;#32;)</code> or a DOT<code>(&amp;#32;.&amp;#32;)</code>, they are also removed.<br> Contrary to
  <a href="../../../../../de/griefed/serverpackcreator/utilities/common/StringUtilities.html#pathSecureText-java.lang.String-"><code>pathSecureText(String)</code></a>, this method does <strong>NOT</strong> remove
  <strong>&#47;</strong> or <strong>&#92;</strong>.
 
@@ -356,6 +367,8 @@ extends java.lang.Object</pre>
    <li><b>&#180;</b>
    <li><b>&#96;</b>
    <li><b>&#61;</b>
+   <li><b>&#91;</b>
+   <li><b>&#93;</b>
  </ul>
 
  <br></div>
@@ -373,7 +386,8 @@ extends java.lang.Object</pre>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>checkForIllegalCharacters</h4>
-<pre>public&nbsp;boolean&nbsp;checkForIllegalCharacters(java.lang.String&nbsp;text)</pre>
+<pre>public&nbsp;boolean&nbsp;checkForIllegalCharacters(@NotNull
+                                         @NotNull java.lang.String&nbsp;text)</pre>
 <div class="block">Check the passed string whether it contains any of the following characters:
 
  <ul>

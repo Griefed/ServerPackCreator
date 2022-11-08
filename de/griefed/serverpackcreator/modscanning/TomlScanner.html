@@ -146,8 +146,8 @@ extends java.lang.Object</pre>
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr id="i0" class="altColor">
-<td class="colFirst"><code>java.util.TreeSet&lt;java.io.File&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/modscanning/TomlScanner.html#scan-java.util.Collection-">scan</a></span>(java.util.Collection&lt;java.io.File&gt;&nbsp;filesInModsDir)</code>
+<td class="colFirst"><code>@NotNull java.util.TreeSet&lt;java.io.File&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/modscanning/TomlScanner.html#scan-java.util.Collection-">scan</a></span>(@NotNull java.util.Collection&lt;java.io.File&gt;&nbsp;filesInModsDir)</code>
 <div class="block">Scan the <code>mods.toml</code>-files in mod JAR-files of a given directory for their sideness.</div>
 </td>
 </tr>
@@ -179,7 +179,8 @@ extends java.lang.Object</pre>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>TomlScanner</h4>
-<pre>@Autowired
+<pre>@Contract(pure=true)
+ @Autowired
 public&nbsp;TomlScanner(com.electronwill.nightconfig.toml.TomlParser&nbsp;tomlParser)</pre>
 </li>
 </ul>
@@ -197,7 +198,9 @@ public&nbsp;TomlScanner(com.electronwill.nightconfig.toml.TomlParser&nbsp;tomlPa
 <ul class="blockListLast">
 <li class="blockList">
 <h4>scan</h4>
-<pre>public&nbsp;java.util.TreeSet&lt;java.io.File&gt;&nbsp;scan(java.util.Collection&lt;java.io.File&gt;&nbsp;filesInModsDir)</pre>
+<pre>@NotNull
+public&nbsp;@NotNull java.util.TreeSet&lt;java.io.File&gt;&nbsp;scan(@NotNull
+                                                              @NotNull java.util.Collection&lt;java.io.File&gt;&nbsp;filesInModsDir)</pre>
 <div class="block">Scan the <code>mods.toml</code>-files in mod JAR-files of a given directory for their sideness.
  <br>
  If <code>[[mods]]</code> specifies <code>side=BOTH|SERVER</code>, it is added.<br> If

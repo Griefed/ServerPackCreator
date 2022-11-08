@@ -98,12 +98,7 @@ var activeTableTab = "activeTableTab";
 <li>java.lang.Object</li>
 <li>
 <ul class="inheritance">
-<li><a href="../../../../../de/griefed/serverpackcreator/versionmeta/ManifestParser.html" title="class in de.griefed.serverpackcreator.versionmeta">de.griefed.serverpackcreator.versionmeta.ManifestParser</a></li>
-<li>
-<ul class="inheritance">
 <li>de.griefed.serverpackcreator.versionmeta.legacyfabric.LegacyFabricMeta</li>
-</ul>
-</li>
 </ul>
 </li>
 </ul>
@@ -117,7 +112,7 @@ var activeTableTab = "activeTableTab";
 <hr>
 <br>
 <pre>public final class <span class="typeNameLabel">LegacyFabricMeta</span>
-extends <a href="../../../../../de/griefed/serverpackcreator/versionmeta/ManifestParser.html" title="class in de.griefed.serverpackcreator.versionmeta">ManifestParser</a>
+extends java.lang.Object
 implements <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html" title="interface in de.griefed.serverpackcreator.versionmeta">Meta</a></pre>
 </li>
 </ul>
@@ -137,10 +132,12 @@ implements <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/legacyfabric/LegacyFabricMeta.html#LegacyFabricMeta-java.io.File-java.io.File-java.io.File-com.fasterxml.jackson.databind.ObjectMapper-">LegacyFabricMeta</a></span>(java.io.File&nbsp;gameVersionsManifest,
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/legacyfabric/LegacyFabricMeta.html#LegacyFabricMeta-java.io.File-java.io.File-java.io.File-de.griefed.serverpackcreator.utilities.common.Utilities-">LegacyFabricMeta</a></span>(java.io.File&nbsp;gameVersionsManifest,
                 java.io.File&nbsp;loaderVersionsManifest,
                 java.io.File&nbsp;installerVersionsManifest,
-                com.fasterxml.jackson.databind.ObjectMapper&nbsp;mapper)</code>&nbsp;</td>
+                <a href="../../../../../de/griefed/serverpackcreator/utilities/common/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.common">Utilities</a>&nbsp;utilities)</code>
+<div class="block">LegacyFabric meta providing game, loader and installer version information.</div>
+</td>
 </tr>
 </table>
 </li>
@@ -158,8 +155,8 @@ implements <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr id="i0" class="altColor">
-<td class="colFirst"><code>java.util.Optional&lt;java.net.URL&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/legacyfabric/LegacyFabricMeta.html#getInstallerUrl-java.lang.String-">getInstallerUrl</a></span>(java.lang.String&nbsp;version)</code>
+<td class="colFirst"><code>@NotNull java.util.Optional&lt;java.net.URL&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/legacyfabric/LegacyFabricMeta.html#getInstallerUrl-java.lang.String-">getInstallerUrl</a></span>(@NotNull java.lang.String&nbsp;version)</code>
 <div class="block">Get the URL to the installer for the specified version, wrapped in an Optional.</div>
 </td>
 </tr>
@@ -176,13 +173,13 @@ implements <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta
 </td>
 </tr>
 <tr id="i3" class="rowColor">
-<td class="colFirst"><code>java.util.List&lt;java.lang.String&gt;</code></td>
+<td class="colFirst"><code>@NotNull java.util.List&lt;java.lang.String&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/legacyfabric/LegacyFabricMeta.html#installerVersionsListAscending--">installerVersionsListAscending</a></span>()</code>
 <div class="block">List of available installer version in ascending order.</div>
 </td>
 </tr>
 <tr id="i4" class="altColor">
-<td class="colFirst"><code>java.util.List&lt;java.lang.String&gt;</code></td>
+<td class="colFirst"><code>@NotNull java.util.List&lt;java.lang.String&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/legacyfabric/LegacyFabricMeta.html#installerVersionsListDescending--">installerVersionsListDescending</a></span>()</code>
 <div class="block">List of available installer version in descending order.</div>
 </td>
@@ -195,30 +192,30 @@ implements <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta
 </tr>
 <tr id="i6" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/legacyfabric/LegacyFabricMeta.html#isMinecraftSupported-java.lang.String-">isMinecraftSupported</a></span>(java.lang.String&nbsp;minecraftVersion)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/legacyfabric/LegacyFabricMeta.html#isMinecraftSupported-java.lang.String-">isMinecraftSupported</a></span>(@NotNull java.lang.String&nbsp;minecraftVersion)</code>
 <div class="block">Check whether the given Minecraft version is supported by this modloader.</div>
 </td>
 </tr>
 <tr id="i7" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/legacyfabric/LegacyFabricMeta.html#isVersionValid-java.lang.String-">isVersionValid</a></span>(java.lang.String&nbsp;version)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/legacyfabric/LegacyFabricMeta.html#isVersionValid-java.lang.String-">isVersionValid</a></span>(@NotNull java.lang.String&nbsp;version)</code>
 <div class="block">Check whether the specified version is available/correct/valid.</div>
 </td>
 </tr>
 <tr id="i8" class="altColor">
-<td class="colFirst"><code>java.lang.String</code></td>
+<td class="colFirst"><code>@NotNull java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/legacyfabric/LegacyFabricMeta.html#latestInstaller--">latestInstaller</a></span>()</code>
 <div class="block">Get the latest installer version.</div>
 </td>
 </tr>
 <tr id="i9" class="rowColor">
-<td class="colFirst"><code>java.net.URL</code></td>
+<td class="colFirst"><code>@NotNull java.net.URL</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/legacyfabric/LegacyFabricMeta.html#latestInstallerUrl--">latestInstallerUrl</a></span>()</code>
 <div class="block">Get the URL to the latest installer.</div>
 </td>
 </tr>
 <tr id="i10" class="altColor">
-<td class="colFirst"><code>java.lang.String</code></td>
+<td class="colFirst"><code>@NotNull java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/legacyfabric/LegacyFabricMeta.html#latestLoader--">latestLoader</a></span>()</code>
 <div class="block">Get the latest loader version.</div>
 </td>
@@ -236,37 +233,37 @@ implements <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta
 </td>
 </tr>
 <tr id="i13" class="rowColor">
-<td class="colFirst"><code>java.util.List&lt;java.lang.String&gt;</code></td>
+<td class="colFirst"><code>@NotNull java.util.List&lt;java.lang.String&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/legacyfabric/LegacyFabricMeta.html#loaderVersionsListAscending--">loaderVersionsListAscending</a></span>()</code>
 <div class="block">List of available loader versions in ascending order.</div>
 </td>
 </tr>
 <tr id="i14" class="altColor">
-<td class="colFirst"><code>java.util.List&lt;java.lang.String&gt;</code></td>
+<td class="colFirst"><code>@NotNull java.util.List&lt;java.lang.String&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/legacyfabric/LegacyFabricMeta.html#loaderVersionsListDescending--">loaderVersionsListDescending</a></span>()</code>
 <div class="block">List of available loader versions in descending order.</div>
 </td>
 </tr>
 <tr id="i15" class="rowColor">
-<td class="colFirst"><code>java.lang.String</code></td>
+<td class="colFirst"><code>@NotNull java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/legacyfabric/LegacyFabricMeta.html#releaseInstaller--">releaseInstaller</a></span>()</code>
 <div class="block">Get the release installer version.</div>
 </td>
 </tr>
 <tr id="i16" class="altColor">
-<td class="colFirst"><code>java.net.URL</code></td>
+<td class="colFirst"><code>@NotNull java.net.URL</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/legacyfabric/LegacyFabricMeta.html#releaseInstallerUrl--">releaseInstallerUrl</a></span>()</code>
 <div class="block">Get the URL to the release installer.</div>
 </td>
 </tr>
 <tr id="i17" class="rowColor">
-<td class="colFirst"><code>java.lang.String</code></td>
+<td class="colFirst"><code>@NotNull java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/legacyfabric/LegacyFabricMeta.html#releaseLoader--">releaseLoader</a></span>()</code>
 <div class="block">Get the release loader version.</div>
 </td>
 </tr>
 <tr id="i18" class="altColor">
-<td class="colFirst"><code>java.util.List&lt;java.lang.String&gt;</code></td>
+<td class="colFirst"><code>@NotNull java.util.List&lt;java.lang.String&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/legacyfabric/LegacyFabricMeta.html#supportedMinecraftVersions--">supportedMinecraftVersions</a></span>()</code>
 <div class="block">All Legacy Fabric supported Minecraft versions.</div>
 </td>
@@ -279,13 +276,6 @@ implements <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta
 </td>
 </tr>
 </table>
-<ul class="blockList">
-<li class="blockList"><a name="methods.inherited.from.class.de.griefed.serverpackcreator.versionmeta.ManifestParser">
-<!--   -->
-</a>
-<h3>Methods inherited from class&nbsp;de.griefed.serverpackcreator.versionmeta.<a href="../../../../../de/griefed/serverpackcreator/versionmeta/ManifestParser.html" title="class in de.griefed.serverpackcreator.versionmeta">ManifestParser</a></h3>
-<code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/ManifestParser.html#getJson-java.io.File-com.fasterxml.jackson.databind.ObjectMapper-">getJson</a>, <a href="../../../../../de/griefed/serverpackcreator/versionmeta/ManifestParser.html#getJson-java.io.InputStream-com.fasterxml.jackson.databind.ObjectMapper-">getJson</a>, <a href="../../../../../de/griefed/serverpackcreator/versionmeta/ManifestParser.html#getJson-java.lang.String-com.fasterxml.jackson.databind.ObjectMapper-">getJson</a>, <a href="../../../../../de/griefed/serverpackcreator/versionmeta/ManifestParser.html#getJson-java.net.URL-com.fasterxml.jackson.databind.ObjectMapper-">getJson</a>, <a href="../../../../../de/griefed/serverpackcreator/versionmeta/ManifestParser.html#getXml-java.io.File-">getXml</a>, <a href="../../../../../de/griefed/serverpackcreator/versionmeta/ManifestParser.html#getXml-java.io.InputStream-">getXml</a>, <a href="../../../../../de/griefed/serverpackcreator/versionmeta/ManifestParser.html#getXml-java.lang.String-">getXml</a></code></li>
-</ul>
 <ul class="blockList">
 <li class="blockList"><a name="methods.inherited.from.class.java.lang.Object">
 <!--   -->
@@ -307,7 +297,7 @@ implements <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta
 <!--   -->
 </a>
 <h3>Constructor Detail</h3>
-<a name="LegacyFabricMeta-java.io.File-java.io.File-java.io.File-com.fasterxml.jackson.databind.ObjectMapper-">
+<a name="LegacyFabricMeta-java.io.File-java.io.File-java.io.File-de.griefed.serverpackcreator.utilities.common.Utilities-">
 <!--   -->
 </a>
 <ul class="blockListLast">
@@ -316,7 +306,15 @@ implements <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta
 <pre>public&nbsp;LegacyFabricMeta(java.io.File&nbsp;gameVersionsManifest,
                         java.io.File&nbsp;loaderVersionsManifest,
                         java.io.File&nbsp;installerVersionsManifest,
-                        com.fasterxml.jackson.databind.ObjectMapper&nbsp;mapper)</pre>
+                        <a href="../../../../../de/griefed/serverpackcreator/utilities/common/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.common">Utilities</a>&nbsp;utilities)</pre>
+<div class="block">LegacyFabric meta providing game, loader and installer version information.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>gameVersionsManifest</code> - Game version manifest.</dd>
+<dd><code>loaderVersionsManifest</code> - Loader version manifest.</dd>
+<dd><code>installerVersionsManifest</code> - Installer version manifest.</dd>
+<dd><code>utilities</code> - Commonly used utilities across ServerPackCreator.</dd>
+</dl>
 </li>
 </ul>
 </li>
@@ -356,7 +354,8 @@ implements <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta
 <ul class="blockList">
 <li class="blockList">
 <h4>latestLoader</h4>
-<pre>public&nbsp;java.lang.String&nbsp;latestLoader()</pre>
+<pre>@NotNull
+public&nbsp;@NotNull java.lang.String&nbsp;latestLoader()</pre>
 <div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#latestLoader--">Meta</a></code></span></div>
 <div class="block">Get the latest loader version.</div>
 <dl>
@@ -373,7 +372,8 @@ implements <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta
 <ul class="blockList">
 <li class="blockList">
 <h4>releaseLoader</h4>
-<pre>public&nbsp;java.lang.String&nbsp;releaseLoader()</pre>
+<pre>@NotNull
+public&nbsp;@NotNull java.lang.String&nbsp;releaseLoader()</pre>
 <div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#releaseLoader--">Meta</a></code></span></div>
 <div class="block">Get the release loader version.</div>
 <dl>
@@ -390,7 +390,9 @@ implements <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta
 <ul class="blockList">
 <li class="blockList">
 <h4>latestInstaller</h4>
-<pre>public&nbsp;java.lang.String&nbsp;latestInstaller()</pre>
+<pre>@Contract(pure=true)
+ @NotNull
+public&nbsp;@NotNull java.lang.String&nbsp;latestInstaller()</pre>
 <div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#latestInstaller--">Meta</a></code></span></div>
 <div class="block">Get the latest installer version.</div>
 <dl>
@@ -407,7 +409,9 @@ implements <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta
 <ul class="blockList">
 <li class="blockList">
 <h4>releaseInstaller</h4>
-<pre>public&nbsp;java.lang.String&nbsp;releaseInstaller()</pre>
+<pre>@Contract(pure=true)
+ @NotNull
+public&nbsp;@NotNull java.lang.String&nbsp;releaseInstaller()</pre>
 <div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#releaseInstaller--">Meta</a></code></span></div>
 <div class="block">Get the release installer version.</div>
 <dl>
@@ -424,7 +428,8 @@ implements <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta
 <ul class="blockList">
 <li class="blockList">
 <h4>loaderVersionsListAscending</h4>
-<pre>public&nbsp;java.util.List&lt;java.lang.String&gt;&nbsp;loaderVersionsListAscending()</pre>
+<pre>@NotNull
+public&nbsp;@NotNull java.util.List&lt;java.lang.String&gt;&nbsp;loaderVersionsListAscending()</pre>
 <div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#loaderVersionsListAscending--">Meta</a></code></span></div>
 <div class="block">List of available loader versions in ascending order.</div>
 <dl>
@@ -441,7 +446,8 @@ implements <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta
 <ul class="blockList">
 <li class="blockList">
 <h4>loaderVersionsListDescending</h4>
-<pre>public&nbsp;java.util.List&lt;java.lang.String&gt;&nbsp;loaderVersionsListDescending()</pre>
+<pre>@NotNull
+public&nbsp;@NotNull java.util.List&lt;java.lang.String&gt;&nbsp;loaderVersionsListDescending()</pre>
 <div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#loaderVersionsListDescending--">Meta</a></code></span></div>
 <div class="block">List of available loader versions in descending order.</div>
 <dl>
@@ -492,7 +498,9 @@ implements <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta
 <ul class="blockList">
 <li class="blockList">
 <h4>installerVersionsListAscending</h4>
-<pre>public&nbsp;java.util.List&lt;java.lang.String&gt;&nbsp;installerVersionsListAscending()</pre>
+<pre>@Contract(pure=true)
+ @NotNull
+public&nbsp;@NotNull java.util.List&lt;java.lang.String&gt;&nbsp;installerVersionsListAscending()</pre>
 <div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#installerVersionsListAscending--">Meta</a></code></span></div>
 <div class="block">List of available installer version in ascending order.</div>
 <dl>
@@ -509,7 +517,8 @@ implements <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta
 <ul class="blockList">
 <li class="blockList">
 <h4>installerVersionsListDescending</h4>
-<pre>public&nbsp;java.util.List&lt;java.lang.String&gt;&nbsp;installerVersionsListDescending()</pre>
+<pre>@NotNull
+public&nbsp;@NotNull java.util.List&lt;java.lang.String&gt;&nbsp;installerVersionsListDescending()</pre>
 <div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#installerVersionsListDescending--">Meta</a></code></span></div>
 <div class="block">List of available installer version in descending order.</div>
 <dl>
@@ -560,8 +569,10 @@ implements <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta
 <ul class="blockList">
 <li class="blockList">
 <h4>latestInstallerUrl</h4>
-<pre>public&nbsp;java.net.URL&nbsp;latestInstallerUrl()
-                                throws java.net.MalformedURLException</pre>
+<pre>@Contract(value=" -&gt; new")
+ @NotNull
+public&nbsp;@NotNull java.net.URL&nbsp;latestInstallerUrl()
+                                                                              throws java.net.MalformedURLException</pre>
 <div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#latestInstallerUrl--">Meta</a></code></span></div>
 <div class="block">Get the URL to the latest installer.</div>
 <dl>
@@ -580,8 +591,10 @@ implements <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta
 <ul class="blockList">
 <li class="blockList">
 <h4>releaseInstallerUrl</h4>
-<pre>public&nbsp;java.net.URL&nbsp;releaseInstallerUrl()
-                                 throws java.net.MalformedURLException</pre>
+<pre>@Contract(value=" -&gt; new")
+ @NotNull
+public&nbsp;@NotNull java.net.URL&nbsp;releaseInstallerUrl()
+                                                                               throws java.net.MalformedURLException</pre>
 <div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#releaseInstallerUrl--">Meta</a></code></span></div>
 <div class="block">Get the URL to the release installer.</div>
 <dl>
@@ -619,8 +632,10 @@ implements <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta
 <ul class="blockList">
 <li class="blockList">
 <h4>getInstallerUrl</h4>
-<pre>public&nbsp;java.util.Optional&lt;java.net.URL&gt;&nbsp;getInstallerUrl(java.lang.String&nbsp;version)
-                                                 throws java.net.MalformedURLException</pre>
+<pre>@NotNull
+public&nbsp;@NotNull java.util.Optional&lt;java.net.URL&gt;&nbsp;getInstallerUrl(@NotNull
+                                                                          @NotNull java.lang.String&nbsp;version)
+                                                                   throws java.net.MalformedURLException</pre>
 <div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#getInstallerUrl-java.lang.String-">Meta</a></code></span></div>
 <div class="block">Get the URL to the installer for the specified version, wrapped in an Optional.</div>
 <dl>
@@ -641,7 +656,8 @@ implements <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta
 <ul class="blockList">
 <li class="blockList">
 <h4>isVersionValid</h4>
-<pre>public&nbsp;boolean&nbsp;isVersionValid(java.lang.String&nbsp;version)</pre>
+<pre>public&nbsp;boolean&nbsp;isVersionValid(@NotNull
+                              @NotNull java.lang.String&nbsp;version)</pre>
 <div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#isVersionValid-java.lang.String-">Meta</a></code></span></div>
 <div class="block">Check whether the specified version is available/correct/valid.</div>
 <dl>
@@ -660,7 +676,8 @@ implements <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta
 <ul class="blockList">
 <li class="blockList">
 <h4>isMinecraftSupported</h4>
-<pre>public&nbsp;boolean&nbsp;isMinecraftSupported(java.lang.String&nbsp;minecraftVersion)</pre>
+<pre>public&nbsp;boolean&nbsp;isMinecraftSupported(@NotNull
+                                    @NotNull java.lang.String&nbsp;minecraftVersion)</pre>
 <div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#isMinecraftSupported-java.lang.String-">Meta</a></code></span></div>
 <div class="block">Check whether the given Minecraft version is supported by this modloader.</div>
 <dl>
@@ -679,7 +696,8 @@ implements <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Meta
 <ul class="blockListLast">
 <li class="blockList">
 <h4>supportedMinecraftVersions</h4>
-<pre>public&nbsp;java.util.List&lt;java.lang.String&gt;&nbsp;supportedMinecraftVersions()</pre>
+<pre>@NotNull
+public&nbsp;@NotNull java.util.List&lt;java.lang.String&gt;&nbsp;supportedMinecraftVersions()</pre>
 <div class="block">All Legacy Fabric supported Minecraft versions.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>

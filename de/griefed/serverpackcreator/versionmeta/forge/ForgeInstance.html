@@ -129,9 +129,9 @@ extends java.lang.Object</pre>
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeInstance.html#ForgeInstance-java.lang.String-java.lang.String-de.griefed.serverpackcreator.versionmeta.minecraft.MinecraftMeta-">ForgeInstance</a></span>(java.lang.String&nbsp;minecraftVersion,
-             java.lang.String&nbsp;forgeVersion,
-             <a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft">MinecraftMeta</a>&nbsp;minecraftMeta)</code>
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeInstance.html#ForgeInstance-java.lang.String-java.lang.String-de.griefed.serverpackcreator.versionmeta.minecraft.MinecraftMeta-">ForgeInstance</a></span>(@NotNull java.lang.String&nbsp;minecraftVersion,
+             @NotNull java.lang.String&nbsp;forgeVersion,
+             @NotNull <a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft">MinecraftMeta</a>&nbsp;minecraftMeta)</code>
 <div class="block">Create a new ForgeInstance instance.</div>
 </td>
 </tr>
@@ -151,26 +151,26 @@ extends java.lang.Object</pre>
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr id="i0" class="altColor">
-<td class="colFirst"><code>java.lang.String</code></td>
+<td class="colFirst"><code>@NotNull java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeInstance.html#forgeVersion--">forgeVersion</a></span>()</code>
 <div class="block">Get the Forge version of this Forge instance.</div>
 </td>
 </tr>
 <tr id="i1" class="rowColor">
-<td class="colFirst"><code>java.net.URL</code></td>
+<td class="colFirst"><code>@NotNull java.net.URL</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeInstance.html#installerUrl--">installerUrl</a></span>()</code>
 <div class="block">Get the URL to the Forge server installer for this instances Minecraft and Forge version.</div>
 </td>
 </tr>
 <tr id="i2" class="altColor">
-<td class="colFirst"><code>java.util.Optional&lt;<a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft">MinecraftClient</a>&gt;</code></td>
+<td class="colFirst"><code>@NotNull java.util.Optional&lt;<a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft">MinecraftClient</a>&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeInstance.html#minecraftClient--">minecraftClient</a></span>()</code>
 <div class="block">Get this Forge instances corresponding Minecraft client instance, wrapped in an
  <code>Optional</code></div>
 </td>
 </tr>
 <tr id="i3" class="rowColor">
-<td class="colFirst"><code>java.lang.String</code></td>
+<td class="colFirst"><code>@NotNull java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeInstance.html#minecraftVersion--">minecraftVersion</a></span>()</code>
 <div class="block">Get the Minecraft version of this Forge instance.</div>
 </td>
@@ -203,9 +203,12 @@ extends java.lang.Object</pre>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>ForgeInstance</h4>
-<pre>public&nbsp;ForgeInstance(java.lang.String&nbsp;minecraftVersion,
-                     java.lang.String&nbsp;forgeVersion,
-                     <a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft">MinecraftMeta</a>&nbsp;minecraftMeta)
+<pre>public&nbsp;ForgeInstance(@NotNull
+                     @NotNull java.lang.String&nbsp;minecraftVersion,
+                     @NotNull
+                     @NotNull java.lang.String&nbsp;forgeVersion,
+                     @NotNull
+                     @NotNull <a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft">MinecraftMeta</a>&nbsp;minecraftMeta)
               throws java.net.MalformedURLException</pre>
 <div class="block">Create a new ForgeInstance instance.</div>
 <dl>
@@ -233,7 +236,9 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>minecraftVersion</h4>
-<pre>public&nbsp;java.lang.String&nbsp;minecraftVersion()</pre>
+<pre>@Contract(pure=true)
+ @NotNull
+public&nbsp;@NotNull java.lang.String&nbsp;minecraftVersion()</pre>
 <div class="block">Get the Minecraft version of this Forge instance.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
@@ -247,7 +252,9 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>forgeVersion</h4>
-<pre>public&nbsp;java.lang.String&nbsp;forgeVersion()</pre>
+<pre>@Contract(pure=true)
+ @NotNull
+public&nbsp;@NotNull java.lang.String&nbsp;forgeVersion()</pre>
 <div class="block">Get the Forge version of this Forge instance.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
@@ -261,7 +268,9 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>installerUrl</h4>
-<pre>public&nbsp;java.net.URL&nbsp;installerUrl()</pre>
+<pre>@Contract(pure=true)
+ @NotNull
+public&nbsp;@NotNull java.net.URL&nbsp;installerUrl()</pre>
 <div class="block">Get the URL to the Forge server installer for this instances Minecraft and Forge version.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
@@ -275,7 +284,8 @@ extends java.lang.Object</pre>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>minecraftClient</h4>
-<pre>public&nbsp;java.util.Optional&lt;<a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft">MinecraftClient</a>&gt;&nbsp;minecraftClient()</pre>
+<pre>@NotNull
+public&nbsp;@NotNull java.util.Optional&lt;<a href="../../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftClient.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft">MinecraftClient</a>&gt;&nbsp;minecraftClient()</pre>
 <div class="block">Get this Forge instances corresponding Minecraft client instance, wrapped in an
  <code>Optional</code></div>
 <dl>

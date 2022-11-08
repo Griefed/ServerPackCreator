@@ -238,11 +238,11 @@ extends javax.swing.JPanel</pre>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>protected </code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/addons/swinggui/ExtensionTab.html#ExtensionTab-de.griefed.serverpackcreator.versionmeta.VersionMeta-de.griefed.serverpackcreator.ApplicationProperties-de.griefed.serverpackcreator.utilities.common.Utilities-java.util.Optional-java.util.Optional-">ExtensionTab</a></span>(<a href="../../../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta">VersionMeta</a>&nbsp;versionMeta,
-            <a href="../../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;applicationProperties,
-            <a href="../../../../../de/griefed/serverpackcreator/utilities/common/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.common">Utilities</a>&nbsp;utilities,
-            java.util.Optional&lt;com.electronwill.nightconfig.core.CommentedConfig&gt;&nbsp;addonConfig,
-            java.util.Optional&lt;java.io.File&gt;&nbsp;configFile)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/addons/swinggui/ExtensionTab.html#ExtensionTab-de.griefed.serverpackcreator.versionmeta.VersionMeta-de.griefed.serverpackcreator.ApplicationProperties-de.griefed.serverpackcreator.utilities.common.Utilities-java.util.Optional-java.util.Optional-">ExtensionTab</a></span>(@NotNull <a href="../../../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta">VersionMeta</a>&nbsp;versionMeta,
+            @NotNull <a href="../../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;applicationProperties,
+            @NotNull <a href="../../../../../de/griefed/serverpackcreator/utilities/common/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.common">Utilities</a>&nbsp;utilities,
+            @NotNull java.util.Optional&lt;com.electronwill.nightconfig.core.CommentedConfig&gt;&nbsp;addonConfig,
+            @NotNull java.util.Optional&lt;java.io.File&gt;&nbsp;configFile)</code>
 <div class="block">Construct a new panel to add to the ServerPackCreator GUI as an additional tab.</div>
 </td>
 </tr>
@@ -262,19 +262,19 @@ extends javax.swing.JPanel</pre>
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr id="i0" class="altColor">
-<td class="colFirst"><code>protected <a href="../../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a></code></td>
+<td class="colFirst"><code>protected @NotNull <a href="../../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/addons/swinggui/ExtensionTab.html#getApplicationProperties--">getApplicationProperties</a></span>()</code>
 <div class="block">Get the application properties which make up the current configuration of ServerPackCreator.</div>
 </td>
 </tr>
 <tr id="i1" class="rowColor">
-<td class="colFirst"><code>protected <a href="../../../../../de/griefed/serverpackcreator/utilities/common/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.common">Utilities</a></code></td>
+<td class="colFirst"><code>protected @NotNull <a href="../../../../../de/griefed/serverpackcreator/utilities/common/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.common">Utilities</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/addons/swinggui/ExtensionTab.html#getUtilities--">getUtilities</a></span>()</code>
 <div class="block">Common utilities used across ServerPackCreator.</div>
 </td>
 </tr>
 <tr id="i2" class="altColor">
-<td class="colFirst"><code>protected <a href="../../../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta">VersionMeta</a></code></td>
+<td class="colFirst"><code>protected @NotNull <a href="../../../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta">VersionMeta</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/addons/swinggui/ExtensionTab.html#getVersionMeta--">getVersionMeta</a></span>()</code>
 <div class="block">Get the version meta used by ServerPackCreator, giving you access to Minecraft, Forge, Fabric,
  LegacyFabric and Quilt versions.</div>
@@ -368,11 +368,16 @@ extends javax.swing.JPanel</pre>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>ExtensionTab</h4>
-<pre>protected&nbsp;ExtensionTab(<a href="../../../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta">VersionMeta</a>&nbsp;versionMeta,
-                       <a href="../../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;applicationProperties,
-                       <a href="../../../../../de/griefed/serverpackcreator/utilities/common/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.common">Utilities</a>&nbsp;utilities,
-                       java.util.Optional&lt;com.electronwill.nightconfig.core.CommentedConfig&gt;&nbsp;addonConfig,
-                       java.util.Optional&lt;java.io.File&gt;&nbsp;configFile)</pre>
+<pre>protected&nbsp;ExtensionTab(@NotNull
+                       @NotNull <a href="../../../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta">VersionMeta</a>&nbsp;versionMeta,
+                       @NotNull
+                       @NotNull <a href="../../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;applicationProperties,
+                       @NotNull
+                       @NotNull <a href="../../../../../de/griefed/serverpackcreator/utilities/common/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.common">Utilities</a>&nbsp;utilities,
+                       @NotNull
+                       @NotNull java.util.Optional&lt;com.electronwill.nightconfig.core.CommentedConfig&gt;&nbsp;addonConfig,
+                       @NotNull
+                       @NotNull java.util.Optional&lt;java.io.File&gt;&nbsp;configFile)</pre>
 <div class="block">Construct a new panel to add to the ServerPackCreator GUI as an additional tab.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -418,7 +423,9 @@ extends javax.swing.JPanel</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>getVersionMeta</h4>
-<pre>protected final&nbsp;<a href="../../../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta">VersionMeta</a>&nbsp;getVersionMeta()</pre>
+<pre>@Contract(pure=true)
+ @NotNull
+protected final&nbsp;@NotNull <a href="../../../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta">VersionMeta</a>&nbsp;getVersionMeta()</pre>
 <div class="block">Get the version meta used by ServerPackCreator, giving you access to Minecraft, Forge, Fabric,
  LegacyFabric and Quilt versions.</div>
 <dl>
@@ -433,7 +440,9 @@ extends javax.swing.JPanel</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>getApplicationProperties</h4>
-<pre>protected final&nbsp;<a href="../../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;getApplicationProperties()</pre>
+<pre>@Contract(pure=true)
+ @NotNull
+protected final&nbsp;@NotNull <a href="../../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;getApplicationProperties()</pre>
 <div class="block">Get the application properties which make up the current configuration of ServerPackCreator.
  The application properties contains various settings like the fallback list of clientside-only
  mods, the server pack directory in which server packs are generated and stored in, and more.</div>
@@ -450,7 +459,9 @@ extends javax.swing.JPanel</pre>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>getUtilities</h4>
-<pre>protected final&nbsp;<a href="../../../../../de/griefed/serverpackcreator/utilities/common/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.common">Utilities</a>&nbsp;getUtilities()</pre>
+<pre>@Contract(pure=true)
+ @NotNull
+protected final&nbsp;@NotNull <a href="../../../../../de/griefed/serverpackcreator/utilities/common/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.common">Utilities</a>&nbsp;getUtilities()</pre>
 <div class="block">Common utilities used across ServerPackCreator.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>

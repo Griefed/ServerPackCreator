@@ -140,14 +140,14 @@ extends java.lang.Object</pre>
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/i18n/I18n.html#I18n-de.griefed.serverpackcreator.ApplicationProperties-">I18n</a></span>(<a href="../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;injectedApplicationProperties)</code>
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/i18n/I18n.html#I18n-java.io.File-">I18n</a></span>(@NotNull java.io.File&nbsp;languagePropertiesDirectory)</code>
 <div class="block">Constructor for our I18n using the locale set in the <a href="../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator"><code>ApplicationProperties</code></a>-instance
  passed to this constructor.</div>
 </td>
 </tr>
 <tr class="rowColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/i18n/I18n.html#I18n-de.griefed.serverpackcreator.ApplicationProperties-java.lang.String-">I18n</a></span>(<a href="../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;injectedApplicationProperties,
-    java.lang.String&nbsp;locale)</code>
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/i18n/I18n.html#I18n-java.io.File-java.lang.String-">I18n</a></span>(@NotNull java.io.File&nbsp;languagePropertiesDirectory,
+    @NotNull java.lang.String&nbsp;locale)</code>
 <div class="block">Constructor for our I18n with a given locale.</div>
 </td>
 </tr>
@@ -167,8 +167,8 @@ extends java.lang.Object</pre>
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr id="i0" class="altColor">
-<td class="colFirst"><code>java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/i18n/I18n.html#getMessage-java.lang.String-">getMessage</a></span>(java.lang.String&nbsp;languageKey)</code>
+<td class="colFirst"><code>@NotNull java.lang.String</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/i18n/I18n.html#getMessage-java.lang.String-">getMessage</a></span>(@NotNull java.lang.String&nbsp;languageKey)</code>
 <div class="block">Acquires a localized String for the provided language key from the initialized locale resource.</div>
 </td>
 </tr>
@@ -180,7 +180,7 @@ extends java.lang.Object</pre>
 </tr>
 <tr id="i2" class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/i18n/I18n.html#initialize-java.lang.String-">initialize</a></span>(java.lang.String&nbsp;locale)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/i18n/I18n.html#initialize-java.lang.String-">initialize</a></span>(@NotNull java.lang.String&nbsp;locale)</code>
 <div class="block">Initializes the I18n with a provided locale.</div>
 </td>
 </tr>
@@ -206,41 +206,46 @@ extends java.lang.Object</pre>
 <!--   -->
 </a>
 <h3>Constructor Detail</h3>
-<a name="I18n-de.griefed.serverpackcreator.ApplicationProperties-">
+<a name="I18n-java.io.File-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>I18n</h4>
 <pre>@Autowired
-public&nbsp;I18n(<a href="../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;injectedApplicationProperties)</pre>
+public&nbsp;I18n(@NotNull
+                       @NotNull java.io.File&nbsp;languagePropertiesDirectory)</pre>
 <div class="block">Constructor for our I18n using the locale set in the <a href="../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator"><code>ApplicationProperties</code></a>-instance
  passed to this constructor. If initialization with the provided
  <a href="../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator"><code>ApplicationProperties</code></a>-instance fails, the I18n is initialized with the default locale
  <code>en_us</code>.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>injectedApplicationProperties</code> - Instance of <a href="../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator"><code>ApplicationProperties</code></a> required for
-                                      various different things.</dd>
+<dd><code>languagePropertiesDirectory</code> - Directory in which the language properties-files reside in.
+                                    Language key-value-pairs will be read and used from the
+                                    files in this directory.</dd>
 </dl>
 </li>
 </ul>
-<a name="I18n-de.griefed.serverpackcreator.ApplicationProperties-java.lang.String-">
+<a name="I18n-java.io.File-java.lang.String-">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>I18n</h4>
-<pre>public&nbsp;I18n(<a href="../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;injectedApplicationProperties,
-            java.lang.String&nbsp;locale)</pre>
+<pre>public&nbsp;I18n(@NotNull
+            @NotNull java.io.File&nbsp;languagePropertiesDirectory,
+            @NotNull
+            @NotNull java.lang.String&nbsp;locale)</pre>
 <div class="block">Constructor for our I18n with a given locale. If initialization with the provided locale fails,
  the I18n is initialized with the locale set in the instance of <a href="../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator"><code>ApplicationProperties</code></a>.
  If this also fails, the default locale <code>en_us </code> is used.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>injectedApplicationProperties</code> - Instance of <a href="../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator"><code>ApplicationProperties</code></a> required for
-                                      various different things.</dd>
-<dd><code>locale</code> - String. The locale to initialize with.</dd>
+<dd><code>languagePropertiesDirectory</code> - Directory in which the language properties-files reside in.
+                                    Language key-value-pairs will be read and used from the
+                                    files in this directory.</dd>
+<dd><code>locale</code> - The locale to initialize with.</dd>
 </dl>
 </li>
 </ul>
@@ -252,23 +257,14 @@ public&nbsp;I18n(<a href="../../../../de/griefed/serverpackcreator/ApplicationPr
 <!--   -->
 </a>
 <h3>Method Detail</h3>
-<a name="initialize--">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>initialize</h4>
-<pre>public&nbsp;void&nbsp;initialize()</pre>
-<div class="block">Initialize the I18n with en_us as the locale.</div>
-</li>
-</ul>
 <a name="initialize-java.lang.String-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>initialize</h4>
-<pre>public&nbsp;void&nbsp;initialize(java.lang.String&nbsp;locale)
+<pre>public&nbsp;void&nbsp;initialize(@NotNull
+                       @NotNull java.lang.String&nbsp;locale)
                 throws <a href="../../../../de/griefed/serverpackcreator/i18n/IncorrectLanguageException.html" title="class in de.griefed.serverpackcreator.i18n">IncorrectLanguageException</a></pre>
 <div class="block">Initializes the I18n with a provided locale.</div>
 <dl>
@@ -281,13 +277,25 @@ public&nbsp;I18n(<a href="../../../../de/griefed/serverpackcreator/ApplicationPr
 </dl>
 </li>
 </ul>
+<a name="initialize--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>initialize</h4>
+<pre>public&nbsp;void&nbsp;initialize()</pre>
+<div class="block">Initialize the I18n with en_us as the locale.</div>
+</li>
+</ul>
 <a name="getMessage-java.lang.String-">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>getMessage</h4>
-<pre>public&nbsp;java.lang.String&nbsp;getMessage(java.lang.String&nbsp;languageKey)</pre>
+<pre>@NotNull
+public&nbsp;@NotNull java.lang.String&nbsp;getMessage(@NotNull
+                                                     @NotNull java.lang.String&nbsp;languageKey)</pre>
 <div class="block">Acquires a localized String for the provided language key from the initialized locale resource.
  If the specified langkey can not be found in the lang-file loaded, a fallback from the
  en_us-definitions is used.</div>

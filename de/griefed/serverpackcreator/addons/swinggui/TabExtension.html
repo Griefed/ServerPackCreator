@@ -126,27 +126,27 @@ extends <a href="../../../../../de/griefed/serverpackcreator/addons/ExtensionInf
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr id="i0" class="altColor">
-<td class="colFirst"><code><a href="../../../../../de/griefed/serverpackcreator/addons/swinggui/ExtensionTab.html" title="class in de.griefed.serverpackcreator.addons.swinggui">ExtensionTab</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/addons/swinggui/TabExtension.html#getTab-de.griefed.serverpackcreator.versionmeta.VersionMeta-de.griefed.serverpackcreator.ApplicationProperties-de.griefed.serverpackcreator.utilities.common.Utilities-java.util.Optional-java.util.Optional-">getTab</a></span>(<a href="../../../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta">VersionMeta</a>&nbsp;versionMeta,
-      <a href="../../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;applicationProperties,
-      <a href="../../../../../de/griefed/serverpackcreator/utilities/common/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.common">Utilities</a>&nbsp;utilities,
-      java.util.Optional&lt;com.electronwill.nightconfig.core.CommentedConfig&gt;&nbsp;addonConfig,
-      java.util.Optional&lt;java.io.File&gt;&nbsp;configFile)</code>&nbsp;</td>
+<td class="colFirst"><code>@NotNull <a href="../../../../../de/griefed/serverpackcreator/addons/swinggui/ExtensionTab.html" title="class in de.griefed.serverpackcreator.addons.swinggui">ExtensionTab</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/addons/swinggui/TabExtension.html#getTab-de.griefed.serverpackcreator.versionmeta.VersionMeta-de.griefed.serverpackcreator.ApplicationProperties-de.griefed.serverpackcreator.utilities.common.Utilities-java.util.Optional-java.util.Optional-">getTab</a></span>(@NotNull <a href="../../../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta">VersionMeta</a>&nbsp;versionMeta,
+      @NotNull <a href="../../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;applicationProperties,
+      @NotNull <a href="../../../../../de/griefed/serverpackcreator/utilities/common/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.common">Utilities</a>&nbsp;utilities,
+      @NotNull java.util.Optional&lt;com.electronwill.nightconfig.core.CommentedConfig&gt;&nbsp;addonConfig,
+      @NotNull java.util.Optional&lt;java.io.File&gt;&nbsp;configFile)</code>&nbsp;</td>
 </tr>
 <tr id="i1" class="rowColor">
-<td class="colFirst"><code>javax.swing.Icon</code></td>
+<td class="colFirst"><code>@NotNull javax.swing.Icon</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/addons/swinggui/TabExtension.html#getTabIcon--">getTabIcon</a></span>()</code>
 <div class="block">Get the <code>Icon</code> for this tab to display to the ServerPackCreator GUI.</div>
 </td>
 </tr>
 <tr id="i2" class="altColor">
-<td class="colFirst"><code>java.lang.String</code></td>
+<td class="colFirst"><code>@NotNull java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/addons/swinggui/TabExtension.html#getTabTitle--">getTabTitle</a></span>()</code>
 <div class="block">Get the title of this tab to display in the ServerPackCreator GUI.</div>
 </td>
 </tr>
 <tr id="i3" class="rowColor">
-<td class="colFirst"><code>java.lang.String</code></td>
+<td class="colFirst"><code>@NotNull java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/addons/swinggui/TabExtension.html#getTabTooltip--">getTabTooltip</a></span>()</code>
 <div class="block">Get the tooltip for this tab to display in the ServerPackCreator GUI.</div>
 </td>
@@ -186,11 +186,17 @@ extends <a href="../../../../../de/griefed/serverpackcreator/addons/ExtensionInf
 <ul class="blockList">
 <li class="blockList">
 <h4>getTab</h4>
-<pre><a href="../../../../../de/griefed/serverpackcreator/addons/swinggui/ExtensionTab.html" title="class in de.griefed.serverpackcreator.addons.swinggui">ExtensionTab</a>&nbsp;getTab(<a href="../../../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta">VersionMeta</a>&nbsp;versionMeta,
-                    <a href="../../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;applicationProperties,
-                    <a href="../../../../../de/griefed/serverpackcreator/utilities/common/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.common">Utilities</a>&nbsp;utilities,
-                    java.util.Optional&lt;com.electronwill.nightconfig.core.CommentedConfig&gt;&nbsp;addonConfig,
-                    java.util.Optional&lt;java.io.File&gt;&nbsp;configFile)</pre>
+<pre>@NotNull
+@NotNull <a href="../../../../../de/griefed/serverpackcreator/addons/swinggui/ExtensionTab.html" title="class in de.griefed.serverpackcreator.addons.swinggui">ExtensionTab</a>&nbsp;getTab(@NotNull
+                                      @NotNull <a href="../../../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta">VersionMeta</a>&nbsp;versionMeta,
+                                      @NotNull
+                                      @NotNull <a href="../../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;applicationProperties,
+                                      @NotNull
+                                      @NotNull <a href="../../../../../de/griefed/serverpackcreator/utilities/common/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.common">Utilities</a>&nbsp;utilities,
+                                      @NotNull
+                                      @NotNull java.util.Optional&lt;com.electronwill.nightconfig.core.CommentedConfig&gt;&nbsp;addonConfig,
+                                      @NotNull
+                                      @NotNull java.util.Optional&lt;java.io.File&gt;&nbsp;configFile)</pre>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>versionMeta</code> - Instance of <a href="../../../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta"><code>VersionMeta</code></a> so you can work with available
@@ -216,7 +222,8 @@ extends <a href="../../../../../de/griefed/serverpackcreator/addons/ExtensionInf
 <ul class="blockList">
 <li class="blockList">
 <h4>getTabIcon</h4>
-<pre>javax.swing.Icon&nbsp;getTabIcon()</pre>
+<pre>@NotNull
+@NotNull javax.swing.Icon&nbsp;getTabIcon()</pre>
 <div class="block">Get the <code>Icon</code> for this tab to display to the ServerPackCreator GUI.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
@@ -230,7 +237,8 @@ extends <a href="../../../../../de/griefed/serverpackcreator/addons/ExtensionInf
 <ul class="blockList">
 <li class="blockList">
 <h4>getTabTitle</h4>
-<pre>java.lang.String&nbsp;getTabTitle()</pre>
+<pre>@NotNull
+@NotNull java.lang.String&nbsp;getTabTitle()</pre>
 <div class="block">Get the title of this tab to display in the ServerPackCreator GUI.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
@@ -244,7 +252,8 @@ extends <a href="../../../../../de/griefed/serverpackcreator/addons/ExtensionInf
 <ul class="blockListLast">
 <li class="blockList">
 <h4>getTabTooltip</h4>
-<pre>java.lang.String&nbsp;getTabTooltip()</pre>
+<pre>@NotNull
+@NotNull java.lang.String&nbsp;getTabTooltip()</pre>
 <div class="block">Get the tooltip for this tab to display in the ServerPackCreator GUI.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>

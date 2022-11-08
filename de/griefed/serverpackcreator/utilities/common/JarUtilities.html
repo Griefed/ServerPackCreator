@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -148,56 +148,68 @@ extends java.lang.Object</pre>
 </tr>
 <tr id="i0" class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/JarUtilities.html#copyFileFromJar-java.lang.String-boolean-java.lang.Class-">copyFileFromJar</a></span>(java.lang.String&nbsp;fileToCopy,
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/JarUtilities.html#copyFileFromJar-java.lang.String-boolean-java.lang.Class-java.lang.String-">copyFileFromJar</a></span>(@NotNull java.lang.String&nbsp;fileToCopy,
                boolean&nbsp;replaceIfExists,
-               java.lang.Class&lt;?&gt;&nbsp;classToCopyFrom)</code>
+               @NotNull java.lang.Class&lt;?&gt;&nbsp;classToCopyFrom,
+               @NotNull java.lang.String&nbsp;directory)</code>
 <div class="block">Copy a file from inside our JAR-file to the host filesystem.</div>
 </td>
 </tr>
 <tr id="i1" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/JarUtilities.html#copyFileFromJar-java.lang.String-java.lang.Class-">copyFileFromJar</a></span>(java.lang.String&nbsp;fileToCopy,
-               java.lang.Class&lt;?&gt;&nbsp;identifierClass)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/JarUtilities.html#copyFileFromJar-java.lang.String-java.lang.Class-java.lang.String-">copyFileFromJar</a></span>(@NotNull java.lang.String&nbsp;fileToCopy,
+               @NotNull java.lang.Class&lt;?&gt;&nbsp;identifierClass,
+               @NotNull java.lang.String&nbsp;directory)</code>
 <div class="block">Copy a file from inside our JAR-file to the host filesystem.</div>
 </td>
 </tr>
 <tr id="i2" class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/JarUtilities.html#copyFileFromJar-java.lang.String-java.io.File-boolean-java.lang.Class-">copyFileFromJar</a></span>(java.lang.String&nbsp;fileToCopy,
-               java.io.File&nbsp;destinationFile,
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/JarUtilities.html#copyFileFromJar-java.lang.String-java.io.File-boolean-java.lang.Class-">copyFileFromJar</a></span>(@NotNull java.lang.String&nbsp;fileToCopy,
+               @NotNull java.io.File&nbsp;destinationFile,
                boolean&nbsp;replaceIfExists,
-               java.lang.Class&lt;?&gt;&nbsp;identifierClass)</code>
+               @NotNull java.lang.Class&lt;?&gt;&nbsp;identifierClass)</code>
 <div class="block">Copy a file from inside our JAR-file to the host filesystem to the specified destination,
  replacing an already existing file.</div>
 </td>
 </tr>
 <tr id="i3" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/JarUtilities.html#copyFileFromJar-java.lang.String-java.io.File-java.lang.Class-">copyFileFromJar</a></span>(java.lang.String&nbsp;fileToCopy,
-               java.io.File&nbsp;destinationFile,
-               java.lang.Class&lt;?&gt;&nbsp;identifierClass)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/JarUtilities.html#copyFileFromJar-java.lang.String-java.io.File-java.lang.Class-">copyFileFromJar</a></span>(@NotNull java.lang.String&nbsp;fileToCopy,
+               @NotNull java.io.File&nbsp;destinationFile,
+               @NotNull java.lang.Class&lt;?&gt;&nbsp;identifierClass)</code>
 <div class="block">Copy a file from inside our JAR-file to the host filesystem to the specified destination.</div>
 </td>
 </tr>
 <tr id="i4" class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/JarUtilities.html#copyFolderFromJar-java.lang.Class-java.lang.String-java.lang.String-java.lang.String-java.lang.String-">copyFolderFromJar</a></span>(java.lang.Class&lt;?&gt;&nbsp;classToRetrieveHomeFor,
-                 java.lang.String&nbsp;directoryToCopy,
-                 java.lang.String&nbsp;destinationDirectory,
-                 java.lang.String&nbsp;jarDirectoryPrefix,
-                 java.lang.String&nbsp;fileEnding)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/JarUtilities.html#copyFolderFromJar-java.lang.Class-java.lang.String-java.lang.String-java.lang.String-java.lang.String-">copyFolderFromJar</a></span>(@NotNull java.lang.Class&lt;?&gt;&nbsp;classToRetrieveHomeFor,
+                 @NotNull java.lang.String&nbsp;directoryToCopy,
+                 @NotNull java.lang.String&nbsp;destinationDirectory,
+                 @NotNull java.lang.String&nbsp;jarDirectoryPrefix,
+                 @NotNull java.lang.String&nbsp;fileEnding)</code>
 <div class="block">Copy a folder from inside a JAR-file to the host filesystem.</div>
 </td>
 </tr>
 <tr id="i5" class="rowColor">
-<td class="colFirst"><code>org.springframework.boot.system.ApplicationHome</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/JarUtilities.html#getApplicationHomeForClass-java.lang.Class-">getApplicationHomeForClass</a></span>(java.lang.Class&lt;?&gt;&nbsp;classToRetrieveHomeFor)</code>
+<td class="colFirst"><code>@NotNull org.springframework.boot.system.ApplicationHome</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/JarUtilities.html#getApplicationHomeForClass-java.lang.Class-">getApplicationHomeForClass</a></span>(@NotNull java.lang.Class&lt;?&gt;&nbsp;classToRetrieveHomeFor)</code>
 <div class="block">Retrieve the ApplicationHome for a given class.</div>
 </td>
 </tr>
 <tr id="i6" class="altColor">
-<td class="colFirst"><code>java.util.HashMap&lt;java.lang.String,java.lang.String&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/JarUtilities.html#systemInformation-org.springframework.boot.system.ApplicationHome-">systemInformation</a></span>(org.springframework.boot.system.ApplicationHome&nbsp;applicationHome)</code>
+<td class="colFirst"><code>@NotNull java.util.HashMap&lt;java.lang.String,java.lang.String&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/JarUtilities.html#jarInformation-org.springframework.boot.system.ApplicationHome-">jarInformation</a></span>(@NotNull org.springframework.boot.system.ApplicationHome&nbsp;applicationHome)</code>
+<div class="block">Retrieve information about the environment for the given instance of <code>ApplicationHome</code>,
+ stored in a <code>HashMap</code>.<br> Available key-value-pairs:<br> jarPath - The path to the
+ JAR-file.<br> jarName - The name of the JAR-file.<br> javaVersion - The version of the Java
+ installation used.<br> osArch - Architecture of the system.<br> osName - Name of the operating
+ system.<br> osVersion - Version of the operating system.<br></div>
+</td>
+</tr>
+<tr id="i7" class="rowColor">
+<td class="colFirst"><code>@NotNull java.util.HashMap&lt;java.lang.String,java.lang.String&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/JarUtilities.html#jarInformation-java.lang.Class-">jarInformation</a></span>(@NotNull java.lang.Class&lt;?&gt;&nbsp;classInJar)</code>
 <div class="block">Retrieve information about the environment for the given instance of <code>ApplicationHome</code>,
  stored in a <code>HashMap</code>.<br> Available key-value-pairs:<br> jarPath - The path to the
  JAR-file.<br> jarName - The name of the JAR-file.<br> javaVersion - The version of the Java
@@ -233,7 +245,8 @@ extends java.lang.Object</pre>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>JarUtilities</h4>
-<pre>public&nbsp;JarUtilities()</pre>
+<pre>@Contract(pure=true)
+public&nbsp;JarUtilities()</pre>
 </li>
 </ul>
 </li>
@@ -244,35 +257,44 @@ extends java.lang.Object</pre>
 <!--   -->
 </a>
 <h3>Method Detail</h3>
-<a name="copyFileFromJar-java.lang.String-boolean-java.lang.Class-">
+<a name="copyFileFromJar-java.lang.String-boolean-java.lang.Class-java.lang.String-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>copyFileFromJar</h4>
-<pre>public&nbsp;void&nbsp;copyFileFromJar(java.lang.String&nbsp;fileToCopy,
+<pre>public&nbsp;void&nbsp;copyFileFromJar(@NotNull
+                            @NotNull java.lang.String&nbsp;fileToCopy,
                             boolean&nbsp;replaceIfExists,
-                            java.lang.Class&lt;?&gt;&nbsp;classToCopyFrom)</pre>
+                            @NotNull
+                            @NotNull java.lang.Class&lt;?&gt;&nbsp;classToCopyFrom,
+                            @NotNull
+                            @NotNull java.lang.String&nbsp;directory)</pre>
 <div class="block">Copy a file from inside our JAR-file to the host filesystem. The file will create exactly as
  specified in the parameter. <br> Example:<br> <code>copyFileFromJar(new File("log4j2.xml"))</code>
  will result in the log4j2.xml file from inside the JAR-file to be copied to the outside of the
  JAR-file as <code>log4j2.xml</code></div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>fileToCopy</code> - File. The source-file in the JAR you wish to copy outside the JAR.</dd>
-<dd><code>replaceIfExists</code> - Boolean. Whether to replace the file, if it already exists.</dd>
-<dd><code>classToCopyFrom</code> - Class. The class of the JAR from which you want to copy from.</dd>
+<dd><code>fileToCopy</code> - The source-file in the JAR you wish to copy outside the JAR.</dd>
+<dd><code>replaceIfExists</code> - Whether to replace the file, if it already exists.</dd>
+<dd><code>classToCopyFrom</code> - The class of the JAR from which you want to copy from.</dd>
+<dd><code>directory</code> - The directory where the file should be copied to.</dd>
 </dl>
 </li>
 </ul>
-<a name="copyFileFromJar-java.lang.String-java.lang.Class-">
+<a name="copyFileFromJar-java.lang.String-java.lang.Class-java.lang.String-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>copyFileFromJar</h4>
-<pre>public&nbsp;boolean&nbsp;copyFileFromJar(java.lang.String&nbsp;fileToCopy,
-                               java.lang.Class&lt;?&gt;&nbsp;identifierClass)</pre>
+<pre>public&nbsp;boolean&nbsp;copyFileFromJar(@NotNull
+                               @NotNull java.lang.String&nbsp;fileToCopy,
+                               @NotNull
+                               @NotNull java.lang.Class&lt;?&gt;&nbsp;identifierClass,
+                               @NotNull
+                               @NotNull java.lang.String&nbsp;directory)</pre>
 <div class="block">Copy a file from inside our JAR-file to the host filesystem. The file will be created with
  exactly the same path specified in the parameter. <br> Example:<br>
  <code>copyFileFromJar(new File("log4j2.xml"))</code> will result in the log4j2.xml file from inside
@@ -281,6 +303,7 @@ extends java.lang.Object</pre>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>fileToCopy</code> - The source-file in the JAR you wish to copy outside the JAR.</dd>
 <dd><code>identifierClass</code> - The class of the JAR from which to get the resource.</dd>
+<dd><code>directory</code> - The directory to copy the file to.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd><code>true</code> if the file was created, <code>false</code> otherwise.</dd>
 </dl>
@@ -292,10 +315,13 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>copyFileFromJar</h4>
-<pre>public&nbsp;void&nbsp;copyFileFromJar(java.lang.String&nbsp;fileToCopy,
-                            java.io.File&nbsp;destinationFile,
+<pre>public&nbsp;void&nbsp;copyFileFromJar(@NotNull
+                            @NotNull java.lang.String&nbsp;fileToCopy,
+                            @NotNull
+                            @NotNull java.io.File&nbsp;destinationFile,
                             boolean&nbsp;replaceIfExists,
-                            java.lang.Class&lt;?&gt;&nbsp;identifierClass)</pre>
+                            @NotNull
+                            @NotNull java.lang.Class&lt;?&gt;&nbsp;identifierClass)</pre>
 <div class="block">Copy a file from inside our JAR-file to the host filesystem to the specified destination,
  replacing an already existing file. The file will be created with exactly the same path
  specified in the parameter. <br> Example:<br> <code>copyFileFromJar(new File("log4j2.xml"))</code>
@@ -306,7 +332,7 @@ extends java.lang.Object</pre>
 <dd><code>fileToCopy</code> - The source-file in the JAR you wish to copy outside the JAR.</dd>
 <dd><code>destinationFile</code> - The file to which to copy to.</dd>
 <dd><code>identifierClass</code> - The class of the JAR from which to get the resource.</dd>
-<dd><code>replaceIfExists</code> - Boolean. Whether to replace the file, if it already exists.</dd>
+<dd><code>replaceIfExists</code> - Whether to replace the file, if it already exists.</dd>
 </dl>
 </li>
 </ul>
@@ -316,9 +342,12 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>copyFileFromJar</h4>
-<pre>public&nbsp;boolean&nbsp;copyFileFromJar(java.lang.String&nbsp;fileToCopy,
-                               java.io.File&nbsp;destinationFile,
-                               java.lang.Class&lt;?&gt;&nbsp;identifierClass)</pre>
+<pre>public&nbsp;boolean&nbsp;copyFileFromJar(@NotNull
+                               @NotNull java.lang.String&nbsp;fileToCopy,
+                               @NotNull
+                               @NotNull java.io.File&nbsp;destinationFile,
+                               @NotNull
+                               @NotNull java.lang.Class&lt;?&gt;&nbsp;identifierClass)</pre>
 <div class="block">Copy a file from inside our JAR-file to the host filesystem to the specified destination. The
  file will be created with exactly the same path specified in the parameter. <br> Example:<br>
  <code>copyFileFromJar(new File("log4j2.xml"))</code> will result in the log4j2.xml file from inside
@@ -333,55 +362,22 @@ extends java.lang.Object</pre>
 </dl>
 </li>
 </ul>
-<a name="getApplicationHomeForClass-java.lang.Class-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>getApplicationHomeForClass</h4>
-<pre>public&nbsp;org.springframework.boot.system.ApplicationHome&nbsp;getApplicationHomeForClass(java.lang.Class&lt;?&gt;&nbsp;classToRetrieveHomeFor)</pre>
-<div class="block">Retrieve the ApplicationHome for a given class.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>classToRetrieveHomeFor</code> - The class to retrieve the <code>ApplicationHome</code> for.</dd>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>An instance of <code>ApplicationHome</code> for the given class.</dd>
-</dl>
-</li>
-</ul>
-<a name="systemInformation-org.springframework.boot.system.ApplicationHome-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>systemInformation</h4>
-<pre>public&nbsp;java.util.HashMap&lt;java.lang.String,java.lang.String&gt;&nbsp;systemInformation(org.springframework.boot.system.ApplicationHome&nbsp;applicationHome)</pre>
-<div class="block">Retrieve information about the environment for the given instance of <code>ApplicationHome</code>,
- stored in a <code>HashMap</code>.<br> Available key-value-pairs:<br> jarPath - The path to the
- JAR-file.<br> jarName - The name of the JAR-file.<br> javaVersion - The version of the Java
- installation used.<br> osArch - Architecture of the system.<br> osName - Name of the operating
- system.<br> osVersion - Version of the operating system.<br></div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>applicationHome</code> - Instance of <code>ApplicationHome</code> from which to gather information
-                        about the JAR-file and system.</dd>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>HashMap String-String. A hashmap containing key-value-pairs with information about the
- JAR-file and system.</dd>
-</dl>
-</li>
-</ul>
 <a name="copyFolderFromJar-java.lang.Class-java.lang.String-java.lang.String-java.lang.String-java.lang.String-">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>copyFolderFromJar</h4>
-<pre>public&nbsp;void&nbsp;copyFolderFromJar(java.lang.Class&lt;?&gt;&nbsp;classToRetrieveHomeFor,
-                              java.lang.String&nbsp;directoryToCopy,
-                              java.lang.String&nbsp;destinationDirectory,
-                              java.lang.String&nbsp;jarDirectoryPrefix,
-                              java.lang.String&nbsp;fileEnding)
+<pre>public&nbsp;void&nbsp;copyFolderFromJar(@NotNull
+                              @NotNull java.lang.Class&lt;?&gt;&nbsp;classToRetrieveHomeFor,
+                              @NotNull
+                              @NotNull java.lang.String&nbsp;directoryToCopy,
+                              @NotNull
+                              @NotNull java.lang.String&nbsp;destinationDirectory,
+                              @NotNull
+                              @NotNull java.lang.String&nbsp;jarDirectoryPrefix,
+                              @NotNull
+                              @NotNull java.lang.String&nbsp;fileEnding)
                        throws java.io.IOException</pre>
 <div class="block">Copy a folder from inside a JAR-file to the host filesystem. The specified folder will be
  copied, along with all resources inside it, recursively, to the specified destination.<br></div>
@@ -411,6 +407,71 @@ extends java.lang.Object</pre>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code>java.io.IOException</code> - Exception thrown if a file can not be accessed, found or otherwise worked
                      with.</dd>
+</dl>
+</li>
+</ul>
+<a name="jarInformation-java.lang.Class-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>jarInformation</h4>
+<pre>@NotNull
+public&nbsp;@NotNull java.util.HashMap&lt;java.lang.String,java.lang.String&gt;&nbsp;jarInformation(@NotNull
+                                                                                             @NotNull java.lang.Class&lt;?&gt;&nbsp;classInJar)</pre>
+<div class="block">Retrieve information about the environment for the given instance of <code>ApplicationHome</code>,
+ stored in a <code>HashMap</code>.<br> Available key-value-pairs:<br> jarPath - The path to the
+ JAR-file.<br> jarName - The name of the JAR-file.<br> javaVersion - The version of the Java
+ installation used.<br> osArch - Architecture of the system.<br> osName - Name of the operating
+ system.<br> osVersion - Version of the operating system.<br></div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>classInJar</code> - The class in the jar for which you want to acquire the information for.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>HashMap String-String. A hashmap containing key-value-pairs with information about the
+ JAR-file and system.</dd>
+</dl>
+</li>
+</ul>
+<a name="jarInformation-org.springframework.boot.system.ApplicationHome-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>jarInformation</h4>
+<pre>@NotNull
+public&nbsp;@NotNull java.util.HashMap&lt;java.lang.String,java.lang.String&gt;&nbsp;jarInformation(@NotNull
+                                                                                             @NotNull org.springframework.boot.system.ApplicationHome&nbsp;applicationHome)</pre>
+<div class="block">Retrieve information about the environment for the given instance of <code>ApplicationHome</code>,
+ stored in a <code>HashMap</code>.<br> Available key-value-pairs:<br> jarPath - The path to the
+ JAR-file.<br> jarName - The name of the JAR-file.<br> javaVersion - The version of the Java
+ installation used.<br> osArch - Architecture of the system.<br> osName - Name of the operating
+ system.<br> osVersion - Version of the operating system.<br></div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>applicationHome</code> - Instance of <code>ApplicationHome</code> from which to gather information
+                        about the JAR-file and system.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>A hashmap containing key-value-pairs with information about the JAR-file and system.</dd>
+</dl>
+</li>
+</ul>
+<a name="getApplicationHomeForClass-java.lang.Class-">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>getApplicationHomeForClass</h4>
+<pre>@Contract(value="_ -&gt; new")
+ @NotNull
+public&nbsp;@NotNull org.springframework.boot.system.ApplicationHome&nbsp;getApplicationHomeForClass(@NotNull
+                                                                                                                                 @NotNull java.lang.Class&lt;?&gt;&nbsp;classToRetrieveHomeFor)</pre>
+<div class="block">Retrieve the ApplicationHome for a given class.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>classToRetrieveHomeFor</code> - The class to retrieve the <code>ApplicationHome</code> for.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>An instance of <code>ApplicationHome</code> for the given class.</dd>
 </dl>
 </li>
 </ul>

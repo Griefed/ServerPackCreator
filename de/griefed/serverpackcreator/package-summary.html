@@ -70,8 +70,7 @@
 <div class="header">
 <h1 title="Package" class="title">Package&nbsp;de.griefed.serverpackcreator</h1>
 <div class="docSummary">
-<div class="block">The ServerPackCreator core.<br> The heart and soul, if you will.<br> The classes inside this
- package are responsible for turning your modpack into a server pack.</div>
+<div class="block">Core-package of ServerPackCreator.</div>
 </div>
 <p>See:&nbsp;<a href="#package.description">Description</a></p>
 </div>
@@ -94,36 +93,49 @@
 <tr class="rowColor">
 <td class="colFirst"><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a></td>
 <td class="colLast">
-<div class="block">Our properties-class.</div>
+<div class="block">Base settings of ServerPackCreator, such as working directories, default list of clientside-only
+ mods, default list of directories to include in a server pack, script templates, java paths and
+ much more.</div>
 </td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html" title="class in de.griefed.serverpackcreator">ConfigurationHandler</a></td>
 <td class="colLast">
-<div class="block">This class revolves around checking and adjusting a given instance of <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a>
- so it can safely be used in <a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html#run-de.griefed.serverpackcreator.ConfigurationModel-"><code>ServerPackHandler.run(ConfigurationModel)</code></a> later.</div>
+<div class="block">Check any given <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a> for errors and, if so desired, add them to a passed
+ list of errors, so you may display them in a GUI, CLI or website.</div>
 </td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a></td>
 <td class="colLast">
-<div class="block">Class containing all fields and therefore all information either gathered from a configuration
- file, stored by the creation of a modpack from CurseForge or passed otherwise.</div>
+<div class="block">A ConfigurationModel contains the settings required by
+ <a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html#run-de.griefed.serverpackcreator.ConfigurationModel-"><code>ServerPackHandler.run(ConfigurationModel)</code></a> to create a server pack.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><a href="../../../de/griefed/serverpackcreator/LoggingConfig.html" title="class in de.griefed.serverpackcreator">LoggingConfig</a></td>
+<td class="colLast">
+<div class="block">Custom logging configuration setup to prevent incorrect log-directories when executing
+ ServerPackCreator from CLI from a completely other directory.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><a href="../../../de/griefed/serverpackcreator/MigrationManager.html" title="class in de.griefed.serverpackcreator">MigrationManager</a></td>
+<td class="colLast">
+<div class="block">The migration manager of ServerPackCreator is responsible for determining update-steps between a
+ given old version and a given new version.</div>
 </td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html" title="class in de.griefed.serverpackcreator">ServerPackCreator</a></td>
 <td class="colLast">
-<div class="block">Launch-class of ServerPackCreator which determines the mode to run in, takes care of
- initialization and dependency injection and, finally, running ServerPackCreator.</div>
+<div class="block">Main-class of ServerPackCreator.</div>
 </td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html" title="class in de.griefed.serverpackcreator">ServerPackHandler</a></td>
 <td class="colLast">
-<div class="block">Create a server pack from a modpack by copying all specified or required files from the modpack
- to the server pack as well as installing the modloader server for the specified modloader,
- modloader version and Minecraft version.</div>
+<div class="block">Everything revolving around creating a server pack.</div>
 </td>
 </tr>
 </tbody>
@@ -144,7 +156,8 @@
 <tr class="rowColor">
 <td class="colFirst"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.Mode.html" title="enum in de.griefed.serverpackcreator">ServerPackCreator.Mode</a></td>
 <td class="colLast">
-<div class="block">Mode-priorities.</div>
+<div class="block">Available mods of ServerPackCreator and their respective CLI-arguments required to be
+ activated/used.</div>
 </td>
 </tr>
 </tbody>
@@ -155,14 +168,34 @@
 <!--   -->
 </a>
 <h2 title="Package de.griefed.serverpackcreator Description">Package de.griefed.serverpackcreator Description</h2>
-<div class="block">The ServerPackCreator core.<br> The heart and soul, if you will.<br> The classes inside this
- package are responsible for turning your modpack into a server pack. Especially the
- <a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html" title="class in de.griefed.serverpackcreator"><code>ServerPackHandler</code></a>, which receives a configuration and then
- creates the actual server pack for you.<br><br>A regular run of ServerPackCreator is
+<div class="block">Core-package of ServerPackCreator.
+ <p>
+ Server packs are created using <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a>, which can
+ be checked for errors using
+ <a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#checkConfiguration-de.griefed.serverpackcreator.ConfigurationModel-boolean-"><code>ConfigurationHandler.checkConfiguration(de.griefed.serverpackcreator.ConfigurationModel,
+ boolean)</code></a> and any of the available variants. Afterwards, when the checks of the given
+ configuration model return no errors, it is fed into
+ <a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html#run-de.griefed.serverpackcreator.ConfigurationModel-"><code>ServerPackHandler.run(de.griefed.serverpackcreator.ConfigurationModel)</code></a>,
+ which creates finally creates your server pack.
+ <p>
+ In other words, the intended workflow is as follows:
  <ol>
-   <li>Load or create a configuration. <p>See <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html#ConfigurationModel-de.griefed.serverpackcreator.utilities.common.Utilities-java.io.File-"><code>ConfigurationModel(de.griefed.serverpackcreator.utilities.common.Utilities, java.io.File)</code></a><br>and <a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#checkConfiguration-java.io.File-java.util.List-boolean-"><code>ConfigurationHandler.checkConfiguration(java.io.File, java.util.List&lt;java.lang.String&gt;, boolean)</code></a><br>or <a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#checkConfiguration-java.io.File-de.griefed.serverpackcreator.ConfigurationModel-java.util.List-boolean-"><code>ConfigurationHandler.checkConfiguration(java.io.File, de.griefed.serverpackcreator.ConfigurationModel, java.util.List, boolean)</code></a></p></li>
-   <li>Run ServerPackCreator with the configuration. See <a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html#run-de.griefed.serverpackcreator.ConfigurationModel-"><code>ServerPackHandler.run(de.griefed.serverpackcreator.ConfigurationModel)</code></a></li>
- </ol></div>
+   <li>Create a <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a>.</li>
+   <li>Check it using <a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#checkConfiguration-de.griefed.serverpackcreator.ConfigurationModel-boolean-"><code>ConfigurationHandler.checkConfiguration(de.griefed.serverpackcreator.ConfigurationModel, boolean)</code></a> or variants.</li>
+   <li>Create the server pack using <a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html#run-de.griefed.serverpackcreator.ConfigurationModel-"><code>ServerPackHandler.run(de.griefed.serverpackcreator.ConfigurationModel)</code></a>.</li>
+ </ol>
+ <p>
+ Should you wish to customize your instance of ServerPackCreator, see <a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator"><code>ApplicationProperties</code></a>.
+ If you wish to enhance your instance of ServerPackCreator with addons, see <a href="../../../de/griefed/serverpackcreator/ApplicationAddons.html" title="class in de.griefed.serverpackcreator"><code>ApplicationAddons</code></a>
+ and
+ <ul>
+   <li><a href="../../../de/griefed/serverpackcreator/addons/configurationhandler/ConfigCheckExtension.html" title="interface in de.griefed.serverpackcreator.addons.configurationhandler"><code>ConfigCheckExtension</code></a></li>
+   <li><a href="../../../de/griefed/serverpackcreator/addons/serverpackhandler/PreGenExtension.html" title="interface in de.griefed.serverpackcreator.addons.serverpackhandler"><code>PreGenExtension</code></a></li>
+   <li><a href="../../../de/griefed/serverpackcreator/addons/serverpackhandler/PreZipExtension.html" title="interface in de.griefed.serverpackcreator.addons.serverpackhandler"><code>PreZipExtension</code></a></li>
+   <li><a href="../../../de/griefed/serverpackcreator/addons/serverpackhandler/PostGenExtension.html" title="interface in de.griefed.serverpackcreator.addons.serverpackhandler"><code>PostGenExtension</code></a></li>
+   <li><a href="../../../de/griefed/serverpackcreator/addons/swinggui/ConfigPanelExtension.html" title="interface in de.griefed.serverpackcreator.addons.swinggui"><code>ConfigPanelExtension</code></a> and <a href="../../../de/griefed/serverpackcreator/addons/swinggui/ExtensionConfigPanel.html" title="class in de.griefed.serverpackcreator.addons.swinggui"><code>ExtensionConfigPanel</code></a></li>
+   <li><a href="../../../de/griefed/serverpackcreator/addons/swinggui/TabExtension.html" title="interface in de.griefed.serverpackcreator.addons.swinggui"><code>TabExtension</code></a> and <a href="../../../de/griefed/serverpackcreator/addons/swinggui/ExtensionTab.html" title="class in de.griefed.serverpackcreator.addons.swinggui"><code>ExtensionTab</code></a></li>
+ </ul></div>
 </div>
 <!-- ======= START OF BOTTOM NAVBAR ====== -->
 <div class="bottomNav"><a name="navbar.bottom">

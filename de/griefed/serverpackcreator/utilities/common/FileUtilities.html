@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10,"i17":10,"i18":10,"i19":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10,"i17":10,"i18":10,"i19":10,"i20":10,"i21":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -166,126 +166,138 @@ extends java.lang.Object</pre>
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr id="i0" class="altColor">
-<td class="colFirst"><code><a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.FileType.html" title="enum in de.griefed.serverpackcreator.utilities.common">FileUtilities.FileType</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.html#checkFileType-java.io.File-">checkFileType</a></span>(java.io.File&nbsp;file)</code>
+<td class="colFirst"><code>@NotNull <a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.FileType.html" title="enum in de.griefed.serverpackcreator.utilities.common">FileUtilities.FileType</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.html#checkFileType-java.io.File-">checkFileType</a></span>(@NotNull java.io.File&nbsp;file)</code>
 <div class="block">Check the given file for its type, whether it is a regular file, a Windows link or a UNIX
  symlink.</div>
 </td>
 </tr>
 <tr id="i1" class="rowColor">
-<td class="colFirst"><code><a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.FileType.html" title="enum in de.griefed.serverpackcreator.utilities.common">FileUtilities.FileType</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.html#checkFileType-java.lang.String-">checkFileType</a></span>(java.lang.String&nbsp;file)</code>
+<td class="colFirst"><code>@NotNull <a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.FileType.html" title="enum in de.griefed.serverpackcreator.utilities.common">FileUtilities.FileType</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.html#checkFileType-java.lang.String-">checkFileType</a></span>(@NotNull java.lang.String&nbsp;file)</code>
 <div class="block">Check the given file for its type, whether it is a regular file, a Windows link or a UNIX
  symlink.</div>
 </td>
 </tr>
 <tr id="i2" class="altColor">
-<td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.html#checkPermissions-java.io.File-">checkPermissions</a></span>(java.io.File&nbsp;fileOrDirectory)</code>
-<div class="block">Check the given file or directory for read- and write-permission.</div>
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.html#createDirectories-java.nio.file.Path-">createDirectories</a></span>(@NotNull java.nio.file.Path&nbsp;directory)</code>
+<div class="block">Create a directory, including any necessary parent directories.</div>
 </td>
 </tr>
 <tr id="i3" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.html#checkPermissions-java.nio.file.Path-">checkPermissions</a></span>(java.nio.file.Path&nbsp;fileOrDirectory)</code>
-<div class="block">Check the given file or directory for read- and write-permission.</div>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.html#isLink-java.io.File-">isLink</a></span>(@NotNull java.io.File&nbsp;file)</code>
+<div class="block">Check if the given file is a UNIX symlink or Windows lnk.</div>
 </td>
 </tr>
 <tr id="i4" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.html#checkPermissions-java.lang.String-">checkPermissions</a></span>(java.lang.String&nbsp;fileOrDirectory)</code>
-<div class="block">Check the given file or directory for read- and write-permission.</div>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.html#isLink-java.lang.String-">isLink</a></span>(@NotNull java.lang.String&nbsp;file)</code>
+<div class="block">Check if the given file is a UNIX symlink or Windows lnk.</div>
 </td>
 </tr>
 <tr id="i5" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.html#checkReadPermission-java.io.File-">checkReadPermission</a></span>(java.io.File&nbsp;fileOrDirectory)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.html#isReadPermissionSet-java.io.File-">isReadPermissionSet</a></span>(@NotNull java.io.File&nbsp;fileOrDirectory)</code>
 <div class="block">Check the given file or directory for read-permission.</div>
 </td>
 </tr>
 <tr id="i6" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.html#checkReadPermission-java.nio.file.Path-">checkReadPermission</a></span>(java.nio.file.Path&nbsp;fileOrDirectory)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.html#isReadPermissionSet-java.nio.file.Path-">isReadPermissionSet</a></span>(@NotNull java.nio.file.Path&nbsp;fileOrDirectory)</code>
 <div class="block">Check the given file or directory for read-permission.</div>
 </td>
 </tr>
 <tr id="i7" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.html#checkReadPermission-java.lang.String-">checkReadPermission</a></span>(java.lang.String&nbsp;fileOrDirectory)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.html#isReadPermissionSet-java.lang.String-">isReadPermissionSet</a></span>(@NotNull java.lang.String&nbsp;fileOrDirectory)</code>
 <div class="block">Check the given file or directory for read-permission.</div>
 </td>
 </tr>
 <tr id="i8" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.html#checkWritePermission-java.io.File-">checkWritePermission</a></span>(java.io.File&nbsp;fileOrDirectory)</code>
-<div class="block">Check the given file or directory for write-permission.</div>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.html#isReadWritePermissionSet-java.io.File-">isReadWritePermissionSet</a></span>(@NotNull java.io.File&nbsp;fileOrDirectory)</code>
+<div class="block">Check the given file or directory for read- and write-permission.</div>
 </td>
 </tr>
 <tr id="i9" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.html#checkWritePermission-java.nio.file.Path-">checkWritePermission</a></span>(java.nio.file.Path&nbsp;fileOrDirectory)</code>
-<div class="block">Check the given file or directory for write-permission.</div>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.html#isReadWritePermissionSet-java.nio.file.Path-">isReadWritePermissionSet</a></span>(@NotNull java.nio.file.Path&nbsp;fileOrDirectory)</code>
+<div class="block">Check the given file or directory for read- and write-permission.</div>
 </td>
 </tr>
 <tr id="i10" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.html#checkWritePermission-java.lang.String-">checkWritePermission</a></span>(java.lang.String&nbsp;fileOrDirectory)</code>
-<div class="block">Check the given file or directory for write-permission.</div>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.html#isReadWritePermissionSet-java.lang.String-">isReadWritePermissionSet</a></span>(@NotNull java.lang.String&nbsp;fileOrDirectory)</code>
+<div class="block">Check the given file or directory for read- and write-permission.</div>
 </td>
 </tr>
 <tr id="i11" class="rowColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.html#createDirectories-java.nio.file.Path-">createDirectories</a></span>(java.nio.file.Path&nbsp;directory)</code>
-<div class="block">Create a directory, including any necessary parent directories.</div>
+<td class="colFirst"><code>boolean</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.html#isWritePermissionSet-java.io.File-">isWritePermissionSet</a></span>(@NotNull java.io.File&nbsp;fileOrDirectory)</code>
+<div class="block">Check the given file or directory for write-permission.</div>
 </td>
 </tr>
 <tr id="i12" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.html#isLink-java.io.File-">isLink</a></span>(java.io.File&nbsp;file)</code>
-<div class="block">Check if the given file is a UNIX symlink or Windows lnk.</div>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.html#isWritePermissionSet-java.nio.file.Path-">isWritePermissionSet</a></span>(@NotNull java.nio.file.Path&nbsp;fileOrDirectory)</code>
+<div class="block">Check the given file or directory for write-permission.</div>
 </td>
 </tr>
 <tr id="i13" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.html#isLink-java.lang.String-">isLink</a></span>(java.lang.String&nbsp;file)</code>
-<div class="block">Check if the given file is a UNIX symlink or Windows lnk.</div>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.html#isWritePermissionSet-java.lang.String-">isWritePermissionSet</a></span>(@NotNull java.lang.String&nbsp;fileOrDirectory)</code>
+<div class="block">Check the given file or directory for write-permission.</div>
 </td>
 </tr>
 <tr id="i14" class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.html#openFile-java.lang.String-">openFile</a></span>(java.lang.String&nbsp;fileToOpen)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.html#openFile-java.io.File-">openFile</a></span>(@NotNull java.io.File&nbsp;fileToOpen)</code>
 <div class="block">Open the specified file in an editor.</div>
 </td>
 </tr>
 <tr id="i15" class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.html#openFolder-java.lang.String-">openFolder</a></span>(java.lang.String&nbsp;folder)</code>
-<div class="block">Open the specified folder in the file explorer.</div>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.html#openFile-java.lang.String-">openFile</a></span>(@NotNull java.lang.String&nbsp;fileToOpen)</code>
+<div class="block">Open the specified file in an editor.</div>
 </td>
 </tr>
 <tr id="i16" class="altColor">
-<td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.html#replaceFile-java.io.File-java.io.File-">replaceFile</a></span>(java.io.File&nbsp;sourceFile,
-           java.io.File&nbsp;destinationFile)</code>
-<div class="block">Move a file from source to destination, and replace the destination file if it exists.</div>
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.html#openFolder-java.io.File-">openFolder</a></span>(@NotNull java.io.File&nbsp;folder)</code>
+<div class="block">Open the specified folder in the file explorer.</div>
 </td>
 </tr>
 <tr id="i17" class="rowColor">
-<td class="colFirst"><code>java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.html#resolveLink-java.io.File-">resolveLink</a></span>(java.io.File&nbsp;link)</code>
-<div class="block">Resolve a given link/symlink to its source.</div>
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.html#openFolder-java.lang.String-">openFolder</a></span>(@NotNull java.lang.String&nbsp;folder)</code>
+<div class="block">Open the specified folder in the file explorer.</div>
 </td>
 </tr>
 <tr id="i18" class="altColor">
-<td class="colFirst"><code>java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.html#resolveLink-java.lang.String-">resolveLink</a></span>(java.lang.String&nbsp;link)</code>
-<div class="block">Resolve a given link/symlink to its source.</div>
+<td class="colFirst"><code>boolean</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.html#replaceFile-java.io.File-java.io.File-">replaceFile</a></span>(@NotNull java.io.File&nbsp;sourceFile,
+           @NotNull java.io.File&nbsp;destinationFile)</code>
+<div class="block">Move a file from source to destination, and replace the destination file if it exists.</div>
 </td>
 </tr>
 <tr id="i19" class="rowColor">
+<td class="colFirst"><code>@NotNull java.lang.String</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.html#resolveLink-java.io.File-">resolveLink</a></span>(@NotNull java.io.File&nbsp;link)</code>
+<div class="block">Resolve a given link/symlink to its source.</div>
+</td>
+</tr>
+<tr id="i20" class="altColor">
+<td class="colFirst"><code>@NotNull java.lang.String</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.html#resolveLink-java.lang.String-">resolveLink</a></span>(@NotNull java.lang.String&nbsp;link)</code>
+<div class="block">Resolve a given link/symlink to its source.</div>
+</td>
+</tr>
+<tr id="i21" class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.html#unzipArchive-java.lang.String-java.lang.String-">unzipArchive</a></span>(java.lang.String&nbsp;zipFile,
-            java.lang.String&nbsp;destinationDirectory)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.html#unzipArchive-java.lang.String-java.lang.String-">unzipArchive</a></span>(@NotNull java.lang.String&nbsp;zipFile,
+            @NotNull java.lang.String&nbsp;destinationDirectory)</code>
 <div class="block">Unzips the downloaded modpack ZIP-archive to the specified directory.</div>
 </td>
 </tr>
@@ -317,7 +329,8 @@ extends java.lang.Object</pre>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>FileUtilities</h4>
-<pre>public&nbsp;FileUtilities()</pre>
+<pre>@Contract(pure=true)
+public&nbsp;FileUtilities()</pre>
 </li>
 </ul>
 </li>
@@ -334,8 +347,10 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>replaceFile</h4>
-<pre>public&nbsp;boolean&nbsp;replaceFile(java.io.File&nbsp;sourceFile,
-                           java.io.File&nbsp;destinationFile)
+<pre>public&nbsp;boolean&nbsp;replaceFile(@NotNull
+                           @NotNull java.io.File&nbsp;sourceFile,
+                           @NotNull
+                           @NotNull java.io.File&nbsp;destinationFile)
                     throws java.io.IOException</pre>
 <div class="block">Move a file from source to destination, and replace the destination file if it exists.</div>
 <dl>
@@ -343,7 +358,7 @@ extends java.lang.Object</pre>
 <dd><code>sourceFile</code> - The source file.</dd>
 <dd><code>destinationFile</code> - The destination file to be replaced by the source file.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>Boolean. Returns true if the file was sucessfully replaced.</dd>
+<dd>Returns true if the file was sucessfully replaced.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code>java.io.IOException</code> - Thrown if an error occurs when the file is moved.</dd>
 </dl>
@@ -355,7 +370,8 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>createDirectories</h4>
-<pre>public&nbsp;void&nbsp;createDirectories(java.nio.file.Path&nbsp;directory)</pre>
+<pre>public&nbsp;void&nbsp;createDirectories(@NotNull
+                              @NotNull java.nio.file.Path&nbsp;directory)</pre>
 <div class="block">Create a directory, including any necessary parent directories. If an error is encountered, it
  is printed to our logs.</div>
 <dl>
@@ -370,12 +386,14 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>unzipArchive</h4>
-<pre>public&nbsp;void&nbsp;unzipArchive(java.lang.String&nbsp;zipFile,
-                         java.lang.String&nbsp;destinationDirectory)</pre>
+<pre>public&nbsp;void&nbsp;unzipArchive(@NotNull
+                         @NotNull java.lang.String&nbsp;zipFile,
+                         @NotNull
+                         @NotNull java.lang.String&nbsp;destinationDirectory)</pre>
 <div class="block">Unzips the downloaded modpack ZIP-archive to the specified directory.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>zipFile</code> - String. The path to the ZIP-archive which we want to unzip.</dd>
+<dd><code>zipFile</code> - The path to the ZIP-archive which we want to unzip.</dd>
 <dd><code>destinationDirectory</code> - The directory into which the ZIP-archive will be unzipped into.</dd>
 </dl>
 </li>
@@ -386,7 +404,9 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>checkFileType</h4>
-<pre>public&nbsp;<a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.FileType.html" title="enum in de.griefed.serverpackcreator.utilities.common">FileUtilities.FileType</a>&nbsp;checkFileType(java.lang.String&nbsp;file)</pre>
+<pre>@NotNull
+public&nbsp;@NotNull <a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.FileType.html" title="enum in de.griefed.serverpackcreator.utilities.common">FileUtilities.FileType</a>&nbsp;checkFileType(@NotNull
+                                                              @NotNull java.lang.String&nbsp;file)</pre>
 <div class="block">Check the given file for its type, whether it is a regular file, a Windows link or a UNIX
  symlink.</div>
 <dl>
@@ -404,7 +424,9 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>checkFileType</h4>
-<pre>public&nbsp;<a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.FileType.html" title="enum in de.griefed.serverpackcreator.utilities.common">FileUtilities.FileType</a>&nbsp;checkFileType(java.io.File&nbsp;file)</pre>
+<pre>@NotNull
+public&nbsp;@NotNull <a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.FileType.html" title="enum in de.griefed.serverpackcreator.utilities.common">FileUtilities.FileType</a>&nbsp;checkFileType(@NotNull
+                                                              @NotNull java.io.File&nbsp;file)</pre>
 <div class="block">Check the given file for its type, whether it is a regular file, a Windows link or a UNIX
  symlink.</div>
 <dl>
@@ -422,7 +444,8 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>isLink</h4>
-<pre>public&nbsp;boolean&nbsp;isLink(java.lang.String&nbsp;file)</pre>
+<pre>public&nbsp;boolean&nbsp;isLink(@NotNull
+                      @NotNull java.lang.String&nbsp;file)</pre>
 <div class="block">Check if the given file is a UNIX symlink or Windows lnk.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -438,7 +461,8 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>isLink</h4>
-<pre>public&nbsp;boolean&nbsp;isLink(java.io.File&nbsp;file)</pre>
+<pre>public&nbsp;boolean&nbsp;isLink(@NotNull
+                      @NotNull java.io.File&nbsp;file)</pre>
 <div class="block">Check if the given file is a UNIX symlink or Windows lnk.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -454,9 +478,11 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>resolveLink</h4>
-<pre>public&nbsp;java.lang.String&nbsp;resolveLink(java.lang.String&nbsp;link)
-                             throws <a href="../../../../../de/griefed/serverpackcreator/utilities/common/InvalidFileTypeException.html" title="class in de.griefed.serverpackcreator.utilities.common">InvalidFileTypeException</a>,
-                                    java.io.IOException</pre>
+<pre>@NotNull
+public&nbsp;@NotNull java.lang.String&nbsp;resolveLink(@NotNull
+                                                      @NotNull java.lang.String&nbsp;link)
+                                               throws <a href="../../../../../de/griefed/serverpackcreator/utilities/common/InvalidFileTypeException.html" title="class in de.griefed.serverpackcreator.utilities.common">InvalidFileTypeException</a>,
+                                                      java.io.IOException</pre>
 <div class="block">Resolve a given link/symlink to its source.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -476,9 +502,11 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>resolveLink</h4>
-<pre>public&nbsp;java.lang.String&nbsp;resolveLink(java.io.File&nbsp;link)
-                             throws java.io.IOException,
-                                    <a href="../../../../../de/griefed/serverpackcreator/utilities/common/InvalidFileTypeException.html" title="class in de.griefed.serverpackcreator.utilities.common">InvalidFileTypeException</a></pre>
+<pre>@NotNull
+public&nbsp;@NotNull java.lang.String&nbsp;resolveLink(@NotNull
+                                                      @NotNull java.io.File&nbsp;link)
+                                               throws java.io.IOException,
+                                                      <a href="../../../../../de/griefed/serverpackcreator/utilities/common/InvalidFileTypeException.html" title="class in de.griefed.serverpackcreator.utilities.common">InvalidFileTypeException</a></pre>
 <div class="block">Resolve a given link/symlink to its source.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -492,14 +520,15 @@ extends java.lang.Object</pre>
 </dl>
 </li>
 </ul>
-<a name="checkPermissions-java.lang.String-">
+<a name="isReadWritePermissionSet-java.lang.String-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>checkPermissions</h4>
-<pre>public&nbsp;boolean&nbsp;checkPermissions(java.lang.String&nbsp;fileOrDirectory)
-                         throws java.nio.file.InvalidPathException</pre>
+<h4>isReadWritePermissionSet</h4>
+<pre>public&nbsp;boolean&nbsp;isReadWritePermissionSet(@NotNull
+                                        @NotNull java.lang.String&nbsp;fileOrDirectory)
+                                 throws java.nio.file.InvalidPathException</pre>
 <div class="block">Check the given file or directory for read- and write-permission.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -511,14 +540,66 @@ extends java.lang.Object</pre>
 </dl>
 </li>
 </ul>
-<a name="checkPermissions-java.io.File-">
+<a name="isReadWritePermissionSet-java.nio.file.Path-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>checkPermissions</h4>
-<pre>public&nbsp;boolean&nbsp;checkPermissions(java.io.File&nbsp;fileOrDirectory)
-                         throws java.nio.file.InvalidPathException</pre>
+<h4>isReadWritePermissionSet</h4>
+<pre>public&nbsp;boolean&nbsp;isReadWritePermissionSet(@NotNull
+                                        @NotNull java.nio.file.Path&nbsp;fileOrDirectory)</pre>
+<div class="block">Check the given file or directory for read- and write-permission.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>fileOrDirectory</code> - File or directory.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd><code>true</code> if both read- and write-permissions are set.</dd>
+</dl>
+</li>
+</ul>
+<a name="isReadPermissionSet-java.nio.file.Path-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>isReadPermissionSet</h4>
+<pre>public&nbsp;boolean&nbsp;isReadPermissionSet(@NotNull
+                                   @NotNull java.nio.file.Path&nbsp;fileOrDirectory)</pre>
+<div class="block">Check the given file or directory for read-permission.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>fileOrDirectory</code> - File or directory.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd><code>true</code> if read-permissions are set.</dd>
+</dl>
+</li>
+</ul>
+<a name="isWritePermissionSet-java.nio.file.Path-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>isWritePermissionSet</h4>
+<pre>public&nbsp;boolean&nbsp;isWritePermissionSet(@NotNull
+                                    @NotNull java.nio.file.Path&nbsp;fileOrDirectory)</pre>
+<div class="block">Check the given file or directory for write-permission.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>fileOrDirectory</code> - File or directory.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd><code>true</code> if write-permissions are set.</dd>
+</dl>
+</li>
+</ul>
+<a name="isReadWritePermissionSet-java.io.File-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>isReadWritePermissionSet</h4>
+<pre>public&nbsp;boolean&nbsp;isReadWritePermissionSet(@NotNull
+                                        @NotNull java.io.File&nbsp;fileOrDirectory)
+                                 throws java.nio.file.InvalidPathException</pre>
 <div class="block">Check the given file or directory for read- and write-permission.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -532,29 +613,14 @@ extends java.lang.Object</pre>
 </dl>
 </li>
 </ul>
-<a name="checkPermissions-java.nio.file.Path-">
+<a name="isReadPermissionSet-java.lang.String-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>checkPermissions</h4>
-<pre>public&nbsp;boolean&nbsp;checkPermissions(java.nio.file.Path&nbsp;fileOrDirectory)</pre>
-<div class="block">Check the given file or directory for read- and write-permission.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>fileOrDirectory</code> - File or directory.</dd>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>true</code> if both read- and write-permissions are set.</dd>
-</dl>
-</li>
-</ul>
-<a name="checkReadPermission-java.lang.String-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>checkReadPermission</h4>
-<pre>public&nbsp;boolean&nbsp;checkReadPermission(java.lang.String&nbsp;fileOrDirectory)</pre>
+<h4>isReadPermissionSet</h4>
+<pre>public&nbsp;boolean&nbsp;isReadPermissionSet(@NotNull
+                                   @NotNull java.lang.String&nbsp;fileOrDirectory)</pre>
 <div class="block">Check the given file or directory for read-permission.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -564,13 +630,14 @@ extends java.lang.Object</pre>
 </dl>
 </li>
 </ul>
-<a name="checkReadPermission-java.io.File-">
+<a name="isReadPermissionSet-java.io.File-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>checkReadPermission</h4>
-<pre>public&nbsp;boolean&nbsp;checkReadPermission(java.io.File&nbsp;fileOrDirectory)</pre>
+<h4>isReadPermissionSet</h4>
+<pre>public&nbsp;boolean&nbsp;isReadPermissionSet(@NotNull
+                                   @NotNull java.io.File&nbsp;fileOrDirectory)</pre>
 <div class="block">Check the given file or directory for read-permission.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -580,29 +647,14 @@ extends java.lang.Object</pre>
 </dl>
 </li>
 </ul>
-<a name="checkReadPermission-java.nio.file.Path-">
+<a name="isWritePermissionSet-java.lang.String-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>checkReadPermission</h4>
-<pre>public&nbsp;boolean&nbsp;checkReadPermission(java.nio.file.Path&nbsp;fileOrDirectory)</pre>
-<div class="block">Check the given file or directory for read-permission.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>fileOrDirectory</code> - File or directory.</dd>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>true</code> if read-permissions are set.</dd>
-</dl>
-</li>
-</ul>
-<a name="checkWritePermission-java.lang.String-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>checkWritePermission</h4>
-<pre>public&nbsp;boolean&nbsp;checkWritePermission(java.lang.String&nbsp;fileOrDirectory)</pre>
+<h4>isWritePermissionSet</h4>
+<pre>public&nbsp;boolean&nbsp;isWritePermissionSet(@NotNull
+                                    @NotNull java.lang.String&nbsp;fileOrDirectory)</pre>
 <div class="block">Check the given file or directory for write-permission.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -612,29 +664,14 @@ extends java.lang.Object</pre>
 </dl>
 </li>
 </ul>
-<a name="checkWritePermission-java.io.File-">
+<a name="isWritePermissionSet-java.io.File-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>checkWritePermission</h4>
-<pre>public&nbsp;boolean&nbsp;checkWritePermission(java.io.File&nbsp;fileOrDirectory)</pre>
-<div class="block">Check the given file or directory for write-permission.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>fileOrDirectory</code> - File or directory.</dd>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>true</code> if write-permissions are set.</dd>
-</dl>
-</li>
-</ul>
-<a name="checkWritePermission-java.nio.file.Path-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>checkWritePermission</h4>
-<pre>public&nbsp;boolean&nbsp;checkWritePermission(java.nio.file.Path&nbsp;fileOrDirectory)</pre>
+<h4>isWritePermissionSet</h4>
+<pre>public&nbsp;boolean&nbsp;isWritePermissionSet(@NotNull
+                                    @NotNull java.io.File&nbsp;fileOrDirectory)</pre>
 <div class="block">Check the given file or directory for write-permission.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -650,7 +687,23 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>openFolder</h4>
-<pre>public&nbsp;void&nbsp;openFolder(java.lang.String&nbsp;folder)</pre>
+<pre>public&nbsp;void&nbsp;openFolder(@NotNull
+                       @NotNull java.lang.String&nbsp;folder)</pre>
+<div class="block">Open the specified folder in the file explorer.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>folder</code> - The folder to open.</dd>
+</dl>
+</li>
+</ul>
+<a name="openFolder-java.io.File-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>openFolder</h4>
+<pre>public&nbsp;void&nbsp;openFolder(@NotNull
+                       @NotNull java.io.File&nbsp;folder)</pre>
 <div class="block">Open the specified folder in the file explorer.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -661,10 +714,26 @@ extends java.lang.Object</pre>
 <a name="openFile-java.lang.String-">
 <!--   -->
 </a>
+<ul class="blockList">
+<li class="blockList">
+<h4>openFile</h4>
+<pre>public&nbsp;void&nbsp;openFile(@NotNull
+                     @NotNull java.lang.String&nbsp;fileToOpen)</pre>
+<div class="block">Open the specified file in an editor.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>fileToOpen</code> - The file to open.</dd>
+</dl>
+</li>
+</ul>
+<a name="openFile-java.io.File-">
+<!--   -->
+</a>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>openFile</h4>
-<pre>public&nbsp;void&nbsp;openFile(java.lang.String&nbsp;fileToOpen)</pre>
+<pre>public&nbsp;void&nbsp;openFile(@NotNull
+                     @NotNull java.io.File&nbsp;fileToOpen)</pre>
 <div class="block">Open the specified file in an editor.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>

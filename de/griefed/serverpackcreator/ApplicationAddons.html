@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -173,10 +173,10 @@ extends org.pf4j.JarPluginManager</pre>
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationAddons.html#ApplicationAddons-com.electronwill.nightconfig.toml.TomlParser-de.griefed.serverpackcreator.ApplicationProperties-de.griefed.serverpackcreator.versionmeta.VersionMeta-de.griefed.serverpackcreator.utilities.common.Utilities-">ApplicationAddons</a></span>(com.electronwill.nightconfig.toml.TomlParser&nbsp;tomlParser,
-                 <a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;injectedApplicationProperties,
-                 <a href="../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta">VersionMeta</a>&nbsp;injectedVersionMeta,
-                 <a href="../../../de/griefed/serverpackcreator/utilities/common/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.common">Utilities</a>&nbsp;injectedUtilities)</code>
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationAddons.html#ApplicationAddons-com.electronwill.nightconfig.toml.TomlParser-de.griefed.serverpackcreator.ApplicationProperties-de.griefed.serverpackcreator.versionmeta.VersionMeta-de.griefed.serverpackcreator.utilities.common.Utilities-">ApplicationAddons</a></span>(@NotNull com.electronwill.nightconfig.toml.TomlParser&nbsp;tomlParser,
+                 @NotNull <a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;injectedApplicationProperties,
+                 @NotNull <a href="../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta">VersionMeta</a>&nbsp;injectedVersionMeta,
+                 @NotNull <a href="../../../de/griefed/serverpackcreator/utilities/common/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.common">Utilities</a>&nbsp;injectedUtilities)</code>
 <div class="block">Initialize ServerPackCreators addons and give access to any and all available extensions.</div>
 </td>
 </tr>
@@ -197,40 +197,72 @@ extends org.pf4j.JarPluginManager</pre>
 </tr>
 <tr id="i0" class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationAddons.html#addTabExtensionTabs-javax.swing.JTabbedPane-">addTabExtensionTabs</a></span>(javax.swing.JTabbedPane&nbsp;tabbedPane)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationAddons.html#addTabExtensionTabs-javax.swing.JTabbedPane-">addTabExtensionTabs</a></span>(@NotNull javax.swing.JTabbedPane&nbsp;tabbedPane)</code>
 <div class="block">Add any and all additional tabs to the ServerPackCreator tabbed pane (main GUI).</div>
 </td>
 </tr>
 <tr id="i1" class="rowColor">
-<td class="colFirst"><code>java.util.List&lt;<a href="../../../de/griefed/serverpackcreator/addons/swinggui/ConfigPanelExtension.html" title="interface in de.griefed.serverpackcreator.addons.swinggui">ConfigPanelExtension</a>&gt;</code></td>
+<td class="colFirst"><code>@NotNull java.util.List&lt;<a href="../../../de/griefed/serverpackcreator/addons/swinggui/ConfigPanelExtension.html" title="interface in de.griefed.serverpackcreator.addons.swinggui">ConfigPanelExtension</a>&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationAddons.html#configPanelExtensions--">configPanelExtensions</a></span>()</code>
 <div class="block">List of available <a href="../../../de/griefed/serverpackcreator/addons/swinggui/ConfigPanelExtension.html" title="interface in de.griefed.serverpackcreator.addons.swinggui"><code>ConfigPanelExtension</code></a>-extensions.</div>
 </td>
 </tr>
 <tr id="i2" class="altColor">
-<td class="colFirst"><code>protected org.pf4j.ExtensionFactory</code></td>
+<td class="colFirst"><code>protected @NotNull org.pf4j.ExtensionFactory</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationAddons.html#createExtensionFactory--">createExtensionFactory</a></span>()</code>&nbsp;</td>
 </tr>
 <tr id="i3" class="rowColor">
-<td class="colFirst"><code>java.util.Optional&lt;com.electronwill.nightconfig.core.CommentedConfig&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationAddons.html#getAddonConfig-java.lang.String-">getAddonConfig</a></span>(java.lang.String&nbsp;addonId)</code>
+<td class="colFirst"><code>@NotNull java.util.Optional&lt;com.electronwill.nightconfig.core.CommentedConfig&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationAddons.html#getAddonConfig-java.lang.String-">getAddonConfig</a></span>(@NotNull java.lang.String&nbsp;addonId)</code>
 <div class="block">Get the global addon configuration for an addon of the passed ID.</div>
 </td>
 </tr>
 <tr id="i4" class="altColor">
-<td class="colFirst"><code>java.util.Optional&lt;java.io.File&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationAddons.html#getAddonConfigFile-java.lang.String-">getAddonConfigFile</a></span>(java.lang.String&nbsp;addonId)</code>
+<td class="colFirst"><code>@NotNull java.util.Optional&lt;java.io.File&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationAddons.html#getAddonConfigFile-java.lang.String-">getAddonConfigFile</a></span>(@NotNull java.lang.String&nbsp;addonId)</code>
 <div class="block">Get the configuration-file for an addon, if it exists.</div>
 </td>
 </tr>
 <tr id="i5" class="rowColor">
-<td class="colFirst"><code>java.util.List&lt;<a href="../../../de/griefed/serverpackcreator/addons/swinggui/ExtensionConfigPanel.html" title="class in de.griefed.serverpackcreator.addons.swinggui">ExtensionConfigPanel</a>&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationAddons.html#getConfigPanels-de.griefed.serverpackcreator.swing.TabCreateServerPack-">getConfigPanels</a></span>(<a href="../../../de/griefed/serverpackcreator/swing/TabCreateServerPack.html" title="class in de.griefed.serverpackcreator.swing">TabCreateServerPack</a>&nbsp;tabCreateServerPack)</code>
+<td class="colFirst"><code>@NotNull java.util.List&lt;<a href="../../../de/griefed/serverpackcreator/addons/swinggui/ExtensionConfigPanel.html" title="class in de.griefed.serverpackcreator.addons.swinggui">ExtensionConfigPanel</a>&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationAddons.html#getConfigPanels-de.griefed.serverpackcreator.swing.TabCreateServerPack-">getConfigPanels</a></span>(@NotNull <a href="../../../de/griefed/serverpackcreator/swing/TabCreateServerPack.html" title="class in de.griefed.serverpackcreator.swing">TabCreateServerPack</a>&nbsp;tabCreateServerPack)</code>
 <div class="block">Create config panels for the passed server pack configuration tab.</div>
 </td>
 </tr>
 <tr id="i6" class="altColor">
-<td class="colFirst"><code>java.util.List&lt;<a href="../../../de/griefed/serverpackcreator/addons/swinggui/TabExtension.html" title="interface in de.griefed.serverpackcreator.addons.swinggui">TabExtension</a>&gt;</code></td>
+<td class="colFirst"><code>boolean</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationAddons.html#runConfigCheckExtensions-de.griefed.serverpackcreator.ConfigurationModel-java.util.List-">runConfigCheckExtensions</a></span>(@NotNull <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel,
+                        @NotNull java.util.List&lt;java.lang.String&gt;&nbsp;encounteredErrors)</code>
+<div class="block">Run any and all configuration-check extensions, using the passed configuration model and the
+ destination at which the server pack is to be generated and stored at.</div>
+</td>
+</tr>
+<tr id="i7" class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationAddons.html#runPostGenExtensions-de.griefed.serverpackcreator.ConfigurationModel-java.lang.String-">runPostGenExtensions</a></span>(@NotNull <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel,
+                    @NotNull java.lang.String&nbsp;destination)</code>
+<div class="block">Run any and all Post-server pack-generation extensions, using the passed configuration model
+ and the destination at which the server pack is to be generated and stored at.</div>
+</td>
+</tr>
+<tr id="i8" class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationAddons.html#runPreGenExtensions-de.griefed.serverpackcreator.ConfigurationModel-java.lang.String-">runPreGenExtensions</a></span>(@NotNull <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel,
+                   @NotNull java.lang.String&nbsp;destination)</code>
+<div class="block">Run any and all Pre-Server Pack-Generation extensions, using the passed configuration model and
+ the destination at which the server pack is to be generated and stored at.</div>
+</td>
+</tr>
+<tr id="i9" class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationAddons.html#runPreZipExtensions-de.griefed.serverpackcreator.ConfigurationModel-java.lang.String-">runPreZipExtensions</a></span>(@NotNull <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel,
+                   @NotNull java.lang.String&nbsp;destination)</code>
+<div class="block">Run any and all Pre-ZIP-archive creation extensions, using the passed configuration model and
+ the destination at which the server pack is to be generated and stored at.</div>
+</td>
+</tr>
+<tr id="i10" class="altColor">
+<td class="colFirst"><code>@NotNull java.util.List&lt;<a href="../../../de/griefed/serverpackcreator/addons/swinggui/TabExtension.html" title="interface in de.griefed.serverpackcreator.addons.swinggui">TabExtension</a>&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ApplicationAddons.html#tabExtensions--">tabExtensions</a></span>()</code>
 <div class="block">List of available <a href="../../../de/griefed/serverpackcreator/addons/swinggui/TabExtension.html" title="interface in de.griefed.serverpackcreator.addons.swinggui"><code>TabExtension</code></a>-extensions.</div>
 </td>
@@ -292,10 +324,14 @@ extends org.pf4j.JarPluginManager</pre>
 <li class="blockList">
 <h4>ApplicationAddons</h4>
 <pre>@Autowired
-public&nbsp;ApplicationAddons(com.electronwill.nightconfig.toml.TomlParser&nbsp;tomlParser,
-                                    <a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;injectedApplicationProperties,
-                                    <a href="../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta">VersionMeta</a>&nbsp;injectedVersionMeta,
-                                    <a href="../../../de/griefed/serverpackcreator/utilities/common/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.common">Utilities</a>&nbsp;injectedUtilities)</pre>
+public&nbsp;ApplicationAddons(@NotNull
+                                    @NotNull com.electronwill.nightconfig.toml.TomlParser&nbsp;tomlParser,
+                                    @NotNull
+                                    @NotNull <a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;injectedApplicationProperties,
+                                    @NotNull
+                                    @NotNull <a href="../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta">VersionMeta</a>&nbsp;injectedVersionMeta,
+                                    @NotNull
+                                    @NotNull <a href="../../../de/griefed/serverpackcreator/utilities/common/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.common">Utilities</a>&nbsp;injectedUtilities)</pre>
 <div class="block">Initialize ServerPackCreators addons and give access to any and all available extensions.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -315,16 +351,68 @@ public&nbsp;ApplicationAddons(com.electronwill.nightconfig.toml.TomlParser&nbsp;
 <!--   -->
 </a>
 <h3>Method Detail</h3>
+<a name="tabExtensions--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>tabExtensions</h4>
+<pre>@NotNull
+public&nbsp;@NotNull java.util.List&lt;<a href="../../../de/griefed/serverpackcreator/addons/swinggui/TabExtension.html" title="interface in de.griefed.serverpackcreator.addons.swinggui">TabExtension</a>&gt;&nbsp;tabExtensions()</pre>
+<div class="block">List of available <a href="../../../de/griefed/serverpackcreator/addons/swinggui/TabExtension.html" title="interface in de.griefed.serverpackcreator.addons.swinggui"><code>TabExtension</code></a>-extensions.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>List of available <a href="../../../de/griefed/serverpackcreator/addons/swinggui/TabExtension.html" title="interface in de.griefed.serverpackcreator.addons.swinggui"><code>TabExtension</code></a>-extensions.</dd>
+</dl>
+</li>
+</ul>
+<a name="configPanelExtensions--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>configPanelExtensions</h4>
+<pre>@NotNull
+public&nbsp;@NotNull java.util.List&lt;<a href="../../../de/griefed/serverpackcreator/addons/swinggui/ConfigPanelExtension.html" title="interface in de.griefed.serverpackcreator.addons.swinggui">ConfigPanelExtension</a>&gt;&nbsp;configPanelExtensions()</pre>
+<div class="block">List of available <a href="../../../de/griefed/serverpackcreator/addons/swinggui/ConfigPanelExtension.html" title="interface in de.griefed.serverpackcreator.addons.swinggui"><code>ConfigPanelExtension</code></a>-extensions.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>List of available <a href="../../../de/griefed/serverpackcreator/addons/swinggui/ConfigPanelExtension.html" title="interface in de.griefed.serverpackcreator.addons.swinggui"><code>ConfigPanelExtension</code></a>-extensions.</dd>
+</dl>
+</li>
+</ul>
 <a name="createExtensionFactory--">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>createExtensionFactory</h4>
-<pre>protected&nbsp;org.pf4j.ExtensionFactory&nbsp;createExtensionFactory()</pre>
+<pre>@Contract(value=" -&gt; new")
+ @NotNull
+protected&nbsp;@NotNull org.pf4j.ExtensionFactory&nbsp;createExtensionFactory()</pre>
 <dl>
 <dt><span class="overrideSpecifyLabel">Overrides:</span></dt>
 <dd><code>createExtensionFactory</code>&nbsp;in class&nbsp;<code>org.pf4j.DefaultPluginManager</code></dd>
+</dl>
+</li>
+</ul>
+<a name="runPreGenExtensions-de.griefed.serverpackcreator.ConfigurationModel-java.lang.String-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>runPreGenExtensions</h4>
+<pre>public&nbsp;void&nbsp;runPreGenExtensions(@NotNull
+                                @NotNull <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel,
+                                @NotNull
+                                @NotNull java.lang.String&nbsp;destination)</pre>
+<div class="block">Run any and all Pre-Server Pack-Generation extensions, using the passed configuration model and
+ the destination at which the server pack is to be generated and stored at.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>configurationModel</code> - The configuration model from which to create the server pack.</dd>
+<dd><code>destination</code> - The destination at which the server pack will be generated and stored
+                           at.</dd>
 </dl>
 </li>
 </ul>
@@ -334,7 +422,9 @@ public&nbsp;ApplicationAddons(com.electronwill.nightconfig.toml.TomlParser&nbsp;
 <ul class="blockList">
 <li class="blockList">
 <h4>getAddonConfig</h4>
-<pre>public&nbsp;java.util.Optional&lt;com.electronwill.nightconfig.core.CommentedConfig&gt;&nbsp;getAddonConfig(java.lang.String&nbsp;addonId)</pre>
+<pre>@NotNull
+public&nbsp;@NotNull java.util.Optional&lt;com.electronwill.nightconfig.core.CommentedConfig&gt;&nbsp;getAddonConfig(@NotNull
+                                                                                                              @NotNull java.lang.String&nbsp;addonId)</pre>
 <div class="block">Get the global addon configuration for an addon of the passed ID. The configuration is wrapped
  in an <code>Optional</code>, because an addon may not provide a global configuration. If you intend
  on using a global configuration for your addon, make sure to check whether it is present before
@@ -347,13 +437,72 @@ public&nbsp;ApplicationAddons(com.electronwill.nightconfig.toml.TomlParser&nbsp;
 </dl>
 </li>
 </ul>
+<a name="runPreZipExtensions-de.griefed.serverpackcreator.ConfigurationModel-java.lang.String-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>runPreZipExtensions</h4>
+<pre>public&nbsp;void&nbsp;runPreZipExtensions(@NotNull
+                                @NotNull <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel,
+                                @NotNull
+                                @NotNull java.lang.String&nbsp;destination)</pre>
+<div class="block">Run any and all Pre-ZIP-archive creation extensions, using the passed configuration model and
+ the destination at which the server pack is to be generated and stored at.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>configurationModel</code> - The configuration model from which to create the server pack.</dd>
+<dd><code>destination</code> - The destination at which the server pack will be generated and stored
+                           at.</dd>
+</dl>
+</li>
+</ul>
+<a name="runPostGenExtensions-de.griefed.serverpackcreator.ConfigurationModel-java.lang.String-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>runPostGenExtensions</h4>
+<pre>public&nbsp;void&nbsp;runPostGenExtensions(@NotNull
+                                 @NotNull <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel,
+                                 @NotNull
+                                 @NotNull java.lang.String&nbsp;destination)</pre>
+<div class="block">Run any and all Post-server pack-generation extensions, using the passed configuration model
+ and the destination at which the server pack is to be generated and stored at.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>configurationModel</code> - The configuration model from which to create the server pack.</dd>
+<dd><code>destination</code> - The destination at which the server pack will be generated and stored
+                           at.</dd>
+</dl>
+</li>
+</ul>
+<a name="addTabExtensionTabs-javax.swing.JTabbedPane-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>addTabExtensionTabs</h4>
+<pre>public&nbsp;void&nbsp;addTabExtensionTabs(@NotNull
+                                @NotNull javax.swing.JTabbedPane&nbsp;tabbedPane)</pre>
+<div class="block">Add any and all additional tabs to the ServerPackCreator tabbed pane (main GUI). You may use
+ this to add tabs to your own <code>JTabbedPane</code>, if you so desire. Could be pretty awesome to
+ have your addons extra tabs in a separate window!</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>tabbedPane</code> - The tabbed pane to which the additional panels should be added to as tabs.</dd>
+</dl>
+</li>
+</ul>
 <a name="getAddonConfigFile-java.lang.String-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>getAddonConfigFile</h4>
-<pre>public&nbsp;java.util.Optional&lt;java.io.File&gt;&nbsp;getAddonConfigFile(java.lang.String&nbsp;addonId)</pre>
+<pre>@NotNull
+public&nbsp;@NotNull java.util.Optional&lt;java.io.File&gt;&nbsp;getAddonConfigFile(@NotNull
+                                                                             @NotNull java.lang.String&nbsp;addonId)</pre>
 <div class="block">Get the configuration-file for an addon, if it exists. This is wrapped in an <code>Optional</code>,
  because not every addon may provide a configuration-file to use globally for the relevant
  addons settings. If you intend on using a global configuration, make sure to check whether the
@@ -366,29 +515,15 @@ public&nbsp;ApplicationAddons(com.electronwill.nightconfig.toml.TomlParser&nbsp;
 </dl>
 </li>
 </ul>
-<a name="addTabExtensionTabs-javax.swing.JTabbedPane-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>addTabExtensionTabs</h4>
-<pre>public&nbsp;void&nbsp;addTabExtensionTabs(javax.swing.JTabbedPane&nbsp;tabbedPane)</pre>
-<div class="block">Add any and all additional tabs to the ServerPackCreator tabbed pane (main GUI). You may use
- this to add tabs to your own <code>JTabbedPane</code>, if you so desire. Could be pretty awesome to
- have your addons extra tabs in a separate window!</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>tabbedPane</code> - The tabbed pane to which the additional panels should be added to as tabs.</dd>
-</dl>
-</li>
-</ul>
 <a name="getConfigPanels-de.griefed.serverpackcreator.swing.TabCreateServerPack-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>getConfigPanels</h4>
-<pre>public&nbsp;java.util.List&lt;<a href="../../../de/griefed/serverpackcreator/addons/swinggui/ExtensionConfigPanel.html" title="class in de.griefed.serverpackcreator.addons.swinggui">ExtensionConfigPanel</a>&gt;&nbsp;getConfigPanels(<a href="../../../de/griefed/serverpackcreator/swing/TabCreateServerPack.html" title="class in de.griefed.serverpackcreator.swing">TabCreateServerPack</a>&nbsp;tabCreateServerPack)</pre>
+<pre>@NotNull
+public&nbsp;@NotNull java.util.List&lt;<a href="../../../de/griefed/serverpackcreator/addons/swinggui/ExtensionConfigPanel.html" title="class in de.griefed.serverpackcreator.addons.swinggui">ExtensionConfigPanel</a>&gt;&nbsp;getConfigPanels(@NotNull
+                                                                              @NotNull <a href="../../../de/griefed/serverpackcreator/swing/TabCreateServerPack.html" title="class in de.griefed.serverpackcreator.swing">TabCreateServerPack</a>&nbsp;tabCreateServerPack)</pre>
 <div class="block">Create config panels for the passed server pack configuration tab. Note that this method does
  <strong>NOT</strong> add the panels to the tab, it only creates them and passes the server
  pack config tab object-reference to each config panel, so they, in turn, may use any available
@@ -404,31 +539,29 @@ public&nbsp;ApplicationAddons(com.electronwill.nightconfig.toml.TomlParser&nbsp;
 </dl>
 </li>
 </ul>
-<a name="tabExtensions--">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>tabExtensions</h4>
-<pre>public&nbsp;java.util.List&lt;<a href="../../../de/griefed/serverpackcreator/addons/swinggui/TabExtension.html" title="interface in de.griefed.serverpackcreator.addons.swinggui">TabExtension</a>&gt;&nbsp;tabExtensions()</pre>
-<div class="block">List of available <a href="../../../de/griefed/serverpackcreator/addons/swinggui/TabExtension.html" title="interface in de.griefed.serverpackcreator.addons.swinggui"><code>TabExtension</code></a>-extensions.</div>
-<dl>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>List of available <a href="../../../de/griefed/serverpackcreator/addons/swinggui/TabExtension.html" title="interface in de.griefed.serverpackcreator.addons.swinggui"><code>TabExtension</code></a>-extensions.</dd>
-</dl>
-</li>
-</ul>
-<a name="configPanelExtensions--">
+<a name="runConfigCheckExtensions-de.griefed.serverpackcreator.ConfigurationModel-java.util.List-">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
-<h4>configPanelExtensions</h4>
-<pre>public&nbsp;java.util.List&lt;<a href="../../../de/griefed/serverpackcreator/addons/swinggui/ConfigPanelExtension.html" title="interface in de.griefed.serverpackcreator.addons.swinggui">ConfigPanelExtension</a>&gt;&nbsp;configPanelExtensions()</pre>
-<div class="block">List of available <a href="../../../de/griefed/serverpackcreator/addons/swinggui/ConfigPanelExtension.html" title="interface in de.griefed.serverpackcreator.addons.swinggui"><code>ConfigPanelExtension</code></a>-extensions.</div>
+<h4>runConfigCheckExtensions</h4>
+<pre>public&nbsp;boolean&nbsp;runConfigCheckExtensions(@NotNull
+                                        @NotNull <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel,
+                                        @NotNull
+                                        @NotNull java.util.List&lt;java.lang.String&gt;&nbsp;encounteredErrors)</pre>
+<div class="block">Run any and all configuration-check extensions, using the passed configuration model and the
+ destination at which the server pack is to be generated and stored at.</div>
 <dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>configurationModel</code> - The configuration model containing the server pack and addon
+                           configurations to check.</dd>
+<dd><code>encounteredErrors</code> - A list of encountered errors to add to in case anything goes wrong.
+                           This list is displayed to the user after am unsuccessful server pack
+                           generation to help them figure out what went wrong.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>List of available <a href="../../../de/griefed/serverpackcreator/addons/swinggui/ConfigPanelExtension.html" title="interface in de.griefed.serverpackcreator.addons.swinggui"><code>ConfigPanelExtension</code></a>-extensions.</dd>
+<dd><code>true</code> if any custom check detected an error with the configuration.
+ <strong>Only</strong> return <code>false</code> when not a <strong>single</strong> check
+ errored.</dd>
 </dl>
 </li>
 </ul>

@@ -98,12 +98,7 @@ var activeTableTab = "activeTableTab";
 <li>java.lang.Object</li>
 <li>
 <ul class="inheritance">
-<li><a href="../../../../../de/griefed/serverpackcreator/versionmeta/ManifestParser.html" title="class in de.griefed.serverpackcreator.versionmeta">de.griefed.serverpackcreator.versionmeta.ManifestParser</a></li>
-<li>
-<ul class="inheritance">
 <li>de.griefed.serverpackcreator.versionmeta.legacyfabric.LegacyFabricInstaller</li>
-</ul>
-</li>
 </ul>
 </li>
 </ul>
@@ -113,7 +108,7 @@ var activeTableTab = "activeTableTab";
 <hr>
 <br>
 <pre>public final class <span class="typeNameLabel">LegacyFabricInstaller</span>
-extends <a href="../../../../../de/griefed/serverpackcreator/versionmeta/ManifestParser.html" title="class in de.griefed.serverpackcreator.versionmeta">ManifestParser</a></pre>
+extends java.lang.Object</pre>
 </li>
 </ul>
 </div>
@@ -132,7 +127,10 @@ extends <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Manifes
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/legacyfabric/LegacyFabricInstaller.html#LegacyFabricInstaller-java.io.File-">LegacyFabricInstaller</a></span>(java.io.File&nbsp;installerVersionsManifest)</code>&nbsp;</td>
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/legacyfabric/LegacyFabricInstaller.html#LegacyFabricInstaller-java.io.File-de.griefed.serverpackcreator.utilities.common.Utilities-">LegacyFabricInstaller</a></span>(@NotNull java.io.File&nbsp;installerVersionsManifest,
+                     @NotNull <a href="../../../../../de/griefed/serverpackcreator/utilities/common/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.common">Utilities</a>&nbsp;utilities)</code>
+<div class="block">New instance holding information about the LegacyFabric installer and versions.</div>
+</td>
 </tr>
 </table>
 </li>
@@ -150,49 +148,42 @@ extends <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Manifes
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr id="i0" class="altColor">
-<td class="colFirst"><code>java.util.List&lt;java.lang.String&gt;</code></td>
+<td class="colFirst"><code>@NotNull java.util.List&lt;java.lang.String&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/legacyfabric/LegacyFabricInstaller.html#all--">all</a></span>()</code>
 <div class="block">All available installer versions.</div>
 </td>
 </tr>
 <tr id="i1" class="rowColor">
-<td class="colFirst"><code>java.lang.String</code></td>
+<td class="colFirst"><code>@NotNull java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/legacyfabric/LegacyFabricInstaller.html#latest--">latest</a></span>()</code>
 <div class="block">The latest version of the Legacy Fabric installer.</div>
 </td>
 </tr>
 <tr id="i2" class="altColor">
-<td class="colFirst"><code>java.net.URL</code></td>
+<td class="colFirst"><code>@NotNull java.net.URL</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/legacyfabric/LegacyFabricInstaller.html#latestURL--">latestURL</a></span>()</code>
 <div class="block">The URL to the latest installer for Legacy Fabric.</div>
 </td>
 </tr>
 <tr id="i3" class="rowColor">
-<td class="colFirst"><code>java.lang.String</code></td>
+<td class="colFirst"><code>@NotNull java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/legacyfabric/LegacyFabricInstaller.html#release--">release</a></span>()</code>
 <div class="block">The release version of the Legacy Fabric installer.</div>
 </td>
 </tr>
 <tr id="i4" class="altColor">
-<td class="colFirst"><code>java.net.URL</code></td>
+<td class="colFirst"><code>@NotNull java.net.URL</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/legacyfabric/LegacyFabricInstaller.html#releaseURL--">releaseURL</a></span>()</code>
 <div class="block">The URL to the release installer for Legacy Fabric.</div>
 </td>
 </tr>
 <tr id="i5" class="rowColor">
-<td class="colFirst"><code>java.util.Optional&lt;java.net.URL&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/legacyfabric/LegacyFabricInstaller.html#specificURL-java.lang.String-">specificURL</a></span>(java.lang.String&nbsp;version)</code>
+<td class="colFirst"><code>@NotNull java.util.Optional&lt;java.net.URL&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/legacyfabric/LegacyFabricInstaller.html#specificURL-java.lang.String-">specificURL</a></span>(@NotNull java.lang.String&nbsp;version)</code>
 <div class="block">Get the URL for a specific installer version, wrapped in an Optional.</div>
 </td>
 </tr>
 </table>
-<ul class="blockList">
-<li class="blockList"><a name="methods.inherited.from.class.de.griefed.serverpackcreator.versionmeta.ManifestParser">
-<!--   -->
-</a>
-<h3>Methods inherited from class&nbsp;de.griefed.serverpackcreator.versionmeta.<a href="../../../../../de/griefed/serverpackcreator/versionmeta/ManifestParser.html" title="class in de.griefed.serverpackcreator.versionmeta">ManifestParser</a></h3>
-<code><a href="../../../../../de/griefed/serverpackcreator/versionmeta/ManifestParser.html#getJson-java.io.File-com.fasterxml.jackson.databind.ObjectMapper-">getJson</a>, <a href="../../../../../de/griefed/serverpackcreator/versionmeta/ManifestParser.html#getJson-java.io.InputStream-com.fasterxml.jackson.databind.ObjectMapper-">getJson</a>, <a href="../../../../../de/griefed/serverpackcreator/versionmeta/ManifestParser.html#getJson-java.lang.String-com.fasterxml.jackson.databind.ObjectMapper-">getJson</a>, <a href="../../../../../de/griefed/serverpackcreator/versionmeta/ManifestParser.html#getJson-java.net.URL-com.fasterxml.jackson.databind.ObjectMapper-">getJson</a>, <a href="../../../../../de/griefed/serverpackcreator/versionmeta/ManifestParser.html#getXml-java.io.File-">getXml</a>, <a href="../../../../../de/griefed/serverpackcreator/versionmeta/ManifestParser.html#getXml-java.io.InputStream-">getXml</a>, <a href="../../../../../de/griefed/serverpackcreator/versionmeta/ManifestParser.html#getXml-java.lang.String-">getXml</a></code></li>
-</ul>
 <ul class="blockList">
 <li class="blockList"><a name="methods.inherited.from.class.java.lang.Object">
 <!--   -->
@@ -214,13 +205,23 @@ extends <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Manifes
 <!--   -->
 </a>
 <h3>Constructor Detail</h3>
-<a name="LegacyFabricInstaller-java.io.File-">
+<a name="LegacyFabricInstaller-java.io.File-de.griefed.serverpackcreator.utilities.common.Utilities-">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>LegacyFabricInstaller</h4>
-<pre>public&nbsp;LegacyFabricInstaller(java.io.File&nbsp;installerVersionsManifest)</pre>
+<pre>public&nbsp;LegacyFabricInstaller(@NotNull
+                             @NotNull java.io.File&nbsp;installerVersionsManifest,
+                             @NotNull
+                             @NotNull <a href="../../../../../de/griefed/serverpackcreator/utilities/common/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.common">Utilities</a>&nbsp;utilities)</pre>
+<div class="block">New instance holding information about the LegacyFabric installer and versions.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>installerVersionsManifest</code> - Manifest containing information about LegacyFabric installer
+                                  versions.</dd>
+<dd><code>utilities</code> - Commonly used utilities across ServerPackCreator.</dd>
+</dl>
 </li>
 </ul>
 </li>
@@ -237,7 +238,9 @@ extends <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Manifes
 <ul class="blockList">
 <li class="blockList">
 <h4>all</h4>
-<pre>public&nbsp;java.util.List&lt;java.lang.String&gt;&nbsp;all()</pre>
+<pre>@Contract(pure=true)
+ @NotNull
+public&nbsp;@NotNull java.util.List&lt;java.lang.String&gt;&nbsp;all()</pre>
 <div class="block">All available installer versions.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
@@ -251,7 +254,9 @@ extends <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Manifes
 <ul class="blockList">
 <li class="blockList">
 <h4>latest</h4>
-<pre>public&nbsp;java.lang.String&nbsp;latest()</pre>
+<pre>@Contract(pure=true)
+ @NotNull
+public&nbsp;@NotNull java.lang.String&nbsp;latest()</pre>
 <div class="block">The latest version of the Legacy Fabric installer.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
@@ -265,7 +270,9 @@ extends <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Manifes
 <ul class="blockList">
 <li class="blockList">
 <h4>release</h4>
-<pre>public&nbsp;java.lang.String&nbsp;release()</pre>
+<pre>@Contract(pure=true)
+ @NotNull
+public&nbsp;@NotNull java.lang.String&nbsp;release()</pre>
 <div class="block">The release version of the Legacy Fabric installer.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
@@ -279,8 +286,10 @@ extends <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Manifes
 <ul class="blockList">
 <li class="blockList">
 <h4>latestURL</h4>
-<pre>public&nbsp;java.net.URL&nbsp;latestURL()
-                       throws java.net.MalformedURLException</pre>
+<pre>@Contract(value=" -&gt; new")
+ @NotNull
+public&nbsp;@NotNull java.net.URL&nbsp;latestURL()
+                                                                     throws java.net.MalformedURLException</pre>
 <div class="block">The URL to the latest installer for Legacy Fabric.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
@@ -296,8 +305,10 @@ extends <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Manifes
 <ul class="blockList">
 <li class="blockList">
 <h4>releaseURL</h4>
-<pre>public&nbsp;java.net.URL&nbsp;releaseURL()
-                        throws java.net.MalformedURLException</pre>
+<pre>@Contract(value=" -&gt; new")
+ @NotNull
+public&nbsp;@NotNull java.net.URL&nbsp;releaseURL()
+                                                                      throws java.net.MalformedURLException</pre>
 <div class="block">The URL to the release installer for Legacy Fabric.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
@@ -313,8 +324,10 @@ extends <a href="../../../../../de/griefed/serverpackcreator/versionmeta/Manifes
 <ul class="blockListLast">
 <li class="blockList">
 <h4>specificURL</h4>
-<pre>public&nbsp;java.util.Optional&lt;java.net.URL&gt;&nbsp;specificURL(java.lang.String&nbsp;version)
-                                             throws java.net.MalformedURLException</pre>
+<pre>@NotNull
+public&nbsp;@NotNull java.util.Optional&lt;java.net.URL&gt;&nbsp;specificURL(@NotNull
+                                                                      @NotNull java.lang.String&nbsp;version)
+                                                               throws java.net.MalformedURLException</pre>
 <div class="block">Get the URL for a specific installer version, wrapped in an Optional.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>

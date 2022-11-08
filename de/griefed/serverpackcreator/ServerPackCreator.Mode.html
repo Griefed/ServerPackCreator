@@ -122,7 +122,8 @@ var activeTableTab = "activeTableTab";
 <br>
 <pre>public static enum <span class="typeNameLabel">ServerPackCreator.Mode</span>
 extends java.lang.Enum&lt;<a href="../../../de/griefed/serverpackcreator/ServerPackCreator.Mode.html" title="enum in de.griefed.serverpackcreator">ServerPackCreator.Mode</a>&gt;</pre>
-<div class="block">Mode-priorities. Highest to lowest.</div>
+<div class="block">Available mods of ServerPackCreator and their respective CLI-arguments required to be
+ activated/used.</div>
 </li>
 </ul>
 </div>
@@ -142,27 +143,27 @@ extends java.lang.Enum&lt;<a href="../../../de/griefed/serverpackcreator/ServerP
 </tr>
 <tr class="altColor">
 <td class="colOne"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.Mode.html#CGEN">CGEN</a></span></code>
-<div class="block">Priority 2.</div>
+<div class="block"><b>Priority 2</b></div>
 </td>
 </tr>
 <tr class="rowColor">
 <td class="colOne"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.Mode.html#CLI">CLI</a></span></code>
-<div class="block">Priority 3.</div>
+<div class="block"><b>Priority 3</b></div>
 </td>
 </tr>
 <tr class="altColor">
 <td class="colOne"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.Mode.html#EXIT">EXIT</a></span></code>
-<div class="block">Priority 7.</div>
+<div class="block"><b>Priority 7</b></div>
 </td>
 </tr>
 <tr class="rowColor">
 <td class="colOne"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.Mode.html#GUI">GUI</a></span></code>
-<div class="block">Priority 5.</div>
+<div class="block"><b>Priority 5</b></div>
 </td>
 </tr>
 <tr class="altColor">
 <td class="colOne"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.Mode.html#HELP">HELP</a></span></code>
-<div class="block">Priority 0.</div>
+<div class="block"><b>Priority 0</b></div>
 </td>
 </tr>
 <tr class="rowColor">
@@ -172,17 +173,17 @@ extends java.lang.Enum&lt;<a href="../../../de/griefed/serverpackcreator/ServerP
 </tr>
 <tr class="altColor">
 <td class="colOne"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.Mode.html#SETUP">SETUP</a></span></code>
-<div class="block">Priority 6 Set up and prepare the environment for subsequent runs of ServerPackCreator.</div>
+<div class="block"><b>Priority 6</b></div>
 </td>
 </tr>
 <tr class="rowColor">
 <td class="colOne"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.Mode.html#UPDATE">UPDATE</a></span></code>
-<div class="block">Priority 1.</div>
+<div class="block"><b>Priority 1</b></div>
 </td>
 </tr>
 <tr class="altColor">
 <td class="colOne"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.Mode.html#WEB">WEB</a></span></code>
-<div class="block">Priority 4.</div>
+<div class="block"><b>Priority 4</b></div>
 </td>
 </tr>
 </table>
@@ -201,7 +202,7 @@ extends java.lang.Enum&lt;<a href="../../../de/griefed/serverpackcreator/ServerP
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr id="i0" class="altColor">
-<td class="colFirst"><code>java.lang.String</code></td>
+<td class="colFirst"><code>@NotNull java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.Mode.html#argument--">argument</a></span>()</code>
 <div class="block">Textual representation of this mode.</div>
 </td>
@@ -255,7 +256,9 @@ the order they are declared.</div>
 <li class="blockList">
 <h4>HELP</h4>
 <pre>public static final&nbsp;<a href="../../../de/griefed/serverpackcreator/ServerPackCreator.Mode.html" title="enum in de.griefed.serverpackcreator">ServerPackCreator.Mode</a> HELP</pre>
-<div class="block">Priority 0. Print ServerPackCreators help to commandline.</div>
+<div class="block"><b>Priority 0</b>
+ <p>
+ Print ServerPackCreators help to commandline.</div>
 </li>
 </ul>
 <a name="UPDATE">
@@ -265,7 +268,9 @@ the order they are declared.</div>
 <li class="blockList">
 <h4>UPDATE</h4>
 <pre>public static final&nbsp;<a href="../../../de/griefed/serverpackcreator/ServerPackCreator.Mode.html" title="enum in de.griefed.serverpackcreator">ServerPackCreator.Mode</a> UPDATE</pre>
-<div class="block">Priority 1. Check whether a newer version of ServerPackCreator is available.</div>
+<div class="block"><b>Priority 1</b>
+ <p>
+ Check whether a newer version of ServerPackCreator is available.</div>
 </li>
 </ul>
 <a name="CGEN">
@@ -275,7 +280,9 @@ the order they are declared.</div>
 <li class="blockList">
 <h4>CGEN</h4>
 <pre>public static final&nbsp;<a href="../../../de/griefed/serverpackcreator/ServerPackCreator.Mode.html" title="enum in de.griefed.serverpackcreator">ServerPackCreator.Mode</a> CGEN</pre>
-<div class="block">Priority 2. Run ServerPackCreators configuration generation.</div>
+<div class="block"><b>Priority 2</b>
+ <p>
+ Run ServerPackCreators configuration generation.</div>
 </li>
 </ul>
 <a name="CLI">
@@ -285,9 +292,11 @@ the order they are declared.</div>
 <li class="blockList">
 <h4>CLI</h4>
 <pre>public static final&nbsp;<a href="../../../de/griefed/serverpackcreator/ServerPackCreator.Mode.html" title="enum in de.griefed.serverpackcreator">ServerPackCreator.Mode</a> CLI</pre>
-<div class="block">Priority 3. Run ServerPackCreator in commandline-mode. If no graphical environment is
- supported, this is the default ServerPackCreator will enter, even when starting
- ServerPackCreator with no extra arguments at all.</div>
+<div class="block"><b>Priority 3</b>
+ <p>
+ Run ServerPackCreator in commandline-mode. If no graphical environment is supported, this is
+ the default ServerPackCreator will enter, even when starting ServerPackCreator with no extra
+ arguments at all.</div>
 </li>
 </ul>
 <a name="WEB">
@@ -297,7 +306,9 @@ the order they are declared.</div>
 <li class="blockList">
 <h4>WEB</h4>
 <pre>public static final&nbsp;<a href="../../../de/griefed/serverpackcreator/ServerPackCreator.Mode.html" title="enum in de.griefed.serverpackcreator">ServerPackCreator.Mode</a> WEB</pre>
-<div class="block">Priority 4. Run ServerPackCreator as a webservice.</div>
+<div class="block"><b>Priority 4</b>
+ <p>
+ Run ServerPackCreator as a webservice.</div>
 </li>
 </ul>
 <a name="GUI">
@@ -307,9 +318,11 @@ the order they are declared.</div>
 <li class="blockList">
 <h4>GUI</h4>
 <pre>public static final&nbsp;<a href="../../../de/griefed/serverpackcreator/ServerPackCreator.Mode.html" title="enum in de.griefed.serverpackcreator">ServerPackCreator.Mode</a> GUI</pre>
-<div class="block">Priority 5. Run ServerPackCreator with our GUI. If a graphical environment is supported, this
- is the default ServerPackCreator will enter, even when starting ServerPackCreator with no
- extra arguments at all.</div>
+<div class="block"><b>Priority 5</b>
+ <p>
+ Run ServerPackCreator with our GUI. If a graphical environment is supported, this is the
+ default ServerPackCreator will enter, even when starting ServerPackCreator with no extra
+ arguments at all.</div>
 </li>
 </ul>
 <a name="SETUP">
@@ -319,9 +332,16 @@ the order they are declared.</div>
 <li class="blockList">
 <h4>SETUP</h4>
 <pre>public static final&nbsp;<a href="../../../de/griefed/serverpackcreator/ServerPackCreator.Mode.html" title="enum in de.griefed.serverpackcreator">ServerPackCreator.Mode</a> SETUP</pre>
-<div class="block">Priority 6 Set up and prepare the environment for subsequent runs of ServerPackCreator. This
- will create/copy all files needed for ServerPackCreator to function properly from inside its
- JAR-file and setup everything else, too.</div>
+<div class="block"><b>Priority 6</b>
+ <p>
+ Set up and prepare the environment for subsequent runs of ServerPackCreator. This will
+ create/copy all files needed for ServerPackCreator to function properly from inside its
+ JAR-file and setup everything else, too.
+ <p>
+ The <code>--setup</code>-argument also allows a user to specify a <code>properties</code>-file to load
+ into <a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator"><code>ApplicationProperties</code></a>. Values are loaded from the specified file and
+ subsequently stored in the local <code>serverpackcreator.properties</code>-file inside
+ ServerPackCreators home-directory.</div>
 </li>
 </ul>
 <a name="EXIT">
@@ -331,7 +351,9 @@ the order they are declared.</div>
 <li class="blockList">
 <h4>EXIT</h4>
 <pre>public static final&nbsp;<a href="../../../de/griefed/serverpackcreator/ServerPackCreator.Mode.html" title="enum in de.griefed.serverpackcreator">ServerPackCreator.Mode</a> EXIT</pre>
-<div class="block">Priority 7. Exit ServerPackCreator.</div>
+<div class="block"><b>Priority 7</b>
+ <p>
+ Exit ServerPackCreator.</div>
 </li>
 </ul>
 <a name="LANG">
@@ -400,7 +422,9 @@ not permitted.)</div>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>argument</h4>
-<pre>public&nbsp;java.lang.String&nbsp;argument()</pre>
+<pre>@Contract(pure=true)
+ @NotNull
+public&nbsp;@NotNull java.lang.String&nbsp;argument()</pre>
 <div class="block">Textual representation of this mode.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>

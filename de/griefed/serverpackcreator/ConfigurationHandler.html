@@ -17,8 +17,8 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":42,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10,"i17":10,"i18":42,"i19":10,"i20":10,"i21":10,"i22":42};
-var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"],32:["t6","Deprecated Methods"]};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10,"i17":10,"i18":10,"i19":10,"i20":10,"i21":10,"i22":10,"i23":10,"i24":10,"i25":10,"i26":10,"i27":10,"i28":10,"i29":10,"i30":10,"i31":10,"i32":10,"i33":10,"i34":10,"i35":10,"i36":10};
+var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
 var tableTab = "tableTab";
@@ -110,8 +110,12 @@ var activeTableTab = "activeTableTab";
 <pre>@Component
 public final class <span class="typeNameLabel">ConfigurationHandler</span>
 extends java.lang.Object</pre>
-<div class="block">This class revolves around checking and adjusting a given instance of <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a>
- so it can safely be used in <a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html#run-de.griefed.serverpackcreator.ConfigurationModel-"><code>ServerPackHandler.run(ConfigurationModel)</code></a> later.</div>
+<div class="block">Check any given <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a> for errors and, if so desired, add them to a passed
+ list of errors, so you may display them in a GUI, CLI or website. The most important method is
+ <a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#checkConfiguration-de.griefed.serverpackcreator.ConfigurationModel-boolean-"><code>checkConfiguration(ConfigurationModel, boolean)</code></a> and all of its variants which will check
+ your passed configuration model for errors, indicating whether it is safe to use for further
+ operations. Running your model through the checks also ensures that the default script settings
+ are present and set according to your pack's environment.</div>
 </li>
 </ul>
 </div>
@@ -130,11 +134,10 @@ extends java.lang.Object</pre>
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#ConfigurationHandler-de.griefed.serverpackcreator.i18n.I18n-de.griefed.serverpackcreator.versionmeta.VersionMeta-de.griefed.serverpackcreator.ApplicationProperties-de.griefed.serverpackcreator.utilities.common.Utilities-de.griefed.serverpackcreator.utilities.ConfigUtilities-de.griefed.serverpackcreator.ApplicationAddons-">ConfigurationHandler</a></span>(<a href="../../../de/griefed/serverpackcreator/i18n/I18n.html" title="class in de.griefed.serverpackcreator.i18n">I18n</a>&nbsp;injectedI18n,
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#ConfigurationHandler-de.griefed.serverpackcreator.i18n.I18n-de.griefed.serverpackcreator.versionmeta.VersionMeta-de.griefed.serverpackcreator.ApplicationProperties-de.griefed.serverpackcreator.utilities.common.Utilities-de.griefed.serverpackcreator.ApplicationAddons-">ConfigurationHandler</a></span>(<a href="../../../de/griefed/serverpackcreator/i18n/I18n.html" title="class in de.griefed.serverpackcreator.i18n">I18n</a>&nbsp;injectedI18n,
                     <a href="../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta">VersionMeta</a>&nbsp;injectedVersionMeta,
                     <a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;injectedApplicationProperties,
                     <a href="../../../de/griefed/serverpackcreator/utilities/common/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.common">Utilities</a>&nbsp;injectedUtilities,
-                    <a href="../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ConfigUtilities</a>&nbsp;injectedConfigUtilities,
                     <a href="../../../de/griefed/serverpackcreator/ApplicationAddons.html" title="class in de.griefed.serverpackcreator">ApplicationAddons</a>&nbsp;injectedApplicationAddons)</code>
 <div class="block">Construct a new ConfigurationHandler giving you access to various config check methods.</div>
 </td>
@@ -149,7 +152,7 @@ extends java.lang.Object</pre>
 </a>
 <h3>Method Summary</h3>
 <table class="memberSummary" border="0" cellpadding="3" cellspacing="0" summary="Method Summary table, listing methods, and an explanation">
-<caption><span id="t0" class="activeTableTab"><span>All Methods</span><span class="tabEnd">&nbsp;</span></span><span id="t2" class="tableTab"><span><a href="javascript:show(2);">Instance Methods</a></span><span class="tabEnd">&nbsp;</span></span><span id="t4" class="tableTab"><span><a href="javascript:show(8);">Concrete Methods</a></span><span class="tabEnd">&nbsp;</span></span><span id="t6" class="tableTab"><span><a href="javascript:show(32);">Deprecated Methods</a></span><span class="tabEnd">&nbsp;</span></span></caption>
+<caption><span id="t0" class="activeTableTab"><span>All Methods</span><span class="tabEnd">&nbsp;</span></span><span id="t2" class="tableTab"><span><a href="javascript:show(2);">Instance Methods</a></span><span class="tabEnd">&nbsp;</span></span><span id="t4" class="tableTab"><span><a href="javascript:show(8);">Concrete Methods</a></span><span class="tabEnd">&nbsp;</span></span></caption>
 <tr>
 <th class="colFirst" scope="col">Modifier and Type</th>
 <th class="colLast" scope="col">Method and Description</th>
@@ -203,17 +206,17 @@ extends java.lang.Object</pre>
 </tr>
 <tr id="i6" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#checkCopyDirs-java.util.List-java.lang.String-">checkCopyDirs</a></span>(java.util.List&lt;java.lang.String&gt;&nbsp;directoriesToCopy,
-             java.lang.String&nbsp;modpackDir)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#checkCopyDirs-java.util.List-java.lang.String-">checkCopyDirs</a></span>(@NotNull java.util.List&lt;java.lang.String&gt;&nbsp;directoriesToCopy,
+             @NotNull java.lang.String&nbsp;modpackDir)</code>
 <div class="block">Checks whether the passed list of directories which are supposed to be in the modpack directory
  is empty, or whether all directories in the list exist in the modpack directory.</div>
 </td>
 </tr>
 <tr id="i7" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#checkCopyDirs-java.util.List-java.lang.String-java.util.List-">checkCopyDirs</a></span>(java.util.List&lt;java.lang.String&gt;&nbsp;directoriesToCopy,
-             java.lang.String&nbsp;modpackDir,
-             java.util.List&lt;java.lang.String&gt;&nbsp;encounteredErrors)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#checkCopyDirs-java.util.List-java.lang.String-java.util.List-">checkCopyDirs</a></span>(@NotNull java.util.List&lt;java.lang.String&gt;&nbsp;directoriesToCopy,
+             @NotNull java.lang.String&nbsp;modpackDir,
+             @NotNull java.util.List&lt;java.lang.String&gt;&nbsp;encounteredErrors)</code>
 <div class="block">Checks whether the passed list of directories which are supposed to be in the modpack directory
  is empty and prints a message to the console and serverpackcreator.log if it is.<br> Checks
  whether all directories in the list exist in the modpack directory and prints a message to the
@@ -222,79 +225,86 @@ extends java.lang.Object</pre>
 </tr>
 <tr id="i8" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#checkIconAndProperties-java.lang.String-">checkIconAndProperties</a></span>(java.lang.String&nbsp;iconOrPropertiesPath)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#checkIconAndProperties-java.lang.String-">checkIconAndProperties</a></span>(@NotNull java.lang.String&nbsp;iconOrPropertiesPath)</code>
 <div class="block">Checks the passed String whether it is an existing file.</div>
 </td>
 </tr>
 <tr id="i9" class="rowColor">
-<td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#checkJavaPath-java.lang.String-">checkJavaPath</a></span>(java.lang.String&nbsp;pathToJava)</code>
-<div class="block"><span class="deprecatedLabel">Deprecated.</span>&nbsp;
-<div class="block"><span class="deprecationComment">Will be removed in Milestone 4. Java path settings have moved to the global
- ApplicationProperties, because the Java path setting is used for modloader installation by
- ServerPackCreator only.</span></div>
-</div>
-</td>
-</tr>
-<tr id="i10" class="altColor">
-<td class="colFirst"><code>java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#checkManifests-java.lang.String-de.griefed.serverpackcreator.ConfigurationModel-java.util.List-">checkManifests</a></span>(java.lang.String&nbsp;destination,
-              <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel,
-              java.util.List&lt;java.lang.String&gt;&nbsp;encounteredErrors)</code>
+<td class="colFirst"><code>@Nullable java.lang.String</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#checkManifests-java.lang.String-de.griefed.serverpackcreator.ConfigurationModel-java.util.List-">checkManifests</a></span>(@NotNull java.lang.String&nbsp;destination,
+              @NotNull <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel,
+              @NotNull java.util.List&lt;java.lang.String&gt;&nbsp;encounteredErrors)</code>
 <div class="block">Check whether various manifests from various launchers exist and use them to update our
  ConfigurationModel and pack name.</div>
 </td>
 </tr>
+<tr id="i10" class="altColor">
+<td class="colFirst"><code>boolean</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#checkModloader-java.lang.String-">checkModloader</a></span>(@NotNull java.lang.String&nbsp;modloader)</code>
+<div class="block">Checks whether either Forge or Fabric were specified as the modloader.</div>
+</td>
+</tr>
 <tr id="i11" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#checkModloader-java.lang.String-">checkModloader</a></span>(java.lang.String&nbsp;modloader)</code>
-<div class="block">Checks whether either Forge or Fabric were specified as the modloader.</div>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#checkModloaderVersion-java.lang.String-java.lang.String-java.lang.String-">checkModloaderVersion</a></span>(@NotNull java.lang.String&nbsp;modloader,
+                     @NotNull java.lang.String&nbsp;modloaderVersion,
+                     @NotNull java.lang.String&nbsp;minecraftVersion)</code>
+<div class="block">Check the given Minecraft and modloader versions for the specified modloader.</div>
 </td>
 </tr>
 <tr id="i12" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#checkModloaderVersion-java.lang.String-java.lang.String-java.lang.String-">checkModloaderVersion</a></span>(java.lang.String&nbsp;modloader,
-                     java.lang.String&nbsp;modloaderVersion,
-                     java.lang.String&nbsp;minecraftVersion)</code>
-<div class="block">Check the given Minecraft and modloader versions for the specified modloader.</div>
-</td>
-</tr>
-<tr id="i13" class="rowColor">
-<td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#checkModloaderVersion-java.lang.String-java.lang.String-java.lang.String-java.util.List-">checkModloaderVersion</a></span>(java.lang.String&nbsp;modloader,
-                     java.lang.String&nbsp;modloaderVersion,
-                     java.lang.String&nbsp;minecraftVersion,
-                     java.util.List&lt;java.lang.String&gt;&nbsp;encounteredErrors)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#checkModloaderVersion-java.lang.String-java.lang.String-java.lang.String-java.util.List-">checkModloaderVersion</a></span>(@NotNull java.lang.String&nbsp;modloader,
+                     @NotNull java.lang.String&nbsp;modloaderVersion,
+                     @NotNull java.lang.String&nbsp;minecraftVersion,
+                     @NotNull java.util.List&lt;java.lang.String&gt;&nbsp;encounteredErrors)</code>
 <div class="block">Check the given Minecraft and modloader versions for the specified modloader and update the
  passed error-list should any error be encountered.</div>
 </td>
 </tr>
-<tr id="i14" class="altColor">
+<tr id="i13" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#checkModpackDir-java.lang.String-">checkModpackDir</a></span>(java.lang.String&nbsp;modpackDir)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#checkModpackDir-java.lang.String-">checkModpackDir</a></span>(@NotNull java.lang.String&nbsp;modpackDir)</code>
 <div class="block">Check the passed directory for existence and whether it is a directory, rather than a file.</div>
 </td>
 </tr>
-<tr id="i15" class="rowColor">
+<tr id="i14" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#checkModpackDir-java.lang.String-java.util.List-">checkModpackDir</a></span>(java.lang.String&nbsp;modpackDir,
-               java.util.List&lt;java.lang.String&gt;&nbsp;encounteredErrors)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#checkModpackDir-java.lang.String-java.util.List-">checkModpackDir</a></span>(@NotNull java.lang.String&nbsp;modpackDir,
+               @NotNull java.util.List&lt;java.lang.String&gt;&nbsp;encounteredErrors)</code>
 <div class="block">Checks whether the passed String is empty and if it is empty, prints the corresponding message
  to the console and serverpackcreator.log so the user knows what went wrong.<br> Checks whether
  the passed String is a directory and if it is not, prints the corresponding message to the
  console and serverpackcreator.log so the user knows what went wrong.</div>
 </td>
 </tr>
+<tr id="i15" class="rowColor">
+<td class="colFirst"><code>boolean</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#checkRegex-java.lang.String-java.lang.String-boolean-">checkRegex</a></span>(@NotNull java.lang.String&nbsp;modpackDir,
+          @NotNull java.lang.String&nbsp;entry,
+          boolean&nbsp;exclusion)</code>
+<div class="block">Check the given entry for valid regex.</div>
+</td>
+</tr>
 <tr id="i16" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#checkZipArchive-java.nio.file.Path-java.util.List-">checkZipArchive</a></span>(java.nio.file.Path&nbsp;pathToZip,
-               java.util.List&lt;java.lang.String&gt;&nbsp;encounteredErrors)</code>
-<div class="block">Check a given ZIP-archives contents.</div>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#checkRegex-java.lang.String-java.lang.String-boolean-java.util.List-">checkRegex</a></span>(@NotNull java.lang.String&nbsp;modpackDir,
+          @NotNull java.lang.String&nbsp;entry,
+          boolean&nbsp;exclusion,
+          @NotNull java.util.List&lt;java.lang.String&gt;&nbsp;encounteredErrors)</code>
+<div class="block">Check the given entry for valid regex.</div>
 </td>
 </tr>
 <tr id="i17" class="rowColor">
+<td class="colFirst"><code>boolean</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#checkZipArchive-java.nio.file.Path-java.util.List-">checkZipArchive</a></span>(@NotNull java.nio.file.Path&nbsp;pathToZip,
+               @NotNull java.util.List&lt;java.lang.String&gt;&nbsp;encounteredErrors)</code>
+<div class="block">Check a given ZIP-archives contents.</div>
+</td>
+</tr>
+<tr id="i18" class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#ensureScriptSettingsDefaults-de.griefed.serverpackcreator.ConfigurationModel-">ensureScriptSettingsDefaults</a></span>(<a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#ensureScriptSettingsDefaults-de.griefed.serverpackcreator.ConfigurationModel-">ensureScriptSettingsDefaults</a></span>(@NotNull <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel)</code>
 <div class="block">Update the script settings and ensure the default keys, with values gathered from the passed
  <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a>, are present:
 
@@ -313,48 +323,142 @@ extends java.lang.Object</pre>
  </div>
 </td>
 </tr>
-<tr id="i18" class="altColor">
-<td class="colFirst"><code>java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#getJavaPath-java.lang.String-">getJavaPath</a></span>(java.lang.String&nbsp;pathToJava)</code>
-<div class="block"><span class="deprecatedLabel">Deprecated.</span>&nbsp;
-<div class="block"><span class="deprecationComment">Will be removed in Milestone 4. Java path settings have moved to the global
- ApplicationProperties, because the Java path setting is used for modloader installation by
- ServerPackCreator only.</span></div>
-</div>
+<tr id="i19" class="rowColor">
+<td class="colFirst"><code>@NotNull java.util.List&lt;java.lang.String&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#getAllFilesAndDirectoriesInModpackZip-net.lingala.zip4j.ZipFile-">getAllFilesAndDirectoriesInModpackZip</a></span>(@NotNull net.lingala.zip4j.ZipFile&nbsp;zipFile)</code>
+<div class="block">Acquire a list of all files and directories in a ZIP-file.</div>
 </td>
 </tr>
-<tr id="i19" class="rowColor">
+<tr id="i20" class="altColor">
+<td class="colFirst"><code>@NotNull java.util.List&lt;java.lang.String&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#getDirectoriesInModpackZip-net.lingala.zip4j.ZipFile-">getDirectoriesInModpackZip</a></span>(@NotNull net.lingala.zip4j.ZipFile&nbsp;zipFile)</code>
+<div class="block">Acquire a list of all directories in a ZIP-file.</div>
+</td>
+</tr>
+<tr id="i21" class="rowColor">
+<td class="colFirst"><code>@NotNull java.util.List&lt;java.lang.String&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#getDirectoriesInModpackZipBaseDirectory-net.lingala.zip4j.ZipFile-">getDirectoriesInModpackZipBaseDirectory</a></span>(@NotNull net.lingala.zip4j.ZipFile&nbsp;zipFile)</code>
+<div class="block">Acquire a list of directories in the base-directory of a ZIP-file.</div>
+</td>
+</tr>
+<tr id="i22" class="altColor">
+<td class="colFirst"><code>@NotNull java.util.List&lt;java.lang.String&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#getFilesInModpackZip-net.lingala.zip4j.ZipFile-">getFilesInModpackZip</a></span>(@NotNull net.lingala.zip4j.ZipFile&nbsp;zipFile)</code>
+<div class="block">Acquire a list of all files in a ZIP-file.</div>
+</td>
+</tr>
+<tr id="i23" class="rowColor">
+<td class="colFirst"><code>@NotNull java.lang.String</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#getModLoaderCase-java.lang.String-">getModLoaderCase</a></span>(@NotNull java.lang.String&nbsp;modloader)</code>
+<div class="block">Ensures the modloader is normalized to first letter upper case and rest lower case.</div>
+</td>
+</tr>
+<tr id="i24" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#isDir-de.griefed.serverpackcreator.ConfigurationModel-java.util.List-">isDir</a></span>(<a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel,
-     java.util.List&lt;java.lang.String&gt;&nbsp;encounteredErrors)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#isDir-de.griefed.serverpackcreator.ConfigurationModel-java.util.List-">isDir</a></span>(@NotNull <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel,
+     @NotNull java.util.List&lt;java.lang.String&gt;&nbsp;encounteredErrors)</code>
 <div class="block">If the in the configuration specified modpack dir is an existing directory, checks are made for
  valid configuration of: directories to copy to server pack, if includeServerInstallation is
  <code>true</code> path to Java executable/binary, Minecraft version, modloader and modloader
  version.</div>
 </td>
 </tr>
-<tr id="i20" class="altColor">
+<tr id="i25" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#isZip-de.griefed.serverpackcreator.ConfigurationModel-java.util.List-">isZip</a></span>(<a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel,
-     java.util.List&lt;java.lang.String&gt;&nbsp;encounteredErrors)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#isZip-de.griefed.serverpackcreator.ConfigurationModel-java.util.List-">isZip</a></span>(@NotNull <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel,
+     @NotNull java.util.List&lt;java.lang.String&gt;&nbsp;encounteredErrors)</code>
 <div class="block">Checks the specified ZIP-archive for validity.</div>
 </td>
 </tr>
-<tr id="i21" class="rowColor">
+<tr id="i26" class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#sanitizeLinks-de.griefed.serverpackcreator.ConfigurationModel-">sanitizeLinks</a></span>(<a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#printConfigurationModel-de.griefed.serverpackcreator.ConfigurationModel-">printConfigurationModel</a></span>(@NotNull <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel)</code>
+<div class="block">Convenience method which passes the important fields from an instance of
+ <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a> to
+ <a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#printConfigurationModel-java.lang.String-java.util.List-java.util.List-boolean-java.lang.String-java.lang.String-java.lang.String-boolean-boolean-boolean-java.lang.String-java.lang.String-java.lang.String-java.lang.String-java.util.HashMap-"><code>printConfigurationModel(String, List, List, boolean, String, String, String, boolean,
+ boolean, boolean, String, String, String, String, HashMap)</code></a></div>
+</td>
+</tr>
+<tr id="i27" class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#printConfigurationModel-java.lang.String-java.util.List-java.util.List-boolean-java.lang.String-java.lang.String-java.lang.String-boolean-boolean-boolean-java.lang.String-java.lang.String-java.lang.String-java.lang.String-java.util.HashMap-">printConfigurationModel</a></span>(@NotNull java.lang.String&nbsp;modpackDirectory,
+                       @NotNull java.util.List&lt;java.lang.String&gt;&nbsp;clientsideMods,
+                       @NotNull java.util.List&lt;java.lang.String&gt;&nbsp;copyDirectories,
+                       boolean&nbsp;installServer,
+                       @NotNull java.lang.String&nbsp;minecraftVer,
+                       @NotNull java.lang.String&nbsp;modloader,
+                       @NotNull java.lang.String&nbsp;modloaderVersion,
+                       boolean&nbsp;includeIcon,
+                       boolean&nbsp;includeProperties,
+                       boolean&nbsp;includeZip,
+                       @NotNull java.lang.String&nbsp;javaArgs,
+                       @NotNull java.lang.String&nbsp;serverPackSuffix,
+                       @NotNull java.lang.String&nbsp;serverIconPath,
+                       @NotNull java.lang.String&nbsp;serverPropertiesPath,
+                       @NotNull java.util.HashMap&lt;java.lang.String,java.lang.String&gt;&nbsp;scriptSettings)</code>
+<div class="block">Prints all passed fields to the console and serverpackcreator.log.</div>
+</td>
+</tr>
+<tr id="i28" class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#sanitizeLinks-de.griefed.serverpackcreator.ConfigurationModel-">sanitizeLinks</a></span>(@NotNull <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel)</code>
 <div class="block">Sanitize any and all links in a given instance of <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a> modpack-directory,
  server-icon path, server-properties path, Java path and copy-directories entries.</div>
 </td>
 </tr>
-<tr id="i22" class="altColor">
-<td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#testJava-java.lang.String-">testJava</a></span>(java.lang.String&nbsp;pathToJava)</code>
-<div class="block"><span class="deprecatedLabel">Deprecated.</span>&nbsp;
-<div class="block"><span class="deprecationComment">Will be removed in Milestone 4. Java path settings have moved to the global
- ApplicationProperties, because the Java path setting is used for modloader installation by
- ServerPackCreator only.</span></div>
-</div>
+<tr id="i29" class="rowColor">
+<td class="colFirst"><code>@NotNull java.util.List&lt;java.lang.String&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#suggestCopyDirs-java.lang.String-">suggestCopyDirs</a></span>(@NotNull java.lang.String&nbsp;modpackDir)</code>
+<div class="block">Creates a list of suggested directories to include in server pack which is later on written to
+ a new configuration file.</div>
+</td>
+</tr>
+<tr id="i30" class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#updateConfigModelFromATLauncherInstance-de.griefed.serverpackcreator.ConfigurationModel-java.io.File-">updateConfigModelFromATLauncherInstance</a></span>(@NotNull <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel,
+                                       @NotNull java.io.File&nbsp;manifest)</code>
+<div class="block"><strong><code>instance.json</code></strong></div>
+</td>
+</tr>
+<tr id="i31" class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#updateConfigModelFromConfigJson-de.griefed.serverpackcreator.ConfigurationModel-java.io.File-">updateConfigModelFromConfigJson</a></span>(@NotNull <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel,
+                               @NotNull java.io.File&nbsp;config)</code>
+<div class="block"><strong><code>config.json</code></strong></div>
+</td>
+</tr>
+<tr id="i32" class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#updateConfigModelFromCurseManifest-de.griefed.serverpackcreator.ConfigurationModel-java.io.File-">updateConfigModelFromCurseManifest</a></span>(@NotNull <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel,
+                                  @NotNull java.io.File&nbsp;manifest)</code>
+<div class="block"><strong><code>manifest.json</code></strong></div>
+</td>
+</tr>
+<tr id="i33" class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#updateConfigModelFromMinecraftInstance-de.griefed.serverpackcreator.ConfigurationModel-java.io.File-">updateConfigModelFromMinecraftInstance</a></span>(@NotNull <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel,
+                                      @NotNull java.io.File&nbsp;minecraftInstance)</code>
+<div class="block"><strong><code>minecraftinstance.json</code></strong></div>
+</td>
+</tr>
+<tr id="i34" class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#updateConfigModelFromMMCPack-de.griefed.serverpackcreator.ConfigurationModel-java.io.File-">updateConfigModelFromMMCPack</a></span>(@NotNull <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel,
+                            @NotNull java.io.File&nbsp;mmcPack)</code>
+<div class="block"><strong><code>mmc-pack.json</code></strong></div>
+</td>
+</tr>
+<tr id="i35" class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#updateConfigModelFromModrinthManifest-de.griefed.serverpackcreator.ConfigurationModel-java.io.File-">updateConfigModelFromModrinthManifest</a></span>(@NotNull <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel,
+                                     @NotNull java.io.File&nbsp;manifest)</code>
+<div class="block"><strong><code>modrinth.index.json</code></strong></div>
+</td>
+</tr>
+<tr id="i36" class="altColor">
+<td class="colFirst"><code>@NotNull java.lang.String</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#updateDestinationFromInstanceCfg-java.io.File-">updateDestinationFromInstanceCfg</a></span>(@NotNull java.io.File&nbsp;instanceCfg)</code>
+<div class="block"><strong><code>instance.cfg</code></strong></div>
 </td>
 </tr>
 </table>
@@ -379,34 +483,30 @@ extends java.lang.Object</pre>
 <!--   -->
 </a>
 <h3>Constructor Detail</h3>
-<a name="ConfigurationHandler-de.griefed.serverpackcreator.i18n.I18n-de.griefed.serverpackcreator.versionmeta.VersionMeta-de.griefed.serverpackcreator.ApplicationProperties-de.griefed.serverpackcreator.utilities.common.Utilities-de.griefed.serverpackcreator.utilities.ConfigUtilities-de.griefed.serverpackcreator.ApplicationAddons-">
+<a name="ConfigurationHandler-de.griefed.serverpackcreator.i18n.I18n-de.griefed.serverpackcreator.versionmeta.VersionMeta-de.griefed.serverpackcreator.ApplicationProperties-de.griefed.serverpackcreator.utilities.common.Utilities-de.griefed.serverpackcreator.ApplicationAddons-">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>ConfigurationHandler</h4>
-<pre>@Autowired
+<pre>@Contract(pure=true)
+ @Autowired
 public&nbsp;ConfigurationHandler(<a href="../../../de/griefed/serverpackcreator/i18n/I18n.html" title="class in de.griefed.serverpackcreator.i18n">I18n</a>&nbsp;injectedI18n,
-                                       <a href="../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta">VersionMeta</a>&nbsp;injectedVersionMeta,
-                                       <a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;injectedApplicationProperties,
-                                       <a href="../../../de/griefed/serverpackcreator/utilities/common/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.common">Utilities</a>&nbsp;injectedUtilities,
-                                       <a href="../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ConfigUtilities</a>&nbsp;injectedConfigUtilities,
-                                       <a href="../../../de/griefed/serverpackcreator/ApplicationAddons.html" title="class in de.griefed.serverpackcreator">ApplicationAddons</a>&nbsp;injectedApplicationAddons)
-                                throws java.io.IOException</pre>
+                                                             <a href="../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta">VersionMeta</a>&nbsp;injectedVersionMeta,
+                                                             <a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;injectedApplicationProperties,
+                                                             <a href="../../../de/griefed/serverpackcreator/utilities/common/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.common">Utilities</a>&nbsp;injectedUtilities,
+                                                             <a href="../../../de/griefed/serverpackcreator/ApplicationAddons.html" title="class in de.griefed.serverpackcreator">ApplicationAddons</a>&nbsp;injectedApplicationAddons)</pre>
 <div class="block">Construct a new ConfigurationHandler giving you access to various config check methods.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>injectedI18n</code> - Instance of <a href="../../../de/griefed/serverpackcreator/i18n/I18n.html" title="class in de.griefed.serverpackcreator.i18n"><code>I18n</code></a> required for localized log
-                                      messages.</dd>
-<dd><code>injectedApplicationProperties</code> - Instance of <a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator"><code>ApplicationProperties</code></a> required for
-                                      various different things.</dd>
-<dd><code>injectedVersionMeta</code> - Instance of <a href="../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta"><code>VersionMeta</code></a> required for everything
-                                      version-related.</dd>
-<dd><code>injectedUtilities</code> - Instance of <a href="../../../de/griefed/serverpackcreator/utilities/common/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.common"><code>Utilities</code></a>.</dd>
-<dd><code>injectedConfigUtilities</code> - Instance of <a href="../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities"><code>ConfigUtilities</code></a>.</dd>
-<dd><code>injectedApplicationAddons</code> - Instance of <a href="../../../de/griefed/serverpackcreator/ApplicationAddons.html" title="class in de.griefed.serverpackcreator"><code>ApplicationAddons</code></a>.</dd>
-<dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.io.IOException</code> - if the <a href="../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta"><code>VersionMeta</code></a> could not be instantiated.</dd>
+<dd><code>injectedI18n</code> - Used to add localized error messages during configuration
+                                      checks.</dd>
+<dd><code>injectedApplicationProperties</code> - Base settings of SPC used just about everywhere.</dd>
+<dd><code>injectedVersionMeta</code> - Meta used for Minecraft and modloader version checks and
+                                      verification.</dd>
+<dd><code>injectedUtilities</code> - Common utilities used all across SPC.</dd>
+<dd><code>injectedApplicationAddons</code> - Addons and extensions added by external addons which can
+                                      add additional checks to a given configuration check.</dd>
 </dl>
 </li>
 </ul>
@@ -448,6 +548,727 @@ public&nbsp;ConfigurationHandler(<a href="../../../de/griefed/serverpackcreator/
                           Pass false to quietly check the configuration.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd><code>false</code> if the configuration has passed all tests.</dd>
+</dl>
+</li>
+</ul>
+<a name="checkConfiguration-java.io.File-de.griefed.serverpackcreator.ConfigurationModel-java.util.List-boolean-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>checkConfiguration</h4>
+<pre>public&nbsp;boolean&nbsp;checkConfiguration(@NotNull
+                                  @NotNull java.io.File&nbsp;configFile,
+                                  @NotNull
+                                  @NotNull <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel,
+                                  @NotNull
+                                  @NotNull java.util.List&lt;java.lang.String&gt;&nbsp;encounteredErrors,
+                                  boolean&nbsp;quietCheck)</pre>
+<div class="block">Check the passed configuration-file. If any check returns <code>true</code> then the server pack
+ will not be created. In order to find out which check failed, the user has to check their
+ serverpackcreator.log in the logs-directory.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>configFile</code> - The configuration file to check. Must either be an existing file to
+                           load a configuration from or null if you want to use the passed
+                           configuration model.</dd>
+<dd><code>configurationModel</code> - Instance of a configuration of a modpack. Can be used to further
+                           display or use any information within, as it may be changed or
+                           otherwise altered by this method.</dd>
+<dd><code>encounteredErrors</code> - A list of errors encountered during configuration checks which gets
+                           printed to the console and log after all checks have run. Gives the
+                           user more detail on what went wrong at which part of their
+                           configuration. Can be used to display the errors, if any were
+                           encountered, in a UI or be printed into the console or whatever have
+                           you.</dd>
+<dd><code>quietCheck</code> - Whether the configuration should be printed to the console and logs.
+                           Pass false to quietly check the configuration.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd><code>false</code> if the configuration has passed all tests.</dd>
+</dl>
+</li>
+</ul>
+<a name="checkConfiguration-de.griefed.serverpackcreator.ConfigurationModel-java.util.List-boolean-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>checkConfiguration</h4>
+<pre>public&nbsp;boolean&nbsp;checkConfiguration(@NotNull
+                                  @NotNull <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel,
+                                  @NotNull
+                                  @NotNull java.util.List&lt;java.lang.String&gt;&nbsp;encounteredErrors,
+                                  boolean&nbsp;quietCheck)</pre>
+<div class="block">Check the passed <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a>. If any check returns <code>true</code> then the server
+ pack will not be created. In order to find out which check failed, the user has to check their
+ serverpackcreator.log in the logs-directory.<br> The passed String List
+ <code>encounteredErrors</code> can be used to display the errors, if any were encountered, in a UI
+ or be printed into the console or whatever have you.<br> The passed <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a>
+ can be used to further display or use any information within, as it may be changed or otherwise
+ altered by this method.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>configurationModel</code> - Instance of a configuration of a modpack. Can be used to further
+                           display or use any information within, as it may be changed or
+                           otherwise altered by this method.</dd>
+<dd><code>encounteredErrors</code> - A list of errors encountered during configuration checks which gets
+                           printed to the console and log after all checks have run. Gives the
+                           user more detail on what went wrong at which part of their
+                           configuration. Can be used to display the errors, if any were
+                           encountered, in a UI or be printed into the console or whatever have
+                           you.</dd>
+<dd><code>quietCheck</code> - Whether the configuration should be printed to the console and logs.
+                           Pass false to quietly check the configuration.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd><code>false</code> if all checks are passed.</dd>
+</dl>
+</li>
+</ul>
+<a name="sanitizeLinks-de.griefed.serverpackcreator.ConfigurationModel-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>sanitizeLinks</h4>
+<pre>public&nbsp;void&nbsp;sanitizeLinks(@NotNull
+                          @NotNull <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel)</pre>
+<div class="block">Sanitize any and all links in a given instance of <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a> modpack-directory,
+ server-icon path, server-properties path, Java path and copy-directories entries.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>configurationModel</code> - Instance of <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a> in which to sanitize links to
+                           their respective destinations.</dd>
+</dl>
+</li>
+</ul>
+<a name="checkIconAndProperties-java.lang.String-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>checkIconAndProperties</h4>
+<pre>public&nbsp;boolean&nbsp;checkIconAndProperties(@NotNull
+                                      @NotNull java.lang.String&nbsp;iconOrPropertiesPath)</pre>
+<div class="block">Checks the passed String whether it is an existing file. If the passed String is empty, then
+ ServerPackCreator will treat it as the user being fine with the default files and return the
+ corresponding boolean.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>iconOrPropertiesPath</code> - The path to the custom server-icon.png or server.properties file to
+                             check.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd><code>true</code> if the file exists or an empty String was passed, false if a file was
+ specified, but the file was not found.</dd>
+</dl>
+</li>
+</ul>
+<a name="isDir-de.griefed.serverpackcreator.ConfigurationModel-java.util.List-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>isDir</h4>
+<pre>public&nbsp;boolean&nbsp;isDir(@NotNull
+                     @NotNull <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel,
+                     @NotNull
+                     @NotNull java.util.List&lt;java.lang.String&gt;&nbsp;encounteredErrors)</pre>
+<div class="block">If the in the configuration specified modpack dir is an existing directory, checks are made for
+ valid configuration of: directories to copy to server pack, if includeServerInstallation is
+ <code>true</code> path to Java executable/binary, Minecraft version, modloader and modloader
+ version.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>configurationModel</code> - An instance of <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a> which contains the
+                           configuration of the modpack.</dd>
+<dd><code>encounteredErrors</code> - A list to which all encountered errors are saved to.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd><code>true</code> if an error is found during configuration check.</dd>
+</dl>
+</li>
+</ul>
+<a name="isZip-de.griefed.serverpackcreator.ConfigurationModel-java.util.List-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>isZip</h4>
+<pre>public&nbsp;boolean&nbsp;isZip(@NotNull
+                     @NotNull <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel,
+                     @NotNull
+                     @NotNull java.util.List&lt;java.lang.String&gt;&nbsp;encounteredErrors)
+              throws java.io.IOException</pre>
+<div class="block">Checks the specified ZIP-archive for validity. In order for a modpack ZIP-archive to be
+ considered valid, it needs to contain the <code>mods</code> and <code>config</code> folders at minimum.
+ If any of <code>manifest.json</code>, <code>minecraftinstance.json</code> or <code>config.json</code> are
+ available, gather as much information from them as possible.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>configurationModel</code> - Instance of <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a> with a server pack
+                           configuration.</dd>
+<dd><code>encounteredErrors</code> - A list of errors encountered during configuration checks.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd><code>false</code> when no errors were encountered.</dd>
+<dt><span class="throwsLabel">Throws:</span></dt>
+<dd><code>java.io.IOException</code> - if an error occurred trying to move the server pack directory.</dd>
+</dl>
+</li>
+</ul>
+<a name="checkModloader-java.lang.String-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>checkModloader</h4>
+<pre>public&nbsp;boolean&nbsp;checkModloader(@NotNull
+                              @NotNull java.lang.String&nbsp;modloader)</pre>
+<div class="block">Checks whether either Forge or Fabric were specified as the modloader.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>modloader</code> - Check as case-insensitive for Forge or Fabric.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd><code>true</code> if the specified modloader is either Forge or Fabric. False if neither.</dd>
+</dl>
+</li>
+</ul>
+<a name="checkModloaderVersion-java.lang.String-java.lang.String-java.lang.String-java.util.List-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>checkModloaderVersion</h4>
+<pre>public&nbsp;boolean&nbsp;checkModloaderVersion(@NotNull
+                                     @NotNull java.lang.String&nbsp;modloader,
+                                     @NotNull
+                                     @NotNull java.lang.String&nbsp;modloaderVersion,
+                                     @NotNull
+                                     @NotNull java.lang.String&nbsp;minecraftVersion,
+                                     @NotNull
+                                     @NotNull java.util.List&lt;java.lang.String&gt;&nbsp;encounteredErrors)</pre>
+<div class="block">Check the given Minecraft and modloader versions for the specified modloader and update the
+ passed error-list should any error be encountered.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>modloader</code> - The passed modloader which determines whether the check for Forge or
+                          Fabric is called.</dd>
+<dd><code>modloaderVersion</code> - The version of the modloader which is checked against the
+                          corresponding modloaders manifest.</dd>
+<dd><code>minecraftVersion</code> - The version of Minecraft used for checking the Forge version.</dd>
+<dd><code>encounteredErrors</code> - List of encountered errors to add to in case of errors.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd><code>true</code> if the specified modloader version was found in the corresponding
+ manifest.</dd>
+</dl>
+</li>
+</ul>
+<a name="printConfigurationModel-de.griefed.serverpackcreator.ConfigurationModel-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>printConfigurationModel</h4>
+<pre>public&nbsp;void&nbsp;printConfigurationModel(@NotNull
+                                    @NotNull <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel)</pre>
+<div class="block">Convenience method which passes the important fields from an instance of
+ <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a> to
+ <a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html#printConfigurationModel-java.lang.String-java.util.List-java.util.List-boolean-java.lang.String-java.lang.String-java.lang.String-boolean-boolean-boolean-java.lang.String-java.lang.String-java.lang.String-java.lang.String-java.util.HashMap-"><code>printConfigurationModel(String, List, List, boolean, String, String, String, boolean,
+ boolean, boolean, String, String, String, String, HashMap)</code></a></div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>configurationModel</code> - Instance of <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a> to print to console and logs.</dd>
+</dl>
+</li>
+</ul>
+<a name="ensureScriptSettingsDefaults-de.griefed.serverpackcreator.ConfigurationModel-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>ensureScriptSettingsDefaults</h4>
+<pre>public&nbsp;void&nbsp;ensureScriptSettingsDefaults(@NotNull
+                                         @NotNull <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel)</pre>
+<div class="block">Update the script settings and ensure the default keys, with values gathered from the passed
+ <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a>, are present:
+
+ <ol>
+   <li><code>SPC_SERVERPACKCREATOR_VERSION_SPC</code> : <code>ServerPackCreator version with which the scripts were created</code>
+   <li><code>SPC_MINECRAFT_VERSION_SPC</code> : <code>Minecraft version of the modpack</code>
+   <li><code>SPC_MINECRAFT_SERVER_URL_SPC</code> : <code>Download-URL to the Minecraft server
+       </code>
+   <li><code>SPC_MODLOADER_SPC</code> : <code>The modloader of the modpack</code>
+   <li><code>SPC_MODLOADER_VERSION_SPC</code> : <code>The modloader version of the modpack
+       </code>
+   <li><code>SPC_JAVA_ARGS_SPC</code> : <code>The JVM args to be used to run the server</code>
+   <li><code>SPC_JAVA_SPC</code> : <code>Path to the java installation to be used to run the server</code>
+   <li><code>SPC_FABRIC_INSTALLER_VERSION_SPC</code> : <code>Most recent version of the Fabric installer at the time of creating the scripts</code>
+   <li><code>SPC_QUILT_INSTALLER_VERSION_SPC</code> : <code>Most recent version of the Quilt installer at the time of creating the scripts</code>
+ </ol></div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>configurationModel</code> - Model in which to ensure the default key-value pairs are present.</dd>
+</dl>
+</li>
+</ul>
+<a name="checkCopyDirs-java.util.List-java.lang.String-java.util.List-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>checkCopyDirs</h4>
+<pre>public&nbsp;boolean&nbsp;checkCopyDirs(@NotNull
+                             @NotNull java.util.List&lt;java.lang.String&gt;&nbsp;directoriesToCopy,
+                             @NotNull
+                             @NotNull java.lang.String&nbsp;modpackDir,
+                             @NotNull
+                             @NotNull java.util.List&lt;java.lang.String&gt;&nbsp;encounteredErrors)</pre>
+<div class="block">Checks whether the passed list of directories which are supposed to be in the modpack directory
+ is empty and prints a message to the console and serverpackcreator.log if it is.<br> Checks
+ whether all directories in the list exist in the modpack directory and prints a message to the
+ console and serverpackcreator.log if any one of the directories could not be found. If the user
+ specified a <code>source/file;destination/file</code>-combination, it is checked whether the
+ specified source-file exists on the host.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>directoriesToCopy</code> - The list of directories, or
+                          <code>source/file;destination/file</code>-combinations, to check for
+                          existence. <code>source/file;destination/file</code>-combinations must be
+                          absolute paths to the source-file.</dd>
+<dd><code>modpackDir</code> - The path to the modpack directory in which to check for existence of
+                          the passed list of directories.</dd>
+<dd><code>encounteredErrors</code> - A list to which all encountered errors are saved to.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd><code>true</code> if every directory was found in the modpack directory. If any single one
+ was not found, false is returned.</dd>
+</dl>
+</li>
+</ul>
+<a name="checkZipArchive-java.nio.file.Path-java.util.List-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>checkZipArchive</h4>
+<pre>public&nbsp;boolean&nbsp;checkZipArchive(@NotNull
+                               @NotNull java.nio.file.Path&nbsp;pathToZip,
+                               @NotNull
+                               @NotNull java.util.List&lt;java.lang.String&gt;&nbsp;encounteredErrors)</pre>
+<div class="block">Check a given ZIP-archives contents. If the ZIP-archive only contains one directory, or if it
+ contains neither the mods nor the config directories, consider it invalid.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>pathToZip</code> - Path to the ZIP-file to check.</dd>
+<dd><code>encounteredErrors</code> - List of encountered errors for further processing, like printing to
+                          logs or display in GUI or whatever you want, really.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd><code>false</code> if the ZIP-archive is considered valid.</dd>
+</dl>
+</li>
+</ul>
+<a name="suggestCopyDirs-java.lang.String-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>suggestCopyDirs</h4>
+<pre>@NotNull
+public&nbsp;@NotNull java.util.List&lt;java.lang.String&gt;&nbsp;suggestCopyDirs(@NotNull
+                                                                          @NotNull java.lang.String&nbsp;modpackDir)</pre>
+<div class="block">Creates a list of suggested directories to include in server pack which is later on written to
+ a new configuration file. The list of directories to include in the server pack which is
+ generated by this method excludes well know directories which would not be needed by a server
+ pack. If you have suggestions to this list, open a feature request issue on <a
+ href="https://github.com/Griefed/ServerPackCreator/issues/new/choose">GitHub</a></div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>modpackDir</code> - The directory for which to gather a list of directories to copy to the server
+                   pack.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Directories inside the modpack, excluding well known client-side only directories.</dd>
+</dl>
+</li>
+</ul>
+<a name="checkManifests-java.lang.String-de.griefed.serverpackcreator.ConfigurationModel-java.util.List-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>checkManifests</h4>
+<pre>@Nullable
+public&nbsp;@Nullable java.lang.String&nbsp;checkManifests(@NotNull
+                                                           @NotNull java.lang.String&nbsp;destination,
+                                                           @NotNull
+                                                           @NotNull <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel,
+                                                           @NotNull
+                                                           @NotNull java.util.List&lt;java.lang.String&gt;&nbsp;encounteredErrors)</pre>
+<div class="block">Check whether various manifests from various launchers exist and use them to update our
+ ConfigurationModel and pack name.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>destination</code> - The destination in which the manifests are.</dd>
+<dd><code>configurationModel</code> - The ConfigurationModel to update.</dd>
+<dd><code>encounteredErrors</code> - A list of errors encountered during configuration checks, to be added
+                           to in case an error is encountered during manifest checks.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>The name of the modpack currently being checked. <code>null</code> if the name could not be
+ acquired.</dd>
+</dl>
+</li>
+</ul>
+<a name="printConfigurationModel-java.lang.String-java.util.List-java.util.List-boolean-java.lang.String-java.lang.String-java.lang.String-boolean-boolean-boolean-java.lang.String-java.lang.String-java.lang.String-java.lang.String-java.util.HashMap-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>printConfigurationModel</h4>
+<pre>public&nbsp;void&nbsp;printConfigurationModel(@NotNull
+                                    @NotNull java.lang.String&nbsp;modpackDirectory,
+                                    @NotNull
+                                    @NotNull java.util.List&lt;java.lang.String&gt;&nbsp;clientsideMods,
+                                    @NotNull
+                                    @NotNull java.util.List&lt;java.lang.String&gt;&nbsp;copyDirectories,
+                                    boolean&nbsp;installServer,
+                                    @NotNull
+                                    @NotNull java.lang.String&nbsp;minecraftVer,
+                                    @NotNull
+                                    @NotNull java.lang.String&nbsp;modloader,
+                                    @NotNull
+                                    @NotNull java.lang.String&nbsp;modloaderVersion,
+                                    boolean&nbsp;includeIcon,
+                                    boolean&nbsp;includeProperties,
+                                    boolean&nbsp;includeZip,
+                                    @NotNull
+                                    @NotNull java.lang.String&nbsp;javaArgs,
+                                    @NotNull
+                                    @NotNull java.lang.String&nbsp;serverPackSuffix,
+                                    @NotNull
+                                    @NotNull java.lang.String&nbsp;serverIconPath,
+                                    @NotNull
+                                    @NotNull java.lang.String&nbsp;serverPropertiesPath,
+                                    @NotNull
+                                    @NotNull java.util.HashMap&lt;java.lang.String,java.lang.String&gt;&nbsp;scriptSettings)</pre>
+<div class="block">Prints all passed fields to the console and serverpackcreator.log. Used to show the user the
+ configuration before ServerPackCreator starts the generation of the server pack or, if checks
+ failed, to show the user their last configuration, so they can more easily identify problems
+ with said configuration.<br> Should a user report an issue on GitHub and include their logs
+ (which I hope they do....), this would also help me help them. Logging is good. People should
+ use more logging.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>modpackDirectory</code> - The used modpackDir field either from a configuration file or from
+                             configuration setup.</dd>
+<dd><code>clientsideMods</code> - List of clientside-only mods to exclude from the server pack...</dd>
+<dd><code>copyDirectories</code> - List of directories in the modpack which are to be included in the
+                             server pack.</dd>
+<dd><code>installServer</code> - Whether to install the modloader server in the server pack.</dd>
+<dd><code>minecraftVer</code> - The Minecraft version the modpack uses.</dd>
+<dd><code>modloader</code> - The modloader the modpack uses.</dd>
+<dd><code>modloaderVersion</code> - The version of the modloader the modpack uses.</dd>
+<dd><code>includeIcon</code> - Whether to include the server-icon.png in the server pack.</dd>
+<dd><code>includeProperties</code> - Whether to include the server.properties in the server pack.</dd>
+<dd><code>includeZip</code> - Whether to create a zip-archive of the server pack, excluding the
+                             Minecraft server JAR according to Mojang's TOS and EULA.</dd>
+<dd><code>javaArgs</code> - Java arguments to write the start-scripts with.</dd>
+<dd><code>serverPackSuffix</code> - Suffix to append to name of the server pack to be generated.</dd>
+<dd><code>serverIconPath</code> - The path to the custom server-icon.png to be used in the server
+                             pack.</dd>
+<dd><code>serverPropertiesPath</code> - The path to the custom server.properties to be used in the server
+                             pack.</dd>
+<dd><code>scriptSettings</code> - Custom settings for start script creation. <code>KEY</code>s are the
+                             placeholder, <code>VALUE</code>s are the values with which the
+                             placeholders are to be replaced.</dd>
+</dl>
+</li>
+</ul>
+<a name="checkRegex-java.lang.String-java.lang.String-boolean-java.util.List-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>checkRegex</h4>
+<pre>public&nbsp;boolean&nbsp;checkRegex(@NotNull
+                          @NotNull java.lang.String&nbsp;modpackDir,
+                          @NotNull
+                          @NotNull java.lang.String&nbsp;entry,
+                          boolean&nbsp;exclusion,
+                          @NotNull
+                          @NotNull java.util.List&lt;java.lang.String&gt;&nbsp;encounteredErrors)</pre>
+<div class="block">Check the given entry for valid regex. In order for an entry to be valid, it must
+ <ul>
+   <li>Contain <code>==</code></li>
+   <li>Optionally start with <code>==</code>. When starting with <code>==</code></li>
+   <li><ul>
+     <li>The left side of <code>==</code> must specify an existing directory</li>
+     <li>The right side of <code>==</code> must be the regex to match files and/or directories</li>
+   </ul></li>
+ </ul></div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>modpackDir</code> - The modpacks directory which will be checked when the entry starts
+                          with <code>==</code></dd>
+<dd><code>entry</code> - The regex, or file/directory and regex, combination.</dd>
+<dd><code>exclusion</code> - Whether the checks are for exclusions (<code>true</code>) or files and/or
+                          directories, or inclusions (<code>false</code>).</dd>
+<dd><code>encounteredErrors</code> - A list to which all encountered errors are saved to.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd><code>true</code> when no errors were encountered.</dd>
+</dl>
+</li>
+</ul>
+<a name="getDirectoriesInModpackZipBaseDirectory-net.lingala.zip4j.ZipFile-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getDirectoriesInModpackZipBaseDirectory</h4>
+<pre>@NotNull
+public&nbsp;@NotNull java.util.List&lt;java.lang.String&gt;&nbsp;getDirectoriesInModpackZipBaseDirectory(@NotNull
+                                                                                                  @NotNull net.lingala.zip4j.ZipFile&nbsp;zipFile)
+                                                                                           throws java.lang.IllegalArgumentException,
+                                                                                                  java.nio.file.FileSystemAlreadyExistsException,
+                                                                                                  java.nio.file.ProviderNotFoundException,
+                                                                                                  java.io.IOException,
+                                                                                                  java.lang.SecurityException</pre>
+<div class="block">Acquire a list of directories in the base-directory of a ZIP-file.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>zipFile</code> - The ZIP-archive to get the list of files from.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>All directories in the base-directory of the ZIP-file.</dd>
+<dt><span class="throwsLabel">Throws:</span></dt>
+<dd><code>java.lang.IllegalArgumentException</code> - if the pre-conditions for the uri parameter are not
+                                          met, or the env parameter does not contain properties
+                                          required by the provider, or a property value is
+                                          invalid.</dd>
+<dd><code>java.nio.file.FileSystemAlreadyExistsException</code> - if the file system has already been created.</dd>
+<dd><code>java.nio.file.ProviderNotFoundException</code> - if a provider supporting the URI scheme is not
+                                          installed.</dd>
+<dd><code>java.io.IOException</code> - if an I/O error occurs creating the file system.</dd>
+<dd><code>java.lang.SecurityException</code> - if a security manager is installed, and it denies an
+                                          unspecified permission required by the file system
+                                          provider implementation.</dd>
+</dl>
+</li>
+</ul>
+<a name="updateConfigModelFromCurseManifest-de.griefed.serverpackcreator.ConfigurationModel-java.io.File-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>updateConfigModelFromCurseManifest</h4>
+<pre>public&nbsp;void&nbsp;updateConfigModelFromCurseManifest(@NotNull
+                                               @NotNull <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel,
+                                               @NotNull
+                                               @NotNull java.io.File&nbsp;manifest)
+                                        throws java.io.IOException</pre>
+<div class="block"><strong><code>manifest.json</code></strong>
+
+ <p>Update the given ConfigurationModel with values gathered from the downloaded CurseForge
+ modpack. A manifest.json-file is usually created when a modpack is exported through launchers
+ like Overwolf's CurseForge or GDLauncher.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>configurationModel</code> - An instance containing a configuration for a modpack from which to
+                           create a server pack.</dd>
+<dd><code>manifest</code> - The CurseForge manifest.json-file of the modpack to read.</dd>
+<dt><span class="throwsLabel">Throws:</span></dt>
+<dd><code>java.io.IOException</code> - when the manifest.json-file could not be parsed.</dd>
+</dl>
+</li>
+</ul>
+<a name="updateConfigModelFromMinecraftInstance-de.griefed.serverpackcreator.ConfigurationModel-java.io.File-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>updateConfigModelFromMinecraftInstance</h4>
+<pre>public&nbsp;void&nbsp;updateConfigModelFromMinecraftInstance(@NotNull
+                                                   @NotNull <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel,
+                                                   @NotNull
+                                                   @NotNull java.io.File&nbsp;minecraftInstance)
+                                            throws java.io.IOException</pre>
+<div class="block"><strong><code>minecraftinstance.json</code></strong>
+
+ <p>Update the given ConfigurationModel with values gathered from the minecraftinstance.json of
+ the modpack. A minecraftinstance.json is usually created by Overwolf's CurseForge launcher.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>configurationModel</code> - An instance containing a configuration for a modpack from which to
+                           create a server pack.</dd>
+<dd><code>minecraftInstance</code> - The minecraftinstance.json-file of the modpack to read.</dd>
+<dt><span class="throwsLabel">Throws:</span></dt>
+<dd><code>java.io.IOException</code> - when the minecraftinstance.json-file could not be parsed.</dd>
+</dl>
+</li>
+</ul>
+<a name="updateConfigModelFromModrinthManifest-de.griefed.serverpackcreator.ConfigurationModel-java.io.File-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>updateConfigModelFromModrinthManifest</h4>
+<pre>public&nbsp;void&nbsp;updateConfigModelFromModrinthManifest(@NotNull
+                                                  @NotNull <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel,
+                                                  @NotNull
+                                                  @NotNull java.io.File&nbsp;manifest)
+                                           throws java.io.IOException</pre>
+<div class="block"><strong><code>modrinth.index.json</code></strong>
+
+ <p>Update the given ConfigurationModel with values gathered from a Modrinth <code>modrinth.index.json</code>-manifest.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>configurationModel</code> - The model to update.</dd>
+<dd><code>manifest</code> - The manifest file.</dd>
+<dt><span class="throwsLabel">Throws:</span></dt>
+<dd><code>java.io.IOException</code> - when the modrinth.index.json-file could not be parsed.</dd>
+</dl>
+</li>
+</ul>
+<a name="updateConfigModelFromATLauncherInstance-de.griefed.serverpackcreator.ConfigurationModel-java.io.File-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>updateConfigModelFromATLauncherInstance</h4>
+<pre>public&nbsp;void&nbsp;updateConfigModelFromATLauncherInstance(@NotNull
+                                                    @NotNull <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel,
+                                                    @NotNull
+                                                    @NotNull java.io.File&nbsp;manifest)
+                                             throws java.io.IOException</pre>
+<div class="block"><strong><code>instance.json</code></strong>
+
+ <p>Update the given ConfigurationModel with values gathered from a ATLauncher manifest.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>configurationModel</code> - The model to update.</dd>
+<dd><code>manifest</code> - The manifest file.</dd>
+<dt><span class="throwsLabel">Throws:</span></dt>
+<dd><code>java.io.IOException</code> - when the instance.json-file could not be parsed.</dd>
+</dl>
+</li>
+</ul>
+<a name="updateConfigModelFromConfigJson-de.griefed.serverpackcreator.ConfigurationModel-java.io.File-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>updateConfigModelFromConfigJson</h4>
+<pre>public&nbsp;void&nbsp;updateConfigModelFromConfigJson(@NotNull
+                                            @NotNull <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel,
+                                            @NotNull
+                                            @NotNull java.io.File&nbsp;config)
+                                     throws java.io.IOException</pre>
+<div class="block"><strong><code>config.json</code></strong>
+
+ <p>Update the given ConfigurationModel with values gathered from the modpacks config.json. A
+ config.json is usually created by GDLauncher.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>configurationModel</code> - An instance containing a configuration for a modpack from which to
+                           create a server pack.</dd>
+<dd><code>config</code> - The config.json-file of the modpack to read.</dd>
+<dt><span class="throwsLabel">Throws:</span></dt>
+<dd><code>java.io.IOException</code> - when the config.json-file could not be parsed.</dd>
+</dl>
+</li>
+</ul>
+<a name="updateConfigModelFromMMCPack-de.griefed.serverpackcreator.ConfigurationModel-java.io.File-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>updateConfigModelFromMMCPack</h4>
+<pre>public&nbsp;void&nbsp;updateConfigModelFromMMCPack(@NotNull
+                                         @NotNull <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel,
+                                         @NotNull
+                                         @NotNull java.io.File&nbsp;mmcPack)
+                                  throws java.io.IOException</pre>
+<div class="block"><strong><code>mmc-pack.json</code></strong>
+
+ <p>Update the given ConfigurationModel with values gathered from the modpacks mmc-pack.json. A
+ mmc-pack.json is usually created by the MultiMC launcher.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>configurationModel</code> - An instance containing a configuration for a modpack from which to
+                           create a server pack.</dd>
+<dd><code>mmcPack</code> - The config.json-file of the modpack to read.</dd>
+<dt><span class="throwsLabel">Throws:</span></dt>
+<dd><code>java.io.IOException</code> - when the mmc-pack.json-file could not be parsed.</dd>
+</dl>
+</li>
+</ul>
+<a name="updateDestinationFromInstanceCfg-java.io.File-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>updateDestinationFromInstanceCfg</h4>
+<pre>@NotNull
+public&nbsp;@NotNull java.lang.String&nbsp;updateDestinationFromInstanceCfg(@NotNull
+                                                                           @NotNull java.io.File&nbsp;instanceCfg)
+                                                                    throws java.io.IOException</pre>
+<div class="block"><strong><code>instance.cfg</code></strong>
+
+ <p>Acquire the name of the modpack/instance of a MultiMC modpack from the modpacks
+ instance.cfg, which is usually created by the MultiMC launcher.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>instanceCfg</code> - The config.json-file of the modpack to read.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>The instance name.</dd>
+<dt><span class="throwsLabel">Throws:</span></dt>
+<dd><code>java.io.IOException</code> - when the file could not be found or the properties not be loaded from the
+                     file.</dd>
+</dl>
+</li>
+</ul>
+<a name="getModLoaderCase-java.lang.String-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getModLoaderCase</h4>
+<pre>@NotNull
+public&nbsp;@NotNull java.lang.String&nbsp;getModLoaderCase(@NotNull
+                                                           @NotNull java.lang.String&nbsp;modloader)</pre>
+<div class="block">Ensures the modloader is normalized to first letter upper case and rest lower case. Basically
+ allows the user to input Forge or Fabric in any combination of upper- and lowercase and
+ ServerPackCreator will still be able to work with the users input.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>modloader</code> - Modloader String-representation to normalize.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>A normalized String of the specified modloader.</dd>
+</dl>
+</li>
+</ul>
+<a name="checkRegex-java.lang.String-java.lang.String-boolean-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>checkRegex</h4>
+<pre>public&nbsp;boolean&nbsp;checkRegex(@NotNull
+                          @NotNull java.lang.String&nbsp;modpackDir,
+                          @NotNull
+                          @NotNull java.lang.String&nbsp;entry,
+                          boolean&nbsp;exclusion)</pre>
+<div class="block">Check the given entry for valid regex. In order for an entry to be valid, it must
+ <ol>
+   <li>Contain <code>==</code></li>
+   <li>Optionally start with <code>==</code>. When starting with <code>==</code></li>
+   <li><ul>
+     <li>The left side of <code>==</code> must specify an existing directory</li>
+     <li>The right side of <code>==</code> must be the regex to match files and/or directories</li>
+   </ul></li>
+ </ol></div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>modpackDir</code> - The modpacks directory which will be checked when the entry starts with
+                   <code>==</code></dd>
+<dd><code>entry</code> - The regex, or file/directory and regex, combination.</dd>
+<dd><code>exclusion</code> - Whether the checks are for exclusions (<code>true</code>) or files and/or
+                   directories, or inclusions (<code>false</code>).</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd><code>true</code> when no errors were encountered.</dd>
 </dl>
 </li>
 </ul>
@@ -528,227 +1349,20 @@ public&nbsp;ConfigurationHandler(<a href="../../../de/griefed/serverpackcreator/
 </dl>
 </li>
 </ul>
-<a name="checkConfiguration-java.io.File-de.griefed.serverpackcreator.ConfigurationModel-java.util.List-boolean-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>checkConfiguration</h4>
-<pre>public&nbsp;boolean&nbsp;checkConfiguration(@NotNull
-                                  @NotNull java.io.File&nbsp;configFile,
-                                  @NotNull
-                                  @NotNull <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel,
-                                  @NotNull
-                                  @NotNull java.util.List&lt;java.lang.String&gt;&nbsp;encounteredErrors,
-                                  boolean&nbsp;quietCheck)</pre>
-<div class="block">Check the passed configuration-file. If any check returns <code>true</code> then the server pack
- will not be created. In order to find out which check failed, the user has to check their
- serverpackcreator.log in the logs-directory.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>configFile</code> - The configuration file to check. Must either be an existing file to
-                           load a configuration from or null if you want to use the passed
-                           configuration model.</dd>
-<dd><code>configurationModel</code> - Instance of a configuration of a modpack. Can be used to further
-                           display or use any information within, as it may be changed or
-                           otherwise altered by this method.</dd>
-<dd><code>encounteredErrors</code> - A list of errors encountered during configuration checks which gets
-                           printed to the console and log after all checks have run. Gives the
-                           user more detail on what went wrong at which part of their
-                           configuration. Can be used to display the errors, if any were
-                           encountered, in a UI or be printed into the console or whatever have
-                           you.</dd>
-<dd><code>quietCheck</code> - Whether the configuration should be printed to the console and logs.
-                           Pass false to quietly check the configuration.</dd>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>false</code> if the configuration has passed all tests.</dd>
-</dl>
-</li>
-</ul>
-<a name="checkConfiguration-de.griefed.serverpackcreator.ConfigurationModel-java.util.List-boolean-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>checkConfiguration</h4>
-<pre>public&nbsp;boolean&nbsp;checkConfiguration(@NotNull
-                                  @NotNull <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel,
-                                  @NotNull
-                                  @NotNull java.util.List&lt;java.lang.String&gt;&nbsp;encounteredErrors,
-                                  boolean&nbsp;quietCheck)</pre>
-<div class="block">Check the passed <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a>. If any check returns <code>true</code> then the server
- pack will not be created. In order to find out which check failed, the user has to check their
- serverpackcreator.log in the logs-directory.<br> The passed String List
- <code>encounteredErrors</code> can be used to display the errors, if any were encountered, in a UI
- or be printed into the console or whatever have you.<br> The passed <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a>
- can be used to further display or use any information within, as it may be changed or otherwise
- altered by this method.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>configurationModel</code> - Instance of a configuration of a modpack. Can be used to further
-                           display or use any information within, as it may be changed or
-                           otherwise altered by this method.</dd>
-<dd><code>encounteredErrors</code> - A list of errors encountered during configuration checks which gets
-                           printed to the console and log after all checks have run. Gives the
-                           user more detail on what went wrong at which part of their
-                           configuration. Can be used to display the errors, if any were
-                           encountered, in a UI or be printed into the console or whatever have
-                           you.</dd>
-<dd><code>quietCheck</code> - Whether the configuration should be printed to the console and logs.
-                           Pass false to quietly check the configuration.</dd>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>false</code> if all checks are passed.</dd>
-</dl>
-</li>
-</ul>
-<a name="isDir-de.griefed.serverpackcreator.ConfigurationModel-java.util.List-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>isDir</h4>
-<pre>public&nbsp;boolean&nbsp;isDir(<a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel,
-                     java.util.List&lt;java.lang.String&gt;&nbsp;encounteredErrors)</pre>
-<div class="block">If the in the configuration specified modpack dir is an existing directory, checks are made for
- valid configuration of: directories to copy to server pack, if includeServerInstallation is
- <code>true</code> path to Java executable/binary, Minecraft version, modloader and modloader
- version.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>configurationModel</code> - An instance of <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a> which contains the
-                           configuration of the modpack.</dd>
-<dd><code>encounteredErrors</code> - A list to which all encountered errors are saved to.</dd>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>true</code> if an error is found during configuration check.</dd>
-</dl>
-</li>
-</ul>
-<a name="isZip-de.griefed.serverpackcreator.ConfigurationModel-java.util.List-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>isZip</h4>
-<pre>public&nbsp;boolean&nbsp;isZip(<a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel,
-                     java.util.List&lt;java.lang.String&gt;&nbsp;encounteredErrors)
-              throws java.io.IOException</pre>
-<div class="block">Checks the specified ZIP-archive for validity. In order for a modpack ZIP-archive to be
- considered valid, it needs to contain the <code>mods</code> and <code>config</code> folders at minimum.
- If any of <code>manifest.json</code>, <code>minecraftinstance.json</code> or <code>config.json</code> are
- available, gather as much information from them as possible.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>configurationModel</code> - Instance of <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a> with a server pack
-                           configuration.</dd>
-<dd><code>encounteredErrors</code> - A list of errors encountered during configuration checks.</dd>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>false</code> when no errors were encountered.</dd>
-<dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.io.IOException</code> - if an error occurred trying to move the server pack directory.</dd>
-</dl>
-</li>
-</ul>
-<a name="checkManifests-java.lang.String-de.griefed.serverpackcreator.ConfigurationModel-java.util.List-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>checkManifests</h4>
-<pre>public&nbsp;java.lang.String&nbsp;checkManifests(java.lang.String&nbsp;destination,
-                                       <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel,
-                                       java.util.List&lt;java.lang.String&gt;&nbsp;encounteredErrors)</pre>
-<div class="block">Check whether various manifests from various launchers exist and use them to update our
- ConfigurationModel and pack name.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>destination</code> - The destination in which the manifests are.</dd>
-<dd><code>configurationModel</code> - The ConfigurationModel to update.</dd>
-<dd><code>encounteredErrors</code> - A list of errors encountered during configuration checks, to be added
-                           to in case an error is encountered during manifest checks.</dd>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>The name of the modpack currently being checked. <code>null</code> if the name could not be
- acquired.</dd>
-</dl>
-</li>
-</ul>
-<a name="checkZipArchive-java.nio.file.Path-java.util.List-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>checkZipArchive</h4>
-<pre>public&nbsp;boolean&nbsp;checkZipArchive(java.nio.file.Path&nbsp;pathToZip,
-                               java.util.List&lt;java.lang.String&gt;&nbsp;encounteredErrors)</pre>
-<div class="block">Check a given ZIP-archives contents. If the ZIP-archive only contains one directory, or if it
- contains neither the mods nor the config directories, consider it invalid.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>pathToZip</code> - Path to the ZIP-file to check.</dd>
-<dd><code>encounteredErrors</code> - List of encountered errors for further processing, like printing to
-                          logs or display in GUI or whatever you want, really.</dd>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>Boolean. <code>false</code> if the ZIP-archive is considered valid.</dd>
-</dl>
-</li>
-</ul>
-<a name="ensureScriptSettingsDefaults-de.griefed.serverpackcreator.ConfigurationModel-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>ensureScriptSettingsDefaults</h4>
-<pre>public&nbsp;void&nbsp;ensureScriptSettingsDefaults(<a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel)</pre>
-<div class="block">Update the script settings and ensure the default keys, with values gathered from the passed
- <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a>, are present:
-
- <ol>
-   <li><code>SPC_SERVERPACKCREATOR_VERSION_SPC</code> : <code>ServerPackCreator version with which the scripts were created</code>
-   <li><code>SPC_MINECRAFT_VERSION_SPC</code> : <code>Minecraft version of the modpack</code>
-   <li><code>SPC_MINECRAFT_SERVER_URL_SPC</code> : <code>Download-URL to the Minecraft server
-       </code>
-   <li><code>SPC_MODLOADER_SPC</code> : <code>The modloader of the modpack</code>
-   <li><code>SPC_MODLOADER_VERSION_SPC</code> : <code>The modloader version of the modpack
-       </code>
-   <li><code>SPC_JAVA_ARGS_SPC</code> : <code>The JVM args to be used to run the server</code>
-   <li><code>SPC_JAVA_SPC</code> : <code>Path to the java installation to be used to run the server</code>
-   <li><code>SPC_FABRIC_INSTALLER_VERSION_SPC</code> : <code>Most recent version of the Fabric installer at the time of creating the scripts</code>
-   <li><code>SPC_QUILT_INSTALLER_VERSION_SPC</code> : <code>Most recent version of the Quilt installer at the time of creating the scripts</code>
- </ol></div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>configurationModel</code> - Model in which to ensure the default key-value pairs are present.</dd>
-</dl>
-</li>
-</ul>
-<a name="sanitizeLinks-de.griefed.serverpackcreator.ConfigurationModel-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>sanitizeLinks</h4>
-<pre>public&nbsp;void&nbsp;sanitizeLinks(<a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator">ConfigurationModel</a>&nbsp;configurationModel)</pre>
-<div class="block">Sanitize any and all links in a given instance of <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a> modpack-directory,
- server-icon path, server-properties path, Java path and copy-directories entries.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>configurationModel</code> - Instance of <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a> in which to sanitize links to
-                           their respective destinations.</dd>
-</dl>
-</li>
-</ul>
 <a name="checkModpackDir-java.lang.String-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>checkModpackDir</h4>
-<pre>public&nbsp;boolean&nbsp;checkModpackDir(java.lang.String&nbsp;modpackDir)</pre>
+<pre>public&nbsp;boolean&nbsp;checkModpackDir(@NotNull
+                               @NotNull java.lang.String&nbsp;modpackDir)</pre>
 <div class="block">Check the passed directory for existence and whether it is a directory, rather than a file.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>modpackDir</code> - The modpack directory.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>Boolean. Returns true if the directory exists.</dd>
+<dd><code>true</code> if the directory exists.</dd>
 </dl>
 </li>
 </ul>
@@ -758,19 +1372,21 @@ public&nbsp;ConfigurationHandler(<a href="../../../de/griefed/serverpackcreator/
 <ul class="blockList">
 <li class="blockList">
 <h4>checkModpackDir</h4>
-<pre>public&nbsp;boolean&nbsp;checkModpackDir(java.lang.String&nbsp;modpackDir,
-                               java.util.List&lt;java.lang.String&gt;&nbsp;encounteredErrors)</pre>
+<pre>public&nbsp;boolean&nbsp;checkModpackDir(@NotNull
+                               @NotNull java.lang.String&nbsp;modpackDir,
+                               @NotNull
+                               @NotNull java.util.List&lt;java.lang.String&gt;&nbsp;encounteredErrors)</pre>
 <div class="block">Checks whether the passed String is empty and if it is empty, prints the corresponding message
  to the console and serverpackcreator.log so the user knows what went wrong.<br> Checks whether
  the passed String is a directory and if it is not, prints the corresponding message to the
  console and serverpackcreator.log so the user knows what went wrong.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>modpackDir</code> - String. The path to the modpack directory to check whether it is empty
-                          and whether it is a directory.</dd>
-<dd><code>encounteredErrors</code> - List String. A list to which all encountered errors are saved to.</dd>
+<dd><code>modpackDir</code> - Path to the modpack directory to check whether it is empty and whether
+                          it is a directory.</dd>
+<dd><code>encounteredErrors</code> - List to which all encountered errors are added to.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>Boolean. Returns true if the directory exists.</dd>
+<dd><code>true</code> if the directory exists.</dd>
 </dl>
 </li>
 </ul>
@@ -780,154 +1396,25 @@ public&nbsp;ConfigurationHandler(<a href="../../../de/griefed/serverpackcreator/
 <ul class="blockList">
 <li class="blockList">
 <h4>checkCopyDirs</h4>
-<pre>public&nbsp;boolean&nbsp;checkCopyDirs(java.util.List&lt;java.lang.String&gt;&nbsp;directoriesToCopy,
-                             java.lang.String&nbsp;modpackDir)</pre>
+<pre>public&nbsp;boolean&nbsp;checkCopyDirs(@NotNull
+                             @NotNull java.util.List&lt;java.lang.String&gt;&nbsp;directoriesToCopy,
+                             @NotNull
+                             @NotNull java.lang.String&nbsp;modpackDir)</pre>
 <div class="block">Checks whether the passed list of directories which are supposed to be in the modpack directory
  is empty, or whether all directories in the list exist in the modpack directory. If the user
  specified a <code>source/file;destination/file</code>-combination, it is checked whether the
  specified source-file exists on the host.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>directoriesToCopy</code> - List String. The list of directories, or
-                          <code>source/file;destination/file</code>-combinations, to check for
-                          existence. <code>source/file;destination/file</code>-combinations must be
-                          absolute paths to the source-file.</dd>
-<dd><code>modpackDir</code> - String. The path to the modpack directory in which to check for
-                          existence of the passed list of directories.</dd>
+<dd><code>directoriesToCopy</code> - Directories, or <code>source/file;destination/file</code>-combinations, to
+                          check for existence.
+                          <code>source/file;destination/file</code>-combinations must be absolute
+                          paths to the source-file.</dd>
+<dd><code>modpackDir</code> - Path to the modpack directory in which to check for existence of the
+                          passed list of directories.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>Boolean. Returns true if every directory was found in the modpack directory. If any
- single one was not found, false is returned.</dd>
-</dl>
-</li>
-</ul>
-<a name="checkCopyDirs-java.util.List-java.lang.String-java.util.List-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>checkCopyDirs</h4>
-<pre>public&nbsp;boolean&nbsp;checkCopyDirs(java.util.List&lt;java.lang.String&gt;&nbsp;directoriesToCopy,
-                             java.lang.String&nbsp;modpackDir,
-                             java.util.List&lt;java.lang.String&gt;&nbsp;encounteredErrors)</pre>
-<div class="block">Checks whether the passed list of directories which are supposed to be in the modpack directory
- is empty and prints a message to the console and serverpackcreator.log if it is.<br> Checks
- whether all directories in the list exist in the modpack directory and prints a message to the
- console and serverpackcreator.log if any one of the directories could not be found. If the user
- specified a <code>source/file;destination/file</code>-combination, it is checked whether the
- specified source-file exists on the host.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>directoriesToCopy</code> - List String. The list of directories, or
-                          <code>source/file;destination/file</code>-combinations, to check for
-                          existence. <code>source/file;destination/file</code>-combinations must be
-                          absolute paths to the source-file.</dd>
-<dd><code>modpackDir</code> - String. The path to the modpack directory in which to check for
-                          existence of the passed list of directories.</dd>
-<dd><code>encounteredErrors</code> - List String. A list to which all encountered errors are saved to.</dd>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>Boolean. Returns true if every directory was found in the modpack directory. If any
- single one was not found, false is returned.</dd>
-</dl>
-</li>
-</ul>
-<a name="checkIconAndProperties-java.lang.String-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>checkIconAndProperties</h4>
-<pre>public&nbsp;boolean&nbsp;checkIconAndProperties(java.lang.String&nbsp;iconOrPropertiesPath)</pre>
-<div class="block">Checks the passed String whether it is an existing file. If the passed String is empty, then
- ServerPackCreator will treat it as the user being fine with the default files and return the
- corresponding boolean.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>iconOrPropertiesPath</code> - The path to the custom server-icon.png or server.properties file to
-                             check.</dd>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>Boolean. True if the file exists or an empty String was passed, false if a file was
- specified, but the file was not found.</dd>
-</dl>
-</li>
-</ul>
-<a name="checkJavaPath-java.lang.String-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>checkJavaPath</h4>
-<pre>@Deprecated
-public&nbsp;boolean&nbsp;checkJavaPath(java.lang.String&nbsp;pathToJava)</pre>
-<div class="block"><span class="deprecatedLabel">Deprecated.</span>&nbsp;<span class="deprecationComment">Will be removed in Milestone 4. Java path settings have moved to the global
- ApplicationProperties, because the Java path setting is used for modloader installation by
- ServerPackCreator only.</span></div>
-<div class="block">Check whether the given path is a valid Java specification.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>pathToJava</code> - Path to the Java executable</dd>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>Boolean. Returns <code>true</code> if the path is valid.</dd>
-</dl>
-</li>
-</ul>
-<a name="testJava-java.lang.String-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>testJava</h4>
-<pre>@Deprecated
-public&nbsp;boolean&nbsp;testJava(java.lang.String&nbsp;pathToJava)</pre>
-<div class="block"><span class="deprecatedLabel">Deprecated.</span>&nbsp;<span class="deprecationComment">Will be removed in Milestone 4. Java path settings have moved to the global
- ApplicationProperties, because the Java path setting is used for modloader installation by
- ServerPackCreator only.</span></div>
-<div class="block">Test for a valid Java specification by trying to run <code>java -version</code>. If the command goes
- through without errors, it is considered a correct specification.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>pathToJava</code> - Path to the java executable/binary.</dd>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>true</code> if the specified file is a valid Java executable/binary.</dd>
-</dl>
-</li>
-</ul>
-<a name="getJavaPath-java.lang.String-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>getJavaPath</h4>
-<pre>@Deprecated
-public&nbsp;java.lang.String&nbsp;getJavaPath(java.lang.String&nbsp;pathToJava)</pre>
-<div class="block"><span class="deprecatedLabel">Deprecated.</span>&nbsp;<span class="deprecationComment">Will be removed in Milestone 4. Java path settings have moved to the global
- ApplicationProperties, because the Java path setting is used for modloader installation by
- ServerPackCreator only.</span></div>
-<div class="block">Check the given path to a Java installation for validity and return it, if it is valid. If the
- passed path is a UNIX symlink or Windows lnk, it is resolved, then returned. If the passed path
- is considered invalid, the system default is acquired and returned.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>pathToJava</code> - The path to check for whether it is a valid Java installation.</dd>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>String. Returns the path to the Java installation. If user input was incorrect, SPC
- will try to acquire the path automatically.</dd>
-</dl>
-</li>
-</ul>
-<a name="checkModloader-java.lang.String-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>checkModloader</h4>
-<pre>public&nbsp;boolean&nbsp;checkModloader(java.lang.String&nbsp;modloader)</pre>
-<div class="block">Checks whether either Forge or Fabric were specified as the modloader.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>modloader</code> - Check as case-insensitive for Forge or Fabric.</dd>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>Boolean. Returns true if the specified modloader is either Forge or Fabric. False if
- neither.</dd>
+<dd><code>true</code> if every directory was found in the modpack directory. If any single one
+ was not found, false is returned.</dd>
 </dl>
 </li>
 </ul>
@@ -937,9 +1424,12 @@ public&nbsp;java.lang.String&nbsp;getJavaPath(java.lang.String&nbsp;pathToJava)<
 <ul class="blockList">
 <li class="blockList">
 <h4>checkModloaderVersion</h4>
-<pre>public&nbsp;boolean&nbsp;checkModloaderVersion(java.lang.String&nbsp;modloader,
-                                     java.lang.String&nbsp;modloaderVersion,
-                                     java.lang.String&nbsp;minecraftVersion)</pre>
+<pre>public&nbsp;boolean&nbsp;checkModloaderVersion(@NotNull
+                                     @NotNull java.lang.String&nbsp;modloader,
+                                     @NotNull
+                                     @NotNull java.lang.String&nbsp;modloaderVersion,
+                                     @NotNull
+                                     @NotNull java.lang.String&nbsp;minecraftVersion)</pre>
 <div class="block">Check the given Minecraft and modloader versions for the specified modloader.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -949,34 +1439,113 @@ public&nbsp;java.lang.String&nbsp;getJavaPath(java.lang.String&nbsp;pathToJava)<
                          modloaders manifest.</dd>
 <dd><code>minecraftVersion</code> - The version of Minecraft used for checking the Forge version.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>Returns true if the specified modloader version was found in the corresponding
+<dd><code>true</code> if the specified modloader version was found in the corresponding
  manifest.</dd>
 </dl>
 </li>
 </ul>
-<a name="checkModloaderVersion-java.lang.String-java.lang.String-java.lang.String-java.util.List-">
+<a name="getAllFilesAndDirectoriesInModpackZip-net.lingala.zip4j.ZipFile-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getAllFilesAndDirectoriesInModpackZip</h4>
+<pre>@NotNull
+public&nbsp;@NotNull java.util.List&lt;java.lang.String&gt;&nbsp;getAllFilesAndDirectoriesInModpackZip(@NotNull
+                                                                                                @NotNull net.lingala.zip4j.ZipFile&nbsp;zipFile)
+                                                                                         throws java.lang.IllegalArgumentException,
+                                                                                                java.nio.file.FileSystemAlreadyExistsException,
+                                                                                                java.nio.file.ProviderNotFoundException,
+                                                                                                java.io.IOException,
+                                                                                                java.lang.SecurityException</pre>
+<div class="block">Acquire a list of all files and directories in a ZIP-file.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>zipFile</code> - The ZIP-archive to get the list of files from.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>All files and directories in the ZIP-file.</dd>
+<dt><span class="throwsLabel">Throws:</span></dt>
+<dd><code>java.lang.IllegalArgumentException</code> - if the pre-conditions for the uri parameter are not
+                                          met, or the env parameter does not contain properties
+                                          required by the provider, or a property value is
+                                          invalid.</dd>
+<dd><code>java.nio.file.FileSystemAlreadyExistsException</code> - if the file system has already been created.</dd>
+<dd><code>java.nio.file.ProviderNotFoundException</code> - if a provider supporting the URI scheme is not
+                                          installed.</dd>
+<dd><code>java.io.IOException</code> - if an I/O error occurs creating the file system.</dd>
+<dd><code>java.lang.SecurityException</code> - if a security manager is installed, and it denies an
+                                          unspecified permission required by the file system
+                                          provider implementation.</dd>
+</dl>
+</li>
+</ul>
+<a name="getDirectoriesInModpackZip-net.lingala.zip4j.ZipFile-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getDirectoriesInModpackZip</h4>
+<pre>@NotNull
+public&nbsp;@NotNull java.util.List&lt;java.lang.String&gt;&nbsp;getDirectoriesInModpackZip(@NotNull
+                                                                                     @NotNull net.lingala.zip4j.ZipFile&nbsp;zipFile)
+                                                                              throws java.lang.IllegalArgumentException,
+                                                                                     java.nio.file.FileSystemAlreadyExistsException,
+                                                                                     java.nio.file.ProviderNotFoundException,
+                                                                                     java.io.IOException,
+                                                                                     java.lang.SecurityException</pre>
+<div class="block">Acquire a list of all directories in a ZIP-file. The resulting list excludes files.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>zipFile</code> - The ZIP-archive to get the list of files from.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>All directories in the ZIP-file.</dd>
+<dt><span class="throwsLabel">Throws:</span></dt>
+<dd><code>java.lang.IllegalArgumentException</code> - if the pre-conditions for the uri parameter are not
+                                          met, or the env parameter does not contain properties
+                                          required by the provider, or a property value is
+                                          invalid.</dd>
+<dd><code>java.nio.file.FileSystemAlreadyExistsException</code> - if the file system has already been created.</dd>
+<dd><code>java.nio.file.ProviderNotFoundException</code> - if a provider supporting the URI scheme is not
+                                          installed.</dd>
+<dd><code>java.io.IOException</code> - if an I/O error occurs creating the file system.</dd>
+<dd><code>java.lang.SecurityException</code> - if a security manager is installed, and it denies an
+                                          unspecified permission required by the file system
+                                          provider implementation.</dd>
+</dl>
+</li>
+</ul>
+<a name="getFilesInModpackZip-net.lingala.zip4j.ZipFile-">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
-<h4>checkModloaderVersion</h4>
-<pre>public&nbsp;boolean&nbsp;checkModloaderVersion(java.lang.String&nbsp;modloader,
-                                     java.lang.String&nbsp;modloaderVersion,
-                                     java.lang.String&nbsp;minecraftVersion,
-                                     java.util.List&lt;java.lang.String&gt;&nbsp;encounteredErrors)</pre>
-<div class="block">Check the given Minecraft and modloader versions for the specified modloader and update the
- passed error-list should any error be encountered.</div>
+<h4>getFilesInModpackZip</h4>
+<pre>@NotNull
+public&nbsp;@NotNull java.util.List&lt;java.lang.String&gt;&nbsp;getFilesInModpackZip(@NotNull
+                                                                               @NotNull net.lingala.zip4j.ZipFile&nbsp;zipFile)
+                                                                        throws java.lang.IllegalArgumentException,
+                                                                               java.nio.file.FileSystemAlreadyExistsException,
+                                                                               java.nio.file.ProviderNotFoundException,
+                                                                               java.io.IOException,
+                                                                               java.lang.SecurityException</pre>
+<div class="block">Acquire a list of all files in a ZIP-file. The resulting list excludes directories.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>modloader</code> - String. The passed modloader which determines whether the check for
-                          Forge or Fabric is called.</dd>
-<dd><code>modloaderVersion</code> - String. The version of the modloader which is checked against the
-                          corresponding modloaders manifest.</dd>
-<dd><code>minecraftVersion</code> - String. The version of Minecraft used for checking the Forge version.</dd>
-<dd><code>encounteredErrors</code> - List of encountered errors to add to in case of errors.</dd>
+<dd><code>zipFile</code> - The ZIP-archive to get the list of files from.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>Boolean. Returns true if the specified modloader version was found in the corresponding
- manifest.</dd>
+<dd>All files in the ZIP-file.</dd>
+<dt><span class="throwsLabel">Throws:</span></dt>
+<dd><code>java.lang.IllegalArgumentException</code> - if the pre-conditions for the uri parameter are not
+                                          met, or the env parameter does not contain properties
+                                          required by the provider, or a property value is
+                                          invalid.</dd>
+<dd><code>java.nio.file.FileSystemAlreadyExistsException</code> - if the file system has already been created.</dd>
+<dd><code>java.nio.file.ProviderNotFoundException</code> - if a provider supporting the URI scheme is not
+                                          installed.</dd>
+<dd><code>java.io.IOException</code> - if an I/O error occurs creating the file system.</dd>
+<dd><code>java.lang.SecurityException</code> - if a security manager is installed, and it denies an
+                                          unspecified permission required by the file system
+                                          provider implementation.</dd>
 </dl>
 </li>
 </ul>

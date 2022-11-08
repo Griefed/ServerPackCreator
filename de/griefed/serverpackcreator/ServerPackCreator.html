@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":9,"i15":9,"i16":10,"i17":10,"i18":10,"i19":10,"i20":10,"i21":10,"i22":10,"i23":10,"i24":10,"i25":10,"i26":10,"i27":10,"i28":10,"i29":10,"i30":10,"i31":10,"i32":10,"i33":9,"i34":10,"i35":10,"i36":10,"i37":10,"i38":9};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":9,"i15":9,"i16":10,"i17":10,"i18":10,"i19":10,"i20":10,"i21":10,"i22":10,"i23":10,"i24":10,"i25":10,"i26":10,"i27":10,"i28":10,"i29":10,"i30":10,"i31":10,"i32":10,"i33":10,"i34":10,"i35":10,"i36":9,"i37":10,"i38":10,"i39":10,"i40":10,"i41":10};
 var tabs = {65535:["t0","All Methods"],1:["t1","Static Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -47,7 +47,7 @@ var activeTableTab = "activeTableTab";
 </div>
 <div class="subNav">
 <ul class="navList">
-<li><a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
+<li><a href="../../../de/griefed/serverpackcreator/MigrationManager.MigrationMessage.html" title="class in de.griefed.serverpackcreator"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
 <li><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.CommandlineParser.html" title="class in de.griefed.serverpackcreator"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
 </ul>
 <ul class="navList">
@@ -109,11 +109,17 @@ var activeTableTab = "activeTableTab";
 <br>
 <pre>@SpringBootApplication
  @EnableScheduling
- @PropertySource(value="classpath:application.properties") @PropertySource(value="classpath:serverpackcreator.properties") @PropertySource(value="file:./serverpackcreator.properties")
 public class <span class="typeNameLabel">ServerPackCreator</span>
 extends java.lang.Object</pre>
-<div class="block">Launch-class of ServerPackCreator which determines the mode to run in, takes care of
- initialization and dependency injection and, finally, running ServerPackCreator.</div>
+<div class="block">Main-class of ServerPackCreator. Run either via <a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#main-java.lang.String:A-"><code>main(String[])</code></a>, or
+ <a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getInstance-java.lang.String:A-"><code>getInstance(String[])</code></a>, or <a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getInstance--"><code>getInstance()</code></a> to work with ServerPackCreator. For
+ available arguments to initialize and run SPC with, check <a href="../../../de/griefed/serverpackcreator/ServerPackCreator.Mode.html" title="enum in de.griefed.serverpackcreator"><code>ServerPackCreator.Mode</code></a> and
+ <a href="../../../de/griefed/serverpackcreator/ServerPackCreator.CommandlineParser.html" title="class in de.griefed.serverpackcreator"><code>ServerPackCreator.CommandlineParser</code></a> for how the initialization is prioritized. An instance of SPC will have
+ the base amount of class-instances available to it. If a given instance of a class is null, then
+ calling the appropriate getter will ensure a new instance is initialized first, hence the huge
+ amount of <code>synchronized</code>-methods.<br><br> When running as a web-service, Spring Boot will
+ read and parse the <code>serverpackcreator.properties</code>-file to set Spring Boot properties. So if
+ you want to change Spring Boot specific properties, that's the file to do that in.</div>
 </li>
 </ul>
 </div>
@@ -135,14 +141,15 @@ extends java.lang.Object</pre>
 <tr class="altColor">
 <td class="colFirst"><code>class&nbsp;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.CommandlineParser.html" title="class in de.griefed.serverpackcreator">ServerPackCreator.CommandlineParser</a></span></code>
-<div class="block">Check the passed commandline-arguments with which ServerPackCreator was started and return the
- mode in which to run.</div>
+<div class="block">The Commandline Parser checks the passed commandline arguments to determine the mode to run
+ in.</div>
 </td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>static class&nbsp;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.Mode.html" title="enum in de.griefed.serverpackcreator">ServerPackCreator.Mode</a></span></code>
-<div class="block">Mode-priorities.</div>
+<div class="block">Available mods of ServerPackCreator and their respective CLI-arguments required to be
+ activated/used.</div>
 </td>
 </tr>
 </table>
@@ -160,8 +167,9 @@ extends java.lang.Object</pre>
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#ServerPackCreator-java.lang.String:A-">ServerPackCreator</a></span>(java.lang.String[]&nbsp;args)</code>
-<div class="block">Initialize ServerPackCreator and determine the <a href="../../../de/griefed/serverpackcreator/ServerPackCreator.Mode.html" title="enum in de.griefed.serverpackcreator"><code>ServerPackCreator.Mode</code></a> to run in.</div>
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#ServerPackCreator-java.lang.String:A-">ServerPackCreator</a></span>(@NotNull java.lang.String[]&nbsp;args)</code>
+<div class="block">Initialize ServerPackCreator and determine the <a href="../../../de/griefed/serverpackcreator/ServerPackCreator.Mode.html" title="enum in de.griefed.serverpackcreator"><code>ServerPackCreator.Mode</code></a> to run in from the passed entries
+ in the String-array.</div>
 </td>
 </tr>
 </table>
@@ -188,177 +196,261 @@ extends java.lang.Object</pre>
 <tr id="i1" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#checkForConfig--">checkForConfig</a></span>()</code>
-<div class="block">Check for old config file, if found rename to new name.</div>
+<div class="block">Check whether a <code>serverpackcreator.conf</code>-file exists.</div>
 </td>
 </tr>
 <tr id="i2" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#checkServerFilesFile-java.io.File-">checkServerFilesFile</a></span>(java.io.File&nbsp;fileToCheckFor)</code>
-<div class="block">Checks for existence of defaults files.</div>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#checkServerFilesFile-java.io.File-">checkServerFilesFile</a></span>(@NotNull java.io.File&nbsp;fileToCheckFor)</code>
+<div class="block">Check whether the specified server-files file exists and create it if it doesn't.</div>
 </td>
 </tr>
 <tr id="i3" class="rowColor">
-<td class="colFirst"><code><a href="../../../de/griefed/serverpackcreator/modscanning/AnnotationScanner.html" title="class in de.griefed.serverpackcreator.modscanning">AnnotationScanner</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getAnnotationScanner--">getAnnotationScanner</a></span>()</code>&nbsp;</td>
+<td class="colFirst"><code>@NotNull <a href="../../../de/griefed/serverpackcreator/modscanning/AnnotationScanner.html" title="class in de.griefed.serverpackcreator.modscanning">AnnotationScanner</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getAnnotationScanner--">getAnnotationScanner</a></span>()</code>
+<div class="block">This instances annotation scanner used to determine the sideness of Forge mods for Minecraft
+ 1.12.2 and older.</div>
+</td>
 </tr>
 <tr id="i4" class="altColor">
-<td class="colFirst"><code><a href="../../../de/griefed/serverpackcreator/ApplicationAddons.html" title="class in de.griefed.serverpackcreator">ApplicationAddons</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getApplicationAddons--">getApplicationAddons</a></span>()</code>&nbsp;</td>
+<td class="colFirst"><code>@NotNull <a href="../../../de/griefed/serverpackcreator/ApplicationAddons.html" title="class in de.griefed.serverpackcreator">ApplicationAddons</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getApplicationAddons--">getApplicationAddons</a></span>()</code>
+<div class="block">This instances addon manager for ServerPackCreator-addons, if any are installed.</div>
+</td>
 </tr>
 <tr id="i5" class="rowColor">
-<td class="colFirst"><code><a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getApplicationProperties--">getApplicationProperties</a></span>()</code>&nbsp;</td>
+<td class="colFirst"><code>@NotNull <a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getApplicationProperties--">getApplicationProperties</a></span>()</code>
+<div class="block">This instances settings used across ServerPackCreator, such as the working-directories, files
+ and other settings.</div>
+</td>
 </tr>
 <tr id="i6" class="altColor">
-<td class="colFirst"><code>java.lang.String[]</code></td>
+<td class="colFirst"><code>@NotNull java.lang.String[]</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getArgs--">getArgs</a></span>()</code>
-<div class="block">The arguments with which ServerPackCreator was started.</div>
+<div class="block">This instances arguments with which ServerPackCreator was started.</div>
 </td>
 </tr>
 <tr id="i7" class="rowColor">
-<td class="colFirst"><code><a href="../../../de/griefed/serverpackcreator/utilities/common/BooleanUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">BooleanUtilities</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getBooleanUtilities--">getBooleanUtilities</a></span>()</code>&nbsp;</td>
+<td class="colFirst"><code>@NotNull <a href="../../../de/griefed/serverpackcreator/utilities/common/BooleanUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">BooleanUtilities</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getBooleanUtilities--">getBooleanUtilities</a></span>()</code>
+<div class="block">This instances common boolean utilities used across ServerPackCreator.</div>
+</td>
 </tr>
 <tr id="i8" class="altColor">
-<td class="colFirst"><code><a href="../../../de/griefed/serverpackcreator/utilities/ConfigurationEditor.html" title="class in de.griefed.serverpackcreator.utilities">ConfigurationEditor</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getConfigurationEditor--">getConfigurationEditor</a></span>()</code>&nbsp;</td>
+<td class="colFirst"><code>@NotNull <a href="../../../de/griefed/serverpackcreator/utilities/ConfigurationEditor.html" title="class in de.griefed.serverpackcreator.utilities">ConfigurationEditor</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getConfigurationEditor--">getConfigurationEditor</a></span>()</code>
+<div class="block">This instances configuration editor used when running in <a href="../../../de/griefed/serverpackcreator/ServerPackCreator.Mode.html#CLI"><code>ServerPackCreator.Mode.CLI</code></a>.</div>
+</td>
 </tr>
 <tr id="i9" class="rowColor">
-<td class="colFirst"><code><a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html" title="class in de.griefed.serverpackcreator">ConfigurationHandler</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getConfigurationHandler--">getConfigurationHandler</a></span>()</code>&nbsp;</td>
+<td class="colFirst"><code>@NotNull <a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html" title="class in de.griefed.serverpackcreator">ConfigurationHandler</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getConfigurationHandler--">getConfigurationHandler</a></span>()</code>
+<div class="block">This instances ConfigurationHandler for checking a given <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a> for
+ validity, so a server pack can safely be created from it.</div>
+</td>
 </tr>
 <tr id="i10" class="altColor">
-<td class="colFirst"><code><a href="../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ConfigUtilities</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getConfigUtilities--">getConfigUtilities</a></span>()</code>&nbsp;</td>
+<td class="colFirst"><code>@Nullable javax.xml.parsers.DocumentBuilder</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getDocumentBuilder--">getDocumentBuilder</a></span>()</code>
+<div class="block">This instances DocumentBuilder for working with XML-data.</div>
+</td>
 </tr>
 <tr id="i11" class="rowColor">
-<td class="colFirst"><code><a href="../../../de/griefed/serverpackcreator/modscanning/FabricScanner.html" title="class in de.griefed.serverpackcreator.modscanning">FabricScanner</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getFabricScanner--">getFabricScanner</a></span>()</code>&nbsp;</td>
+<td class="colFirst"><code>@NotNull <a href="../../../de/griefed/serverpackcreator/modscanning/FabricScanner.html" title="class in de.griefed.serverpackcreator.modscanning">FabricScanner</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getFabricScanner--">getFabricScanner</a></span>()</code>
+<div class="block">This instances scanner to determine the sideness of Fabric mods.</div>
+</td>
 </tr>
 <tr id="i12" class="altColor">
-<td class="colFirst"><code><a href="../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">FileUtilities</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getFileUtilities--">getFileUtilities</a></span>()</code>&nbsp;</td>
+<td class="colFirst"><code>@NotNull <a href="../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">FileUtilities</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getFileUtilities--">getFileUtilities</a></span>()</code>
+<div class="block">This instances common file utilities used across ServerPackCreator.</div>
+</td>
 </tr>
 <tr id="i13" class="rowColor">
-<td class="colFirst"><code><a href="../../../de/griefed/serverpackcreator/i18n/I18n.html" title="class in de.griefed.serverpackcreator.i18n">I18n</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getI18n--">getI18n</a></span>()</code>&nbsp;</td>
+<td class="colFirst"><code>@NotNull <a href="../../../de/griefed/serverpackcreator/i18n/I18n.html" title="class in de.griefed.serverpackcreator.i18n">I18n</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getI18n--">getI18n</a></span>()</code>
+<div class="block">This instances internationalization used in the GUI and error messages displayed in the very
+ same.</div>
+</td>
 </tr>
 <tr id="i14" class="altColor">
-<td class="colFirst"><code>static <a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html" title="class in de.griefed.serverpackcreator">ServerPackCreator</a></code></td>
+<td class="colFirst"><code>static @NotNull <a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html" title="class in de.griefed.serverpackcreator">ServerPackCreator</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getInstance--">getInstance</a></span>()</code>
 <div class="block">Acquire an instance of ServerPackCreator using the <code>--setup</code>-argument so a prepared
  environment is present after acquiring the instance.</div>
 </td>
 </tr>
 <tr id="i15" class="rowColor">
-<td class="colFirst"><code>static <a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html" title="class in de.griefed.serverpackcreator">ServerPackCreator</a></code></td>
+<td class="colFirst"><code>static @NotNull <a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html" title="class in de.griefed.serverpackcreator">ServerPackCreator</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getInstance-java.lang.String:A-">getInstance</a></span>(java.lang.String[]&nbsp;args)</code>
 <div class="block">Acquire an instance of ServerPackCreator using the specified argument.</div>
 </td>
 </tr>
 <tr id="i16" class="altColor">
-<td class="colFirst"><code><a href="../../../de/griefed/serverpackcreator/utilities/common/JarUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">JarUtilities</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getJarUtilities--">getJarUtilities</a></span>()</code>&nbsp;</td>
+<td class="colFirst"><code>@NotNull <a href="../../../de/griefed/serverpackcreator/utilities/common/JarUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">JarUtilities</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getJarUtilities--">getJarUtilities</a></span>()</code>
+<div class="block">This instances common JAR-utilities used across ServerPackCreator.</div>
+</td>
 </tr>
 <tr id="i17" class="rowColor">
-<td class="colFirst"><code><a href="../../../de/griefed/serverpackcreator/utilities/common/JsonUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">JsonUtilities</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getJsonUtilities--">getJsonUtilities</a></span>()</code>&nbsp;</td>
+<td class="colFirst"><code>@NotNull <a href="../../../de/griefed/serverpackcreator/utilities/common/JsonUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">JsonUtilities</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getJsonUtilities--">getJsonUtilities</a></span>()</code>
+<div class="block">This instances common JSON utilities used across ServerPackCreator.</div>
+</td>
 </tr>
 <tr id="i18" class="altColor">
-<td class="colFirst"><code><a href="../../../de/griefed/serverpackcreator/utilities/common/ListUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">ListUtilities</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getListUtilities--">getListUtilities</a></span>()</code>&nbsp;</td>
+<td class="colFirst"><code>@NotNull <a href="../../../de/griefed/serverpackcreator/utilities/common/ListUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">ListUtilities</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getListUtilities--">getListUtilities</a></span>()</code>
+<div class="block">This instances common list utilities used across ServerPackCreator.</div>
+</td>
 </tr>
 <tr id="i19" class="rowColor">
-<td class="colFirst"><code><a href="../../../de/griefed/serverpackcreator/modscanning/ModScanner.html" title="class in de.griefed.serverpackcreator.modscanning">ModScanner</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getModScanner--">getModScanner</a></span>()</code>&nbsp;</td>
+<td class="colFirst"><code>@NotNull <a href="../../../de/griefed/serverpackcreator/MigrationManager.html" title="class in de.griefed.serverpackcreator">MigrationManager</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getMigrationManager--">getMigrationManager</a></span>()</code>
+<div class="block">This instances MigrationManager responsible for checking and executing any required
+ migration-steps between version upgrades.</div>
+</td>
 </tr>
 <tr id="i20" class="altColor">
-<td class="colFirst"><code>com.fasterxml.jackson.databind.ObjectMapper</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getObjectMapper--">getObjectMapper</a></span>()</code>&nbsp;</td>
+<td class="colFirst"><code>@NotNull <a href="../../../de/griefed/serverpackcreator/modscanning/ModScanner.html" title="class in de.griefed.serverpackcreator.modscanning">ModScanner</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getModScanner--">getModScanner</a></span>()</code>
+<div class="block">This instances modscanner to determine the sideness of a given Forge, Fabric, LegacyFabric or
+ Quilt mod.</div>
+</td>
 </tr>
 <tr id="i21" class="rowColor">
-<td class="colFirst"><code><a href="../../../de/griefed/serverpackcreator/modscanning/QuiltScanner.html" title="class in de.griefed.serverpackcreator.modscanning">QuiltScanner</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getQuiltScanner--">getQuiltScanner</a></span>()</code>&nbsp;</td>
+<td class="colFirst"><code>@NotNull com.fasterxml.jackson.databind.ObjectMapper</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getObjectMapper--">getObjectMapper</a></span>()</code>
+<div class="block">This instances JSON-ObjectMapper used across ServerPackCreator with which this instance was
+ initialized.</div>
+</td>
 </tr>
 <tr id="i22" class="altColor">
-<td class="colFirst"><code><a href="../../../de/griefed/serverpackcreator/swing/ServerPackCreatorWindow.html" title="class in de.griefed.serverpackcreator.swing">ServerPackCreatorWindow</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getServerPackCreatorGui--">getServerPackCreatorGui</a></span>()</code>&nbsp;</td>
+<td class="colFirst"><code>@NotNull <a href="../../../de/griefed/serverpackcreator/modscanning/QuiltScanner.html" title="class in de.griefed.serverpackcreator.modscanning">QuiltScanner</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getQuiltScanner--">getQuiltScanner</a></span>()</code>
+<div class="block">This instances scanner to determine the sideness of Quilt mods.</div>
+</td>
 </tr>
 <tr id="i23" class="rowColor">
-<td class="colFirst"><code><a href="../../../de/griefed/serverpackcreator/swing/ServerPackCreatorSplash.html" title="class in de.griefed.serverpackcreator.swing">ServerPackCreatorSplash</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getServerPackCreatorSplash--">getServerPackCreatorSplash</a></span>()</code>&nbsp;</td>
+<td class="colFirst"><code>@NotNull <a href="../../../de/griefed/serverpackcreator/swing/ServerPackCreatorWindow.html" title="class in de.griefed.serverpackcreator.swing">ServerPackCreatorWindow</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getServerPackCreatorGui--">getServerPackCreatorGui</a></span>()</code>
+<div class="block">This instances frame holding the GUI allowing the user to run and configure their server
+ packs.</div>
+</td>
 </tr>
 <tr id="i24" class="altColor">
-<td class="colFirst"><code><a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html" title="class in de.griefed.serverpackcreator">ServerPackHandler</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getServerPackHandler--">getServerPackHandler</a></span>()</code>&nbsp;</td>
+<td class="colFirst"><code>@NotNull <a href="../../../de/griefed/serverpackcreator/swing/ServerPackCreatorSplash.html" title="class in de.griefed.serverpackcreator.swing">ServerPackCreatorSplash</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getServerPackCreatorSplash--">getServerPackCreatorSplash</a></span>()</code>
+<div class="block">Splash screen displayed during the boot up of ServerPackCreator if a graphical environment is
+ supported and SPC is started in GUI-mode.</div>
+</td>
 </tr>
 <tr id="i25" class="rowColor">
-<td class="colFirst"><code><a href="../../../de/griefed/serverpackcreator/utilities/common/StringUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">StringUtilities</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getStringUtilities--">getStringUtilities</a></span>()</code>&nbsp;</td>
+<td class="colFirst"><code>@NotNull <a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html" title="class in de.griefed.serverpackcreator">ServerPackHandler</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getServerPackHandler--">getServerPackHandler</a></span>()</code>
+<div class="block">This instances ServerPackHandler used to turn a <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a> into a server pack.</div>
+</td>
 </tr>
 <tr id="i26" class="altColor">
-<td class="colFirst"><code><a href="../../../de/griefed/serverpackcreator/utilities/common/SystemUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">SystemUtilities</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getSystemUtilities--">getSystemUtilities</a></span>()</code>&nbsp;</td>
+<td class="colFirst"><code>@NotNull org.springframework.context.ConfigurableApplicationContext</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getSpringBootApplicationContext-java.lang.String:A-">getSpringBootApplicationContext</a></span>(@NotNull java.lang.String[]&nbsp;args)</code>
+<div class="block">This instances application context when running as a webservice.</div>
+</td>
 </tr>
 <tr id="i27" class="rowColor">
-<td class="colFirst"><code>com.electronwill.nightconfig.toml.TomlParser</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getTomlParser--">getTomlParser</a></span>()</code>&nbsp;</td>
+<td class="colFirst"><code>@NotNull <a href="../../../de/griefed/serverpackcreator/utilities/common/StringUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">StringUtilities</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getStringUtilities--">getStringUtilities</a></span>()</code>
+<div class="block">This instances common String utilities used across ServerPackCreator.</div>
+</td>
 </tr>
 <tr id="i28" class="altColor">
-<td class="colFirst"><code><a href="../../../de/griefed/serverpackcreator/modscanning/TomlScanner.html" title="class in de.griefed.serverpackcreator.modscanning">TomlScanner</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getTomlScanner--">getTomlScanner</a></span>()</code>&nbsp;</td>
+<td class="colFirst"><code>@NotNull <a href="../../../de/griefed/serverpackcreator/utilities/common/SystemUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">SystemUtilities</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getSystemUtilities--">getSystemUtilities</a></span>()</code>
+<div class="block">This instances common system utilities used across ServerPackCreator.</div>
+</td>
 </tr>
 <tr id="i29" class="rowColor">
-<td class="colFirst"><code><a href="../../../de/griefed/serverpackcreator/utilities/UpdateChecker.html" title="class in de.griefed.serverpackcreator.utilities">UpdateChecker</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getUpdateChecker--">getUpdateChecker</a></span>()</code>&nbsp;</td>
+<td class="colFirst"><code>@NotNull com.electronwill.nightconfig.toml.TomlParser</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getTomlParser--">getTomlParser</a></span>()</code>
+<div class="block">This instances toml parser to read and parse various <code>.toml</code>-files during modscanning,
+ addon- and extension config loading and provisioning, serverpackcreator.conf reading and more.</div>
+</td>
 </tr>
 <tr id="i30" class="altColor">
-<td class="colFirst"><code><a href="../../../de/griefed/serverpackcreator/utilities/common/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.common">Utilities</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getUtilities--">getUtilities</a></span>()</code>&nbsp;</td>
+<td class="colFirst"><code>@NotNull <a href="../../../de/griefed/serverpackcreator/modscanning/TomlScanner.html" title="class in de.griefed.serverpackcreator.modscanning">TomlScanner</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getTomlScanner--">getTomlScanner</a></span>()</code>
+<div class="block">This instances toml scanner to determine the sideness of Forge mods for Minecraft 1.13.x and
+ newer.</div>
+</td>
 </tr>
 <tr id="i31" class="rowColor">
-<td class="colFirst"><code><a href="../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta">VersionMeta</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getVersionMeta--">getVersionMeta</a></span>()</code>&nbsp;</td>
+<td class="colFirst"><code>@NotNull <a href="../../../de/griefed/serverpackcreator/utilities/UpdateChecker.html" title="class in de.griefed.serverpackcreator.utilities">UpdateChecker</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getUpdateChecker--">getUpdateChecker</a></span>()</code>
+<div class="block">This instances update checker to inform the user about any potentially available update,
+ including links to said update, if any.</div>
+</td>
 </tr>
 <tr id="i32" class="altColor">
-<td class="colFirst"><code><a href="../../../de/griefed/serverpackcreator/utilities/common/WebUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">WebUtilities</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getWebUtilities--">getWebUtilities</a></span>()</code>&nbsp;</td>
+<td class="colFirst"><code>@NotNull <a href="../../../de/griefed/serverpackcreator/utilities/common/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.common">Utilities</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getUtilities--">getUtilities</a></span>()</code>
+<div class="block">This instances collection of common utilities used across ServerPackCreator.</div>
+</td>
 </tr>
 <tr id="i33" class="rowColor">
+<td class="colFirst"><code>@NotNull <a href="../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta">VersionMeta</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getVersionMeta--">getVersionMeta</a></span>()</code>
+<div class="block">This instances version meta used for checking version-correctness of Minecraft and supported
+ modloaders, as well as gathering information about Minecraft servers and modloader installers.</div>
+</td>
+</tr>
+<tr id="i34" class="altColor">
+<td class="colFirst"><code>@NotNull <a href="../../../de/griefed/serverpackcreator/utilities/common/WebUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">WebUtilities</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getWebUtilities--">getWebUtilities</a></span>()</code>
+<div class="block">This instances common web utilities used across ServerPackCreator.</div>
+</td>
+</tr>
+<tr id="i35" class="rowColor">
+<td class="colFirst"><code>@NotNull <a href="../../../de/griefed/serverpackcreator/utilities/common/XmlUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">XmlUtilities</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#getXmlUtilities--">getXmlUtilities</a></span>()</code>
+<div class="block">This instances common XML utilities used across ServerPackCreator.</div>
+</td>
+</tr>
+<tr id="i36" class="altColor">
 <td class="colFirst"><code>static void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#main-java.lang.String:A-">main</a></span>(java.lang.String[]&nbsp;args)</code>
 <div class="block">Initialize ServerPackCreator with the passed commandline-arguments and run.</div>
 </td>
 </tr>
-<tr id="i34" class="altColor">
+<tr id="i37" class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#overwriteServerFilesFile-java.io.File-">overwriteServerFilesFile</a></span>(java.io.File&nbsp;fileToOverwrite)</code>
-<div class="block">Delete and recreate a server-files file, so we always have the latest and greatest hits
- available on the host, and therefor, the user.</div>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#overwriteServerFilesFile-java.io.File-">overwriteServerFilesFile</a></span>(@NotNull java.io.File&nbsp;fileToOverwrite)</code>
+<div class="block">Overwrite the specified server-files file, even when it exists.</div>
 </td>
 </tr>
-<tr id="i35" class="rowColor">
+<tr id="i38" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#run--">run</a></span>()</code>
 <div class="block">Run ServerPackCreator with the mode acquired from <a href="../../../de/griefed/serverpackcreator/ServerPackCreator.CommandlineParser.html" title="class in de.griefed.serverpackcreator"><code>ServerPackCreator.CommandlineParser</code></a>.</div>
 </td>
 </tr>
-<tr id="i36" class="altColor">
+<tr id="i39" class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#run-de.griefed.serverpackcreator.ServerPackCreator.Mode-">run</a></span>(<a href="../../../de/griefed/serverpackcreator/ServerPackCreator.Mode.html" title="enum in de.griefed.serverpackcreator">ServerPackCreator.Mode</a>&nbsp;modeToRunIn)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#run-de.griefed.serverpackcreator.ServerPackCreator.Mode-">run</a></span>(@NotNull <a href="../../../de/griefed/serverpackcreator/ServerPackCreator.Mode.html" title="enum in de.griefed.serverpackcreator">ServerPackCreator.Mode</a>&nbsp;modeToRunIn)</code>
 <div class="block">Run ServerPackCreator in a specific <a href="../../../de/griefed/serverpackcreator/ServerPackCreator.Mode.html" title="enum in de.griefed.serverpackcreator"><code>ServerPackCreator.Mode</code></a>.</div>
 </td>
 </tr>
-<tr id="i37" class="rowColor">
+<tr id="i40" class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#updateCheck--">updateCheck</a></span>()</code>
-<div class="block">Check for update-availability and exit with status code 0.</div>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#updateCheck-boolean-">updateCheck</a></span>(boolean&nbsp;logToConsole)</code>
+<div class="block">Check for update-availability.</div>
 </td>
 </tr>
-<tr id="i38" class="altColor">
-<td class="colFirst"><code>static void</code></td>
+<tr id="i41" class="rowColor">
+<td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#web-java.lang.String:A-">web</a></span>(java.lang.String[]&nbsp;args)</code>
-<div class="block">Start Spring Boot app, providing our Apache Tomcat and serving our frontend.</div>
+<div class="block">Run the ServerPackCreator webservice and provide Spring Boot with arguments.</div>
 </td>
 </tr>
 </table>
@@ -389,12 +481,18 @@ extends java.lang.Object</pre>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>ServerPackCreator</h4>
-<pre>public&nbsp;ServerPackCreator(java.lang.String[]&nbsp;args)</pre>
-<div class="block">Initialize ServerPackCreator and determine the <a href="../../../de/griefed/serverpackcreator/ServerPackCreator.Mode.html" title="enum in de.griefed.serverpackcreator"><code>ServerPackCreator.Mode</code></a> to run in.</div>
+<pre>public&nbsp;ServerPackCreator(@NotNull
+                         @NotNull java.lang.String[]&nbsp;args)</pre>
+<div class="block">Initialize ServerPackCreator and determine the <a href="../../../de/griefed/serverpackcreator/ServerPackCreator.Mode.html" title="enum in de.griefed.serverpackcreator"><code>ServerPackCreator.Mode</code></a> to run in from the passed entries
+ in the String-array. A new instance of SPC will initialize an instance of
+ <a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator"><code>ApplicationProperties</code></a>, required for just about everything, as well as <a href="../../../de/griefed/serverpackcreator/i18n/I18n.html" title="class in de.griefed.serverpackcreator.i18n"><code>I18n</code></a> for
+ localization purposes. <a href="../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common"><code>FileUtilities</code></a>, <a href="../../../de/griefed/serverpackcreator/utilities/common/SystemUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common"><code>SystemUtilities</code></a>, <a href="../../../de/griefed/serverpackcreator/utilities/common/ListUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common"><code>ListUtilities</code></a>
+ and <a href="../../../de/griefed/serverpackcreator/utilities/common/JarUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common"><code>JarUtilities</code></a> are also setup, so feel free to use them right away.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>args</code> - Commandline arguments with which ServerPackCreator is run. Determines which mode
-             ServerPackCreator will enter and which locale is used.</dd>
+             ServerPackCreator will enter and which locale is used. In order to see which
+             argument results in which mode, see <a href="../../../de/griefed/serverpackcreator/ServerPackCreator.Mode.html" title="enum in de.griefed.serverpackcreator"><code>ServerPackCreator.Mode</code></a>.</dd>
 </dl>
 </li>
 </ul>
@@ -406,20 +504,83 @@ extends java.lang.Object</pre>
 <!--   -->
 </a>
 <h3>Method Detail</h3>
+<a name="getFileUtilities--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getFileUtilities</h4>
+<pre>@NotNull
+public&nbsp;@NotNull <a href="../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">FileUtilities</a>&nbsp;getFileUtilities()</pre>
+<div class="block">This instances common file utilities used across ServerPackCreator.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Common file utilities used across ServerPackCreator.</dd>
+</dl>
+</li>
+</ul>
+<a name="getSystemUtilities--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getSystemUtilities</h4>
+<pre>@NotNull
+public&nbsp;@NotNull <a href="../../../de/griefed/serverpackcreator/utilities/common/SystemUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">SystemUtilities</a>&nbsp;getSystemUtilities()</pre>
+<div class="block">This instances common system utilities used across ServerPackCreator.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Common system utilities used across ServerPackCreator.</dd>
+</dl>
+</li>
+</ul>
+<a name="getListUtilities--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getListUtilities</h4>
+<pre>@NotNull
+public&nbsp;@NotNull <a href="../../../de/griefed/serverpackcreator/utilities/common/ListUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">ListUtilities</a>&nbsp;getListUtilities()</pre>
+<div class="block">This instances common list utilities used across ServerPackCreator.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Common list utilities used across ServerPackCreator.</dd>
+</dl>
+</li>
+</ul>
+<a name="getJarUtilities--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getJarUtilities</h4>
+<pre>@NotNull
+public&nbsp;@NotNull <a href="../../../de/griefed/serverpackcreator/utilities/common/JarUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">JarUtilities</a>&nbsp;getJarUtilities()</pre>
+<div class="block">This instances common JAR-utilities used across ServerPackCreator.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Common JAR-utilities used across ServerPackCreator.</dd>
+</dl>
+</li>
+</ul>
 <a name="getInstance--">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>getInstance</h4>
-<pre>public static&nbsp;<a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html" title="class in de.griefed.serverpackcreator">ServerPackCreator</a>&nbsp;getInstance()</pre>
+<pre>@NotNull
+public static&nbsp;@NotNull <a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html" title="class in de.griefed.serverpackcreator">ServerPackCreator</a>&nbsp;getInstance()</pre>
 <div class="block">Acquire an instance of ServerPackCreator using the <code>--setup</code>-argument so a prepared
  environment is present after acquiring the instance. If a new instance of ServerPackCreator is
  created as the result of calling this method, then the setup is run to ensure a properly
- prepared environment.</div>
+ prepared environment, otherwise the already existing instance of ServerPackCreator is returned,
+ allowing you to do your operations.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>ServerPackCreator-instance using the <code>--setup</code>-argument.</dd>
+<dd>ServerPackCreator-instance using the <code>--setup</code>-argument, or the already existing
+ instance, if one was initialized already.</dd>
 </dl>
 </li>
 </ul>
@@ -429,10 +590,12 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>getInstance</h4>
-<pre>public static&nbsp;<a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html" title="class in de.griefed.serverpackcreator">ServerPackCreator</a>&nbsp;getInstance(java.lang.String[]&nbsp;args)</pre>
+<pre>@NotNull
+public static&nbsp;@NotNull <a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html" title="class in de.griefed.serverpackcreator">ServerPackCreator</a>&nbsp;getInstance(java.lang.String[]&nbsp;args)</pre>
 <div class="block">Acquire an instance of ServerPackCreator using the specified argument. If a new instance of
  ServerPackCreator is created as the result of calling this method, then the setup is run to
- ensure a properly prepared environment.</div>
+ ensure a properly prepared environment. Afterwards, the instance of ServerPackCreator is
+ returned.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>args</code> - Arguments with which to instantiate ServerPackCreator. Possible arguments can be
@@ -472,8 +635,8 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>web</h4>
-<pre>public static&nbsp;void&nbsp;web(java.lang.String[]&nbsp;args)</pre>
-<div class="block">Start Spring Boot app, providing our Apache Tomcat and serving our frontend.</div>
+<pre>public&nbsp;void&nbsp;web(java.lang.String[]&nbsp;args)</pre>
+<div class="block">Run the ServerPackCreator webservice and provide Spring Boot with arguments.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>args</code> - Arguments passed from invocation in <a href="../../../de/griefed/serverpackcreator/ServerPackCreator.html#main-java.lang.String:A-"><code>main(String[])</code></a>.</dd>
@@ -486,8 +649,9 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>getArgs</h4>
-<pre>public&nbsp;java.lang.String[]&nbsp;getArgs()</pre>
-<div class="block">The arguments with which ServerPackCreator was started.</div>
+<pre>@NotNull
+public&nbsp;@NotNull java.lang.String[]&nbsp;getArgs()</pre>
+<div class="block">This instances arguments with which ServerPackCreator was started.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>All arguments with which ServerPackCreator was started.</dd>
@@ -500,7 +664,14 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>getI18n</h4>
-<pre>public&nbsp;<a href="../../../de/griefed/serverpackcreator/i18n/I18n.html" title="class in de.griefed.serverpackcreator.i18n">I18n</a>&nbsp;getI18n()</pre>
+<pre>@NotNull
+public&nbsp;@NotNull <a href="../../../de/griefed/serverpackcreator/i18n/I18n.html" title="class in de.griefed.serverpackcreator.i18n">I18n</a>&nbsp;getI18n()</pre>
+<div class="block">This instances internationalization used in the GUI and error messages displayed in the very
+ same.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Instance of ServerPackCreators Internationalization used in this instance.</dd>
+</dl>
 </li>
 </ul>
 <a name="getObjectMapper--">
@@ -509,7 +680,20 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>getObjectMapper</h4>
-<pre>public&nbsp;com.fasterxml.jackson.databind.ObjectMapper&nbsp;getObjectMapper()</pre>
+<pre>@NotNull
+public&nbsp;@NotNull com.fasterxml.jackson.databind.ObjectMapper&nbsp;getObjectMapper()</pre>
+<div class="block">This instances JSON-ObjectMapper used across ServerPackCreator with which this instance was
+ initialized. By default, the ObjectMapper used across ServerPackCreator has the following
+ features set:
+ <ul>
+   <li>disabled: <code>DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES</code></li>
+   <li>enabled: <code>DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY</code></li>
+   <li>enabled: <code>JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS</code></li>
+ </ul></div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Json-ObjectMapper to parse and read JSON.</dd>
+</dl>
 </li>
 </ul>
 <a name="getApplicationProperties--">
@@ -518,7 +702,14 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>getApplicationProperties</h4>
-<pre>public&nbsp;<a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;getApplicationProperties()</pre>
+<pre>@NotNull
+public&nbsp;@NotNull <a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;getApplicationProperties()</pre>
+<div class="block">This instances settings used across ServerPackCreator, such as the working-directories, files
+ and other settings.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>ApplicationProperties used across this ServerPackCreator-instance.</dd>
+</dl>
 </li>
 </ul>
 <a name="getBooleanUtilities--">
@@ -527,25 +718,13 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>getBooleanUtilities</h4>
-<pre>public&nbsp;<a href="../../../de/griefed/serverpackcreator/utilities/common/BooleanUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">BooleanUtilities</a>&nbsp;getBooleanUtilities()</pre>
-</li>
-</ul>
-<a name="getFileUtilities--">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>getFileUtilities</h4>
-<pre>public&nbsp;<a href="../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">FileUtilities</a>&nbsp;getFileUtilities()</pre>
-</li>
-</ul>
-<a name="getJarUtilities--">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>getJarUtilities</h4>
-<pre>public&nbsp;<a href="../../../de/griefed/serverpackcreator/utilities/common/JarUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">JarUtilities</a>&nbsp;getJarUtilities()</pre>
+<pre>@NotNull
+public&nbsp;@NotNull <a href="../../../de/griefed/serverpackcreator/utilities/common/BooleanUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">BooleanUtilities</a>&nbsp;getBooleanUtilities()</pre>
+<div class="block">This instances common boolean utilities used across ServerPackCreator.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Common boolean utilities used across ServerPackCreator.</dd>
+</dl>
 </li>
 </ul>
 <a name="getJsonUtilities--">
@@ -554,16 +733,43 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>getJsonUtilities</h4>
-<pre>public&nbsp;<a href="../../../de/griefed/serverpackcreator/utilities/common/JsonUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">JsonUtilities</a>&nbsp;getJsonUtilities()</pre>
+<pre>@NotNull
+public&nbsp;@NotNull <a href="../../../de/griefed/serverpackcreator/utilities/common/JsonUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">JsonUtilities</a>&nbsp;getJsonUtilities()</pre>
+<div class="block">This instances common JSON utilities used across ServerPackCreator.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Common JSON utilities used across ServerPackCreator.</dd>
+</dl>
 </li>
 </ul>
-<a name="getListUtilities--">
+<a name="getXmlUtilities--">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>getListUtilities</h4>
-<pre>public&nbsp;<a href="../../../de/griefed/serverpackcreator/utilities/common/ListUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">ListUtilities</a>&nbsp;getListUtilities()</pre>
+<h4>getXmlUtilities</h4>
+<pre>@NotNull
+public&nbsp;@NotNull <a href="../../../de/griefed/serverpackcreator/utilities/common/XmlUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">XmlUtilities</a>&nbsp;getXmlUtilities()</pre>
+<div class="block">This instances common XML utilities used across ServerPackCreator.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Common XML utilities used across ServerPackCreator.</dd>
+</dl>
+</li>
+</ul>
+<a name="getDocumentBuilder--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getDocumentBuilder</h4>
+<pre>@Nullable
+public&nbsp;@Nullable javax.xml.parsers.DocumentBuilder&nbsp;getDocumentBuilder()</pre>
+<div class="block">This instances DocumentBuilder for working with XML-data.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>DocumentBuilder for working with XML.</dd>
+</dl>
 </li>
 </ul>
 <a name="getStringUtilities--">
@@ -572,16 +778,13 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>getStringUtilities</h4>
-<pre>public&nbsp;<a href="../../../de/griefed/serverpackcreator/utilities/common/StringUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">StringUtilities</a>&nbsp;getStringUtilities()</pre>
-</li>
-</ul>
-<a name="getSystemUtilities--">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>getSystemUtilities</h4>
-<pre>public&nbsp;<a href="../../../de/griefed/serverpackcreator/utilities/common/SystemUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">SystemUtilities</a>&nbsp;getSystemUtilities()</pre>
+<pre>@NotNull
+public&nbsp;@NotNull <a href="../../../de/griefed/serverpackcreator/utilities/common/StringUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">StringUtilities</a>&nbsp;getStringUtilities()</pre>
+<div class="block">This instances common String utilities used across ServerPackCreator.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Common String utilities used across ServerPackCreator.</dd>
+</dl>
 </li>
 </ul>
 <a name="getWebUtilities--">
@@ -590,7 +793,13 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>getWebUtilities</h4>
-<pre>public&nbsp;<a href="../../../de/griefed/serverpackcreator/utilities/common/WebUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">WebUtilities</a>&nbsp;getWebUtilities()</pre>
+<pre>@NotNull
+public&nbsp;@NotNull <a href="../../../de/griefed/serverpackcreator/utilities/common/WebUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">WebUtilities</a>&nbsp;getWebUtilities()</pre>
+<div class="block">This instances common web utilities used across ServerPackCreator.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Common web utilities used across ServerPackCreator.</dd>
+</dl>
 </li>
 </ul>
 <a name="getUtilities--">
@@ -599,7 +808,29 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>getUtilities</h4>
-<pre>public&nbsp;<a href="../../../de/griefed/serverpackcreator/utilities/common/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.common">Utilities</a>&nbsp;getUtilities()</pre>
+<pre>@NotNull
+public&nbsp;@NotNull <a href="../../../de/griefed/serverpackcreator/utilities/common/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.common">Utilities</a>&nbsp;getUtilities()</pre>
+<div class="block">This instances collection of common utilities used across ServerPackCreator.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Collection of common utilities used across ServerPackCreator.</dd>
+</dl>
+</li>
+</ul>
+<a name="getMigrationManager--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getMigrationManager</h4>
+<pre>@NotNull
+public&nbsp;@NotNull <a href="../../../de/griefed/serverpackcreator/MigrationManager.html" title="class in de.griefed.serverpackcreator">MigrationManager</a>&nbsp;getMigrationManager()</pre>
+<div class="block">This instances MigrationManager responsible for checking and executing any required
+ migration-steps between version upgrades.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>MigrationManager responsible for checking and executing any required migration-steps.</dd>
+</dl>
 </li>
 </ul>
 <a name="getVersionMeta--">
@@ -608,25 +839,21 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>getVersionMeta</h4>
-<pre>public&nbsp;<a href="../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta">VersionMeta</a>&nbsp;getVersionMeta()
-                           throws java.io.IOException,
-                                  javax.xml.parsers.ParserConfigurationException,
-                                  org.xml.sax.SAXException</pre>
+<pre>@NotNull
+public&nbsp;@NotNull <a href="../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta">VersionMeta</a>&nbsp;getVersionMeta()
+                                             throws java.io.IOException,
+                                                    javax.xml.parsers.ParserConfigurationException,
+                                                    org.xml.sax.SAXException</pre>
+<div class="block">This instances version meta used for checking version-correctness of Minecraft and supported
+ modloaders, as well as gathering information about Minecraft servers and modloader installers.</div>
 <dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Meta used for checking version-correctness of Minecraft and supported modloaders.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.io.IOException</code></dd>
-<dd><code>javax.xml.parsers.ParserConfigurationException</code></dd>
-<dd><code>org.xml.sax.SAXException</code></dd>
+<dd><code>java.io.IOException</code> - When manifests couldn't be parsed.</dd>
+<dd><code>javax.xml.parsers.ParserConfigurationException</code> - When xml-manifests couldn't be read.</dd>
+<dd><code>org.xml.sax.SAXException</code> - When xml-manifests couldn't be read.</dd>
 </dl>
-</li>
-</ul>
-<a name="getConfigUtilities--">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>getConfigUtilities</h4>
-<pre>public&nbsp;<a href="../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ConfigUtilities</a>&nbsp;getConfigUtilities()</pre>
 </li>
 </ul>
 <a name="getConfigurationHandler--">
@@ -635,15 +862,23 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>getConfigurationHandler</h4>
-<pre>public&nbsp;<a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html" title="class in de.griefed.serverpackcreator">ConfigurationHandler</a>&nbsp;getConfigurationHandler()
-                                             throws java.io.IOException,
-                                                    javax.xml.parsers.ParserConfigurationException,
-                                                    org.xml.sax.SAXException</pre>
+<pre>@NotNull
+public&nbsp;@NotNull <a href="../../../de/griefed/serverpackcreator/ConfigurationHandler.html" title="class in de.griefed.serverpackcreator">ConfigurationHandler</a>&nbsp;getConfigurationHandler()
+                                                               throws java.io.IOException,
+                                                                      javax.xml.parsers.ParserConfigurationException,
+                                                                      org.xml.sax.SAXException</pre>
+<div class="block">This instances ConfigurationHandler for checking a given <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a> for
+ validity, so a server pack can safely be created from it.</div>
 <dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Handler for config checking.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.io.IOException</code></dd>
-<dd><code>javax.xml.parsers.ParserConfigurationException</code></dd>
-<dd><code>org.xml.sax.SAXException</code></dd>
+<dd><code>java.io.IOException</code> - When the <a href="../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta"><code>VersionMeta</code></a> had to be instantiated, but
+                                      an error occured during the parsing of a manifest.</dd>
+<dd><code>javax.xml.parsers.ParserConfigurationException</code> - When the <a href="../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta"><code>VersionMeta</code></a> had to be instantiated, but
+                                      an error occured during the parsing of a manifest.</dd>
+<dd><code>org.xml.sax.SAXException</code> - When the <a href="../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta"><code>VersionMeta</code></a> had to be instantiated, but
+                                      an error occured during the parsing of a manifest.</dd>
 </dl>
 </li>
 </ul>
@@ -653,15 +888,24 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>getApplicationAddons</h4>
-<pre>public&nbsp;<a href="../../../de/griefed/serverpackcreator/ApplicationAddons.html" title="class in de.griefed.serverpackcreator">ApplicationAddons</a>&nbsp;getApplicationAddons()
-                                       throws java.io.IOException,
-                                              javax.xml.parsers.ParserConfigurationException,
-                                              org.xml.sax.SAXException</pre>
+<pre>@NotNull
+public&nbsp;@NotNull <a href="../../../de/griefed/serverpackcreator/ApplicationAddons.html" title="class in de.griefed.serverpackcreator">ApplicationAddons</a>&nbsp;getApplicationAddons()
+                                                         throws java.io.IOException,
+                                                                javax.xml.parsers.ParserConfigurationException,
+                                                                org.xml.sax.SAXException</pre>
+<div class="block">This instances addon manager for ServerPackCreator-addons, if any are installed. This gives you
+ access to the available extensions, should any be available in your instance of
+ ServerPackCreator.</div>
 <dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Addon manager for ServerPackCreator-addons, if any are installed.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.io.IOException</code></dd>
-<dd><code>javax.xml.parsers.ParserConfigurationException</code></dd>
-<dd><code>org.xml.sax.SAXException</code></dd>
+<dd><code>java.io.IOException</code> - When the <a href="../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta"><code>VersionMeta</code></a> had to be instantiated, but
+                                      an error occurred during the parsing of a manifest.</dd>
+<dd><code>javax.xml.parsers.ParserConfigurationException</code> - When the <a href="../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta"><code>VersionMeta</code></a> had to be instantiated, but
+                                      an error occurred during the parsing of a manifest.</dd>
+<dd><code>org.xml.sax.SAXException</code> - When the <a href="../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta"><code>VersionMeta</code></a> had to be instantiated, but
+                                      an error occurred during the parsing of a manifest.</dd>
 </dl>
 </li>
 </ul>
@@ -671,15 +915,22 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>getServerPackHandler</h4>
-<pre>public&nbsp;<a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html" title="class in de.griefed.serverpackcreator">ServerPackHandler</a>&nbsp;getServerPackHandler()
-                                       throws java.io.IOException,
-                                              javax.xml.parsers.ParserConfigurationException,
-                                              org.xml.sax.SAXException</pre>
+<pre>@NotNull
+public&nbsp;@NotNull <a href="../../../de/griefed/serverpackcreator/ServerPackHandler.html" title="class in de.griefed.serverpackcreator">ServerPackHandler</a>&nbsp;getServerPackHandler()
+                                                         throws java.io.IOException,
+                                                                javax.xml.parsers.ParserConfigurationException,
+                                                                org.xml.sax.SAXException</pre>
+<div class="block">This instances ServerPackHandler used to turn a <a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><code>ConfigurationModel</code></a> into a server pack.</div>
 <dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>The ServerPackHandler with which config models can be used to create server packs.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.io.IOException</code></dd>
-<dd><code>javax.xml.parsers.ParserConfigurationException</code></dd>
-<dd><code>org.xml.sax.SAXException</code></dd>
+<dd><code>java.io.IOException</code> - When the <a href="../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta"><code>VersionMeta</code></a> had to be instantiated, but
+                                      an error occurred during the parsing of a manifest.</dd>
+<dd><code>javax.xml.parsers.ParserConfigurationException</code> - When the <a href="../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta"><code>VersionMeta</code></a> had to be instantiated, but
+                                      an error occurred during the parsing of a manifest.</dd>
+<dd><code>org.xml.sax.SAXException</code> - When the <a href="../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta"><code>VersionMeta</code></a> had to be instantiated, but
+                                      an error occurred during the parsing of a manifest.</dd>
 </dl>
 </li>
 </ul>
@@ -689,7 +940,14 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>getServerPackCreatorSplash</h4>
-<pre>public&nbsp;<a href="../../../de/griefed/serverpackcreator/swing/ServerPackCreatorSplash.html" title="class in de.griefed.serverpackcreator.swing">ServerPackCreatorSplash</a>&nbsp;getServerPackCreatorSplash()</pre>
+<pre>@NotNull
+public&nbsp;@NotNull <a href="../../../de/griefed/serverpackcreator/swing/ServerPackCreatorSplash.html" title="class in de.griefed.serverpackcreator.swing">ServerPackCreatorSplash</a>&nbsp;getServerPackCreatorSplash()</pre>
+<div class="block">Splash screen displayed during the boot up of ServerPackCreator if a graphical environment is
+ supported and SPC is started in GUI-mode.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Boot splash screen displayed during startup.</dd>
+</dl>
 </li>
 </ul>
 <a name="getUpdateChecker--">
@@ -698,7 +956,14 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>getUpdateChecker</h4>
-<pre>public&nbsp;<a href="../../../de/griefed/serverpackcreator/utilities/UpdateChecker.html" title="class in de.griefed.serverpackcreator.utilities">UpdateChecker</a>&nbsp;getUpdateChecker()</pre>
+<pre>@NotNull
+public&nbsp;@NotNull <a href="../../../de/griefed/serverpackcreator/utilities/UpdateChecker.html" title="class in de.griefed.serverpackcreator.utilities">UpdateChecker</a>&nbsp;getUpdateChecker()</pre>
+<div class="block">This instances update checker to inform the user about any potentially available update,
+ including links to said update, if any.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>This instances update checker to perform update checks and information acquirement.</dd>
+</dl>
 </li>
 </ul>
 <a name="getModScanner--">
@@ -707,7 +972,15 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>getModScanner</h4>
-<pre>public&nbsp;<a href="../../../de/griefed/serverpackcreator/modscanning/ModScanner.html" title="class in de.griefed.serverpackcreator.modscanning">ModScanner</a>&nbsp;getModScanner()</pre>
+<pre>@NotNull
+public&nbsp;@NotNull <a href="../../../de/griefed/serverpackcreator/modscanning/ModScanner.html" title="class in de.griefed.serverpackcreator.modscanning">ModScanner</a>&nbsp;getModScanner()</pre>
+<div class="block">This instances modscanner to determine the sideness of a given Forge, Fabric, LegacyFabric or
+ Quilt mod.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Modscanner to determine the sideness of a given Forge, Fabric, LegacyFabric or Quilt
+ mod.</dd>
+</dl>
 </li>
 </ul>
 <a name="getAnnotationScanner--">
@@ -716,7 +989,15 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>getAnnotationScanner</h4>
-<pre>public&nbsp;<a href="../../../de/griefed/serverpackcreator/modscanning/AnnotationScanner.html" title="class in de.griefed.serverpackcreator.modscanning">AnnotationScanner</a>&nbsp;getAnnotationScanner()</pre>
+<pre>@NotNull
+public&nbsp;@NotNull <a href="../../../de/griefed/serverpackcreator/modscanning/AnnotationScanner.html" title="class in de.griefed.serverpackcreator.modscanning">AnnotationScanner</a>&nbsp;getAnnotationScanner()</pre>
+<div class="block">This instances annotation scanner used to determine the sideness of Forge mods for Minecraft
+ 1.12.2 and older.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Annotation scanner used to determine the sideness of Forge mods for Minecraft 1.12.2
+ and older.</dd>
+</dl>
 </li>
 </ul>
 <a name="getFabricScanner--">
@@ -725,7 +1006,13 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>getFabricScanner</h4>
-<pre>public&nbsp;<a href="../../../de/griefed/serverpackcreator/modscanning/FabricScanner.html" title="class in de.griefed.serverpackcreator.modscanning">FabricScanner</a>&nbsp;getFabricScanner()</pre>
+<pre>@NotNull
+public&nbsp;@NotNull <a href="../../../de/griefed/serverpackcreator/modscanning/FabricScanner.html" title="class in de.griefed.serverpackcreator.modscanning">FabricScanner</a>&nbsp;getFabricScanner()</pre>
+<div class="block">This instances scanner to determine the sideness of Fabric mods.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Scanner to determine the sideness of Fabric mods.</dd>
+</dl>
 </li>
 </ul>
 <a name="getQuiltScanner--">
@@ -734,7 +1021,13 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>getQuiltScanner</h4>
-<pre>public&nbsp;<a href="../../../de/griefed/serverpackcreator/modscanning/QuiltScanner.html" title="class in de.griefed.serverpackcreator.modscanning">QuiltScanner</a>&nbsp;getQuiltScanner()</pre>
+<pre>@NotNull
+public&nbsp;@NotNull <a href="../../../de/griefed/serverpackcreator/modscanning/QuiltScanner.html" title="class in de.griefed.serverpackcreator.modscanning">QuiltScanner</a>&nbsp;getQuiltScanner()</pre>
+<div class="block">This instances scanner to determine the sideness of Quilt mods.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Scanner to determine the sideness of Quilt mods.</dd>
+</dl>
 </li>
 </ul>
 <a name="getTomlParser--">
@@ -743,7 +1036,14 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>getTomlParser</h4>
-<pre>public&nbsp;com.electronwill.nightconfig.toml.TomlParser&nbsp;getTomlParser()</pre>
+<pre>@NotNull
+public&nbsp;@NotNull com.electronwill.nightconfig.toml.TomlParser&nbsp;getTomlParser()</pre>
+<div class="block">This instances toml parser to read and parse various <code>.toml</code>-files during modscanning,
+ addon- and extension config loading and provisioning, serverpackcreator.conf reading and more.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Toml parser to read and parse <code>.toml</code>-files.</dd>
+</dl>
 </li>
 </ul>
 <a name="getTomlScanner--">
@@ -752,7 +1052,14 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>getTomlScanner</h4>
-<pre>public&nbsp;<a href="../../../de/griefed/serverpackcreator/modscanning/TomlScanner.html" title="class in de.griefed.serverpackcreator.modscanning">TomlScanner</a>&nbsp;getTomlScanner()</pre>
+<pre>@NotNull
+public&nbsp;@NotNull <a href="../../../de/griefed/serverpackcreator/modscanning/TomlScanner.html" title="class in de.griefed.serverpackcreator.modscanning">TomlScanner</a>&nbsp;getTomlScanner()</pre>
+<div class="block">This instances toml scanner to determine the sideness of Forge mods for Minecraft 1.13.x and
+ newer.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Scanner to determine the sideness of Forge mods for Minecraft 1.13.x and newer.</dd>
+</dl>
 </li>
 </ul>
 <a name="getConfigurationEditor--">
@@ -761,15 +1068,23 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>getConfigurationEditor</h4>
-<pre>public&nbsp;<a href="../../../de/griefed/serverpackcreator/utilities/ConfigurationEditor.html" title="class in de.griefed.serverpackcreator.utilities">ConfigurationEditor</a>&nbsp;getConfigurationEditor()
-                                           throws java.io.IOException,
-                                                  javax.xml.parsers.ParserConfigurationException,
-                                                  org.xml.sax.SAXException</pre>
+<pre>@NotNull
+public&nbsp;@NotNull <a href="../../../de/griefed/serverpackcreator/utilities/ConfigurationEditor.html" title="class in de.griefed.serverpackcreator.utilities">ConfigurationEditor</a>&nbsp;getConfigurationEditor()
+                                                             throws java.io.IOException,
+                                                                    javax.xml.parsers.ParserConfigurationException,
+                                                                    org.xml.sax.SAXException</pre>
+<div class="block">This instances configuration editor used when running in <a href="../../../de/griefed/serverpackcreator/ServerPackCreator.Mode.html#CLI"><code>ServerPackCreator.Mode.CLI</code></a>. Bear in mind that
+ the CLI config editor only provides limited functionality.</div>
 <dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Config editor to load, edit and save serverpackcreator.conf-files from the CLI.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.io.IOException</code></dd>
-<dd><code>javax.xml.parsers.ParserConfigurationException</code></dd>
-<dd><code>org.xml.sax.SAXException</code></dd>
+<dd><code>java.io.IOException</code> - When the <a href="../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta"><code>VersionMeta</code></a> had to be instantiated, but
+                                      an error occurred during the parsing of a manifest.</dd>
+<dd><code>javax.xml.parsers.ParserConfigurationException</code> - When the <a href="../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta"><code>VersionMeta</code></a> had to be instantiated, but
+                                      an error occurred during the parsing of a manifest.</dd>
+<dd><code>org.xml.sax.SAXException</code> - When the <a href="../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta"><code>VersionMeta</code></a> had to be instantiated, but
+                                      an error occurred during the parsing of a manifest.</dd>
 </dl>
 </li>
 </ul>
@@ -779,15 +1094,43 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>getServerPackCreatorGui</h4>
-<pre>public&nbsp;<a href="../../../de/griefed/serverpackcreator/swing/ServerPackCreatorWindow.html" title="class in de.griefed.serverpackcreator.swing">ServerPackCreatorWindow</a>&nbsp;getServerPackCreatorGui()
-                                                throws java.io.IOException,
-                                                       javax.xml.parsers.ParserConfigurationException,
-                                                       org.xml.sax.SAXException</pre>
+<pre>@NotNull
+public&nbsp;@NotNull <a href="../../../de/griefed/serverpackcreator/swing/ServerPackCreatorWindow.html" title="class in de.griefed.serverpackcreator.swing">ServerPackCreatorWindow</a>&nbsp;getServerPackCreatorGui()
+                                                                  throws java.io.IOException,
+                                                                         javax.xml.parsers.ParserConfigurationException,
+                                                                         org.xml.sax.SAXException</pre>
+<div class="block">This instances frame holding the GUI allowing the user to run and configure their server
+ packs.</div>
 <dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Frame holding the GUI allowing the user to run and configure their server packs.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.io.IOException</code></dd>
-<dd><code>javax.xml.parsers.ParserConfigurationException</code></dd>
-<dd><code>org.xml.sax.SAXException</code></dd>
+<dd><code>java.io.IOException</code> - When the <a href="../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta"><code>VersionMeta</code></a> had to be instantiated, but
+                                      an error occurred during the parsing of a manifest.</dd>
+<dd><code>javax.xml.parsers.ParserConfigurationException</code> - When the <a href="../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta"><code>VersionMeta</code></a> had to be instantiated, but
+                                      an error occurred during the parsing of a manifest.</dd>
+<dd><code>org.xml.sax.SAXException</code> - When the <a href="../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta"><code>VersionMeta</code></a> had to be instantiated, but
+                                      an error occurred during the parsing of a manifest.</dd>
+</dl>
+</li>
+</ul>
+<a name="getSpringBootApplicationContext-java.lang.String:A-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getSpringBootApplicationContext</h4>
+<pre>@NotNull
+public&nbsp;@NotNull org.springframework.context.ConfigurableApplicationContext&nbsp;getSpringBootApplicationContext(@NotNull
+                                                                                                                    @NotNull java.lang.String[]&nbsp;args)</pre>
+<div class="block">This instances application context when running as a webservice. When no instance of the Spring
+ Boot application context is available yet, it will be created and the Spring Boot application
+ will be started with the given arguments.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>args</code> - CLI arguments to pass to Spring Boot when it has not yet been started.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Application context of Spring Boot.</dd>
 </dl>
 </li>
 </ul>
@@ -804,9 +1147,12 @@ extends java.lang.Object</pre>
 <div class="block">Run ServerPackCreator with the mode acquired from <a href="../../../de/griefed/serverpackcreator/ServerPackCreator.CommandlineParser.html" title="class in de.griefed.serverpackcreator"><code>ServerPackCreator.CommandlineParser</code></a>.</div>
 <dl>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>javax.xml.parsers.ParserConfigurationException</code> - indicates a serious configuration error.</dd>
-<dd><code>java.io.IOException</code> - if any IO errors occur.</dd>
-<dd><code>org.xml.sax.SAXException</code> - if any parse errors occur.</dd>
+<dd><code>java.io.IOException</code> - When the <a href="../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta"><code>VersionMeta</code></a> had to be instantiated, but
+                                      an error occurred during the parsing of a manifest.</dd>
+<dd><code>javax.xml.parsers.ParserConfigurationException</code> - When the <a href="../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta"><code>VersionMeta</code></a> had to be instantiated, but
+                                      an error occurred during the parsing of a manifest.</dd>
+<dd><code>org.xml.sax.SAXException</code> - When the <a href="../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta"><code>VersionMeta</code></a> had to be instantiated, but
+                                      an error occurred during the parsing of a manifest.</dd>
 </dl>
 </li>
 </ul>
@@ -816,7 +1162,8 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>run</h4>
-<pre>public&nbsp;void&nbsp;run(<a href="../../../de/griefed/serverpackcreator/ServerPackCreator.Mode.html" title="enum in de.griefed.serverpackcreator">ServerPackCreator.Mode</a>&nbsp;modeToRunIn)
+<pre>public&nbsp;void&nbsp;run(@NotNull
+                @NotNull <a href="../../../de/griefed/serverpackcreator/ServerPackCreator.Mode.html" title="enum in de.griefed.serverpackcreator">ServerPackCreator.Mode</a>&nbsp;modeToRunIn)
          throws java.io.IOException,
                 javax.xml.parsers.ParserConfigurationException,
                 org.xml.sax.SAXException</pre>
@@ -825,9 +1172,12 @@ extends java.lang.Object</pre>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>modeToRunIn</code> - Mode to run in.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>javax.xml.parsers.ParserConfigurationException</code> - indicates a serious configuration error.</dd>
-<dd><code>java.io.IOException</code> - if any IO errors occur.</dd>
-<dd><code>org.xml.sax.SAXException</code> - if any parse errors occur.</dd>
+<dd><code>java.io.IOException</code> - When the <a href="../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta"><code>VersionMeta</code></a> had to be instantiated, but
+                                      an error occurred during the parsing of a manifest.</dd>
+<dd><code>javax.xml.parsers.ParserConfigurationException</code> - When the <a href="../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta"><code>VersionMeta</code></a> had to be instantiated, but
+                                      an error occurred during the parsing of a manifest.</dd>
+<dd><code>org.xml.sax.SAXException</code> - When the <a href="../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta"><code>VersionMeta</code></a> had to be instantiated, but
+                                      an error occurred during the parsing of a manifest.</dd>
 </dl>
 </li>
 </ul>
@@ -838,12 +1188,12 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>checkForConfig</h4>
 <pre>public&nbsp;boolean&nbsp;checkForConfig()</pre>
-<div class="block">Check for old config file, if found rename to new name. If neither old nor new config file can
- be found, a new config file is generated.</div>
+<div class="block">Check whether a <code>serverpackcreator.conf</code>-file exists. If it doesn't exist, and we are not
+ running in <a href="../../../de/griefed/serverpackcreator/ServerPackCreator.Mode.html#CLI"><code>ServerPackCreator.Mode.CLI</code></a> or <a href="../../../de/griefed/serverpackcreator/ServerPackCreator.Mode.html#CGEN"><code>ServerPackCreator.Mode.CGEN</code></a>, create an unconfigured default one which can
+ then be loaded into the GUI.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>Boolean. Returns true if the file was generated, so we can inform the user about said
- newly generated file.</dd>
+<dd><code>true</code> if a <code>serverpackcreator.conf</code>-file was created.</dd>
 </dl>
 </li>
 </ul>
@@ -853,15 +1203,15 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>checkServerFilesFile</h4>
-<pre>public&nbsp;boolean&nbsp;checkServerFilesFile(java.io.File&nbsp;fileToCheckFor)</pre>
-<div class="block">Checks for existence of defaults files. If it is not found, it is generated.</div>
+<pre>public&nbsp;boolean&nbsp;checkServerFilesFile(@NotNull
+                                    @NotNull java.io.File&nbsp;fileToCheckFor)</pre>
+<div class="block">Check whether the specified server-files file exists and create it if it doesn't.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>fileToCheckFor</code> - The file which is to be checked for whether it exists and if it doesn't,
                        should be created.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>true</code> if the file was generated, so we can inform the user about said newly
- generated file.</dd>
+<dd><code>true</code> if the file was generated.</dd>
 </dl>
 </li>
 </ul>
@@ -871,9 +1221,10 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>overwriteServerFilesFile</h4>
-<pre>public&nbsp;void&nbsp;overwriteServerFilesFile(java.io.File&nbsp;fileToOverwrite)</pre>
-<div class="block">Delete and recreate a server-files file, so we always have the latest and greatest hits
- available on the host, and therefor, the user.</div>
+<pre>public&nbsp;void&nbsp;overwriteServerFilesFile(@NotNull
+                                     @NotNull java.io.File&nbsp;fileToOverwrite)</pre>
+<div class="block">Overwrite the specified server-files file, even when it exists. Used to ensure files like the
+ default script templates are always up-to-date.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>fileToOverwrite</code> - The file which is to be overwritten. If it exists. it is first deleted,
@@ -891,14 +1242,19 @@ extends java.lang.Object</pre>
 <div class="block">Ensures serverpackcreator.db exists. If the database does not exist, it is created.</div>
 </li>
 </ul>
-<a name="updateCheck--">
+<a name="updateCheck-boolean-">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>updateCheck</h4>
-<pre>public&nbsp;void&nbsp;updateCheck()</pre>
-<div class="block">Check for update-availability and exit with status code 0.</div>
+<pre>public&nbsp;void&nbsp;updateCheck(boolean&nbsp;logToConsole)</pre>
+<div class="block">Check for update-availability. If an update is present, information about said update is
+ printed to the console.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>logToConsole</code> - Whether to log update information to console or to logs.</dd>
+</dl>
 </li>
 </ul>
 </li>
@@ -928,7 +1284,7 @@ extends java.lang.Object</pre>
 </div>
 <div class="subNav">
 <ul class="navList">
-<li><a href="../../../de/griefed/serverpackcreator/ConfigurationModel.html" title="class in de.griefed.serverpackcreator"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
+<li><a href="../../../de/griefed/serverpackcreator/MigrationManager.MigrationMessage.html" title="class in de.griefed.serverpackcreator"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
 <li><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.CommandlineParser.html" title="class in de.griefed.serverpackcreator"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
 </ul>
 <ul class="navList">

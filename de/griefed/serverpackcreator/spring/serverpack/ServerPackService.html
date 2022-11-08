@@ -262,6 +262,21 @@ public&nbsp;ServerPackService(<a href="../../../../../de/griefed/serverpackcreat
 </dl>
 </li>
 </ul>
+<a name="updateDownloadCounter-int-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>updateDownloadCounter</h4>
+<pre>public&nbsp;void&nbsp;updateDownloadCounter(int&nbsp;id)</pre>
+<div class="block">Increment the download counter for a given server pack entry in the database identified by the
+ database id.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>id</code> - The database id of the server pack.</dd>
+</dl>
+</li>
+</ul>
 <a name="voteForServerPack-java.lang.String-">
 <!--   -->
 </a>
@@ -276,6 +291,23 @@ public&nbsp;ServerPackService(<a href="../../../../../de/griefed/serverpackcreat
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>Returns ok if the vote went through, bad request if the passed vote was malformed, or
  not found if the server pack could not be found.</dd>
+</dl>
+</li>
+</ul>
+<a name="updateConfirmedCounter-int-int-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>updateConfirmedCounter</h4>
+<pre>public&nbsp;void&nbsp;updateConfirmedCounter(int&nbsp;id,
+                                   int&nbsp;vote)</pre>
+<div class="block">Either increment or decrement the confirmed working value of a given server pack entry in the
+ database, identified by the database id.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>id</code> - The database id of the server pack.</dd>
+<dd><code>vote</code> - Positive for upvote, negative for downvote</dd>
 </dl>
 </li>
 </ul>
@@ -321,38 +353,6 @@ public&nbsp;ServerPackService(<a href="../../../../../de/griefed/serverpackcreat
 <dd><code>id</code> - Integer. The database id of the server pack to initialize.</dd>
 <dd><code>serverPackModel</code> - Instance of <a href="../../../../../de/griefed/serverpackcreator/spring/serverpack/ServerPackModel.html" title="class in de.griefed.serverpackcreator.spring.serverpack"><code>ServerPackModel</code></a> with which to initialize the entry
                         in the database.</dd>
-</dl>
-</li>
-</ul>
-<a name="updateDownloadCounter-int-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>updateDownloadCounter</h4>
-<pre>public&nbsp;void&nbsp;updateDownloadCounter(int&nbsp;id)</pre>
-<div class="block">Increment the download counter for a given server pack entry in the database identified by the
- database id.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>id</code> - The database id of the server pack.</dd>
-</dl>
-</li>
-</ul>
-<a name="updateConfirmedCounter-int-int-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>updateConfirmedCounter</h4>
-<pre>public&nbsp;void&nbsp;updateConfirmedCounter(int&nbsp;id,
-                                   int&nbsp;vote)</pre>
-<div class="block">Either increment or decrement the confirmed working value of a given server pack entry in the
- database, identified by the database id.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>id</code> - The database id of the server pack.</dd>
-<dd><code>vote</code> - Positive for upvote, negative for downvote</dd>
 </dl>
 </li>
 </ul>

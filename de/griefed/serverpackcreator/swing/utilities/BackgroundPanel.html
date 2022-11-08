@@ -558,20 +558,6 @@ extends javax.swing.JPanel</pre>
 </dl>
 </li>
 </ul>
-<a name="setPaint-java.awt.Paint-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>setPaint</h4>
-<pre>public&nbsp;void&nbsp;setPaint(java.awt.Paint&nbsp;painter)</pre>
-<div class="block">Setter for the Paint object used to paint the background.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>painter</code> - Sets the painter with which the background should be painted.</dd>
-</dl>
-</li>
-</ul>
 <a name="setImageAlignmentX-float-">
 <!--   -->
 </a>
@@ -600,6 +586,20 @@ extends javax.swing.JPanel</pre>
 </dl>
 </li>
 </ul>
+<a name="setPaint-java.awt.Paint-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>setPaint</h4>
+<pre>public&nbsp;void&nbsp;setPaint(java.awt.Paint&nbsp;painter)</pre>
+<div class="block">Setter for the Paint object used to paint the background.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>painter</code> - Sets the painter with which the background should be painted.</dd>
+</dl>
+</li>
+</ul>
 <a name="addComponent-javax.swing.JComponent-">
 <!--   -->
 </a>
@@ -611,22 +611,6 @@ extends javax.swing.JPanel</pre>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>component</code> - JComponent to add to the panel.</dd>
-</dl>
-</li>
-</ul>
-<a name="getPreferredSize--">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>getPreferredSize</h4>
-<pre>public&nbsp;java.awt.Dimension&nbsp;getPreferredSize()</pre>
-<div class="block">Override to provide a preferred size equal to the image size.</div>
-<dl>
-<dt><span class="overrideSpecifyLabel">Overrides:</span></dt>
-<dd><code>getPreferredSize</code>&nbsp;in class&nbsp;<code>javax.swing.JComponent</code></dd>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>Dimension. Returns the dimension of the passed image.</dd>
 </dl>
 </li>
 </ul>
@@ -664,7 +648,7 @@ extends javax.swing.JPanel</pre>
 <a name="paintComponent-java.awt.Graphics-">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>paintComponent</h4>
 <pre>protected&nbsp;void&nbsp;paintComponent(java.awt.Graphics&nbsp;g)</pre>
@@ -674,6 +658,22 @@ extends javax.swing.JPanel</pre>
 <dd><code>paintComponent</code>&nbsp;in class&nbsp;<code>javax.swing.JComponent</code></dd>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>g</code> - Received from parent.</dd>
+</dl>
+</li>
+</ul>
+<a name="getPreferredSize--">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>getPreferredSize</h4>
+<pre>public&nbsp;java.awt.Dimension&nbsp;getPreferredSize()</pre>
+<div class="block">Override to provide a preferred size equal to the image size.</div>
+<dl>
+<dt><span class="overrideSpecifyLabel">Overrides:</span></dt>
+<dd><code>getPreferredSize</code>&nbsp;in class&nbsp;<code>javax.swing.JComponent</code></dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Returns the dimension of the passed image.</dd>
 </dl>
 </li>
 </ul>

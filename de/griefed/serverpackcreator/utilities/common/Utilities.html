@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -129,17 +129,20 @@ extends java.lang.Object</pre>
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/Utilities.html#Utilities-de.griefed.serverpackcreator.ApplicationProperties-">Utilities</a></span>(<a href="../../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;injectedApplicationProperties)</code>&nbsp;</td>
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/Utilities.html#Utilities-de.griefed.serverpackcreator.ApplicationProperties-com.fasterxml.jackson.databind.ObjectMapper-javax.xml.parsers.DocumentBuilder-">Utilities</a></span>(@NotNull <a href="../../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;injectedApplicationProperties,
+         @NotNull com.fasterxml.jackson.databind.ObjectMapper&nbsp;injectedObjectMapper,
+         @NotNull javax.xml.parsers.DocumentBuilder&nbsp;documentBuilder)</code>&nbsp;</td>
 </tr>
 <tr class="rowColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/Utilities.html#Utilities-de.griefed.serverpackcreator.utilities.common.BooleanUtilities-de.griefed.serverpackcreator.utilities.common.FileUtilities-de.griefed.serverpackcreator.utilities.common.JarUtilities-de.griefed.serverpackcreator.utilities.common.ListUtilities-de.griefed.serverpackcreator.utilities.common.StringUtilities-de.griefed.serverpackcreator.utilities.common.SystemUtilities-de.griefed.serverpackcreator.utilities.common.WebUtilities-de.griefed.serverpackcreator.utilities.common.JsonUtilities-">Utilities</a></span>(<a href="../../../../../de/griefed/serverpackcreator/utilities/common/BooleanUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">BooleanUtilities</a>&nbsp;booleanUtilities,
-         <a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">FileUtilities</a>&nbsp;fileUtilities,
-         <a href="../../../../../de/griefed/serverpackcreator/utilities/common/JarUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">JarUtilities</a>&nbsp;jarUtilities,
-         <a href="../../../../../de/griefed/serverpackcreator/utilities/common/ListUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">ListUtilities</a>&nbsp;listUtilities,
-         <a href="../../../../../de/griefed/serverpackcreator/utilities/common/StringUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">StringUtilities</a>&nbsp;stringUtilities,
-         <a href="../../../../../de/griefed/serverpackcreator/utilities/common/SystemUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">SystemUtilities</a>&nbsp;systemUtilities,
-         <a href="../../../../../de/griefed/serverpackcreator/utilities/common/WebUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">WebUtilities</a>&nbsp;webUtilities,
-         <a href="../../../../../de/griefed/serverpackcreator/utilities/common/JsonUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">JsonUtilities</a>&nbsp;jsonUtilities)</code>&nbsp;</td>
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/Utilities.html#Utilities-de.griefed.serverpackcreator.utilities.common.BooleanUtilities-de.griefed.serverpackcreator.utilities.common.FileUtilities-de.griefed.serverpackcreator.utilities.common.JarUtilities-de.griefed.serverpackcreator.utilities.common.ListUtilities-de.griefed.serverpackcreator.utilities.common.StringUtilities-de.griefed.serverpackcreator.utilities.common.SystemUtilities-de.griefed.serverpackcreator.utilities.common.WebUtilities-de.griefed.serverpackcreator.utilities.common.JsonUtilities-de.griefed.serverpackcreator.utilities.common.XmlUtilities-">Utilities</a></span>(@NotNull <a href="../../../../../de/griefed/serverpackcreator/utilities/common/BooleanUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">BooleanUtilities</a>&nbsp;booleanUtilities,
+         @NotNull <a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">FileUtilities</a>&nbsp;fileUtilities,
+         @NotNull <a href="../../../../../de/griefed/serverpackcreator/utilities/common/JarUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">JarUtilities</a>&nbsp;jarUtilities,
+         @NotNull <a href="../../../../../de/griefed/serverpackcreator/utilities/common/ListUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">ListUtilities</a>&nbsp;listUtilities,
+         @NotNull <a href="../../../../../de/griefed/serverpackcreator/utilities/common/StringUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">StringUtilities</a>&nbsp;stringUtilities,
+         @NotNull <a href="../../../../../de/griefed/serverpackcreator/utilities/common/SystemUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">SystemUtilities</a>&nbsp;systemUtilities,
+         @NotNull <a href="../../../../../de/griefed/serverpackcreator/utilities/common/WebUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">WebUtilities</a>&nbsp;webUtilities,
+         @NotNull <a href="../../../../../de/griefed/serverpackcreator/utilities/common/JsonUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">JsonUtilities</a>&nbsp;jsonUtilities,
+         @NotNull <a href="../../../../../de/griefed/serverpackcreator/utilities/common/XmlUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">XmlUtilities</a>&nbsp;xmlUtilities)</code>&nbsp;</td>
 </tr>
 </table>
 </li>
@@ -157,36 +160,40 @@ extends java.lang.Object</pre>
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr id="i0" class="altColor">
-<td class="colFirst"><code><a href="../../../../../de/griefed/serverpackcreator/utilities/common/BooleanUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">BooleanUtilities</a></code></td>
+<td class="colFirst"><code>@NotNull <a href="../../../../../de/griefed/serverpackcreator/utilities/common/BooleanUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">BooleanUtilities</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/Utilities.html#BooleanUtils--">BooleanUtils</a></span>()</code>&nbsp;</td>
 </tr>
 <tr id="i1" class="rowColor">
-<td class="colFirst"><code><a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">FileUtilities</a></code></td>
+<td class="colFirst"><code>@NotNull <a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">FileUtilities</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/Utilities.html#FileUtils--">FileUtils</a></span>()</code>&nbsp;</td>
 </tr>
 <tr id="i2" class="altColor">
-<td class="colFirst"><code><a href="../../../../../de/griefed/serverpackcreator/utilities/common/JarUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">JarUtilities</a></code></td>
+<td class="colFirst"><code>@NotNull <a href="../../../../../de/griefed/serverpackcreator/utilities/common/JarUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">JarUtilities</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/Utilities.html#JarUtils--">JarUtils</a></span>()</code>&nbsp;</td>
 </tr>
 <tr id="i3" class="rowColor">
-<td class="colFirst"><code><a href="../../../../../de/griefed/serverpackcreator/utilities/common/JsonUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">JsonUtilities</a></code></td>
+<td class="colFirst"><code>@NotNull <a href="../../../../../de/griefed/serverpackcreator/utilities/common/JsonUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">JsonUtilities</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/Utilities.html#JsonUtilities--">JsonUtilities</a></span>()</code>&nbsp;</td>
 </tr>
 <tr id="i4" class="altColor">
-<td class="colFirst"><code><a href="../../../../../de/griefed/serverpackcreator/utilities/common/ListUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">ListUtilities</a></code></td>
+<td class="colFirst"><code>@NotNull <a href="../../../../../de/griefed/serverpackcreator/utilities/common/ListUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">ListUtilities</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/Utilities.html#ListUtils--">ListUtils</a></span>()</code>&nbsp;</td>
 </tr>
 <tr id="i5" class="rowColor">
-<td class="colFirst"><code><a href="../../../../../de/griefed/serverpackcreator/utilities/common/StringUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">StringUtilities</a></code></td>
+<td class="colFirst"><code>@NotNull <a href="../../../../../de/griefed/serverpackcreator/utilities/common/StringUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">StringUtilities</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/Utilities.html#StringUtils--">StringUtils</a></span>()</code>&nbsp;</td>
 </tr>
 <tr id="i6" class="altColor">
-<td class="colFirst"><code><a href="../../../../../de/griefed/serverpackcreator/utilities/common/SystemUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">SystemUtilities</a></code></td>
+<td class="colFirst"><code>@NotNull <a href="../../../../../de/griefed/serverpackcreator/utilities/common/SystemUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">SystemUtilities</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/Utilities.html#SystemUtils--">SystemUtils</a></span>()</code>&nbsp;</td>
 </tr>
 <tr id="i7" class="rowColor">
-<td class="colFirst"><code><a href="../../../../../de/griefed/serverpackcreator/utilities/common/WebUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">WebUtilities</a></code></td>
+<td class="colFirst"><code>@NotNull <a href="../../../../../de/griefed/serverpackcreator/utilities/common/WebUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">WebUtilities</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/Utilities.html#WebUtils--">WebUtils</a></span>()</code>&nbsp;</td>
+</tr>
+<tr id="i8" class="altColor">
+<td class="colFirst"><code>@NotNull <a href="../../../../../de/griefed/serverpackcreator/utilities/common/XmlUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">XmlUtilities</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/Utilities.html#XmlUtilities--">XmlUtilities</a></span>()</code>&nbsp;</td>
 </tr>
 </table>
 <ul class="blockList">
@@ -210,30 +217,46 @@ extends java.lang.Object</pre>
 <!--   -->
 </a>
 <h3>Constructor Detail</h3>
-<a name="Utilities-de.griefed.serverpackcreator.ApplicationProperties-">
+<a name="Utilities-de.griefed.serverpackcreator.ApplicationProperties-com.fasterxml.jackson.databind.ObjectMapper-javax.xml.parsers.DocumentBuilder-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>Utilities</h4>
 <pre>@Autowired
-public&nbsp;Utilities(<a href="../../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;injectedApplicationProperties)</pre>
+public&nbsp;Utilities(@NotNull
+                            @NotNull <a href="../../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;injectedApplicationProperties,
+                            @NotNull
+                            @NotNull com.fasterxml.jackson.databind.ObjectMapper&nbsp;injectedObjectMapper,
+                            @NotNull
+                            @NotNull javax.xml.parsers.DocumentBuilder&nbsp;documentBuilder)</pre>
 </li>
 </ul>
-<a name="Utilities-de.griefed.serverpackcreator.utilities.common.BooleanUtilities-de.griefed.serverpackcreator.utilities.common.FileUtilities-de.griefed.serverpackcreator.utilities.common.JarUtilities-de.griefed.serverpackcreator.utilities.common.ListUtilities-de.griefed.serverpackcreator.utilities.common.StringUtilities-de.griefed.serverpackcreator.utilities.common.SystemUtilities-de.griefed.serverpackcreator.utilities.common.WebUtilities-de.griefed.serverpackcreator.utilities.common.JsonUtilities-">
+<a name="Utilities-de.griefed.serverpackcreator.utilities.common.BooleanUtilities-de.griefed.serverpackcreator.utilities.common.FileUtilities-de.griefed.serverpackcreator.utilities.common.JarUtilities-de.griefed.serverpackcreator.utilities.common.ListUtilities-de.griefed.serverpackcreator.utilities.common.StringUtilities-de.griefed.serverpackcreator.utilities.common.SystemUtilities-de.griefed.serverpackcreator.utilities.common.WebUtilities-de.griefed.serverpackcreator.utilities.common.JsonUtilities-de.griefed.serverpackcreator.utilities.common.XmlUtilities-">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>Utilities</h4>
-<pre>public&nbsp;Utilities(<a href="../../../../../de/griefed/serverpackcreator/utilities/common/BooleanUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">BooleanUtilities</a>&nbsp;booleanUtilities,
-                 <a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">FileUtilities</a>&nbsp;fileUtilities,
-                 <a href="../../../../../de/griefed/serverpackcreator/utilities/common/JarUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">JarUtilities</a>&nbsp;jarUtilities,
-                 <a href="../../../../../de/griefed/serverpackcreator/utilities/common/ListUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">ListUtilities</a>&nbsp;listUtilities,
-                 <a href="../../../../../de/griefed/serverpackcreator/utilities/common/StringUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">StringUtilities</a>&nbsp;stringUtilities,
-                 <a href="../../../../../de/griefed/serverpackcreator/utilities/common/SystemUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">SystemUtilities</a>&nbsp;systemUtilities,
-                 <a href="../../../../../de/griefed/serverpackcreator/utilities/common/WebUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">WebUtilities</a>&nbsp;webUtilities,
-                 <a href="../../../../../de/griefed/serverpackcreator/utilities/common/JsonUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">JsonUtilities</a>&nbsp;jsonUtilities)</pre>
+<pre>@Contract(pure=true)
+public&nbsp;Utilities(@NotNull
+                                      @NotNull <a href="../../../../../de/griefed/serverpackcreator/utilities/common/BooleanUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">BooleanUtilities</a>&nbsp;booleanUtilities,
+                                      @NotNull
+                                      @NotNull <a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">FileUtilities</a>&nbsp;fileUtilities,
+                                      @NotNull
+                                      @NotNull <a href="../../../../../de/griefed/serverpackcreator/utilities/common/JarUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">JarUtilities</a>&nbsp;jarUtilities,
+                                      @NotNull
+                                      @NotNull <a href="../../../../../de/griefed/serverpackcreator/utilities/common/ListUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">ListUtilities</a>&nbsp;listUtilities,
+                                      @NotNull
+                                      @NotNull <a href="../../../../../de/griefed/serverpackcreator/utilities/common/StringUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">StringUtilities</a>&nbsp;stringUtilities,
+                                      @NotNull
+                                      @NotNull <a href="../../../../../de/griefed/serverpackcreator/utilities/common/SystemUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">SystemUtilities</a>&nbsp;systemUtilities,
+                                      @NotNull
+                                      @NotNull <a href="../../../../../de/griefed/serverpackcreator/utilities/common/WebUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">WebUtilities</a>&nbsp;webUtilities,
+                                      @NotNull
+                                      @NotNull <a href="../../../../../de/griefed/serverpackcreator/utilities/common/JsonUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">JsonUtilities</a>&nbsp;jsonUtilities,
+                                      @NotNull
+                                      @NotNull <a href="../../../../../de/griefed/serverpackcreator/utilities/common/XmlUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">XmlUtilities</a>&nbsp;xmlUtilities)</pre>
 </li>
 </ul>
 </li>
@@ -250,7 +273,9 @@ public&nbsp;Utilities(<a href="../../../../../de/griefed/serverpackcreator/Appli
 <ul class="blockList">
 <li class="blockList">
 <h4>BooleanUtils</h4>
-<pre>public&nbsp;<a href="../../../../../de/griefed/serverpackcreator/utilities/common/BooleanUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">BooleanUtilities</a>&nbsp;BooleanUtils()</pre>
+<pre>@Contract(pure=true)
+ @NotNull
+public&nbsp;@NotNull <a href="../../../../../de/griefed/serverpackcreator/utilities/common/BooleanUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">BooleanUtilities</a>&nbsp;BooleanUtils()</pre>
 </li>
 </ul>
 <a name="FileUtils--">
@@ -259,7 +284,9 @@ public&nbsp;Utilities(<a href="../../../../../de/griefed/serverpackcreator/Appli
 <ul class="blockList">
 <li class="blockList">
 <h4>FileUtils</h4>
-<pre>public&nbsp;<a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">FileUtilities</a>&nbsp;FileUtils()</pre>
+<pre>@Contract(pure=true)
+ @NotNull
+public&nbsp;@NotNull <a href="../../../../../de/griefed/serverpackcreator/utilities/common/FileUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">FileUtilities</a>&nbsp;FileUtils()</pre>
 </li>
 </ul>
 <a name="JarUtils--">
@@ -268,7 +295,9 @@ public&nbsp;Utilities(<a href="../../../../../de/griefed/serverpackcreator/Appli
 <ul class="blockList">
 <li class="blockList">
 <h4>JarUtils</h4>
-<pre>public&nbsp;<a href="../../../../../de/griefed/serverpackcreator/utilities/common/JarUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">JarUtilities</a>&nbsp;JarUtils()</pre>
+<pre>@Contract(pure=true)
+ @NotNull
+public&nbsp;@NotNull <a href="../../../../../de/griefed/serverpackcreator/utilities/common/JarUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">JarUtilities</a>&nbsp;JarUtils()</pre>
 </li>
 </ul>
 <a name="ListUtils--">
@@ -277,7 +306,9 @@ public&nbsp;Utilities(<a href="../../../../../de/griefed/serverpackcreator/Appli
 <ul class="blockList">
 <li class="blockList">
 <h4>ListUtils</h4>
-<pre>public&nbsp;<a href="../../../../../de/griefed/serverpackcreator/utilities/common/ListUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">ListUtilities</a>&nbsp;ListUtils()</pre>
+<pre>@Contract(pure=true)
+ @NotNull
+public&nbsp;@NotNull <a href="../../../../../de/griefed/serverpackcreator/utilities/common/ListUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">ListUtilities</a>&nbsp;ListUtils()</pre>
 </li>
 </ul>
 <a name="StringUtils--">
@@ -286,7 +317,9 @@ public&nbsp;Utilities(<a href="../../../../../de/griefed/serverpackcreator/Appli
 <ul class="blockList">
 <li class="blockList">
 <h4>StringUtils</h4>
-<pre>public&nbsp;<a href="../../../../../de/griefed/serverpackcreator/utilities/common/StringUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">StringUtilities</a>&nbsp;StringUtils()</pre>
+<pre>@Contract(pure=true)
+ @NotNull
+public&nbsp;@NotNull <a href="../../../../../de/griefed/serverpackcreator/utilities/common/StringUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">StringUtilities</a>&nbsp;StringUtils()</pre>
 </li>
 </ul>
 <a name="SystemUtils--">
@@ -295,7 +328,9 @@ public&nbsp;Utilities(<a href="../../../../../de/griefed/serverpackcreator/Appli
 <ul class="blockList">
 <li class="blockList">
 <h4>SystemUtils</h4>
-<pre>public&nbsp;<a href="../../../../../de/griefed/serverpackcreator/utilities/common/SystemUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">SystemUtilities</a>&nbsp;SystemUtils()</pre>
+<pre>@Contract(pure=true)
+ @NotNull
+public&nbsp;@NotNull <a href="../../../../../de/griefed/serverpackcreator/utilities/common/SystemUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">SystemUtilities</a>&nbsp;SystemUtils()</pre>
 </li>
 </ul>
 <a name="WebUtils--">
@@ -304,16 +339,31 @@ public&nbsp;Utilities(<a href="../../../../../de/griefed/serverpackcreator/Appli
 <ul class="blockList">
 <li class="blockList">
 <h4>WebUtils</h4>
-<pre>public&nbsp;<a href="../../../../../de/griefed/serverpackcreator/utilities/common/WebUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">WebUtilities</a>&nbsp;WebUtils()</pre>
+<pre>@Contract(pure=true)
+ @NotNull
+public&nbsp;@NotNull <a href="../../../../../de/griefed/serverpackcreator/utilities/common/WebUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">WebUtilities</a>&nbsp;WebUtils()</pre>
 </li>
 </ul>
 <a name="JsonUtilities--">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>JsonUtilities</h4>
-<pre>public&nbsp;<a href="../../../../../de/griefed/serverpackcreator/utilities/common/JsonUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">JsonUtilities</a>&nbsp;JsonUtilities()</pre>
+<pre>@Contract(pure=true)
+ @NotNull
+public&nbsp;@NotNull <a href="../../../../../de/griefed/serverpackcreator/utilities/common/JsonUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">JsonUtilities</a>&nbsp;JsonUtilities()</pre>
+</li>
+</ul>
+<a name="XmlUtilities--">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>XmlUtilities</h4>
+<pre>@Contract(pure=true)
+ @NotNull
+public&nbsp;@NotNull <a href="../../../../../de/griefed/serverpackcreator/utilities/common/XmlUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">XmlUtilities</a>&nbsp;XmlUtilities()</pre>
 </li>
 </ul>
 </li>

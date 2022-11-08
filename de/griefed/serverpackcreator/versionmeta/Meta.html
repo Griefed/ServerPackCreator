@@ -47,7 +47,7 @@ var activeTableTab = "activeTableTab";
 </div>
 <div class="subNav">
 <ul class="navList">
-<li><a href="../../../../de/griefed/serverpackcreator/versionmeta/ManifestParser.html" title="class in de.griefed.serverpackcreator.versionmeta"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
+<li><a href="../../../../de/griefed/serverpackcreator/versionmeta/InvalidTypeException.html" title="class in de.griefed.serverpackcreator.versionmeta"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
 <li><a href="../../../../de/griefed/serverpackcreator/versionmeta/Type.html" title="enum in de.griefed.serverpackcreator.versionmeta"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
 </ul>
 <ul class="navList">
@@ -123,31 +123,31 @@ var activeTableTab = "activeTableTab";
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr id="i0" class="altColor">
-<td class="colFirst"><code>java.util.Optional&lt;java.net.URL&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#getInstallerUrl-java.lang.String-">getInstallerUrl</a></span>(java.lang.String&nbsp;version)</code>
+<td class="colFirst"><code>@NotNull java.util.Optional&lt;java.net.URL&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#getInstallerUrl-java.lang.String-">getInstallerUrl</a></span>(@NotNull java.lang.String&nbsp;version)</code>
 <div class="block">Get the URL to the installer for the specified version, wrapped in an Optional.</div>
 </td>
 </tr>
 <tr id="i1" class="rowColor">
-<td class="colFirst"><code>java.lang.String[]</code></td>
+<td class="colFirst"><code>@NotNull java.lang.String[]</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#installerVersionsArrayAscending--">installerVersionsArrayAscending</a></span>()</code>
 <div class="block">Array of available installer version in ascending order.</div>
 </td>
 </tr>
 <tr id="i2" class="altColor">
-<td class="colFirst"><code>java.lang.String[]</code></td>
+<td class="colFirst"><code>@NotNull java.lang.String[]</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#installerVersionsArrayDescending--">installerVersionsArrayDescending</a></span>()</code>
 <div class="block">Array of available installer version in descending order.</div>
 </td>
 </tr>
 <tr id="i3" class="rowColor">
-<td class="colFirst"><code>java.util.List&lt;java.lang.String&gt;</code></td>
+<td class="colFirst"><code>@NotNull java.util.List&lt;java.lang.String&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#installerVersionsListAscending--">installerVersionsListAscending</a></span>()</code>
 <div class="block">List of available installer version in ascending order.</div>
 </td>
 </tr>
 <tr id="i4" class="altColor">
-<td class="colFirst"><code>java.util.List&lt;java.lang.String&gt;</code></td>
+<td class="colFirst"><code>@NotNull java.util.List&lt;java.lang.String&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#installerVersionsListDescending--">installerVersionsListDescending</a></span>()</code>
 <div class="block">List of available installer version in descending order.</div>
 </td>
@@ -160,72 +160,72 @@ var activeTableTab = "activeTableTab";
 </tr>
 <tr id="i6" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#isMinecraftSupported-java.lang.String-">isMinecraftSupported</a></span>(java.lang.String&nbsp;minecraftVersion)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#isMinecraftSupported-java.lang.String-">isMinecraftSupported</a></span>(@NotNull java.lang.String&nbsp;minecraftVersion)</code>
 <div class="block">Check whether the given Minecraft version is supported by this modloader.</div>
 </td>
 </tr>
 <tr id="i7" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#isVersionValid-java.lang.String-">isVersionValid</a></span>(java.lang.String&nbsp;version)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#isVersionValid-java.lang.String-">isVersionValid</a></span>(@NotNull java.lang.String&nbsp;version)</code>
 <div class="block">Check whether the specified version is available/correct/valid.</div>
 </td>
 </tr>
 <tr id="i8" class="altColor">
-<td class="colFirst"><code>java.lang.String</code></td>
+<td class="colFirst"><code>@NotNull java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#latestInstaller--">latestInstaller</a></span>()</code>
 <div class="block">Get the latest installer version.</div>
 </td>
 </tr>
 <tr id="i9" class="rowColor">
-<td class="colFirst"><code>java.net.URL</code></td>
+<td class="colFirst"><code>@NotNull java.net.URL</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#latestInstallerUrl--">latestInstallerUrl</a></span>()</code>
 <div class="block">Get the URL to the latest installer.</div>
 </td>
 </tr>
 <tr id="i10" class="altColor">
-<td class="colFirst"><code>java.lang.String</code></td>
+<td class="colFirst"><code>@NotNull java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#latestLoader--">latestLoader</a></span>()</code>
 <div class="block">Get the latest loader version.</div>
 </td>
 </tr>
 <tr id="i11" class="rowColor">
-<td class="colFirst"><code>java.lang.String[]</code></td>
+<td class="colFirst"><code>@NotNull java.lang.String[]</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#loaderVersionsArrayAscending--">loaderVersionsArrayAscending</a></span>()</code>
 <div class="block">Array of available loader versions in ascending order.</div>
 </td>
 </tr>
 <tr id="i12" class="altColor">
-<td class="colFirst"><code>java.lang.String[]</code></td>
+<td class="colFirst"><code>@NotNull java.lang.String[]</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#loaderVersionsArrayDescending--">loaderVersionsArrayDescending</a></span>()</code>
 <div class="block">Array of available loader versions in descending order.</div>
 </td>
 </tr>
 <tr id="i13" class="rowColor">
-<td class="colFirst"><code>java.util.List&lt;java.lang.String&gt;</code></td>
+<td class="colFirst"><code>@NotNull java.util.List&lt;java.lang.String&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#loaderVersionsListAscending--">loaderVersionsListAscending</a></span>()</code>
 <div class="block">List of available loader versions in ascending order.</div>
 </td>
 </tr>
 <tr id="i14" class="altColor">
-<td class="colFirst"><code>java.util.List&lt;java.lang.String&gt;</code></td>
+<td class="colFirst"><code>@NotNull java.util.List&lt;java.lang.String&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#loaderVersionsListDescending--">loaderVersionsListDescending</a></span>()</code>
 <div class="block">List of available loader versions in descending order.</div>
 </td>
 </tr>
 <tr id="i15" class="rowColor">
-<td class="colFirst"><code>java.lang.String</code></td>
+<td class="colFirst"><code>@NotNull java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#releaseInstaller--">releaseInstaller</a></span>()</code>
 <div class="block">Get the release installer version.</div>
 </td>
 </tr>
 <tr id="i16" class="altColor">
-<td class="colFirst"><code>java.net.URL</code></td>
+<td class="colFirst"><code>@NotNull java.net.URL</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#releaseInstallerUrl--">releaseInstallerUrl</a></span>()</code>
 <div class="block">Get the URL to the release installer.</div>
 </td>
 </tr>
 <tr id="i17" class="rowColor">
-<td class="colFirst"><code>java.lang.String</code></td>
+<td class="colFirst"><code>@NotNull java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/versionmeta/Meta.html#releaseLoader--">releaseLoader</a></span>()</code>
 <div class="block">Get the release loader version.</div>
 </td>
@@ -278,7 +278,8 @@ var activeTableTab = "activeTableTab";
 <ul class="blockList">
 <li class="blockList">
 <h4>latestLoader</h4>
-<pre>java.lang.String&nbsp;latestLoader()</pre>
+<pre>@NotNull
+@NotNull java.lang.String&nbsp;latestLoader()</pre>
 <div class="block">Get the latest loader version.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
@@ -292,7 +293,8 @@ var activeTableTab = "activeTableTab";
 <ul class="blockList">
 <li class="blockList">
 <h4>releaseLoader</h4>
-<pre>java.lang.String&nbsp;releaseLoader()</pre>
+<pre>@NotNull
+@NotNull java.lang.String&nbsp;releaseLoader()</pre>
 <div class="block">Get the release loader version.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
@@ -306,7 +308,8 @@ var activeTableTab = "activeTableTab";
 <ul class="blockList">
 <li class="blockList">
 <h4>latestInstaller</h4>
-<pre>java.lang.String&nbsp;latestInstaller()</pre>
+<pre>@NotNull
+@NotNull java.lang.String&nbsp;latestInstaller()</pre>
 <div class="block">Get the latest installer version.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
@@ -320,7 +323,8 @@ var activeTableTab = "activeTableTab";
 <ul class="blockList">
 <li class="blockList">
 <h4>releaseInstaller</h4>
-<pre>java.lang.String&nbsp;releaseInstaller()</pre>
+<pre>@NotNull
+@NotNull java.lang.String&nbsp;releaseInstaller()</pre>
 <div class="block">Get the release installer version.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
@@ -334,7 +338,8 @@ var activeTableTab = "activeTableTab";
 <ul class="blockList">
 <li class="blockList">
 <h4>loaderVersionsListAscending</h4>
-<pre>java.util.List&lt;java.lang.String&gt;&nbsp;loaderVersionsListAscending()</pre>
+<pre>@NotNull
+@NotNull java.util.List&lt;java.lang.String&gt;&nbsp;loaderVersionsListAscending()</pre>
 <div class="block">List of available loader versions in ascending order.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
@@ -348,7 +353,8 @@ var activeTableTab = "activeTableTab";
 <ul class="blockList">
 <li class="blockList">
 <h4>loaderVersionsListDescending</h4>
-<pre>java.util.List&lt;java.lang.String&gt;&nbsp;loaderVersionsListDescending()</pre>
+<pre>@NotNull
+@NotNull java.util.List&lt;java.lang.String&gt;&nbsp;loaderVersionsListDescending()</pre>
 <div class="block">List of available loader versions in descending order.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
@@ -362,7 +368,8 @@ var activeTableTab = "activeTableTab";
 <ul class="blockList">
 <li class="blockList">
 <h4>loaderVersionsArrayAscending</h4>
-<pre>java.lang.String[]&nbsp;loaderVersionsArrayAscending()</pre>
+<pre>@NotNull
+@NotNull java.lang.String[]&nbsp;loaderVersionsArrayAscending()</pre>
 <div class="block">Array of available loader versions in ascending order.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
@@ -376,7 +383,8 @@ var activeTableTab = "activeTableTab";
 <ul class="blockList">
 <li class="blockList">
 <h4>loaderVersionsArrayDescending</h4>
-<pre>java.lang.String[]&nbsp;loaderVersionsArrayDescending()</pre>
+<pre>@NotNull
+@NotNull java.lang.String[]&nbsp;loaderVersionsArrayDescending()</pre>
 <div class="block">Array of available loader versions in descending order.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
@@ -390,7 +398,8 @@ var activeTableTab = "activeTableTab";
 <ul class="blockList">
 <li class="blockList">
 <h4>installerVersionsListAscending</h4>
-<pre>java.util.List&lt;java.lang.String&gt;&nbsp;installerVersionsListAscending()</pre>
+<pre>@NotNull
+@NotNull java.util.List&lt;java.lang.String&gt;&nbsp;installerVersionsListAscending()</pre>
 <div class="block">List of available installer version in ascending order.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
@@ -404,7 +413,8 @@ var activeTableTab = "activeTableTab";
 <ul class="blockList">
 <li class="blockList">
 <h4>installerVersionsListDescending</h4>
-<pre>java.util.List&lt;java.lang.String&gt;&nbsp;installerVersionsListDescending()</pre>
+<pre>@NotNull
+@NotNull java.util.List&lt;java.lang.String&gt;&nbsp;installerVersionsListDescending()</pre>
 <div class="block">List of available installer version in descending order.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
@@ -418,7 +428,8 @@ var activeTableTab = "activeTableTab";
 <ul class="blockList">
 <li class="blockList">
 <h4>installerVersionsArrayAscending</h4>
-<pre>java.lang.String[]&nbsp;installerVersionsArrayAscending()</pre>
+<pre>@NotNull
+@NotNull java.lang.String[]&nbsp;installerVersionsArrayAscending()</pre>
 <div class="block">Array of available installer version in ascending order.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
@@ -432,7 +443,8 @@ var activeTableTab = "activeTableTab";
 <ul class="blockList">
 <li class="blockList">
 <h4>installerVersionsArrayDescending</h4>
-<pre>java.lang.String[]&nbsp;installerVersionsArrayDescending()</pre>
+<pre>@NotNull
+@NotNull java.lang.String[]&nbsp;installerVersionsArrayDescending()</pre>
 <div class="block">Array of available installer version in descending order.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
@@ -446,8 +458,9 @@ var activeTableTab = "activeTableTab";
 <ul class="blockList">
 <li class="blockList">
 <h4>latestInstallerUrl</h4>
-<pre>java.net.URL&nbsp;latestInstallerUrl()
-                         throws java.net.MalformedURLException</pre>
+<pre>@NotNull
+@NotNull java.net.URL&nbsp;latestInstallerUrl()
+                                           throws java.net.MalformedURLException</pre>
 <div class="block">Get the URL to the latest installer.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
@@ -463,8 +476,9 @@ var activeTableTab = "activeTableTab";
 <ul class="blockList">
 <li class="blockList">
 <h4>releaseInstallerUrl</h4>
-<pre>java.net.URL&nbsp;releaseInstallerUrl()
-                          throws java.net.MalformedURLException</pre>
+<pre>@NotNull
+@NotNull java.net.URL&nbsp;releaseInstallerUrl()
+                                            throws java.net.MalformedURLException</pre>
 <div class="block">Get the URL to the release installer.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
@@ -496,8 +510,10 @@ var activeTableTab = "activeTableTab";
 <ul class="blockList">
 <li class="blockList">
 <h4>getInstallerUrl</h4>
-<pre>java.util.Optional&lt;java.net.URL&gt;&nbsp;getInstallerUrl(java.lang.String&nbsp;version)
-                                          throws java.net.MalformedURLException</pre>
+<pre>@NotNull
+@NotNull java.util.Optional&lt;java.net.URL&gt;&nbsp;getInstallerUrl(@NotNull
+                                                                   @NotNull java.lang.String&nbsp;version)
+                                                            throws java.net.MalformedURLException</pre>
 <div class="block">Get the URL to the installer for the specified version, wrapped in an Optional.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -515,7 +531,8 @@ var activeTableTab = "activeTableTab";
 <ul class="blockList">
 <li class="blockList">
 <h4>isVersionValid</h4>
-<pre>boolean&nbsp;isVersionValid(java.lang.String&nbsp;version)</pre>
+<pre>boolean&nbsp;isVersionValid(@NotNull
+                       @NotNull java.lang.String&nbsp;version)</pre>
 <div class="block">Check whether the specified version is available/correct/valid.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -531,7 +548,8 @@ var activeTableTab = "activeTableTab";
 <ul class="blockListLast">
 <li class="blockList">
 <h4>isMinecraftSupported</h4>
-<pre>boolean&nbsp;isMinecraftSupported(java.lang.String&nbsp;minecraftVersion)</pre>
+<pre>boolean&nbsp;isMinecraftSupported(@NotNull
+                             @NotNull java.lang.String&nbsp;minecraftVersion)</pre>
 <div class="block">Check whether the given Minecraft version is supported by this modloader.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -568,7 +586,7 @@ var activeTableTab = "activeTableTab";
 </div>
 <div class="subNav">
 <ul class="navList">
-<li><a href="../../../../de/griefed/serverpackcreator/versionmeta/ManifestParser.html" title="class in de.griefed.serverpackcreator.versionmeta"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
+<li><a href="../../../../de/griefed/serverpackcreator/versionmeta/InvalidTypeException.html" title="class in de.griefed.serverpackcreator.versionmeta"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
 <li><a href="../../../../de/griefed/serverpackcreator/versionmeta/Type.html" title="enum in de.griefed.serverpackcreator.versionmeta"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
 </ul>
 <ul class="navList">

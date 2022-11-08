@@ -233,7 +233,8 @@ extends <a href="../../../../de/griefed/serverpackcreator/swing/utilities/JCompo
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/swing/TabServerPackCreatorLog.html#TabServerPackCreatorLog-java.lang.String-">TabServerPackCreatorLog</a></span>(java.lang.String&nbsp;tooltip)</code>
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/swing/TabServerPackCreatorLog.html#TabServerPackCreatorLog-java.lang.String-java.io.File-">TabServerPackCreatorLog</a></span>(java.lang.String&nbsp;tooltip,
+                       java.io.File&nbsp;logsDirectory)</code>
 <div class="block"><strong>Constructor</strong></div>
 </td>
 </tr>
@@ -254,7 +255,7 @@ extends <a href="../../../../de/griefed/serverpackcreator/swing/utilities/JCompo
 </tr>
 <tr id="i0" class="altColor">
 <td class="colFirst"><code>protected void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/swing/TabServerPackCreatorLog.html#createTailer--">createTailer</a></span>()</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/swing/TabServerPackCreatorLog.html#createTailer-java.io.File-">createTailer</a></span>(java.io.File&nbsp;logsDirectory)</code>&nbsp;</td>
 </tr>
 </table>
 <ul class="blockList">
@@ -306,13 +307,14 @@ extends <a href="../../../../de/griefed/serverpackcreator/swing/utilities/JCompo
 <!--   -->
 </a>
 <h3>Constructor Detail</h3>
-<a name="TabServerPackCreatorLog-java.lang.String-">
+<a name="TabServerPackCreatorLog-java.lang.String-java.io.File-">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>TabServerPackCreatorLog</h4>
-<pre>public&nbsp;TabServerPackCreatorLog(java.lang.String&nbsp;tooltip)</pre>
+<pre>public&nbsp;TabServerPackCreatorLog(java.lang.String&nbsp;tooltip,
+                               java.io.File&nbsp;logsDirectory)</pre>
 <div class="block"><strong>Constructor</strong>
 
  <p>Used for Dependency Injection.
@@ -322,6 +324,7 @@ extends <a href="../../../../de/griefed/serverpackcreator/swing/utilities/JCompo
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>tooltip</code> - The tooltip text for this tailer.</dd>
+<dd><code>logsDirectory</code> - The directory in which the logs reside in.</dd>
 </dl>
 </li>
 </ul>
@@ -333,16 +336,16 @@ extends <a href="../../../../de/griefed/serverpackcreator/swing/utilities/JCompo
 <!--   -->
 </a>
 <h3>Method Detail</h3>
-<a name="createTailer--">
+<a name="createTailer-java.io.File-">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>createTailer</h4>
-<pre>protected&nbsp;void&nbsp;createTailer()</pre>
+<pre>protected&nbsp;void&nbsp;createTailer(java.io.File&nbsp;logsDirectory)</pre>
 <dl>
 <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
-<dd><code><a href="../../../../de/griefed/serverpackcreator/swing/utilities/JComponentTailer.html#createTailer--">createTailer</a></code>&nbsp;in class&nbsp;<code><a href="../../../../de/griefed/serverpackcreator/swing/utilities/JComponentTailer.html" title="class in de.griefed.serverpackcreator.swing.utilities">JComponentTailer</a></code></dd>
+<dd><code><a href="../../../../de/griefed/serverpackcreator/swing/utilities/JComponentTailer.html#createTailer-java.io.File-">createTailer</a></code>&nbsp;in class&nbsp;<code><a href="../../../../de/griefed/serverpackcreator/swing/utilities/JComponentTailer.html" title="class in de.griefed.serverpackcreator.swing.utilities">JComponentTailer</a></code></dd>
 </dl>
 </li>
 </ul>

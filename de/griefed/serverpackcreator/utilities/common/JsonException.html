@@ -117,6 +117,7 @@
 <br>
 <pre>public final class <span class="typeNameLabel">JsonException</span>
 extends java.lang.Exception</pre>
+<div class="block">Exceptions thrown if a JSON value could not successfully be parsed.</div>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
 <dd><a href="../../../../../serialized-form.html#de.griefed.serverpackcreator.utilities.common.JsonException">Serialized Form</a></dd>
@@ -139,11 +140,9 @@ extends java.lang.Exception</pre>
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/JsonException.html#JsonException-java.lang.String-">JsonException</a></span>(java.lang.String&nbsp;errorMessage)</code>&nbsp;</td>
-</tr>
-<tr class="rowColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/JsonException.html#JsonException-java.lang.String-java.lang.Throwable-">JsonException</a></span>(java.lang.String&nbsp;errorMessage,
-             java.lang.Throwable&nbsp;error)</code>&nbsp;</td>
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/JsonException.html#JsonException-java.lang.String-">JsonException</a></span>(java.lang.String&nbsp;errorMessage)</code>
+<div class="block">Throw a new exception indicating that the specified JSON value could not be parsed.</div>
+</td>
 </tr>
 </table>
 </li>
@@ -182,16 +181,6 @@ extends java.lang.Exception</pre>
 <!--   -->
 </a>
 <h3>Constructor Detail</h3>
-<a name="JsonException-java.lang.String-java.lang.Throwable-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>JsonException</h4>
-<pre>public&nbsp;JsonException(java.lang.String&nbsp;errorMessage,
-                     java.lang.Throwable&nbsp;error)</pre>
-</li>
-</ul>
 <a name="JsonException-java.lang.String-">
 <!--   -->
 </a>
@@ -199,6 +188,11 @@ extends java.lang.Exception</pre>
 <li class="blockList">
 <h4>JsonException</h4>
 <pre>public&nbsp;JsonException(java.lang.String&nbsp;errorMessage)</pre>
+<div class="block">Throw a new exception indicating that the specified JSON value could not be parsed.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>errorMessage</code> - Message indicating what exactly went wrong.</dd>
+</dl>
 </li>
 </ul>
 </li>

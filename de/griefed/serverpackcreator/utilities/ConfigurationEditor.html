@@ -48,7 +48,7 @@ var activeTableTab = "activeTableTab";
 <div class="subNav">
 <ul class="navList">
 <li>Prev&nbsp;Class</li>
-<li><a href="../../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
+<li><a href="../../../../de/griefed/serverpackcreator/utilities/ReticulatingSplines.html" title="class in de.griefed.serverpackcreator.utilities"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
 </ul>
 <ul class="navList">
 <li><a href="../../../../index.html?de/griefed/serverpackcreator/utilities/ConfigurationEditor.html" target="_top">Frames</a></li>
@@ -129,11 +129,10 @@ extends java.lang.Object</pre>
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/utilities/ConfigurationEditor.html#ConfigurationEditor-de.griefed.serverpackcreator.ConfigurationHandler-de.griefed.serverpackcreator.ApplicationProperties-de.griefed.serverpackcreator.utilities.common.Utilities-de.griefed.serverpackcreator.versionmeta.VersionMeta-de.griefed.serverpackcreator.utilities.ConfigUtilities-">ConfigurationEditor</a></span>(<a href="../../../../de/griefed/serverpackcreator/ConfigurationHandler.html" title="class in de.griefed.serverpackcreator">ConfigurationHandler</a>&nbsp;injectedConfigurationHandler,
-                   <a href="../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;injectedApplicationProperties,
-                   <a href="../../../../de/griefed/serverpackcreator/utilities/common/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.common">Utilities</a>&nbsp;injectedUtilities,
-                   <a href="../../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta">VersionMeta</a>&nbsp;injectedVersionMeta,
-                   <a href="../../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ConfigUtilities</a>&nbsp;injectedConfigUtilities)</code>&nbsp;</td>
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/utilities/ConfigurationEditor.html#ConfigurationEditor-de.griefed.serverpackcreator.ConfigurationHandler-de.griefed.serverpackcreator.ApplicationProperties-de.griefed.serverpackcreator.utilities.common.Utilities-de.griefed.serverpackcreator.versionmeta.VersionMeta-">ConfigurationEditor</a></span>(@NotNull <a href="../../../../de/griefed/serverpackcreator/ConfigurationHandler.html" title="class in de.griefed.serverpackcreator">ConfigurationHandler</a>&nbsp;injectedConfigurationHandler,
+                   @NotNull <a href="../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;injectedApplicationProperties,
+                   @NotNull <a href="../../../../de/griefed/serverpackcreator/utilities/common/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.common">Utilities</a>&nbsp;injectedUtilities,
+                   @NotNull <a href="../../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta">VersionMeta</a>&nbsp;injectedVersionMeta)</code>&nbsp;</td>
 </tr>
 </table>
 </li>
@@ -158,7 +157,7 @@ extends java.lang.Object</pre>
 </tr>
 <tr id="i1" class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/utilities/ConfigurationEditor.html#createConfigurationFile-java.util.Scanner-">createConfigurationFile</a></span>(java.util.Scanner&nbsp;scanner)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/utilities/ConfigurationEditor.html#createConfigurationFile-java.util.Scanner-">createConfigurationFile</a></span>(@NotNull java.util.Scanner&nbsp;scanner)</code>
 <div class="block">Walk the user through the generation of a new ServerPackCreator configuration file by asking
  them for input, step-by-step, regarding their modpack.</div>
 </td>
@@ -185,17 +184,20 @@ extends java.lang.Object</pre>
 <!--   -->
 </a>
 <h3>Constructor Detail</h3>
-<a name="ConfigurationEditor-de.griefed.serverpackcreator.ConfigurationHandler-de.griefed.serverpackcreator.ApplicationProperties-de.griefed.serverpackcreator.utilities.common.Utilities-de.griefed.serverpackcreator.versionmeta.VersionMeta-de.griefed.serverpackcreator.utilities.ConfigUtilities-">
+<a name="ConfigurationEditor-de.griefed.serverpackcreator.ConfigurationHandler-de.griefed.serverpackcreator.ApplicationProperties-de.griefed.serverpackcreator.utilities.common.Utilities-de.griefed.serverpackcreator.versionmeta.VersionMeta-">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>ConfigurationEditor</h4>
-<pre>public&nbsp;ConfigurationEditor(<a href="../../../../de/griefed/serverpackcreator/ConfigurationHandler.html" title="class in de.griefed.serverpackcreator">ConfigurationHandler</a>&nbsp;injectedConfigurationHandler,
-                           <a href="../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;injectedApplicationProperties,
-                           <a href="../../../../de/griefed/serverpackcreator/utilities/common/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.common">Utilities</a>&nbsp;injectedUtilities,
-                           <a href="../../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta">VersionMeta</a>&nbsp;injectedVersionMeta,
-                           <a href="../../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ConfigUtilities</a>&nbsp;injectedConfigUtilities)</pre>
+<pre>public&nbsp;ConfigurationEditor(@NotNull
+                           @NotNull <a href="../../../../de/griefed/serverpackcreator/ConfigurationHandler.html" title="class in de.griefed.serverpackcreator">ConfigurationHandler</a>&nbsp;injectedConfigurationHandler,
+                           @NotNull
+                           @NotNull <a href="../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;injectedApplicationProperties,
+                           @NotNull
+                           @NotNull <a href="../../../../de/griefed/serverpackcreator/utilities/common/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.common">Utilities</a>&nbsp;injectedUtilities,
+                           @NotNull
+                           @NotNull <a href="../../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta">VersionMeta</a>&nbsp;injectedVersionMeta)</pre>
 </li>
 </ul>
 </li>
@@ -222,7 +224,8 @@ extends java.lang.Object</pre>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>createConfigurationFile</h4>
-<pre>public&nbsp;void&nbsp;createConfigurationFile(java.util.Scanner&nbsp;scanner)</pre>
+<pre>public&nbsp;void&nbsp;createConfigurationFile(@NotNull
+                                    @NotNull java.util.Scanner&nbsp;scanner)</pre>
 <div class="block">Walk the user through the generation of a new ServerPackCreator configuration file by asking
  them for input, step-by-step, regarding their modpack. At the end of this method a fully
  configured serverpackcreator.conf file is saved and any previously existing configuration file
@@ -268,7 +271,7 @@ extends java.lang.Object</pre>
 <div class="subNav">
 <ul class="navList">
 <li>Prev&nbsp;Class</li>
-<li><a href="../../../../de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
+<li><a href="../../../../de/griefed/serverpackcreator/utilities/ReticulatingSplines.html" title="class in de.griefed.serverpackcreator.utilities"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
 </ul>
 <ul class="navList">
 <li><a href="../../../../index.html?de/griefed/serverpackcreator/utilities/ConfigurationEditor.html" target="_top">Frames</a></li>

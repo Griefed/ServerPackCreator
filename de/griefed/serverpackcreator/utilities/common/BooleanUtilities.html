@@ -17,8 +17,8 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":42,"i2":10};
-var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"],32:["t6","Deprecated Methods"]};
+var methods = {"i0":10,"i1":10};
+var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
 var tableTab = "tableTab";
@@ -141,28 +141,20 @@ extends java.lang.Object</pre>
 </a>
 <h3>Method Summary</h3>
 <table class="memberSummary" border="0" cellpadding="3" cellspacing="0" summary="Method Summary table, listing methods, and an explanation">
-<caption><span id="t0" class="activeTableTab"><span>All Methods</span><span class="tabEnd">&nbsp;</span></span><span id="t2" class="tableTab"><span><a href="javascript:show(2);">Instance Methods</a></span><span class="tabEnd">&nbsp;</span></span><span id="t4" class="tableTab"><span><a href="javascript:show(8);">Concrete Methods</a></span><span class="tabEnd">&nbsp;</span></span><span id="t6" class="tableTab"><span><a href="javascript:show(32);">Deprecated Methods</a></span><span class="tabEnd">&nbsp;</span></span></caption>
+<caption><span id="t0" class="activeTableTab"><span>All Methods</span><span class="tabEnd">&nbsp;</span></span><span id="t2" class="tableTab"><span><a href="javascript:show(2);">Instance Methods</a></span><span class="tabEnd">&nbsp;</span></span><span id="t4" class="tableTab"><span><a href="javascript:show(8);">Concrete Methods</a></span><span class="tabEnd">&nbsp;</span></span></caption>
 <tr>
 <th class="colFirst" scope="col">Modifier and Type</th>
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr id="i0" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/BooleanUtilities.html#convert-java.lang.String-">convert</a></span>(java.lang.String&nbsp;stringBoolean)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/BooleanUtilities.html#convert-java.lang.String-">convert</a></span>(@NotNull java.lang.String&nbsp;stringBoolean)</code>
 <div class="block">Converts various strings to booleans, by using regex, to allow for more variations in input.</div>
 </td>
 </tr>
 <tr id="i1" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/BooleanUtilities.html#readBoolean--">readBoolean</a></span>()</code>
-<div class="block"><span class="deprecatedLabel">Deprecated.</span>&nbsp;
-<div class="block"><span class="deprecationComment">Will be removed in Milestone 4. Use <a href="../../../../../de/griefed/serverpackcreator/utilities/common/BooleanUtilities.html#readBoolean-java.util.Scanner-"><code>readBoolean(Scanner)</code></a> instead.</span></div>
-</div>
-</td>
-</tr>
-<tr id="i2" class="altColor">
-<td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/BooleanUtilities.html#readBoolean-java.util.Scanner-">readBoolean</a></span>(java.util.Scanner&nbsp;scanner)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/BooleanUtilities.html#readBoolean-java.util.Scanner-">readBoolean</a></span>(@NotNull java.util.Scanner&nbsp;scanner)</code>
 <div class="block">Prompts the user to enter values which will then be converted to booleans, either <code>TRUE </code>
  or <code>FALSE</code>.</div>
 </td>
@@ -195,7 +187,8 @@ extends java.lang.Object</pre>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>BooleanUtilities</h4>
-<pre>public&nbsp;BooleanUtilities()</pre>
+<pre>@Contract(pure=true)
+public&nbsp;BooleanUtilities()</pre>
 </li>
 </ul>
 </li>
@@ -206,13 +199,33 @@ extends java.lang.Object</pre>
 <!--   -->
 </a>
 <h3>Method Detail</h3>
-<a name="convert-java.lang.String-">
+<a name="readBoolean-java.util.Scanner-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
+<h4>readBoolean</h4>
+<pre>public&nbsp;boolean&nbsp;readBoolean(@NotNull
+                           @NotNull java.util.Scanner&nbsp;scanner)</pre>
+<div class="block">Prompts the user to enter values which will then be converted to booleans, either <code>TRUE </code>
+ or <code>FALSE</code>. This prevents any non-boolean values from being written to the new
+ configuration file.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>scanner</code> - Used for reading the users input.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>True or False, depending on user input.</dd>
+</dl>
+</li>
+</ul>
+<a name="convert-java.lang.String-">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
 <h4>convert</h4>
-<pre>public&nbsp;boolean&nbsp;convert(java.lang.String&nbsp;stringBoolean)</pre>
+<pre>public&nbsp;boolean&nbsp;convert(@NotNull
+                       @NotNull java.lang.String&nbsp;stringBoolean)</pre>
 <div class="block">Converts various strings to booleans, by using regex, to allow for more variations in input.
  <br>
  <strong>Converted to <code>TRUE</code> are:<br>
@@ -228,44 +241,8 @@ extends java.lang.Object</pre>
 <dd><code>stringBoolean</code> - The string which should be converted to boolean if it matches certain
                       patterns.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>Boolean. Returns the corresponding boolean if match with pattern was found. If no match
- is found, assume and return false.</dd>
-</dl>
-</li>
-</ul>
-<a name="readBoolean--">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>readBoolean</h4>
-<pre>@Deprecated
-public&nbsp;boolean&nbsp;readBoolean()</pre>
-<div class="block"><span class="deprecatedLabel">Deprecated.</span>&nbsp;<span class="deprecationComment">Will be removed in Milestone 4. Use <a href="../../../../../de/griefed/serverpackcreator/utilities/common/BooleanUtilities.html#readBoolean-java.util.Scanner-"><code>readBoolean(Scanner)</code></a> instead.</span></div>
-<div class="block">Prompts the user to enter values which will then be converted to booleans, either <code>TRUE </code>
- or <code>FALSE</code>. This prevents any non-boolean values from being written to the new
- configuration file.</div>
-<dl>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>Boolean. True or False, depending on user input.</dd>
-</dl>
-</li>
-</ul>
-<a name="readBoolean-java.util.Scanner-">
-<!--   -->
-</a>
-<ul class="blockListLast">
-<li class="blockList">
-<h4>readBoolean</h4>
-<pre>public&nbsp;boolean&nbsp;readBoolean(java.util.Scanner&nbsp;scanner)</pre>
-<div class="block">Prompts the user to enter values which will then be converted to booleans, either <code>TRUE </code>
- or <code>FALSE</code>. This prevents any non-boolean values from being written to the new
- configuration file.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>scanner</code> - Used for reading the users input.</dd>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>Boolean. True or False, depending on user input.</dd>
+<dd>Returns the corresponding boolean if match with pattern was found. If no match is
+ found, assume and return false.</dd>
 </dl>
 </li>
 </ul>

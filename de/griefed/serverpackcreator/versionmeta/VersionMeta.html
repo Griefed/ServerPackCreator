@@ -98,12 +98,7 @@ var activeTableTab = "activeTableTab";
 <li>java.lang.Object</li>
 <li>
 <ul class="inheritance">
-<li><a href="../../../../de/griefed/serverpackcreator/versionmeta/ManifestParser.html" title="class in de.griefed.serverpackcreator.versionmeta">de.griefed.serverpackcreator.versionmeta.ManifestParser</a></li>
-<li>
-<ul class="inheritance">
 <li>de.griefed.serverpackcreator.versionmeta.VersionMeta</li>
-</ul>
-</li>
 </ul>
 </li>
 </ul>
@@ -114,7 +109,7 @@ var activeTableTab = "activeTableTab";
 <br>
 <pre>@Service
 public final class <span class="typeNameLabel">VersionMeta</span>
-extends <a href="../../../../de/griefed/serverpackcreator/versionmeta/ManifestParser.html" title="class in de.griefed.serverpackcreator.versionmeta">ManifestParser</a></pre>
+extends java.lang.Object</pre>
 <div class="block">VersionMeta containing available versions and important details for Minecraft, Fabric and Forge.</div>
 </li>
 </ul>
@@ -134,19 +129,19 @@ extends <a href="../../../../de/griefed/serverpackcreator/versionmeta/ManifestPa
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html#VersionMeta-java.io.File-java.io.File-java.io.File-java.io.File-java.io.File-java.io.File-java.io.File-java.io.File-java.io.File-java.io.File-com.fasterxml.jackson.databind.ObjectMapper-de.griefed.serverpackcreator.utilities.common.Utilities-de.griefed.serverpackcreator.ApplicationProperties-">VersionMeta</a></span>(java.io.File&nbsp;minecraftManifest,
-           java.io.File&nbsp;forgeManifest,
-           java.io.File&nbsp;fabricManifest,
-           java.io.File&nbsp;fabricInstallerManifest,
-           java.io.File&nbsp;fabricIntermediariesManifest,
-           java.io.File&nbsp;quiltManifest,
-           java.io.File&nbsp;quiltInstallerManifest,
-           java.io.File&nbsp;legacyFabricGameManifest,
-           java.io.File&nbsp;legacyFabricLoaderManifest,
-           java.io.File&nbsp;legacyFabricInstallerManifest,
-           com.fasterxml.jackson.databind.ObjectMapper&nbsp;injectedObjectMapper,
-           <a href="../../../../de/griefed/serverpackcreator/utilities/common/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.common">Utilities</a>&nbsp;injectedUtilities,
-           <a href="../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;injectedApplicationProperties)</code>
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html#VersionMeta-java.io.File-java.io.File-java.io.File-java.io.File-java.io.File-java.io.File-java.io.File-java.io.File-java.io.File-java.io.File-com.fasterxml.jackson.databind.ObjectMapper-de.griefed.serverpackcreator.utilities.common.Utilities-de.griefed.serverpackcreator.ApplicationProperties-">VersionMeta</a></span>(@NotNull java.io.File&nbsp;minecraftManifest,
+           @NotNull java.io.File&nbsp;forgeManifest,
+           @NotNull java.io.File&nbsp;fabricManifest,
+           @NotNull java.io.File&nbsp;fabricInstallerManifest,
+           @NotNull java.io.File&nbsp;fabricIntermediariesManifest,
+           @NotNull java.io.File&nbsp;quiltManifest,
+           @NotNull java.io.File&nbsp;quiltInstallerManifest,
+           @NotNull java.io.File&nbsp;legacyFabricGameManifest,
+           @NotNull java.io.File&nbsp;legacyFabricLoaderManifest,
+           @NotNull java.io.File&nbsp;legacyFabricInstallerManifest,
+           @NotNull com.fasterxml.jackson.databind.ObjectMapper&nbsp;injectedObjectMapper,
+           @NotNull <a href="../../../../de/griefed/serverpackcreator/utilities/common/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.common">Utilities</a>&nbsp;injectedUtilities,
+           @NotNull <a href="../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;injectedApplicationProperties)</code>
 <div class="block">Constructor.</div>
 </td>
 </tr>
@@ -166,49 +161,42 @@ extends <a href="../../../../de/griefed/serverpackcreator/versionmeta/ManifestPa
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr id="i0" class="altColor">
-<td class="colFirst"><code><a href="../../../../de/griefed/serverpackcreator/versionmeta/fabric/FabricMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric">FabricMeta</a></code></td>
+<td class="colFirst"><code>@NotNull <a href="../../../../de/griefed/serverpackcreator/versionmeta/fabric/FabricMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric">FabricMeta</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html#fabric--">fabric</a></span>()</code>
 <div class="block">The QuiltMeta-instance for working with Fabric versions and information about them.</div>
 </td>
 </tr>
 <tr id="i1" class="rowColor">
-<td class="colFirst"><code><a href="../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.forge">ForgeMeta</a></code></td>
+<td class="colFirst"><code>@NotNull <a href="../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.forge">ForgeMeta</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html#forge--">forge</a></span>()</code>
 <div class="block">The ForgeMeta-instance for working with Forge versions and information about them.</div>
 </td>
 </tr>
 <tr id="i2" class="altColor">
-<td class="colFirst"><code><a href="../../../../de/griefed/serverpackcreator/versionmeta/legacyfabric/LegacyFabricMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.legacyfabric">LegacyFabricMeta</a></code></td>
+<td class="colFirst"><code>@NotNull <a href="../../../../de/griefed/serverpackcreator/versionmeta/legacyfabric/LegacyFabricMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.legacyfabric">LegacyFabricMeta</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html#legacyFabric--">legacyFabric</a></span>()</code>
 <div class="block">The LegacyFabric-instance for working with Legacy Fabric versions and information about them.</div>
 </td>
 </tr>
 <tr id="i3" class="rowColor">
-<td class="colFirst"><code><a href="../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft">MinecraftMeta</a></code></td>
+<td class="colFirst"><code>@NotNull <a href="../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft">MinecraftMeta</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html#minecraft--">minecraft</a></span>()</code>
 <div class="block">The MinecraftMeta instance for working with Minecraft versions and information about them.</div>
 </td>
 </tr>
 <tr id="i4" class="altColor">
-<td class="colFirst"><code><a href="../../../../de/griefed/serverpackcreator/versionmeta/quilt/QuiltMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.quilt">QuiltMeta</a></code></td>
+<td class="colFirst"><code>@NotNull <a href="../../../../de/griefed/serverpackcreator/versionmeta/quilt/QuiltMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.quilt">QuiltMeta</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html#quilt--">quilt</a></span>()</code>
 <div class="block">The QuiltMeta-instance for working with Quilt versions and information about them.</div>
 </td>
 </tr>
 <tr id="i5" class="rowColor">
-<td class="colFirst"><code><a href="../../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta">VersionMeta</a></code></td>
+<td class="colFirst"><code>@NotNull <a href="../../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta">VersionMeta</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html#update--">update</a></span>()</code>
 <div class="block">Update the Minecraft, Forge and Fabric metas.</div>
 </td>
 </tr>
 </table>
-<ul class="blockList">
-<li class="blockList"><a name="methods.inherited.from.class.de.griefed.serverpackcreator.versionmeta.ManifestParser">
-<!--   -->
-</a>
-<h3>Methods inherited from class&nbsp;de.griefed.serverpackcreator.versionmeta.<a href="../../../../de/griefed/serverpackcreator/versionmeta/ManifestParser.html" title="class in de.griefed.serverpackcreator.versionmeta">ManifestParser</a></h3>
-<code><a href="../../../../de/griefed/serverpackcreator/versionmeta/ManifestParser.html#getJson-java.io.File-com.fasterxml.jackson.databind.ObjectMapper-">getJson</a>, <a href="../../../../de/griefed/serverpackcreator/versionmeta/ManifestParser.html#getJson-java.io.InputStream-com.fasterxml.jackson.databind.ObjectMapper-">getJson</a>, <a href="../../../../de/griefed/serverpackcreator/versionmeta/ManifestParser.html#getJson-java.lang.String-com.fasterxml.jackson.databind.ObjectMapper-">getJson</a>, <a href="../../../../de/griefed/serverpackcreator/versionmeta/ManifestParser.html#getJson-java.net.URL-com.fasterxml.jackson.databind.ObjectMapper-">getJson</a>, <a href="../../../../de/griefed/serverpackcreator/versionmeta/ManifestParser.html#getXml-java.io.File-">getXml</a>, <a href="../../../../de/griefed/serverpackcreator/versionmeta/ManifestParser.html#getXml-java.io.InputStream-">getXml</a>, <a href="../../../../de/griefed/serverpackcreator/versionmeta/ManifestParser.html#getXml-java.lang.String-">getXml</a></code></li>
-</ul>
 <ul class="blockList">
 <li class="blockList"><a name="methods.inherited.from.class.java.lang.Object">
 <!--   -->
@@ -237,19 +225,32 @@ extends <a href="../../../../de/griefed/serverpackcreator/versionmeta/ManifestPa
 <li class="blockList">
 <h4>VersionMeta</h4>
 <pre>@Autowired
-public&nbsp;VersionMeta(java.io.File&nbsp;minecraftManifest,
-                              java.io.File&nbsp;forgeManifest,
-                              java.io.File&nbsp;fabricManifest,
-                              java.io.File&nbsp;fabricInstallerManifest,
-                              java.io.File&nbsp;fabricIntermediariesManifest,
-                              java.io.File&nbsp;quiltManifest,
-                              java.io.File&nbsp;quiltInstallerManifest,
-                              java.io.File&nbsp;legacyFabricGameManifest,
-                              java.io.File&nbsp;legacyFabricLoaderManifest,
-                              java.io.File&nbsp;legacyFabricInstallerManifest,
-                              com.fasterxml.jackson.databind.ObjectMapper&nbsp;injectedObjectMapper,
-                              <a href="../../../../de/griefed/serverpackcreator/utilities/common/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.common">Utilities</a>&nbsp;injectedUtilities,
-                              <a href="../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;injectedApplicationProperties)
+public&nbsp;VersionMeta(@NotNull
+                              @NotNull java.io.File&nbsp;minecraftManifest,
+                              @NotNull
+                              @NotNull java.io.File&nbsp;forgeManifest,
+                              @NotNull
+                              @NotNull java.io.File&nbsp;fabricManifest,
+                              @NotNull
+                              @NotNull java.io.File&nbsp;fabricInstallerManifest,
+                              @NotNull
+                              @NotNull java.io.File&nbsp;fabricIntermediariesManifest,
+                              @NotNull
+                              @NotNull java.io.File&nbsp;quiltManifest,
+                              @NotNull
+                              @NotNull java.io.File&nbsp;quiltInstallerManifest,
+                              @NotNull
+                              @NotNull java.io.File&nbsp;legacyFabricGameManifest,
+                              @NotNull
+                              @NotNull java.io.File&nbsp;legacyFabricLoaderManifest,
+                              @NotNull
+                              @NotNull java.io.File&nbsp;legacyFabricInstallerManifest,
+                              @NotNull
+                              @NotNull com.fasterxml.jackson.databind.ObjectMapper&nbsp;injectedObjectMapper,
+                              @NotNull
+                              @NotNull <a href="../../../../de/griefed/serverpackcreator/utilities/common/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.common">Utilities</a>&nbsp;injectedUtilities,
+                              @NotNull
+                              @NotNull <a href="../../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">ApplicationProperties</a>&nbsp;injectedApplicationProperties)
                        throws java.io.IOException,
                               javax.xml.parsers.ParserConfigurationException,
                               org.xml.sax.SAXException</pre>
@@ -267,7 +268,7 @@ public&nbsp;VersionMeta(java.io.File&nbsp;minecraftManifest,
 <dd><code>legacyFabricGameManifest</code> - Fabric Legacy Game manifest file.</dd>
 <dd><code>legacyFabricLoaderManifest</code> - Fabric Legacy Loader manifest file.</dd>
 <dd><code>legacyFabricInstallerManifest</code> - Fabric Legacy Installer manifest file.</dd>
-<dd><code>injectedUtilities</code> - Instance of commonly used utilities.</dd>
+<dd><code>injectedUtilities</code> - Commonly used utilities across ServerPackCreator.</dd>
 <dd><code>injectedApplicationProperties</code> - ServerPackCreator settings.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code>javax.xml.parsers.ParserConfigurationException</code> - indicates a serious configuration error.</dd>
@@ -290,15 +291,17 @@ public&nbsp;VersionMeta(java.io.File&nbsp;minecraftManifest,
 <ul class="blockList">
 <li class="blockList">
 <h4>update</h4>
-<pre>public&nbsp;<a href="../../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta">VersionMeta</a>&nbsp;update()
-                   throws java.io.IOException,
-                          javax.xml.parsers.ParserConfigurationException,
-                          org.xml.sax.SAXException</pre>
+<pre>@Contract(value=" -&gt; this")
+ @NotNull
+public&nbsp;@NotNull <a href="../../../../de/griefed/serverpackcreator/versionmeta/VersionMeta.html" title="class in de.griefed.serverpackcreator.versionmeta">VersionMeta</a>&nbsp;update()
+                                                                  throws java.io.IOException,
+                                                                         javax.xml.parsers.ParserConfigurationException,
+                                                                         org.xml.sax.SAXException</pre>
 <div class="block">Update the Minecraft, Forge and Fabric metas. Usually called when the manifest files have been
  refreshed.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>The instance of of this version meta, updated.</dd>
+<dd>The instance of this version meta, updated.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code>javax.xml.parsers.ParserConfigurationException</code> - indicates a serious configuration error.</dd>
 <dd><code>java.io.IOException</code> - if any IO errors occur.</dd>
@@ -312,7 +315,9 @@ public&nbsp;VersionMeta(java.io.File&nbsp;minecraftManifest,
 <ul class="blockList">
 <li class="blockList">
 <h4>minecraft</h4>
-<pre>public&nbsp;<a href="../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft">MinecraftMeta</a>&nbsp;minecraft()</pre>
+<pre>@Contract(pure=true)
+ @NotNull
+public&nbsp;@NotNull <a href="../../../../de/griefed/serverpackcreator/versionmeta/minecraft/MinecraftMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.minecraft">MinecraftMeta</a>&nbsp;minecraft()</pre>
 <div class="block">The MinecraftMeta instance for working with Minecraft versions and information about them.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
@@ -326,7 +331,9 @@ public&nbsp;VersionMeta(java.io.File&nbsp;minecraftManifest,
 <ul class="blockList">
 <li class="blockList">
 <h4>fabric</h4>
-<pre>public&nbsp;<a href="../../../../de/griefed/serverpackcreator/versionmeta/fabric/FabricMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric">FabricMeta</a>&nbsp;fabric()</pre>
+<pre>@Contract(pure=true)
+ @NotNull
+public&nbsp;@NotNull <a href="../../../../de/griefed/serverpackcreator/versionmeta/fabric/FabricMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric">FabricMeta</a>&nbsp;fabric()</pre>
 <div class="block">The QuiltMeta-instance for working with Fabric versions and information about them.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
@@ -340,7 +347,9 @@ public&nbsp;VersionMeta(java.io.File&nbsp;minecraftManifest,
 <ul class="blockList">
 <li class="blockList">
 <h4>forge</h4>
-<pre>public&nbsp;<a href="../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.forge">ForgeMeta</a>&nbsp;forge()</pre>
+<pre>@Contract(pure=true)
+ @NotNull
+public&nbsp;@NotNull <a href="../../../../de/griefed/serverpackcreator/versionmeta/forge/ForgeMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.forge">ForgeMeta</a>&nbsp;forge()</pre>
 <div class="block">The ForgeMeta-instance for working with Forge versions and information about them.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
@@ -354,7 +363,9 @@ public&nbsp;VersionMeta(java.io.File&nbsp;minecraftManifest,
 <ul class="blockList">
 <li class="blockList">
 <h4>quilt</h4>
-<pre>public&nbsp;<a href="../../../../de/griefed/serverpackcreator/versionmeta/quilt/QuiltMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.quilt">QuiltMeta</a>&nbsp;quilt()</pre>
+<pre>@Contract(pure=true)
+ @NotNull
+public&nbsp;@NotNull <a href="../../../../de/griefed/serverpackcreator/versionmeta/quilt/QuiltMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.quilt">QuiltMeta</a>&nbsp;quilt()</pre>
 <div class="block">The QuiltMeta-instance for working with Quilt versions and information about them.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
@@ -368,7 +379,9 @@ public&nbsp;VersionMeta(java.io.File&nbsp;minecraftManifest,
 <ul class="blockListLast">
 <li class="blockList">
 <h4>legacyFabric</h4>
-<pre>public&nbsp;<a href="../../../../de/griefed/serverpackcreator/versionmeta/legacyfabric/LegacyFabricMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.legacyfabric">LegacyFabricMeta</a>&nbsp;legacyFabric()</pre>
+<pre>@Contract(pure=true)
+ @NotNull
+public&nbsp;@NotNull <a href="../../../../de/griefed/serverpackcreator/versionmeta/legacyfabric/LegacyFabricMeta.html" title="class in de.griefed.serverpackcreator.versionmeta.legacyfabric">LegacyFabricMeta</a>&nbsp;legacyFabric()</pre>
 <div class="block">The LegacyFabric-instance for working with Legacy Fabric versions and information about them.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>

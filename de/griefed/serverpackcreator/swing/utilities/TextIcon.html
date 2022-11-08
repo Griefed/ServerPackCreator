@@ -346,6 +346,35 @@ implements javax.swing.Icon, java.beans.PropertyChangeListener</pre>
 <!--   -->
 </a>
 <h3>Method Detail</h3>
+<a name="getFont--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getFont</h4>
+<pre>public&nbsp;java.awt.Font&nbsp;getFont()</pre>
+<div class="block">Get the Font used to render the text. This will default to the Font of the component unless the
+ Font has been overridden by using the setFont() method.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>The Font used to render the text</dd>
+</dl>
+</li>
+</ul>
+<a name="setFont-java.awt.Font-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>setFont</h4>
+<pre>public&nbsp;void&nbsp;setFont(java.awt.Font&nbsp;font)</pre>
+<div class="block">Set the Font to be used for rendering the text</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>font</code> - The Font to be used for rendering the text</dd>
+</dl>
+</li>
+</ul>
 <a name="getLayout--">
 <!--   -->
 </a>
@@ -388,32 +417,54 @@ implements javax.swing.Icon, java.beans.PropertyChangeListener</pre>
 </dl>
 </li>
 </ul>
-<a name="getFont--">
+<a name="getPadding--">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>getFont</h4>
-<pre>public&nbsp;java.awt.Font&nbsp;getFont()</pre>
-<div class="block">Get the Font used to render the text. This will default to the Font of the component unless the
- Font has been overridden by using the setFont() method.</div>
+<h4>getPadding</h4>
+<pre>public&nbsp;int&nbsp;getPadding()</pre>
+<div class="block">Get the padding used when rendering the text</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>The Font used to render the text</dd>
+<dd>The padding specified in pixels</dd>
 </dl>
 </li>
 </ul>
-<a name="setFont-java.awt.Font-">
+<a name="setPadding-int-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>setFont</h4>
-<pre>public&nbsp;void&nbsp;setFont(java.awt.Font&nbsp;font)</pre>
-<div class="block">Set the Font to be used for rendering the text</div>
+<h4>setPadding</h4>
+<pre>public&nbsp;void&nbsp;setPadding(int&nbsp;padding)</pre>
+<div class="block">By default, the size of the Icon is based on the size of the rendered text. You can specify
+ some padding to be added to the start and end of the text when it is rendered.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>font</code> - The Font to be used for rendering the text</dd>
+<dd><code>padding</code> - The padding amount in pixels</dd>
+</dl>
+</li>
+</ul>
+<a name="paintIcon-java.awt.Component-java.awt.Graphics-int-int-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>paintIcon</h4>
+<pre>public&nbsp;void&nbsp;paintIcon(java.awt.Component&nbsp;c,
+                      java.awt.Graphics&nbsp;g,
+                      int&nbsp;x,
+                      int&nbsp;y)</pre>
+<div class="block">Paint the icons of this compound icon at the specified location</div>
+<dl>
+<dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
+<dd><code>paintIcon</code>&nbsp;in interface&nbsp;<code>javax.swing.Icon</code></dd>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>c</code> - The component to which the icon is added</dd>
+<dd><code>g</code> - the graphics context</dd>
+<dd><code>x</code> - the X coordinate of the icon's top-left corner</dd>
+<dd><code>y</code> - the Y coordinate of the icon's top-left corner</dd>
 </dl>
 </li>
 </ul>
@@ -447,35 +498,6 @@ implements javax.swing.Icon, java.beans.PropertyChangeListener</pre>
 </dl>
 </li>
 </ul>
-<a name="getPadding--">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>getPadding</h4>
-<pre>public&nbsp;int&nbsp;getPadding()</pre>
-<div class="block">Get the padding used when rendering the text</div>
-<dl>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>The padding specified in pixels</dd>
-</dl>
-</li>
-</ul>
-<a name="setPadding-int-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>setPadding</h4>
-<pre>public&nbsp;void&nbsp;setPadding(int&nbsp;padding)</pre>
-<div class="block">By default, the size of the Icon is based on the size of the rendered text. You can specify
- some padding to be added to the start and end of the text when it is rendered.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>padding</code> - The padding amount in pixels</dd>
-</dl>
-</li>
-</ul>
 <a name="getIconWidth--">
 <!--   -->
 </a>
@@ -505,28 +527,6 @@ implements javax.swing.Icon, java.beans.PropertyChangeListener</pre>
 <dd><code>getIconHeight</code>&nbsp;in interface&nbsp;<code>javax.swing.Icon</code></dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>the height of the icon in pixels.</dd>
-</dl>
-</li>
-</ul>
-<a name="paintIcon-java.awt.Component-java.awt.Graphics-int-int-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>paintIcon</h4>
-<pre>public&nbsp;void&nbsp;paintIcon(java.awt.Component&nbsp;c,
-                      java.awt.Graphics&nbsp;g,
-                      int&nbsp;x,
-                      int&nbsp;y)</pre>
-<div class="block">Paint the icons of this compound icon at the specified location</div>
-<dl>
-<dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
-<dd><code>paintIcon</code>&nbsp;in interface&nbsp;<code>javax.swing.Icon</code></dd>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>c</code> - The component to which the icon is added</dd>
-<dd><code>g</code> - the graphics context</dd>
-<dd><code>x</code> - the X coordinate of the icon's top-left corner</dd>
-<dd><code>y</code> - the Y coordinate of the icon's top-left corner</dd>
 </dl>
 </li>
 </ul>

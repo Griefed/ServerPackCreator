@@ -73,488 +73,6 @@
 <div class="serializedFormContainer">
 <ul class="blockList">
 <li class="blockList">
-<h2 title="Package">Package&nbsp;de.griefed.serverpackcreator</h2>
-<ul class="blockList">
-<li class="blockList"><a name="de.griefed.serverpackcreator.ApplicationProperties">
-<!--   -->
-</a>
-<h3>Class <a href="de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator">de.griefed.serverpackcreator.ApplicationProperties</a> extends java.util.Properties implements Serializable</h3>
-<ul class="blockList">
-<li class="blockList">
-<h3>Serialized Fields</h3>
-<ul class="blockList">
-<li class="blockList">
-<h4>FILE_UTILITIES</h4>
-<pre><a href="de/griefed/serverpackcreator/utilities/common/FileUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">FileUtilities</a> FILE_UTILITIES</pre>
-</li>
-<li class="blockList">
-<h4>SYSTEM_UTILITIES</h4>
-<pre><a href="de/griefed/serverpackcreator/utilities/common/SystemUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">SystemUtilities</a> SYSTEM_UTILITIES</pre>
-</li>
-<li class="blockList">
-<h4>LIST_UTILITIES</h4>
-<pre><a href="de/griefed/serverpackcreator/utilities/common/ListUtilities.html" title="class in de.griefed.serverpackcreator.utilities.common">ListUtilities</a> LIST_UTILITIES</pre>
-</li>
-<li class="blockList">
-<h4>SERVERPACKCREATOR_PROPERTIES</h4>
-<pre>java.lang.String SERVERPACKCREATOR_PROPERTIES</pre>
-<div class="block">Default properties.</div>
-</li>
-<li class="blockList">
-<h4>SERVERPACKCREATOR_PROPERTIES_FILE</h4>
-<pre>java.io.File SERVERPACKCREATOR_PROPERTIES_FILE</pre>
-<div class="block">Default properties file.</div>
-</li>
-<li class="blockList">
-<h4>FALLBACK_MODS_DEFAULT_ASSTRING</h4>
-<pre>java.lang.String FALLBACK_MODS_DEFAULT_ASSTRING</pre>
-<div class="block">Default fallback clientside-only mods.</div>
-</li>
-<li class="blockList">
-<h4>FALLBACK_CLIENTSIDE_MODS</h4>
-<pre>java.util.TreeSet&lt;E&gt; FALLBACK_CLIENTSIDE_MODS</pre>
-<div class="block">Default fallback clientside-only mods list.</div>
-</li>
-<li class="blockList">
-<h4>FALLBACK_MODS</h4>
-<pre>java.util.TreeSet&lt;E&gt; FALLBACK_MODS</pre>
-<div class="block">List of mods which should be excluded from server packs.</div>
-</li>
-<li class="blockList">
-<h4>FALLBACK_MODS_DEFAULT_REGEX_ASSTRING</h4>
-<pre>java.lang.String FALLBACK_MODS_DEFAULT_REGEX_ASSTRING</pre>
-<div class="block">Default fallback clientside-only mods, regex.</div>
-</li>
-<li class="blockList">
-<h4>FALLBACK_REGEX_CLIENTSIDE_MODS</h4>
-<pre>java.util.TreeSet&lt;E&gt; FALLBACK_REGEX_CLIENTSIDE_MODS</pre>
-<div class="block">Default fallback clientside-only mods list, regex.</div>
-</li>
-<li class="blockList">
-<h4>FALLBACK_MODS_REGEX</h4>
-<pre>java.util.TreeSet&lt;E&gt; FALLBACK_MODS_REGEX</pre>
-<div class="block">List of mods which should be excluded from server packs, in regex format.</div>
-</li>
-<li class="blockList">
-<h4>SERVERPACKCREATOR_VERSION</h4>
-<pre>java.lang.String SERVERPACKCREATOR_VERSION</pre>
-<div class="block">ServerPackCreator version.</div>
-</li>
-<li class="blockList">
-<h4>SUPPORTED_MODLOADERS</h4>
-<pre>java.lang.String[] SUPPORTED_MODLOADERS</pre>
-<div class="block">Supported modloaders.</div>
-</li>
-<li class="blockList">
-<h4>FALLBACK_DIRECTORIES_INCLUDE_ASSTRING</h4>
-<pre>java.lang.String FALLBACK_DIRECTORIES_INCLUDE_ASSTRING</pre>
-<div class="block">Default directories to include in the server pack.</div>
-</li>
-<li class="blockList">
-<h4>FALLBACK_DIRECTORIES_INCLUDE</h4>
-<pre>java.util.TreeSet&lt;E&gt; FALLBACK_DIRECTORIES_INCLUDE</pre>
-<div class="block">Default list of directories to include in the server pack.</div>
-</li>
-<li class="blockList">
-<h4>DIRECTORIES_TO_INCLUDE</h4>
-<pre>java.util.TreeSet&lt;E&gt; DIRECTORIES_TO_INCLUDE</pre>
-<div class="block">List of directories which must not be excluded from server packs. Default is mods, config,
- defaultconfigs, scripts, saves, seeds, libraries.</div>
-</li>
-<li class="blockList">
-<h4>FALLBACK_DIRECTORIES_EXCLUDE_ASSTRING</h4>
-<pre>java.lang.String FALLBACK_DIRECTORIES_EXCLUDE_ASSTRING</pre>
-<div class="block">Default directories to exclude from the server pack.</div>
-</li>
-<li class="blockList">
-<h4>FALLBACK_DIRECTORIES_EXCLUDE</h4>
-<pre>java.util.TreeSet&lt;E&gt; FALLBACK_DIRECTORIES_EXCLUDE</pre>
-<div class="block">Default list of directories to exclude from the server pack.</div>
-</li>
-<li class="blockList">
-<h4>DIRECTORIES_TO_EXCLUDE</h4>
-<pre>java.util.TreeSet&lt;E&gt; DIRECTORIES_TO_EXCLUDE</pre>
-<div class="block">List of directories which should be excluded from server packs. Default is overrides, packmenu,
- resourcepacks, server_pack, fancymenu.</div>
-</li>
-<li class="blockList">
-<h4>FALLBACK_FILES_EXCLUDE_ZIP_ASSTRING</h4>
-<pre>java.lang.String FALLBACK_FILES_EXCLUDE_ZIP_ASSTRING</pre>
-<div class="block">Default files to exclude from a server pack ZIP-archive.</div>
-</li>
-<li class="blockList">
-<h4>FALLBACK_FILES_EXCLUDE_ZIP</h4>
-<pre>java.util.TreeSet&lt;E&gt; FALLBACK_FILES_EXCLUDE_ZIP</pre>
-<div class="block">Default list of files to exclude from a server pack ZIP-archive.</div>
-</li>
-<li class="blockList">
-<h4>FILES_TO_EXCLUDE_FROM_ZIP</h4>
-<pre>java.util.TreeSet&lt;E&gt; FILES_TO_EXCLUDE_FROM_ZIP</pre>
-<div class="block">List of files to be excluded from ZIP-archives.</div>
-</li>
-<li class="blockList">
-<h4>DEFAULT_SHELL_TEMPLATE</h4>
-<pre>java.lang.String DEFAULT_SHELL_TEMPLATE</pre>
-<div class="block">Default shell-script template.</div>
-</li>
-<li class="blockList">
-<h4>DEFAULT_POWERSHELL_TEMPLATE</h4>
-<pre>java.lang.String DEFAULT_POWERSHELL_TEMPLATE</pre>
-<div class="block">Default PowerShell script template.</div>
-</li>
-<li class="blockList">
-<h4>FALLBACK_SCRIPT_TEMPLATES_ASSTRING</h4>
-<pre>java.lang.String FALLBACK_SCRIPT_TEMPLATES_ASSTRING</pre>
-<div class="block">Default script templates list as string.</div>
-</li>
-<li class="blockList">
-<h4>FALLBACK_SCRIPT_TEMPLATES</h4>
-<pre>java.util.TreeSet&lt;E&gt; FALLBACK_SCRIPT_TEMPLATES</pre>
-<div class="block">Default list of script templates in the server_files-directory.</div>
-</li>
-<li class="blockList">
-<h4>SCRIPT_TEMPLATES</h4>
-<pre>java.util.TreeSet&lt;E&gt; SCRIPT_TEMPLATES</pre>
-<div class="block">List of templates used for start-script creation.</div>
-</li>
-<li class="blockList">
-<h4>DEFAULT_CONFIG</h4>
-<pre>java.io.File DEFAULT_CONFIG</pre>
-<div class="block">Default configuration file from which to load a server pack configuration.</div>
-</li>
-<li class="blockList">
-<h4>DEFAULT_SERVER_PROPERTIES</h4>
-<pre>java.io.File DEFAULT_SERVER_PROPERTIES</pre>
-<div class="block">Default properties file for a Minecraft server.</div>
-</li>
-<li class="blockList">
-<h4>DEFAULT_SERVER_ICON</h4>
-<pre>java.io.File DEFAULT_SERVER_ICON</pre>
-<div class="block">Default server-icon for a Minecraft server.</div>
-</li>
-<li class="blockList">
-<h4>MINECRAFT_VERSION_MANIFEST</h4>
-<pre>java.io.File MINECRAFT_VERSION_MANIFEST</pre>
-<div class="block">Minecraft version manifest file.</div>
-</li>
-<li class="blockList">
-<h4>FORGE_VERSION_MANIFEST</h4>
-<pre>java.io.File FORGE_VERSION_MANIFEST</pre>
-<div class="block">Forge version manifest file.</div>
-</li>
-<li class="blockList">
-<h4>FABRIC_VERSION_MANIFEST</h4>
-<pre>java.io.File FABRIC_VERSION_MANIFEST</pre>
-<div class="block">Fabric version manifest file.</div>
-</li>
-<li class="blockList">
-<h4>FABRIC_INTERMEDIARIES_MANIFEST</h4>
-<pre>java.io.File FABRIC_INTERMEDIARIES_MANIFEST</pre>
-</li>
-<li class="blockList">
-<h4>MANIFEST_LOCATION</h4>
-<pre>java.lang.String MANIFEST_LOCATION</pre>
-<div class="block">Storage location of manifests used by the VersionMeta.</div>
-</li>
-<li class="blockList">
-<h4>MINECRAFT_SERVER_MANIFESTS_LOCATION</h4>
-<pre>java.lang.String MINECRAFT_SERVER_MANIFESTS_LOCATION</pre>
-</li>
-<li class="blockList">
-<h4>FABRIC_INTERMEDIARIES_MANIFEST_LOCATION</h4>
-<pre>java.io.File FABRIC_INTERMEDIARIES_MANIFEST_LOCATION</pre>
-<div class="block">Fabric intermediaries manifest file.</div>
-</li>
-<li class="blockList">
-<h4>FABRIC_INSTALLER_VERSION_MANIFEST</h4>
-<pre>java.io.File FABRIC_INSTALLER_VERSION_MANIFEST</pre>
-<div class="block">Fabric installer version manifest file.</div>
-</li>
-<li class="blockList">
-<h4>QUILT_VERSION_MANIFEST</h4>
-<pre>java.io.File QUILT_VERSION_MANIFEST</pre>
-<div class="block">Quilt version manifest file.</div>
-</li>
-<li class="blockList">
-<h4>QUILT_INSTALLER_VERSION_MANIFEST</h4>
-<pre>java.io.File QUILT_INSTALLER_VERSION_MANIFEST</pre>
-<div class="block">Quilt installer version manifest file.</div>
-</li>
-<li class="blockList">
-<h4>SERVERPACKCREATOR_DATABASE</h4>
-<pre>java.io.File SERVERPACKCREATOR_DATABASE</pre>
-<div class="block">ServerPackCreator webservice database file.</div>
-</li>
-<li class="blockList">
-<h4>MINECRAFT_VERSION_MANIFEST_LOCATION</h4>
-<pre>java.io.File MINECRAFT_VERSION_MANIFEST_LOCATION</pre>
-<div class="block">Storage location for Minecraft version manifest file.</div>
-</li>
-<li class="blockList">
-<h4>FORGE_VERSION_MANIFEST_LOCATION</h4>
-<pre>java.io.File FORGE_VERSION_MANIFEST_LOCATION</pre>
-<div class="block">Storage location for Forge version manifest file.</div>
-</li>
-<li class="blockList">
-<h4>FABRIC_VERSION_MANIFEST_LOCATION</h4>
-<pre>java.io.File FABRIC_VERSION_MANIFEST_LOCATION</pre>
-<div class="block">Storage location for Fabric version manifest file.</div>
-</li>
-<li class="blockList">
-<h4>LEGACY_FABRIC_GAME_MANIFEST</h4>
-<pre>java.io.File LEGACY_FABRIC_GAME_MANIFEST</pre>
-<div class="block">Legacy Fabric Game version manifest file.</div>
-</li>
-<li class="blockList">
-<h4>LEGACY_FABRIC_LOADER_MANIFEST</h4>
-<pre>java.io.File LEGACY_FABRIC_LOADER_MANIFEST</pre>
-<div class="block">Legacy Fabric Loader version manifest file.</div>
-</li>
-<li class="blockList">
-<h4>LEGACY_FABRIC_INSTALLER_MANIFEST</h4>
-<pre>java.io.File LEGACY_FABRIC_INSTALLER_MANIFEST</pre>
-<div class="block">Legacy Fabric Installer version manifest file.</div>
-</li>
-<li class="blockList">
-<h4>LEGACY_FABRIC_GAME_MANIFEST_LOCATION</h4>
-<pre>java.io.File LEGACY_FABRIC_GAME_MANIFEST_LOCATION</pre>
-<div class="block">Storage location for Legacy Fabric Game version manifest file.</div>
-</li>
-<li class="blockList">
-<h4>LEGACY_FABRIC_LOADER_MANIFEST_LOCATION</h4>
-<pre>java.io.File LEGACY_FABRIC_LOADER_MANIFEST_LOCATION</pre>
-<div class="block">Storage location for Legacy Fabric Loader version manifest file.</div>
-</li>
-<li class="blockList">
-<h4>LEGACY_FABRIC_INSTALLER_MANIFEST_LOCATION</h4>
-<pre>java.io.File LEGACY_FABRIC_INSTALLER_MANIFEST_LOCATION</pre>
-<div class="block">Storage location for Legacy Fabric Installer version manifest file.</div>
-</li>
-<li class="blockList">
-<h4>FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION</h4>
-<pre>java.io.File FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION</pre>
-<div class="block">Storage location for Fabric installer version manifest file.</div>
-</li>
-<li class="blockList">
-<h4>QUILT_VERSION_MANIFEST_LOCATION</h4>
-<pre>java.io.File QUILT_VERSION_MANIFEST_LOCATION</pre>
-<div class="block">Storage location for Quilt version manifest file.</div>
-</li>
-<li class="blockList">
-<h4>QUILT_INSTALLER_VERSION_MANIFEST_LOCATION</h4>
-<pre>java.io.File QUILT_INSTALLER_VERSION_MANIFEST_LOCATION</pre>
-<div class="block">Storage location for Quilt installer version manifest file.</div>
-</li>
-<li class="blockList">
-<h4>AIKARS_FLAGS</h4>
-<pre>java.lang.String AIKARS_FLAGS</pre>
-<div class="block">Default Aikars flags.</div>
-</li>
-<li class="blockList">
-<h4>JAVA_PATHS</h4>
-<pre>java.util.HashMap&lt;K,V&gt; JAVA_PATHS</pre>
-<div class="block">Map containing any Java paths from properties with the format
- <code>de.griefed.serverpackcreator.script.javaN</code> where N is the version of the Java
- installation.</div>
-</li>
-<li class="blockList">
-<h4>PROPERTY_VERSIONCHECK_PRERELEASE</h4>
-<pre>java.lang.String PROPERTY_VERSIONCHECK_PRERELEASE</pre>
-</li>
-<li class="blockList">
-<h4>PROPERTY_LANGUAGE</h4>
-<pre>java.lang.String PROPERTY_LANGUAGE</pre>
-</li>
-<li class="blockList">
-<h4>PROPERTY_CONFIGURATION_FALLBACKMODSLIST</h4>
-<pre>java.lang.String PROPERTY_CONFIGURATION_FALLBACKMODSLIST</pre>
-</li>
-<li class="blockList">
-<h4>PROPERTY_CONFIGURATION_FALLBACKMODSLIST_REGEX</h4>
-<pre>java.lang.String PROPERTY_CONFIGURATION_FALLBACKMODSLIST_REGEX</pre>
-</li>
-<li class="blockList">
-<h4>PROPERTY_CONFIGURATION_HASTEBINSERVER</h4>
-<pre>java.lang.String PROPERTY_CONFIGURATION_HASTEBINSERVER</pre>
-</li>
-<li class="blockList">
-<h4>PROPERTY_CONFIGURATION_AIKAR</h4>
-<pre>java.lang.String PROPERTY_CONFIGURATION_AIKAR</pre>
-</li>
-<li class="blockList">
-<h4>PROPERTY_SERVERPACK_AUTODISCOVERY_ENABLED</h4>
-<pre>java.lang.String PROPERTY_SERVERPACK_AUTODISCOVERY_ENABLED</pre>
-</li>
-<li class="blockList">
-<h4>PROPERTY_SERVERPACK_AUTODISCOVERY_ENABLED_LEGACY</h4>
-<pre>java.lang.String PROPERTY_SERVERPACK_AUTODISCOVERY_ENABLED_LEGACY</pre>
-</li>
-<li class="blockList">
-<h4>PROPERTY_GUI_DARKMODE</h4>
-<pre>java.lang.String PROPERTY_GUI_DARKMODE</pre>
-</li>
-<li class="blockList">
-<h4>PROPERTY_CONFIGURATION_DIRECTORIES_SERVERPACKS</h4>
-<pre>java.lang.String PROPERTY_CONFIGURATION_DIRECTORIES_SERVERPACKS</pre>
-</li>
-<li class="blockList">
-<h4>PROPERTY_SERVERPACK_CLEANUP_ENABLED</h4>
-<pre>java.lang.String PROPERTY_SERVERPACK_CLEANUP_ENABLED</pre>
-</li>
-<li class="blockList">
-<h4>PROPERTY_SERVERPACK_OVERWRITE_ENABLED</h4>
-<pre>java.lang.String PROPERTY_SERVERPACK_OVERWRITE_ENABLED</pre>
-</li>
-<li class="blockList">
-<h4>PROPERTY_CONFIGURATION_DIRECTORIES_SHOULDEXCLUDE</h4>
-<pre>java.lang.String PROPERTY_CONFIGURATION_DIRECTORIES_SHOULDEXCLUDE</pre>
-</li>
-<li class="blockList">
-<h4>PROPERTY_SPRING_SCHEDULES_DATABASE_CLEANUP</h4>
-<pre>java.lang.String PROPERTY_SPRING_SCHEDULES_DATABASE_CLEANUP</pre>
-</li>
-<li class="blockList">
-<h4>PROPERTY_SPRING_SCHEDULES_FILES_CLEANUP</h4>
-<pre>java.lang.String PROPERTY_SPRING_SCHEDULES_FILES_CLEANUP</pre>
-</li>
-<li class="blockList">
-<h4>PROPERTY_SPRING_SCHEDULES_VERSIONS_REFRESH</h4>
-<pre>java.lang.String PROPERTY_SPRING_SCHEDULES_VERSIONS_REFRESH</pre>
-</li>
-<li class="blockList">
-<h4>PROPERTY_SPRING_ARTEMIS_QUEUE_MAX_DISK_USAGE</h4>
-<pre>java.lang.String PROPERTY_SPRING_ARTEMIS_QUEUE_MAX_DISK_USAGE</pre>
-</li>
-<li class="blockList">
-<h4>PROPERTY_CONFIGURATION_SAVELOADEDCONFIG</h4>
-<pre>java.lang.String PROPERTY_CONFIGURATION_SAVELOADEDCONFIG</pre>
-</li>
-<li class="blockList">
-<h4>PROPERTY_CONFIGURATION_DIRECTORIES_MUSTINCLUDE</h4>
-<pre>java.lang.String PROPERTY_CONFIGURATION_DIRECTORIES_MUSTINCLUDE</pre>
-</li>
-<li class="blockList">
-<h4>PROPERTY_SERVERPACK_ZIP_EXCLUDE</h4>
-<pre>java.lang.String PROPERTY_SERVERPACK_ZIP_EXCLUDE</pre>
-</li>
-<li class="blockList">
-<h4>PROPERTY_SERVERPACK_ZIP_EXCLUDE_ENABLED</h4>
-<pre>java.lang.String PROPERTY_SERVERPACK_ZIP_EXCLUDE_ENABLED</pre>
-</li>
-<li class="blockList">
-<h4>PROPERTY_SERVERPACK_SCRIPT_TEMPLATE</h4>
-<pre>java.lang.String PROPERTY_SERVERPACK_SCRIPT_TEMPLATE</pre>
-</li>
-<li class="blockList">
-<h4>PROPERTY_MINECRAFT_SNAPSHOTS</h4>
-<pre>java.lang.String PROPERTY_MINECRAFT_SNAPSHOTS</pre>
-</li>
-<li class="blockList">
-<h4>PROPERTY_SERVERPACK_AUTODISCOVERY_FILTER</h4>
-<pre>java.lang.String PROPERTY_SERVERPACK_AUTODISCOVERY_FILTER</pre>
-</li>
-<li class="blockList">
-<h4>PROPERTY_JAVA</h4>
-<pre>java.lang.String PROPERTY_JAVA</pre>
-</li>
-<li class="blockList">
-<h4>PROPERTY_SCRIPT_JAVA</h4>
-<pre>java.lang.String PROPERTY_SCRIPT_JAVA</pre>
-</li>
-<li class="blockList">
-<h4>PROPERTY_SCRIPT_JAVA_AUTOUPDATE</h4>
-<pre>java.lang.String PROPERTY_SCRIPT_JAVA_AUTOUPDATE</pre>
-</li>
-<li class="blockList">
-<h4>directoryServerPacks</h4>
-<pre>java.lang.String directoryServerPacks</pre>
-<div class="block">The directory in which server packs will be generated and stored in, as well as server pack
- ZIP-archives. Default is ./server-packs</div>
-</li>
-<li class="blockList">
-<h4>queueMaxDiskUsage</h4>
-<pre>int queueMaxDiskUsage</pre>
-<div class="block">When running as a webservice: Maximum disk usage in % at which JMS/Artemis will stop storing
- message in the queue saved on disk. Default is 90%.</div>
-</li>
-<li class="blockList">
-<h4>saveLoadedConfiguration</h4>
-<pre>boolean saveLoadedConfiguration</pre>
-<div class="block">Whether the manually loaded configuration file should be saved as well as the default
- serverpackcreator.conf. Setting this to true will make ServerPackCreator save
- serverpackcreator.conf as well as the last loaded configuration-file. Default is false.</div>
-</li>
-<li class="blockList">
-<h4>checkForPreReleases</h4>
-<pre>boolean checkForPreReleases</pre>
-<div class="block">Whether ServerPackCreator should check for available PreReleases. Set to <code>true</code> to get
- notified about available PreReleases. Set to <code>false</code> if you only want stable releases.</div>
-</li>
-<li class="blockList">
-<h4>aikarsFlags</h4>
-<pre>java.lang.String aikarsFlags</pre>
-<div class="block">Aikars flags recommended for running a Minecraft server, from <a
- href=https://aikar.co/mcflags.html>aikar.co</a></div>
-</li>
-<li class="blockList">
-<h4>isZipFileExclusionEnabled</h4>
-<pre>boolean isZipFileExclusionEnabled</pre>
-<div class="block">Whether the exclusion of files from the server pack is enabled.</div>
-</li>
-<li class="blockList">
-<h4>autoExcludingModsEnabled</h4>
-<pre>boolean autoExcludingModsEnabled</pre>
-<div class="block">Whether clientside-only mods should automatically be excluded *</div>
-</li>
-<li class="blockList">
-<h4>serverPacksOverwriteEnabled</h4>
-<pre>boolean serverPacksOverwriteEnabled</pre>
-<div class="block">Whether overwriting of already existing server packs is enabled</div>
-</li>
-<li class="blockList">
-<h4>serverPackCleanupEnabled</h4>
-<pre>boolean serverPackCleanupEnabled</pre>
-<div class="block">Whether cleanup procedures of server packs after generation are enabled. See
- <code>ServerPackHandler#cleanUpServerPack(...)</code> for details.</div>
-</li>
-<li class="blockList">
-<h4>language</h4>
-<pre>java.lang.String language</pre>
-<div class="block">The language currently being used.</div>
-</li>
-<li class="blockList">
-<h4>hasteBinServerUrl</h4>
-<pre>java.lang.String hasteBinServerUrl</pre>
-<div class="block">URL to the hastebin server documents endpoint.</div>
-</li>
-<li class="blockList">
-<h4>minecraftPreReleases</h4>
-<pre>boolean minecraftPreReleases</pre>
-<div class="block">Whether pre-releases and snapshots should be available to the user.</div>
-</li>
-<li class="blockList">
-<h4>exclusionFilter</h4>
-<pre><a href="de/griefed/serverpackcreator/ApplicationProperties.ExclusionFilter.html" title="enum in de.griefed.serverpackcreator">ApplicationProperties.ExclusionFilter</a> exclusionFilter</pre>
-<div class="block">In which way user-specified clientside-only mods should be excluded.</div>
-</li>
-<li class="blockList">
-<h4>javaPath</h4>
-<pre>java.lang.String javaPath</pre>
-<div class="block">The path to a viable Java executable or binary for use in modloader server installation.</div>
-</li>
-<li class="blockListLast">
-<h4>javaScriptAutoupdate</h4>
-<pre>boolean javaScriptAutoupdate</pre>
-<div class="block">Whether to automatically update the <code>SPC_JAVA_SPC</code>-placeholder in the script variables
- table with a Java path matching the required Java version for the Minecraft server.</div>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="blockList">
 <h2 title="Package">Package&nbsp;de.griefed.serverpackcreator.addons.swinggui</h2>
 <ul class="blockList">
 <li class="blockList"><a name="de.griefed.serverpackcreator.addons.swinggui.ExtensionConfigPanel">
@@ -836,8 +354,16 @@
 <pre>javax.swing.ImageIcon ISSUE_ICON</pre>
 </li>
 <li class="blockList">
+<h4>INFO_ICON</h4>
+<pre>javax.swing.ImageIcon INFO_ICON</pre>
+</li>
+<li class="blockList">
 <h4>DIMENSION_WINDOW</h4>
 <pre>java.awt.Dimension DIMENSION_WINDOW</pre>
+</li>
+<li class="blockList">
+<h4>DIMENSION_MIGRATION</h4>
+<pre>java.awt.Dimension DIMENSION_MIGRATION</pre>
 </li>
 <li class="blockList">
 <h4>I18N</h4>
@@ -879,9 +405,17 @@
 <h4>TABBEDPANE</h4>
 <pre>javax.swing.JTabbedPane TABBEDPANE</pre>
 </li>
-<li class="blockListLast">
+<li class="blockList">
 <h4>MENUBAR</h4>
 <pre><a href="de/griefed/serverpackcreator/swing/MainMenuBar.html" title="class in de.griefed.serverpackcreator.swing">MainMenuBar</a> MENUBAR</pre>
+</li>
+<li class="blockList">
+<h4>MIGRATION_MESSAGE</h4>
+<pre>java.lang.String MIGRATION_MESSAGE</pre>
+</li>
+<li class="blockListLast">
+<h4>MIGRATIONS_MADE</h4>
+<pre>boolean MIGRATIONS_MADE</pre>
 </li>
 </ul>
 </li>
@@ -923,10 +457,6 @@
 <li class="blockList">
 <h4>UTILITIES</h4>
 <pre><a href="de/griefed/serverpackcreator/utilities/common/Utilities.html" title="class in de.griefed.serverpackcreator.utilities.common">Utilities</a> UTILITIES</pre>
-</li>
-<li class="blockList">
-<h4>CONFIG_UTILITIES</h4>
-<pre><a href="de/griefed/serverpackcreator/utilities/ConfigUtilities.html" title="class in de.griefed.serverpackcreator.utilities">ConfigUtilities</a> CONFIG_UTILITIES</pre>
 </li>
 <li class="blockList">
 <h4>APPLICATIONPROPERTIES</h4>
@@ -1103,10 +633,6 @@
 <li class="blockList">
 <h4>TEXTFIELD_SERVERPROPERTIESPATH</h4>
 <pre><a href="de/griefed/serverpackcreator/swing/utilities/IconTextField.html" title="class in de.griefed.serverpackcreator.swing.utilities">IconTextField</a> TEXTFIELD_SERVERPROPERTIESPATH</pre>
-</li>
-<li class="blockList">
-<h4>DIRECTORY_CHOOSER</h4>
-<pre>java.io.File DIRECTORY_CHOOSER</pre>
 </li>
 <li class="blockList">
 <h4>CONFIG_PANELS</h4>

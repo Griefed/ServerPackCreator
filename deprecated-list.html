@@ -70,68 +70,6 @@
 <div class="header">
 <h1 title="Deprecated API" class="title">Deprecated API</h1>
 <h2 title="Contents">Contents</h2>
-<ul>
-<li><a href="#method">Deprecated Methods</a></li>
-</ul>
-</div>
-<div class="contentContainer"><a name="method">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<table class="deprecatedSummary" border="0" cellpadding="3" cellspacing="0" summary="Deprecated Methods table, listing deprecated methods, and an explanation">
-<caption><span>Deprecated Methods</span><span class="tabEnd">&nbsp;</span></caption>
-<tr>
-<th class="colOne" scope="col">Method and Description</th>
-</tr>
-<tbody>
-<tr class="altColor">
-<td class="colOne"><a href="de/griefed/serverpackcreator/utilities/ConfigUtilities.html#checkCurseForgeJsonForFabric-com.fasterxml.jackson.databind.JsonNode-">de.griefed.serverpackcreator.utilities.ConfigUtilities.checkCurseForgeJsonForFabric(JsonNode)</a>
-<div class="block"><span class="deprecationComment">Regular checks in
- <a href="de/griefed/serverpackcreator/utilities/ConfigUtilities.html#updateConfigModelFromCurseManifest-de.griefed.serverpackcreator.ConfigurationModel-java.io.File-"><code>ConfigUtilities.updateConfigModelFromCurseManifest(ConfigurationModel, File)</code></a> detect Fabric and the
- version. Iterating through the mods list is no longer necessary.</span></div>
-</td>
-</tr>
-<tr class="rowColor">
-<td class="colOne"><a href="de/griefed/serverpackcreator/ConfigurationHandler.html#checkJavaPath-java.lang.String-">de.griefed.serverpackcreator.ConfigurationHandler.checkJavaPath(String)</a>
-<div class="block"><span class="deprecationComment">Will be removed in Milestone 4. Java path settings have moved to the global
- ApplicationProperties, because the Java path setting is used for modloader installation by
- ServerPackCreator only.</span></div>
-</td>
-</tr>
-<tr class="altColor">
-<td class="colOne"><a href="de/griefed/serverpackcreator/ConfigurationHandler.html#getJavaPath-java.lang.String-">de.griefed.serverpackcreator.ConfigurationHandler.getJavaPath(String)</a>
-<div class="block"><span class="deprecationComment">Will be removed in Milestone 4. Java path settings have moved to the global
- ApplicationProperties, because the Java path setting is used for modloader installation by
- ServerPackCreator only.</span></div>
-</td>
-</tr>
-<tr class="rowColor">
-<td class="colOne"><a href="de/griefed/serverpackcreator/utilities/common/BooleanUtilities.html#readBoolean--">de.griefed.serverpackcreator.utilities.common.BooleanUtilities.readBoolean()</a>
-<div class="block"><span class="deprecationComment">Will be removed in Milestone 4. Use <a href="de/griefed/serverpackcreator/utilities/common/BooleanUtilities.html#readBoolean-java.util.Scanner-"><code>BooleanUtilities.readBoolean(Scanner)</code></a> instead.</span></div>
-</td>
-</tr>
-<tr class="altColor">
-<td class="colOne"><a href="de/griefed/serverpackcreator/ConfigurationHandler.html#testJava-java.lang.String-">de.griefed.serverpackcreator.ConfigurationHandler.testJava(String)</a>
-<div class="block"><span class="deprecationComment">Will be removed in Milestone 4. Java path settings have moved to the global
- ApplicationProperties, because the Java path setting is used for modloader installation by
- ServerPackCreator only.</span></div>
-</td>
-</tr>
-<tr class="rowColor">
-<td class="colOne"><a href="de/griefed/serverpackcreator/utilities/ConfigUtilities.html#writeConfigToFile-de.griefed.serverpackcreator.ConfigurationModel-java.io.File-">de.griefed.serverpackcreator.utilities.ConfigUtilities.writeConfigToFile(ConfigurationModel, File)</a>
-<div class="block"><span class="deprecationComment">Use <a href="de/griefed/serverpackcreator/ConfigurationModel.html#save-java.io.File-"><code>ConfigurationModel.save(File)</code></a> instead.</span></div>
-</td>
-</tr>
-<tr class="altColor">
-<td class="colOne"><a href="de/griefed/serverpackcreator/utilities/ConfigUtilities.html#writeConfigToFile-java.lang.String-java.util.List-java.util.List-java.lang.String-java.lang.String-boolean-java.lang.String-java.lang.String-java.lang.String-boolean-boolean-boolean-java.lang.String-java.lang.String-java.io.File-">de.griefed.serverpackcreator.utilities.ConfigUtilities.writeConfigToFile(String, List&lt;String&gt;, List&lt;String&gt;, String, String, boolean, String, String, String, boolean, boolean, boolean, String, String, File)</a>
-<div class="block"><span class="deprecationComment">Use <a href="de/griefed/serverpackcreator/ConfigurationModel.html#save-java.io.File-"><code>ConfigurationModel.save(File)</code></a> instead.</span></div>
-</td>
-</tr>
-</tbody>
-</table>
-</li>
-</ul>
 </div>
 <!-- ======= START OF BOTTOM NAVBAR ====== -->
 <div class="bottomNav"><a name="navbar.bottom">

@@ -119,6 +119,22 @@ var activeTableTab = "activeTableTab";
 <pre>public abstract class <span class="typeNameLabel">ServerPackCreatorAddon</span>
 extends org.pf4j.Plugin
 implements <a href="../../../../de/griefed/serverpackcreator/addons/BaseInformation.html" title="interface in de.griefed.serverpackcreator.addons">BaseInformation</a></pre>
+<div class="block">A ServerPackCreator addon provides additional functionality to ServerPackCreator via any of
+ <ul>
+   <li><a href="../../../../de/griefed/serverpackcreator/addons/configurationhandler/ConfigCheckExtension.html" title="interface in de.griefed.serverpackcreator.addons.configurationhandler"><code>ConfigCheckExtension</code></a></li>
+   <li><a href="../../../../de/griefed/serverpackcreator/addons/serverpackhandler/PostGenExtension.html" title="interface in de.griefed.serverpackcreator.addons.serverpackhandler"><code>PostGenExtension</code></a></li>
+   <li><a href="../../../../de/griefed/serverpackcreator/addons/serverpackhandler/PreGenExtension.html" title="interface in de.griefed.serverpackcreator.addons.serverpackhandler"><code>PreGenExtension</code></a></li>
+   <li><a href="../../../../de/griefed/serverpackcreator/addons/serverpackhandler/PreZipExtension.html" title="interface in de.griefed.serverpackcreator.addons.serverpackhandler"><code>PreZipExtension</code></a></li>
+   <li><a href="../../../../de/griefed/serverpackcreator/addons/swinggui/ConfigPanelExtension.html" title="interface in de.griefed.serverpackcreator.addons.swinggui"><code>ConfigPanelExtension</code></a></li>
+   <li><a href="../../../../de/griefed/serverpackcreator/addons/swinggui/TabExtension.html" title="interface in de.griefed.serverpackcreator.addons.swinggui"><code>TabExtension</code></a></li>
+ </ul>
+ and
+ <ul>
+   <li><a href="../../../../de/griefed/serverpackcreator/addons/swinggui/ExtensionConfigPanel.html" title="class in de.griefed.serverpackcreator.addons.swinggui"><code>ExtensionConfigPanel</code></a></li>
+   <li><a href="../../../../de/griefed/serverpackcreator/addons/swinggui/ExtensionTab.html" title="class in de.griefed.serverpackcreator.addons.swinggui"><code>ExtensionTab</code></a></li>
+ </ul>
+ <p>
+ For details on pf4j, the library used to realize the addon-functionality in ServerPackCreator, visit <a href="https://pf4j.org">pf4j.org</a></div>
 </li>
 </ul>
 </div>
@@ -163,7 +179,10 @@ implements <a href="../../../../de/griefed/serverpackcreator/addons/BaseInformat
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/addons/ServerPackCreatorAddon.html#ServerPackCreatorAddon-org.pf4j.PluginWrapper-">ServerPackCreatorAddon</a></span>(org.pf4j.PluginWrapper&nbsp;wrapper)</code>&nbsp;</td>
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/addons/ServerPackCreatorAddon.html#ServerPackCreatorAddon-org.pf4j.PluginWrapper-">ServerPackCreatorAddon</a></span>(@NotNull org.pf4j.PluginWrapper&nbsp;wrapper)</code>
+<div class="block">Using the pre-made ServerPackCreatorAddon-class and extending it, you can save yourself the
+ hassle of writing the code which provides ServerPackCreator with information about your addon.</div>
+</td>
 </tr>
 </table>
 </li>
@@ -181,29 +200,29 @@ implements <a href="../../../../de/griefed/serverpackcreator/addons/BaseInformat
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr id="i0" class="altColor">
-<td class="colFirst"><code>java.lang.String</code></td>
+<td class="colFirst"><code>@NotNull java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/addons/ServerPackCreatorAddon.html#getAuthor--">getAuthor</a></span>()</code>
 <div class="block">Get the author of this addon.</div>
 </td>
 </tr>
 <tr id="i1" class="rowColor">
-<td class="colFirst"><code>java.lang.String</code></td>
+<td class="colFirst"><code>@NotNull java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/addons/ServerPackCreatorAddon.html#getDescription--">getDescription</a></span>()</code>
 <div class="block">Get the description of this addon.</div>
 </td>
 </tr>
 <tr id="i2" class="altColor">
-<td class="colFirst"><code>java.lang.String</code></td>
+<td class="colFirst"><code>@NotNull java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/addons/ServerPackCreatorAddon.html#getId--">getId</a></span>()</code>&nbsp;</td>
 </tr>
 <tr id="i3" class="rowColor">
-<td class="colFirst"><code>java.lang.String</code></td>
+<td class="colFirst"><code>@NotNull java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/addons/ServerPackCreatorAddon.html#getName--">getName</a></span>()</code>
 <div class="block">Get the name of this addon.</div>
 </td>
 </tr>
 <tr id="i4" class="altColor">
-<td class="colFirst"><code>java.lang.String</code></td>
+<td class="colFirst"><code>@NotNull java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/addons/ServerPackCreatorAddon.html#getVersion--">getVersion</a></span>()</code>
 <div class="block">Get the version of this addon.</div>
 </td>
@@ -272,11 +291,20 @@ implements <a href="../../../../de/griefed/serverpackcreator/addons/BaseInformat
 <ul class="blockListLast">
 <li class="blockList">
 <h4>ServerPackCreatorAddon</h4>
-<pre>public&nbsp;ServerPackCreatorAddon(org.pf4j.PluginWrapper&nbsp;wrapper)
+<pre>public&nbsp;ServerPackCreatorAddon(@NotNull
+                              @NotNull org.pf4j.PluginWrapper&nbsp;wrapper)
                        throws java.io.IOException</pre>
+<div class="block">Using the pre-made ServerPackCreatorAddon-class and extending it, you can save yourself the
+ hassle of writing the code which provides ServerPackCreator with information about your addon.
+ <p>
+ The only thing you need to take care of is your <code>build.gradle</code> and the
+ <code>Name</code>,<code>Description</code>,<code>Author</code> and <code>Version</code> fields.</div>
 <dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>wrapper</code> - PluginWrapper provided by ServerPackCreator. Do not touch unless you know what
+                you are doing.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.io.IOException</code></dd>
+<dd><code>java.io.IOException</code> - if the addon could not be initialized.</dd>
 </dl>
 </li>
 </ul>
@@ -332,7 +360,8 @@ implements <a href="../../../../de/griefed/serverpackcreator/addons/BaseInformat
 <ul class="blockList">
 <li class="blockList">
 <h4>getId</h4>
-<pre>public&nbsp;java.lang.String&nbsp;getId()</pre>
+<pre>@NotNull
+public&nbsp;@NotNull java.lang.String&nbsp;getId()</pre>
 </li>
 </ul>
 <a name="getName--">
@@ -341,7 +370,8 @@ implements <a href="../../../../de/griefed/serverpackcreator/addons/BaseInformat
 <ul class="blockList">
 <li class="blockList">
 <h4>getName</h4>
-<pre>public&nbsp;java.lang.String&nbsp;getName()</pre>
+<pre>@NotNull
+public&nbsp;@NotNull java.lang.String&nbsp;getName()</pre>
 <div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../../../../de/griefed/serverpackcreator/addons/BaseInformation.html#getName--">BaseInformation</a></code></span></div>
 <div class="block">Get the name of this addon.</div>
 <dl>
@@ -358,7 +388,8 @@ implements <a href="../../../../de/griefed/serverpackcreator/addons/BaseInformat
 <ul class="blockList">
 <li class="blockList">
 <h4>getDescription</h4>
-<pre>public&nbsp;java.lang.String&nbsp;getDescription()</pre>
+<pre>@NotNull
+public&nbsp;@NotNull java.lang.String&nbsp;getDescription()</pre>
 <div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../../../../de/griefed/serverpackcreator/addons/BaseInformation.html#getDescription--">BaseInformation</a></code></span></div>
 <div class="block">Get the description of this addon.</div>
 <dl>
@@ -375,7 +406,8 @@ implements <a href="../../../../de/griefed/serverpackcreator/addons/BaseInformat
 <ul class="blockList">
 <li class="blockList">
 <h4>getAuthor</h4>
-<pre>public&nbsp;java.lang.String&nbsp;getAuthor()</pre>
+<pre>@NotNull
+public&nbsp;@NotNull java.lang.String&nbsp;getAuthor()</pre>
 <div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../../../../de/griefed/serverpackcreator/addons/BaseInformation.html#getAuthor--">BaseInformation</a></code></span></div>
 <div class="block">Get the author of this addon.</div>
 <dl>
@@ -392,7 +424,8 @@ implements <a href="../../../../de/griefed/serverpackcreator/addons/BaseInformat
 <ul class="blockListLast">
 <li class="blockList">
 <h4>getVersion</h4>
-<pre>public&nbsp;java.lang.String&nbsp;getVersion()</pre>
+<pre>@NotNull
+public&nbsp;@NotNull java.lang.String&nbsp;getVersion()</pre>
 <div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../../../../de/griefed/serverpackcreator/addons/BaseInformation.html#getVersion--">BaseInformation</a></code></span></div>
 <div class="block">Get the version of this addon.</div>
 <dl>

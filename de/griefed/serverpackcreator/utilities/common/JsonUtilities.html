@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -110,6 +110,7 @@ var activeTableTab = "activeTableTab";
 <pre>@Component
 public final class <span class="typeNameLabel">JsonUtilities</span>
 extends java.lang.Object</pre>
+<div class="block">JSON-based utility methods for acquiring and working with JSON from files and objects.</div>
 </li>
 </ul>
 </div>
@@ -128,7 +129,7 @@ extends java.lang.Object</pre>
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/JsonUtilities.html#JsonUtilities--">JsonUtilities</a></span>()</code>&nbsp;</td>
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/JsonUtilities.html#JsonUtilities-com.fasterxml.jackson.databind.ObjectMapper-">JsonUtilities</a></span>(@NotNull com.fasterxml.jackson.databind.ObjectMapper&nbsp;objectMapper)</code>&nbsp;</td>
 </tr>
 </table>
 </li>
@@ -146,70 +147,94 @@ extends java.lang.Object</pre>
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr id="i0" class="altColor">
-<td class="colFirst"><code>java.util.Iterator&lt;java.lang.String&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/JsonUtilities.html#getFieldNames-com.fasterxml.jackson.databind.JsonNode-java.lang.String...-">getFieldNames</a></span>(com.fasterxml.jackson.databind.JsonNode&nbsp;jsonNode,
+<td class="colFirst"><code>@NotNull java.util.Iterator&lt;java.lang.String&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/JsonUtilities.html#getFieldNames-com.fasterxml.jackson.databind.JsonNode-java.lang.String...-">getFieldNames</a></span>(@NotNull com.fasterxml.jackson.databind.JsonNode&nbsp;jsonNode,
              java.lang.String...&nbsp;childNodes)</code>
 <div class="block">Get a string iterator for the field names of the last specified child node in the specified
  JsonNode.</div>
 </td>
 </tr>
 <tr id="i1" class="rowColor">
-<td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/JsonUtilities.html#getNestedBoolean-com.fasterxml.jackson.databind.JsonNode-java.lang.String...-">getNestedBoolean</a></span>(com.fasterxml.jackson.databind.JsonNode&nbsp;jsonNode,
-                java.lang.String...&nbsp;childNodes)</code>
-<div class="block">Get the boolean value from the nested child node(s).</div>
+<td class="colFirst"><code>@NotNull com.fasterxml.jackson.databind.JsonNode</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/JsonUtilities.html#getJson-java.io.File-">getJson</a></span>(@NotNull java.io.File&nbsp;file)</code>
+<div class="block">Acquire a <code>JsonNode</code> from the given json file.</div>
 </td>
 </tr>
 <tr id="i2" class="altColor">
-<td class="colFirst"><code>com.fasterxml.jackson.databind.JsonNode</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/JsonUtilities.html#getNestedElement-com.fasterxml.jackson.databind.JsonNode-java.lang.String...-">getNestedElement</a></span>(com.fasterxml.jackson.databind.JsonNode&nbsp;jsonNode,
-                java.lang.String...&nbsp;childNodes)</code>
-<div class="block">Get a nested element from a JsonNode.</div>
+<td class="colFirst"><code>@NotNull com.fasterxml.jackson.databind.JsonNode</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/JsonUtilities.html#getJson-java.io.InputStream-">getJson</a></span>(@NotNull java.io.InputStream&nbsp;inputStream)</code>
+<div class="block">Acquire a <code>JsonNode</code> from the given json inputstream.</div>
 </td>
 </tr>
 <tr id="i3" class="rowColor">
-<td class="colFirst"><code>java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/JsonUtilities.html#getNestedText-com.fasterxml.jackson.databind.JsonNode-java.lang.String...-">getNestedText</a></span>(com.fasterxml.jackson.databind.JsonNode&nbsp;jsonNode,
-             java.lang.String...&nbsp;childNodes)</code>
-<div class="block">Get the text from nested child node(s).</div>
+<td class="colFirst"><code>@NotNull com.fasterxml.jackson.databind.JsonNode</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/JsonUtilities.html#getJson-java.lang.String-">getJson</a></span>(@NotNull java.lang.String&nbsp;string)</code>
+<div class="block">Acquire a <code>JsonNode</code> from the given json string.</div>
 </td>
 </tr>
 <tr id="i4" class="altColor">
-<td class="colFirst"><code>java.lang.String[]</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/JsonUtilities.html#getNestedTexts-com.fasterxml.jackson.databind.JsonNode-java.lang.String-java.lang.String...-">getNestedTexts</a></span>(com.fasterxml.jackson.databind.JsonNode&nbsp;jsonNode,
-              java.lang.String&nbsp;split,
-              java.lang.String...&nbsp;childNodes)</code>
-<div class="block">Get the array of texts from the nested child node(s) comma-separated text.</div>
+<td class="colFirst"><code>@NotNull com.fasterxml.jackson.databind.JsonNode</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/JsonUtilities.html#getJson-java.net.URL-">getJson</a></span>(@NotNull java.net.URL&nbsp;url)</code>
+<div class="block">Acquire a <code>JsonNode</code> from the given URL.</div>
 </td>
 </tr>
 <tr id="i5" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/JsonUtilities.html#nestedTextContains-com.fasterxml.jackson.databind.JsonNode-java.lang.String-java.lang.String...-">nestedTextContains</a></span>(com.fasterxml.jackson.databind.JsonNode&nbsp;jsonNode,
-                  java.lang.String&nbsp;contains,
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/JsonUtilities.html#getNestedBoolean-com.fasterxml.jackson.databind.JsonNode-java.lang.String...-">getNestedBoolean</a></span>(@NotNull com.fasterxml.jackson.databind.JsonNode&nbsp;jsonNode,
+                java.lang.String...&nbsp;childNodes)</code>
+<div class="block">Get the boolean value from the nested child node(s).</div>
+</td>
+</tr>
+<tr id="i6" class="altColor">
+<td class="colFirst"><code>@NotNull com.fasterxml.jackson.databind.JsonNode</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/JsonUtilities.html#getNestedElement-com.fasterxml.jackson.databind.JsonNode-java.lang.String...-">getNestedElement</a></span>(@NotNull com.fasterxml.jackson.databind.JsonNode&nbsp;jsonNode,
+                java.lang.String...&nbsp;childNodes)</code>
+<div class="block">Get a nested element from a JsonNode.</div>
+</td>
+</tr>
+<tr id="i7" class="rowColor">
+<td class="colFirst"><code>@NotNull java.lang.String</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/JsonUtilities.html#getNestedText-com.fasterxml.jackson.databind.JsonNode-java.lang.String...-">getNestedText</a></span>(@NotNull com.fasterxml.jackson.databind.JsonNode&nbsp;jsonNode,
+             java.lang.String...&nbsp;childNodes)</code>
+<div class="block">Get the text from nested child node(s).</div>
+</td>
+</tr>
+<tr id="i8" class="altColor">
+<td class="colFirst"><code>@NotNull java.lang.String[]</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/JsonUtilities.html#getNestedTexts-com.fasterxml.jackson.databind.JsonNode-java.lang.String-java.lang.String...-">getNestedTexts</a></span>(@NotNull com.fasterxml.jackson.databind.JsonNode&nbsp;jsonNode,
+              @NotNull java.lang.String&nbsp;split,
+              java.lang.String...&nbsp;childNodes)</code>
+<div class="block">Get the array of texts from the nested child node(s) comma-separated text.</div>
+</td>
+</tr>
+<tr id="i9" class="rowColor">
+<td class="colFirst"><code>boolean</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/JsonUtilities.html#nestedTextContains-com.fasterxml.jackson.databind.JsonNode-java.lang.String-java.lang.String...-">nestedTextContains</a></span>(@NotNull com.fasterxml.jackson.databind.JsonNode&nbsp;jsonNode,
+                  @NotNull java.lang.String&nbsp;contains,
                   java.lang.String...&nbsp;childNodes)</code>
 <div class="block">Check whether a child node contains the specified text.</div>
 </td>
 </tr>
-<tr id="i6" class="altColor">
+<tr id="i10" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/JsonUtilities.html#nestedTextEqualsIgnoreCase-com.fasterxml.jackson.databind.JsonNode-java.lang.String-java.lang.String...-">nestedTextEqualsIgnoreCase</a></span>(com.fasterxml.jackson.databind.JsonNode&nbsp;jsonNode,
-                          java.lang.String&nbsp;equalsIgnoreCase,
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/JsonUtilities.html#nestedTextEqualsIgnoreCase-com.fasterxml.jackson.databind.JsonNode-java.lang.String-java.lang.String...-">nestedTextEqualsIgnoreCase</a></span>(@NotNull com.fasterxml.jackson.databind.JsonNode&nbsp;jsonNode,
+                          @NotNull java.lang.String&nbsp;equalsIgnoreCase,
                           java.lang.String...&nbsp;childNodes)</code>
 <div class="block">Check whether the text in specified child node(s) is equal to the specified text,
  case-insensitive.</div>
 </td>
 </tr>
-<tr id="i7" class="rowColor">
+<tr id="i11" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/JsonUtilities.html#nestedTextIsEmpty-com.fasterxml.jackson.databind.JsonNode-java.lang.String...-">nestedTextIsEmpty</a></span>(com.fasterxml.jackson.databind.JsonNode&nbsp;jsonNode,
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/JsonUtilities.html#nestedTextIsEmpty-com.fasterxml.jackson.databind.JsonNode-java.lang.String...-">nestedTextIsEmpty</a></span>(@NotNull com.fasterxml.jackson.databind.JsonNode&nbsp;jsonNode,
                  java.lang.String...&nbsp;childNodes)</code>
 <div class="block">Check whether the text in the specified child node(s) is empty.</div>
 </td>
 </tr>
-<tr id="i8" class="altColor">
+<tr id="i12" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/JsonUtilities.html#nestedTextMatches-com.fasterxml.jackson.databind.JsonNode-java.lang.String-java.lang.String...-">nestedTextMatches</a></span>(com.fasterxml.jackson.databind.JsonNode&nbsp;jsonNode,
-                 java.lang.String&nbsp;matches,
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/JsonUtilities.html#nestedTextMatches-com.fasterxml.jackson.databind.JsonNode-java.lang.String-java.lang.String...-">nestedTextMatches</a></span>(@NotNull com.fasterxml.jackson.databind.JsonNode&nbsp;jsonNode,
+                 @NotNull java.lang.String&nbsp;matches,
                  java.lang.String...&nbsp;childNodes)</code>
 <div class="block">Check whether the text in specified child node(s) matches the specified text.</div>
 </td>
@@ -236,13 +261,15 @@ extends java.lang.Object</pre>
 <!--   -->
 </a>
 <h3>Constructor Detail</h3>
-<a name="JsonUtilities--">
+<a name="JsonUtilities-com.fasterxml.jackson.databind.ObjectMapper-">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>JsonUtilities</h4>
-<pre>public&nbsp;JsonUtilities()</pre>
+<pre>@Contract(pure=true)
+public&nbsp;JsonUtilities(@NotNull
+                                          @NotNull com.fasterxml.jackson.databind.ObjectMapper&nbsp;objectMapper)</pre>
 </li>
 </ul>
 </li>
@@ -259,8 +286,11 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>nestedTextMatches</h4>
-<pre>public&nbsp;boolean&nbsp;nestedTextMatches(com.fasterxml.jackson.databind.JsonNode&nbsp;jsonNode,
-                                 java.lang.String&nbsp;matches,
+<pre>public&nbsp;boolean&nbsp;nestedTextMatches(@NotNull
+                                 @NotNull com.fasterxml.jackson.databind.JsonNode&nbsp;jsonNode,
+                                 @NotNull
+                                 @NotNull java.lang.String&nbsp;matches,
+                                 @NotNull
                                  java.lang.String...&nbsp;childNodes)
                           throws java.lang.NullPointerException</pre>
 <div class="block">Check whether the text in specified child node(s) matches the specified text.</div>
@@ -276,14 +306,65 @@ extends java.lang.Object</pre>
 </dl>
 </li>
 </ul>
+<a name="getNestedText-com.fasterxml.jackson.databind.JsonNode-java.lang.String...-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getNestedText</h4>
+<pre>@NotNull
+public&nbsp;@NotNull java.lang.String&nbsp;getNestedText(@NotNull
+                                                        @NotNull com.fasterxml.jackson.databind.JsonNode&nbsp;jsonNode,
+                                                        @NotNull
+                                                        java.lang.String...&nbsp;childNodes)
+                                                 throws java.lang.NullPointerException</pre>
+<div class="block">Get the text from nested child node(s).</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>jsonNode</code> - The JsonNode from which to acquire the text from.</dd>
+<dd><code>childNodes</code> - The child nodes which contain the requested text, in order.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>The text from the requested child node(s).</dd>
+<dt><span class="throwsLabel">Throws:</span></dt>
+<dd><code>java.lang.NullPointerException</code> - if the requested element is not present in the JsonNode.</dd>
+</dl>
+</li>
+</ul>
+<a name="getNestedElement-com.fasterxml.jackson.databind.JsonNode-java.lang.String...-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getNestedElement</h4>
+<pre>@NotNull
+public&nbsp;@NotNull com.fasterxml.jackson.databind.JsonNode&nbsp;getNestedElement(@NotNull
+                                                                                  @NotNull com.fasterxml.jackson.databind.JsonNode&nbsp;jsonNode,
+                                                                                  @NotNull
+                                                                                  java.lang.String...&nbsp;childNodes)
+                                                                           throws java.lang.NullPointerException</pre>
+<div class="block">Get a nested element from a JsonNode.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>jsonNode</code> - The JsonNode from which to acquire the nested element.</dd>
+<dd><code>childNodes</code> - The nested elements, in order.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>The nested element from the JsonNode.</dd>
+<dt><span class="throwsLabel">Throws:</span></dt>
+<dd><code>java.lang.NullPointerException</code> - if the requested element is not present in the JsonNode.</dd>
+</dl>
+</li>
+</ul>
 <a name="nestedTextEqualsIgnoreCase-com.fasterxml.jackson.databind.JsonNode-java.lang.String-java.lang.String...-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>nestedTextEqualsIgnoreCase</h4>
-<pre>public&nbsp;boolean&nbsp;nestedTextEqualsIgnoreCase(com.fasterxml.jackson.databind.JsonNode&nbsp;jsonNode,
-                                          java.lang.String&nbsp;equalsIgnoreCase,
+<pre>public&nbsp;boolean&nbsp;nestedTextEqualsIgnoreCase(@NotNull
+                                          @NotNull com.fasterxml.jackson.databind.JsonNode&nbsp;jsonNode,
+                                          @NotNull
+                                          @NotNull java.lang.String&nbsp;equalsIgnoreCase,
+                                          @NotNull
                                           java.lang.String...&nbsp;childNodes)
                                    throws java.lang.NullPointerException</pre>
 <div class="block">Check whether the text in specified child node(s) is equal to the specified text,
@@ -306,7 +387,9 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>nestedTextIsEmpty</h4>
-<pre>public&nbsp;boolean&nbsp;nestedTextIsEmpty(com.fasterxml.jackson.databind.JsonNode&nbsp;jsonNode,
+<pre>public&nbsp;boolean&nbsp;nestedTextIsEmpty(@NotNull
+                                 @NotNull com.fasterxml.jackson.databind.JsonNode&nbsp;jsonNode,
+                                 @NotNull
                                  java.lang.String...&nbsp;childNodes)
                           throws java.lang.NullPointerException</pre>
 <div class="block">Check whether the text in the specified child node(s) is empty.</div>
@@ -327,7 +410,9 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>getNestedBoolean</h4>
-<pre>public&nbsp;boolean&nbsp;getNestedBoolean(com.fasterxml.jackson.databind.JsonNode&nbsp;jsonNode,
+<pre>public&nbsp;boolean&nbsp;getNestedBoolean(@NotNull
+                                @NotNull com.fasterxml.jackson.databind.JsonNode&nbsp;jsonNode,
+                                @NotNull
                                 java.lang.String...&nbsp;childNodes)
                          throws java.lang.NullPointerException,
                                 <a href="../../../../../de/griefed/serverpackcreator/utilities/common/JsonException.html" title="class in de.griefed.serverpackcreator.utilities.common">JsonException</a></pre>
@@ -351,15 +436,20 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>getNestedTexts</h4>
-<pre>public&nbsp;java.lang.String[]&nbsp;getNestedTexts(com.fasterxml.jackson.databind.JsonNode&nbsp;jsonNode,
-                                         java.lang.String&nbsp;split,
-                                         java.lang.String...&nbsp;childNodes)
-                                  throws java.lang.NullPointerException</pre>
+<pre>@NotNull
+public&nbsp;@NotNull java.lang.String[]&nbsp;getNestedTexts(@NotNull
+                                                           @NotNull com.fasterxml.jackson.databind.JsonNode&nbsp;jsonNode,
+                                                           @NotNull
+                                                           @NotNull java.lang.String&nbsp;split,
+                                                           @NotNull
+                                                           java.lang.String...&nbsp;childNodes)
+                                                    throws java.lang.NullPointerException</pre>
 <div class="block">Get the array of texts from the nested child node(s) comma-separated text.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>jsonNode</code> - The JsonNode from which to acquire the texts from.</dd>
-<dd><code>split</code> - The</dd>
+<dd><code>split</code> - The character by which to split the text of the last child node into an array
+                   with.</dd>
 <dd><code>childNodes</code> - The nested nodes in the JsonNode to acquire the texts from, in order.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>An array of strings containing the texts from the specified node(s)</dd>
@@ -374,8 +464,11 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>nestedTextContains</h4>
-<pre>public&nbsp;boolean&nbsp;nestedTextContains(com.fasterxml.jackson.databind.JsonNode&nbsp;jsonNode,
-                                  java.lang.String&nbsp;contains,
+<pre>public&nbsp;boolean&nbsp;nestedTextContains(@NotNull
+                                  @NotNull com.fasterxml.jackson.databind.JsonNode&nbsp;jsonNode,
+                                  @NotNull
+                                  @NotNull java.lang.String&nbsp;contains,
+                                  @NotNull
                                   java.lang.String...&nbsp;childNodes)
                            throws java.lang.NullPointerException</pre>
 <div class="block">Check whether a child node contains the specified text.</div>
@@ -392,36 +485,18 @@ extends java.lang.Object</pre>
 </dl>
 </li>
 </ul>
-<a name="getNestedText-com.fasterxml.jackson.databind.JsonNode-java.lang.String...-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>getNestedText</h4>
-<pre>public&nbsp;java.lang.String&nbsp;getNestedText(com.fasterxml.jackson.databind.JsonNode&nbsp;jsonNode,
-                                      java.lang.String...&nbsp;childNodes)
-                               throws java.lang.NullPointerException</pre>
-<div class="block">Get the text from nested child node(s).</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>jsonNode</code> - The JsonNode from which to acquire the text from.</dd>
-<dd><code>childNodes</code> - The child nodes which contain the requested text, in order.</dd>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>The text from the requested child node(s).</dd>
-<dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.NullPointerException</code> - if the requested element is not present in the JsonNode.</dd>
-</dl>
-</li>
-</ul>
 <a name="getFieldNames-com.fasterxml.jackson.databind.JsonNode-java.lang.String...-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>getFieldNames</h4>
-<pre>public&nbsp;java.util.Iterator&lt;java.lang.String&gt;&nbsp;getFieldNames(com.fasterxml.jackson.databind.JsonNode&nbsp;jsonNode,
-                                                          java.lang.String...&nbsp;childNodes)
-                                                   throws java.lang.NullPointerException</pre>
+<pre>@NotNull
+public&nbsp;@NotNull java.util.Iterator&lt;java.lang.String&gt;&nbsp;getFieldNames(@NotNull
+                                                                            @NotNull com.fasterxml.jackson.databind.JsonNode&nbsp;jsonNode,
+                                                                            @NotNull
+                                                                            java.lang.String...&nbsp;childNodes)
+                                                                     throws java.lang.NullPointerException</pre>
 <div class="block">Get a string iterator for the field names of the last specified child node in the specified
  JsonNode.</div>
 <dl>
@@ -437,24 +512,87 @@ extends java.lang.Object</pre>
 </dl>
 </li>
 </ul>
-<a name="getNestedElement-com.fasterxml.jackson.databind.JsonNode-java.lang.String...-">
+<a name="getJson-java.io.InputStream-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getJson</h4>
+<pre>@NotNull
+public&nbsp;@NotNull com.fasterxml.jackson.databind.JsonNode&nbsp;getJson(@NotNull
+                                                                         @NotNull java.io.InputStream&nbsp;inputStream)
+                                                                  throws java.io.IOException</pre>
+<div class="block">Acquire a <code>JsonNode</code> from the given json inputstream.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>inputStream</code> - The inputstream to read.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>JSON data from the specified file.</dd>
+<dt><span class="throwsLabel">Throws:</span></dt>
+<dd><code>java.io.IOException</code> - when the file could not be parsed/read into a <code>JsonNode</code>.</dd>
+</dl>
+</li>
+</ul>
+<a name="getJson-java.lang.String-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getJson</h4>
+<pre>@NotNull
+public&nbsp;@NotNull com.fasterxml.jackson.databind.JsonNode&nbsp;getJson(@NotNull
+                                                                         @NotNull java.lang.String&nbsp;string)
+                                                                  throws java.io.IOException</pre>
+<div class="block">Acquire a <code>JsonNode</code> from the given json string.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>string</code> - The string to read.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>JSON data from the specified file.</dd>
+<dt><span class="throwsLabel">Throws:</span></dt>
+<dd><code>java.io.IOException</code> - when the file could not be parsed/read into a <code>JsonNode</code>.</dd>
+</dl>
+</li>
+</ul>
+<a name="getJson-java.io.File-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getJson</h4>
+<pre>@NotNull
+public&nbsp;@NotNull com.fasterxml.jackson.databind.JsonNode&nbsp;getJson(@NotNull
+                                                                         @NotNull java.io.File&nbsp;file)
+                                                                  throws java.io.IOException</pre>
+<div class="block">Acquire a <code>JsonNode</code> from the given json file.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>file</code> - The file to read.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>JSON data from the specified file.</dd>
+<dt><span class="throwsLabel">Throws:</span></dt>
+<dd><code>java.io.IOException</code> - when the file could not be parsed/read into a <code>JsonNode</code>.</dd>
+</dl>
+</li>
+</ul>
+<a name="getJson-java.net.URL-">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
-<h4>getNestedElement</h4>
-<pre>public&nbsp;com.fasterxml.jackson.databind.JsonNode&nbsp;getNestedElement(com.fasterxml.jackson.databind.JsonNode&nbsp;jsonNode,
-                                                                java.lang.String...&nbsp;childNodes)
-                                                         throws java.lang.NullPointerException</pre>
-<div class="block">Get a nested element from a JsonNode.</div>
+<h4>getJson</h4>
+<pre>@NotNull
+public&nbsp;@NotNull com.fasterxml.jackson.databind.JsonNode&nbsp;getJson(@NotNull
+                                                                         @NotNull java.net.URL&nbsp;url)
+                                                                  throws java.io.IOException</pre>
+<div class="block">Acquire a <code>JsonNode</code> from the given URL.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>jsonNode</code> - The JsonNode from which to acquire the nested element.</dd>
-<dd><code>childNodes</code> - The nested elements, in order.</dd>
+<dd><code>url</code> - URL to the data which contains your JSON.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>The nested element from the JsonNode.</dd>
+<dd>JSON data from the specified file.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.NullPointerException</code> - if the requested element is not present in the JsonNode.</dd>
+<dd><code>java.io.IOException</code> - when the file could not be parsed/read into a <code>JsonNode</code>.</dd>
 </dl>
 </li>
 </ul>

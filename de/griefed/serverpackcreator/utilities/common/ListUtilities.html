@@ -147,38 +147,38 @@ extends java.lang.Object</pre>
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr id="i0" class="altColor">
-<td class="colFirst"><code>java.util.List&lt;java.lang.String&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/ListUtilities.html#cleanList-java.util.List-">cleanList</a></span>(java.util.List&lt;java.lang.String&gt;&nbsp;listToCleanUp)</code>
+<td class="colFirst"><code>@NotNull java.util.List&lt;java.lang.String&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/ListUtilities.html#cleanList-java.util.List-">cleanList</a></span>(@NotNull java.util.List&lt;java.lang.String&gt;&nbsp;listToCleanUp)</code>
 <div class="block">Clean a given String List of any entry consisting only of whitespace or a length of
  <code>0 </code>.</div>
 </td>
 </tr>
 <tr id="i1" class="rowColor">
-<td class="colFirst"><code>java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/ListUtilities.html#encapsulateListElements-java.util.List-">encapsulateListElements</a></span>(java.util.List&lt;java.lang.String&gt;&nbsp;listToEncapsulate)</code>
+<td class="colFirst"><code>@NotNull java.lang.String</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/ListUtilities.html#encapsulateListElements-java.util.List-">encapsulateListElements</a></span>(@NotNull java.util.List&lt;java.lang.String&gt;&nbsp;listToEncapsulate)</code>
 <div class="block">Encapsulate every element of the passed String List in quotes.</div>
 </td>
 </tr>
 <tr id="i2" class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/ListUtilities.html#printListToConsoleChunked-java.util.List-int-java.lang.String-boolean-">printListToConsoleChunked</a></span>(java.util.List&lt;java.lang.String&gt;&nbsp;list,
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/ListUtilities.html#printListToConsoleChunked-java.util.List-int-java.lang.String-boolean-">printListToConsoleChunked</a></span>(@NotNull java.util.List&lt;java.lang.String&gt;&nbsp;list,
                          int&nbsp;chunkSize,
-                         java.lang.String&nbsp;prefix,
+                         @NotNull java.lang.String&nbsp;prefix,
                          boolean&nbsp;printIndexes)</code>
 <div class="block">Print a list to console in chunks.</div>
 </td>
 </tr>
 <tr id="i3" class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/ListUtilities.html#printListToLogChunked-java.util.List-int-java.lang.String-boolean-">printListToLogChunked</a></span>(java.util.List&lt;java.lang.String&gt;&nbsp;list,
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/ListUtilities.html#printListToLogChunked-java.util.List-int-java.lang.String-boolean-">printListToLogChunked</a></span>(@NotNull java.util.List&lt;java.lang.String&gt;&nbsp;list,
                      int&nbsp;chunkSize,
-                     java.lang.String&nbsp;prefix,
+                     @NotNull java.lang.String&nbsp;prefix,
                      boolean&nbsp;printIndexes)</code>
 <div class="block">Print a list to our log at info level, in chunks.</div>
 </td>
 </tr>
 <tr id="i4" class="altColor">
-<td class="colFirst"><code>java.util.List&lt;java.lang.String&gt;</code></td>
+<td class="colFirst"><code>@NotNull java.util.List&lt;java.lang.String&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/utilities/common/ListUtilities.html#readStringList--">readStringList</a></span>()</code>
 <div class="block">Prompts the user to enter the values which will make up a String List in the new configuration
  file.</div>
@@ -212,7 +212,8 @@ extends java.lang.Object</pre>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>ListUtilities</h4>
-<pre>public&nbsp;ListUtilities()</pre>
+<pre>@Contract(pure=true)
+public&nbsp;ListUtilities()</pre>
 </li>
 </ul>
 </li>
@@ -229,15 +230,16 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>encapsulateListElements</h4>
-<pre>public&nbsp;java.lang.String&nbsp;encapsulateListElements(java.util.List&lt;java.lang.String&gt;&nbsp;listToEncapsulate)</pre>
+<pre>@NotNull
+public&nbsp;@NotNull java.lang.String&nbsp;encapsulateListElements(@NotNull
+                                                                  @NotNull java.util.List&lt;java.lang.String&gt;&nbsp;listToEncapsulate)</pre>
 <div class="block">Encapsulate every element of the passed String List in quotes. Returns the list as
  <code>["element1","element2","element3"</code> etc.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>listToEncapsulate</code> - The String List of which to encapsulate every element in.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>String. Returns a concatenated String with all elements of the passed list
- encapsulated.</dd>
+<dd>Returns a concatenated String with all elements of the passed list encapsulated.</dd>
 </dl>
 </li>
 </ul>
@@ -247,12 +249,13 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>readStringList</h4>
-<pre>public&nbsp;java.util.List&lt;java.lang.String&gt;&nbsp;readStringList()</pre>
+<pre>@NotNull
+public&nbsp;@NotNull java.util.List&lt;java.lang.String&gt;&nbsp;readStringList()</pre>
 <div class="block">Prompts the user to enter the values which will make up a String List in the new configuration
  file. If the user enters an empty line, the method is exited and the String List returned.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>String List. Returns the list of values entered by the user.</dd>
+<dd>Returns the list of values entered by the user.</dd>
 </dl>
 </li>
 </ul>
@@ -262,15 +265,18 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>cleanList</h4>
-<pre>public&nbsp;java.util.List&lt;java.lang.String&gt;&nbsp;cleanList(java.util.List&lt;java.lang.String&gt;&nbsp;listToCleanUp)</pre>
+<pre>@Contract(value="_ -&gt; param1")
+ @NotNull
+public&nbsp;@NotNull java.util.List&lt;java.lang.String&gt;&nbsp;cleanList(@NotNull
+                                                                                                    @NotNull java.util.List&lt;java.lang.String&gt;&nbsp;listToCleanUp)</pre>
 <div class="block">Clean a given String List of any entry consisting only of whitespace or a length of
  <code>0 </code>.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>listToCleanUp</code> - List String. The list from which to delete all entries consisting only of
-                      whitespace or with a length of zero.</dd>
+<dd><code>listToCleanUp</code> - The list from which to delete all entries consisting only of whitespace or
+                      with a length of zero.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>List String. Returns the cleaned up list.</dd>
+<dd>Returns the cleaned up list.</dd>
 </dl>
 </li>
 </ul>
@@ -280,9 +286,11 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>printListToConsoleChunked</h4>
-<pre>public&nbsp;void&nbsp;printListToConsoleChunked(java.util.List&lt;java.lang.String&gt;&nbsp;list,
+<pre>public&nbsp;void&nbsp;printListToConsoleChunked(@NotNull
+                                      @NotNull java.util.List&lt;java.lang.String&gt;&nbsp;list,
                                       int&nbsp;chunkSize,
-                                      java.lang.String&nbsp;prefix,
+                                      @NotNull
+                                      @NotNull java.lang.String&nbsp;prefix,
                                       boolean&nbsp;printIndexes)</pre>
 <div class="block">Print a list to console in chunks. If a chunk size of 5 is set for a list with 20 entries, the
  result would be 4 lines printed, with 5 entries each.</div>
@@ -301,9 +309,11 @@ extends java.lang.Object</pre>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>printListToLogChunked</h4>
-<pre>public&nbsp;void&nbsp;printListToLogChunked(java.util.List&lt;java.lang.String&gt;&nbsp;list,
+<pre>public&nbsp;void&nbsp;printListToLogChunked(@NotNull
+                                  @NotNull java.util.List&lt;java.lang.String&gt;&nbsp;list,
                                   int&nbsp;chunkSize,
-                                  java.lang.String&nbsp;prefix,
+                                  @NotNull
+                                  @NotNull java.lang.String&nbsp;prefix,
                                   boolean&nbsp;printIndexes)</pre>
 <div class="block">Print a list to our log at info level, in chunks. If a chunk size of 5 is set for a list with
  20 entries, the result would be 4 lines printed, with 5 entries each.</div>

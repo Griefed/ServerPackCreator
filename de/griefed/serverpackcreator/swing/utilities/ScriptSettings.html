@@ -424,6 +424,20 @@ extends javax.swing.JTable</pre>
 <!--   -->
 </a>
 <h3>Method Detail</h3>
+<a name="setSelectAllForEdit-boolean-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>setSelectAllForEdit</h4>
+<pre>public&nbsp;void&nbsp;setSelectAllForEdit(boolean&nbsp;isSelectAllForEdit)</pre>
+<div class="block">Sets the Select All property for all event types</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>isSelectAllForEdit</code> - Whether to select all for editing</dd>
+</dl>
+</li>
+</ul>
 <a name="editCellAt-int-int-java.util.EventObject-">
 <!--   -->
 </a>
@@ -437,20 +451,6 @@ extends javax.swing.JTable</pre>
 <dl>
 <dt><span class="overrideSpecifyLabel">Overrides:</span></dt>
 <dd><code>editCellAt</code>&nbsp;in class&nbsp;<code>javax.swing.JTable</code></dd>
-</dl>
-</li>
-</ul>
-<a name="setSelectAllForEdit-boolean-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>setSelectAllForEdit</h4>
-<pre>public&nbsp;void&nbsp;setSelectAllForEdit(boolean&nbsp;isSelectAllForEdit)</pre>
-<div class="block">Sets the Select All property for all event types</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>isSelectAllForEdit</code> - Whether to select all for editing</dd>
 </dl>
 </li>
 </ul>
@@ -511,10 +511,20 @@ extends javax.swing.JTable</pre>
 </dl>
 </li>
 </ul>
-<a name="getData--">
+<a name="clearData--">
 <!--   -->
 </a>
 <ul class="blockList">
+<li class="blockList">
+<h4>clearData</h4>
+<pre>public&nbsp;void&nbsp;clearData()</pre>
+<div class="block">Clear the table of all data. Only leave SPC_JAVA_SPC behind.</div>
+</li>
+</ul>
+<a name="getData--">
+<!--   -->
+</a>
+<ul class="blockListLast">
 <li class="blockList">
 <h4>getData</h4>
 <pre>public&nbsp;java.util.HashMap&lt;java.lang.String,java.lang.String&gt;&nbsp;getData()</pre>
@@ -525,16 +535,6 @@ extends javax.swing.JTable</pre>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>A map containing the data of the table.</dd>
 </dl>
-</li>
-</ul>
-<a name="clearData--">
-<!--   -->
-</a>
-<ul class="blockListLast">
-<li class="blockList">
-<h4>clearData</h4>
-<pre>public&nbsp;void&nbsp;clearData()</pre>
-<div class="block">Clear the table of all data. Only leave SPC_JAVA_SPC behind.</div>
 </li>
 </ul>
 </li>

@@ -204,7 +204,8 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>getId</h4>
-<pre>public&nbsp;java.lang.String&nbsp;getId()</pre>
+<pre>@Contract(pure=true)
+public&nbsp;java.lang.String&nbsp;getId()</pre>
 <div class="block">Fabric loader ID, in the format of <code>fabric-loader-FABRIC_VERSION-MINECRAFT_VERSION </code>.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
@@ -218,7 +219,8 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>getInheritsFrom</h4>
-<pre>public&nbsp;java.lang.String&nbsp;getInheritsFrom()</pre>
+<pre>@Contract(pure=true)
+public&nbsp;java.lang.String&nbsp;getInheritsFrom()</pre>
 <div class="block">The Minecraft version from which this Fabric loader version inherits from.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
@@ -232,7 +234,8 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>getReleaseTime</h4>
-<pre>public&nbsp;java.util.Date&nbsp;getReleaseTime()</pre>
+<pre>@Contract(pure=true)
+public&nbsp;java.util.Date&nbsp;getReleaseTime()</pre>
 <div class="block">The date at which this loader was released.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
@@ -246,7 +249,8 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>getTime</h4>
-<pre>public&nbsp;java.util.Date&nbsp;getTime()</pre>
+<pre>@Contract(pure=true)
+public&nbsp;java.util.Date&nbsp;getTime()</pre>
 <div class="block">Probably the same as <a href="../../../../../de/griefed/serverpackcreator/versionmeta/fabric/FabricDetails.html#getReleaseTime--"><code>getReleaseTime()</code></a>. Not sure. It's a field in the JSON you receive
  from Fabric. - Griefed.</div>
 <dl>
@@ -261,7 +265,8 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>getType</h4>
-<pre>public&nbsp;java.lang.String&nbsp;getType()</pre>
+<pre>@Contract(pure=true)
+public&nbsp;java.lang.String&nbsp;getType()</pre>
 <div class="block">The release type of this Fabric loader.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
@@ -275,7 +280,8 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>getMainClass</h4>
-<pre>public&nbsp;java.lang.String&nbsp;getMainClass()</pre>
+<pre>@Contract(pure=true)
+public&nbsp;java.lang.String&nbsp;getMainClass()</pre>
 <div class="block">The Main class of this Fabric loader.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
@@ -289,7 +295,8 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>getArguments</h4>
-<pre>public&nbsp;<a href="../../../../../de/griefed/serverpackcreator/versionmeta/fabric/FabricArguments.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric">FabricArguments</a>&nbsp;getArguments()</pre>
+<pre>@Contract(pure=true)
+public&nbsp;<a href="../../../../../de/griefed/serverpackcreator/versionmeta/fabric/FabricArguments.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric">FabricArguments</a>&nbsp;getArguments()</pre>
 <div class="block"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/fabric/FabricArguments.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric"><code>FabricArguments</code></a> used by this Fabric loader.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
@@ -303,7 +310,8 @@ extends java.lang.Object</pre>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>getLibraries</h4>
-<pre>public&nbsp;java.util.List&lt;<a href="../../../../../de/griefed/serverpackcreator/versionmeta/fabric/FabricLibrary.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric">FabricLibrary</a>&gt;&nbsp;getLibraries()</pre>
+<pre>@Contract(pure=true)
+public&nbsp;java.util.List&lt;<a href="../../../../../de/griefed/serverpackcreator/versionmeta/fabric/FabricLibrary.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric">FabricLibrary</a>&gt;&nbsp;getLibraries()</pre>
 <div class="block"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/fabric/FabricLibrary.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric"><code>FabricLibrary</code></a>-list used by this Fabric loader.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>

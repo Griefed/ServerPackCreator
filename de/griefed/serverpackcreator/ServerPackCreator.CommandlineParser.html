@@ -113,8 +113,22 @@ var activeTableTab = "activeTableTab";
 <br>
 <pre>public class <span class="typeNameLabel">ServerPackCreator.CommandlineParser</span>
 extends java.lang.Object</pre>
-<div class="block">Check the passed commandline-arguments with which ServerPackCreator was started and return the
- mode in which to run.</div>
+<div class="block">The Commandline Parser checks the passed commandline arguments to determine the mode to run
+ in.
+ <p>
+ CLI arguments are checked in order of their priority, which you can find in <a href="../../../de/griefed/serverpackcreator/ServerPackCreator.Mode.html" title="enum in de.griefed.serverpackcreator"><code>ServerPackCreator.Mode</code></a>.
+ <p>
+ After the mode has been determined, you can acquire it with
+ <a href="../../../de/griefed/serverpackcreator/ServerPackCreator.CommandlineParser.html#getModeToRunIn--"><code>getModeToRunIn()</code></a>.
+ <p>
+ If a specific language was passed using the <code>-lang</code>-argument, you can get it with
+ <a href="../../../de/griefed/serverpackcreator/ServerPackCreator.CommandlineParser.html#getLanguageToUse--"><code>getLanguageToUse()</code></a>.
+ <p>
+ If ServerPackCreator was run with the <code>--setup</code>-argument specifying a
+ <code>properties</code>-file to load into <a href="../../../de/griefed/serverpackcreator/ApplicationProperties.html" title="class in de.griefed.serverpackcreator"><code>ApplicationProperties</code></a>, you can get said file via
+ <a href="../../../de/griefed/serverpackcreator/ServerPackCreator.CommandlineParser.html#propertiesFile--"><code>propertiesFile()</code></a>. Values are loaded from the specified file and
+ subsequently stored in the local <code>serverpackcreator.properties</code>-file inside
+ ServerPackCreators home-directory.</div>
 </li>
 </ul>
 </div>
@@ -133,7 +147,7 @@ extends java.lang.Object</pre>
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.CommandlineParser.html#CommandlineParser-java.lang.String:A-">CommandlineParser</a></span>(java.lang.String[]&nbsp;args)</code>
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.CommandlineParser.html#CommandlineParser-java.lang.String:A-">CommandlineParser</a></span>(@NotNull java.lang.String[]&nbsp;args)</code>
 <div class="block">Create a new CommandlineParser from the passed commandline-arguments with which
  ServerPackCreator was started.</div>
 </td>
@@ -154,19 +168,19 @@ extends java.lang.Object</pre>
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr id="i0" class="altColor">
-<td class="colFirst"><code>protected java.util.Optional&lt;java.lang.String&gt;</code></td>
+<td class="colFirst"><code>protected @NotNull java.util.Optional&lt;java.lang.String&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.CommandlineParser.html#getLanguageToUse--">getLanguageToUse</a></span>()</code>
 <div class="block">Get the locale in which ServerPackCreator should be run in, wrapped in an <code>Optional</code>.</div>
 </td>
 </tr>
 <tr id="i1" class="rowColor">
-<td class="colFirst"><code>protected <a href="../../../de/griefed/serverpackcreator/ServerPackCreator.Mode.html" title="enum in de.griefed.serverpackcreator">ServerPackCreator.Mode</a></code></td>
+<td class="colFirst"><code>protected @NotNull <a href="../../../de/griefed/serverpackcreator/ServerPackCreator.Mode.html" title="enum in de.griefed.serverpackcreator">ServerPackCreator.Mode</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.CommandlineParser.html#getModeToRunIn--">getModeToRunIn</a></span>()</code>
 <div class="block">Get the mode in which ServerPackCreator should be run in.</div>
 </td>
 </tr>
 <tr id="i2" class="altColor">
-<td class="colFirst"><code>java.util.Optional&lt;java.io.File&gt;</code></td>
+<td class="colFirst"><code>@NotNull java.util.Optional&lt;java.io.File&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../de/griefed/serverpackcreator/ServerPackCreator.CommandlineParser.html#propertiesFile--">propertiesFile</a></span>()</code>
 <div class="block">If ServerPackCreator was executed with the <code>--setup</code>-argument as well as a
  properties-file, then this method will return the specified properties file, wrapped in an
@@ -201,7 +215,8 @@ extends java.lang.Object</pre>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>CommandlineParser</h4>
-<pre>public&nbsp;CommandlineParser(java.lang.String[]&nbsp;args)</pre>
+<pre>public&nbsp;CommandlineParser(@NotNull
+                         @NotNull java.lang.String[]&nbsp;args)</pre>
 <div class="block">Create a new CommandlineParser from the passed commandline-arguments with which
  ServerPackCreator was started. The mode and language in which ServerPackCreator should run
  will thus be determined and available to you via <a href="../../../de/griefed/serverpackcreator/ServerPackCreator.CommandlineParser.html#getModeToRunIn--"><code>getModeToRunIn()</code></a> and
@@ -228,7 +243,8 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>getModeToRunIn</h4>
-<pre>protected&nbsp;<a href="../../../de/griefed/serverpackcreator/ServerPackCreator.Mode.html" title="enum in de.griefed.serverpackcreator">ServerPackCreator.Mode</a>&nbsp;getModeToRunIn()</pre>
+<pre>@NotNull
+protected&nbsp;@NotNull <a href="../../../de/griefed/serverpackcreator/ServerPackCreator.Mode.html" title="enum in de.griefed.serverpackcreator">ServerPackCreator.Mode</a>&nbsp;getModeToRunIn()</pre>
 <div class="block">Get the mode in which ServerPackCreator should be run in.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
@@ -242,7 +258,8 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>getLanguageToUse</h4>
-<pre>protected&nbsp;java.util.Optional&lt;java.lang.String&gt;&nbsp;getLanguageToUse()</pre>
+<pre>@NotNull
+protected&nbsp;@NotNull java.util.Optional&lt;java.lang.String&gt;&nbsp;getLanguageToUse()</pre>
 <div class="block">Get the locale in which ServerPackCreator should be run in, wrapped in an <code>Optional</code>.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
@@ -257,7 +274,8 @@ extends java.lang.Object</pre>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>propertiesFile</h4>
-<pre>public&nbsp;java.util.Optional&lt;java.io.File&gt;&nbsp;propertiesFile()</pre>
+<pre>@NotNull
+public&nbsp;@NotNull java.util.Optional&lt;java.io.File&gt;&nbsp;propertiesFile()</pre>
 <div class="block">If ServerPackCreator was executed with the <code>--setup</code>-argument as well as a
  properties-file, then this method will return the specified properties file, wrapped in an
  <code>Optional</code>, so you can check whether it is present or not.</div>

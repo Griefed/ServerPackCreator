@@ -130,10 +130,10 @@ extends java.lang.Object</pre>
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/modscanning/ModScanner.html#ModScanner-de.griefed.serverpackcreator.modscanning.AnnotationScanner-de.griefed.serverpackcreator.modscanning.FabricScanner-de.griefed.serverpackcreator.modscanning.QuiltScanner-de.griefed.serverpackcreator.modscanning.TomlScanner-">ModScanner</a></span>(<a href="../../../../de/griefed/serverpackcreator/modscanning/AnnotationScanner.html" title="class in de.griefed.serverpackcreator.modscanning">AnnotationScanner</a>&nbsp;annotationScanner,
-          <a href="../../../../de/griefed/serverpackcreator/modscanning/FabricScanner.html" title="class in de.griefed.serverpackcreator.modscanning">FabricScanner</a>&nbsp;fabricScanner,
-          <a href="../../../../de/griefed/serverpackcreator/modscanning/QuiltScanner.html" title="class in de.griefed.serverpackcreator.modscanning">QuiltScanner</a>&nbsp;quiltScanner,
-          <a href="../../../../de/griefed/serverpackcreator/modscanning/TomlScanner.html" title="class in de.griefed.serverpackcreator.modscanning">TomlScanner</a>&nbsp;tomlScanner)</code>&nbsp;</td>
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/modscanning/ModScanner.html#ModScanner-de.griefed.serverpackcreator.modscanning.AnnotationScanner-de.griefed.serverpackcreator.modscanning.FabricScanner-de.griefed.serverpackcreator.modscanning.QuiltScanner-de.griefed.serverpackcreator.modscanning.TomlScanner-">ModScanner</a></span>(@NotNull <a href="../../../../de/griefed/serverpackcreator/modscanning/AnnotationScanner.html" title="class in de.griefed.serverpackcreator.modscanning">AnnotationScanner</a>&nbsp;annotationScanner,
+          @NotNull <a href="../../../../de/griefed/serverpackcreator/modscanning/FabricScanner.html" title="class in de.griefed.serverpackcreator.modscanning">FabricScanner</a>&nbsp;fabricScanner,
+          @NotNull <a href="../../../../de/griefed/serverpackcreator/modscanning/QuiltScanner.html" title="class in de.griefed.serverpackcreator.modscanning">QuiltScanner</a>&nbsp;quiltScanner,
+          @NotNull <a href="../../../../de/griefed/serverpackcreator/modscanning/TomlScanner.html" title="class in de.griefed.serverpackcreator.modscanning">TomlScanner</a>&nbsp;tomlScanner)</code>&nbsp;</td>
 </tr>
 </table>
 </li>
@@ -151,25 +151,25 @@ extends java.lang.Object</pre>
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr id="i0" class="altColor">
-<td class="colFirst"><code><a href="../../../../de/griefed/serverpackcreator/modscanning/AnnotationScanner.html" title="class in de.griefed.serverpackcreator.modscanning">AnnotationScanner</a></code></td>
+<td class="colFirst"><code>@NotNull <a href="../../../../de/griefed/serverpackcreator/modscanning/AnnotationScanner.html" title="class in de.griefed.serverpackcreator.modscanning">AnnotationScanner</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/modscanning/ModScanner.html#annotations--">annotations</a></span>()</code>
 <div class="block">Forge annotation-based scanner.</div>
 </td>
 </tr>
 <tr id="i1" class="rowColor">
-<td class="colFirst"><code><a href="../../../../de/griefed/serverpackcreator/modscanning/FabricScanner.html" title="class in de.griefed.serverpackcreator.modscanning">FabricScanner</a></code></td>
+<td class="colFirst"><code>@NotNull <a href="../../../../de/griefed/serverpackcreator/modscanning/FabricScanner.html" title="class in de.griefed.serverpackcreator.modscanning">FabricScanner</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/modscanning/ModScanner.html#fabric--">fabric</a></span>()</code>
 <div class="block">Fabric-based scanner.</div>
 </td>
 </tr>
 <tr id="i2" class="altColor">
-<td class="colFirst"><code><a href="../../../../de/griefed/serverpackcreator/modscanning/QuiltScanner.html" title="class in de.griefed.serverpackcreator.modscanning">QuiltScanner</a></code></td>
+<td class="colFirst"><code>@NotNull <a href="../../../../de/griefed/serverpackcreator/modscanning/QuiltScanner.html" title="class in de.griefed.serverpackcreator.modscanning">QuiltScanner</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/modscanning/ModScanner.html#quilt--">quilt</a></span>()</code>
 <div class="block">Quilt-based scanner.</div>
 </td>
 </tr>
 <tr id="i3" class="rowColor">
-<td class="colFirst"><code><a href="../../../../de/griefed/serverpackcreator/modscanning/TomlScanner.html" title="class in de.griefed.serverpackcreator.modscanning">TomlScanner</a></code></td>
+<td class="colFirst"><code>@NotNull <a href="../../../../de/griefed/serverpackcreator/modscanning/TomlScanner.html" title="class in de.griefed.serverpackcreator.modscanning">TomlScanner</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../de/griefed/serverpackcreator/modscanning/ModScanner.html#tomls--">tomls</a></span>()</code>
 <div class="block">Forge toml-based scanner.</div>
 </td>
@@ -202,11 +202,16 @@ extends java.lang.Object</pre>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>ModScanner</h4>
-<pre>@Autowired
-public&nbsp;ModScanner(<a href="../../../../de/griefed/serverpackcreator/modscanning/AnnotationScanner.html" title="class in de.griefed.serverpackcreator.modscanning">AnnotationScanner</a>&nbsp;annotationScanner,
-                             <a href="../../../../de/griefed/serverpackcreator/modscanning/FabricScanner.html" title="class in de.griefed.serverpackcreator.modscanning">FabricScanner</a>&nbsp;fabricScanner,
-                             <a href="../../../../de/griefed/serverpackcreator/modscanning/QuiltScanner.html" title="class in de.griefed.serverpackcreator.modscanning">QuiltScanner</a>&nbsp;quiltScanner,
-                             <a href="../../../../de/griefed/serverpackcreator/modscanning/TomlScanner.html" title="class in de.griefed.serverpackcreator.modscanning">TomlScanner</a>&nbsp;tomlScanner)</pre>
+<pre>@Contract(pure=true)
+ @Autowired
+public&nbsp;ModScanner(@NotNull
+                                                   @NotNull <a href="../../../../de/griefed/serverpackcreator/modscanning/AnnotationScanner.html" title="class in de.griefed.serverpackcreator.modscanning">AnnotationScanner</a>&nbsp;annotationScanner,
+                                                   @NotNull
+                                                   @NotNull <a href="../../../../de/griefed/serverpackcreator/modscanning/FabricScanner.html" title="class in de.griefed.serverpackcreator.modscanning">FabricScanner</a>&nbsp;fabricScanner,
+                                                   @NotNull
+                                                   @NotNull <a href="../../../../de/griefed/serverpackcreator/modscanning/QuiltScanner.html" title="class in de.griefed.serverpackcreator.modscanning">QuiltScanner</a>&nbsp;quiltScanner,
+                                                   @NotNull
+                                                   @NotNull <a href="../../../../de/griefed/serverpackcreator/modscanning/TomlScanner.html" title="class in de.griefed.serverpackcreator.modscanning">TomlScanner</a>&nbsp;tomlScanner)</pre>
 </li>
 </ul>
 </li>
@@ -223,7 +228,9 @@ public&nbsp;ModScanner(<a href="../../../../de/griefed/serverpackcreator/modscan
 <ul class="blockList">
 <li class="blockList">
 <h4>annotations</h4>
-<pre>public&nbsp;<a href="../../../../de/griefed/serverpackcreator/modscanning/AnnotationScanner.html" title="class in de.griefed.serverpackcreator.modscanning">AnnotationScanner</a>&nbsp;annotations()</pre>
+<pre>@Contract(pure=true)
+ @NotNull
+public&nbsp;@NotNull <a href="../../../../de/griefed/serverpackcreator/modscanning/AnnotationScanner.html" title="class in de.griefed.serverpackcreator.modscanning">AnnotationScanner</a>&nbsp;annotations()</pre>
 <div class="block">Forge annotation-based scanner.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
@@ -237,7 +244,9 @@ public&nbsp;ModScanner(<a href="../../../../de/griefed/serverpackcreator/modscan
 <ul class="blockList">
 <li class="blockList">
 <h4>fabric</h4>
-<pre>public&nbsp;<a href="../../../../de/griefed/serverpackcreator/modscanning/FabricScanner.html" title="class in de.griefed.serverpackcreator.modscanning">FabricScanner</a>&nbsp;fabric()</pre>
+<pre>@Contract(pure=true)
+ @NotNull
+public&nbsp;@NotNull <a href="../../../../de/griefed/serverpackcreator/modscanning/FabricScanner.html" title="class in de.griefed.serverpackcreator.modscanning">FabricScanner</a>&nbsp;fabric()</pre>
 <div class="block">Fabric-based scanner.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
@@ -251,7 +260,9 @@ public&nbsp;ModScanner(<a href="../../../../de/griefed/serverpackcreator/modscan
 <ul class="blockList">
 <li class="blockList">
 <h4>quilt</h4>
-<pre>public&nbsp;<a href="../../../../de/griefed/serverpackcreator/modscanning/QuiltScanner.html" title="class in de.griefed.serverpackcreator.modscanning">QuiltScanner</a>&nbsp;quilt()</pre>
+<pre>@Contract(pure=true)
+ @NotNull
+public&nbsp;@NotNull <a href="../../../../de/griefed/serverpackcreator/modscanning/QuiltScanner.html" title="class in de.griefed.serverpackcreator.modscanning">QuiltScanner</a>&nbsp;quilt()</pre>
 <div class="block">Quilt-based scanner.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
@@ -265,7 +276,9 @@ public&nbsp;ModScanner(<a href="../../../../de/griefed/serverpackcreator/modscan
 <ul class="blockListLast">
 <li class="blockList">
 <h4>tomls</h4>
-<pre>public&nbsp;<a href="../../../../de/griefed/serverpackcreator/modscanning/TomlScanner.html" title="class in de.griefed.serverpackcreator.modscanning">TomlScanner</a>&nbsp;tomls()</pre>
+<pre>@Contract(pure=true)
+ @NotNull
+public&nbsp;@NotNull <a href="../../../../de/griefed/serverpackcreator/modscanning/TomlScanner.html" title="class in de.griefed.serverpackcreator.modscanning">TomlScanner</a>&nbsp;tomls()</pre>
 <div class="block">Forge toml-based scanner.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>

@@ -128,8 +128,8 @@ extends java.lang.Object</pre>
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/fabric/FabricIntermediaries.html#FabricIntermediaries-java.io.File-com.fasterxml.jackson.databind.ObjectMapper-">FabricIntermediaries</a></span>(java.io.File&nbsp;intermediaryManifest,
-                    com.fasterxml.jackson.databind.ObjectMapper&nbsp;objectMapper)</code>
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/fabric/FabricIntermediaries.html#FabricIntermediaries-java.io.File-com.fasterxml.jackson.databind.ObjectMapper-">FabricIntermediaries</a></span>(@NotNull java.io.File&nbsp;intermediaryManifest,
+                    @NotNull com.fasterxml.jackson.databind.ObjectMapper&nbsp;objectMapper)</code>
 <div class="block">Instantiate Fabric intermediaries.</div>
 </td>
 </tr>
@@ -149,16 +149,16 @@ extends java.lang.Object</pre>
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr id="i0" class="altColor">
-<td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/fabric/FabricIntermediaries.html#areIntermediariesPresent-java.lang.String-">areIntermediariesPresent</a></span>(java.lang.String&nbsp;minecraftVersion)</code>
-<div class="block">Check whether Fabric Intermediaries for the given Minecraft version are present, indicating
- that the given Minecraft version is supported.</div>
+<td class="colFirst"><code>@NotNull java.util.Optional&lt;<a href="../../../../../de/griefed/serverpackcreator/versionmeta/fabric/FabricIntermediary.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric">FabricIntermediary</a>&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/fabric/FabricIntermediaries.html#getIntermediary-java.lang.String-">getIntermediary</a></span>(@NotNull java.lang.String&nbsp;minecraftVersion)</code>
+<div class="block">Get a specific intermediary, wrapped in an <code>Optional</code>.</div>
 </td>
 </tr>
 <tr id="i1" class="rowColor">
-<td class="colFirst"><code>java.util.Optional&lt;<a href="../../../../../de/griefed/serverpackcreator/versionmeta/fabric/FabricIntermediary.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric">FabricIntermediary</a>&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/fabric/FabricIntermediaries.html#getIntermediary-java.lang.String-">getIntermediary</a></span>(java.lang.String&nbsp;minecraftVersion)</code>
-<div class="block">Get a specific intermediary, wrapped in an <code>Optional</code>.</div>
+<td class="colFirst"><code>boolean</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../de/griefed/serverpackcreator/versionmeta/fabric/FabricIntermediaries.html#isIntermediariesPresent-java.lang.String-">isIntermediariesPresent</a></span>(@NotNull java.lang.String&nbsp;minecraftVersion)</code>
+<div class="block">Check whether Fabric Intermediaries for the given Minecraft version are present, indicating
+ that the given Minecraft version is supported.</div>
 </td>
 </tr>
 <tr id="i2" class="altColor">
@@ -195,8 +195,10 @@ extends java.lang.Object</pre>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>FabricIntermediaries</h4>
-<pre>public&nbsp;FabricIntermediaries(java.io.File&nbsp;intermediaryManifest,
-                            com.fasterxml.jackson.databind.ObjectMapper&nbsp;objectMapper)</pre>
+<pre>public&nbsp;FabricIntermediaries(@NotNull
+                            @NotNull java.io.File&nbsp;intermediaryManifest,
+                            @NotNull
+                            @NotNull com.fasterxml.jackson.databind.ObjectMapper&nbsp;objectMapper)</pre>
 <div class="block">Instantiate Fabric intermediaries.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -228,29 +230,14 @@ extends java.lang.Object</pre>
 </dl>
 </li>
 </ul>
-<a name="getIntermediary-java.lang.String-">
+<a name="isIntermediariesPresent-java.lang.String-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>getIntermediary</h4>
-<pre>public&nbsp;java.util.Optional&lt;<a href="../../../../../de/griefed/serverpackcreator/versionmeta/fabric/FabricIntermediary.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric">FabricIntermediary</a>&gt;&nbsp;getIntermediary(java.lang.String&nbsp;minecraftVersion)</pre>
-<div class="block">Get a specific intermediary, wrapped in an <code>Optional</code>.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>minecraftVersion</code> - Minecraft version.</dd>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>A specific intermediary, wrapped in an <code>Optional</code>.</dd>
-</dl>
-</li>
-</ul>
-<a name="areIntermediariesPresent-java.lang.String-">
-<!--   -->
-</a>
-<ul class="blockListLast">
-<li class="blockList">
-<h4>areIntermediariesPresent</h4>
-<pre>public&nbsp;boolean&nbsp;areIntermediariesPresent(java.lang.String&nbsp;minecraftVersion)</pre>
+<h4>isIntermediariesPresent</h4>
+<pre>public&nbsp;boolean&nbsp;isIntermediariesPresent(@NotNull
+                                       @NotNull java.lang.String&nbsp;minecraftVersion)</pre>
 <div class="block">Check whether Fabric Intermediaries for the given Minecraft version are present, indicating
  that the given Minecraft version is supported.</div>
 <dl>
@@ -258,6 +245,24 @@ extends java.lang.Object</pre>
 <dd><code>minecraftVersion</code> - The Minecraft version to check for.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd><code>true</code> if intermediaries are present.</dd>
+</dl>
+</li>
+</ul>
+<a name="getIntermediary-java.lang.String-">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>getIntermediary</h4>
+<pre>@NotNull
+public&nbsp;@NotNull java.util.Optional&lt;<a href="../../../../../de/griefed/serverpackcreator/versionmeta/fabric/FabricIntermediary.html" title="class in de.griefed.serverpackcreator.versionmeta.fabric">FabricIntermediary</a>&gt;&nbsp;getIntermediary(@NotNull
+                                                                                @NotNull java.lang.String&nbsp;minecraftVersion)</pre>
+<div class="block">Get a specific intermediary, wrapped in an <code>Optional</code>.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>minecraftVersion</code> - Minecraft version.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>A specific intermediary, wrapped in an <code>Optional</code>.</dd>
 </dl>
 </li>
 </ul>
