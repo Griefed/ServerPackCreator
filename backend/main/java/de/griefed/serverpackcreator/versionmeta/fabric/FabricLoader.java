@@ -19,12 +19,14 @@
  */
 package de.griefed.serverpackcreator.versionmeta.fabric;
 
-import de.griefed.serverpackcreator.versionmeta.ManifestParser;
+import de.griefed.serverpackcreator.utilities.common.Utilities;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.xml.parsers.ParserConfigurationException;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -33,8 +35,9 @@ import org.xml.sax.SAXException;
  *
  * @author Griefed
  */
-final class FabricLoader extends ManifestParser {
+final class FabricLoader {
 
+  private final Utilities UTILITIES;
   private final List<String> loaders = new ArrayList<>(100);
   private final File MANIFEST;
   private String latest;
@@ -44,10 +47,13 @@ final class FabricLoader extends ManifestParser {
    * Create a new instance of the Fabric Loader.
    *
    * @param loaderManifest The manifest used when updating available versions.
+   * @param utilities      Commonly used utilities across ServerPackCreator.
    * @author Griefed
    */
-  FabricLoader(File loaderManifest) {
+  FabricLoader(@NotNull File loaderManifest,
+               @NotNull Utilities utilities) {
     MANIFEST = loaderManifest;
+    UTILITIES = utilities;
   }
 
   /**
@@ -56,7 +62,7 @@ final class FabricLoader extends ManifestParser {
    * @author Griefed
    */
   void update() throws ParserConfigurationException, IOException, SAXException {
-    Document document = getXml(MANIFEST);
+    Document document = UTILITIES.XmlUtilities().getXml(MANIFEST);
     latest =
         document
             .getElementsByTagName("latest")
@@ -89,7 +95,8 @@ final class FabricLoader extends ManifestParser {
    * @return The latest Fabric loader version.
    * @author Griefed
    */
-  String latestLoaderVersion() {
+  @Contract(pure = true)
+  @NotNull String latestLoaderVersion() {
     return latest;
   }
 
@@ -99,7 +106,8 @@ final class FabricLoader extends ManifestParser {
    * @return The release Fabric loader version.
    * @author Griefed
    */
-  String releaseLoaderVersion() {
+  @Contract(pure = true)
+  @NotNull String releaseLoaderVersion() {
     return release;
   }
 
@@ -109,7 +117,8 @@ final class FabricLoader extends ManifestParser {
    * @return List of the available Fabric loader versions.
    * @author Griefed
    */
-  List<String> loaders() {
+  @Contract(pure = true)
+  @NotNull List<String> loaders() {
     return loaders;
   }
 }

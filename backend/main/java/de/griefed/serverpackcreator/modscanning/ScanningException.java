@@ -19,13 +19,22 @@
  */
 package de.griefed.serverpackcreator.modscanning;
 
+import org.jetbrains.annotations.NotNull;
+
+/**
+ * Exceptions thrown if an error occurred trying to scan a mod for its sideness.
+ *
+ * @author Griefed
+ */
 final class ScanningException extends Exception {
 
-  public ScanningException(String errorMessage, Throwable error) {
-    super(errorMessage, error);
-  }
-
-  public ScanningException(String errorMessage) {
+  /**
+   * Throw a new exception indicating that an error occurred during the sideness-scanning of a mod.
+   *
+   * @param errorMessage The message indicating what exactly went wrong.
+   * @author Griefed
+   */
+  public ScanningException(@NotNull String errorMessage) {
     super(errorMessage);
   }
 }

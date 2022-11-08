@@ -51,9 +51,10 @@ public class VersionsController {
    * @author Griefed
    */
   @Autowired
-  public VersionsController(VersionMeta injectedVersionMeta, Utilities injectedUtilities) {
-    this.VERSIONMETA = injectedVersionMeta;
-    this.UTILITIES = injectedUtilities;
+  public VersionsController(VersionMeta injectedVersionMeta,
+                            Utilities injectedUtilities) {
+    VERSIONMETA = injectedVersionMeta;
+    UTILITIES = injectedUtilities;
   }
 
   /**
@@ -66,12 +67,13 @@ public class VersionsController {
   public ResponseEntity<String> getAvailableMinecraftVersions() {
 
     return ResponseEntity.ok()
-        .header("Content-Type", "application/json")
-        .body(
-            "{\"minecraft\":"
-                + UTILITIES.ListUtils()
-                .encapsulateListElements(VERSIONMETA.minecraft().releaseVersionsDescending())
-                + "}");
+                         .header("Content-Type", "application/json")
+                         .body(
+                             "{\"minecraft\":"
+                                 + UTILITIES.ListUtils()
+                                            .encapsulateListElements(
+                                                VERSIONMETA.minecraft().releaseVersionsDescending())
+                                 + "}");
   }
 
   /**
@@ -85,19 +87,19 @@ public class VersionsController {
   public ResponseEntity<String> getAvailableForgeVersions(
       @PathVariable("minecraftversion") String minecraftVersion) {
 
-    if (VERSIONMETA.forge().availableForgeVersionsDescending(minecraftVersion).isPresent()) {
+    if (VERSIONMETA.forge().supportedForgeVersionsAscending(minecraftVersion).isPresent()) {
 
       return ResponseEntity.ok()
-          .header("Content-Type", "application/json")
-          .body(
-              "{\"forge\":"
-                  + UTILITIES.ListUtils()
-                  .encapsulateListElements(
-                      VERSIONMETA
-                          .forge()
-                          .availableForgeVersionsDescending(minecraftVersion)
-                          .get())
-                  + "}");
+                           .header("Content-Type", "application/json")
+                           .body(
+                               "{\"forge\":"
+                                   + UTILITIES.ListUtils()
+                                              .encapsulateListElements(
+                                                  VERSIONMETA
+                                                      .forge()
+                                                      .supportedForgeVersionsAscending(minecraftVersion)
+                                                      .get())
+                                   + "}");
 
     } else {
 
@@ -115,35 +117,35 @@ public class VersionsController {
   public ResponseEntity<String> getAvailableFabricVersions() {
 
     return ResponseEntity.ok()
-        .header("Content-Type", "application/json")
-        .body(
-            "{\"fabric\":"
-                + UTILITIES.ListUtils()
-                .encapsulateListElements(VERSIONMETA.fabric().loaderVersionsListDescending())
-                + "}");
+                         .header("Content-Type", "application/json")
+                         .body(
+                             "{\"fabric\":"
+                                 + UTILITIES.ListUtils()
+                                            .encapsulateListElements(
+                                                VERSIONMETA.fabric().loaderVersionsListDescending())
+                                 + "}");
   }
 
   /**
    * Get the Latest Fabric Installer and Release Fabric installer versions as a JSON object.
    *
-   * @return String, JSON. Returns the Latest Fabric Installer and Release Fabric Installer as a
-   * JSON object.
+   * @return Returns the Latest Fabric Installer and Release Fabric Installer as a JSON object.
    * @author Griefed
    */
   @GetMapping(value = "/fabric/installer", produces = "application/json")
   public ResponseEntity<String> getAvailableFabricInstallerVersions() {
 
     return ResponseEntity.ok()
-        .header("Content-Type", "application/json")
-        .body(
-            "{"
-                + "\"release\":\""
-                + VERSIONMETA.fabric().releaseInstaller()
-                + "\","
-                + "\"latest\":\""
-                + VERSIONMETA.fabric().releaseInstaller()
-                + "\""
-                + "}");
+                         .header("Content-Type", "application/json")
+                         .body(
+                             "{"
+                                 + "\"release\":\""
+                                 + VERSIONMETA.fabric().releaseInstaller()
+                                 + "\","
+                                 + "\"latest\":\""
+                                 + VERSIONMETA.fabric().releaseInstaller()
+                                 + "\""
+                                 + "}");
   }
 
   /**
@@ -156,34 +158,34 @@ public class VersionsController {
   public ResponseEntity<String> getAvailableQuiltVersions() {
 
     return ResponseEntity.ok()
-        .header("Content-Type", "application/json")
-        .body(
-            "{\"quilt\":"
-                + UTILITIES.ListUtils()
-                .encapsulateListElements(VERSIONMETA.quilt().loaderVersionsListDescending())
-                + "}");
+                         .header("Content-Type", "application/json")
+                         .body(
+                             "{\"quilt\":"
+                                 + UTILITIES.ListUtils()
+                                            .encapsulateListElements(
+                                                VERSIONMETA.quilt().loaderVersionsListDescending())
+                                 + "}");
   }
 
   /**
    * Get the Latest Fabric Installer and Release Fabric installer versions as a JSON object.
    *
-   * @return String, JSON. Returns the Latest Fabric Installer and Release Fabric Installer as a
-   * JSON object.
+   * @return Returns the Latest Fabric Installer and Release Fabric Installer as a JSON object.
    * @author Griefed
    */
   @GetMapping(value = "/quilt/installer", produces = "application/json")
   public ResponseEntity<String> getAvailableQuiltInstallerVersions() {
 
     return ResponseEntity.ok()
-        .header("Content-Type", "application/json")
-        .body(
-            "{"
-                + "\"release\":\""
-                + VERSIONMETA.quilt().releaseInstaller()
-                + "\","
-                + "\"latest\":\""
-                + VERSIONMETA.quilt().releaseInstaller()
-                + "\""
-                + "}");
+                         .header("Content-Type", "application/json")
+                         .body(
+                             "{"
+                                 + "\"release\":\""
+                                 + VERSIONMETA.quilt().releaseInstaller()
+                                 + "\","
+                                 + "\"latest\":\""
+                                 + VERSIONMETA.quilt().releaseInstaller()
+                                 + "\""
+                                 + "}");
   }
 }

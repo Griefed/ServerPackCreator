@@ -21,6 +21,7 @@ package de.griefed.serverpackcreator.versionmeta.fabric;
 
 import java.util.Date;
 import java.util.List;
+import org.jetbrains.annotations.Contract;
 
 /**
  * Fabric loader details
@@ -38,6 +39,7 @@ public final class FabricDetails {
   private FabricArguments arguments;
   private List<FabricLibrary> libraries;
 
+  @Contract(pure = true)
   FabricDetails() {
   }
 
@@ -47,6 +49,7 @@ public final class FabricDetails {
    * @return The Fabric loader ID for the requested Minecraft and Fabric versions.
    * @author Griefed
    */
+  @Contract(pure = true)
   public String getId() {
     return id;
   }
@@ -57,6 +60,7 @@ public final class FabricDetails {
    * @return The Minecrat version of this Fabric loader.
    * @author Griefed
    */
+  @Contract(pure = true)
   public String getInheritsFrom() {
     return inheritsFrom;
   }
@@ -67,6 +71,7 @@ public final class FabricDetails {
    * @return The release date of this Fabric loader.
    * @author Griefed
    */
+  @Contract(pure = true)
   public Date getReleaseTime() {
     return releaseTime;
   }
@@ -78,6 +83,7 @@ public final class FabricDetails {
    * @return The date of this Fabric loader.
    * @author Griefed
    */
+  @Contract(pure = true)
   public Date getTime() {
     return time;
   }
@@ -88,6 +94,7 @@ public final class FabricDetails {
    * @return Release type of this Fabric loader.
    * @author Griefed
    */
+  @Contract(pure = true)
   public String getType() {
     return type;
   }
@@ -98,6 +105,7 @@ public final class FabricDetails {
    * @return Main class.
    * @author Griefed
    */
+  @Contract(pure = true)
   public String getMainClass() {
     return mainClass;
   }
@@ -108,6 +116,7 @@ public final class FabricDetails {
    * @return Arguments of this Fabric loader.
    * @author Griefed
    */
+  @Contract(pure = true)
   public FabricArguments getArguments() {
     return arguments;
   }
@@ -118,6 +127,7 @@ public final class FabricDetails {
    * @return Library-list used by this Fabric loader.
    * @author Griefed
    */
+  @Contract(pure = true)
   public List<FabricLibrary> getLibraries() {
     return libraries;
   }

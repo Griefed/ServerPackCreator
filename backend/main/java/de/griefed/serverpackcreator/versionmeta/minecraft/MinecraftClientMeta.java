@@ -20,10 +20,8 @@
 package de.griefed.serverpackcreator.versionmeta.minecraft;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.utilities.common.Utilities;
-import de.griefed.serverpackcreator.versionmeta.ManifestParser;
 import de.griefed.serverpackcreator.versionmeta.Type;
 import de.griefed.serverpackcreator.versionmeta.forge.ForgeMeta;
 import java.io.File;
@@ -34,25 +32,24 @@ import java.util.HashMap;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Minecraft client meta containing informatiom about available Minecraft releases.
  *
  * @author Griefed
  */
-final class MinecraftClientMeta extends ManifestParser {
+final class MinecraftClientMeta {
 
   private static final Logger LOG = LogManager.getLogger(MinecraftClientMeta.class);
-  private final ObjectMapper OBJECTMAPPER;
   private final Utilities UTILITIES;
   private final ApplicationProperties APPLICATIONPROPERTIES;
-
   private final ForgeMeta FORGE_META;
   private final File MINECRAFT_MANIFEST;
   private final List<MinecraftClient> RELEASES = new ArrayList<>(100);
   private final List<MinecraftClient> SNAPSHOTS = new ArrayList<>(200);
   private final List<MinecraftClient> ALL = new ArrayList<>(300);
-
   private MinecraftClient latestRelease;
   private MinecraftClient latestSnapshot;
   private HashMap<String, MinecraftClient> meta = new HashMap<>(300);
@@ -63,20 +60,20 @@ final class MinecraftClientMeta extends ManifestParser {
    * @param injectedForgeMeta     To acquire Forge instances for this {@link MinecraftClient}
    *                              version.
    * @param minecraftManifest     Minecraft manifest file.
-   * @param objectMapper          Object mapper for JSON parsing.
-   * @param utilities             Instance of commonly used utilities.
+   * @param utilities             Commonly used utilities across ServerPackCreator.
    * @param applicationProperties ServerPackCreator settings.
    * @author Griefed
    */
   MinecraftClientMeta(
-      File minecraftManifest, ForgeMeta injectedForgeMeta, ObjectMapper objectMapper,
-      Utilities utilities, ApplicationProperties applicationProperties) {
+      @NotNull File minecraftManifest,
+      @NotNull ForgeMeta injectedForgeMeta,
+      @NotNull Utilities utilities,
+      @NotNull ApplicationProperties applicationProperties) {
 
     APPLICATIONPROPERTIES = applicationProperties;
     UTILITIES = utilities;
     MINECRAFT_MANIFEST = minecraftManifest;
     FORGE_META = injectedForgeMeta;
-    OBJECTMAPPER = objectMapper;
   }
 
   /**
@@ -91,7 +88,7 @@ final class MinecraftClientMeta extends ManifestParser {
     SNAPSHOTS.clear();
     meta = new HashMap<>(100);
 
-    JsonNode minecraftManifest = getJson(MINECRAFT_MANIFEST, OBJECTMAPPER);
+    JsonNode minecraftManifest = UTILITIES.JsonUtilities().getJson(MINECRAFT_MANIFEST);
 
     minecraftManifest
         .get("versions")
@@ -108,7 +105,6 @@ final class MinecraftClientMeta extends ManifestParser {
                       Type.RELEASE,
                       new URL(minecraftVersion.get("url").asText()),
                       FORGE_META,
-                      OBJECTMAPPER,
                       UTILITIES,
                       APPLICATIONPROPERTIES);
 
@@ -129,7 +125,6 @@ final class MinecraftClientMeta extends ManifestParser {
                       Type.SNAPSHOT,
                       new URL(minecraftVersion.get("url").asText()),
                       FORGE_META,
-                      OBJECTMAPPER,
                       UTILITIES,
                       APPLICATIONPROPERTIES);
 
@@ -175,7 +170,8 @@ final class MinecraftClientMeta extends ManifestParser {
    * @return All available Minecraft releases.
    * @author Griefed
    */
-  List<MinecraftClient> all() {
+  @Contract(pure = true)
+  @NotNull List<MinecraftClient> all() {
     return ALL;
   }
 
@@ -185,7 +181,8 @@ final class MinecraftClientMeta extends ManifestParser {
    * @return Client-list of the {@link Type#RELEASE}.
    * @author Griefed
    */
-  List<MinecraftClient> releases() {
+  @Contract(pure = true)
+  @NotNull List<MinecraftClient> releases() {
     return RELEASES;
   }
 
@@ -195,7 +192,8 @@ final class MinecraftClientMeta extends ManifestParser {
    * @return Client-list of the {@link Type#SNAPSHOT}.
    * @author Griefed
    */
-  List<MinecraftClient> snapshots() {
+  @Contract(pure = true)
+  @NotNull List<MinecraftClient> snapshots() {
     return SNAPSHOTS;
   }
 
@@ -205,7 +203,8 @@ final class MinecraftClientMeta extends ManifestParser {
    * @return Latest release as a {@link MinecraftClient}
    * @author Griefed
    */
-  MinecraftClient latestRelease() {
+  @Contract(pure = true)
+  @NotNull MinecraftClient latestRelease() {
     return latestRelease;
   }
 
@@ -215,7 +214,8 @@ final class MinecraftClientMeta extends ManifestParser {
    * @return Latest snapshot as a {@link MinecraftClient}
    * @author Griefed
    */
-  MinecraftClient latestSnapshot() {
+  @Contract(pure = true)
+  @NotNull MinecraftClient latestSnapshot() {
     return latestSnapshot;
   }
 
@@ -226,7 +226,8 @@ final class MinecraftClientMeta extends ManifestParser {
    * @return Map containing the client meta.
    * @author Griefed
    */
-  HashMap<String, MinecraftClient> meta() {
+  @Contract(pure = true)
+  @NotNull HashMap<String, MinecraftClient> meta() {
     return meta;
   }
 }

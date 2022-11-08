@@ -25,6 +25,7 @@ import java.net.URL;
 import java.util.List;
 import java.util.Optional;
 import javax.xml.parsers.ParserConfigurationException;
+import org.jetbrains.annotations.NotNull;
 import org.xml.sax.SAXException;
 
 public interface Meta {
@@ -46,7 +47,7 @@ public interface Meta {
    * @return The latest version.
    * @author Griefed
    */
-  String latestLoader();
+  @NotNull String latestLoader();
 
   /**
    * Get the release loader version.
@@ -54,7 +55,7 @@ public interface Meta {
    * @return The release loader version.
    * @author Griefed
    */
-  String releaseLoader();
+  @NotNull String releaseLoader();
 
   /**
    * Get the latest installer version.
@@ -62,7 +63,7 @@ public interface Meta {
    * @return The latest installer version.
    * @author Griefed
    */
-  String latestInstaller();
+  @NotNull String latestInstaller();
 
   /**
    * Get the release installer version.
@@ -70,7 +71,7 @@ public interface Meta {
    * @return The release installer version.
    * @author Griefed
    */
-  String releaseInstaller();
+  @NotNull String releaseInstaller();
 
   /**
    * List of available loader versions in ascending order.
@@ -78,7 +79,7 @@ public interface Meta {
    * @return Available loader versions in ascending order.
    * @author Griefed
    */
-  List<String> loaderVersionsListAscending();
+  @NotNull List<String> loaderVersionsListAscending();
 
   /**
    * List of available loader versions in descending order.
@@ -86,7 +87,7 @@ public interface Meta {
    * @return Available loader versions in descending order.
    * @author Griefed
    */
-  List<String> loaderVersionsListDescending();
+  @NotNull List<String> loaderVersionsListDescending();
 
   /**
    * Array of available loader versions in ascending order.
@@ -94,7 +95,7 @@ public interface Meta {
    * @return Available loader versions in ascending order.
    * @author Griefed
    */
-  String[] loaderVersionsArrayAscending();
+  @NotNull String @NotNull [] loaderVersionsArrayAscending();
 
   /**
    * Array of available loader versions in descending order.
@@ -102,7 +103,7 @@ public interface Meta {
    * @return Available loader versions in descending order.
    * @author Griefed
    */
-  String[] loaderVersionsArrayDescending();
+  @NotNull String @NotNull [] loaderVersionsArrayDescending();
 
   /**
    * List of available installer version in ascending order.
@@ -110,7 +111,7 @@ public interface Meta {
    * @return Available installer version in ascending order.
    * @author Griefed
    */
-  List<String> installerVersionsListAscending();
+  @NotNull List<String> installerVersionsListAscending();
 
   /**
    * List of available installer version in descending order.
@@ -118,7 +119,7 @@ public interface Meta {
    * @return Available installer version in descending order.
    * @author Griefed
    */
-  List<String> installerVersionsListDescending();
+  @NotNull List<String> installerVersionsListDescending();
 
   /**
    * Array of available installer version in ascending order.
@@ -126,7 +127,7 @@ public interface Meta {
    * @return Available installer version in ascending order.
    * @author Griefed
    */
-  String[] installerVersionsArrayAscending();
+  @NotNull String @NotNull [] installerVersionsArrayAscending();
 
   /**
    * Array of available installer version in descending order.
@@ -134,7 +135,7 @@ public interface Meta {
    * @return Available installer version in descending order.
    * @author Griefed
    */
-  String[] installerVersionsArrayDescending();
+  @NotNull String @NotNull [] installerVersionsArrayDescending();
 
   /**
    * Get the URL to the latest installer.
@@ -143,7 +144,7 @@ public interface Meta {
    * @throws MalformedURLException when the URL could not be created.
    * @author Griefed
    */
-  URL latestInstallerUrl() throws MalformedURLException;
+  @NotNull URL latestInstallerUrl() throws MalformedURLException;
 
   /**
    * Get the URL to the release installer.
@@ -152,7 +153,7 @@ public interface Meta {
    * @throws MalformedURLException when the URL could not be created.
    * @author Griefed
    */
-  URL releaseInstallerUrl() throws MalformedURLException;
+  @NotNull URL releaseInstallerUrl() throws MalformedURLException;
 
   /**
    * Check whether a URL to an installer is available for the specified version.
@@ -171,7 +172,7 @@ public interface Meta {
    * @throws MalformedURLException when the URL could not be created.
    * @author Griefed
    */
-  Optional<URL> getInstallerUrl(String version) throws MalformedURLException;
+  @NotNull Optional<URL> getInstallerUrl(@NotNull String version) throws MalformedURLException;
 
   /**
    * Check whether the specified version is available/correct/valid.
@@ -180,7 +181,7 @@ public interface Meta {
    * @return {@code true} if the specified version is available/correct/valid.
    * @author Griefed
    */
-  boolean isVersionValid(String version);
+  boolean isVersionValid(@NotNull String version);
 
   /**
    * Check whether the given Minecraft version is supported by this modloader.
@@ -189,5 +190,5 @@ public interface Meta {
    * @return {@code true} if the specified Minecraft version is supported.
    * @author Griefed
    */
-  boolean isMinecraftSupported(String minecraftVersion);
+  boolean isMinecraftSupported(@NotNull String minecraftVersion);
 }

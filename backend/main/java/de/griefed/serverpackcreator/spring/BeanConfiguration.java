@@ -20,10 +20,14 @@
 package de.griefed.serverpackcreator.spring;
 
 import com.electronwill.nightconfig.toml.TomlParser;
+import com.fasterxml.jackson.core.json.JsonReadFeature;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.griefed.serverpackcreator.ApplicationProperties;
 import java.io.File;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -41,7 +45,7 @@ public class BeanConfiguration {
 
   @Autowired
   public BeanConfiguration(ApplicationProperties applicationProperties) {
-    this.APPLICATIONPROPERTIES = applicationProperties;
+    APPLICATIONPROPERTIES = applicationProperties;
   }
 
   /**
@@ -52,7 +56,7 @@ public class BeanConfiguration {
    */
   @Bean
   public File minecraftManifest() {
-    return APPLICATIONPROPERTIES.MINECRAFT_VERSION_MANIFEST_LOCATION();
+    return APPLICATIONPROPERTIES.minecraftVersionManifest();
   }
 
   /**
@@ -63,7 +67,7 @@ public class BeanConfiguration {
    */
   @Bean
   public File forgeManifest() {
-    return APPLICATIONPROPERTIES.FORGE_VERSION_MANIFEST_LOCATION();
+    return APPLICATIONPROPERTIES.forgeVersionManifest();
   }
 
   /**
@@ -74,7 +78,7 @@ public class BeanConfiguration {
    */
   @Bean
   public File fabricManifest() {
-    return APPLICATIONPROPERTIES.FABRIC_VERSION_MANIFEST_LOCATION();
+    return APPLICATIONPROPERTIES.fabricVersionManifest();
   }
 
   /**
@@ -85,7 +89,7 @@ public class BeanConfiguration {
    */
   @Bean
   public File fabricIntermediariesManifest() {
-    return APPLICATIONPROPERTIES.FABRIC_INTERMEDIARIES_MANIFEST_LOCATION();
+    return APPLICATIONPROPERTIES.fabricIntermediariesManifest();
   }
 
   /**
@@ -96,7 +100,7 @@ public class BeanConfiguration {
    */
   @Bean
   public File fabricInstallerManifest() {
-    return APPLICATIONPROPERTIES.FABRIC_INSTALLER_VERSION_MANIFEST_LOCATION();
+    return APPLICATIONPROPERTIES.fabricInstallerManifest();
   }
 
   /**
@@ -107,7 +111,7 @@ public class BeanConfiguration {
    */
   @Bean
   public File quiltManifest() {
-    return APPLICATIONPROPERTIES.QUILT_VERSION_MANIFEST_LOCATION();
+    return APPLICATIONPROPERTIES.quiltVersionManifest();
   }
 
   /**
@@ -118,7 +122,7 @@ public class BeanConfiguration {
    */
   @Bean
   public File quiltInstallerManifest() {
-    return APPLICATIONPROPERTIES.QUILT_INSTALLER_VERSION_MANIFEST_LOCATION();
+    return APPLICATIONPROPERTIES.quiltInstallerManifest();
   }
 
   /**
@@ -149,7 +153,8 @@ public class BeanConfiguration {
   public ObjectMapper objectMapper() {
     return new ObjectMapper()
         .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-        .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
+        .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+        .enable(JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS.mappedFeature());
   }
 
   /**
@@ -171,7 +176,7 @@ public class BeanConfiguration {
    */
   @Bean
   public File legacyFabricGameManifest() {
-    return APPLICATIONPROPERTIES.LEGACY_FABRIC_GAME_MANIFEST_LOCATION();
+    return APPLICATIONPROPERTIES.legacyFabricGameManifest();
   }
 
   /**
@@ -182,7 +187,7 @@ public class BeanConfiguration {
    */
   @Bean
   public File legacyFabricLoaderManifest() {
-    return APPLICATIONPROPERTIES.LEGACY_FABRIC_LOADER_MANIFEST_LOCATION();
+    return APPLICATIONPROPERTIES.legacyFabricLoaderManifest();
   }
 
   /**
@@ -193,6 +198,30 @@ public class BeanConfiguration {
    */
   @Bean
   public File legacyFabricInstallerManifest() {
-    return APPLICATIONPROPERTIES.LEGACY_FABRIC_INSTALLER_MANIFEST_LOCATION();
+    return APPLICATIONPROPERTIES.legacyFabricInstallerManifest();
+  }
+
+  /**
+   * DocumentBuilder for working with XML data.
+   *
+   * @return DocumentBuilder for working with XML data.
+   * @throws ParserConfigurationException if a DocumentBuilder cannot be created which satisfies the
+   *                                      configuration requested.
+   * @author Griefed
+   */
+  @Bean
+  public DocumentBuilder documentBuilder() throws ParserConfigurationException {
+    return DocumentBuilderFactory.newInstance().newDocumentBuilder();
+  }
+
+  /**
+   * Directory in which our language-property-files reside in. These will be used to read i18n
+   * key-value-pairs from.
+   *
+   * @return The directory in which the language-property-files reside in.
+   */
+  @Bean
+  public File languagePropertiesDirectory() {
+    return APPLICATIONPROPERTIES.langDirectory();
   }
 }

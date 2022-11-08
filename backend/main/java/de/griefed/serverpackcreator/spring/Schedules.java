@@ -56,23 +56,11 @@ public class Schedules {
    * @author Griefed
    */
   @Autowired
-  public Schedules(ServerPackService injectedServerPackService, VersionMeta injectedVersionMeta) {
+  public Schedules(ServerPackService injectedServerPackService,
+                   VersionMeta injectedVersionMeta) {
 
-    this.SERVERPACKSERVICE = injectedServerPackService;
-    this.VERSIONMETA = injectedVersionMeta;
-  }
-
-  private void deletePack(ServerPackModel pack) {
-    LOG.info("Deleting archive " + pack.getPath().replace("\\", "/"));
-    FileUtils.deleteQuietly(new File(pack.getPath().replace("\\", "/")));
-
-    LOG.info(
-        "Deleting folder " + pack.getPath().replace("\\", "/").replace("_server_pack-zip", ""));
-    FileUtils.deleteQuietly(
-        new File(pack.getPath().replace("\\", "/").replace("_server_pack-zip", "")));
-
-    LOG.info("Cleaned server pack " + pack.getId() + " from database.");
-    SERVERPACKSERVICE.deleteServerPack(pack.getId());
+    SERVERPACKSERVICE = injectedServerPackService;
+    VERSIONMETA = injectedVersionMeta;
   }
 
   /**
@@ -117,6 +105,19 @@ public class Schedules {
     }
   }
 
+  private void deletePack(ServerPackModel pack) {
+    LOG.info("Deleting archive " + pack.getPath());
+    FileUtils.deleteQuietly(new File(pack.getPath()));
+
+    LOG.info(
+        "Deleting folder " + pack.getPath().replace("_server_pack-zip", ""));
+    FileUtils.deleteQuietly(
+        new File(pack.getPath().replace("_server_pack-zip", "")));
+
+    LOG.info("Cleaned server pack " + pack.getId() + " from database.");
+    SERVERPACKSERVICE.deleteServerPack(pack.getId());
+  }
+
   @Scheduled(cron = "${de.griefed.serverpackcreator.spring.schedules.files.cleanup}")
   private void cleanFiles() {
     if (!SERVERPACKSERVICE.getServerPacks().isEmpty()) {
@@ -130,9 +131,9 @@ public class Schedules {
 
           LOG.info(
               "Deleting folder "
-                  + pack.getPath().replace("_server_pack-zip", "").replace("\\", "/"));
+                  + pack.getPath().replace("_server_pack-zip", ""));
           FileUtils.deleteQuietly(
-              new File(pack.getPath().replace("_server_pack-zip", "").replace("\\", "/")));
+              new File(pack.getPath().replace("_server_pack-zip", "")));
 
         } else {
           LOG.info("No files to clean up.");

@@ -19,12 +19,14 @@
  */
 package de.griefed.serverpackcreator.versionmeta.quilt;
 
-import de.griefed.serverpackcreator.versionmeta.ManifestParser;
+import de.griefed.serverpackcreator.utilities.common.Utilities;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.xml.parsers.ParserConfigurationException;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -33,8 +35,9 @@ import org.xml.sax.SAXException;
  *
  * @author Griefed
  */
-final class QuiltLoader extends ManifestParser {
+final class QuiltLoader {
 
+  private final Utilities UTILITIES;
   private final File MANIFEST;
   private final List<String> loaders = new ArrayList<>(100);
   private String latest;
@@ -44,10 +47,13 @@ final class QuiltLoader extends ManifestParser {
    * Create a new Quilt Loader instance.
    *
    * @param loaderManifest The manifest used when updating available versions.
+   * @param utilities      Commonly used utilities across ServerPackCreator.
    * @author Griefed
    */
-  QuiltLoader(File loaderManifest) {
+  QuiltLoader(@NotNull File loaderManifest,
+              @NotNull Utilities utilities) {
     MANIFEST = loaderManifest;
+    UTILITIES = utilities;
   }
 
   /**
@@ -56,7 +62,7 @@ final class QuiltLoader extends ManifestParser {
    * @author Griefed
    */
   void update() throws ParserConfigurationException, IOException, SAXException {
-    Document document = getXml(MANIFEST);
+    Document document = UTILITIES.XmlUtilities().getXml(MANIFEST);
 
     latest =
         document
@@ -92,7 +98,8 @@ final class QuiltLoader extends ManifestParser {
    * @return The latest Quilt loader version.
    * @author Griefed
    */
-  String latestLoaderVersion() {
+  @Contract(pure = true)
+  @NotNull String latestLoaderVersion() {
     return latest;
   }
 
@@ -102,7 +109,8 @@ final class QuiltLoader extends ManifestParser {
    * @return The release Quilt loader version.
    * @author Griefed
    */
-  String releaseLoaderVersion() {
+  @Contract(pure = true)
+  @NotNull String releaseLoaderVersion() {
     return release;
   }
 
@@ -112,7 +120,8 @@ final class QuiltLoader extends ManifestParser {
    * @return List of the available Quilt loader versions.
    * @author Griefed
    */
-  List<String> loaders() {
+  @Contract(pure = true)
+  @NotNull List<String> loaders() {
     return loaders;
   }
 }

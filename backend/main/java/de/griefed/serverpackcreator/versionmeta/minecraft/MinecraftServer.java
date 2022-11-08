@@ -20,15 +20,15 @@
 package de.griefed.serverpackcreator.versionmeta.minecraft;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.utilities.common.Utilities;
-import de.griefed.serverpackcreator.versionmeta.ManifestParser;
 import de.griefed.serverpackcreator.versionmeta.Type;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Optional;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Representation of a Minecraft server, containing information about its Minecraft-version,
@@ -36,10 +36,9 @@ import java.util.Optional;
  *
  * @author Griefed
  */
-public final class MinecraftServer extends ManifestParser {
+public final class MinecraftServer {
 
   private final Utilities UTILITIES;
-  private final ObjectMapper OBJECT_MAPPER;
   private final URL MANIFEST_URL;
   private final File MANIFEST_FILE;
   private final String VERSION;
@@ -53,22 +52,63 @@ public final class MinecraftServer extends ManifestParser {
    * @param mcVersion             The Minecraft version of this server.
    * @param mcType                The release-type of this server. Either {@link Type#RELEASE} or
    *                              {@link Type#SNAPSHOT}.
-   * @param mcUrl                 The URL to the download of this servers JAR-file.
-   * @param objectMapper          Object mapper for JSON parsing.
-   * @param utilities             Instance of commonly used utilities.
+   * @param mcUrl                 The URL to the download of these servers JAR-file.
+   * @param utilities             Commonly used utilities across ServerPackCreator.
    * @param applicationProperties ServerPackCreator settings.
    * @author Griefed
    */
-  MinecraftServer(String mcVersion, Type mcType, URL mcUrl, ObjectMapper objectMapper,
-      Utilities utilities, ApplicationProperties applicationProperties) {
+  MinecraftServer(@NotNull String mcVersion,
+                  @NotNull Type mcType,
+                  @NotNull URL mcUrl,
+                  @NotNull Utilities utilities,
+                  @NotNull ApplicationProperties applicationProperties) {
 
     UTILITIES = utilities;
     MANIFEST_URL = mcUrl;
     VERSION = mcVersion;
     MANIFEST_FILE = new File(
-        applicationProperties.MINECRAFT_SERVER_MANIFEST_LOCATION() + VERSION + ".json");
+        applicationProperties.minecraftServerManifestsDirectory(), VERSION + ".json");
     TYPE = mcType;
-    OBJECT_MAPPER = objectMapper;
+  }
+
+  /**
+   * Get the Minecraft-version of this server.
+   *
+   * @return Version.
+   * @author Griefed
+   */
+  @Contract(pure = true)
+  public @NotNull String version() {
+    return VERSION;
+  }
+
+  /**
+   * Get the release-type of this Minecraft-server. Either {@link Type#RELEASE} or
+   * {@link Type#SNAPSHOT}.
+   *
+   * @return Type.
+   * @author Griefed
+   */
+  @Contract(pure = true)
+  public @NotNull Type type() {
+    return TYPE;
+  }
+
+  /**
+   * Get the {@link URL} to the download of this Minecraft-servers JAR-file.
+   *
+   * @return URL.
+   * @author Griefed
+   */
+  public @NotNull Optional<URL> url() {
+    if (serverJson == null) {
+      setServerJson();
+    }
+    try {
+      return Optional.of(new URL(serverJson.get("downloads").get("server").get("url").asText()));
+    } catch (Exception e) {
+      return Optional.empty();
+    }
   }
 
   /**
@@ -82,47 +122,9 @@ public final class MinecraftServer extends ManifestParser {
     }
 
     try {
-      serverJson = getJson(MANIFEST_FILE, OBJECT_MAPPER);
+      serverJson = UTILITIES.JsonUtilities().getJson(MANIFEST_FILE);
     } catch (IOException e) {
       throw new RuntimeException(e);
-    }
-  }
-
-  /**
-   * Get the Minecraft-version of this server.
-   *
-   * @return Version.
-   * @author Griefed
-   */
-  public String version() {
-    return VERSION;
-  }
-
-  /**
-   * Get the release-type of this Minecraft-server. Either {@link Type#RELEASE} or
-   * {@link Type#SNAPSHOT}.
-   *
-   * @return Type.
-   * @author Griefed
-   */
-  public Type type() {
-    return TYPE;
-  }
-
-  /**
-   * Get the {@link URL} to the download of this Minecraft-servers JAR-file.
-   *
-   * @return URL.
-   * @author Griefed
-   */
-  public Optional<URL> url() {
-    if (serverJson == null) {
-      setServerJson();
-    }
-    try {
-      return Optional.of(new URL(serverJson.get("downloads").get("server").get("url").asText()));
-    } catch (Exception e) {
-      return Optional.empty();
     }
   }
 
@@ -132,7 +134,7 @@ public final class MinecraftServer extends ManifestParser {
    * @return Java version.
    * @author Griefed
    */
-  public Optional<Byte> javaVersion() {
+  public @NotNull Optional<Byte> javaVersion() {
     if (serverJson == null) {
       setServerJson();
     }

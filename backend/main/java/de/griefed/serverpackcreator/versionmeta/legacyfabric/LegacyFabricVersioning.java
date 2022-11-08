@@ -19,23 +19,33 @@
  */
 package de.griefed.serverpackcreator.versionmeta.legacyfabric;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import de.griefed.serverpackcreator.versionmeta.ManifestParser;
+import de.griefed.serverpackcreator.utilities.common.Utilities;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import org.jetbrains.annotations.NotNull;
 
-abstract class LegacyFabricVersioning extends ManifestParser {
+/**
+ * LegacyFabric version parent-class, implemented by {@link LegacyFabricGame} and
+ * {@link LegacyFabricLoader} to store and provide version information for game and loader
+ * versions.
+ */
+abstract class LegacyFabricVersioning {
 
   private final List<String> RELEASES = new ArrayList<>(100);
   private final List<String> SNAPSHOTS = new ArrayList<>(100);
   private final List<String> ALL = new ArrayList<>(200);
-  private final ObjectMapper MAPPER;
+  private final Utilities UTILITIES;
   private final File MANIFEST;
 
-  LegacyFabricVersioning(File manifest, ObjectMapper mapper) {
-    MAPPER = mapper;
+  /**
+   * @param manifest  The manifest holding the version information for this LegacyFabric type.
+   * @param utilities Commonly used utilities across ServerPackCreator.
+   */
+  LegacyFabricVersioning(@NotNull File manifest,
+                         @NotNull Utilities utilities) {
+    UTILITIES = utilities;
     MANIFEST = manifest;
   }
 
@@ -49,7 +59,7 @@ abstract class LegacyFabricVersioning extends ManifestParser {
     SNAPSHOTS.clear();
     ALL.clear();
 
-    getJson(MANIFEST, MAPPER).forEach(node -> {
+    UTILITIES.JsonUtilities().getJson(MANIFEST).forEach(node -> {
       String version = node.get("version").asText();
       ALL.add(version);
       if (node.get("stable").asBoolean()) {
@@ -66,7 +76,7 @@ abstract class LegacyFabricVersioning extends ManifestParser {
    * @return Release versions.
    * @author Griefed
    */
-  List<String> releases() {
+  @NotNull List<String> releases() {
     return RELEASES;
   }
 
@@ -76,7 +86,7 @@ abstract class LegacyFabricVersioning extends ManifestParser {
    * @return Snapshot/pre-release versions.
    * @author Griefed
    */
-  List<String> snapshots() {
+  @NotNull List<String> snapshots() {
     return SNAPSHOTS;
   }
 
@@ -86,7 +96,7 @@ abstract class LegacyFabricVersioning extends ManifestParser {
    * @return All versions.
    * @author Griefed
    */
-  List<String> all() {
+  @NotNull List<String> all() {
     return ALL;
   }
 

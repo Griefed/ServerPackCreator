@@ -142,6 +142,8 @@ yarn.lock
 /build
 /.gradle
 
+# IDEA
+/.fleet
 
 # other
 eclipse
@@ -209,3 +211,5 @@ backend/main/resources/VERSION.txt
 /quilt-manifest.xml
 /after.conf
 /server-packs_server_pack.zip
+qodana
+tests

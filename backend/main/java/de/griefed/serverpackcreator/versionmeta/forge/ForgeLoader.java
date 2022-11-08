@@ -20,8 +20,7 @@
 package de.griefed.serverpackcreator.versionmeta.forge;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import de.griefed.serverpackcreator.versionmeta.ManifestParser;
+import de.griefed.serverpackcreator.utilities.common.Utilities;
 import de.griefed.serverpackcreator.versionmeta.minecraft.MinecraftMeta;
 import java.io.File;
 import java.io.IOException;
@@ -32,16 +31,18 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Information about available Forge loader versions in correlation to Minecraft versions.
  *
  * @author Griefed
  */
-final class ForgeLoader extends ManifestParser {
+final class ForgeLoader {
 
   private static final Logger LOG = LogManager.getLogger(ForgeLoader.class);
-  private final ObjectMapper MAPPER;
+  private final Utilities UTILITIES;
   private final MinecraftMeta MINECRAFT_META;
   private final List<String> minecraftVersions = new ArrayList<>(100);
   private final List<String> forgeVersions = new ArrayList<>(100);
@@ -70,12 +71,15 @@ final class ForgeLoader extends ManifestParser {
    * Create a new instance of the Forge Loader.
    *
    * @param forgemanifest         Node containing information about available Forge versions.
+   * @param utilities             Commonly used utilities across ServerPackCreator.
    * @param injectedMinecraftMeta Meta for retroactively updating the previously passed meta.
    * @author Griefed
    */
-  ForgeLoader(File forgemanifest, ObjectMapper mapper, MinecraftMeta injectedMinecraftMeta) {
+  ForgeLoader(@NotNull File forgemanifest,
+              @NotNull Utilities utilities,
+              @NotNull MinecraftMeta injectedMinecraftMeta) {
     MANIFEST = forgemanifest;
-    MAPPER = mapper;
+    UTILITIES = utilities;
     MINECRAFT_META = injectedMinecraftMeta;
   }
 
@@ -92,7 +96,7 @@ final class ForgeLoader extends ManifestParser {
     forgeToMinecraftMeta = new HashMap<>(200);
     instanceMeta = new HashMap<>(200);
 
-    JsonNode forgeManifest = getJson(MANIFEST, MAPPER);
+    JsonNode forgeManifest = UTILITIES.JsonUtilities().getJson(MANIFEST);
     forgeManifest
         .fieldNames()
         .forEachRemaining(
@@ -169,7 +173,8 @@ final class ForgeLoader extends ManifestParser {
    * @return List of the available Minecraft versions for Forge.
    * @author Griefed
    */
-  List<String> minecraftVersions() {
+  @Contract(pure = true)
+  @NotNull List<String> minecraftVersions() {
     return minecraftVersions;
   }
 
@@ -179,7 +184,8 @@ final class ForgeLoader extends ManifestParser {
    * @return List of the available Forge versions.
    * @author Griefed
    */
-  List<String> forgeVersions() {
+  @Contract(pure = true)
+  @NotNull List<String> forgeVersions() {
     return forgeVersions;
   }
 
@@ -191,7 +197,8 @@ final class ForgeLoader extends ManifestParser {
    * @return Map containing the version meta.
    * @author Griefed
    */
-  HashMap<String, List<String>> versionMeta() {
+  @Contract(pure = true)
+  @NotNull HashMap<String, List<String>> versionMeta() {
     return versionMeta;
   }
 
@@ -202,7 +209,8 @@ final class ForgeLoader extends ManifestParser {
    * @return Map with Forge-to-Minecraft-version mappings.
    * @author Griefed
    */
-  HashMap<String, String> forgeToMinecraftMeta() {
+  @Contract(pure = true)
+  @NotNull HashMap<String, String> forgeToMinecraftMeta() {
     return forgeToMinecraftMeta;
   }
 
@@ -214,7 +222,8 @@ final class ForgeLoader extends ManifestParser {
    * @return Map with Minecraft-Forge-version-to-ForgeInstance mapping.
    * @author Griefed
    */
-  HashMap<String, ForgeInstance> instanceMeta() {
+  @Contract(pure = true)
+  @NotNull HashMap<String, ForgeInstance> instanceMeta() {
     return instanceMeta;
   }
 }

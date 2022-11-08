@@ -19,6 +19,8 @@
  */
 package de.griefed.serverpackcreator.addons;
 
+import org.jetbrains.annotations.NotNull;
+
 public interface BaseInformation {
 
   /**
@@ -27,7 +29,7 @@ public interface BaseInformation {
    * @return The name of this addon.
    * @author Griefed
    */
-  String getName();
+  @NotNull String getName();
 
   /**
    * Get the description of this addon.
@@ -35,7 +37,7 @@ public interface BaseInformation {
    * @return The description of this addon.
    * @author Griefed
    */
-  String getDescription();
+  @NotNull String getDescription();
 
   /**
    * Get the author of this addon.
@@ -43,7 +45,7 @@ public interface BaseInformation {
    * @return The author of this addon.
    * @author Griefed
    */
-  String getAuthor();
+  @NotNull String getAuthor();
 
   /**
    * Get the version of this addon.
@@ -51,5 +53,5 @@ public interface BaseInformation {
    * @return The version of this addon.
    * @author Griefed
    */
-  String getVersion();
+  @NotNull String getVersion();
 }

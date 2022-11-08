@@ -29,6 +29,7 @@ import java.util.Collection;
 import java.util.TreeSet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -48,9 +49,10 @@ public final class AnnotationScanner extends JsonBasedScanner implements
   private final String DEPENDENCY_CHECK_REGEX = "(before:.*|after:.*|required-after:.*|)";
 
   @Autowired
-  public AnnotationScanner(ObjectMapper objectMapper, Utilities utilities) {
-    this.OBJECT_MAPPER = objectMapper;
-    this.UTILITIES = utilities;
+  public AnnotationScanner(@NotNull ObjectMapper objectMapper,
+                           @NotNull Utilities utilities) {
+    OBJECT_MAPPER = objectMapper;
+    UTILITIES = utilities;
   }
 
   /**
@@ -65,7 +67,7 @@ public final class AnnotationScanner extends JsonBasedScanner implements
    * @author Griefed
    */
   @Override
-  public TreeSet<File> scan(Collection<File> filesInModsDir) {
+  public @NotNull TreeSet<File> scan(@NotNull Collection<File> filesInModsDir) {
 
     LOG.info("Scanning Minecraft 1.12.x and older mods for sideness...");
 
@@ -90,8 +92,9 @@ public final class AnnotationScanner extends JsonBasedScanner implements
   }
 
   @Override
-  void checkForClientModsAndDeps(Collection<File> filesInModsDir,
-      TreeSet<String> clientMods, TreeSet<String> modDependencies) {
+  void checkForClientModsAndDeps(@NotNull Collection<File> filesInModsDir,
+                                 @NotNull TreeSet<String> clientMods,
+                                 @NotNull TreeSet<String> modDependencies) {
     for (File mod : filesInModsDir) {
       if (mod.getName().endsWith("jar")) {
 
@@ -171,7 +174,7 @@ public final class AnnotationScanner extends JsonBasedScanner implements
    * @throws NullPointerException if the JSON node does not contain the modId.
    * @author Griefed
    */
-  private String getModId(JsonNode jsonNode) throws NullPointerException {
+  private @NotNull String getModId(@NotNull JsonNode jsonNode) throws NullPointerException {
     if (!UTILITIES.JsonUtilities().nestedTextIsEmpty(jsonNode, "values", "modid", "value")) {
       return UTILITIES.JsonUtilities().getNestedText(jsonNode, "values", "modid", "value");
     } else {
@@ -190,7 +193,9 @@ public final class AnnotationScanner extends JsonBasedScanner implements
    *                              {@code false}.
    * @author Griefed
    */
-  private void checkForClientSide(JsonNode jsonNode, String modId, TreeSet<String> clientMods)
+  private void checkForClientSide(@NotNull JsonNode jsonNode,
+                                  @NotNull String modId,
+                                  @NotNull TreeSet<String> clientMods)
       throws NullPointerException, JsonException {
     if (UTILITIES.JsonUtilities().getNestedBoolean(jsonNode, "values", "clientSideOnly", "value")) {
 
@@ -211,18 +216,21 @@ public final class AnnotationScanner extends JsonBasedScanner implements
    * @throws NullPointerException if the JSON node contains no additional mod id.
    * @author Griefed
    */
-  private void checkAdditionalId(JsonNode child, String modId, TreeSet<String> clientMods,
-      TreeSet<String> additionalMods) throws NullPointerException {
+  private void checkAdditionalId(@NotNull JsonNode child,
+                                 @NotNull String modId,
+                                 @NotNull TreeSet<String> clientMods,
+                                 @NotNull TreeSet<String> additionalMods)
+      throws NullPointerException {
     if (!UTILITIES.JsonUtilities().nestedTextIsEmpty(child, "values", "modid", "value")) {
 
       // ModIDs are the same, so check for clientside-only
       if (UTILITIES.JsonUtilities()
-          .nestedTextEqualsIgnoreCase(child, modId, "values", "modid", "value")) {
+                   .nestedTextEqualsIgnoreCase(child, modId, "values", "modid", "value")) {
 
         try {
           // Add mod to list of clientmods if clientSideOnly is true
           if (UTILITIES.JsonUtilities()
-              .getNestedBoolean(child, "values", "clientSideOnly", "value")) {
+                       .getNestedBoolean(child, "values", "clientSideOnly", "value")) {
 
             clientMods.add(modId);
             LOG.debug("Added clientMod: " + modId);
@@ -249,17 +257,19 @@ public final class AnnotationScanner extends JsonBasedScanner implements
    * @param modDependencies Set containing our dependency ids.
    * @author Griefed
    */
-  private void checkDependencies(JsonNode child, TreeSet<String> modDependencies,
-      String modFileName) {
+  private void checkDependencies(@NotNull JsonNode child,
+                                 @NotNull TreeSet<String> modDependencies,
+                                 @NotNull String modFileName) {
     try {
       if (!UTILITIES.JsonUtilities().nestedTextIsEmpty(child, "values", "dependencies", "value")) {
 
         // There are multiple dependencies for this mod
         if (UTILITIES.JsonUtilities()
-            .nestedTextContains(child, ";", "values", "dependencies", "value")) {
+                     .nestedTextContains(child, ";", "values", "dependencies", "value")) {
 
           String[] dependencies = UTILITIES.JsonUtilities()
-              .getNestedTexts(child, ";", "values", "dependencies", "value");
+                                           .getNestedTexts(child, ";", "values", "dependencies",
+                                                           "value");
 
           for (String dependency : dependencies) {
 
@@ -281,7 +291,7 @@ public final class AnnotationScanner extends JsonBasedScanner implements
           ) {
 
             String dependencies = UTILITIES.JsonUtilities()
-                .getNestedText(child, "values", "dependencies", "value");
+                                           .getNestedText(child, "values", "dependencies", "value");
             String dependency = getDependency(dependencies);
 
             addDependency(dependency, child, modDependencies, modFileName);
@@ -291,44 +301,6 @@ public final class AnnotationScanner extends JsonBasedScanner implements
     } catch (NullPointerException ignored) {
 
     }
-  }
-
-  /**
-   * Add a dependency to our set of dependencies.
-   *
-   * @param dependency      The dependency to add
-   * @param child           The JSON node containing information about dependencies and ids.
-   * @param modDependencies The set of dependencies to add the new dependency to.
-   * @author Griefed
-   */
-  private void addDependency(String dependency, JsonNode child, TreeSet<String> modDependencies,
-      String modFileName) {
-    if (!dependency.equalsIgnoreCase("forge") && !dependency.equals("*")) {
-
-      if (modDependencies.add(dependency)) {
-
-        try {
-          LOG.debug("Added dependency " + dependency + " for " + UTILITIES.JsonUtilities()
-              .getNestedText(child, "values", "modid", "value") + " (" + modFileName + ").");
-        } catch (NullPointerException ex) {
-          LOG.debug("Added dependency " + dependency + " (" + modFileName + ").");
-        }
-
-      }
-    }
-  }
-
-  /**
-   * Get the id of a dependency.
-   *
-   * @param dependency The full text of a dependency previously acquired from a JSON node.
-   * @return The pure id of the dependency.
-   * @author Griefed
-   */
-  private String getDependency(String dependency) {
-    return dependency
-        .substring(dependency.lastIndexOf(":") + 1)
-        .replaceAll(DEPENDENCY_REPLACE_REGEX, "");
   }
 
   /**
@@ -344,8 +316,10 @@ public final class AnnotationScanner extends JsonBasedScanner implements
    *                       mod will be added to.
    * @author Griefed
    */
-  private void checkAdditionalMods(String modId, TreeSet<String> additionalMods, JsonNode modJson,
-      TreeSet<String> clientMods) {
+  private void checkAdditionalMods(@NotNull String modId,
+                                   @NotNull TreeSet<String> additionalMods,
+                                   @NotNull JsonNode modJson,
+                                   @NotNull TreeSet<String> clientMods) {
 
     for (String additionalModId : additionalMods) {
 
@@ -364,19 +338,19 @@ public final class AnnotationScanner extends JsonBasedScanner implements
                * first modId is present
                */
               if (UTILITIES.JsonUtilities()
-                  .nestedTextEqualsIgnoreCase(
-                      child,
-                      additionalModId,
-                      "values", "modid", "value")
+                           .nestedTextEqualsIgnoreCase(
+                               child,
+                               additionalModId,
+                               "values", "modid", "value")
                   &&
                   !UTILITIES.JsonUtilities()
-                      .nestedTextIsEmpty(
-                          child,
-                          "values", "dependencies", "value")
+                            .nestedTextIsEmpty(
+                                child,
+                                "values", "dependencies", "value")
               ) {
 
                 if (UTILITIES.JsonUtilities()
-                    .nestedTextContains(child, ";", "values", "dependencies", "value")) {
+                             .nestedTextContains(child, ";", "values", "dependencies", "value")) {
 
                   if (additionalDependenciesDepend(child, modId)) {
                     additionalModDependsOnFirst = true;
@@ -423,6 +397,102 @@ public final class AnnotationScanner extends JsonBasedScanner implements
   }
 
   /**
+   * Check whether the mod-jar should be added to the modsDelta list.
+   *
+   * @param file       The mod-jar to check.
+   * @param clientMods A set of modIds of clientside-only mods already discovered previously..
+   * @return {@code true} if the modJar can be added to the modsDelta set.
+   * @throws IOException if the fml_cache_annotation could not be read.
+   * @author Griefed
+   */
+  private boolean addToDelta(@NotNull File file,
+                             @NotNull TreeSet<String> clientMods)
+      throws IOException {
+
+    JsonNode modJson = getJarJson(file, "META-INF/fml_cache_annotation.json", OBJECT_MAPPER);
+    boolean addToDelta = false;
+
+    for (JsonNode node : modJson) {
+
+      try {
+        // iterate though annotations
+        for (JsonNode child : node.get("annotations")) {
+
+          // Get the modId
+          try {
+
+            String modIdTocheck = getModId(child);
+
+            // Add mod to list of clientmods if clientSideOnly is true
+            if (UTILITIES.JsonUtilities()
+                         .getNestedBoolean(child,
+                                           "values",
+                                           "clientSideOnly",
+                                           "value")) {
+
+              if (clientMods.contains(modIdTocheck)) {
+                addToDelta = true;
+              }
+            }
+
+          } catch (NullPointerException | JsonException ignored) {
+
+          }
+        }
+
+      } catch (NullPointerException ignored) {
+
+      }
+    }
+
+    return addToDelta;
+  }
+
+  /**
+   * Get the id of a dependency.
+   *
+   * @param dependency The full text of a dependency previously acquired from a JSON node.
+   * @return The pure id of the dependency.
+   * @author Griefed
+   */
+  private @NotNull String getDependency(@NotNull String dependency) {
+    return dependency
+        .substring(dependency.lastIndexOf(":") + 1)
+        .replaceAll(DEPENDENCY_REPLACE_REGEX, "");
+  }
+
+  /**
+   * Add a dependency to our set of dependencies.
+   *
+   * @param dependency      The dependency to add
+   * @param child           The JSON node containing information about dependencies and ids.
+   * @param modDependencies The set of dependencies to add the new dependency to.
+   * @author Griefed
+   */
+  private void addDependency(@NotNull String dependency,
+                             @NotNull JsonNode child,
+                             @NotNull TreeSet<String> modDependencies,
+                             @NotNull String modFileName) {
+    if (!dependency.equalsIgnoreCase("forge") && !dependency.equals("*")) {
+
+      if (modDependencies.add(dependency)) {
+
+        try {
+          LOG.debug("Added dependency " + dependency + " for " + UTILITIES.JsonUtilities()
+                                                                          .getNestedText(child,
+                                                                                         "values",
+                                                                                         "modid",
+                                                                                         "value")
+                        + " (" + modFileName + ").");
+        } catch (NullPointerException ex) {
+          LOG.debug("Added dependency " + dependency + " (" + modFileName + ").");
+        }
+
+      }
+    }
+  }
+
+  /**
    * Check whether the passed mod id is present as a dependency in any of the mods dependencies. If
    * it is, then the mod of the modId is required.
    *
@@ -431,10 +501,11 @@ public final class AnnotationScanner extends JsonBasedScanner implements
    * @return {@code true} if the modId is a dependency.
    * @author Griefed
    */
-  private boolean additionalDependenciesDepend(JsonNode child, String modId) {
+  private boolean additionalDependenciesDepend(@NotNull JsonNode child,
+                                               @NotNull String modId) {
     boolean depends = false;
     String[] dependencies = UTILITIES.JsonUtilities()
-        .getNestedTexts(child, ";", "values", "dependencies", "value");
+                                     .getNestedTexts(child, ";", "values", "dependencies", "value");
 
     for (String dependency : dependencies) {
 
@@ -463,13 +534,15 @@ public final class AnnotationScanner extends JsonBasedScanner implements
    * @return {@code true} if the modId is a dependency.
    * @author Griefed
    */
-  private boolean additionalDependencyDepends(JsonNode child, String modId) {
+  private boolean additionalDependencyDepends(@NotNull JsonNode child,
+                                              @NotNull String modId) {
     boolean depends = false;
     if (UTILITIES.JsonUtilities()
-        .nestedTextMatches(child, DEPENDENCY_CHECK_REGEX, "values", "dependencies", "value")) {
+                 .nestedTextMatches(child, DEPENDENCY_CHECK_REGEX, "values", "dependencies",
+                                    "value")) {
 
       String dependencies = UTILITIES.JsonUtilities()
-          .getNestedText(child, "values", "dependencies", "value");
+                                     .getNestedText(child, "values", "dependencies", "value");
 
       String dependency = dependencies
           .substring(
@@ -491,7 +564,8 @@ public final class AnnotationScanner extends JsonBasedScanner implements
    * @return {@code true} if the additional mod is clientside-only.
    * @author Griefed
    */
-  private boolean isAdditionalModClientSide(JsonNode node, String additionalModId) {
+  private boolean isAdditionalModClientSide(@NotNull JsonNode node,
+                                            @NotNull String additionalModId) {
     boolean clientSide = false;
 
     try {
@@ -500,9 +574,10 @@ public final class AnnotationScanner extends JsonBasedScanner implements
 
         try {
           if (UTILITIES.JsonUtilities()
-              .nestedTextEqualsIgnoreCase(children, additionalModId, "values", "modid", "value")
+                       .nestedTextEqualsIgnoreCase(children, additionalModId, "values", "modid",
+                                                   "value")
               && UTILITIES.JsonUtilities()
-              .getNestedBoolean(children, "values", "clientSideOnly", "value")) {
+                          .getNestedBoolean(children, "values", "clientSideOnly", "value")) {
 
             clientSide = true;
           }
@@ -517,7 +592,8 @@ public final class AnnotationScanner extends JsonBasedScanner implements
   }
 
   @Override
-  TreeSet<File> getModsDelta(Collection<File> filesInModsDir, TreeSet<String> clientMods) {
+  @NotNull TreeSet<File> getModsDelta(@NotNull Collection<File> filesInModsDir,
+                                      @NotNull TreeSet<String> clientMods) {
     TreeSet<File> modsDelta = new TreeSet<>();
     for (File mod : filesInModsDir) {
 
@@ -532,53 +608,5 @@ public final class AnnotationScanner extends JsonBasedScanner implements
 
     }
     return modsDelta;
-  }
-
-  /**
-   * Check whether the mod-jar should be added to the modsDelta list.
-   *
-   * @param file       The mod-jar to check.
-   * @param clientMods A set of modIds of clientside-only mods already discovered previously..
-   * @return {@code true} if the modJar can be added to the modsDelta set.
-   * @throws IOException if the fml_cache_annotation could not be read.
-   * @author Griefed
-   */
-  private boolean addToDelta(File file, TreeSet<String> clientMods)
-      throws IOException {
-
-    JsonNode modJson = getJarJson(file, "META-INF/fml_cache_annotation.json", OBJECT_MAPPER);
-    boolean addToDelta = false;
-
-    for (JsonNode node : modJson) {
-
-      try {
-        // iterate though annotations
-        for (JsonNode child : node.get("annotations")) {
-
-          // Get the modId
-          try {
-
-            String modIdTocheck = getModId(child);
-
-            // Add mod to list of clientmods if clientSideOnly is true
-            if (modIdTocheck != null && UTILITIES.JsonUtilities()
-                .getNestedBoolean(child, "values", "clientSideOnly",
-                    "value")) {
-              if (clientMods.contains(modIdTocheck)) {
-                addToDelta = true;
-              }
-            }
-
-          } catch (NullPointerException | JsonException ignored) {
-
-          }
-        }
-
-      } catch (NullPointerException ignored) {
-
-      }
-    }
-
-    return addToDelta;
   }
 }

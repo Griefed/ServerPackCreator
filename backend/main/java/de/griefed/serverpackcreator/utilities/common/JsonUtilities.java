@@ -20,14 +20,32 @@
 package de.griefed.serverpackcreator.utilities.common;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
+import org.apache.commons.io.FileUtils;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StreamUtils;
 
+/**
+ * JSON-based utility methods for acquiring and working with JSON from files and objects.
+ *
+ * @author Griefed
+ */
 @Component
 public final class JsonUtilities {
 
-  public JsonUtilities() {
+  private final ObjectMapper OBJECT_MAPPER;
 
+  @Contract(pure = true)
+  public JsonUtilities(@NotNull ObjectMapper objectMapper) {
+    OBJECT_MAPPER = objectMapper;
   }
 
   /**
@@ -40,9 +58,44 @@ public final class JsonUtilities {
    * @throws NullPointerException if the requested element is not present in the JsonNode.
    * @author Griefed
    */
-  public boolean nestedTextMatches(JsonNode jsonNode, String matches, String... childNodes)
+  public boolean nestedTextMatches(@NotNull JsonNode jsonNode,
+                                   @NotNull String matches,
+                                   @NotNull String... childNodes)
       throws NullPointerException {
     return getNestedText(jsonNode, childNodes).matches(matches);
+  }
+
+  /**
+   * Get the text from nested child node(s).
+   *
+   * @param jsonNode   The JsonNode from which to acquire the text from.
+   * @param childNodes The child nodes which contain the requested text, in order.
+   * @return The text from the requested child node(s).
+   * @throws NullPointerException if the requested element is not present in the JsonNode.
+   * @author Griefed
+   */
+  public @NotNull String getNestedText(@NotNull JsonNode jsonNode,
+                                       @NotNull String... childNodes) throws NullPointerException {
+    return getNestedElement(jsonNode, childNodes).asText();
+  }
+
+  /**
+   * Get a nested element from a JsonNode.
+   *
+   * @param jsonNode   The JsonNode from which to acquire the nested element.
+   * @param childNodes The nested elements, in order.
+   * @return The nested element from the JsonNode.
+   * @throws NullPointerException if the requested element is not present in the JsonNode.
+   * @author Griefed
+   */
+  public @NotNull JsonNode getNestedElement(@NotNull JsonNode jsonNode,
+                                            @NotNull String @NotNull ... childNodes)
+      throws NullPointerException {
+    JsonNode child = jsonNode;
+    for (String nested : childNodes) {
+      child = child.get(nested);
+    }
+    return child;
   }
 
   /**
@@ -56,8 +109,10 @@ public final class JsonUtilities {
    * @throws NullPointerException if the requested element is not present in the JsonNode.
    * @author Griefed
    */
-  public boolean nestedTextEqualsIgnoreCase(JsonNode jsonNode, String equalsIgnoreCase,
-      String... childNodes) throws NullPointerException {
+  public boolean nestedTextEqualsIgnoreCase(@NotNull JsonNode jsonNode,
+                                            @NotNull String equalsIgnoreCase,
+                                            @NotNull String... childNodes)
+      throws NullPointerException {
     return getNestedText(jsonNode, childNodes).equalsIgnoreCase(equalsIgnoreCase);
   }
 
@@ -70,7 +125,8 @@ public final class JsonUtilities {
    * @throws NullPointerException if the requested element is not present in the JsonNode.
    * @author Griefed
    */
-  public boolean nestedTextIsEmpty(JsonNode jsonNode, String... childNodes)
+  public boolean nestedTextIsEmpty(@NotNull JsonNode jsonNode,
+                                   @NotNull String... childNodes)
       throws NullPointerException {
     return getNestedText(jsonNode, childNodes).isEmpty();
   }
@@ -86,7 +142,8 @@ public final class JsonUtilities {
    * @throws NullPointerException if the requested element is not present in the JsonNode.
    * @author Griefed
    */
-  public boolean getNestedBoolean(JsonNode jsonNode, String... childNodes)
+  public boolean getNestedBoolean(@NotNull JsonNode jsonNode,
+                                  @NotNull String... childNodes)
       throws NullPointerException, JsonException {
     String bool = getNestedText(jsonNode, childNodes);
 
@@ -107,13 +164,16 @@ public final class JsonUtilities {
    * Get the array of texts from the nested child node(s) comma-separated text.
    *
    * @param jsonNode   The JsonNode from which to acquire the texts from.
-   * @param split      The
+   * @param split      The character by which to split the text of the last child node into an array
+   *                   with.
    * @param childNodes The nested nodes in the JsonNode to acquire the texts from, in order.
    * @return An array of strings containing the texts from the specified node(s)
    * @throws NullPointerException if the requested element is not present in the JsonNode.
    * @author Griefed
    */
-  public String[] getNestedTexts(JsonNode jsonNode, String split, String... childNodes)
+  public @NotNull String @NotNull [] getNestedTexts(@NotNull JsonNode jsonNode,
+                                                    @NotNull String split,
+                                                    @NotNull String... childNodes)
       throws NullPointerException {
     return getNestedText(jsonNode, childNodes).split(split);
   }
@@ -129,23 +189,11 @@ public final class JsonUtilities {
    * @throws NullPointerException if the requested element is not present in the JsonNode.
    * @author Griefed
    */
-  public boolean nestedTextContains(JsonNode jsonNode, String contains, String... childNodes)
+  public boolean nestedTextContains(@NotNull JsonNode jsonNode,
+                                    @NotNull String contains,
+                                    @NotNull String... childNodes)
       throws NullPointerException {
     return getNestedText(jsonNode, childNodes).contains(contains);
-  }
-
-
-  /**
-   * Get the text from nested child node(s).
-   *
-   * @param jsonNode   The JsonNode from which to acquire the text from.
-   * @param childNodes The child nodes which contain the requested text, in order.
-   * @return The text from the requested child node(s).
-   * @throws NullPointerException if the requested element is not present in the JsonNode.
-   * @author Griefed
-   */
-  public String getNestedText(JsonNode jsonNode, String... childNodes) throws NullPointerException {
-    return getNestedElement(jsonNode, childNodes).asText();
   }
 
   /**
@@ -160,27 +208,58 @@ public final class JsonUtilities {
    *                              JsonNode.
    * @author Griefed
    */
-  public Iterator<String> getFieldNames(JsonNode jsonNode, String... childNodes)
+  public @NotNull Iterator<String> getFieldNames(@NotNull JsonNode jsonNode,
+                                                 @NotNull String... childNodes)
       throws NullPointerException {
     return getNestedElement(jsonNode, childNodes).fieldNames();
   }
 
   /**
-   * Get a nested element from a JsonNode.
+   * Acquire a {@link JsonNode} from the given json inputstream.
    *
-   * @param jsonNode   The JsonNode from which to acquire the nested element.
-   * @param childNodes The nested elements, in order.
-   * @return The nested element from the JsonNode.
-   * @throws NullPointerException if the requested element is not present in the JsonNode.
+   * @param inputStream The inputstream to read.
+   * @return JSON data from the specified file.
+   * @throws IOException when the file could not be parsed/read into a {@link JsonNode}.
    * @author Griefed
    */
-  public JsonNode getNestedElement(JsonNode jsonNode, String... childNodes)
-      throws NullPointerException {
-    JsonNode child = jsonNode;
-    for (String nested : childNodes) {
-      child = child.get(nested);
-    }
-    return child;
+  public @NotNull JsonNode getJson(@NotNull InputStream inputStream) throws IOException {
+    return getJson(StreamUtils.copyToString(inputStream,
+                                            StandardCharsets.UTF_8));
   }
 
+  /**
+   * Acquire a {@link JsonNode} from the given json string.
+   *
+   * @param string The string to read.
+   * @return JSON data from the specified file.
+   * @throws IOException when the file could not be parsed/read into a {@link JsonNode}.
+   * @author Griefed
+   */
+  public @NotNull JsonNode getJson(@NotNull String string) throws IOException {
+    return OBJECT_MAPPER.readTree(string);
+  }
+
+  /**
+   * Acquire a {@link JsonNode} from the given json file.
+   *
+   * @param file The file to read.
+   * @return JSON data from the specified file.
+   * @throws IOException when the file could not be parsed/read into a {@link JsonNode}.
+   * @author Griefed
+   */
+  public @NotNull JsonNode getJson(@NotNull File file) throws IOException {
+    return getJson(FileUtils.readFileToString(file, StandardCharsets.UTF_8));
+  }
+
+  /**
+   * Acquire a {@link JsonNode} from the given URL.
+   *
+   * @param url URL to the data which contains your JSON.
+   * @return JSON data from the specified file.
+   * @throws IOException when the file could not be parsed/read into a {@link JsonNode}.
+   * @author Griefed
+   */
+  public @NotNull JsonNode getJson(@NotNull URL url) throws IOException {
+    return OBJECT_MAPPER.readTree(url);
+  }
 }

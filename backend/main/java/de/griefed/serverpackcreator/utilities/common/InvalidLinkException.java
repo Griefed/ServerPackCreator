@@ -19,6 +19,8 @@
  */
 package de.griefed.serverpackcreator.utilities.common;
 
+import org.jetbrains.annotations.NotNull;
+
 /**
  * Exceptions thrown if a specified {@link FileUtilities.FileType} is considered invalid.
  *
@@ -26,7 +28,13 @@ package de.griefed.serverpackcreator.utilities.common;
  */
 public final class InvalidLinkException extends Exception {
 
-  public InvalidLinkException(String message) {
+  /**
+   * Throw new exception indicating that the specified link type is invalid.
+   *
+   * @param message Message indicating what exactly went wrong.
+   * @author Griefed
+   */
+  public InvalidLinkException(@NotNull String message) {
     super(message);
   }
 }

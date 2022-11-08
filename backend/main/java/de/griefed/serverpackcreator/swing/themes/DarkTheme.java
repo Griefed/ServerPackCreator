@@ -59,15 +59,6 @@ public class DarkTheme extends JMarsDarkTheme {
   }
 
   @Override
-  protected void installDefaultColor() {
-    super.installDefaultColor();
-    this.buttonDefaultTextColor = this.textColor;
-
-    this.foregroundTableHeader = this.textColor;
-    this.selectionForegroundTable = this.highlightBackgroundPrimary;
-  }
-
-  @Override
   protected void installColor() {
     super.installColor();
     this.backgroundPrimary = new ColorUIResource(45, 48, 56);
@@ -147,12 +138,21 @@ public class DarkTheme extends JMarsDarkTheme {
   }
 
   @Override
-  public boolean getButtonBorderEnableToAll() {
-    return true;
+  protected void installDefaultColor() {
+    super.installDefaultColor();
+    this.buttonDefaultTextColor = this.textColor;
+
+    this.foregroundTableHeader = this.textColor;
+    this.selectionForegroundTable = this.highlightBackgroundPrimary;
   }
 
   @Override
   public boolean getButtonBorderEnable() {
+    return true;
+  }
+
+  @Override
+  public boolean getButtonBorderEnableToAll() {
     return true;
   }
 

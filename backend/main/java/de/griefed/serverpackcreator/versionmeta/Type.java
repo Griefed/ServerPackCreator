@@ -43,49 +43,33 @@ public enum Type {
    */
   SERVER,
   /**
-   * Sort ascending, small to large.
-   */
-  ASCENDING,
-  /**
-   * Sort descending, large to small.
-   */
-  DESCENDING,
-
-  /**
    * Indicates this operation concerns Minecraft.
    */
   MINECRAFT,
-
   /**
    * Indicates this operation concerns Forge.
    */
   FORGE,
-
   /**
    * Indicates this operation concerns Fabric.
    */
   FABRIC,
-
   /**
    * Indicates this operation concerns Fabric Installer.
    */
   FABRIC_INSTALLER,
-
   /**
    * Indicates this operation concerns Quilt.
    */
   QUILT,
-
   /**
    * Indicates this operation concerns Fabric Intermediaries.
    */
   FABRIC_INTERMEDIARIES,
-
   /**
    * Indicates this operation concerns Quilt Installer.
    */
   QUILT_INSTALLER,
-
   /**
    * Indicates this operation concerns Legacy Fabric.
    */

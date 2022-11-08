@@ -20,7 +20,7 @@
 package de.griefed.serverpackcreator.versionmeta.quilt;
 
 import com.google.common.collect.Lists;
-import de.griefed.serverpackcreator.versionmeta.ManifestParser;
+import de.griefed.serverpackcreator.utilities.common.Utilities;
 import de.griefed.serverpackcreator.versionmeta.Meta;
 import de.griefed.serverpackcreator.versionmeta.fabric.FabricIntermediaries;
 import java.io.File;
@@ -29,6 +29,8 @@ import java.net.URL;
 import java.util.List;
 import java.util.Optional;
 import javax.xml.parsers.ParserConfigurationException;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.xml.sax.SAXException;
 
 /**
@@ -36,7 +38,7 @@ import org.xml.sax.SAXException;
  *
  * @author Griefed
  */
-public final class QuiltMeta extends ManifestParser implements Meta {
+public final class QuiltMeta implements Meta {
 
   private final QuiltLoader QUILT_LOADER;
   private final QuiltInstaller QUILT_INSTALLER;
@@ -49,13 +51,16 @@ public final class QuiltMeta extends ManifestParser implements Meta {
    * @param quiltManifest                Quilt manifest file.
    * @param quiltInstallerManifest       Quilt-installer manifest file.
    * @param injectedFabricIntermediaries Fabric-Intermediaries for further compatibility tests.
+   * @param utilities                    Commonly used utilities across ServerPackCreator.
    * @author Griefed
    */
-  public QuiltMeta(File quiltManifest, File quiltInstallerManifest,
-      FabricIntermediaries injectedFabricIntermediaries) {
+  public QuiltMeta(@NotNull File quiltManifest,
+                   @NotNull File quiltInstallerManifest,
+                   @NotNull FabricIntermediaries injectedFabricIntermediaries,
+                   @NotNull Utilities utilities) {
 
-    QUILT_LOADER = new QuiltLoader(quiltManifest);
-    QUILT_INSTALLER = new QuiltInstaller(quiltInstallerManifest);
+    QUILT_LOADER = new QuiltLoader(quiltManifest, utilities);
+    QUILT_INSTALLER = new QuiltInstaller(quiltInstallerManifest, utilities);
     FABRIC_INTERMEDIARIES = injectedFabricIntermediaries;
   }
 
@@ -65,73 +70,81 @@ public final class QuiltMeta extends ManifestParser implements Meta {
     QUILT_INSTALLER.update();
   }
 
+  @Contract(pure = true)
   @Override
-  public String latestLoader() {
+  public @NotNull String latestLoader() {
     return QUILT_LOADER.latestLoaderVersion();
   }
 
+  @Contract(pure = true)
   @Override
-  public String releaseLoader() {
+  public @NotNull String releaseLoader() {
     return QUILT_LOADER.releaseLoaderVersion();
   }
 
+  @Contract(pure = true)
   @Override
-  public List<String> loaderVersionsListAscending() {
+  public @NotNull String latestInstaller() {
+    return QUILT_INSTALLER.latestInstallerVersion();
+  }
+
+  @Contract(pure = true)
+  @Override
+  public @NotNull String releaseInstaller() {
+    return QUILT_INSTALLER.releaseInstallerVersion();
+  }
+
+  @Contract(pure = true)
+  @Override
+  public @NotNull List<String> loaderVersionsListAscending() {
     return QUILT_LOADER.loaders();
   }
 
   @Override
-  public List<String> loaderVersionsListDescending() {
+  public @NotNull List<String> loaderVersionsListDescending() {
     return Lists.reverse(QUILT_LOADER.loaders());
   }
 
   @Override
-  public String[] loaderVersionsArrayAscending() {
+  public String @NotNull [] loaderVersionsArrayAscending() {
     return QUILT_LOADER.loaders().toArray(new String[0]);
   }
 
   @Override
-  public String[] loaderVersionsArrayDescending() {
+  public String @NotNull [] loaderVersionsArrayDescending() {
     return Lists.reverse(QUILT_LOADER.loaders()).toArray(new String[0]);
   }
 
+  @Contract(pure = true)
   @Override
-  public String latestInstaller() {
-    return QUILT_INSTALLER.latestInstallerVersion();
-  }
-
-  @Override
-  public String releaseInstaller() {
-    return QUILT_INSTALLER.releaseInstallerVersion();
-  }
-
-  @Override
-  public List<String> installerVersionsListAscending() {
+  public @NotNull List<String> installerVersionsListAscending() {
     return QUILT_INSTALLER.installers();
   }
 
   @Override
-  public List<String> installerVersionsListDescending() {
+  public @NotNull List<String> installerVersionsListDescending() {
     return Lists.reverse(QUILT_INSTALLER.installers());
   }
 
   @Override
-  public String[] installerVersionsArrayAscending() {
+  public String @NotNull [] installerVersionsArrayAscending() {
     return QUILT_INSTALLER.installers().toArray(new String[0]);
   }
 
   @Override
-  public String[] installerVersionsArrayDescending() {
+  public String @NotNull [] installerVersionsArrayDescending() {
     return Lists.reverse(QUILT_INSTALLER.installers()).toArray(new String[0]);
   }
 
+  @Contract(pure = true)
   @Override
-  public URL latestInstallerUrl() {
+  public @NotNull URL latestInstallerUrl() {
     return QUILT_INSTALLER.latestInstallerUrl();
   }
 
+  @Contract(pure = true)
   @Override
-  public URL releaseInstallerUrl() {
+  public @NotNull URL releaseInstallerUrl() {
     return QUILT_INSTALLER.releaseInstallerUrl();
   }
 
@@ -141,17 +154,17 @@ public final class QuiltMeta extends ManifestParser implements Meta {
   }
 
   @Override
-  public Optional<URL> getInstallerUrl(String quiltVersion) {
+  public @NotNull Optional<URL> getInstallerUrl(@NotNull String quiltVersion) {
     return Optional.ofNullable(QUILT_INSTALLER.meta().get(quiltVersion));
   }
 
   @Override
-  public boolean isVersionValid(String quiltVersion) {
+  public boolean isVersionValid(@NotNull String quiltVersion) {
     return QUILT_LOADER.loaders().contains(quiltVersion);
   }
 
   @Override
-  public boolean isMinecraftSupported(String minecraftVersion) {
-    return FABRIC_INTERMEDIARIES.areIntermediariesPresent(minecraftVersion);
+  public boolean isMinecraftSupported(@NotNull String minecraftVersion) {
+    return FABRIC_INTERMEDIARIES.isIntermediariesPresent(minecraftVersion);
   }
 }

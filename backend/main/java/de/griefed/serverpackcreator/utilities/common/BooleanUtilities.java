@@ -22,6 +22,8 @@ package de.griefed.serverpackcreator.utilities.common;
 import java.util.Scanner;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 
 /**
@@ -34,7 +36,32 @@ public final class BooleanUtilities {
 
   private static final Logger LOG = LogManager.getLogger(BooleanUtilities.class);
 
+  @Contract(pure = true)
   public BooleanUtilities() {
+  }
+
+  /**
+   * Prompts the user to enter values which will then be converted to booleans, either {@code TRUE }
+   * or {@code FALSE}. This prevents any non-boolean values from being written to the new
+   * configuration file.
+   *
+   * @param scanner Used for reading the users input.
+   * @return True or False, depending on user input.
+   * @author Griefed
+   */
+  public boolean readBoolean(@NotNull Scanner scanner) {
+    printBoolMenu();
+    return convert(scanner.nextLine());
+  }
+
+  /**
+   * Print a small help text to tell the user which values are accepted as {@code true} and which
+   * values are accepted as {@code false}.
+   *
+   * @author Griefed
+   */
+  private void printBoolMenu() {
+    System.out.println("True: 1, Yes, Y, true -|- False: 0, No, N, false");
   }
 
   /**
@@ -51,11 +78,11 @@ public final class BooleanUtilities {
    *
    * @param stringBoolean The string which should be converted to boolean if it matches certain
    *                      patterns.
-   * @return Boolean. Returns the corresponding boolean if match with pattern was found. If no match
-   * is found, assume and return false.
+   * @return Returns the corresponding boolean if match with pattern was found. If no match is
+   * found, assume and return false.
    * @author Griefed
    */
-  public boolean convert(String stringBoolean) {
+  public boolean convert(@NotNull String stringBoolean) {
 
     if (stringBoolean.matches("1")
         || stringBoolean.matches("[Yy][Ee][Ss]")
@@ -73,46 +100,5 @@ public final class BooleanUtilities {
       LOG.warn("Warning. Couldn't parse boolean. Assuming false.");
       return false;
     }
-  }
-
-  /**
-   * Prompts the user to enter values which will then be converted to booleans, either {@code TRUE }
-   * or {@code FALSE}. This prevents any non-boolean values from being written to the new
-   * configuration file.
-   *
-   * @return Boolean. True or False, depending on user input.
-   * @author whitebear60
-   * @deprecated Will be removed in Milestone 4. Use {@link #readBoolean(Scanner)} instead.
-   */
-  @Deprecated
-  public boolean readBoolean() {
-    Scanner readerBoolean = new Scanner(System.in);
-    boolean read = readBoolean(readerBoolean);
-    readerBoolean.close();
-    return read;
-  }
-
-  /**
-   * Prompts the user to enter values which will then be converted to booleans, either {@code TRUE }
-   * or {@code FALSE}. This prevents any non-boolean values from being written to the new
-   * configuration file.
-   *
-   * @param scanner Used for reading the users input.
-   * @return Boolean. True or False, depending on user input.
-   * @author Griefed
-   */
-  public boolean readBoolean(Scanner scanner) {
-    printBoolMenu();
-    return convert(scanner.nextLine());
-  }
-
-  /**
-   * Print a small help text to tell the user which values are accepted as {@code true} and which
-   * values are accepted as {@code false}.
-   *
-   * @author Griefed
-   */
-  private void printBoolMenu() {
-    System.out.println("True: 1, Yes, Y, true -|- False: 0, No, N, false");
   }
 }

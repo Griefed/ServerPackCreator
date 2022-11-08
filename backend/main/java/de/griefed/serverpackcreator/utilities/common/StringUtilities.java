@@ -21,6 +21,8 @@ package de.griefed.serverpackcreator.utilities.common;
 
 import java.util.Arrays;
 import java.util.List;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 
 /**
@@ -31,6 +33,7 @@ import org.springframework.stereotype.Component;
 @Component
 public final class StringUtilities {
 
+  @Contract(pure = true)
   public StringUtilities() {
   }
 
@@ -38,10 +41,10 @@ public final class StringUtilities {
    * Converts a list of Strings, for example from a list, into a concatenated String.
    *
    * @param strings List of strings that will be concatenated into one string
-   * @return String. Returns concatenated string that contains all provided values.
+   * @return Returns concatenated string that contains all provided values.
    * @author Griefed
    */
-  public String buildString(List<String> strings) {
+  public @NotNull String buildString(@NotNull List<String> strings) {
     return buildString(strings.toString());
   }
 
@@ -49,10 +52,10 @@ public final class StringUtilities {
    * Converts a sequence of Strings, for example from a list, into a concatenated String.
    *
    * @param args Strings that will be concatenated into one string
-   * @return String. Returns concatenated string that contains all provided values.
+   * @return Returns concatenated string that contains all provided values.
    * @author whitebear60
    */
-  public String buildString(String... args) {
+  public @NotNull String buildString(@NotNull String... args) {
 
     StringBuilder stringBuilder = new StringBuilder();
 
@@ -92,6 +95,8 @@ public final class StringUtilities {
    *   <li><b>&#180;</b>
    *   <li><b>&#96;</b>
    *   <li><b>&#61;</b>
+   *   <li><b>&#91;</b>
+   *   <li><b>&#93;</b>
    * </ul>
    *
    * <br>
@@ -100,40 +105,42 @@ public final class StringUtilities {
    * @return The passed String safe for use for files, paths, directories etc.
    * @author Griefed
    */
-  public String pathSecureText(String text) {
+  public @NotNull String pathSecureText(@NotNull String text) {
 
     while (text.endsWith(".") || text.endsWith(" ")) {
       text = text.replace(text.substring(text.length() - 1), "");
     }
 
     return text.replace("/", "")
-        .replace("<", "")
-        .replace(">", "")
-        .replace(":", "")
-        .replace("\"", "")
-        .replace("\\", "")
-        .replace("|", "")
-        .replace("?", "")
-        .replace("*", "")
-        .replace("#", "")
-        .replace("%", "")
-        .replace("&", "")
-        .replace("{", "")
-        .replace("}", "")
-        .replace("$", "")
-        .replace("!", "")
-        .replace("'", "")
-        .replace("@", "")
-        .replace("+", "")
-        .replace("´", "")
-        .replace("`", "")
-        .replace("=", "");
+               .replace("<", "")
+               .replace(">", "")
+               .replace(":", "")
+               .replace("\"", "")
+               .replace("\\", "")
+               .replace("|", "")
+               .replace("?", "")
+               .replace("*", "")
+               .replace("#", "")
+               .replace("%", "")
+               .replace("&", "")
+               .replace("{", "")
+               .replace("}", "")
+               .replace("$", "")
+               .replace("!", "")
+               .replace("'", "")
+               .replace("@", "")
+               .replace("+", "")
+               .replace("´", "")
+               .replace("`", "")
+               .replace("=", "")
+               .replace("[", "")
+               .replace("]", "");
   }
 
   /**
    * Remove commonly forbidden characters from the passed string, making the resulting String safe
    * to use for files, paths, directories etc. If the passed text ends with a
-   * SPACE{@code (&#32;&#32;)} or a DOT{@code (&#32;.&#32;)}, they are also removed.<br> Contraty to
+   * SPACE{@code (&#32;&#32;)} or a DOT{@code (&#32;.&#32;)}, they are also removed.<br> Contrary to
    * {@link #pathSecureText(String)}, this method does <strong>NOT</strong> remove
    * <strong>&#47;</strong> or <strong>&#92;</strong>.
    *
@@ -159,6 +166,8 @@ public final class StringUtilities {
    *   <li><b>&#180;</b>
    *   <li><b>&#96;</b>
    *   <li><b>&#61;</b>
+   *   <li><b>&#91;</b>
+   *   <li><b>&#93;</b>
    * </ul>
    *
    * <br>
@@ -167,31 +176,33 @@ public final class StringUtilities {
    * @return The passed String safe for use for files, paths, directories etc.
    * @author Griefed
    */
-  public String pathSecureTextAlternative(String text) {
+  public @NotNull String pathSecureTextAlternative(@NotNull String text) {
 
     while (text.endsWith(".") || text.endsWith(" ")) {
       text = text.replace(text.substring(text.length() - 1), "");
     }
 
     return text.replace("<", "")
-        .replace(">", "")
-        .replace(":", "")
-        .replace("\"", "")
-        .replace("|", "")
-        .replace("?", "")
-        .replace("*", "")
-        .replace("#", "")
-        .replace("%", "")
-        .replace("&", "")
-        .replace("{", "")
-        .replace("}", "")
-        .replace("$", "")
-        .replace("!", "")
-        .replace("@", "")
-        .replace("+", "")
-        .replace("´", "")
-        .replace("`", "")
-        .replace("=", "");
+               .replace(">", "")
+               .replace(":", "")
+               .replace("\"", "")
+               .replace("|", "")
+               .replace("?", "")
+               .replace("*", "")
+               .replace("#", "")
+               .replace("%", "")
+               .replace("&", "")
+               .replace("{", "")
+               .replace("}", "")
+               .replace("$", "")
+               .replace("!", "")
+               .replace("@", "")
+               .replace("+", "")
+               .replace("´", "")
+               .replace("`", "")
+               .replace("=", "")
+               .replace("[", "")
+               .replace("]", "");
   }
 
   /**
@@ -227,7 +238,7 @@ public final class StringUtilities {
    * @return {@code true} if none of these characters were found.
    * @author Griefed
    */
-  public boolean checkForIllegalCharacters(String text) {
+  public boolean checkForIllegalCharacters(@NotNull String text) {
     return !text.contains("/")
         && !text.contains("<")
         && !text.contains(">")

@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.versionmeta.quilt;
 
-import de.griefed.serverpackcreator.versionmeta.ManifestParser;
+import de.griefed.serverpackcreator.utilities.common.Utilities;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -28,6 +28,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import javax.xml.parsers.ParserConfigurationException;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -36,8 +38,9 @@ import org.xml.sax.SAXException;
  *
  * @author Griefed
  */
-final class QuiltInstaller extends ManifestParser {
+final class QuiltInstaller {
 
+  private final Utilities UTILITIES;
   private final String URL_TEMPLATE_INSTALLER =
       "https://maven.quiltmc.org/repository/release/org/quiltmc/quilt-installer/%s/quilt-installer-%s.jar";
   private final List<String> installers = new ArrayList<>(100);
@@ -52,10 +55,13 @@ final class QuiltInstaller extends ManifestParser {
    * Create a new Quilt Installer instance.
    *
    * @param installerManifest Quilt installer information.
+   * @param utilities         Commonly used utilities across ServerPackCreator.
    * @author Griefed
    */
-  QuiltInstaller(File installerManifest) {
+  QuiltInstaller(@NotNull File installerManifest,
+                 @NotNull Utilities utilities) {
     MANIFEST = installerManifest;
+    UTILITIES = utilities;
   }
 
   /**
@@ -64,7 +70,7 @@ final class QuiltInstaller extends ManifestParser {
    * @author Griefed
    */
   void update() throws ParserConfigurationException, IOException, SAXException {
-    Document document = getXml(MANIFEST);
+    Document document = UTILITIES.XmlUtilities().getXml(MANIFEST);
 
     latestInstaller =
         document
@@ -125,7 +131,9 @@ final class QuiltInstaller extends ManifestParser {
    * @throws MalformedURLException if the URL could not be formed.
    * @author Griefed
    */
-  private URL installerUrl(String quiltInstallerVersion) throws MalformedURLException {
+  @Contract("_ -> new")
+  private @NotNull URL installerUrl(@NotNull String quiltInstallerVersion)
+      throws MalformedURLException {
     return new URL(
         String.format(URL_TEMPLATE_INSTALLER, quiltInstallerVersion, quiltInstallerVersion));
   }
@@ -136,7 +144,8 @@ final class QuiltInstaller extends ManifestParser {
    * @return List of available Quilt installer versions.
    * @author Griefed
    */
-  List<String> installers() {
+  @Contract(pure = true)
+  @NotNull List<String> installers() {
     return installers;
   }
 
@@ -147,7 +156,8 @@ final class QuiltInstaller extends ManifestParser {
    * @return Map with the Quilt-Version-to-Installer-URL.
    * @author Griefed
    */
-  HashMap<String, URL> meta() {
+  @Contract(pure = true)
+  @NotNull HashMap<String, URL> meta() {
     return installerUrlMeta;
   }
 
@@ -157,7 +167,8 @@ final class QuiltInstaller extends ManifestParser {
    * @return The latest Quilt installer version.
    * @author Griefed
    */
-  String latestInstallerVersion() {
+  @Contract(pure = true)
+  @NotNull String latestInstallerVersion() {
     return latestInstaller;
   }
 
@@ -167,7 +178,8 @@ final class QuiltInstaller extends ManifestParser {
    * @return The release Quilt installer version.
    * @author Griefed
    */
-  String releaseInstallerVersion() {
+  @Contract(pure = true)
+  @NotNull String releaseInstallerVersion() {
     return releaseInstaller;
   }
 
@@ -177,7 +189,8 @@ final class QuiltInstaller extends ManifestParser {
    * @return URL to the latest Quilt installer.
    * @author Griefed
    */
-  URL latestInstallerUrl() {
+  @Contract(pure = true)
+  @NotNull URL latestInstallerUrl() {
     return latestInstallerUrl;
   }
 
@@ -187,7 +200,8 @@ final class QuiltInstaller extends ManifestParser {
    * @return URL to the release Quilt installer.
    * @author Griefed
    */
-  URL releaseInstallerUrl() {
+  @Contract(pure = true)
+  @NotNull URL releaseInstallerUrl() {
     return releaseInstallerUrl;
   }
 }

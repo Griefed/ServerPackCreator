@@ -19,6 +19,7 @@
  */
 package de.griefed.serverpackcreator.addons;
 
+import org.jetbrains.annotations.NotNull;
 import org.pf4j.ExtensionPoint;
 
 public interface ExtensionInformation extends BaseInformation, ExtensionPoint {
@@ -30,6 +31,6 @@ public interface ExtensionInformation extends BaseInformation, ExtensionPoint {
    * @return The ID of this extension.
    * @author Griefed
    */
-  String getExtensionId();
+  @NotNull String getExtensionId();
 
 }

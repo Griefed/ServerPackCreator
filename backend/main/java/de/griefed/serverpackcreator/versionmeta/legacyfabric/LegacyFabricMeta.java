@@ -19,9 +19,8 @@
  */
 package de.griefed.serverpackcreator.versionmeta.legacyfabric;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
-import de.griefed.serverpackcreator.versionmeta.ManifestParser;
+import de.griefed.serverpackcreator.utilities.common.Utilities;
 import de.griefed.serverpackcreator.versionmeta.Meta;
 import java.io.File;
 import java.io.IOException;
@@ -30,20 +29,32 @@ import java.net.URL;
 import java.util.List;
 import java.util.Optional;
 import javax.xml.parsers.ParserConfigurationException;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.xml.sax.SAXException;
 
-public final class LegacyFabricMeta extends ManifestParser implements Meta {
+public final class LegacyFabricMeta implements Meta {
 
   private final LegacyFabricGame GAME_VERSIONS;
   private final LegacyFabricLoader LOADER_VERSIONS;
   private final LegacyFabricInstaller INSTALLER_VERSIONS;
 
-  public LegacyFabricMeta(File gameVersionsManifest, File loaderVersionsManifest,
-      File installerVersionsManifest, ObjectMapper mapper) {
+  /**
+   * LegacyFabric meta providing game, loader and installer version information.
+   *
+   * @param gameVersionsManifest      Game version manifest.
+   * @param loaderVersionsManifest    Loader version manifest.
+   * @param installerVersionsManifest Installer version manifest.
+   * @param utilities                 Commonly used utilities across ServerPackCreator.
+   */
+  public LegacyFabricMeta(File gameVersionsManifest,
+                          File loaderVersionsManifest,
+                          File installerVersionsManifest,
+                          Utilities utilities) {
 
-    GAME_VERSIONS = new LegacyFabricGame(gameVersionsManifest, mapper);
-    LOADER_VERSIONS = new LegacyFabricLoader(loaderVersionsManifest, mapper);
-    INSTALLER_VERSIONS = new LegacyFabricInstaller(installerVersionsManifest);
+    GAME_VERSIONS = new LegacyFabricGame(gameVersionsManifest, utilities);
+    LOADER_VERSIONS = new LegacyFabricLoader(loaderVersionsManifest, utilities);
+    INSTALLER_VERSIONS = new LegacyFabricInstaller(installerVersionsManifest, utilities);
   }
 
   @Override
@@ -54,72 +65,77 @@ public final class LegacyFabricMeta extends ManifestParser implements Meta {
   }
 
   @Override
-  public String latestLoader() {
+  public @NotNull String latestLoader() {
     return LOADER_VERSIONS.all().get(0);
   }
 
   @Override
-  public String releaseLoader() {
+  public @NotNull String releaseLoader() {
     return LOADER_VERSIONS.releases().get(0);
   }
 
+  @Contract(pure = true)
   @Override
-  public String latestInstaller() {
+  public @NotNull String latestInstaller() {
     return INSTALLER_VERSIONS.latest();
   }
 
+  @Contract(pure = true)
   @Override
-  public String releaseInstaller() {
+  public @NotNull String releaseInstaller() {
     return INSTALLER_VERSIONS.release();
   }
 
   @Override
-  public List<String> loaderVersionsListAscending() {
+  public @NotNull List<String> loaderVersionsListAscending() {
     return LOADER_VERSIONS.all();
   }
 
   @Override
-  public List<String> loaderVersionsListDescending() {
+  public @NotNull List<String> loaderVersionsListDescending() {
     return Lists.reverse(LOADER_VERSIONS.all());
   }
 
   @Override
-  public String[] loaderVersionsArrayAscending() {
+  public String @NotNull [] loaderVersionsArrayAscending() {
     return loaderVersionsListAscending().toArray(new String[0]);
   }
 
   @Override
-  public String[] loaderVersionsArrayDescending() {
+  public String @NotNull [] loaderVersionsArrayDescending() {
     return loaderVersionsListDescending().toArray(new String[0]);
   }
 
+  @Contract(pure = true)
   @Override
-  public List<String> installerVersionsListAscending() {
+  public @NotNull List<String> installerVersionsListAscending() {
     return INSTALLER_VERSIONS.all();
   }
 
   @Override
-  public List<String> installerVersionsListDescending() {
+  public @NotNull List<String> installerVersionsListDescending() {
     return Lists.reverse(INSTALLER_VERSIONS.all());
   }
 
   @Override
-  public String[] installerVersionsArrayAscending() {
+  public String @NotNull [] installerVersionsArrayAscending() {
     return installerVersionsListAscending().toArray(new String[0]);
   }
 
   @Override
-  public String[] installerVersionsArrayDescending() {
+  public String @NotNull [] installerVersionsArrayDescending() {
     return installerVersionsListDescending().toArray(new String[0]);
   }
 
+  @Contract(" -> new")
   @Override
-  public URL latestInstallerUrl() throws MalformedURLException {
+  public @NotNull URL latestInstallerUrl() throws MalformedURLException {
     return INSTALLER_VERSIONS.latestURL();
   }
 
+  @Contract(" -> new")
   @Override
-  public URL releaseInstallerUrl() throws MalformedURLException {
+  public @NotNull URL releaseInstallerUrl() throws MalformedURLException {
     return INSTALLER_VERSIONS.releaseURL();
   }
 
@@ -133,17 +149,17 @@ public final class LegacyFabricMeta extends ManifestParser implements Meta {
   }
 
   @Override
-  public Optional<URL> getInstallerUrl(String version) throws MalformedURLException {
+  public @NotNull Optional<URL> getInstallerUrl(@NotNull String version) throws MalformedURLException {
     return INSTALLER_VERSIONS.specificURL(version);
   }
 
   @Override
-  public boolean isVersionValid(String version) {
+  public boolean isVersionValid(@NotNull String version) {
     return LOADER_VERSIONS.all().contains(version);
   }
 
   @Override
-  public boolean isMinecraftSupported(String minecraftVersion) {
+  public boolean isMinecraftSupported(@NotNull String minecraftVersion) {
     return GAME_VERSIONS.all().contains(minecraftVersion);
   }
 
@@ -153,7 +169,7 @@ public final class LegacyFabricMeta extends ManifestParser implements Meta {
    * @return All Legacy Fabric supported Minecraft versions.
    * @author Griefed
    */
-  public List<String> supportedMinecraftVersions() {
+  public @NotNull List<String> supportedMinecraftVersions() {
     return GAME_VERSIONS.all();
   }
 }

@@ -27,7 +27,6 @@ import de.griefed.serverpackcreator.utilities.common.Utilities;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.io.FileUtils;
@@ -77,11 +76,11 @@ public class ZipController {
       ApplicationProperties injectedApplicationProperties,
       Utilities injectedUtilities) {
 
-    this.ZIPSERVICE = injectedZipService;
-    this.CONFIGURATIONHANDLER = injectedConfigurationHandler;
-    this.NOTIFICATIONRESPONSE = injectedNotificationResponse;
-    this.APPLICATIONPROPERTIES = injectedApplicationProperties;
-    this.UTILITIES = injectedUtilities;
+    ZIPSERVICE = injectedZipService;
+    CONFIGURATIONHANDLER = injectedConfigurationHandler;
+    NOTIFICATIONRESPONSE = injectedNotificationResponse;
+    APPLICATIONPROPERTIES = injectedApplicationProperties;
+    UTILITIES = injectedUtilities;
   }
 
   /**
@@ -100,32 +99,32 @@ public class ZipController {
     Path pathToZip = ZIPSERVICE.saveUploadedFile(file);
 
     if (CONFIGURATIONHANDLER.checkZipArchive(
-        Paths.get(pathToZip.toString().replace("\\", "/")), encounteredErrors)) {
+        pathToZip, encounteredErrors)) {
 
       FileUtils.deleteQuietly(new File(pathToZip.toString()));
 
       return ResponseEntity.badRequest()
-          .header(HttpHeaders.CONTENT_TYPE, "application/json")
-          .body(
-              NOTIFICATIONRESPONSE.zipResponse(
-                  encounteredErrors,
-                  10000,
-                  "error",
-                  "negative",
-                  file.getOriginalFilename(),
-                  false));
+                           .header(HttpHeaders.CONTENT_TYPE, "application/json")
+                           .body(
+                               NOTIFICATIONRESPONSE.zipResponse(
+                                   encounteredErrors,
+                                   10000,
+                                   "error",
+                                   "negative",
+                                   file.getOriginalFilename(),
+                                   false));
     }
 
     return ResponseEntity.ok()
-        .header(HttpHeaders.CONTENT_TYPE, "application/json")
-        .body(
-            NOTIFICATIONRESPONSE.zipResponse(
-                "ZIP-file checks passed. You may press Submit. :)",
-                5000,
-                "info",
-                "positive",
-                pathToZip.toFile().getName(),
-                true));
+                         .header(HttpHeaders.CONTENT_TYPE, "application/json")
+                         .body(
+                             NOTIFICATIONRESPONSE.zipResponse(
+                                 "ZIP-file checks passed. You may press Submit. :)",
+                                 5000,
+                                 "info",
+                                 "positive",
+                                 pathToZip.toFile().getName(),
+                                 true));
   }
 
   /**
@@ -155,17 +154,17 @@ public class ZipController {
     }
 
     return ResponseEntity.ok()
-        .header(HttpHeaders.CONTENT_TYPE, "application/json")
-        .body(
-            ZIPSERVICE.submitGenerationTask(
-                zipName
-                    + "&"
-                    + clientMods
-                    + "&"
-                    + minecraftVersion
-                    + "&"
-                    + modLoader
-                    + "&"
-                    + modLoaderVersion));
+                         .header(HttpHeaders.CONTENT_TYPE, "application/json")
+                         .body(
+                             ZIPSERVICE.submitGenerationTask(
+                                 zipName
+                                     + "&"
+                                     + clientMods
+                                     + "&"
+                                     + minecraftVersion
+                                     + "&"
+                                     + modLoader
+                                     + "&"
+                                     + modLoaderVersion));
   }
 }

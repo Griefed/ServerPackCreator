@@ -95,7 +95,8 @@ public class CompoundIcon implements Icon {
    *              X_AXIS, Y_AXIS, Z_Axis.
    * @param icons the Icons to be painted as part of the CompoundIcon
    */
-  public CompoundIcon(Axis axis, Icon... icons) {
+  public CompoundIcon(Axis axis,
+                      Icon... icons) {
     this(axis, 0, icons);
   }
 
@@ -108,7 +109,9 @@ public class CompoundIcon implements Icon {
    * @param gap   the gap between the icons
    * @param icons the Icons to be painted as part of the CompoundIcon
    */
-  public CompoundIcon(Axis axis, int gap, Icon... icons) {
+  public CompoundIcon(Axis axis,
+                      int gap,
+                      Icon... icons) {
     this(axis, gap, 0.5f, 0.5f, icons);
   }
 
@@ -124,7 +127,11 @@ public class CompoundIcon implements Icon {
    *                   any value between 0.0 and 1.0
    * @param icons      the Icons to be painted as part of the CompoundIcon
    */
-  public CompoundIcon(Axis axis, int gap, float alignmentX, float alignmentY, Icon... icons) {
+  public CompoundIcon(Axis axis,
+                      int gap,
+                      float alignmentX,
+                      float alignmentY,
+                      Icon... icons) {
     /*
      * TOP = 0.0f
      * LEFT = 0.0f
@@ -204,6 +211,55 @@ public class CompoundIcon implements Icon {
   }
 
   /**
+   * Paint the icons of this compound icon at the specified location
+   *
+   * @param c The component on which the icon is painted
+   * @param g The graphics context
+   * @param x The X coordinate of the icon's top-left corner
+   * @param y The Y coordinate of the icon's top-left corner
+   */
+  @Override
+  public void paintIcon(Component c,
+                        Graphics g,
+                        int x,
+                        int y) {
+    if (axis == Axis.X_AXIS) {
+
+      int height = getIconHeight();
+
+      for (Icon icon : icons) {
+
+        int iconY = getOffset(height, icon.getIconHeight(), alignmentY);
+        icon.paintIcon(c, g, x, y + iconY);
+        x += icon.getIconWidth() + gap;
+      }
+
+    } else if (axis == Axis.Y_AXIS) {
+
+      int width = getIconWidth();
+
+      for (Icon icon : icons) {
+
+        int iconX = getOffset(width, icon.getIconWidth(), alignmentX);
+        icon.paintIcon(c, g, x + iconX, y);
+        y += icon.getIconHeight() + gap;
+      }
+
+    } else /* must be Z_AXIS */ {
+
+      int width = getIconWidth();
+      int height = getIconHeight();
+
+      for (Icon icon : icons) {
+
+        int iconX = getOffset(width, icon.getIconWidth(), alignmentX);
+        int iconY = getOffset(height, icon.getIconHeight(), alignmentY);
+        icon.paintIcon(c, g, x + iconX, y + iconY);
+      }
+    }
+  }
+
+  /**
    * Gets the width of this icon.
    *
    * @return The width of the icon in pixels.
@@ -261,58 +317,14 @@ public class CompoundIcon implements Icon {
     return height;
   }
 
-  /**
-   * Paint the icons of this compound icon at the specified location
-   *
-   * @param c The component on which the icon is painted
-   * @param g The graphics context
-   * @param x The X coordinate of the icon's top-left corner
-   * @param y The Y coordinate of the icon's top-left corner
-   */
-  @Override
-  public void paintIcon(Component c, Graphics g, int x, int y) {
-    if (axis == Axis.X_AXIS) {
-
-      int height = getIconHeight();
-
-      for (Icon icon : icons) {
-
-        int iconY = getOffset(height, icon.getIconHeight(), alignmentY);
-        icon.paintIcon(c, g, x, y + iconY);
-        x += icon.getIconWidth() + gap;
-      }
-
-    } else if (axis == Axis.Y_AXIS) {
-
-      int width = getIconWidth();
-
-      for (Icon icon : icons) {
-
-        int iconX = getOffset(width, icon.getIconWidth(), alignmentX);
-        icon.paintIcon(c, g, x + iconX, y);
-        y += icon.getIconHeight() + gap;
-      }
-
-    } else /* must be Z_AXIS */ {
-
-      int width = getIconWidth();
-      int height = getIconHeight();
-
-      for (Icon icon : icons) {
-
-        int iconX = getOffset(width, icon.getIconWidth(), alignmentX);
-        int iconY = getOffset(height, icon.getIconHeight(), alignmentY);
-        icon.paintIcon(c, g, x + iconX, y + iconY);
-      }
-    }
-  }
-
   /*
    *  When the icon value is smaller than the maximum value of all icons the
    *  icon needs to be aligned appropriately. Calculate the offset to be used
    *  when painting the icon to achieve the proper alignment.
    */
-  private int getOffset(int maxValue, int iconValue, float alignment) {
+  private int getOffset(int maxValue,
+                        int iconValue,
+                        float alignment) {
     float offset = (maxValue - iconValue) * alignment;
     return Math.round(offset);
   }

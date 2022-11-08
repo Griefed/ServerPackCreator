@@ -6,8 +6,10 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import javax.xml.parsers.ParserConfigurationException;
+import net.lingala.zip4j.ZipFile;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
@@ -261,31 +263,37 @@ class ConfigurationHandlerTest {
     Assertions.assertTrue(
         configurationModel.getScriptSettings().containsKey("SPC_FABRIC_INSTALLER_VERSION_SPC"));
     Assertions.assertTrue(configurationModel.getScriptSettings()
-        .containsKey("SPC_LEGACYFABRIC_INSTALLER_VERSION_SPC"));
+                                            .containsKey("SPC_LEGACYFABRIC_INSTALLER_VERSION_SPC"));
     Assertions.assertTrue(
         configurationModel.getScriptSettings().containsKey("SPC_QUILT_INSTALLER_VERSION_SPC"));
 
     Assertions.assertEquals(configurationModel.getMinecraftVersion(),
-        configurationModel.getScriptSettings().get("SPC_MINECRAFT_VERSION_SPC"));
+                            configurationModel.getScriptSettings()
+                                              .get("SPC_MINECRAFT_VERSION_SPC"));
     Assertions.assertEquals(configurationModel.getModLoader(),
-        configurationModel.getScriptSettings().get("SPC_MODLOADER_SPC"));
+                            configurationModel.getScriptSettings().get("SPC_MODLOADER_SPC"));
     Assertions.assertEquals(configurationModel.getModLoaderVersion(),
-        configurationModel.getScriptSettings().get("SPC_MODLOADER_VERSION_SPC"));
+                            configurationModel.getScriptSettings()
+                                              .get("SPC_MODLOADER_VERSION_SPC"));
     Assertions.assertEquals(configurationModel.getJavaArgs(),
-        configurationModel.getScriptSettings().get("SPC_JAVA_ARGS_SPC"));
+                            configurationModel.getScriptSettings().get("SPC_JAVA_ARGS_SPC"));
     Assertions.assertEquals("java", configurationModel.getScriptSettings().get("SPC_JAVA_SPC"));
     Assertions.assertEquals(
         versionMeta.minecraft().getServer(configurationModel.getMinecraftVersion()).get().url()
-            .get().toString(),
+                   .get().toString(),
         configurationModel.getScriptSettings().get("SPC_MINECRAFT_SERVER_URL_SPC"));
-    Assertions.assertEquals(applicationProperties.SERVERPACKCREATOR_VERSION(),
-        configurationModel.getScriptSettings().get("SPC_SERVERPACKCREATOR_VERSION_SPC"));
+    Assertions.assertEquals(applicationProperties.serverPackCreatorVersion(),
+                            configurationModel.getScriptSettings()
+                                              .get("SPC_SERVERPACKCREATOR_VERSION_SPC"));
     Assertions.assertEquals(versionMeta.fabric().releaseInstaller(),
-        configurationModel.getScriptSettings().get("SPC_FABRIC_INSTALLER_VERSION_SPC"));
+                            configurationModel.getScriptSettings()
+                                              .get("SPC_FABRIC_INSTALLER_VERSION_SPC"));
     Assertions.assertEquals(versionMeta.legacyFabric().releaseInstaller(),
-        configurationModel.getScriptSettings().get("SPC_LEGACYFABRIC_INSTALLER_VERSION_SPC"));
+                            configurationModel.getScriptSettings()
+                                              .get("SPC_LEGACYFABRIC_INSTALLER_VERSION_SPC"));
     Assertions.assertEquals(versionMeta.quilt().releaseInstaller(),
-        configurationModel.getScriptSettings().get("SPC_QUILT_INSTALLER_VERSION_SPC"));
+                            configurationModel.getScriptSettings()
+                                              .get("SPC_QUILT_INSTALLER_VERSION_SPC"));
   }
 
   @Test
@@ -418,5 +426,440 @@ class ConfigurationHandlerTest {
         configurationHandler.checkZipArchive(
             Paths.get("backend/test/resources/testresources/Survive_Create_Prosper_4_invalid.zip"),
             new ArrayList<>()));
+  }
+
+
+  @Test
+  void writeConfigToFileTestFabric() {
+    List<String> clientMods =
+        new ArrayList<>(
+            Arrays.asList(
+                "AmbientSounds",
+                "BackTools",
+                "BetterAdvancement",
+                "BetterPing",
+                "cherished",
+                "ClientTweaks",
+                "Controlling",
+                "DefaultOptions",
+                "durability",
+                "DynamicSurroundings",
+                "itemzoom",
+                "jei-professions",
+                "jeiintegration",
+                "JustEnoughResources",
+                "MouseTweaks",
+                "Neat",
+                "OldJavaWarning",
+                "PackMenu",
+                "preciseblockplacing",
+                "SimpleDiscordRichPresence",
+                "SpawnerFix",
+                "TipTheScales",
+                "WorldNameRandomizer"));
+    List<String> copyDirs =
+        new ArrayList<>(Arrays.asList("config", "mods", "scripts", "seeds", "defaultconfigs"));
+
+    String javaPath;
+    String autoJavaPath = System.getProperty("java.home").replace("\\", "/") + "/bin/java";
+
+    if (autoJavaPath.startsWith("C:")) {
+      autoJavaPath = String.format("%s.exe", autoJavaPath);
+    }
+    if (new File("/usr/bin/java").exists()) {
+      javaPath = "/usr/bin/java";
+    } else {
+      javaPath = autoJavaPath;
+    }
+
+    String javaArgs = "tf3g4jz89agz843fag8z49a3zg8ap3jg8zap9vagv3z8j";
+
+    Assertions.assertNotNull(
+        new ConfigurationModel(
+            clientMods,
+            copyDirs,
+            "./backend/test/resources/fabric_tests",
+            javaPath,
+            "1.16.5",
+            "Fabric",
+            "0.11.3",
+            javaArgs,
+            "",
+            "",
+            true,
+            true,
+            true,
+            true,
+            new HashMap<>(),
+            new HashMap<>()
+        ).save(new File("tests/serverpackcreatorfabric.conf")));
+    Assertions.assertTrue(new File("tests/serverpackcreatorfabric.conf").exists());
+  }
+
+  @Test
+  void writeConfigToFileTestForge() {
+    List<String> clientMods =
+        new ArrayList<>(
+            Arrays.asList(
+                "AmbientSounds",
+                "BackTools",
+                "BetterAdvancement",
+                "BetterPing",
+                "cherished",
+                "ClientTweaks",
+                "Controlling",
+                "DefaultOptions",
+                "durability",
+                "DynamicSurroundings",
+                "itemzoom",
+                "jei-professions",
+                "jeiintegration",
+                "JustEnoughResources",
+                "MouseTweaks",
+                "Neat",
+                "OldJavaWarning",
+                "PackMenu",
+                "preciseblockplacing",
+                "SimpleDiscordRichPresence",
+                "SpawnerFix",
+                "TipTheScales",
+                "WorldNameRandomizer"));
+    List<String> copyDirs =
+        new ArrayList<>(Arrays.asList("config", "mods", "scripts", "seeds", "defaultconfigs"));
+
+    String javaPath;
+    String autoJavaPath = System.getProperty("java.home").replace("\\", "/") + "/bin/java";
+
+    if (autoJavaPath.startsWith("C:")) {
+      autoJavaPath = String.format("%s.exe", autoJavaPath);
+    }
+    if (new File("/usr/bin/java").exists()) {
+      javaPath = "/usr/bin/java";
+    } else {
+      javaPath = autoJavaPath;
+    }
+
+    String javaArgs = "tf3g4jz89agz843fag8z49a3zg8ap3jg8zap9vagv3z8j";
+
+    Assertions.assertNotNull(
+        new ConfigurationModel(
+            clientMods,
+            copyDirs,
+            "./backend/test/resources/forge_tests",
+            javaPath,
+            "1.16.5",
+            "Forge",
+            "36.1.2",
+            javaArgs,
+            "",
+            "",
+            true,
+            true,
+            true,
+            true,
+            new HashMap<>(),
+            new HashMap<>()
+        ).save(new File("tests/serverpackcreatorforge.conf")));
+    Assertions.assertTrue(new File("tests/serverpackcreatorforge.conf").exists());
+  }
+
+  @Test
+  void writeConfigToFileModelTest() {
+    ConfigurationModel configurationModel = new ConfigurationModel();
+    configurationModel.setModpackDir("backend/test/resources/forge_tests");
+    configurationModel.setClientMods(
+        new ArrayList<>(
+            Arrays.asList(
+                "AmbientSounds",
+                "BackTools",
+                "BetterAdvancement",
+                "BetterPing",
+                "cherished",
+                "ClientTweaks",
+                "Controlling",
+                "DefaultOptions",
+                "durability",
+                "DynamicSurroundings",
+                "itemzoom",
+                "jei-professions",
+                "jeiintegration",
+                "JustEnoughResources",
+                "MouseTweaks",
+                "Neat",
+                "OldJavaWarning",
+                "PackMenu",
+                "preciseblockplacing",
+                "SimpleDiscordRichPresence",
+                "SpawnerFix",
+                "TipTheScales",
+                "WorldNameRandomizer")));
+    configurationModel.setCopyDirs(
+        new ArrayList<>(Arrays.asList("config", "mods", "scripts", "seeds", "defaultconfigs")));
+    configurationModel.setIncludeServerInstallation(true);
+    configurationModel.setIncludeServerIcon(true);
+    configurationModel.setIncludeServerProperties(true);
+    configurationModel.setIncludeZipCreation(true);
+    configurationModel.setMinecraftVersion("1.16.5");
+    configurationModel.setModLoader("Forge");
+    configurationModel.setModLoaderVersion("36.1.2");
+    configurationModel.setJavaArgs("tf3g4jz89agz843fag8z49a3zg8ap3jg8zap9vagv3z8j");
+    Assertions.assertNotNull(configurationModel.save(new File("tests/somefile.conf")));
+    Assertions.assertTrue(new File("tests/somefile.conf").exists());
+  }
+
+  @Test
+  void setModLoaderCaseTestForge() {
+    Assertions.assertEquals("Forge", configurationHandler.getModLoaderCase("fOrGe"));
+  }
+
+  @Test
+  void setModLoaderCaseTestFabric() {
+    Assertions.assertEquals("Fabric", configurationHandler.getModLoaderCase("fAbRiC"));
+  }
+
+  @Test
+  void setModLoaderCaseTestForgeCorrected() {
+    Assertions.assertEquals("Forge", configurationHandler.getModLoaderCase("eeeeefOrGeeeeee"));
+  }
+
+  @Test
+  void setModLoaderCaseTestFabricCorrected() {
+    Assertions.assertEquals("Fabric",
+                            configurationHandler.getModLoaderCase("hufwhafasfabricfagrsg"));
+  }
+
+  @Test
+  void printConfigModelTest() {
+    ConfigurationModel configurationModel = new ConfigurationModel();
+    configurationModel.setModpackDir("backend/test/resources/forge_tests");
+    configurationModel.setClientMods(
+        new ArrayList<>(
+            Arrays.asList(
+                "AmbientSounds",
+                "BackTools",
+                "BetterAdvancement",
+                "BetterPing",
+                "cherished",
+                "ClientTweaks",
+                "Controlling",
+                "DefaultOptions",
+                "durability",
+                "DynamicSurroundings",
+                "itemzoom",
+                "jei-professions",
+                "jeiintegration",
+                "JustEnoughResources",
+                "MouseTweaks",
+                "Neat",
+                "OldJavaWarning",
+                "PackMenu",
+                "preciseblockplacing",
+                "SimpleDiscordRichPresence",
+                "SpawnerFix",
+                "TipTheScales",
+                "WorldNameRandomizer")));
+    configurationModel.setCopyDirs(
+        new ArrayList<>(Arrays.asList("config", "mods", "scripts", "seeds", "defaultconfigs")));
+    configurationModel.setIncludeServerInstallation(true);
+    configurationModel.setIncludeServerIcon(true);
+    configurationModel.setIncludeServerProperties(true);
+    configurationModel.setIncludeZipCreation(true);
+    configurationModel.setMinecraftVersion("1.16.5");
+    configurationModel.setModLoader("Forge");
+    configurationModel.setModLoaderVersion("36.1.2");
+    configurationModel.setJavaArgs("tf3g4jz89agz843fag8z49a3zg8ap3jg8zap9vagv3z8j");
+    configurationHandler.printConfigurationModel(configurationModel);
+  }
+
+  @Test
+  void updateConfigModelFromModrinthManifestTest() throws IOException {
+    ConfigurationModel configurationModel = new ConfigurationModel();
+    configurationHandler.updateConfigModelFromModrinthManifest(
+        configurationModel,
+        new File("backend/test/resources/testresources/modrinth/forge_modrinth.index.json"));
+    Assertions.assertEquals(configurationModel.getMinecraftVersion(), "1.18.2");
+    Assertions.assertEquals(configurationModel.getModLoader(), "Forge");
+    Assertions.assertEquals(configurationModel.getModLoaderVersion(), "40.1.48");
+
+    configurationHandler.updateConfigModelFromModrinthManifest(
+        configurationModel,
+        new File("backend/test/resources/testresources/modrinth/fabric_modrinth.index.json"));
+    Assertions.assertEquals(configurationModel.getMinecraftVersion(), "1.19");
+    Assertions.assertEquals(configurationModel.getModLoader(), "Fabric");
+    Assertions.assertEquals(configurationModel.getModLoaderVersion(), "0.14.8");
+
+    configurationHandler.updateConfigModelFromModrinthManifest(
+        configurationModel,
+        new File("backend/test/resources/testresources/modrinth/quilt_modrinth.index.json"));
+    Assertions.assertEquals(configurationModel.getMinecraftVersion(), "1.19");
+    Assertions.assertEquals(configurationModel.getModLoader(), "Quilt");
+    Assertions.assertEquals(configurationModel.getModLoaderVersion(), "0.17.0");
+  }
+
+  @Test
+  void updateConfigModelFromCurseManifestTest() throws IOException {
+    ConfigurationModel configurationModel = new ConfigurationModel();
+    configurationHandler.updateConfigModelFromCurseManifest(
+        configurationModel,
+        new File("backend/test/resources/testresources/curseforge/forge_manifest.json"));
+    Assertions.assertEquals(configurationModel.getMinecraftVersion(), "1.16.5");
+    Assertions.assertEquals(configurationModel.getModLoader(), "Forge");
+    Assertions.assertEquals(configurationModel.getModLoaderVersion(), "36.0.1");
+
+    configurationHandler.updateConfigModelFromCurseManifest(
+        configurationModel,
+        new File("backend/test/resources/testresources/curseforge/fabric_manifest.json"));
+    Assertions.assertEquals(configurationModel.getMinecraftVersion(), "1.18.2");
+    Assertions.assertEquals(configurationModel.getModLoader(), "Fabric");
+    Assertions.assertEquals(configurationModel.getModLoaderVersion(), "0.13.3");
+  }
+
+  @Test
+  void updateConfigModelFromMinecraftInstanceTest() throws IOException {
+    ConfigurationModel configurationModel = new ConfigurationModel();
+    configurationHandler.updateConfigModelFromMinecraftInstance(
+        configurationModel,
+        new File("backend/test/resources/testresources/curseforge/forge_minecraftinstance.json"));
+    Assertions.assertEquals(configurationModel.getMinecraftVersion(), "1.16.5");
+    Assertions.assertEquals(configurationModel.getModLoader(), "Forge");
+    Assertions.assertEquals(configurationModel.getModLoaderVersion(), "36.2.4");
+
+    configurationHandler.updateConfigModelFromMinecraftInstance(
+        configurationModel,
+        new File("backend/test/resources/testresources/curseforge/fabric_minecraftinstance.json"));
+    Assertions.assertEquals(configurationModel.getMinecraftVersion(), "1.18.2");
+    Assertions.assertEquals(configurationModel.getModLoader(), "Fabric");
+    Assertions.assertEquals(configurationModel.getModLoaderVersion(), "0.13.3");
+  }
+
+  @Test
+  void updateConfigModelFromConfigJsonTest() throws IOException {
+    ConfigurationModel configurationModel = new ConfigurationModel();
+    configurationHandler.updateConfigModelFromConfigJson(
+        configurationModel,
+        new File("backend/test/resources/testresources/gdlauncher/fabric_config.json"));
+    Assertions.assertEquals(configurationModel.getMinecraftVersion(), "1.18.2");
+    Assertions.assertEquals(configurationModel.getModLoader(), "Fabric");
+    Assertions.assertEquals(configurationModel.getModLoaderVersion(), "0.14.8");
+
+    configurationHandler.updateConfigModelFromConfigJson(
+        configurationModel,
+        new File("backend/test/resources/testresources/gdlauncher/forge_config.json"));
+    Assertions.assertEquals(configurationModel.getMinecraftVersion(), "1.18.2");
+    Assertions.assertEquals(configurationModel.getModLoader(), "Forge");
+    Assertions.assertEquals(configurationModel.getModLoaderVersion(), "40.1.52");
+  }
+
+  @Test
+  void updateConfigModelFromMMCPackTest() throws IOException {
+    ConfigurationModel configurationModel = new ConfigurationModel();
+    configurationHandler.updateConfigModelFromMMCPack(
+        configurationModel,
+        new File("backend/test/resources/testresources/multimc/fabric_mmc-pack.json"));
+    Assertions.assertEquals(configurationModel.getMinecraftVersion(), "1.18.1");
+    Assertions.assertEquals(configurationModel.getModLoader(), "Fabric");
+    Assertions.assertEquals(configurationModel.getModLoaderVersion(), "0.12.12");
+
+    configurationHandler.updateConfigModelFromMMCPack(
+        configurationModel,
+        new File("backend/test/resources/testresources/multimc/forge_mmc-pack.json"));
+    Assertions.assertEquals(configurationModel.getMinecraftVersion(), "1.16.5");
+    Assertions.assertEquals(configurationModel.getModLoader(), "Forge");
+    Assertions.assertEquals(configurationModel.getModLoaderVersion(), "36.2.23");
+
+    configurationHandler.updateConfigModelFromMMCPack(
+        configurationModel,
+        new File("backend/test/resources/testresources/multimc/quilt_mmc-pack.json"));
+    Assertions.assertEquals(configurationModel.getMinecraftVersion(), "1.19");
+    Assertions.assertEquals(configurationModel.getModLoader(), "Quilt");
+    Assertions.assertEquals(configurationModel.getModLoaderVersion(), "0.17.0");
+  }
+
+  @Test
+  void updateDestinationFromInstanceCfgTest() throws IOException {
+    Assertions.assertEquals(
+        configurationHandler.updateDestinationFromInstanceCfg(
+            new File("backend/test/resources/testresources/multimc/better_mc_instance.cfg")),
+        "Better Minecraft [FABRIC] - 1.18.1");
+
+    Assertions.assertEquals(
+        configurationHandler.updateDestinationFromInstanceCfg(
+            new File("backend/test/resources/testresources/multimc/all_the_mods_instance.cfg")),
+        "All the Mods 6 - ATM6 - 1.16.5");
+  }
+
+  @Test
+  void suggestCopyDirsTest() {
+    List<String> dirs = configurationHandler.suggestCopyDirs("backend/test/resources/fabric_tests");
+    Assertions.assertTrue(dirs.contains("config"));
+    Assertions.assertTrue(dirs.contains("defaultconfigs"));
+    Assertions.assertTrue(dirs.contains("mods"));
+    Assertions.assertTrue(dirs.contains("scripts"));
+    Assertions.assertTrue(dirs.contains("seeds"));
+    Assertions.assertFalse(dirs.contains("server_pack"));
+  }
+
+  @Test
+  void directoriesInModpackZipTest() throws IOException {
+    List<String> entries =
+        configurationHandler.getDirectoriesInModpackZipBaseDirectory(
+            new ZipFile(
+                "backend/test/resources/testresources/Survive_Create_Prosper_4_invalid.zip"));
+    Assertions.assertEquals(1, entries.size());
+    Assertions.assertTrue(entries.contains("overrides/"));
+    entries =
+        configurationHandler.getDirectoriesInModpackZipBaseDirectory(
+            new ZipFile("backend/test/resources/testresources/Survive_Create_Prosper_4_valid.zip"));
+    Assertions.assertTrue(entries.size() > 1);
+    Assertions.assertTrue(entries.contains("mods/"));
+    Assertions.assertTrue(entries.contains("config/"));
+  }
+
+  @Test
+  void filesAndDirsInZipTest() throws IOException {
+    Assertions.assertTrue(
+        configurationHandler
+            .getFilesInModpackZip(
+                new ZipFile(
+                    "backend/test/resources/testresources/Survive_Create_Prosper_4_invalid.zip"))
+            .size()
+            > 0);
+    Assertions.assertTrue(
+        configurationHandler
+            .getFilesInModpackZip(
+                new ZipFile(
+                    "backend/test/resources/testresources/Survive_Create_Prosper_4_valid.zip"))
+            .size()
+            > 0);
+
+    Assertions.assertTrue(
+        configurationHandler
+            .getDirectoriesInModpackZip(
+                new ZipFile(
+                    "backend/test/resources/testresources/Survive_Create_Prosper_4_invalid.zip"))
+            .size()
+            > 0);
+    Assertions.assertTrue(
+        configurationHandler
+            .getDirectoriesInModpackZip(
+                new ZipFile(
+                    "backend/test/resources/testresources/Survive_Create_Prosper_4_valid.zip"))
+            .size()
+            > 0);
+
+    Assertions.assertTrue(
+        configurationHandler
+            .getAllFilesAndDirectoriesInModpackZip(
+                new ZipFile(
+                    "backend/test/resources/testresources/Survive_Create_Prosper_4_invalid.zip"))
+            .size()
+            > 0);
+    Assertions.assertTrue(
+        configurationHandler
+            .getAllFilesAndDirectoriesInModpackZip(
+                new ZipFile(
+                    "backend/test/resources/testresources/Survive_Create_Prosper_4_valid.zip"))
+            .size()
+            > 0);
   }
 }

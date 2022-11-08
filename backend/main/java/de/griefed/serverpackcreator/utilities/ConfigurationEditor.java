@@ -37,6 +37,7 @@ import java.util.Scanner;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Create and edit a serverpackcreator.conf file via CLI. Allows loading of a custom file for
@@ -52,23 +53,20 @@ public final class ConfigurationEditor {
   private final ApplicationProperties APPLICATIONPROPERTIES;
   private final VersionMeta VERSIONMETA;
   private final Utilities UTILITIES;
-  private final ConfigUtilities CONFIGUTILITIES;
   private final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern(
       "yyyy-MM-dd_HH-mm-ss");
   private File logFile;
 
   public ConfigurationEditor(
-      ConfigurationHandler injectedConfigurationHandler,
-      ApplicationProperties injectedApplicationProperties,
-      Utilities injectedUtilities,
-      VersionMeta injectedVersionMeta,
-      ConfigUtilities injectedConfigUtilities) {
+      @NotNull ConfigurationHandler injectedConfigurationHandler,
+      @NotNull ApplicationProperties injectedApplicationProperties,
+      @NotNull Utilities injectedUtilities,
+      @NotNull VersionMeta injectedVersionMeta) {
 
-    this.APPLICATIONPROPERTIES = injectedApplicationProperties;
-    this.VERSIONMETA = injectedVersionMeta;
-    this.UTILITIES = injectedUtilities;
-    this.CONFIGUTILITIES = injectedConfigUtilities;
-    this.CONFIGURATIONHANDLER = injectedConfigurationHandler;
+    APPLICATIONPROPERTIES = injectedApplicationProperties;
+    VERSIONMETA = injectedVersionMeta;
+    UTILITIES = injectedUtilities;
+    CONFIGURATIONHANDLER = injectedConfigurationHandler;
   }
 
   /**
@@ -130,7 +128,7 @@ public final class ConfigurationEditor {
    * @param scanner Used for reading the users input.
    * @author Griefed
    */
-  private void loadAndEdit(Scanner scanner) {
+  private void loadAndEdit(@NotNull Scanner scanner) {
 
     ConfigurationModel configurationModel = new ConfigurationModel();
     String fileName;
@@ -157,7 +155,7 @@ public final class ConfigurationEditor {
 
     do {
 
-      CONFIGUTILITIES.printConfigurationModel(configurationModel);
+      CONFIGURATIONHANDLER.printConfigurationModel(configurationModel);
       printEditMenu();
 
       selection = getDecision(scanner, 0, 18);
@@ -174,7 +172,7 @@ public final class ConfigurationEditor {
         case 3:
 
           getDirsAndFilesToCopy(scanner, configurationModel.getModpackDir(),
-              configurationModel.getCopyDirs());
+                                configurationModel.getCopyDirs());
           break;
 
         case 4:
@@ -200,7 +198,7 @@ public final class ConfigurationEditor {
         case 9:
           configurationModel.setModLoaderVersion(
               getModloaderVersion(scanner, configurationModel.getMinecraftVersion(),
-                  configurationModel.getModLoader()));
+                                  configurationModel.getModLoader()));
           break;
 
         case 10:
@@ -228,7 +226,7 @@ public final class ConfigurationEditor {
           break;
 
         case 16:
-          CONFIGUTILITIES.printConfigurationModel(configurationModel);
+          CONFIGURATIONHANDLER.printConfigurationModel(configurationModel);
           break;
 
         case 17:
@@ -250,7 +248,7 @@ public final class ConfigurationEditor {
    * @param configurationModel The ConfigurationModel to check.
    * @author Griefed
    */
-  private void checkConfig(ConfigurationModel configurationModel) {
+  private void checkConfig(@NotNull ConfigurationModel configurationModel) {
     List<String> errors = new ArrayList<>(10);
     CONFIGURATIONHANDLER.checkConfiguration(configurationModel, errors, false);
     if (!errors.isEmpty()) {
@@ -318,7 +316,7 @@ public final class ConfigurationEditor {
    * @author whitebear60
    * @author Griefed
    */
-  public void createConfigurationFile(Scanner scanner) {
+  public void createConfigurationFile(@NotNull Scanner scanner) {
 
     ConfigurationModel configurationModel = new ConfigurationModel();
 
@@ -334,7 +332,7 @@ public final class ConfigurationEditor {
       // ---------------------------------------DIRECTORIES OR FILES TO COPY TO SERVER PACK---------
 
       getDirsAndFilesToCopy(scanner, configurationModel.getModpackDir(),
-          configurationModel.getCopyDirs());
+                            configurationModel.getCopyDirs());
 
       // ------------------------------------------------PATH TO THE CUSTOM SERVER-ICON.PNG---------
 
@@ -360,7 +358,7 @@ public final class ConfigurationEditor {
 
       configurationModel.setModLoaderVersion(
           getModloaderVersion(scanner, configurationModel.getMinecraftVersion(),
-              configurationModel.getModLoader()));
+                              configurationModel.getModLoader()));
 
       // ---------------------------------WHETHER TO INCLUDE SERVER-ICON.PNG IN SERVER PACK---------
 
@@ -393,7 +391,7 @@ public final class ConfigurationEditor {
       configurationModel.setServerPackSuffix(getServerPackSuffix(scanner));
 
       // ---------------------------------------------------PRINT CONFIG TO CONSOLE AND LOG---------
-      CONFIGUTILITIES.printConfigurationModel(configurationModel);
+      CONFIGURATIONHANDLER.printConfigurationModel(configurationModel);
 
       printToFileAndConsole("Are you satisfied with this config?");
       printToFileAndConsole("Answer: ", false);
@@ -420,7 +418,7 @@ public final class ConfigurationEditor {
    * @return The path to the modpack directory.
    * @author Griefed
    */
-  private String getModpackDirectory(Scanner scanner) {
+  private @NotNull String getModpackDirectory(@NotNull Scanner scanner) {
     String modpackDir;
 
     printToFileAndConsole(
@@ -440,8 +438,6 @@ public final class ConfigurationEditor {
 
     } while (!UTILITIES.BooleanUtils().readBoolean(scanner));
 
-    modpackDir = modpackDir.replace("\\", "/");
-
     printToFileAndConsole("You entered: " + modpackDir);
     printToFileAndConsole();
 
@@ -454,7 +450,8 @@ public final class ConfigurationEditor {
    * @param clientMods List of clientside-only mods to either overwrite or edit.
    * @author Griefed
    */
-  private void getClientSideMods(Scanner scanner, List<String> clientMods) {
+  private void getClientSideMods(@NotNull Scanner scanner,
+                                 @NotNull List<String> clientMods) {
 
     int selection = 2;
 
@@ -498,7 +495,9 @@ public final class ConfigurationEditor {
    * @return The users decision.
    * @author Griefed
    */
-  private int getDecision(Scanner scanner, int min, int max) {
+  private int getDecision(@NotNull Scanner scanner,
+                          int min,
+                          int max) {
     int selection;
     do {
       try {
@@ -519,7 +518,8 @@ public final class ConfigurationEditor {
    * @param list    The list in which to edit its entries.
    * @author Griefed
    */
-  private void editList(Scanner scanner, List<String> list) {
+  private void editList(@NotNull Scanner scanner,
+                        @NotNull List<String> list) {
     printToFileAndConsole("Available entries in list:");
     for (int i = 0; i < list.size(); i++) {
       printToFileAndConsole("(" + i + ") : " + list.get(i));
@@ -573,7 +573,7 @@ public final class ConfigurationEditor {
    * @return A list of clientside-only mods, as per user input.
    * @author Griefed
    */
-  private List<String> newClientModsList() {
+  private @NotNull List<String> newClientModsList() {
 
     printToFileAndConsole(
         "Enter filenames of clientside-only mods, one per line. When you are done, simply press enter with empty input.");
@@ -600,7 +600,7 @@ public final class ConfigurationEditor {
    * @return A list of clientside-only mods, as per user input.
    * @author Griefed
    */
-  private List<String> newCustomList() {
+  private @NotNull List<String> newCustomList() {
 
     List<String> custom = new ArrayList<>(UTILITIES.ListUtils().readStringList());
 
@@ -618,8 +618,9 @@ public final class ConfigurationEditor {
    * @param modpackDir The path to the modpack directory.
    * @author Griefed
    */
-  private void getDirsAndFilesToCopy(Scanner scanner, String modpackDir,
-      List<String> copyDirs) {
+  private void getDirsAndFilesToCopy(@NotNull Scanner scanner,
+                                     @NotNull String modpackDir,
+                                     @NotNull List<String> copyDirs) {
 
     printToFileAndConsole(
         "Which directories or files should be copied to the server pack? These are folder- or filenames inside your modpack directory or explicit source/file;destination/file-combinations.");
@@ -670,7 +671,14 @@ public final class ConfigurationEditor {
     printToFileAndConsole();
   }
 
-  private void listModpackFilesAndFolders(String modpackDir) {
+  /**
+   * List all files and folders in the provided modpack-directory.
+   *
+   * @param modpackDir Path to the modpack-directory of which to list the containing files and
+   *                   folders.
+   * @author Griefed
+   */
+  private void listModpackFilesAndFolders(@NotNull String modpackDir) {
     try {
       List<File> dirList = new ArrayList<>(FileUtils.listFiles(new File(modpackDir), null, false));
 
@@ -695,7 +703,7 @@ public final class ConfigurationEditor {
    * @return The path to the server-icon to include in the server pack, as per the users input.
    * @author Griefed
    */
-  private String getServerIcon(Scanner scanner) {
+  private @NotNull String getServerIcon(@NotNull Scanner scanner) {
     String serverIconPath;
     printToFileAndConsole(
         "Enter the path to your custom server-icon.png-file, if you want to include one. Leave blank if you are fine with the default.");
@@ -715,8 +723,6 @@ public final class ConfigurationEditor {
 
     } while (!UTILITIES.BooleanUtils().readBoolean(scanner));
 
-    serverIconPath = serverIconPath.replace("\\", "/");
-
     printToFileAndConsole("You entered: " + serverIconPath);
     printToFileAndConsole();
 
@@ -731,7 +737,7 @@ public final class ConfigurationEditor {
    * input.
    * @author Griefed
    */
-  private String getServerProperties(Scanner scanner) {
+  private @NotNull String getServerProperties(@NotNull Scanner scanner) {
     String serverPropertiesPath;
     printToFileAndConsole(
         "Enter the path to your custom server.properties-file, if you want to include one. Leave blank if you are fine with the default.");
@@ -751,8 +757,6 @@ public final class ConfigurationEditor {
 
     } while (!UTILITIES.BooleanUtils().readBoolean(scanner));
 
-    serverPropertiesPath = serverPropertiesPath.replace("\\", "/");
-
     printToFileAndConsole("You entered: " + serverPropertiesPath);
     printToFileAndConsole();
 
@@ -765,7 +769,7 @@ public final class ConfigurationEditor {
    * @return {@code true} if the user wants the modloader server to be installed.
    * @author Griefed
    */
-  private boolean installModloaderServer(Scanner scanner) {
+  private boolean installModloaderServer(@NotNull Scanner scanner) {
     boolean includeServerInstallation;
     printToFileAndConsole(
         "Do you want ServerPackCreator to install the modloader server for your server pack? Must be true or false.");
@@ -784,7 +788,7 @@ public final class ConfigurationEditor {
    * @return The Minecraft version the users modpack uses, as per the users input.
    * @author Griefed
    */
-  private String getMinecraftVersion(Scanner scanner) {
+  private @NotNull String getMinecraftVersion(@NotNull Scanner scanner) {
     String minecraftVersion;
     printToFileAndConsole("Which version of Minecraft does your modpack use?");
 
@@ -792,7 +796,7 @@ public final class ConfigurationEditor {
       printToFileAndConsole("Minecraft version: ", false);
       minecraftVersion = getNextLine(scanner);
 
-    } while (!VERSIONMETA.minecraft().checkMinecraftVersion(minecraftVersion));
+    } while (!VERSIONMETA.minecraft().isMinecraftVersionAvailable(minecraftVersion));
 
     printToFileAndConsole("You entered: " + minecraftVersion);
     printToFileAndConsole();
@@ -807,7 +811,7 @@ public final class ConfigurationEditor {
    * @return The modloader the users modpack uses, as per the users input.
    * @author Griefed
    */
-  private String getModloader(Scanner scanner) {
+  private @NotNull String getModloader(@NotNull Scanner scanner) {
     String modLoader;
     printToFileAndConsole("What modloader does your modpack use?");
 
@@ -817,7 +821,7 @@ public final class ConfigurationEditor {
 
     } while (!CONFIGURATIONHANDLER.checkModloader(modLoader));
 
-    modLoader = CONFIGUTILITIES.getModLoaderCase(modLoader);
+    modLoader = CONFIGURATIONHANDLER.getModLoaderCase(modLoader);
 
     printToFileAndConsole("You entered: " + modLoader);
     printToFileAndConsole();
@@ -833,7 +837,9 @@ public final class ConfigurationEditor {
    * @return The modloader version the users modpack uses, as per the users input.
    * @author Griefed
    */
-  private String getModloaderVersion(Scanner scanner, String minecraftVersion, String modLoader) {
+  private @NotNull String getModloaderVersion(@NotNull Scanner scanner,
+                                              @NotNull String minecraftVersion,
+                                              @NotNull String modLoader) {
     String modLoaderVersion;
     printToFileAndConsole("What version of " + modLoader + " does your modpack use?");
 
@@ -856,7 +862,7 @@ public final class ConfigurationEditor {
    * @return {@code true} if the user wants the server-icon to be included.
    * @author Griefed
    */
-  private boolean includeServerIcon(Scanner scanner) {
+  private boolean includeServerIcon(@NotNull Scanner scanner) {
     boolean includeServerIcon;
     printToFileAndConsole(
         "Do you want ServerPackCreator to include a server-icon in your server pack? Must be true or false.");
@@ -876,7 +882,7 @@ public final class ConfigurationEditor {
    * @return {@code true} if the user wants the server-properties to be included.
    * @author Griefed
    */
-  private boolean includeServerProperties(Scanner scanner) {
+  private boolean includeServerProperties(@NotNull Scanner scanner) {
     boolean includeServerProperties;
     printToFileAndConsole(
         "Do you want ServerPackCreator to include a server.properties in your server pack? Must be true or false.");
@@ -897,7 +903,7 @@ public final class ConfigurationEditor {
    * @return {@code true} if the user wants a ZIP-archive of the server pack to be created.
    * @author Griefed
    */
-  private boolean includeZipCreation(Scanner scanner) {
+  private boolean includeZipCreation(@NotNull Scanner scanner) {
     boolean includeZipCreation;
     printToFileAndConsole(
         "Do you want ServerPackCreator to create a ZIP-archive of your server pack? Must be true or false.");
@@ -918,7 +924,7 @@ public final class ConfigurationEditor {
    * @return The Java args to be used when starting the server pack, as per the users input.
    * @author Griefed
    */
-  private String getJavaArgs(Scanner scanner) {
+  private @NotNull String getJavaArgs(@NotNull Scanner scanner) {
     String javaArgs;
     printToFileAndConsole(
         "Specify the Java arguments, if any, to execute the server with. Can be left blank.");
@@ -943,7 +949,7 @@ public final class ConfigurationEditor {
    * @return The server pack suffix to append to the server pack, as per the users input.
    * @author Griefed
    */
-  private String getServerPackSuffix(Scanner scanner) {
+  private @NotNull String getServerPackSuffix(@NotNull Scanner scanner) {
     printToFileAndConsole(
         "Enter the suffix you want to append to your server pack. Can be left empty.");
 
@@ -959,7 +965,8 @@ public final class ConfigurationEditor {
    * @param configurationModel Configuration to save.
    * @author Griefed
    */
-  private void saveConfiguration(Scanner scanner, ConfigurationModel configurationModel) {
+  private void saveConfiguration(@NotNull Scanner scanner,
+                                 @NotNull ConfigurationModel configurationModel) {
 
     printToFileAndConsole(
         "Would you like to save this configuration as an additional, separate, configuration file?");
@@ -976,12 +983,12 @@ public final class ConfigurationEditor {
       printToFileAndConsole(
           "Please note that running ServerPackCreator in CLI mode requires a valid 'serverpackcreator.conf'-file to be present.");
       printToFileAndConsole("You may load the previous configuration, saved as '" + customFileName
-          + "' and save it as 'serverpackcreator.conf'");
+                                + "' and save it as 'serverpackcreator.conf'");
 
 
     } else {
 
-      configurationModel.save(APPLICATIONPROPERTIES.DEFAULT_CONFIG());
+      configurationModel.save(APPLICATIONPROPERTIES.defaultConfig());
       printToFileAndConsole(
           "Your configuration has been saved as 'serverpackcreator.conf'.");
 
@@ -994,7 +1001,7 @@ public final class ConfigurationEditor {
    * @param scanner Used for reading the users input.
    * @return The text the user entered.
    */
-  private String getNextLine(Scanner scanner) {
+  private @NotNull String getNextLine(@NotNull Scanner scanner) {
     String text = scanner.nextLine();
     printToFile(text, true);
     return text;
@@ -1021,7 +1028,8 @@ public final class ConfigurationEditor {
    * @param text The text to write/print
    * @author Griefed
    */
-  private void printToFileAndConsole(String text, boolean newLine) {
+  private void printToFileAndConsole(@NotNull String text,
+                                     boolean newLine) {
     if (newLine) {
       System.out.println(text);
     } else {
@@ -1036,7 +1044,8 @@ public final class ConfigurationEditor {
    * @param text    The text to append to the log.
    * @param newLine Whether to include a newline after the text.
    */
-  private void printToFile(String text, boolean newLine) {
+  private void printToFile(@NotNull String text,
+                           boolean newLine) {
     if (logFile.exists()) {
       try {
         if (newLine) {

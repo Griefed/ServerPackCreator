@@ -115,40 +115,10 @@ public class BackgroundPanel extends JPanel {
    *              {@link #TILED}, {@link #ACTUAL}
    * @author Rob Camick
    */
-  public BackgroundPanel(Image image, int style) {
+  public BackgroundPanel(Image image,
+                         int style) {
     setImage(image);
     setStyle(style);
-    setLayout(new BorderLayout());
-  }
-
-  /**
-   * <strong>Constructor</strong><br>
-   * Set image as the background with the specified style and alignment.
-   *
-   * @param image      Pass an image to the constructor to be used in the new JPanel.
-   * @param style      The style with which the image should be painted. See {@link #SCALED},
-   *                   {@link #TILED}, {@link #ACTUAL}
-   * @param alignmentX Alignment along the x-axis.
-   * @param alignmentY Alignment along the y-axis.
-   * @author Rob Camick
-   */
-  public BackgroundPanel(Image image, int style, float alignmentX, float alignmentY) {
-    setImage(image);
-    setStyle(style);
-    setImageAlignmentX(alignmentX);
-    setImageAlignmentY(alignmentY);
-    setLayout(new BorderLayout());
-  }
-
-  /**
-   * <strong>Constructor</strong><br>
-   * Use the Paint interface to paint a background.
-   *
-   * @param painter Pass a painter to be used as the background in the new JPanel.
-   * @author Rob Camick
-   */
-  public BackgroundPanel(Paint painter) {
-    setPaint(painter);
     setLayout(new BorderLayout());
   }
 
@@ -175,14 +145,25 @@ public class BackgroundPanel extends JPanel {
   }
 
   /**
-   * Setter for the Paint object used to paint the background.
+   * <strong>Constructor</strong><br>
+   * Set image as the background with the specified style and alignment.
    *
-   * @param painter Sets the painter with which the background should be painted.
+   * @param image      Pass an image to the constructor to be used in the new JPanel.
+   * @param style      The style with which the image should be painted. See {@link #SCALED},
+   *                   {@link #TILED}, {@link #ACTUAL}
+   * @param alignmentX Alignment along the x-axis.
+   * @param alignmentY Alignment along the y-axis.
    * @author Rob Camick
    */
-  public void setPaint(Paint painter) {
-    this.painter = painter;
-    repaint();
+  public BackgroundPanel(Image image,
+                         int style,
+                         float alignmentX,
+                         float alignmentY) {
+    setImage(image);
+    setStyle(style);
+    setImageAlignmentX(alignmentX);
+    setImageAlignmentY(alignmentY);
+    setLayout(new BorderLayout());
   }
 
   /**
@@ -208,6 +189,29 @@ public class BackgroundPanel extends JPanel {
   }
 
   /**
+   * <strong>Constructor</strong><br>
+   * Use the Paint interface to paint a background.
+   *
+   * @param painter Pass a painter to be used as the background in the new JPanel.
+   * @author Rob Camick
+   */
+  public BackgroundPanel(Paint painter) {
+    setPaint(painter);
+    setLayout(new BorderLayout());
+  }
+
+  /**
+   * Setter for the Paint object used to paint the background.
+   *
+   * @param painter Sets the painter with which the background should be painted.
+   * @author Rob Camick
+   */
+  public void setPaint(Paint painter) {
+    this.painter = painter;
+    repaint();
+  }
+
+  /**
    * Override method so we can make the component transparent.
    *
    * @param component JComponent to add to the panel.
@@ -218,44 +222,19 @@ public class BackgroundPanel extends JPanel {
   }
 
   /**
-   * Override to provide a preferred size equal to the image size.
-   *
-   * @return Dimension. Returns the dimension of the passed image.
-   * @author Rob Camick
-   */
-  @Override
-  public Dimension getPreferredSize() {
-    if (image == null) {
-      return super.getPreferredSize();
-    } else {
-      return new Dimension(image.getWidth(null), image.getHeight(null));
-    }
-  }
-
-  /**
    * Override method so we can make the component transparent.
    *
    * @param component   JComponent to add to the panel.
    * @param constraints Constraints with which the panel should be added.
    * @author Rob Camick
    */
-  public void addComponent(JComponent component, Object constraints) {
+  public void addComponent(JComponent component,
+                           Object constraints) {
     if (isTransparentAdd) {
       makeComponentTransparent(component);
     }
 
     super.add(component, constraints);
-  }
-
-  /**
-   * Controls whether components added to this panel should automatically be made transparent. That
-   * is, setOpaque(false) will be invoked. The default is set to true.
-   *
-   * @param isTransparentAdd Whether to automatically make components transparent.
-   * @author Rob Camick
-   */
-  public void setTransparentAdd(boolean isTransparentAdd) {
-    this.isTransparentAdd = isTransparentAdd;
   }
 
   /**
@@ -279,6 +258,17 @@ public class BackgroundPanel extends JPanel {
         ((JComponent) c).setOpaque(false);
       }
     }
+  }
+
+  /**
+   * Controls whether components added to this panel should automatically be made transparent. That
+   * is, setOpaque(false) will be invoked. The default is set to true.
+   *
+   * @param isTransparentAdd Whether to automatically make components transparent.
+   * @author Rob Camick
+   */
+  public void setTransparentAdd(boolean isTransparentAdd) {
+    this.isTransparentAdd = isTransparentAdd;
   }
 
   /**
@@ -321,14 +311,18 @@ public class BackgroundPanel extends JPanel {
   }
 
   /**
-   * Custom painting code for drawing a SCALED image as the background.
+   * Override to provide a preferred size equal to the image size.
    *
-   * @param g Received from parent.
+   * @return Returns the dimension of the passed image.
    * @author Rob Camick
    */
-  private void drawScaled(Graphics g) {
-    Dimension d = getSize();
-    g.drawImage(image, 0, 0, d.width, d.height, null);
+  @Override
+  public Dimension getPreferredSize() {
+    if (image == null) {
+      return super.getPreferredSize();
+    } else {
+      return new Dimension(image.getWidth(null), image.getHeight(null));
+    }
   }
 
   /**
@@ -364,5 +358,16 @@ public class BackgroundPanel extends JPanel {
     float x = (width - image.getWidth(null)) * alignmentX;
     float y = (height - image.getHeight(null)) * alignmentY;
     g.drawImage(image, (int) x + insets.left, (int) y + insets.top, this);
+  }
+
+  /**
+   * Custom painting code for drawing a SCALED image as the background.
+   *
+   * @param g Received from parent.
+   * @author Rob Camick
+   */
+  private void drawScaled(Graphics g) {
+    Dimension d = getSize();
+    g.drawImage(image, 0, 0, d.width, d.height, null);
   }
 }

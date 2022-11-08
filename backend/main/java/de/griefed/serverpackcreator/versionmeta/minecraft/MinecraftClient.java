@@ -19,7 +19,6 @@
  */
 package de.griefed.serverpackcreator.versionmeta.minecraft;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.utilities.common.Utilities;
 import de.griefed.serverpackcreator.versionmeta.Type;
@@ -28,6 +27,8 @@ import de.griefed.serverpackcreator.versionmeta.forge.ForgeMeta;
 import java.net.URL;
 import java.util.List;
 import java.util.Optional;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Relevant information about a given Minecraft client.
@@ -51,14 +52,17 @@ public final class MinecraftClient {
    * @param type                  Either {@link Type#RELEASE} or {@link Type#SNAPSHOT}.
    * @param url                   Url to this versions manifest.
    * @param forgeMeta             To acquire Forge instances for this client version.
-   * @param objectMapper          Object mapper for JSON parsing.
-   * @param utilities             Instance of commonly used utilities.
+   * @param utilities             Commonly used utilities across ServerPackCreator.
    * @param applicationProperties ServerPackCreator settings.
    * @author Griefed
    */
   MinecraftClient(
-      String version, Type type, URL url, ForgeMeta forgeMeta, ObjectMapper objectMapper,
-      Utilities utilities, ApplicationProperties applicationProperties) {
+      @NotNull String version,
+      @NotNull Type type,
+      @NotNull URL url,
+      @NotNull ForgeMeta forgeMeta,
+      @NotNull Utilities utilities,
+      @NotNull ApplicationProperties applicationProperties) {
 
     APPLICATIONPROPERTIES = applicationProperties;
     UTILITIES = utilities;
@@ -66,8 +70,8 @@ public final class MinecraftClient {
     TYPE = type;
     URL = url;
     FORGE_META = forgeMeta;
-    MINECRAFT_SERVER = new MinecraftServer(version, type, url, objectMapper, UTILITIES,
-        APPLICATIONPROPERTIES);
+    MINECRAFT_SERVER = new MinecraftServer(version, type, url, UTILITIES,
+                                           APPLICATIONPROPERTIES);
   }
 
   /**
@@ -82,9 +86,15 @@ public final class MinecraftClient {
    * @param applicationProperties ServerPackCreator settings.
    * @author Griefed
    */
+  @Contract(pure = true)
   MinecraftClient(
-      String version, Type type, URL url, MinecraftServer server, ForgeMeta forgeMeta,
-      Utilities utilities, ApplicationProperties applicationProperties) {
+      @NotNull String version,
+      @NotNull Type type,
+      @NotNull URL url,
+      @NotNull MinecraftServer server,
+      @NotNull ForgeMeta forgeMeta,
+      @NotNull Utilities utilities,
+      @NotNull ApplicationProperties applicationProperties) {
 
     APPLICATIONPROPERTIES = applicationProperties;
     UTILITIES = utilities;
@@ -101,7 +111,8 @@ public final class MinecraftClient {
    * @return Minecraft version.
    * @author Griefed
    */
-  public String version() {
+  @Contract(pure = true)
+  public @NotNull String version() {
     return VERSION;
   }
 
@@ -111,7 +122,8 @@ public final class MinecraftClient {
    * @return Either {@link Type#RELEASE} or {@link Type#SNAPSHOT}.
    * @author Griefed
    */
-  public Type type() {
+  @Contract(pure = true)
+  public @NotNull Type type() {
     return TYPE;
   }
 
@@ -121,7 +133,8 @@ public final class MinecraftClient {
    * @return URL
    * @author Griefed
    */
-  public URL url() {
+  @Contract(pure = true)
+  public @NotNull URL url() {
     return URL;
   }
 
@@ -131,7 +144,8 @@ public final class MinecraftClient {
    * @return Server wrapped in an {@link Optional}
    * @author Griefed
    */
-  public MinecraftServer server() {
+  @Contract(pure = true)
+  public @NotNull MinecraftServer server() {
     return MINECRAFT_SERVER;
   }
 
@@ -141,7 +155,7 @@ public final class MinecraftClient {
    * @return Forge instance for this client, wrapped in an {@link Optional}.
    * @author Griefed
    */
-  public Optional<List<ForgeInstance>> forge() {
+  public @NotNull Optional<List<ForgeInstance>> forge() {
     return FORGE_META.getForgeInstances(VERSION);
   }
 }

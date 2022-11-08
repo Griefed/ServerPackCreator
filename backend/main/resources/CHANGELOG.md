@@ -1,16 +1,61 @@
-## [3.14.7](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.14.6...3.14.7) (2022-10-04)
+## [3.15.0-beta.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.14.5...3.15.0-beta.1) (2022-10-08)
 
 
-### 🛠 Fixes
+### :scissors: Refactor
 
-* **File and Directory exclusion:** Correctly exclude files and directories as per user input and default list of directories to exclude from the server pack by matching the paths of files and directories. Thanks to @ModernGamingWorld for reporting this! ([df4eb1a](https://git.griefed.de/Griefed/ServerPackCreator/commit/df4eb1a8756e2d53ca1304efe55e7e97866c2b94))
+* Merge ConfigUtilities into ConfigurationHandler. Extract JSON and XML utilities into separate utilitiy classes, passed to VersionMeta and other parts of ServerPackCreator. ([441ede1](https://git.griefed.de/Griefed/ServerPackCreator/commit/441ede123fc7de08543ba2f31cb1c425e43db0d2))
+* **Code Quality:** Implement latest Qodana suggestions ([d7ccfe8](https://git.griefed.de/Griefed/ServerPackCreator/commit/d7ccfe8a31e0015d25fc24fade6212734ca5c9a8))
+* **Execution Time Measurement:** Implement custom stopwatch to measure the execution time of tasks. ([b1c1f2d](https://git.griefed.de/Griefed/ServerPackCreator/commit/b1c1f2d7758fcd0d10698e51d901a0c7bb8703e0))
+* **Migration Message Logging:** Make the display window and logging of migration messages a little easier on the eye. ([92fd7a9](https://git.griefed.de/Griefed/ServerPackCreator/commit/92fd7a91d24c948100ccdfa62adbd98c4e50d539))
+* **MigrationManager:** Improve docs and styling. ([f141413](https://git.griefed.de/Griefed/ServerPackCreator/commit/f14141348df504b29ce56e844d235f5a511190fc))
+* **ServerPackCreator:** Improve docs and styling ([631d581](https://git.griefed.de/Griefed/ServerPackCreator/commit/631d5810bfc33a6f24497cce8daa2fb0eac592a9))
+* **ServerPackHandler:** Improve docs and styling ([44d67c6](https://git.griefed.de/Griefed/ServerPackCreator/commit/44d67c643c73aab0af1dca82b8e04e6fce15702d))
+* **SimpleStopWatch:** Rearrange methods, apply editorconfig and make getElapsedNanoseconds public ([bd81c7d](https://git.griefed.de/Griefed/ServerPackCreator/commit/bd81c7de266919c629b5b925a6a18321530b2c7b))
 
-## [3.14.6](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.14.5...3.14.6) (2022-09-29)
+
+### 💈 Style
+
+* Apply new EditorConfig styling ([ed09b6c](https://git.griefed.de/Griefed/ServerPackCreator/commit/ed09b6c837c467eab59ff7378bc20e80fc2eb520))
+* **Editorconfig:** Wrap multi-parameter method declarations, align multi-parameter calls and improve method grouping ([0e943a6](https://git.griefed.de/Griefed/ServerPackCreator/commit/0e943a666a117b203f5c5dc2df916ffa36ef86e2))
+
+
+### 💎 Improvements
+
+* **Home Directory:** Base all actions, file- and directory paths on home ServerPackCreators directory. Preparations for GH[#438](https://git.griefed.de/Griefed/ServerPackCreator/issues/438) ([3309c74](https://git.griefed.de/Griefed/ServerPackCreator/commit/3309c74bce0a01bf8234173b7976012645745dc7))
+
+
+### 📔 Docs
+
+* Improve description for base-package, short description of intended workflow, list extensions ([5cfdfeb](https://git.griefed.de/Griefed/ServerPackCreator/commit/5cfdfeb00f2cbdf30b3277c5a6dd4ba368ab19fa))
+* **ApplicationProperties:** Improve descriptions for files and directories ([0f88239](https://git.griefed.de/Griefed/ServerPackCreator/commit/0f8823908044fffec48051dbfb8285cba0ac5219))
 
 
 ### 🦊 CI/CD
 
 * **Maintenance Release:** Writes the current version to your serverpackcreator.properties to `de.griefed.serverpackcreator.version.old`, so following version can execute migrations properly.  If you've used SPC before, please update to this version and run it at least once. ([f0de921](https://git.griefed.de/Griefed/ServerPackCreator/commit/f0de921622b73cad9837f74cb13af3cad20a0615))
+
+
+### 🧪 Tests
+
+* Set home-directory to tests and run tests in said directory to prevent file-clobbering and unwanted overwrites ([81a3e49](https://git.griefed.de/Griefed/ServerPackCreator/commit/81a3e49fc473d7046e2b4c33b1a6a2950d63d203))
+
+
+### 🚀 Features
+
+* **Update Migrations:** When updating from an older to a new version, perform necessary migrations on a step-by-step, version-to-version, basis ([7e04426](https://git.griefed.de/Griefed/ServerPackCreator/commit/7e044266685454733ea0a71de76dd081b686d649))
+
+
+### 🛠 Fixes
+
+* **File and Directory exclusion:** Correctly exclude files and directories as per user input and default list of directories to exclude from the server pack by matching the paths of files and directories. Thanks to @ModernGamingWorld for reporting this! ([a887796](https://git.griefed.de/Griefed/ServerPackCreator/commit/a8877962c33e2b7645a3bad7c0a5f079937e6998))
+* **JAR folder extraction:** Extract all files and folders when running in a dev-env. Allow specifying of multiple file-endings separated with pipe-symbol via use of regex. ([a796aab](https://git.griefed.de/Griefed/ServerPackCreator/commit/a796aabf7ee07809c20c8d5e368aed6e567dfb7e))
+* **Quilt server installation:** Install Quilt server in server pack directory. ([3552632](https://git.griefed.de/Griefed/ServerPackCreator/commit/3552632d77e5730b19957db71175bfa6ccead39a))
+* **Webservice Propery Loading:** Pass property files to load as CLI argument when running Spring to ensure the properties from SPCs home-directory get loaded as well. ([b431dd2](https://git.griefed.de/Griefed/ServerPackCreator/commit/b431dd2ee47ad22c0ec1589eb0ff7dd9fdfa9b0c))
+
+
+### Other
+
+* **Maintenance:** Remove manual write of old version to properties from maintenance release 3.14.6. ([d908705](https://git.griefed.de/Griefed/ServerPackCreator/commit/d90870542c1644e6f098cee5756a827fb2aff213))
 
 ## [3.14.5](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.14.4...3.14.5) (2022-09-26)
 

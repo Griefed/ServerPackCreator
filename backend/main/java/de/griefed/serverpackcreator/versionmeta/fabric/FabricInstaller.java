@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.versionmeta.fabric;
 
-import de.griefed.serverpackcreator.versionmeta.ManifestParser;
+import de.griefed.serverpackcreator.utilities.common.Utilities;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -29,6 +29,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import javax.xml.parsers.ParserConfigurationException;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -37,8 +39,9 @@ import org.xml.sax.SAXException;
  *
  * @author Griefed
  */
-final class FabricInstaller extends ManifestParser {
+final class FabricInstaller {
 
+  private final Utilities UTILITIES;
   private final String URL_TEMPLATE_INSTALLER =
       "https://maven.fabricmc.net/net/fabricmc/fabric-installer/%s/fabric-installer-%s.jar";
   private final File MANIFEST;
@@ -52,11 +55,14 @@ final class FabricInstaller extends ManifestParser {
   /**
    * Create a new instance of the Fabric Installer.
    *
-   * @param manifest Fabric installer information
+   * @param manifest  Fabric installer information
+   * @param utilities Commonly used utilities across ServerPackCreator.
    * @author Griefed
    */
-  FabricInstaller(File manifest) {
+  FabricInstaller(@NotNull File manifest,
+                  @NotNull Utilities utilities) {
     MANIFEST = manifest;
+    UTILITIES = utilities;
   }
 
   /**
@@ -65,7 +71,7 @@ final class FabricInstaller extends ManifestParser {
    * @author Griefed
    */
   void update() throws ParserConfigurationException, IOException, SAXException {
-    Document document = getXml(MANIFEST);
+    Document document = UTILITIES.XmlUtilities().getXml(MANIFEST);
 
     latestInstaller =
         document
@@ -124,7 +130,9 @@ final class FabricInstaller extends ManifestParser {
    * @throws MalformedURLException if the URL could not be formed.
    * @author Griefed
    */
-  private URL installerUrl(String fabricInstallerVersion) throws MalformedURLException {
+  @Contract("_ -> new")
+  private @NotNull URL installerUrl(@NotNull String fabricInstallerVersion)
+      throws MalformedURLException {
     return new URL(
         String.format(URL_TEMPLATE_INSTALLER, fabricInstallerVersion, fabricInstallerVersion));
   }
@@ -135,7 +143,8 @@ final class FabricInstaller extends ManifestParser {
    * @return List of available Fabric installer versions.
    * @author Griefed
    */
-  List<String> installers() {
+  @Contract(pure = true)
+  @NotNull List<String> installers() {
     return installers;
   }
 
@@ -146,7 +155,8 @@ final class FabricInstaller extends ManifestParser {
    * @return Map with the Fabric-Version-to-Installer-URL.
    * @author Griefed
    */
-  HashMap<String, URL> meta() {
+  @Contract(pure = true)
+  @NotNull HashMap<String, URL> meta() {
     return installerUrlMeta;
   }
 
@@ -156,7 +166,8 @@ final class FabricInstaller extends ManifestParser {
    * @return The latest Fabric installer version.
    * @author Griefed
    */
-  String latestInstallerVersion() {
+  @Contract(pure = true)
+  @NotNull String latestInstallerVersion() {
     return latestInstaller;
   }
 
@@ -166,7 +177,8 @@ final class FabricInstaller extends ManifestParser {
    * @return The release Fabric installer version.
    * @author Griefed
    */
-  String releaseInstallerVersion() {
+  @Contract(pure = true)
+  @NotNull String releaseInstallerVersion() {
     return releaseInstaller;
   }
 
@@ -176,7 +188,8 @@ final class FabricInstaller extends ManifestParser {
    * @return URL to the latest Fabric installer.
    * @author Griefed
    */
-  URL latestInstallerUrl() {
+  @Contract(pure = true)
+  @NotNull URL latestInstallerUrl() {
     return latestInstallerUrl;
   }
 
@@ -186,7 +199,8 @@ final class FabricInstaller extends ManifestParser {
    * @return URL to the release Fabric installer.
    * @author Griefed
    */
-  URL releaseInstallerUrl() {
+  @Contract(pure = true)
+  @NotNull URL releaseInstallerUrl() {
     return releaseInstallerUrl;
   }
 
@@ -199,7 +213,8 @@ final class FabricInstaller extends ManifestParser {
    * @return URL to the improved Fabric launcher, wrapped in an {@link Optional}.
    * @author Griefed
    */
-  Optional<URL> improvedLauncherUrl(String minecraftVersion, String fabricVersion) {
+  @NotNull Optional<URL> improvedLauncherUrl(@NotNull String minecraftVersion,
+                                             @NotNull String fabricVersion) {
     try {
       return Optional.of(
           new URL(

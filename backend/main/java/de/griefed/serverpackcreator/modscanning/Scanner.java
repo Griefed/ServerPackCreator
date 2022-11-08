@@ -19,6 +19,8 @@
  */
 package de.griefed.serverpackcreator.modscanning;
 
+import org.jetbrains.annotations.NotNull;
+
 /**
  * Small interface for making sure each scanner has a {@code scan}-method with a given format.
  *
@@ -30,5 +32,5 @@ package de.griefed.serverpackcreator.modscanning;
  */
 interface Scanner<T, U> {
 
-  T scan(U jarFiles);
+  @NotNull T scan(@NotNull U jarFiles);
 }

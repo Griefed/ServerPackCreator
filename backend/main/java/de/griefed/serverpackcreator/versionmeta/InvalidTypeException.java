@@ -19,6 +19,8 @@
  */
 package de.griefed.serverpackcreator.versionmeta;
 
+import org.jetbrains.annotations.NotNull;
+
 /**
  * Exceptions thrown if a specified {@link Type} is considered invalid.
  *
@@ -26,7 +28,13 @@ package de.griefed.serverpackcreator.versionmeta;
  */
 public final class InvalidTypeException extends Exception {
 
-  public InvalidTypeException(String message) {
+  /**
+   * Throw new exception indicating that the specified type is incorrect.
+   *
+   * @param message Cause or reason for why this exception was thrown.
+   * @author Griefed
+   */
+  public InvalidTypeException(@NotNull String message) {
     super(message);
   }
 }

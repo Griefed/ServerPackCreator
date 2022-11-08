@@ -54,7 +54,7 @@ public class TaskSubmitter {
    */
   @Autowired
   public TaskSubmitter(JmsTemplate injectedJmsTemplate) {
-    this.jmsTemplate = injectedJmsTemplate;
+    jmsTemplate = injectedJmsTemplate;
   }
 
   /**
@@ -69,27 +69,6 @@ public class TaskSubmitter {
   public void generateZip(String zipGenerationProperties) {
     LOG.debug("Sending ZIP generate task: " + zipGenerationProperties);
     submitGeneration(new GenerateZip(zipGenerationProperties));
-  }
-
-  /**
-   * Convert and send a scan-task to our JMS. Set the {@code type} to {@code scan} and the
-   * {@code unique id} to tasks unique id which contains the CurseForge project and file id
-   * combination.
-   *
-   * @param task The task to be submitted to the scan-queue.
-   * @author Griefed
-   */
-  private void submitScan(Task task) {
-    LOG.info("Submitting scan " + task);
-    LOG.debug("UniqueID is: " + task.uniqueId());
-    jmsTemplate.convertAndSend(
-        "tasks.background",
-        task,
-        message -> {
-          message.setStringProperty("type", "scan");
-          message.setStringProperty("unique_id", task.uniqueId());
-          return message;
-        });
   }
 
   /**
@@ -108,6 +87,27 @@ public class TaskSubmitter {
         task,
         message -> {
           message.setStringProperty("type", "generation");
+          message.setStringProperty("unique_id", task.uniqueId());
+          return message;
+        });
+  }
+
+  /**
+   * Convert and send a scan-task to our JMS. Set the {@code type} to {@code scan} and the
+   * {@code unique id} to tasks unique id which contains the CurseForge project and file id
+   * combination.
+   *
+   * @param task The task to be submitted to the scan-queue.
+   * @author Griefed
+   */
+  private void submitScan(Task task) {
+    LOG.info("Submitting scan " + task);
+    LOG.debug("UniqueID is: " + task.uniqueId());
+    jmsTemplate.convertAndSend(
+        "tasks.background",
+        task,
+        message -> {
+          message.setStringProperty("type", "scan");
           message.setStringProperty("unique_id", task.uniqueId());
           return message;
         });

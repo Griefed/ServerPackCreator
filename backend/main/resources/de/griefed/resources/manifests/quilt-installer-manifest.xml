@@ -3,8 +3,8 @@
   <groupId>org.quiltmc</groupId>
   <artifactId>quilt-installer</artifactId>
   <versioning>
-    <latest>0.4.4</latest>
-    <release>0.4.4</release>
+    <latest>0.5.0</latest>
+    <release>0.5.0</release>
     <versions>
       <version>0.3.1</version>
       <version>0.4.0</version>
@@ -12,7 +12,8 @@
       <version>0.4.2</version>
       <version>0.4.3</version>
       <version>0.4.4</version>
+      <version>0.5.0</version>
     </versions>
-    <lastUpdated>20220825015116</lastUpdated>
+    <lastUpdated>20221105234406</lastUpdated>
   </versioning>
 </metadata>

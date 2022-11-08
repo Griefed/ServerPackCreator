@@ -19,6 +19,8 @@
  */
 package de.griefed.serverpackcreator.versionmeta.fabric;
 
+import org.jetbrains.annotations.Contract;
+
 /**
  * A Fabric intermediary.
  *
@@ -30,6 +32,7 @@ public final class FabricIntermediary {
   private String version;
   private boolean stable;
 
+  @Contract(pure = true)
   FabricIntermediary() {
   }
 
@@ -39,6 +42,7 @@ public final class FabricIntermediary {
    * @return maven mapping.
    * @author Griefed
    */
+  @Contract(pure = true)
   public String getMaven() {
     return maven;
   }
@@ -49,6 +53,7 @@ public final class FabricIntermediary {
    * @return The version of this intermediary.
    * @author Griefed
    */
+  @Contract(pure = true)
   public String getVersion() {
     return version;
   }
@@ -59,6 +64,7 @@ public final class FabricIntermediary {
    * @return Whether this intermediary is considered stable.
    * @author Griefed
    */
+  @Contract(pure = true)
   public boolean isStable() {
     return stable;
   }

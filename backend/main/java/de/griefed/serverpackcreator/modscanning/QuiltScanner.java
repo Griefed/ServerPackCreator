@@ -19,7 +19,6 @@
  */
 package de.griefed.serverpackcreator.modscanning;
 
-import com.fasterxml.jackson.core.json.JsonReadFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.griefed.serverpackcreator.utilities.common.Utilities;
@@ -28,6 +27,7 @@ import java.util.Collection;
 import java.util.TreeSet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -46,10 +46,10 @@ public final class QuiltScanner extends JsonBasedScanner implements
   private final Utilities UTILITIES;
 
   @Autowired
-  public QuiltScanner(ObjectMapper objectMapper, Utilities utilities) {
-    this.OBJECT_MAPPER = objectMapper.enable(
-        JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS.mappedFeature());
-    this.UTILITIES = utilities;
+  public QuiltScanner(@NotNull ObjectMapper objectMapper,
+                      @NotNull Utilities utilities) {
+    OBJECT_MAPPER = objectMapper;
+    UTILITIES = utilities;
   }
 
   /**
@@ -62,7 +62,7 @@ public final class QuiltScanner extends JsonBasedScanner implements
    * @author Griefed
    */
   @Override
-  public TreeSet<File> scan(Collection<File> filesInModsDir) {
+  public @NotNull TreeSet<File> scan(@NotNull Collection<File> filesInModsDir) {
     LOG.info("Scanning Quilt mods for sideness...");
 
     TreeSet<String> modDependencies = new TreeSet<>();
@@ -86,8 +86,9 @@ public final class QuiltScanner extends JsonBasedScanner implements
   }
 
   @Override
-  void checkForClientModsAndDeps(Collection<File> filesInModsDir, TreeSet<String> clientMods,
-      TreeSet<String> modDependencies) {
+  void checkForClientModsAndDeps(@NotNull Collection<File> filesInModsDir,
+                                 @NotNull TreeSet<String> clientMods,
+                                 @NotNull TreeSet<String> modDependencies) {
     for (File mod : filesInModsDir) {
       if (mod.getName().endsWith("jar")) {
 
@@ -102,7 +103,8 @@ public final class QuiltScanner extends JsonBasedScanner implements
           // Get this mods' id/name
           try {
             if (UTILITIES.JsonUtilities()
-                .nestedTextEqualsIgnoreCase(modJson, "client", "minecraft", "environment")) {
+                         .nestedTextEqualsIgnoreCase(modJson, "client", "minecraft",
+                                                     "environment")) {
 
               clientMods.add(modId);
               LOG.debug("Added clientMod: " + modId);
@@ -115,21 +117,22 @@ public final class QuiltScanner extends JsonBasedScanner implements
           try {
 
             for (JsonNode dependency : UTILITIES.JsonUtilities()
-                .getNestedElement(modJson, "quilt_loader", "depends")) {
+                                                .getNestedElement(modJson, "quilt_loader",
+                                                                  "depends")) {
 
               if (dependency.isContainerNode()) {
                 if (!UTILITIES.JsonUtilities().getNestedText(dependency, "id")
-                    .matches(DEPENDENCY_EXCLUSIONS)
+                              .matches(DEPENDENCY_EXCLUSIONS)
                     && modDependencies.add(
                     UTILITIES.JsonUtilities().getNestedText(dependency, "id"))) {
 
                   try {
                     LOG.debug("Added dependency " + UTILITIES.JsonUtilities()
-                        .getNestedText(dependency, "id")
-                        + " for " + modId + " (" + mod.getName() + ").");
+                                                             .getNestedText(dependency, "id")
+                                  + " for " + modId + " (" + mod.getName() + ").");
+                    modDependencies.add(UTILITIES.JsonUtilities().getNestedText(dependency, "id"));
                   } catch (NullPointerException ex) {
-                    LOG.debug("Added dependency " + UTILITIES.JsonUtilities()
-                        .getNestedText(dependency, "id") + " (" + mod.getName() + ").");
+                    LOG.debug("No dependencies for " + modId + " (" + mod.getName() + ").");
                   }
                 }
               } else {
@@ -138,10 +141,10 @@ public final class QuiltScanner extends JsonBasedScanner implements
 
                   try {
                     LOG.debug("Added dependency " + dependency.asText()
-                        + " for " + modId + " (" + mod.getName() + ").");
+                                  + " for " + modId + " (" + mod.getName() + ").");
+                    modDependencies.add(dependency.asText());
                   } catch (NullPointerException ex) {
-                    LOG.debug(
-                        "Added dependency " + dependency.asText() + " (" + mod.getName() + ").");
+                    LOG.debug("No dependencies for " + modId + " (" + mod.getName() + ").");
                   }
                 }
               }
@@ -164,7 +167,8 @@ public final class QuiltScanner extends JsonBasedScanner implements
   }
 
   @Override
-  TreeSet<File> getModsDelta(Collection<File> filesInModsDir, TreeSet<String> clientMods) {
+  @NotNull TreeSet<File> getModsDelta(@NotNull Collection<File> filesInModsDir,
+                                      @NotNull TreeSet<String> clientMods) {
     TreeSet<File> modsDelta = new TreeSet<>();
 
     // After removing dependencies from the list of potential clientside mods, we can remove any mod
@@ -184,7 +188,7 @@ public final class QuiltScanner extends JsonBasedScanner implements
 
         try {
           if (UTILITIES.JsonUtilities()
-              .nestedTextEqualsIgnoreCase(modJson, "client", "minecraft", "environment")) {
+                       .nestedTextEqualsIgnoreCase(modJson, "client", "minecraft", "environment")) {
             if (clientMods.contains(modIdTocheck)) {
               addToDelta = true;
             }

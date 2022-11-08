@@ -22,23 +22,26 @@ package de.griefed.serverpackcreator.swing;
 import de.griefed.serverpackcreator.ApplicationAddons;
 import de.griefed.serverpackcreator.ApplicationProperties;
 import de.griefed.serverpackcreator.ConfigurationHandler;
+import de.griefed.serverpackcreator.MigrationManager.MigrationMessage;
 import de.griefed.serverpackcreator.ServerPackHandler;
 import de.griefed.serverpackcreator.i18n.I18n;
 import de.griefed.serverpackcreator.swing.themes.DarkTheme;
 import de.griefed.serverpackcreator.swing.themes.LightTheme;
 import de.griefed.serverpackcreator.swing.utilities.BackgroundPanel;
-import de.griefed.serverpackcreator.utilities.ConfigUtilities;
 import de.griefed.serverpackcreator.utilities.UpdateChecker;
 import de.griefed.serverpackcreator.utilities.common.Utilities;
 import de.griefed.serverpackcreator.versionmeta.VersionMeta;
 import java.awt.BorderLayout;
+import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Toolkit;
+import java.awt.Window;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Random;
@@ -48,10 +51,17 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultStyledDocument;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
 import mdlaf.MaterialLookAndFeel;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -70,13 +80,20 @@ public final class ServerPackCreatorWindow extends JFrame {
               ServerPackCreatorWindow.class.getResource("/de/griefed/resources/gui/banner.png")));
   private final Image ICON_SERVERPACKCREATOR =
       Toolkit.getDefaultToolkit()
-          .getImage(
-              Objects.requireNonNull(
-                  ServerPackCreatorWindow.class.getResource("/de/griefed/resources/gui/app.png")));
+             .getImage(
+                 Objects.requireNonNull(
+                     ServerPackCreatorWindow.class.getResource(
+                         "/de/griefed/resources/gui/app.png")));
   private final ImageIcon ISSUE_ICON = new ImageIcon(ImageIO.read(Objects.requireNonNull(
-          TabCreateServerPack.class.getResource("/de/griefed/resources/gui/issue.png")))
-      .getScaledInstance(48, 48, Image.SCALE_SMOOTH));
+                                                                TabCreateServerPack.class.getResource("/de/griefed/resources/gui/issue.png")))
+                                                            .getScaledInstance(48, 48,
+                                                                               Image.SCALE_SMOOTH));
+  private final ImageIcon INFO_ICON = new ImageIcon(ImageIO.read(Objects.requireNonNull(
+                                                               TabCreateServerPack.class.getResource("/de/griefed/resources/gui/info.png")))
+                                                           .getScaledInstance(48, 48,
+                                                                              Image.SCALE_SMOOTH));
   private final Dimension DIMENSION_WINDOW = new Dimension(1200, 800);
+  private final Dimension DIMENSION_MIGRATION = new Dimension(800, 400);
   private final I18n I18N;
   private final ApplicationProperties APPLICATIONPROPERTIES;
   private final ServerPackCreatorSplash SERVERPACKCREATORSPLASH;
@@ -88,6 +105,8 @@ public final class ServerPackCreatorWindow extends JFrame {
   private final TabCreateServerPack TAB_CREATESERVERPACK;
   private final JTabbedPane TABBEDPANE;
   private final MainMenuBar MENUBAR;
+  private final String MIGRATION_MESSAGE;
+  private final boolean MIGRATIONS_MADE;
 
   /**
    * <strong>Constructor</strong>
@@ -117,7 +136,7 @@ public final class ServerPackCreatorWindow extends JFrame {
    * @param injectedUpdateChecker           Instance of {@link UpdateChecker}.
    * @param injectedServerPackCreatorSplash Instance of {@link ServerPackCreatorSplash}.
    * @param injectedApplicationAddons       Instance of {@link ApplicationAddons}.
-   * @param injectedConfigUtilities         Instance of {@link ConfigUtilities}.
+   * @param migrationMessages               List of migration messages to display to the user.
    * @throws IOException if the {@link VersionMeta} could not be instantiated.
    * @author Griefed
    */
@@ -131,7 +150,7 @@ public final class ServerPackCreatorWindow extends JFrame {
       UpdateChecker injectedUpdateChecker,
       ServerPackCreatorSplash injectedServerPackCreatorSplash,
       ApplicationAddons injectedApplicationAddons,
-      ConfigUtilities injectedConfigUtilities)
+      List<MigrationMessage> migrationMessages)
       throws IOException {
 
     SERVERPACKCREATORSPLASH = injectedServerPackCreatorSplash;
@@ -146,8 +165,8 @@ public final class ServerPackCreatorWindow extends JFrame {
                     "/de/griefed/resources/gui/tile" + new Random().nextInt(4) + ".jpg")));
 
     setTitle(injectedI18n.getMessage("createserverpack.gui.createandshowgui")
-        + " - "
-        + APPLICATIONPROPERTIES.SERVERPACKCREATOR_VERSION());
+                 + " - "
+                 + APPLICATIONPROPERTIES.serverPackCreatorVersion());
 
     TAB_CREATESERVERPACK =
         new TabCreateServerPack(
@@ -160,17 +179,18 @@ public final class ServerPackCreatorWindow extends JFrame {
             injectedUtilities,
             DARKTHEME,
             LIGHTTHEME,
-            injectedApplicationAddons,
-            injectedConfigUtilities);
+            injectedApplicationAddons);
 
     TabServerPackCreatorLog TAB_LOG_SERVERPACKCREATOR =
         new TabServerPackCreatorLog(
             injectedI18n.getMessage(
-                "createserverpack.gui.tabbedpane.serverpackcreatorlog.tooltip"));
+                "createserverpack.gui.tabbedpane.serverpackcreatorlog.tooltip"),
+            APPLICATIONPROPERTIES.logsDirectory());
 
     TabAddonsHandlerLog TAB_LOG_ADDONSHANDLER =
         new TabAddonsHandlerLog(
-            injectedI18n.getMessage("createserverpack.gui.tabbedpane.addonshandlerlog.tip"));
+            injectedI18n.getMessage("createserverpack.gui.tabbedpane.addonshandlerlog.tip"),
+            APPLICATIONPROPERTIES.logsDirectory());
 
     BACKGROUNDPANEL = new BackgroundPanel(bufferedImage, BackgroundPanel.TILED, 0.0f, 0.0f);
 
@@ -201,6 +221,8 @@ public final class ServerPackCreatorWindow extends JFrame {
 
     TABBEDPANE.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 
+    MIGRATIONS_MADE = !migrationMessages.isEmpty();
+
     MENUBAR =
         new MainMenuBar(
             injectedI18n,
@@ -216,6 +238,12 @@ public final class ServerPackCreatorWindow extends JFrame {
             injectedUtilities);
 
     setJMenuBar(MENUBAR.createMenuBar());
+
+    StringBuilder messages = new StringBuilder();
+    for (MigrationMessage message : migrationMessages) {
+      messages.append(message.get()).append("\n");
+    }
+    MIGRATION_MESSAGE = messages.toString();
   }
 
   /**
@@ -300,6 +328,60 @@ public final class ServerPackCreatorWindow extends JFrame {
     TAB_CREATESERVERPACK.validateInputFields();
     TAB_CREATESERVERPACK.updatePanelTheme();
     MENUBAR.displayUpdateDialog();
+    displayMigrationMessages();
+  }
+
+  /**
+   * Display the available migration messages.
+   *
+   * @author Griefed
+   */
+  void displayMigrationMessages() {
+
+    StyledDocument styledDocument = new DefaultStyledDocument();
+    SimpleAttributeSet simpleAttributeSet = new SimpleAttributeSet();
+    JTextPane jTextPane = new JTextPane(styledDocument);
+    StyleConstants.setBold(simpleAttributeSet, true);
+    StyleConstants.setFontSize(simpleAttributeSet, 14);
+    jTextPane.setCharacterAttributes(simpleAttributeSet, true);
+    StyleConstants.setAlignment(simpleAttributeSet, StyleConstants.ALIGN_LEFT);
+    styledDocument.setParagraphAttributes(
+        0, styledDocument.getLength(), simpleAttributeSet, false);
+    jTextPane.addHierarchyListener(
+        e1 -> {
+          Window window = SwingUtilities.getWindowAncestor(jTextPane);
+          if (window instanceof Dialog) {
+            Dialog dialog = (Dialog) window;
+            if (!dialog.isResizable()) {
+              dialog.setResizable(true);
+            }
+          }
+        });
+
+    JScrollPane scrollPane = new JScrollPane(
+        jTextPane,
+        JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+        JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
+    );
+    scrollPane.setPreferredSize(DIMENSION_MIGRATION);
+
+    try {
+      styledDocument.insertString(0, MIGRATION_MESSAGE, simpleAttributeSet);
+    } catch (BadLocationException ex) {
+      LOG.error("Error inserting text into aboutDocument.", ex);
+    }
+
+    jTextPane.setEditable(false);
+
+    if (MIGRATIONS_MADE) {
+      JOptionPane.showMessageDialog(
+          null,
+          scrollPane,
+          I18N.getMessage("migration.message.title"),
+          JOptionPane.INFORMATION_MESSAGE,
+          INFO_ICON
+      );
+    }
   }
 
   /**
@@ -350,14 +432,14 @@ public final class ServerPackCreatorWindow extends JFrame {
   void chooseJava() {
     JFileChooser javaChooser = new JFileChooser();
 
-    if (new File(String.format("%s/bin/", System.getProperty("java.home").replace("\\", "/")))
+    if (new File(String.format("%s/bin/", System.getProperty("java.home")))
         .isDirectory()) {
 
       javaChooser.setCurrentDirectory(
-          new File(String.format("%s/bin/", System.getProperty("java.home").replace("\\", "/"))));
+          new File(String.format("%s/bin/", System.getProperty("java.home"))));
 
     } else {
-      javaChooser.setCurrentDirectory(new File("."));
+      javaChooser.setCurrentDirectory(APPLICATIONPROPERTIES.homeDirectory());
     }
 
     javaChooser.setDialogTitle(I18N.getMessage("createserverpack.gui.buttonjavapath.tile"));
@@ -367,17 +449,24 @@ public final class ServerPackCreatorWindow extends JFrame {
     javaChooser.setPreferredSize(new Dimension(750, 450));
 
     if (javaChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-      try {
-        APPLICATIONPROPERTIES.setJavaPath(
-            javaChooser.getSelectedFile().getCanonicalPath().replace("\\", "/"));
 
-        LOG.debug(
-            "Set path to Java executable to: "
-                + javaChooser.getSelectedFile().getCanonicalPath().replace("\\", "/"));
+      APPLICATIONPROPERTIES.setJavaPath(
+          javaChooser.getSelectedFile().getPath());
 
-      } catch (IOException ex) {
-        LOG.error("Couldn't set java executable path.", ex);
-      }
+      LOG.debug(
+          "Set path to Java executable to: "
+              + javaChooser.getSelectedFile().getPath());
+
     }
+  }
+
+  /**
+   * Whether any migration were made.
+   *
+   * @return {@code true} if migrations were made and therefor migration messages are available.
+   * @author Griefed
+   */
+  boolean migrationMessagesAvailable() {
+    return MIGRATIONS_MADE;
   }
 }

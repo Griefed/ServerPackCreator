@@ -46,6 +46,16 @@ public class IconTextArea extends JTextArea {
   }
 
   @Override
+  protected void paintComponent(Graphics graphics) {
+    super.paintComponent(graphics);
+
+    if (mIcon != null) {
+      Insets iconInsets = mBorder.getBorderInsets(this);
+      mIcon.paintIcon(this, graphics, iconInsets.left, this.getHeight() - mIcon.getIconHeight());
+    }
+  }
+
+  @Override
   public void setBorder(Border border) {
     mBorder = border;
 
@@ -58,16 +68,6 @@ public class IconTextArea extends JTextArea {
       Border margin = BorderFactory.createEmptyBorder(0, mIcon.getIconWidth() + ICON_SPACING, 0, 0);
       Border compoud = BorderFactory.createCompoundBorder(border, margin);
       super.setBorder(compoud);
-    }
-  }
-
-  @Override
-  protected void paintComponent(Graphics graphics) {
-    super.paintComponent(graphics);
-
-    if (mIcon != null) {
-      Insets iconInsets = mBorder.getBorderInsets(this);
-      mIcon.paintIcon(this, graphics, iconInsets.left, this.getHeight() - mIcon.getIconHeight());
     }
   }
 

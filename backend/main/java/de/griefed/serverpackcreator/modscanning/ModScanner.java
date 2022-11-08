@@ -19,6 +19,8 @@
  */
 package de.griefed.serverpackcreator.modscanning;
 
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -36,17 +38,18 @@ public final class ModScanner {
   private final QuiltScanner QUILT;
   private final TomlScanner TOML;
 
+  @Contract(pure = true)
   @Autowired
   public ModScanner(
-      AnnotationScanner annotationScanner,
-      FabricScanner fabricScanner,
-      QuiltScanner quiltScanner,
-      TomlScanner tomlScanner
+      @NotNull AnnotationScanner annotationScanner,
+      @NotNull FabricScanner fabricScanner,
+      @NotNull QuiltScanner quiltScanner,
+      @NotNull TomlScanner tomlScanner
   ) {
-    this.ANNOTATION = annotationScanner;
-    this.FABRIC = fabricScanner;
-    this.QUILT = quiltScanner;
-    this.TOML = tomlScanner;
+    ANNOTATION = annotationScanner;
+    FABRIC = fabricScanner;
+    QUILT = quiltScanner;
+    TOML = tomlScanner;
   }
 
   /**
@@ -55,7 +58,8 @@ public final class ModScanner {
    * @return Scanner for scanning Forge annotations for sideness.
    * @author Griefed
    */
-  public AnnotationScanner annotations() {
+  @Contract(pure = true)
+  public @NotNull AnnotationScanner annotations() {
     return ANNOTATION;
   }
 
@@ -65,7 +69,8 @@ public final class ModScanner {
    * @return Scanner for scanning Fabric mods for sideness.
    * @author Griefed
    */
-  public FabricScanner fabric() {
+  @Contract(pure = true)
+  public @NotNull FabricScanner fabric() {
     return FABRIC;
   }
 
@@ -75,7 +80,8 @@ public final class ModScanner {
    * @return Scanner for scanning Quilt mods for sideness.
    * @author Griefed
    */
-  public QuiltScanner quilt() {
+  @Contract(pure = true)
+  public @NotNull QuiltScanner quilt() {
     return QUILT;
   }
 
@@ -85,7 +91,8 @@ public final class ModScanner {
    * @return Scanner for scanning Forge tomls for sideness.
    * @author Griefed
    */
-  public TomlScanner tomls() {
+  @Contract(pure = true)
+  public @NotNull TomlScanner tomls() {
     return TOML;
   }
 }

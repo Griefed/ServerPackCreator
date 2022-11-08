@@ -23,6 +23,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Optional;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Acquire details for a Fabric loader of a given Minecraft and Fabric version.
@@ -37,6 +39,7 @@ final class FabricLoaderDetails {
    * @param objectMapper Object mapper for JSON parsing.
    * @author Griefed
    */
+  @Contract(pure = true)
   FabricLoaderDetails(ObjectMapper objectMapper) {
     OBJECT_MAPPER = objectMapper;
   }
@@ -50,7 +53,8 @@ final class FabricLoaderDetails {
    * {@link Optional}.
    * @author Griefed
    */
-  Optional<FabricDetails> getDetails(String minecraftVersion, String modloaderVersion) {
+  @NotNull Optional<FabricDetails> getDetails(@NotNull String minecraftVersion,
+                                              @NotNull String modloaderVersion) {
     try {
       return Optional.of(
           OBJECT_MAPPER.readValue(

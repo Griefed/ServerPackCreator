@@ -20,6 +20,7 @@
 package de.griefed.serverpackcreator.utilities;
 
 import java.util.Random;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Just something fun to brighten the mood. This class provides a list of messages which some of you
@@ -499,6 +500,27 @@ public final class ReticulatingSplines {
       };
 
   /**
+   * Retrieve a random message from {@link #RETICULATING}.
+   *
+   * @return String. Returns a random message.
+   * @author Griefed
+   */
+  public @NotNull String reticulate() {
+    return getReticulation();
+  }
+
+  /**
+   * Retrieves a message from {@link #RETICULATING} using a randomly generated index from
+   * {@link #getRandomIntReticulating()}.
+   *
+   * @return String. Returns the message at the index provided by the randomizer.
+   * @author Griefed
+   */
+  private @NotNull String getReticulation() {
+    return RETICULATING[getRandomIntReticulating()];
+  }
+
+  /**
    * Retrieves the index of a random message in {@link #RETICULATING}.
    *
    * @return Integer. Returns a randomly generated index.
@@ -510,25 +532,14 @@ public final class ReticulatingSplines {
   }
 
   /**
-   * Retrieve the index of a random string in {@link #SPLINES}.
+   * Retrieve a random message from {@link #SPLINES}. Kinda like a random Name generator.
    *
-   * @return Integer. Returns a randomly generated index.
+   * @param wordCount The number of words the resulting string should be made up of.
+   * @return String. Returns a randomly selected three-word long string from {@link #SPLINES}.
    * @author Griefed
    */
-  private int getRandomIntSplines() {
-    Random randInt = new Random();
-    return randInt.nextInt(SPLINES.length);
-  }
-
-  /**
-   * Retrieves a message from {@link #RETICULATING} using a randomly generated index from
-   * {@link #getRandomIntReticulating()}.
-   *
-   * @return String. Returns the message at the index provided by the randomizer.
-   * @author Griefed
-   */
-  private String getReticulation() {
-    return RETICULATING[getRandomIntReticulating()];
+  public @NotNull String spline(int wordCount) {
+    return getSplines(wordCount);
   }
 
   /**
@@ -538,7 +549,7 @@ public final class ReticulatingSplines {
    * @return String. Returns a randomly selected three-word long string from {@link #SPLINES}.
    * @author Griefed
    */
-  private String getSplines(int wordCount) {
+  private @NotNull String getSplines(int wordCount) {
     StringBuilder stringBuilder = new StringBuilder();
     for (int i = 0; i < wordCount; i++) {
       stringBuilder.append(SPLINES[getRandomIntSplines()]);
@@ -547,23 +558,13 @@ public final class ReticulatingSplines {
   }
 
   /**
-   * Retrieve a random message from {@link #RETICULATING}.
+   * Retrieve the index of a random string in {@link #SPLINES}.
    *
-   * @return String. Returns a random message.
+   * @return Integer. Returns a randomly generated index.
    * @author Griefed
    */
-  public String reticulate() {
-    return getReticulation();
-  }
-
-  /**
-   * Retrieve a random message from {@link #SPLINES}. Kinda like a random Name generator.
-   *
-   * @param wordCount The number of words the resulting string should be made up of.
-   * @return String. Returns a randomly selected three-word long string from {@link #SPLINES}.
-   * @author Griefed
-   */
-  public String spline(int wordCount) {
-    return getSplines(wordCount);
+  private int getRandomIntSplines() {
+    Random randInt = new Random();
+    return randInt.nextInt(SPLINES.length);
   }
 }

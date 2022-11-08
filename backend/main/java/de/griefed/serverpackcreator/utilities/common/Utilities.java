@@ -19,7 +19,11 @@
  */
 package de.griefed.serverpackcreator.utilities.common;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import de.griefed.serverpackcreator.ApplicationProperties;
+import javax.xml.parsers.DocumentBuilder;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -39,9 +43,12 @@ public final class Utilities {
   private final SystemUtilities SYSTEM_UTILITIES;
   private final WebUtilities WEB_UTILITIES;
   private final JsonUtilities JSON_UTILITIES;
+  private final XmlUtilities XML_UTILITIES;
 
   @Autowired
-  public Utilities(ApplicationProperties injectedApplicationProperties) {
+  public Utilities(@NotNull ApplicationProperties injectedApplicationProperties,
+                   @NotNull ObjectMapper injectedObjectMapper,
+                   @NotNull DocumentBuilder documentBuilder) {
     BOOLEAN_UTILITIES = new BooleanUtilities();
     FILE_UTILITIES = new FileUtilities();
     JAR_UTILITIES = new JarUtilities();
@@ -49,18 +56,21 @@ public final class Utilities {
     STRING_UTILITIES = new StringUtilities();
     SYSTEM_UTILITIES = new SystemUtilities();
     WEB_UTILITIES = new WebUtilities(injectedApplicationProperties);
-    JSON_UTILITIES = new JsonUtilities();
+    JSON_UTILITIES = new JsonUtilities(injectedObjectMapper);
+    XML_UTILITIES = new XmlUtilities(documentBuilder);
   }
 
+  @Contract(pure = true)
   public Utilities(
-      BooleanUtilities booleanUtilities,
-      FileUtilities fileUtilities,
-      JarUtilities jarUtilities,
-      ListUtilities listUtilities,
-      StringUtilities stringUtilities,
-      SystemUtilities systemUtilities,
-      WebUtilities webUtilities,
-      JsonUtilities jsonUtilities) {
+      @NotNull BooleanUtilities booleanUtilities,
+      @NotNull FileUtilities fileUtilities,
+      @NotNull JarUtilities jarUtilities,
+      @NotNull ListUtilities listUtilities,
+      @NotNull StringUtilities stringUtilities,
+      @NotNull SystemUtilities systemUtilities,
+      @NotNull WebUtilities webUtilities,
+      @NotNull JsonUtilities jsonUtilities,
+      @NotNull XmlUtilities xmlUtilities) {
     BOOLEAN_UTILITIES = booleanUtilities;
     FILE_UTILITIES = fileUtilities;
     JAR_UTILITIES = jarUtilities;
@@ -69,37 +79,51 @@ public final class Utilities {
     SYSTEM_UTILITIES = systemUtilities;
     WEB_UTILITIES = webUtilities;
     JSON_UTILITIES = jsonUtilities;
+    XML_UTILITIES = xmlUtilities;
   }
 
-  public BooleanUtilities BooleanUtils() {
+  @Contract(pure = true)
+  public @NotNull BooleanUtilities BooleanUtils() {
     return BOOLEAN_UTILITIES;
   }
 
-  public FileUtilities FileUtils() {
+  @Contract(pure = true)
+  public @NotNull FileUtilities FileUtils() {
     return FILE_UTILITIES;
   }
 
-  public JarUtilities JarUtils() {
+  @Contract(pure = true)
+  public @NotNull JarUtilities JarUtils() {
     return JAR_UTILITIES;
   }
 
-  public ListUtilities ListUtils() {
+  @Contract(pure = true)
+  public @NotNull ListUtilities ListUtils() {
     return LIST_UTILITIES;
   }
 
-  public StringUtilities StringUtils() {
+  @Contract(pure = true)
+  public @NotNull StringUtilities StringUtils() {
     return STRING_UTILITIES;
   }
 
-  public SystemUtilities SystemUtils() {
+  @Contract(pure = true)
+  public @NotNull SystemUtilities SystemUtils() {
     return SYSTEM_UTILITIES;
   }
 
-  public WebUtilities WebUtils() {
+  @Contract(pure = true)
+  public @NotNull WebUtilities WebUtils() {
     return WEB_UTILITIES;
   }
 
-  public JsonUtilities JsonUtilities() {
+  @Contract(pure = true)
+  public @NotNull JsonUtilities JsonUtilities() {
     return JSON_UTILITIES;
+  }
+
+  @Contract(pure = true)
+  public @NotNull XmlUtilities XmlUtilities() {
+    return XML_UTILITIES;
   }
 }

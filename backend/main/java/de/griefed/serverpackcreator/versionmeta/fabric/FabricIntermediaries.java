@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Intermediaries for Fabric.
@@ -45,7 +46,8 @@ public final class FabricIntermediaries {
    * @param objectMapper         Object mapper for JSON parsing.
    * @author Griefed
    */
-  public FabricIntermediaries(File intermediaryManifest, ObjectMapper objectMapper) {
+  public FabricIntermediaries(@NotNull File intermediaryManifest,
+                              @NotNull ObjectMapper objectMapper) {
     INTERMEDIARY_MANIFEST = intermediaryManifest;
     OBJECT_MAPPER = objectMapper;
   }
@@ -68,21 +70,10 @@ public final class FabricIntermediaries {
    * @throws IOException when the manifest could not be read.
    * @author Griefed
    */
-  private List<FabricIntermediary> listIntermediariesFromManifest() throws IOException {
+  private @NotNull List<FabricIntermediary> listIntermediariesFromManifest() throws IOException {
     return OBJECT_MAPPER.readValue(
         INTERMEDIARY_MANIFEST, new TypeReference<List<FabricIntermediary>>() {
         });
-  }
-
-  /**
-   * Get a specific intermediary, wrapped in an {@link Optional}.
-   *
-   * @param minecraftVersion Minecraft version.
-   * @return A specific intermediary, wrapped in an {@link Optional}.
-   * @author Griefed
-   */
-  public Optional<FabricIntermediary> getIntermediary(String minecraftVersion) {
-    return Optional.ofNullable(INTERMEDIARIES.get(minecraftVersion));
   }
 
   /**
@@ -92,7 +83,18 @@ public final class FabricIntermediaries {
    * @param minecraftVersion The Minecraft version to check for.
    * @return {@code true} if intermediaries are present.
    */
-  public boolean areIntermediariesPresent(String minecraftVersion) {
+  public boolean isIntermediariesPresent(@NotNull String minecraftVersion) {
     return getIntermediary(minecraftVersion).isPresent();
+  }
+
+  /**
+   * Get a specific intermediary, wrapped in an {@link Optional}.
+   *
+   * @param minecraftVersion Minecraft version.
+   * @return A specific intermediary, wrapped in an {@link Optional}.
+   * @author Griefed
+   */
+  public @NotNull Optional<FabricIntermediary> getIntermediary(@NotNull String minecraftVersion) {
+    return Optional.ofNullable(INTERMEDIARIES.get(minecraftVersion));
   }
 }

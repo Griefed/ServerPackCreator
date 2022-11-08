@@ -23,6 +23,8 @@ import de.griefed.serverpackcreator.versionmeta.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Meta containing information about Minecraft servers.
@@ -42,7 +44,7 @@ final class MinecraftServerMeta {
    * @param minecraftClientMeta Instance of {@link MinecraftClientMeta}.
    * @author Griefed
    */
-  MinecraftServerMeta(MinecraftClientMeta minecraftClientMeta) {
+  MinecraftServerMeta(@NotNull MinecraftClientMeta minecraftClientMeta) {
     MINECRAFT_CLIENT_META = minecraftClientMeta;
   }
 
@@ -74,7 +76,8 @@ final class MinecraftServerMeta {
    * @return Release server-list of the {@link Type#RELEASE}.
    * @author Griefed
    */
-  List<MinecraftServer> releases() {
+  @Contract(pure = true)
+  @NotNull List<MinecraftServer> releases() {
     return RELEASES;
   }
 
@@ -84,7 +87,8 @@ final class MinecraftServerMeta {
    * @return Snapshot server-list of the {@link Type#SNAPSHOT}.
    * @author Griefed
    */
-  List<MinecraftServer> snapshots() {
+  @Contract(pure = true)
+  @NotNull List<MinecraftServer> snapshots() {
     return SNAPSHOTS;
   }
 
@@ -95,7 +99,8 @@ final class MinecraftServerMeta {
    * @return Map containing the client meta.
    * @author Griefed
    */
-  HashMap<String, MinecraftServer> meta() {
+  @Contract(pure = true)
+  @NotNull HashMap<String, MinecraftServer> meta() {
     return meta;
   }
 }

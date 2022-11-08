@@ -86,17 +86,32 @@ public class ServerPackService {
       updateDownloadCounter(id);
 
       return ResponseEntity.ok()
-          .contentType(MediaType.parseMediaType(contentType))
-          .header(
-              HttpHeaders.CONTENT_DISPOSITION,
-              "attachment; filename=\""
-                  + serverPackModel.getFileDiskName().replace(".zip", "")
-                  + "_server_pack.zip"
-                  + "\"")
-          .body(resource);
+                           .contentType(MediaType.parseMediaType(contentType))
+                           .header(
+                               HttpHeaders.CONTENT_DISPOSITION,
+                               "attachment; filename=\""
+                                   + serverPackModel.getFileDiskName().replace(".zip", "")
+                                   + "_server_pack.zip"
+                                   + "\"")
+                           .body(resource);
     } else {
 
       return ResponseEntity.notFound().build();
+    }
+  }
+
+  /**
+   * Increment the download counter for a given server pack entry in the database identified by the
+   * database id.
+   *
+   * @param id The database id of the server pack.
+   * @author Griefed
+   */
+  public void updateDownloadCounter(int id) {
+    if (SERVERPACKREPOSITORY.findById(id).isPresent()) {
+      ServerPackModel serverPackModelFromDB = SERVERPACKREPOSITORY.findById(id).get();
+      serverPackModelFromDB.setDownloads(serverPackModelFromDB.getDownloads() + 1);
+      SERVERPACKREPOSITORY.save(serverPackModelFromDB);
     }
   }
 
@@ -136,6 +151,23 @@ public class ServerPackService {
   }
 
   /**
+   * Either increment or decrement the confirmed working value of a given server pack entry in the
+   * database, identified by the database id.
+   *
+   * @param id   The database id of the server pack.
+   * @param vote Positive for upvote, negative for downvote
+   * @author Griefed
+   */
+  public void updateConfirmedCounter(int id,
+                                     int vote) {
+    if (SERVERPACKREPOSITORY.findById(id).isPresent()) {
+      ServerPackModel serverPackModelFromDB = SERVERPACKREPOSITORY.findById(id).get();
+      serverPackModelFromDB.setConfirmedWorking(serverPackModelFromDB.getConfirmedWorking() + vote);
+      SERVERPACKREPOSITORY.save(serverPackModelFromDB);
+    }
+  }
+
+  /**
    * Get a list of all available server packs.
    *
    * @return List ServerPackModel. Returns a list of all available server packs.
@@ -165,7 +197,8 @@ public class ServerPackService {
    *                        in the database.
    * @author Griefed
    */
-  public void updateServerPackByID(int id, ServerPackModel serverPackModel) {
+  public void updateServerPackByID(int id,
+                                   ServerPackModel serverPackModel) {
     if (SERVERPACKREPOSITORY.findById(id).isPresent()) {
       ServerPackModel serverPackModelFromDB = SERVERPACKREPOSITORY.findById(id).get();
       LOG.debug("Updating database with: " + serverPackModel.repositoryToString());
@@ -178,37 +211,6 @@ public class ServerPackService {
       serverPackModelFromDB.setStatus(serverPackModel.getStatus());
       serverPackModelFromDB.setLastModified(new Timestamp(new Date().getTime()));
       serverPackModelFromDB.setPath(serverPackModel.getPath());
-      SERVERPACKREPOSITORY.save(serverPackModelFromDB);
-    }
-  }
-
-  /**
-   * Increment the download counter for a given server pack entry in the database identified by the
-   * database id.
-   *
-   * @param id The database id of the server pack.
-   * @author Griefed
-   */
-  public void updateDownloadCounter(int id) {
-    if (SERVERPACKREPOSITORY.findById(id).isPresent()) {
-      ServerPackModel serverPackModelFromDB = SERVERPACKREPOSITORY.findById(id).get();
-      serverPackModelFromDB.setDownloads(serverPackModelFromDB.getDownloads() + 1);
-      SERVERPACKREPOSITORY.save(serverPackModelFromDB);
-    }
-  }
-
-  /**
-   * Either increment or decrement the confirmed working value of a given server pack entry in the
-   * database, identified by the database id.
-   *
-   * @param id   The database id of the server pack.
-   * @param vote Positive for upvote, negative for downvote
-   * @author Griefed
-   */
-  public void updateConfirmedCounter(int id, int vote) {
-    if (SERVERPACKREPOSITORY.findById(id).isPresent()) {
-      ServerPackModel serverPackModelFromDB = SERVERPACKREPOSITORY.findById(id).get();
-      serverPackModelFromDB.setConfirmedWorking(serverPackModelFromDB.getConfirmedWorking() + vote);
       SERVERPACKREPOSITORY.save(serverPackModelFromDB);
     }
   }

@@ -19,12 +19,18 @@
  */
 package de.griefed.serverpackcreator.utilities.common;
 
+/**
+ * Exceptions thrown if a JSON value could not successfully be parsed.
+ *
+ * @author Griefed
+ */
 public final class JsonException extends Exception {
 
-  public JsonException(String errorMessage, Throwable error) {
-    super(errorMessage, error);
-  }
-
+  /**
+   * Throw a new exception indicating that the specified JSON value could not be parsed.
+   *
+   * @param errorMessage Message indicating what exactly went wrong.
+   */
   public JsonException(String errorMessage) {
     super(errorMessage);
   }

@@ -30,6 +30,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Helper-class containing methods implemented and used by JSON-based scanners, like the
@@ -56,7 +57,9 @@ abstract class JsonBasedScanner {
    * @throws NullPointerException  if the jar does not contain the specified entry.
    * @author Griefed
    */
-  JsonNode getJarJson(File file, String entryInJar, ObjectMapper objectMapper)
+  @NotNull JsonNode getJarJson(@NotNull File file,
+                               @NotNull String entryInJar,
+                               @NotNull ObjectMapper objectMapper)
       throws NullPointerException, IOException, SecurityException, IllegalStateException {
 
     JarFile jarFile = new JarFile(file);
@@ -79,7 +82,8 @@ abstract class JsonBasedScanner {
    * @param clientMods      A set of modIds of clientside-only mods.
    * @author Griefed
    */
-  void cleanupClientMods(TreeSet<String> modDependencies, TreeSet<String> clientMods) {
+  void cleanupClientMods(@NotNull TreeSet<String> modDependencies,
+                         @NotNull TreeSet<String> clientMods) {
     for (String dependency : modDependencies) {
 
       clientMods.removeIf(mod -> {
@@ -106,8 +110,9 @@ abstract class JsonBasedScanner {
    * @param modDependencies Set dependencies of other mods.
    * @author Griefed
    */
-  abstract void checkForClientModsAndDeps(Collection<File> filesInModsDir,
-      TreeSet<String> clientMods, TreeSet<String> modDependencies);
+  abstract void checkForClientModsAndDeps(@NotNull Collection<File> filesInModsDir,
+                                          @NotNull TreeSet<String> clientMods,
+                                          @NotNull TreeSet<String> modDependencies);
 
   /**
    * Get a list of mod-jars which can safely be excluded from the server pack.
@@ -118,5 +123,6 @@ abstract class JsonBasedScanner {
    * server pack.
    * @author Griefed
    */
-  abstract TreeSet<File> getModsDelta(Collection<File> filesInModsDir, TreeSet<String> clientMods);
+  abstract @NotNull TreeSet<File> getModsDelta(@NotNull Collection<File> filesInModsDir,
+                                               @NotNull TreeSet<String> clientMods);
 }
