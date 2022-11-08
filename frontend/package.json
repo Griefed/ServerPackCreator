@@ -38,7 +38,7 @@
   },
   "devDependencies": {
     "terser" : "5.14.2",
-    "@babel/eslint-parser": "7.18.9",
+    "@babel/eslint-parser": "7.19.1",
     "@quasar/app": "3.3.3",
     "eslint": "8.23.0",
     "@types/node": "18.7.9",
