@@ -1,4 +1,4 @@
-FROM ghcr.io/griefed/baseimage-ubuntu-jdk-8:2.0.13
+FROM ghcr.io/griefed/baseimage-ubuntu-jdk-8:2.0.15
 
 ARG VERSION=dev
 
