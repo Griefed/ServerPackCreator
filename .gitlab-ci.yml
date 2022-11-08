@@ -22,7 +22,7 @@ variables:
   QODANA_JOB_URL: $CI_JOB_URL
 
 services:
-  - name: ghcr.io/griefed/gitlab-ci-cd:2.2.1
+  - name: ghcr.io/griefed/gitlab-ci-cd:2.2.3
     alias: docker
 
 workflow:
@@ -138,7 +138,7 @@ secret_detection:
 
 Gradle Test:
   stage: Tests
-  image:  ghcr.io/griefed/baseimage-ubuntu-jdk-8:2.0.13
+  image:  ghcr.io/griefed/baseimage-ubuntu-jdk-8:2.0.15
   before_script:
     - echo "**** Running in $CI_JOB_ID ****"
     - echo "**** Java location ****"
@@ -178,7 +178,7 @@ Gradle Test:
 
 Docker Test:
   stage: Tests
-  image: ghcr.io/griefed/gitlab-ci-cd:2.2.1
+  image: ghcr.io/griefed/gitlab-ci-cd:2.2.3
   needs:
     - job: Gradle Test
       artifacts: true
@@ -195,7 +195,7 @@ Docker Test:
 
 Generate Release:
   stage: Release
-  image: ghcr.io/griefed/gitlab-ci-cd:2.2.1
+  image: ghcr.io/griefed/gitlab-ci-cd:2.2.3
   needs:
     - job: Gradle Test
       artifacts: false
@@ -218,7 +218,7 @@ Generate Release:
 
 Build Release:
   stage: Build Release
-  image: ghcr.io/griefed/baseimage-ubuntu-jdk-8:2.0.13
+  image: ghcr.io/griefed/baseimage-ubuntu-jdk-8:2.0.15
   needs:
     - job: Gradle Test
       artifacts: false
@@ -296,7 +296,7 @@ Build Release:
 
 Sign Java Publication:
   stage: Build Release
-  image: ghcr.io/griefed/baseimage-ubuntu-jdk-8:2.0.13
+  image: ghcr.io/griefed/baseimage-ubuntu-jdk-8:2.0.15
   needs:
     - job: Build Release
       artifacts: false
@@ -341,7 +341,7 @@ Sign Java Publication:
 
 Publish GitHub:
   stage: Build Release
-  image: ghcr.io/griefed/baseimage-ubuntu-jdk-8:2.0.13
+  image: ghcr.io/griefed/baseimage-ubuntu-jdk-8:2.0.15
   needs:
     - job: Sign Java Publication
       optional: false
@@ -371,7 +371,7 @@ Publish GitHub:
 
 Publish GitLab:
   stage: Build Release
-  image: ghcr.io/griefed/baseimage-ubuntu-jdk-8:2.0.13
+  image: ghcr.io/griefed/baseimage-ubuntu-jdk-8:2.0.15
   needs:
     - job: Sign Java Publication
       optional: false
@@ -401,7 +401,7 @@ Publish GitLab:
 
 Publish GitGriefed:
   stage: Build Release
-  image: ghcr.io/griefed/baseimage-ubuntu-jdk-8:2.0.13
+  image: ghcr.io/griefed/baseimage-ubuntu-jdk-8:2.0.15
   needs:
     - job: Sign Java Publication
       optional: false
@@ -431,7 +431,7 @@ Publish GitGriefed:
 
 Publish OSSRH:
   stage: Build Release
-  image: ghcr.io/griefed/baseimage-ubuntu-jdk-8:2.0.13
+  image: ghcr.io/griefed/baseimage-ubuntu-jdk-8:2.0.15
   needs:
     - job: Sign Java Publication
       optional: false
@@ -461,7 +461,7 @@ Publish OSSRH:
 
 Build Docker Release:
   stage: Build Release
-  image: ghcr.io/griefed/gitlab-ci-cd:2.2.1
+  image: ghcr.io/griefed/gitlab-ci-cd:2.2.3
   needs:
     - job: Gradle Test
       artifacts: true
@@ -484,7 +484,7 @@ Build Docker Release:
 
 Build Docker PreRelease:
   stage: Build Release
-  image: ghcr.io/griefed/gitlab-ci-cd:2.2.1
+  image: ghcr.io/griefed/gitlab-ci-cd:2.2.3
   needs:
     - job: Gradle Test
       artifacts: true
@@ -592,7 +592,7 @@ Qodana:
 
 pages:
   stage: Documentation
-  image: ghcr.io/griefed/baseimage-ubuntu-jdk-8:2.0.13
+  image: ghcr.io/griefed/baseimage-ubuntu-jdk-8:2.0.15
   allow_failure: true
   before_script:
     - which java
