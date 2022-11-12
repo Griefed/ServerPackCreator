@@ -40,7 +40,7 @@ downloadIfNotExist() {
     echo "${1} could not be found." >&2
     echo "Downloading ${2}" >&2
     echo "from ${3}" >&2
-    wget -q --progress=bar --show-progress -O "./${2}" "${3}"
+    curl -# -L -o "./${2}" "${3}"
     if [[ -s "${2}" ]]; then
       echo "Download complete." >&2
       echo "true"
@@ -144,9 +144,9 @@ setup_fabric() {
 
   FABRIC_INSTALLER_URL="https://maven.fabricmc.net/net/fabricmc/fabric-installer/${FABRIC_INSTALLER_VERSION}/fabric-installer-${FABRIC_INSTALLER_VERSION}.jar"
   FABRIC_CHECK_URL="https://meta.fabricmc.net/v2/versions/loader/${MINECRAFT_VERSION}/${MODLOADER_VERSION}/server/json"
-  FABRIC_AVAILABLE="$(wget --server-response --spider --quiet ${FABRIC_CHECK_URL} 2>&1 | awk 'NR==1{print $2}')"
+  FABRIC_AVAILABLE="$(curl -LI ${FABRIC_CHECK_URL} -o /dev/null -w '%{http_code}\n' -s)"
   IMPROVED_FABRIC_LAUNCHER_URL="https://meta.fabricmc.net/v2/versions/loader/${MINECRAFT_VERSION}/${MODLOADER_VERSION}/${FABRIC_INSTALLER_VERSION}/server/jar"
-  IMPROVED_FABRIC_LAUNCHER_AVAILABLE="$(wget --server-response --spider --quiet ${IMPROVED_FABRIC_LAUNCHER_URL} 2>&1 | awk 'NR==1{print $2}')"
+  IMPROVED_FABRIC_LAUNCHER_AVAILABLE="$(curl -LI ${IMPROVED_FABRIC_LAUNCHER_URL} -o /dev/null -w '%{http_code}\n' -s)"
 
   if [[ "$IMPROVED_FABRIC_LAUNCHER_AVAILABLE" == "200" ]]; then
 
@@ -201,7 +201,7 @@ setup_quilt() {
 
   QUILT_INSTALLER_URL="https://maven.quiltmc.org/repository/release/org/quiltmc/quilt-installer/${QUILT_INSTALLER_VERSION}/quilt-installer-${QUILT_INSTALLER_VERSION}.jar"
   QUILT_CHECK_URL="https://meta.fabricmc.net/v2/versions/intermediary/${MINECRAFT_VERSION}"
-  QUILT_AVAILABLE="$(wget -qO- ${QUILT_CHECK_URL})"
+  QUILT_AVAILABLE="$(curl -LI ${QUILT_CHECK_URL} -o /dev/null -w '%{http_code}\n' -s)"
 
   if [[ "${#QUILT_AVAILABLE}" -eq "2" ]]; then
 
@@ -244,7 +244,7 @@ setup_legacyfabric() {
 
   LEGACYFABRIC_INSTALLER_URL="https://maven.legacyfabric.net/net/legacyfabric/fabric-installer/${LEGACYFABRIC_INSTALLER_VERSION}/fabric-installer-${LEGACYFABRIC_INSTALLER_VERSION}.jar"
   LEGACYFABRIC_CHECK_URL="https://meta.legacyfabric.net/v2/versions/loader/${MINECRAFT_VERSION}"
-  LEGACYFABRIC_AVAILABLE="$(wget -qO- ${LEGACYFABRIC_CHECK_URL})"
+  LEGACYFABRIC_AVAILABLE="$(curl -LI ${LEGACYFABRIC_CHECK_URL} -o /dev/null -w '%{http_code}\n' -s)"
 
   if [[ "${#LEGACYFABRIC_AVAILABLE}" -eq "2" ]]; then
 
