@@ -1,3 +1,10 @@
+## [3.15.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.15.0...3.15.1) (2022-11-12)
+
+
+### 🛠 Fixes
+
+* Replace wget in Shell scripts with Curl, which is more likely to be available on Mac-systems. Thanks to [@chorbintime](https://git.griefed.de/chorbintime) for the report! ([615f142](https://git.griefed.de/Griefed/ServerPackCreator/commit/615f142a5c9062a72ded79f447bcccf3b81fb28a))
+
 ## [3.15.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.14.7...3.15.0) (2022-11-08)
 
 
