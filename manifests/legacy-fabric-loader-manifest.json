@@ -1,17 +1,10 @@
 [
   {
     "separator": ".",
-    "build": 10,
-    "maven": "net.fabricmc:fabric-loader:0.14.10",
-    "version": "0.14.10",
-    "stable": true
-  },
-  {
-    "separator": ".",
     "build": 9,
     "maven": "net.fabricmc:fabric-loader:0.14.9",
     "version": "0.14.9",
-    "stable": false
+    "stable": true
   },
   {
     "separator": ".",
@@ -60,6 +53,20 @@
     "build": 2,
     "maven": "net.fabricmc:fabric-loader:0.14.2",
     "version": "0.14.2",
+    "stable": false
+  },
+  {
+    "separator": ".",
+    "build": 11,
+    "maven": "net.fabricmc:fabric-loader:0.14.11",
+    "version": "0.14.11",
+    "stable": false
+  },
+  {
+    "separator": ".",
+    "build": 10,
+    "maven": "net.fabricmc:fabric-loader:0.14.10",
+    "version": "0.14.10",
     "stable": false
   },
   {
