@@ -18,7 +18,7 @@ plugins {
   id "io.github.gradle-nexus.publish-plugin" version "1.1.0"
   id 'java-library'
 
-  id 'edu.sc.seis.launch4j' version '2.5.3'
+  id 'edu.sc.seis.launch4j' version '2.5.4'
   id 'org.siouan.frontend-jdk8' version '6.0.0'
 
   id 'io.spring.dependency-management' version '1.1.0'
