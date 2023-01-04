@@ -68,7 +68,7 @@ configurations {
 
 dependencies {
   // Backend
-  implementation 'de.griefed:versionchecker:1.1.0'
+  implementation 'de.griefed:versionchecker:1.1.4'
   implementation 'com.electronwill.night-config:toml:3.6.6'
 
   implementation 'net.lingala.zip4j:zip4j:2.11.2'
