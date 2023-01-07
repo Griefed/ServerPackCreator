@@ -58,7 +58,7 @@ jobs:
         env:
           GITHUB_ACTOR: ${{ secrets.GITHUB_ACTOR }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gradle -Pversion=${{steps.tag.outputs.tag}} build --info --full-stacktrace -x test
+        run: ./gradlew -Pversion=${{steps.tag.outputs.tag}} build --info --full-stacktrace -x test
 
       # UPLOAD ARTIFACTS
       - uses: actions/upload-artifact@v3.1.1
@@ -75,6 +75,9 @@ jobs:
             serverpackcreator-plugin-example/build
           if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
 
+      - name: Rename JAR
+        run: mv serverpackcreator-app/build/libs/serverpackcreator-app-${{steps.tag.outputs.tag}}.jar serverpackcreator-app/build/libs/ServerPackCreator-${{steps.tag.outputs.tag}}.jar
+
       # GENERATE RELEASE
       - name: Create Release
         id: create_release
@@ -88,7 +91,7 @@ jobs:
           release: false
           fail_on_unmatched_files: false
           files: |
-            serverpackcreator-app/build/libs/serverpackcreator-app-${{steps.tag.outputs.tag}}.jar
+            serverpackcreator-app/build/libs/ServerPackCreator-${{steps.tag.outputs.tag}}.jar
             serverpackcreator-plugin-example/build/libs/serverpackcreator-plugin-example-${{steps.tag.outputs.tag}}.jar
 
       - name: Get current date
@@ -137,20 +140,26 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
           check-latest: true
-          cache: 'gradle'
+
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
+
       - uses: gradle/gradle-build-action@v2.3.3
         with:
           gradle-version: wrapper
+
       - name: Prepare wix-toolset
         if: matrix.os == 'windows-latest'
         run: echo "${env:path};${env:wix}bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8
+
       - name: Build installer
         env:
           GITHUB_ACTOR: ${{ secrets.GITHUB_ACTOR }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gradle -Pversion=${{ needs.release.outputs.newtag }} serverpackcreator-app:jpackage --info --full-stacktrace -x test
+        run: gradle :serverpackcreator-app:jpackage -Pversion="${{ needs.release.outputs.newtag }}" --info --full-stacktrace
+
+      - name: List After Build
+        run: ls -ahl serverpackcreator-app/build/dist/
 
       - name: Artifacts
         uses: actions/upload-artifact@v3.1.1
@@ -172,6 +181,9 @@ jobs:
       - name: Rename Ubuntu
         if: matrix.os == 'ubuntu-latest'
         run: mv serverpackcreator-app/build/dist/* serverpackcreator-app/build/dist/ServerPackCreator-Installer-Ubuntu-${{ needs.release.outputs.newtag }}-amd64.deb
+
+      - name: List After Rename
+        run: ls -ahl serverpackcreator-app/build/dist/
 
       # UPLOAD OS-SPECIFICS
       - name: Upload
