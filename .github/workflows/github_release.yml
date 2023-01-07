@@ -163,15 +163,15 @@ jobs:
 
       - name: Rename MacOs
         if: matrix.os == 'macos-latest'
-        run: mv serverpackcreator-app/build/dist/ServerPackCreator-${{ needs.release.outputs.newtag }}.dmg serverpackcreator-app/build/dist/ServerPackCreator-Installer-MacOS-${{ needs.release.outputs.newtag }}.dmg
+        run: mv serverpackcreator-app/build/dist/ServerPackCreator-*.dmg serverpackcreator-app/build/dist/ServerPackCreator-Installer-MacOS-${{ needs.release.outputs.newtag }}.dmg
 
       - name: Rename Windows
         if: matrix.os == 'windows-latest'
-        run: mv serverpackcreator-app/build/dist/ServerPackCreator-${{ needs.release.outputs.newtag }}.msi serverpackcreator-app/build/dist/ServerPackCreator-Installer-Windows-${{ needs.prerelease.outputs.newtag }}.msi
+        run: mv serverpackcreator-app/build/dist/ServerPackCreator-*.msi serverpackcreator-app/build/dist/ServerPackCreator-Installer-Windows-${{ needs.prerelease.outputs.newtag }}.msi
 
       - name: Rename Ubuntu
         if: matrix.os == 'ubuntu-latest'
-        run: mv serverpackcreator-app/build/dist/serverpackcreator_${{ needs.release.outputs.newtag }}-${{ needs.release.outputs.newtag }}_amd64.deb serverpackcreator-app/build/dist/ServerPackCreator-Installer-Ubuntu-${{ needs.release.outputs.newtag }}-amd64.deb
+        run: mv serverpackcreator-app/build/dist/serverpackcreator_*.deb serverpackcreator-app/build/dist/ServerPackCreator-Installer-Ubuntu-${{ needs.release.outputs.newtag }}-amd64.deb
 
       - name: Artifacts
         uses: actions/upload-artifact@v3.1.1
