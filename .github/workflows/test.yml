@@ -71,19 +71,23 @@ jobs:
           java-version: '17'
           check-latest: true
           cache: 'gradle'
+
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
+
       - uses: gradle/gradle-build-action@v2.3.3
         with:
           gradle-version: wrapper
+
       - name: Prepare wix-toolset
         if: matrix.os == 'windows-latest'
         run: echo "${env:path};${env:wix}bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8
+
       - name: Build installer
         env:
           GITHUB_ACTOR: ${{ secrets.GITHUB_ACTOR }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gradle serverpackcreator-app:jpackage --info --full-stacktrace -x test
+        run: gradle serverpackcreator-app:jpackage --info --full-stacktrace
 
       - name: Rename MacOs
         if: matrix.os == 'macos-latest'
