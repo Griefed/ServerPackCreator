@@ -1605,7 +1605,8 @@ actual class ApiProperties(
         serverFilesDirectory = File(homeDirectory, "server_files").absoluteFile
         pluginsDirectory = File(homeDirectory, "plugins").absoluteFile
         manifestsDirectory = File(homeDirectory, "manifests").absoluteFile
-        serverPackCreatorDatabase = File(internalProperties.getProperty("spring.datasource.url", "").replace("jdbc:sqlite:", "")).absoluteFile
+        serverPackCreatorDatabase =
+            File(internalProperties.getProperty("spring.datasource.url", "").replace("jdbc:sqlite:", "")).absoluteFile
         defaultConfig = File(homeDirectory, "serverpackcreator.conf").absoluteFile
         workDirectory = File(homeDirectory, "work").absoluteFile
         pluginsConfigsDirectory = File(pluginsDirectory, "config").absoluteFile

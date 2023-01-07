@@ -374,7 +374,7 @@ class ConfigurationEditor(
             selection = try {
                 getNextLine(scanner).toInt()
             } catch (ex: Exception) {
-                cliLog(Cli.cli_decision(min,max))
+                cliLog(Cli.cli_decision(min, max))
                 min - 1
             }
         } while (selection in (max + 1) until min)
@@ -399,9 +399,9 @@ class ConfigurationEditor(
         val max = list.size - 1
         do {
             cliLog(Cli.cli_list_which.toString())
-            cliLog(Cli.cli_decision(0,max))
+            cliLog(Cli.cli_decision(0, max))
             val selection = getDecision(scanner, 0, max)
-            cliLog(Cli.cli_list_selection(selection,max,list[selection]))
+            cliLog(Cli.cli_list_selection(selection, max, list[selection]))
             cliLog(Cli.cli_list_delete.toString())
             when (getDecision(scanner, 1, 2)) {
                 1 -> {

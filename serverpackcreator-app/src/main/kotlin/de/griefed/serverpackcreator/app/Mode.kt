@@ -19,8 +19,6 @@
  */
 package de.griefed.serverpackcreator.app
 
-import org.jetbrains.annotations.Contract
-
 /**
  * Available mods of ServerPackCreator and their respective CLI-arguments required to be
  * activated/used.

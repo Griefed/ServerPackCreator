@@ -1180,13 +1180,15 @@ class TabCreateServerPack(
                     serverIconPreview.toolTipText =
                         Gui.createserverpack_gui_createserverpack_servericon_preview.toString()
                     try {
-                        serverIconPreview.icon = ImageIcon(withContext(Dispatchers.IO) {
-                            ImageIO.read(
-                                File(getServerIconPath())
-                            )
-                        }.getScaledInstance(
+                        serverIconPreview.icon = ImageIcon(
+                            withContext(Dispatchers.IO) {
+                                ImageIO.read(
+                                    File(getServerIconPath())
+                                )
+                            }.getScaledInstance(
                                 48, 48, Image.SCALE_SMOOTH
-                            ))
+                            )
+                        )
                     } catch (ex: IOException) {
                         log.error("Error generating server icon preview.", ex)
                         errors.add(Gui.configuration_log_error_servericon_error.toString())
@@ -1204,13 +1206,15 @@ class TabCreateServerPack(
                 try {
                     serverIconPreview.toolTipText =
                         Gui.createserverpack_gui_createserverpack_servericon_preview.toString()
-                    serverIconPreview.icon = ImageIcon(withContext(Dispatchers.IO) {
-                        ImageIO.read(
-                            apiProperties.defaultServerIcon
-                        )
-                    }.getScaledInstance(
+                    serverIconPreview.icon = ImageIcon(
+                        withContext(Dispatchers.IO) {
+                            ImageIO.read(
+                                apiProperties.defaultServerIcon
+                            )
+                        }.getScaledInstance(
                             48, 48, Image.SCALE_SMOOTH
-                        ))
+                        )
+                    )
                 } catch (ex: IOException) {
                     log.error("Error generating server icon preview.", ex)
                     errors.add(Gui.configuration_log_error_servericon_error.toString())

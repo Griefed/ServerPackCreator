@@ -35,7 +35,6 @@ import org.apache.commons.io.monitor.FileAlterationListener
 import org.apache.commons.io.monitor.FileAlterationMonitor
 import org.apache.commons.io.monitor.FileAlterationObserver
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
-import org.jetbrains.annotations.Contract
 import org.xml.sax.SAXException
 import java.awt.GraphicsEnvironment
 import java.io.File

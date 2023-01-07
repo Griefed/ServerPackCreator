@@ -27,7 +27,6 @@ import de.griefed.serverpackcreator.api.utilities.common.filteredWalk
 import de.griefed.serverpackcreator.api.utilities.common.readText
 import net.lingala.zip4j.ZipFile
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
-import org.jetbrains.annotations.Contract
 import java.io.File
 import java.io.IOException
 import java.lang.reflect.InvocationTargetException
@@ -188,28 +187,28 @@ class MigrationManager constructor(
      */
     private fun toSemantic(textVersion: String): String {
         return textVersion.replace(
-                "Zero", "0"
-            ).replace(
-                "One", "1"
-            ).replace(
-                "Two", "2"
-            ).replace(
-                "Three", "3"
-            ).replace(
-                "Four", "4"
-            ).replace(
-                "Five", "5"
-            ).replace(
-                "Six", "6"
-            ).replace(
-                "Seven", "7"
-            ).replace(
-                "Eight", "8"
-            ).replace(
-                "Nine", "9"
-            ).replace(
-                "Point", "."
-            )
+            "Zero", "0"
+        ).replace(
+            "One", "1"
+        ).replace(
+            "Two", "2"
+        ).replace(
+            "Three", "3"
+        ).replace(
+            "Four", "4"
+        ).replace(
+            "Five", "5"
+        ).replace(
+            "Six", "6"
+        ).replace(
+            "Seven", "7"
+        ).replace(
+            "Eight", "8"
+        ).replace(
+            "Nine", "9"
+        ).replace(
+            "Point", "."
+        )
     }
 
     /**
