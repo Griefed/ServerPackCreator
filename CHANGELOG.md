@@ -1,3 +1,10 @@
+## [4.0.0-alpha.6](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.0.0-alpha.5...4.0.0-alpha.6) (2023-01-07)
+
+
+### 🛠 Fixes
+
+* **GitHub CI:** Do not use new tag for renaming commands, especially for pre-releases. ([8e39413](https://git.griefed.de/Griefed/ServerPackCreator/commit/8e394134f907ab1d90a0aaceb5989ece0072ce19))
+
 ## [4.0.0-alpha.5](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.0.0-alpha.4...4.0.0-alpha.5) (2023-01-07)
 
 
