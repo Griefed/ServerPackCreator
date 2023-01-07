@@ -1,3 +1,10 @@
+## [4.0.0-alpha.5](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.0.0-alpha.4...4.0.0-alpha.5) (2023-01-07)
+
+
+### 🛠 Fixes
+
+* **GitHub CI:** Unique IDs for asset upload jobs ([d114e23](https://git.griefed.de/Griefed/ServerPackCreator/commit/d114e23bee80dd59fb0b11aa6c944e48bf48c653))
+
 ## [4.0.0-alpha.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.0.0-alpha.3...4.0.0-alpha.4) (2023-01-07)
 
 
