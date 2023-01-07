@@ -18,11 +18,11 @@ plugins {
   id "io.github.gradle-nexus.publish-plugin" version "1.1.0"
   id 'java-library'
 
-  id 'edu.sc.seis.launch4j' version '2.5.3'
+  id 'edu.sc.seis.launch4j' version '2.5.4'
   id 'org.siouan.frontend-jdk8' version '6.0.0'
 
   id 'io.spring.dependency-management' version '1.1.0'
-  id 'org.springframework.boot' version '2.7.5'
+  id 'org.springframework.boot' version '2.7.7'
 
   id 'com.github.jk1.dependency-license-report' version '2.0'
 }
@@ -68,11 +68,11 @@ configurations {
 
 dependencies {
   // Backend
-  implementation 'de.griefed:versionchecker:1.1.0'
+  implementation 'de.griefed:versionchecker:1.1.4'
   implementation 'com.electronwill.night-config:toml:3.6.6'
 
   implementation 'net.lingala.zip4j:zip4j:2.11.2'
-  implementation 'org.xerial:sqlite-jdbc:3.39.3.0'
+  implementation 'org.xerial:sqlite-jdbc:3.40.0.0'
   implementation 'org.pf4j:pf4j:3.8.0'
   implementation 'com.github.vatbub:mslinks:1.0.5'
 
@@ -82,7 +82,7 @@ dependencies {
   implementation 'org.apache.logging.log4j:log4j-api:2.19.0'
   implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.19.0'
   implementation 'org.apache.logging.log4j:log4j-web:2.19.0'
-  implementation 'org.jgroups:jgroups:5.2.7.Final'
+  implementation 'org.jgroups:jgroups:5.2.11.Final'
 
   // GUI
   implementation 'io.github.vincenzopalazzo:material-ui-swing:1.1.4'
@@ -90,19 +90,19 @@ dependencies {
 
   // WEB
   implementation 'org.apache.activemq:artemis-jms-server:2.19.1'
-  implementation 'org.springframework.boot:spring-boot-starter-web:2.7.5'
-  implementation 'org.springframework.boot:spring-boot-starter-log4j2:2.7.5'
-  implementation 'org.springframework.boot:spring-boot-starter-data-jpa:2.7.5'
-  implementation 'org.springframework.boot:spring-boot-starter-artemis:2.7.5'
+  implementation 'org.springframework.boot:spring-boot-starter-web:2.7.7'
+  implementation 'org.springframework.boot:spring-boot-starter-log4j2:2.7.7'
+  implementation 'org.springframework.boot:spring-boot-starter-data-jpa:2.7.7'
+  implementation 'org.springframework.boot:spring-boot-starter-artemis:2.7.7'
   implementation 'com.github.gwenn:sqlite-dialect:0.1.2'
 
   // Dev tools
-  developmentOnly 'org.springframework.boot:spring-boot-devtools:2.7.5'
+  developmentOnly 'org.springframework.boot:spring-boot-devtools:2.7.7'
 
   // Testing
   testImplementation 'org.junit.jupiter:junit-jupiter:5.9.1'
   testImplementation 'org.junit.platform:junit-platform-suite:1.9.1'
-  testImplementation 'org.springframework.boot:spring-boot-starter-test:2.7.5'
+  testImplementation 'org.springframework.boot:spring-boot-starter-test:2.7.7'
 }
 
 licenseReport {
