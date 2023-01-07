@@ -167,7 +167,7 @@ jobs:
 
       - name: Rename Windows
         if: matrix.os == 'windows-latest'
-        run: mv serverpackcreator-app/build/dist/ServerPackCreator-*.msi serverpackcreator-app/build/dist/ServerPackCreator-Installer-Windows-${{ needs.prerelease.outputs.newtag }}.msi
+        run: mv serverpackcreator-app/build/dist/ServerPackCreator-*.msi serverpackcreator-app/build/dist/ServerPackCreator-Installer-Windows-${{ needs.release.outputs.newtag }}.msi
 
       - name: Rename Ubuntu
         if: matrix.os == 'ubuntu-latest'
@@ -207,7 +207,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           path: |
-            serverpackcreator-app/build/dist/ServerPackCreator-Installer-Windows-${{ needs.prerelease.outputs.newtag }}.msi
+            serverpackcreator-app/build/dist/ServerPackCreator-Installer-Windows-${{ needs.release.outputs.newtag }}.msi
           if-no-files-found: warn
           upload-release-files: true
           release-upload-url: ${{ needs.prerelease.outputs.uploadurl }}
