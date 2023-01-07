@@ -156,7 +156,7 @@ jobs:
         env:
           GITHUB_ACTOR: ${{ secrets.GITHUB_ACTOR }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gradle :serverpackcreator-app:jpackage -Pversion="${{ needs.release.outputs.newtag }}" --info --full-stacktrace
+        run: ./gradlew :serverpackcreator-app:jpackage -Pversion="${{ needs.release.outputs.newtag }}" --info --full-stacktrace
 
       - name: List After Build
         run: ls -ahl serverpackcreator-app/build/dist/
@@ -215,7 +215,7 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - name: Build documentation
-        run: ./gradlew :serverpackcreator-api:dokkaHtml -Pversion=${{ needs.release.outputs.newtag }} --full-stacktrace --info -x test
+        run: ./gradlew :serverpackcreator-api:dokkaHtml -Pversion="${{ needs.release.outputs.newtag }}" --full-stacktrace --info -x test
 
       - uses: actions/upload-artifact@v3
         with:

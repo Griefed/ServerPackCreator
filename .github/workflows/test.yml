@@ -23,14 +23,16 @@ jobs:
           java-version: '17'
           check-latest: true
           cache: 'gradle'
+
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
+
       - uses: gradle/gradle-build-action@v2.3.3
         with:
           gradle-version: wrapper
 
       - name: Build with Gradle
-        run: gradle -Pversion=${{ steps.branch-name.outputs.current_branch }} build --info --full-stacktrace
+        run: ./gradlew -Pversion=${{ steps.branch-name.outputs.current_branch }} build --info --full-stacktrace
 
       - uses: actions/upload-artifact@v3.1.1
         if: ${{ always() }}
@@ -87,7 +89,7 @@ jobs:
         env:
           GITHUB_ACTOR: ${{ secrets.GITHUB_ACTOR }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gradle serverpackcreator-app:jpackage --info --full-stacktrace
+        run: ./gradlew :serverpackcreator-app:jpackage --info --full-stacktrace
 
       - name: Rename MacOs
         if: matrix.os == 'macos-latest'
