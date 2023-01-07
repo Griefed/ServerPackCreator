@@ -70,19 +70,7 @@ updates:
     pull-request-branch-name:
       separator: "-"
   - package-ecosystem: "gradle"
-    directory: "/serverpackcreator-plugin-example-java"
-    schedule:
-      interval: "monthly"
-    assignees:
-      - "Griefed"
-    labels:
-      - "dependencies"
-      - "gradle"
-    target-branch: "dependabot"
-    pull-request-branch-name:
-      separator: "-"
-  - package-ecosystem: "gradle"
-    directory: "/serverpackcreator-plugin-example-kotlin"
+    directory: "/serverpackcreator-plugin-example"
     schedule:
       interval: "monthly"
     assignees:
@@ -148,4 +136,4 @@ updates:
       - "docker"
     target-branch: "dependabot"
     pull-request-branch-name:
-#      separator: "-"
+      separator: "-"
