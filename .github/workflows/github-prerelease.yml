@@ -96,31 +96,6 @@ jobs:
             serverpackcreator-app/build/libs/ServerPackCreator-${{steps.tag.outputs.tag}}.jar
             serverpackcreator-plugin-example/build/libs/serverpackcreator-plugin-example-${{steps.tag.outputs.tag}}.jar
 
-      - name: Get current date
-        id: date
-        run: echo "today=$(date +'%Y-%m-%dT%H:%M:%S')" >> $GITHUB_OUTPUT
-      - name: Post WebHook Message
-        run: |
-          curl -L --output ./discord.sh https://raw.githubusercontent.com/ChaoticWeg/discord.sh/master/discord.sh
-          chmod a+x ./discord.sh
-          ./discord.sh \
-            --webhook-url="${{ secrets.WEBHOOK_URL }}" \
-            --username "$GITHUB_REPOSITORY" \
-            --avatar "https://i.griefed.de/images/2020/11/18/Prosper_Docker_300x300.png" \
-            --text "There's been a new release for $GITHUB_REPOSITORY. The new version is ${{steps.tag.outputs.tag}} and is available at <$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/tag/${{steps.tag.outputs.tag}}>" \
-            --title "New $GITHUB_REPOSITORY Release" \
-            --description "There's been a new release for $GITHUB_REPOSITORY. The new version is ${{steps.tag.outputs.tag}} and is available at $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/tag/${{steps.tag.outputs.tag}}" \
-            --color "0xC0FFEE" \
-            --url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/tag/${{steps.tag.outputs.tag}}" \
-            --author "Griefed" \
-            --author-url "$GITHUB_SERVER_URL/Griefed" \
-            --author-icon "https://i.griefed.de/images/2022/01/21/sam_1500x1500.th.jpg" \
-            --thumbnail "https://i.griefed.de/images/2021/05/08/app.png" \
-            --field "Author;[Griefed]($GITHUB_SERVER_URL/Griefed)" \
-            --field "Platform;[GitHub]($GITHUB_SERVER_URL)" \
-            --footer "Released at ${{ steps.date.outputs.today }}" \
-            --footer-icon "https://i.griefed.de/images/2022/01/21/start_generation.png"
-
   installers:
     strategy:
       fail-fast: false
