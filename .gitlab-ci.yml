@@ -130,9 +130,9 @@ Build Release:
     - echo "**** Building ServerPackCreator ****"
     - "./gradlew build -Pversion=${CI_COMMIT_TAG} --info --full-stacktrace -x test"
     - echo "**** Listing build directory ****"
-    - LC_COLLATE=C ls -ahl --group-directories-first --color=auto ./*/build
-    - LC_COLLATE=C ls -ahl --group-directories-first --color=auto ./*/build/libs
-    - LC_COLLATE=C ls -ah --group-directories-first --color=auto ./*/build/libs/libraries
+    - LC_COLLATE=C ls -ahl --group-directories-first --color=auto */build
+    - LC_COLLATE=C ls -ahl --group-directories-first --color=auto */build/libs
+    - LC_COLLATE=C ls -ah --group-directories-first --color=auto */build/libs/libraries
     - echo "**** Uploading packages ****"
     - 'curl --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --upload-file serverpackcreator-app/build/libs/serverpackcreator-app-${CI_COMMIT_TAG}.jar "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}/${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.jar"'
     - echo "**** Create asset links ****"
