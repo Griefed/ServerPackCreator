@@ -1,3 +1,10 @@
+## [4.0.0-alpha.7](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.0.0-alpha.6...4.0.0-alpha.7) (2023-01-07)
+
+
+### 🛠 Fixes
+
+* **GitHub CI:** Use correct variables in release jobs. ([e19c72d](https://git.griefed.de/Griefed/ServerPackCreator/commit/e19c72d17b6d25dd726ed6a427dccaf12e92ed86))
+
 ## [4.0.0-alpha.6](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.0.0-alpha.5...4.0.0-alpha.6) (2023-01-07)
 
 
