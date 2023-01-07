@@ -1,3 +1,11 @@
+## [4.0.0-alpha.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.0.0-alpha.1...4.0.0-alpha.2) (2023-01-07)
+
+
+### 🛠 Fixes
+
+* **GitHub CI:** Hopefully fix release-pipeline crashing for Windows and macOS installers. ([469e01a](https://git.griefed.de/Griefed/ServerPackCreator/commit/469e01ae1d2f55db6db8cfed8e51fb46f9d61305))
+* **GitLab CI:** Update release job to jdk17 image. Move upload commands to single-line. ([41de4b2](https://git.griefed.de/Griefed/ServerPackCreator/commit/41de4b262bef9e84aec38db6a09e6ed2e7b6e38b))
+
 ## [4.0.0-alpha.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.15.1...4.0.0-alpha.1) (2023-01-07)
 
 
