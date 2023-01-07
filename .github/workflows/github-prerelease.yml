@@ -50,10 +50,10 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
           check-latest: true
-          cache: 'gradle'
+
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
-      - uses: gradle/gradle-build-action@v2
+      - uses: gradle/gradle-build-action@v2.3.3
         with:
           gradle-version: wrapper
       - name: Build release
@@ -83,7 +83,7 @@ jobs:
       # GENERATE RELEASE
       - name: Create Release
         id: create_release
-        uses: softprops/action-gh-release@v0.1.14
+        uses: softprops/action-gh-release@v0.1.15
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           tag_name: ${{steps.tag.outputs.tag}}
@@ -138,15 +138,6 @@ jobs:
       - name: List After Build
         run: ls -ahl serverpackcreator-app/build/dist/
 
-      - name: Artifacts
-        uses: actions/upload-artifact@v3.1.1
-        if: ${{ always() }}
-        with:
-          name: build-artifacts
-          path: |
-            serverpackcreator-app/build/dist/*
-          if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
-
       - name: Rename MacOs
         if: matrix.os == 'macos-latest'
         run: mv serverpackcreator-app/build/dist/* serverpackcreator-app/build/dist/ServerPackCreator-Installer-MacOS-${{ needs.prerelease.outputs.newtag }}.dmg
@@ -159,13 +150,22 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: mv serverpackcreator-app/build/dist/* serverpackcreator-app/build/dist/ServerPackCreator-Installer-Ubuntu-${{ needs.prerelease.outputs.newtag }}-amd64.deb
 
+      - name: Artifacts
+        uses: actions/upload-artifact@v3.1.1
+        if: ${{ always() }}
+        with:
+          name: build-artifacts
+          path: |
+            serverpackcreator-app/build/dist/*
+          if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
+
       - name: List After Rename
         run: ls -ahl serverpackcreator-app/build/dist/
 
       # UPLOAD OS-SPECIFICS
       - name: Upload
         id: upload-release-asset
-        uses: nanoufo/action-upload-artifacts-and-release-assets@v1.4
+        uses: nanoufo/action-upload-artifacts-and-release-assets@v1.5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
