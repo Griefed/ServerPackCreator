@@ -1,3 +1,15 @@
+## [4.0.0-alpha.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.0.0-alpha.3...4.0.0-alpha.4) (2023-01-07)
+
+
+### 🦊 CI/CD
+
+* **GitLab:** List build and sub-directories contents ([45ae729](https://git.griefed.de/Griefed/ServerPackCreator/commit/45ae7298d25d1f6a460964026b34a9a66b5ad5c7))
+
+
+### 🛠 Fixes
+
+* **GitHub CI:** Avoid use of glob patterns in OS specific jobs. ([280a730](https://git.griefed.de/Griefed/ServerPackCreator/commit/280a730981759dadfbf37dd1edf366c185f2e91c))
+
 ## [4.0.0-alpha.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.0.0-alpha.2...4.0.0-alpha.3) (2023-01-07)
 
 
