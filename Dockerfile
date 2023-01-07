@@ -1,4 +1,4 @@
-FROM ghcr.io/griefed/baseimage-ubuntu-jdk-8:2.0.17
+FROM ghcr.io/griefed/baseimage-ubuntu-jdk17-kotlin:1.0.0
 
 ARG VERSION=dev
 
@@ -31,14 +31,9 @@ RUN \
       /tmp/*
 
 COPY root/ /
-
-COPY --chown=grfd:grfd build/libs/ServerPackCreator-${VERSION}.jar /app/serverpackcreator/serverpackcreator.jar
-
-COPY --chown=grfd:grfd backend/main/resources/de/griefed/resources/server_files /defaults/server_files
-
-COPY --chown=grfd:grfd backend/main/resources/serverpackcreator.properties /defaults/serverpackcreator.properties
-
-COPY --chown=grfd:grfd backend/main/resources/de/griefed/resources/serverpackcreator.conf /defaults/serverpackcreator.conf
+COPY --chown=grfd:grfd serverpackcreator-app/build/libs/serverpackcreator-app-${VERSION}.jar /app/serverpackcreator/serverpackcreator.jar
+COPY --chown=grfd:grfd serverpackcreator-api/src/jvmMain/resources/de/griefed/resources/server_files /defaults/server_files
+COPY --chown=grfd:grfd serverpackcreator-api/src/jvmMain/resources/de/griefed/resources/serverpackcreator.conf /defaults/serverpackcreator.conf
 
 VOLUME /data /server-packs
 

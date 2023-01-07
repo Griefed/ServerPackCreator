@@ -102,10 +102,6 @@ dist
 # TernJS port file
 .tern-port
 
-# Repo specific
-Survive*
-backend/main/resources/static
-
 # eclipse
 bin
 *.launch
@@ -116,12 +112,6 @@ bin
 
 .DS_Store
 .thumbs.db
-
-# Quasar core related directories
-.quasar
-/dist
-frontend/node
-node_modules/
 
 # Editor directories and files
 .idea
@@ -148,68 +138,148 @@ yarn.lock
 # other
 eclipse
 
-# Tests
-backend/test/resources/fabric_tests/server_pack/.fabric-installer/libraries
-backend/test/resources/fabric_tests/server_pack/download_minecraft-server.jar_fabric.sh
-backend/test/resources/forge_tests/server_pack/forge.jar
-backend/test/resources/tests/server_pack/download*
-backend/test/resources/tests/server_pack/forge.jar
-backend/test/resources/tests/server_pack/fabric-installer.xml
-backend/test/resources/tests/server_pack/libraries
-backend/test/resources/tests/server_pack/1.16.5.json
-backend/test/resources/tests/server_pack/fabric-server-launch.jar
-backend/test/resources/tests/server_pack/minecraft_server.1.16.5.jar
-backend/test/resources/tests/server_pack/server.jar
-backend/test/resources/tests/server_pack/server.jar.tmp
-backend/test/resources/tests/server_pack/fabric-installer.jar
-backend/test/resources/tests/server_pack/forge-installer.jar
-backend/test/resources/forge_tests/Vanilla Forge
-backend/test/resources/fabric_tests/server_pack.zip
-backend/test/resources/legacyfabric_tests/server_pack.zip
-backend/test/resources/forge_tests/server_pack.zip
-/Vanilla Forge
-/serverpackcreator.conf
-/serverpackcreator.tmp
-/server_files
-/fabric-manifest.xml
-/forge-manifest.json
-/mcmanifest.json
-/lang.properties
-/work
-/server-packs
-/log4j2.xml
-/addons
-/testruns/*
-!/testruns
-/serverpackcreator.properties
-/serverpackcreator.db
-/server.properties
-/creator.conf
-/banner.txt
-/somefile.conf
-/lang
-backend/main/resources/VERSION.txt
-/backend/test/resources/forge_tests_server_pack.zip
-/backend/test/resources/fabric_tests_server_pack.zip
-/backend/test/resources/legacyfabric_tests_server_pack.zip
-/backend/test/resources/quilt_tests_server_pack.zip
-/fabric_tests/
-/forge_tests/
-/plugins/
-/set_env.ps1
-/backend/test/resources/forge_tests_copy/
-/backend/test/resources/fabric_tests_copy/
-/backend/test/resources/legacyfabric_tests_copy/
-/backend/test/resources/quilt_tests_copy/
-/backend/test/resources/fabric_tests/server_pack/.fabric-installer/
-/backend/test/resources/fabric_tests/server_pack/download_minecraft-server.jar_fabric.bat
-/backend/test/resources/fabric_tests/server_pack/download_minecraft-server.jar_fabric.sh
-/backend/test/resources/fabric_tests/server_pack/fabric-installer.jar
-/fabric-installer-manifest.xml
-/minecraft-manifest.json
-/quilt-installer-manifest.xml
-/quilt-manifest.xml
-/after.conf
-/server-packs_server_pack.zip
-qodana
-tests
+# CMake
+cmake-build-*/
+
+# IntelliJ
+out/
+
+# mpeltonen/sbt-idea plugin
+.idea_modules/
+
+# JIRA plugin
+atlassian-ide-plugin.xml
+
+# Crashlytics plugin (for Android Studio and IntelliJ)
+com_crashlytics_export_strings.xml
+crashlytics.properties
+crashlytics-build.properties
+
+### Kotlin ###
+# Compiled class file
+*.class
+
+# BlueJ files
+*.ctxt
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+hs_err_pid*
+
+### Linux ###
+*~
+
+# temporary files which can be created if a process still has a handle open of a deleted file
+.fuse_hidden*
+
+# KDE directory preferences
+.directory
+
+# Linux trash folder which might appear on any partition or disk
+.Trash-*
+
+# .nfs files are created when an open file is removed but is still being accessed
+.nfs*
+
+### macOS ###
+# General
+.AppleDouble
+.LSOverride
+
+# Icon must end with two \r
+Icon
+
+# Thumbnails
+._*
+
+# Files that might appear in the root of a volume
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Directories potentially created on remote AFP share
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+### Windows ###
+# Windows thumbnail cache files
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+
+# Dump file
+*.stackdump
+
+# Folder config file
+[Dd]esktop.ini
+
+# Recycle Bin used on file shares
+$RECYCLE.BIN/
+
+# Windows Installer files
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+
+# Windows shortcuts
+*.lnk
+
+### Gradle ###
+.gradle
+build/
+
+# Ignore Gradle GUI config
+gradle-app.setting
+
+# Avoid ignoring Gradle wrapper jar file (.jar files are usually ignored)
+!gradle-wrapper.jar
+
+# Cache of project
+.gradletasknamecache
+
+# # Work around https://youtrack.jetbrains.com/issue/IDEA-116898
+# gradle/wrapper/gradle-wrapper.properties/
+
+# End of https://www.toptal.com/developers/gitignore/api/gradle,kotlin,intellij,macos,windows,linux
+
+**/build
+**/.gradle
+
+# ServerPackCreator Web
+serverpackcreator-web/src/main/resources/static
+serverpackcreator-web/tests/*
+!serverpackcreator-web/tests/.gitkeep
+serverpackcreator-web-frontend/.quasar/
+serverpackcreator-web-frontend/dist/
+serverpackcreator-web-frontend/node_modules/
+serverpackcreator-web-frontend/node/
+serverpackcreator-web/serverpackcreator.db
+
+# ServerPackCreator App
+serverpackcreator-app/tests/*
+!serverpackcreator-app/tests/.gitkeep
+serverpackcreator-app/src/main/resources/static
+
+# ServerPackCreator API
+serverpackcreator-api/main/resources/VERSION.txt
+serverpackcreator-api/tests/*
+!serverpackcreator-api/tests/.gitkeep
+serverpackcreator-api/src/jvmTest/resources/forge_tests_copy/
+serverpackcreator-api/src/jvmTest/resources/fabric_tests_copy/
+serverpackcreator-api/src/jvmTest/resources/legacyfabric_tests_copy/
+serverpackcreator-api/src/jvmTest/resources/quilt_tests_copy/
+serverpackcreator-api/src/jvmTest/resources/fabric_tests_server_pack.zip
+serverpackcreator-api/src/jvmTest/resources/forge_tests_server_pack.zip
+serverpackcreator-api/src/jvmTest/resources/quilt_tests_server_pack.zip

@@ -8,19 +8,23 @@ on:
       - '[0-9]+.[0-9]+.[0-9]+-pre.[0-9]+'
 
 jobs:
-  release:
+  prerelease:
     runs-on: ubuntu-latest
+    # OUTPUTS
+    outputs:
+      newtag: ${{ steps.tag.outputs.tag }}
+      uploadurl: ${{ steps.create_release.outputs.upload_url }}
     steps:
       # GET THE LATEST CODE
       - name: Checkout latest code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v3.1.0
         with:
           fetch-depth: 0
 
       # EXTRACT TAG FROM PUSH
       - name: Get tag
         id: tag
-        uses: dawidd6/action-get-tag@v1
+        uses: tj-actions/branch-names@v6.3
       - name: Use tag
         run: echo ${{steps.tag.outputs.tag}}
 
@@ -33,65 +37,65 @@ jobs:
 
       # GET DESCRIPTION
       - name: Extract version changelog
-        uses: sergeysova/jq-action@v2
+        uses: sergeysova/jq-action@v2.2.1
         id: description
         with:
           cmd: "jq .description version.json -r | sed -e 's/\\n/\\n/g' > description.txt"
           multiline: true
 
-      # BUILD PROJECT AND PUBLISH TO PACKAGES
-      - name: Set up JDK 8
-        uses: actions/setup-java@v3
+      # BUILD PROJECT AND PUBLISH
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3.6.0
         with:
           distribution: 'zulu'
-          java-version: '8'
+          java-version: '17'
           check-latest: true
           cache: 'gradle'
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
-      - name: Publish to GitHub Packages
+      - uses: gradle/gradle-build-action@v2
+        with:
+          gradle-version: wrapper
+      - name: Build release
         env:
           GITHUB_ACTOR: ${{ secrets.GITHUB_ACTOR }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          ./gradlew -Pversion=${{steps.tag.outputs.tag}} build --info --full-stacktrace -x test
-
-      # RENAME EXE
-      - name: Rename files
-        run: |
-          echo "**** Renaming files to please the eye ****"
-          mv build/libs/ServerPackCreator.exe build/libs/ServerPackCreator-${{steps.tag.outputs.tag}}.exe
+        run: gradle -Pversion=${{steps.tag.outputs.tag}} build --info --full-stacktrace -x test
 
       # PUBLISH ARTIFACTS
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v3.1.1
+        if: ${{ always() }}
         with:
           name: build-artifacts-gradle
           path: |
-            build
-            frontend/dist
+            serverpackcreator-api/build
+            serverpackcreator-app/build
+            serverpackcreator-cli/build
+            serverpackcreator-web/build
+            serverpackcreator-updater/build
+            serverpackcreator-web-frontend/dist
+            serverpackcreator-plugin-example/build
           if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
 
       # GENERATE RELEASE
       - name: Create Release
         id: create_release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v0.1.14
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           tag_name: ${{steps.tag.outputs.tag}}
-          name: Release ${{steps.tag.outputs.tag}}
+          name: Pre-Release ${{steps.tag.outputs.tag}}
           body_path: description.txt
           draft: false
           prerelease: true
           fail_on_unmatched_files: false
           files: |
-            build/libs/ServerPackCreator-${{steps.tag.outputs.tag}}.exe
-            build/libs/ServerPackCreator-${{steps.tag.outputs.tag}}.jar
-            build/libs/ServerPackCreator-${{steps.tag.outputs.tag}}-sources.jar
-            build/libs/ServerPackCreator-${{steps.tag.outputs.tag}}-javadoc.jar
+            serverpackcreator-app/build/libs/serverpackcreator-app-${{steps.tag.outputs.tag}}.jar
+            serverpackcreator-plugin-example/build/libs/serverpackcreator-plugin-example-${{steps.tag.outputs.tag}}.jar
 
       - name: Get current date
         id: date
-        run: echo "::set-output name=today::$(date +'%Y-%m-%dT%H:%M:%S')"
+        run: echo "today=$(date +'%Y-%m-%dT%H:%M:%S')" >> $GITHUB_OUTPUT
       - name: Post WebHook Message
         run: |
           curl -L --output ./discord.sh https://raw.githubusercontent.com/ChaoticWeg/discord.sh/master/discord.sh
@@ -113,3 +117,73 @@ jobs:
             --field "Platform;[GitHub]($GITHUB_SERVER_URL)" \
             --footer "Released at ${{ steps.date.outputs.today }}" \
             --footer-icon "https://i.griefed.de/images/2022/01/21/start_generation.png"
+
+  installers:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest,ubuntu-latest,windows-latest]
+    needs: prerelease
+    runs-on: ${{ matrix.os }}
+    steps:
+      # GET THE LATEST CODE
+      - name: Checkout latest code
+        uses: actions/checkout@v3.1.0
+        with:
+          fetch-depth: 0
+
+      # BUILD PROJECT AND PUBLISH
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3.6.0
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+          check-latest: true
+          cache: 'gradle'
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      - uses: gradle/gradle-build-action@v2.3.3
+        with:
+          gradle-version: wrapper
+      - name: Prepare wix-toolset
+        if: matrix.os == 'windows-latest'
+        run: echo "${env:path};${env:wix}bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8
+      - name: Build installer
+        env:
+          GITHUB_ACTOR: ${{ secrets.GITHUB_ACTOR }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gradle -Pversion=${{ needs.prerelease.outputs.newtag }} serverpackcreator-app:jpackage --info --full-stacktrace -x test
+
+      - name: Artifacts
+        uses: actions/upload-artifact@v3.1.1
+        if: ${{ always() }}
+        with:
+          name: build-artifacts
+          path: |
+            serverpackcreator-app/build/dist/*
+          if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
+
+      - name: Rename MacOs
+        if: matrix.os == 'macos-latest'
+        run: mv serverpackcreator-app/build/dist/* serverpackcreator-app/build/dist/ServerPackCreator-Installer-MacOS-${{ needs.prerelease.outputs.newtag }}.dmg
+
+      - name: Rename Windows
+        if: matrix.os == 'windows-latest'
+        run: mv serverpackcreator-app/build/dist/* serverpackcreator-app/build/dist/ServerPackCreator-Installer-Windows-${{ needs.prerelease.outputs.newtag }}.msi
+
+      - name: Rename Ubuntu
+        if: matrix.os == 'ubuntu-latest'
+        run: mv serverpackcreator-app/build/dist/* serverpackcreator-app/build/dist/ServerPackCreator-Installer-Ubuntu-${{ needs.prerelease.outputs.newtag }}-amd64.deb
+
+      # UPLOAD OS-SPECIFICS
+      - name: Upload
+        id: upload-release-asset
+        uses: nanoufo/action-upload-artifacts-and-release-assets@v1.4
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          path: |
+            serverpackcreator-app/build/dist/*
+          if-no-files-found: warn
+          upload-release-files: true
+          release-upload-url: ${{ needs.prerelease.outputs.uploadurl }}
