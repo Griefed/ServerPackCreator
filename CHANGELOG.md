@@ -1,3 +1,17 @@
+## [4.0.0-alpha.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.0.0-alpha.2...4.0.0-alpha.3) (2023-01-07)
+
+
+### 🦊 CI/CD
+
+* **Gradle:** Increase available memory to 2048mb ([58052a0](https://git.griefed.de/Griefed/ServerPackCreator/commit/58052a0dc2070fd87dd1b80f96eb615796a728f2))
+* **GitLab:** Correctly list directory entries ([262c90b](https://git.griefed.de/Griefed/ServerPackCreator/commit/262c90bf3c92c4b69e85720ac7ef2f585e1cdbde))
+
+
+### 🛠 Fixes
+
+* **GitHub CI:** Update action versions and move artifact upload to run after installer renaming. Disable cache for release jobs. ([e47514e](https://git.griefed.de/Griefed/ServerPackCreator/commit/e47514ecb3747e3fc84c3808243d5fe80d778a47))
+* **GitHub CI:** Use Gradle Wrapper instead of installed Gradle version. ([ce3c15e](https://git.griefed.de/Griefed/ServerPackCreator/commit/ce3c15e19218482cc8045137ea16a1fb62785ea5))
+
 ## [4.0.0-alpha.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.0.0-alpha.1...4.0.0-alpha.2) (2023-01-07)
 
 
