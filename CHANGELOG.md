@@ -1,3 +1,10 @@
+## [4.0.0-alpha.9](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.0.0-alpha.8...4.0.0-alpha.9) (2023-01-08)
+
+
+### 🛠 Fixes
+
+* **GitHub CI:** Add missing fetch task ([836c574](https://git.griefed.de/Griefed/ServerPackCreator/commit/836c574ec8cd0d38d93583b54a9a61a1341fe556))
+
 ## [4.0.0-alpha.8](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.0.0-alpha.7...4.0.0-alpha.8) (2023-01-08)
 
 
