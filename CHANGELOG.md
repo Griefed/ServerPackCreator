@@ -1,3 +1,10 @@
+## [4.0.0-alpha.12](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.0.0-alpha.11...4.0.0-alpha.12) (2023-01-08)
+
+
+### 🛠 Fixes
+
+* **GitHub CI:** Upload all assets CORRECTLY this time. Please. With a cherry on top. ([a04ba89](https://git.griefed.de/Griefed/ServerPackCreator/commit/a04ba89bc59642a906426617f57dfdafc9863ab0))
+
 ## [4.0.0-alpha.11](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.0.0-alpha.10...4.0.0-alpha.11) (2023-01-08)
 
 
