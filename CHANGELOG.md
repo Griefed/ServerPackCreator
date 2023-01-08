@@ -1,3 +1,10 @@
+## [4.0.0-alpha.11](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.0.0-alpha.10...4.0.0-alpha.11) (2023-01-08)
+
+
+### 🛠 Fixes
+
+* **GitHub CI:** Include example plugin in release artefacts ([a262bab](https://git.griefed.de/Griefed/ServerPackCreator/commit/a262bab332de1e465124d83ff744e315570dea2e))
+
 ## [4.0.0-alpha.10](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.0.0-alpha.9...4.0.0-alpha.10) (2023-01-08)
 
 
