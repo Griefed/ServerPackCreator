@@ -6,12 +6,12 @@ on:
       - '[0-9]+.[0-9]+.[0-9]+'
 
 jobs:
-  release:
+  preparations:
     runs-on: ubuntu-latest
     # OUTPUTS
     outputs:
-      newtag: ${{ steps.tag.outputs.tag }}
-      uploadurl: ${{ steps.create_release.outputs.upload_url }}
+      version: ${{ steps.tag.outputs.tag }}
+
     steps:
       # GET THE LATEST CODE
       - name: Checkout latest code
@@ -23,23 +23,19 @@ jobs:
       - name: Get tag
         id: tag
         uses: tj-actions/branch-names@v6.3
-      - name: Print tag
+      - name: Use tag
         run: echo ${{steps.tag.outputs.tag}}
 
-      # GET RELEASE INFO
-      - name: Get Release Info
-        run: |
-          curl --header \
-          'PRIVATE-TOKEN: ${{ secrets.GITLAB_TOKEN }}' \
-          'https://git.griefed.de/api/v4/projects/63/releases/${{steps.tag.outputs.tag}}' >> version.json
+  jar:
+    needs: preparations
+    runs-on: ubuntu-latest
 
-      # GET DESCRIPTION
-      - name: Extract version changelog
-        uses: sergeysova/jq-action@v2.2.1
-        id: description
+    steps:
+      # GET THE LATEST CODE
+      - name: Checkout latest code
+        uses: actions/checkout@v3.1.0
         with:
-          cmd: "jq .description version.json -r | sed -e 's/\\n/\\n/g' > description.txt"
-          multiline: true
+          fetch-depth: 0
 
       # BUILD PROJECT AND PUBLISH
       - name: Set up JDK 17
@@ -51,20 +47,22 @@ jobs:
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
+
       - uses: gradle/gradle-build-action@v2.3.3
         with:
           gradle-version: wrapper
+
       - name: Build release
         env:
           GITHUB_ACTOR: ${{ secrets.GITHUB_ACTOR }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./gradlew -Pversion=${{steps.tag.outputs.tag}} build --info --full-stacktrace -x test
+        run: ./gradlew -Pversion="${{ needs.preparations.outputs.version }}" build --info --full-stacktrace -x :serverpackcreator-api:jvmTest -x :serverpackcreator-web:test
 
       # UPLOAD ARTIFACTS
-      - uses: actions/upload-artifact@v3.1.1
+      - uses: actions/upload-artifact@v3.1.2
         if: ${{ always() }}
         with:
-          name: build-artifacts-gradle
+          name: build-artifacts
           path: |
             serverpackcreator-api/build
             serverpackcreator-app/build
@@ -76,56 +74,25 @@ jobs:
           if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
 
       - name: Rename JAR
-        run: mv serverpackcreator-app/build/libs/serverpackcreator-app-${{steps.tag.outputs.tag}}.jar serverpackcreator-app/build/libs/ServerPackCreator-${{steps.tag.outputs.tag}}.jar
+        run: mv serverpackcreator-app/build/libs/serverpackcreator-app-${{ needs.preparations.outputs.version }}.jar serverpackcreator-app/build/libs/ServerPackCreator-${{ needs.preparations.outputs.version }}.jar
 
-      # GENERATE RELEASE
-      - name: Create Release
-        id: create_release
-        uses: softprops/action-gh-release@v0.1.15
+      # UPLOAD ARTIFACTS
+      - uses: actions/upload-artifact@v3.1.2
+        if: ${{ always() }}
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          tag_name: ${{steps.tag.outputs.tag}}
-          name: Release ${{steps.tag.outputs.tag}}
-          body_path: description.txt
-          draft: false
-          release: false
-          fail_on_unmatched_files: false
-          files: |
-            serverpackcreator-app/build/libs/ServerPackCreator-${{steps.tag.outputs.tag}}.jar
-            serverpackcreator-plugin-example/build/libs/serverpackcreator-plugin-example-${{steps.tag.outputs.tag}}.jar
-
-      - name: Get current date
-        id: date
-        run: echo "today=$(date +'%Y-%m-%dT%H:%M:%S')" >> $GITHUB_OUTPUT
-      - name: Post WebHook Message
-        run: |
-          curl -L --output ./discord.sh https://raw.githubusercontent.com/ChaoticWeg/discord.sh/master/discord.sh
-          chmod a+x ./discord.sh
-          ./discord.sh \
-            --webhook-url="${{ secrets.WEBHOOK_URL }}" \
-            --username "$GITHUB_REPOSITORY" \
-            --avatar "https://i.griefed.de/images/2020/11/18/Prosper_Docker_300x300.png" \
-            --text "There's been a new release for $GITHUB_REPOSITORY. The new version is ${{steps.tag.outputs.tag}} and is available at <$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/tag/${{steps.tag.outputs.tag}}>" \
-            --title "New $GITHUB_REPOSITORY Release" \
-            --description "There's been a new release for $GITHUB_REPOSITORY. The new version is ${{steps.tag.outputs.tag}} and is available at $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/tag/${{steps.tag.outputs.tag}}" \
-            --color "0xC0FFEE" \
-            --url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/tag/${{steps.tag.outputs.tag}}" \
-            --author "Griefed" \
-            --author-url "$GITHUB_SERVER_URL/Griefed" \
-            --author-icon "https://i.griefed.de/images/2022/01/21/sam_1500x1500.th.jpg" \
-            --thumbnail "https://i.griefed.de/images/2021/05/08/app.png" \
-            --field "Author;[Griefed]($GITHUB_SERVER_URL/Griefed)" \
-            --field "Platform;[GitHub]($GITHUB_SERVER_URL)" \
-            --footer "Released at ${{ steps.date.outputs.today }}" \
-            --footer-icon "https://i.griefed.de/images/2022/01/21/start_generation.png"
+          name: release-artifacts
+          path: |
+            serverpackcreator-app/build/libs/ServerPackCreator-${{ needs.preparations.outputs.version }}.jar
+          if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
 
   installers:
     strategy:
       fail-fast: false
       matrix:
         os: [macos-latest,ubuntu-latest,windows-latest]
-    needs: release
+    needs: preparations
     runs-on: ${{ matrix.os }}
+
     steps:
       # GET THE LATEST CODE
       - name: Checkout latest code
@@ -156,74 +123,79 @@ jobs:
         env:
           GITHUB_ACTOR: ${{ secrets.GITHUB_ACTOR }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./gradlew :serverpackcreator-app:jpackage -Pversion="${{ needs.release.outputs.newtag }}" --info --full-stacktrace
+        run: ./gradlew :serverpackcreator-app:jpackage -Pversion="${{ needs.preparations.outputs.version }}" --info --full-stacktrace -x :serverpackcreator-api:jvmTest -x :serverpackcreator-web:test
 
       - name: List After Build
         run: ls serverpackcreator-app/build/dist/
 
       - name: Rename MacOs
         if: matrix.os == 'macos-latest'
-        run: mv serverpackcreator-app/build/dist/ServerPackCreator-*.dmg serverpackcreator-app/build/dist/ServerPackCreator-Installer-MacOS-${{ needs.release.outputs.newtag }}.dmg
+        run: mv serverpackcreator-app/build/dist/ServerPackCreator-*.dmg serverpackcreator-app/build/dist/ServerPackCreator-Installer-MacOS-${{ needs.preparations.outputs.version }}.dmg
 
       - name: Rename Windows
         if: matrix.os == 'windows-latest'
-        run: mv serverpackcreator-app/build/dist/ServerPackCreator-*.msi serverpackcreator-app/build/dist/ServerPackCreator-Installer-Windows-${{ needs.release.outputs.newtag }}.msi
+        run: mv serverpackcreator-app/build/dist/ServerPackCreator-*.msi serverpackcreator-app/build/dist/ServerPackCreator-Installer-Windows-${{ needs.preparations.outputs.version }}.msi
 
       - name: Rename Ubuntu
         if: matrix.os == 'ubuntu-latest'
-        run: mv serverpackcreator-app/build/dist/serverpackcreator_*.deb serverpackcreator-app/build/dist/ServerPackCreator-Installer-Ubuntu-${{ needs.release.outputs.newtag }}-amd64.deb
+        run: mv serverpackcreator-app/build/dist/serverpackcreator_*.deb serverpackcreator-app/build/dist/ServerPackCreator-Installer-Ubuntu-${{ needs.preparations.outputs.version }}-amd64.deb
 
       - name: Artifacts
-        uses: actions/upload-artifact@v3.1.1
+        uses: actions/upload-artifact@v3.1.2
         if: ${{ always() }}
         with:
-          name: build-artifacts
+          name: release-artifacts
           path: |
             serverpackcreator-app/build/dist/*
           if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
 
-      - name: List After Rename
-        run: ls serverpackcreator-app/build/dist/
+  prerelease:
+    runs-on: ubuntu-latest
+    needs: [preparations, jar, installers]
 
-      # UPLOAD OS-SPECIFICS
-      - name: Upload Mac Installer
-        if: matrix.os == 'macos-latest'
-        id: upload-release-asset-macos
-        uses: nanoufo/action-upload-artifacts-and-release-assets@v1.5
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      # GET THE LATEST CODE
+      - name: Checkout latest code
+        uses: actions/checkout@v3.1.0
         with:
-          path: |
-            serverpackcreator-app/build/dist/ServerPackCreator-Installer-MacOS-${{ needs.release.outputs.newtag }}.dmg
-          if-no-files-found: warn
-          upload-release-files: true
-          release-upload-url: ${{ needs.prerelease.outputs.uploadurl }}
+          fetch-depth: 0
 
-      - name: Upload Windows Installer
-        if: matrix.os == 'windows-latest'
-        id: upload-release-asset-windows
-        uses: nanoufo/action-upload-artifacts-and-release-assets@v1.5
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          path: |
-            serverpackcreator-app/build/dist/ServerPackCreator-Installer-Windows-${{ needs.release.outputs.newtag }}.msi
-          if-no-files-found: warn
-          upload-release-files: true
-          release-upload-url: ${{ needs.prerelease.outputs.uploadurl }}
+      # GET RELEASE INFO
+      - name: Get Release Info
+        run: |
+          curl --header \
+          'PRIVATE-TOKEN: ${{ secrets.GITLAB_TOKEN }}' \
+          'https://git.griefed.de/api/v4/projects/63/releases/${{steps.tag.outputs.tag}}' >> version.json
 
-      - name: Upload Ubuntu Installer
-        if: matrix.os == 'ubuntu-latest'
-        id: upload-release-asset-ubuntu
-        uses: nanoufo/action-upload-artifacts-and-release-assets@v1.5
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # GET DESCRIPTION
+      - name: Extract version changelog
+        uses: sergeysova/jq-action@v2.2.1
+        id: description
         with:
-          path: |
-            serverpackcreator-app/build/dist/ServerPackCreator-Installer-Ubuntu-${{ needs.release.outputs.newtag }}-amd64.deb
-          if-no-files-found: warn
-          upload-release-files: true
-          release-upload-url: ${{ needs.prerelease.outputs.uploadurl }}
+          cmd: "jq .description version.json -r | sed -e 's/\\n/\\n/g' > description.txt"
+          multiline: true
+
+      - uses: actions/download-artifact@v3.0.2
+        with:
+          name: release-artifacts
+
+      # GENERATE RELEASE
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v0.1.15
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag_name: ${{ needs.preparations.outputs.version }}
+          name: Release ${{ needs.preparations.outputs.version }}
+          body_path: description.txt
+          draft: false
+          prerelease: false
+          fail_on_unmatched_files: false
+          files: |
+            ServerPackCreator-Installer-MacOS-${{ needs.preparations.outputs.version }}.dmg
+            ServerPackCreator-Installer-Windows-${{ needs.preparations.outputs.version }}.msi
+            ServerPackCreator-Installer-Ubuntu-${{ needs.preparations.outputs.version }}-amd64.deb
+            ServerPackCreator-${{ needs.preparations.outputs.version }}.jar
 
   pages:
     needs: release
@@ -242,7 +214,7 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - name: Build documentation
-        run: ./gradlew :serverpackcreator-api:dokkaHtml -Pversion="${{ needs.release.outputs.newtag }}" --full-stacktrace --info -x test
+        run: ./gradlew :serverpackcreator-api:dokkaHtml -Pversion="${{ needs.preparations.outputs.version }}" --full-stacktrace --info -x test
 
       - uses: actions/upload-artifact@v3
         with:
