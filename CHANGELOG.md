@@ -1,3 +1,15 @@
+## [4.0.0-alpha.8](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.0.0-alpha.7...4.0.0-alpha.8) (2023-01-08)
+
+
+### 🦊 CI/CD
+
+* **GitLab:** Do not run tests for release build. A release / release-pipeline is only generated when the pipeline for the previous commits completes successfully. ([ec428c3](https://git.griefed.de/Griefed/ServerPackCreator/commit/ec428c3f996424cfe9dfee9a7da5acf59eb04a5f))
+
+
+### 🛠 Fixes
+
+* **GitHub CI:** Restructure jobs to generate all release files before release is generated. Release job acquires artefacts and uploads them as assets. ([287feac](https://git.griefed.de/Griefed/ServerPackCreator/commit/287feace84eb110ad0273c58f3a2d77612fa2181))
+
 ## [4.0.0-alpha.7](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.0.0-alpha.6...4.0.0-alpha.7) (2023-01-07)
 
 
