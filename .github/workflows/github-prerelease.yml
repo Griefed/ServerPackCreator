@@ -198,3 +198,4 @@ jobs:
             ServerPackCreator-Installer-Windows-${{ needs.preparations.outputs.version }}.msi
             ServerPackCreator-Installer-Ubuntu-${{ needs.preparations.outputs.version }}-amd64.deb
             ServerPackCreator-${{ needs.preparations.outputs.version }}.jar
+            serverpackcreator-plugin-example-${{ needs.preparations.outputs.version }}.jar
