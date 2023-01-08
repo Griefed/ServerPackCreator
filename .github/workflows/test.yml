@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  test:
+  jar:
     runs-on: ubuntu-latest
     steps:
 
@@ -47,8 +47,7 @@ jobs:
             serverpackcreator-web/build
             serverpackcreator-updater/build
             serverpackcreator-web-frontend/dist
-            serverpackcreator-plugin-example-java/build
-            serverpackcreator-plugin-example-kotlin/build
+            serverpackcreator-plugin-example/build
           if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
 
   installers:
@@ -56,7 +55,6 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-latest,ubuntu-latest,windows-latest]
-    needs: test
     runs-on: ${{ matrix.os }}
     steps:
       # GET THE LATEST CODE
