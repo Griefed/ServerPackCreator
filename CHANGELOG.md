@@ -1,3 +1,16 @@
+## [4.0.0-alpha.10](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.0.0-alpha.9...4.0.0-alpha.10) (2023-01-08)
+
+
+### 🦊 CI/CD
+
+* **GitHub:** Let jar and installer jobs run in parallel. ([66c9463](https://git.griefed.de/Griefed/ServerPackCreator/commit/66c94639c32f61aef1ecea6da41f4d48c37758d4))
+
+
+### 🛠 Fixes
+
+* **GitHub CI:** Add missing example plugin upload. ([d3714c4](https://git.griefed.de/Griefed/ServerPackCreator/commit/d3714c40626973b4dfb7cb34f63ddb2d14ffc8a9))
+* **GitHub CI:** Upload correct Ubuntu installer. Migrate release workflow to working config. ([6470c0d](https://git.griefed.de/Griefed/ServerPackCreator/commit/6470c0d6621bee3d8256b53311703d87975675e4))
+
 ## [4.0.0-alpha.9](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.0.0-alpha.8...4.0.0-alpha.9) (2023-01-08)
 
 
