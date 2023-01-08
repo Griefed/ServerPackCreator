@@ -85,6 +85,7 @@ jobs:
           name: release-artifacts
           path: |
             serverpackcreator-app/build/libs/ServerPackCreator-${{ needs.preparations.outputs.version }}.jar
+            serverpackcreator-plugin-example/build/libs/serverpackcreator-plugin-example-${{ needs.preparations.outputs.version }}.jar
           if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
 
   installers:
