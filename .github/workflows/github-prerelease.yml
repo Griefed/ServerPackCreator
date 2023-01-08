@@ -69,8 +69,9 @@ jobs:
             serverpackcreator-api/build
             serverpackcreator-app/build
             serverpackcreator-cli/build
-            serverpackcreator-web/build
+            serverpackcreator-gui/build
             serverpackcreator-updater/build
+            serverpackcreator-web/build
             serverpackcreator-web-frontend/dist
             serverpackcreator-plugin-example/build
           if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
@@ -133,15 +134,15 @@ jobs:
 
       - name: Rename MacOs
         if: matrix.os == 'macos-latest'
-        run: mv serverpackcreator-app/build/dist/ServerPackCreator-*.dmg serverpackcreator-app/build/dist/ServerPackCreator-Installer-MacOS-${{ needs.preparations.outputs.version }}.dmg
+        run: mv serverpackcreator-app/build/dist/ServerPackCreator*.dmg serverpackcreator-app/build/dist/ServerPackCreator-Installer-MacOS-${{ needs.preparations.outputs.version }}.dmg
 
       - name: Rename Windows
         if: matrix.os == 'windows-latest'
-        run: mv serverpackcreator-app/build/dist/ServerPackCreator-*.msi serverpackcreator-app/build/dist/ServerPackCreator-Installer-Windows-${{ needs.preparations.outputs.version }}.msi
+        run: mv serverpackcreator-app/build/dist/ServerPackCreator*.msi serverpackcreator-app/build/dist/ServerPackCreator-Installer-Windows-${{ needs.preparations.outputs.version }}.msi
 
       - name: Rename Ubuntu
         if: matrix.os == 'ubuntu-latest'
-        run: mv serverpackcreator-app/build/dist/serverpackcreator_*.deb serverpackcreator-app/build/dist/ServerPackCreator-Installer-Ubuntu-${{ needs.preparations.outputs.version }}-amd64.deb
+        run: mv serverpackcreator-app/build/dist/serverpackcreator*.deb serverpackcreator-app/build/dist/ServerPackCreator-Installer-Ubuntu-${{ needs.preparations.outputs.version }}-amd64.deb
 
       - name: Artifacts
         uses: actions/upload-artifact@v3.1.2
@@ -168,7 +169,7 @@ jobs:
         run: |
           curl --header \
           'PRIVATE-TOKEN: ${{ secrets.GITLAB_TOKEN }}' \
-          'https://git.griefed.de/api/v4/projects/63/releases/${{steps.tag.outputs.tag}}' >> version.json
+          'https://git.griefed.de/api/v4/projects/63/releases/${{ needs.preparations.outputs.version }}' >> version.json
 
       # GET DESCRIPTION
       - name: Extract version changelog
@@ -198,5 +199,5 @@ jobs:
             ServerPackCreator-Installer-MacOS-${{ needs.preparations.outputs.version }}.dmg
             ServerPackCreator-Installer-Windows-${{ needs.preparations.outputs.version }}.msi
             ServerPackCreator-Installer-Ubuntu-${{ needs.preparations.outputs.version }}-amd64.deb
-            ServerPackCreator-${{ needs.preparations.outputs.version }}.jar
-            serverpackcreator-plugin-example-${{ needs.preparations.outputs.version }}.jar
+            serverpackcreator-app/build/libs/ServerPackCreator-${{ needs.preparations.outputs.version }}.jar
+            serverpackcreator-plugin-example/build/libs/serverpackcreator-plugin-example-${{ needs.preparations.outputs.version }}.jar
