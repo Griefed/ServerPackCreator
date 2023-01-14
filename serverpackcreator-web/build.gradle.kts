@@ -40,8 +40,8 @@ dependencies {
     api("com.github.gwenn:sqlite-dialect:0.1.2")
     api("org.xerial:sqlite-jdbc:3.40.0.0")
     testImplementation("org.jetbrains.kotlin:kotlin-test:1.7.22")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.1")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.1")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.2")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.2")
     testImplementation("org.springframework.boot:spring-boot-starter-test:2.7.7")
     developmentOnly("org.springframework.boot:spring-boot-devtools:2.7.7")
 }

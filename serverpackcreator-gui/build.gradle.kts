@@ -14,6 +14,6 @@ dependencies {
     api("commons-io:commons-io:2.11.0")
     implementation(project(":serverpackcreator-updater"))
     testImplementation("org.jetbrains.kotlin:kotlin-test:1.7.22")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.1")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.1")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.2")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.2")
 }
