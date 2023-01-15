@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/serverpackcreator-api/serverpackcreator.serverpackcreator-api.jvmTest.iml" filepath="$PROJECT_DIR$/.idea/modules/serverpackcreator-api/serverpackcreator.serverpackcreator-api.jvmTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/serverpackcreator-app/serverpackcreator.serverpackcreator-app.iml" filepath="$PROJECT_DIR$/.idea/modules/serverpackcreator-app/serverpackcreator.serverpackcreator-app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/serverpackcreator-app/serverpackcreator.serverpackcreator-app.main.iml" filepath="$PROJECT_DIR$/.idea/modules/serverpackcreator-app/serverpackcreator.serverpackcreator-app.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/serverpackcreator-web/serverpackcreator.serverpackcreator-web.iml" filepath="$PROJECT_DIR$/.idea/modules/serverpackcreator-web/serverpackcreator.serverpackcreator-web.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/serverpackcreator-web-frontend/serverpackcreator.serverpackcreator-web-frontend.iml" filepath="$PROJECT_DIR$/.idea/modules/serverpackcreator-web-frontend/serverpackcreator.serverpackcreator-web-frontend.iml" />
+    </modules>
+  </component>
+</project>

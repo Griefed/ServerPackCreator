@@ -1,0 +1,6 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="serverpackcreator-api-jvm-dev">
+    <output-path>$PROJECT_DIR$/serverpackcreator-api/build/libs</output-path>
+    <root id="archive" name="serverpackcreator-api-jvm-dev.jar" />
+  </artifact>
+</component>
