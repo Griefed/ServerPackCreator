@@ -384,9 +384,27 @@ to the [Contribution-Guidelines](CONTRIBUTING.md).
 
 ### 6.1.1 Adding a translation
 
-Say you want to translate ServerPackCreator to german. You would need to add the file `<Module_Name>_de.properties`
+Say you want to translate ServerPackCreator to german.
+You would need to add the file `<Module_Name>_de_DE.properties` in the following places:
+- `serverpackcreator-api\src\commonMain\i18n`
+  - Prefix: `Api_`
+- `serverpackcreator-cli\src\main\i18n`
+  - Prefix: `Cli_`
+- `serverpackcreator-gui\src\main\i18n`
+  - Prefix: `Gui_`
+- `serverpackcreator-plugin-example\src\main\i18n`
+  - Prefix: `Example_`
+- `serverpackcreator-updater\src\main\i18n`
+  - Prefix: `Updates_`
 
-In the english properties, you will see entries like
+English translations for each can be found at:
+1. [API module](serverpackcreator-api/src/commonMain/i18n/Api_en_GB.properties)
+2. [CLI module](serverpackcreator-cli/src/main/i18n/Cli_en_GB.properties)
+3. [GUI module](serverpackcreator-gui/src/main/i18n/Gui_en_GB.properties)
+4. [Example Kotlin](serverpackcreator-plugin-example/src/main/i18n/Example_en_GB.properties)
+5. [Updater module](serverpackcreator-updater/src/main/i18n/Updates_en_GB.properties)
+
+In the english properties for the Gui, for example, you will see entries like
 
 ```properties
 menubar.gui.menu.file=File
@@ -396,7 +414,7 @@ menubar.gui.menu.about=About
 menubar.gui.menu.help=Help
 ```
 
-So, in order to translate them to german, in your `Messages_de.properties`-file, you would add
+So, in order to translate them to german, in your `Gui_de_DE.properties`-file, you would add
 
 ```properties
 menubar.gui.menu.file=Datei
@@ -406,16 +424,14 @@ menubar.gui.menu.about=Info
 menubar.gui.menu.help=Hilfe
 ```
 
-Then, either in your `serverpackcreator.properties` set `de.griefed.serverpackcreator.language=de` or launch
-ServerPackCreator with the argument `-lang=de`.
+To make these available whilst coding, rebuild the project. The [i18n4k](https://github.com/comahe-de/i18n4k)-plugin will
+generate the necessary code, which will, in turn, then be available for you to use and test. Alternatively, you can run the
+Gradle task `generateI18n4kFiles` to generate the translation-code.
+
+Then, either in your `serverpackcreator.properties` set `de.griefed.serverpackcreator.language=de_DE` or launch
+ServerPackCreator with the argument `-lang=de_DE`.
 
 Voilà! The menubar will now have german translations!
-
-There are several places in ServerPackCreator where translations come into play. At the time of writing, these are:
-1. [CLI module](serverpackcreator-cli/src/main/i18n/Cli_en_GB.properties)
-2. [GUI module](serverpackcreator-gui/src/main/i18n/Gui_en_GB.properties)
-3. [Example Kotlin](serverpackcreator-plugin-example/src/main/i18n/Example_en_GB.properties)
-4. [Updater module](serverpackcreator-updater/src/main/i18n/Updates_en_GB.properties)
 
 # 7 Contributing
 
