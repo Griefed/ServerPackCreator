@@ -10,7 +10,7 @@
       </option>
       <option name="taskNames">
         <list>
-          <option value=":serverpackcreator-api:dokkaHtml" />
+          <option value=":serverpackcreator-api:dokkaJavadocJar" />
         </list>
       </option>
       <option name="vmOptions" />
