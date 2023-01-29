@@ -24,6 +24,9 @@ import de.griefed.serverpackcreator.api.utilities.TomlParser
 import de.griefed.serverpackcreator.api.utilities.common.*
 import de.griefed.serverpackcreator.api.versionmeta.VersionMeta
 
+/**
+ * TODO write expectation docs
+ */
 expect class ApiWrapper {
 
     val apiProperties: ApiProperties

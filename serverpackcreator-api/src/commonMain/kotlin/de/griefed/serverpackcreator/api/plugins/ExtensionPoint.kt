@@ -20,4 +20,7 @@
  */
 package de.griefed.serverpackcreator.api.plugins
 
+/**
+ * TODO write expectation docs
+ */
 expect interface ExtensionPoint

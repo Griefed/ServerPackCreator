@@ -19,6 +19,9 @@
  */
 package de.griefed.serverpackcreator.api
 
+/**
+ * TODO write expectation docs
+ */
 expect class ServerPackFile {
 
     fun copy()

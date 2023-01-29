@@ -26,6 +26,9 @@ import de.griefed.serverpackcreator.api.utilities.Optional
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import de.griefed.serverpackcreator.api.versionmeta.VersionMeta
 
+/**
+ * TODO write expectation docs
+ */
 expect abstract class ExtensionConfigPanel protected constructor(
     versionMeta: VersionMeta,
     apiProperties: ApiProperties,

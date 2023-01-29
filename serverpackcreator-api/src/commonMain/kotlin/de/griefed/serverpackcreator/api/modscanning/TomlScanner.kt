@@ -21,6 +21,9 @@
 
 package de.griefed.serverpackcreator.api.modscanning
 
+/**
+ * TODO write expectation docs
+ */
 expect class TomlScanner
 
 val TomlScanner.forgeMinecraft: Regex

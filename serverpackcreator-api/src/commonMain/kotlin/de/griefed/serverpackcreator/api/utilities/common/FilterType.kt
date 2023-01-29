@@ -22,6 +22,9 @@
  */
 package de.griefed.serverpackcreator.api.utilities.common
 
+/**
+ * TODO write docs
+ */
 enum class FilterType {
     /**
      * Whether the string to check contains the given filter.
