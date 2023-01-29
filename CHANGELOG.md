@@ -1,3 +1,25 @@
+## [4.0.0-alpha.13](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.0.0-alpha.12...4.0.0-alpha.13) (2023-01-29)
+
+
+### 📔 Docs
+
+* Copy documentation of actuals to expect. Add documentation to more classes. ([a307181](https://git.griefed.de/Griefed/ServerPackCreator/commit/a30718118a848c02b8d6c6e0191d2b023f8292eb))
+* Create javadoc JAR after build ([7f4d6b0](https://git.griefed.de/Griefed/ServerPackCreator/commit/7f4d6b03ef6d0b9260e3ca1fb3d95bcf486024aa))
+* Have dokka-conventions build the javadoc JAR ([a29b129](https://git.griefed.de/Griefed/ServerPackCreator/commit/a29b129dd506e22e30a9b5446eee452b80310deb))
+* Improve i18n contribution description ([79dd96b](https://git.griefed.de/Griefed/ServerPackCreator/commit/79dd96b235a540ddb2585ef513202a6a6c3d9ad5))
+
+
+### 📦 Other
+
+* Remove unnecessary comment ([ea8cf43](https://git.griefed.de/Griefed/ServerPackCreator/commit/ea8cf43b939fcdd0b15bddf5be71389b6bec9ed5))
+* Update IDEA config and run-configs ([d2582ad](https://git.griefed.de/Griefed/ServerPackCreator/commit/d2582ad6e69f67f5e0de78844f436b5af73d4e3a))
+
+
+### 🦊 CI/CD
+
+* **deps:** Update Quasar ([1828483](https://git.griefed.de/Griefed/ServerPackCreator/commit/1828483ded9446e0f47555614e468d1912cdc6b9))
+* **GitLab:** Prepare publishing job ([30e4f27](https://git.griefed.de/Griefed/ServerPackCreator/commit/30e4f274c615652e1f2c9c735fc60115244a1882))
+
 ## [4.0.0-alpha.12](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.0.0-alpha.11...4.0.0-alpha.12) (2023-01-08)
 
 
