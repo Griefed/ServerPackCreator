@@ -51,7 +51,7 @@ actual class WebUtilities constructor(private val apiProperties: ApiProperties) 
      * @return Boolean. Returns true if the file could be found on the hosts' filesystem.
      * @author Griefed
      */
-    fun downloadAndReplaceFile(
+    actual fun downloadAndReplaceFile(
         fileDestination: File,
         downloadURL: URL
     ): Boolean {
@@ -70,7 +70,7 @@ actual class WebUtilities constructor(private val apiProperties: ApiProperties) 
      * @return true if the file was created.
      * @author Griefed
      */
-    fun downloadFile(
+    actual fun downloadFile(
         file: File,
         downloadURL: URL
     ): Boolean {
@@ -96,7 +96,7 @@ actual class WebUtilities constructor(private val apiProperties: ApiProperties) 
      * @param url The URI to the website you want to open.
      * @author Griefed
      */
-    fun openLinkInBrowser(url: URL) {
+    actual fun openLinkInBrowser(url: URL) {
         try {
             openLinkInBrowser(url.toURI())
         } catch (ex: URISyntaxException) {
@@ -128,7 +128,7 @@ actual class WebUtilities constructor(private val apiProperties: ApiProperties) 
      * @return Boolean. True if the file is smaller, false if the file is bigger than 10 MB.
      * @author Griefed
      */
-    fun hasteBinPreChecks(fileToCheck: File): Boolean {
+    actual fun hasteBinPreChecks(fileToCheck: File): Boolean {
         val fileSize = fileToCheck.size()
         try {
             return if (fileSize < 10000000.0
@@ -161,7 +161,7 @@ actual class WebUtilities constructor(private val apiProperties: ApiProperties) 
      * @author [kaimu-kun/hastebin.java](https://github.com/kaimu-kun)
      * @author Griefed
      */
-    fun createHasteBinFromFile(textFile: File): String {
+    actual fun createHasteBinFromFile(textFile: File): String {
         val requestURL: String = apiProperties.hasteBinServerUrl
         var response: String? = null
         val url = URL(requestURL)
@@ -222,7 +222,7 @@ actual class WebUtilities constructor(private val apiProperties: ApiProperties) 
      * @throws IOException if the URL could not be called or a communication error occurred.
      */
     @Throws(IOException::class)
-    fun getResponseAsString(url: URL): String {
+    actual fun getResponseAsString(url: URL): String {
         val `in` = BufferedReader(InputStreamReader(url.openConnection().getInputStream()))
         val response = StringBuilder()
         var currentLine: String?
@@ -241,7 +241,7 @@ actual class WebUtilities constructor(private val apiProperties: ApiProperties) 
      * @throws IOException if the URL could not be called or a communication error occurred.
      */
     @Throws(IOException::class)
-    fun getResponseCode(url: URL): Int {
+    actual fun getResponseCode(url: URL): Int {
         val connection = url.openConnection() as HttpURLConnection
         return connection.responseCode
     }
@@ -254,7 +254,7 @@ actual class WebUtilities constructor(private val apiProperties: ApiProperties) 
      * @param url The URL of which to check for host-availability.
      * @return `true` if, and only if, the host is available and the URL returns the status code 200.
      */
-    fun isReachable(url: URL): Boolean {
+    actual fun isReachable(url: URL): Boolean {
         var available: Boolean
         var connection: HttpURLConnection? = null
         try {

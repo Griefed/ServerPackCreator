@@ -24,7 +24,7 @@ import de.griefed.serverpackcreator.api.ApiProperties
 import javax.xml.parsers.DocumentBuilderFactory
 
 /**
- * Parent-class for all utilities, giving access to any and all utility-classes we may have.
+ * Access to any and all utility-classes we may have.
  *
  * @author Griefed
  */

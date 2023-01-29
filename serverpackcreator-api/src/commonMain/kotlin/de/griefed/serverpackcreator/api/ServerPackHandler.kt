@@ -24,7 +24,42 @@ import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import de.griefed.serverpackcreator.api.versionmeta.VersionMeta
 
 /**
- * TODO write expectation docs
+ * Everything revolving around creating a server pack. The intended workflow is to create a [PackConfig] and run
+ * it through any of the available [ConfigurationHandler.checkConfiguration]-variants, and then call [run] with the
+ * previously checked configuration model. You may run with an unchecked configuration model, but no guarantees or
+ * promises, yes not even support, is given for running a model without checking it first.
+ *
+ * This class also gives you access to the methods which are responsible for creating the server pack, in case you want
+ * to do things manually.
+ *
+ * The methods in question are:
+ *  * [cleanupEnvironment] and [cleanupEnvironment]
+ *  * [ApiPlugins.runPreZipExtensions]
+ *  * [copyFiles] and [copyFiles]
+ *  * [provideImprovedFabricServerLauncher] and [provideImprovedFabricServerLauncher] if Fabric is the chosen Modloader
+ *  * [copyIcon] and [copyIcon]
+ *  * [copyProperties] and [copyProperties]
+ *  * [ApiPlugins.runPreZipExtensions]
+ *  * [zipBuilder] and [zipBuilder]
+ *  * [createStartScripts] and [createStartScripts]
+ *  * [installServer] and [installServer]
+ *  * [ApiPlugins.runPostGenExtensions]
+ *
+ * If you want to execute extensions, see
+ * * [ApiPlugins.runPreGenExtensions]},
+ * * [ApiPlugins.runPreZipExtensions]} and
+ * * [ApiPlugins.runPostGenExtensions].
+ *
+ * @param apiProperties Base settings of ServerPackCreator needed for server pack generation, such as access to the
+ * directories, script templates and so on.
+ * @param versionMeta   Meta for modloader and version specific checks and information gathering, such as modloader
+ * installer downloads.
+ * @param utilities     Common utilities used across ServerPackCreator.
+ * @param apiPlugins    Any addons which a user may want to execute during the generation of a server pack.
+ * @param modScanner    In case a user enabled automatic sideness detection, this will exclude clientside-only mods
+ * from a server pack.
+ *
+ * @author Griefed
  */
 expect class ServerPackHandler(
     apiProperties: ApiProperties,

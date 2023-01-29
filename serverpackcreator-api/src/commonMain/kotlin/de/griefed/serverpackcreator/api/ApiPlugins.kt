@@ -19,12 +19,21 @@
  */
 package de.griefed.serverpackcreator.api
 
+import de.griefed.serverpackcreator.api.plugins.serverpackhandler.PostGenExtension
+import de.griefed.serverpackcreator.api.plugins.serverpackhandler.PreGenExtension
+import de.griefed.serverpackcreator.api.plugins.serverpackhandler.PreZipExtension
+import de.griefed.serverpackcreator.api.plugins.swinggui.TabExtension
 import de.griefed.serverpackcreator.api.utilities.CommentedConfig
 import de.griefed.serverpackcreator.api.utilities.File
 import de.griefed.serverpackcreator.api.utilities.Optional
 
 /**
- * TODO write expectation docs
+ * Manager for ServerPackCreator plugins. In itself it doesn't do much. It gathers lists of all
+ * available extensions for [TabExtension],[PreGenExtension],[PreZipExtension] and
+ * [PostGenExtension] so they can then be run during server pack generation and during
+ * initialization of the GUI.
+ *
+ * @author Griefed
  */
 expect class ApiPlugins {
 

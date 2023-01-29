@@ -25,7 +25,9 @@ import de.griefed.serverpackcreator.api.utilities.common.*
 import de.griefed.serverpackcreator.api.versionmeta.VersionMeta
 
 /**
- * TODO write expectation docs
+ * API wrapper, allowing you to conveniently initialize, setup and use the different aspects of ServerPackCreator.
+ *
+ * @author Griefed
  */
 expect class ApiWrapper {
 

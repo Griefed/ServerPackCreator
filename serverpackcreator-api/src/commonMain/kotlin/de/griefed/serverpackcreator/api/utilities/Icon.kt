@@ -21,6 +21,13 @@
 package de.griefed.serverpackcreator.api.utilities
 
 /**
- * TODO write expectation docs
+ * Fixed size picture for displaying and decorating components.
+ *
+ * This class should all you to create images from files and resources, as well as scaling said images and saving them
+ * to disk.
+ *
+ * See javax.swing.Icon and javax.swing.ImageIcon for reference
+ *
+ * @author Griefed
  */
 expect interface Icon

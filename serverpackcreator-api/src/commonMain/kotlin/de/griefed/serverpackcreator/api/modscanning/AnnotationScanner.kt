@@ -22,7 +22,9 @@
 package de.griefed.serverpackcreator.api.modscanning
 
 /**
- * TODO write expectation docs
+ * `fml-cache-annotation.json`-based scanning of Forge-Minecraft mods of older versions.
+ *
+ * @author Griefed
  */
 expect class AnnotationScanner
 

@@ -21,6 +21,10 @@
 package de.griefed.serverpackcreator.api.utilities
 
 /**
- * TODO write expectation docs
+ * Uniform Resource Locator for files, resources, web-addresses.
+ *
+ * See java.net.URL for reference.
+ *
+ * @author Griefed
  */
 expect class URL

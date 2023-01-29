@@ -20,10 +20,14 @@
 package de.griefed.serverpackcreator.api
 
 /**
- * TODO write expectation docs
+ * Base settings of ServerPackCreator, such as working directories, default list of clientside-only
+ * mods, default list of directories to include in a server pack, script templates, java paths and
+ * much more.
+ *
+ * @author Griefed
  */
 expect class ApiProperties {
-    //TODO check members
+
     companion object {
         @JvmStatic
         fun getSeparator(): String

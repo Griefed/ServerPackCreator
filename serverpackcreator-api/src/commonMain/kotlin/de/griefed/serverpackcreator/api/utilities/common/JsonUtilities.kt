@@ -20,6 +20,8 @@
 package de.griefed.serverpackcreator.api.utilities.common
 
 /**
- * TODO write expectation docs
+ * JSON-based utility methods for acquiring and working with JSON from files and objects.
+ *
+ * @author Griefed
  */
 expect class JsonUtilities

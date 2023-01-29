@@ -21,6 +21,31 @@
 package de.griefed.serverpackcreator.api.utilities
 
 /**
- * TODO write expectation docs
+ * Class giving access to several things like:
+ * - path
+ * - absolute path
+ * - parent-directory
+ * - whether an instance is a file or directory
+ * - separator / path separator depending on the filesystem
+ * - constructor accepting a parent and the actual file
+ * - constructor accepting the full path of the file
+ * - constructor accepting the relative path to the file in relation to the current working directory
+ * - name of the file
+ * - check read and write access
+ * - whether the file exists
+ * - deletion
+ * - recursive deletion if the file is a directory
+ * - list contents of the file if it is a directory
+ * - create a directory
+ * - rename
+ * - move
+ * - copy
+ * - copy recursively
+ * - filesize
+ * - directory size
+ *
+ * See the File-class from Java for reference.
+ *
+ * @author Griefed
  */
 expect class File

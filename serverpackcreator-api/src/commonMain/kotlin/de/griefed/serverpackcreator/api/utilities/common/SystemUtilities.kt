@@ -20,7 +20,9 @@
 package de.griefed.serverpackcreator.api.utilities.common
 
 /**
- * TODO write expectation docs
+ * Utility-class revolving around the system we are running on.
+ *
+ * @author Griefed
  */
 expect class SystemUtilities {
     fun acquireJavaPathFromSystem(): String

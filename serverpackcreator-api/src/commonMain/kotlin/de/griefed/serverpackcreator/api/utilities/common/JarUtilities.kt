@@ -20,6 +20,8 @@
 package de.griefed.serverpackcreator.api.utilities.common
 
 /**
- * TODO write expectation docs
+ * Some utilities used across ServerPackCreator, revolving around interacting with JAR-files.
+ *
+ * @author Griefed
  */
 expect class JarUtilities

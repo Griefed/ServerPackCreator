@@ -22,7 +22,9 @@
 package de.griefed.serverpackcreator.api.modscanning
 
 /**
- * TODO write expectation docs
+ * `fabric.mod.json`-based scanning of Fabric-Minecraft mods.
+ *
+ * @author Griefed
  */
 expect class FabricScanner
 

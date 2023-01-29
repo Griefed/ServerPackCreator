@@ -20,9 +20,18 @@
 package de.griefed.serverpackcreator.api
 
 /**
- * TODO write expectation docs
+ * A ServerPackFile represents a source-destination-combination of two files/directories. The
+ * source is the file/directory, usually in the modpack, whilst the destination is the file to
+ * which the source is supposed to be copied to in the server pack.
+ *
+ * @author Griefed
  */
 expect class ServerPackFile {
 
+    /**
+     * Copy the file to the server pack.
+     *
+     * @author Griefed
+     */
     fun copy()
 }

@@ -16,11 +16,12 @@
  * USA
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
- */package de.griefed.serverpackcreator.api.utilities.common
+ */
+package de.griefed.serverpackcreator.api.utilities.common
 
 /**
- * TODO write expectation docs
+ * Commonly used XML utilities.
+ *
+ * @author Griefed
  */
-expect class XmlUtilities {
-//TODO check members
-}
+expect class XmlUtilities

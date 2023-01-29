@@ -22,6 +22,11 @@
 package de.griefed.serverpackcreator.api.utilities
 
 /**
- * TODO write expectation docs
+ * Container object containing a value which may or may not be null, which allows for checking said value for null-ness,
+ * retrieval of said value if it is not null, checking if a value is present.
+ *
+ * See java.util.Optional for reference.
+ *
+ * @author Griefed
  */
 expect class Optional<T>

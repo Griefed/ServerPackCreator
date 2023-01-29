@@ -20,7 +20,9 @@
 package de.griefed.serverpackcreator.api.utilities.common
 
 /**
- * TODO write expectation docs
+ * Access to any and all utility-classes we may have.
+ *
+ * @author Griefed
  */
 expect class Utilities {
     val booleanUtilities: BooleanUtilities
