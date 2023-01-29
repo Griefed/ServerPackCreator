@@ -51,6 +51,7 @@ kotlin {
                 implementation("org.junit.jupiter:junit-jupiter-engine:5.9.1")
             }
         }
+// Uncomment if you wish to start developing the JS component
 //        val jsMain by getting {
 //            dependsOn(commonMain)
 //            dependencies {
@@ -65,10 +66,6 @@ kotlin {
 //            }
 //        }
     }
-}
-
-i18n4k {
-    sourceCodeLocales = listOf("en_GB")
 }
 
 //Fix resources missing in multiplatform jvm inDev run https://youtrack.jetbrains.com/issue/KTIJ-16582/Consumer-Kotlin-JVM-library-cannot-access-a-Kotlin-Multiplatform-JVM-target-resources-in-multi-module-Gradle-project
@@ -105,6 +102,12 @@ tasks.test {
         if (!gitkeep.exists()) {
             File(tests,".gitkeep").writeText("Hi")
         }
+    }
+}
+
+tasks.build {
+    doLast {
+        tasks.getByName("dokkaJavadocJar")
     }
 }
 
