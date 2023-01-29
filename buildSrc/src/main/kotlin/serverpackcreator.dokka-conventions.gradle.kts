@@ -24,9 +24,17 @@ tasks.withType<DokkaTask>().configureEach {
             skipDeprecated.set(false)
             reportUndocumented.set(true)
             skipEmptyPackages.set(true)
-            //jdkVersion.set(JDK_VERSION.toInt())
+            jdkVersion.set(JDK_VERSION.toInt())
             suppressGeneratedFiles.set(false)
-            includes.from(projectDir.resolve("module.md"))
+            includes.from(
+                projectDir.resolve("module.md")
+            )
         }
     }
+}
+
+tasks.register<Jar>("dokkaJavadocJar") {
+    dependsOn(tasks.dokkaHtml)
+    from(tasks.dokkaHtml)
+    archiveClassifier.set("javadoc")
 }
