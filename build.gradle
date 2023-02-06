@@ -76,7 +76,7 @@ dependencies {
   implementation 'org.pf4j:pf4j:3.8.0'
   implementation 'com.github.vatbub:mslinks:1.0.5'
 
-  annotationProcessor 'org.jetbrains:annotations:23.0.0'
+  annotationProcessor 'org.jetbrains:annotations:23.1.0'
 
   implementation 'org.apache.logging.log4j:log4j-core:2.19.0'
   implementation 'org.apache.logging.log4j:log4j-api:2.19.0'
