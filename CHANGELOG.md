@@ -1,3 +1,10 @@
+## [4.0.0-beta.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.0.0-beta.3...4.0.0-beta.4) (2023-02-11)
+
+
+### 🛠 Fixes
+
+* **CI:** Please, OSSRH-job, work this time. ([0783330](https://git.griefed.de/Griefed/ServerPackCreator/commit/078333043acff0d3776386473a814d6074fa8353))
+
 ## [4.0.0-beta.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.0.0-beta.2...4.0.0-beta.3) (2023-02-11)
 
 
