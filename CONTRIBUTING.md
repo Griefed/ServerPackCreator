@@ -1,5 +1,29 @@
 # Contributing
 
+## Building ServerPackCreator locally
+
+Clone the webservice branch of the repository:
+
+`git clone -b $BRANCH https://git.griefed.de/Griefed/ServerPackCreator.git`
+
+Where `$BRANCH` represents the branch you want to clone.
+
+If you are on linux, run `chmod +x gradlew` first.
+
+Build with:
+
+`build --info --full-stacktrace`
+
+The `build` task is configured to do everything automatically, from installing frontend dependencies, assembling the web-frontend, copying some files around, build and testing.
+
+If you wish to test the installer for your system, run `serverpackcreator-app:jpackage --info --full-stacktrace`. This
+will generate the installer in the `serverpackcreator-app/build/dist`-directory.
+Depending on your operating system, this may be either of:
+- Windows: `ServerPackCreator-VERSION.exe`
+- Ubuntu: `serverpackcreator_VERSION_ARCH.deb`
+- MacOS: `ServerPackCreator-VERSION.dmg`
+or other files. It depends on your operating system, really.
+
 ## Important info regarding pull requests, my GitLab instance, and GitHub!
 
 If you want to contribute to ServerPackCreator, then the following procedure **must** be adhered to:
