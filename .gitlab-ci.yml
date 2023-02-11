@@ -169,7 +169,7 @@ Sign Java Publication:
     - chmod +x gradlew
   script:
     - echo "**** Publishing Maven Artifacts ****"
-    - "./gradlew :serverpackcreator-api:dokkaJavadocJar :serverpackcreator-api:signJvmPublication -Pversion=${CI_COMMIT_TAG} --info --stacktrace -x :serverpackcreator-api:jvmTest -x :serverpackcreator-web:test"
+    - "./gradlew dokkaJavadocJar signJvmPublication -Pversion=${CI_COMMIT_TAG} --info --stacktrace -x :serverpackcreator-api:jvmTest -x :serverpackcreator-web:test"
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-beta\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
@@ -191,7 +191,7 @@ Publish GitHub:
       artifacts: true
   script:
     - echo "**** Publishing Maven Artifacts to GitHub ****"
-    - "./gradlew :serverpackcreator-api:publishJvmPublicationToGitHubPackagesRepository -Pversion=${CI_COMMIT_TAG} --info --stacktrace -x :serverpackcreator-api:jvmTest -x :serverpackcreator-web:test"
+    - "./gradlew publishAllPublicationsToGitHubPackagesRepository -Pversion=${CI_COMMIT_TAG} --info --stacktrace -x :serverpackcreator-api:jvmTest -x :serverpackcreator-web:test"
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-beta\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
@@ -213,7 +213,7 @@ Publish GitLab:
       artifacts: true
   script:
     - echo "**** Publishing Maven Artifacts to GitLab ****"
-    - "./gradlew :serverpackcreator-api:publishJvmPublicationToGitLabRepository -Pversion=${CI_COMMIT_TAG}--info --stacktrace -x :serverpackcreator-api:jvmTest -x :serverpackcreator-web:test"
+    - "./gradlew publishAllPublicationsToGitLabRepository -Pversion=${CI_COMMIT_TAG} --info --stacktrace -x :serverpackcreator-api:jvmTest -x :serverpackcreator-web:test"
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-beta\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
@@ -235,7 +235,7 @@ Publish GitGriefed:
       artifacts: true
   script:
     - echo "**** Publishing Maven Artifacts GitGriefed ****"
-    - "./gradlew :serverpackcreator-api:publishJvmPublicationToGitGriefedRepository -Pversion=${CI_COMMIT_TAG}--info --stacktrace -x :serverpackcreator-api:jvmTest -x :serverpackcreator-web:test"
+    - "./gradlew publishAllPublicationsToGitGriefedRepository -Pversion=${CI_COMMIT_TAG} --info --stacktrace -x :serverpackcreator-api:jvmTest -x :serverpackcreator-web:test"
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-beta\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
@@ -257,7 +257,7 @@ Publish OSSRH:
       artifacts: true
   script:
     - echo "**** Publishing Maven Artifacts to OSSRH ****"
-    - "./gradlew :serverpackcreator-api:publishToSonatype :serverpackcreator-api:closeAndReleaseSonatypeStagingRepository -Pversion=${CI_COMMIT_TAG}--info --stacktrace -x :serverpackcreator-api:jvmTest -x :serverpackcreator-web:test"
+    - "./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository -Pversion=${CI_COMMIT_TAG} --info --stacktrace -x :serverpackcreator-api:jvmTest -x :serverpackcreator-web:test"
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-beta\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
