@@ -94,8 +94,7 @@ publishing {
         groupId = project.group.toString()
         artifactId = project.name
         version = project.version.toString()
-
-        // Provide artifacts information requited by Maven Central
+        artifact(tasks["javadocJar"])
         pom {
             name.set("ServerPackCreator")
             description.set("ServerPackCreators API, to create server packs from Forge, Fabric, Quilt and LegacyFabric modpacks.")

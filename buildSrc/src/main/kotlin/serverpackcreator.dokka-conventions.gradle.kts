@@ -33,8 +33,10 @@ tasks.withType<DokkaTask>().configureEach {
     }
 }
 
+val dokkaHtml by tasks.getting(org.jetbrains.dokka.gradle.DokkaTask::class)
+
 tasks.register<Jar>("dokkaJavadocJar") {
     dependsOn(tasks.dokkaHtml)
-    from(tasks.dokkaHtml)
     archiveClassifier.set("javadoc")
+    from(dokkaHtml.outputDirectory)
 }
