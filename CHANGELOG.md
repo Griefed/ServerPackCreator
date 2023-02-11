@@ -1,3 +1,10 @@
+## [4.0.0-beta.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.0.0-beta.1...4.0.0-beta.2) (2023-02-11)
+
+
+### 🛠 Fixes
+
+* **CI:** Hopefully correctly setup publishing jobs to artifacts get published on various repos ([0493f3f](https://git.griefed.de/Griefed/ServerPackCreator/commit/0493f3fbcb6431d5f90e212b5f178c1e77cd4fe1))
+
 ## [4.0.0-beta.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.15.1...4.0.0-beta.1) (2023-02-11)
 
 
