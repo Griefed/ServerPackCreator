@@ -1,5 +1,4 @@
 branches: [
-    'master',
     'main',
   {
     name: 'alpha',
@@ -33,8 +32,10 @@ verifyConditions:
 analyzeCommits:
   - path: '@semantic-release/commit-analyzer'
     releaseRules:
-      - type: breaking  # Changes that break something makes something incompatible to ealier version
+      - type: milestone # A milestone release marking a huge step forward in development
         release: major
+      - type: breaking  # Changes that break something makes something incompatible to earlier version
+        release: minor
       - type: build     # Changes that affect the build system or external dependencies
         release: patch
       - type: chore     # Other changes that don't modify src or test files
@@ -74,7 +75,10 @@ generateNotes:
     linkCompare: true
     linkReferences: true
     presetConfig:
-      types:  # looks like it only works with 'conventionalcommits' preset
+      types:
+        - type: 'milestone'
+          section: '✨ Milestone'
+          hidden: false
         - type: 'breaking'
           section: '🧨 Breaking changes!'
           hidden: false
@@ -82,16 +86,13 @@ generateNotes:
           section: '🦊 CI/CD'
           hidden: false
         - type: 'chore'
-          section: 'Other'
+          section: '📦 Other'
           hidden: false
         - type: 'ci'
           section: '🦊 CI/CD'
           hidden: false
         - type: 'docs'
           section: '📔 Docs'
-          hidden: false
-        - type: 'example'
-          section: '📝 Examples'
           hidden: false
         - type: 'feat'
           section: '🚀 Features'

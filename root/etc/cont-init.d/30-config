@@ -40,23 +40,11 @@ if [ ! -f /data/serverpackcreator.conf ]; then
     /data/serverpackcreator.conf
 fi
 
-if [ ! -d "/data/server_files/" ]; then
-  mkdir -p \
-    /data/server_files
-fi
-
-if [ ! -f /data/server_files/server.properties ]; then
-  echo "**** Setting up default server.properties. ****"
+if [ ! -f /data/serverpackcreator.properties ]; then
+  echo "**** Setting up default serverpackcreator properties. ****"
   cp -f \
-    /defaults/server_files/server.properties \
-    /data/server_files/server.properties
-fi
-
-if [ ! -f /data/server_files/server-icon.png ]; then
-  echo "**** Setting up default server.icon.png. ****"
-  cp -f \
-    /defaults/server_files/server-icon.png \
-    /data/server_files/server-icon.png
+    /defaults/serverpackcreator.properties \
+    /data/serverpackcreator.properties
 fi
 
 chown -R \
