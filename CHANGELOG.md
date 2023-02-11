@@ -1,3 +1,10 @@
+## [4.0.0-beta.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.0.0-beta.2...4.0.0-beta.3) (2023-02-11)
+
+
+### 🛠 Fixes
+
+* **CI:** Hopefully fix publishing jobs. Switch to publishAll. ([344c1c1](https://git.griefed.de/Griefed/ServerPackCreator/commit/344c1c1a325b45ec55f90bb260274d3ca0e507e1))
+
 ## [4.0.0-beta.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.0.0-beta.1...4.0.0-beta.2) (2023-02-11)
 
 
