@@ -14,8 +14,8 @@
 img
 logs
 tests
-src/test
-addons
+src/jvmTest
+plugins
 backend/test
 backend/main/java
 backend/main/resources/de/griefed/resources/examples

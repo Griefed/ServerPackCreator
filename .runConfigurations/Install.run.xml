@@ -1,8 +1,8 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Install" type="js.build_tools.npm">
-    <package-json value="$PROJECT_DIR$/frontend/package.json" />
+    <package-json value="$PROJECT_DIR$/serverpackcreator-web-frontend/package.json" />
     <command value="install" />
-    <node-interpreter value="project" />
+    <node-interpreter value="$PROJECT_DIR$/serverpackcreator-web-frontend/node/npm" />
     <envs />
     <method v="2" />
   </configuration>
