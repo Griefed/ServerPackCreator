@@ -111,6 +111,7 @@ tasks.build {
     }
 }
 
+/*
 publishing {
     publications {
         create<MavenPublication>("mavenJava") {
@@ -151,4 +152,4 @@ publishing {
 
 signing {
     sign(publishing.publications.getByName("mavenJava"))
-}
+}*/
