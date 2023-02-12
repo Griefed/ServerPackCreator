@@ -468,8 +468,8 @@ actual class ApiPlugins constructor(
     fun getConfigPanels(serverPackConfigTab: ServerPackConfigTab): List<ExtensionConfigPanel> {
         val panels: MutableList<ExtensionConfigPanel> = ArrayList<ExtensionConfigPanel>(10)
         for (plugin in getPlugins()) {
-            log.info("Executing ConfigPanelExtension extensions.")
-            pluginsLog.info("Executing ConfigPanelExtension extensions.")
+            log.info("Getting ConfigPanelExtension from ${plugin.pluginId}.")
+            pluginsLog.info("Getting ConfigPanelExtension from ${plugin.pluginId}.")
             for (extension in getAllExtensionsOfPlugin(plugin, ConfigPanelExtension::class.java)) {
                 pluginsLog.info("Executing ConfigPanelExtension ${extension.name}")
                 try {

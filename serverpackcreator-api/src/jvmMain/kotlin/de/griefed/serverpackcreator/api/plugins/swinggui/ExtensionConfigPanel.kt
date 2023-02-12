@@ -68,10 +68,6 @@ actual abstract class ExtensionConfigPanel protected actual constructor(
     @Suppress("MemberVisibilityCanBePrivate")
     actual val serverPackExtensionConfig: ArrayList<CommentedConfig> = ArrayList<CommentedConfig>(100)
 
-    init {
-        border = BorderFactory.createTitledBorder(extensionName)
-    }
-
     /**
      * Retrieve this extensions server pack specific configuration. When no configuration with configs
      * for this extension has been loaded yet, the returned list is empty. Fill it with life!

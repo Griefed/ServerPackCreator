@@ -26,8 +26,8 @@ import de.griefed.serverpackcreator.api.PackConfig
 import de.griefed.serverpackcreator.api.utilities.common.JarInformation
 import de.griefed.serverpackcreator.api.utilities.common.readText
 import de.griefed.serverpackcreator.cli.ConfigurationEditor
-import de.griefed.serverpackcreator.gui.ServerPackCreatorSplash
-import de.griefed.serverpackcreator.gui.ServerPackCreatorWindow
+import de.griefed.serverpackcreator.gui.splash.SplashScreen
+import de.griefed.serverpackcreator.gui.window.MainWindow
 import de.griefed.serverpackcreator.updater.MigrationManager
 import de.griefed.serverpackcreator.updater.UpdateChecker
 import de.griefed.serverpackcreator.web.WebService
@@ -120,18 +120,18 @@ class ServerPackCreator(private val args: Array<String>) {
             }
 
             Mode.GUI -> {
-                showSplashScreen()
+                splashScreen!!
                 api.stageOne()
                 migrationManager!!.migrate()
-                serverPackCreatorSplash!!.update(20)
+                splashScreen!!.update(20)
                 api.stageTwo()
-                serverPackCreatorSplash!!.update(40)
+                splashScreen!!.update(40)
                 api.stageThree()
-                serverPackCreatorSplash!!.update(60)
+                splashScreen!!.update(60)
                 createDefaultConfig()
                 Executors.newSingleThreadExecutor().execute { stageFour() }
-                serverPackCreatorSplash!!.update(80)
-                runGui()
+                splashScreen!!.update(80)
+                Thread(mainWindow!!).start()
             }
 
             Mode.SETUP -> {
@@ -340,44 +340,34 @@ class ServerPackCreator(private val args: Array<String>) {
     }
 
     @get:Synchronized
-    var serverPackCreatorSplash: ServerPackCreatorSplash? = null
+    var splashScreen: SplashScreen? = null
         get() {
             if (GraphicsEnvironment.isHeadless()) {
                 throw RuntimeException("Graphical environment not supported!")
             }
             if (field == null) {
-                field = ServerPackCreatorSplash(
+                field = SplashScreen(
                     api.apiProperties.apiVersion
                 )
             }
             return field!!
         }
 
-    /**
-     * Show the splashscreen of ServerPackCreator, indicating that things are loading and
-     * ServerPackCreator is starting.
-     *
-     * @author Griefed
-     */
-    private fun showSplashScreen() {
-        serverPackCreatorSplash!!
-    }
-
     @get:Synchronized
-    var serverPackCreatorWindow: ServerPackCreatorWindow? = null
+    var mainWindow: MainWindow? = null
         get() {
             if (GraphicsEnvironment.isHeadless()) {
                 throw RuntimeException("Graphical environment not supported!")
             }
             if (field == null) {
-                field = ServerPackCreatorWindow(
+                field = MainWindow(
                     api.configurationHandler!!,
                     api.serverPackHandler!!,
                     api.apiProperties,
                     api.versionMeta!!,
                     api.utilities!!,
                     updateChecker,
-                    serverPackCreatorSplash!!,
+                    splashScreen!!,
                     api.apiPlugins!!,
                     migrationManager!!
                 )
@@ -396,17 +386,6 @@ class ServerPackCreator(private val args: Array<String>) {
             }
             return field
         }
-
-    /**
-     * Run ServerPackCreator with our GUI.
-     *
-     * @throws IOException if the [de.griefed.serverpackcreator.api.versionmeta.VersionMeta] could not be instantiated.
-     * @author Griefed
-     */
-    @Throws(IOException::class, ParserConfigurationException::class, SAXException::class)
-    private fun runGui() {
-        serverPackCreatorWindow!!.createAndShowMainGui()
-    }
 
     /**
      * Initialize our FileWatcher to ensure that vital files get restored, should they be deleted
