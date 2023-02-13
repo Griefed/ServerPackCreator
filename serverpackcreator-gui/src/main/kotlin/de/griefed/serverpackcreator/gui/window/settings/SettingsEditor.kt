@@ -5,3 +5,5 @@ import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.window.components.TabPanel
 
 class SettingsEditor(private val guiProps: GuiProps, apiProperties: ApiProperties) : TabPanel()
+
+//TODO settings editor for guiProps(?) and apiProperties

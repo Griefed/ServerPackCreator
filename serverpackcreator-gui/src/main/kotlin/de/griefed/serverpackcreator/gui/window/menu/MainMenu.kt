@@ -83,6 +83,8 @@ class MainMenu(
     private val m4i32 = JMenuItem("light")
     private val m4i33 = JMenuItem("dark")
 
+    // TODO move menus from old menu
+    // TODO move each menu to separate class
     init {
         menuOne.add(m1i1)
         menuOne.add(m1i2)

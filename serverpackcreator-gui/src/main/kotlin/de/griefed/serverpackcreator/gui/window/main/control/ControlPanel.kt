@@ -29,7 +29,6 @@ class ControlPanel(
     utilities: Utilities
 ) {
     private val log = cachedLoggerOf(this.javaClass)
-    val panel = JPanel()
     private val statusPanel = StatusPanel()
     private val generate = JButton(Gui.createserverpack_gui_buttongenerateserverpack.toString())
     private val serverPacks = JButton(Gui.createserverpack_gui_buttonserverpacks.toString())
@@ -38,6 +37,7 @@ class ControlPanel(
     private val finishedGenerationPane: JTextPane = JTextPane(finishedGenerationDocument)
     private val lazyModeDocument: StyledDocument = DefaultStyledDocument()
     private val lazyModeTextPane: JTextPane = JTextPane(lazyModeDocument)
+    val panel = JPanel()
 
     init {
         finishedGenerationPane.isOpaque = false
@@ -55,12 +55,12 @@ class ControlPanel(
         }
 
         generate.icon = guiProps.genIcon
-        generate.addActionListener { generateServerpack() }
+        generate.addActionListener { generateServerPack() }
         generate.multiClickThreshhold = 1000
         generate.toolTipText = Gui.createserverpack_gui_buttongenerateserverpack_tip.toString()
         serverPacks.icon = guiProps.packsIcon
         serverPacks.addActionListener { utilities.fileUtilities.openFolder(apiProperties.serverPacksDirectory) }
-
+        serverPacks.toolTipText = Gui.createserverpack_gui_buttonserverpacks_tip.toString()
         panel.layout = MigLayout(
             "",
             "0[200!]0[grow]0",
@@ -71,16 +71,12 @@ class ControlPanel(
         panel.add(statusPanel.panel, "cell 1 0 1 2,grow,push, h 160!")
     }
 
-    private fun status() {
-        statusPanel.updateStatus("Fasel")
-    }
-
     /**
      * Upon button-press, check the entered configuration and if successfull, generate a server pack.
      *
      * @author Griefed
      */
-    private fun generateServerpack() {
+    private fun generateServerPack() {
         generate.isEnabled = false
         larsonScanner.loadConfig(guiProps.busyConfig)
         var decision = 0

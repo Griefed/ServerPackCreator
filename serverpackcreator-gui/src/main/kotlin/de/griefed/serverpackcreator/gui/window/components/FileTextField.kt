@@ -4,10 +4,6 @@ import java.io.File
 import javax.swing.JTextField
 
 class FileTextField(text: String, editable: Boolean = false) : JTextField(text) {
-    init {
-        isEditable = editable
-    }
-
     var file: File
         get() {
             return File(text).absoluteFile
@@ -15,4 +11,9 @@ class FileTextField(text: String, editable: Boolean = false) : JTextField(text) 
         set(value) {
             text = value.absolutePath
         }
+
+    init {
+        isEditable = editable
+        file = File(text).absoluteFile
+    }
 }
