@@ -8,7 +8,6 @@ import de.griefed.serverpackcreator.api.ServerPackHandler
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import de.griefed.serverpackcreator.api.versionmeta.VersionMeta
 import de.griefed.serverpackcreator.gui.GuiProps
-import de.griefed.serverpackcreator.gui.splash.SplashScreen
 import de.griefed.serverpackcreator.gui.window.components.TabPanel
 import de.griefed.serverpackcreator.gui.window.configs.ConfigsTab
 import de.griefed.serverpackcreator.gui.window.logs.Logs
@@ -32,7 +31,7 @@ class MainPanel(
     migrationManager: MigrationManager,
     private val larsonScanner: LarsonScanner
 ) : TabPanel() {
-    private val configsTab = ConfigsTab(
+    val configsTab = ConfigsTab(
         guiProps,
         configurationHandler,
         apiProperties,

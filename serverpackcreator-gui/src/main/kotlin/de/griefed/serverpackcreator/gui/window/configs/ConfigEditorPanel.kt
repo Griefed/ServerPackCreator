@@ -10,14 +10,14 @@ import de.griefed.serverpackcreator.api.versionmeta.VersionMeta
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.window.components.*
 import de.griefed.serverpackcreator.gui.window.components.interactivetable.InteractiveTable
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import net.miginfocom.swing.MigLayout
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.awt.Dimension
-import java.awt.FlowLayout
 import java.awt.Image
 import java.awt.event.ActionListener
-import java.awt.event.MouseAdapter
-import java.awt.event.MouseEvent
 import java.io.File
 import java.io.IOException
 import java.util.*
@@ -42,11 +42,6 @@ class ConfigEditorPanel(
 ), ServerPackConfigTab {
     private val log = cachedLoggerOf(this.javaClass)
     private val whitespace = "^.*,\\s*\\\\*$".toRegex()
-
-    private var lastLoadedConfiguration: PackConfig? = null
-
-    private val pluginPanels: MutableList<ExtensionConfigPanel> = apiPlugins.getConfigPanels(this).toMutableList()
-
     private val modpackInfo = JLabel(guiProps.infoIcon)
     private val propertiesInfo = JLabel(guiProps.infoIcon)
     private val iconInfo = JLabel(guiProps.infoIcon)
@@ -64,7 +59,6 @@ class ConfigEditorPanel(
     private val exclusionsInfo = JLabel(guiProps.infoIcon)
     private val argumentsInfo = JLabel(guiProps.infoIcon)
     private val scriptInfo = JLabel(guiProps.infoIcon)
-
     private val modpackBrowser = JButton(guiProps.folderIcon)
     private val modpackInspect = JButton(guiProps.inspectIcon)
     private val propertiesBrowser = JButton(guiProps.folderIcon)
@@ -73,45 +67,35 @@ class ConfigEditorPanel(
     private val serverPackFilesRevert = JButton(guiProps.revertIcon)
     private val serverPackFilesBrowser = JButton(guiProps.folderIcon)
     private val serverPackFilesReset = JButton(guiProps.resetIcon)
-
     private val javaVersion = ElementLabel("8", 16)
-
     private val serverPackSuffix = JTextField("")
-
     private val includeIcon = JCheckBox(Gui.createserverpack_gui_createserverpack_checkboxicon.toString())
     private val includeZip = JCheckBox(Gui.createserverpack_gui_createserverpack_checkboxzip.toString())
     private val includeProperties = JCheckBox(Gui.createserverpack_gui_createserverpack_checkboxproperties.toString())
     private val prepareServer = JCheckBox(Gui.createserverpack_gui_createserverpack_checkboxserver.toString())
-
     private val noVersions =
         DefaultComboBoxModel(arrayOf(Gui.createserverpack_gui_createserverpack_forge_none.toString()))
     private val legacyFabricVersions = DefaultComboBoxModel(versionMeta.legacyFabric.loaderVersionsArrayDescending())
     private val fabricVersions = DefaultComboBoxModel(versionMeta.fabric.loaderVersionsArrayDescending())
     private val quiltVersions = DefaultComboBoxModel(versionMeta.quilt.loaderVersionsArrayDescending())
-
     private val propertiesQuickSelect = JComboBox<File>()
     private val iconQuickSelect = JComboBox<File>()
     private val minecraftVersions = JComboBox<String>()
     private val modloaders = JComboBox<String>()
     private val modloaderVersions = JComboBox<String>()
-
     private val exclusionsRevert = JButton(guiProps.revertIcon)
     private val exclusionsBrowser = JButton(guiProps.folderIcon)
     private val exclusionsReset = JButton(guiProps.resetIcon)
     private val scriptKVPairsRevert = JButton(guiProps.revertIcon)
     private val scriptKVPairsReset = JButton(guiProps.resetIcon)
     private val aikarsFlags = JButton()
-
     private val modpackDirectory = FileTextField("")
-    private val propertiesFile = FileTextField("")
-    private val iconFile = FileTextField("")
-
-    private val serverPackFiles = ScrollTextArea("")
-    private val exclusions = ScrollTextArea("")
-    private val startArgs = ScrollTextArea("")
-
+    private val propertiesFile = FileTextField(apiProperties.defaultServerProperties)
+    private val iconFile = FileTextField(apiProperties.defaultServerIcon)
+    private val serverPackFiles = ScrollTextArea("config,mods")
+    private val exclusions = ScrollTextArea(apiProperties.clientSideMods())
+    private val startArgs = ScrollTextArea("-Xmx4G -Xms4G")
     private val scriptKVPairs = InteractiveTable()
-
     private val advancedSettingsPanel = AdvancedSettingsPanel(
         exclusionsInfo,
         argumentsInfo,
@@ -126,6 +110,7 @@ class ConfigEditorPanel(
         scriptKVPairsRevert,
         scriptKVPairsReset
     )
+    val pluginPanels: MutableList<ExtensionConfigPanel> = apiPlugins.getConfigPanels(this).toMutableList()
     private val pluginsSettingsPanel = PluginsSettingsPanel(pluginPanels)
     private val collapsibleAdvanced = CollapsiblePanel(
         Gui.createserverpack_gui_advanced.toString(),
@@ -135,39 +120,41 @@ class ConfigEditorPanel(
         Gui.createserverpack_gui_plugins.toString(),
         pluginsSettingsPanel
     )
+    var lastLoadedConfiguration: PackConfig? = null
+    val title = ConfigEditorTitle(guiProps, configsTab, this)
+
     private val modpackChanges = object : DocumentChangeListener {
         override fun update(e: DocumentEvent) {
             title.titleLabel.text = modpackDirectory.file.name
-            validateModpackDir()
+            validateInputFields()
         }
     }
     private val suffixChanges = object : DocumentChangeListener {
         override fun update(e: DocumentEvent) {
-            validateSuffix()
+            validateInputFields()
         }
     }
     private val exclusionChanges = object : DocumentChangeListener {
         override fun update(e: DocumentEvent) {
-            validateExclusions()
+            validateInputFields()
         }
     }
     private val serverPackFilesChanges = object : DocumentChangeListener {
         override fun update(e: DocumentEvent) {
-            validateServerPackFiles()
+            validateInputFields()
         }
     }
     private val iconChanges = object : DocumentChangeListener {
         override fun update(e: DocumentEvent) {
-            validateServerIcon()
+            validateInputFields()
         }
     }
     private val propertyChanges = object : DocumentChangeListener {
         override fun update(e: DocumentEvent) {
-            validateServerProperties()
+            validateInputFields()
         }
     }
 
-    val title: Title
 
     init {
         initListeners()
@@ -251,40 +238,7 @@ class ConfigEditorPanel(
         if (pluginPanels.isNotEmpty()) {
             add(collapsiblePlugins, "cell 0 11 5,grow")
         }
-
-        title = Title()
         validateInputFields()
-    }
-
-    //TODO warning icon checkbox icon if invalid icon
-    //TODO warning icon checkbox properties if invalid properties
-    //TODO warning icon checkbox prepare server if no server
-
-    /**
-     * TODO docs
-     */
-    inner class Title : JPanel(FlowLayout(FlowLayout.LEFT, 0, 0)) {
-
-        val titleLabel = JLabel(Gui.createserverpack_gui_title_new.toString())
-        val closeButton = JButton(guiProps.closeIcon)
-
-        init {
-            isOpaque = false
-            titleLabel.border = BorderFactory.createEmptyBorder(0, 0, 0, 5)
-            add(titleLabel)
-            closeButton.addMouseListener(object : MouseAdapter() {
-                override fun mouseClicked(e: MouseEvent?) {
-                    val currentTab = configsTab.tabs.selectedIndex
-                    configsTab.tabs.remove(this@ConfigEditorPanel)
-
-                    if (currentTab - 1 > 0) {
-                        configsTab.tabs.selectedIndex = currentTab - 1
-                    }
-                }
-            })
-            closeButton.isVisible = false
-            add(closeButton)
-        }
     }
 
     /**
@@ -386,7 +340,8 @@ class ConfigEditorPanel(
         iconFile.document.addDocumentListener(iconChanges)
         propertiesFile.document.addDocumentListener(propertyChanges)
         minecraftVersions.addActionListener { updateMinecraftValues() }
-        modloaders.addActionListener { setModloader(modloaders.selectedItem!!.toString()) }
+        modloaders.addActionListener { updateMinecraftValues() }
+        modloaderVersions.addActionListener { updateMinecraftValues() }
 
         prepareServer.addActionListener { checkServer() }
         includeIcon.addActionListener { validateServerIcon() }
@@ -397,10 +352,12 @@ class ConfigEditorPanel(
 
     override fun setClientSideMods(entries: MutableList<String>) {
         exclusions.text = utilities.stringUtilities.buildString(entries)
+        validateInputFields()
     }
 
     override fun setCopyDirectories(entries: MutableList<String>) {
         serverPackFiles.text = utilities.stringUtilities.buildString(entries.toString())
+        validateInputFields()
     }
 
     override fun setIconInclusionTicked(ticked: Boolean) {
@@ -597,12 +554,47 @@ class ConfigEditorPanel(
     }
 
     override fun validateInputFields() {
-        validateModpackDir()
-        validateSuffix()
-        validateExclusions()
-        validateServerPackFiles()
-        validateServerIcon()
-        validateServerProperties()
+        val errors = mutableListOf<String>()
+        runBlocking(Dispatchers.IO) {
+            launch {
+                errors.addAll(validateModpackDir())
+            }
+            launch {
+                errors.addAll(validateSuffix())
+            }
+            launch {
+                errors.addAll(validateExclusions())
+            }
+            launch {
+                errors.addAll(validateServerPackFiles())
+            }
+            launch {
+                errors.addAll(validateServerIcon())
+            }
+            launch {
+                errors.addAll(validateServerProperties())
+            }
+            launch {
+                if (!checkServer()) {
+                    errors.add(Gui.createserverpack_gui_createserverpack_checkboxserver_unavailable_title(
+                        minecraftVersions.selectedItem!!.toString(),
+                        modloaders.selectedItem!!.toString(),
+                        modloaderVersions.selectedItem!!.toString()
+                    ))
+                }
+            }
+            launch {
+                if (modloaderVersions.selectedItem!! == Gui.createserverpack_gui_createserverpack_forge_none.toString()) {
+                    errors.add(Gui.configuration_log_error_minecraft_modloader(getMinecraftVersion(), getModloader()))
+                }
+            }
+        }
+        println("CEP562 $errors")
+        if (errors.isEmpty()) {
+            title.clearErrorIcon()
+        } else {
+            title.setErrorIcon("<html>${errors.joinToString("<br>")}</html>")
+        }
     }
 
     override fun acquireRequiredJavaVersion(): String {
@@ -623,7 +615,7 @@ class ConfigEditorPanel(
      * @param minecraftVersion The Minecraft version to work with in the GUI update.
      * @author Griefed
      */
-    private fun setModloaderVersionsModel(minecraftVersion: String = minecraftVersions.selectedItem!!.toString()) =
+    private fun setModloaderVersionsModel(minecraftVersion: String = minecraftVersions.selectedItem!!.toString()) {
         when (modloaders.selectedIndex) {
             0 -> updateFabricModel(minecraftVersion)
             1 -> updateForgeModel(minecraftVersion)
@@ -633,27 +625,17 @@ class ConfigEditorPanel(
                 log.error("Invalid modloader selected.")
             }
         }
+    }
 
     /**
      * TODO docs
      */
-    private fun setModloaderVersions(model: DefaultComboBoxModel<String>) {
-        modloaderVersionInfo.icon = guiProps.infoIcon
-        modloaderVersionInfo.toolTipText =
-            Gui.createserverpack_gui_createserverpack_labelmodloaderversion_tip.toString()
+    private fun setModloaderVersions(model: DefaultComboBoxModel<String>, icon: Icon = guiProps.infoIcon,tooltip: String = Gui.createserverpack_gui_createserverpack_labelmodloaderversion_tip.toString()) {
+        modloaderVersionInfo.icon = icon
+        modloaderVersionInfo.toolTipText = tooltip
         modloaderVersions.model = model
     }
 
-    /**
-     * TODO docs
-     */
-    private fun setModloaderVersionsNone() {
-        modloaderVersionInfo.icon = guiProps.errorIcon
-        val tooltip = Gui.configuration_log_error_minecraft_modloader.toString()
-        modloaderVersionInfo.toolTipText = tooltip.format(getMinecraftVersion(), getModloader())
-        modloaderVersions.model = noVersions
-    }
-    //TODO replace {x} in i18n with %s because format {x} doesn't work in kotlin as it does in Java
     /**
      * TODO docs
      */
@@ -661,7 +643,7 @@ class ConfigEditorPanel(
         if (versionMeta.fabric.isMinecraftSupported(minecraftVersion)) {
             setModloaderVersions(fabricVersions)
         } else {
-            setModloaderVersionsNone()
+            setModloaderVersions(noVersions,guiProps.errorIcon,Gui.configuration_log_error_minecraft_modloader(getMinecraftVersion(), getModloader()))
         }
     }
 
@@ -678,7 +660,7 @@ class ConfigEditorPanel(
                 )
             )
         } else {
-            setModloaderVersionsNone()
+            setModloaderVersions(noVersions,guiProps.errorIcon,Gui.configuration_log_error_minecraft_modloader(getMinecraftVersion(), getModloader()))
         }
     }
 
@@ -689,7 +671,7 @@ class ConfigEditorPanel(
         if (versionMeta.fabric.isMinecraftSupported(minecraftVersion)) {
             setModloaderVersions(quiltVersions)
         } else {
-            setModloaderVersionsNone()
+            setModloaderVersions(noVersions,guiProps.errorIcon,Gui.configuration_log_error_minecraft_modloader(getMinecraftVersion(), getModloader()))
         }
     }
 
@@ -700,7 +682,7 @@ class ConfigEditorPanel(
         if (versionMeta.legacyFabric.isMinecraftSupported(minecraftVersion)) {
             setModloaderVersions(legacyFabricVersions)
         } else {
-            setModloaderVersionsNone()
+            setModloaderVersions(noVersions,guiProps.errorIcon,Gui.configuration_log_error_minecraft_modloader(getMinecraftVersion(), getModloader()))
         }
     }
 
@@ -711,19 +693,17 @@ class ConfigEditorPanel(
      */
     private fun validateModpackDir(): List<String> {
         val errors: MutableList<String> = ArrayList(20)
-        SwingUtilities.invokeLater {
-            if (configurationHandler.checkModpackDir(getModpackDirectory(), errors, false)) {
-                modpackInfo.icon = guiProps.infoIcon
-                modpackInfo.toolTipText = Gui.createserverpack_gui_createserverpack_labelmodpackdir_tip.toString()
-            } else {
-                modpackInfo.icon = guiProps.errorIcon
-                modpackInfo.toolTipText = "<html>${errors.joinToString("<br>")}</html>"
-            }
+        if (configurationHandler.checkModpackDir(getModpackDirectory(), errors, false)) {
+            modpackInfo.icon = guiProps.infoIcon
+            modpackInfo.toolTipText = Gui.createserverpack_gui_createserverpack_labelmodpackdir_tip.toString()
+        } else {
+            modpackInfo.icon = guiProps.errorIcon
+            modpackInfo.toolTipText = "<html>${errors.joinToString("<br>")}</html>"
         }
         for (error in errors) {
             log.error(error)
         }
-        return errors.toList()
+        return errors
     }
 
     /**
@@ -733,20 +713,18 @@ class ConfigEditorPanel(
      */
     private fun validateSuffix(): List<String> {
         val errors: MutableList<String> = ArrayList(10)
-        SwingUtilities.invokeLater {
-            if (utilities.stringUtilities.checkForIllegalCharacters(serverPackSuffix.text)) {
-                suffixInfo.icon = guiProps.infoIcon
-                suffixInfo.toolTipText = Gui.createserverpack_gui_createserverpack_labelsuffix_tip.toString()
-            } else {
-                errors.add(Gui.configuration_log_error_serverpack_suffix.toString())
-                suffixInfo.icon = guiProps.errorIcon
-                suffixInfo.toolTipText = "<html>${errors.joinToString("<br>")}</html>"
-            }
+        if (utilities.stringUtilities.checkForIllegalCharacters(serverPackSuffix.text)) {
+            suffixInfo.icon = guiProps.infoIcon
+            suffixInfo.toolTipText = Gui.createserverpack_gui_createserverpack_labelsuffix_tip.toString()
+        } else {
+            errors.add(Gui.configuration_log_error_serverpack_suffix.toString())
+            suffixInfo.icon = guiProps.errorIcon
+            suffixInfo.toolTipText = "<html>${errors.joinToString("<br>")}</html>"
         }
         for (error in errors) {
             log.error(error)
         }
-        return errors.toList()
+        return errors
     }
 
     /**
@@ -756,21 +734,18 @@ class ConfigEditorPanel(
      */
     private fun validateExclusions(): List<String> {
         val errors: MutableList<String> = ArrayList(10)
-        SwingUtilities.invokeLater {
-
-            if (!getClientSideMods().matches(whitespace)) {
-                exclusionsInfo.icon = guiProps.infoIcon
-                exclusionsInfo.toolTipText = Gui.createserverpack_gui_createserverpack_labelclientmods_tip.toString()
-            } else {
-                errors.add(Gui.configuration_log_error_formatting.toString())
-                exclusionsInfo.icon = guiProps.errorIcon
-                exclusionsInfo.toolTipText = "<html>${errors.joinToString("<br>")}</html>"
-            }
+        if (!getClientSideMods().matches(whitespace)) {
+            exclusionsInfo.icon = guiProps.infoIcon
+            exclusionsInfo.toolTipText = Gui.createserverpack_gui_createserverpack_labelclientmods_tip.toString()
+        } else {
+            errors.add(Gui.configuration_log_error_formatting.toString())
+            exclusionsInfo.icon = guiProps.errorIcon
+            exclusionsInfo.toolTipText = "<html>${errors.joinToString("<br>")}</html>"
         }
         for (error in errors) {
             log.error(error)
         }
-        return errors.toList()
+        return errors
     }
 
     /**
@@ -780,25 +755,21 @@ class ConfigEditorPanel(
      */
     private fun validateServerPackFiles(): List<String> {
         val errors: MutableList<String> = ArrayList(10)
-        SwingUtilities.invokeLater {
-            configurationHandler.checkCopyDirs(
-                getCopyDirectoriesList(), getModpackDirectory(), errors, false
-            )
-            if (getCopyDirectories().matches(whitespace)) {
-                errors.add(Gui.configuration_log_error_formatting.toString())
-            }
-            if (errors.isNotEmpty()) {
-                filesInfo.icon = guiProps.errorIcon
-                filesInfo.toolTipText = "<html>${errors.joinToString("<br>")}</html>"
-            } else {
-                filesInfo.icon = guiProps.infoIcon
-                filesInfo.toolTipText = Gui.createserverpack_gui_createserverpack_labelcopydirs_tip.toString()
-            }
+        configurationHandler.checkCopyDirs(getCopyDirectoriesList(), getModpackDirectory(), errors, false)
+        if (getCopyDirectories().matches(whitespace)) {
+            errors.add(Gui.configuration_log_error_formatting.toString())
+        }
+        if (errors.isNotEmpty()) {
+            filesInfo.icon = guiProps.errorIcon
+            filesInfo.toolTipText = "<html>${errors.joinToString("<br>")}</html>"
+        } else {
+            filesInfo.icon = guiProps.infoIcon
+            filesInfo.toolTipText = Gui.createserverpack_gui_createserverpack_labelcopydirs_tip.toString()
         }
         for (error in errors) {
             log.error(error)
         }
-        return errors.toList()
+        return errors
     }
 
     /**
@@ -808,32 +779,58 @@ class ConfigEditorPanel(
      */
     private fun validateServerIcon(): List<String> {
         val errors: MutableList<String> = ArrayList(10)
-        SwingUtilities.invokeLater {
-            if (getServerIconPath().isNotEmpty()) {
-                if (configurationHandler.checkIconAndProperties(getServerIconPath())) {
-                    iconInfo.icon = guiProps.infoIcon
-                    includeIconInfo.icon = guiProps.infoIcon
-                    includeIconInfo.toolTipText = Gui.createserverpack_gui_createserverpack_checkboxicon_tip.toString()
-                    iconInfo.toolTipText = Gui.createserverpack_gui_createserverpack_textfield_iconpath.toString()
-                    setIconPreview(File(getServerIconPath()), errors)
-                } else {
-                    iconInfo.icon = guiProps.errorIcon
-                    includeIconInfo.icon = guiProps.warningIcon
-                    includeIconInfo.toolTipText = Gui.configuration_log_warn_icon.toString()
-                    iconInfo.toolTipText = Gui.configuration_log_error_servericon_error.toString()
-                    iconPreview.icon = guiProps.iconError
-                }
-            } else {
-                setIconPreview(apiProperties.defaultServerIcon, errors)
-                iconInfo.toolTipText = Gui.createserverpack_gui_createserverpack_servericon_preview.toString()
+        if (getServerIconPath().isNotEmpty()) {
+            if (configurationHandler.checkIconAndProperties(getServerIconPath())) {
+                iconInfo.icon = guiProps.infoIcon
                 includeIconInfo.icon = guiProps.infoIcon
                 includeIconInfo.toolTipText = Gui.createserverpack_gui_createserverpack_checkboxicon_tip.toString()
+                iconInfo.toolTipText = Gui.createserverpack_gui_createserverpack_textfield_iconpath.toString()
+                setIconPreview(File(getServerIconPath()), errors)
+            } else {
+                iconInfo.icon = guiProps.errorIcon
+                includeIconInfo.icon = guiProps.warningIcon
+                includeIconInfo.toolTipText = Gui.configuration_log_warn_icon.toString()
+                iconInfo.toolTipText = Gui.configuration_log_error_servericon_error.toString()
+                iconPreview.icon = guiProps.iconError
             }
+        } else {
+            setIconPreview(apiProperties.defaultServerIcon, errors)
+            iconInfo.toolTipText = Gui.createserverpack_gui_createserverpack_servericon_preview.toString()
+            includeIconInfo.icon = guiProps.infoIcon
+            includeIconInfo.toolTipText = Gui.createserverpack_gui_createserverpack_checkboxicon_tip.toString()
         }
         for (error in errors) {
             log.error(error)
         }
-        return errors.toList()
+        return errors
+    }
+
+    /**
+     * Validate the inputfield for server properties.
+     *
+     * @author Griefed
+     */
+    private fun validateServerProperties(): List<String> {
+        val errors: MutableList<String> = ArrayList(10)
+        if (configurationHandler.checkIconAndProperties(getServerPropertiesPath())) {
+            propertiesInfo.icon = guiProps.infoIcon
+            includePropertiesInfo.icon = guiProps.infoIcon
+
+            propertiesInfo.toolTipText =
+                Gui.createserverpack_gui_createserverpack_textfield_propertiespath.toString()
+            includePropertiesInfo.toolTipText =
+                Gui.createserverpack_gui_createserverpack_checkboxproperties_tip.toString()
+        } else {
+            propertiesInfo.icon = guiProps.errorIcon
+            includePropertiesInfo.icon = guiProps.warningIcon
+
+            propertiesInfo.toolTipText = Gui.configuration_log_warn_properties.toString()
+            includePropertiesInfo.toolTipText = Gui.configuration_log_warn_properties.toString()
+        }
+        for (error in errors) {
+            log.error(error)
+        }
+        return errors
     }
 
     /**
@@ -846,36 +843,6 @@ class ConfigEditorPanel(
             log.error("Error generating server icon preview.", ex)
             errors.add(Gui.configuration_log_error_servericon_error.toString())
         }
-    }
-
-    /**
-     * Validate the inputfield for server properties.
-     *
-     * @author Griefed
-     */
-    private fun validateServerProperties(): List<String> {
-        val errors: MutableList<String> = ArrayList(10)
-        SwingUtilities.invokeLater {
-            if (configurationHandler.checkIconAndProperties(getServerPropertiesPath())) {
-                propertiesInfo.icon = guiProps.infoIcon
-                includePropertiesInfo.icon = guiProps.infoIcon
-
-                propertiesInfo.toolTipText =
-                    Gui.createserverpack_gui_createserverpack_textfield_propertiespath.toString()
-                includePropertiesInfo.toolTipText =
-                    Gui.createserverpack_gui_createserverpack_checkboxproperties_tip.toString()
-            } else {
-                propertiesInfo.icon = guiProps.errorIcon
-                includePropertiesInfo.icon = guiProps.warningIcon
-
-                propertiesInfo.toolTipText = Gui.configuration_log_warn_properties.toString()
-                includePropertiesInfo.toolTipText = Gui.configuration_log_warn_properties.toString()
-            }
-        }
-        for (error in errors) {
-            log.error(error)
-        }
-        return errors.toList()
     }
 
     /**
@@ -893,25 +860,6 @@ class ConfigEditorPanel(
             }
         }
         return configs
-    }
-
-    /**
-     * Adds a mouse listener to the passed button which sets the content area of said button
-     * filled|not-filled when the mouse enters|leaves the button.
-     *
-     * @param buttonToAddMouseListenerTo JButton. The button to add the mouse listener to.
-     * @author Griefed
-     */
-    private fun addMouseListenerContentAreaFilledToButton(buttonToAddMouseListenerTo: JButton) {
-        buttonToAddMouseListenerTo.addMouseListener(object : MouseAdapter() {
-            override fun mouseEntered(event: MouseEvent) {
-                buttonToAddMouseListenerTo.isContentAreaFilled = true
-            }
-
-            override fun mouseExited(event: MouseEvent) {
-                buttonToAddMouseListenerTo.isContentAreaFilled = false
-            }
-        })
     }
 
     /**
@@ -1012,6 +960,7 @@ class ConfigEditorPanel(
     private fun revertExclusions() {
         if (lastLoadedConfiguration != null) {
             setClientSideMods(lastLoadedConfiguration!!.clientMods)
+            validateInputFields()
         }
     }
 
@@ -1024,6 +973,7 @@ class ConfigEditorPanel(
     private fun revertServerPackFiles() {
         if (lastLoadedConfiguration != null) {
             setCopyDirectories(lastLoadedConfiguration!!.copyDirs)
+            validateInputFields()
         }
     }
 
@@ -1036,6 +986,7 @@ class ConfigEditorPanel(
         setModloaderVersionsModel(minecraftVersions.selectedItem!!.toString())
         updateRequiredJavaVersion()
         checkMinecraftServer()
+        validateInputFields()
     }
 
     /**
@@ -1212,59 +1163,6 @@ class ConfigEditorPanel(
         if (javaChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
             apiProperties.javaPath = javaChooser.selectedFile.path
             log.debug("Set path to Java executable to: ${javaChooser.selectedFile.path}")
-        }
-    }
-
-    /**
-     * When the GUI has finished loading, try and load the existing serverpackcreator.conf-file into
-     * ServerPackCreator.
-     *
-     * @param configFile The configuration file to parse and load into the GUI.
-     * @author Griefed
-     */
-    fun loadConfig(configFile: File) {
-        try {
-            val packConfig = PackConfig(utilities, configFile)
-            lastLoadedConfiguration = packConfig
-            setModpackDirectory(packConfig.modpackDir)
-            if (packConfig.clientMods.isEmpty()) {
-                setClientSideMods(apiProperties.clientSideMods())
-                log.debug("Set clientMods with fallback list.")
-            } else {
-                setClientSideMods(packConfig.clientMods)
-            }
-            if (packConfig.copyDirs.isEmpty()) {
-                setCopyDirectories(mutableListOf("mods", "config"))
-            } else {
-                setCopyDirectories(packConfig.copyDirs)
-            }
-            setScriptVariables(packConfig.scriptSettings)
-            setServerIconPath(packConfig.serverIconPath)
-            setServerPropertiesPath(packConfig.serverPropertiesPath)
-            if (packConfig.minecraftVersion.isEmpty()) {
-                packConfig.minecraftVersion = versionMeta.minecraft.latestRelease().version
-            }
-            setMinecraftVersion(packConfig.minecraftVersion)
-            setModloader(packConfig.modloader)
-            setModloaderVersion(packConfig.modloaderVersion)
-            setServerInstallationTicked(packConfig.isServerInstallationDesired)
-            setIconInclusionTicked(packConfig.isServerIconInclusionDesired)
-            setPropertiesInclusionTicked(packConfig.isServerPropertiesInclusionDesired)
-            setZipArchiveCreationTicked(packConfig.isZipCreationDesired)
-            setJavaArguments(packConfig.javaArgs)
-            setServerPackSuffix(packConfig.serverPackSuffix)
-            for (panel in pluginPanels) {
-                panel.setServerPackExtensionConfig(packConfig.getPluginConfigs(panel.pluginID))
-            }
-        } catch (ex: Exception) {
-            log.error("Couldn't load configuration file.", ex)
-            JOptionPane.showMessageDialog(
-                this,
-                Gui.createserverpack_gui_config_load_error_message.toString() + " " + ex.cause + "   ",
-                Gui.createserverpack_gui_config_load_error.toString(),
-                JOptionPane.ERROR_MESSAGE,
-                guiProps.errorIcon
-            )
         }
     }
 

@@ -11,6 +11,7 @@ import de.griefed.serverpackcreator.gui.window.configs.ConfigsTab
 import net.miginfocom.swing.MigLayout
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.awt.Desktop
+import java.awt.Window
 import java.io.File
 import java.io.IOException
 import java.util.ArrayList
@@ -132,25 +133,21 @@ class ControlPanel(
 
             if (!configurationHandler.checkConfiguration(packConfig, encounteredErrors, true)) {
                 log.info("Configuration checked successfully.")
-                statusPanel.updateStatus(
-                    Gui.createserverpack_log_info_buttoncreateserverpack_checked.toString()
-                )
+                statusPanel.updateStatus(Gui.createserverpack_log_info_buttoncreateserverpack_checked.toString())
                 //TODO store to modpackname.conf in configs dir
                 packConfig.save(apiProperties.defaultConfig)
                 log.info("Starting ServerPackCreator run.")
                 statusPanel.updateStatus(Gui.createserverpack_log_info_buttoncreateserverpack_generating.toString())
                 try {
                     serverPackHandler.run(packConfig)
-                    activeTab.loadConfig(apiProperties.defaultConfig)
-                    statusPanel.updateStatus(
-                        Gui.createserverpack_log_info_buttoncreateserverpack_ready.toString()
-                    )
+                    configsTab.loadConfig(apiProperties.defaultConfig,activeTab)
+                    statusPanel.updateStatus(Gui.createserverpack_log_info_buttoncreateserverpack_ready.toString())
                     finishedGenerationDocument.setParagraphAttributes(
                         0, finishedGenerationDocument.length, finishedGenerationAttributeSet, false
                     )
                     ready()
                     if (JOptionPane.showConfirmDialog(
-                            panel,
+                            Window.getWindows()[0],
                             finishedGenerationPane,
                             Gui.createserverpack_gui_createserverpack_openfolder_title.toString(),
                             JOptionPane.YES_NO_OPTION,

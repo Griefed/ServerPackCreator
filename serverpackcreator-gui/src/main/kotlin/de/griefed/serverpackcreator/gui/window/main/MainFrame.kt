@@ -30,18 +30,6 @@ class MainFrame(
 ) {
     private val mainFrame: JFrame = JFrame("ServerPackCreator")
     private val larsonScanner = LarsonScanner()
-    private val mainMenu = MainMenu(
-        guiProps,
-        configurationHandler,
-        serverPackHandler,
-        apiProperties,
-        versionMeta,
-        utilities,
-        updateChecker,
-        apiPlugins,
-        migrationManager,
-        larsonScanner
-    )
     private val mainPanel = MainPanel(
         guiProps,
         configurationHandler,
@@ -53,6 +41,19 @@ class MainFrame(
         apiPlugins,
         migrationManager,
         larsonScanner
+    )
+    private val mainMenu = MainMenu(
+        guiProps,
+        configurationHandler,
+        serverPackHandler,
+        apiProperties,
+        versionMeta,
+        utilities,
+        updateChecker,
+        apiPlugins,
+        migrationManager,
+        larsonScanner,
+        mainPanel.configsTab
     )
 
     init {

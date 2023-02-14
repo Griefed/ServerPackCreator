@@ -15,6 +15,7 @@ import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import de.griefed.serverpackcreator.api.versionmeta.VersionMeta
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.splash.SplashScreen
+import de.griefed.serverpackcreator.gui.window.configs.ConfigsTab
 import de.griefed.serverpackcreator.updater.MigrationManager
 import de.griefed.serverpackcreator.updater.UpdateChecker
 import javax.swing.*
@@ -23,13 +24,14 @@ class MainMenu(
     private val guiProps: GuiProps,
     configurationHandler: ConfigurationHandler,
     serverPackHandler: ServerPackHandler,
-    apiProperties: ApiProperties,
+    private val apiProperties: ApiProperties,
     versionMeta: VersionMeta,
     utilities: Utilities,
     updateChecker: UpdateChecker,
     apiPlugins: ApiPlugins,
     migrationManager: MigrationManager,
-    private val larsonScanner: LarsonScanner
+    private val larsonScanner: LarsonScanner,
+    private val configsTab: ConfigsTab
 ) {
     val menuBar: JMenuBar = JMenuBar()
     private val menuOne = JMenu("One")
@@ -37,9 +39,9 @@ class MainMenu(
     private val menuThree = JMenu("Three")
     private val menuFour = JMenu("Four")
 
-    private val m1i1 = JMenuItem("Item 1")
-    private val m1i2 = JMenuItem("Item 2")
-    private val m1i3 = JMenuItem("Item 3")
+    private val m1i1 = JMenuItem("Item 1 Add Tab")
+    private val m1i2 = JMenuItem("Item 2 Load New")
+    private val m1i3 = JMenuItem("Item 3 Load")
 
     private val m2i1 = JMenuItem("Item 1")
     private val m2i2 = JMenuItem("Item 2")
@@ -132,6 +134,10 @@ class MainMenu(
         menuFour.add(m4i32)
         menuFour.add(m4i33)
 
+        m1i1.addActionListener { addTab() }
+        m1i2.addActionListener { loadNew() }
+        m1i3.addActionListener { load() }
+
         m4i1.addActionListener { arc() }
         m4i2.addActionListener { arcOrange() }
         m4i3.addActionListener { arcDark() }
@@ -170,6 +176,18 @@ class MainMenu(
         menuBar.add(menuTwo)
         menuBar.add(menuThree)
         menuBar.add(menuFour)
+    }
+
+    private fun addTab() {
+        configsTab.addTab()
+    }
+
+    private fun loadNew() {
+        configsTab.loadConfig(apiProperties.defaultConfig)
+    }
+
+    private fun load() {
+        configsTab.loadConfig(apiProperties.defaultConfig,configsTab.selectedEditor!!)
     }
 
     private fun changeTheme(theme: FlatLaf) {

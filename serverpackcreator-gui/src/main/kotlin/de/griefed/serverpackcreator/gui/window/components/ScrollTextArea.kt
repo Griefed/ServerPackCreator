@@ -1,5 +1,6 @@
 package de.griefed.serverpackcreator.gui.window.components
 
+import java.util.*
 import javax.swing.JScrollPane
 import javax.swing.JTextArea
 import javax.swing.event.DocumentListener
@@ -10,6 +11,9 @@ class ScrollTextArea(
     verticalScrollbarVisibility: Int = VERTICAL_SCROLLBAR_AS_NEEDED,
     horizontalScrollbarVisibility: Int = HORIZONTAL_SCROLLBAR_NEVER
 ) : JScrollPane(verticalScrollbarVisibility, horizontalScrollbarVisibility) {
+    constructor(text: List<String>) : this(text.joinToString(","))
+    constructor(text: TreeSet<String>) : this(text.joinToString(","))
+
     init {
         textArea.lineWrap = true
         viewport.view = textArea
