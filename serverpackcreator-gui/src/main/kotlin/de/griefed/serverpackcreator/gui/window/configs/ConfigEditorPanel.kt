@@ -10,9 +10,7 @@ import de.griefed.serverpackcreator.api.versionmeta.VersionMeta
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.window.components.*
 import de.griefed.serverpackcreator.gui.window.components.interactivetable.InteractiveTable
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.*
 import net.miginfocom.swing.MigLayout
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.awt.Dimension
@@ -123,35 +121,64 @@ class ConfigEditorPanel(
     var lastLoadedConfiguration: PackConfig? = null
     val title = ConfigEditorTitle(guiProps, configsTab, this)
 
+    @OptIn(DelicateCoroutinesApi::class)
     private val modpackChanges = object : DocumentChangeListener {
         override fun update(e: DocumentEvent) {
-            title.titleLabel.text = modpackDirectory.file.name
-            validateInputFields()
+            GlobalScope.launch(Dispatchers.Default) {
+                title.titleLabel.text = modpackDirectory.file.name
+                validateInputFields()
+            }
+
         }
     }
+
+    @OptIn(DelicateCoroutinesApi::class)
     private val suffixChanges = object : DocumentChangeListener {
         override fun update(e: DocumentEvent) {
-            validateInputFields()
+            GlobalScope.launch(Dispatchers.Default) {
+                validateInputFields()
+            }
+
         }
     }
+
+    @OptIn(DelicateCoroutinesApi::class)
     private val exclusionChanges = object : DocumentChangeListener {
         override fun update(e: DocumentEvent) {
-            validateInputFields()
+            GlobalScope.launch(Dispatchers.Default) {
+                validateInputFields()
+            }
+
         }
     }
+
+    @OptIn(DelicateCoroutinesApi::class)
     private val serverPackFilesChanges = object : DocumentChangeListener {
         override fun update(e: DocumentEvent) {
-            validateInputFields()
+            GlobalScope.launch(Dispatchers.Default) {
+                validateInputFields()
+            }
+
         }
     }
+
+    @OptIn(DelicateCoroutinesApi::class)
     private val iconChanges = object : DocumentChangeListener {
         override fun update(e: DocumentEvent) {
-            validateInputFields()
+            GlobalScope.launch(Dispatchers.Default) {
+                validateInputFields()
+            }
+
         }
     }
+
+    @OptIn(DelicateCoroutinesApi::class)
     private val propertyChanges = object : DocumentChangeListener {
         override fun update(e: DocumentEvent) {
-            validateInputFields()
+            GlobalScope.launch(Dispatchers.Default) {
+                validateInputFields()
+            }
+
         }
     }
 
@@ -576,11 +603,13 @@ class ConfigEditorPanel(
             }
             launch {
                 if (!checkServer()) {
-                    errors.add(Gui.createserverpack_gui_createserverpack_checkboxserver_unavailable_title(
-                        minecraftVersions.selectedItem!!.toString(),
-                        modloaders.selectedItem!!.toString(),
-                        modloaderVersions.selectedItem!!.toString()
-                    ))
+                    errors.add(
+                        Gui.createserverpack_gui_createserverpack_checkboxserver_unavailable_title(
+                            minecraftVersions.selectedItem!!.toString(),
+                            modloaders.selectedItem!!.toString(),
+                            modloaderVersions.selectedItem!!.toString()
+                        )
+                    )
                 }
             }
             launch {
@@ -630,7 +659,11 @@ class ConfigEditorPanel(
     /**
      * TODO docs
      */
-    private fun setModloaderVersions(model: DefaultComboBoxModel<String>, icon: Icon = guiProps.infoIcon,tooltip: String = Gui.createserverpack_gui_createserverpack_labelmodloaderversion_tip.toString()) {
+    private fun setModloaderVersions(
+        model: DefaultComboBoxModel<String>,
+        icon: Icon = guiProps.infoIcon,
+        tooltip: String = Gui.createserverpack_gui_createserverpack_labelmodloaderversion_tip.toString()
+    ) {
         modloaderVersionInfo.icon = icon
         modloaderVersionInfo.toolTipText = tooltip
         modloaderVersions.model = model
@@ -643,7 +676,11 @@ class ConfigEditorPanel(
         if (versionMeta.fabric.isMinecraftSupported(minecraftVersion)) {
             setModloaderVersions(fabricVersions)
         } else {
-            setModloaderVersions(noVersions,guiProps.errorIcon,Gui.configuration_log_error_minecraft_modloader(getMinecraftVersion(), getModloader()))
+            setModloaderVersions(
+                noVersions,
+                guiProps.errorIcon,
+                Gui.configuration_log_error_minecraft_modloader(getMinecraftVersion(), getModloader())
+            )
         }
     }
 
@@ -660,7 +697,11 @@ class ConfigEditorPanel(
                 )
             )
         } else {
-            setModloaderVersions(noVersions,guiProps.errorIcon,Gui.configuration_log_error_minecraft_modloader(getMinecraftVersion(), getModloader()))
+            setModloaderVersions(
+                noVersions,
+                guiProps.errorIcon,
+                Gui.configuration_log_error_minecraft_modloader(getMinecraftVersion(), getModloader())
+            )
         }
     }
 
@@ -671,7 +712,11 @@ class ConfigEditorPanel(
         if (versionMeta.fabric.isMinecraftSupported(minecraftVersion)) {
             setModloaderVersions(quiltVersions)
         } else {
-            setModloaderVersions(noVersions,guiProps.errorIcon,Gui.configuration_log_error_minecraft_modloader(getMinecraftVersion(), getModloader()))
+            setModloaderVersions(
+                noVersions,
+                guiProps.errorIcon,
+                Gui.configuration_log_error_minecraft_modloader(getMinecraftVersion(), getModloader())
+            )
         }
     }
 
@@ -682,7 +727,11 @@ class ConfigEditorPanel(
         if (versionMeta.legacyFabric.isMinecraftSupported(minecraftVersion)) {
             setModloaderVersions(legacyFabricVersions)
         } else {
-            setModloaderVersions(noVersions,guiProps.errorIcon,Gui.configuration_log_error_minecraft_modloader(getMinecraftVersion(), getModloader()))
+            setModloaderVersions(
+                noVersions,
+                guiProps.errorIcon,
+                Gui.configuration_log_error_minecraft_modloader(getMinecraftVersion(), getModloader())
+            )
         }
     }
 

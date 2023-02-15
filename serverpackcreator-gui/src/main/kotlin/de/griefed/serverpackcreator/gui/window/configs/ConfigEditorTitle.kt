@@ -1,5 +1,6 @@
 package de.griefed.serverpackcreator.gui.window.configs
 
+import Gui
 import de.griefed.serverpackcreator.gui.GuiProps
 import java.awt.FlowLayout
 import java.awt.event.MouseAdapter

@@ -3,7 +3,6 @@ package de.griefed.serverpackcreator.gui.window.configs
 import de.griefed.serverpackcreator.api.plugins.swinggui.ExtensionConfigPanel
 import de.griefed.serverpackcreator.gui.window.components.CollapsiblePanel
 import net.miginfocom.swing.MigLayout
-import javax.swing.BorderFactory
 import javax.swing.JPanel
 
 class PluginsSettingsPanel(pluginPanels: List<ExtensionConfigPanel>) : JPanel(
@@ -21,6 +20,6 @@ class PluginsSettingsPanel(pluginPanels: List<ExtensionConfigPanel>) : JPanel(
     }
 
     private fun createCollapsiblePluginPanel(pluginPanel: ExtensionConfigPanel): JPanel {
-        return CollapsiblePanel(pluginPanel.extensionName,pluginPanel)
+        return CollapsiblePanel(pluginPanel.extensionName, pluginPanel)
     }
 }

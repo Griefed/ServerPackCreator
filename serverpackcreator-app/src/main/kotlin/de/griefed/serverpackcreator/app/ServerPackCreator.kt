@@ -131,7 +131,17 @@ class ServerPackCreator(private val args: Array<String>) {
                 createDefaultConfig()
                 Executors.newSingleThreadExecutor().execute { stageFour() }
                 splashScreen!!.update(80)
-                Thread(mainWindow!!).start()
+                MainWindow(
+                    api.configurationHandler!!,
+                    api.serverPackHandler!!,
+                    api.apiProperties,
+                    api.versionMeta!!,
+                    api.utilities!!,
+                    updateChecker,
+                    splashScreen!!,
+                    api.apiPlugins!!,
+                    migrationManager!!
+                )
             }
 
             Mode.SETUP -> {

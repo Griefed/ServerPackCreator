@@ -6,7 +6,7 @@ import java.awt.Graphics
 import java.awt.Graphics2D
 import kotlin.math.roundToInt
 
-class ErrorIcon(private val zoom: Float = 0.7f): FlatOptionPaneErrorIcon() {
+class ErrorIcon(private val zoom: Float = 0.7f) : FlatOptionPaneErrorIcon() {
     override fun paintIcon(c: Component?, g: Graphics, x: Int, y: Int) {
         val g2 = g.create() as Graphics2D
         try {

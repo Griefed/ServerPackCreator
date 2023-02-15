@@ -14,7 +14,6 @@ import de.griefed.serverpackcreator.api.ServerPackHandler
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import de.griefed.serverpackcreator.api.versionmeta.VersionMeta
 import de.griefed.serverpackcreator.gui.GuiProps
-import de.griefed.serverpackcreator.gui.splash.SplashScreen
 import de.griefed.serverpackcreator.gui.window.configs.ConfigsTab
 import de.griefed.serverpackcreator.updater.MigrationManager
 import de.griefed.serverpackcreator.updater.UpdateChecker
@@ -187,7 +186,7 @@ class MainMenu(
     }
 
     private fun load() {
-        configsTab.loadConfig(apiProperties.defaultConfig,configsTab.selectedEditor!!)
+        configsTab.loadConfig(apiProperties.defaultConfig, configsTab.selectedEditor!!)
     }
 
     private fun changeTheme(theme: FlatLaf) {

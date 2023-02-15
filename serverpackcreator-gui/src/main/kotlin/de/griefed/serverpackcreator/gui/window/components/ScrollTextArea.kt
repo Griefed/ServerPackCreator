@@ -20,8 +20,12 @@ class ScrollTextArea(
     }
 
     var text: String
-        get() {return textArea.text}
-        set(value) {textArea.text = value}
+        get() {
+            return textArea.text
+        }
+        set(value) {
+            textArea.text = value
+        }
 
     fun addDocumentListener(listener: DocumentListener) {
         textArea.document.addDocumentListener(listener)

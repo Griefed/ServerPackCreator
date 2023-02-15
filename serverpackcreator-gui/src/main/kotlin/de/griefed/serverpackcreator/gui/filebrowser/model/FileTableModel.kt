@@ -1,5 +1,6 @@
 package de.griefed.serverpackcreator.gui.filebrowser.model
 
+import Gui
 import de.griefed.serverpackcreator.gui.filebrowser.view.renderer.DateRenderer
 import java.awt.Dimension
 import java.text.DateFormat
@@ -14,8 +15,11 @@ import javax.swing.table.TableColumn
 class FileTableModel : AbstractTableModel() {
     private val rows: MutableList<List<Any>> = ArrayList(10)
     private val columns = arrayOf(
-        "Icon", "File", "Size",
-        "Last Modified", "Read"
+        Gui.filebrowser_table_icon.toString(),
+        Gui.filebrowser_table_file.toString(),
+        Gui.filebrowser_table_size.toString(),
+        Gui.filebrowser_table_last.toString(),
+        Gui.filebrowser_table_read.toString()
     )
 
     init {

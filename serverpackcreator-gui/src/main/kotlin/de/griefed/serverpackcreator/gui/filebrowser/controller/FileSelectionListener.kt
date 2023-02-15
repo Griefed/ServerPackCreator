@@ -16,11 +16,10 @@ class FileSelectionListener(
     override fun valueChanged(event: TreeSelectionEvent) {
         val node: DefaultMutableTreeNode = event.path.lastPathComponent as DefaultMutableTreeNode
         val fileNode: FileNode = node.userObject as FileNode
-        val addNodes = AddNodes(browserModel, node)
-        Thread(addNodes).start()
+        AddNodes(browserModel, node)
         val file: File = fileNode.file
         frame.updateFileDetail(fileNode)
-        frame.setDesktopButtonFileNode(fileNode)
+        frame.setFilePreviewNode(fileNode)
         if (file.isDirectory) {
             frame.setDefaultTableModel(node)
         } else {

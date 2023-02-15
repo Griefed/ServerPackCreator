@@ -1,5 +1,6 @@
 package de.griefed.serverpackcreator.gui.filebrowser.controller.action
 
+import Gui
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.awt.Desktop
 import java.awt.event.ActionEvent
@@ -12,7 +13,7 @@ class OpenAction : AbstractAction() {
     private var file: File? = null
 
     init {
-        putValue(NAME, "Open")
+        putValue(NAME, Gui.filebrowser_action_open.toString())
     }
 
     override fun actionPerformed(e: ActionEvent) {

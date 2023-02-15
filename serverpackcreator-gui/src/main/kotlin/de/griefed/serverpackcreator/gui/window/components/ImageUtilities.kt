@@ -49,7 +49,12 @@ class ImageUtilities {
         /**
          * Create an image icon from a base64 encoded image.
          */
-        fun fromBase64(encoded: String, width: Int = 24, height: Int = 24, scaling: Int = Image.SCALE_SMOOTH): ImageIcon {
+        fun fromBase64(
+            encoded: String,
+            width: Int = 24,
+            height: Int = 24,
+            scaling: Int = Image.SCALE_SMOOTH
+        ): ImageIcon {
             return ImageIcon(
                 Base64.getDecoder().decode(encoded)
             ).getScaledInstance(width, height, scaling)

@@ -29,7 +29,6 @@ class TreeScrollPane(
         tree.addTreeWillExpandListener(
             TreeExpandListener(this.browserModel)
         )
-        tree.expandRow(1)
         tree.isRootVisible = true
         tree.cellRenderer = FileTreeCellRenderer(this.browserModel)
         tree.showsRootHandles = true
@@ -40,19 +39,18 @@ class TreeScrollPane(
             300, preferredSize.getHeight().toInt()
         )
         scrollPane.preferredSize = widePreferred
-        expandPaths()
     }
 
-    private fun expandPaths() {
+    fun expandPathsToModpackDir() {
         val activeTab = configsTab.selectedEditor
-        if (activeTab != null && File(activeTab.getModpackDirectory()).isDirectory) {
+        if (activeTab != null) {
             val prefixes: Array<String> = File(activeTab.getModpackDirectory()).absolutePath
                 .replace("\\", "/").split(slashRegex)
                 .dropLastWhile { it.isEmpty() }
                 .toTypedArray()
             var path: TreePath? = null
             for (prefix in prefixes) {
-                path = tree.getNextMatch(prefix, 0, Position.Bias.Backward)
+                path = tree.getNextMatch(prefix, 0, Position.Bias.Forward)
                 tree.expandPath(path)
             }
             if (path != null) {

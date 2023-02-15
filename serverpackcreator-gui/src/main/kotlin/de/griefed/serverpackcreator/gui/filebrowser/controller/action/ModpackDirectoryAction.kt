@@ -1,5 +1,6 @@
 package de.griefed.serverpackcreator.gui.filebrowser.controller.action
 
+import Gui
 import de.griefed.serverpackcreator.gui.window.configs.ConfigsTab
 import java.awt.event.ActionEvent
 import java.io.File
@@ -9,7 +10,7 @@ class ModpackDirectoryAction(private val configsTab: ConfigsTab) : AbstractActio
     private var directory: File? = null
 
     init {
-        putValue(NAME, "Set as modpack directory")
+        putValue(NAME, Gui.filebrowser_action_modpack.toString())
     }
 
     override fun actionPerformed(e: ActionEvent) {

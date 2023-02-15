@@ -16,7 +16,10 @@ import de.griefed.serverpackcreator.gui.splash.SplashScreen
 import de.griefed.serverpackcreator.gui.window.main.MainFrame
 import de.griefed.serverpackcreator.updater.MigrationManager
 import de.griefed.serverpackcreator.updater.UpdateChecker
+import kotlinx.coroutines.*
+import kotlinx.coroutines.swing.Swing
 
+@OptIn(DelicateCoroutinesApi::class)
 class MainWindow(
     private val configurationHandler: ConfigurationHandler,
     private val serverPackHandler: ServerPackHandler,
@@ -27,37 +30,34 @@ class MainWindow(
     private val splashScreen: SplashScreen,
     private val apiPlugins: ApiPlugins,
     private val migrationManager: MigrationManager
-) : Runnable {
+) {
     private val alphaBetaRegex = "^(.*alpha.*|.*beta.*|.*dev.*)$".toRegex()
-    private val guiProps: GuiProps
 
     init {
-        FlatJetBrainsMonoFont.install()
-        FlatLaf.setPreferredFontFamily(FlatJetBrainsMonoFont.FAMILY)
-        if (apiProperties.apiVersion.matches(alphaBetaRegex)) {
-            FlatInspector.install( "ctrl shift alt X" )
-            FlatUIDefaultsInspector.install( "ctrl shift alt Y" )
+        GlobalScope.launch(Dispatchers.Swing) {
+            FlatJetBrainsMonoFont.install()
+            FlatLaf.setPreferredFontFamily(FlatJetBrainsMonoFont.FAMILY)
+            if (apiProperties.apiVersion.matches(alphaBetaRegex)) {
+                FlatInspector.install("ctrl shift alt X")
+                FlatUIDefaultsInspector.install("ctrl shift alt Y")
+            }
+            try {
+                FlatDarkPurpleIJTheme.setup()
+            } catch (weTried: Exception) {
+                weTried.printStackTrace()
+            }
+            MainFrame(
+                GuiProps(),
+                configurationHandler,
+                serverPackHandler,
+                apiProperties,
+                versionMeta,
+                utilities,
+                updateChecker,
+                splashScreen,
+                apiPlugins,
+                migrationManager
+            )
         }
-        try {
-            FlatDarkPurpleIJTheme.setup()
-        } catch (weTried: Exception) {
-            weTried.printStackTrace()
-        }
-        guiProps = GuiProps()
-    }
-
-    override fun run() {
-        MainFrame(
-            guiProps,
-            configurationHandler,
-            serverPackHandler,
-            apiProperties,
-            versionMeta,
-            utilities,
-            updateChecker,
-            splashScreen,
-            apiPlugins,
-            migrationManager
-        )
     }
 }

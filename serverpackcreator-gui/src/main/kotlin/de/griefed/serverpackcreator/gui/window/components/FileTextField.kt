@@ -5,6 +5,7 @@ import javax.swing.JTextField
 
 class FileTextField(text: String, editable: Boolean = false) : JTextField(text) {
     constructor(text: File) : this(text.absolutePath)
+
     var file: File
         get() {
             return File(text).absoluteFile

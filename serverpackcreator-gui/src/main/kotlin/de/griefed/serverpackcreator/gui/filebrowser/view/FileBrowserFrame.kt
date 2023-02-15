@@ -1,5 +1,7 @@
 package de.griefed.serverpackcreator.gui.filebrowser.view
 
+import Gui
+import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.filebrowser.model.FileBrowserModel
 import de.griefed.serverpackcreator.gui.filebrowser.model.FileNode
 import de.griefed.serverpackcreator.gui.window.configs.ConfigsTab
@@ -13,23 +15,28 @@ import javax.swing.tree.DefaultMutableTreeNode
 
 class FileBrowserFrame(
     private val browserModel: FileBrowserModel,
-    private val configsTab: ConfigsTab
+    private val configsTab: ConfigsTab,
+    guiProps: GuiProps
 ) {
-    private var filePreviewPanel: FilePreviewPanel
-    private var fileDetailPanel: FileDetailPanel
-    private var frame: JFrame = JFrame()
-    private var splitTreeTable: JSplitPane
-    private var tableScrollPane: TableScrollPane
+    private val filePreviewPanel: FilePreviewPanel
+    private val fileDetailPanel: FileDetailPanel
+    private val frame: JFrame = JFrame()
+    private val splitTreeTable: JSplitPane
+    private val tableScrollPane: TableScrollPane
+    private val treeScrollPane: TreeScrollPane
+    private val tablePreviewSplit: JSplitPane
+    private val northPanel = JPanel()
+    private val southPanel = JPanel()
 
     init {
-        frame.title = "File Browser"
+        frame.title = Gui.filebrowser.toString()
+        frame.iconImage = guiProps.appIcon
         frame.defaultCloseOperation = JFrame.HIDE_ON_CLOSE
         frame.addWindowListener(object : WindowAdapter() {
             override fun windowClosing(event: WindowEvent) {
                 frame.isVisible = false
             }
         })
-        val northPanel = JPanel()
         northPanel.layout = BorderLayout()
         tableScrollPane = TableScrollPane(this, browserModel, configsTab)
         tableScrollPane.panel.let {
@@ -38,7 +45,6 @@ class FileBrowserFrame(
                 BorderLayout.CENTER
             )
         }
-        val southPanel = JPanel()
         southPanel.layout = BorderLayout()
         fileDetailPanel = FileDetailPanel()
         fileDetailPanel.panel.let { southPanel.add(it, BorderLayout.PAGE_START) }
@@ -48,12 +54,12 @@ class FileBrowserFrame(
             BorderLayout.CENTER
         )
 
-        val tablePreviewSplit = JSplitPane(JSplitPane.VERTICAL_SPLIT,northPanel,southPanel)
+        tablePreviewSplit = JSplitPane(JSplitPane.VERTICAL_SPLIT, northPanel, southPanel)
         tablePreviewSplit.isOneTouchExpandable = true
         tablePreviewSplit.dividerLocation = 200
         tablePreviewSplit.dividerSize = 20
 
-        val treeScrollPane = TreeScrollPane(this, browserModel, configsTab)
+        treeScrollPane = TreeScrollPane(this, browserModel, configsTab)
         splitTreeTable = JSplitPane(
             JSplitPane.HORIZONTAL_SPLIT,
             treeScrollPane.scrollPane,
@@ -80,7 +86,7 @@ class FileBrowserFrame(
         tableScrollPane.clearDefaultTableModel()
     }
 
-    fun setDesktopButtonFileNode(fileNode: FileNode?) {
+    fun setFilePreviewNode(fileNode: FileNode?) {
         fileNode?.let { filePreviewPanel.setFileNode(it) }
     }
 
@@ -91,6 +97,7 @@ class FileBrowserFrame(
             frame.isVisible = true
             frame.toFront()
         }
+        treeScrollPane.expandPathsToModpackDir()
     }
 
     fun hide() {

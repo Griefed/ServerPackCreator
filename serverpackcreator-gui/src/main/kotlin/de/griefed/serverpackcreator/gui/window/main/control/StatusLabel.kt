@@ -10,6 +10,7 @@ class StatusLabel(text: String, private val transparency: Int = 255) : JLabel(te
     init {
         updateColour()
     }
+
     override fun paintComponent(g: Graphics?) {
         super.paintComponent(g)
         updateColour()

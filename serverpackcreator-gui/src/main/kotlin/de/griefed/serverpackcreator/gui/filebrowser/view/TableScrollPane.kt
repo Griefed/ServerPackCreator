@@ -1,5 +1,6 @@
 package de.griefed.serverpackcreator.gui.filebrowser.view
 
+import Gui
 import de.griefed.serverpackcreator.gui.filebrowser.controller.TableMouseListener
 import de.griefed.serverpackcreator.gui.filebrowser.controller.TableSelectionListener
 import de.griefed.serverpackcreator.gui.filebrowser.model.FileBrowserModel
@@ -54,8 +55,7 @@ class TableScrollPane(
 
     private fun buildLabelString(count: Int): String {
         val nf: NumberFormat = NumberFormat.getInstance()
-        return (nf.format(count.toLong())
-                + " files / directories")
+        return (nf.format(count.toLong()) + " " + Gui.filebrowser_table_header)
     }
 
     fun clearDefaultTableModel() {

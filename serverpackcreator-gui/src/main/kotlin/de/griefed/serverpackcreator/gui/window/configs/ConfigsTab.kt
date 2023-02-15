@@ -1,11 +1,15 @@
 package de.griefed.serverpackcreator.gui.window.configs
 
+import Gui
 import de.griefed.serverpackcreator.api.*
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import de.griefed.serverpackcreator.api.versionmeta.VersionMeta
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.filebrowser.FileBrowser
 import de.griefed.serverpackcreator.gui.window.components.TabPanel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
 import javax.swing.JOptionPane
@@ -20,7 +24,7 @@ class ConfigsTab(
     private val apiPlugins: ApiPlugins,
 ) : TabPanel() {
     private val log = cachedLoggerOf(this.javaClass)
-    private val fileBrowser = FileBrowser(this)
+    private val fileBrowser = FileBrowser(this, guiProps)
     val selectedEditor: ConfigEditorPanel?
         get() {
             return if (activeTab != null) {
@@ -31,14 +35,16 @@ class ConfigsTab(
         }
 
     init {
-        Thread(fileBrowser).start()
         tabs.addChangeListener {
-            if (tabs.tabCount != 0) {
-                for (tab in 0 until tabs.tabCount) {
-                    (tabs.getComponentAt(tab) as ConfigEditorPanel).title.closeButton.isVisible = false
+            MainScope().launch(Dispatchers.Default) {
+                if (tabs.tabCount != 0) {
+                    for (tab in 0 until tabs.tabCount) {
+                        (tabs.getComponentAt(tab) as ConfigEditorPanel).title.closeButton.isVisible = false
+                    }
+                    (activeTab!! as ConfigEditorPanel).title.closeButton.isVisible = true
                 }
-                (activeTab!! as ConfigEditorPanel).title.closeButton.isVisible = true
             }
+
         }
         for (i in 0..5) {
             addTab()
@@ -71,48 +77,50 @@ class ConfigsTab(
      * @author Griefed
      */
     fun loadConfig(configFile: File, tab: ConfigEditorPanel = addTab()) {
-        try {
-            val packConfig = PackConfig(utilities, configFile)
-            tab.lastLoadedConfiguration = packConfig
-            tab.setModpackDirectory(packConfig.modpackDir)
-            if (packConfig.clientMods.isEmpty()) {
-                tab.setClientSideMods(apiProperties.clientSideMods())
-                log.debug("Set clientMods with fallback list.")
-            } else {
-                tab.setClientSideMods(packConfig.clientMods)
+        MainScope().launch(Dispatchers.Default) {
+            try {
+                val packConfig = PackConfig(utilities, configFile)
+                tab.lastLoadedConfiguration = packConfig
+                tab.setModpackDirectory(packConfig.modpackDir)
+                if (packConfig.clientMods.isEmpty()) {
+                    tab.setClientSideMods(apiProperties.clientSideMods())
+                    log.debug("Set clientMods with fallback list.")
+                } else {
+                    tab.setClientSideMods(packConfig.clientMods)
+                }
+                if (packConfig.copyDirs.isEmpty()) {
+                    tab.setCopyDirectories(mutableListOf("mods", "config"))
+                } else {
+                    tab.setCopyDirectories(packConfig.copyDirs)
+                }
+                tab.setScriptVariables(packConfig.scriptSettings)
+                tab.setServerIconPath(packConfig.serverIconPath)
+                tab.setServerPropertiesPath(packConfig.serverPropertiesPath)
+                if (packConfig.minecraftVersion.isEmpty()) {
+                    packConfig.minecraftVersion = versionMeta.minecraft.latestRelease().version
+                }
+                tab.setMinecraftVersion(packConfig.minecraftVersion)
+                tab.setModloader(packConfig.modloader)
+                tab.setModloaderVersion(packConfig.modloaderVersion)
+                tab.setServerInstallationTicked(packConfig.isServerInstallationDesired)
+                tab.setIconInclusionTicked(packConfig.isServerIconInclusionDesired)
+                tab.setPropertiesInclusionTicked(packConfig.isServerPropertiesInclusionDesired)
+                tab.setZipArchiveCreationTicked(packConfig.isZipCreationDesired)
+                tab.setJavaArguments(packConfig.javaArgs)
+                tab.setServerPackSuffix(packConfig.serverPackSuffix)
+                for (panel in tab.pluginPanels) {
+                    panel.setServerPackExtensionConfig(packConfig.getPluginConfigs(panel.pluginID))
+                }
+            } catch (ex: Exception) {
+                log.error("Couldn't load configuration file.", ex)
+                JOptionPane.showMessageDialog(
+                    panel,
+                    Gui.createserverpack_gui_config_load_error_message.toString() + " " + ex.cause + "   ",
+                    Gui.createserverpack_gui_config_load_error.toString(),
+                    JOptionPane.ERROR_MESSAGE,
+                    guiProps.errorIcon
+                )
             }
-            if (packConfig.copyDirs.isEmpty()) {
-                tab.setCopyDirectories(mutableListOf("mods", "config"))
-            } else {
-                tab.setCopyDirectories(packConfig.copyDirs)
-            }
-            tab.setScriptVariables(packConfig.scriptSettings)
-            tab.setServerIconPath(packConfig.serverIconPath)
-            tab.setServerPropertiesPath(packConfig.serverPropertiesPath)
-            if (packConfig.minecraftVersion.isEmpty()) {
-                packConfig.minecraftVersion = versionMeta.minecraft.latestRelease().version
-            }
-            tab.setMinecraftVersion(packConfig.minecraftVersion)
-            tab.setModloader(packConfig.modloader)
-            tab.setModloaderVersion(packConfig.modloaderVersion)
-            tab.setServerInstallationTicked(packConfig.isServerInstallationDesired)
-            tab.setIconInclusionTicked(packConfig.isServerIconInclusionDesired)
-            tab.setPropertiesInclusionTicked(packConfig.isServerPropertiesInclusionDesired)
-            tab.setZipArchiveCreationTicked(packConfig.isZipCreationDesired)
-            tab.setJavaArguments(packConfig.javaArgs)
-            tab.setServerPackSuffix(packConfig.serverPackSuffix)
-            for (panel in tab.pluginPanels) {
-                panel.setServerPackExtensionConfig(packConfig.getPluginConfigs(panel.pluginID))
-            }
-        } catch (ex: Exception) {
-            log.error("Couldn't load configuration file.", ex)
-            JOptionPane.showMessageDialog(
-                panel,
-                Gui.createserverpack_gui_config_load_error_message.toString() + " " + ex.cause + "   ",
-                Gui.createserverpack_gui_config_load_error.toString(),
-                JOptionPane.ERROR_MESSAGE,
-                guiProps.errorIcon
-            )
         }
     }
 }

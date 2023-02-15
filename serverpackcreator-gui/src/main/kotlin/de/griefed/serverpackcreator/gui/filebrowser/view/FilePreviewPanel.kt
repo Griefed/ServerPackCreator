@@ -17,7 +17,9 @@ class FilePreviewPanel {
     private val textPreview = JTextPane()
     private val textScroll =
         JScrollPane(textPreview, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED)
-    private val imageRegex = ".*\\.(png|jpg|jpeg|bmp)".toRegex()
+
+    // TODO move regexes to guiProps
+    private val imageRegex = ".*\\.([Pp][Nn][Gg]|[Jj][Pp][Gg]|[Jj][Pp][Ee][Gg]|[Bb][Mm][Pp])".toRegex()
     private val props = "properties"
     private val conf = "conf"
     val panel = JPanel(
@@ -63,7 +65,6 @@ class FilePreviewPanel {
 
     inner class ImageCanvas : Canvas() {
         override fun paint(g: Graphics?) {
-            super.paint(g)
             if (fileNode?.file?.absoluteFile!!.name.matches(imageRegex)) {
                 val image = ImageIO.read(fileNode?.file?.absoluteFile)
                 val imgSize = Dimension(image.getWidth(null), image.getHeight(null))
@@ -84,7 +85,7 @@ class FilePreviewPanel {
                     startY.toInt(),
                     newWidth.toInt(),
                     newHeight.toInt(),
-                    this
+                    this@ImageCanvas
                 )
             }
         }

@@ -17,7 +17,6 @@ class TreeExpandListener(private val browserModel: FileBrowserModel) : TreeWillE
     override fun treeWillExpand(event: TreeExpansionEvent) {
         val path: TreePath = event.path
         val node: DefaultMutableTreeNode = path.lastPathComponent as DefaultMutableTreeNode
-        val addNodes = AddNodes(browserModel, node)
-        Thread(addNodes).start()
+        AddNodes(browserModel, node)
     }
 }

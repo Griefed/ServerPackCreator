@@ -23,7 +23,7 @@ class TableSelectionListener(private val frame: FileBrowserFrame, private val jT
                 val fileNode: FileNode = jTable.model
                     .getValueAt(row, 5) as FileNode
                 frame.updateFileDetail(fileNode)
-                frame.setDesktopButtonFileNode(fileNode)
+                frame.setFilePreviewNode(fileNode)
             }
         }
     }

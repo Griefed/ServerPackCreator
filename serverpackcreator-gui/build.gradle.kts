@@ -11,6 +11,7 @@ dependencies {
     api(project(":serverpackcreator-api"))
     api("de.griefed:larsonscanner:1.0.4")
     api("commons-io:commons-io:2.11.0")
+    api("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.6.4")
     implementation(project(":serverpackcreator-updater"))
 
     //New GUI

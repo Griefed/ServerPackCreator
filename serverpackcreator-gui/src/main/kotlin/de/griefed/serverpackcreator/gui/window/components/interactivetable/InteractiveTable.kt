@@ -19,6 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui.window.components.interactivetable
 
+import Gui
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.awt.Component
 import java.awt.event.*
@@ -68,7 +69,7 @@ class InteractiveTable(
             arrayOf<Any>(
                 Gui.createserverpack_gui_createserverpack_scriptsettings_table_column_variable.toString(),
                 Gui.createserverpack_gui_createserverpack_scriptsettings_table_column_value.toString(),
-                "","","","","",""
+                "", "", "", "", "", ""
             ),
             1
         ),
@@ -80,12 +81,12 @@ class InteractiveTable(
         setRowHeight(25)
         tableHeader.reorderingAllowed = false
         try {
-            ButtonColumns(this, 2,ButtonColumns.ColumnType.CLEAR)
-            ButtonColumns(this, 3,ButtonColumns.ColumnType.DELETE)
-            ButtonColumns(this, 4,ButtonColumns.ColumnType.ADD_BEFORE)
-            ButtonColumns(this, 5,ButtonColumns.ColumnType.ADD_AFTER)
-            ButtonColumns(this, 6,ButtonColumns.ColumnType.MOVE_UP)
-            ButtonColumns(this, 7,ButtonColumns.ColumnType.MOVE_DOWN)
+            ButtonColumns(this, 2, ButtonColumns.ColumnType.CLEAR)
+            ButtonColumns(this, 3, ButtonColumns.ColumnType.DELETE)
+            ButtonColumns(this, 4, ButtonColumns.ColumnType.ADD_BEFORE)
+            ButtonColumns(this, 5, ButtonColumns.ColumnType.ADD_AFTER)
+            ButtonColumns(this, 6, ButtonColumns.ColumnType.MOVE_UP)
+            ButtonColumns(this, 7, ButtonColumns.ColumnType.MOVE_DOWN)
         } catch (ex: IOException) {
             log.error("Couldn't create button column.", ex)
         }

@@ -1,8 +1,10 @@
 package de.griefed.serverpackcreator.gui.filebrowser.view
 
+import Gui
 import de.griefed.serverpackcreator.gui.filebrowser.model.FileBrowserModel
 import de.griefed.serverpackcreator.gui.filebrowser.model.FileNode
-import java.awt.*
+import de.griefed.serverpackcreator.gui.window.components.ElementLabel
+import net.miginfocom.swing.MigLayout
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
@@ -11,78 +13,44 @@ import javax.swing.JPanel
 import javax.swing.JTextField
 
 class FileDetailPanel {
-    private val insets: Insets = Insets(6, 6, 6, 6)
-    private var fileNameLabel: JLabel = JLabel(" ")
-    private var fileNameTextLabel: JLabel = JLabel(" ")
-    private var lastModifiedLabel: JLabel = JLabel(" ")
-    private var fileSizeLabel: JLabel = JLabel(" ")
-    private var filePathField: JTextField = JTextField(70)
+    private var fileNameLabel = JLabel(" ")
+    private var lastModifiedLabel = JLabel(" ")
+    private var fileSizeLabel = JLabel(" ")
+    private var filePathField = JTextField(70)
+    private var fileNameTextLabel = ElementLabel(" ")
+    private val filePathTextLabel = ElementLabel(Gui.filebrowser_detail_path.toString())
+    private val lastModifiedTextLabel = ElementLabel(Gui.filebrowser_detail_last.toString())
+    private val fileSizeTextLabel = ElementLabel(Gui.filebrowser_detail_size.toString())
     var fileNode: FileNode? = null
-    val panel: JPanel = JPanel()
+    val panel: JPanel = JPanel(
+        MigLayout(
+            "fillx",
+            "10[150!]0[grow]20"
+        )
+    )
 
     init {
-        panel.layout = GridBagLayout()
-        var gridy = 0
-        addComponent(
-            panel, fileNameTextLabel, 0, gridy,
-            insets
-        )
-        addComponent(
-            panel, fileNameLabel, 1, gridy++,
-            insets
-        )
-        val filePathTextLabel = JLabel("Path:")
-        addComponent(
-            panel, filePathTextLabel, 0, gridy,
-            insets
-        )
         filePathField.isEditable = false
-        addComponent(
-            panel, filePathField, 1, gridy++,
-            insets
-        )
-        val lastModifiedTextLabel = JLabel("Last Modified:")
-        addComponent(
-            panel, lastModifiedTextLabel, 0, gridy,
-            insets
-        )
-        addComponent(
-            panel, lastModifiedLabel, 1, gridy++,
-            insets
-        )
-        val fileSizeTextLabel = JLabel("File Size:")
-        addComponent(
-            panel, fileSizeTextLabel, 0, gridy,
-            insets
-        )
-        addComponent(
-            panel, fileSizeLabel, 1, gridy++,
-            insets
-        )
-    }
+        panel.add(fileNameTextLabel, "cell 0 0")
+        panel.add(fileNameLabel, "cell 1 0,grow")
 
-    private fun addComponent(
-        container: Container,
-        component: Component,
-        gridx: Int,
-        gridy: Int,
-        insets: Insets
-    ) {
-        val gbc = GridBagConstraints(
-            gridx, gridy,
-            1, 1, 1.0, 1.0, GridBagConstraints.LINE_START, GridBagConstraints.NONE,
-            insets, 0, 0
-        )
-        container.add(component, gbc)
+        panel.add(filePathTextLabel, "cell 0 1")
+        panel.add(filePathField, "cell 1 1,grow")
+
+        panel.add(lastModifiedTextLabel, "cell 0 2")
+        panel.add(lastModifiedLabel, "cell 1 2,grow")
+
+        panel.add(fileSizeTextLabel, "cell 0 3")
+        panel.add(fileSizeLabel, "cell 1 3,grow")
     }
 
     private fun updatePartControl(browserModel: FileBrowserModel) {
         if (fileNode != null) {
             val file: File = fileNode!!.file
             if (file.isDirectory) {
-                fileNameTextLabel.text = "Directory:"
+                fileNameTextLabel.text = Gui.filebrowser_detail_directory.toString()
             } else {
-                fileNameTextLabel.text = "File:"
+                fileNameTextLabel.text = Gui.filebrowser_detail_file.toString()
             }
             fileNameLabel.text = file.name
             fileNameLabel.icon = browserModel.getFileIcon(file)

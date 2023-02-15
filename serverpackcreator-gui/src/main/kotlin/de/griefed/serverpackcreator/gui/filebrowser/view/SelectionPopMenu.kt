@@ -17,9 +17,10 @@ open class SelectionPopMenu(configsTab: ConfigsTab) : MouseAdapter() {
     private val icon = ServerIconAction(configsTab)
     private val properties = ServerPropertiesAction(configsTab)
     private val open = OpenAction()
-    private val imageRegex: Regex = ".*\\.(png|jpg|jpeg|bmp)".toRegex()
+    private val imageRegex = ".*\\.([Pp][Nn][Gg]|[Jj][Pp][Gg]|[Jj][Pp][Ee][Gg]|[Bb][Mm][Pp])".toRegex()
     private val props: String = "properties"
 
+    // TODO move regexes to guiProps
     init {
         menu.add(open)
         menu.add(JSeparator())
