@@ -1,0 +1,37 @@
+name: Improvement Ask
+description: Ask for an improvement for ServerPackCreator
+title: "[Improvement Ask]: "
+labels: ["enhancement"]
+assignees:
+  - Griefed
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this improvement ask!
+  - type: textarea
+    id: improvement
+    attributes:
+      label: Whats the improvement you would like to be made?
+      description: Describe, in detail, the improvement you would like to be made. How does it improve ServerPackCreator? What does it improve? How does it improve the creation of a server pack? Etc.
+      placeholder: Describe, in detail, the improvement you would like to be made. How does it improve ServerPackCreator? What does it improve? How does it improve the creation of a server pack? Etc.
+      value: "Describe, in detail, the improvement you would like to be made. How does it improve ServerPackCreator? What does it improve? How does it improve the creation of a server pack? Etc."
+    validations:
+      required: true
+  - type: textarea
+    id: anything-else
+    attributes:
+      label: Anything else you would like to add?
+      description: Any additional info you would like to add?
+      placeholder: Tell me!
+      value: "Tell me!"
+    validations:
+      required: true
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Code of Conduct
+      description: By submitting this issue, you agree to follow our [Code of Conduct](https://github.com/Griefed/ServerPackCreator/blob/main/CODE_OF_CONDUCT.md)
+      options:
+        - label: I agree to follow this project's Code of Conduct
+          required: true

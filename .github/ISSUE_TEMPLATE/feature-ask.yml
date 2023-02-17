@@ -1,0 +1,37 @@
+name: Feature Wish
+description: Ask for a feature for ServerPackCreator
+title: "[Feature ask]: "
+labels: ["enhancement"]
+assignees:
+  - Griefed
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this feature ask!
+  - type: textarea
+    id: feature
+    attributes:
+      label: Whats the feature you would like to be added?
+      description: Describe, in detail, the feature you would like to be added. What's the workflow of your feature? How would a user go about using it. What benefit does it provide to the creation of a server pack? Etc.
+      placeholder: Describe, in detail, the feature you would like to be added. What's the workflow of your feature? How would a user go about using it. What benefit does it provide to the creation of a server pack? Etc.
+      value: "Describe, in detail, the feature you would like to be added. What's the workflow of your feature? How would a user go about using it. What benefit does it provide to the creation of a server pack? Etc."
+    validations:
+      required: true
+  - type: textarea
+    id: anything-else
+    attributes:
+      label: Anything else you would like to add?
+      description: Any additional info you would like to add?
+      placeholder: Any additional info you would like to add?
+      value: "Any additional info you would like to add?"
+    validations:
+      required: true
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Code of Conduct
+      description: By submitting this issue, you agree to follow our [Code of Conduct](https://github.com/Griefed/ServerPackCreator/blob/main/CODE_OF_CONDUCT.md)
+      options:
+        - label: I agree to follow this project's Code of Conduct
+          required: true

@@ -48,10 +48,15 @@ into the world of programming. And here we are.
 
 * For more detailed help and information, take a look at the [Wiki](https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-Help) and [HELP.md](HELP.md).
 
-##### Advice:
+##### Disclaimer:
 
-When using alpha, beta or in-dev version of ServerPackCreator, it is advised to do so in a different directory than your
+* You are still expected to be knowledgeable about your modpack, server packs in general, server administration and managing your Java installations. ServerPackCreator is not intended to take all the work off your shoulders!
+
+* When using alpha, beta or in-dev version of ServerPackCreator, it is advised to do so in a different directory than your
 regular ServerPackCreator installation. Things *will* break with alpha releases, stuff *may* break when using beta releases.
+If you distribute server packs generated with a pre-release (alpha, beta) of ServerPackCreator, you do so at your own risk.
+I will not be held responsible for errors in your server pack caused by you using a pre-release.
+  * **TL;DR:** Don't use test to ship to prod!
 
 # Screenshots
 
@@ -94,10 +99,12 @@ ServerPackCreator also has a webservice which you can run with the `-web`-argume
 
 # 1. Issues and help
 
-- Use issue templates available at [GitHub](https://github.com/Griefed/ServerPackCreator/issues/new/choose)
-    - **provide as much information as detailed as possible**. The more information and details you provide for your issue at hand, the easier it is for me to investigate it!
-- [Wiki](https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-Help)
-- [HELP.md](HELP.md)
+- Report a bug / ask for a feature / ask for an improvement / request a documentation improvement:
+  - [Click Me!](https://github.com/Griefed/ServerPackCreator/issues/new/choose)
+- There's a Wiki available which goes into further detail for many of ServerPackCreators available aspects:
+  - [Wiki](https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-Help)
+- The same as the Wiki, but as a file should you prefer it. 😊
+  - [HELP.md](HELP.md)
 
 # 2. Small feature overview
 
