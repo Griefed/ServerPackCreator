@@ -41,7 +41,7 @@ class FileBrowserModel {
                 val files = file.listFiles()
                 files?.forEach { child ->
                     root.add(
-                        DefaultMutableTreeNode(
+                        SimpleTreeNode(
                             FileNode(child)
                         )
                     )
@@ -57,7 +57,7 @@ class FileBrowserModel {
                     try {
                         file.listFiles()?.forEach { child ->
                             node.add(
-                                DefaultMutableTreeNode(
+                                SimpleTreeNode(
                                     FileNode(child)
                                 )
                             )

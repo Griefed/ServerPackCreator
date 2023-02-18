@@ -13,7 +13,7 @@ class FileTreeCellRenderer(private val browserModel: FileBrowserModel) : TreeCel
     private val label: JLabel = JLabel(" ")
 
     init {
-        label.isOpaque = true
+        label.isOpaque = false
     }
 
     override fun getTreeCellRendererComponent(

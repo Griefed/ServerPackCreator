@@ -15,10 +15,10 @@ class RootManager {
                 return myComputer
             }
             val roots = File.listRoots()
-            val rootNode = DefaultMutableTreeNode()
+            val rootNode = SimpleTreeNode()
             if (roots.isNotEmpty()) {
                 for (root in roots) {
-                    rootNode.add(DefaultMutableTreeNode(FileNode(root)))
+                    rootNode.add(SimpleTreeNode(FileNode(root)))
                 }
             } else {
                 throw IllegalStateException("No roots available")
@@ -31,12 +31,12 @@ class RootManager {
         get() {
             for (file in fileSystemView.roots) {
                 if (file.name.equals("::{20D04FE0-3AEA-1069-A2D8-08002B30309D}", ignoreCase = true)) {
-                    return DefaultMutableTreeNode(FileNode(file))
+                    return SimpleTreeNode(FileNode(file))
                 }
                 if (file.isDirectory) {
                     file.listFiles()?.forEach { child ->
                         if (child.name.equals("::{20D04FE0-3AEA-1069-A2D8-08002B30309D}", ignoreCase = true)) {
-                            return DefaultMutableTreeNode(FileNode(child))
+                            return SimpleTreeNode(FileNode(child))
                         }
                     }
                 }
