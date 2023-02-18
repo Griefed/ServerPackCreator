@@ -10,12 +10,12 @@ import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.window.configs.ConfigEditorPanel
 import de.griefed.serverpackcreator.gui.window.configs.ConfigsTab
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import net.miginfocom.swing.MigLayout
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.awt.Desktop
+import java.awt.event.ActionEvent
+import java.awt.event.ActionListener
 import java.io.File
 import java.io.IOException
 import javax.swing.JButton
@@ -44,6 +44,13 @@ class ControlPanel(
     private val lazyModeTextPane: JTextPane = JTextPane(lazyModeDocument)
     val panel = JPanel()
 
+    @OptIn(DelicateCoroutinesApi::class)
+    private val generateAction = ActionListener {
+        GlobalScope.launch(Dispatchers.IO) {
+            launchGeneration()
+        }
+    }
+
     init {
         finishedGenerationPane.isOpaque = false
         finishedGenerationPane.isEditable = false
@@ -60,11 +67,7 @@ class ControlPanel(
         }
 
         generate.icon = guiProps.genIcon
-        generate.addActionListener {
-            MainScope().launch(Dispatchers.IO) {
-                launchGeneration()
-            }
-        }
+        generate.addActionListener(generateAction)
         generate.multiClickThreshhold = 1000
         generate.toolTipText = Gui.createserverpack_gui_buttongenerateserverpack_tip.toString()
         serverPacks.icon = guiProps.packsIcon
