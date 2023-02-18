@@ -10,15 +10,13 @@ import de.griefed.serverpackcreator.api.versionmeta.VersionMeta
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.window.components.*
 import de.griefed.serverpackcreator.gui.window.components.interactivetable.InteractiveTable
+import de.griefed.serverpackcreator.gui.window.configs.components.*
 import kotlinx.coroutines.*
 import net.java.balloontip.BalloonTip
-import net.java.balloontip.styles.EdgedBalloonStyle
 import net.miginfocom.swing.MigLayout
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
-import java.awt.Color
 import java.awt.Dimension
 import java.awt.Image
-import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
 import java.awt.event.MouseEvent
 import java.awt.event.MouseListener
@@ -47,31 +45,65 @@ class ConfigEditorPanel(
 ), ServerPackConfigTab {
     private val log = cachedLoggerOf(this.javaClass)
     private val whitespace = "^.*,\\s*\\\\*$".toRegex()
-    private val modpackInfo = JLabel(guiProps.infoIcon)
-    private val propertiesInfo = JLabel(guiProps.infoIcon)
-    private val iconInfo = JLabel(guiProps.infoIcon)
-    private val filesInfo = JLabel(guiProps.infoIcon)
-    private val suffixInfo = JLabel(guiProps.infoIcon)
-    private val minecraftInfo = JLabel(guiProps.infoIcon)
-    private val javaVersionInfo = JLabel(guiProps.infoIcon)
-    private val modloaderInfo = JLabel(guiProps.infoIcon)
-    private val modloaderVersionInfo = JLabel(guiProps.infoIcon)
-    private val includeIconInfo = JLabel(guiProps.infoIcon)
-    private val includeZIPInfo = JLabel(guiProps.infoIcon)
-    private val includePropertiesInfo = JLabel(guiProps.infoIcon)
-    private val prepareServerInfo = JLabel(guiProps.infoIcon)
+    private val modpackInfo =
+        StatusIcon(guiProps, Gui.createserverpack_gui_createserverpack_labelmodpackdir_tip.toString())
+    private val propertiesInfo =
+        StatusIcon(guiProps, Gui.createserverpack_gui_createserverpack_labelpropertiespath_tip.toString())
+    private val iconInfo = StatusIcon(guiProps, Gui.createserverpack_gui_createserverpack_labeliconpath_tip.toString())
+    private val filesInfo = StatusIcon(guiProps, Gui.createserverpack_gui_createserverpack_labelcopydirs_tip.toString())
+    private val suffixInfo = StatusIcon(guiProps, Gui.createserverpack_gui_createserverpack_labelsuffix_tip.toString())
+    private val minecraftInfo =
+        StatusIcon(guiProps, Gui.createserverpack_gui_createserverpack_labelminecraft_tip.toString())
+    private val javaVersionInfo =
+        StatusIcon(guiProps, Gui.createserverpack_gui_createserverpack_minecraft_java_tooltip.toString())
+    private val modloaderInfo =
+        StatusIcon(guiProps, Gui.createserverpack_gui_createserverpack_labelmodloader_tip.toString())
+    private val modloaderVersionInfo =
+        StatusIcon(guiProps, Gui.createserverpack_gui_createserverpack_labelmodloaderversion_tip.toString())
+    private val includeIconInfo =
+        StatusIcon(guiProps, Gui.createserverpack_gui_createserverpack_checkboxicon_tip.toString())
+    private val includeZIPInfo =
+        StatusIcon(guiProps, Gui.createserverpack_gui_createserverpack_checkboxzip_tip.toString())
+    private val includePropertiesInfo =
+        StatusIcon(guiProps, Gui.createserverpack_gui_createserverpack_checkboxproperties_tip.toString())
+    private val prepareServerInfo =
+        StatusIcon(guiProps, Gui.createserverpack_gui_createserverpack_checkboxserver_tip.toString())
+    private val exclusionsInfo =
+        StatusIcon(guiProps, Gui.createserverpack_gui_createserverpack_labelclientmods_tip.toString())
+    private val argumentsInfo = StatusIcon(guiProps, Gui.createserverpack_gui_createserverpack_javaargs_tip.toString())
+    private val scriptInfo =
+        StatusIcon(guiProps, Gui.createserverpack_gui_createserverpack_scriptsettings_label_tooltip.toString())
+
     private val iconPreview = JLabel(guiProps.serverIcon)
-    private val exclusionsInfo = JLabel(guiProps.infoIcon)
-    private val argumentsInfo = JLabel(guiProps.infoIcon)
-    private val scriptInfo = JLabel(guiProps.infoIcon)
-    private val modpackBrowser = JButton(guiProps.folderIcon)
-    private val modpackInspect = JButton(guiProps.inspectIcon)
-    private val propertiesBrowser = JButton(guiProps.folderIcon)
-    private val propertiesOpen = JButton(guiProps.openIcon)
-    private val iconBrowser = JButton(guiProps.folderIcon)
-    private val serverPackFilesRevert = JButton(guiProps.revertIcon)
-    private val serverPackFilesBrowser = JButton(guiProps.folderIcon)
-    private val serverPackFilesReset = JButton(guiProps.resetIcon)
+
+    private val modpackBrowser =
+        IconActionButton(guiProps.folderIcon, Gui.createserverpack_gui_browser.toString(), showBrowser)
+    private val serverPackFilesBrowser =
+        IconActionButton(guiProps.folderIcon, Gui.createserverpack_gui_browser.toString(), showBrowser)
+    private val propertiesBrowser =
+        IconActionButton(guiProps.folderIcon, Gui.createserverpack_gui_browser.toString(), showBrowser)
+    private val iconBrowser =
+        IconActionButton(guiProps.folderIcon, Gui.createserverpack_gui_browser.toString(), showBrowser)
+    private val exclusionsBrowser =
+        IconActionButton(guiProps.folderIcon, Gui.createserverpack_gui_browser.toString(), showBrowser)
+
+    //TODO replace with IconActionButton
+    private val modpackInspect = IconActionButton(
+        guiProps.inspectIcon,
+        Gui.createserverpack_gui_buttonmodpackdir_scan_tip.toString()
+    ) { updateGuiFromSelectedModpack() }
+    private val propertiesOpen = IconActionButton(
+        guiProps.openIcon,
+        Gui.createserverpack_gui_createserverpack_button_open_properties.toString()
+    ) { openServerProperties() }
+    private val serverPackFilesRevert = IconActionButton(
+        guiProps.revertIcon,
+        Gui.createserverpack_gui_buttoncopydirs_revert_tip.toString()
+    ) { revertServerPackFiles() }
+    private val serverPackFilesReset = IconActionButton(
+        guiProps.resetIcon,
+        Gui.createserverpack_gui_buttoncopydirs_reset_tip.toString()
+    ) { setCopyDirectories(apiProperties.directoriesToInclude.toMutableList()) }
     private val javaVersion = ElementLabel("8", 16)
     private val serverPackSuffix = JTextField("")
     private val includeIcon = JCheckBox(Gui.createserverpack_gui_createserverpack_checkboxicon.toString())
@@ -89,7 +121,6 @@ class ConfigEditorPanel(
     private val modloaders = JComboBox<String>()
     private val modloaderVersions = JComboBox<String>()
     private val exclusionsRevert = JButton(guiProps.revertIcon)
-    private val exclusionsBrowser = JButton(guiProps.folderIcon)
     private val exclusionsReset = JButton(guiProps.resetIcon)
     private val scriptKVPairsRevert = JButton(guiProps.revertIcon)
     private val scriptKVPairsReset = JButton(guiProps.resetIcon)
@@ -127,7 +158,7 @@ class ConfigEditorPanel(
     )
     var lastLoadedConfiguration: PackConfig? = null
     val title = ConfigEditorTitle(guiProps, configsTab, this)
-    private val timer : Timer = Timer(100,null)
+    private val timer: Timer = Timer(100, null)
     private val iconPreviewBig = JLabel()
     private val balloonTip = BalloonTip(
         iconPreview,
@@ -228,7 +259,12 @@ class ConfigEditorPanel(
                 }
                 launch {
                     if (modloaderVersions.selectedItem!! == Gui.createserverpack_gui_createserverpack_forge_none.toString()) {
-                        errors.add(Gui.configuration_log_error_minecraft_modloader(getMinecraftVersion(), getModloader()))
+                        errors.add(
+                            Gui.configuration_log_error_minecraft_modloader(
+                                getMinecraftVersion(),
+                                getModloader()
+                            )
+                        )
                     }
                 }
             }
@@ -362,21 +398,6 @@ class ConfigEditorPanel(
      * TODO docs
      */
     private fun initTooltips() {
-        modpackInfo.toolTipText = Gui.createserverpack_gui_createserverpack_labelmodpackdir_tip.toString()
-        propertiesInfo.toolTipText = Gui.createserverpack_gui_createserverpack_labelpropertiespath_tip.toString()
-        iconInfo.toolTipText = Gui.createserverpack_gui_createserverpack_labeliconpath_tip.toString()
-        filesInfo.toolTipText = Gui.createserverpack_gui_createserverpack_labelcopydirs_tip.toString()
-        suffixInfo.toolTipText = Gui.createserverpack_gui_createserverpack_labelsuffix_tip.toString()
-        minecraftInfo.toolTipText = Gui.createserverpack_gui_createserverpack_labelminecraft_tip.toString()
-        javaVersionInfo.toolTipText = Gui.createserverpack_gui_createserverpack_minecraft_java_tooltip.toString()
-        modloaderInfo.toolTipText = Gui.createserverpack_gui_createserverpack_labelmodloader_tip.toString()
-        modloaderVersionInfo.toolTipText =
-            Gui.createserverpack_gui_createserverpack_labelmodloaderversion_tip.toString()
-        includeIconInfo.toolTipText = Gui.createserverpack_gui_createserverpack_checkboxicon_tip.toString()
-        includeZIPInfo.toolTipText = Gui.createserverpack_gui_createserverpack_checkboxzip_tip.toString()
-        includePropertiesInfo.toolTipText = Gui.createserverpack_gui_createserverpack_checkboxproperties_tip.toString()
-        prepareServerInfo.toolTipText = Gui.createserverpack_gui_createserverpack_checkboxserver_tip.toString()
-        //iconPreview.toolTipText = Gui.createserverpack_gui_createserverpack_servericon_preview.toString()
 
         balloonTip.isVisible = false
         iconPreview.addMouseListener(object : MouseListener {
@@ -406,19 +427,7 @@ class ConfigEditorPanel(
 
         })
 
-        exclusionsInfo.toolTipText = Gui.createserverpack_gui_createserverpack_labelclientmods_tip.toString()
-        argumentsInfo.toolTipText = Gui.createserverpack_gui_createserverpack_javaargs_tip.toString()
-        scriptInfo.toolTipText = Gui.createserverpack_gui_createserverpack_scriptsettings_label_tooltip.toString()
-        modpackBrowser.toolTipText = Gui.createserverpack_gui_browser.toString()
-        modpackInspect.toolTipText = Gui.createserverpack_gui_buttonmodpackdir_scan_tip.toString()
-        propertiesBrowser.toolTipText = Gui.createserverpack_gui_browser.toString()
-        propertiesOpen.toolTipText = Gui.createserverpack_gui_createserverpack_button_open_properties.toString()
-        iconBrowser.toolTipText = Gui.createserverpack_gui_browser.toString()
-        serverPackFilesRevert.toolTipText = Gui.createserverpack_gui_buttoncopydirs_revert_tip.toString()
-        serverPackFilesBrowser.toolTipText = Gui.createserverpack_gui_browser.toString()
-        serverPackFilesReset.toolTipText = Gui.createserverpack_gui_buttoncopydirs_reset_tip.toString()
         exclusionsRevert.toolTipText = Gui.createserverpack_gui_buttonclientmods_revert_tip.toString()
-        exclusionsBrowser.toolTipText = Gui.createserverpack_gui_browser.toString()
         exclusionsReset.toolTipText = Gui.createserverpack_gui_buttonclientmods_reset_tip.toString()
         scriptKVPairsRevert.toolTipText = Gui.createserverpack_gui_revert.toString()
         scriptKVPairsReset.toolTipText = Gui.createserverpack_gui_reset.toString()
@@ -429,20 +438,8 @@ class ConfigEditorPanel(
      * TODO docs
      */
     private fun initListeners() {
-        modpackBrowser.addActionListener(showBrowser)
-        propertiesBrowser.addActionListener(showBrowser)
-        iconBrowser.addActionListener(showBrowser)
-        serverPackFilesBrowser.addActionListener(showBrowser)
-        exclusionsBrowser.addActionListener(showBrowser)
-
-        modpackInspect.addActionListener { updateGuiFromSelectedModpack() }
-        propertiesOpen.addActionListener { openServerProperties() }
-
         exclusionsRevert.addActionListener { revertExclusions() }
-        serverPackFilesRevert.addActionListener { revertServerPackFiles() }
-
         exclusionsReset.addActionListener { setClientSideMods(apiProperties.clientSideMods()) }
-        serverPackFilesReset.addActionListener { setCopyDirectories(apiProperties.directoriesToInclude.toMutableList()) }
 
         modpackDirectory.document.addDocumentListener(modpackChanges)
         serverPackSuffix.document.addDocumentListener(suffixChanges)
@@ -883,7 +880,7 @@ class ConfigEditorPanel(
                 includeIconInfo.toolTipText = Gui.configuration_log_warn_icon.toString()
                 iconInfo.toolTipText = Gui.configuration_log_error_servericon_error.toString()
                 iconPreview.icon = guiProps.iconError
-                iconPreviewBig.icon = guiProps.iconError.getScaledInstance(64,64,Image.SCALE_SMOOTH)
+                iconPreviewBig.icon = guiProps.iconError.getScaledInstance(64, 64, Image.SCALE_SMOOTH)
             }
         } else {
             setIconPreview(apiProperties.defaultServerIcon, errors)
@@ -932,7 +929,7 @@ class ConfigEditorPanel(
         try {
             val newIcon = ImageIcon(ImageIO.read(icon))
             iconPreview.icon = newIcon.getScaledInstance(32, 32, Image.SCALE_SMOOTH)
-            iconPreviewBig.icon = newIcon.getScaledInstance(128,128,Image.SCALE_SMOOTH)
+            iconPreviewBig.icon = newIcon.getScaledInstance(128, 128, Image.SCALE_SMOOTH)
         } catch (ex: IOException) {
             log.error("Error generating server icon preview.", ex)
             errors.add(Gui.configuration_log_error_servericon_error.toString())
