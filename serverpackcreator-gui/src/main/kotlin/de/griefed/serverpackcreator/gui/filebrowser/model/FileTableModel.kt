@@ -54,7 +54,7 @@ class FileTableModel : AbstractTableModel() {
 
     fun addRow(browserModel: FileBrowserModel, fileNode: FileNode) {
         val file = fileNode.file
-        val list: MutableList<Any> = ArrayList()
+        val list = mutableListOf<Any>()
         list.add(browserModel.getFileIcon(file))
         list.add(browserModel.getFileText(file))
         list.add(file.length())
@@ -69,7 +69,7 @@ class FileTableModel : AbstractTableModel() {
     }
 
     fun setColumnWidths(table: JTable): Int {
-        val centerRenderer: DefaultTableCellRenderer = DateRenderer()
+        val centerRenderer = DateRenderer()
         centerRenderer.horizontalAlignment = JLabel.CENTER
         table.columnModel.getColumn(3).cellRenderer = centerRenderer
         var width = setColumnWidth(table, 0, 35)
@@ -82,9 +82,9 @@ class FileTableModel : AbstractTableModel() {
 
     private fun setColumnWidth(table: JTable, column: Int, width: Int): Int {
         var columnWidth = width
-        val tableColumn: TableColumn = table.columnModel.getColumn(column)
+        val tableColumn = table.columnModel.getColumn(column)
         val label = JLabel(tableColumn.headerValue as String)
-        val preferred: Dimension = label.preferredSize
+        val preferred = label.preferredSize
         columnWidth = columnWidth.coerceAtLeast(preferred.getWidth().toInt() + 14)
         tableColumn.preferredWidth = columnWidth
         tableColumn.minWidth = columnWidth

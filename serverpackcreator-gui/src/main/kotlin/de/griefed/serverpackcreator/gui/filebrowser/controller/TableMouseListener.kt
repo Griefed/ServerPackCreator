@@ -13,16 +13,16 @@ class TableMouseListener(
 
     override fun mousePressed(mouseEvent: MouseEvent) {
         if (mouseEvent.button == MouseEvent.BUTTON3) {
-            val r: Int = jTable.rowAtPoint(mouseEvent.point)
+            val r = jTable.rowAtPoint(mouseEvent.point)
             if (r >= 0 && r < jTable.rowCount) {
                 jTable.setRowSelectionInterval(r, r)
             } else {
                 jTable.clearSelection()
             }
-            val rowindex: Int = jTable.selectedRow
+            val rowindex = jTable.selectedRow
             if (rowindex >= 0) {
-                val fileNode: FileNode = jTable.model.getValueAt(rowindex, 5) as FileNode
-                val file: File = fileNode.file
+                val fileNode = jTable.model.getValueAt(rowindex, 5) as FileNode
+                val file = fileNode.file
                 show(jTable, mouseEvent.x, mouseEvent.y, file)
             }
         }

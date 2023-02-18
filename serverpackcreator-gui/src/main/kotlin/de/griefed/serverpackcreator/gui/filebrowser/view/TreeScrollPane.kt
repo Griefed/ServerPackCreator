@@ -44,7 +44,7 @@ class TreeScrollPane(
     fun expandPathsToModpackDir() {
         val activeTab = configsTab.selectedEditor
         if (activeTab != null) {
-            val prefixes: Array<String> = File(activeTab.getModpackDirectory()).absolutePath
+            val prefixes = File(activeTab.getModpackDirectory()).absolutePath
                 .replace("\\", "/").split(slashRegex)
                 .dropLastWhile { it.isEmpty() }
                 .toTypedArray()

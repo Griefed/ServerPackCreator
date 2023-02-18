@@ -15,10 +15,10 @@ class TreeMouseListener(
     override fun mousePressed(mouseEvent: MouseEvent) {
         if (mouseEvent.button == MouseEvent.BUTTON3) {
             if (jTree.getPathForLocation(mouseEvent.x, mouseEvent.y) != null) {
-                val treePath: TreePath = jTree.getPathForLocation(mouseEvent.x, mouseEvent.y)!!
-                val treeNode: DefaultMutableTreeNode = treePath.lastPathComponent as DefaultMutableTreeNode
-                val fileNode: FileNode = treeNode.userObject as FileNode
-                val file: File = fileNode.file
+                val treePath = jTree.getPathForLocation(mouseEvent.x, mouseEvent.y)!!
+                val treeNode = treePath.lastPathComponent as DefaultMutableTreeNode
+                val fileNode = treeNode.userObject as FileNode
+                val file = fileNode.file
                 show(jTree, mouseEvent.x, mouseEvent.y, file)
             }
         }

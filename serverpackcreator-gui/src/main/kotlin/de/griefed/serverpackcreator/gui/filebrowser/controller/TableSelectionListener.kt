@@ -16,8 +16,8 @@ class TableSelectionListener(private val frame: FileBrowserFrame, private val jT
 
     override fun valueChanged(event: ListSelectionEvent) {
         if (!event.valueIsAdjusting) {
-            val lsm: ListSelectionModel = event.source as ListSelectionModel
-            var row: Int = lsm.minSelectionIndex
+            val lsm = event.source as ListSelectionModel
+            var row = lsm.minSelectionIndex
             if (row in 0 until rowCount) {
                 row = jTable.convertRowIndexToModel(row)
                 val fileNode: FileNode = jTable.model

@@ -9,7 +9,7 @@ import kotlinx.coroutines.swing.Swing
 
 @OptIn(DelicateCoroutinesApi::class)
 class FileBrowser(private val configsTab: ConfigsTab, guiProps: GuiProps) {
-    private val browserModel: FileBrowserModel = FileBrowserModel()
+    private val browserModel: FileBrowserModel = FileBrowserModel(guiProps)
     private lateinit var frame: FileBrowserFrame
 
     init {

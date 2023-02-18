@@ -2,6 +2,8 @@ package de.griefed.serverpackcreator.gui
 
 import de.griefed.larsonscanner.LarsonScanner.ScannerConfig
 import de.griefed.serverpackcreator.api.utilities.ReticulatingSplines
+import de.griefed.serverpackcreator.gui.filebrowser.view.renderer.FileNameComparator
+import de.griefed.serverpackcreator.gui.filebrowser.view.renderer.FileTypeComparator
 import de.griefed.serverpackcreator.gui.window.components.ImageUtilities
 import de.griefed.serverpackcreator.gui.window.icons.ErrorIcon
 import de.griefed.serverpackcreator.gui.window.icons.InfoIcon
@@ -120,4 +122,6 @@ class GuiProps {
                 UIManager.getColor("Panel.background")
             )
         }
+    val typeComparator = FileTypeComparator()
+    val nameComparator = FileNameComparator()
 }

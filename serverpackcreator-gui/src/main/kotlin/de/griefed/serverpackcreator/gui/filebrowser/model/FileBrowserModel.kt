@@ -1,13 +1,14 @@
 package de.griefed.serverpackcreator.gui.filebrowser.model
 
+import de.griefed.serverpackcreator.gui.GuiProps
 import java.io.File
 import java.util.*
 import javax.swing.Icon
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.DefaultTreeModel
 
-class FileBrowserModel {
-    private val rootManager: RootManager = RootManager()
+class FileBrowserModel(private val guiProps: GuiProps) {
+    private val rootManager: RootManager = RootManager(guiProps)
     val treeModel: DefaultTreeModel = createTreeModel()
 
     fun reload() {
@@ -41,7 +42,7 @@ class FileBrowserModel {
                 val files = file.listFiles()
                 files?.forEach { child ->
                     root.add(
-                        SimpleTreeNode(
+                        SortedTreeNode(guiProps,
                             FileNode(child)
                         )
                     )
@@ -57,7 +58,7 @@ class FileBrowserModel {
                     try {
                         file.listFiles()?.forEach { child ->
                             node.add(
-                                SimpleTreeNode(
+                                SortedTreeNode(guiProps,
                                     FileNode(child)
                                 )
                             )

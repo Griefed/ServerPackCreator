@@ -2,6 +2,7 @@ package de.griefed.serverpackcreator.gui.filebrowser.model
 
 import java.io.File
 
+//TODO extend file?
 class FileNode(val file: File) {
     var isGenerateGrandchildren = true
 
