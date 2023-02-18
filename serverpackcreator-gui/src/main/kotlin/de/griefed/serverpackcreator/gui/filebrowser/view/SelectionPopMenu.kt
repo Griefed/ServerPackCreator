@@ -1,9 +1,7 @@
 package de.griefed.serverpackcreator.gui.filebrowser.view
 
-import de.griefed.serverpackcreator.gui.filebrowser.controller.action.ModpackDirectoryAction
-import de.griefed.serverpackcreator.gui.filebrowser.controller.action.OpenAction
-import de.griefed.serverpackcreator.gui.filebrowser.controller.action.ServerIconAction
-import de.griefed.serverpackcreator.gui.filebrowser.controller.action.ServerPropertiesAction
+import de.griefed.serverpackcreator.api.utilities.common.Utilities
+import de.griefed.serverpackcreator.gui.filebrowser.controller.action.*
 import de.griefed.serverpackcreator.gui.window.configs.ConfigsTab
 import java.awt.Component
 import java.awt.event.MouseAdapter
@@ -11,18 +9,20 @@ import java.io.File
 import javax.swing.JPopupMenu
 import javax.swing.JSeparator
 
-open class SelectionPopMenu(configsTab: ConfigsTab) : MouseAdapter() {
+open class SelectionPopMenu(configsTab: ConfigsTab, utilities: Utilities) : MouseAdapter() {
     private val menu: JPopupMenu = JPopupMenu()
     private val directory = ModpackDirectoryAction(configsTab)
     private val icon = ServerIconAction(configsTab)
     private val properties = ServerPropertiesAction(configsTab)
-    private val open = OpenAction()
+    private val open = OpenAction(utilities)
+    private val openContainingFolder = OpenContainingFolder(utilities)
     private val imageRegex = ".*\\.([Pp][Nn][Gg]|[Jj][Pp][Gg]|[Jj][Pp][Ee][Gg]|[Bb][Mm][Pp])".toRegex()
     private val props: String = "properties"
 
     // TODO move regexes to guiProps
     init {
         menu.add(open)
+        menu.add(openContainingFolder)
         menu.add(JSeparator())
         menu.add(directory)
         menu.add(icon)
@@ -36,6 +36,7 @@ open class SelectionPopMenu(configsTab: ConfigsTab) : MouseAdapter() {
 
     private fun setVisibilities(file: File) {
         open.setFile(file)
+        openContainingFolder.setDirectory(file)
         if (file.isDirectory) {
             directory.setDirectory(file)
             directory.isEnabled = true

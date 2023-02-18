@@ -15,15 +15,16 @@ dependencies {
     implementation(project(":serverpackcreator-updater"))
 
     //New GUI
-    implementation("com.formdev:flatlaf:3.0")
-    implementation("com.formdev:flatlaf-extras:3.0")
-    implementation("com.formdev:flatlaf-intellij-themes:3.0")
-    implementation("com.formdev:flatlaf-fonts-inter:3.19")
-    implementation("com.formdev:flatlaf-fonts-roboto:2.137")
-    implementation("com.formdev:flatlaf-fonts-roboto-mono:3.000")
-    implementation("com.formdev:flatlaf-fonts-jetbrains-mono:2.242")
-    implementation("com.miglayout:miglayout-swing:11.0")
-    implementation("com.formdev:svgSalamander:1.1.4")
+    api("com.formdev:flatlaf:3.0")
+    api("com.formdev:flatlaf-extras:3.0")
+    api("com.formdev:flatlaf-intellij-themes:3.0")
+    api("com.formdev:flatlaf-fonts-inter:3.19")
+    api("com.formdev:flatlaf-fonts-roboto:2.137")
+    api("com.formdev:flatlaf-fonts-roboto-mono:3.000")
+    api("com.formdev:flatlaf-fonts-jetbrains-mono:2.242")
+    api("com.miglayout:miglayout-swing:11.0")
+    api("com.formdev:svgSalamander:1.1.4")
+    api("net.java.balloontip:balloontip:1.2.4.1")
 
     //Old GUI
     api("io.github.vincenzopalazzo:material-ui-swing:1.1.4")

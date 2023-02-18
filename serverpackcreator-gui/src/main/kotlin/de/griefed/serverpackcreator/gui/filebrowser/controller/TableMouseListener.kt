@@ -1,5 +1,6 @@
 package de.griefed.serverpackcreator.gui.filebrowser.controller
 
+import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import de.griefed.serverpackcreator.gui.filebrowser.model.FileNode
 import de.griefed.serverpackcreator.gui.filebrowser.view.SelectionPopMenu
 import de.griefed.serverpackcreator.gui.window.configs.ConfigsTab
@@ -8,8 +9,8 @@ import java.io.File
 import javax.swing.JTable
 
 class TableMouseListener(
-    private val jTable: JTable, configsTab: ConfigsTab
-) : SelectionPopMenu(configsTab) {
+    private val jTable: JTable, configsTab: ConfigsTab, utilities: Utilities
+) : SelectionPopMenu(configsTab,utilities) {
 
     override fun mousePressed(mouseEvent: MouseEvent) {
         if (mouseEvent.button == MouseEvent.BUTTON3) {

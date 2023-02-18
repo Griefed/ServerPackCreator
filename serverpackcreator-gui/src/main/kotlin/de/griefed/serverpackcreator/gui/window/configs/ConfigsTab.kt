@@ -24,7 +24,7 @@ class ConfigsTab(
     private val apiPlugins: ApiPlugins,
 ) : TabPanel() {
     private val log = cachedLoggerOf(this.javaClass)
-    private val fileBrowser = FileBrowser(this, guiProps)
+    private val fileBrowser = FileBrowser(this, guiProps, utilities)
     val selectedEditor: ConfigEditorPanel?
         get() {
             return if (activeTab != null) {

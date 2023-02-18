@@ -1,15 +1,12 @@
 package de.griefed.serverpackcreator.gui.filebrowser.controller.action
 
 import Gui
-import org.apache.logging.log4j.kotlin.cachedLoggerOf
-import java.awt.Desktop
+import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import java.awt.event.ActionEvent
 import java.io.File
-import java.io.IOException
 import javax.swing.AbstractAction
 
-class OpenAction : AbstractAction() {
-    private val log = cachedLoggerOf(this.javaClass)
+class OpenAction(private val utilities: Utilities) : AbstractAction() {
     private var file: File? = null
 
     init {
@@ -17,15 +14,8 @@ class OpenAction : AbstractAction() {
     }
 
     override fun actionPerformed(e: ActionEvent) {
-        if (Desktop.isDesktopSupported()) {
-            val desktop = Desktop.getDesktop()
-            if (desktop.isSupported(Desktop.Action.OPEN)) {
-                try {
-                    desktop.open(file)
-                } catch (ex: IOException) {
-                    log.error("Couldn't open $file.")
-                }
-            }
+        if (file != null) {
+            utilities.fileUtilities.openFile(file!!)
         }
     }
 

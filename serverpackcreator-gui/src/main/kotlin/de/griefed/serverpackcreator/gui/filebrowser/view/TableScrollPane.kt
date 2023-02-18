@@ -1,6 +1,7 @@
 package de.griefed.serverpackcreator.gui.filebrowser.view
 
 import Gui
+import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import de.griefed.serverpackcreator.gui.filebrowser.controller.TableMouseListener
 import de.griefed.serverpackcreator.gui.filebrowser.controller.TableSelectionListener
 import de.griefed.serverpackcreator.gui.filebrowser.model.FileBrowserModel
@@ -18,7 +19,8 @@ import javax.swing.tree.DefaultMutableTreeNode
 class TableScrollPane(
     frame: FileBrowserFrame,
     private val model: FileBrowserModel,
-    configsTab: ConfigsTab
+    configsTab: ConfigsTab,
+    utilities: Utilities
 ) {
     private var ftModel: FileTableModel
     private var countLabel: JLabel
@@ -40,7 +42,7 @@ class TableScrollPane(
         table.autoResizeMode = JTable.AUTO_RESIZE_OFF
         table.columnSelectionAllowed = false
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION)
-        table.addMouseListener(TableMouseListener(table, configsTab))
+        table.addMouseListener(TableMouseListener(table, configsTab,utilities))
 
         tsListener = TableSelectionListener(frame, table)
         tsListener.setRowCount(ftModel.rowCount)

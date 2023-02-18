@@ -8,6 +8,9 @@ import de.griefed.serverpackcreator.gui.window.components.ImageUtilities
 import de.griefed.serverpackcreator.gui.window.icons.ErrorIcon
 import de.griefed.serverpackcreator.gui.window.icons.InfoIcon
 import de.griefed.serverpackcreator.gui.window.icons.WarningIcon
+import net.java.balloontip.styles.EdgedBalloonStyle
+import net.java.balloontip.styles.IsometricBalloonStyle
+import net.java.balloontip.styles.ModernBalloonStyle
 import javax.swing.UIManager
 
 class GuiProps {
@@ -124,4 +127,5 @@ class GuiProps {
         }
     val typeComparator = FileTypeComparator()
     val nameComparator = FileNameComparator()
+    var balloonStyle = EdgedBalloonStyle(UIManager.getColor("Panel.background"),UIManager.getColor("TabbedPane.focusColor"))
 }

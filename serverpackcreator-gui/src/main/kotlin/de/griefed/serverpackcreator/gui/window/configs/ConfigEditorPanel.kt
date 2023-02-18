@@ -11,16 +11,23 @@ import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.window.components.*
 import de.griefed.serverpackcreator.gui.window.components.interactivetable.InteractiveTable
 import kotlinx.coroutines.*
+import net.java.balloontip.BalloonTip
+import net.java.balloontip.styles.EdgedBalloonStyle
 import net.miginfocom.swing.MigLayout
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
+import java.awt.Color
 import java.awt.Dimension
 import java.awt.Image
+import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
+import java.awt.event.MouseEvent
+import java.awt.event.MouseListener
 import java.io.File
 import java.io.IOException
 import java.util.*
 import javax.imageio.ImageIO
 import javax.swing.*
+import javax.swing.Timer
 import javax.swing.event.DocumentEvent
 
 class ConfigEditorPanel(
@@ -120,6 +127,14 @@ class ConfigEditorPanel(
     )
     var lastLoadedConfiguration: PackConfig? = null
     val title = ConfigEditorTitle(guiProps, configsTab, this)
+    private val timer : Timer = Timer(100,null)
+    private val iconPreviewBig = JLabel()
+    private val balloonTip = BalloonTip(
+        iconPreview,
+        iconPreviewBig,
+        guiProps.balloonStyle,
+        false
+    )
 
     @OptIn(DelicateCoroutinesApi::class)
     private val modpackChanges = object : DocumentChangeListener {
@@ -128,7 +143,6 @@ class ConfigEditorPanel(
                 title.titleLabel.text = modpackDirectory.file.name
                 validateInputFields()
             }
-
         }
     }
 
@@ -138,7 +152,6 @@ class ConfigEditorPanel(
             GlobalScope.launch(Dispatchers.Default) {
                 validateInputFields()
             }
-
         }
     }
 
@@ -148,7 +161,6 @@ class ConfigEditorPanel(
             GlobalScope.launch(Dispatchers.Default) {
                 validateInputFields()
             }
-
         }
     }
 
@@ -158,7 +170,6 @@ class ConfigEditorPanel(
             GlobalScope.launch(Dispatchers.Default) {
                 validateInputFields()
             }
-
         }
     }
 
@@ -168,7 +179,6 @@ class ConfigEditorPanel(
             GlobalScope.launch(Dispatchers.Default) {
                 validateInputFields()
             }
-
         }
     }
 
@@ -178,12 +188,57 @@ class ConfigEditorPanel(
             GlobalScope.launch(Dispatchers.Default) {
                 validateInputFields()
             }
-
         }
     }
 
-
     init {
+        timer.stop()
+        timer.addActionListener {
+            timer.stop()
+            val errors = mutableListOf<String>()
+            runBlocking(Dispatchers.IO) {
+                launch {
+                    errors.addAll(validateModpackDir())
+                }
+                launch {
+                    errors.addAll(validateSuffix())
+                }
+                launch {
+                    errors.addAll(validateExclusions())
+                }
+                launch {
+                    errors.addAll(validateServerPackFiles())
+                }
+                launch {
+                    errors.addAll(validateServerIcon())
+                }
+                launch {
+                    errors.addAll(validateServerProperties())
+                }
+                launch {
+                    if (!checkServer()) {
+                        errors.add(
+                            Gui.createserverpack_gui_createserverpack_checkboxserver_unavailable_title(
+                                minecraftVersions.selectedItem!!.toString(),
+                                modloaders.selectedItem!!.toString(),
+                                modloaderVersions.selectedItem!!.toString()
+                            )
+                        )
+                    }
+                }
+                launch {
+                    if (modloaderVersions.selectedItem!! == Gui.createserverpack_gui_createserverpack_forge_none.toString()) {
+                        errors.add(Gui.configuration_log_error_minecraft_modloader(getMinecraftVersion(), getModloader()))
+                    }
+                }
+            }
+            if (errors.isEmpty()) {
+                title.clearErrorIcon()
+            } else {
+                title.setErrorIcon("<html>${errors.joinToString("<br>")}</html>")
+            }
+        }
+
         initListeners()
         initTooltips()
         initAikarsButton()
@@ -321,7 +376,36 @@ class ConfigEditorPanel(
         includeZIPInfo.toolTipText = Gui.createserverpack_gui_createserverpack_checkboxzip_tip.toString()
         includePropertiesInfo.toolTipText = Gui.createserverpack_gui_createserverpack_checkboxproperties_tip.toString()
         prepareServerInfo.toolTipText = Gui.createserverpack_gui_createserverpack_checkboxserver_tip.toString()
-        iconPreview.toolTipText = Gui.createserverpack_gui_createserverpack_servericon_preview.toString()
+        //iconPreview.toolTipText = Gui.createserverpack_gui_createserverpack_servericon_preview.toString()
+
+        balloonTip.isVisible = false
+        iconPreview.addMouseListener(object : MouseListener {
+            override fun mouseClicked(e: MouseEvent?) {
+                balloonTip.style = guiProps.balloonStyle
+                balloonTip.isVisible = true
+            }
+
+            override fun mousePressed(e: MouseEvent?) {
+                balloonTip.style = guiProps.balloonStyle
+                balloonTip.isVisible = true
+            }
+
+            override fun mouseReleased(e: MouseEvent?) {
+                balloonTip.style = guiProps.balloonStyle
+                balloonTip.isVisible = true
+            }
+
+            override fun mouseEntered(e: MouseEvent?) {
+                balloonTip.style = guiProps.balloonStyle
+                balloonTip.isVisible = true
+            }
+
+            override fun mouseExited(e: MouseEvent?) {
+                balloonTip.isVisible = false
+            }
+
+        })
+
         exclusionsInfo.toolTipText = Gui.createserverpack_gui_createserverpack_labelclientmods_tip.toString()
         argumentsInfo.toolTipText = Gui.createserverpack_gui_createserverpack_javaargs_tip.toString()
         scriptInfo.toolTipText = Gui.createserverpack_gui_createserverpack_scriptsettings_label_tooltip.toString()
@@ -581,49 +665,7 @@ class ConfigEditorPanel(
     }
 
     override fun validateInputFields() {
-        val errors = mutableListOf<String>()
-        runBlocking(Dispatchers.IO) {
-            launch {
-                errors.addAll(validateModpackDir())
-            }
-            launch {
-                errors.addAll(validateSuffix())
-            }
-            launch {
-                errors.addAll(validateExclusions())
-            }
-            launch {
-                errors.addAll(validateServerPackFiles())
-            }
-            launch {
-                errors.addAll(validateServerIcon())
-            }
-            launch {
-                errors.addAll(validateServerProperties())
-            }
-            launch {
-                if (!checkServer()) {
-                    errors.add(
-                        Gui.createserverpack_gui_createserverpack_checkboxserver_unavailable_title(
-                            minecraftVersions.selectedItem!!.toString(),
-                            modloaders.selectedItem!!.toString(),
-                            modloaderVersions.selectedItem!!.toString()
-                        )
-                    )
-                }
-            }
-            launch {
-                if (modloaderVersions.selectedItem!! == Gui.createserverpack_gui_createserverpack_forge_none.toString()) {
-                    errors.add(Gui.configuration_log_error_minecraft_modloader(getMinecraftVersion(), getModloader()))
-                }
-            }
-        }
-        println("CEP562 $errors")
-        if (errors.isEmpty()) {
-            title.clearErrorIcon()
-        } else {
-            title.setErrorIcon("<html>${errors.joinToString("<br>")}</html>")
-        }
+        timer.restart()
     }
 
     override fun acquireRequiredJavaVersion(): String {
@@ -841,6 +883,7 @@ class ConfigEditorPanel(
                 includeIconInfo.toolTipText = Gui.configuration_log_warn_icon.toString()
                 iconInfo.toolTipText = Gui.configuration_log_error_servericon_error.toString()
                 iconPreview.icon = guiProps.iconError
+                iconPreviewBig.icon = guiProps.iconError.getScaledInstance(64,64,Image.SCALE_SMOOTH)
             }
         } else {
             setIconPreview(apiProperties.defaultServerIcon, errors)
@@ -887,7 +930,9 @@ class ConfigEditorPanel(
      */
     private fun setIconPreview(icon: File, errors: MutableList<String>) {
         try {
-            iconPreview.icon = ImageIcon(ImageIO.read(icon).getScaledInstance(32, 32, Image.SCALE_SMOOTH))
+            val newIcon = ImageIcon(ImageIO.read(icon))
+            iconPreview.icon = newIcon.getScaledInstance(32, 32, Image.SCALE_SMOOTH)
+            iconPreviewBig.icon = newIcon.getScaledInstance(128,128,Image.SCALE_SMOOTH)
         } catch (ex: IOException) {
             log.error("Error generating server icon preview.", ex)
             errors.add(Gui.configuration_log_error_servericon_error.toString())
@@ -917,8 +962,10 @@ class ConfigEditorPanel(
      *
      * @author Griefed
      */
+    @OptIn(DelicateCoroutinesApi::class)
     fun updateGuiFromSelectedModpack() {
-        SwingUtilities.invokeLater {
+        GlobalScope.launch(Dispatchers.Default) {
+            modpackInspect.isEnabled = false
             if (File(getModpackDirectory()).isDirectory) {
                 try {
                     val packConfig = PackConfig()
@@ -979,9 +1026,9 @@ class ConfigEditorPanel(
                         setMinecraftVersion(packConfig.minecraftVersion)
                         setModloader(packConfig.modloader)
                         setModloaderVersion(packConfig.modloaderVersion)
-                        setCopyDirectories(java.util.ArrayList(dirsToInclude))
+                        setCopyDirectories(ArrayList(dirsToInclude))
                         JOptionPane.showMessageDialog(
-                            this,
+                            this@ConfigEditorPanel,
                             Gui.createserverpack_gui_modpack_scan_message(
                                 getMinecraftVersion(),
                                 getModloader(),
@@ -997,6 +1044,7 @@ class ConfigEditorPanel(
                     log.error("Couldn't update GUI from modpack manifests.", ex)
                 }
             }
+            modpackInspect.isEnabled = true
         }
     }
 

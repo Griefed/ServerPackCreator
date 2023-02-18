@@ -1,6 +1,7 @@
 package de.griefed.serverpackcreator.gui.filebrowser.view
 
 import Gui
+import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.filebrowser.model.FileBrowserModel
 import de.griefed.serverpackcreator.gui.filebrowser.model.FileNode
@@ -15,8 +16,9 @@ import javax.swing.tree.DefaultMutableTreeNode
 
 class FileBrowserFrame(
     private val browserModel: FileBrowserModel,
-    private val configsTab: ConfigsTab,
-    guiProps: GuiProps
+    configsTab: ConfigsTab,
+    guiProps: GuiProps,
+    utilities: Utilities
 ) {
     private val filePreviewPanel: FilePreviewPanel
     private val fileDetailPanel: FileDetailPanel
@@ -38,7 +40,7 @@ class FileBrowserFrame(
             }
         })
         northPanel.layout = BorderLayout()
-        tableScrollPane = TableScrollPane(this, browserModel, configsTab)
+        tableScrollPane = TableScrollPane(this, browserModel, configsTab,utilities)
         tableScrollPane.panel.let {
             northPanel.add(
                 it,
@@ -59,7 +61,7 @@ class FileBrowserFrame(
         tablePreviewSplit.dividerLocation = 200
         tablePreviewSplit.dividerSize = 20
 
-        treeScrollPane = TreeScrollPane(this, browserModel, configsTab)
+        treeScrollPane = TreeScrollPane(this, browserModel, configsTab,utilities)
         splitTreeTable = JSplitPane(
             JSplitPane.HORIZONTAL_SPLIT,
             treeScrollPane.scrollPane,

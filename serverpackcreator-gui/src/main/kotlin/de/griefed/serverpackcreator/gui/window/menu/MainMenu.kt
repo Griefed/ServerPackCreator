@@ -17,6 +17,7 @@ import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.window.configs.ConfigsTab
 import de.griefed.serverpackcreator.updater.MigrationManager
 import de.griefed.serverpackcreator.updater.UpdateChecker
+import net.java.balloontip.styles.EdgedBalloonStyle
 import javax.swing.*
 
 class MainMenu(
@@ -202,22 +203,24 @@ class MainMenu(
     }
 
     private fun updateLarsonConfig() {
-        val backgroundColour = UIManager.getColor("Panel.background")
-        guiProps.busyConfig.eyeBackgroundColour = backgroundColour
-        guiProps.busyConfig.scannerBackgroundColour = backgroundColour
-        guiProps.idleConfig.eyeBackgroundColour = backgroundColour
-        guiProps.idleConfig.scannerBackgroundColour = backgroundColour
+        val panelBackgroundColour = UIManager.getColor("Panel.background")
+        val tabbedPaneFocusColor = UIManager.getColor("TabbedPane.focusColor")
+        guiProps.balloonStyle = EdgedBalloonStyle(panelBackgroundColour,tabbedPaneFocusColor)
+        guiProps.busyConfig.eyeBackgroundColour = panelBackgroundColour
+        guiProps.busyConfig.scannerBackgroundColour = panelBackgroundColour
+        guiProps.idleConfig.eyeBackgroundColour = panelBackgroundColour
+        guiProps.idleConfig.scannerBackgroundColour = panelBackgroundColour
         val config = larsonScanner.currentConfig
-        config.eyeBackgroundColour = backgroundColour
-        config.scannerBackgroundColour = backgroundColour
+        config.eyeBackgroundColour = panelBackgroundColour
+        config.scannerBackgroundColour = panelBackgroundColour
         config.eyeColours = arrayOf(
-            UIManager.getColor("TabbedPane.focusColor"),
-            UIManager.getColor("TabbedPane.focusColor"),
-            UIManager.getColor("TabbedPane.focusColor"),
-            UIManager.getColor("TabbedPane.focusColor"),
-            UIManager.getColor("TabbedPane.focusColor"),
-            UIManager.getColor("TabbedPane.focusColor"),
-            UIManager.getColor("TabbedPane.focusColor")
+            tabbedPaneFocusColor,
+            tabbedPaneFocusColor,
+            tabbedPaneFocusColor,
+            tabbedPaneFocusColor,
+            tabbedPaneFocusColor,
+            tabbedPaneFocusColor,
+            tabbedPaneFocusColor
         )
         larsonScanner.loadConfig(config)
     }
