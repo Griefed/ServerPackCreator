@@ -130,4 +130,5 @@ class GuiProps {
     val typeComparator = FileTypeComparator()
     val nameComparator = FileNameComparator()
     var balloonStyle = EdgedBalloonStyle(UIManager.getColor("Panel.background"),UIManager.getColor("TabbedPane.focusColor"))
+    val whitespace = "^.*,\\s*\\\\*$".toRegex()
 }

@@ -3,7 +3,7 @@ package de.griefed.serverpackcreator.gui.filebrowser.view
 import Gui
 import de.griefed.serverpackcreator.gui.filebrowser.model.FileBrowserModel
 import de.griefed.serverpackcreator.gui.filebrowser.model.FileNode
-import de.griefed.serverpackcreator.gui.window.components.ElementLabel
+import de.griefed.serverpackcreator.gui.window.configs.components.ElementLabel
 import net.miginfocom.swing.MigLayout
 import java.io.File
 import java.text.SimpleDateFormat
@@ -19,7 +19,7 @@ class FileDetailPanel {
     private var fileNameLabel = JLabel(" ")
     private var lastModifiedLabel = JLabel(" ")
     private var fileSizeLabel = JLabel(" ")
-    private var filePathField = JTextField(70)
+    private var filePathField = JTextField()
     private var fileNameTextLabel = ElementLabel(" ")
     private val filePathTextLabel = ElementLabel(Gui.filebrowser_detail_path.toString())
     private val lastModifiedTextLabel = ElementLabel(Gui.filebrowser_detail_last.toString())
