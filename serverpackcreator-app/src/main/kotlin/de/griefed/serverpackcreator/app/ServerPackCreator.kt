@@ -27,7 +27,7 @@ import de.griefed.serverpackcreator.api.utilities.common.JarInformation
 import de.griefed.serverpackcreator.api.utilities.common.readText
 import de.griefed.serverpackcreator.cli.ConfigurationEditor
 import de.griefed.serverpackcreator.gui.splash.SplashScreen
-import de.griefed.serverpackcreator.gui.window.MainWindow
+import de.griefed.serverpackcreator.gui.MainWindow
 import de.griefed.serverpackcreator.updater.MigrationManager
 import de.griefed.serverpackcreator.updater.UpdateChecker
 import de.griefed.serverpackcreator.web.WebService

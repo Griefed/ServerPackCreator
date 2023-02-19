@@ -1,4 +1,4 @@
-package de.griefed.serverpackcreator.gui.window
+package de.griefed.serverpackcreator.gui
 
 import com.formdev.flatlaf.FlatLaf
 import com.formdev.flatlaf.extras.FlatInspector
@@ -11,7 +11,6 @@ import de.griefed.serverpackcreator.api.ConfigurationHandler
 import de.griefed.serverpackcreator.api.ServerPackHandler
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import de.griefed.serverpackcreator.api.versionmeta.VersionMeta
-import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.splash.SplashScreen
 import de.griefed.serverpackcreator.gui.window.main.MainFrame
 import de.griefed.serverpackcreator.updater.MigrationManager

@@ -1,4 +1,4 @@
-package de.griefed.serverpackcreator.gui.filebrowser
+package de.griefed.serverpackcreator.gui
 
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import de.griefed.serverpackcreator.gui.GuiProps
