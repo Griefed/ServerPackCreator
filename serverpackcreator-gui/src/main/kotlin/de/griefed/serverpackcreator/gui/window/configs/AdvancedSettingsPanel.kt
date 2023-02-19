@@ -1,14 +1,17 @@
 package de.griefed.serverpackcreator.gui.window.configs
 
 import Gui
-import de.griefed.serverpackcreator.gui.window.components.ElementLabel
-import de.griefed.serverpackcreator.gui.window.components.ScrollTextArea
-import de.griefed.serverpackcreator.gui.window.components.interactivetable.InteractiveTable
+import de.griefed.serverpackcreator.gui.window.configs.components.ElementLabel
+import de.griefed.serverpackcreator.gui.window.configs.components.ScrollTextArea
+import de.griefed.serverpackcreator.gui.window.configs.components.interactivetable.InteractiveTable
 import net.miginfocom.swing.MigLayout
 import javax.swing.JButton
 import javax.swing.JLabel
 import javax.swing.JPanel
 
+/**
+ * TODO docs
+ */
 class AdvancedSettingsPanel(
     exclusionsInfo: JLabel,
     argumentsInfo: JLabel,

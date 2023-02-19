@@ -5,6 +5,9 @@ import net.miginfocom.swing.MigLayout
 import javax.swing.JLabel
 import javax.swing.JPanel
 
+/**
+ * TODO docs
+ */
 class StatusPanel(guiProps: GuiProps) {
     val panel = JPanel()
     private val statusLine0 = StatusLabel("...${guiProps.reticulatingSplines.reticulate()}", 20)

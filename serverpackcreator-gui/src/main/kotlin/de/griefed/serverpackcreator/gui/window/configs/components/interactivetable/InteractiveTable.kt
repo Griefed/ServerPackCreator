@@ -17,7 +17,7 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.gui.window.components.interactivetable
+package de.griefed.serverpackcreator.gui.window.configs.components.interactivetable
 
 import Gui
 import org.apache.logging.log4j.kotlin.cachedLoggerOf

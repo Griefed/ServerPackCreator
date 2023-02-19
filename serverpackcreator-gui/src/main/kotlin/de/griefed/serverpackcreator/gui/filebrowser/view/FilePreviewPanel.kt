@@ -11,6 +11,9 @@ import javax.swing.JPanel
 import javax.swing.JScrollPane
 import javax.swing.JTextPane
 
+/**
+ * TODO docs
+ */
 class FilePreviewPanel {
     private var fileNode: FileNode? = null
     private val iconPreview = ImageCanvas()
@@ -38,6 +41,9 @@ class FilePreviewPanel {
         panel.add(textScroll, "cell 0 0, grow, aligny top, alignx left, hidemode 3,w 10:10:,h 10:10:")
     }
 
+    /**
+     * TODO docs
+     */
     fun setFileNode(fileNode: FileNode) {
         this.fileNode = fileNode
         val name = fileNode.file.name
@@ -63,6 +69,9 @@ class FilePreviewPanel {
         }
     }
 
+    /**
+     * TODO docs
+     */
     inner class ImageCanvas : Canvas() {
         override fun paint(g: Graphics?) {
             if (fileNode?.file?.absoluteFile!!.name.matches(imageRegex)) {

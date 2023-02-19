@@ -5,6 +5,9 @@ import de.griefed.serverpackcreator.gui.filebrowser.model.FileNode
 import kotlinx.coroutines.*
 import javax.swing.tree.DefaultMutableTreeNode
 
+/**
+ * TODO docs
+ */
 @OptIn(DelicateCoroutinesApi::class)
 class AddNodes(private val browserModel: FileBrowserModel, private val node: DefaultMutableTreeNode) {
     init {

@@ -28,7 +28,7 @@
  * #####################################################################################################################
  *
  */
-package de.griefed.serverpackcreator.gui.window.components
+package de.griefed.serverpackcreator.gui.components
 
 import java.awt.*
 import java.beans.PropertyChangeEvent

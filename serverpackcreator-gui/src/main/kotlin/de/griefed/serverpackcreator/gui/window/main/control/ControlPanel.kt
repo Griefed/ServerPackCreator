@@ -24,6 +24,9 @@ import javax.swing.JPanel
 import javax.swing.JTextPane
 import javax.swing.text.*
 
+/**
+ * TODO docs
+ */
 class ControlPanel(
     private val guiProps: GuiProps,
     private val configsTab: ConfigsTab,
@@ -153,6 +156,9 @@ class ControlPanel(
 
     }
 
+    /**
+     * TODO docs
+     */
     private fun generateServerPack(packConfig: PackConfig, activeTab: ConfigEditorPanel) {
         log.info("Starting ServerPackCreator run.")
         statusPanel.updateStatus(Gui.createserverpack_log_info_buttoncreateserverpack_generating.toString())
@@ -187,6 +193,9 @@ class ControlPanel(
         }
     }
 
+    /**
+     * TODO docs
+     */
     private fun generationFailed(encounteredErrors: List<String>) {
         statusPanel.updateStatus(Gui.createserverpack_gui_buttongenerateserverpack_fail.toString())
         if (encounteredErrors.isNotEmpty()) {

@@ -1,6 +1,6 @@
-package de.griefed.serverpackcreator.gui.window.components.interactivetable
+package de.griefed.serverpackcreator.gui.window.configs.components.interactivetable
 
-import de.griefed.serverpackcreator.gui.window.components.ImageUtilities
+import de.griefed.serverpackcreator.gui.ImageUtilities
 import java.awt.Component
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
@@ -13,6 +13,9 @@ import javax.swing.table.TableCellEditor
 import javax.swing.table.TableCellRenderer
 import javax.swing.table.TableColumnModel
 
+/**
+ * TODO docs
+ */
 class ButtonColumns(
     private val table: JTable,
     column: Int,
@@ -95,6 +98,9 @@ class ButtonColumns(
         }
     }
 
+    /**
+     * TODO docs
+     */
     fun clearRow(tableModel: DefaultTableModel, modelRow: Int) {
         tableModel.setValueAt("", modelRow, 0)
         tableModel.setValueAt("", modelRow, 1)
@@ -224,6 +230,9 @@ class ButtonColumns(
     override fun mouseEntered(e: MouseEvent) {}
     override fun mouseExited(e: MouseEvent) {}
 
+    /**
+     * TODO docs
+     */
     enum class ColumnType {
         /**
          * Clear the row

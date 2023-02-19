@@ -7,13 +7,22 @@ import javax.swing.ListSelectionModel
 import javax.swing.event.ListSelectionEvent
 import javax.swing.event.ListSelectionListener
 
+/**
+ * TODO docs
+ */
 class TableSelectionListener(private val frame: FileBrowserFrame, private val jTable: JTable) : ListSelectionListener {
     private var rowCount = 0
 
+    /**
+     * TODO docs
+     */
     fun setRowCount(rowCount: Int) {
         this.rowCount = rowCount
     }
 
+    /**
+     * TODO docs
+     */
     override fun valueChanged(event: ListSelectionEvent) {
         if (!event.valueIsAdjusting) {
             val lsm = event.source as ListSelectionModel

@@ -14,6 +14,9 @@ import javax.swing.JTree
 import javax.swing.text.Position
 import javax.swing.tree.TreePath
 
+/**
+ * TODO docs
+ */
 class TreeScrollPane(
     frame: FileBrowserFrame,
     private val browserModel: FileBrowserModel,
@@ -43,6 +46,9 @@ class TreeScrollPane(
         scrollPane.preferredSize = widePreferred
     }
 
+    /**
+     * TODO docs
+     */
     fun expandPathsToModpackDir() {
         val activeTab = configsTab.selectedEditor
         if (activeTab != null) {

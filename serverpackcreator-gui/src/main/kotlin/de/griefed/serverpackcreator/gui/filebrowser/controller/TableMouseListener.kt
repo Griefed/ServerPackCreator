@@ -8,10 +8,16 @@ import java.awt.event.MouseEvent
 import java.io.File
 import javax.swing.JTable
 
+/**
+ * TODO docs
+ */
 class TableMouseListener(
     private val jTable: JTable, configsTab: ConfigsTab, utilities: Utilities
 ) : SelectionPopMenu(configsTab,utilities) {
 
+    /**
+     * TODO docs
+     */
     override fun mousePressed(mouseEvent: MouseEvent) {
         if (mouseEvent.button == MouseEvent.BUTTON3) {
             val r = jTable.rowAtPoint(mouseEvent.point)

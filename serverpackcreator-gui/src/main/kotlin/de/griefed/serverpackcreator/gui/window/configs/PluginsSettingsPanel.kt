@@ -1,10 +1,13 @@
 package de.griefed.serverpackcreator.gui.window.configs
 
 import de.griefed.serverpackcreator.api.plugins.swinggui.ExtensionConfigPanel
-import de.griefed.serverpackcreator.gui.window.components.CollapsiblePanel
+import de.griefed.serverpackcreator.gui.components.CollapsiblePanel
 import net.miginfocom.swing.MigLayout
 import javax.swing.JPanel
 
+/**
+ * TODO docs
+ */
 class PluginsSettingsPanel(pluginPanels: List<ExtensionConfigPanel>) : JPanel(
     MigLayout(
         "left,wrap",
@@ -19,6 +22,9 @@ class PluginsSettingsPanel(pluginPanels: List<ExtensionConfigPanel>) : JPanel(
         isVisible = false
     }
 
+    /**
+     * TODO docs
+     */
     private fun createCollapsiblePluginPanel(pluginPanel: ExtensionConfigPanel): JPanel {
         return CollapsiblePanel(pluginPanel.extensionName, pluginPanel)
     }

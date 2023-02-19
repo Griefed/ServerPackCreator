@@ -17,13 +17,16 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.gui.window.components
+package de.griefed.serverpackcreator.gui
 
 import java.awt.Component
 import javax.swing.Icon
 import javax.swing.JDialog
 import javax.swing.JOptionPane
 
+/**
+ * TODO docs
+ */
 class DialogUtilities {
     companion object {
 

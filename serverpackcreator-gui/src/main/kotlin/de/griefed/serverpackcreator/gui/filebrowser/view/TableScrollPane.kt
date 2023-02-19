@@ -16,6 +16,9 @@ import java.util.*
 import javax.swing.*
 import javax.swing.tree.DefaultMutableTreeNode
 
+/**
+ * TODO docs
+ */
 class TableScrollPane(
     frame: FileBrowserFrame,
     private val model: FileBrowserModel,
@@ -55,17 +58,26 @@ class TableScrollPane(
         panel.add(scrollPane, BorderLayout.CENTER)
     }
 
+    /**
+     * TODO docs
+     */
     private fun buildLabelString(count: Int): String {
         val nf: NumberFormat = NumberFormat.getInstance()
         return (nf.format(count.toLong()) + " " + Gui.filebrowser_table_header)
     }
 
+    /**
+     * TODO docs
+     */
     fun clearDefaultTableModel() {
         ftModel.removeRows()
         countLabel.text = " "
         ftModel.fireTableDataChanged()
     }
 
+    /**
+     * TODO docs
+     */
     fun setDefaultTableModel(node: DefaultMutableTreeNode) {
         ftModel.removeRows()
         val fileNode: FileNode = node.userObject as FileNode

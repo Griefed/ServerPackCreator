@@ -6,6 +6,9 @@ import java.awt.event.ActionEvent
 import java.io.File
 import javax.swing.AbstractAction
 
+/**
+ * TODO docs
+ */
 class ServerPropertiesAction(private val configsTab: ConfigsTab) : AbstractAction() {
     private var properties: File? = null
 
@@ -22,6 +25,9 @@ class ServerPropertiesAction(private val configsTab: ConfigsTab) : AbstractActio
         configsTab.selectedEditor?.setServerPropertiesPath(properties!!.absolutePath)
     }
 
+    /**
+     * TODO docs
+     */
     fun setProperties(file: File?) {
         properties = file
     }

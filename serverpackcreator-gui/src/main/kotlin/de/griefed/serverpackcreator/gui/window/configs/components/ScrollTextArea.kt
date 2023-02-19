@@ -1,10 +1,13 @@
-package de.griefed.serverpackcreator.gui.window.components
+package de.griefed.serverpackcreator.gui.window.configs.components
 
 import java.util.*
 import javax.swing.JScrollPane
 import javax.swing.JTextArea
 import javax.swing.event.DocumentListener
 
+/**
+ * TODO docs
+ */
 class ScrollTextArea(
     text: String,
     private val textArea: JTextArea = JTextArea(text),
@@ -27,6 +30,9 @@ class ScrollTextArea(
             textArea.text = value
         }
 
+    /**
+     * TODO docs
+     */
     fun addDocumentListener(listener: DocumentListener) {
         textArea.document.addDocumentListener(listener)
     }

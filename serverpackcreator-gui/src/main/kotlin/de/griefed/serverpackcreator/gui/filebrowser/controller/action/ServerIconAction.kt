@@ -6,6 +6,9 @@ import java.awt.event.ActionEvent
 import java.io.File
 import javax.swing.AbstractAction
 
+/**
+ * TODO docs
+ */
 class ServerIconAction(private val configsTab: ConfigsTab) : AbstractAction() {
     private var icon: File? = null
 
@@ -23,6 +26,9 @@ class ServerIconAction(private val configsTab: ConfigsTab) : AbstractAction() {
         configsTab.selectedEditor?.setServerIconPath(icon!!.absolutePath)
     }
 
+    /**
+     * TODO docs
+     */
     fun setIcon(file: File?) {
         icon = file
     }

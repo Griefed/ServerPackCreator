@@ -9,6 +9,9 @@ import java.io.File
 import javax.swing.JPopupMenu
 import javax.swing.JSeparator
 
+/**
+ * TODO docs
+ */
 open class SelectionPopMenu(configsTab: ConfigsTab, utilities: Utilities) : MouseAdapter() {
     private val menu: JPopupMenu = JPopupMenu()
     private val directory = ModpackDirectoryAction(configsTab)
@@ -29,11 +32,17 @@ open class SelectionPopMenu(configsTab: ConfigsTab, utilities: Utilities) : Mous
         menu.add(properties)
     }
 
+    /**
+     * TODO docs
+     */
     fun show(invoker: Component?, x: Int, y: Int, file: File) {
         setVisibilities(file)
         menu.show(invoker, x, y)
     }
 
+    /**
+     * TODO docs
+     */
     private fun setVisibilities(file: File) {
         open.setFile(file)
         openContainingFolder.setDirectory(file)

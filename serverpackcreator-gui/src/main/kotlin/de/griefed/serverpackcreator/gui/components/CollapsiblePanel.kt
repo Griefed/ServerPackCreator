@@ -1,4 +1,4 @@
-package de.griefed.serverpackcreator.gui.window.components
+package de.griefed.serverpackcreator.gui.components
 
 import java.awt.BorderLayout
 import java.awt.Component

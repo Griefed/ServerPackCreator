@@ -8,9 +8,10 @@ import de.griefed.serverpackcreator.api.plugins.swinggui.ServerPackConfigTab
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import de.griefed.serverpackcreator.api.versionmeta.VersionMeta
 import de.griefed.serverpackcreator.gui.GuiProps
-import de.griefed.serverpackcreator.gui.window.components.*
-import de.griefed.serverpackcreator.gui.window.components.interactivetable.InteractiveTable
+import de.griefed.serverpackcreator.gui.components.*
+import de.griefed.serverpackcreator.gui.getScaledInstance
 import de.griefed.serverpackcreator.gui.window.configs.components.*
+import de.griefed.serverpackcreator.gui.window.configs.components.interactivetable.InteractiveTable
 import kotlinx.coroutines.*
 import net.java.balloontip.BalloonTip
 import net.miginfocom.swing.MigLayout
@@ -27,7 +28,11 @@ import javax.imageio.ImageIO
 import javax.swing.*
 import javax.swing.Timer
 import javax.swing.event.DocumentEvent
+import kotlin.collections.HashMap
 
+/**
+ * TODO docs
+ */
 class ConfigEditorPanel(
     private val guiProps: GuiProps, private val configsTab: ConfigsTab,
     private val configurationHandler: ConfigurationHandler,
@@ -104,6 +109,18 @@ class ConfigEditorPanel(
         guiProps.resetIcon,
         Gui.createserverpack_gui_buttoncopydirs_reset_tip.toString()
     ) { setCopyDirectories(apiProperties.directoriesToInclude.toMutableList()) }
+    private val exclusionsRevert = IconActionButton(
+        guiProps.revertIcon,
+        Gui.createserverpack_gui_buttonclientmods_revert_tip.toString()
+    ) { revertExclusions() }
+    private val exclusionsReset = IconActionButton(
+        guiProps.resetIcon,
+        Gui.createserverpack_gui_buttonclientmods_reset_tip.toString()
+    ) { setClientSideMods(apiProperties.clientSideMods()) }
+    private val scriptKVPairsRevert =
+        IconActionButton(guiProps.revertIcon, Gui.createserverpack_gui_revert.toString()) { revertScriptKVPairs() }
+    private val scriptKVPairsReset =
+        IconActionButton(guiProps.resetIcon, Gui.createserverpack_gui_reset.toString()) { resetScriptKVPairs() }
     private val javaVersion = ElementLabel("8", 16)
     private val serverPackSuffix = JTextField("")
     private val includeIcon = JCheckBox(Gui.createserverpack_gui_createserverpack_checkboxicon.toString())
@@ -120,10 +137,6 @@ class ConfigEditorPanel(
     private val minecraftVersions = JComboBox<String>()
     private val modloaders = JComboBox<String>()
     private val modloaderVersions = JComboBox<String>()
-    private val exclusionsRevert = JButton(guiProps.revertIcon)
-    private val exclusionsReset = JButton(guiProps.resetIcon)
-    private val scriptKVPairsRevert = JButton(guiProps.revertIcon)
-    private val scriptKVPairsReset = JButton(guiProps.resetIcon)
     private val aikarsFlags = JButton()
     private val modpackDirectory = FileTextField("")
     private val propertiesFile = FileTextField(apiProperties.defaultServerProperties)
@@ -166,6 +179,7 @@ class ConfigEditorPanel(
         guiProps.balloonStyle,
         false
     )
+    private val defaultScriptKVSetting = hashMapOf("SPC_JAVA_SPC" to "java")
 
     @OptIn(DelicateCoroutinesApi::class)
     private val modpackChanges = object : DocumentChangeListener {
@@ -398,7 +412,6 @@ class ConfigEditorPanel(
      * TODO docs
      */
     private fun initTooltips() {
-
         balloonTip.isVisible = false
         iconPreview.addMouseListener(object : MouseListener {
             override fun mouseClicked(e: MouseEvent?) {
@@ -427,10 +440,6 @@ class ConfigEditorPanel(
 
         })
 
-        exclusionsRevert.toolTipText = Gui.createserverpack_gui_buttonclientmods_revert_tip.toString()
-        exclusionsReset.toolTipText = Gui.createserverpack_gui_buttonclientmods_reset_tip.toString()
-        scriptKVPairsRevert.toolTipText = Gui.createserverpack_gui_revert.toString()
-        scriptKVPairsReset.toolTipText = Gui.createserverpack_gui_reset.toString()
         aikarsFlags.toolTipText = Gui.createserverpack_gui_createserverpack_button_properties.toString()
     }
 
@@ -438,8 +447,6 @@ class ConfigEditorPanel(
      * TODO docs
      */
     private fun initListeners() {
-        exclusionsRevert.addActionListener { revertExclusions() }
-        exclusionsReset.addActionListener { setClientSideMods(apiProperties.clientSideMods()) }
 
         modpackDirectory.document.addDocumentListener(modpackChanges)
         serverPackSuffix.document.addDocumentListener(suffixChanges)
@@ -943,8 +950,7 @@ class ConfigEditorPanel(
      * @return Map containing lists of CommentedConfigs mapped to the corresponding pluginID.
      */
     private fun getConfigPanelConfigs(): HashMap<String, ArrayList<CommentedConfig>> {
-        val configs: HashMap<String, ArrayList<CommentedConfig>> =
-            HashMap<String, ArrayList<CommentedConfig>>(10)
+        val configs: HashMap<String, ArrayList<CommentedConfig>> = HashMap(10)
         if (pluginPanels.isNotEmpty()) {
             for (panel in pluginPanels) {
                 configs[panel.pluginID] = panel.serverPackExtensionConfig()
@@ -1046,6 +1052,22 @@ class ConfigEditorPanel(
     }
 
     /**
+     * TODO docs
+     */
+    private fun revertScriptKVPairs() {
+        if (lastLoadedConfiguration != null) {
+            setScriptVariables(lastLoadedConfiguration!!.scriptSettings)
+        }
+    }
+
+    /**
+     * TODO docs
+     */
+    private fun resetScriptKVPairs() {
+        setScriptVariables(defaultScriptKVSetting)
+    }
+
+    /**
      * Reverts the list of clientside-only mods to the value of the last loaded configuration, if one
      * is available.
      *
@@ -1088,9 +1110,10 @@ class ConfigEditorPanel(
      */
     private fun updateRequiredJavaVersion() {
         javaVersion.text = acquireRequiredJavaVersion()
-        if (javaVersion.text != "?" && apiProperties.javaPath(javaVersion.text).isPresent && !scriptKVPairs.getData()["SPC_JAVA_SPC"].equals(
-                apiProperties.javaPath(javaVersion.text).get()
-            ) && apiProperties.isJavaScriptAutoupdateEnabled
+        if (javaVersion.text != "?"
+            && apiProperties.javaPath(javaVersion.text).isPresent
+            && !scriptKVPairs.getData()["SPC_JAVA_SPC"].equals(apiProperties.javaPath(javaVersion.text).get())
+            && apiProperties.isJavaScriptAutoupdateEnabled
         ) {
             val path = apiProperties.javaPath(javaVersion.text).get()
             val data: HashMap<String, String> = scriptKVPairs.getData()

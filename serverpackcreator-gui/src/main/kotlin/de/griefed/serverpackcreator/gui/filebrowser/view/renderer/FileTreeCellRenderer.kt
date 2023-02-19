@@ -9,6 +9,9 @@ import javax.swing.JTree
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.TreeCellRenderer
 
+/**
+ * TODO docs
+ */
 class FileTreeCellRenderer(private val browserModel: FileBrowserModel) : TreeCellRenderer {
     private val label: JLabel = JLabel(" ")
 

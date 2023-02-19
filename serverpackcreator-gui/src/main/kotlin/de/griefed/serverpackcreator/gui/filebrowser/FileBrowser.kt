@@ -8,6 +8,9 @@ import de.griefed.serverpackcreator.gui.window.configs.ConfigsTab
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
 
+/**
+ * TODO docs
+ */
 @OptIn(DelicateCoroutinesApi::class)
 class FileBrowser(private val configsTab: ConfigsTab, guiProps: GuiProps,utilities: Utilities) {
     private val browserModel: FileBrowserModel = FileBrowserModel(guiProps)
@@ -19,14 +22,23 @@ class FileBrowser(private val configsTab: ConfigsTab, guiProps: GuiProps,utiliti
         }
     }
 
+    /**
+     * TODO docs
+     */
     fun reload() {
         browserModel.reload()
     }
 
+    /**
+     * TODO docs
+     */
     fun show() {
         frame.show()
     }
 
+    /**
+     * TODO docs
+     */
     fun hide() {
         frame.hide()
     }

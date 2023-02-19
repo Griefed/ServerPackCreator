@@ -8,7 +8,7 @@ import de.griefed.serverpackcreator.api.ServerPackHandler
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import de.griefed.serverpackcreator.api.versionmeta.VersionMeta
 import de.griefed.serverpackcreator.gui.GuiProps
-import de.griefed.serverpackcreator.gui.window.components.TabPanel
+import de.griefed.serverpackcreator.gui.components.TabPanel
 import de.griefed.serverpackcreator.gui.window.configs.ConfigsTab
 import de.griefed.serverpackcreator.gui.window.logs.Logs
 import de.griefed.serverpackcreator.gui.window.main.control.ControlPanel
@@ -19,6 +19,9 @@ import net.miginfocom.swing.MigLayout
 import javax.swing.JScrollPane
 import javax.swing.JSeparator
 
+/**
+ * TODO docs
+ */
 class MainPanel(
     private val guiProps: GuiProps,
     configurationHandler: ConfigurationHandler,
@@ -75,10 +78,16 @@ class MainPanel(
         larsonScanner.play()
     }
 
+    /**
+     * TODO docs
+     */
     fun larsonIdle() {
         larsonScanner.loadConfig(guiProps.idleConfig)
     }
 
+    /**
+     * TODO docs
+     */
     fun larsonBusy() {
         larsonScanner.loadConfig(guiProps.busyConfig)
     }

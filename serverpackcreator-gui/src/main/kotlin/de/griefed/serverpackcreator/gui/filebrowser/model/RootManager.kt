@@ -5,10 +5,16 @@ import java.io.File
 import javax.swing.filechooser.FileSystemView
 import javax.swing.tree.DefaultMutableTreeNode
 
+/**
+ * TODO docs
+ */
 class RootManager(private val guiProps: GuiProps) {
     private val osName = System.getProperty("os.name")
     val fileSystemView: FileSystemView = FileSystemView.getFileSystemView()
 
+    /**
+     * TODO docs
+     */
     @get:Throws(IllegalStateException::class)
     val root: DefaultMutableTreeNode
         get() {
@@ -27,6 +33,9 @@ class RootManager(private val guiProps: GuiProps) {
             return rootNode
         }
 
+    /**
+     * TODO docs
+     */
     @get:Throws(IllegalStateException::class)
     private val myComputer: DefaultMutableTreeNode
         get() {
@@ -44,6 +53,7 @@ class RootManager(private val guiProps: GuiProps) {
             }
             throw IllegalStateException("My Computer not available!")
         }
+
     private val isOSX: Boolean
         get() = osName.equals("Max OS X", ignoreCase = true)
     private val isLinux: Boolean

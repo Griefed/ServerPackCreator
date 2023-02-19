@@ -6,6 +6,9 @@ import java.awt.event.ActionEvent
 import java.io.File
 import javax.swing.AbstractAction
 
+/**
+ * TODO docs
+ */
 class OpenContainingFolder(private val utilities: Utilities) : AbstractAction() {
     private lateinit var directory: File
 
@@ -13,10 +16,16 @@ class OpenContainingFolder(private val utilities: Utilities) : AbstractAction() 
         putValue(NAME, Gui.filebrowser_action_open_folder.toString())
     }
 
+    /**
+     * TODO docs
+     */
     override fun actionPerformed(e: ActionEvent?) {
         utilities.fileUtilities.openFolder(directory)
     }
 
+    /**
+     * TODO docs
+     */
     fun setDirectory(file: File) {
         directory = file.parentFile
     }

@@ -6,6 +6,9 @@ import javax.swing.JLabel
 import javax.swing.UIManager
 import javax.swing.plaf.ColorUIResource
 
+/**
+ * TODO docs
+ */
 class StatusLabel(text: String, private val transparency: Int = 255) : JLabel(text) {
     init {
         updateColour()
@@ -16,6 +19,9 @@ class StatusLabel(text: String, private val transparency: Int = 255) : JLabel(te
         updateColour()
     }
 
+    /**
+     * TODO docs
+     */
     private fun updateColour() {
         val color = UIManager.get("Label.foreground") as ColorUIResource
         foreground = Color(color.red, color.green, color.blue, transparency)

@@ -19,6 +19,9 @@ import de.griefed.serverpackcreator.updater.UpdateChecker
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
 
+/**
+ * TODO docs
+ */
 @OptIn(DelicateCoroutinesApi::class)
 class MainWindow(
     private val configurationHandler: ConfigurationHandler,

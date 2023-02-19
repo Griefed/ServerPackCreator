@@ -7,18 +7,30 @@ import javax.swing.Icon
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.DefaultTreeModel
 
+/**
+ * TODO docs
+ */
 class FileBrowserModel(private val guiProps: GuiProps) {
     private val rootManager: RootManager = RootManager(guiProps)
     val treeModel: DefaultTreeModel = createTreeModel()
 
+    /**
+     * TODO docs
+     */
     fun reload() {
         treeModel.setRoot(updateRoot())
     }
 
+    /**
+     * TODO docs
+     */
     private fun createTreeModel(): DefaultTreeModel {
         return DefaultTreeModel(updateRoot())
     }
 
+    /**
+     * TODO docs
+     */
     private fun updateRoot(): DefaultMutableTreeNode {
         val root = rootManager.root
         addChildNodes(root)
@@ -26,6 +38,9 @@ class FileBrowserModel(private val guiProps: GuiProps) {
         return root
     }
 
+    /**
+     * TODO docs
+     */
     fun addGrandchildNodes(root: DefaultMutableTreeNode) {
         val enumeration: Enumeration<*> = root.children()
         while (enumeration.hasMoreElements()) {
@@ -34,6 +49,9 @@ class FileBrowserModel(private val guiProps: GuiProps) {
         }
     }
 
+    /**
+     * TODO docs
+     */
     private fun addChildNodes(root: DefaultMutableTreeNode) {
         if (rootManager.isWindows) {
             val fileNode = root.userObject as FileNode
@@ -71,10 +89,16 @@ class FileBrowserModel(private val guiProps: GuiProps) {
         }
     }
 
+    /**
+     * TODO docs
+     */
     fun getFileIcon(file: File?): Icon {
         return rootManager.fileSystemView.getSystemIcon(file)
     }
 
+    /**
+     * TODO docs
+     */
     fun getFileText(file: File?): String {
         return rootManager.fileSystemView.getSystemDisplayName(file)
     }

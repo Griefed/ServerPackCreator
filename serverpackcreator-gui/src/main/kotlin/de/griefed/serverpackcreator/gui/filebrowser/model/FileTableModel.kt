@@ -12,6 +12,9 @@ import javax.swing.table.AbstractTableModel
 import javax.swing.table.DefaultTableCellRenderer
 import javax.swing.table.TableColumn
 
+/**
+ * TODO docs
+ */
 class FileTableModel : AbstractTableModel() {
     private val rows: MutableList<List<Any>> = ArrayList(10)
     private val columns = arrayOf(
@@ -52,6 +55,9 @@ class FileTableModel : AbstractTableModel() {
         return columns[column]
     }
 
+    /**
+     * TODO docs
+     */
     fun addRow(browserModel: FileBrowserModel, fileNode: FileNode) {
         val file = fileNode.file
         val list = mutableListOf<Any>()
@@ -64,10 +70,16 @@ class FileTableModel : AbstractTableModel() {
         rows.add(list)
     }
 
+    /**
+     * TODO docs
+     */
     fun removeRows() {
         rows.clear()
     }
 
+    /**
+     * TODO docs
+     */
     fun setColumnWidths(table: JTable): Int {
         val centerRenderer = DateRenderer()
         centerRenderer.horizontalAlignment = JLabel.CENTER
@@ -80,6 +92,9 @@ class FileTableModel : AbstractTableModel() {
         return width + 30
     }
 
+    /**
+     * TODO docs
+     */
     private fun setColumnWidth(table: JTable, column: Int, width: Int): Int {
         var columnWidth = width
         val tableColumn = table.columnModel.getColumn(column)

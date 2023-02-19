@@ -16,6 +16,9 @@ import de.griefed.serverpackcreator.updater.UpdateChecker
 import javax.swing.JFrame
 import javax.swing.WindowConstants
 
+/**
+ * TODO docs
+ */
 class MainFrame(
     guiProps: GuiProps,
     configurationHandler: ConfigurationHandler,

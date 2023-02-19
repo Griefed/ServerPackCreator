@@ -14,7 +14,7 @@ import javax.swing.JPanel
  * TODO docs
  */
 class ConfigEditorTitle(
-    private val guiProps: GuiProps,
+    guiProps: GuiProps,
     configsTab: ConfigsTab,
     configEditorPanel: ConfigEditorPanel
 ) : JPanel(FlowLayout(FlowLayout.LEFT, 0, 0)) {
@@ -47,19 +47,31 @@ class ConfigEditorTitle(
         add(closeButton)
     }
 
+    /**
+     * TODO docs
+     */
     fun setErrorIcon(tooltip: String = Gui.configuration_title_error.toString()) {
         errorIconLabel.isVisible = true
         errorIconLabel.toolTipText = tooltip
     }
 
+    /**
+     * TODO docs
+     */
     fun setWarningIcon() {
         warningIconLabel.isVisible = true
     }
 
+    /**
+     * TODO docs
+     */
     fun clearErrorIcon() {
         errorIconLabel.isVisible = false
     }
 
+    /**
+     * TODO docs
+     */
     fun clearWarningIcon() {
         warningIconLabel.isVisible = false
     }

@@ -23,6 +23,9 @@ import de.griefed.serverpackcreator.updater.UpdateChecker
 import net.java.balloontip.styles.EdgedBalloonStyle
 import javax.swing.*
 
+/**
+ * TODO docs
+ */
 class MainMenu(
     private val guiProps: GuiProps,
     configurationHandler: ConfigurationHandler,
@@ -87,18 +90,30 @@ class MainMenu(
         menuBar.add(menuFour)
     }
 
+    /**
+     * TODO docs
+     */
     private fun addTab() {
         configsTab.addTab()
     }
 
+    /**
+     * TODO docs
+     */
     private fun loadNew() {
         configsTab.loadConfig(apiProperties.defaultConfig)
     }
 
+    /**
+     * TODO docs
+     */
     private fun load() {
         configsTab.loadConfig(apiProperties.defaultConfig, configsTab.selectedEditor!!)
     }
 
+    /**
+     * TODO docs
+     */
     private fun changeTheme(theme: FlatIJLookAndFeelInfo) {
         try {
             val instance = Class.forName(theme.className).getDeclaredConstructor().newInstance()  as FlatLaf
@@ -112,6 +127,9 @@ class MainMenu(
         }
     }
 
+    /**
+     * TODO docs
+     */
     private fun updateLarsonConfig() {
         val panelBackgroundColour = UIManager.getColor("Panel.background")
         val tabbedPaneFocusColor = UIManager.getColor("TabbedPane.focusColor")

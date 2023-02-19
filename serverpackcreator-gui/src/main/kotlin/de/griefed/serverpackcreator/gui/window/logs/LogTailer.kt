@@ -17,8 +17,11 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.gui.window.components
+package de.griefed.serverpackcreator.gui.window.logs
 
+import de.griefed.serverpackcreator.gui.components.ScrollDirection
+import de.griefed.serverpackcreator.gui.components.SmartScroller
+import de.griefed.serverpackcreator.gui.components.ViewPortPosition
 import java.awt.Font
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
@@ -27,6 +30,9 @@ import javax.swing.JPanel
 import javax.swing.JScrollPane
 import javax.swing.JTextArea
 
+/**
+ * TODO docs
+ */
 abstract class LogTailer(tooltip: String) : JPanel() {
     protected var textArea: JTextArea
 
@@ -54,5 +60,8 @@ abstract class LogTailer(tooltip: String) : JPanel() {
         this.add(scrollPane, constraints)
     }
 
+    /**
+     * TODO docs
+     */
     protected abstract fun createTailer(logsDirectory: File)
 }

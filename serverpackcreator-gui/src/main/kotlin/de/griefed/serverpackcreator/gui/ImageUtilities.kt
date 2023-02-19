@@ -17,13 +17,16 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.gui.window.components
+package de.griefed.serverpackcreator.gui
 
 import java.awt.Image
 import java.util.*
 import javax.imageio.ImageIO
 import javax.swing.ImageIcon
 
+/**
+ * TODO docs
+ */
 class ImageUtilities {
     companion object {
         /**

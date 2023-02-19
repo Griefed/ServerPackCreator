@@ -14,6 +14,9 @@ import javax.swing.JPanel
 import javax.swing.JSplitPane
 import javax.swing.tree.DefaultMutableTreeNode
 
+/**
+ * TODO docs
+ */
 class FileBrowserFrame(
     private val browserModel: FileBrowserModel,
     configsTab: ConfigsTab,
@@ -76,22 +79,37 @@ class FileBrowserFrame(
         frame.isAutoRequestFocus = true
     }
 
+    /**
+     * TODO docs
+     */
     fun updateFileDetail(fileNode: FileNode?) {
         fileDetailPanel.setFileNode(fileNode, browserModel)
     }
 
+    /**
+     * TODO docs
+     */
     fun setDefaultTableModel(node: DefaultMutableTreeNode) {
         tableScrollPane.setDefaultTableModel(node)
     }
 
+    /**
+     * TODO docs
+     */
     fun clearDefaultTableModel() {
         tableScrollPane.clearDefaultTableModel()
     }
 
+    /**
+     * TODO docs
+     */
     fun setFilePreviewNode(fileNode: FileNode?) {
         fileNode?.let { filePreviewPanel.setFileNode(it) }
     }
 
+    /**
+     * TODO docs
+     */
     fun show() {
         if (frame.isVisible) {
             frame.toFront()
@@ -102,6 +120,9 @@ class FileBrowserFrame(
         treeScrollPane.expandPathsToModpackDir()
     }
 
+    /**
+     * TODO docs
+     */
     fun hide() {
         frame.isVisible = false
     }

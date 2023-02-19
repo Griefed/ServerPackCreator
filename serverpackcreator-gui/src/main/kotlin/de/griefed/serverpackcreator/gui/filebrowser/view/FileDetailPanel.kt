@@ -12,6 +12,9 @@ import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.JTextField
 
+/**
+ * TODO docs
+ */
 class FileDetailPanel {
     private var fileNameLabel = JLabel(" ")
     private var lastModifiedLabel = JLabel(" ")
@@ -44,6 +47,9 @@ class FileDetailPanel {
         panel.add(fileSizeLabel, "cell 1 3,grow")
     }
 
+    /**
+     * TODO docs
+     */
     private fun updatePartControl(browserModel: FileBrowserModel) {
         if (fileNode != null) {
             val file: File = fileNode!!.file
@@ -61,6 +67,9 @@ class FileDetailPanel {
         }
     }
 
+    /**
+     * TODO docs
+     */
     private fun generateLastModified(file: File): String {
         val timestamp = file.lastModified()
         val date = Date(timestamp)
@@ -69,6 +78,9 @@ class FileDetailPanel {
         return sdf.format(date)
     }
 
+    /**
+     * TODO docs
+     */
     private fun generateFileSize(file: File): String {
         val label = arrayOf("bytes", "KB", "GB", "TB")
         var dbytes = file.length().toDouble()
@@ -80,6 +92,9 @@ class FileDetailPanel {
         return String.format("%.3f ", dbytes) + label[count]
     }
 
+    /**
+     * TODO docs
+     */
     fun setFileNode(fileNode: FileNode?, browserModel: FileBrowserModel) {
         this.fileNode = fileNode
         updatePartControl(browserModel)

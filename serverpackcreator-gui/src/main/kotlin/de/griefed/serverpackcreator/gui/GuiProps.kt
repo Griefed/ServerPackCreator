@@ -4,7 +4,6 @@ import de.griefed.larsonscanner.LarsonScanner.ScannerConfig
 import de.griefed.serverpackcreator.api.utilities.ReticulatingSplines
 import de.griefed.serverpackcreator.gui.filebrowser.view.renderer.FileNameComparator
 import de.griefed.serverpackcreator.gui.filebrowser.view.renderer.FileTypeComparator
-import de.griefed.serverpackcreator.gui.window.components.ImageUtilities
 import de.griefed.serverpackcreator.gui.window.icons.ErrorIcon
 import de.griefed.serverpackcreator.gui.window.icons.InfoIcon
 import de.griefed.serverpackcreator.gui.window.icons.WarningIcon
@@ -13,6 +12,9 @@ import net.java.balloontip.styles.IsometricBalloonStyle
 import net.java.balloontip.styles.ModernBalloonStyle
 import javax.swing.UIManager
 
+/**
+ * TODO docs
+ */
 class GuiProps {
     private val size = 24
     val folderIcon = ImageUtilities.fromBase64(

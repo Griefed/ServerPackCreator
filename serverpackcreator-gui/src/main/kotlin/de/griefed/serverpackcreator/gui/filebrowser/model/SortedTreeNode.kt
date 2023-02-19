@@ -6,7 +6,9 @@ import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.MutableTreeNode
 import javax.swing.tree.TreeNode
 
-
+/**
+ * TODO docs
+ */
 class SortedTreeNode : DefaultMutableTreeNode {
     private val guiProps: GuiProps
 
@@ -23,6 +25,9 @@ class SortedTreeNode : DefaultMutableTreeNode {
         children = sort()
     }
 
+    /**
+     * TODO docs
+     */
     private fun sort(): Vector<TreeNode> {
         Collections.sort(children, guiProps.typeComparator)
         val directories = mutableListOf<TreeNode>()
@@ -44,10 +49,16 @@ class SortedTreeNode : DefaultMutableTreeNode {
         return merge(directories, files)
     }
 
+    /**
+     * TODO docs
+     */
     private fun sortAlphabetically(files: MutableList<TreeNode>) {
         Collections.sort(files, guiProps.nameComparator)
     }
 
+    /**
+     * TODO docs
+     */
     private fun merge(directories: MutableList<TreeNode>, files: MutableList<TreeNode>): Vector<TreeNode> {
         val merged = mutableListOf<TreeNode>()
         merged.addAll(directories)

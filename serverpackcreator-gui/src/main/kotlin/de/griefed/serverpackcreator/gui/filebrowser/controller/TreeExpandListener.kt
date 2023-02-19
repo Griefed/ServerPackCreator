@@ -8,11 +8,21 @@ import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.ExpandVetoException
 import javax.swing.tree.TreePath
 
+/**
+ * TODO docs
+ */
 class TreeExpandListener(private val browserModel: FileBrowserModel) : TreeWillExpandListener {
+
+    /**
+     * TODO docs
+     */
     @Throws(ExpandVetoException::class)
     override fun treeWillCollapse(event: TreeExpansionEvent) {
     }
 
+    /**
+     * TODO docs
+     */
     @Throws(ExpandVetoException::class)
     override fun treeWillExpand(event: TreeExpansionEvent) {
         val path = event.path

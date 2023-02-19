@@ -1,4 +1,4 @@
-package de.griefed.serverpackcreator.gui.window.components
+package de.griefed.serverpackcreator.gui.components
 
 import de.griefed.serverpackcreator.gui.window.configs.ConfigEditorPanel
 import java.awt.BorderLayout

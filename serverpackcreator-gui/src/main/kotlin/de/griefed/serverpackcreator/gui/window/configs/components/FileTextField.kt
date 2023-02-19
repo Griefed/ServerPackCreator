@@ -1,8 +1,11 @@
-package de.griefed.serverpackcreator.gui.window.components
+package de.griefed.serverpackcreator.gui.window.configs.components
 
 import java.io.File
 import javax.swing.JTextField
 
+/**
+ * TODO docs
+ */
 class FileTextField(text: String, editable: Boolean = false) : JTextField(text) {
     constructor(text: File) : this(text.absolutePath)
 
