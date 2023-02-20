@@ -62,6 +62,7 @@ actual class ApiProperties(
     private val alphaBetaRegex = "^(.*alpha.*|.*beta.*)$".toRegex()
     private val serverPacksRegex = "^(?:\\./)?server-packs$".toRegex()
     private val installCacheRegex = "^(?:\\./)?installers$".toRegex()
+    private val imageRegex = ".*\\.([Pp][Nn][Gg]|[Jj][Pp][Gg]|[Jj][Pp][Ee][Gg]|[Bb][Mm][Pp])".toRegex()
     private val pVersionCheckPreRelease =
         "de.griefed.serverpackcreator.versioncheck.prerelease"
     private val pLanguage =
@@ -557,6 +558,11 @@ actual class ApiProperties(
      * `server_files`-directory inside ServerPackCreators home-directory.
      */
     val defaultServerIcon: File
+
+    /**
+     * The database used by the webservice-portion of ServerPackCreaot to do store and provide server packs and
+     * related information.
+     */
     val serverPackCreatorDatabase: File
 
     /**
@@ -612,6 +618,35 @@ actual class ApiProperties(
      * inside ServerPackCreators home-directory.
      */
     val logsDirectory: File
+
+    /**
+     * Directory in which the properties for quick selection are to be stored in and retrieved from.
+     */
+    val propertiesDirectory: File
+
+    /**
+     * Directory in which the icons for quick selection are to be stored in and retrieved from.
+     */
+    val iconsDirectory: File
+
+    /**
+     * List of server properties for quick selection in a given config tab.
+     */
+    val propertiesQuickSelections: List<String>
+        get() {
+            val files = propertiesDirectory.listFiles()?.filterNotNull()?.filter { properties -> properties.name.endsWith(".properties") }
+                ?.toTypedArray() ?: arrayOf()
+            return files.map { file -> file.name }
+        }
+
+    /**
+     * List of server icons for quick selection in a given config tab.
+     */
+    val iconQuickSelections: List<String>
+        get() {
+            val files = iconsDirectory.listFiles()?.filterNotNull()?.filter { icon -> icon.name.matches(imageRegex) }?.toTypedArray() ?: arrayOf()
+            return files.map { file -> file.name }
+        }
 
     /**
      * Reload from a specific properties-file.
@@ -1603,6 +1638,8 @@ actual class ApiProperties(
         serverPackCreatorPropertiesFile = File(homeDirectory, serverPackCreatorProperties).absoluteFile
         logsDirectory = File(homeDirectory, "logs").absoluteFile
         serverFilesDirectory = File(homeDirectory, "server_files").absoluteFile
+        propertiesDirectory = File(serverFilesDirectory, "properties").absoluteFile
+        iconsDirectory = File(serverFilesDirectory, "icons").absoluteFile
         pluginsDirectory = File(homeDirectory, "plugins").absoluteFile
         manifestsDirectory = File(homeDirectory, "manifests").absoluteFile
         serverPackCreatorDatabase =
@@ -1627,6 +1664,8 @@ actual class ApiProperties(
         legacyFabricLoaderManifest = File(manifestsDirectory, "legacy-fabric-loader-manifest.json").absoluteFile
         legacyFabricGameManifest = File(manifestsDirectory, "legacy-fabric-game-manifest.json").absoluteFile
         serverFilesDirectory.createDirectories(create = true, directory = true)
+        propertiesDirectory.createDirectories(create = true, directory = true)
+        iconsDirectory.createDirectories(create = true, directory = true)
         workDirectory.createDirectories(create = true, directory = true)
         tempDirectory.createDirectories(create = true, directory = true)
         modpacksDirectory.createDirectories(create = true, directory = true)

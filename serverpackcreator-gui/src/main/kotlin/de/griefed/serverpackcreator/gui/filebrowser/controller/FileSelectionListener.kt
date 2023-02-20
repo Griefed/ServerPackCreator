@@ -4,7 +4,6 @@ import de.griefed.serverpackcreator.gui.filebrowser.model.FileBrowserModel
 import de.griefed.serverpackcreator.gui.filebrowser.model.FileNode
 import de.griefed.serverpackcreator.gui.filebrowser.runnable.AddNodes
 import de.griefed.serverpackcreator.gui.filebrowser.view.FileBrowserFrame
-import java.io.File
 import javax.swing.event.TreeSelectionEvent
 import javax.swing.event.TreeSelectionListener
 import javax.swing.tree.DefaultMutableTreeNode

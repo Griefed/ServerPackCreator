@@ -2,15 +2,12 @@ package de.griefed.serverpackcreator.gui.filebrowser.model
 
 import Gui
 import de.griefed.serverpackcreator.gui.filebrowser.view.renderer.DateRenderer
-import java.awt.Dimension
 import java.text.DateFormat
 import java.util.*
 import javax.swing.ImageIcon
 import javax.swing.JLabel
 import javax.swing.JTable
 import javax.swing.table.AbstractTableModel
-import javax.swing.table.DefaultTableCellRenderer
-import javax.swing.table.TableColumn
 
 /**
  * TODO docs

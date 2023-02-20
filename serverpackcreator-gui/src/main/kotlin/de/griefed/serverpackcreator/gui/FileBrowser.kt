@@ -1,12 +1,10 @@
 package de.griefed.serverpackcreator.gui
 
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
-import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.filebrowser.model.FileBrowserModel
 import de.griefed.serverpackcreator.gui.filebrowser.view.FileBrowserFrame
 import de.griefed.serverpackcreator.gui.window.configs.ConfigsTab
 import kotlinx.coroutines.*
-import kotlinx.coroutines.swing.Swing
 
 /**
  * TODO docs

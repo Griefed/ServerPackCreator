@@ -8,8 +8,6 @@ import de.griefed.serverpackcreator.gui.window.icons.ErrorIcon
 import de.griefed.serverpackcreator.gui.window.icons.InfoIcon
 import de.griefed.serverpackcreator.gui.window.icons.WarningIcon
 import net.java.balloontip.styles.EdgedBalloonStyle
-import net.java.balloontip.styles.IsometricBalloonStyle
-import net.java.balloontip.styles.ModernBalloonStyle
 import javax.swing.UIManager
 
 /**
@@ -131,4 +129,6 @@ class GuiProps {
     val nameComparator = FileNameComparator()
     var balloonStyle = EdgedBalloonStyle(UIManager.getColor("Panel.background"),UIManager.getColor("TabbedPane.focusColor"))
     val whitespace = "^.*,\\s*\\\\*$".toRegex()
+    val imageRegex = ".*\\.([Pp][Nn][Gg]|[Jj][Pp][Gg]|[Jj][Pp][Ee][Gg]|[Bb][Mm][Pp])".toRegex()
+    val defaultScriptKVSetting = hashMapOf("SPC_JAVA_SPC" to "java")
 }

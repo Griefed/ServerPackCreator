@@ -4,9 +4,9 @@ import Gui
 import de.griefed.serverpackcreator.api.*
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import de.griefed.serverpackcreator.api.versionmeta.VersionMeta
+import de.griefed.serverpackcreator.gui.FileBrowser
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.components.TabPanel
-import de.griefed.serverpackcreator.gui.FileBrowser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch

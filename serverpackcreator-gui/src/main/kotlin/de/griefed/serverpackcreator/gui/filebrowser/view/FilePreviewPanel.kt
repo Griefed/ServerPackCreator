@@ -1,5 +1,6 @@
 package de.griefed.serverpackcreator.gui.filebrowser.view
 
+import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.filebrowser.model.FileNode
 import net.miginfocom.swing.MigLayout
 import java.awt.Canvas
@@ -14,7 +15,7 @@ import javax.swing.JTextPane
 /**
  * TODO docs
  */
-class FilePreviewPanel {
+class FilePreviewPanel(private val guiProps: GuiProps) {
     private var fileNode: FileNode? = null
     private val iconPreview = ImageCanvas()
     private val textPreview = JTextPane()
@@ -22,7 +23,6 @@ class FilePreviewPanel {
         JScrollPane(textPreview, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED)
 
     // TODO move regexes to guiProps
-    private val imageRegex = ".*\\.([Pp][Nn][Gg]|[Jj][Pp][Gg]|[Jj][Pp][Ee][Gg]|[Bb][Mm][Pp])".toRegex()
     private val props = "properties"
     private val conf = "conf"
     val panel = JPanel(
@@ -47,7 +47,7 @@ class FilePreviewPanel {
     fun setFileNode(fileNode: FileNode) {
         this.fileNode = fileNode
         val name = fileNode.file.name
-        if (name.matches(imageRegex)) {
+        if (name.matches(guiProps.imageRegex)) {
             iconPreview.repaint()
             textPreview.isVisible = false
             textScroll.isVisible = false
@@ -74,7 +74,7 @@ class FilePreviewPanel {
      */
     inner class ImageCanvas : Canvas() {
         override fun paint(g: Graphics?) {
-            if (fileNode?.file?.absoluteFile!!.name.matches(imageRegex)) {
+            if (fileNode?.file?.absoluteFile!!.name.matches(guiProps.imageRegex)) {
                 val image = ImageIO.read(fileNode?.file?.absoluteFile)
                 val imgSize = Dimension(image.getWidth(null), image.getHeight(null))
                 val boundary = this.size

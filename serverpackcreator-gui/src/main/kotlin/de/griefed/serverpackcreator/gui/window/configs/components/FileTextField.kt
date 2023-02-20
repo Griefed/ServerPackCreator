@@ -6,8 +6,7 @@ import javax.swing.JTextField
 /**
  * TODO docs
  */
-class FileTextField(text: String, editable: Boolean = false) : JTextField(text) {
-    constructor(text: File) : this(text.absolutePath)
+class FileTextField(text: String, editable: Boolean = false) : ListeningTextField(text) {
     constructor(text: File, documentChangeListener: DocumentChangeListener) : this(text.absolutePath) {
         document.addDocumentListener(documentChangeListener)
     }

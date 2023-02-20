@@ -5,7 +5,6 @@ import de.griefed.serverpackcreator.gui.filebrowser.model.FileNode
 import de.griefed.serverpackcreator.gui.filebrowser.view.SelectionPopMenu
 import de.griefed.serverpackcreator.gui.window.configs.ConfigsTab
 import java.awt.event.MouseEvent
-import java.io.File
 import javax.swing.JTable
 
 /**

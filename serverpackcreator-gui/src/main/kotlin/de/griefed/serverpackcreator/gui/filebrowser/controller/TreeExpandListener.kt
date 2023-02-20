@@ -6,7 +6,6 @@ import javax.swing.event.TreeExpansionEvent
 import javax.swing.event.TreeWillExpandListener
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.ExpandVetoException
-import javax.swing.tree.TreePath
 
 /**
  * TODO docs

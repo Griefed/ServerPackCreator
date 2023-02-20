@@ -53,7 +53,7 @@ class FileBrowserFrame(
         southPanel.layout = BorderLayout()
         fileDetailPanel = FileDetailPanel()
         fileDetailPanel.panel.let { southPanel.add(it, BorderLayout.PAGE_START) }
-        filePreviewPanel = FilePreviewPanel()
+        filePreviewPanel = FilePreviewPanel(guiProps)
         southPanel.add(
             filePreviewPanel.panel,
             BorderLayout.CENTER

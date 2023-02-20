@@ -1,7 +1,5 @@
 package de.griefed.serverpackcreator.gui.window.configs.components
 
-import java.io.File
-import java.util.*
 import javax.swing.JScrollPane
 import javax.swing.JTextArea
 import javax.swing.event.DocumentListener
@@ -19,12 +17,8 @@ class ScrollTextArea(
     constructor(text: String, documentChangeListener: DocumentChangeListener) : this(text) {
         addDocumentListener(documentChangeListener)
     }
-    constructor(text: List<String>) : this(text.joinToString(","))
+
     constructor(text: List<String>, documentChangeListener: DocumentChangeListener) : this(text.joinToString(",")) {
-        addDocumentListener(documentChangeListener)
-    }
-    constructor(text: TreeSet<String>) : this(text.joinToString(","))
-    constructor(text: TreeSet<String>, documentChangeListener: DocumentChangeListener) : this(text.joinToString(",")) {
         addDocumentListener(documentChangeListener)
     }
 
@@ -44,7 +38,7 @@ class ScrollTextArea(
     /**
      * TODO docs
      */
-    fun addDocumentListener(listener: DocumentListener) {
+    private fun addDocumentListener(listener: DocumentListener) {
         textArea.document.addDocumentListener(listener)
     }
 }

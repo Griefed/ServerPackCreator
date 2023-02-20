@@ -14,7 +14,6 @@ import kotlinx.coroutines.*
 import net.miginfocom.swing.MigLayout
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.awt.Desktop
-import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
 import java.io.File
 import java.io.IOException
