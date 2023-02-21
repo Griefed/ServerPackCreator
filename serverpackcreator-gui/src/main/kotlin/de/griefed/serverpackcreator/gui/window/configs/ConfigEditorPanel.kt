@@ -88,7 +88,7 @@ class ConfigEditorPanel(
     private val aikarsFlags = JButton()
     private val modpackDirectory = FileTextField("")
     private val startArgs = ScrollTextArea("-Xmx4G -Xms4G")
-    private val scriptKVPairs = InteractiveTable()
+    private val scriptKVPairs = InteractiveTable(guiProps)
 
     @OptIn(DelicateCoroutinesApi::class)
     private val serverPackSuffix = ListeningTextField("", object : DocumentChangeListener {
@@ -209,7 +209,7 @@ class ConfigEditorPanel(
 
     val pluginPanels: MutableList<ExtensionConfigPanel> = apiPlugins.getConfigPanels(this).toMutableList()
 
-    //TODO unsaved changes info!
+    //TODO unsaved changes warning!
     var lastLoadedConfiguration: PackConfig? = null
     val title = ConfigEditorTitle(guiProps, configsTab, this)
 

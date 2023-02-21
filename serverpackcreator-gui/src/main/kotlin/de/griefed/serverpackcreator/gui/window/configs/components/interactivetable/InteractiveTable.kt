@@ -20,6 +20,7 @@
 package de.griefed.serverpackcreator.gui.window.configs.components.interactivetable
 
 import Gui
+import de.griefed.serverpackcreator.gui.GuiProps
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.awt.Component
 import java.awt.event.*
@@ -54,7 +55,8 @@ import javax.swing.text.JTextComponent
 class InteractiveTable(
     tableModel: TableModel,
     tableColumnModel: TableColumnModel?,
-    listSelectionModel: ListSelectionModel?
+    listSelectionModel: ListSelectionModel?,
+    guiProps: GuiProps
 ) : JTable(tableModel, tableColumnModel, listSelectionModel) {
     private val log = cachedLoggerOf(this.javaClass)
     val scrollPanel: JScrollPane
@@ -64,7 +66,7 @@ class InteractiveTable(
      * names according to the currently used language.
      *
      */
-    constructor() : this(
+    constructor(guiProps: GuiProps) : this(
         DefaultTableModel(
             arrayOf<Any>(
                 Gui.createserverpack_gui_createserverpack_scriptsettings_table_column_variable.toString(),
@@ -74,19 +76,20 @@ class InteractiveTable(
             1
         ),
         null,
-        null
+        null,
+        guiProps
     )
 
     init {
         setRowHeight(25)
         tableHeader.reorderingAllowed = false
         try {
-            ButtonColumns(this, 2, ButtonColumns.ColumnType.CLEAR)
-            ButtonColumns(this, 3, ButtonColumns.ColumnType.DELETE)
-            ButtonColumns(this, 4, ButtonColumns.ColumnType.ADD_BEFORE)
-            ButtonColumns(this, 5, ButtonColumns.ColumnType.ADD_AFTER)
-            ButtonColumns(this, 6, ButtonColumns.ColumnType.MOVE_UP)
-            ButtonColumns(this, 7, ButtonColumns.ColumnType.MOVE_DOWN)
+            ButtonColumns(this, 2,guiProps, ButtonColumns.ColumnType.CLEAR)
+            ButtonColumns(this, 3,guiProps, ButtonColumns.ColumnType.DELETE)
+            ButtonColumns(this, 4,guiProps, ButtonColumns.ColumnType.ADD_BEFORE)
+            ButtonColumns(this, 5,guiProps, ButtonColumns.ColumnType.ADD_AFTER)
+            ButtonColumns(this, 6,guiProps, ButtonColumns.ColumnType.MOVE_UP)
+            ButtonColumns(this, 7,guiProps, ButtonColumns.ColumnType.MOVE_DOWN)
         } catch (ex: IOException) {
             log.error("Couldn't create button column.", ex)
         }
