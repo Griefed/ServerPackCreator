@@ -27,6 +27,8 @@ class ConfigEditorTitle(
     init {
         isOpaque = false
         titleLabel.border = BorderFactory.createEmptyBorder(0, 0, 0, 5)
+        warningIconLabel.border = BorderFactory.createEmptyBorder(0, 0, 0, 5)
+        errorIconLabel.border = BorderFactory.createEmptyBorder(0, 0, 0, 5)
         warningIconLabel.toolTipText = Gui.configuration_title_warning.toString()
         errorIconLabel.isVisible = false
         warningIconLabel.isVisible = false

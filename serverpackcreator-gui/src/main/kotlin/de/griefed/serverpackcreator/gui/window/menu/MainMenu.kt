@@ -111,7 +111,7 @@ class MainMenu(
      */
     private fun changeTheme(theme: FlatIJLookAndFeelInfo) {
         try {
-            val instance = Class.forName(theme.className).getDeclaredConstructor().newInstance()  as FlatLaf
+            val instance = Class.forName(theme.className).getDeclaredConstructor().newInstance() as FlatLaf
             FlatAnimatedLafChange.showSnapshot()
             UIManager.setLookAndFeel(instance)
             updateLarsonConfig()

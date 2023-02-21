@@ -92,9 +92,9 @@ class ConfigEditorPanel(
     private val quiltVersions = DefaultComboBoxModel(versionMeta.quilt.loaderVersionsArrayDescending())
     private val propertiesQuickSelect = QuickSelect(apiProperties.propertiesQuickSelections) { setProperties() }
     private val iconQuickSelect = QuickSelect(apiProperties.iconQuickSelections) { setIcon() }
-    private val minecraftVersions = JComboBox<String>()
-    private val modloaders = JComboBox<String>()
-    private val modloaderVersions = JComboBox<String>()
+    private val minecraftVersions = ActionComboBox(DefaultComboBoxModel(versionMeta.minecraft.settingsDependantVersionsArrayDescending())) { updateMinecraftValues() }
+    private val modloaders = ActionComboBox(DefaultComboBoxModel(apiProperties.supportedModloaders)) { updateMinecraftValues() }
+    private val modloaderVersions = ActionComboBox { updateMinecraftValues() }
     private val aikarsFlags = JButton()
     private val modpackDirectory = FileTextField("")
 
@@ -103,7 +103,7 @@ class ConfigEditorPanel(
         apiProperties.defaultServerProperties,
         object : DocumentChangeListener {
             override fun update(e: DocumentEvent) {
-                GlobalScope.launch(Dispatchers.Default) {
+                GlobalScope.launch(Dispatchers.Unconfined) {
                     validateInputFields()
                 }
             }
@@ -114,7 +114,7 @@ class ConfigEditorPanel(
         apiProperties.defaultServerIcon,
         object : DocumentChangeListener {
             override fun update(e: DocumentEvent) {
-                GlobalScope.launch(Dispatchers.Default) {
+                GlobalScope.launch(Dispatchers.Unconfined) {
                     validateInputFields()
                 }
             }
@@ -125,7 +125,7 @@ class ConfigEditorPanel(
         "config,mods",
         object : DocumentChangeListener {
             override fun update(e: DocumentEvent) {
-                GlobalScope.launch(Dispatchers.Default) {
+                GlobalScope.launch(Dispatchers.Unconfined) {
                     validateInputFields()
                 }
             }
@@ -136,7 +136,7 @@ class ConfigEditorPanel(
         apiProperties.clientSideMods(),
         object : DocumentChangeListener {
             override fun update(e: DocumentEvent) {
-                GlobalScope.launch(Dispatchers.Default) {
+                GlobalScope.launch(Dispatchers.Unconfined) {
                     validateInputFields()
                 }
             }
@@ -157,53 +157,56 @@ class ConfigEditorPanel(
         }
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     private val timer: Timer = Timer(250) {
         val errors = mutableListOf<String>()
-        runBlocking(Dispatchers.IO) {
-            launch {
-                errors.addAll(validateModpackDir())
-            }
-            launch {
-                errors.addAll(validateSuffix())
-            }
-            launch {
-                errors.addAll(validateExclusions())
-            }
-            launch {
-                errors.addAll(validateServerPackFiles())
-            }
-            launch {
-                errors.addAll(validateServerIcon())
-            }
-            launch {
-                errors.addAll(validateServerProperties())
-            }
-            launch {
-                if (!checkServer()) {
-                    errors.add(
-                        Gui.createserverpack_gui_createserverpack_checkboxserver_unavailable_title(
-                            minecraftVersions.selectedItem!!.toString(),
-                            modloaders.selectedItem!!.toString(),
-                            modloaderVersions.selectedItem!!.toString()
+        GlobalScope.launch(newSingleThreadContext("Validation")) {
+            runBlocking {
+                launch {
+                    errors.addAll(validateModpackDir())
+                }
+                launch {
+                    errors.addAll(validateSuffix())
+                }
+                launch {
+                    errors.addAll(validateExclusions())
+                }
+                launch {
+                    errors.addAll(validateServerPackFiles())
+                }
+                launch {
+                    errors.addAll(validateServerIcon())
+                }
+                launch {
+                    errors.addAll(validateServerProperties())
+                }
+                launch {
+                    if (!checkServer()) {
+                        errors.add(
+                            Gui.createserverpack_gui_createserverpack_checkboxserver_unavailable_title(
+                                minecraftVersions.selectedItem!!.toString(),
+                                modloaders.selectedItem!!.toString(),
+                                modloaderVersions.selectedItem!!.toString()
+                            )
                         )
-                    )
+                    }
+                }
+                launch {
+                    if (modloaderVersions.selectedItem!! == Gui.createserverpack_gui_createserverpack_forge_none.toString()) {
+                        errors.add(
+                            Gui.configuration_log_error_minecraft_modloader(
+                                getMinecraftVersion(),
+                                getModloader()
+                            )
+                        )
+                    }
                 }
             }
-            launch {
-                if (modloaderVersions.selectedItem!! == Gui.createserverpack_gui_createserverpack_forge_none.toString()) {
-                    errors.add(
-                        Gui.configuration_log_error_minecraft_modloader(
-                            getMinecraftVersion(),
-                            getModloader()
-                        )
-                    )
-                }
+            if (errors.isEmpty()) {
+                title.clearErrorIcon()
+            } else {
+                title.setErrorIcon("<html>${errors.joinToString("<br>")}</html>")
             }
-        }
-        if (errors.isEmpty()) {
-            title.clearErrorIcon()
-        } else {
-            title.setErrorIcon("<html>${errors.joinToString("<br>")}</html>")
         }
     }
 
@@ -211,10 +214,12 @@ class ConfigEditorPanel(
         timer.isRepeats = false
         timer.stop()
 
-        initListeners()
-        initTooltips()
+        minecraftVersions.selectedIndex = 0
+        modloaders.selectedIndex = 0
+        modpackDirectory.document.addDocumentListener(modpackChanges)
+
         initAikarsButton()
-        initComboboxes()
+        updateMinecraftValues()
 
         // Modpack directory
         add(modpackInfo, "cell 0 0,grow")
@@ -369,6 +374,8 @@ class ConfigEditorPanel(
      * TODO docs
      */
     private fun initAikarsButton() {
+        aikarsFlags.addActionListener { setAikarsFlagsAsJavaArguments() }
+        aikarsFlags.toolTipText = Gui.createserverpack_gui_createserverpack_button_properties.toString()
         val parts = Gui.createserverpack_gui_createserverpack_javaargs_aikar.toString().split(" ")
         val flags = mutableListOf<TextIcon>()
         for (part in parts) {
@@ -379,43 +386,6 @@ class ConfigEditorPanel(
             5,
             CompoundIcon.Axis.Y_AXIS
         )
-    }
-
-    /**
-     * TODO docs
-     */
-    private fun initComboboxes() {
-        if (apiProperties.isMinecraftPreReleasesAvailabilityEnabled) {
-            minecraftVersions.setModel(DefaultComboBoxModel(versionMeta.minecraft.allVersionsArrayDescending()))
-        } else {
-            minecraftVersions.setModel(DefaultComboBoxModel(versionMeta.minecraft.releaseVersionsArrayDescending()))
-        }
-        if (minecraftVersions.selectedItem == null) {
-            minecraftVersions.selectedIndex = 0
-        }
-        modloaders.model = DefaultComboBoxModel(apiProperties.supportedModloaders)
-        if (modloaders.selectedItem == null) {
-            modloaders.selectedIndex = 0
-        }
-        updateMinecraftValues()
-    }
-
-    /**
-     * TODO docs
-     */
-    private fun initTooltips() {
-        aikarsFlags.toolTipText = Gui.createserverpack_gui_createserverpack_button_properties.toString()
-    }
-
-    /**
-     * TODO docs
-     */
-    private fun initListeners() {
-        modpackDirectory.document.addDocumentListener(modpackChanges)
-        minecraftVersions.addActionListener { updateMinecraftValues() }
-        modloaders.addActionListener { updateMinecraftValues() }
-        modloaderVersions.addActionListener { updateMinecraftValues() }
-        aikarsFlags.addActionListener { setAikarsFlagsAsJavaArguments() }
     }
 
     override fun setClientSideMods(entries: MutableList<String>) {
@@ -579,7 +549,7 @@ class ConfigEditorPanel(
         }
         val icon = iconQuickSelect.selectedItem
         if (icon != null && icon.toString() != Gui.createserverpack_gui_quickselect_choose.toString()) {
-            setServerIconPath(File(apiProperties.iconsDirectory,icon.toString()).absolutePath)
+            setServerIconPath(File(apiProperties.iconsDirectory, icon.toString()).absolutePath)
             iconQuickSelect.selectedIndex = 0
         }
     }
@@ -593,7 +563,7 @@ class ConfigEditorPanel(
         }
         val properties = propertiesQuickSelect.selectedItem
         if (properties != null && properties.toString() != Gui.createserverpack_gui_quickselect_choose.toString()) {
-            setServerPropertiesPath(File(apiProperties.propertiesDirectory,properties.toString()).absolutePath)
+            setServerPropertiesPath(File(apiProperties.propertiesDirectory, properties.toString()).absolutePath)
             propertiesQuickSelect.selectedIndex = 0
         }
     }
@@ -924,7 +894,7 @@ class ConfigEditorPanel(
      */
     @OptIn(DelicateCoroutinesApi::class)
     fun updateGuiFromSelectedModpack() {
-        GlobalScope.launch(Dispatchers.Default) {
+        GlobalScope.launch(newSingleThreadContext("Inspection")) {
             modpackInspect.isEnabled = false
             if (File(getModpackDirectory()).isDirectory) {
                 try {

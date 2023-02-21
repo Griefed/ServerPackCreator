@@ -40,7 +40,7 @@ actual class MinecraftMeta(
     minecraftManifest: File,
     injectedForgeMeta: ForgeMeta,
     utilities: Utilities,
-    apiProperties: ApiProperties
+    private val apiProperties: ApiProperties
 ) {
     private val minecraftClientMeta: MinecraftClientMeta = MinecraftClientMeta(
         minecraftManifest,
@@ -565,5 +565,29 @@ actual class MinecraftMeta(
      */
     fun snapshotsServersAscending(): List<MinecraftServer> {
         return minecraftServerMeta.snapshots.reversed()
+    }
+
+    /**
+     * Depending on whether *de.griefed.serverpackcreator.minecraft.snapshots*-property is set to *true|false* this will return
+     * either [allVersionsArrayDescending] or [releaseVersionsArrayDescending].
+     */
+    fun settingsDependantVersionsArrayDescending(): Array<String> {
+        return if (apiProperties.isMinecraftPreReleasesAvailabilityEnabled) {
+            allVersionsArrayDescending()
+        } else {
+            releaseVersionsArrayDescending()
+        }
+    }
+
+    /**
+     * Depending on whether *de.griefed.serverpackcreator.minecraft.snapshots*-property is set to *true|false* this will return
+     * either [allVersionsArrayAscending] or [releaseVersionsArrayAscending].
+     */
+    fun settingsDependantVersionsArrayAscending(): Array<String> {
+        return if (apiProperties.isMinecraftPreReleasesAvailabilityEnabled) {
+            allVersionsArrayAscending()
+        } else {
+            releaseVersionsArrayAscending()
+        }
     }
 }
