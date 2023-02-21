@@ -60,24 +60,12 @@ class ConfigEditorPanel(
         StatusIcon(guiProps, Gui.createserverpack_gui_createserverpack_checkboxserver_tip.toString())
     private val exclusionsInfo =
         StatusIcon(guiProps, Gui.createserverpack_gui_createserverpack_labelclientmods_tip.toString())
-
     private val iconPreview = IconPreview(guiProps)
-
-    //TODO replace with IconActionButton
     private val modpackInspect = IconActionButton(
         guiProps.inspectIcon,
         Gui.createserverpack_gui_buttonmodpackdir_scan_tip.toString()
     ) { updateGuiFromSelectedModpack() }
     private val javaVersion = ElementLabel("8", 16)
-
-    @OptIn(DelicateCoroutinesApi::class)
-    private val serverPackSuffix = ListeningTextField("", object : DocumentChangeListener {
-        override fun update(e: DocumentEvent) {
-            GlobalScope.launch(Dispatchers.Default) {
-                validateInputFields()
-            }
-        }
-    })
     private val includeIcon =
         ActionCheckBox(Gui.createserverpack_gui_createserverpack_checkboxicon.toString()) { validateServerIcon() }
     private val includeProperties =
@@ -92,11 +80,24 @@ class ConfigEditorPanel(
     private val quiltVersions = DefaultComboBoxModel(versionMeta.quilt.loaderVersionsArrayDescending())
     private val propertiesQuickSelect = QuickSelect(apiProperties.propertiesQuickSelections) { setProperties() }
     private val iconQuickSelect = QuickSelect(apiProperties.iconQuickSelections) { setIcon() }
-    private val minecraftVersions = ActionComboBox(DefaultComboBoxModel(versionMeta.minecraft.settingsDependantVersionsArrayDescending())) { updateMinecraftValues() }
-    private val modloaders = ActionComboBox(DefaultComboBoxModel(apiProperties.supportedModloaders)) { updateMinecraftValues() }
+    private val minecraftVersions =
+        ActionComboBox(DefaultComboBoxModel(versionMeta.minecraft.settingsDependantVersionsArrayDescending())) { updateMinecraftValues() }
+    private val modloaders =
+        ActionComboBox(DefaultComboBoxModel(apiProperties.supportedModloaders)) { updateMinecraftValues() }
     private val modloaderVersions = ActionComboBox { updateMinecraftValues() }
     private val aikarsFlags = JButton()
     private val modpackDirectory = FileTextField("")
+    private val startArgs = ScrollTextArea("-Xmx4G -Xms4G")
+    private val scriptKVPairs = InteractiveTable()
+
+    @OptIn(DelicateCoroutinesApi::class)
+    private val serverPackSuffix = ListeningTextField("", object : DocumentChangeListener {
+        override fun update(e: DocumentEvent) {
+            GlobalScope.launch(Dispatchers.Default) {
+                validateInputFields()
+            }
+        }
+    })
 
     @OptIn(DelicateCoroutinesApi::class)
     private val propertiesFile = FileTextField(
@@ -141,11 +142,7 @@ class ConfigEditorPanel(
                 }
             }
         })
-    private val startArgs = ScrollTextArea("-Xmx4G -Xms4G")
-    private val scriptKVPairs = InteractiveTable()
-    val pluginPanels: MutableList<ExtensionConfigPanel> = apiPlugins.getConfigPanels(this).toMutableList()
-    var lastLoadedConfiguration: PackConfig? = null
-    val title = ConfigEditorTitle(guiProps, configsTab, this)
+
 
     @OptIn(DelicateCoroutinesApi::class)
     private val modpackChanges = object : DocumentChangeListener {
@@ -209,6 +206,12 @@ class ConfigEditorPanel(
             }
         }
     }
+
+    val pluginPanels: MutableList<ExtensionConfigPanel> = apiPlugins.getConfigPanels(this).toMutableList()
+
+    //TODO unsaved changes info!
+    var lastLoadedConfiguration: PackConfig? = null
+    val title = ConfigEditorTitle(guiProps, configsTab, this)
 
     init {
         timer.isRepeats = false
@@ -417,10 +420,10 @@ class ConfigEditorPanel(
 
     override fun setModloader(modloader: String) {
         when (modloader) {
-            "Fabric" -> modloaders.setSelectedIndex(0)
-            "Forge" -> modloaders.setSelectedIndex(1)
-            "Quilt" -> modloaders.setSelectedIndex(2)
-            "LegacyFabric" -> modloaders.setSelectedIndex(3)
+            "Fabric" -> modloaders.selectedIndex = 0
+            "Forge" -> modloaders.selectedIndex = 1
+            "Quilt" -> modloaders.selectedIndex = 2
+            "LegacyFabric" -> modloaders.selectedIndex = 3
         }
         setModloaderVersionsModel()
     }

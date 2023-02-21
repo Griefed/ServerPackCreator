@@ -27,6 +27,7 @@ import javax.swing.JOptionPane
 /**
  * TODO docs
  */
+@Suppress("unused")
 class DialogUtilities {
     companion object {
 

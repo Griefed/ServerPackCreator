@@ -56,7 +56,7 @@ import javax.swing.JScrollPane
 @Suppress("unused")
 class BackgroundPanel(
     private var image: Image,
-    private var style: Int = de.griefed.serverpackcreator.gui.components.BackgroundPanel.Companion.SCALED,
+    private var style: Int = SCALED,
     private var alignX: Float = 0.5f,
     private var alignY: Float = 0.5f,
     private var isTransparentAdd: Boolean = true
@@ -170,8 +170,8 @@ class BackgroundPanel(
     override fun paintComponent(g: Graphics) {
         super.paintComponent(g)
         when (style) {
-            de.griefed.serverpackcreator.gui.components.BackgroundPanel.Companion.TILED -> drawTiled(g)
-            de.griefed.serverpackcreator.gui.components.BackgroundPanel.Companion.ACTUAL -> drawActual(g)
+            TILED -> drawTiled(g)
+            ACTUAL -> drawActual(g)
             else -> drawScaled(g)
         }
     }

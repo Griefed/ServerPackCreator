@@ -1,7 +1,6 @@
 package de.griefed.serverpackcreator.gui.window.configs.components
 
 import java.io.File
-import javax.swing.JTextField
 
 /**
  * TODO docs

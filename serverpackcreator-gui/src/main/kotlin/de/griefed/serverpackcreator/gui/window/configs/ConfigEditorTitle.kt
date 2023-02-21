@@ -13,6 +13,7 @@ import javax.swing.JPanel
 /**
  * TODO docs
  */
+@Suppress("unused")
 class ConfigEditorTitle(
     guiProps: GuiProps,
     configsTab: ConfigsTab,

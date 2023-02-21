@@ -151,6 +151,7 @@ class ButtonColumns(
      *
      * @param focusBorder the foreground color
      */
+    @Suppress("unused")
     private fun setFocusBorder(focusBorder: Border?) {
         this.focusBorder = focusBorder
         editButton.border = focusBorder
