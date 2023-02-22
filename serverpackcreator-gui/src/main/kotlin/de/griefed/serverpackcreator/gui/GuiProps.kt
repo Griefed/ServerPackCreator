@@ -7,7 +7,9 @@ import de.griefed.serverpackcreator.gui.filebrowser.view.renderer.FileTypeCompar
 import de.griefed.serverpackcreator.gui.window.icons.ErrorIcon
 import de.griefed.serverpackcreator.gui.window.icons.InfoIcon
 import de.griefed.serverpackcreator.gui.window.icons.WarningIcon
+import kotlinx.coroutines.asCoroutineDispatcher
 import net.java.balloontip.styles.EdgedBalloonStyle
+import java.util.concurrent.Executors
 import javax.swing.UIManager
 
 /**
@@ -162,4 +164,7 @@ class GuiProps {
     val whitespace = "^.*,\\s*\\\\*$".toRegex()
     val imageRegex = ".*\\.([Pp][Nn][Gg]|[Jj][Pp][Gg]|[Jj][Pp][Ee][Gg]|[Bb][Mm][Pp])".toRegex()
     val defaultScriptKVSetting = hashMapOf("SPC_JAVA_SPC" to "java")
+    val configDispatcher = Executors.newFixedThreadPool(5).asCoroutineDispatcher()
+    val fileBrowserDispatcher = Executors.newFixedThreadPool(5).asCoroutineDispatcher()
+    val generationDispatcher = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
 }

@@ -70,8 +70,13 @@ class ConfigEditorPanel(
         ActionCheckBox(Gui.createserverpack_gui_createserverpack_checkboxicon.toString()) { validateServerIcon() }
     private val includeProperties =
         ActionCheckBox(Gui.createserverpack_gui_createserverpack_checkboxproperties.toString()) { validateServerProperties() }
+    @OptIn(DelicateCoroutinesApi::class)
     private val prepareServer =
-        ActionCheckBox(Gui.createserverpack_gui_createserverpack_checkboxserver.toString()) { checkServer() }
+        ActionCheckBox(Gui.createserverpack_gui_createserverpack_checkboxserver.toString()) {
+            GlobalScope.launch(guiProps.configDispatcher) {
+                checkServer()
+            }
+        }
     private val includeZip = JCheckBox(Gui.createserverpack_gui_createserverpack_checkboxzip.toString())
     private val noVersions =
         DefaultComboBoxModel(arrayOf(Gui.createserverpack_gui_createserverpack_forge_none.toString()))
@@ -93,7 +98,7 @@ class ConfigEditorPanel(
     @OptIn(DelicateCoroutinesApi::class)
     private val serverPackSuffix = ListeningTextField("", object : DocumentChangeListener {
         override fun update(e: DocumentEvent) {
-            GlobalScope.launch(Dispatchers.Default) {
+            GlobalScope.launch(guiProps.configDispatcher) {
                 validateInputFields()
             }
         }
@@ -104,7 +109,7 @@ class ConfigEditorPanel(
         apiProperties.defaultServerProperties,
         object : DocumentChangeListener {
             override fun update(e: DocumentEvent) {
-                GlobalScope.launch(Dispatchers.Unconfined) {
+                GlobalScope.launch(guiProps.configDispatcher) {
                     validateInputFields()
                 }
             }
@@ -115,7 +120,7 @@ class ConfigEditorPanel(
         apiProperties.defaultServerIcon,
         object : DocumentChangeListener {
             override fun update(e: DocumentEvent) {
-                GlobalScope.launch(Dispatchers.Unconfined) {
+                GlobalScope.launch(guiProps.configDispatcher) {
                     validateInputFields()
                 }
             }
@@ -126,7 +131,7 @@ class ConfigEditorPanel(
         "config,mods",
         object : DocumentChangeListener {
             override fun update(e: DocumentEvent) {
-                GlobalScope.launch(Dispatchers.Unconfined) {
+                GlobalScope.launch(guiProps.configDispatcher) {
                     validateInputFields()
                 }
             }
@@ -137,17 +142,16 @@ class ConfigEditorPanel(
         apiProperties.clientSideMods(),
         object : DocumentChangeListener {
             override fun update(e: DocumentEvent) {
-                GlobalScope.launch(Dispatchers.Unconfined) {
+                GlobalScope.launch(guiProps.configDispatcher) {
                     validateInputFields()
                 }
             }
         })
 
-
     @OptIn(DelicateCoroutinesApi::class)
     private val modpackChanges = object : DocumentChangeListener {
         override fun update(e: DocumentEvent) {
-            GlobalScope.launch(Dispatchers.Default) {
+            GlobalScope.launch(guiProps.configDispatcher) {
                 title.titleLabel.text = modpackDirectory.file.name
                 validateInputFields()
             }
@@ -157,7 +161,7 @@ class ConfigEditorPanel(
     @OptIn(DelicateCoroutinesApi::class)
     private val timer: Timer = Timer(250) {
         val errors = mutableListOf<String>()
-        GlobalScope.launch(newSingleThreadContext("Validation")) {
+        GlobalScope.launch(guiProps.configDispatcher) {
             runBlocking {
                 launch {
                     errors.addAll(validateModpackDir())
@@ -897,7 +901,7 @@ class ConfigEditorPanel(
      */
     @OptIn(DelicateCoroutinesApi::class)
     fun updateGuiFromSelectedModpack() {
-        GlobalScope.launch(newSingleThreadContext("Inspection")) {
+        GlobalScope.launch(guiProps.configDispatcher) {
             modpackInspect.isEnabled = false
             if (File(getModpackDirectory()).isDirectory) {
                 try {

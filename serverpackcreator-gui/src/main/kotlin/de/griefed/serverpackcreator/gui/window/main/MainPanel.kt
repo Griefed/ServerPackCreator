@@ -11,7 +11,7 @@ import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.components.TabPanel
 import de.griefed.serverpackcreator.gui.window.configs.ConfigsTab
 import de.griefed.serverpackcreator.gui.window.logs.Logs
-import de.griefed.serverpackcreator.gui.window.main.control.ControlPanel
+import de.griefed.serverpackcreator.gui.window.control.ControlPanel
 import de.griefed.serverpackcreator.gui.window.settings.SettingsEditor
 import de.griefed.serverpackcreator.updater.MigrationManager
 import de.griefed.serverpackcreator.updater.UpdateChecker

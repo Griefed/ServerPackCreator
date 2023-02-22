@@ -1,4 +1,4 @@
-package de.griefed.serverpackcreator.gui.window.main.control
+package de.griefed.serverpackcreator.gui.window.control
 
 import java.awt.Color
 import java.awt.Graphics

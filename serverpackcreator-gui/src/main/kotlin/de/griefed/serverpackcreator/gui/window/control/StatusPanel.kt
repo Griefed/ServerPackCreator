@@ -1,4 +1,4 @@
-package de.griefed.serverpackcreator.gui.window.main.control
+package de.griefed.serverpackcreator.gui.window.control
 
 import de.griefed.serverpackcreator.gui.GuiProps
 import net.miginfocom.swing.MigLayout

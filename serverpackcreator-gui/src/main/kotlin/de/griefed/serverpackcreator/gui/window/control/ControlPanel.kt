@@ -1,4 +1,4 @@
-package de.griefed.serverpackcreator.gui.window.main.control
+package de.griefed.serverpackcreator.gui.window.control
 
 import Gui
 import de.griefed.larsonscanner.LarsonScanner
@@ -48,7 +48,7 @@ class ControlPanel(
 
     @OptIn(DelicateCoroutinesApi::class)
     private val generateAction = ActionListener {
-        GlobalScope.launch(Dispatchers.IO) {
+        GlobalScope.launch(guiProps.generationDispatcher) {
             launchGeneration()
         }
     }
@@ -152,7 +152,6 @@ class ControlPanel(
         }
         encounteredErrors.clear()
         readyForGeneration()
-
     }
 
     /**

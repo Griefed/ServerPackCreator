@@ -15,7 +15,7 @@ class FileBrowser(private val configsTab: ConfigsTab, guiProps: GuiProps,utiliti
     private lateinit var frame: FileBrowserFrame
 
     init {
-        GlobalScope.launch(Dispatchers.Default) {
+        GlobalScope.launch(guiProps.fileBrowserDispatcher) {
             frame = FileBrowserFrame(browserModel, configsTab, guiProps,utilities)
         }
     }

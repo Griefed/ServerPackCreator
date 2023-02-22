@@ -139,6 +139,7 @@ actual class ApiProperties(
         "animation,asm,cache,changelogs,craftpresence,crash-reports,downloads,icons,libraries,local,logs,overrides,packmenu,profileImage,profileImage,resourcepacks,screenshots,server_pack,shaderpacks,simple-rpc,tv-cache"
     private var fallbackZipExclusionsString =
         "minecraft_server.MINECRAFT_VERSION.jar,server.jar,libraries/net/minecraft/server/MINECRAFT_VERSION/server-MINECRAFT_VERSION.jar"
+    private val checkedJavas = hashMapOf<String,Boolean>()
     val i18n4kConfig = I18n4kConfigDefault()
 
     /**
@@ -1271,26 +1272,35 @@ actual class ApiProperties(
         if (pathToJava.isEmpty()) {
             return false
         }
-        return when (this.fileUtilities.checkFileType(pathToJava)) {
-            FileType.FILE -> testJava(pathToJava)
+        if (checkedJavas.containsKey(pathToJava)) {
+            return checkedJavas[javaPath]!!
+        }
+        val result: Boolean
+        when (this.fileUtilities.checkFileType(pathToJava)) {
+            FileType.FILE -> {
+                result = testJava(pathToJava)
+            }
             FileType.LINK, FileType.SYMLINK -> {
-                try {
-                    return testJava(this.fileUtilities.resolveLink(File(pathToJava)))
+                result = try {
+                    testJava(this.fileUtilities.resolveLink(File(pathToJava)))
                 } catch (ex: InvalidFileTypeException) {
                     log.error("Could not read Java link/symlink.", ex)
+                    false
                 } catch (ex: IOException) {
                     log.error("Could not read Java link/symlink.", ex)
+                    false
                 }
-                false
             }
 
             FileType.DIRECTORY -> {
                 log.error("Directory specified. Path to Java must lead to a lnk, symlink or file.")
-                false
+                result = false
             }
 
-            FileType.INVALID -> false
+            FileType.INVALID -> result = false
         }
+        checkedJavas[javaPath] = result
+        return result
     }
 
     /**

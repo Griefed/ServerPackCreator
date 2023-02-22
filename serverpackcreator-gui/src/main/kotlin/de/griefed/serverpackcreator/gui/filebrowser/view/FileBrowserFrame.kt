@@ -64,7 +64,7 @@ class FileBrowserFrame(
         tablePreviewSplit.dividerLocation = 200
         tablePreviewSplit.dividerSize = 20
 
-        treeScrollPane = TreeScrollPane(this, browserModel, configsTab,utilities)
+        treeScrollPane = TreeScrollPane(this, browserModel, configsTab,utilities,guiProps)
         splitTreeTable = JSplitPane(
             JSplitPane.HORIZONTAL_SPLIT,
             treeScrollPane.scrollPane,

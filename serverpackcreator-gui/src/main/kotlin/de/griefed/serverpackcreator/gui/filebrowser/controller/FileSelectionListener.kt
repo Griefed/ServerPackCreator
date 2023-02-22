@@ -1,5 +1,6 @@
 package de.griefed.serverpackcreator.gui.filebrowser.controller
 
+import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.filebrowser.model.FileBrowserModel
 import de.griefed.serverpackcreator.gui.filebrowser.model.FileNode
 import de.griefed.serverpackcreator.gui.filebrowser.runnable.AddNodes
@@ -13,7 +14,8 @@ import javax.swing.tree.DefaultMutableTreeNode
  */
 class FileSelectionListener(
     private val frame: FileBrowserFrame,
-    private val browserModel: FileBrowserModel
+    private val browserModel: FileBrowserModel,
+    private val guiProps: GuiProps
 ) : TreeSelectionListener {
 
     /**
@@ -22,7 +24,7 @@ class FileSelectionListener(
     override fun valueChanged(event: TreeSelectionEvent) {
         val node = event.path.lastPathComponent as DefaultMutableTreeNode
         val fileNode = node.userObject as FileNode
-        AddNodes(browserModel, node)
+        AddNodes(browserModel, node,guiProps)
         val file = fileNode.file
         frame.updateFileDetail(fileNode)
         frame.setFilePreviewNode(fileNode)

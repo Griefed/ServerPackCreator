@@ -1,6 +1,7 @@
 package de.griefed.serverpackcreator.gui.filebrowser.view
 
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
+import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.filebrowser.controller.FileSelectionListener
 import de.griefed.serverpackcreator.gui.filebrowser.controller.TreeExpandListener
 import de.griefed.serverpackcreator.gui.filebrowser.controller.TreeMouseListener
@@ -21,7 +22,8 @@ class TreeScrollPane(
     frame: FileBrowserFrame,
     private val browserModel: FileBrowserModel,
     private val configsTab: ConfigsTab,
-    utilities: Utilities
+    utilities: Utilities,
+    guiProps: GuiProps
 ) {
     private val slashRegex: Regex = "/".toRegex()
     var tree: JTree = JTree(this.browserModel.treeModel)
@@ -29,10 +31,10 @@ class TreeScrollPane(
 
     init {
         tree.addTreeSelectionListener(
-            FileSelectionListener(frame, this.browserModel)
+            FileSelectionListener(frame, this.browserModel, guiProps)
         )
         tree.addTreeWillExpandListener(
-            TreeExpandListener(this.browserModel)
+            TreeExpandListener(this.browserModel, guiProps)
         )
         tree.isRootVisible = true
         tree.cellRenderer = FileTreeCellRenderer(this.browserModel)

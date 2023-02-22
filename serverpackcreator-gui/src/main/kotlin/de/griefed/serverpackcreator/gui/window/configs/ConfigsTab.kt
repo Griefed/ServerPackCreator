@@ -7,13 +7,12 @@ import de.griefed.serverpackcreator.api.versionmeta.VersionMeta
 import de.griefed.serverpackcreator.gui.FileBrowser
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.components.TabPanel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
 import javax.swing.JOptionPane
 
+@OptIn(DelicateCoroutinesApi::class)
 class ConfigsTab(
     private val guiProps: GuiProps,
     private val configurationHandler: ConfigurationHandler,
@@ -36,7 +35,7 @@ class ConfigsTab(
 
     init {
         tabs.addChangeListener {
-            MainScope().launch(Dispatchers.Default) {
+            GlobalScope.launch(guiProps.configDispatcher) {
                 if (tabs.tabCount != 0) {
                     for (tab in 0 until tabs.tabCount) {
                         (tabs.getComponentAt(tab) as ConfigEditorPanel).title.closeButton.isVisible = false
@@ -61,7 +60,7 @@ class ConfigsTab(
             versionMeta,
             utilities,
             serverPackHandler,
-            apiPlugins,
+            apiPlugins
         ) { fileBrowser.show() }
         tabs.add(editor)
         tabs.setTabComponentAt(tabs.tabCount - 1, editor.title)
@@ -77,7 +76,7 @@ class ConfigsTab(
      * @author Griefed
      */
     fun loadConfig(configFile: File, tab: ConfigEditorPanel = addTab()) {
-        MainScope().launch(Dispatchers.Default) {
+        GlobalScope.launch(guiProps.configDispatcher) {
             try {
                 val packConfig = PackConfig(utilities, configFile)
                 tab.lastLoadedConfiguration = packConfig
