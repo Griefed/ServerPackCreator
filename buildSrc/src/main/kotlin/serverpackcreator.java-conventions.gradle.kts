@@ -84,6 +84,9 @@ tasks.jar {
                 "Build-OS" to "${System.getProperty("os.name")} ${System.getProperty("os.arch")} ${
                     System.getProperty("os.version")
                 }",
+                "Implementation-Vendor" to "Griefed",
+                "Implementation-Version" to project.version,
+                "Implementation-Title" to project.name
             )
         )
     }
