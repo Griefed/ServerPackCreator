@@ -17,23 +17,25 @@ The heart and soul of ServerPackCreator. This is what's responsible for turning 
 #### Gradle Groovy DSL
 
 ```groovy
-implementation 'de.griefed.serverpackcreator:serverpackcreator-api:$VERSION'
+// https://mvnrepository.com/artifact/de.griefed.serverpackcreator/serverpackcreator-api
+implementation group: 'de.griefed.serverpackcreator', name: 'serverpackcreator-api', version: '$VERSION'
 ```
 
 #### Gradle Kotlin DSL
 
 ```kotlin
+// https://mvnrepository.com/artifact/de.griefed.serverpackcreator/serverpackcreator-api
 implementation("de.griefed.serverpackcreator:serverpackcreator-api:$VERSION")
 ```
 
 #### Maven
 
 ```xml
+<!-- https://mvnrepository.com/artifact/de.griefed.serverpackcreator/serverpackcreator-api -->
 <dependency>
-  <groupId>de.griefed.serverpackcreator</groupId>
-  <artifactId>serverpackcreator-api</artifactId>
-  <version>$VERSION</version>
-  <type>pom</type>
+    <groupId>de.griefed.serverpackcreator</groupId>
+    <artifactId>serverpackcreator-api</artifactId>
+    <version>$VERSION</version>
 </dependency>
 ```
 
