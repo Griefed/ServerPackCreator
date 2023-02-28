@@ -1,0 +1,12 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Run App With Kotlin Example Plugin" type="JetRunConfigurationType">
+    <option name="MAIN_CLASS_NAME" value="de.griefed.serverpackcreator.app.ServerPackCreatorKt" />
+    <module name="serverpackcreator.serverpackcreator-app.main" />
+    <shortenClasspath name="NONE" />
+    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/serverpackcreator-app/tests" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+      <option name="Gradle.BeforeRunTask" enabled="false" tasks="copyExamplePluginsToApp" externalProjectPath="$PROJECT_DIR$" vmOptions="" scriptParameters="" />
+    </method>
+  </configuration>
+</component>

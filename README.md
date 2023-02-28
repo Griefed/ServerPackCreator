@@ -9,18 +9,10 @@
 
 ---
 
-# Sources, GitHub, GitLab and Mirroring and all that good stuff
-
-Repositories on GitHub are now for issues only. I've set up my own installation of GitLab and moved all my repositories over to [Git.Griefed.de](https://git.griefed.de/users/Griefed/projects). Make sure to check there first for the latest code before opening an issue on GitHub.
-
 For questions, you can always join my [Discord server](https://discord.griefed.de) and talk to me there.
 
-###### This repository is available at:
-
-- Source: https://git.griefed.de/Griefed/ServerPackCreator (Source code,releases,downloads)
-- Mirror: https://gitlab.com/Griefed/ServerPackCreator (Source code,releases,downloads)
-- Mirror: https://github.com/Griefed/ServerPackCreator (Source code,releases,downloads)
-- Mirror: https://gitea.com/Griefed/ServerPackCreator (Source code)
+This repository is a mirror of https://git.griefed.de/Griefed/ServerPackCreator, mainly used for issue reporting and
+release distribution.
 
 ---
 
@@ -32,47 +24,45 @@ For questions, you can always join my [Discord server](https://discord.griefed.d
 [![GitHub forks](https://img.shields.io/github/forks/Griefed/serverpackcreator?label=GitHub%20Forks&style=for-the-badge&logo=Github&labelColor=325358&color=c0ffee)](https://github.com/Griefed/ServerPackCreator)
 [![GitHub contributors](https://img.shields.io/github/contributors/Griefed/ServerPackCreator?color=c0ffee&label=Contributors&logo=GitHub&logoColor=white&style=for-the-badge&labelColor=325358)](https://github.com/Griefed/ServerPackCreator/graphs/contributors)
 
-**ServerPackCreator is a Java-program which creates a server pack from any given Forge, Fabric, Quilt or LegacyFabric modpack. Customize the
-configuration to your liking and off you go.**
+**ServerPackCreator creates a server pack from any given Forge, Fabric, Quilt or LegacyFabric modpack.**
+
 **Whenever you are working on an update to your modpack, you simply run ServerPackCreator and BAM! You've got yourself a
 server pack for your new modpack version.**
 
 ServerPackCreator is a passion project on which I am working in my spare time. It is also the main reason for why I got into programming in the first place.
+Patience with issues and support is appreciated!
 
-I started getting into Java programming in february 2021, when I was working on an update for one of my Minecraft modpacks,
+I started getting into Java programming in February 2021, when I was working on an update for one of my Minecraft modpacks,
 Survive Create Prosper 4, and got tired and bored with manually creating a server pack everytime I wanted to update and
 test something, or just release a new server pack for the new modpack version.
 
 The thought "*There must be a way to automate this, or at least make it less tedious...*" was the spark which sent me off
-into the world of programming.
+into the world of programming. And here we are.
 
-And here we are.
+##### Required:
 
-**Required:**
-Please be aware that ServerPackCreator requires a working internet connection in order to work properly.
-Features like letting ServerPackCreator install the modloader server, updating the fallback modslist, checking for updates etc.
-require internet. You *may* use SPC without a proper internet connection, but please keep in mind that functionality will be
-limited.
-The first run will create all necessary files and folders in the directory in which you are running ServerPackCreator.
-Move it to a dedicated directory before using it!
+* Using the JAR-file release requires Java 17.
+* Working internet connection recommended.
 
-**Note:**
-For more detailed information about all the different configuration options and possibilities of ServerPackCreator, take a look at the [Wiki](https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-Help)
-of check out [HELP.md](HELP.md).
+##### Note:
 
-**Advice:**
-When using alpha, beta or in-dev version of ServerPackCreator, it is advised to do so in a different directory than your
-regular ServerPackCreator installation.
+* For more detailed help and information, take a look at the [Wiki](https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-Help) and [HELP.md](HELP.md).
+
+##### Disclaimer:
+
+* You are still expected to be knowledgeable about your modpack, server packs in general, server administration and managing your Java installations. ServerPackCreator is not intended to take all the work off your shoulders!
+
+* When using alpha, beta or in-dev version of ServerPackCreator, it is advised to do so in a different directory than your
+regular ServerPackCreator installation. Things *will* break with alpha releases, stuff *may* break when using beta releases.
+If you distribute server packs generated with a pre-release (alpha, beta) of ServerPackCreator, you do so at your own risk.
+I will not be held responsible for errors in your server pack caused by you using a pre-release.
+  * **TL;DR:** Don't use test to ship to prod!
 
 # Screenshots
 
-## Commandline Interface (CLI)
-
-![cli](img/cli.png)
-
-## Graphical User Interface (GUI)
-
-![gui dark](img/gui_dark.png)
+| CLI                 | GUI                           | WEB                                    |
+|---------------------|-------------------------------|----------------------------------------|
+| ![cli](img/cli.png) | ![gui dark](img/gui_dark.png) | ![web](img/web_configuration_dark.png) |
 
 # Advantages/Disadvantages of CLI, GUI:
 
@@ -82,13 +72,13 @@ Note: All three ways are supported by the **.jar**-file. Which one is started de
 
 ## CLI:
 
-| Advantages                                                                                                                                                                                              | Disadvantages                                                                                                         |
-|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------|
-| No need for a graphical environment. Can be used on a server to generate a server pack for immediate use.                                                                                               | Gathering of information for a configuration file is tedious.                                                         |
-| Step-by-Step generation of a configuration-file with the use of the `-cgen` argument. Generated config will be used immediately afterwards.                                                             | No convenience features file folder-browsing or jumping to the generated server pack after generation.                |
-| Load and edit an existing configuration. Editing is limited to base values of a given configuration. Not editable via CLI are script settings as well as any potentially installed addon configuration. | Debugging in case of a broken/erroring configuration file can be time consuming. Careful reading of logs is required. |
-|                                                                                                                                                                                                         | Manual editing of the configuration-file in case you want to change it.                                               |
-|                                                                                                                                                                                                         | Unable to edit start script placeholders and variables                                                                |
+| Advantages                                                                                                                                                                                               | Disadvantages                                                                                                         |
+|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------|
+| No need for a graphical environment. Can be used on a server to generate a server pack for immediate use.                                                                                                | Gathering of information for a configuration file is tedious.                                                         |
+| Step-by-Step generation of a configuration-file with the use of the `-cgen` argument. Generated config will be used immediately afterwards.                                                              | No convenience features file folder-browsing or jumping to the generated server pack after generation.                |
+| Load and edit an existing configuration. Editing is limited to base values of a given configuration. Not editable via CLI are script settings as well as any potentially installed plugin configuration. | Debugging in case of a broken/erroring configuration file can be time consuming. Careful reading of logs is required. |
+|                                                                                                                                                                                                          | Manual editing of the configuration-file in case you want to change it.                                               |
+|                                                                                                                                                                                                          | Unable to edit start script placeholders and variables                                                                |
 
 ## GUI:
 
@@ -107,13 +97,14 @@ ServerPackCreator also has a webservice which you can run with the `-web`-argume
 
 ---
 
-# 1. Known issues and help
+# 1. Issues and help
 
-- A list of known issues can be found in [Known Issues](https://github.com/Griefed/ServerPackCreator/issues/55).
-
-- If you want to report an issue, please make sure to follow the templates on [GitHub](https://github.com/Griefed/ServerPackCreator/issues/new/choose) and **provide as much information as detailed as possible**. The more information and details you provide for your issue at hand, the easier it is for me to investigate it!
-
-- A wiki article containing useful hints, tips & tricks about, for and with ServerPackCreator can be found on [my Wiki's ServerPackCreator Help page](https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-Help)
+- Report a bug / ask for a feature / ask for an improvement / request a documentation improvement:
+  - [Click Me!](https://github.com/Griefed/ServerPackCreator/issues/new/choose)
+- There's a Wiki available which goes into further detail for many of ServerPackCreators available aspects:
+  - [Wiki](https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-Help)
+- The same as the Wiki, but as a file should you prefer it. 😊
+  - [HELP.md](HELP.md)
 
 # 2. Small feature overview
 
@@ -147,9 +138,9 @@ ServerPackCreator also has a webservice which you can run with the `-web`-argume
     - **Add additional functionality** to your servers start scripts
     - Use **placeholders in your templates**, to be **replaced with custom values**
         - Example: placeholder `SPC_FLYNN_LIVES_SPC` in the templates can be replaced with a value configured on a per-server pack basis, i.e `Now that's a big door`
-11. **Addons!**
-    - ServerPackCreator allows you to use addons to add new features in various places.
-    - An example addon can be found at [the Example Addon Repository](https://github.com/Griefed/ServerPackCreatorExampleAddon). It has simple examples for every possible addon and extension in ServerPackCreator
+11. **Plugins!**
+    - ServerPackCreator allows you to use plugins to add new features in various places.
+    - An example plugins is available with every release, and the source code for it can be found in this repository, at [Example Plugin](serverpackcreator-plugin-example)
 
 # 3. How To
 
@@ -229,51 +220,47 @@ Give it a read before asking something, it *does* contain lots of useful informa
 
 # 4. Java
 
-ServerPackCreator is being developed with Java 8, ServerPackCreator is guaranteed to work with that version.
-
-Users have reported the following Java versions to also work with ServerPackCreator. A list of these can be found at the [Wiki help section](https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-Help)
+ServerPackCreator requires Java 17.
 
 **ATTENTION:** I **can** not and **will** not guarantee that ServerPackCreator will work flawlessly with any other Java
-version other than version 8. Things may break at **random**, at **any** place, if a **different** Java version is used.
+version other than version 17. Things may break at **random**, at **any** place, if a **different** Java version is used.
 You are welcome to try and use any other version, but do **not** report issues back to me if you do encounter problems
 when running ServerPackCreator with a more recent Java version.
 
-# 5. Addons
+# 5. Plugins
 
-The addons-section shows an excerpt from the README of the example addon README. Check out the repository of the example addon, linked below,
+The plugin-section shows an excerpt from the README of the example plugin README. Check out the repository of the example plugin, linked below,
 for more details.
 
-## 5.1. Example Addon for ServerPackCreator
+## 5.1. Example plugin for ServerPackCreator
 
-There is an example addon available at [ServerPackCreator Example Addon](https://github.com/Griefed/ServerPackCreatorExampleAddon)
+This repository contains an example plugin. Available at [Example Plugin](serverpackcreator-plugin-example)
 
-ServerPackCreator provides several extension endpoints for [pf4j plugins](https://github.com/pf4j/pf4j), from hereon out called **addons**, to add
-additional functionality. This example addon demonstrates an implementation for all available extension endpoints of ServerPackCreator.
+ServerPackCreator provides several extension endpoints for [pf4j plugins](https://github.com/pf4j/pf4j), to add
+additional functionality. This example plugin demonstrates an implementation for all available extension endpoints of ServerPackCreator.
 
-The example repository demonstrates how extension for ServerPackCreator are implemented, one small example for every extension
+The example plugin demonstrates how extension for ServerPackCreator are implemented, one small example for every extension
 point available in ServerPackCreator.
 
 ### 5.2 Available Extensions
 
 #### 5.2.1 Configuration Panel Extension
 
-The configuration panel is intended to let you add a panel in which you, or the user of your addon, may
-configure something for any of the extensions added by your addon.
+The configuration panel is intended to let you add a panel in which you, or the user of your plugin, may
+configure something for any of the extensions added by your plugin.
 
 ![configpanel](img/configpanel.png)
 
-The above example lets you configure four textfields, one for each extension point used during server pack
+The above example lets you configure four text-fields, one for each extension point used during server pack
 configuration checking and server pack generation. More on this in **Configuration Check Extension**.
 
 Extension configurations are saved to the serverpackcreator.conf of the server pack and re-loaded along
 with everything else, like the Minecraft version, modloader and modloader version etc.
 
-Docs: [Configuration Panel Extension](https://griefed.github.io/ServerPackCreator/de/griefed/serverpackcreator/addons/swinggui/ConfigPanelExtension.html)
-
 #### 5.2.2 Tab Extension
 
 Tab extensions allow you to add whole tabs to the GUI of ServerPackCreator. These additional tabs are intended
-to let you add textfields and such, which allow you to configure your global addon configuration.
+to let you add text-fields and such, which allow you to configure your global plugin configuration.
 You may add anything you want to it. The sky is the limit!
 
 ![tab](img/tabextension.png)
@@ -282,15 +269,13 @@ The above example adds a button which, when pressed, opens a minimalistic Tetris
 It's not supposed to be actually that entertaining, but rather to demonstrate that you can do what you want inside
 your tab.
 
-Below the big button are some textfields which allow you to change some values of the global addon-wide configuration.
-Global addon-configurations are handed to you by ServerPackCreator when the tab is instantiated.
+Below the big button are some text-fields which allow you to change some values of the global plugin-wide configuration.
+Global plugin-configurations are handed to you by ServerPackCreator when the tab is instantiated.
 
-Global addon-configurations are passed to every extension, along with any available extension-specific configuration,
+Global plugin-configurations are passed to every extension, along with any available extension-specific configuration,
 automatically, so you don't have to worry about anything other than actually saving changes you made in the tab.
 
 Maybe have a timer auto-save every few seconds? Your tab, your choice! 😁
-
-Docs: [Tab Extension](https://griefed.github.io/ServerPackCreator/de/griefed/serverpackcreator/addons/swinggui/TabExtension.html)
 
 #### 5.2.3 Configuration Check Extension
 
@@ -308,8 +293,6 @@ That list is then displayed to the user after the configurations checks have all
 Make use of this extension point in combination with the **Configuration Panel Extension** and/or **Tab Extension** in order to
 check user input for any errors!
 
-Docs: [ConfigurationCheck Extension](https://griefed.github.io/ServerPackCreator/de/griefed/serverpackcreator/addons/configurationhandler/ConfigCheckExtension.html)
-
 #### 5.2.4 Pre Server Pack Generation Extension
 
 The Pre Server Pack Generation extensions run, as the name implies, *right before* the generation of a server pack really begins.
@@ -317,10 +300,8 @@ You may use this to prepare the environment for any of the tailing extensions.
 
 ![pregen](img/pregen.png)
 
-The above example shows the run of a PreGen extension, with the global addon configuration as well as the extension-specific
+The above example shows the run of a PreGen extension, with the global plugin configuration as well as the extension-specific
 extension passed to it by ServerPackCreator.
-
-Docs: [Pre Generation Extension](https://griefed.github.io/ServerPackCreator/de/griefed/serverpackcreator/addons/serverpackhandler/PreGenExtension.html)
 
 #### 5.2.5 Pre Server Pack ZIP-archive Creation Extension
 
@@ -329,66 +310,60 @@ started. Want to add any files to the ZIP-archive? Or make sure some file doesn'
 
 ![prezip](img/prezip.png)
 
-The above example shows the run of a PreZip extension, with the global addon configuration as well as the extension-specific
+The above example shows the run of a PreZip extension, with the global plugin configuration as well as the extension-specific
 extension passed to it by ServerPackCreator.
-
-Docs: [Pre Zip Extension](https://griefed.github.io/ServerPackCreator/de/griefed/serverpackcreator/addons/serverpackhandler/PreZipExtension.html)
 
 #### 5.2.6 Post Server Pack Generation Extension
 
 The Post Server Pack Generation extensions run, as the name implies, *after* the generation of a server pack has finished.
 Want to add any files to the server pack, but don't want them to end up in the ZIP-archive? Maybe download,
-install and configure DynMap with some renderdata? This would be the place to do that!
+install and configure DynMap with some render-data? This would be the place to do that!
 
 ![postgen](img/postgen.png)
 
-The above example shows the run of a PreGen extension, with the global addon configuration as well as the extension-specific
+The above example shows the run of a PreGen extension, with the global plugin configuration as well as the extension-specific
 extension passed to it by ServerPackCreator.
-
-Docs: [Post Generation Extension](https://griefed.github.io/ServerPackCreator/de/griefed/serverpackcreator/addons/serverpackhandler/PostGenExtension.html)
 
 ---
 
 See now why the ConfigPanel, ConfigCheck and Tab extensions are so nice to have?
 The possibilities are (almost) **endless**!😁
 
-## 5.3 The reason for allowing ServerPackCreator to run addons:
+## 5.3 The reason for allowing ServerPackCreator to run plugin:
 
 Some people need additional functionality for their server packs, or have some additional wishes for
-them. Some of those
-things may not fit into the core functionality of ServerPackCreator itself.
+them. Some of those things may not fit into the core functionality of ServerPackCreator itself.
 
 It may also be that it is such a niche feature, that I either don't have the time to code it in, or
-simply don't want to.
-Maybe it doesn't fit into the overall design of ServerPackCreator, too. Who knows, it could be any
+simply don't want to. Maybe it doesn't fit into the overall design of ServerPackCreator, too. Who knows, it could be any
 of those reasons or another.
 
-**Hence, the addon functionality.**
+**Hence, the plugin functionality.**
 
-This allows people to write their own addons to expand the functionality of ServerPackCreator with
-their own features as
-they see fit.
+This allows people to write their own plugins to expand the functionality of ServerPackCreator with
+their own features as they see fit.
 
 ## 5.4 Adding your own
 
-A curated list of officially acknowledged addons/plugins can be found [here](https://addons.griefed.de) (redirects to [GitHub Pages](https://griefed.github.io/ServerPackCreator-Addons-Overview/#/))
+A curated list of officially acknowledged plugins can be found [here](https://addons.griefed.de) (redirects to [GitHub Pages](https://griefed.github.io/ServerPackCreator-Addons-Overview/#/))
 
-How to get your own addon into this list:
+How to get your own plugin into this list:
 
-If you have written your own addon or plugin for ServerPackCreator and you would like to see it added here,
-please open an issue over at [ServerPackCreator](https://github.com/Griefed/ServerPackCreator/issues/new?assignees=Griefed&labels=documentation&template=documentation-request.yml&title=%5BDocumentation%5D%3A+)
-or [ServerPackCreatorAddonExample](https://github.com/Griefed/ServerPackCreatorExampleAddon/issues/new?assignees=&labels=&template=documentation-request.md), using the Documentation template.
+If you have written your own plugin for ServerPackCreator and you would like to see it added here,
+please open an issue over at [ServerPackCreator](https://github.com/Griefed/ServerPackCreator/issues/new?assignees=Griefed&labels=documentation&template=documentation-request.yml&title=%5BDocumentation%5D%3A+), using the Documentation template.
 
-For an addon to be accepted, you must at least provide:
-- The name of and link to the repository, and therefore the addon.
-- The owner of the repository, and therefore the addon.
+For a plugin to be accepted, you must at least provide:
+- The name of and link to the repository, and therefore the plugin.
+- The owner of the repository, and therefore the plugin.
 - The branch of the repository where the main code resides in.
-- A description of the addon.
+- A description of the plugin.
 
 # 6 Running
 
-In every situation, the `.jar`-file needs to be run from the commandline. Executing it via "Open with..." and selecting Java will not work. To use the GUI, for example, simply run `java -jar ServerPackCreator-2.x.x.jar`.
-The `.exe` can be executed as usual by simply double-clicking it and is GUI exclusive. It only works in Windows, though. Please keep that in mind.
+1. If you've used the installer to acquire ServerPackCreator, use the shortcut created by the installer to run
+ServerPackCreator. The installers provide their own Java runtime, so you do not need to install Java separately.
+2. If you've downloaded the JAR-file, and depending on how your Java installation is set up, you *may* be able to simply
+run the JAR via double-click or other methods, or you *may* need to run it from the commandline.
 
 There are a couple of arguments which may or may not be helpful for you, depending on how you plan on using ServerPackCreator:
 
@@ -405,9 +380,65 @@ There are a couple of arguments which may or may not be helpful for you, dependi
 ## 6.1 Localization
 
 If you wish to run ServerPackCreator with your locale (if it is already supported), you can either:
-1. Run `java -jar ServerPackCreator-X.X.X.jar -lang your_locale` for example `java -jar ServerPackCreator-X.X.X.jar -lang en_us`. This will create the lang.properties-file with your specified locale.
-2. Running `java -jar ServerPackCreator-x.x.x.jar` without `-lang en_us` or any other language will set the locale to en_us by default and create the lang.properties-file.
-3. Modify the `serverpackcreator.properties`-file in the same directory as ServerPackCreator-X-X-X.jar and set your locale like this `lang=your_locale` for example `lang=en_us`
+1. Run `java -jar ServerPackCreator-X.X.X.jar -lang yourLocale` for example `java -jar ServerPackCreator-X.X.X.jar -lang en`. This will create the lang.properties-file with your specified locale.
+2. Running `java -jar ServerPackCreator-x.x.x.jar` without `-lang en` or any other language will either set the locale to `en` by default, or use the already defined locale from the `serverpackcreator.properites`-file.
+3. Modify the `serverpackcreator.properties`-file and set your locale like this `lang=yourLocale` for example `lang=en`
+
+
+If you want to contribute translations to ServerPackCreator, check out the [i18n](serverpackcreator-api/src/commonMain/kotlin/de/griefed/serverpackcreator/api/i18n)-directory containing already available
+translations to see how they are set up. Then, make your changes, test them, and open a pull request on GitHub according
+to the [Contribution-Guidelines](CONTRIBUTING.md).
+
+### 6.1.1 Adding a translation
+
+Say you want to translate ServerPackCreator to german.
+You would need to add the file `<Module_Name>_de_DE.properties` in the following places:
+- `serverpackcreator-api\src\commonMain\i18n`
+  - Prefix: `Api_`
+- `serverpackcreator-cli\src\main\i18n`
+  - Prefix: `Cli_`
+- `serverpackcreator-gui\src\main\i18n`
+  - Prefix: `Gui_`
+- `serverpackcreator-plugin-example\src\main\i18n`
+  - Prefix: `Example_`
+- `serverpackcreator-updater\src\main\i18n`
+  - Prefix: `Updates_`
+
+English translations for each can be found at:
+1. [API module](serverpackcreator-api/src/commonMain/i18n/Api_en_GB.properties)
+2. [CLI module](serverpackcreator-cli/src/main/i18n/Cli_en_GB.properties)
+3. [GUI module](serverpackcreator-gui/src/main/i18n/Gui_en_GB.properties)
+4. [Example Kotlin](serverpackcreator-plugin-example/src/main/i18n/Example_en_GB.properties)
+5. [Updater module](serverpackcreator-updater/src/main/i18n/Updates_en_GB.properties)
+
+In the english properties for the Gui, for example, you will see entries like
+
+```properties
+menubar.gui.menu.file=File
+menubar.gui.menu.edit=Edit
+menubar.gui.menu.view=View
+menubar.gui.menu.about=About
+menubar.gui.menu.help=Help
+```
+
+So, in order to translate them to german, in your `Gui_de_DE.properties`-file, you would add
+
+```properties
+menubar.gui.menu.file=Datei
+menubar.gui.menu.edit=Bearbeiten
+menubar.gui.menu.view=Ansicht
+menubar.gui.menu.about=Info
+menubar.gui.menu.help=Hilfe
+```
+
+To make these available whilst coding, rebuild the project. The [i18n4k](https://github.com/comahe-de/i18n4k)-plugin will
+generate the necessary code, which will, in turn, then be available for you to use and test. Alternatively, you can run the
+Gradle task `generateI18n4kFiles` to generate the translation-code.
+
+Then, either in your `serverpackcreator.properties` set `de.griefed.serverpackcreator.language=de_DE` or launch
+ServerPackCreator with the argument `-lang=de_DE`.
+
+Voilà! The menubar will now have german translations!
 
 # 7 Contributing
 
@@ -461,24 +492,7 @@ A short excerpt:
 > This is the only way to ensure that any changes made to ServerPackCreator always arrive on my GitLab instance first, then on GitHub.
 > Since I want to stay independent of GitHub and their architecture, I have to make use of my own GitLab installation. Hence this procedure. So, if one day, GitHub vanishes, we still can provide people with ServerPackCreator from my GitLab instance.
 
-
-# 8. Building ServerPackCreator locally
-
-Clone the webservice branch of the repository:
-
-`git clone -b $BRANCH https://git.griefed.de/Griefed/ServerPackCreator.git`
-
-Where `$BRANCH` represents the branch you want to clone.
-
-If you are on linux, run `chmod +x gradlew` first.
-
-Build with:
-
-`build --info --stacktrace`
-
-The `build` task is configured to do everything automatically, from installing frontend dependencies, assembling the web-frontend, copying some files around, build and testing and then, finally, also creating a .exe file.
-
-# 9. Awesomesauce!
+# 8. Awesomesauce!
 
 **None of this would have been possible without the excellent IDEs by JetBrains. They have kindly provided this open source project with an All Products Pack license.**
 **Additionally, ej-Technologies has provided an open-source license for JProfiler for ServerPackCreator, which allows me to resolve performance bottlenecks, pin down memory leaks and understand threading issues.
@@ -498,125 +512,5 @@ Huge shoutout and thank you!**
 
 # 10. Libraries and Licenses
 
-This project would not be possible without these awesome groups, creators and developers and their wonderful libraries they have kindly provided to people such as me.
-
-**License report generated using [jk1/Gradle-License-Report](https://github.com/jk1/Gradle-License-Report)**
-
-Dependency License Report 2022-10-14
-
-## Apache License, Version 2.0
-
-**1** **Group:** `com.github.vatbub` **Name:** `mslinks` **Version:** `1.0.5`
-> - **POM Project URL**: [https://github.com/vatbub/mslinks](https://github.com/vatbub/mslinks)
-> - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
-
-**2** **Group:** `net.lingala.zip4j` **Name:** `zip4j` **Version:** `2.11.2`
-> - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
-> - **POM Project URL**: [https://github.com/srikanth-lingala/zip4j](https://github.com/srikanth-lingala/zip4j)
-> - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
-
-**3** **Group:** `org.apache.activemq` **Name:** `artemis-jms-server` **Version:** `2.19.1`
-> - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
-> - **Embedded license files**: [artemis-jms-server-2.19.1.jar/META-INF/LICENSE](licenses/artemis-jms-server-2.19.1.jar/META-INF/LICENSE)
-    - [artemis-jms-server-2.19.1.jar/META-INF/NOTICE](licenses/artemis-jms-server-2.19.1.jar/META-INF/NOTICE)
-
-**4** **Group:** `org.apache.logging.log4j` **Name:** `log4j-slf4j-impl` **Version:** `2.19.0`
-> - **Manifest Project URL**: [https://www.apache.org/](https://www.apache.org/)
-> - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
-> - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
-> - **Embedded license files**: [log4j-slf4j-impl-2.19.0.jar/META-INF/LICENSE](licenses/log4j-slf4j-impl-2.19.0.jar/META-INF/LICENSE)
-    - [log4j-slf4j-impl-2.19.0.jar/META-INF/NOTICE](licenses/log4j-slf4j-impl-2.19.0.jar/META-INF/NOTICE)
-
-**5** **Group:** `org.apache.logging.log4j` **Name:** `log4j-core` **Version:** `2.19.0`
-> - **Manifest Project URL**: [https://www.apache.org/](https://www.apache.org/)
-> - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
-> - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
-> - **Embedded license files**: [log4j-core-2.19.0.jar/META-INF/LICENSE](licenses/log4j-core-2.19.0.jar/META-INF/LICENSE)
-    - [log4j-core-2.19.0.jar/META-INF/NOTICE](licenses/log4j-core-2.19.0.jar/META-INF/NOTICE)
-
-**6** **Group:** `org.apache.logging.log4j` **Name:** `log4j-web` **Version:** `2.19.0`
-> - **Manifest Project URL**: [https://www.apache.org/](https://www.apache.org/)
-> - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
-> - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
-> - **Embedded license files**: [log4j-web-2.19.0.jar/META-INF/LICENSE](licenses/log4j-web-2.19.0.jar/META-INF/LICENSE)
-    - [log4j-web-2.19.0.jar/META-INF/NOTICE](licenses/log4j-web-2.19.0.jar/META-INF/NOTICE)
-
-**7** **Group:** `org.apache.logging.log4j` **Name:** `log4j-api` **Version:** `2.19.0`
-> - **Manifest Project URL**: [https://www.apache.org/](https://www.apache.org/)
-> - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
-> - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
-> - **Embedded license files**: [log4j-api-2.19.0.jar/META-INF/LICENSE](log4j-api-2.19.0.jar/META-INF/LICENSE)
-    - [log4j-api-2.19.0.jar/META-INF/NOTICE](log4j-api-2.19.0.jar/META-INF/NOTICE)
-
-**8** **Group:** `org.jgroups` **Name:** `jgroups` **Version:** `5.2.6.Final`
-> - **POM Project URL**: [http://www.jgroups.org](http://www.jgroups.org)
-> - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
-> - **Embedded license files**: [jgroups-5.2.6.Final.jar/LICENSE](licenses/jgroups-5.2.6.Final.jar/LICENSE)
-    - [jgroups-5.2.6.Final.jar/README](licenses/jgroups-5.2.6.Final.jar/README)
-
-**9** **Group:** `org.pf4j` **Name:** `pf4j` **Version:** `3.7.0`
-> - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
-
-**10** **Group:** `org.springframework.boot` **Name:** `spring-boot-devtools` **Version:** `2.7.4`
-> - **POM Project URL**: [https://spring.io/projects/spring-boot](https://spring.io/projects/spring-boot)
-> - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
-> - **Embedded license files**: [spring-boot-devtools-2.7.4.jar/META-INF/LICENSE.txt](licenses/spring-boot-devtools-2.7.4.jar/META-INF/LICENSE.txt)
-    - [spring-boot-devtools-2.7.4.jar/META-INF/NOTICE.txt](licenses/spring-boot-devtools-2.7.4.jar/META-INF/NOTICE.txt)
-
-**11** **Group:** `org.springframework.boot` **Name:** `spring-boot-starter-log4j2` **Version:** `2.7.4`
-> - **POM Project URL**: [https://spring.io/projects/spring-boot](https://spring.io/projects/spring-boot)
-> - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
-> - **Embedded license files**: [spring-boot-starter-log4j2-2.7.4.jar/META-INF/LICENSE.txt](licenses/spring-boot-starter-log4j2-2.7.4.jar/META-INF/LICENSE.txt)
-    - [spring-boot-starter-log4j2-2.7.4.jar/META-INF/NOTICE.txt](licenses/spring-boot-starter-log4j2-2.7.4.jar/META-INF/NOTICE.txt)
-
-**12** **Group:** `org.springframework.boot` **Name:** `spring-boot-starter-web` **Version:** `2.7.4`
-> - **POM Project URL**: [https://spring.io/projects/spring-boot](https://spring.io/projects/spring-boot)
-> - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
-> - **Embedded license files**: [spring-boot-starter-web-2.7.4.jar/META-INF/LICENSE.txt](licenses/spring-boot-starter-web-2.7.4.jar/META-INF/LICENSE.txt)
-    - [spring-boot-starter-web-2.7.4.jar/META-INF/NOTICE.txt](licenses/spring-boot-starter-web-2.7.4.jar/META-INF/NOTICE.txt)
-
-**13** **Group:** `org.springframework.boot` **Name:** `spring-boot-starter-data-jpa` **Version:** `2.7.4`
-> - **POM Project URL**: [https://spring.io/projects/spring-boot](https://spring.io/projects/spring-boot)
-> - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
-> - **Embedded license files**: [spring-boot-starter-data-jpa-2.7.4.jar/META-INF/LICENSE.txt](licenses/spring-boot-starter-data-jpa-2.7.4.jar/META-INF/LICENSE.txt)
-    - [spring-boot-starter-data-jpa-2.7.4.jar/META-INF/NOTICE.txt](licenses/spring-boot-starter-data-jpa-2.7.4.jar/META-INF/NOTICE.txt)
-
-**14** **Group:** `org.springframework.boot` **Name:** `spring-boot-starter-artemis` **Version:** `2.7.4`
-> - **POM Project URL**: [https://spring.io/projects/spring-boot](https://spring.io/projects/spring-boot)
-> - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
-> - **Embedded license files**: [spring-boot-starter-artemis-2.7.4.jar/META-INF/LICENSE.txt](licenses/spring-boot-starter-artemis-2.7.4.jar/META-INF/LICENSE.txt)
-    - [spring-boot-starter-artemis-2.7.4.jar/META-INF/NOTICE.txt](licenses/spring-boot-starter-artemis-2.7.4.jar/META-INF/NOTICE.txt)
-
-**15** **Group:** `org.xerial` **Name:** `sqlite-jdbc` **Version:** `3.39.3.0`
-> - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
-> - **POM Project URL**: [https://github.com/xerial/sqlite-jdbc](https://github.com/xerial/sqlite-jdbc)
-> - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
-> - **Embedded license files**: [sqlite-jdbc-3.39.3.0.jar/META-INF/maven/org.xerial/sqlite-jdbc/LICENSE](licenses/sqlite-jdbc-3.39.3.0.jar/META-INF/maven/org.xerial/sqlite-jdbc/LICENSE)
-    - [sqlite-jdbc-3.39.3.0.jar/META-INF/maven/org.xerial/sqlite-jdbc/LICENSE.zentus](licenses/sqlite-jdbc-3.39.3.0.jar/META-INF/maven/org.xerial/sqlite-jdbc/LICENSE.zentus)
-
-## GNU Lesser General Public License v3.0
-
-**16** **Group:** `com.electronwill.night-config` **Name:** `toml` **Version:** `3.6.6`
-> - **POM Project URL**: [https://github.com/TheElectronWill/Night-Config](https://github.com/TheElectronWill/Night-Config)
-> - **POM License**: GNU Lesser General Public License v3.0 - [https://www.gnu.org/licenses/lgpl-3.0.txt](https://www.gnu.org/licenses/lgpl-3.0.txt)
-
-## MIT License
-
-**17** **Group:** `de.griefed` **Name:** `larsonscanner` **Version:** `1.0.4`
-> - **POM Project URL**: [https://git.griefed.de/Griefed/LarsonScanner.git](https://git.griefed.de/Griefed/LarsonScanner.git)
-> - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
-> - **Embedded license files**: [larsonscanner-1.0.4.jar/LICENSE](licenses/larsonscanner-1.0.4.jar/LICENSE)
-
-**18** **Group:** `de.griefed` **Name:** `versionchecker` **Version:** `1.1.0`
-> - **POM Project URL**: [https://git.griefed.de/Griefed/VersionChecker.git](https://git.griefed.de/Griefed/VersionChecker.git)
-> - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
-
-**19** **Group:** `io.github.vincenzopalazzo` **Name:** `material-ui-swing` **Version:** `1.1.4`
-> - **POM Project URL**: [https://github.com/vincenzopalazzo/material-ui-swing](https://github.com/vincenzopalazzo/material-ui-swing)
-> - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
-
-## PUBLIC DOMAIN
-
-**20** **Group:** `com.github.gwenn` **Name:** `sqlite-dialect` **Version:** `0.1.2`
-> - **POM Project URL**: [https://github.com/gwenn/sqlite-dialect](https://github.com/gwenn/sqlite-dialect)
-> - **POM License**: PUBLIC DOMAIN - [http://unlicense.org/](http://unlicense.org/)
+This project would not be possible without [these awesome groups](licenses/licences.md), creators and developers and their wonderful libraries
+they have kindly provided to people such as me. 
