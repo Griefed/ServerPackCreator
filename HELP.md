@@ -5,10 +5,10 @@ ServerPackCreator is develop with Java 8, ServerPackCreator is guaranteed to wor
 Users have reported the following Java versions to also work with ServerPackCreator:
 
 1. Java 19 Pre-Release (reported by [Griefed](https://github.com/Griefed))
-1. Java 18 (reported by [Kreezxil](https://github.com/Kreezxil))
-1. Java 17 (reported by [Kreezxil](https://github.com/Kreezxil))
-1. Java 16 (reported by [Griefed](https://github.com/Griefed))
-1. Java 11 (reported by [Kreezxil](https://github.com/Kreezxil))
+2. Java 18 (reported by [Kreezxil](https://github.com/Kreezxil))
+3. Java 17 (reported by [Kreezxil](https://github.com/Kreezxil))
+4. Java 16 (reported by [Griefed](https://github.com/Griefed))
+5. Java 11 (reported by [Kreezxil](https://github.com/Kreezxil))
 
 **ATTENTION:** I **can** not and **will** not guarantee that ServerPackCreator will work flawlessly
 with any other Java version other than version 8. Things may break at **random**, at **any** place,
@@ -26,11 +26,11 @@ Tests have shown, that using the
 official [Oracle JDKs](https://www.oracle.com/java/technologies/downloads/archive/), this problem
 does not occur.
 
-## Using Adoptium JDK Java 8 331
+## Using Adoptium JDK
 
 ![fugly_artifacts](https://i.griefed.de/images/2022/07/01/fugly_artifacts.png)
 
-## Using Oracle JDK Java 8 331
+## Using Oracle JDK
 
 ![a_ok](https://i.griefed.de/images/2022/07/01/a_ok.png)
 
@@ -79,8 +79,7 @@ then immediately closing* again, consult the **Running Powershell scripts**-sect
 > risk into your system. So, beware when running scripts from unknown sources. If you run the
 > exectuion-policy command from a non-administrator terminal, you may be prompted with a question as
 > to how exactly you would like to adjust
-> it. ![question](https://i.griefed.de/images/2022/10/02/ps_execution_policy.png).<br>When this
-> happens, please select `[Y]`, as any other option is potentially more dangerous.
+> it.<br> ![question](https://i.griefed.de/images/2022/10/02/ps_execution_policy.png) <br>When this happens, please select `[Y]`, as any other option is potentially more dangerous.
 > {.is-warning}
 
 ### Default values
@@ -101,7 +100,7 @@ ServerPackCreator always supplies a couple of default key-value-pairs during scr
 
 ### Placeholders and values (3.14.x and up)
 
-As of 3.14.x you can add and edit placeholders to your liking.
+As of 3.14.x you can add and edit placeholders.
 Make sure to map your desired value to the appropriate placeholder key.
 The GUI provides a table where you can configure these, or any other values, to your liking.
 
@@ -121,6 +120,14 @@ BAM! Template engine with customizable content!
 > shell-script, for example, uses the variable name `JAVA` for Java-based operations. With the
 > previously mentioned placeholder `JAVA`, that variable would be removed from the scripts,
 > potentially rendering them useless. Nobody wants that, right? :D
+> {.is-warning}
+
+
+> **Default placeholder limitations**
+> Of all available default placeholders mentioned above, only one of them can be overriden via a given configuration.
+> Said placeholder is `SPC_JAVA_SPC`. This one allows you to set a different Java executable/binary path for your local scripts,
+> to make testing your server pack easier. The files in the ZIP-archive will always have the `SPC_JAVA_SPC=java` key-value-pair,
+> to ensure any given user of your server pack has the value most likely to work on their system.
 > {.is-warning}
 
 ### Changing the default templates
@@ -151,8 +158,8 @@ instead, your custom-templates will be used.
 
 1. The file-endings of the templates determine the file ending of the start script (`template.bat`
    becomes `start.bat`, `template.sh` becomes `start.sh` and so on)
-1. Put your template(s) into the `server_files`-directory
-1. Edit the `serverpackcreator.properties`-file and change
+2. Put your template(s) into the `server_files`-directory
+3. Edit the `serverpackcreator.properties`-file and change
    the `de.griefed.serverpackcreator.serverpack.script.template`-property accordingly
 
 **Example:**
@@ -304,8 +311,7 @@ If you use **2.12.1** or newer and you want to include it in your server pack, y
 1. Remove the `fancymenu_`-entry from your list of clientside-only mods-list.
 2. To be on the safe side, add an entry to your file/directories to include in your server pack for
    your version of FancyMenu:
-    -
-    Example: `mods/fancymenu_forge_2.12.1_MC_1.19-1.19.1.jar;mods/fancymenu_forge_2.12.1_MC_1.19-1.19.1.jar`
+    - Example: `mods/fancymenu_forge_2.12.1_MC_1.19-1.19.1.jar;mods/fancymenu_forge_2.12.1_MC_1.19-1.19.1.jar`
 
 ## Automatic detection of clientside-only mods
 
@@ -566,7 +572,7 @@ server jar should it be present in the `libraries`-folder.
 To deactivate the exclusion alltogether,
 set `de.griefed.serverpackcreator.serverpack.zip.exclude.enabled` to `false`
 
-## Minecraft snapshots and pre-releases (3.12.x and up)
+## Minecraft's snapshots and pre-releases (3.12.x and up)
 
 If your modloader supports Minecraft snapshots or pre-releases, you can use those, too.
 
@@ -626,26 +632,26 @@ Each of these modes has its advantages and disadvantages.
 | Voting system to let users indicate whether a generated server pack works.                                                                           | Requires somewhat modern browser versions.                |
 | Open REST API. Interaction with the webservice does not *require* a browser. You can request a server pack generation and/or download from the CLI.  | Not all browers may be supported.                         |
 
-# Addons
+# Plugins
 
-ServerPackCreator gives you the ability to use addons, which can enhance your experience in a
+ServerPackCreator gives you the ability to use plugins, which can enhance your experience in a
 limited amount of ways.
 
-Any given addon has the chance to do things
+Any given plugin has the chance to do various things:
 
 - Before a server pack is generated
 - After a server pack was generated, but BEFORE the ZIP-archive is created
 - After a server pack and its ZIP-archive were generated
 - Adding extra tabs to the GUI, in which more additional features can then be added
+- Adding custom configuration checks
+- Adding custom elements to the server pack configuration tab
 
-For a list of addons, check out
+For a list of plugins, check out
 the [ServerPackCreator Addons Overview](https://griefed.github.io/ServerPackCreator-Addons-Overview/#/)
 
-The first three entries are examples I made to demonstrate some basic capabilities of such addons.
+## Installing a plugin
 
-## Installing an addon
-
-If you have an addon you would like to enhance your ServerPackCreator-experience with, simply
+If you have a plugin you would like to enhance your ServerPackCreator-experience with, simply
 download it and put it into the `plugins`-directory which resides in the base-directory of
 ServerPackCreator.
 
@@ -653,40 +659,20 @@ ServerPackCreator.
 ServerPackCreator
 ├── lang
 ├── logs
-│   └── archive
+│   └── archive
 ├── plugins <--------- 
 ├── server-packs
-│   ├── Survive Create Prosper 4 custom (1)
-│   └── World of Dragons II
+│   ├── Survive Create Prosper 4 custom (1)
+│   └── World of Dragons II
 ├── server_files
 └── work
     ├── modpacks
     └── temp
 ```
 
-Example with `ExampleAddon-3.0.5.jar` from
-the [Example Addon Repository](https://github.com/Griefed/ServerPackCreatorExampleAddon/releases/tag/3.0.5)
-on GitHub.
+## Disabling a plugin
 
-```
-ServerPackCreator
-├── lang
-├── logs
-├── plugins
-│   ├── ExampleAddon-3.0.5.jar <------
-│   └── disabled.txt
-├── server-packs
-├── server_files
-└── work
-    └── ...
-```
-
-**Important:** If ServerPackCreator was running during the installation of an addon, you need to
-restart it in order for the addon to become available.
-
-## Disabling an addon
-
-In order to deactivate any installed addon, edit the `disabled.txt`-file in the `plugins`-directory.
+In order to deactivate any installed plugins, edit the `disabled.txt`-file in the `plugins`-directory.
 If these don't exist, create them.
 
 ```
@@ -694,22 +680,22 @@ ServerPackCreator
 ├── lang
 ├── logs
 ├── plugins
-│   ├── ExampleAddon-3.0.5.jar
-│   └── disabled.txt <------
+│   ├── ExamplePlugin-3.0.5.jar
+│   └── disabled.txt <------
 ├── server-packs
 ├── server_files
 └── work
     └── ...
 ```
 
-Then, find the plugin ID of the installed addon. This can be mentioned in the addons repository, but
-can also be found in the addons manifest.
+Then, find the plugin ID of the installed plugins. This can be mentioned in the pluginss repository, but
+can also be found in the pluginss manifest.
 
-Example for my example addon: `ExampleAddon-3.0.5.jar\META-INF\MANIFEST.MF`.
-Look for the entry `Plugin-Id:`, in this case: `Plugin-Id: example-plugin`
+`SomePlugin-3.0.5.jar\META-INF\MANIFEST.MF`.
+Look for the entry `Plugin-Id:`, for example: `Plugin-Id: example-plugin`
 
 Then, in your `disabled.txt`, add a new line containing `example-plugin`, or rather, whatever ID of
-any addon you want to deactivate:
+any plugins you want to deactivate:
 
 ```
 ########################################
@@ -719,8 +705,8 @@ any addon you want to deactivate:
 example-plugin
 ```
 
-**Important:** If ServerPackCreator was running during the disabling of an addon, you need to
-restart it in order for the addon to become disabled.
+**Important:** If ServerPackCreator was running during the disabling of an plugins, you need to
+restart it in order for the plugins to become disabled.
 
 # Configuration
 
@@ -843,39 +829,35 @@ Changes to properties not described below are not supported. If you changed a pr
 meant to fiddle around with, do not report an issue. Such issues will be closed without further
 comment.
 
-| Property | Description                                                                                            |
-| -------- |--------------------------------------------------------------------------------------------------------|
-| server.port | The port at which ServerPackCreator as a webservice will be available at.                              |
-| spring.datasource.url | Path to and name of the SQLite database which the webservice will use.                                 |
-| spring.artemis.embedded.data-directory | The path to and name of the directory in which Artemis will store queues and task related information. |
-| spring.servlet.multipart.max-file-size | Maximum filesize for uploads.                                                                          |
+| Property                                  | Description                                                                                            |
+|-------------------------------------------|--------------------------------------------------------------------------------------------------------|
+| server.port                               | The port at which ServerPackCreator as a webservice will be available at.                              |
+| spring.datasource.url                     | Path to and name of the SQLite database which the webservice will use.                                 |
+| spring.artemis.embedded.data-directory    | The path to and name of the directory in which Artemis will store queues and task related information. |
+| spring.servlet.multipart.max-file-size    | Maximum filesize for uploads.                                                                          |
 | spring.servlet.multipart.max-request-size | Maximum request size for file uploads.                                                                 |
-| spring.config.import | Additional properties-file to import properties from.                                                  |
+| spring.config.import                      | Additional properties-file to import properties from.                                                  |
 
 # Localization
 
 If you wish to run ServerPackCreator with your locale (if it is already supported), you can either:
 
 1. Run `java -jar ServerPackCreator-X.X.X.jar -lang your_locale` for
-   example `java -jar ServerPackCreator-X.X.X.jar -lang en_us`. This will create the
+   example `java -jar ServerPackCreator-X.X.X.jar -lang en_GB`. This will create the
    lang.properties-file with your specified locale.
-2. Running `java -jar ServerPackCreator-x.x.x.jar` without `-lang en_us` or any other language will
+2. Running `java -jar ServerPackCreator-x.x.x.jar` without `-lang en_GB` or any other language will
    set the locale to en_us by default and create the lang.properties-file.
 3. Modify the `serverpackcreator.properties`-file in the same directory as
    ServerPackCreator-X-X-X.jar and set your locale like this `lang=your_locale` for
-   example `lang=en_us`
+   example `lang=en_GB`
 
-If you want to customize the translation of ServerPackCreator, you can edit the files in the `lang`
--directory. As of me writing this it should, by default, contain `lang_de_de.properties`
-, `lang_en_us.properties` and `lang_uk_ua.properties`.
-
-The most up-to-date translation will always be the english one, as I make ServerPackCreator with
-english in mind.
+If you want to contribute translations to ServerPackCreator, check out the [i18n](serverpackcreator-api/src/commonMain/kotlin/de/griefed/serverpackcreator/api/i18n)-directory containing already available
+translations to see how they are set up. Then, make your changes, test them, and open a pull request on GitHub according
+to the [Contribution-Guidelines](CONTRIBUTING.md).
 
 ## Adding a translation
 
-Say you want to translate ServerPackCreator to german. You would need both
-the `lang_de_de.properties`-file and the `lang_en_us.properties`-file.
+Say you want to translate ServerPackCreator to german. You would need to add the file `Gui_en_GB.properties`
 
 In the english properties, you will see entries like
 
@@ -887,7 +869,7 @@ menubar.gui.menu.about=About
 menubar.gui.menu.help=Help
 ```
 
-So, in order to translate them to german, in your `lang_de_de.properties`-file, you would add
+So, in order to translate them to german, in your `Gui_en_GB.properties`-file, you would add
 
 ```properties
 menubar.gui.menu.file=Datei
@@ -898,10 +880,10 @@ menubar.gui.menu.help=Hilfe
 ```
 
 Then, either in your `serverpackcreator.properties`
-set `de.griefed.serverpackcreator.language=de_de` or launch ServerPackCreator with the
-argument `-lang=de_de`.
+set `de.griefed.serverpackcreator.language=de_DE` or launch ServerPackCreator with the
+argument `-lang=de_DE`.
 
 Voila! The menubar will now have german translations!
 
-Keep in mind when using languages other than `en_us`: Any key not found in your currently set
+Keep in mind when using languages other than `en_GB`: Any key not found in your currently set
 language will fall back to the english default.

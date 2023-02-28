@@ -2,69 +2,37 @@ version: "1.0"
 linter: jetbrains/qodana-jvm-community:2022.2
 profile:
   name: qodana.recommended
-include:
-  - name: ArrayEquality
-  - name: AwaitWithoutCorrespondingSignal
-  - name: CallToSimpleGetterInClass
-  - name: CallToSimpleSetterInClass
-  - name: ClassNameDiffersFromFileName
-  - name: CollectionsMustHaveInitialCapacity
-  - name: DanglingJavadoc
-  - name: Deprecation
-  - name: DevKitPropertiesQuotesValidation
-  - name: ExtendsThread
-  - name: GroovyEmptyFinallyBlock
-  - name: GroovyEmptyTryBlock
-  - name: GroovyPointlessBoolean
-  - name: GroovyReturnFromFinallyBlock
-  - name: HtmlTagCanBeJavadocTag
-  - name: IfCanBeSwitch
-  - name: InstanceofChain
-  - name: InstanceVariableUninitializedUse
-  - name: IOStreamConstructor
-  - name: JavadocBlankLines
-  - name: JavadocHtmlLint
-  - name: JavadocLinkAsPlainText
-  - name: MissingJavadoc
-  - name: MissingPackageInfo
-  - name: NegatedEqualityExpression
-  - name: NonFinalFieldOfException
-  - name: NotifyWithoutCorrespondingWait
-  - name: ObjectEquality
-  - name: ReplaceCollectionCountWithSize
-  - name: ReplaceNotNullAssertionWithElvisReturn
-  - name: SizeReplaceableByIsEmpty
-  - name: StaticVariableUninitializedUse
-  - name: StringBufferField
-  - name: StringEquality
-  - name: StringEqualsEmptyString
-  - name: SystemGC
-  - name: UnnecessaryJavaDocLink
-  - name: UseOfObsoleteDateTimeApi
-  - name: WaitWithoutCorrespondingNotify
 exclude:
   - name: FieldMayBeStatic
+  - name: KotlinAnnotator
+  - name: KotlinRedundantDiagnosticSuppress
   - name: SystemOutErr
   - name: All
     paths:
       - .github
-      - .gitlab
       - .gradle
       - .idea
       - .jpb
       - .runConfigurations
       - build
-      - frontend
+      - buildSrc/.gradle
+      - buildSrc/build
       - gradle
       - img
-      - lang
       - licenses
-      - logs
       - manifests
-      - plugins
-      - root
-      - server_files
-      - server-packs
-      - testruns
-      - work
       - qodana
+      - root
+      - serverpackcreator-api/build
+      - serverpackcreator-api/tests
+      - serverpackcreator-app/build
+      - serverpackcreator-app/tests
+      - serverpackcreator-cli/build
+      - serverpackcreator-cli/tests
+      - serverpackcreator-gui/build
+      - serverpackcreator-gui/tests
+      - serverpackcreator-updater/build
+      - serverpackcreator-updater/tests
+      - serverpackcreator-web-frontend
+      - serverpackcreator-web/build
+      - serverpackcreator-web/tests

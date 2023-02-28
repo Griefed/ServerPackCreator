@@ -1,0 +1,66 @@
+{
+  "name": "serverpackcreator",
+  "version": "1.0.0",
+  "description": "Create server packs from Minecraft Forge or Fabric modpacks.",
+  "productName": "ServerPackCreator",
+  "cordovaId": "org.cordova.quasar.app",
+  "capacitorId": "",
+  "author": {
+    "name": "Griefed",
+    "email": "griefed@griefed.de",
+    "url": "https://griefed.de/"
+  },
+  "private": true,
+  "bugs": {
+    "url": "https://github.com/Griefed/ServerPackCreator/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Griefed/ServerPackCreator.git"
+  },
+  "license": " LGPL-2.1",
+  "scripts": {
+    "lint": "eslint --ext .js,.ts,.vue ./",
+    "test": "echo \"No test specified\" && exit 0",
+    "clean": "quasar clean",
+    "dev": "quasar dev",
+    "build": "quasar build"
+  },
+  "dependencies": {
+    "@quasar/cli": "2.0.0",
+    "@quasar/extras": "1.15.6",
+    "axios": "1.2.2",
+    "core-js": "3.27.1",
+    "quasar": "2.11.5",
+    "tsparticles": "1.43.1",
+    "vue": "3.2.45",
+    "vue-class-component": "^8.0.0-rc.1"
+  },
+  "devDependencies": {
+    "terser": "5.16.1",
+    "@babel/eslint-parser": "7.19.1",
+    "@quasar/app": "3.3.3",
+    "eslint": "8.26.0",
+    "@types/node": "18.11.18",
+    "eslint-config-prettier": "8.5.0",
+    "eslint-plugin-vue": "9.8.0",
+    "eslint-webpack-plugin": "3.2.0",
+    "minimist": "1.2.7"
+  },
+  "browserslist": [
+    "last 10 Chrome versions",
+    "last 10 Firefox versions",
+    "last 4 Edge versions",
+    "last 7 Safari versions",
+    "last 8 Android versions",
+    "last 8 ChromeAndroid versions",
+    "last 8 FirefoxAndroid versions",
+    "last 10 iOS versions",
+    "last 5 Opera versions"
+  ],
+  "engines": {
+    "node": "^18.0.0",
+    "npm": "^8.0.0",
+    "yarn": "^1.22.11"
+  }
+}
