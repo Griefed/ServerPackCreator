@@ -21,6 +21,11 @@ package de.griefed.serverpackcreator.api
 
 import de.griefed.serverpackcreator.api.utilities.CommentedConfig
 
+/**
+ * A server pack configuration from which to generate a server pack.
+ *
+ * @author Griefed
+ */
 @Suppress("MemberVisibilityCanBePrivate")
 abstract class Pack<F, J, out P> {
     protected val forge = "^forge$".toRegex()

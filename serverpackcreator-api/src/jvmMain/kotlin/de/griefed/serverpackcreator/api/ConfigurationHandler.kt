@@ -259,7 +259,7 @@ actual class ConfigurationHandler constructor(
             for (i in packConfig.copyDirs.indices) {
                 val entry = copyDirs[i]
                 val equalsArray = entry.split("==").dropLastWhile { it.isEmpty() }.toTypedArray()
-                val semikolonArray = entry.split(";").dropLastWhile { it.isEmpty() }.toTypedArray()
+                val semicolonArray = entry.split(";").dropLastWhile { it.isEmpty() }.toTypedArray()
                 try {
                     if (!entry.startsWith("==") && entry.contains("==") && equalsArray.size == 2) {
 
@@ -270,19 +270,19 @@ actual class ConfigurationHandler constructor(
                             copyDirChanges = true
                         }
 
-                    } else if (entry.contains(";") && semikolonArray.size == 2) {
+                    } else if (entry.contains(";") && semicolonArray.size == 2) {
 
                         // Source;Destination-combination
-                        if (utilities.fileUtilities.isLink(semikolonArray[0])) {
-                            link = utilities.fileUtilities.resolveLink(semikolonArray[0])
-                            copyDirs[i] = "$link;${semikolonArray[1]}"
+                        if (utilities.fileUtilities.isLink(semicolonArray[0])) {
+                            link = utilities.fileUtilities.resolveLink(semicolonArray[0])
+                            copyDirs[i] = "$link;${semicolonArray[1]}"
                             log.info("Resolved copy-directories link to: ${copyDirs[i]}")
                             copyDirChanges = true
 
-                        } else if (utilities.fileUtilities.isLink("${packConfig.modpackDir}${File.separator}${semikolonArray[0]}")) {
+                        } else if (utilities.fileUtilities.isLink("${packConfig.modpackDir}${File.separator}${semicolonArray[0]}")) {
                             link =
-                                utilities.fileUtilities.resolveLink("${packConfig.modpackDir}${File.separator}${semikolonArray[0]}")
-                            copyDirs[i] = "$link;${semikolonArray[1]}"
+                                utilities.fileUtilities.resolveLink("${packConfig.modpackDir}${File.separator}${semicolonArray[0]}")
+                            copyDirs[i] = "$link;${semicolonArray[1]}"
                             log.info("Resolved copy-directories link to: ${copyDirs[i]}")
                             copyDirChanges = true
                         }
@@ -399,7 +399,7 @@ actual class ConfigurationHandler constructor(
         }
 
         // If no json was read from the modpack, we must sadly use the ZIP-files name as the new
-        // destination. Sadface.
+        // destination. Sad-face.
         if (packName == null) {
             packName = unzippedModpack
         }
@@ -535,7 +535,7 @@ actual class ConfigurationHandler constructor(
         if (directoriesToCopy.isEmpty()) {
             configCorrect = false
             if (printLog) {
-                log.error("No directories or files specified for copying. This would result in an empty serverpack.")
+                log.error("No directories or files specified for copying. This would result in an empty server pack.")
             }
             // This log is meant to be read by the user, therefore we allow translation.
             encounteredErrors.add(Api.configuration_log_error_checkcopydirs_empty.toString())

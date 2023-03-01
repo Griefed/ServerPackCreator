@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui.old
 
-import de.griefed.serverpackcreator.gui.old.utilities.JComponentTailer
+import de.griefed.serverpackcreator.gui.utilities.JComponentTailer
 import org.apache.commons.io.input.Tailer
 import org.apache.commons.io.input.TailerListener
 import org.apache.commons.io.input.TailerListenerAdapter

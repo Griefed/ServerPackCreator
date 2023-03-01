@@ -1,3 +1,31 @@
+## [4.0.0-beta.5](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.0.0-beta.4...4.0.0-beta.5) (2023-02-27)
+
+
+### 📔 Docs
+
+* Merge Wiki help and repo help sections. Proper format for api lib impl. ([e8340b7](https://git.griefed.de/Griefed/ServerPackCreator/commit/e8340b7f6a8fb760e5aef1927cfc07c365e9a498))
+* Some minor README improvements. Disclaimers, warnings, wiki and help. ([fbaf66f](https://git.griefed.de/Griefed/ServerPackCreator/commit/fbaf66f3287807602fb7e90cb6bd1df1202ce565))
+* **GitHub:** Improve the feature and improvement templates by rephrasing them from requests to asks instead. ([0125c02](https://git.griefed.de/Griefed/ServerPackCreator/commit/0125c0264a5541c3b73256b1b9b10331780b07f8))
+
+
+### 📦 Other
+
+* **deps:** update dependency @quasar/extras to v1.15.10 ([8cb7429](https://git.griefed.de/Griefed/ServerPackCreator/commit/8cb74290e4964f79d7e016bf1c008be38e0ff8be))
+* **deps:** update dependency core-js to v3.27.2 ([27fec81](https://git.griefed.de/Griefed/ServerPackCreator/commit/27fec81202957f2da5c0ee66a20971e6d0a3bde2))
+* **deps:** update dependency eslint-config-prettier to v8.6.0 ([9ef1b62](https://git.griefed.de/Griefed/ServerPackCreator/commit/9ef1b6206da0a811edbdf5fba743b92565189c6c))
+
+
+### 🔩 Dependencies
+
+* **deps:** update dependency org.jetbrains:annotations to v23.1.0 ([ba73b25](https://git.griefed.de/Griefed/ServerPackCreator/commit/ba73b250169ffbedc39bc36aa7de840c14c784b1))
+* **deps:** update jetbrains/qodana-jvm-community docker tag to v2022.3 ([e6c4b22](https://git.griefed.de/Griefed/ServerPackCreator/commit/e6c4b228defda893ebd192c407a3c7a154469024))
+
+
+### 🦊 CI/CD
+
+* Ensure multiplatform jvm jar manifests contain correct information. ([29f6ea6](https://git.griefed.de/Griefed/ServerPackCreator/commit/29f6ea6246691ab04e10218aac8d5c30c4e20695))
+* Disable Qodana caches ([ddab9bc](https://git.griefed.de/Griefed/ServerPackCreator/commit/ddab9bc274aae0ec112dd333cd77101fd9c03335))
+
 ## [4.0.0-beta.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.0.0-beta.3...4.0.0-beta.4) (2023-02-11)
 
 

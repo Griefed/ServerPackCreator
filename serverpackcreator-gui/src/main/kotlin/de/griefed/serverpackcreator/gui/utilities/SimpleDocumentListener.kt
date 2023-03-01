@@ -17,7 +17,7 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.gui.old.utilities
+package de.griefed.serverpackcreator.gui.utilities
 
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener

@@ -24,6 +24,12 @@ package de.griefed.serverpackcreator.api
 import de.griefed.serverpackcreator.api.utilities.File
 import mu.KotlinLogging
 
+/**
+ * Base for the [de.griefed.serverpackcreator.api.ConfigurationHandler] to ensure we have the basics for config-checks
+ * and config-handling.
+ *
+ * @author Griefed
+ */
 abstract class Configuration<F, P> {
     protected val log = KotlinLogging.logger {}
     protected val forge = "^forge$".toRegex()

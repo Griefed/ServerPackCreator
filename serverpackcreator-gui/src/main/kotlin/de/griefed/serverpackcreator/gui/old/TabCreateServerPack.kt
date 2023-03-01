@@ -30,7 +30,7 @@ import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import de.griefed.serverpackcreator.api.versionmeta.VersionMeta
 import de.griefed.serverpackcreator.gui.old.themes.DarkTheme
 import de.griefed.serverpackcreator.gui.old.themes.LightTheme
-import de.griefed.serverpackcreator.gui.old.utilities.*
+import de.griefed.serverpackcreator.gui.utilities.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext

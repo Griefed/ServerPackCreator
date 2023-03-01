@@ -20,9 +20,9 @@
 package de.griefed.serverpackcreator.gui.old
 
 import de.griefed.serverpackcreator.api.utilities.ReticulatingSplines
-import de.griefed.serverpackcreator.gui.old.utilities.BackgroundPanel
-import de.griefed.serverpackcreator.gui.old.utilities.ImageUtilities
-import de.griefed.serverpackcreator.gui.old.utilities.getScaledInstance
+import de.griefed.serverpackcreator.gui.utilities.BackgroundPanel
+import de.griefed.serverpackcreator.gui.utilities.ImageUtilities
+import de.griefed.serverpackcreator.gui.utilities.getScaledInstance
 import java.awt.Color
 import java.awt.Font
 import java.awt.Graphics

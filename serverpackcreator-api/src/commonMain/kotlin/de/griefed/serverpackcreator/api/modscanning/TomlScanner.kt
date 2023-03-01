@@ -24,7 +24,7 @@ package de.griefed.serverpackcreator.api.modscanning
 /**
  * `mods.toml`-based scanning of Fabric-Minecraft mods for Minecraft 1.16.5 and newer.
  *
- * @Griefed
+ * @author Griefed
  */
 expect class TomlScanner
 

@@ -1,7 +1,7 @@
 # Fugly Artifacts
 
-Depending on which JDK you are using, ServerPackCreator may display some hideous artifacts and
-anti-aliasing issues in the GUI. So far, I've nailed this issue down to occurring when
+Depending on which JDK you are using, ServerPackCreator may display some really ugly artifacts and
+anti-aliasing issues in the GUI. So far, I've nailed this issue down to occuring when
 using [AdoptiumJDKs](https://adoptium.net/).
 
 Tests have shown, that using the
@@ -61,8 +61,7 @@ then immediately closing* again, consult the **Running Powershell scripts**-sect
 > risk into your system. So, beware when running scripts from unknown sources. If you run the
 > exectuion-policy command from a non-administrator terminal, you may be prompted with a question as
 > to how exactly you would like to adjust
-> it. ![question](https://i.griefed.de/images/2022/10/02/ps_execution_policy.png).<br>When this
-> happens, please select `[Y]`, as any other option is potentially more dangerous.
+> it.<br> ![question](https://i.griefed.de/images/2022/10/02/ps_execution_policy.png) <br>When this happens, please select `[Y]`, as any other option is potentially more dangerous.
 > {.is-warning}
 
 ### Default values
@@ -83,7 +82,7 @@ ServerPackCreator always supplies a couple of default key-value-pairs during scr
 
 ### Placeholders and values (3.14.x and up)
 
-As of 3.14.x you can add and edit placeholders to your liking.
+As of 3.14.x you can add and edit placeholders.
 Make sure to map your desired value to the appropriate placeholder key.
 The GUI provides a table where you can configure these, or any other values, to your liking.
 
@@ -103,6 +102,14 @@ BAM! Template engine with customizable content!
 > shell-script, for example, uses the variable name `JAVA` for Java-based operations. With the
 > previously mentioned placeholder `JAVA`, that variable would be removed from the scripts,
 > potentially rendering them useless. Nobody wants that, right? :D
+> {.is-warning}
+
+
+> **Default placeholder limitations**
+> Of all available default placeholders mentioned above, only one of them can be overriden via a given configuration.
+> Said placeholder is `SPC_JAVA_SPC`. This one allows you to set a different Java executable/binary path for your local scripts,
+> to make testing your server pack easier. The files in the ZIP-archive will always have the `SPC_JAVA_SPC=java` key-value-pair,
+> to ensure any given user of your server pack has the value most likely to work on their system.
 > {.is-warning}
 
 ### Changing the default templates
@@ -133,8 +140,8 @@ instead, your custom-templates will be used.
 
 1. The file-endings of the templates determine the file ending of the start script (`template.bat`
    becomes `start.bat`, `template.sh` becomes `start.sh` and so on)
-1. Put your template(s) into the `server_files`-directory
-1. Edit the `serverpackcreator.properties`-file and change
+2. Put your template(s) into the `server_files`-directory
+3. Edit the `serverpackcreator.properties`-file and change
    the `de.griefed.serverpackcreator.serverpack.script.template`-property accordingly
 
 **Example:**
@@ -286,8 +293,7 @@ If you use **2.12.1** or newer and you want to include it in your server pack, y
 1. Remove the `fancymenu_`-entry from your list of clientside-only mods-list.
 2. To be on the safe side, add an entry to your file/directories to include in your server pack for
    your version of FancyMenu:
-    -
-    Example: `mods/fancymenu_forge_2.12.1_MC_1.19-1.19.1.jar;mods/fancymenu_forge_2.12.1_MC_1.19-1.19.1.jar`
+    - Example: `mods/fancymenu_forge_2.12.1_MC_1.19-1.19.1.jar;mods/fancymenu_forge_2.12.1_MC_1.19-1.19.1.jar`
 
 ## Automatic detection of clientside-only mods
 
@@ -635,11 +641,11 @@ ServerPackCreator.
 ServerPackCreator
 ├── lang
 ├── logs
-│   └── archive
+│   └── archive
 ├── plugins <--------- 
 ├── server-packs
-│   ├── Survive Create Prosper 4 custom (1)
-│   └── World of Dragons II
+│   ├── Survive Create Prosper 4 custom (1)
+│   └── World of Dragons II
 ├── server_files
 └── work
     ├── modpacks
@@ -656,8 +662,8 @@ ServerPackCreator
 ├── lang
 ├── logs
 ├── plugins
-│   ├── ExamplePlugin-3.0.5.jar
-│   └── disabled.txt <------
+│   ├── ExamplePlugin-3.0.5.jar
+│   └── disabled.txt <------
 ├── server-packs
 ├── server_files
 └── work
@@ -805,22 +811,27 @@ Changes to properties not described below are not supported. If you changed a pr
 meant to fiddle around with, do not report an issue. Such issues will be closed without further
 comment.
 
-| Property | Description                                                                                            |
-| -------- |--------------------------------------------------------------------------------------------------------|
-| server.port | The port at which ServerPackCreator as a webservice will be available at.                              |
-| spring.datasource.url | Path to and name of the SQLite database which the webservice will use.                                 |
-| spring.artemis.embedded.data-directory | The path to and name of the directory in which Artemis will store queues and task related information. |
-| spring.servlet.multipart.max-file-size | Maximum filesize for uploads.                                                                          |
+| Property                                  | Description                                                                                            |
+|-------------------------------------------|--------------------------------------------------------------------------------------------------------|
+| server.port                               | The port at which ServerPackCreator as a webservice will be available at.                              |
+| spring.datasource.url                     | Path to and name of the SQLite database which the webservice will use.                                 |
+| spring.artemis.embedded.data-directory    | The path to and name of the directory in which Artemis will store queues and task related information. |
+| spring.servlet.multipart.max-file-size    | Maximum filesize for uploads.                                                                          |
 | spring.servlet.multipart.max-request-size | Maximum request size for file uploads.                                                                 |
-| spring.config.import | Additional properties-file to import properties from.                                                  |
+| spring.config.import                      | Additional properties-file to import properties from.                                                  |
 
 # Localization
 
 If you wish to run ServerPackCreator with your locale (if it is already supported), you can either:
-1. Run `java -jar ServerPackCreator-X.X.X.jar -lang yourLocale` for example `java -jar ServerPackCreator-X.X.X.jar -lang en`. This will create the lang.properties-file with your specified locale.
-2. Running `java -jar ServerPackCreator-x.x.x.jar` without `-lang en` or any other language will either set the locale to `en` by default, or use the already defined locale from the `serverpackcreator.properites`-file.
-3. Modify the `serverpackcreator.properties`-file and set your locale like this `lang=yourLocale` for example `lang=en`
 
+1. Run `java -jar ServerPackCreator-X.X.X.jar -lang your_locale` for
+   example `java -jar ServerPackCreator-X.X.X.jar -lang en_GB`. This will create the
+   lang.properties-file with your specified locale.
+2. Running `java -jar ServerPackCreator-x.x.x.jar` without `-lang en_GB` or any other language will
+   set the locale to en_us by default and create the lang.properties-file.
+3. Modify the `serverpackcreator.properties`-file in the same directory as
+   ServerPackCreator-X-X-X.jar and set your locale like this `lang=your_locale` for
+   example `lang=en_GB`
 
 If you want to contribute translations to ServerPackCreator, check out the [i18n](serverpackcreator-api/src/commonMain/kotlin/de/griefed/serverpackcreator/api/i18n)-directory containing already available
 translations to see how they are set up. Then, make your changes, test them, and open a pull request on GitHub according
@@ -828,7 +839,7 @@ to the [Contribution-Guidelines](CONTRIBUTING.md).
 
 ## Adding a translation
 
-Say you want to translate ServerPackCreator to german. You would need to add the file `Messages_de.properties`
+Say you want to translate ServerPackCreator to german. You would need to add the file `Gui_en_GB.properties`
 
 In the english properties, you will see entries like
 
@@ -840,7 +851,7 @@ menubar.gui.menu.about=About
 menubar.gui.menu.help=Help
 ```
 
-So, in order to translate them to german, in your `Messages_de.properties`-file, you would add
+So, in order to translate them to german, in your `Gui_en_GB.properties`-file, you would add
 
 ```properties
 menubar.gui.menu.file=Datei
@@ -851,13 +862,10 @@ menubar.gui.menu.help=Hilfe
 ```
 
 Then, either in your `serverpackcreator.properties`
-set `de.griefed.serverpackcreator.language=de` or launch ServerPackCreator with the
-argument `-lang=de`.
+set `de.griefed.serverpackcreator.language=de_DE` or launch ServerPackCreator with the
+argument `-lang=de_DE`.
 
-Voilà! The menubar will now have german translations!
+Voila! The menubar will now have german translations!
 
-There are several places in ServerPackCreator where translations come into play. At the time of writing, these are:
-1. [CLI module](serverpackcreator-cli/src/main/i18n/Cli_en_GB.properties)
-2. [GUI module](serverpackcreator-gui/src/main/i18n/Gui_en_GB.properties)
-3. [Example Kotlin Plugin](serverpackcreator-plugin-example-kotlin/src/main/i18n/Example_en_GB.properties)
-4. [Updater module](serverpackcreator-updater/src/main/i18n/Updates_en_GB.properties)
+Keep in mind when using languages other than `en_GB`: Any key not found in your currently set
+language will fall back to the english default.

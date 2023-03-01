@@ -19,6 +19,10 @@
  */
 package de.griefed.serverpackcreator.api
 
+/**
+ * Method by which to exclude mods during the generation of a server pack.
+ * @author Griefed
+ */
 enum class ExclusionFilter {
     /**
      * Does the name of a mod start with the user specified string?

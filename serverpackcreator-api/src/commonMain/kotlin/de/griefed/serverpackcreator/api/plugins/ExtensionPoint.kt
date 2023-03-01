@@ -21,6 +21,9 @@
 package de.griefed.serverpackcreator.api.plugins
 
 /**
- * TODO write expectation docs
+ * The extension point interface should provide an entry point from which to expand plugins from. See the implementation
+ * in the JVM backend for an example with the pf4j-library.
+ *
+ * @author Griefed
  */
 expect interface ExtensionPoint

@@ -28,7 +28,7 @@ import de.griefed.serverpackcreator.api.versionmeta.VersionMeta
 
 /**
  * Extension point for plugins which add additional [javax.swing.JPanel]s in a given server pack tab,
- * allowing users to customize server pack specific configurations of an plugin.
+ * allowing users to customize server pack specific configurations of a plugin.
  *
  * @author Griefed
  */
@@ -57,7 +57,7 @@ interface ConfigPanelExtension : ExtensionInformation {
      * @param extensionName         The name the titled border of this ConfigPanel will get.
      * @param pluginID              The same as the PluginId.
      * @return A ConfigPanel allowing users to further customize their ServerPackCreator experience
-     * when using an plugin.
+     * when using a plugin.
      * @author Griefed
      */
     fun getPanel(

@@ -21,6 +21,8 @@ package de.griefed.serverpackcreator.api.plugins
 
 /**
  * Base information to be provided by every extension.
+ *
+ * @author Griefed
  */
 interface BaseInformation {
     /**

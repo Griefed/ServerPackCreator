@@ -21,6 +21,7 @@
 package de.griefed.serverpackcreator.api.utilities
 
 /**
- * A configurable parser of TOML configurations. It is not thread-safe.
+ * A configurable parser of TOML configurations.
+ * @author Griefed
  */
 expect class TomlParser

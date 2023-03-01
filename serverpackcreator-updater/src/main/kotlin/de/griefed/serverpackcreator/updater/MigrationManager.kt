@@ -388,15 +388,15 @@ class MigrationManager constructor(
      * @author Griefed
      */
     inner class MigrationMessage(
-        private val FROM: String, private val TO: String, private val changes: MutableList<String> = ArrayList(20)
+        private val fromVersion: String, private val toVersion: String, private val changes: MutableList<String> = ArrayList(20)
     ) {
 
         fun fromVersion(): String {
-            return FROM
+            return fromVersion
         }
 
         fun toVersion(): String {
-            return TO
+            return toVersion
         }
 
         fun changes(): List<String> {
@@ -412,7 +412,7 @@ class MigrationManager constructor(
         }
 
         override fun toString(): String {
-            val header = "From $FROM to $TO the following changes were made:\n"
+            val header = "From $fromVersion to $toVersion the following changes were made:\n"
             val content = StringBuilder()
             content.append(header).append("\n")
             for (i in changes.indices) {

@@ -21,6 +21,10 @@ package de.griefed.serverpackcreator.api.versionmeta
 
 import de.griefed.serverpackcreator.api.utilities.Optional
 
+/**
+ * Provide default methods to access a given Metas versions.
+ * @author Griefed
+ */
 interface Meta {
     /**
      * Update the meta-information for this modloader-meta, updating the available loader and

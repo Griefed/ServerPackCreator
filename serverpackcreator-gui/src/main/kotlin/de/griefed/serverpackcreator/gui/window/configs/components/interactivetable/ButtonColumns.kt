@@ -1,7 +1,6 @@
 package de.griefed.serverpackcreator.gui.window.configs.components.interactivetable
 
 import de.griefed.serverpackcreator.gui.GuiProps
-import de.griefed.serverpackcreator.gui.ImageUtilities
 import java.awt.Component
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener

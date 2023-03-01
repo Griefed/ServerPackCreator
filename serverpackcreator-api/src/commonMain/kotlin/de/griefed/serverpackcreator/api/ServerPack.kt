@@ -22,6 +22,12 @@ package de.griefed.serverpackcreator.api
 import de.griefed.serverpackcreator.api.utilities.common.escapePath
 import mu.KotlinLogging
 
+/**
+ * Base-class for the [de.griefed.serverpackcreator.api.ServerPackHandler] to ensure we have the most important methods
+ * for generating a server pack from a given configuration.
+ *
+ * @author Griefed
+ */
 abstract class ServerPack<F, TS, TF> {
     protected val log = KotlinLogging.logger {}
     protected val modFileEndings = listOf("jar", "disabled")

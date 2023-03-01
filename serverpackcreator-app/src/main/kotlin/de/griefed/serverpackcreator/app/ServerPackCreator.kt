@@ -44,15 +44,25 @@ import java.util.concurrent.Executors
 import javax.xml.parsers.ParserConfigurationException
 import kotlin.system.exitProcess
 
+/**
+ * Entry point for the app. Creates a new instance of [ServerPackCreator] and executes [ServerPackCreator.run] with the
+ * mode determined by [CommandlineParser].
+ * @author Griefed
+ */
 fun main(args: Array<String>) {
     val app = ServerPackCreator(args)
     app.run(app.commandlineParser.mode)
 }
 
+/**
+ * Create and manage instances required to run ServerPackCreator and provide access to various aspects, such as the
+ * API-instance used to run a given instance of SPC.
+ * @author Griefed
+ */
 class ServerPackCreator(private val args: Array<String>) {
     private val log = cachedLoggerOf(this.javaClass)
     val commandlineParser: CommandlineParser = CommandlineParser(args)
-    private val api = ApiWrapper.api(commandlineParser.propertiesFile, commandlineParser.language, false)
+    val api = ApiWrapper.api(commandlineParser.propertiesFile, commandlineParser.language, false)
     private val appInfo = JarInformation(ServerPackCreator::class.java, api.jarUtilities)
 
     @Suppress("MemberVisibilityCanBePrivate")
@@ -361,28 +371,6 @@ class ServerPackCreator(private val args: Array<String>) {
                 )
             }
             return field!!
-        }
-
-    @get:Synchronized
-    var mainWindow: MainWindow? = null
-        get() {
-            if (GraphicsEnvironment.isHeadless()) {
-                throw RuntimeException("Graphical environment not supported!")
-            }
-            if (field == null) {
-                field = MainWindow(
-                    api.configurationHandler!!,
-                    api.serverPackHandler!!,
-                    api.apiProperties,
-                    api.versionMeta!!,
-                    api.utilities!!,
-                    updateChecker,
-                    splashScreen!!,
-                    api.apiPlugins!!,
-                    migrationManager!!
-                )
-            }
-            return field
         }
 
     @get:Synchronized

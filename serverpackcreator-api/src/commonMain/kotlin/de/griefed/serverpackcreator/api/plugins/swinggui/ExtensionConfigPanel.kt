@@ -27,7 +27,11 @@ import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import de.griefed.serverpackcreator.api.versionmeta.VersionMeta
 
 /**
- * TODO write expectation docs
+ * Configuration panel for a given plugins configuration in the context of a server pack configuration. An
+ * extension config panel should provide configuration options relevant to one server pack and one server pack only.
+ * Every server pack configuration will receive/store/load one config for your plugin's panel.
+ *
+ * @author Griefed
  */
 expect abstract class ExtensionConfigPanel protected constructor(
     versionMeta: VersionMeta,
@@ -52,7 +56,7 @@ expect abstract class ExtensionConfigPanel protected constructor(
     abstract fun serverPackExtensionConfig(): ArrayList<CommentedConfig>
 
     /**
-     * Pass the extension configuration to the configuration panel so it can then, in turn, load the
+     * Pass the extension configuration to the configuration panel, so it can then, in turn, load the
      * available configurations and make them editable, if so desired.
      *
      * @param serverPackExtensionConfig The list of extension configurations to pass to the

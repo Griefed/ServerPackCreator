@@ -31,6 +31,7 @@ class ReticulatingSplines {
     /**
      * The list of messages as they were available in SimCity, plus Reticulating Splines added by
      * myself, for good measure.
+     * @author Griefed
      */
     @Suppress("SpellCheckingInspection", "MemberVisibilityCanBePrivate")
     val reticulatingSplines = arrayOf(
@@ -142,6 +143,9 @@ class ReticulatingSplines {
         "Reticulating Splines"
     )
 
+    /**
+     * @author Griefed
+     */
     @Suppress("SpellCheckingInspection", "MemberVisibilityCanBePrivate")
     val splines = arrayOf(
         "Adding",

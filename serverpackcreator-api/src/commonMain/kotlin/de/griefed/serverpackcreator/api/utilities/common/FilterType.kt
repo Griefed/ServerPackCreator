@@ -23,7 +23,8 @@
 package de.griefed.serverpackcreator.api.utilities.common
 
 /**
- * TODO write docs
+ * Filter-types by which to filter entries when walking through the files in a directory.
+ * @author Griefed
  */
 enum class FilterType {
     /**

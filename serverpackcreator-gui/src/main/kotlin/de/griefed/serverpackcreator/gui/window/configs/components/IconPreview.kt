@@ -1,7 +1,7 @@
 package de.griefed.serverpackcreator.gui.window.configs.components
 
 import de.griefed.serverpackcreator.gui.GuiProps
-import de.griefed.serverpackcreator.gui.getScaledInstance
+import de.griefed.serverpackcreator.gui.utilities.getScaledInstance
 import net.java.balloontip.BalloonTip
 import java.awt.Image
 import java.awt.event.MouseEvent

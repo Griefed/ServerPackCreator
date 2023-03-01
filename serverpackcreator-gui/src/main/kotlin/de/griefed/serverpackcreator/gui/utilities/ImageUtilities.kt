@@ -17,7 +17,7 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.gui
+package de.griefed.serverpackcreator.gui.utilities
 
 import java.awt.Image
 import java.util.*

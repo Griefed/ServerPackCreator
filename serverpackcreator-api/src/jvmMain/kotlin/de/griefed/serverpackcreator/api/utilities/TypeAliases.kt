@@ -20,10 +20,33 @@
  */
 package de.griefed.serverpackcreator.api.utilities
 
+/**
+ * Type alias to link [Optional] to [java.util.Optional]
+ */
 actual typealias Optional<T> = java.util.Optional<T>
+
+/**
+ * Type alias to link [CommentedConfig] to [com.electronwill.nightconfig.core.CommentedConfig]
+ */
 actual typealias CommentedConfig = com.electronwill.nightconfig.core.CommentedConfig
+
+/**
+ * Type alias to link [TomlParser] to [com.electronwill.nightconfig.toml.TomlParser]
+ */
 actual typealias TomlParser = com.electronwill.nightconfig.toml.TomlParser
+
+/**
+ * Type alias to link [File] to [java.io.File]
+ */
 actual typealias File = java.io.File
+
+/**
+ * Type alias to link [URL] to [java.net.URL]
+ */
 actual typealias URL = java.net.URL
+
+/**
+ * Type alias to link [Icon] to [javax.swing.Icon]
+ */
 actual typealias Icon = javax.swing.Icon
 

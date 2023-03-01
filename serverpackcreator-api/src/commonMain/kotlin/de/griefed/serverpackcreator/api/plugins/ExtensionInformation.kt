@@ -21,6 +21,8 @@ package de.griefed.serverpackcreator.api.plugins
 
 /**
  * Force every extension to provide its ID.
+ *
+ * @author Griefed
  */
 interface ExtensionInformation : BaseInformation, ExtensionPoint {
     /**

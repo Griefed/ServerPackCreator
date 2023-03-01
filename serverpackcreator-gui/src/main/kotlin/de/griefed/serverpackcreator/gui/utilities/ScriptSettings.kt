@@ -17,7 +17,7 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.gui.old.utilities
+package de.griefed.serverpackcreator.gui.utilities
 
 import Gui
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
@@ -100,8 +100,6 @@ class ScriptSettings(
         getColumnModel().getColumn(2).maxWidth = 60
         getColumnModel().getColumn(2).width = 60
         getColumnModel().getColumn(2).resizable = false
-        tableModel.setValueAt("", 0, 0)
-        tableModel.setValueAt("", 0, 1)
     }
 
     /**

@@ -22,6 +22,11 @@
  */
 package de.griefed.serverpackcreator.api.utilities.common
 
+/**
+ * File-type to use, identify and report configured Java versions with.
+ *
+ * @author Griefed
+ */
 enum class FileType {
     /**
      * A regular file.

@@ -19,6 +19,11 @@
  */
 package de.griefed.serverpackcreator.api.utilities.common
 
+/**
+ * Bare-bones Kotlin version of Java's predicate-system.
+ *
+ * @author Griefed
+ */
 @Suppress("UNCHECKED_CAST", "unused")
 fun interface Affirm<T> {
     fun test(test: T): Boolean

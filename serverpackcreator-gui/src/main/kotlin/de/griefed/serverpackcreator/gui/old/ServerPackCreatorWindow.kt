@@ -28,10 +28,10 @@ import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import de.griefed.serverpackcreator.api.versionmeta.VersionMeta
 import de.griefed.serverpackcreator.gui.old.themes.DarkTheme
 import de.griefed.serverpackcreator.gui.old.themes.LightTheme
-import de.griefed.serverpackcreator.gui.old.utilities.BackgroundPanel
-import de.griefed.serverpackcreator.gui.old.utilities.DialogUtilities
-import de.griefed.serverpackcreator.gui.old.utilities.ImageUtilities
-import de.griefed.serverpackcreator.gui.old.utilities.getScaledInstance
+import de.griefed.serverpackcreator.gui.utilities.BackgroundPanel
+import de.griefed.serverpackcreator.gui.utilities.DialogUtilities
+import de.griefed.serverpackcreator.gui.utilities.ImageUtilities
+import de.griefed.serverpackcreator.gui.utilities.getScaledInstance
 import de.griefed.serverpackcreator.updater.MigrationManager
 import de.griefed.serverpackcreator.updater.UpdateChecker
 import mdlaf.MaterialLookAndFeel
