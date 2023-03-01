@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>MinecraftMeta</title>
+    <link href="../../../images/logo-icon.svg" rel="icon" type="image/svg">
+    <script>var pathToRoot = "../../../";</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+    if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    } else {
+        const savedDarkMode = JSON.parse(storage)
+        if(savedDarkMode === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    }
+    </script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async="async"></script>
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/jetbrains-mono.css" rel="Stylesheet">
+<link href="../../../styles/main.css" rel="Stylesheet">
+<link href="../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../scripts/clipboard.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/navigation-loader.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/platform-content-handler.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/main.js" defer="defer"></script>
+<script type="text/javascript" src="../../../scripts/prism.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/symbol-parameters-wrapper_deferred.js" defer="defer"></script>
+</head>
+<body>
+<div class="navigation-wrapper" id="navigation-wrapper">
+    <div id="leftToggler"><span class="icon-toggler"></span></div>
+    <div class="library-name">
+            <a href="../../../index.html">
+                    <span>serverpackcreator-api</span>
+            </a>
+    </div>
+    <div>
+    </div>
+    <div class="pull-right d-flex">
+        <div class="filter-section" id="filter-section">
+                <button class="platform-tag platform-selector common-like" data-active="" data-filter=":serverpackcreator-api:dokkaHtml/commonMain">common</button>
+                <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button>
+        </div>
+        <button id="theme-toggle-button"><span id="theme-toggle"></span></button>
+        <div id="searchBar"></div>
+    </div>
+</div>
+<div id="container">
+    <div id="leftColumn">
+        <div id="sideMenu"></div>
+    </div>
+    <div id="main">
+<div class="main-content" id="content" pageIds="serverpackcreator-api::de.griefed.serverpackcreator.api.versionmeta.minecraft/MinecraftMeta///PointingToDeclaration//1537383562">
+  <div class="breadcrumbs"><a href="../../../index.html">serverpackcreator-api</a><span class="delimiter">/</span><a href="../index.html">de.griefed.serverpackcreator.api.versionmeta.minecraft</a><span class="delimiter">/</span><span class="current">MinecraftMeta</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Minecraft</span><wbr></wbr><span><span>Meta</span></span></h1>
+    <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+      <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/commonMain">common</button><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword">class </span><a href="index.html">MinecraftMeta</a></div><p class="paragraph">Minecraft meta containing information about available client- and server releases.</p><span class="kdoc-tag"><h4 class="">Author</h4><p class="paragraph">Griefed</p></span></div><div class="content sourceset-dependent-content" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">actual </span><span class="token keyword">class </span><a href="index.html">MinecraftMeta</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">minecraftManifest<span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/io/File.html">File</a><span class="token punctuation">, </span></span><span class="parameter ">injectedForgeMeta<span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api.versionmeta.forge/-forge-meta/index.html">ForgeMeta</a><span class="token punctuation">, </span></span><span class="parameter ">utilities<span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api.utilities.common/-utilities/index.html">Utilities</a><span class="token punctuation">, </span></span><span class="parameter ">apiProperties<span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api/-api-properties/index.html">ApiProperties</a></span></span><span class="token punctuation">)</span></div><p class="paragraph">Minecraft meta containing information about available client- and server releases.</p><span class="kdoc-tag"><h4 class="">Author</h4><p class="paragraph">Griefed</p></span></div>    </div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="Constructors">Constructors</button><button class="section-tab" data-togglable="Functions">Functions</button><button class="section-tab" data-togglable="Parameters">Parameters</button></div>
+    <div class="tabs-section-body">
+      <h4 class="">Parameters</h4>
+      <div data-togglable="Parameters">
+        <div class="platform-hinted WithExtraAttributes with-platform-tabs" data-platform-hinted="data-platform-hinted" data-togglable="Parameters">
+          <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div data-togglable="Parameters"><div class="table" data-togglable="Parameters"><div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="main-subrow keyValue WithExtraAttributes"><div class=""><span class="inline-flex"><div><u><span>minecraft</span><wbr></wbr><span><span>Manifest</span></span></u></div></span></div><div><div class="title"><div data-togglable="Parameters"><p class="paragraph">Minecraft manifest file.</p></div></div></div></div></div><div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="main-subrow keyValue WithExtraAttributes"><div class=""><span class="inline-flex"><div><u><span>injected</span><wbr></wbr><span>Forge</span><wbr></wbr><span><span>Meta</span></span></u></div></span></div><div><div class="title"><div data-togglable="Parameters"><p class="paragraph">To acquire Forge instances for this <a href="../-minecraft-client/index.html">MinecraftClient</a> version.</p></div></div></div></div></div><div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="main-subrow keyValue WithExtraAttributes"><div class=""><span class="inline-flex"><div><u><span><span>utilities</span></span></u></div></span></div><div><div class="title"><div data-togglable="Parameters"><p class="paragraph">Commonly used utilities across ServerPackCreator.</p></div></div></div></div></div><div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="main-subrow keyValue WithExtraAttributes"><div class=""><span class="inline-flex"><div><u><span>api</span><wbr></wbr><span><span>Properties</span></span></u></div></span></div><div><div class="title"><div data-togglable="Parameters"><p class="paragraph">ServerPackCreator settings.</p></div></div></div></div></div></div></div></div>        </div>
+      </div>
+      <h2 class="tabbedcontent">Constructors</h2>
+      <div class="table" data-togglable="Constructors"><a data-name="1825886096%2FConstructors%2F655084441" anchor-label="MinecraftMeta" id="1825886096%2FConstructors%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
+        <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+          <div class="main-subrow keyValue TabbedContent">
+            <div class=""><span class="inline-flex">
+                <div><a href="-minecraft-meta.html"><span>Minecraft</span><wbr></wbr><span><span>Meta</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1825886096%2FConstructors%2F655084441"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                  <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="-minecraft-meta.html"><span class="token function">MinecraftMeta</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">minecraftManifest<span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/io/File.html">File</a><span class="token punctuation">, </span></span><span class="parameter ">injectedForgeMeta<span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api.versionmeta.forge/-forge-meta/index.html">ForgeMeta</a><span class="token punctuation">, </span></span><span class="parameter ">utilities<span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api.utilities.common/-utilities/index.html">Utilities</a><span class="token punctuation">, </span></span><span class="parameter ">apiProperties<span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api/-api-properties/index.html">ApiProperties</a></span></span><span class="token punctuation">)</span></div></div>                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <h2 class="">Functions</h2>
+      <div class="table" data-togglable="Functions"><a data-name="2042157223%2FFunctions%2F655084441" anchor-label="allAscending" id="2042157223%2FFunctions%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
+        <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="all-ascending.html"><span>all</span><wbr></wbr><span><span>Ascending</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2042157223%2FFunctions%2F655084441"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                  <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="all-ascending.html"><span class="token function">allAscending</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../-minecraft-client/index.html">MinecraftClient</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Get all available Minecraft releases, both releases and pre-releases or snapshots, in ascending order.</p></div></div>                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="-1076547334%2FFunctions%2F655084441" anchor-label="allAscendingArray" id="-1076547334%2FFunctions%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
+        <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="all-ascending-array.html"><span>all</span><wbr></wbr><span>Ascending</span><wbr></wbr><span><span>Array</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1076547334%2FFunctions%2F655084441"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                  <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="all-ascending-array.html"><span class="token function">allAscendingArray</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html">Array</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../-minecraft-client/index.html">MinecraftClient</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Get all available Minecraft releases, both releases and pre-releases or snapshots, in ascending order.</p></div></div>                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="127452995%2FFunctions%2F655084441" anchor-label="allDescending" id="127452995%2FFunctions%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
+        <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="all-descending.html"><span>all</span><wbr></wbr><span><span>Descending</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="127452995%2FFunctions%2F655084441"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                  <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="all-descending.html"><span class="token function">allDescending</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../-minecraft-client/index.html">MinecraftClient</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Get all available Minecraft releases, both releases and pre-releases or snapshots, in descending order.</p></div></div>                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="820904926%2FFunctions%2F655084441" anchor-label="allDescendingArray" id="820904926%2FFunctions%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
+        <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="all-descending-array.html"><span>all</span><wbr></wbr><span>Descending</span><wbr></wbr><span><span>Array</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="820904926%2FFunctions%2F655084441"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                  <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="all-descending-array.html"><span class="token function">allDescendingArray</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html">Array</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../-minecraft-client/index.html">MinecraftClient</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Get all available Minecraft releases, both releases and pre-releases or snapshots, in descending order.</p></div></div>                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="1435323265%2FFunctions%2F1537383562" anchor-label="allVersionsArrayAscending" id="1435323265%2FFunctions%2F1537383562" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain"></a>
+        <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="all-versions-array-ascending.html"><span>all</span><wbr></wbr><span>Versions</span><wbr></wbr><span>Array</span><wbr></wbr><span><span>Ascending</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1435323265%2FFunctions%2F1537383562"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                  <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/commonMain">common</button><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="all-versions-array-ascending.html"><span class="token function">allVersionsArrayAscending</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html">Array</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Get an array of all available Minecraft versions of the <a href="../../de.griefed.serverpackcreator.api.versionmeta/-type/-r-e-l-e-a-s-e/index.html">de.griefed.serverpackcreator.api.versionmeta.Type.RELEASE</a> and <a href="../../de.griefed.serverpackcreator.api.versionmeta/-type/-s-n-a-p-s-h-o-t/index.html">de.griefed.serverpackcreator.api.versionmeta.Type.SNAPSHOT</a> in ascending order.</p></div></div><div class="content sourceset-dependent-content" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">actual </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="all-versions-array-ascending.html"><span class="token function">allVersionsArrayAscending</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html">Array</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Get an array of all available Minecraft versions of the <span data-unresolved-link="de.griefed.serverpackcreator.api.versionmeta/Type.RELEASE///PointingToDeclaration/{&amp;quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&amp;quot;:{&amp;quot;key&amp;quot;:&amp;quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&amp;quot;}}">de.griefed.serverpackcreator.api.versionmeta.Type.RELEASE</span> and <span data-unresolved-link="de.griefed.serverpackcreator.api.versionmeta/Type.SNAPSHOT///PointingToDeclaration/{&amp;quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&amp;quot;:{&amp;quot;key&amp;quot;:&amp;quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&amp;quot;}}">de.griefed.serverpackcreator.api.versionmeta.Type.SNAPSHOT</span> in ascending order.</p></div></div>                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="-1504530519%2FFunctions%2F1537383562" anchor-label="allVersionsArrayDescending" id="-1504530519%2FFunctions%2F1537383562" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain"></a>
+        <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="all-versions-array-descending.html"><span>all</span><wbr></wbr><span>Versions</span><wbr></wbr><span>Array</span><wbr></wbr><span><span>Descending</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1504530519%2FFunctions%2F1537383562"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                  <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/commonMain">common</button><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="all-versions-array-descending.html"><span class="token function">allVersionsArrayDescending</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html">Array</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Get an array of all available Minecraft versions of the <a href="../../de.griefed.serverpackcreator.api.versionmeta/-type/-r-e-l-e-a-s-e/index.html">de.griefed.serverpackcreator.api.versionmeta.Type.RELEASE</a> and <a href="../../de.griefed.serverpackcreator.api.versionmeta/-type/-s-n-a-p-s-h-o-t/index.html">de.griefed.serverpackcreator.api.versionmeta.Type.SNAPSHOT</a> in descending order.</p></div></div><div class="content sourceset-dependent-content" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">actual </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="all-versions-array-descending.html"><span class="token function">allVersionsArrayDescending</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html">Array</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Get an array of all available Minecraft versions of the <span data-unresolved-link="de.griefed.serverpackcreator.api.versionmeta/Type.RELEASE///PointingToDeclaration/{&amp;quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&amp;quot;:{&amp;quot;key&amp;quot;:&amp;quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&amp;quot;}}">de.griefed.serverpackcreator.api.versionmeta.Type.RELEASE</span> and <span data-unresolved-link="de.griefed.serverpackcreator.api.versionmeta/Type.SNAPSHOT///PointingToDeclaration/{&amp;quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&amp;quot;:{&amp;quot;key&amp;quot;:&amp;quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&amp;quot;}}">de.griefed.serverpackcreator.api.versionmeta.Type.SNAPSHOT</span> in descending order.</p></div></div>                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="-1537766750%2FFunctions%2F1537383562" anchor-label="allVersionsAscending" id="-1537766750%2FFunctions%2F1537383562" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain"></a>
+        <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="all-versions-ascending.html"><span>all</span><wbr></wbr><span>Versions</span><wbr></wbr><span><span>Ascending</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1537766750%2FFunctions%2F1537383562"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                  <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/commonMain">common</button><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="all-versions-ascending.html"><span class="token function">allVersionsAscending</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Get a list of all available Minecraft versions of the <a href="../../de.griefed.serverpackcreator.api.versionmeta/-type/-r-e-l-e-a-s-e/index.html">de.griefed.serverpackcreator.api.versionmeta.Type.RELEASE</a> and <a href="../../de.griefed.serverpackcreator.api.versionmeta/-type/-s-n-a-p-s-h-o-t/index.html">de.griefed.serverpackcreator.api.versionmeta.Type.SNAPSHOT</a> in ascending order.</p></div></div><div class="content sourceset-dependent-content" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">actual </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="all-versions-ascending.html"><span class="token function">allVersionsAscending</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Get a list of all available Minecraft versions of the <span data-unresolved-link="de.griefed.serverpackcreator.api.versionmeta/Type.RELEASE///PointingToDeclaration/{&amp;quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&amp;quot;:{&amp;quot;key&amp;quot;:&amp;quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&amp;quot;}}">de.griefed.serverpackcreator.api.versionmeta.Type.RELEASE</span> and <span data-unresolved-link="de.griefed.serverpackcreator.api.versionmeta/Type.SNAPSHOT///PointingToDeclaration/{&amp;quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&amp;quot;:{&amp;quot;key&amp;quot;:&amp;quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&amp;quot;}}">de.griefed.serverpackcreator.api.versionmeta.Type.SNAPSHOT</span> in ascending order.</p></div></div>                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="818959528%2FFunctions%2F1537383562" anchor-label="allVersionsDescending" id="818959528%2FFunctions%2F1537383562" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain"></a>
+        <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="all-versions-descending.html"><span>all</span><wbr></wbr><span>Versions</span><wbr></wbr><span><span>Descending</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="818959528%2FFunctions%2F1537383562"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                  <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/commonMain">common</button><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="all-versions-descending.html"><span class="token function">allVersionsDescending</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Get a list of all available Minecraft versions of the <a href="../../de.griefed.serverpackcreator.api.versionmeta/-type/-r-e-l-e-a-s-e/index.html">de.griefed.serverpackcreator.api.versionmeta.Type.RELEASE</a> and <a href="../../de.griefed.serverpackcreator.api.versionmeta/-type/-s-n-a-p-s-h-o-t/index.html">de.griefed.serverpackcreator.api.versionmeta.Type.SNAPSHOT</a> in descending order.</p></div></div><div class="content sourceset-dependent-content" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">actual </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="all-versions-descending.html"><span class="token function">allVersionsDescending</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Get a list of all available Minecraft versions of the <span data-unresolved-link="de.griefed.serverpackcreator.api.versionmeta/Type.RELEASE///PointingToDeclaration/{&amp;quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&amp;quot;:{&amp;quot;key&amp;quot;:&amp;quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&amp;quot;}}">de.griefed.serverpackcreator.api.versionmeta.Type.RELEASE</span> and <span data-unresolved-link="de.griefed.serverpackcreator.api.versionmeta/Type.SNAPSHOT///PointingToDeclaration/{&amp;quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&amp;quot;:{&amp;quot;key&amp;quot;:&amp;quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&amp;quot;}}">de.griefed.serverpackcreator.api.versionmeta.Type.SNAPSHOT</span> in descending order.</p></div></div>                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="-2123658135%2FFunctions%2F655084441" anchor-label="getClient" id="-2123658135%2FFunctions%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
+        <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="get-client.html"><span>get</span><wbr></wbr><span><span>Client</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2123658135%2FFunctions%2F655084441"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                  <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="get-client.html"><span class="token function">getClient</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">minecraftVersion<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Optional.html">Optional</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../-minecraft-client/index.html">MinecraftClient</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Get a specific Minecraft client as a <a href="../-minecraft-client/index.html">MinecraftClient</a> wrapped in an <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Optional.html">Optional</a>.</p></div></div>                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="1653239265%2FFunctions%2F655084441" anchor-label="getServer" id="1653239265%2FFunctions%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
+        <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="get-server.html"><span>get</span><wbr></wbr><span><span>Server</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1653239265%2FFunctions%2F655084441"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                  <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="get-server.html"><span class="token function">getServer</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">minecraftVersion<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Optional.html">Optional</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../-minecraft-server/index.html">MinecraftServer</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Get a specific <a href="../-minecraft-server/index.html">MinecraftServer</a> for the specified Minecraft-version, wrapped in an <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Optional.html">Optional</a>.</p></div></div>                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="-636011588%2FFunctions%2F1537383562" anchor-label="isMinecraftVersionAvailable" id="-636011588%2FFunctions%2F1537383562" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain"></a>
+        <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="is-minecraft-version-available.html"><span>is</span><wbr></wbr><span>Minecraft</span><wbr></wbr><span>Version</span><wbr></wbr><span><span>Available</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-636011588%2FFunctions%2F1537383562"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                  <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/commonMain">common</button><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="is-minecraft-version-available.html"><span class="token function">isMinecraftVersionAvailable</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">minecraftVersion<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Check whether a client is available for the specified Minecraft-version.</p></div></div><div class="content sourceset-dependent-content" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">actual </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="is-minecraft-version-available.html"><span class="token function">isMinecraftVersionAvailable</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">minecraftVersion<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Check whether a <a href="../-minecraft-client/index.html">MinecraftClient</a> is available for the specified Minecraft-version.</p></div></div>                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="-1448716124%2FFunctions%2F1537383562" anchor-label="isServerAvailable" id="-1448716124%2FFunctions%2F1537383562" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain"></a>
+        <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="is-server-available.html"><span>is</span><wbr></wbr><span>Server</span><wbr></wbr><span><span>Available</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1448716124%2FFunctions%2F1537383562"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                  <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/commonMain">common</button><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="is-server-available.html"><span class="token function">isServerAvailable</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">minecraftVersion<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Check whether a server is available for the specified Minecraft-version.</p></div></div><div class="content sourceset-dependent-content" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">actual </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="is-server-available.html"><span class="token function">isServerAvailable</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">minecraftVersion<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Check whether a <a href="../-minecraft-server/index.html">MinecraftServer</a> is available for the specified Minecraft-version.</p></div></div>                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="-930406884%2FFunctions%2F655084441" anchor-label="latestRelease" id="-930406884%2FFunctions%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
+        <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="latest-release.html"><span>latest</span><wbr></wbr><span><span>Release</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-930406884%2FFunctions%2F655084441"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                  <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="latest-release.html"><span class="token function">latestRelease</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-minecraft-client/index.html">MinecraftClient</a></div><div class="brief "><p class="paragraph">Get the latest Minecraft release as a <a href="../-minecraft-client/index.html">MinecraftClient</a>.</p></div></div>                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="-247462695%2FFunctions%2F655084441" anchor-label="latestReleaseServer" id="-247462695%2FFunctions%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
+        <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="latest-release-server.html"><span>latest</span><wbr></wbr><span>Release</span><wbr></wbr><span><span>Server</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-247462695%2FFunctions%2F655084441"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                  <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="latest-release-server.html"><span class="token function">latestReleaseServer</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-minecraft-server/index.html">MinecraftServer</a></div><div class="brief "><p class="paragraph">Get the latest <a href="../-minecraft-server/index.html">MinecraftServer</a> of the <span data-unresolved-link="de.griefed.serverpackcreator.api.versionmeta/Type.RELEASE///PointingToDeclaration/{&amp;quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&amp;quot;:{&amp;quot;key&amp;quot;:&amp;quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&amp;quot;}}">de.griefed.serverpackcreator.api.versionmeta.Type.RELEASE</span>, wrapped in an <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Optional.html">Optional</a>.</p></div></div>                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="-590395725%2FFunctions%2F655084441" anchor-label="latestSnapshot" id="-590395725%2FFunctions%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
+        <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="latest-snapshot.html"><span>latest</span><wbr></wbr><span><span>Snapshot</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-590395725%2FFunctions%2F655084441"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                  <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="latest-snapshot.html"><span class="token function">latestSnapshot</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-minecraft-client/index.html">MinecraftClient</a></div><div class="brief "><p class="paragraph">Get the latest Minecraft snapshot as a <a href="../-minecraft-client/index.html">MinecraftClient</a>.</p></div></div>                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="-275570640%2FFunctions%2F655084441" anchor-label="latestSnapshotServer" id="-275570640%2FFunctions%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
+        <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="latest-snapshot-server.html"><span>latest</span><wbr></wbr><span>Snapshot</span><wbr></wbr><span><span>Server</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-275570640%2FFunctions%2F655084441"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                  <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="latest-snapshot-server.html"><span class="token function">latestSnapshotServer</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-minecraft-server/index.html">MinecraftServer</a></div><div class="brief "><p class="paragraph">Get the latest <a href="../-minecraft-server/index.html">MinecraftServer</a> of the <span data-unresolved-link="de.griefed.serverpackcreator.api.versionmeta/Type.SNAPSHOT///PointingToDeclaration/{&amp;quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&amp;quot;:{&amp;quot;key&amp;quot;:&amp;quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&amp;quot;}}">de.griefed.serverpackcreator.api.versionmeta.Type.SNAPSHOT</span>, wrapped in an <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Optional.html">Optional</a>.</p></div></div>                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="1031268147%2FFunctions%2F655084441" anchor-label="releasesArrayAscending" id="1031268147%2FFunctions%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
+        <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="releases-array-ascending.html"><span>releases</span><wbr></wbr><span>Array</span><wbr></wbr><span><span>Ascending</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1031268147%2FFunctions%2F655084441"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                  <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="releases-array-ascending.html"><span class="token function">releasesArrayAscending</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html">Array</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../-minecraft-client/index.html">MinecraftClient</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Get an array of all available <a href="../-minecraft-client/index.html">MinecraftClient</a> of the <span data-unresolved-link="de.griefed.serverpackcreator.api.versionmeta/Type.RELEASE///PointingToDeclaration/{&amp;quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&amp;quot;:{&amp;quot;key&amp;quot;:&amp;quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&amp;quot;}}">de.griefed.serverpackcreator.api.versionmeta.Type.RELEASE</span>, in descending order.</p></div></div>                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="-1145337289%2FFunctions%2F655084441" anchor-label="releasesArrayDescending" id="-1145337289%2FFunctions%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
+        <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="releases-array-descending.html"><span>releases</span><wbr></wbr><span>Array</span><wbr></wbr><span><span>Descending</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1145337289%2FFunctions%2F655084441"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                  <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="releases-array-descending.html"><span class="token function">releasesArrayDescending</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html">Array</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../-minecraft-client/index.html">MinecraftClient</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Get an array of all available <a href="../-minecraft-client/index.html">MinecraftClient</a> of the <span data-unresolved-link="de.griefed.serverpackcreator.api.versionmeta/Type.RELEASE///PointingToDeclaration/{&amp;quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&amp;quot;:{&amp;quot;key&amp;quot;:&amp;quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&amp;quot;}}">de.griefed.serverpackcreator.api.versionmeta.Type.RELEASE</span>, in ascending order.</p></div></div>                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="-974985296%2FFunctions%2F655084441" anchor-label="releasesAscending" id="-974985296%2FFunctions%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
+        <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="releases-ascending.html"><span>releases</span><wbr></wbr><span><span>Ascending</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-974985296%2FFunctions%2F655084441"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                  <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="releases-ascending.html"><span class="token function">releasesAscending</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../-minecraft-client/index.html">MinecraftClient</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Get a list of all available <a href="../-minecraft-client/index.html">MinecraftClient</a> of the <span data-unresolved-link="de.griefed.serverpackcreator.api.versionmeta/Type.RELEASE///PointingToDeclaration/{&amp;quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&amp;quot;:{&amp;quot;key&amp;quot;:&amp;quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&amp;quot;}}">de.griefed.serverpackcreator.api.versionmeta.Type.RELEASE</span>, in descending order.</p></div></div>                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="1085315418%2FFunctions%2F655084441" anchor-label="releasesDescending" id="1085315418%2FFunctions%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
+        <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="releases-descending.html"><span>releases</span><wbr></wbr><span><span>Descending</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1085315418%2FFunctions%2F655084441"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                  <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="releases-descending.html"><span class="token function">releasesDescending</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../-minecraft-client/index.html">MinecraftClient</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Get a list of all available <a href="../-minecraft-client/index.html">MinecraftClient</a> of the <span data-unresolved-link="de.griefed.serverpackcreator.api.versionmeta/Type.RELEASE///PointingToDeclaration/{&amp;quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&amp;quot;:{&amp;quot;key&amp;quot;:&amp;quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&amp;quot;}}">de.griefed.serverpackcreator.api.versionmeta.Type.RELEASE</span>, in ascending order.</p></div></div>                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="-1693752391%2FFunctions%2F655084441" anchor-label="releasesServersArrayAscending" id="-1693752391%2FFunctions%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
+        <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="releases-servers-array-ascending.html"><span>releases</span><wbr></wbr><span>Servers</span><wbr></wbr><span>Array</span><wbr></wbr><span><span>Ascending</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1693752391%2FFunctions%2F655084441"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                  <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="releases-servers-array-ascending.html"><span class="token function">releasesServersArrayAscending</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html">Array</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../-minecraft-server/index.html">MinecraftServer</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Get an array of all available <a href="../-minecraft-server/index.html">MinecraftServer</a> of the <span data-unresolved-link="de.griefed.serverpackcreator.api.versionmeta/Type.RELEASE///PointingToDeclaration/{&amp;quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&amp;quot;:{&amp;quot;key&amp;quot;:&amp;quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&amp;quot;}}">de.griefed.serverpackcreator.api.versionmeta.Type.RELEASE</span>, in ascending order.</p></div></div>                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="278371953%2FFunctions%2F655084441" anchor-label="releasesServersArrayDescending" id="278371953%2FFunctions%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
+        <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="releases-servers-array-descending.html"><span>releases</span><wbr></wbr><span>Servers</span><wbr></wbr><span>Array</span><wbr></wbr><span><span>Descending</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="278371953%2FFunctions%2F655084441"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                  <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="releases-servers-array-descending.html"><span class="token function">releasesServersArrayDescending</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html">Array</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../-minecraft-server/index.html">MinecraftServer</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Get an array of all available <a href="../-minecraft-server/index.html">MinecraftServer</a> of the <span data-unresolved-link="de.griefed.serverpackcreator.api.versionmeta/Type.RELEASE///PointingToDeclaration/{&amp;quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&amp;quot;:{&amp;quot;key&amp;quot;:&amp;quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&amp;quot;}}">de.griefed.serverpackcreator.api.versionmeta.Type.RELEASE</span>, in descending order.</p></div></div>                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="-1517736086%2FFunctions%2F655084441" anchor-label="releasesServersAscending" id="-1517736086%2FFunctions%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
+        <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="releases-servers-ascending.html"><span>releases</span><wbr></wbr><span>Servers</span><wbr></wbr><span><span>Ascending</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1517736086%2FFunctions%2F655084441"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                  <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="releases-servers-ascending.html"><span class="token function">releasesServersAscending</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../-minecraft-server/index.html">MinecraftServer</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Get a list of all available <a href="../-minecraft-server/index.html">MinecraftServer</a> of the <span data-unresolved-link="de.griefed.serverpackcreator.api.versionmeta/Type.RELEASE///PointingToDeclaration/{&amp;quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&amp;quot;:{&amp;quot;key&amp;quot;:&amp;quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&amp;quot;}}">de.griefed.serverpackcreator.api.versionmeta.Type.RELEASE</span>, in ascending order.</p></div></div>                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="1439910112%2FFunctions%2F655084441" anchor-label="releasesServersDescending" id="1439910112%2FFunctions%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
+        <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="releases-servers-descending.html"><span>releases</span><wbr></wbr><span>Servers</span><wbr></wbr><span><span>Descending</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1439910112%2FFunctions%2F655084441"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                  <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="releases-servers-descending.html"><span class="token function">releasesServersDescending</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../-minecraft-server/index.html">MinecraftServer</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Get a list of all available <a href="../-minecraft-server/index.html">MinecraftServer</a> of the <span data-unresolved-link="de.griefed.serverpackcreator.api.versionmeta/Type.RELEASE///PointingToDeclaration/{&amp;quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&amp;quot;:{&amp;quot;key&amp;quot;:&amp;quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&amp;quot;}}">de.griefed.serverpackcreator.api.versionmeta.Type.RELEASE</span>, in descending order.</p></div></div>                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="1725175003%2FFunctions%2F1537383562" anchor-label="releaseVersionsArrayAscending" id="1725175003%2FFunctions%2F1537383562" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain"></a>
+        <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="release-versions-array-ascending.html"><span>release</span><wbr></wbr><span>Versions</span><wbr></wbr><span>Array</span><wbr></wbr><span><span>Ascending</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1725175003%2FFunctions%2F1537383562"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                  <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/commonMain">common</button><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="release-versions-array-ascending.html"><span class="token function">releaseVersionsArrayAscending</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html">Array</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Get the array of available Minecraft version of the <a href="../../de.griefed.serverpackcreator.api.versionmeta/-type/-r-e-l-e-a-s-e/index.html">de.griefed.serverpackcreator.api.versionmeta.Type.RELEASE</a> in ascending order.</p></div></div><div class="content sourceset-dependent-content" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">actual </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="release-versions-array-ascending.html"><span class="token function">releaseVersionsArrayAscending</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html">Array</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Get the array of available Minecraft version of the <span data-unresolved-link="de.griefed.serverpackcreator.api.versionmeta/Type.RELEASE///PointingToDeclaration/{&amp;quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&amp;quot;:{&amp;quot;key&amp;quot;:&amp;quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&amp;quot;}}">de.griefed.serverpackcreator.api.versionmeta.Type.RELEASE</span> in ascending order.</p></div></div>                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="-1109061233%2FFunctions%2F1537383562" anchor-label="releaseVersionsArrayDescending" id="-1109061233%2FFunctions%2F1537383562" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain"></a>
+        <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="release-versions-array-descending.html"><span>release</span><wbr></wbr><span>Versions</span><wbr></wbr><span>Array</span><wbr></wbr><span><span>Descending</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1109061233%2FFunctions%2F1537383562"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                  <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/commonMain">common</button><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="release-versions-array-descending.html"><span class="token function">releaseVersionsArrayDescending</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html">Array</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Get the array of available Minecraft version of the <a href="../../de.griefed.serverpackcreator.api.versionmeta/-type/-r-e-l-e-a-s-e/index.html">de.griefed.serverpackcreator.api.versionmeta.Type.RELEASE</a> in descending order.</p></div></div><div class="content sourceset-dependent-content" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">actual </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="release-versions-array-descending.html"><span class="token function">releaseVersionsArrayDescending</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html">Array</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Get the array of available Minecraft version of the <span data-unresolved-link="de.griefed.serverpackcreator.api.versionmeta/Type.RELEASE///PointingToDeclaration/{&amp;quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&amp;quot;:{&amp;quot;key&amp;quot;:&amp;quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&amp;quot;}}">de.griefed.serverpackcreator.api.versionmeta.Type.RELEASE</span> in descending order.</p></div></div>                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="-365244152%2FFunctions%2F1537383562" anchor-label="releaseVersionsAscending" id="-365244152%2FFunctions%2F1537383562" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain"></a>
+        <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="release-versions-ascending.html"><span>release</span><wbr></wbr><span>Versions</span><wbr></wbr><span><span>Ascending</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-365244152%2FFunctions%2F1537383562"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                  <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/commonMain">common</button><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="release-versions-ascending.html"><span class="token function">releaseVersionsAscending</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Get the list of available Minecraft version of the <a href="../../de.griefed.serverpackcreator.api.versionmeta/-type/-r-e-l-e-a-s-e/index.html">de.griefed.serverpackcreator.api.versionmeta.Type.RELEASE</a> in ascending order.</p></div></div><div class="content sourceset-dependent-content" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">actual </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="release-versions-ascending.html"><span class="token function">releaseVersionsAscending</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Get the list of available Minecraft version of the <span data-unresolved-link="de.griefed.serverpackcreator.api.versionmeta/Type.RELEASE///PointingToDeclaration/{&amp;quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&amp;quot;:{&amp;quot;key&amp;quot;:&amp;quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&amp;quot;}}">de.griefed.serverpackcreator.api.versionmeta.Type.RELEASE</span> in ascending order.</p></div></div>                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="-1487545598%2FFunctions%2F1537383562" anchor-label="releaseVersionsDescending" id="-1487545598%2FFunctions%2F1537383562" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain"></a>
+        <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="release-versions-descending.html"><span>release</span><wbr></wbr><span>Versions</span><wbr></wbr><span><span>Descending</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1487545598%2FFunctions%2F1537383562"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                  <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/commonMain">common</button><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="release-versions-descending.html"><span class="token function">releaseVersionsDescending</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Get the list of available Minecraft version of the <a href="../../de.griefed.serverpackcreator.api.versionmeta/-type/-r-e-l-e-a-s-e/index.html">de.griefed.serverpackcreator.api.versionmeta.Type.RELEASE</a> in descending order.</p></div></div><div class="content sourceset-dependent-content" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">actual </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="release-versions-descending.html"><span class="token function">releaseVersionsDescending</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Get the list of available Minecraft version of the <span data-unresolved-link="de.griefed.serverpackcreator.api.versionmeta/Type.RELEASE///PointingToDeclaration/{&amp;quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&amp;quot;:{&amp;quot;key&amp;quot;:&amp;quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&amp;quot;}}">de.griefed.serverpackcreator.api.versionmeta.Type.RELEASE</span> in descending order.</p></div></div>                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="440682510%2FFunctions%2F655084441" anchor-label="snapshotsArrayAscending" id="440682510%2FFunctions%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
+        <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="snapshots-array-ascending.html"><span>snapshots</span><wbr></wbr><span>Array</span><wbr></wbr><span><span>Ascending</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="440682510%2FFunctions%2F655084441"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                  <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="snapshots-array-ascending.html"><span class="token function">snapshotsArrayAscending</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html">Array</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../-minecraft-client/index.html">MinecraftClient</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Get an array of all available <a href="../-minecraft-client/index.html">MinecraftClient</a> of the <span data-unresolved-link="de.griefed.serverpackcreator.api.versionmeta/Type.SNAPSHOT///PointingToDeclaration/{&amp;quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&amp;quot;:{&amp;quot;key&amp;quot;:&amp;quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&amp;quot;}}">de.griefed.serverpackcreator.api.versionmeta.Type.SNAPSHOT</span>, in descending order.</p></div></div>                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="2021344444%2FFunctions%2F655084441" anchor-label="snapshotsArrayDescending" id="2021344444%2FFunctions%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
+        <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="snapshots-array-descending.html"><span>snapshots</span><wbr></wbr><span>Array</span><wbr></wbr><span><span>Descending</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2021344444%2FFunctions%2F655084441"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                  <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="snapshots-array-descending.html"><span class="token function">snapshotsArrayDescending</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html">Array</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../-minecraft-client/index.html">MinecraftClient</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Get an array of all available <a href="../-minecraft-client/index.html">MinecraftClient</a> of the <span data-unresolved-link="de.griefed.serverpackcreator.api.versionmeta/Type.SNAPSHOT///PointingToDeclaration/{&amp;quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&amp;quot;:{&amp;quot;key&amp;quot;:&amp;quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&amp;quot;}}">de.griefed.serverpackcreator.api.versionmeta.Type.SNAPSHOT</span>, in ascending order.</p></div></div>                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="-1852954123%2FFunctions%2F655084441" anchor-label="snapshotsAscending" id="-1852954123%2FFunctions%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
+        <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="snapshots-ascending.html"><span>snapshots</span><wbr></wbr><span><span>Ascending</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1852954123%2FFunctions%2F655084441"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                  <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="snapshots-ascending.html"><span class="token function">snapshotsAscending</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../-minecraft-client/index.html">MinecraftClient</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Get a list of all available <a href="../-minecraft-client/index.html">MinecraftClient</a> of the <span data-unresolved-link="de.griefed.serverpackcreator.api.versionmeta/Type.SNAPSHOT///PointingToDeclaration/{&amp;quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&amp;quot;:{&amp;quot;key&amp;quot;:&amp;quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&amp;quot;}}">de.griefed.serverpackcreator.api.versionmeta.Type.SNAPSHOT</span>, in descending order.</p></div></div>                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="-361914443%2FFunctions%2F655084441" anchor-label="snapshotsDescending" id="-361914443%2FFunctions%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
+        <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="snapshots-descending.html"><span>snapshots</span><wbr></wbr><span><span>Descending</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-361914443%2FFunctions%2F655084441"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                  <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="snapshots-descending.html"><span class="token function">snapshotsDescending</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../-minecraft-client/index.html">MinecraftClient</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Get a list of all available <a href="../-minecraft-client/index.html">MinecraftClient</a> of the <span data-unresolved-link="de.griefed.serverpackcreator.api.versionmeta/Type.SNAPSHOT///PointingToDeclaration/{&amp;quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&amp;quot;:{&amp;quot;key&amp;quot;:&amp;quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&amp;quot;}}">de.griefed.serverpackcreator.api.versionmeta.Type.SNAPSHOT</span>, in ascending order.</p></div></div>                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="1328834174%2FFunctions%2F655084441" anchor-label="snapshotsServersArrayAscending" id="1328834174%2FFunctions%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
+        <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="snapshots-servers-array-ascending.html"><span>snapshots</span><wbr></wbr><span>Servers</span><wbr></wbr><span>Array</span><wbr></wbr><span><span>Ascending</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1328834174%2FFunctions%2F655084441"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                  <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="snapshots-servers-array-ascending.html"><span class="token function">snapshotsServersArrayAscending</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html">Array</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../-minecraft-server/index.html">MinecraftServer</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Get an array of all available <a href="../-minecraft-server/index.html">MinecraftServer</a> of the <span data-unresolved-link="de.griefed.serverpackcreator.api.versionmeta/Type.SNAPSHOT///PointingToDeclaration/{&amp;quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&amp;quot;:{&amp;quot;key&amp;quot;:&amp;quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&amp;quot;}}">de.griefed.serverpackcreator.api.versionmeta.Type.SNAPSHOT</span>, in descending order.</p></div></div>                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="-510725044%2FFunctions%2F655084441" anchor-label="snapshotsServersArrayDescending" id="-510725044%2FFunctions%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
+        <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="snapshots-servers-array-descending.html"><span>snapshots</span><wbr></wbr><span>Servers</span><wbr></wbr><span>Array</span><wbr></wbr><span><span>Descending</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-510725044%2FFunctions%2F655084441"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                  <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="snapshots-servers-array-descending.html"><span class="token function">snapshotsServersArrayDescending</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html">Array</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../-minecraft-server/index.html">MinecraftServer</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Get an array of all available <a href="../-minecraft-server/index.html">MinecraftServer</a> of the <span data-unresolved-link="de.griefed.serverpackcreator.api.versionmeta/Type.SNAPSHOT///PointingToDeclaration/{&amp;quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&amp;quot;:{&amp;quot;key&amp;quot;:&amp;quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&amp;quot;}}">de.griefed.serverpackcreator.api.versionmeta.Type.SNAPSHOT</span>, in ascending order.</p></div></div>                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="-2134850171%2FFunctions%2F655084441" anchor-label="snapshotsServersAscending" id="-2134850171%2FFunctions%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
+        <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="snapshots-servers-ascending.html"><span>snapshots</span><wbr></wbr><span>Servers</span><wbr></wbr><span><span>Ascending</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2134850171%2FFunctions%2F655084441"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                  <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="snapshots-servers-ascending.html"><span class="token function">snapshotsServersAscending</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../-minecraft-server/index.html">MinecraftServer</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Get a list of all available <a href="../-minecraft-server/index.html">MinecraftServer</a> of the <span data-unresolved-link="de.griefed.serverpackcreator.api.versionmeta/Type.SNAPSHOT///PointingToDeclaration/{&amp;quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&amp;quot;:{&amp;quot;key&amp;quot;:&amp;quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&amp;quot;}}">de.griefed.serverpackcreator.api.versionmeta.Type.SNAPSHOT</span>, in descending order.</p></div></div>                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="-510757339%2FFunctions%2F655084441" anchor-label="snapshotsServersDescending" id="-510757339%2FFunctions%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
+        <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="snapshots-servers-descending.html"><span>snapshots</span><wbr></wbr><span>Servers</span><wbr></wbr><span><span>Descending</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-510757339%2FFunctions%2F655084441"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                  <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="snapshots-servers-descending.html"><span class="token function">snapshotsServersDescending</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../-minecraft-server/index.html">MinecraftServer</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Get a list of all available <a href="../-minecraft-server/index.html">MinecraftServer</a> of the <span data-unresolved-link="de.griefed.serverpackcreator.api.versionmeta/Type.SNAPSHOT///PointingToDeclaration/{&amp;quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&amp;quot;:{&amp;quot;key&amp;quot;:&amp;quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&amp;quot;}}">de.griefed.serverpackcreator.api.versionmeta.Type.SNAPSHOT</span>, in descending order.</p></div></div>                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="452794272%2FFunctions%2F1537383562" anchor-label="snapshotVersionsArrayAscending" id="452794272%2FFunctions%2F1537383562" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain"></a>
+        <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="snapshot-versions-array-ascending.html"><span>snapshot</span><wbr></wbr><span>Versions</span><wbr></wbr><span>Array</span><wbr></wbr><span><span>Ascending</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="452794272%2FFunctions%2F1537383562"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                  <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/commonMain">common</button><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="snapshot-versions-array-ascending.html"><span class="token function">snapshotVersionsArrayAscending</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html">Array</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Get the array of available Minecraft version of the <a href="../../de.griefed.serverpackcreator.api.versionmeta/-type/-s-n-a-p-s-h-o-t/index.html">de.griefed.serverpackcreator.api.versionmeta.Type.SNAPSHOT</a> in ascending order.</p></div></div><div class="content sourceset-dependent-content" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">actual </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="snapshot-versions-array-ascending.html"><span class="token function">snapshotVersionsArrayAscending</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html">Array</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Get the array of available Minecraft version of the <span data-unresolved-link="de.griefed.serverpackcreator.api.versionmeta/Type.SNAPSHOT///PointingToDeclaration/{&amp;quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&amp;quot;:{&amp;quot;key&amp;quot;:&amp;quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&amp;quot;}}">de.griefed.serverpackcreator.api.versionmeta.Type.SNAPSHOT</span> in ascending order.</p></div></div>                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="-1898158230%2FFunctions%2F1537383562" anchor-label="snapshotVersionsArrayDescending" id="-1898158230%2FFunctions%2F1537383562" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain"></a>
+        <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="snapshot-versions-array-descending.html"><span>snapshot</span><wbr></wbr><span>Versions</span><wbr></wbr><span>Array</span><wbr></wbr><span><span>Descending</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1898158230%2FFunctions%2F1537383562"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                  <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/commonMain">common</button><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="snapshot-versions-array-descending.html"><span class="token function">snapshotVersionsArrayDescending</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html">Array</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Get the array of available Minecraft version of the <a href="../../de.griefed.serverpackcreator.api.versionmeta/-type/-s-n-a-p-s-h-o-t/index.html">de.griefed.serverpackcreator.api.versionmeta.Type.SNAPSHOT</a> in descending order.</p></div></div><div class="content sourceset-dependent-content" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">actual </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="snapshot-versions-array-descending.html"><span class="token function">snapshotVersionsArrayDescending</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html">Array</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Get the array of available Minecraft version of the <span data-unresolved-link="de.griefed.serverpackcreator.api.versionmeta/Type.SNAPSHOT///PointingToDeclaration/{&amp;quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&amp;quot;:{&amp;quot;key&amp;quot;:&amp;quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&amp;quot;}}">de.griefed.serverpackcreator.api.versionmeta.Type.SNAPSHOT</span> in descending order.</p></div></div>                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="-982358237%2FFunctions%2F1537383562" anchor-label="snapshotVersionsAscending" id="-982358237%2FFunctions%2F1537383562" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain"></a>
+        <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="snapshot-versions-ascending.html"><span>snapshot</span><wbr></wbr><span>Versions</span><wbr></wbr><span><span>Ascending</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-982358237%2FFunctions%2F1537383562"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                  <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/commonMain">common</button><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="snapshot-versions-ascending.html"><span class="token function">snapshotVersionsAscending</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Get the list of available Minecraft version of the <a href="../../de.griefed.serverpackcreator.api.versionmeta/-type/-s-n-a-p-s-h-o-t/index.html">de.griefed.serverpackcreator.api.versionmeta.Type.SNAPSHOT</a> in ascending order.</p></div></div><div class="content sourceset-dependent-content" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">actual </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="snapshot-versions-ascending.html"><span class="token function">snapshotVersionsAscending</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Get the list of available Minecraft version of the <span data-unresolved-link="de.griefed.serverpackcreator.api.versionmeta/Type.SNAPSHOT///PointingToDeclaration/{&amp;quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&amp;quot;:{&amp;quot;key&amp;quot;:&amp;quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&amp;quot;}}">de.griefed.serverpackcreator.api.versionmeta.Type.SNAPSHOT</span> in ascending order.</p></div></div>                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="856754247%2FFunctions%2F1537383562" anchor-label="snapshotVersionsDescending" id="856754247%2FFunctions%2F1537383562" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain"></a>
+        <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="snapshot-versions-descending.html"><span>snapshot</span><wbr></wbr><span>Versions</span><wbr></wbr><span><span>Descending</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="856754247%2FFunctions%2F1537383562"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                  <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/commonMain">common</button><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="snapshot-versions-descending.html"><span class="token function">snapshotVersionsDescending</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Get the list of available Minecraft version of the <a href="../../de.griefed.serverpackcreator.api.versionmeta/-type/-s-n-a-p-s-h-o-t/index.html">de.griefed.serverpackcreator.api.versionmeta.Type.SNAPSHOT</a> in descending order.</p></div></div><div class="content sourceset-dependent-content" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">actual </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="snapshot-versions-descending.html"><span class="token function">snapshotVersionsDescending</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Get the list of available Minecraft version of the <span data-unresolved-link="de.griefed.serverpackcreator.api.versionmeta/Type.SNAPSHOT///PointingToDeclaration/{&amp;quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&amp;quot;:{&amp;quot;key&amp;quot;:&amp;quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&amp;quot;}}">de.griefed.serverpackcreator.api.versionmeta.Type.SNAPSHOT</span> in descending order.</p></div></div>                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="-233621739%2FFunctions%2F655084441" anchor-label="update" id="-233621739%2FFunctions%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
+        <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="update.html"><span><span>update</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-233621739%2FFunctions%2F655084441"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                  <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="update.html"><span class="token function">update</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Update the <span data-unresolved-link="de.griefed.serverpackcreator.api.versionmeta.minecraft/MinecraftClientMeta///PointingToDeclaration/">MinecraftClientMeta</span> and <span data-unresolved-link="de.griefed.serverpackcreator.api.versionmeta.minecraft/MinecraftServerMeta///PointingToDeclaration/">MinecraftServerMeta</span>. Usually called after the manifest-files have been refreshed.</p></div></div>                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      <div class="footer">
+        <span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>© 2023 Copyright</span><span
+                class="pull-right"><span>Generated by </span><a
+                href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span>
+      </div>
+    </div>
+</div>
+</body>
+</html>

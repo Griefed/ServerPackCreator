@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>de.griefed.serverpackcreator.api.utilities</title>
+    <link href="../../images/logo-icon.svg" rel="icon" type="image/svg">
+    <script>var pathToRoot = "../../";</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+    if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    } else {
+        const savedDarkMode = JSON.parse(storage)
+        if(savedDarkMode === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    }
+    </script>
+<script type="text/javascript" src="../../scripts/sourceset_dependencies.js" async="async"></script>
+<link href="../../styles/style.css" rel="Stylesheet">
+<link href="../../styles/jetbrains-mono.css" rel="Stylesheet">
+<link href="../../styles/main.css" rel="Stylesheet">
+<link href="../../styles/prism.css" rel="Stylesheet">
+<link href="../../styles/logo-styles.css" rel="Stylesheet">
+<script type="text/javascript" src="../../scripts/clipboard.js" async="async"></script>
+<script type="text/javascript" src="../../scripts/navigation-loader.js" async="async"></script>
+<script type="text/javascript" src="../../scripts/platform-content-handler.js" async="async"></script>
+<script type="text/javascript" src="../../scripts/main.js" defer="defer"></script>
+<script type="text/javascript" src="../../scripts/prism.js" async="async"></script>
+<script type="text/javascript" src="../../scripts/symbol-parameters-wrapper_deferred.js" defer="defer"></script>
+</head>
+<body>
+<div class="navigation-wrapper" id="navigation-wrapper">
+    <div id="leftToggler"><span class="icon-toggler"></span></div>
+    <div class="library-name">
+            <a href="../../index.html">
+                    <span>serverpackcreator-api</span>
+            </a>
+    </div>
+    <div>
+    </div>
+    <div class="pull-right d-flex">
+        <div class="filter-section" id="filter-section">
+                <button class="platform-tag platform-selector common-like" data-active="" data-filter=":serverpackcreator-api:dokkaHtml/commonMain">common</button>
+                <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button>
+        </div>
+        <button id="theme-toggle-button"><span id="theme-toggle"></span></button>
+        <div id="searchBar"></div>
+    </div>
+</div>
+<div id="container">
+    <div id="leftColumn">
+        <div id="sideMenu"></div>
+    </div>
+    <div id="main">
+<div class="main-content" id="content" pageIds="serverpackcreator-api::de.griefed.serverpackcreator.api.utilities////PointingToDeclaration//1537383562">
+  <div class="breadcrumbs"><a href="../../index.html">serverpackcreator-api</a><span class="delimiter">/</span><span class="current">de.griefed.serverpackcreator.api.utilities</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span><span>Package-level</span></span> <span><span>declarations</span></span></h1>
+    <div class="platform-hinted UnderCoverText with-platform-tabs" data-platform-hinted="data-platform-hinted">
+      <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/commonMain">common</button><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><p class="paragraph">The utilities package holds classes and methods for various useful bits and pieces used all throughout ServerPackCreator. If any given method is helpful in multiple steps throughout the ServerPackCreator architecture, it usually belongs to one of the utility classes.</p><p class="paragraph">Such utilities include, but are not limited to converting Strings to booleans, encapsulating each entry in a String list with quotation-marks, downloading files, copying files and folders from a JAR-file and so on and so forth.</p><p class="paragraph">Basically, whenever a method in any SeverPackCreator class becomes useful to multiple classes, it is usually moved into any already existing utility-class or a new one is added if no already-fitting one exists.</p></div><div class="content sourceset-dependent-content" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><p class="paragraph">The utilities package holds classes and methods for various useful bits and pieces used all throughout ServerPackCreator. If any given method is helpful in multiple steps throughout the ServerPackCreator architecture, it usually belongs to one of the utility classes.</p><p class="paragraph">Such utilities include, but are not limited to converting Strings to booleans, encapsulating each entry in a String list with quotation-marks, downloading files, copying files and folders from a JAR-file and so on and so forth.</p><p class="paragraph">Basically, whenever a method in any SeverPackCreator class becomes useful to multiple classes, it is usually moved into any already existing utility-class or a new one is added if no already-fitting one exists.</p></div>    </div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="Types">Types</button></div>
+    <div class="tabs-section-body">
+      <h2 class="">Types</h2>
+      <div class="table" data-togglable="Types"><a data-name="846371237%2FClasslikes%2F1537383562" anchor-label="CommentedConfig" id="846371237%2FClasslikes%2F1537383562" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain"></a>
+        <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="-commented-config/index.html"><span>Commented</span><wbr></wbr><span><span>Config</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="846371237%2FClasslikes%2F1537383562"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                  <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/commonMain">common</button><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword">interface </span><a href="-commented-config/index.html">CommentedConfig</a></div><div class="brief "><p class="paragraph">A modifiable config that supports comments.</p></div></div><div class="content sourceset-dependent-content" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">actual </span><span class="token keyword">typealias </span><a href="-commented-config/index.html">CommentedConfig</a><span class="token operator"> = </span><span data-unresolved-link="com.electronwill.nightconfig.core/CommentedConfig///PointingToDeclaration/">CommentedConfig</span></div></div>                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="820834593%2FClasslikes%2F1537383562" anchor-label="File" id="820834593%2FClasslikes%2F1537383562" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain"></a>
+        <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="-file/index.html"><span><span>File</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="820834593%2FClasslikes%2F1537383562"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                  <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/commonMain">common</button><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword">class </span><a href="-file/index.html">File</a></div><div class="brief "><p class="paragraph">Class giving access to several things like:</p></div></div><div class="content sourceset-dependent-content" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">actual </span><span class="token keyword">typealias </span><a href="-file/index.html">File</a><span class="token operator"> = </span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/io/File.html">File</a></div></div>                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="-997355324%2FClasslikes%2F1537383562" anchor-label="Icon" id="-997355324%2FClasslikes%2F1537383562" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain"></a>
+        <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="-icon/index.html"><span><span>Icon</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-997355324%2FClasslikes%2F1537383562"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                  <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/commonMain">common</button><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword">interface </span><a href="-icon/index.html">Icon</a></div><div class="brief "><p class="paragraph">Fixed size picture for displaying and decorating components.</p></div></div><div class="content sourceset-dependent-content" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">actual </span><span class="token keyword">typealias </span><a href="-icon/index.html">Icon</a><span class="token operator"> = </span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.desktop/javax/swing/Icon.html">Icon</a></div></div>                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="436334013%2FClasslikes%2F1537383562" anchor-label="Optional" id="436334013%2FClasslikes%2F1537383562" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain"></a>
+        <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="-optional/index.html"><span><span>Optional</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="436334013%2FClasslikes%2F1537383562"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                  <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/commonMain">common</button><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword">class </span><a href="-optional/index.html">Optional</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="-optional/index.html">T</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Container object containing a value which may or may not be null, which allows for checking said value for null-ness, retrieval of said value if it is not null, checking if a value is present.</p></div></div><div class="content sourceset-dependent-content" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">actual </span><span class="token keyword">typealias </span><a href="-optional/index.html">Optional</a><span class="token operator"> = </span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Optional.html">Optional</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="-optional/index.html">T</a><span class="token operator">&gt;</span></div></div>                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="-2036985824%2FClasslikes%2F232887997" anchor-label="ReticulatingSplines" id="-2036985824%2FClasslikes%2F232887997" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain"></a>
+        <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="-reticulating-splines/index.html"><span>Reticulating</span><wbr></wbr><span><span>Splines</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2036985824%2FClasslikes%2F232887997"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">class </span><a href="-reticulating-splines/index.html">ReticulatingSplines</a></div><div class="brief "><p class="paragraph">Just something fun to brighten the mood. This class provides a list of messages which some of you may know from the SimCity games. Thanks go out to MAXIS and Sim City, for the ridiculous messages these games contained. Additional thanks to Larsz for providing a list of all these messages <a href="https://gamefaqs.gamespot.com/pc/561176-simcity-4/faqs/22135">on GameFAQs</a></p></div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="1795913162%2FClasslikes%2F232887997" anchor-label="SimpleStopWatch" id="1795913162%2FClasslikes%2F232887997" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain"></a>
+        <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="-simple-stop-watch/index.html"><span>Simple</span><wbr></wbr><span>Stop</span><wbr></wbr><span><span>Watch</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1795913162%2FClasslikes%2F232887997"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">class </span><a href="-simple-stop-watch/index.html">SimpleStopWatch</a></div><div class="brief "><p class="paragraph">Minimalistic stopwatch to measure the elapsed time between operations.</p></div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="-1844192732%2FClasslikes%2F1537383562" anchor-label="TomlParser" id="-1844192732%2FClasslikes%2F1537383562" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain"></a>
+        <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="-toml-parser/index.html"><span>Toml</span><wbr></wbr><span><span>Parser</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1844192732%2FClasslikes%2F1537383562"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                  <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/commonMain">common</button><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword">class </span><a href="-toml-parser/index.html">TomlParser</a></div><div class="brief "><p class="paragraph">A configurable parser of TOML configurations.</p></div></div><div class="content sourceset-dependent-content" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">actual </span><span class="token keyword">typealias </span><a href="-toml-parser/index.html">TomlParser</a><span class="token operator"> = </span><span data-unresolved-link="com.electronwill.nightconfig.toml/TomlParser///PointingToDeclaration/">TomlParser</span></div></div>                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+<a data-name="-9517770%2FClasslikes%2F1537383562" anchor-label="URL" id="-9517770%2FClasslikes%2F1537383562" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain"></a>
+        <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain">
+          <div class="main-subrow keyValue ">
+            <div class=""><span class="inline-flex">
+                <div><a href="-u-r-l/index.html"><span><span>URL</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-9517770%2FClasslikes%2F1537383562"></span>
+                  <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                </span></span></div>
+            <div>
+              <div class="title">
+                <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                  <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/commonMain">common</button><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword">class </span><a href="-u-r-l/index.html">URL</a></div><div class="brief "><p class="paragraph">Uniform Resource Locator for files, resources, web-addresses.</p></div></div><div class="content sourceset-dependent-content" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">actual </span><span class="token keyword">typealias </span><a href="-u-r-l/index.html">URL</a><span class="token operator"> = </span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/net/URL.html">URL</a></div></div>                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      <div class="footer">
+        <span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>© 2023 Copyright</span><span
+                class="pull-right"><span>Generated by </span><a
+                href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span>
+      </div>
+    </div>
+</div>
+</body>
+</html>
