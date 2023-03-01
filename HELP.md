@@ -1,21 +1,3 @@
-# Java versions
-
-ServerPackCreator is develop with Java 8, ServerPackCreator is guaranteed to work with that version.
-
-Users have reported the following Java versions to also work with ServerPackCreator:
-
-1. Java 19 Pre-Release (reported by [Griefed](https://github.com/Griefed))
-2. Java 18 (reported by [Kreezxil](https://github.com/Kreezxil))
-3. Java 17 (reported by [Kreezxil](https://github.com/Kreezxil))
-4. Java 16 (reported by [Griefed](https://github.com/Griefed))
-5. Java 11 (reported by [Kreezxil](https://github.com/Kreezxil))
-
-**ATTENTION:** I **can** not and **will** not guarantee that ServerPackCreator will work flawlessly
-with any other Java version other than version 8. Things may break at **random**, at **any** place,
-if a **different** Java version is used. You are welcome to try and use any other version, but do **
-not** report issues back to me if you do encounter problems when running ServerPackCreator with a
-more recent Java version.
-
 # Fugly Artifacts
 
 Depending on which JDK you are using, ServerPackCreator may display some really ugly artifacts and
