@@ -201,7 +201,6 @@ jobs:
             serverpackcreator-plugin-example/build/libs/serverpackcreator-plugin-example-${{ needs.preparations.outputs.version }}.jar
 
   pages:
-    needs: release
     runs-on: ubuntu-latest
     steps:
       - name: Checkout latest code
