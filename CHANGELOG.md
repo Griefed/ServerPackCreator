@@ -1,3 +1,10 @@
+## [4.0.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.0.0...4.0.1) (2023-03-01)
+
+
+### 🛠 Fixes
+
+* **CI:** Remove dependency of pages job ([28f184c](https://git.griefed.de/Griefed/ServerPackCreator/commit/28f184c5e14b7ede5a067bbc1ef0f7f305a77902))
+
 ## [4.0.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.15.1...4.0.0) (2023-03-01)
 
 
