@@ -68,12 +68,18 @@ kotlin {
     }
 }
 
+// Explicit dependency to remove Gradle 8 warning
+tasks.jvmProcessResources {
+    dependsOn(tasks.generateI18n4kFiles)
+}
+
 //Fix resources missing in multiplatform jvm inDev run https://youtrack.jetbrains.com/issue/KTIJ-16582/Consumer-Kotlin-JVM-library-cannot-access-a-Kotlin-Multiplatform-JVM-target-resources-in-multi-module-Gradle-project
 tasks.register<Copy>("fixMissingResources") {
     dependsOn(tasks.jvmProcessResources)
     from("$buildDir/processedResources/jvm/main")
     into("$buildDir/resources/")
 }
+
 tasks.jvmJar {
     dependsOn(tasks.getByName("fixMissingResources"))
 }
@@ -92,6 +98,11 @@ tasks.register<Copy>("updateManifests") {
     dependsOn("test")
     from(projectDir.resolve("tests/manifests"))
     into(projectDir.resolve("src/jvmMain/resources/de/griefed/resources/manifests"))
+}
+
+// Explicit dependency to remove Gradle 8 warning
+tasks.jvmTest {
+    dependsOn(tasks.getByName("fixMissingResources"))
 }
 
 tasks.test {
