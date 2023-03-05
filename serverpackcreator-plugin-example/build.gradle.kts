@@ -69,6 +69,16 @@ tasks.processResources {
     }
 }
 
+// Explicit dependency to remove Gradle 8 warning
+tasks.processResources {
+    dependsOn(tasks.generateI18n4kFiles)
+}
+
+// Explicit dependency to remove Gradle 8 warning
+tasks.sourcesJar {
+    dependsOn(tasks.generateI18n4kFiles)
+}
+
 tasks.jar {
     manifest {
         attributes(

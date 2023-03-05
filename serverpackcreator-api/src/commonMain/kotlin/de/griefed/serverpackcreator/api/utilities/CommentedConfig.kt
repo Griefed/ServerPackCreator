@@ -21,7 +21,6 @@ package de.griefed.serverpackcreator.api.utilities
 
 /**
  * A modifiable config that supports comments.
- *
  * @author Griefed
  */
 expect interface CommentedConfig

@@ -32,44 +32,14 @@ internal class ServerPackHandlerTest {
 
     @Suppress("SpellCheckingInspection")
     @Test
-    @Throws(IOException::class)
-    fun runTest() {
-        val copyDirs = arrayListOf("config", "mods", "scripts", "seeds", "defaultconfigs")
-        val clientMods = arrayListOf(
-            "AmbientSounds",
-            "BackTools",
-            "BetterAdvancement",
-            "BetterPing",
-            "cherished",
-            "ClientTweaks",
-            "Controlling",
-            "DefaultOptions",
-            "durability",
-            "DynamicSurroundings",
-            "itemzoom",
-            "jei-professions",
-            "jeiintegration",
-            "JustEnoughResources",
-            "MouseTweaks",
-            "Neat",
-            "OldJavaWarning",
-            "PackMenu",
-            "preciseblockplacing",
-            "SimpleDiscordRichPresence",
-            "SpawnerFix",
-            "TipTheScales",
-            "WorldNameRandomizer"
-        )
-        val legacyFabricDir = File(applicationProperties.serverPacksDirectory, "legacyfabric_tests_copy")
+    fun forgeTest() {
+        val packConfig = PackConfig()
         val ps1 = File(applicationProperties.serverPacksDirectory, "forge_tests/start.ps1")
         val shell = File(applicationProperties.serverPacksDirectory, "forge_tests/start.sh")
         val vars = File(applicationProperties.serverPacksDirectory, "forge_tests/variables.txt")
         val forgeZip = ZipFile(File(applicationProperties.serverPacksDirectory, "forge_tests_server_pack.zip"))
         val forgeDir = File(applicationProperties.serverPacksDirectory, "forge_tests")
         val props = File(forgeDir, "server.properties")
-        val quiltDir = File(applicationProperties.serverPacksDirectory, "quilt_tests_copy")
-        val fabricDir = File(applicationProperties.serverPacksDirectory, "fabric_tests_copy")
-        val packConfig = PackConfig()
         configurationHandler.checkConfiguration(
             File("src/jvmTest/resources/testresources/spcconfs/serverpackcreator.conf"),
             packConfig
@@ -111,7 +81,13 @@ internal class ServerPackHandlerTest {
         Assertions.assertTrue(variables.contains("LEGACYFABRIC_INSTALLER_VERSION=${versionMeta.legacyFabric.releaseInstaller()}"))
         Assertions.assertTrue(variables.contains("FABRIC_INSTALLER_VERSION=${versionMeta.fabric.releaseInstaller()}"))
         Assertions.assertTrue(variables.contains("QUILT_INSTALLER_VERSION=${versionMeta.quilt.releaseInstaller()}"))
-        Assertions.assertTrue(variables.contains("MINECRAFT_SERVER_URL=${versionMeta.minecraft.getServer(packConfig.minecraftVersion).get().url().get()}"))
+        Assertions.assertTrue(
+            variables.contains(
+                "MINECRAFT_SERVER_URL=${
+                    versionMeta.minecraft.getServer(packConfig.minecraftVersion).get().url().get()
+                }"
+            )
+        )
         Assertions.assertTrue(variables.contains("JAVA_ARGS=${packConfig.javaArgs}"))
         Assertions.assertTrue(variables.contains("JAVA=\"C\\:\\\\Program Files\\\\Java\\\\jdk1.8.0_301\\\\bin\\\\java.exe\""))
 
@@ -228,96 +204,71 @@ internal class ServerPackHandlerTest {
         } catch (e: IOException) {
             throw RuntimeException(e)
         }
-        configurationHandler.checkConfiguration(
-            File("src/jvmTest/resources/testresources/spcconfs/serverpackcreator_quilt.conf"),
-            packConfig
-        )
-        Assertions.assertTrue(serverPackHandler.run(packConfig))
+    }
+
+    @Suppress("SpellCheckingInspection")
+    @Test
+    fun fabricTest() {
+        val fabricDir = File(applicationProperties.serverPacksDirectory, "fabric_tests_copy")
+        val packConfig = PackConfig()
         configurationHandler.checkConfiguration(
             File("src/jvmTest/resources/testresources/spcconfs/serverpackcreator_fabric.conf"),
             packConfig
         )
         Assertions.assertTrue(serverPackHandler.run(packConfig))
-        File("src/jvmTest/resources/legacyfabric_tests").copyRecursively(
-            File(
-                applicationProperties.modpacksDirectory,
-                "legacyfabric_tests_copy"
-            ), true
-        )
-        packConfig.modpackDir =
-            File(applicationProperties.modpacksDirectory, "legacyfabric_tests_copy").absolutePath
-        packConfig.modloader = "LegacyFabric"
-        packConfig.modloaderVersion = "0.13.3"
-        packConfig.minecraftVersion = "1.12.2"
-        packConfig.javaArgs = ""
-        configurationHandler.checkConfiguration(packConfig)
-        serverPackHandler.run(packConfig)
         Assertions.assertTrue(
             File(
                 applicationProperties.serverPacksDirectory,
-                "legacyfabric_tests_copy_server_pack.zip"
-            ).isFile
-        )
-        Assertions.assertTrue(File(legacyFabricDir, "server.jar").isFile)
-        Assertions.assertTrue(File(legacyFabricDir, "fabric-server-launch.jar").isFile)
-        Assertions.assertTrue(File(legacyFabricDir, "start.ps1").isFile)
-        Assertions.assertTrue(File(legacyFabricDir, "start.sh").isFile)
-        File("src/jvmTest/resources/quilt_tests").copyRecursively(
-            File(
-                applicationProperties.modpacksDirectory,
-                "quilt_tests_copy"
-            ), true
-        )
-        packConfig.modpackDir = File(applicationProperties.modpacksDirectory, "quilt_tests_copy").path
-        packConfig.setClientMods(clientMods)
-        packConfig.setCopyDirs(copyDirs)
-        packConfig.isServerInstallationDesired = true
-        packConfig.isServerIconInclusionDesired = true
-        packConfig.isServerPropertiesInclusionDesired = true
-        packConfig.isZipCreationDesired = true
-        packConfig.modloader = "Quilt"
-        packConfig.modloaderVersion = "0.16.1"
-        packConfig.minecraftVersion = "1.18.2"
-        packConfig.javaArgs = ""
-        configurationHandler.checkConfiguration(packConfig)
-        serverPackHandler.run(packConfig)
-        Assertions.assertTrue(
-            File(
-                applicationProperties.serverPacksDirectory, "quilt_tests_copy_server_pack.zip"
-            ).isFile
-        )
-        Assertions.assertTrue(File(quiltDir, "server.jar").isFile)
-        Assertions.assertTrue(File(quiltDir, "quilt-server-launch.jar").isFile)
-        Assertions.assertTrue(File(quiltDir, "start.ps1").isFile)
-        Assertions.assertTrue(File(quiltDir, "start.sh").isFile)
-        File("src/jvmTest/resources/fabric_tests").copyRecursively(
-            File(
-                applicationProperties.modpacksDirectory,
-                "fabric_tests_copy"
-            ), true
-        )
-        packConfig.modpackDir = File(applicationProperties.modpacksDirectory, "fabric_tests_copy").path
-        packConfig.setClientMods(clientMods)
-        packConfig.setCopyDirs(copyDirs)
-        packConfig.isServerInstallationDesired = true
-        packConfig.isServerIconInclusionDesired = true
-        packConfig.isServerPropertiesInclusionDesired = true
-        packConfig.isZipCreationDesired = true
-        packConfig.modloader = "Fabric"
-        packConfig.modloaderVersion = "0.14.6"
-        packConfig.minecraftVersion = "1.18.2"
-        packConfig.javaArgs = ""
-        configurationHandler.checkConfiguration(packConfig)
-        serverPackHandler.run(packConfig)
-        Assertions.assertTrue(
-            File(
-                applicationProperties.serverPacksDirectory,
-                "fabric_tests_copy_server_pack.zip"
+                "fabric_tests_server_pack.zip"
             ).isFile
         )
         Assertions.assertTrue(File(fabricDir, "fabric-server-launch.jar").isFile)
         Assertions.assertTrue(File(fabricDir, "fabric-server-launcher.jar").isFile)
         Assertions.assertTrue(File(fabricDir, "start.ps1").isFile)
         Assertions.assertTrue(File(fabricDir, "start.sh").isFile)
+    }
+
+    @Suppress("SpellCheckingInspection")
+    @Test
+    fun quiltTest() {
+        val quiltDir = File(applicationProperties.serverPacksDirectory, "quilt_tests_copy")
+        val packConfig = PackConfig()
+        configurationHandler.checkConfiguration(
+            File("src/jvmTest/resources/testresources/spcconfs/serverpackcreator_quilt.conf"),
+            packConfig
+        )
+        Assertions.assertTrue(serverPackHandler.run(packConfig))
+        Assertions.assertTrue(
+            File(
+                applicationProperties.serverPacksDirectory,
+                "legacyfabric_tests_server_pack.zip"
+            ).isFile
+        )
+        Assertions.assertTrue(File(quiltDir, "server.jar").isFile)
+        Assertions.assertTrue(File(quiltDir, "quilt-server-launch.jar").isFile)
+        Assertions.assertTrue(File(quiltDir, "start.ps1").isFile)
+        Assertions.assertTrue(File(quiltDir, "start.sh").isFile)
+    }
+
+    @Suppress("SpellCheckingInspection")
+    @Test
+    fun legacyFabricTest() {
+        val legacyFabricDir = File(applicationProperties.serverPacksDirectory, "legacyfabric_tests")
+        val packConfig = PackConfig()
+        configurationHandler.checkConfiguration(
+            File("src/jvmTest/resources/testresources/spcconfs/serverpackcreator_legacyfabric.conf"),
+            packConfig
+        )
+        Assertions.assertTrue(serverPackHandler.run(packConfig))
+        Assertions.assertTrue(
+            File(
+                applicationProperties.serverPacksDirectory,
+                "legacyfabric_tests_server_pack.zip"
+            ).isFile
+        )
+        Assertions.assertTrue(File(legacyFabricDir, "server.jar").isFile)
+        Assertions.assertTrue(File(legacyFabricDir, "fabric-server-launch.jar").isFile)
+        Assertions.assertTrue(File(legacyFabricDir, "start.ps1").isFile)
+        Assertions.assertTrue(File(legacyFabricDir, "start.sh").isFile)
     }
 }

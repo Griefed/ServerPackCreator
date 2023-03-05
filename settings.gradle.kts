@@ -1,11 +1,3 @@
-pluginManagement {
-    repositories {
-        gradlePluginPortal()
-        google()
-        mavenCentral()
-    }
-}
-
 rootProject.name = "serverpackcreator"
 include(":serverpackcreator-api")
 include(":serverpackcreator-updater")

@@ -2,7 +2,6 @@ import de.griefed.common.gradle.constant.JDK_VERSION
 import de.griefed.common.gradle.constant.KOTLIN_VERSION
 import java.text.SimpleDateFormat
 import java.util.*
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     id("serverpackcreator.java-conventions")

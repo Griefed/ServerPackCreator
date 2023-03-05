@@ -25,7 +25,9 @@ import javax.imageio.ImageIO
 import javax.swing.ImageIcon
 
 /**
- * TODO docs
+ * Various utilities revolving around working with images and icons.
+ *
+ * @author Griefed
  */
 class ImageUtilities {
     companion object {

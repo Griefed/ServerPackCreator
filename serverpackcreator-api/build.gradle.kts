@@ -68,23 +68,25 @@ kotlin {
     }
 }
 
+// Explicit dependency to remove Gradle 8 warning
+tasks.jvmProcessResources {
+    dependsOn(tasks.generateI18n4kFiles)
+}
+
 //Fix resources missing in multiplatform jvm inDev run https://youtrack.jetbrains.com/issue/KTIJ-16582/Consumer-Kotlin-JVM-library-cannot-access-a-Kotlin-Multiplatform-JVM-target-resources-in-multi-module-Gradle-project
 tasks.register<Copy>("fixMissingResources") {
     dependsOn(tasks.jvmProcessResources)
     from("$buildDir/processedResources/jvm/main")
     into("$buildDir/resources/")
 }
+
 tasks.jvmJar {
     dependsOn(tasks.getByName("fixMissingResources"))
 }
 
 tasks.clean {
     doFirst {
-        delete {
-            fileTree("tests") {
-                exclude(".gitkeep")
-            }
-        }
+        cleanup()
     }
 }
 
@@ -94,19 +96,37 @@ tasks.register<Copy>("updateManifests") {
     into(projectDir.resolve("src/jvmMain/resources/de/griefed/resources/manifests"))
 }
 
+// Explicit dependency to remove Gradle 8 warning
+tasks.jvmTest {
+    dependsOn(tasks.getByName("fixMissingResources"))
+    doFirst {
+        cleanup()
+    }
+}
+
 tasks.test {
     doFirst {
-        val tests = File(projectDir,"tests").absoluteFile
-        mkdir(tests.absolutePath)
-        val gitkeep = File(tests,".gitkeep").absoluteFile
-        if (!gitkeep.exists()) {
-            File(tests,".gitkeep").writeText("Hi")
-        }
+        cleanup()
     }
 }
 
 tasks.build {
     doLast {
         tasks.getByName("dokkaJavadocJar")
+    }
+}
+
+fun cleanup() {
+    delete {
+        fileTree("tests") {
+            exclude(".gitkeep")
+        }
+    }
+
+    val tests = File(projectDir,"tests").absoluteFile
+    mkdir(tests.absolutePath)
+    val gitkeep = File(tests,".gitkeep").absoluteFile
+    if (!gitkeep.exists()) {
+        File(tests,".gitkeep").writeText("Hi")
     }
 }

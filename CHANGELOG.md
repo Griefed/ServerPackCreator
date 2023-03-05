@@ -1,3 +1,58 @@
+## [4.0.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.0.0...4.0.1) (2023-03-01)
+
+
+### 🛠 Fixes
+
+* **CI:** Remove dependency of pages job ([28f184c](https://git.griefed.de/Griefed/ServerPackCreator/commit/28f184c5e14b7ede5a067bbc1ef0f7f305a77902))
+
+## [4.0.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.15.1...4.0.0) (2023-03-01)
+
+
+### ✨ Milestone
+
+* Migrate to Kotlin, Multimodule, SPC API Kotlin Multiplatform preparations, JDK 17 ([a7ad55f](https://git.griefed.de/Griefed/ServerPackCreator/commit/a7ad55f1bcb6bbbcab8b81c09c07f1ee76fb4c41))
+* Migrate to Kotlin, Multimodule, SPC API Kotlin Multiplatform preparations, JDK 17 ([4a0d1a8](https://git.griefed.de/Griefed/ServerPackCreator/commit/4a0d1a8b657c51ddbdcbd48354cfd93f4e090279))
+
+
+### 📔 Docs
+
+* Remove mentioning of Java versions ([5bd1d54](https://git.griefed.de/Griefed/ServerPackCreator/commit/5bd1d54a122b4085f0e5786aa576dd2779638136))
+* Set name for feature asks correctly. ([18c6fcc](https://git.griefed.de/Griefed/ServerPackCreator/commit/18c6fcc779374210c97241b261544bfb818ae5c1))
+
+
+### 📦 Other
+
+* Add Esential to clientside-only modslist. ([eee0cda](https://git.griefed.de/Griefed/ServerPackCreator/commit/eee0cda5877dcd50bfa84116f5b822ce7af298c9))
+* Removed JustEnoughResources from default clientside-modslist. Use the "Reset to Default"-button in the GUI, or empty the the field manually, to use the new values. Thanks to [@chorbintime](https://git.griefed.de/chorbintime) for the report. ([e60f8a6](https://git.griefed.de/Griefed/ServerPackCreator/commit/e60f8a632c02eb17b6da4281aa65473975e18f36))
+* Update manifests ([c85cddb](https://git.griefed.de/Griefed/ServerPackCreator/commit/c85cddba5499f465141ed5215971c01c02d66e80))
+* **deps:** update dependency @quasar/extras to v1.15.10 ([8cb7429](https://git.griefed.de/Griefed/ServerPackCreator/commit/8cb74290e4964f79d7e016bf1c008be38e0ff8be))
+* **deps:** update dependency @quasar/extras to v1.15.6 ([736ce87](https://git.griefed.de/Griefed/ServerPackCreator/commit/736ce87c61aac141219fb708669b13fd6ee0e15e))
+* **deps:** update dependency @quasar/extras to v1.15.9 ([31e6849](https://git.griefed.de/Griefed/ServerPackCreator/commit/31e68495a6390e62f3d852662e6a227beb51297c))
+* **deps:** update dependency core-js to v3.27.1 ([66277f8](https://git.griefed.de/Griefed/ServerPackCreator/commit/66277f85136ddbf6a67899364bbfdcb2b502c54a))
+* **deps:** update dependency core-js to v3.27.2 ([27fec81](https://git.griefed.de/Griefed/ServerPackCreator/commit/27fec81202957f2da5c0ee66a20971e6d0a3bde2))
+* **deps:** update dependency eslint to v8.31.0 ([6caba9c](https://git.griefed.de/Griefed/ServerPackCreator/commit/6caba9c55bb185ebd6fa879b3861bd6001080c68))
+* **deps:** update dependency eslint-config-prettier to v8.6.0 ([9ef1b62](https://git.griefed.de/Griefed/ServerPackCreator/commit/9ef1b6206da0a811edbdf5fba743b92565189c6c))
+* **deps:** update dependency eslint-plugin-vue to v9.8.0 ([959f3ca](https://git.griefed.de/Griefed/ServerPackCreator/commit/959f3ca03c8f15f829755a976f9807bd46eb8f50))
+* **deps:** update dependency quasar to v2.10.2 ([6862385](https://git.griefed.de/Griefed/ServerPackCreator/commit/6862385cf63961792945892a9985ab84ed7dea80))
+* **deps:** update dependency terser to v5.16.1 ([b32b269](https://git.griefed.de/Griefed/ServerPackCreator/commit/b32b269ef4a4f619c47ef0856f6fa3735fdea79c))
+* **deps:** update dependency vue to v3.2.45 ([28ae924](https://git.griefed.de/Griefed/ServerPackCreator/commit/28ae924147c2eda83b3dc3d5f8d9981aafffd2be))
+* **deps:** update npm to v9 ([def5ad7](https://git.griefed.de/Griefed/ServerPackCreator/commit/def5ad7e2778db303a604305c142deedd77db4cf))
+
+
+### 🔩 Dependencies
+
+* **deps:** update dependency de.griefed:versionchecker to v1.1.4 ([76cb5ac](https://git.griefed.de/Griefed/ServerPackCreator/commit/76cb5ac6d11f53a287573da741027cc5bed218b4))
+* **deps:** update dependency gradle to v7.6 ([5c9b71c](https://git.griefed.de/Griefed/ServerPackCreator/commit/5c9b71c714719d7eaf37b3cd3fb05beae0175a6c))
+* **deps:** update dependency org.jetbrains:annotations to v23.1.0 ([ba73b25](https://git.griefed.de/Griefed/ServerPackCreator/commit/ba73b250169ffbedc39bc36aa7de840c14c784b1))
+* **deps:** update dependency org.jgroups:jgroups to v5.2.11.final ([4e511a7](https://git.griefed.de/Griefed/ServerPackCreator/commit/4e511a75de36131c2974e835d3210e3396646604))
+* **deps:** update dependency org.xerial:sqlite-jdbc to v3.40.0.0 ([1625e3a](https://git.griefed.de/Griefed/ServerPackCreator/commit/1625e3a4501cefee356273fcd578e22c9feb727b))
+* **deps:** update ghcr.io/griefed/baseimage-ubuntu-jdk-8 docker tag to v2.0.17 ([54254d9](https://git.griefed.de/Griefed/ServerPackCreator/commit/54254d9cb543dd46d52e8bc593581bf01e4860c4))
+* **deps:** update ghcr.io/griefed/gitlab-ci-cd docker tag to v2.2.5 ([7d1db0b](https://git.griefed.de/Griefed/ServerPackCreator/commit/7d1db0ba4443ff2818bbf17642d2c233a74cafdd))
+* **deps:** update jamesives/github-pages-deploy-action action to v4.4.1 ([5e603a1](https://git.griefed.de/Griefed/ServerPackCreator/commit/5e603a101372ddde5d94388e3a120cc53d019ba0))
+* **deps:** update jetbrains/qodana-jvm-community docker tag to v2022.3 ([e6c4b22](https://git.griefed.de/Griefed/ServerPackCreator/commit/e6c4b228defda893ebd192c407a3c7a154469024))
+* **deps:** update plugin edu.sc.seis.launch4j to v2.5.4 ([aaaa858](https://git.griefed.de/Griefed/ServerPackCreator/commit/aaaa858cfdd97c0157f4b1586a69933484f6c6dd))
+* **deps:** update spring boot to v2.7.7 ([29c5439](https://git.griefed.de/Griefed/ServerPackCreator/commit/29c54398064a5b5e42180a75f6a0ceb67b91ff18))
+
 ## [4.0.0-beta.5](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.0.0-beta.4...4.0.0-beta.5) (2023-02-27)
 
 
