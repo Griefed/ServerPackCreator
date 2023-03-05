@@ -116,13 +116,14 @@ tasks.build {
     }
 }
 
-fun cleanup() {
-    delete {
-        fileTree("tests") {
-            exclude(".gitkeep")
-        }
-    }
 
+fun cleanup() {
+    projectDir.resolve("tests")
+        .listFiles()
+        .filter { !it.name.endsWith("gitkeep") }
+        .forEach {
+        it.deleteRecursively()
+    }
     val tests = File(projectDir,"tests").absoluteFile
     mkdir(tests.absolutePath)
     val gitkeep = File(tests,".gitkeep").absoluteFile

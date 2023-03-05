@@ -209,7 +209,7 @@ internal class ServerPackHandlerTest {
     @Suppress("SpellCheckingInspection")
     @Test
     fun fabricTest() {
-        val fabricDir = File(applicationProperties.serverPacksDirectory, "fabric_tests_copy")
+        val fabricDir = File(applicationProperties.serverPacksDirectory, "fabric_tests")
         val packConfig = PackConfig()
         configurationHandler.checkConfiguration(
             File("src/jvmTest/resources/testresources/spcconfs/serverpackcreator_fabric.conf"),
@@ -231,7 +231,7 @@ internal class ServerPackHandlerTest {
     @Suppress("SpellCheckingInspection")
     @Test
     fun quiltTest() {
-        val quiltDir = File(applicationProperties.serverPacksDirectory, "quilt_tests_copy")
+        val quiltDir = File(applicationProperties.serverPacksDirectory, "quilt_tests")
         val packConfig = PackConfig()
         configurationHandler.checkConfiguration(
             File("src/jvmTest/resources/testresources/spcconfs/serverpackcreator_quilt.conf"),
@@ -241,7 +241,7 @@ internal class ServerPackHandlerTest {
         Assertions.assertTrue(
             File(
                 applicationProperties.serverPacksDirectory,
-                "legacyfabric_tests_server_pack.zip"
+                "quilt_tests_server_pack.zip"
             ).isFile
         )
         Assertions.assertTrue(File(quiltDir, "server.jar").isFile)
