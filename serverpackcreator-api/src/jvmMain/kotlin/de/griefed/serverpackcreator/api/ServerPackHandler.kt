@@ -459,6 +459,7 @@ actual class ServerPackHandler actual constructor(
         var process: Process? = null
         when (modLoader) {
             "Fabric" -> {
+                log.info { "Installing Fabric server." }
                 installerLog.info("Starting Fabric installation.")
                 if (versionMeta.fabric.installerFor(versionMeta.fabric.releaseInstaller()).isPresent) {
                     log.info("Fabric installer successfully downloaded.")
@@ -480,6 +481,7 @@ actual class ServerPackHandler actual constructor(
             }
 
             "Forge" -> {
+                log.info { "Installing Forge server." }
                 installerLog.info("Starting Forge installation.")
                 if (versionMeta.forge.installerFor(modLoaderVersion, minecraftVersion).isPresent) {
                     log.info("Forge installer successfully downloaded.")
@@ -496,6 +498,7 @@ actual class ServerPackHandler actual constructor(
             }
 
             "Quilt" -> {
+                log.info { "Installing Quilt server." }
                 installerLog.info("Starting Quilt installation.")
                 if (versionMeta.quilt.installerFor(versionMeta.quilt.releaseInstaller()).isPresent) {
                     log.info("Quilt installer successfully downloaded.")
@@ -516,6 +519,7 @@ actual class ServerPackHandler actual constructor(
             }
 
             "LegacyFabric" -> {
+                log.info { "Installing LegacyFabric server." }
                 installerLog.info("Starting Legacy Fabric installation.")
                 try {
                     if (versionMeta.legacyFabric.installerFor(versionMeta.legacyFabric.releaseInstaller()).isPresent) {
