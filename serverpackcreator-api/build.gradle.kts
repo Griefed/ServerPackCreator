@@ -86,11 +86,7 @@ tasks.jvmJar {
 
 tasks.clean {
     doFirst {
-        delete {
-            fileTree("tests") {
-                exclude(".gitkeep")
-            }
-        }
+        cleanup()
     }
 }
 
@@ -107,17 +103,28 @@ tasks.jvmTest {
 
 tasks.test {
     doFirst {
-        val tests = File(projectDir,"tests").absoluteFile
-        mkdir(tests.absolutePath)
-        val gitkeep = File(tests,".gitkeep").absoluteFile
-        if (!gitkeep.exists()) {
-            File(tests,".gitkeep").writeText("Hi")
-        }
+        cleanup()
     }
 }
 
 tasks.build {
     doLast {
         tasks.getByName("dokkaJavadocJar")
+    }
+}
+
+
+fun cleanup() {
+    projectDir.resolve("tests")
+        .listFiles()
+        .filter { !it.name.endsWith("gitkeep") }
+        .forEach {
+        it.deleteRecursively()
+    }
+    val tests = File(projectDir,"tests").absoluteFile
+    mkdir(tests.absolutePath)
+    val gitkeep = File(tests,".gitkeep").absoluteFile
+    if (!gitkeep.exists()) {
+        File(tests,".gitkeep").writeText("Hi")
     }
 }
