@@ -111,26 +111,24 @@ abstract class Pack<F, J, out P> {
     }
 
     override fun toString(): String {
-        return "ConfigurationModel(" +
-                "clientMods=$clientMods, " +
-                "copyDirs=$copyDirs, " +
-                "scriptSettings=$scriptSettings, " +
-                "pluginsConfigs=$pluginsConfigs, " +
-                "modloader='$modloader', " +
-                "modpackDir='$modpackDir', " +
-                "minecraftVersion='$minecraftVersion', " +
-                "modloaderVersion='$modloaderVersion', " +
-                "javaArgs='$javaArgs', " +
-                "serverPackSuffix='$serverPackSuffix', " +
-                "serverIconPath='$serverIconPath', " +
-                "serverPropertiesPath='$serverPropertiesPath', " +
-                "isServerInstallationDesired=$isServerInstallationDesired, " +
-                "isServerIconInclusionDesired=$isServerIconInclusionDesired, " +
-                "isServerPropertiesInclusionDesired=$isServerPropertiesInclusionDesired, " +
-                "isZipCreationDesired=$isZipCreationDesired, " +
-                "modpackJson=$modpackJson, " +
-                "projectName=$projectName, " +
-                "fileName=$fileName, " +
-                "fileDiskName=$fileDiskName)"
+        return "Pack(" +
+                " clientMods=$clientMods," +
+                " copyDirs=$copyDirs," +
+                " scriptSettings=$scriptSettings," +
+                " pluginsConfigs=$pluginsConfigs," +
+                " modpackDir='$modpackDir'," +
+                " minecraftVersion='$minecraftVersion'," +
+                " modloaderVersion='$modloaderVersion'," +
+                " javaArgs='$javaArgs'," +
+                " serverPackSuffix='$serverPackSuffix'," +
+                " serverIconPath='$serverIconPath'," +
+                " serverPropertiesPath='$serverPropertiesPath'," +
+                " modloader='$modloader'," +
+                " isServerInstallationDesired=$isServerInstallationDesired," +
+                " isServerIconInclusionDesired=$isServerIconInclusionDesired," +
+                " isServerPropertiesInclusionDesired=$isServerPropertiesInclusionDesired," +
+                " isZipCreationDesired=$isZipCreationDesired)"
     }
+
+
 }

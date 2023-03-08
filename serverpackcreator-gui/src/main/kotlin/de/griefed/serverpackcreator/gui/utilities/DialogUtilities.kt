@@ -93,10 +93,12 @@ class DialogUtilities {
             message: Any,
             title: String,
             parent: Component = JDialog(),
-            messageType: Int = JOptionPane.PLAIN_MESSAGE, optionType: Int = JOptionPane.DEFAULT_OPTION,
+            messageType: Int = JOptionPane.PLAIN_MESSAGE,
+            optionType: Int = JOptionPane.DEFAULT_OPTION,
             icon: Icon? = null,
             resizable: Boolean = false,
-            options: Array<*>? = null, initialValue: Any? = null
+            options: Array<*>? = null,
+            initialValue: Any? = null
         ): Int {
             val pane = createOptionPane(
                 message,

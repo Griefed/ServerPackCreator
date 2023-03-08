@@ -114,4 +114,20 @@ expect class WebUtilities {
      * @return `true` if, and only if, the host is available and the URL returns the status code 200.
      */
     fun isReachable(url: URL): Boolean
+
+    /**
+     * Create a HasteBin post from a given string. The text provided passed onto [Haste zneix](https://haste.zneix.eu)
+     * which creates a HasteBin post out of the passed String and returns the URL to the newly created post.
+     *
+     * Created with the help of [kaimu-ken's hastebin.java (MIT License)](https://github.com/kaimu-kun/hastebin.java)
+     * and edited to use HasteBin fork [zneix/haste-server](https://github.com/zneix/haste-server). My fork of kaimu-kun's
+     * hastebin.java is available at [Griefed/hastebin.java](https://github.com/Griefed/hastebin.java).
+     *
+     * @param text The file which will be read into a String of which then to create a HasteBin
+     * post of.
+     * @return String. Returns a String containing the URL to the newly created HasteBin post.
+     * @author [kaimu-kun/hastebin.java](https://github.com/kaimu-kun)
+     * @author Griefed
+     */
+    fun createHasteBinFromString(text: String): String
 }
