@@ -3,8 +3,8 @@
   <groupId>org.quiltmc</groupId>
   <artifactId>quilt-loader</artifactId>
   <versioning>
-    <latest>0.18.1-beta.27</latest>
-    <release>0.18.1-beta.27</release>
+    <latest>0.18.4-pre.3</latest>
+    <release>0.18.4-pre.3</release>
     <versions>
       <version>0.16.0-beta.1</version>
       <version>0.16.0-beta.2</version>
@@ -86,7 +86,65 @@
       <version>0.18.1-beta.25</version>
       <version>0.18.1-beta.26</version>
       <version>0.18.1-beta.27</version>
+      <version>0.18.1-beta.28</version>
+      <version>0.18.1-beta.29</version>
+      <version>0.18.1-beta.30</version>
+      <version>0.17.9-beta.1</version>
+      <version>0.18.1-beta.32</version>
+      <version>0.18.1-beta.33</version>
+      <version>0.18.1-beta.34</version>
+      <version>0.18.1-beta.35</version>
+      <version>0.18.1-beta.36</version>
+      <version>0.18.1-beta.37</version>
+      <version>0.18.1-beta.38</version>
+      <version>0.18.1-beta.39</version>
+      <version>0.18.1-beta.40</version>
+      <version>0.18.1-beta.41</version>
+      <version>0.18.1-beta.42</version>
+      <version>0.18.1-beta.43</version>
+      <version>0.18.1-beta.44</version>
+      <version>0.18.1-beta.45</version>
+      <version>0.18.1-beta.46</version>
+      <version>0.17.10</version>
+      <version>0.18.1-beta.47</version>
+      <version>0.18.1-beta.48</version>
+      <version>0.18.1-beta.49</version>
+      <version>0.18.1-beta.50</version>
+      <version>0.18.1-beta.51</version>
+      <version>0.18.1-beta.52</version>
+      <version>0.18.1-beta.53</version>
+      <version>0.18.1-beta.54</version>
+      <version>0.18.1-beta.55</version>
+      <version>0.18.1-beta.56</version>
+      <version>0.18.1-beta.57</version>
+      <version>0.18.1-beta.58</version>
+      <version>0.18.1-beta.59</version>
+      <version>0.18.1-beta.60</version>
+      <version>0.18.1-beta.62</version>
+      <version>0.18.1-beta.63</version>
+      <version>0.18.1-beta.64</version>
+      <version>0.18.1-beta.65</version>
+      <version>0.17.11</version>
+      <version>0.18.1-beta.66</version>
+      <version>0.18.1-beta.67</version>
+      <version>0.18.1-beta.68</version>
+      <version>0.18.1-beta.72</version>
+      <version>0.18.1-beta.73</version>
+      <version>0.18.1-beta.74</version>
+      <version>0.18.1-beta.75</version>
+      <version>0.18.1-beta.76</version>
+      <version>0.18.1-beta.77</version>
+      <version>0.18.1-beta.78</version>
+      <version>0.18.1-beta.79</version>
+      <version>0.18.1</version>
+      <version>0.18.2</version>
+      <version>0.18.3-pre.1</version>
+      <version>0.18.3-pre.2</version>
+      <version>0.18.3</version>
+      <version>0.18.4-pre.1</version>
+      <version>0.18.4-pre.2</version>
+      <version>0.18.4-pre.3</version>
     </versions>
-    <lastUpdated>20230105203009</lastUpdated>
+    <lastUpdated>20230305225815</lastUpdated>
   </versioning>
 </metadata>
