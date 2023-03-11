@@ -138,8 +138,7 @@ class ServerPackCreator(private val args: Array<String>) {
                 splashScreen!!.update(40)
                 api.stageThree()
                 splashScreen!!.update(60)
-                createDefaultConfig()
-                Executors.newSingleThreadExecutor().execute { stageFour() }
+                stageFour()
                 splashScreen!!.update(80)
                 MainWindow(
                     api.configurationHandler!!,
@@ -402,81 +401,83 @@ class ServerPackCreator(private val args: Array<String>) {
      * @author Griefed
      */
     private fun stageFour() {
-        log.debug("Setting up FileWatcher...")
-        val fileAlterationObserver = FileAlterationObserver(
-            api.apiProperties.homeDirectory
-        )
-        val fileAlterationListener: FileAlterationListener = object : FileAlterationListener {
-            override fun onStart(observer: FileAlterationObserver) {
-            }
+        Executors.newSingleThreadExecutor().execute {
+            log.debug("Setting up FileWatcher...")
+            val fileAlterationObserver = FileAlterationObserver(
+                api.apiProperties.homeDirectory
+            )
+            val fileAlterationListener: FileAlterationListener = object : FileAlterationListener {
+                override fun onStart(observer: FileAlterationObserver) {
+                }
 
-            override fun onDirectoryCreate(directory: File) {
-            }
+                override fun onDirectoryCreate(directory: File) {
+                }
 
-            override fun onDirectoryChange(directory: File) {
-            }
+                override fun onDirectoryChange(directory: File) {
+                }
 
-            override fun onDirectoryDelete(directory: File) {
-            }
+                override fun onDirectoryDelete(directory: File) {
+                }
 
-            override fun onFileCreate(file: File) {
-            }
+                override fun onFileCreate(file: File) {
+                }
 
-            override fun onFileChange(file: File) {
-            }
+                override fun onFileChange(file: File) {
+                }
 
-            override fun onFileDelete(file: File) {
-                if (!file.toString()
-                        .contains(api.apiProperties.serverPacksDirectory.toString())
-                    && !file.toString()
-                        .contains(api.apiProperties.modpacksDirectory.toString())
-                ) {
-                    if (check(file, api.apiProperties.serverPackCreatorPropertiesFile)) {
-                        createFile(api.apiProperties.serverPackCreatorPropertiesFile)
-                        api.apiProperties.loadProperties()
-                        log.info("Restored serverpackcreator.properties and loaded defaults.")
-                    } else if (check(file, api.apiProperties.defaultServerProperties)) {
-                        api.checkServerFilesFile(api.apiProperties.defaultServerProperties)
-                        log.info("Restored default server.properties.")
-                    } else if (check(file, api.apiProperties.defaultServerIcon)) {
-                        api.checkServerFilesFile(api.apiProperties.defaultServerIcon)
-                        log.info("Restored default server-icon.png.")
-                    } else if (check(file, api.apiProperties.defaultShellScriptTemplate)) {
-                        api.checkServerFilesFile(api.apiProperties.defaultShellScriptTemplate)
-                        log.info("Restored default_template.sh.")
-                    } else if (check(file, api.apiProperties.defaultPowerShellScriptTemplate)) {
-                        api.checkServerFilesFile(api.apiProperties.defaultPowerShellScriptTemplate)
-                        log.info("Restored default_template.ps1.")
+                override fun onFileDelete(file: File) {
+                    if (!file.toString()
+                            .contains(api.apiProperties.serverPacksDirectory.toString())
+                        && !file.toString()
+                            .contains(api.apiProperties.modpacksDirectory.toString())
+                    ) {
+                        if (check(file, api.apiProperties.serverPackCreatorPropertiesFile)) {
+                            createFile(api.apiProperties.serverPackCreatorPropertiesFile)
+                            api.apiProperties.loadProperties()
+                            log.info("Restored serverpackcreator.properties and loaded defaults.")
+                        } else if (check(file, api.apiProperties.defaultServerProperties)) {
+                            api.checkServerFilesFile(api.apiProperties.defaultServerProperties)
+                            log.info("Restored default server.properties.")
+                        } else if (check(file, api.apiProperties.defaultServerIcon)) {
+                            api.checkServerFilesFile(api.apiProperties.defaultServerIcon)
+                            log.info("Restored default server-icon.png.")
+                        } else if (check(file, api.apiProperties.defaultShellScriptTemplate)) {
+                            api.checkServerFilesFile(api.apiProperties.defaultShellScriptTemplate)
+                            log.info("Restored default_template.sh.")
+                        } else if (check(file, api.apiProperties.defaultPowerShellScriptTemplate)) {
+                            api.checkServerFilesFile(api.apiProperties.defaultPowerShellScriptTemplate)
+                            log.info("Restored default_template.ps1.")
+                        }
                     }
                 }
-            }
 
-            override fun onStop(observer: FileAlterationObserver) {
-            }
+                override fun onStop(observer: FileAlterationObserver) {
+                }
 
-            private fun check(
-                watched: File,
-                toCreate: File
-            ): Boolean {
-                return watched.name == toCreate.name
-            }
+                private fun check(
+                    watched: File,
+                    toCreate: File
+                ): Boolean {
+                    return watched.name == toCreate.name
+                }
 
-            private fun createFile(toCreate: File) {
-                api.utilities!!.jarUtilities.copyFileFromJar(
-                    toCreate.name, ServerPackCreator::class.java,
-                    toCreate.parent
-                )
+                private fun createFile(toCreate: File) {
+                    api.utilities!!.jarUtilities.copyFileFromJar(
+                        toCreate.name, ServerPackCreator::class.java,
+                        toCreate.parent
+                    )
+                }
             }
+            fileAlterationObserver.addListener(fileAlterationListener)
+            val fileAlterationMonitor = FileAlterationMonitor(1000)
+            fileAlterationMonitor.addObserver(fileAlterationObserver)
+            try {
+                fileAlterationMonitor.start()
+            } catch (ex: Exception) {
+                log.error("Error starting the FileWatcher Monitor.", ex)
+            }
+            log.debug("File-watcher started...")
         }
-        fileAlterationObserver.addListener(fileAlterationListener)
-        val fileAlterationMonitor = FileAlterationMonitor(1000)
-        fileAlterationMonitor.addObserver(fileAlterationObserver)
-        try {
-            fileAlterationMonitor.start()
-        } catch (ex: Exception) {
-            log.error("Error starting the FileWatcher Monitor.", ex)
-        }
-        log.debug("File-watcher started...")
     }
 
     /**

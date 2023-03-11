@@ -38,7 +38,10 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
 
 /**
- * TODO docs
+ * Main window of ServerPackCreator housing everything needed to configure a server pack, generate it, view logs, manage
+ * files etc.
+ *
+ * @author Griefed
  */
 @OptIn(DelicateCoroutinesApi::class)
 class MainWindow(

@@ -54,20 +54,20 @@ class LoadConfigItem(
 
     private fun loadConfigFile() {
         val configChooser = ConfigChooser(apiProperties,Gui.createserverpack_gui_buttonloadconfig_title.toString())
-        // TODO make configChooser.isMultiSelectionEnabled = true work
-        // TODO if no tab available, automatically new tab
+        configChooser.isMultiSelectionEnabled = true
         if (configChooser.showOpenDialog(mainFrame) == JFileChooser.APPROVE_OPTION) {
-            try {
-                /* This log is meant to be read by the user, therefore we allow translation. */
-                log.info("Loading from configuration file: ${configChooser.selectedFile.path}")
-                val specifiedConfigFile: File = try {
-                    File(fileUtilities.resolveLink(configChooser.selectedFile))
+            val files = configChooser.selectedFiles.map { file ->
+                try {
+                    File(fileUtilities.resolveLink(file)).absoluteFile
                 } catch (ex: InvalidFileTypeException) {
                     log.error("Could not resolve link/symlink. Using entry from user input for checks.", ex)
-                    File(configChooser.selectedFile.path)
+                    file.absoluteFile
                 }
-                if (DialogUtilities.createShowGet(
-                        Gui.menubar_gui_config_load_message(specifiedConfigFile.absolutePath),
+            }
+            for (file in files) {
+                if (configsTab.tabs.tabCount > 0 &&
+                    DialogUtilities.createShowGet(
+                        Gui.menubar_gui_config_load_message(file.absolutePath),
                         Gui.menubar_gui_config_load_title.toString(),
                         mainFrame,
                         JOptionPane.QUESTION_MESSAGE,
@@ -77,14 +77,11 @@ class LoadConfigItem(
                         arrayOf(Gui.menubar_gui_config_load_current, Gui.menubar_gui_config_load_new)
                     ) == 0
                 ) {
-                    configsTab.loadConfig(specifiedConfigFile, configsTab.selectedEditor!!)
+                    configsTab.loadConfig(file, configsTab.selectedEditor!!)
                 } else {
-                    configsTab.loadConfig(specifiedConfigFile)
+                    configsTab.loadConfig(file)
                 }
-            } catch (ex: IOException) {
-                log.error("Error loading configuration from selected file.", ex)
             }
-            log.debug("Configuration successfully loaded.")
         }
     }
 }

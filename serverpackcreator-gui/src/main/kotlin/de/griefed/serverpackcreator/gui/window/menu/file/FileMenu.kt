@@ -23,28 +23,28 @@ import Gui
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import de.griefed.serverpackcreator.gui.GuiProps
+import de.griefed.serverpackcreator.gui.window.MainFrame
 import de.griefed.serverpackcreator.gui.window.configs.ConfigsTab
-import javax.swing.JFrame
 import javax.swing.JMenu
 import javax.swing.JSeparator
 
 class FileMenu(
     configsTab: ConfigsTab,
     apiProperties: ApiProperties,
-    mainFrame: JFrame,
+    mainFrame: MainFrame,
     utilities: Utilities,
     guiProps: GuiProps
 ) : JMenu(Gui.menubar_gui_menu_file.toString()) {
     init {
         add(NewConfigItem(configsTab))
-        add(LoadConfigItem(apiProperties, mainFrame, utilities.fileUtilities, guiProps, configsTab))
+        add(LoadConfigItem(apiProperties, mainFrame.frame, utilities.fileUtilities, guiProps, configsTab))
         add(JSeparator())
         add(SaveConfigItem(configsTab))
-        add(SaveConfigAsItem(apiProperties,mainFrame,configsTab))
+        add(SaveConfigAsItem(apiProperties, mainFrame.frame, configsTab))
         add(SaveAllConfigsItem(configsTab))
         add(JSeparator())
-        add(MainLogToHasteBinItem(utilities.webUtilities,apiProperties,guiProps,mainFrame))
-        add(ConfigToHasteBinItem(configsTab,utilities.webUtilities,apiProperties,guiProps,mainFrame))
+        add(MainLogToHasteBinItem(utilities.webUtilities, apiProperties, guiProps, mainFrame.frame))
+        add(ConfigToHasteBinItem(configsTab, utilities.webUtilities, apiProperties, guiProps, mainFrame.frame))
         add(JSeparator())
         add(ExitItem(mainFrame))
     }

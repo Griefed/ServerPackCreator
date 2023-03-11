@@ -19,6 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui.window.menu.file
 
+import de.griefed.serverpackcreator.gui.window.MainFrame
 import java.awt.event.WindowEvent
 import javax.swing.JFrame
 import javax.swing.JMenuItem
@@ -28,12 +29,11 @@ import javax.swing.JMenuItem
  *
  * @author Griefed
  */
-class ExitItem(mainFrame: JFrame): JMenuItem(Gui.menubar_gui_menuitem_exit.toString()) {
-    private val windowEvent: WindowEvent = WindowEvent(mainFrame, WindowEvent.WINDOW_CLOSING)
+class ExitItem(private val mainFrame: MainFrame): JMenuItem(Gui.menubar_gui_menuitem_exit.toString()) {
     init {
         //TODO warn if unsaved changes
         //TODO store last opened configs
         //TODO reopen last opened configs
-        addActionListener { mainFrame.dispatchEvent(windowEvent) }
+        addActionListener { mainFrame.closeAndExit() }
     }
 }

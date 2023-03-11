@@ -26,7 +26,13 @@ import de.griefed.serverpackcreator.gui.FileBrowser
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.components.TabPanel
 import kotlinx.coroutines.*
+import org.apache.commons.io.monitor.FileAlterationListener
+import org.apache.commons.io.monitor.FileAlterationMonitor
+import org.apache.commons.io.monitor.FileAlterationObserver
+import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
+import java.util.concurrent.Executors
+import javax.swing.DefaultComboBoxModel
 
 @OptIn(DelicateCoroutinesApi::class)
 class ConfigsTab(
@@ -38,7 +44,9 @@ class ConfigsTab(
     private val serverPackHandler: ServerPackHandler,
     private val apiPlugins: ApiPlugins,
 ) : TabPanel() {
+    private val log = cachedLoggerOf(this.javaClass)
     private val fileBrowser = FileBrowser(this, guiProps, utilities)
+    private val choose = arrayOf(Gui.createserverpack_gui_quickselect_choose.toString())
     val selectedEditor: ConfigEditorPanel?
         get() {
             return if (activeTab != null) {
@@ -49,6 +57,8 @@ class ConfigsTab(
         }
 
     init {
+        iconsDirectoryWatcher()
+        propertiesDirectoryWatcher()
         tabs.addChangeListener {
             GlobalScope.launch(guiProps.configDispatcher) {
                 if (tabs.tabCount != 0) {
@@ -60,9 +70,21 @@ class ConfigsTab(
             }
 
         }
-        for (i in 0..5) {
+
+        val lastLoadedConfigs = apiProperties.retrieveCustomProperty(this.javaClass,"lastloaded")
+        if (lastLoadedConfigs != null) {
+            val configs = if (lastLoadedConfigs.contains(",")) {
+                lastLoadedConfigs.split(",").map { File(it) }
+            } else {
+                listOf(File(lastLoadedConfigs))
+            }
+            for (configFile in configs) {
+                loadConfig(configFile)
+            }
+        } else {
             addTab()
         }
+
         tabs.selectedIndex = 0
         (activeTab!! as ConfigEditorPanel).title.closeButton.isVisible = true
     }
@@ -91,6 +113,96 @@ class ConfigsTab(
      * @author Griefed
      */
     fun loadConfig(configFile: File, tab: ConfigEditorPanel = addTab()) {
-        tab.loadConfiguration(PackConfig(utilities, configFile))
+        tab.loadConfiguration(PackConfig(utilities, configFile),configFile)
+    }
+
+    private fun iconsDirectoryWatcher() {
+        Executors.newSingleThreadExecutor().execute {
+            val observer = FileAlterationObserver(apiProperties.iconsDirectory)
+            val alterations = object: FileAlterationListener {
+                override fun onStart(observer: FileAlterationObserver?) {}
+                override fun onDirectoryCreate(directory: File?) {}
+                override fun onDirectoryChange(directory: File?) {}
+                override fun onDirectoryDelete(directory: File?) {}
+                override fun onStop(observer: FileAlterationObserver?) {}
+
+                override fun onFileCreate(file: File?) {
+                    update()
+                }
+
+                override fun onFileChange(file: File?) {
+                    update()
+                }
+
+                override fun onFileDelete(file: File?) {
+                    update()
+                }
+
+                private fun update() {
+                    if (tabs.tabCount == 0) {
+                        return
+                    }
+                    for (tab in allTabs) {
+                        val configTab = tab as ConfigEditorPanel
+                        val model = DefaultComboBoxModel(choose)
+                        model.addAll(apiProperties.iconQuickSelections)
+                        configTab.iconQuickSelect.model = model
+                    }
+                }
+            }
+            observer.addListener(alterations)
+            val monitor = FileAlterationMonitor(2000)
+            monitor.addObserver(observer)
+            try {
+                monitor.start()
+            } catch(ex: Exception) {
+                log.error("Error starting the FileWatcher Monitor.", ex)
+            }
+        }
+    }
+
+    private fun propertiesDirectoryWatcher() {
+        Executors.newSingleThreadExecutor().execute {
+            val observer = FileAlterationObserver(apiProperties.propertiesDirectory)
+            val alterations = object: FileAlterationListener {
+                override fun onStart(observer: FileAlterationObserver?) {}
+                override fun onDirectoryCreate(directory: File?) {}
+                override fun onDirectoryChange(directory: File?) {}
+                override fun onDirectoryDelete(directory: File?) {}
+                override fun onStop(observer: FileAlterationObserver?) {}
+
+                override fun onFileCreate(file: File?) {
+                    update()
+                }
+
+                override fun onFileChange(file: File?) {
+                    update()
+                }
+
+                override fun onFileDelete(file: File?) {
+                    update()
+                }
+
+                private fun update() {
+                    if (tabs.tabCount == 0) {
+                        return
+                    }
+                    for (tab in allTabs) {
+                        val configTab = tab as ConfigEditorPanel
+                        val model = DefaultComboBoxModel(choose)
+                        model.addAll(apiProperties.propertiesQuickSelections)
+                        configTab.propertiesQuickSelect.model = model
+                    }
+                }
+            }
+            observer.addListener(alterations)
+            val monitor = FileAlterationMonitor(2000)
+            monitor.addObserver(observer)
+            try {
+                monitor.start()
+            } catch(ex: Exception) {
+                log.error("Error starting the FileWatcher Monitor.", ex)
+            }
+        }
     }
 }

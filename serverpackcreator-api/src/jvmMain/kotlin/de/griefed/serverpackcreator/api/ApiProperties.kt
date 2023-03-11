@@ -32,6 +32,7 @@ import java.io.IOException
 import java.io.InputStreamReader
 import java.net.URL
 import java.util.*
+import java.util.concurrent.Executors
 
 /**
  * Base settings of ServerPackCreator, such as working directories, default list of clientside-only
@@ -121,6 +122,8 @@ actual class ApiProperties(
         "de.griefed.serverpackcreator.home"
     private val pOldVersion =
         "de.griefed.serverpackcreator.version.old"
+    private val customPropertyPrefix =
+        "custom.property."
 
     @Suppress("SpellCheckingInspection")
     private var fallbackModsString =
@@ -139,7 +142,7 @@ actual class ApiProperties(
         "animation,asm,cache,changelogs,craftpresence,crash-reports,downloads,icons,libraries,local,logs,overrides,packmenu,profileImage,profileImage,resourcepacks,screenshots,server_pack,shaderpacks,simple-rpc,tv-cache"
     private var fallbackZipExclusionsString =
         "minecraft_server.MINECRAFT_VERSION.jar,server.jar,libraries/net/minecraft/server/MINECRAFT_VERSION/server-MINECRAFT_VERSION.jar"
-    private val checkedJavas = hashMapOf<String,Boolean>()
+    private val checkedJavas = hashMapOf<String, Boolean>()
     val i18n4kConfig = I18n4kConfigDefault()
 
     /**
@@ -640,7 +643,8 @@ actual class ApiProperties(
      */
     val propertiesQuickSelections: List<String>
         get() {
-            val files = propertiesDirectory.listFiles()?.filterNotNull()?.filter { properties -> properties.name.endsWith(".properties") }
+            val files = propertiesDirectory.listFiles()?.filterNotNull()
+                ?.filter { properties -> properties.name.endsWith(".properties") }
                 ?.toTypedArray() ?: arrayOf()
             return files.map { file -> file.name }
         }
@@ -650,7 +654,8 @@ actual class ApiProperties(
      */
     val iconQuickSelections: List<String>
         get() {
-            val files = iconsDirectory.listFiles()?.filterNotNull()?.filter { icon -> icon.name.matches(imageRegex) }?.toTypedArray() ?: arrayOf()
+            val files = iconsDirectory.listFiles()?.filterNotNull()?.filter { icon -> icon.name.matches(imageRegex) }
+                ?.toTypedArray() ?: arrayOf()
             return files.map { file -> file.name }
         }
 
@@ -1285,6 +1290,7 @@ actual class ApiProperties(
             FileType.FILE -> {
                 result = testJava(pathToJava)
             }
+
             FileType.LINK, FileType.SYMLINK -> {
                 result = try {
                     testJava(this.fileUtilities.resolveLink(File(pathToJava)))
@@ -1536,6 +1542,42 @@ actual class ApiProperties(
     }
 
     /**
+     * Store a custom property in the serverpackcreator.properties-file. Beware that every property you add
+     * receives a prefix, to prevent clashes with any other properties.
+     *
+     * Said prefix consists of `custom.property.` followed by the package name of the class you provided
+     * and with the property you specified coming in last.
+     *
+     * Say you have a class in your package `de.anon.foo.bar`, and you want to store a value in the property
+     * `saved`, then the resulting property in the serverpackcreator.properties would be:
+     * `custom.property.de.anon.foo.bar.saved`
+     *
+     * @author Griefed
+     */
+    fun storeCustomProperty(sourceClass: Class<*>, property: String, value: String): String {
+        val customProp = "$customPropertyPrefix${sourceClass.packageName}.$property"
+        return defineProperty(customProp, value)
+    }
+
+    /**
+     * Retrieve a custom property in the serverpackcreator.properties-file. Beware that every property you retrieve this
+     * way receives a prefix, to prevent clashes with any other properties.
+     *
+     * Said prefix consists of `custom.property.` followed by the package name of the class you provided
+     * and with the property you specified coming in last.
+     *
+     * Say you have a class in your package `de.anon.foo.bar`, and you want to store a value in the property
+     * `saved`, then the resulting property in the serverpackcreator.properties would be:
+     * `custom.property.de.anon.foo.bar.saved`
+     *
+     * @author Griefed
+     */
+    fun retrieveCustomProperty(sourceClass: Class<*>, property: String): String? {
+        val customProp = "$customPropertyPrefix${sourceClass.packageName}.$property"
+        return internalProperties.getProperty(customProp)
+    }
+
+    /**
      * Get the path to the specified Java executable/binary, wrapped in an [Optional] for your
      * convenience.
      *
@@ -1655,7 +1697,7 @@ actual class ApiProperties(
         serverFilesDirectory = File(homeDirectory, "server_files").absoluteFile
         propertiesDirectory = File(serverFilesDirectory, "properties").absoluteFile
         iconsDirectory = File(serverFilesDirectory, "icons").absoluteFile
-        configsDirectory = File(homeDirectory,"configs").absoluteFile
+        configsDirectory = File(homeDirectory, "configs").absoluteFile
         pluginsDirectory = File(homeDirectory, "plugins").absoluteFile
         manifestsDirectory = File(homeDirectory, "manifests").absoluteFile
         serverPackCreatorDatabase =
@@ -1682,7 +1724,7 @@ actual class ApiProperties(
         serverFilesDirectory.createDirectories(create = true, directory = true)
         propertiesDirectory.createDirectories(create = true, directory = true)
         iconsDirectory.createDirectories(create = true, directory = true)
-        configsDirectory.createDirectories(create = true,directory = true)
+        configsDirectory.createDirectories(create = true, directory = true)
         workDirectory.createDirectories(create = true, directory = true)
         tempDirectory.createDirectories(create = true, directory = true)
         modpacksDirectory.createDirectories(create = true, directory = true)

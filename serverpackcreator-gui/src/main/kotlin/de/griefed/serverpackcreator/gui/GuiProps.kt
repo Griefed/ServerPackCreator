@@ -33,7 +33,9 @@ import java.util.concurrent.Executors
 import javax.swing.UIManager
 
 /**
- * TODO docs
+ * Properties used at various places across the whole of the ServerPackCreator GUI, such as icons.
+ *
+ * @author Griefed
  */
 @Suppress("unused")
 class GuiProps {

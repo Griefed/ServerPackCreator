@@ -30,13 +30,18 @@ import de.griefed.serverpackcreator.api.versionmeta.VersionMeta
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.splash.SplashScreen
 import de.griefed.serverpackcreator.gui.utilities.DialogUtilities
+import de.griefed.serverpackcreator.gui.window.configs.ConfigEditorPanel
 import de.griefed.serverpackcreator.gui.window.menu.MainMenu
 import de.griefed.serverpackcreator.updater.MigrationManager
 import de.griefed.serverpackcreator.updater.UpdateChecker
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.awt.Dimension
+import java.awt.event.WindowAdapter
+import java.awt.event.WindowEvent
+import java.io.File
 import javax.swing.*
 import javax.swing.text.*
+import kotlin.system.exitProcess
 
 /**
  * TODO docs
@@ -89,7 +94,43 @@ class MainFrame(
         frame.setSize(1200, 800)
         frame.isVisible = true
         frame.isAutoRequestFocus = true
+        frame.addWindowListener(object : WindowAdapter() {
+            override fun windowClosing(event: WindowEvent) {
+                closeAndExit()
+            }
+        })
         splashScreen.close()
+    }
+
+    fun closeAndExit() {
+        if (mainPanel.configsTab.tabs.tabCount == 0) {
+            exitProcess(0)
+        }
+        val configs = mutableListOf<String>()
+        for (tab in mainPanel.configsTab.allTabs) {
+            val config = tab as ConfigEditorPanel
+            val modpackName = File(config.getModpackDirectory()).name
+            if (config.title.hasUnsavedChanges) {
+                mainPanel.configsTab.tabs.selectedComponent = tab
+                if (DialogUtilities.createShowGet(
+                        Gui.createserverpack_gui_close_unsaved_message(modpackName),
+                        Gui.createserverpack_gui_close_unsaved_title(modpackName),
+                        frame,
+                        JOptionPane.WARNING_MESSAGE,
+                        JOptionPane.YES_NO_OPTION,
+                        guiProps.warningIcon
+                    ) == 0
+                ) {
+                    config.saveCurrentConfiguration()
+                }
+            }
+            if (config.configFile != null && config.title.title != Gui.createserverpack_gui_title_new.toString()) {
+                configs.add(config.configFile!!.absolutePath)
+            }
+        }
+        apiProperties.storeCustomProperty(mainPanel.configsTab.javaClass,"lastloaded",configs.joinToString(","))
+        apiProperties.saveToDisk(apiProperties.serverPackCreatorPropertiesFile)
+        exitProcess(0)
     }
 
     /**

@@ -47,7 +47,7 @@ class MainMenu(
     val menuBar: JMenuBar = JMenuBar()
 
     init {
-        menuBar.add(FileMenu(configsTab, apiProperties, mainFrame.frame, utilities, guiProps))
+        menuBar.add(FileMenu(configsTab, apiProperties, mainFrame, utilities, guiProps))
         menuBar.add(EditMenu(utilities.fileUtilities, apiProperties, guiProps, larsonScanner))
         menuBar.add(ViewMenu(utilities, apiProperties, mainFrame))
         menuBar.add(AboutMenu(utilities.webUtilities, updateDialogs))

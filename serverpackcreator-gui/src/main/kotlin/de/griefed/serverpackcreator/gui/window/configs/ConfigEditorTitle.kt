@@ -41,8 +41,20 @@ class ConfigEditorTitle(
 
     private val errorIconLabel = JLabel(guiProps.mediumErrorIcon)
     private val warningIconLabel = JLabel(guiProps.mediumWarningIcon)
-    val titleLabel = JLabel(Gui.createserverpack_gui_title_new.toString())
+    private val titleLabel = JLabel(Gui.createserverpack_gui_title_new.toString())
     val closeButton = JButton(guiProps.closeIcon)
+    var hasUnsavedChanges: Boolean = false
+        get() {
+            return warningIconLabel.isVisible
+        }
+        private set
+    var title : String
+        get() {
+            return titleLabel.text
+        }
+        set(value) {
+            titleLabel.text = value
+        }
 
     init {
         isOpaque = false

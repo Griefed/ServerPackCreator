@@ -162,9 +162,6 @@ class ControlPanel(
         if (!configurationHandler.checkConfiguration(packConfig, encounteredErrors, true)) {
             log.info("Config check passed.")
             statusPanel.updateStatus(Gui.createserverpack_log_info_buttoncreateserverpack_checked.toString())
-            //TODO store to modpackname.conf in configs dir
-
-            packConfig.save(apiProperties.defaultConfig)
             generateServerPack(packConfig, activeTab)
         } else {
             generationFailed(encounteredErrors)

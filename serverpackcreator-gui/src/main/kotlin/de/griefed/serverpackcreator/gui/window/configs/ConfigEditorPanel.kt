@@ -107,8 +107,6 @@ class ConfigEditorPanel(
     private val legacyFabricVersions = DefaultComboBoxModel(versionMeta.legacyFabric.loaderVersionsArrayDescending())
     private val fabricVersions = DefaultComboBoxModel(versionMeta.fabric.loaderVersionsArrayDescending())
     private val quiltVersions = DefaultComboBoxModel(versionMeta.quilt.loaderVersionsArrayDescending())
-    private val propertiesQuickSelect = QuickSelect(apiProperties.propertiesQuickSelections) { setProperties() }
-    private val iconQuickSelect = QuickSelect(apiProperties.iconQuickSelections) { setIcon() }
     private val minecraftVersions =
         ActionComboBox(DefaultComboBoxModel(versionMeta.minecraft.settingsDependantVersionsArrayDescending())) { updateMinecraftValues() }
     private val modloaders =
@@ -120,6 +118,10 @@ class ConfigEditorPanel(
     private val scriptKVPairs = InteractiveTable(guiProps)
     private val pluginPanels: MutableList<ExtensionConfigPanel> = apiPlugins.getConfigPanels(this).toMutableList()
     private var lastSavedConfig: PackConfig? = null
+    val propertiesQuickSelect = QuickSelect(apiProperties.propertiesQuickSelections) { setProperties() }
+    val iconQuickSelect = QuickSelect(apiProperties.iconQuickSelections) { setIcon() }
+    var configFile: File? = null
+        private set
 
     @OptIn(DelicateCoroutinesApi::class)
     private val serverPackSuffix = ListeningTextField("", object : DocumentChangeListener {
@@ -178,7 +180,7 @@ class ConfigEditorPanel(
     private val modpackChanges = object : DocumentChangeListener {
         override fun update(e: DocumentEvent) {
             GlobalScope.launch(guiProps.configDispatcher) {
-                title.titleLabel.text = modpackDirectory.file.name
+                title.title = modpackDirectory.file.name
                 validateInputFields()
             }
         }
@@ -548,6 +550,7 @@ class ConfigEditorPanel(
         val modpackName = utilities.stringUtilities.pathSecureText(File(getModpackDirectory()).name + ".conf")
         val config = File(apiProperties.configsDirectory, modpackName)
         lastSavedConfig = getCurrentConfiguration().save(config)
+        configFile = config
         title.hideWarningIcon()
         return config
     }
@@ -698,6 +701,7 @@ class ConfigEditorPanel(
                     || includeZip.isSelected != lastSavedConfig!!.isZipCreationDesired -> {
                 title.showWarningIcon()
             }
+
             else -> {
                 title.hideWarningIcon()
             }
@@ -708,11 +712,10 @@ class ConfigEditorPanel(
      * When the GUI has finished loading, try and load the existing serverpackcreator.conf-file into
      * ServerPackCreator.
      *
-     * @param configFile The configuration file to parse and load into the GUI.
      * @author Griefed
      */
     @OptIn(DelicateCoroutinesApi::class)
-    fun loadConfiguration(packConfig: PackConfig) {
+    fun loadConfiguration(packConfig: PackConfig, confFile: File) {
         GlobalScope.launch(guiProps.configDispatcher) {
             try {
                 setModpackDirectory(packConfig.modpackDir)
@@ -746,6 +749,8 @@ class ConfigEditorPanel(
                     panel.setServerPackExtensionConfig(packConfig.getPluginConfigs(panel.pluginID))
                 }
                 lastSavedConfig = packConfig
+                configFile = confFile
+                title.hideWarningIcon()
             } catch (ex: Exception) {
                 log.error("Couldn't load configuration file.", ex)
                 JOptionPane.showMessageDialog(
