@@ -1,6 +1,5 @@
 package de.griefed.serverpackcreator.gui.components
 
-import de.griefed.serverpackcreator.gui.window.configs.ConfigEditorPanel
 import java.awt.BorderLayout
 import java.awt.Component
 import javax.swing.JPanel
@@ -21,9 +20,9 @@ abstract class TabPanel {
         }
     val allTabs: List<Component>
         get() {
-            val paneTabs = mutableListOf<ConfigEditorPanel>()
-            for (tab in 0..tabs.tabCount) {
-                paneTabs.add(tabs.getTabComponentAt(tab) as ConfigEditorPanel)
+            val paneTabs = mutableListOf<Component>()
+            for (tab in 0 until tabs.tabCount) {
+                paneTabs.add(tabs.getComponentAt(tab))
             }
             return paneTabs.toList()
         }

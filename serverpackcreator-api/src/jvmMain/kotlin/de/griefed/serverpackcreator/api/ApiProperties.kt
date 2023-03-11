@@ -631,6 +631,11 @@ actual class ApiProperties(
     val iconsDirectory: File
 
     /**
+     * Directory in which ServerPackCreator configurations from the GUI get saved in by default.
+     */
+    val configsDirectory: File
+
+    /**
      * List of server properties for quick selection in a given config tab.
      */
     val propertiesQuickSelections: List<String>
@@ -1650,6 +1655,7 @@ actual class ApiProperties(
         serverFilesDirectory = File(homeDirectory, "server_files").absoluteFile
         propertiesDirectory = File(serverFilesDirectory, "properties").absoluteFile
         iconsDirectory = File(serverFilesDirectory, "icons").absoluteFile
+        configsDirectory = File(homeDirectory,"configs").absoluteFile
         pluginsDirectory = File(homeDirectory, "plugins").absoluteFile
         manifestsDirectory = File(homeDirectory, "manifests").absoluteFile
         serverPackCreatorDatabase =
@@ -1676,6 +1682,7 @@ actual class ApiProperties(
         serverFilesDirectory.createDirectories(create = true, directory = true)
         propertiesDirectory.createDirectories(create = true, directory = true)
         iconsDirectory.createDirectories(create = true, directory = true)
+        configsDirectory.createDirectories(create = true,directory = true)
         workDirectory.createDirectories(create = true, directory = true)
         tempDirectory.createDirectories(create = true, directory = true)
         modpacksDirectory.createDirectories(create = true, directory = true)

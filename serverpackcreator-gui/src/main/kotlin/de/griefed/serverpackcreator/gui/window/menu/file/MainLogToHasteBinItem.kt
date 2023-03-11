@@ -23,7 +23,6 @@ import Gui
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.utilities.common.WebUtilities
 import de.griefed.serverpackcreator.gui.GuiProps
-import de.griefed.serverpackcreator.gui.window.menu.HasteBinMenuItem
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
 import javax.swing.JFrame
@@ -59,16 +58,16 @@ class MainLogToHasteBinItem(
                 File(apiProperties.logsDirectory, "serverpackcreator.log")
             )
         ) {
-            val urltoHasteBin: String = webUtilities.createHasteBinFromFile(
+            val urlToHasteBin: String = webUtilities.createHasteBinFromFile(
                 File(apiProperties.logsDirectory, "serverpackcreator.log")
             )
-            val textContent = "URL: %s".format(urltoHasteBin)
+            val textContent = "URL: %s".format(urlToHasteBin)
             try {
                 spcLogDocument.insertString(0, textContent, spcLogAttributeSet)
             } catch (ex: BadLocationException) {
                 log.error("Error inserting text into aboutDocument.", ex)
             }
-            displayUploadUrl(urltoHasteBin, spcLogWindowTextPane)
+            displayUploadUrl(urlToHasteBin, spcLogWindowTextPane)
         } else {
             fileTooLargeDialog()
         }

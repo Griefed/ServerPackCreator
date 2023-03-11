@@ -19,5 +19,45 @@
  */
 package de.griefed.serverpackcreator.gui.window.menu.file
 
-class SaveConfigAsItem {
+import Gui
+import de.griefed.serverpackcreator.api.ApiProperties
+import de.griefed.serverpackcreator.gui.window.configs.ConfigsTab
+import org.apache.logging.log4j.kotlin.cachedLoggerOf
+import java.io.File
+import javax.swing.JFileChooser
+import javax.swing.JFrame
+import javax.swing.JMenuItem
+
+/**
+ * Menu item to store the currently selected configuration-tabs config under a custom file and path.
+ *
+ * @author Griefed
+ */
+class SaveConfigAsItem(
+    private val apiProperties: ApiProperties,
+    private val mainFrame: JFrame,
+    private val configsTab: ConfigsTab
+) : JMenuItem(Gui.menubar_gui_menuitem_saveas.toString()) {
+    private val log = cachedLoggerOf(this.javaClass)
+
+    init {
+        addActionListener { saveAs() }
+    }
+
+    private fun saveAs() {
+        val configChooser = ConfigChooser(apiProperties, Gui.menubar_gui_menuitem_saveas_title.toString())
+        if (configChooser.showOpenDialog(mainFrame) == JFileChooser.APPROVE_OPTION) {
+            if (configChooser.selectedFile.path.endsWith(".conf")) {
+                configsTab.selectedEditor!!.getCurrentConfiguration().save(
+                    configChooser.selectedFile.absoluteFile
+                )
+                log.debug("Saved configuration to: ${configChooser.selectedFile.absoluteFile}")
+            } else {
+                configsTab.selectedEditor!!.getCurrentConfiguration().save(
+                    File("${configChooser.selectedFile.absoluteFile}.conf")
+                )
+                log.debug("Saved configuration to: ${configChooser.selectedFile.absoluteFile}.conf")
+            }
+        }
+    }
 }

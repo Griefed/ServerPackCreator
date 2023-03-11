@@ -19,5 +19,32 @@
  */
 package de.griefed.serverpackcreator.gui.window.menu.view
 
-class ViewMenu {
+import Gui
+import de.griefed.serverpackcreator.api.ApiProperties
+import de.griefed.serverpackcreator.api.utilities.common.Utilities
+import de.griefed.serverpackcreator.gui.window.MainFrame
+import javax.swing.JMenu
+import javax.swing.JSeparator
+
+/**
+ * Menu revolving around viewing directories and logs, mainly.
+ *
+ * @author Griefed
+ */
+class ViewMenu(utilities: Utilities,apiProperties: ApiProperties, mainFrame: MainFrame) : JMenu(Gui.menubar_gui_menu_view.toString()) {
+    init {
+        add(HomeDirItem(utilities.fileUtilities,apiProperties))
+        add(ServerPacksDirItem(utilities.fileUtilities,apiProperties))
+        add(ServerFilesDirItem(utilities.fileUtilities,apiProperties))
+        add(ConfigsDirItem(utilities.fileUtilities,apiProperties))
+        add(JSeparator())
+        add(PluginsDirItem(utilities.fileUtilities,apiProperties))
+        add(PluginsConfigDirItem(utilities.fileUtilities,apiProperties))
+        add(JSeparator())
+        add(MigrationInfoItem(mainFrame))
+        add(JSeparator())
+        add(ServerPackCreatorLogItem(utilities.fileUtilities,apiProperties))
+        add(PluginsLogItem(utilities.fileUtilities,apiProperties))
+        add(ModloaderInstallerLogItem(utilities.fileUtilities,apiProperties))
+    }
 }

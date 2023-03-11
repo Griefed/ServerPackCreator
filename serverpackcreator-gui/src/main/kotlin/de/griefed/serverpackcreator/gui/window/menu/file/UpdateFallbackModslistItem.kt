@@ -39,6 +39,7 @@ class UpdateFallbackModslistItem(
     init {
         addActionListener { updateFallbacks() }
     }
+
     private fun updateFallbacks() {
         if (apiProperties.updateFallback()) {
             JOptionPane.showMessageDialog(

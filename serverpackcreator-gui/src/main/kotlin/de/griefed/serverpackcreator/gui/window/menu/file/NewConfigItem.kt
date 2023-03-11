@@ -19,5 +19,16 @@
  */
 package de.griefed.serverpackcreator.gui.window.menu.file
 
-class NewConfigItem {
+import de.griefed.serverpackcreator.gui.window.configs.ConfigsTab
+import javax.swing.JMenuItem
+
+/**
+ * Menu item which adds a new configuration-tab with default values.
+ *
+ * @author Griefed
+ */
+class NewConfigItem(private val configsTab: ConfigsTab): JMenuItem(Gui.menubar_gui_menuitem_newconfig.toString()) {
+    init {
+        addActionListener { configsTab.addTab() }
+    }
 }

@@ -29,28 +29,32 @@ import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import de.griefed.serverpackcreator.api.versionmeta.VersionMeta
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.splash.SplashScreen
+import de.griefed.serverpackcreator.gui.utilities.DialogUtilities
 import de.griefed.serverpackcreator.gui.window.menu.MainMenu
 import de.griefed.serverpackcreator.updater.MigrationManager
 import de.griefed.serverpackcreator.updater.UpdateChecker
-import javax.swing.JFrame
-import javax.swing.WindowConstants
+import org.apache.logging.log4j.kotlin.cachedLoggerOf
+import java.awt.Dimension
+import javax.swing.*
+import javax.swing.text.*
 
 /**
  * TODO docs
  */
 class MainFrame(
-    guiProps: GuiProps,
+    private val guiProps: GuiProps,
     configurationHandler: ConfigurationHandler,
     serverPackHandler: ServerPackHandler,
-    apiProperties: ApiProperties,
+    private val apiProperties: ApiProperties,
     versionMeta: VersionMeta,
     utilities: Utilities,
     updateChecker: UpdateChecker,
     splashScreen: SplashScreen,
     apiPlugins: ApiPlugins,
-    migrationManager: MigrationManager
+    private val migrationManager: MigrationManager
 ) {
-    private val mainFrame: JFrame = JFrame(Gui.createserverpack_gui_createandshowgui.toString())
+    private val log = cachedLoggerOf(this.javaClass)
+    val frame: JFrame = JFrame(Gui.createserverpack_gui_createandshowgui.toString())
     private val larsonScanner = LarsonScanner()
     private val mainPanel = MainPanel(
         guiProps,
@@ -64,31 +68,82 @@ class MainFrame(
         migrationManager,
         larsonScanner
     )
-    private val updateDialogs = UpdateDialogs(guiProps, utilities.webUtilities, apiProperties, updateChecker, mainFrame)
+    private val updateDialogs = UpdateDialogs(guiProps, utilities.webUtilities, apiProperties, updateChecker, frame)
     private val mainMenu = MainMenu(
         guiProps,
-        configurationHandler,
-        serverPackHandler,
         apiProperties,
-        versionMeta,
         utilities,
-        updateChecker,
-        apiPlugins,
-        migrationManager,
+        updateDialogs,
         larsonScanner,
-        mainPanel.configsTab
+        mainPanel.configsTab,
+        this
     )
 
     init {
-        mainFrame.iconImage = guiProps.appIcon
-        mainFrame.jMenuBar = mainMenu.menuBar
-        mainFrame.contentPane.add(mainPanel.scroll)
-        mainFrame.pack()
-        mainFrame.defaultCloseOperation = WindowConstants.EXIT_ON_CLOSE
-        mainFrame.isLocationByPlatform = true
-        mainFrame.setSize(1200, 800)
-        mainFrame.isVisible = true
-        mainFrame.isAutoRequestFocus = true
+        frame.iconImage = guiProps.appIcon
+        frame.jMenuBar = mainMenu.menuBar
+        frame.contentPane.add(mainPanel.scroll)
+        frame.pack()
+        frame.defaultCloseOperation = WindowConstants.EXIT_ON_CLOSE
+        frame.isLocationByPlatform = true
+        frame.setSize(1200, 800)
+        frame.isVisible = true
+        frame.isAutoRequestFocus = true
         splashScreen.close()
+    }
+
+    /**
+     * Display the available migration messages.
+     *
+     * @author Griefed
+     */
+    fun displayMigrationMessages() {
+        val styledDocument: StyledDocument = DefaultStyledDocument()
+        val simpleAttributeSet = SimpleAttributeSet()
+        StyleConstants.setBold(simpleAttributeSet, true)
+        StyleConstants.setFontSize(simpleAttributeSet, 14)
+        StyleConstants.setAlignment(simpleAttributeSet, StyleConstants.ALIGN_LEFT)
+        styledDocument.setParagraphAttributes(
+            0, styledDocument.length, simpleAttributeSet, false
+        )
+        val jTextPane = JTextPane(styledDocument)
+        jTextPane.setCharacterAttributes(simpleAttributeSet, true)
+
+        val messages = StringBuilder()
+        if (apiProperties.apiVersion != "dev") {
+            if (migrationManager.migrationMessages.isEmpty()) {
+                messages.append("No migrations occurred. :)")
+            } else {
+                for (message in migrationManager.migrationMessages) {
+                    messages.append(message.get()).append("\n")
+                }
+            }
+        } else {
+            messages.append("No migrations will occur in a dev-version of SPC.")
+        }
+
+        try {
+            styledDocument.insertString(0, messages.toString(), simpleAttributeSet)
+        } catch (ex: BadLocationException) {
+            log.error("Error inserting text into aboutDocument.", ex)
+        }
+
+        val scrollPane = JScrollPane(
+            jTextPane,
+            JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+            JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
+        )
+        scrollPane.preferredSize = Dimension(800, 400)
+        jTextPane.isEditable = false
+
+        DialogUtilities.createDialog(
+            scrollPane,
+            Gui.migration_message_title.toString(),
+            frame,
+            JOptionPane.INFORMATION_MESSAGE,
+            JOptionPane.DEFAULT_OPTION,
+            guiProps.infoIcon,
+            true
+        )
     }
 }

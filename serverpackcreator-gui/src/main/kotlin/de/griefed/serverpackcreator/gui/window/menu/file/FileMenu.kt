@@ -19,10 +19,33 @@
  */
 package de.griefed.serverpackcreator.gui.window.menu.file
 
+import Gui
+import de.griefed.serverpackcreator.api.ApiProperties
+import de.griefed.serverpackcreator.api.utilities.common.Utilities
+import de.griefed.serverpackcreator.gui.GuiProps
+import de.griefed.serverpackcreator.gui.window.configs.ConfigsTab
+import javax.swing.JFrame
 import javax.swing.JMenu
+import javax.swing.JSeparator
 
-class FileMenu: JMenu(Gui.menubar_gui_menu_file.toString()) {
+class FileMenu(
+    configsTab: ConfigsTab,
+    apiProperties: ApiProperties,
+    mainFrame: JFrame,
+    utilities: Utilities,
+    guiProps: GuiProps
+) : JMenu(Gui.menubar_gui_menu_file.toString()) {
     init {
-
+        add(NewConfigItem(configsTab))
+        add(LoadConfigItem(apiProperties, mainFrame, utilities.fileUtilities, guiProps, configsTab))
+        add(JSeparator())
+        add(SaveConfigItem(configsTab,apiProperties,utilities.stringUtilities))
+        add(SaveConfigAsItem(apiProperties,mainFrame,configsTab))
+        add(SaveAllConfigsItem(apiProperties,configsTab,utilities.stringUtilities))
+        add(JSeparator())
+        add(MainLogToHasteBinItem(utilities.webUtilities,apiProperties,guiProps,mainFrame))
+        add(ConfigToHasteBinItem(configsTab,utilities.webUtilities,apiProperties,guiProps,mainFrame))
+        add(JSeparator())
+        add(ExitItem(mainFrame))
     }
 }

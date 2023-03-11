@@ -42,6 +42,7 @@ class SwitchThemeMenu(private val guiProps: GuiProps, private val larsonScanner:
             item.addActionListener { changeTheme(theme) }
             add(item)
         }
+        // TODO store theme in properties
     }
     /**
      * Change the theme to the provided [theme], updating the whole GUI and the current [larsonScanner] configuration

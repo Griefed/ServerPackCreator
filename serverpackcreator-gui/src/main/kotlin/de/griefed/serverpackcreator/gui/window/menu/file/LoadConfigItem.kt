@@ -27,14 +27,12 @@ import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.utilities.DialogUtilities
 import de.griefed.serverpackcreator.gui.window.configs.ConfigsTab
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
-import java.awt.Dimension
 import java.io.File
 import java.io.IOException
 import javax.swing.JFileChooser
 import javax.swing.JFrame
 import javax.swing.JMenuItem
 import javax.swing.JOptionPane
-import javax.swing.filechooser.FileNameExtensionFilter
 
 /**
  * Menu item to load a configuration from a file into a new or the currently selected tab in the GUI.
@@ -55,7 +53,7 @@ class LoadConfigItem(
     }
 
     private fun loadConfigFile() {
-        val configChooser = ConfigChooser()
+        val configChooser = ConfigChooser(apiProperties,Gui.createserverpack_gui_buttonloadconfig_title.toString())
         if (configChooser.showOpenDialog(mainFrame) == JFileChooser.APPROVE_OPTION) {
             try {
                 /* This log is meant to be read by the user, therefore we allow translation. */
@@ -85,17 +83,6 @@ class LoadConfigItem(
                 log.error("Error loading configuration from selected file.", ex)
             }
             log.debug("Configuration successfully loaded.")
-        }
-    }
-    private inner class ConfigChooser: JFileChooser() {
-        init {
-            currentDirectory = apiProperties.homeDirectory
-            dialogTitle = Gui.createserverpack_gui_buttonloadconfig_title.toString()
-            fileSelectionMode = FILES_ONLY
-            fileFilter = FileNameExtensionFilter(Gui.createserverpack_gui_buttonloadconfig_filter.toString(), "conf")
-            isAcceptAllFileFilterUsed = false
-            isMultiSelectionEnabled = false
-            preferredSize = Dimension(750, 450)
         }
     }
 }

@@ -163,9 +163,11 @@ class MainMenuBar(
         val fileUploadSPCLogToHasteNin = JMenuItem(Gui.menubar_gui_menuitem_uploadlog.toString())
         val fileUpdateFallbackModsList = JMenuItem(Gui.menubar_gui_menuitem_updatefallback.toString())
         val fileExitConfigMenuItem = JMenuItem(Gui.menubar_gui_menuitem_exit.toString())
+
         val editSwitchTheme = JMenuItem(Gui.menubar_gui_menuitem_theme.toString())
         val editOpenInEditorServerProperties = JMenuItem(Gui.menubar_gui_menuitem_serverproperties.toString())
         val editOpenInEditorServerIcon = JMenuItem(Gui.menubar_gui_menuitem_servericon.toString())
+
         val viewOpenPluginsDirectoryMenuItem = JMenuItem(Gui.menubar_gui_menuitem_pluginsdir.toString())
         val viewExamplePluginRepositoryMenuItem = JMenuItem(Gui.menubar_gui_menuitem_examplepluginrepo.toString())
         val viewOpenSPCDirectoryMenuItem = JMenuItem(Gui.menubar_gui_menuitem_spcdir.toString())

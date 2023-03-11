@@ -17,32 +17,23 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.gui.window.menu.file
+package de.griefed.serverpackcreator.gui.window.menu.view
 
 import Gui
 import de.griefed.serverpackcreator.api.ApiProperties
-import de.griefed.serverpackcreator.api.utilities.common.StringUtilities
-import de.griefed.serverpackcreator.gui.window.configs.ConfigsTab
-import java.io.File
+import de.griefed.serverpackcreator.api.utilities.common.FileUtilities
 import javax.swing.JMenuItem
 
 /**
- * Menu item to save the currently selected server pack configuration.
+ * Menu item to open the configs-directory of ServerPackCreator in the users file-explorer.
  *
  * @author Griefed
  */
-class SaveConfigItem(
-    private val configsTab: ConfigsTab,
-    private val apiProperties: ApiProperties,
-    private val stringUtilities: StringUtilities
-) : JMenuItem(Gui.menubar_gui_menuitem_saveconfig.toString()) {
+class ConfigsDirItem(
+    fileUtilities: FileUtilities,
+    apiProperties: ApiProperties
+) : JMenuItem(Gui.menubar_gui_menuitem_configdir.toString()) {
     init {
-        addActionListener { save() }
-    }
-
-    private fun save() {
-        val tab = configsTab.selectedEditor!!
-        val configName = stringUtilities.pathSecureText(File(tab.getModpackDirectory()).name + ".conf")
-        tab.getCurrentConfiguration().save(File(apiProperties.configsDirectory,configName))
+        addActionListener { fileUtilities.openFolder(apiProperties.configsDirectory) }
     }
 }
