@@ -44,17 +44,21 @@ import javax.swing.Timer
 import javax.swing.event.DocumentEvent
 
 /**
- * TODO docs
+ * Panel to edit a server pack configuration. This panel contains any and all elements required to fully configure
+ * a server pack to the users liking.
+ *
+ * @author Griefed
  */
 class ConfigEditorPanel(
-    private val guiProps: GuiProps, private val configsTab: ConfigsTab,
+    private val guiProps: GuiProps,
+    configsTab: ConfigsTab,
     private val configurationHandler: ConfigurationHandler,
     private val apiProperties: ApiProperties,
     private val versionMeta: VersionMeta,
     private val utilities: Utilities,
     private val serverPackHandler: ServerPackHandler,
     apiPlugins: ApiPlugins,
-    private val showBrowser: ActionListener
+    showBrowser: ActionListener
 ) : JPanel(
     MigLayout(
         "left,wrap",
@@ -89,8 +93,9 @@ class ConfigEditorPanel(
         ActionCheckBox(Gui.createserverpack_gui_createserverpack_checkboxicon.toString()) { validateServerIcon() }
     private val includeProperties =
         ActionCheckBox(Gui.createserverpack_gui_createserverpack_checkboxproperties.toString()) { validateServerProperties() }
+
     @OptIn(DelicateCoroutinesApi::class)
-    private val prepareServer =
+    private val includeServer =
         ActionCheckBox(Gui.createserverpack_gui_createserverpack_checkboxserver.toString()) {
             GlobalScope.launch(guiProps.configDispatcher) {
                 checkServer()
@@ -111,8 +116,10 @@ class ConfigEditorPanel(
     private val modloaderVersions = ActionComboBox { updateMinecraftValues() }
     private val aikarsFlags = JButton()
     private val modpackDirectory = FileTextField("")
-    private val startArgs = ScrollTextArea("-Xmx4G -Xms4G")
+    private val javaArgs = ScrollTextArea("-Xmx4G -Xms4G")
     private val scriptKVPairs = InteractiveTable(guiProps)
+    private val pluginPanels: MutableList<ExtensionConfigPanel> = apiPlugins.getConfigPanels(this).toMutableList()
+    private var lastSavedConfig: PackConfig? = null
 
     @OptIn(DelicateCoroutinesApi::class)
     private val serverPackSuffix = ListeningTextField("", object : DocumentChangeListener {
@@ -221,19 +228,18 @@ class ConfigEditorPanel(
                         )
                     }
                 }
+                launch {
+                    compareSettings()
+                }
             }
             if (errors.isEmpty()) {
-                title.clearErrorIcon()
+                title.hideErrorIcon()
             } else {
-                title.setErrorIcon("<html>${errors.joinToString("<br>")}</html>")
+                title.setAndShowErrorIcon("<html>${errors.joinToString("<br>")}</html>")
             }
         }
     }
 
-    val pluginPanels: MutableList<ExtensionConfigPanel> = apiPlugins.getConfigPanels(this).toMutableList()
-
-    //TODO unsaved changes warning!
-    var lastLoadedConfiguration: PackConfig? = null
     val title = ConfigEditorTitle(guiProps, configsTab, this)
 
     init {
@@ -348,7 +354,7 @@ class ConfigEditorPanel(
         add(includeProperties, "cell 2 9, w 200!")
         //Install Local Server
         add(prepareServerInfo, "cell 2 9, w 40!,grow")
-        add(prepareServer, "cell 2 9, w 200!")
+        add(includeServer, "cell 2 9, w 200!")
 
         // Advanced Settings
         add(CollapsiblePanel(
@@ -370,7 +376,7 @@ class ConfigEditorPanel(
                     guiProps.resetIcon,
                     Gui.createserverpack_gui_buttonclientmods_reset_tip.toString()
                 ) { setClientSideMods(apiProperties.clientSideMods()) },
-                startArgs,
+                javaArgs,
                 aikarsFlags,
                 scriptKVPairs,
                 IconActionButton(
@@ -394,6 +400,7 @@ class ConfigEditorPanel(
             )
         }
         validateInputFields()
+        lastSavedConfig = getCurrentConfiguration()
     }
 
     /**
@@ -429,7 +436,7 @@ class ConfigEditorPanel(
     }
 
     override fun setJavaArguments(javaArguments: String) {
-        startArgs.text = javaArguments
+        javaArgs.text = javaArguments
     }
 
     override fun setMinecraftVersion(version: String) {
@@ -477,7 +484,7 @@ class ConfigEditorPanel(
     }
 
     override fun setServerInstallationTicked(ticked: Boolean) {
-        prepareServer.isSelected = ticked
+        includeServer.isSelected = ticked
     }
 
     override fun setServerPackSuffix(suffix: String) {
@@ -537,9 +544,16 @@ class ConfigEditorPanel(
         )
     }
 
-    // TODO rename to getStartArguments ?
+    override fun saveCurrentConfiguration(): File {
+        val modpackName = utilities.stringUtilities.pathSecureText(File(getModpackDirectory()).name + ".conf")
+        val config = File(apiProperties.configsDirectory, modpackName)
+        lastSavedConfig = getCurrentConfiguration().save(config)
+        title.hideWarningIcon()
+        return config
+    }
+
     override fun getJavaArguments(): String {
-        return startArgs.text
+        return javaArgs.text
     }
 
     override fun getMinecraftVersion(): String {
@@ -607,7 +621,7 @@ class ConfigEditorPanel(
     }
 
     override fun isServerInstallationTicked(): Boolean {
-        return prepareServer.isSelected
+        return includeServer.isSelected
     }
 
     override fun isServerIconInclusionTicked(): Boolean {
@@ -657,6 +671,91 @@ class ConfigEditorPanel(
             versionMeta.minecraft.getServer(getMinecraftVersion()).get().javaVersion().get().toString()
         } else {
             "?"
+        }
+    }
+
+    private fun compareSettings() {
+        if (lastSavedConfig == null) {
+            title.showWarningIcon()
+            return
+        }
+
+        when {
+            getClientSideModsList() != lastSavedConfig!!.clientMods
+                    || getCopyDirectoriesList() != lastSavedConfig!!.copyDirs
+                    || includeIcon.isSelected != lastSavedConfig!!.isServerIconInclusionDesired
+                    || getJavaArguments() != lastSavedConfig!!.javaArgs
+                    || getMinecraftVersion() != lastSavedConfig!!.minecraftVersion
+                    || getModloader() != lastSavedConfig!!.modloader
+                    || getModloaderVersion() != lastSavedConfig!!.modloaderVersion
+                    || getModpackDirectory() != lastSavedConfig!!.modpackDir
+                    || includeProperties.isSelected != lastSavedConfig!!.isServerPropertiesInclusionDesired
+                    || getScriptSettings() != lastSavedConfig!!.scriptSettings
+                    || getServerIconPath() != lastSavedConfig!!.serverIconPath
+                    || includeServer.isSelected != lastSavedConfig!!.isServerInstallationDesired
+                    || getServerPackSuffix() != lastSavedConfig!!.serverPackSuffix
+                    || getServerPropertiesPath() != lastSavedConfig!!.serverPropertiesPath
+                    || includeZip.isSelected != lastSavedConfig!!.isZipCreationDesired -> {
+                title.showWarningIcon()
+            }
+            else -> {
+                title.hideWarningIcon()
+            }
+        }
+    }
+
+    /**
+     * When the GUI has finished loading, try and load the existing serverpackcreator.conf-file into
+     * ServerPackCreator.
+     *
+     * @param configFile The configuration file to parse and load into the GUI.
+     * @author Griefed
+     */
+    @OptIn(DelicateCoroutinesApi::class)
+    fun loadConfiguration(packConfig: PackConfig) {
+        GlobalScope.launch(guiProps.configDispatcher) {
+            try {
+                setModpackDirectory(packConfig.modpackDir)
+                if (packConfig.clientMods.isEmpty()) {
+                    setClientSideMods(apiProperties.clientSideMods())
+                    log.debug("Set clientMods with fallback list.")
+                } else {
+                    setClientSideMods(packConfig.clientMods)
+                }
+                if (packConfig.copyDirs.isEmpty()) {
+                    setCopyDirectories(mutableListOf("mods", "config"))
+                } else {
+                    setCopyDirectories(packConfig.copyDirs)
+                }
+                setScriptVariables(packConfig.scriptSettings)
+                setServerIconPath(packConfig.serverIconPath)
+                setServerPropertiesPath(packConfig.serverPropertiesPath)
+                if (packConfig.minecraftVersion.isEmpty()) {
+                    packConfig.minecraftVersion = versionMeta.minecraft.latestRelease().version
+                }
+                setMinecraftVersion(packConfig.minecraftVersion)
+                setModloader(packConfig.modloader)
+                setModloaderVersion(packConfig.modloaderVersion)
+                setServerInstallationTicked(packConfig.isServerInstallationDesired)
+                setIconInclusionTicked(packConfig.isServerIconInclusionDesired)
+                setPropertiesInclusionTicked(packConfig.isServerPropertiesInclusionDesired)
+                setZipArchiveCreationTicked(packConfig.isZipCreationDesired)
+                setJavaArguments(packConfig.javaArgs)
+                setServerPackSuffix(packConfig.serverPackSuffix)
+                for (panel in pluginPanels) {
+                    panel.setServerPackExtensionConfig(packConfig.getPluginConfigs(panel.pluginID))
+                }
+                lastSavedConfig = packConfig
+            } catch (ex: Exception) {
+                log.error("Couldn't load configuration file.", ex)
+                JOptionPane.showMessageDialog(
+                    this@ConfigEditorPanel,
+                    Gui.createserverpack_gui_config_load_error_message.toString() + " " + ex.cause + "   ",
+                    Gui.createserverpack_gui_config_load_error.toString(),
+                    JOptionPane.ERROR_MESSAGE,
+                    guiProps.errorIcon
+                )
+            }
         }
     }
 
@@ -1008,8 +1107,8 @@ class ConfigEditorPanel(
      * TODO docs
      */
     private fun revertScriptKVPairs() {
-        if (lastLoadedConfiguration != null) {
-            setScriptVariables(lastLoadedConfiguration!!.scriptSettings)
+        if (lastSavedConfig != null) {
+            setScriptVariables(lastSavedConfig!!.scriptSettings)
         }
     }
 
@@ -1027,8 +1126,8 @@ class ConfigEditorPanel(
      * @author Griefed
      */
     private fun revertExclusions() {
-        if (lastLoadedConfiguration != null) {
-            setClientSideMods(lastLoadedConfiguration!!.clientMods)
+        if (lastSavedConfig != null) {
+            setClientSideMods(lastSavedConfig!!.clientMods)
             validateInputFields()
         }
     }
@@ -1040,8 +1139,8 @@ class ConfigEditorPanel(
      * @author Griefed
      */
     private fun revertServerPackFiles() {
-        if (lastLoadedConfiguration != null) {
-            setCopyDirectories(lastLoadedConfiguration!!.copyDirs)
+        if (lastSavedConfig != null) {
+            setCopyDirectories(lastSavedConfig!!.copyDirs)
             validateInputFields()
         }
     }

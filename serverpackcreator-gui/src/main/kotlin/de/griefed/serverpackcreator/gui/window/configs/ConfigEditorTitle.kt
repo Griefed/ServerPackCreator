@@ -70,31 +70,31 @@ class ConfigEditorTitle(
     }
 
     /**
-     * TODO docs
+     * Show the error icon, indicating the configuration has errors.
      */
-    fun setErrorIcon(tooltip: String = Gui.configuration_title_error.toString()) {
+    fun setAndShowErrorIcon(tooltip: String = Gui.configuration_title_error.toString()) {
         errorIconLabel.isVisible = true
         errorIconLabel.toolTipText = tooltip
     }
 
     /**
-     * TODO docs
+     * Show the warning icon, indicating the configuration has unsaved changes.
      */
-    fun setWarningIcon() {
+    fun showWarningIcon() {
         warningIconLabel.isVisible = true
     }
 
     /**
-     * TODO docs
+     * Hide the error icon, indicating the configuration is free from errors.
      */
-    fun clearErrorIcon() {
+    fun hideErrorIcon() {
         errorIconLabel.isVisible = false
     }
 
     /**
-     * TODO docs
+     * Hide the warning icon, indicating the configuration has no unsaved changes.
      */
-    fun clearWarningIcon() {
+    fun hideWarningIcon() {
         warningIconLabel.isVisible = false
     }
 }

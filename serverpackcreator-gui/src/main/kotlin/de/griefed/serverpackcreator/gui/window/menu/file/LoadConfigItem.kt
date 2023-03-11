@@ -54,6 +54,8 @@ class LoadConfigItem(
 
     private fun loadConfigFile() {
         val configChooser = ConfigChooser(apiProperties,Gui.createserverpack_gui_buttonloadconfig_title.toString())
+        // TODO make configChooser.isMultiSelectionEnabled = true work
+        // TODO if no tab available, automatically new tab
         if (configChooser.showOpenDialog(mainFrame) == JFileChooser.APPROVE_OPTION) {
             try {
                 /* This log is meant to be read by the user, therefore we allow translation. */

@@ -20,10 +20,7 @@
 package de.griefed.serverpackcreator.gui.window.menu.file
 
 import Gui
-import de.griefed.serverpackcreator.api.ApiProperties
-import de.griefed.serverpackcreator.api.utilities.common.StringUtilities
 import de.griefed.serverpackcreator.gui.window.configs.ConfigsTab
-import java.io.File
 import javax.swing.JMenuItem
 
 /**
@@ -31,18 +28,12 @@ import javax.swing.JMenuItem
  *
  * @author Griefed
  */
-class SaveConfigItem(
-    private val configsTab: ConfigsTab,
-    private val apiProperties: ApiProperties,
-    private val stringUtilities: StringUtilities
-) : JMenuItem(Gui.menubar_gui_menuitem_saveconfig.toString()) {
+class SaveConfigItem(private val configsTab: ConfigsTab) : JMenuItem(Gui.menubar_gui_menuitem_saveconfig.toString()) {
     init {
         addActionListener { save() }
     }
 
     private fun save() {
-        val tab = configsTab.selectedEditor!!
-        val configName = stringUtilities.pathSecureText(File(tab.getModpackDirectory()).name + ".conf")
-        tab.getCurrentConfiguration().save(File(apiProperties.configsDirectory,configName))
+        configsTab.selectedEditor!!.saveCurrentConfiguration()
     }
 }

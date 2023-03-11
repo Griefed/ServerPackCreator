@@ -31,6 +31,9 @@ import javax.swing.JMenuItem
 class ExitItem(mainFrame: JFrame): JMenuItem(Gui.menubar_gui_menuitem_exit.toString()) {
     private val windowEvent: WindowEvent = WindowEvent(mainFrame, WindowEvent.WINDOW_CLOSING)
     init {
+        //TODO warn if unsaved changes
+        //TODO store last opened configs
+        //TODO reopen last opened configs
         addActionListener { mainFrame.dispatchEvent(windowEvent) }
     }
 }

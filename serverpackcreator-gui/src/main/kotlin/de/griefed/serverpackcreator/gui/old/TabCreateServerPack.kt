@@ -1805,6 +1805,10 @@ class TabCreateServerPack(
         )
     }
 
+    override fun saveCurrentConfiguration(): File {
+        return File("")
+    }
+
     /**
      * Get the list of clientside-only mods to exclude from the server pack.
      *

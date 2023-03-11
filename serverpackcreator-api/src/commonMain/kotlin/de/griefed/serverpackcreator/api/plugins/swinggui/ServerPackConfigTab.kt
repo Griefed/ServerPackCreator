@@ -20,6 +20,7 @@
 package de.griefed.serverpackcreator.api.plugins.swinggui
 
 import de.griefed.serverpackcreator.api.PackConfig
+import de.griefed.serverpackcreator.api.utilities.File
 
 /**
  * Force every server pack configuration tab to provide a certain set of methods. Said set of methods give plugins
@@ -53,6 +54,7 @@ interface ServerPackConfigTab {
     fun getCopyDirectories(): String
     fun getCopyDirectoriesList(): MutableList<String>
     fun getCurrentConfiguration(): PackConfig
+    fun saveCurrentConfiguration(): File
     fun getJavaArguments(): String
     fun getMinecraftVersion(): String
     fun getModloader(): String
