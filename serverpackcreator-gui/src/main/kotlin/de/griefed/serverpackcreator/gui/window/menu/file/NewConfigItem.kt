@@ -19,6 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui.window.menu.file
 
+import Gui
 import de.griefed.serverpackcreator.gui.window.configs.ConfigsTab
 import javax.swing.JMenuItem
 
@@ -27,7 +28,7 @@ import javax.swing.JMenuItem
  *
  * @author Griefed
  */
-class NewConfigItem(private val configsTab: ConfigsTab): JMenuItem(Gui.menubar_gui_menuitem_newconfig.toString()) {
+class NewConfigItem(private val configsTab: ConfigsTab) : JMenuItem(Gui.menubar_gui_menuitem_newconfig.toString()) {
     init {
         addActionListener { configsTab.addTab() }
     }

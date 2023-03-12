@@ -39,9 +39,11 @@ class FileTypeComparator : Comparator<TreeNode> {
             f1.isDirectory == f2.isDirectory -> {
                 f1.name.compareTo(f2.name)
             }
+
             f1.isDirectory -> {
                 -1
             }
+
             else -> 1
         }
     }

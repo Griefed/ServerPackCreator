@@ -17,16 +17,13 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.gui.window.configs.components
+package de.griefed.serverpackcreator.gui.window.configs.components.specific
 
-import java.awt.event.ActionListener
-import javax.swing.JCheckBox
+import Gui
+import de.griefed.serverpackcreator.gui.GuiProps
+import de.griefed.serverpackcreator.gui.window.configs.components.general.StatusIcon
 
-/**
- * TODO docs
- */
-class ActionCheckBox(title: String, actionListener: ActionListener): JCheckBox(title) {
-    init {
-        addActionListener(actionListener)
-    }
-}
+class ModloaderVersionInfo(guiProps: GuiProps) : StatusIcon(
+    guiProps,
+    Gui.createserverpack_gui_createserverpack_labelmodloaderversion_tip.toString()
+)

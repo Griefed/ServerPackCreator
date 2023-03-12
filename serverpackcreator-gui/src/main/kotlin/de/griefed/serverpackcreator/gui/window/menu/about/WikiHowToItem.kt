@@ -19,6 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui.window.menu.about
 
+import Gui
 import de.griefed.serverpackcreator.api.utilities.common.WebUtilities
 import java.net.URI
 import javax.swing.JMenuItem
@@ -28,11 +29,14 @@ import javax.swing.JMenuItem
  *
  * @author Griefed
  */
-class WikiHowToItem(private val webUtilities: WebUtilities): JMenuItem(Gui.menubar_gui_menuitem_wiki_howto.toString()) {
+class WikiHowToItem(private val webUtilities: WebUtilities) :
+    JMenuItem(Gui.menubar_gui_menuitem_wiki_howto.toString()) {
     private val howto = URI.create("https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-HowTo")
+
     init {
         addActionListener { openHowTo() }
     }
+
     private fun openHowTo() {
         webUtilities.openLinkInBrowser(howto)
     }

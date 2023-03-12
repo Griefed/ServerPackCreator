@@ -97,7 +97,7 @@ class ControlPanel(
                 panel,
                 Gui.createserverpack_log_error_configuration_none_message.toString(),
                 Gui.createserverpack_log_error_configuration_none_title.toString(),
-                JOptionPane.INFORMATION_MESSAGE,guiProps.largeInfoIcon
+                JOptionPane.INFORMATION_MESSAGE, guiProps.largeInfoIcon
             )
             statusPanel.updateStatus(Gui.createserverpack_log_error_configuration_none_message.toString())
             readyForGeneration()
@@ -105,9 +105,9 @@ class ControlPanel(
         }
         if (configsTab.selectedEditor!!.getCopyDirectories() == "lazy_mode") {
             val message = Gui.configuration_log_warn_checkconfig_copydirs_lazymode0.toString() + "\n" +
-            Gui.configuration_log_warn_checkconfig_copydirs_lazymode1.toString() + "\n" +
-            Gui.configuration_log_warn_checkconfig_copydirs_lazymode2.toString() + "\n" +
-            Gui.configuration_log_warn_checkconfig_copydirs_lazymode3.toString()
+                    Gui.configuration_log_warn_checkconfig_copydirs_lazymode1.toString() + "\n" +
+                    Gui.configuration_log_warn_checkconfig_copydirs_lazymode2.toString() + "\n" +
+                    Gui.configuration_log_warn_checkconfig_copydirs_lazymode3.toString()
             decision = JOptionPane.showConfirmDialog(
                 panel,
                 message,

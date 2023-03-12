@@ -17,32 +17,31 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.gui.window.configs.components
+package de.griefed.serverpackcreator.gui.window.configs.components.general
 
 import de.griefed.serverpackcreator.gui.GuiProps
-import de.griefed.serverpackcreator.gui.utilities.getScaledInstance
 import net.java.balloontip.BalloonTip
-import java.awt.Image
 import java.awt.event.MouseEvent
 import java.awt.event.MouseListener
-import javax.swing.ImageIcon
 import javax.swing.JLabel
 
 /**
  * TODO docs
  */
-class IconPreview(guiProps: GuiProps): JLabel(guiProps.serverIcon) {
-    private val bigPreview = JLabel(scaled(guiProps.serverIcon))
-    private val balloonTip: BalloonTip
+abstract class StatusIcon(private val guiProps: GuiProps, private val infoToolTip: String) : JLabel() {
+    private val tooltTipLabel = JLabel(infoToolTip)
+
     init {
-        balloonTip = BalloonTip(
+        icon = guiProps.infoIcon
+        toolTipText = null
+        val balloonTip = BalloonTip(
             this,
-            bigPreview,
+            tooltTipLabel,
             guiProps.balloonStyle,
             false
         )
         balloonTip.isVisible = false
-        addMouseListener(object : MouseListener {
+        this.addMouseListener(object : MouseListener {
             override fun mouseClicked(e: MouseEvent?) {
                 balloonTip.style = guiProps.balloonStyle
                 balloonTip.isVisible = true
@@ -66,22 +65,30 @@ class IconPreview(guiProps: GuiProps): JLabel(guiProps.serverIcon) {
             override fun mouseExited(e: MouseEvent?) {
                 balloonTip.isVisible = false
             }
-
         })
     }
 
     /**
      * TODO docs
      */
-    private fun scaled(icon: ImageIcon, width: Int = 128, height: Int = 128): ImageIcon {
-        return icon.getScaledInstance(width,height,Image.SCALE_SMOOTH)
+    fun error(tooltip: String) {
+        icon = guiProps.errorIcon
+        tooltTipLabel.text = tooltip
     }
 
     /**
      * TODO docs
      */
-    fun updateIcon(newIcon: ImageIcon) {
-        icon = scaled(newIcon,32,32)
-        bigPreview.icon = scaled(newIcon)
+    fun info() {
+        icon = guiProps.infoIcon
+        tooltTipLabel.text = infoToolTip
+    }
+
+    /**
+     * TODO docs
+     */
+    fun warning(tooltip: String) {
+        icon = guiProps.warningIcon
+        tooltTipLabel.text = tooltip
     }
 }

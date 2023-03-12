@@ -19,6 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui.window.menu.about
 
+import Gui
 import de.griefed.serverpackcreator.api.utilities.common.WebUtilities
 import de.griefed.serverpackcreator.gui.window.UpdateDialogs
 import javax.swing.JMenu
@@ -30,7 +31,8 @@ import javax.swing.JSeparator
  *
  * @author Griefed
  */
-class AboutMenu(webUtilities: WebUtilities, updateDialogs: UpdateDialogs): JMenu(Gui.menubar_gui_menu_about.toString()) {
+class AboutMenu(webUtilities: WebUtilities, updateDialogs: UpdateDialogs) :
+    JMenu(Gui.menubar_gui_menu_about.toString()) {
     init {
         add(UpdateCheckItem(updateDialogs))
         add(JSeparator())

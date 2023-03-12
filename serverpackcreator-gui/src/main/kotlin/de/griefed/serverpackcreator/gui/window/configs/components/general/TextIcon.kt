@@ -28,7 +28,7 @@
  * #####################################################################################################################
  *
  */
-package de.griefed.serverpackcreator.gui.window.configs.components
+package de.griefed.serverpackcreator.gui.window.configs.components.general
 
 import java.awt.*
 import java.beans.PropertyChangeEvent
@@ -110,15 +110,15 @@ class TextIcon constructor(
     private fun calculateIconDimensions() {
         val fm = component.getFontMetrics(font)
         if (layout == Layout.HORIZONTAL) {
-            iconWidth = text?.let { fm.stringWidth(it) }!! + padding * 2
+            iconWidth = text.let { fm.stringWidth(it) } + padding * 2
             iconHeight = fm.height
         } else if (layout == Layout.VERTICAL) {
             var maxWidth = 0
-            strings = arrayOfNulls(text!!.length)
-            stringWidths = IntArray(text!!.length)
+            strings = arrayOfNulls(text.length)
+            stringWidths = IntArray(text.length)
             //  Find the widest character in the text string
-            for (i in 0 until text!!.length) {
-                strings[i] = text!!.substring(i, i + 1)
+            for (i in text.indices) {
+                strings[i] = text.substring(i, i + 1)
                 stringWidths[i] = strings[i]?.let { fm.stringWidth(it) }!!
                 maxWidth = maxWidth.coerceAtLeast(stringWidths[i])
             }
@@ -127,7 +127,7 @@ class TextIcon constructor(
             iconWidth = maxWidth + (fm.leading + 2) * 2
             //  Decrease then normal gap between lines of text by taking into
             //  account the descent.
-            iconHeight = (fm.height - fm.descent) * text!!.length
+            iconHeight = (fm.height - fm.descent) * text.length
             iconHeight += padding * 2
         }
         component.revalidate()
@@ -166,11 +166,11 @@ class TextIcon constructor(
         val fm = g2.fontMetrics
         if (layout == Layout.HORIZONTAL) {
             g2.translate(x, y + fm.ascent)
-            text?.let { g2.drawString(it, padding, 0) }
+            text.let { g2.drawString(it, padding, 0) }
         } else if (layout == Layout.VERTICAL) {
             var offsetY = fm.ascent - fm.descent + padding
             val incrementY = fm.height - fm.descent
-            for (i in 0 until text!!.length) {
+            for (i in 0 until text.length) {
                 val offsetX = ((iconWidth - stringWidths[i]) / 2.0f).roundToInt()
                 strings[i]?.let { g2.drawString(it, x + offsetX, y + offsetY) }
                 offsetY += incrementY

@@ -34,6 +34,7 @@ class ServerFilesDirItem(private val fileUtilities: FileUtilities, private val a
     init {
         addActionListener { openServerFilesDir() }
     }
+
     private fun openServerFilesDir() {
         fileUtilities.openFolder(apiProperties.serverFilesDirectory)
     }

@@ -32,7 +32,7 @@ import javax.swing.tree.DefaultMutableTreeNode
  * @author Griefed
  */
 @OptIn(DelicateCoroutinesApi::class)
-class AddNodes(browserModel: FileBrowserModel,node: DefaultMutableTreeNode, guiProps: GuiProps) {
+class AddNodes(browserModel: FileBrowserModel, node: DefaultMutableTreeNode, guiProps: GuiProps) {
     init {
         GlobalScope.launch(guiProps.fileBrowserDispatcher) {
             val fileNode: FileNode = node.userObject as FileNode

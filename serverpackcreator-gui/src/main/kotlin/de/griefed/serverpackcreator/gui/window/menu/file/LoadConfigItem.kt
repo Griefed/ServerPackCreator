@@ -28,7 +28,6 @@ import de.griefed.serverpackcreator.gui.utilities.DialogUtilities
 import de.griefed.serverpackcreator.gui.window.configs.ConfigsTab
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
-import java.io.IOException
 import javax.swing.JFileChooser
 import javax.swing.JFrame
 import javax.swing.JMenuItem
@@ -53,7 +52,7 @@ class LoadConfigItem(
     }
 
     private fun loadConfigFile() {
-        val configChooser = ConfigChooser(apiProperties,Gui.createserverpack_gui_buttonloadconfig_title.toString())
+        val configChooser = ConfigChooser(apiProperties, Gui.createserverpack_gui_buttonloadconfig_title.toString())
         configChooser.isMultiSelectionEnabled = true
         if (configChooser.showOpenDialog(mainFrame) == JFileChooser.APPROVE_OPTION) {
             val files = configChooser.selectedFiles.map { file ->

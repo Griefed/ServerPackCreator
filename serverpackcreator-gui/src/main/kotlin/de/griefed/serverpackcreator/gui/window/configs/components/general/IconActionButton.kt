@@ -17,26 +17,18 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.gui.window.configs.components
+package de.griefed.serverpackcreator.gui.window.configs.components.general
 
 import java.awt.event.ActionListener
-import javax.swing.DefaultComboBoxModel
-import javax.swing.JComboBox
+import javax.swing.ImageIcon
+import javax.swing.JButton
 
 /**
  * TODO docs
  */
-class ActionComboBox(actionListener: ActionListener) : JComboBox<String>() {
-    constructor(
-        defaultComboBoxModel: DefaultComboBoxModel<String>,
-        actionListener: ActionListener
-    ) : this(
-        actionListener
-    ) {
-        model = defaultComboBoxModel
-    }
-
+class IconActionButton(icon: ImageIcon, tooltip: String, action: ActionListener) : JButton(icon) {
     init {
-        addActionListener(actionListener)
+        toolTipText = tooltip
+        addActionListener(action)
     }
 }

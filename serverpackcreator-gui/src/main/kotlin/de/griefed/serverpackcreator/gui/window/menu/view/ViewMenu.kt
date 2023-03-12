@@ -31,20 +31,21 @@ import javax.swing.JSeparator
  *
  * @author Griefed
  */
-class ViewMenu(utilities: Utilities,apiProperties: ApiProperties, mainFrame: MainFrame) : JMenu(Gui.menubar_gui_menu_view.toString()) {
+class ViewMenu(utilities: Utilities, apiProperties: ApiProperties, mainFrame: MainFrame) :
+    JMenu(Gui.menubar_gui_menu_view.toString()) {
     init {
-        add(HomeDirItem(utilities.fileUtilities,apiProperties))
-        add(ServerPacksDirItem(utilities.fileUtilities,apiProperties))
-        add(ServerFilesDirItem(utilities.fileUtilities,apiProperties))
-        add(ConfigsDirItem(utilities.fileUtilities,apiProperties))
+        add(HomeDirItem(utilities.fileUtilities, apiProperties))
+        add(ServerPacksDirItem(utilities.fileUtilities, apiProperties))
+        add(ServerFilesDirItem(utilities.fileUtilities, apiProperties))
+        add(ConfigsDirItem(utilities.fileUtilities, apiProperties))
         add(JSeparator())
-        add(PluginsDirItem(utilities.fileUtilities,apiProperties))
-        add(PluginsConfigDirItem(utilities.fileUtilities,apiProperties))
+        add(PluginsDirItem(utilities.fileUtilities, apiProperties))
+        add(PluginsConfigDirItem(utilities.fileUtilities, apiProperties))
         add(JSeparator())
         add(MigrationInfoItem(mainFrame))
         add(JSeparator())
-        add(ServerPackCreatorLogItem(utilities.fileUtilities,apiProperties))
-        add(PluginsLogItem(utilities.fileUtilities,apiProperties))
-        add(ModloaderInstallerLogItem(utilities.fileUtilities,apiProperties))
+        add(ServerPackCreatorLogItem(utilities.fileUtilities, apiProperties))
+        add(PluginsLogItem(utilities.fileUtilities, apiProperties))
+        add(ModloaderInstallerLogItem(utilities.fileUtilities, apiProperties))
     }
 }

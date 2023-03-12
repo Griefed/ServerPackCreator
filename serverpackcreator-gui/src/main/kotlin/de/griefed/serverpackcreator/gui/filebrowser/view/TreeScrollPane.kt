@@ -61,7 +61,7 @@ class TreeScrollPane(
         tree.isRootVisible = true
         tree.cellRenderer = FileTreeCellRenderer(this.browserModel)
         tree.showsRootHandles = true
-        tree.addMouseListener(TreeMouseListener(tree, configsTab,utilities))
+        tree.addMouseListener(TreeMouseListener(tree, configsTab, utilities))
         scrollPane = JScrollPane(tree)
         val preferredSize: Dimension = scrollPane.preferredSize
         val widePreferred = Dimension(

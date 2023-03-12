@@ -17,19 +17,21 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.gui.window.configs.components
+package de.griefed.serverpackcreator.gui.window.configs.components.general
 
 import java.awt.Graphics
 import javax.swing.BorderFactory
 import javax.swing.Icon
-import javax.swing.JTextField
+import javax.swing.JTextArea
 import javax.swing.border.Border
 import javax.swing.event.DocumentListener
 
 /**
+ * Based on [IconTextField]
+ *
  * [it_qna](https://itqna.net/questions/10833/decorating-jtextfield-icon)
  */
-class IconTextField(s: String?) : JTextField(s) {
+class IconTextArea(s: String?) : JTextArea(s) {
     private var mBorder: Border? = null
     private var mIcon: Icon? = null
 
@@ -37,7 +39,7 @@ class IconTextField(s: String?) : JTextField(s) {
         super.paintComponent(graphics)
         if (mIcon != null) {
             val iconInsets = mBorder!!.getBorderInsets(this)
-            mIcon!!.paintIcon(this, graphics, iconInsets.left, iconInsets.top)
+            mIcon!!.paintIcon(this, graphics, iconInsets.left, height - mIcon!!.iconHeight)
         }
     }
 

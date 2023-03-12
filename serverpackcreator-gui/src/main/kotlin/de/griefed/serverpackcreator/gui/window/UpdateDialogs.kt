@@ -51,6 +51,7 @@ class UpdateDialogs(
     private val mainFrame: JFrame
 ) {
     private val log = cachedLoggerOf(this.javaClass)
+
     /**
      * If an update for ServerPackCreator is available, display a dialog letting the user choose whether they want to
      * visit the releases page or do nothing.

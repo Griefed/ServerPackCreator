@@ -19,9 +19,8 @@
  */
 package de.griefed.serverpackcreator.gui.window.menu.file
 
+import Gui
 import de.griefed.serverpackcreator.gui.window.MainFrame
-import java.awt.event.WindowEvent
-import javax.swing.JFrame
 import javax.swing.JMenuItem
 
 /**
@@ -29,7 +28,7 @@ import javax.swing.JMenuItem
  *
  * @author Griefed
  */
-class ExitItem(private val mainFrame: MainFrame): JMenuItem(Gui.menubar_gui_menuitem_exit.toString()) {
+class ExitItem(private val mainFrame: MainFrame) : JMenuItem(Gui.menubar_gui_menuitem_exit.toString()) {
     init {
         addActionListener { mainFrame.closeAndExit() }
     }

@@ -17,24 +17,26 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.gui.window.configs.components
+package de.griefed.serverpackcreator.gui.window.configs.components.general
 
-import java.awt.font.TextAttribute
-import javax.swing.JLabel
+import java.awt.event.ActionListener
+import javax.swing.DefaultComboBoxModel
+import javax.swing.JComboBox
 
 /**
  * TODO docs
  */
-class ElementLabel(text: String, private var size: Int = 0) : JLabel(text) {
+class ActionComboBox(actionListener: ActionListener) : JComboBox<String>() {
+    constructor(
+        defaultComboBoxModel: DefaultComboBoxModel<String>,
+        actionListener: ActionListener
+    ) : this(
+        actionListener
+    ) {
+        model = defaultComboBoxModel
+    }
+
     init {
-        if (size == 0) {
-            size = font.size
-        }
-        font = font.deriveFont(
-            mutableMapOf(
-                Pair(TextAttribute.WEIGHT, TextAttribute.WEIGHT_BOLD),
-                Pair(TextAttribute.SIZE, size)
-            )
-        )
+        addActionListener(actionListener)
     }
 }

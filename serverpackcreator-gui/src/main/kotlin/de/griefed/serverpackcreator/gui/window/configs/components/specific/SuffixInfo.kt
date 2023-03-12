@@ -17,20 +17,13 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.gui.window.configs.components
+package de.griefed.serverpackcreator.gui.window.configs.components.specific
 
-import java.awt.event.ActionListener
-import javax.swing.DefaultComboBoxModel
-import javax.swing.JComboBox
+import Gui
+import de.griefed.serverpackcreator.gui.GuiProps
+import de.griefed.serverpackcreator.gui.window.configs.components.general.StatusIcon
 
-/**
- * TODO docs
- */
-class QuickSelect(content: List<String>, actionListener: ActionListener) : JComboBox<String>() {
-    init {
-        val choose = DefaultComboBoxModel(arrayOf(Gui.createserverpack_gui_quickselect_choose.toString()))
-        choose.addAll(content)
-        model = choose
-        addActionListener(actionListener)
-    }
-}
+class SuffixInfo(guiProps: GuiProps) : StatusIcon(
+    guiProps,
+    Gui.createserverpack_gui_createserverpack_labelsuffix_tip.toString()
+)

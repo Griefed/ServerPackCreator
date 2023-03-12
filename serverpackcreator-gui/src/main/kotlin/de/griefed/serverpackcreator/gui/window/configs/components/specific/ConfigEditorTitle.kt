@@ -17,26 +17,26 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.gui.window.configs
+package de.griefed.serverpackcreator.gui.window.configs.components.specific
 
 import Gui
 import de.griefed.serverpackcreator.gui.GuiProps
+import de.griefed.serverpackcreator.gui.utilities.DialogUtilities
+import de.griefed.serverpackcreator.gui.window.configs.ConfigEditorPanel
+import de.griefed.serverpackcreator.gui.window.configs.ConfigsTab
 import java.awt.FlowLayout
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
-import javax.swing.BorderFactory
-import javax.swing.JButton
-import javax.swing.JLabel
-import javax.swing.JPanel
+import javax.swing.*
 
 /**
  * TODO docs
  */
 @Suppress("unused")
 class ConfigEditorTitle(
-    guiProps: GuiProps,
-    configsTab: ConfigsTab,
-    configEditorPanel: ConfigEditorPanel
+    private val guiProps: GuiProps,
+    private val configsTab: ConfigsTab,
+    private val configEditorPanel: ConfigEditorPanel
 ) : JPanel(FlowLayout(FlowLayout.LEFT, 0, 0)) {
 
     private val errorIconLabel = JLabel(guiProps.smallErrorIcon)
@@ -48,7 +48,7 @@ class ConfigEditorTitle(
             return warningIconLabel.isVisible
         }
         private set
-    var title : String
+    var title: String
         get() {
             return titleLabel.text
         }
@@ -69,16 +69,34 @@ class ConfigEditorTitle(
         add(titleLabel)
         closeButton.addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent?) {
-                val currentTab = configsTab.tabs.selectedIndex
-                configsTab.tabs.remove(configEditorPanel)
-
-                if (currentTab - 1 > 0) {
-                    configsTab.tabs.selectedIndex = currentTab - 1
-                }
+                close()
             }
         })
         closeButton.isVisible = false
         add(closeButton)
+    }
+
+    private fun close() {
+        if (hasUnsavedChanges) {
+            configsTab.tabs.selectedComponent = configEditorPanel
+            if (DialogUtilities.createShowGet(
+                    Gui.createserverpack_gui_close_unsaved_message(title),
+                    Gui.createserverpack_gui_close_unsaved_title(title),
+                    configsTab.panel.parent,
+                    JOptionPane.WARNING_MESSAGE,
+                    JOptionPane.YES_NO_OPTION,
+                    guiProps.warningIcon
+                ) == 0
+            ) {
+                configEditorPanel.saveCurrentConfiguration()
+            }
+        }
+        val currentTab = configsTab.tabs.selectedIndex
+        configsTab.tabs.remove(configEditorPanel)
+
+        if (currentTab - 1 > 0) {
+            configsTab.tabs.selectedIndex = currentTab - 1
+        }
     }
 
     /**

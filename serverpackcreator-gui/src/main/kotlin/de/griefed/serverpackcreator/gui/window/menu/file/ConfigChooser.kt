@@ -1,5 +1,6 @@
 package de.griefed.serverpackcreator.gui.window.menu.file
 
+import Gui
 import de.griefed.serverpackcreator.api.ApiProperties
 import java.awt.Dimension
 import javax.swing.JFileChooser
@@ -10,7 +11,7 @@ import javax.swing.filechooser.FileNameExtensionFilter
  *
  * @author Griefed
  */
-class ConfigChooser(apiProperties: ApiProperties,title: String): JFileChooser() {
+class ConfigChooser(apiProperties: ApiProperties, title: String) : JFileChooser() {
     init {
         currentDirectory = apiProperties.configsDirectory
         dialogTitle = title

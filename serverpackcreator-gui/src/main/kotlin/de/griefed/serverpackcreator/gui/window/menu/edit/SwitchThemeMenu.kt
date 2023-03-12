@@ -27,8 +27,6 @@ import de.griefed.larsonscanner.LarsonScanner
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.window.MainFrame
-import net.java.balloontip.styles.EdgedBalloonStyle
-import java.awt.Graphics
 import javax.swing.JMenu
 import javax.swing.JMenuItem
 import javax.swing.UIManager
@@ -81,7 +79,6 @@ class SwitchThemeMenu(
     private fun updateThemeRelatedComponents() {
         val panelBackgroundColour = UIManager.getColor("Panel.background")
         val tabbedPaneFocusColor = UIManager.getColor("TabbedPane.focusColor")
-        guiProps.balloonStyle = EdgedBalloonStyle(panelBackgroundColour, tabbedPaneFocusColor)
         guiProps.busyConfig.eyeBackgroundColour = panelBackgroundColour
         guiProps.busyConfig.scannerBackgroundColour = panelBackgroundColour
         guiProps.idleConfig.eyeBackgroundColour = panelBackgroundColour

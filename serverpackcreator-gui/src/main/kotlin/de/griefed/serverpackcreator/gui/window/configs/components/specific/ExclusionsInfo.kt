@@ -17,18 +17,13 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.gui.window.configs.components
+package de.griefed.serverpackcreator.gui.window.configs.components.specific
 
-import java.awt.event.ActionListener
-import javax.swing.ImageIcon
-import javax.swing.JButton
+import Gui
+import de.griefed.serverpackcreator.gui.GuiProps
+import de.griefed.serverpackcreator.gui.window.configs.components.general.StatusIcon
 
-/**
- * TODO docs
- */
-class IconActionButton(icon: ImageIcon, tooltip: String, action: ActionListener) : JButton(icon) {
-    init {
-        toolTipText = tooltip
-        addActionListener(action)
-    }
-}
+class ExclusionsInfo(guiProps: GuiProps) : StatusIcon(
+    guiProps,
+    Gui.createserverpack_gui_createserverpack_labelclientmods_tip.toString()
+)

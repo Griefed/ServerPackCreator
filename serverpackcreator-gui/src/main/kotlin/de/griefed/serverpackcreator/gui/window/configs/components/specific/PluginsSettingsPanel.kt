@@ -17,26 +17,34 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.gui.window.menu.about
+package de.griefed.serverpackcreator.gui.window.configs.components.specific
 
-import Gui
-import de.griefed.serverpackcreator.api.utilities.common.WebUtilities
-import java.net.URI
-import javax.swing.JMenuItem
+import de.griefed.serverpackcreator.api.plugins.swinggui.ExtensionConfigPanel
+import de.griefed.serverpackcreator.gui.window.configs.components.general.CollapsiblePanel
+import net.miginfocom.swing.MigLayout
+import javax.swing.JPanel
 
 /**
- * Menu item which opens the donations section for Griefed on GitHub in the users browser.
- *
- * @author Griefed
+ * TODO docs
  */
-class DonationsItem(private val webUtilities: WebUtilities) : JMenuItem(Gui.menubar_gui_menuitem_donate.toString()) {
-    private val donations = URI.create("https://github.com/sponsors/Griefed")
+class PluginsSettingsPanel(pluginPanels: List<ExtensionConfigPanel>) : JPanel(
+    MigLayout(
+        "left,wrap",
+        "0[left,grow,push]0", "30"
+    )
+) {
 
     init {
-        addActionListener { openDonations() }
+        for (panel in pluginPanels.indices) {
+            add(createCollapsiblePluginPanel(pluginPanels[panel]), "cell 0 $panel,grow")
+        }
+        isVisible = false
     }
 
-    private fun openDonations() {
-        webUtilities.openLinkInBrowser(donations)
+    /**
+     * TODO docs
+     */
+    private fun createCollapsiblePluginPanel(pluginPanel: ExtensionConfigPanel): JPanel {
+        return CollapsiblePanel(pluginPanel.extensionName, pluginPanel)
     }
 }

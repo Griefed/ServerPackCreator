@@ -43,7 +43,7 @@ class FileSelectionListener(
     override fun valueChanged(event: TreeSelectionEvent) {
         val node = event.path.lastPathComponent as DefaultMutableTreeNode
         val fileNode = node.userObject as FileNode
-        AddNodes(browserModel, node,guiProps)
+        AddNodes(browserModel, node, guiProps)
         val file = fileNode.file
         frame.updateFileDetail(fileNode)
         frame.setFilePreviewNode(fileNode)

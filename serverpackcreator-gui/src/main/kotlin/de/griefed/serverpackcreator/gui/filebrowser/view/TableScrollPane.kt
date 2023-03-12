@@ -67,7 +67,7 @@ class TableScrollPane(
         table.autoResizeMode = JTable.AUTO_RESIZE_OFF
         table.columnSelectionAllowed = false
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION)
-        table.addMouseListener(TableMouseListener(table, configsTab,utilities))
+        table.addMouseListener(TableMouseListener(table, configsTab, utilities))
 
         tsListener = TableSelectionListener(frame, table)
         tsListener.setRowCount(ftModel.rowCount)

@@ -28,7 +28,7 @@
  * #####################################################################################################################
  *
  */
-package de.griefed.serverpackcreator.gui.window.configs.components
+package de.griefed.serverpackcreator.gui.window.configs.components.general
 
 import java.awt.Component
 import java.awt.Graphics

@@ -48,7 +48,7 @@ class MainMenu(
 
     init {
         menuBar.add(FileMenu(configsTab, apiProperties, mainFrame, utilities, guiProps))
-        menuBar.add(EditMenu(utilities.fileUtilities, apiProperties, guiProps, larsonScanner,mainFrame))
+        menuBar.add(EditMenu(utilities.fileUtilities, apiProperties, guiProps, larsonScanner, mainFrame))
         menuBar.add(ViewMenu(utilities, apiProperties, mainFrame))
         menuBar.add(AboutMenu(utilities.webUtilities, updateDialogs))
     }

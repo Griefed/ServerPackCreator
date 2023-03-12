@@ -34,7 +34,7 @@ import javax.swing.JTable
  */
 class TableMouseListener(
     private val jTable: JTable, configsTab: ConfigsTab, utilities: Utilities
-) : SelectionPopMenu(configsTab,utilities) {
+) : SelectionPopMenu(configsTab, utilities) {
 
     override fun mousePressed(mouseEvent: MouseEvent) {
         if (mouseEvent.button == MouseEvent.BUTTON3) {

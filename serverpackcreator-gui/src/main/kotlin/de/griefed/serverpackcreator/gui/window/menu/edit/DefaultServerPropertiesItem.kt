@@ -19,6 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui.window.menu.edit
 
+import Gui
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.utilities.common.FileUtilities
 import java.io.File
@@ -29,11 +30,14 @@ import javax.swing.JMenuItem
  *
  * @author Griefed
  */
-class DefaultServerPropertiesItem(private val fileUtilities: FileUtilities, apiProperties: ApiProperties): JMenuItem(Gui.menubar_gui_menuitem_serverproperties.toString()) {
+class DefaultServerPropertiesItem(private val fileUtilities: FileUtilities, apiProperties: ApiProperties) :
+    JMenuItem(Gui.menubar_gui_menuitem_serverproperties.toString()) {
     private val properties = File(apiProperties.serverFilesDirectory, "server.properties")
+
     init {
         addActionListener { openProperties() }
     }
+
     private fun openProperties() {
         fileUtilities.openFile(properties)
     }

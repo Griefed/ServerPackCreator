@@ -17,23 +17,27 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.gui.window.configs.components
+package de.griefed.serverpackcreator.gui.window.configs.components.general
 
+import java.io.File
+import javax.swing.BorderFactory
 import javax.swing.JScrollPane
-import javax.swing.JTextArea
+import javax.swing.JTextField
 import javax.swing.event.DocumentListener
 
 /**
- * Scrollable textarea.
+ * Scrollable textfield.
  *
  * @author Griefed
  */
-class ScrollTextArea(
+class ScrollTextFileField(
     text: String,
-    private val textArea: JTextArea = JTextArea(text),
-    verticalScrollbarVisibility: Int = VERTICAL_SCROLLBAR_AS_NEEDED,
-    horizontalScrollbarVisibility: Int = HORIZONTAL_SCROLLBAR_NEVER
-) : JScrollPane(verticalScrollbarVisibility, horizontalScrollbarVisibility) {
+    private val textField: JTextField = JTextField(text),
+    horizontalScrollbarVisibility: Int = HORIZONTAL_SCROLLBAR_AS_NEEDED
+) : JScrollPane(VERTICAL_SCROLLBAR_NEVER, horizontalScrollbarVisibility) {
+    constructor(file: File, documentChangeListener: DocumentChangeListener) : this(file.absolutePath) {
+        addDocumentListener(documentChangeListener)
+    }
 
     constructor(text: String, documentChangeListener: DocumentChangeListener) : this(text) {
         addDocumentListener(documentChangeListener)
@@ -43,20 +47,30 @@ class ScrollTextArea(
         addDocumentListener(documentChangeListener)
     }
 
-    init {
-        textArea.lineWrap = true
-        viewport.view = textArea
-    }
-
     var text: String
         get() {
-            return textArea.text
+            return textField.text
         }
         set(value) {
-            textArea.text = value
+            textField.text = value
         }
 
+    var file: File
+        get() {
+            return File(text).absoluteFile
+        }
+        set(value) {
+            text = value.absolutePath
+        }
+
+    init {
+        textField.isEditable = false
+        viewport.view = textField
+        file = File(text).absoluteFile
+        textField.border = BorderFactory.createEmptyBorder(0, 5, 0, 5)
+    }
+
     fun addDocumentListener(listener: DocumentListener) {
-        textArea.document.addDocumentListener(listener)
+        textField.document.addDocumentListener(listener)
     }
 }

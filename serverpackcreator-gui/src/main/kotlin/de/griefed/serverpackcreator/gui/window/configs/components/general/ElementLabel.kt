@@ -17,26 +17,24 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.gui.window.menu.about
+package de.griefed.serverpackcreator.gui.window.configs.components.general
 
-import Gui
-import de.griefed.serverpackcreator.api.utilities.common.WebUtilities
-import java.net.URI
-import javax.swing.JMenuItem
+import java.awt.font.TextAttribute
+import javax.swing.JLabel
 
 /**
- * Menu item which opens the donations section for Griefed on GitHub in the users browser.
- *
- * @author Griefed
+ * TODO docs
  */
-class DonationsItem(private val webUtilities: WebUtilities) : JMenuItem(Gui.menubar_gui_menuitem_donate.toString()) {
-    private val donations = URI.create("https://github.com/sponsors/Griefed")
-
+class ElementLabel(text: String, private var size: Int = 0) : JLabel(text) {
     init {
-        addActionListener { openDonations() }
-    }
-
-    private fun openDonations() {
-        webUtilities.openLinkInBrowser(donations)
+        if (size == 0) {
+            size = font.size
+        }
+        font = font.deriveFont(
+            mutableMapOf(
+                Pair(TextAttribute.WEIGHT, TextAttribute.WEIGHT_BOLD),
+                Pair(TextAttribute.SIZE, size)
+            )
+        )
     }
 }

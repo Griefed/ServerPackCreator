@@ -47,7 +47,7 @@ class RootManager(private val guiProps: GuiProps) {
             val rootNode = SortedTreeNode(guiProps)
             if (roots.isNotEmpty()) {
                 for (root in roots) {
-                    rootNode.add(SortedTreeNode(guiProps,FileNode(root)))
+                    rootNode.add(SortedTreeNode(guiProps, FileNode(root)))
                 }
             } else {
                 throw IllegalStateException("No roots available")
@@ -60,12 +60,12 @@ class RootManager(private val guiProps: GuiProps) {
         get() {
             for (file in fileSystemView.roots) {
                 if (file.name.equals("::{20D04FE0-3AEA-1069-A2D8-08002B30309D}", ignoreCase = true)) {
-                    return SortedTreeNode(guiProps,FileNode(file))
+                    return SortedTreeNode(guiProps, FileNode(file))
                 }
                 if (file.isDirectory) {
                     file.listFiles()?.forEach { child ->
                         if (child.name.equals("::{20D04FE0-3AEA-1069-A2D8-08002B30309D}", ignoreCase = true)) {
-                            return SortedTreeNode(guiProps,FileNode(child))
+                            return SortedTreeNode(guiProps, FileNode(child))
                         }
                     }
                 }

@@ -19,6 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui.window.configs
 
+import Gui
 import de.griefed.serverpackcreator.api.*
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import de.griefed.serverpackcreator.api.versionmeta.VersionMeta
@@ -47,6 +48,9 @@ class ConfigsTab(
     private val log = cachedLoggerOf(this.javaClass)
     private val fileBrowser = FileBrowser(this, guiProps, utilities)
     private val choose = arrayOf(Gui.createserverpack_gui_quickselect_choose.toString())
+    private val noVersions = DefaultComboBoxModel(
+        arrayOf(Gui.createserverpack_gui_createserverpack_forge_none.toString())
+    )
     val selectedEditor: ConfigEditorPanel?
         get() {
             return if (activeTab != null) {
@@ -97,7 +101,8 @@ class ConfigsTab(
             versionMeta,
             utilities,
             serverPackHandler,
-            apiPlugins
+            apiPlugins,
+            noVersions
         ) { fileBrowser.show() }
         tabs.add(editor)
         tabs.setTabComponentAt(tabs.tabCount - 1, editor.title)
@@ -113,14 +118,14 @@ class ConfigsTab(
      * @author Griefed
      */
     fun loadConfig(configFile: File, tab: ConfigEditorPanel = addTab()) {
-        tab.loadConfiguration(PackConfig(utilities, configFile),configFile)
+        tab.loadConfiguration(PackConfig(utilities, configFile), configFile)
     }
 
     @Suppress("DuplicatedCode")
     private fun iconsDirectoryWatcher() {
         Executors.newSingleThreadExecutor().execute {
             val observer = FileAlterationObserver(apiProperties.iconsDirectory)
-            val alterations = object: FileAlterationListener {
+            val alterations = object : FileAlterationListener {
                 override fun onStart(observer: FileAlterationObserver?) {}
                 override fun onDirectoryCreate(directory: File?) {}
                 override fun onDirectoryChange(directory: File?) {}
@@ -156,7 +161,7 @@ class ConfigsTab(
             monitor.addObserver(observer)
             try {
                 monitor.start()
-            } catch(ex: Exception) {
+            } catch (ex: Exception) {
                 log.error("Error starting the FileWatcher Monitor.", ex)
             }
         }
@@ -166,7 +171,7 @@ class ConfigsTab(
     private fun propertiesDirectoryWatcher() {
         Executors.newSingleThreadExecutor().execute {
             val observer = FileAlterationObserver(apiProperties.propertiesDirectory)
-            val alterations = object: FileAlterationListener {
+            val alterations = object : FileAlterationListener {
                 override fun onStart(observer: FileAlterationObserver?) {}
                 override fun onDirectoryCreate(directory: File?) {}
                 override fun onDirectoryChange(directory: File?) {}
@@ -202,7 +207,7 @@ class ConfigsTab(
             monitor.addObserver(observer)
             try {
                 monitor.start()
-            } catch(ex: Exception) {
+            } catch (ex: Exception) {
                 log.error("Error starting the FileWatcher Monitor.", ex)
             }
         }

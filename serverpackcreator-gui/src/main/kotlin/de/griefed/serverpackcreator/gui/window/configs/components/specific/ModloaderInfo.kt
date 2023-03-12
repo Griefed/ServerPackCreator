@@ -17,30 +17,13 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.gui.window.configs.components
+package de.griefed.serverpackcreator.gui.window.configs.components.specific
 
-import javax.swing.event.DocumentEvent
-import javax.swing.event.DocumentListener
+import Gui
+import de.griefed.serverpackcreator.gui.GuiProps
+import de.griefed.serverpackcreator.gui.window.configs.components.general.StatusIcon
 
-/**
- * TODO docs
- */
-interface DocumentChangeListener : DocumentListener {
-
-    /**
-     * TODO docs
-     */
-    fun update(e: DocumentEvent)
-
-    override fun insertUpdate(e: DocumentEvent) {
-        update(e)
-    }
-
-    override fun removeUpdate(e: DocumentEvent) {
-        update(e)
-    }
-
-    override fun changedUpdate(e: DocumentEvent) {
-        update(e)
-    }
-}
+class ModloaderInfo(guiProps: GuiProps) : StatusIcon(
+    guiProps,
+    Gui.createserverpack_gui_createserverpack_labelmodloader_tip.toString()
+)

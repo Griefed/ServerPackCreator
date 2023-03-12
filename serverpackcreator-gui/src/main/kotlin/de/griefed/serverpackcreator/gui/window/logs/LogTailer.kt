@@ -63,7 +63,6 @@ abstract class LogTailer : JScrollPane() {
         viewport.view = textArea
         horizontalScrollBarPolicy = HORIZONTAL_SCROLLBAR_ALWAYS
         verticalScrollBarPolicy = VERTICAL_SCROLLBAR_ALWAYS
-        border = null
         SmartScroller(this, ScrollDirection.VERTICAL, ViewPortPosition.END)
     }
 

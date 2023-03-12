@@ -28,7 +28,7 @@ import javax.swing.tree.TreeNode
  *
  * @author Griefed
  */
-class FileNameComparator :Comparator<TreeNode> {
+class FileNameComparator : Comparator<TreeNode> {
     override fun compare(o1: TreeNode, o2: TreeNode): Int {
         val t1 = (o1 as DefaultMutableTreeNode).userObject
         val t2 = (o2 as DefaultMutableTreeNode).userObject

@@ -36,7 +36,7 @@ import javax.swing.tree.DefaultMutableTreeNode
 class TreeMouseListener(
     private val jTree: JTree, configsTab: ConfigsTab, utilities: Utilities
 ) : SelectionPopMenu(configsTab, utilities) {
-  override fun mousePressed(mouseEvent: MouseEvent) {
+    override fun mousePressed(mouseEvent: MouseEvent) {
         if (mouseEvent.button == MouseEvent.BUTTON3) {
             if (jTree.getPathForLocation(mouseEvent.x, mouseEvent.y) != null) {
                 val treePath = jTree.getPathForLocation(mouseEvent.x, mouseEvent.y)!!

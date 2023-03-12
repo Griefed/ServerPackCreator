@@ -66,7 +66,7 @@ class FileBrowserFrame(
             }
         })
         northPanel.layout = BorderLayout()
-        tableScrollPane = TableScrollPane(this, browserModel, configsTab,utilities)
+        tableScrollPane = TableScrollPane(this, browserModel, configsTab, utilities)
         tableScrollPane.panel.let {
             northPanel.add(
                 it,
@@ -87,7 +87,7 @@ class FileBrowserFrame(
         tablePreviewSplit.dividerLocation = 200
         tablePreviewSplit.dividerSize = 20
 
-        treeScrollPane = TreeScrollPane(this, browserModel, configsTab,utilities,guiProps)
+        treeScrollPane = TreeScrollPane(this, browserModel, configsTab, utilities, guiProps)
         splitTreeTable = JSplitPane(
             JSplitPane.HORIZONTAL_SPLIT,
             treeScrollPane.scrollPane,

@@ -17,40 +17,13 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.gui.window.configs.components
+package de.griefed.serverpackcreator.gui.window.configs.components.specific
 
+import Gui
 import de.griefed.serverpackcreator.gui.GuiProps
-import javax.swing.JLabel
+import de.griefed.serverpackcreator.gui.window.configs.components.general.StatusIcon
 
-/**
- * TODO docs
- */
-class StatusIcon(private val guiProps: GuiProps, private val infoToolTip: String) : JLabel() {
-    init {
-        icon = guiProps.infoIcon
-    }
-
-    /**
-     * TODO docs
-     */
-    fun error(tooltip: String) {
-        icon = guiProps.errorIcon
-        toolTipText = tooltip
-    }
-
-    /**
-     * TODO docs
-     */
-    fun info() {
-        icon = guiProps.infoIcon
-        toolTipText = infoToolTip
-    }
-
-    /**
-     * TODO docs
-     */
-    fun warning(tooltip: String) {
-        icon = guiProps.warningIcon
-        toolTipText = tooltip
-    }
-}
+class ModpackInfo(guiProps: GuiProps) : StatusIcon(
+    guiProps,
+    Gui.createserverpack_gui_createserverpack_labelmodpackdir_tip.toString()
+)

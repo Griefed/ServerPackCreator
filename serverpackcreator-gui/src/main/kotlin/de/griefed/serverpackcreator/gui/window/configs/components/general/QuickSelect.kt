@@ -17,26 +17,21 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.gui.window.menu.about
+package de.griefed.serverpackcreator.gui.window.configs.components.general
 
 import Gui
-import de.griefed.serverpackcreator.api.utilities.common.WebUtilities
-import java.net.URI
-import javax.swing.JMenuItem
+import java.awt.event.ActionListener
+import javax.swing.DefaultComboBoxModel
+import javax.swing.JComboBox
 
 /**
- * Menu item which opens the donations section for Griefed on GitHub in the users browser.
- *
- * @author Griefed
+ * TODO docs
  */
-class DonationsItem(private val webUtilities: WebUtilities) : JMenuItem(Gui.menubar_gui_menuitem_donate.toString()) {
-    private val donations = URI.create("https://github.com/sponsors/Griefed")
-
+class QuickSelect(content: List<String>, actionListener: ActionListener) : JComboBox<String>() {
     init {
-        addActionListener { openDonations() }
-    }
-
-    private fun openDonations() {
-        webUtilities.openLinkInBrowser(donations)
+        val choose = DefaultComboBoxModel(arrayOf(Gui.createserverpack_gui_quickselect_choose.toString()))
+        choose.addAll(content)
+        model = choose
+        addActionListener(actionListener)
     }
 }

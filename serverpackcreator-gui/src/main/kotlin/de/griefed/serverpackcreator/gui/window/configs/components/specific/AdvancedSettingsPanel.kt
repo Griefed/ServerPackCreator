@@ -17,12 +17,12 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.gui.window.configs
+package de.griefed.serverpackcreator.gui.window.configs.components.specific
 
 import Gui
-import de.griefed.serverpackcreator.gui.window.configs.components.ElementLabel
-import de.griefed.serverpackcreator.gui.window.configs.components.ScrollTextArea
-import de.griefed.serverpackcreator.gui.window.configs.components.interactivetable.InteractiveTable
+import de.griefed.serverpackcreator.gui.window.configs.components.general.ElementLabel
+import de.griefed.serverpackcreator.gui.window.configs.components.general.ScrollTextArea
+import de.griefed.serverpackcreator.gui.window.configs.components.specific.ScriptKVPairs
 import net.miginfocom.swing.MigLayout
 import javax.swing.JButton
 import javax.swing.JLabel
@@ -41,7 +41,7 @@ class AdvancedSettingsPanel(
     exclusionsReset: JButton,
     startArgs: ScrollTextArea,
     aikarsFlags: JButton,
-    scriptKVPairs: InteractiveTable,
+    scriptKVPairs: ScriptKVPairs,
     scriptKVPairsRevert: JButton,
     scriptKVPairsReset: JButton
 ) : JPanel(

@@ -45,12 +45,12 @@ class ConfigToHasteBinItem(
     private val apiProperties: ApiProperties,
     guiProps: GuiProps,
     mainFrame: JFrame
-) : HasteBinMenuItem(Gui.menubar_gui_menuitem_uploadconfig.toString(),mainFrame,guiProps,webUtilities) {
+) : HasteBinMenuItem(Gui.menubar_gui_menuitem_uploadconfig.toString(), mainFrame, guiProps, webUtilities) {
     private val log = cachedLoggerOf(this.javaClass)
     private val configDocument: StyledDocument = DefaultStyledDocument()
     private val configAttributeSet: SimpleAttributeSet = SimpleAttributeSet()
     private val configWindowTextPane: JTextPane = JTextPane(configDocument)
-    private val tempFile = File(apiProperties.workDirectory,"temp.conf")
+    private val tempFile = File(apiProperties.workDirectory, "temp.conf")
 
     init {
         addActionListener { uploadConfig() }

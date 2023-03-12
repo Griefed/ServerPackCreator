@@ -76,7 +76,8 @@ class FileBrowserModel(private val guiProps: GuiProps) {
                 val files = file.listFiles()
                 files?.forEach { child ->
                     root.add(
-                        SortedTreeNode(guiProps,
+                        SortedTreeNode(
+                            guiProps,
                             FileNode(child)
                         )
                     )
@@ -92,7 +93,8 @@ class FileBrowserModel(private val guiProps: GuiProps) {
                     try {
                         file.listFiles()?.forEach { child ->
                             node.add(
-                                SortedTreeNode(guiProps,
+                                SortedTreeNode(
+                                    guiProps,
                                     FileNode(child)
                                 )
                             )

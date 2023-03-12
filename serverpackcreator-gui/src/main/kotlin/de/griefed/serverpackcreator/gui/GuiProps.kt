@@ -26,6 +26,7 @@ import de.griefed.serverpackcreator.gui.filebrowser.view.renderer.FileNameCompar
 import de.griefed.serverpackcreator.gui.filebrowser.view.renderer.FileTypeComparator
 import de.griefed.serverpackcreator.gui.utilities.ImageUtilities
 import kotlinx.coroutines.asCoroutineDispatcher
+import net.java.balloontip.styles.BalloonTipStyle
 import net.java.balloontip.styles.EdgedBalloonStyle
 import java.util.concurrent.Executors
 import javax.swing.UIManager
@@ -120,15 +121,15 @@ class GuiProps {
         defaultSize,
         defaultSize
     )
-    val infoIcon = FlatSVGIcon("de/griefed/resources/gui/svg/informationDialog.svg",defaultSize,defaultSize)
-    val warningIcon = FlatSVGIcon("de/griefed/resources/gui/svg/warningDialog.svg",defaultSize,defaultSize)
-    val errorIcon = FlatSVGIcon("de/griefed/resources/gui/svg/errorDialog.svg",defaultSize,defaultSize)
-    val smallInfoIcon = FlatSVGIcon("de/griefed/resources/gui/svg/informationDialog.svg",smallSize,smallSize)
-    val smallWarningIcon = FlatSVGIcon("de/griefed/resources/gui/svg/warningDialog.svg",smallSize,smallSize)
-    val smallErrorIcon = FlatSVGIcon("de/griefed/resources/gui/svg/errorDialog.svg",smallSize,smallSize)
-    val largeInfoIcon = FlatSVGIcon("de/griefed/resources/gui/svg/informationDialog.svg",largeSize,largeSize)
-    val largeWarningIcon = FlatSVGIcon("de/griefed/resources/gui/svg/warningDialog.svg",largeSize,largeSize)
-    val largeErrorIcon = FlatSVGIcon("de/griefed/resources/gui/svg/errorDialog.svg",largeSize,largeSize)
+    val infoIcon = FlatSVGIcon("de/griefed/resources/gui/svg/informationDialog.svg", defaultSize, defaultSize)
+    val warningIcon = FlatSVGIcon("de/griefed/resources/gui/svg/warningDialog.svg", defaultSize, defaultSize)
+    val errorIcon = FlatSVGIcon("de/griefed/resources/gui/svg/errorDialog.svg", defaultSize, defaultSize)
+    val smallInfoIcon = FlatSVGIcon("de/griefed/resources/gui/svg/informationDialog.svg", smallSize, smallSize)
+    val smallWarningIcon = FlatSVGIcon("de/griefed/resources/gui/svg/warningDialog.svg", smallSize, smallSize)
+    val smallErrorIcon = FlatSVGIcon("de/griefed/resources/gui/svg/errorDialog.svg", smallSize, smallSize)
+    val largeInfoIcon = FlatSVGIcon("de/griefed/resources/gui/svg/informationDialog.svg", largeSize, largeSize)
+    val largeWarningIcon = FlatSVGIcon("de/griefed/resources/gui/svg/warningDialog.svg", largeSize, largeSize)
+    val largeErrorIcon = FlatSVGIcon("de/griefed/resources/gui/svg/errorDialog.svg", largeSize, largeSize)
     val reticulatingSplines: ReticulatingSplines = ReticulatingSplines()
     val idleConfig: ScannerConfig
         get() {
@@ -188,9 +189,15 @@ class GuiProps {
                 UIManager.getColor("Panel.background")
             )
         }
+    val balloonStyle: BalloonTipStyle
+        get() {
+            return EdgedBalloonStyle(
+                UIManager.getColor("Panel.background"),
+                UIManager.getColor("TabbedPane.underlineColor")
+            )
+        }
     val typeComparator = FileTypeComparator()
     val nameComparator = FileNameComparator()
-    var balloonStyle = EdgedBalloonStyle(UIManager.getColor("Panel.background"),UIManager.getColor("TabbedPane.focusColor"))
     val whitespace = "^.*,\\s*\\\\*$".toRegex()
     val imageRegex = ".*\\.([Pp][Nn][Gg]|[Jj][Pp][Gg]|[Jj][Pp][Ee][Gg]|[Bb][Mm][Pp])".toRegex()
     val defaultScriptKVSetting = hashMapOf("SPC_JAVA_SPC" to "java")

@@ -42,6 +42,6 @@ class EditMenu(
     init {
         add(DefaultServerPropertiesItem(fileUtilities, apiProperties))
         add(DefaultServerIconItem(fileUtilities, apiProperties))
-        add(SwitchThemeMenu(guiProps, larsonScanner, apiProperties,mainFrame))
+        add(SwitchThemeMenu(guiProps, larsonScanner, apiProperties, mainFrame))
     }
 }
