@@ -66,33 +66,87 @@ class ConfigEditorPanel(
     )
 ), ServerPackConfigTab {
     private val log = cachedLoggerOf(this.javaClass)
-    private val modpackInfo =
-        StatusIcon(guiProps, Gui.createserverpack_gui_createserverpack_labelmodpackdir_tip.toString())
-    private val propertiesInfo =
-        StatusIcon(guiProps, Gui.createserverpack_gui_createserverpack_labelpropertiespath_tip.toString())
-    private val iconInfo = StatusIcon(guiProps, Gui.createserverpack_gui_createserverpack_labeliconpath_tip.toString())
-    private val filesInfo = StatusIcon(guiProps, Gui.createserverpack_gui_createserverpack_labelcopydirs_tip.toString())
-    private val suffixInfo = StatusIcon(guiProps, Gui.createserverpack_gui_createserverpack_labelsuffix_tip.toString())
-    private val modloaderVersionInfo =
-        StatusIcon(guiProps, Gui.createserverpack_gui_createserverpack_labelmodloaderversion_tip.toString())
-    private val includeIconInfo =
-        StatusIcon(guiProps, Gui.createserverpack_gui_createserverpack_checkboxicon_tip.toString())
-    private val includePropertiesInfo =
-        StatusIcon(guiProps, Gui.createserverpack_gui_createserverpack_checkboxproperties_tip.toString())
-    private val prepareServerInfo =
-        StatusIcon(guiProps, Gui.createserverpack_gui_createserverpack_checkboxserver_tip.toString())
-    private val exclusionsInfo =
-        StatusIcon(guiProps, Gui.createserverpack_gui_createserverpack_labelclientmods_tip.toString())
-    private val iconPreview = IconPreview(guiProps)
+    private val modpackInfo = StatusIcon(
+        guiProps,
+        Gui.createserverpack_gui_createserverpack_labelmodpackdir_tip.toString()
+    )
+    private val propertiesInfo = StatusIcon(
+        guiProps,
+        Gui.createserverpack_gui_createserverpack_labelpropertiespath_tip.toString()
+    )
+    private val iconInfo = StatusIcon(
+        guiProps,
+        Gui.createserverpack_gui_createserverpack_labeliconpath_tip.toString()
+    )
+    private val filesInfo = StatusIcon(
+        guiProps,
+        Gui.createserverpack_gui_createserverpack_labelcopydirs_tip.toString()
+    )
+    private val suffixInfo = StatusIcon(
+        guiProps,
+        Gui.createserverpack_gui_createserverpack_labelsuffix_tip.toString()
+    )
+    private val modloaderVersionInfo = StatusIcon(
+        guiProps,
+        Gui.createserverpack_gui_createserverpack_labelmodloaderversion_tip.toString()
+    )
+    private val includeIconInfo = StatusIcon(
+        guiProps,
+        Gui.createserverpack_gui_createserverpack_checkboxicon_tip.toString()
+    )
+    private val includePropertiesInfo = StatusIcon(
+        guiProps,
+        Gui.createserverpack_gui_createserverpack_checkboxproperties_tip.toString()
+    )
+    private val prepareServerInfo = StatusIcon(
+        guiProps,
+        Gui.createserverpack_gui_createserverpack_checkboxserver_tip.toString()
+    )
+    private val exclusionsInfo = StatusIcon(
+        guiProps,
+        Gui.createserverpack_gui_createserverpack_labelclientmods_tip.toString()
+    )
     private val modpackInspect = IconActionButton(
         guiProps.inspectIcon,
         Gui.createserverpack_gui_buttonmodpackdir_scan_tip.toString()
     ) { updateGuiFromSelectedModpack() }
+    private val includeIcon = ActionCheckBox(
+        Gui.createserverpack_gui_createserverpack_checkboxicon.toString()
+    ) { validateServerIcon() }
+    private val includeProperties = ActionCheckBox(
+        Gui.createserverpack_gui_createserverpack_checkboxproperties.toString()
+    ) { validateServerProperties() }
+    private val noVersions = DefaultComboBoxModel(
+        arrayOf(Gui.createserverpack_gui_createserverpack_forge_none.toString())
+    )
+    private val minecraftVersions = ActionComboBox(
+        DefaultComboBoxModel(
+            versionMeta.minecraft.settingsDependantVersionsArrayDescending()
+        )
+    ) { updateMinecraftValues() }
+    private val modloaders = ActionComboBox(
+        DefaultComboBoxModel(
+            apiProperties.supportedModloaders
+        )
+    ) { updateMinecraftValues() }
+    private val includeZip = JCheckBox(Gui.createserverpack_gui_createserverpack_checkboxzip.toString())
+    private val iconPreview = IconPreview(guiProps)
     private val javaVersion = ElementLabel("8", 16)
-    private val includeIcon =
-        ActionCheckBox(Gui.createserverpack_gui_createserverpack_checkboxicon.toString()) { validateServerIcon() }
-    private val includeProperties =
-        ActionCheckBox(Gui.createserverpack_gui_createserverpack_checkboxproperties.toString()) { validateServerProperties() }
+    private val legacyFabricVersions = DefaultComboBoxModel(versionMeta.legacyFabric.loaderVersionsArrayDescending())
+    private val fabricVersions = DefaultComboBoxModel(versionMeta.fabric.loaderVersionsArrayDescending())
+    private val quiltVersions = DefaultComboBoxModel(versionMeta.quilt.loaderVersionsArrayDescending())
+    private val modloaderVersions = ActionComboBox { updateMinecraftValues() }
+    private val aikarsFlags = JButton()
+    private val modpackDirectory = ScrollTextFileField("")
+    private val javaArgs = ScrollTextArea("-Xmx4G -Xms4G")
+    private val scriptKVPairs = InteractiveTable(guiProps)
+    private val pluginPanels: MutableList<ExtensionConfigPanel> = apiPlugins.getConfigPanels(this).toMutableList()
+    private var lastSavedConfig: PackConfig? = null
+    val propertiesQuickSelect = QuickSelect(apiProperties.propertiesQuickSelections) { setProperties() }
+    val iconQuickSelect = QuickSelect(apiProperties.iconQuickSelections) { setIcon() }
+    val title = ConfigEditorTitle(guiProps, configsTab, this)
+    var configFile: File? = null
+        private set
 
     @OptIn(DelicateCoroutinesApi::class)
     private val includeServer =
@@ -101,27 +155,6 @@ class ConfigEditorPanel(
                 checkServer()
             }
         }
-    private val includeZip = JCheckBox(Gui.createserverpack_gui_createserverpack_checkboxzip.toString())
-    private val noVersions =
-        DefaultComboBoxModel(arrayOf(Gui.createserverpack_gui_createserverpack_forge_none.toString()))
-    private val legacyFabricVersions = DefaultComboBoxModel(versionMeta.legacyFabric.loaderVersionsArrayDescending())
-    private val fabricVersions = DefaultComboBoxModel(versionMeta.fabric.loaderVersionsArrayDescending())
-    private val quiltVersions = DefaultComboBoxModel(versionMeta.quilt.loaderVersionsArrayDescending())
-    private val minecraftVersions =
-        ActionComboBox(DefaultComboBoxModel(versionMeta.minecraft.settingsDependantVersionsArrayDescending())) { updateMinecraftValues() }
-    private val modloaders =
-        ActionComboBox(DefaultComboBoxModel(apiProperties.supportedModloaders)) { updateMinecraftValues() }
-    private val modloaderVersions = ActionComboBox { updateMinecraftValues() }
-    private val aikarsFlags = JButton()
-    private val modpackDirectory = FileTextField("")
-    private val javaArgs = ScrollTextArea("-Xmx4G -Xms4G")
-    private val scriptKVPairs = InteractiveTable(guiProps)
-    private val pluginPanels: MutableList<ExtensionConfigPanel> = apiPlugins.getConfigPanels(this).toMutableList()
-    private var lastSavedConfig: PackConfig? = null
-    val propertiesQuickSelect = QuickSelect(apiProperties.propertiesQuickSelections) { setProperties() }
-    val iconQuickSelect = QuickSelect(apiProperties.iconQuickSelections) { setIcon() }
-    var configFile: File? = null
-        private set
 
     @OptIn(DelicateCoroutinesApi::class)
     private val serverPackSuffix = ListeningTextField("", object : DocumentChangeListener {
@@ -133,7 +166,7 @@ class ConfigEditorPanel(
     })
 
     @OptIn(DelicateCoroutinesApi::class)
-    private val propertiesFile = FileTextField(
+    private val propertiesFile = ScrollTextFileField(
         apiProperties.defaultServerProperties,
         object : DocumentChangeListener {
             override fun update(e: DocumentEvent) {
@@ -144,7 +177,7 @@ class ConfigEditorPanel(
         })
 
     @OptIn(DelicateCoroutinesApi::class)
-    private val iconFile = FileTextField(
+    private val iconFile = ScrollTextFileField(
         apiProperties.defaultServerIcon,
         object : DocumentChangeListener {
             override fun update(e: DocumentEvent) {
@@ -242,15 +275,13 @@ class ConfigEditorPanel(
         }
     }
 
-    val title = ConfigEditorTitle(guiProps, configsTab, this)
-
     init {
         timer.isRepeats = false
         timer.stop()
 
         minecraftVersions.selectedIndex = 0
         modloaders.selectedIndex = 0
-        modpackDirectory.document.addDocumentListener(modpackChanges)
+        modpackDirectory.addDocumentListener(modpackChanges)
 
         initAikarsButton()
         updateMinecraftValues()
@@ -260,7 +291,11 @@ class ConfigEditorPanel(
         add(ElementLabel(Gui.createserverpack_gui_createserverpack_labelmodpackdir.toString()), "cell 1 0,grow")
         add(modpackDirectory, "cell 2 0,grow")
         add(
-            IconActionButton(guiProps.folderIcon, Gui.createserverpack_gui_browser.toString(), showBrowser),
+            IconActionButton(
+                guiProps.folderIcon,
+                Gui.createserverpack_gui_browser.toString(),
+                showBrowser
+            ),
             "cell 3 0, h 30!,w 30!"
         )
         add(modpackInspect, "cell 4 0")
@@ -268,7 +303,7 @@ class ConfigEditorPanel(
         // Server Properties
         add(propertiesInfo, "cell 0 1,grow")
         add(ElementLabel(Gui.createserverpack_gui_createserverpack_labelpropertiespath.toString()), "cell 1 1,grow")
-        add(propertiesFile, "cell 2 1, split 3,grow")
+        add(propertiesFile, "cell 2 1, split 3,grow, w 50:50:")
         add(ElementLabel(Gui.createserverpack_gui_quickselect.toString()), "cell 2 1")
         add(propertiesQuickSelect, "cell 2 1,w 200!")
         add(IconActionButton(guiProps.folderIcon, Gui.createserverpack_gui_browser.toString(), showBrowser), "cell 3 1")
@@ -276,13 +311,14 @@ class ConfigEditorPanel(
             IconActionButton(
                 guiProps.openIcon,
                 Gui.createserverpack_gui_createserverpack_button_open_properties.toString()
-            ) { openServerProperties() }, "cell 4 1"
+            ) { openServerProperties() },
+            "cell 4 1"
         )
 
         // Server Icon
         add(iconInfo, "cell 0 2,grow")
         add(ElementLabel(Gui.createserverpack_gui_createserverpack_labeliconpath.toString()), "cell 1 2,grow")
-        add(iconFile, "cell 2 2, split 2,grow")
+        add(iconFile, "cell 2 2, split 2,grow, w 50:50:")
         add(ElementLabel(Gui.createserverpack_gui_quickselect.toString()), "cell 2 2")
         add(iconQuickSelect, "cell 2 2,w 200!")
         add(IconActionButton(guiProps.folderIcon, Gui.createserverpack_gui_browser.toString(), showBrowser), "cell 3 2")
@@ -296,7 +332,8 @@ class ConfigEditorPanel(
             IconActionButton(
                 guiProps.revertIcon,
                 Gui.createserverpack_gui_buttoncopydirs_revert_tip.toString()
-            ) { revertServerPackFiles() }, "cell 3 3 2 1, h 30!, aligny center, alignx center,growx"
+            ) { revertServerPackFiles() },
+            "cell 3 3 2 1, h 30!, aligny center, alignx center,growx"
         )
         add(
             IconActionButton(guiProps.folderIcon, Gui.createserverpack_gui_browser.toString(), showBrowser),
@@ -1258,12 +1295,24 @@ class ConfigEditorPanel(
                 okay = false
             }
             if (!serverPackHandler.serverDownloadable(mcVersion, modloader, modloaderVersion)) {
+                val message = Gui.createserverpack_gui_createserverpack_checkboxserver_unavailable_message(
+                    modloader,
+                    mcVersion,
+                    modloader,
+                    modloaderVersion,
+                    modloader
+                ) + "    "
+                val title = Gui.createserverpack_gui_createserverpack_checkboxserver_unavailable_title(
+                    mcVersion,
+                    modloader,
+                    modloaderVersion
+                )
                 JOptionPane.showMessageDialog(
-                    this, Gui.createserverpack_gui_createserverpack_checkboxserver_unavailable_message(
-                        modloader, mcVersion, modloader, modloaderVersion, modloader
-                    ) + "    ", Gui.createserverpack_gui_createserverpack_checkboxserver_unavailable_title(
-                        mcVersion, modloader, modloaderVersion
-                    ), JOptionPane.WARNING_MESSAGE, guiProps.warningIcon
+                    this,
+                    message,
+                    title,
+                    JOptionPane.WARNING_MESSAGE,
+                    guiProps.largeWarningIcon
                 )
                 setServerInstallationTicked(false)
                 okay = false

@@ -39,8 +39,8 @@ class ConfigEditorTitle(
     configEditorPanel: ConfigEditorPanel
 ) : JPanel(FlowLayout(FlowLayout.LEFT, 0, 0)) {
 
-    private val errorIconLabel = JLabel(guiProps.mediumErrorIcon)
-    private val warningIconLabel = JLabel(guiProps.mediumWarningIcon)
+    private val errorIconLabel = JLabel(guiProps.smallErrorIcon)
+    private val warningIconLabel = JLabel(guiProps.smallWarningIcon)
     private val titleLabel = JLabel(Gui.createserverpack_gui_title_new.toString())
     val closeButton = JButton(guiProps.closeIcon)
     var hasUnsavedChanges: Boolean = false

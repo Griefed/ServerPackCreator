@@ -19,12 +19,16 @@
  */
 package de.griefed.serverpackcreator.gui.window.menu.edit
 
+import Gui
 import com.formdev.flatlaf.FlatLaf
 import com.formdev.flatlaf.extras.FlatAnimatedLafChange
 import com.formdev.flatlaf.intellijthemes.FlatAllIJThemes
 import de.griefed.larsonscanner.LarsonScanner
+import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.gui.GuiProps
+import de.griefed.serverpackcreator.gui.window.MainFrame
 import net.java.balloontip.styles.EdgedBalloonStyle
+import java.awt.Graphics
 import javax.swing.JMenu
 import javax.swing.JMenuItem
 import javax.swing.UIManager
@@ -35,7 +39,12 @@ import javax.swing.UnsupportedLookAndFeelException
  *
  * @author Griefed
  */
-class SwitchThemeMenu(private val guiProps: GuiProps, private val larsonScanner: LarsonScanner): JMenu(Gui.menubar_gui_menu_theme.toString()) {
+class SwitchThemeMenu(
+    private val guiProps: GuiProps,
+    private val larsonScanner: LarsonScanner,
+    private val apiProperties: ApiProperties,
+    private val mainFrame: MainFrame
+) : JMenu(Gui.menubar_gui_menu_theme.toString()) {
     init {
         for (theme in FlatAllIJThemes.INFOS) {
             val item = JMenuItem(theme.name)
@@ -44,6 +53,7 @@ class SwitchThemeMenu(private val guiProps: GuiProps, private val larsonScanner:
         }
         // TODO store theme in properties
     }
+
     /**
      * Change the theme to the provided [theme], updating the whole GUI and the current [larsonScanner] configuration
      * to match.
@@ -58,6 +68,7 @@ class SwitchThemeMenu(private val guiProps: GuiProps, private val larsonScanner:
             updateThemeRelatedComponents()
             FlatLaf.updateUI()
             FlatAnimatedLafChange.hideSnapshotWithAnimation()
+            apiProperties.storeCustomProperty("theme", theme.className)
         } catch (ex: UnsupportedLookAndFeelException) {
             throw RuntimeException(ex)
         }
@@ -71,7 +82,7 @@ class SwitchThemeMenu(private val guiProps: GuiProps, private val larsonScanner:
     private fun updateThemeRelatedComponents() {
         val panelBackgroundColour = UIManager.getColor("Panel.background")
         val tabbedPaneFocusColor = UIManager.getColor("TabbedPane.focusColor")
-        guiProps.balloonStyle = EdgedBalloonStyle(panelBackgroundColour,tabbedPaneFocusColor)
+        guiProps.balloonStyle = EdgedBalloonStyle(panelBackgroundColour, tabbedPaneFocusColor)
         guiProps.busyConfig.eyeBackgroundColour = panelBackgroundColour
         guiProps.busyConfig.scannerBackgroundColour = panelBackgroundColour
         guiProps.idleConfig.eyeBackgroundColour = panelBackgroundColour

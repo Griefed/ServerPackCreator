@@ -36,6 +36,7 @@ import de.griefed.serverpackcreator.updater.MigrationManager
 import de.griefed.serverpackcreator.updater.UpdateChecker
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
+import javax.swing.UIManager
 
 /**
  * Main window of ServerPackCreator housing everything needed to configure a server pack, generate it, view logs, manage
@@ -59,16 +60,22 @@ class MainWindow(
 
     init {
         GlobalScope.launch(Dispatchers.Swing) {
-            FlatJetBrainsMonoFont.install()
-            FlatLaf.setPreferredFontFamily(FlatJetBrainsMonoFont.FAMILY)
             if (apiProperties.apiVersion.matches(alphaBetaRegex)) {
                 FlatInspector.install("ctrl shift alt X")
                 FlatUIDefaultsInspector.install("ctrl shift alt Y")
             }
+
+            FlatJetBrainsMonoFont.install()
+            FlatLaf.setPreferredFontFamily(FlatJetBrainsMonoFont.FAMILY)
+
             try {
+                val themeClassName = apiProperties.retrieveCustomProperty("theme")
+                val themeClass = Class.forName(themeClassName)
+                val instance = themeClass.getDeclaredConstructor().newInstance() as FlatLaf
+                UIManager.setLookAndFeel(instance)
+                FlatLaf.updateUI()
+            } catch (ignored: Exception) {
                 FlatDarkPurpleIJTheme.setup()
-            } catch (weTried: Exception) {
-                weTried.printStackTrace()
             }
             MainFrame(
                 GuiProps(),

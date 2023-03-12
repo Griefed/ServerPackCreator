@@ -1545,35 +1545,32 @@ actual class ApiProperties(
      * Store a custom property in the serverpackcreator.properties-file. Beware that every property you add
      * receives a prefix, to prevent clashes with any other properties.
      *
-     * Said prefix consists of `custom.property.` followed by the package name of the class you provided
-     * and with the property you specified coming in last.
+     * Said prefix consists of `custom.property.` followed by the property you specified coming in last.
      *
-     * Say you have a class in your package `de.anon.foo.bar`, and you want to store a value in the property
-     * `saved`, then the resulting property in the serverpackcreator.properties would be:
-     * `custom.property.de.anon.foo.bar.saved`
+     * Say you have a value in the property `saved`, then the resulting property in the serverpackcreator.properties
+     * would be:
+     * * `custom.property.saved`
      *
      * @author Griefed
      */
-    fun storeCustomProperty(sourceClass: Class<*>, property: String, value: String): String {
-        val customProp = "$customPropertyPrefix${sourceClass.packageName}.$property"
+    fun storeCustomProperty(property: String, value: String): String {
+        val customProp = "$customPropertyPrefix$property"
         return defineProperty(customProp, value)
     }
 
     /**
      * Retrieve a custom property in the serverpackcreator.properties-file. Beware that every property you retrieve this
-     * way receives a prefix, to prevent clashes with any other properties.
+     * way contains a prefix, to prevent clashes with any other properties.
      *
-     * Said prefix consists of `custom.property.` followed by the package name of the class you provided
-     * and with the property you specified coming in last.
+     * Said prefix consists of `custom.property.` followed by the property you specified coming in last.
      *
-     * Say you have a class in your package `de.anon.foo.bar`, and you want to store a value in the property
-     * `saved`, then the resulting property in the serverpackcreator.properties would be:
-     * `custom.property.de.anon.foo.bar.saved`
+     * Say you have a property `saved`, then the resulting property in the serverpackcreator.properties would be:
+     * `custom.property.saved`
      *
      * @author Griefed
      */
-    fun retrieveCustomProperty(sourceClass: Class<*>, property: String): String? {
-        val customProp = "$customPropertyPrefix${sourceClass.packageName}.$property"
+    fun retrieveCustomProperty(property: String): String? {
+        val customProp = "$customPropertyPrefix$property"
         return internalProperties.getProperty(customProp)
     }
 

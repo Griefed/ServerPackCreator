@@ -27,7 +27,6 @@ import de.griefed.serverpackcreator.api.PackConfig
 import de.griefed.serverpackcreator.api.ServerPackHandler
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import de.griefed.serverpackcreator.gui.GuiProps
-import de.griefed.serverpackcreator.gui.window.configs.ConfigEditorPanel
 import de.griefed.serverpackcreator.gui.window.configs.ConfigsTab
 import kotlinx.coroutines.*
 import net.miginfocom.swing.MigLayout
@@ -39,7 +38,6 @@ import java.io.IOException
 import javax.swing.JButton
 import javax.swing.JOptionPane
 import javax.swing.JPanel
-import javax.swing.JTextPane
 import javax.swing.text.*
 
 /**
@@ -58,11 +56,6 @@ class ControlPanel(
     private val statusPanel = StatusPanel(guiProps)
     private val generate = JButton(Gui.createserverpack_gui_buttongenerateserverpack.toString())
     private val serverPacks = JButton(Gui.createserverpack_gui_buttonserverpacks.toString())
-    private val finishedGenerationDocument: StyledDocument = DefaultStyledDocument()
-    private val finishedGenerationAttributeSet: SimpleAttributeSet = SimpleAttributeSet()
-    private val finishedGenerationPane: JTextPane = JTextPane(finishedGenerationDocument)
-    private val lazyModeDocument: StyledDocument = DefaultStyledDocument()
-    private val lazyModeTextPane: JTextPane = JTextPane(lazyModeDocument)
     val panel = JPanel()
 
     @OptIn(DelicateCoroutinesApi::class)
@@ -73,20 +66,6 @@ class ControlPanel(
     }
 
     init {
-        finishedGenerationPane.isOpaque = false
-        finishedGenerationPane.isEditable = false
-        finishedGenerationPane.setCharacterAttributes(finishedGenerationAttributeSet, true)
-        StyleConstants.setAlignment(finishedGenerationAttributeSet, StyleConstants.ALIGN_LEFT)
-        try {
-            finishedGenerationDocument.insertString(
-                0,
-                Gui.createserverpack_gui_createserverpack_openfolder_browse.toString() + "    ",
-                finishedGenerationAttributeSet
-            )
-        } catch (ex: BadLocationException) {
-            log.error("Error inserting text into aboutDocument.", ex)
-        }
-
         generate.icon = guiProps.genIcon
         generate.addActionListener(generateAction)
         generate.multiClickThreshhold = 1000
@@ -113,13 +92,29 @@ class ControlPanel(
         generate.isEnabled = false
         larsonScanner.loadConfig(guiProps.busyConfig)
         var decision = 0
-        if (configsTab.selectedEditor?.getCopyDirectories() == "lazy_mode") {
+        if (configsTab.selectedEditor == null) {
+            JOptionPane.showMessageDialog(
+                panel,
+                Gui.createserverpack_log_error_configuration_none_message.toString(),
+                Gui.createserverpack_log_error_configuration_none_title.toString(),
+                JOptionPane.INFORMATION_MESSAGE,guiProps.largeInfoIcon
+            )
+            statusPanel.updateStatus(Gui.createserverpack_log_error_configuration_none_message.toString())
+            readyForGeneration()
+            return
+        }
+        if (configsTab.selectedEditor!!.getCopyDirectories() == "lazy_mode") {
+            val message = Gui.configuration_log_warn_checkconfig_copydirs_lazymode0.toString() + "\n" +
+            Gui.configuration_log_warn_checkconfig_copydirs_lazymode1.toString() + "\n" +
+            Gui.configuration_log_warn_checkconfig_copydirs_lazymode2.toString() + "\n" +
+            Gui.configuration_log_warn_checkconfig_copydirs_lazymode3.toString()
             decision = JOptionPane.showConfirmDialog(
                 panel,
-                lazyModeTextPane,
+                message,
                 Gui.createserverpack_gui_createserverpack_lazymode.toString(),
                 JOptionPane.YES_NO_OPTION,
-                JOptionPane.INFORMATION_MESSAGE
+                JOptionPane.INFORMATION_MESSAGE,
+                guiProps.largeWarningIcon
             )
         }
         log.debug("Case $decision")
@@ -145,12 +140,8 @@ class ControlPanel(
      * @author Griefed
      */
     private fun runGenerationTasks() {
-        val activeTab = configsTab.selectedEditor
-        if (activeTab == null) {
-            log.error("No tab available")
-            statusPanel.updateStatus("No tab available. Load or create a new configuration.")
-        }
-        val packConfig: PackConfig = activeTab!!.getCurrentConfiguration()
+        val activeTab = configsTab.selectedEditor!!
+        val packConfig: PackConfig = activeTab.getCurrentConfiguration()
         val encounteredErrors: MutableList<String> = ArrayList(100)
 
         log.info("Checking entered configuration.")
@@ -162,7 +153,7 @@ class ControlPanel(
         if (!configurationHandler.checkConfiguration(packConfig, encounteredErrors, true)) {
             log.info("Config check passed.")
             statusPanel.updateStatus(Gui.createserverpack_log_info_buttoncreateserverpack_checked.toString())
-            generateServerPack(packConfig, activeTab)
+            generateServerPack(packConfig)
         } else {
             generationFailed(encounteredErrors)
         }
@@ -173,22 +164,16 @@ class ControlPanel(
     /**
      * TODO docs
      */
-    private fun generateServerPack(packConfig: PackConfig, activeTab: ConfigEditorPanel) {
+    private fun generateServerPack(packConfig: PackConfig) {
         log.info("Starting ServerPackCreator run.")
         statusPanel.updateStatus(Gui.createserverpack_log_info_buttoncreateserverpack_generating.toString())
         try {
             serverPackHandler.run(packConfig)
             statusPanel.updateStatus(Gui.createserverpack_log_info_buttoncreateserverpack_ready.toString())
-            finishedGenerationDocument.setParagraphAttributes(
-                0,
-                finishedGenerationDocument.length,
-                finishedGenerationAttributeSet,
-                false
-            )
             readyForGeneration()
             if (JOptionPane.showConfirmDialog(
                     panel.parent,
-                    finishedGenerationPane,
+                    Gui.createserverpack_gui_createserverpack_openfolder_browse.toString(),
                     Gui.createserverpack_gui_createserverpack_openfolder_title.toString(),
                     JOptionPane.YES_NO_OPTION,
                     JOptionPane.INFORMATION_MESSAGE,

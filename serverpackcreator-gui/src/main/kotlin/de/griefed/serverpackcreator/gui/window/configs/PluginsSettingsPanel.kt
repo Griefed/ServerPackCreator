@@ -20,7 +20,7 @@
 package de.griefed.serverpackcreator.gui.window.configs
 
 import de.griefed.serverpackcreator.api.plugins.swinggui.ExtensionConfigPanel
-import de.griefed.serverpackcreator.gui.components.CollapsiblePanel
+import de.griefed.serverpackcreator.gui.window.configs.components.CollapsiblePanel
 import net.miginfocom.swing.MigLayout
 import javax.swing.JPanel
 

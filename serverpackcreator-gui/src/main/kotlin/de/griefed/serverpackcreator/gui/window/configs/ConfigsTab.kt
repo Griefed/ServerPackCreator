@@ -71,8 +71,8 @@ class ConfigsTab(
 
         }
 
-        val lastLoadedConfigs = apiProperties.retrieveCustomProperty(this.javaClass,"lastloaded")
-        if (lastLoadedConfigs != null) {
+        val lastLoadedConfigs = apiProperties.retrieveCustomProperty("lastloaded")
+        if (!lastLoadedConfigs.isNullOrBlank()) {
             val configs = if (lastLoadedConfigs.contains(",")) {
                 lastLoadedConfigs.split(",").map { File(it) }
             } else {
@@ -116,6 +116,7 @@ class ConfigsTab(
         tab.loadConfiguration(PackConfig(utilities, configFile),configFile)
     }
 
+    @Suppress("DuplicatedCode")
     private fun iconsDirectoryWatcher() {
         Executors.newSingleThreadExecutor().execute {
             val observer = FileAlterationObserver(apiProperties.iconsDirectory)
@@ -161,6 +162,7 @@ class ConfigsTab(
         }
     }
 
+    @Suppress("DuplicatedCode")
     private fun propertiesDirectoryWatcher() {
         Executors.newSingleThreadExecutor().execute {
             val observer = FileAlterationObserver(apiProperties.propertiesDirectory)

@@ -128,7 +128,7 @@ class MainFrame(
                 configs.add(config.configFile!!.absolutePath)
             }
         }
-        apiProperties.storeCustomProperty(mainPanel.configsTab.javaClass,"lastloaded",configs.joinToString(","))
+        apiProperties.storeCustomProperty("lastloaded",configs.joinToString(","))
         apiProperties.saveToDisk(apiProperties.serverPackCreatorPropertiesFile)
         exitProcess(0)
     }

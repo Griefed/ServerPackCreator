@@ -24,6 +24,7 @@ import de.griefed.larsonscanner.LarsonScanner
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.utilities.common.FileUtilities
 import de.griefed.serverpackcreator.gui.GuiProps
+import de.griefed.serverpackcreator.gui.window.MainFrame
 import javax.swing.JMenu
 
 /**
@@ -35,11 +36,12 @@ class EditMenu(
     fileUtilities: FileUtilities,
     apiProperties: ApiProperties,
     guiProps: GuiProps,
-    larsonScanner: LarsonScanner
+    larsonScanner: LarsonScanner,
+    mainFrame: MainFrame
 ) : JMenu(Gui.menubar_gui_menu_edit.toString()) {
     init {
         add(DefaultServerPropertiesItem(fileUtilities, apiProperties))
         add(DefaultServerIconItem(fileUtilities, apiProperties))
-        add(SwitchThemeMenu(guiProps, larsonScanner))
+        add(SwitchThemeMenu(guiProps, larsonScanner, apiProperties,mainFrame))
     }
 }

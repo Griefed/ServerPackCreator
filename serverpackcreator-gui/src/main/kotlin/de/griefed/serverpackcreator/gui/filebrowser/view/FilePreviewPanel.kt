@@ -40,8 +40,6 @@ class FilePreviewPanel(private val guiProps: GuiProps) {
     private val textPreview = JTextPane()
     private val textScroll =
         JScrollPane(textPreview, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED)
-
-    // TODO move regexes to guiProps
     private val props = "properties"
     private val conf = "conf"
     val panel = JPanel(
