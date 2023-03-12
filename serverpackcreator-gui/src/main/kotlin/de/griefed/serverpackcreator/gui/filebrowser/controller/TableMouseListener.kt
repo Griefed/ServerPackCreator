@@ -27,15 +27,15 @@ import java.awt.event.MouseEvent
 import javax.swing.JTable
 
 /**
- * TODO docs
+ * Mouse-listener to present the context menu upon pressing the right mouse-button on a file in the file table.
+ *
+ * @author Andrew Thompson
+ * @author Griefed
  */
 class TableMouseListener(
     private val jTable: JTable, configsTab: ConfigsTab, utilities: Utilities
 ) : SelectionPopMenu(configsTab,utilities) {
 
-    /**
-     * TODO docs
-     */
     override fun mousePressed(mouseEvent: MouseEvent) {
         if (mouseEvent.button == MouseEvent.BUTTON3) {
             val r = jTable.rowAtPoint(mouseEvent.point)

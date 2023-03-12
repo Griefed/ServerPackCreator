@@ -29,7 +29,10 @@ import javax.swing.event.TreeSelectionListener
 import javax.swing.tree.DefaultMutableTreeNode
 
 /**
- * TODO docs
+ * Listen to node-selections in the file-tree of our filebrowser and add nodes upon opening of a directory.
+ *
+ * @author Andrew Thompson
+ * @author Griefed
  */
 class FileSelectionListener(
     private val frame: FileBrowserFrame,
@@ -37,9 +40,6 @@ class FileSelectionListener(
     private val guiProps: GuiProps
 ) : TreeSelectionListener {
 
-    /**
-     * TODO docs
-     */
     override fun valueChanged(event: TreeSelectionEvent) {
         val node = event.path.lastPathComponent as DefaultMutableTreeNode
         val fileNode = node.userObject as FileNode

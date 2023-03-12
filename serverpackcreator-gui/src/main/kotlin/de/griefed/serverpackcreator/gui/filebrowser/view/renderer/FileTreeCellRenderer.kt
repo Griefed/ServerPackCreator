@@ -29,7 +29,10 @@ import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.TreeCellRenderer
 
 /**
- * TODO docs
+ * Renderer for a node in the tree.
+ *
+ * @author Andrew Thompson
+ * @author Griefed
  */
 class FileTreeCellRenderer(private val browserModel: FileBrowserModel) : TreeCellRenderer {
     private val label: JLabel = JLabel(" ")

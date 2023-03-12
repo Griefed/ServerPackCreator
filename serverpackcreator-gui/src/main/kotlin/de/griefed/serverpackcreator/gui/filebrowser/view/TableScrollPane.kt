@@ -36,7 +36,10 @@ import javax.swing.*
 import javax.swing.tree.DefaultMutableTreeNode
 
 /**
- * TODO docs
+ * Scroll-pane housing the table for files inside a selected directory.
+ *
+ * @author Andrew Thompson
+ * @author Griefed
  */
 class TableScrollPane(
     frame: FileBrowserFrame,
@@ -78,7 +81,9 @@ class TableScrollPane(
     }
 
     /**
-     * TODO docs
+     * Build the label for a node.
+     *
+     * @author Griefed
      */
     private fun buildLabelString(count: Int): String {
         val nf: NumberFormat = NumberFormat.getInstance()
@@ -86,7 +91,9 @@ class TableScrollPane(
     }
 
     /**
-     * TODO docs
+     * Clear the tree model.
+     *
+     * @author Andrew Thompson
      */
     fun clearDefaultTableModel() {
         ftModel.removeRows()
@@ -95,7 +102,9 @@ class TableScrollPane(
     }
 
     /**
-     * TODO docs
+     * Update the table with the given node, updating all entries and information.
+     *
+     * @author Andrew Thompson
      */
     fun setDefaultTableModel(node: DefaultMutableTreeNode) {
         ftModel.removeRows()

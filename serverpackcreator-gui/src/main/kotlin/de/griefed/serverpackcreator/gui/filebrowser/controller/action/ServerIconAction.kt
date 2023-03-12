@@ -26,7 +26,9 @@ import java.io.File
 import javax.swing.AbstractAction
 
 /**
- * TODO docs
+ * Action to set the server-icon in the currently active config-tab to the in the filebrowser selected image.
+ *
+ * @author Griefed
  */
 class ServerIconAction(private val configsTab: ConfigsTab) : AbstractAction() {
     private var icon: File? = null
@@ -35,19 +37,11 @@ class ServerIconAction(private val configsTab: ConfigsTab) : AbstractAction() {
         putValue(NAME, Gui.filebrowser_action_icon.toString())
     }
 
-    /**
-     * Invoked when an action occurs.
-     *
-     * @param e
-     */
     @Suppress("unused")
     override fun actionPerformed(e: ActionEvent) {
         configsTab.selectedEditor?.setServerIconPath(icon!!.absolutePath)
     }
 
-    /**
-     * TODO docs
-     */
     fun setIcon(file: File?) {
         icon = file
     }

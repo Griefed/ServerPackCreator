@@ -30,6 +30,9 @@ import javax.swing.JSeparator
 
 /**
  * TODO docs
+ *
+ * @author Andrew Thompson
+ * @author Griefed
  */
 open class SelectionPopMenu(configsTab: ConfigsTab, utilities: Utilities) : MouseAdapter() {
     private val menu: JPopupMenu = JPopupMenu()
@@ -52,16 +55,13 @@ open class SelectionPopMenu(configsTab: ConfigsTab, utilities: Utilities) : Mous
     }
 
     /**
-     * TODO docs
+     * Show the context menu with visibilities of contained elements based on the file-type.
      */
     fun show(invoker: Component?, x: Int, y: Int, file: File) {
         setVisibilities(file)
         menu.show(invoker, x, y)
     }
 
-    /**
-     * TODO docs
-     */
     private fun setVisibilities(file: File) {
         open.setFile(file)
         openContainingFolder.setDirectory(file)

@@ -26,7 +26,9 @@ import javax.swing.tree.MutableTreeNode
 import javax.swing.tree.TreeNode
 
 /**
- * TODO docs
+ * A tree node which sorts its entries by file-type and file-name.
+ *
+ * @author Griefed
  */
 class SortedTreeNode : DefaultMutableTreeNode {
     private val guiProps: GuiProps
@@ -45,7 +47,7 @@ class SortedTreeNode : DefaultMutableTreeNode {
     }
 
     /**
-     * TODO docs
+     * Sort all nodes by file-type, then by name.
      */
     private fun sort(): Vector<TreeNode> {
         Collections.sort(children, guiProps.typeComparator)
@@ -68,15 +70,12 @@ class SortedTreeNode : DefaultMutableTreeNode {
         return merge(directories, files)
     }
 
-    /**
-     * TODO docs
-     */
     private fun sortAlphabetically(files: MutableList<TreeNode>) {
         Collections.sort(files, guiProps.nameComparator)
     }
 
     /**
-     * TODO docs
+     * Merge the given nodes into one.
      */
     private fun merge(directories: MutableList<TreeNode>, files: MutableList<TreeNode>): Vector<TreeNode> {
         val merged = mutableListOf<TreeNode>()

@@ -28,16 +28,15 @@ import javax.swing.JTree
 import javax.swing.tree.DefaultMutableTreeNode
 
 /**
- * TODO docs
+ * Mouse-listener to display the context-menu when a user presses the right mouse-button on a node.
+ *
+ * @author Andrew Thompson
+ * @author Griefed
  */
 class TreeMouseListener(
     private val jTree: JTree, configsTab: ConfigsTab, utilities: Utilities
 ) : SelectionPopMenu(configsTab, utilities) {
-
-    /**
-     * TODO docs
-     */
-    override fun mousePressed(mouseEvent: MouseEvent) {
+  override fun mousePressed(mouseEvent: MouseEvent) {
         if (mouseEvent.button == MouseEvent.BUTTON3) {
             if (jTree.getPathForLocation(mouseEvent.x, mouseEvent.y) != null) {
                 val treePath = jTree.getPathForLocation(mouseEvent.x, mouseEvent.y)!!

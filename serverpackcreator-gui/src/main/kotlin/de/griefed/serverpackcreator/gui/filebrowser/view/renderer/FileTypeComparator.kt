@@ -24,7 +24,10 @@ import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.TreeNode
 
 /**
- * TODO docs
+ * File-type comparator to allow sorting at various places based on whether the given file is a directory or a regular
+ * file.
+ *
+ * @author Griefed
  */
 class FileTypeComparator : Comparator<TreeNode> {
     override fun compare(o1: TreeNode, o2: TreeNode): Int {

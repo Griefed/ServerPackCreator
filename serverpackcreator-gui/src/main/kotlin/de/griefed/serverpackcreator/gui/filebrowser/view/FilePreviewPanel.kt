@@ -32,7 +32,10 @@ import javax.swing.JScrollPane
 import javax.swing.JTextPane
 
 /**
- * TODO docs
+ * Preview panel displaying either an image or the contents of a .properties or .conf file, depending on what was
+ * selected.
+ *
+ * @author Griefed
  */
 class FilePreviewPanel(private val guiProps: GuiProps) {
     private var fileNode: FileNode? = null
@@ -59,7 +62,10 @@ class FilePreviewPanel(private val guiProps: GuiProps) {
     }
 
     /**
-     * TODO docs
+     * Update the current node. Depending on whether an image, properties or conf was selected, a different preview
+     * will be visible.
+     *
+     * @author Griefed
      */
     fun setFileNode(fileNode: FileNode) {
         this.fileNode = fileNode
@@ -87,11 +93,13 @@ class FilePreviewPanel(private val guiProps: GuiProps) {
     }
 
     /**
-     * TODO docs
+     * Canvas in which an image preview is displayed in.
+     *
+     * @author Griefed
      */
     inner class ImageCanvas : Canvas() {
         override fun paint(g: Graphics?) {
-            if (fileNode?.file?.absoluteFile!!.name.matches(guiProps.imageRegex)) {
+            if (iconPreview.isVisible) {
                 val image = ImageIO.read(fileNode?.file?.absoluteFile)
                 val imgSize = Dimension(image.getWidth(null), image.getHeight(null))
                 val boundary = this.size
@@ -111,7 +119,7 @@ class FilePreviewPanel(private val guiProps: GuiProps) {
                     startY.toInt(),
                     newWidth.toInt(),
                     newHeight.toInt(),
-                    this@ImageCanvas
+                    panel
                 )
             }
         }

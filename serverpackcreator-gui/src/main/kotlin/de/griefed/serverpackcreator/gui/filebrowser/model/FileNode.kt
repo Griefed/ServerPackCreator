@@ -22,15 +22,14 @@ package de.griefed.serverpackcreator.gui.filebrowser.model
 import java.io.File
 
 /**
- * TODO docs
+ * Simple file-node to store the given file and keep track whether grand-children were generated.
+ *
+ * @author Andrew Thompson
+ * @author Griefed
  */
-//TODO extend file?
 class FileNode(val file: File) {
     var isGenerateGrandchildren = true
 
-    /**
-     * TODO docs
-     */
     override fun toString(): String {
         val name = file.name
         return if (name == "") {

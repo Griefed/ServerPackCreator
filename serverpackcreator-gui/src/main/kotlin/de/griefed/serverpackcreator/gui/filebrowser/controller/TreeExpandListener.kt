@@ -28,23 +28,20 @@ import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.ExpandVetoException
 
 /**
- * TODO docs
+ * Expansion-listener to update available nodes upon expansion, or set nodes invisible upon collapse.
+ *
+ * @author Andrew Thompson
+ * @author Griefed
  */
 class TreeExpandListener(
     private val browserModel: FileBrowserModel,
     private val guiProps: GuiProps
 ) : TreeWillExpandListener {
 
-    /**
-     * TODO docs
-     */
     @Throws(ExpandVetoException::class)
     override fun treeWillCollapse(event: TreeExpansionEvent) {
     }
 
-    /**
-     * TODO docs
-     */
     @Throws(ExpandVetoException::class)
     override fun treeWillExpand(event: TreeExpansionEvent) {
         val path = event.path

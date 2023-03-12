@@ -32,7 +32,10 @@ import javax.swing.JPanel
 import javax.swing.JTextField
 
 /**
- * TODO docs
+ * Panel containing details about the currently selected file in the table.
+ *
+ * @author Andrew Thompson
+ * @author Griefed
  */
 class FileDetailPanel {
     private var fileNameLabel = JLabel(" ")
@@ -67,7 +70,9 @@ class FileDetailPanel {
     }
 
     /**
-     * TODO docs
+     * Update details about the selected file.
+     *
+     * @author Andrew Thompson
      */
     private fun updatePartControl(browserModel: FileBrowserModel) {
         if (fileNode != null) {
@@ -87,7 +92,9 @@ class FileDetailPanel {
     }
 
     /**
-     * TODO docs
+     * Get the date and time of when the file was last modified,
+     *
+     * @author Andrew Thompson
      */
     private fun generateLastModified(file: File): String {
         val timestamp = file.lastModified()
@@ -98,7 +105,9 @@ class FileDetailPanel {
     }
 
     /**
-     * TODO docs
+     * Get the filesize of the selected file and, depending on the size, display it with `bytes`, `KB`, `GB`, `TB`.
+     *
+     * @author Andrew Thompson
      */
     private fun generateFileSize(file: File): String {
         val label = arrayOf("bytes", "KB", "GB", "TB")
@@ -112,7 +121,9 @@ class FileDetailPanel {
     }
 
     /**
-     * TODO docs
+     * Update the filenode.
+     *
+     * @author Andrew Thompson
      */
     fun setFileNode(fileNode: FileNode?, browserModel: FileBrowserModel) {
         this.fileNode = fileNode

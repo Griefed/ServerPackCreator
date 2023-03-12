@@ -27,29 +27,26 @@ import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.DefaultTreeModel
 
 /**
- * TODO docs
+ * Base model from which access to the root-manager, tree-model and update routines is granted.
+ *
+ * @author Andrew Thompson
+ * @author Griefed
  */
 class FileBrowserModel(private val guiProps: GuiProps) {
     private val rootManager: RootManager = RootManager(guiProps)
     val treeModel: DefaultTreeModel = createTreeModel()
 
     /**
-     * TODO docs
+     * Update the root of out root-manager to take filesyste-changes into account.
      */
     fun reload() {
         treeModel.setRoot(updateRoot())
     }
 
-    /**
-     * TODO docs
-     */
     private fun createTreeModel(): DefaultTreeModel {
         return DefaultTreeModel(updateRoot())
     }
 
-    /**
-     * TODO docs
-     */
     private fun updateRoot(): DefaultMutableTreeNode {
         val root = rootManager.root
         addChildNodes(root)
@@ -58,7 +55,7 @@ class FileBrowserModel(private val guiProps: GuiProps) {
     }
 
     /**
-     * TODO docs
+     * Add grandchild-nodes to the parent for every file inside it.
      */
     fun addGrandchildNodes(root: DefaultMutableTreeNode) {
         val enumeration: Enumeration<*> = root.children()
@@ -69,7 +66,7 @@ class FileBrowserModel(private val guiProps: GuiProps) {
     }
 
     /**
-     * TODO docs
+     * Add child-nodes to the parent for every file inside it.
      */
     private fun addChildNodes(root: DefaultMutableTreeNode) {
         if (rootManager.isWindows) {
@@ -108,16 +105,10 @@ class FileBrowserModel(private val guiProps: GuiProps) {
         }
     }
 
-    /**
-     * TODO docs
-     */
     fun getFileIcon(file: File?): Icon {
         return rootManager.fileSystemView.getSystemIcon(file)
     }
 
-    /**
-     * TODO docs
-     */
     fun getFileText(file: File?): String {
         return rootManager.fileSystemView.getSystemDisplayName(file)
     }

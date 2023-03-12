@@ -34,7 +34,11 @@ import javax.swing.JSplitPane
 import javax.swing.tree.DefaultMutableTreeNode
 
 /**
- * TODO docs
+ * Frame housing the filebrowser allowing users to update their modpack-directory, server-icon and server-properties
+ * in a very convenient way.
+ *
+ * @author Andrew Thompson
+ * @author Griefed
  */
 class FileBrowserFrame(
     private val browserModel: FileBrowserModel,
@@ -99,35 +103,45 @@ class FileBrowserFrame(
     }
 
     /**
-     * TODO docs
+     * Update the node of the detail-panel.
+     *
+     * @author Griefed
      */
     fun updateFileDetail(fileNode: FileNode?) {
         fileDetailPanel.setFileNode(fileNode, browserModel)
     }
 
     /**
-     * TODO docs
+     * Set the filemodel of the table-of-contents table.
+     *
+     * @author Griefed
      */
     fun setDefaultTableModel(node: DefaultMutableTreeNode) {
         tableScrollPane.setDefaultTableModel(node)
     }
 
     /**
-     * TODO docs
+     * Clear the table-of-contents for a directory.
+     *
+     * @author Griefed
      */
     fun clearDefaultTableModel() {
         tableScrollPane.clearDefaultTableModel()
     }
 
     /**
-     * TODO docs
+     * Update the filenode of the filepreview-panel.
+     *
+     * @author Griefed
      */
     fun setFilePreviewNode(fileNode: FileNode?) {
         fileNode?.let { filePreviewPanel.setFileNode(it) }
     }
 
     /**
-     * TODO docs
+     * Make the filebrowser visible.
+     *
+     * @author Griefed
      */
     fun show() {
         if (frame.isVisible) {
@@ -140,7 +154,9 @@ class FileBrowserFrame(
     }
 
     /**
-     * TODO docs
+     * Hide the filebrowser.
+     *
+     * @author Griefed
      */
     fun hide() {
         frame.isVisible = false

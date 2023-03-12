@@ -135,7 +135,7 @@ class ConfigEditorPanel(
     private val legacyFabricVersions = DefaultComboBoxModel(versionMeta.legacyFabric.loaderVersionsArrayDescending())
     private val fabricVersions = DefaultComboBoxModel(versionMeta.fabric.loaderVersionsArrayDescending())
     private val quiltVersions = DefaultComboBoxModel(versionMeta.quilt.loaderVersionsArrayDescending())
-    private val modloaderVersions = ActionComboBox { updateMinecraftValues() }
+    private val modloaderVersions = ActionComboBox { validateInputFields() }
     private val aikarsFlags = JButton()
     private val modpackDirectory = ScrollTextFileField("")
     private val javaArgs = ScrollTextArea("-Xmx4G -Xms4G")
@@ -547,7 +547,7 @@ class ConfigEditorPanel(
             isServerPropertiesInclusionTicked(),
             isZipArchiveCreationTicked(),
             getScriptSettings(),
-            getConfigPanelConfigs()
+            getExtensionsConfigs()
         )
     }
 
@@ -708,7 +708,6 @@ class ConfigEditorPanel(
                     || currentConfig.isZipCreationDesired != lastSavedConfig!!.isZipCreationDesired -> {
                 title.showWarningIcon()
             }
-
             else -> {
                 title.hideWarningIcon()
             }
@@ -1013,7 +1012,7 @@ class ConfigEditorPanel(
      *
      * @return Map containing lists of CommentedConfigs mapped to the corresponding pluginID.
      */
-    private fun getConfigPanelConfigs(): HashMap<String, ArrayList<CommentedConfig>> {
+    private fun getExtensionsConfigs(): HashMap<String, ArrayList<CommentedConfig>> {
         val configs: HashMap<String, ArrayList<CommentedConfig>> = HashMap(10)
         if (pluginPanels.isNotEmpty()) {
             for (panel in pluginPanels) {

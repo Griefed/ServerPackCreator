@@ -35,7 +35,10 @@ import javax.swing.text.Position
 import javax.swing.tree.TreePath
 
 /**
- * TODO docs
+ * Scroll-pane housing our tree with all our nodes.
+ *
+ * @author Andrew Thompson
+ * @author Griefed
  */
 class TreeScrollPane(
     frame: FileBrowserFrame,
@@ -68,7 +71,9 @@ class TreeScrollPane(
     }
 
     /**
-     * TODO docs
+     * Expand all nodes up to the modpack-directory of the currently selected config-tab.
+     *
+     * @author Griefed
      */
     fun expandPathsToModpackDir() {
         val activeTab = configsTab.selectedEditor

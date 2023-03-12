@@ -26,7 +26,10 @@ import kotlinx.coroutines.*
 import javax.swing.tree.DefaultMutableTreeNode
 
 /**
- * TODO docs
+ * Add nodes for every file in the parent-node.
+ *
+ * @author Andrew Thompson
+ * @author Griefed
  */
 @OptIn(DelicateCoroutinesApi::class)
 class AddNodes(browserModel: FileBrowserModel,node: DefaultMutableTreeNode, guiProps: GuiProps) {

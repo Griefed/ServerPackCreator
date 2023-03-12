@@ -26,7 +26,9 @@ import java.io.File
 import javax.swing.AbstractAction
 
 /**
- * TODO docs
+ * Action to set the server.properties in the currently active config-tab to the in the filebrowser selected properties.
+ *
+ * @author Griefed
  */
 class ServerPropertiesAction(private val configsTab: ConfigsTab) : AbstractAction() {
     private var properties: File? = null
@@ -35,18 +37,10 @@ class ServerPropertiesAction(private val configsTab: ConfigsTab) : AbstractActio
         putValue(NAME, Gui.filebrowser_action_properties.toString())
     }
 
-    /**
-     * Invoked when an action occurs.
-     *
-     * @param e
-     */
     override fun actionPerformed(e: ActionEvent) {
         configsTab.selectedEditor?.setServerPropertiesPath(properties!!.absolutePath)
     }
 
-    /**
-     * TODO docs
-     */
     fun setProperties(file: File?) {
         properties = file
     }

@@ -25,15 +25,18 @@ import javax.swing.filechooser.FileSystemView
 import javax.swing.tree.DefaultMutableTreeNode
 
 /**
- * TODO docs
+ * Root-file manager responsible for providing information about the top-level node, from which every other node will be
+ * made available.
+ *
+ * Based on whether the user is running on Windows or Linux/UNIX, the root node will be different.
+ *
+ * @author Andrew Thompson
+ * @author Griefed
  */
 class RootManager(private val guiProps: GuiProps) {
     private val osName = System.getProperty("os.name")
     val fileSystemView: FileSystemView = FileSystemView.getFileSystemView()
 
-    /**
-     * TODO docs
-     */
     @get:Throws(IllegalStateException::class)
     val root: DefaultMutableTreeNode
         get() {
@@ -52,9 +55,6 @@ class RootManager(private val guiProps: GuiProps) {
             return rootNode
         }
 
-    /**
-     * TODO docs
-     */
     @get:Throws(IllegalStateException::class)
     private val myComputer: DefaultMutableTreeNode
         get() {

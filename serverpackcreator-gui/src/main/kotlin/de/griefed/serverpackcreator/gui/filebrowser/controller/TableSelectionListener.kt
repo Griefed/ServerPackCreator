@@ -27,21 +27,18 @@ import javax.swing.event.ListSelectionEvent
 import javax.swing.event.ListSelectionListener
 
 /**
- * TODO docs
+ * Listener to update the detail and preview panels upon selection of a file in the file-table.
+ *
+ * @author Andrew Thompson
+ * @author Griefed
  */
 class TableSelectionListener(private val frame: FileBrowserFrame, private val jTable: JTable) : ListSelectionListener {
     private var rowCount = 0
 
-    /**
-     * TODO docs
-     */
     fun setRowCount(rowCount: Int) {
         this.rowCount = rowCount
     }
 
-    /**
-     * TODO docs
-     */
     override fun valueChanged(event: ListSelectionEvent) {
         if (!event.valueIsAdjusting) {
             val lsm = event.source as ListSelectionModel

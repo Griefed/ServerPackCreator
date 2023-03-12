@@ -51,7 +51,6 @@ class SwitchThemeMenu(
             item.addActionListener { changeTheme(theme) }
             add(item)
         }
-        // TODO store theme in properties
     }
 
     /**

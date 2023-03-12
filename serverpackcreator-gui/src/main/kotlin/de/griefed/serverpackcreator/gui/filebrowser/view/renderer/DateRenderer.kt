@@ -23,7 +23,10 @@ import java.text.SimpleDateFormat
 import javax.swing.table.DefaultTableCellRenderer
 
 /**
- * TODO docs
+ * Date renderer to be used on the file tables.
+ *
+ * @author Andrew Thompson
+ * @author Griefed
  */
 class DateRenderer : DefaultTableCellRenderer() {
     private val formatter: SimpleDateFormat = SimpleDateFormat("dd MMM yyyy")

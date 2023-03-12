@@ -24,7 +24,9 @@ import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.TreeNode
 
 /**
- * TODO docs
+ * File-name comparator to allow sorting at various places.
+ *
+ * @author Griefed
  */
 class FileNameComparator :Comparator<TreeNode> {
     override fun compare(o1: TreeNode, o2: TreeNode): Int {
