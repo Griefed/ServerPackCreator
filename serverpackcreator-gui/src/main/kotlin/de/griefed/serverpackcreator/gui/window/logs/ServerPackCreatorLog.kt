@@ -20,17 +20,15 @@
 package de.griefed.serverpackcreator.gui.window.logs
 
 import de.griefed.serverpackcreator.api.ApiProperties
-import de.griefed.serverpackcreator.gui.components.TabPanel
+import java.io.File
 
 /**
- * Tab for viewing the three logs ServerPackCreator creates, all in their own tab.
+ * Log viewer for the ServerPackCreator log.
  *
  * @author Griefed
  */
-class Logs(apiProperties: ApiProperties) : TabPanel() {
+class ServerPackCreatorLog(apiProperties: ApiProperties) : LogTailer() {
     init {
-        tabs.addTab("ServerPackCreatorLog",ServerPackCreatorLog(apiProperties))
-        tabs.addTab("ModloaderInstallerLog",ModloaderInstallerLog(apiProperties))
-        tabs.addTab("PluginsLog",PluginsLog(apiProperties))
+        createTailer(File(apiProperties.logsDirectory, "serverpackcreator.log"))
     }
 }

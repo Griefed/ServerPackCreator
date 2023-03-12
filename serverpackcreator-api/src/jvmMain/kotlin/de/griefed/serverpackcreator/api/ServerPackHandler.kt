@@ -446,7 +446,10 @@ actual class ServerPackHandler actual constructor(
     }
 
     override fun installServer(
-        modLoader: String, minecraftVersion: String, modLoaderVersion: String, destination: String
+        modLoader: String,
+        minecraftVersion: String,
+        modLoaderVersion: String,
+        destination: String
     ) {
         if (!serverDownloadable(minecraftVersion, modLoader, modLoaderVersion)) {
             log.error("The servers for $minecraftVersion, $modLoader $modLoaderVersion are currently unreachable. Skipping server installation.")

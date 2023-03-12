@@ -41,46 +41,54 @@ package de.griefed.serverpackcreator.gui.window.logs
 import de.griefed.serverpackcreator.gui.components.ScrollDirection
 import de.griefed.serverpackcreator.gui.components.SmartScroller
 import de.griefed.serverpackcreator.gui.components.ViewPortPosition
+import org.apache.commons.io.input.Tailer
+import org.apache.commons.io.input.TailerListenerAdapter
 import java.awt.Font
-import java.awt.GridBagConstraints
-import java.awt.GridBagLayout
 import java.io.File
-import javax.swing.JPanel
 import javax.swing.JScrollPane
 import javax.swing.JTextArea
 
 /**
- * TODO docs
+ * Log tailer which writes changes to a scrollable panel.
+ *
+ * @author Griefed
  */
-abstract class LogTailer(tooltip: String) : JPanel() {
-    protected var textArea: JTextArea
+abstract class LogTailer : JScrollPane() {
+    protected var textArea: JTextArea = JTextArea()
+    private var counter = 0
 
     init {
-        layout = GridBagLayout()
-        val constraints = GridBagConstraints()
-        constraints.anchor = GridBagConstraints.CENTER
-        constraints.fill = GridBagConstraints.BOTH
-        constraints.gridx = 0
-        constraints.gridy = 0
-        constraints.weighty = 1.0
-        constraints.weightx = 1.0
-
-        // Log Panel
-        textArea = JTextArea()
         textArea.isEditable = false
         textArea.font = Font("Noto Sans Display Regular", Font.PLAIN, 15)
-        textArea.toolTipText = tooltip
-        val scrollPane = JScrollPane(
-            textArea,
-            JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-            JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS
-        )
-        SmartScroller(scrollPane, ScrollDirection.VERTICAL, ViewPortPosition.END)
-        this.add(scrollPane, constraints)
+        viewport.view = textArea
+        horizontalScrollBarPolicy = HORIZONTAL_SCROLLBAR_ALWAYS
+        verticalScrollBarPolicy = VERTICAL_SCROLLBAR_ALWAYS
+        border = null
+        SmartScroller(this, ScrollDirection.VERTICAL, ViewPortPosition.END)
     }
 
     /**
-     * TODO docs
+     * Create a tailer for the specified [logFile] to keep an eye on said file.
+     *
+     * @author Griefed
      */
-    protected abstract fun createTailer(logsDirectory: File)
+    fun createTailer(logFile: File) {
+        val listener = object : TailerListenerAdapter() {
+            override fun handle(line: String) {
+                textArea.append("$line\n")
+                if (counter >= 2000) {
+                    textArea.document.remove(
+                        0,
+                        textArea.document.defaultRootElement.getElement(0).endOffset
+                    )
+                } else {
+                    counter++
+                }
+            }
+        }
+        val tailer = Tailer(logFile, listener)
+        val thread = Thread(tailer)
+        thread.isDaemon = true
+        thread.start()
+    }
 }

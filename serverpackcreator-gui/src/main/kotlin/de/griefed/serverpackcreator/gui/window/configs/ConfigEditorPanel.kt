@@ -59,12 +59,7 @@ class ConfigEditorPanel(
     private val serverPackHandler: ServerPackHandler,
     apiPlugins: ApiPlugins,
     showBrowser: ActionListener
-) : JPanel(
-    MigLayout(
-        "left,wrap",
-        "[left,::64]5[left]5[left,grow]5[left,::64]5[left,::64]", "30"
-    )
-), ServerPackConfigTab {
+) : JScrollPane(), ServerPackConfigTab {
     private val log = cachedLoggerOf(this.javaClass)
     private val modpackInfo = StatusIcon(
         guiProps,
@@ -112,10 +107,16 @@ class ConfigEditorPanel(
     ) { updateGuiFromSelectedModpack() }
     private val includeIcon = ActionCheckBox(
         Gui.createserverpack_gui_createserverpack_checkboxicon.toString()
-    ) { validateServerIcon() }
+    ) { validateInputFields() }
     private val includeProperties = ActionCheckBox(
         Gui.createserverpack_gui_createserverpack_checkboxproperties.toString()
-    ) { validateServerProperties() }
+    ) { validateInputFields() }
+    private val includeZip = ActionCheckBox(
+        Gui.createserverpack_gui_createserverpack_checkboxzip.toString()
+    ) { validateInputFields() }
+    private val includeServer = ActionCheckBox(
+        Gui.createserverpack_gui_createserverpack_checkboxserver.toString()
+    ) { validateInputFields() }
     private val noVersions = DefaultComboBoxModel(
         arrayOf(Gui.createserverpack_gui_createserverpack_forge_none.toString())
     )
@@ -129,7 +130,6 @@ class ConfigEditorPanel(
             apiProperties.supportedModloaders
         )
     ) { updateMinecraftValues() }
-    private val includeZip = JCheckBox(Gui.createserverpack_gui_createserverpack_checkboxzip.toString())
     private val iconPreview = IconPreview(guiProps)
     private val javaVersion = ElementLabel("8", 16)
     private val legacyFabricVersions = DefaultComboBoxModel(versionMeta.legacyFabric.loaderVersionsArrayDescending())
@@ -142,83 +142,28 @@ class ConfigEditorPanel(
     private val scriptKVPairs = InteractiveTable(guiProps)
     private val pluginPanels: MutableList<ExtensionConfigPanel> = apiPlugins.getConfigPanels(this).toMutableList()
     private var lastSavedConfig: PackConfig? = null
-    val propertiesQuickSelect = QuickSelect(apiProperties.propertiesQuickSelections) { setProperties() }
-    val iconQuickSelect = QuickSelect(apiProperties.iconQuickSelections) { setIcon() }
-    val title = ConfigEditorTitle(guiProps, configsTab, this)
-    var configFile: File? = null
-        private set
-
-    @OptIn(DelicateCoroutinesApi::class)
-    private val includeServer =
-        ActionCheckBox(Gui.createserverpack_gui_createserverpack_checkboxserver.toString()) {
-            GlobalScope.launch(guiProps.configDispatcher) {
-                checkServer()
-            }
-        }
-
-    @OptIn(DelicateCoroutinesApi::class)
-    private val serverPackSuffix = ListeningTextField("", object : DocumentChangeListener {
+    private val changeListener = object : DocumentChangeListener {
         override fun update(e: DocumentEvent) {
-            GlobalScope.launch(guiProps.configDispatcher) {
-                validateInputFields()
-            }
-        }
-    })
-
-    @OptIn(DelicateCoroutinesApi::class)
-    private val propertiesFile = ScrollTextFileField(
-        apiProperties.defaultServerProperties,
-        object : DocumentChangeListener {
-            override fun update(e: DocumentEvent) {
-                GlobalScope.launch(guiProps.configDispatcher) {
-                    validateInputFields()
-                }
-            }
-        })
-
-    @OptIn(DelicateCoroutinesApi::class)
-    private val iconFile = ScrollTextFileField(
-        apiProperties.defaultServerIcon,
-        object : DocumentChangeListener {
-            override fun update(e: DocumentEvent) {
-                GlobalScope.launch(guiProps.configDispatcher) {
-                    validateInputFields()
-                }
-            }
-        })
-
-    @OptIn(DelicateCoroutinesApi::class)
-    private val serverPackFiles = ScrollTextArea(
-        "config,mods",
-        object : DocumentChangeListener {
-            override fun update(e: DocumentEvent) {
-                GlobalScope.launch(guiProps.configDispatcher) {
-                    validateInputFields()
-                }
-            }
-        })
-
-    @OptIn(DelicateCoroutinesApi::class)
-    private val exclusions = ScrollTextArea(
-        apiProperties.clientSideMods(),
-        object : DocumentChangeListener {
-            override fun update(e: DocumentEvent) {
-                GlobalScope.launch(guiProps.configDispatcher) {
-                    validateInputFields()
-                }
-            }
-        })
-
-    @OptIn(DelicateCoroutinesApi::class)
-    private val modpackChanges = object : DocumentChangeListener {
-        override fun update(e: DocumentEvent) {
-            GlobalScope.launch(guiProps.configDispatcher) {
-                title.title = modpackDirectory.file.name
-                validateInputFields()
-            }
+            validateInputFields()
         }
     }
-
+    private val serverPackSuffix = ListeningTextField("", changeListener)
+    private val propertiesFile = ScrollTextFileField(apiProperties.defaultServerProperties, changeListener)
+    private val iconFile = ScrollTextFileField(apiProperties.defaultServerIcon, changeListener)
+    private val serverPackFiles = ScrollTextArea("config,mods", changeListener)
+    private val exclusions = ScrollTextArea(apiProperties.clientSideMods(), changeListener)
+    private val modpackChanges = object : DocumentChangeListener {
+        override fun update(e: DocumentEvent) {
+            title.title = modpackDirectory.file.name
+            validateInputFields()
+        }
+    }
+    private val panel = JPanel(
+        MigLayout(
+            "left,wrap",
+            "[left,::64]5[left]5[left,grow]5[left,::64]5[left,::64]", "30"
+        )
+    )
     @OptIn(DelicateCoroutinesApi::class)
     private val timer: Timer = Timer(250) {
         val errors = mutableListOf<String>()
@@ -274,8 +219,19 @@ class ConfigEditorPanel(
             }
         }
     }
+    val propertiesQuickSelect = QuickSelect(apiProperties.propertiesQuickSelections) { setProperties() }
+    val iconQuickSelect = QuickSelect(apiProperties.iconQuickSelections) { setIcon() }
+    val title = ConfigEditorTitle(guiProps, configsTab, this)
+    var configFile: File? = null
+        private set
 
     init {
+        viewport.view = panel
+        border = null
+        verticalScrollBarPolicy = VERTICAL_SCROLLBAR_AS_NEEDED
+        horizontalScrollBarPolicy = HORIZONTAL_SCROLLBAR_AS_NEEDED
+        verticalScrollBar.unitIncrement = 10
+
         timer.isRepeats = false
         timer.stop()
 
@@ -287,10 +243,10 @@ class ConfigEditorPanel(
         updateMinecraftValues()
 
         // Modpack directory
-        add(modpackInfo, "cell 0 0,grow")
-        add(ElementLabel(Gui.createserverpack_gui_createserverpack_labelmodpackdir.toString()), "cell 1 0,grow")
-        add(modpackDirectory, "cell 2 0,grow")
-        add(
+        panel.add(modpackInfo, "cell 0 0,grow")
+        panel.add(ElementLabel(Gui.createserverpack_gui_createserverpack_labelmodpackdir.toString()), "cell 1 0,grow")
+        panel.add(modpackDirectory, "cell 2 0,grow")
+        panel.add(
             IconActionButton(
                 guiProps.folderIcon,
                 Gui.createserverpack_gui_browser.toString(),
@@ -298,16 +254,22 @@ class ConfigEditorPanel(
             ),
             "cell 3 0, h 30!,w 30!"
         )
-        add(modpackInspect, "cell 4 0")
+        panel.add(modpackInspect, "cell 4 0")
 
         // Server Properties
-        add(propertiesInfo, "cell 0 1,grow")
-        add(ElementLabel(Gui.createserverpack_gui_createserverpack_labelpropertiespath.toString()), "cell 1 1,grow")
-        add(propertiesFile, "cell 2 1, split 3,grow, w 50:50:")
-        add(ElementLabel(Gui.createserverpack_gui_quickselect.toString()), "cell 2 1")
-        add(propertiesQuickSelect, "cell 2 1,w 200!")
-        add(IconActionButton(guiProps.folderIcon, Gui.createserverpack_gui_browser.toString(), showBrowser), "cell 3 1")
-        add(
+        panel.add(propertiesInfo, "cell 0 1,grow")
+        panel.add(
+            ElementLabel(Gui.createserverpack_gui_createserverpack_labelpropertiespath.toString()),
+            "cell 1 1,grow"
+        )
+        panel.add(propertiesFile, "cell 2 1, split 3,grow, w 50:50:")
+        panel.add(ElementLabel(Gui.createserverpack_gui_quickselect.toString()), "cell 2 1")
+        panel.add(propertiesQuickSelect, "cell 2 1,w 200!")
+        panel.add(
+            IconActionButton(guiProps.folderIcon, Gui.createserverpack_gui_browser.toString(), showBrowser),
+            "cell 3 1"
+        )
+        panel.add(
             IconActionButton(
                 guiProps.openIcon,
                 Gui.createserverpack_gui_createserverpack_button_open_properties.toString()
@@ -316,30 +278,33 @@ class ConfigEditorPanel(
         )
 
         // Server Icon
-        add(iconInfo, "cell 0 2,grow")
-        add(ElementLabel(Gui.createserverpack_gui_createserverpack_labeliconpath.toString()), "cell 1 2,grow")
-        add(iconFile, "cell 2 2, split 2,grow, w 50:50:")
-        add(ElementLabel(Gui.createserverpack_gui_quickselect.toString()), "cell 2 2")
-        add(iconQuickSelect, "cell 2 2,w 200!")
-        add(IconActionButton(guiProps.folderIcon, Gui.createserverpack_gui_browser.toString(), showBrowser), "cell 3 2")
-        add(iconPreview, "cell 4 2")
+        panel.add(iconInfo, "cell 0 2,grow")
+        panel.add(ElementLabel(Gui.createserverpack_gui_createserverpack_labeliconpath.toString()), "cell 1 2,grow")
+        panel.add(iconFile, "cell 2 2, split 2,grow, w 50:50:")
+        panel.add(ElementLabel(Gui.createserverpack_gui_quickselect.toString()), "cell 2 2")
+        panel.add(iconQuickSelect, "cell 2 2,w 200!")
+        panel.add(
+            IconActionButton(guiProps.folderIcon, Gui.createserverpack_gui_browser.toString(), showBrowser),
+            "cell 3 2"
+        )
+        panel.add(iconPreview, "cell 4 2")
 
         // Server Files
-        add(filesInfo, "cell 0 3 1 3,grow")
-        add(ElementLabel(Gui.createserverpack_gui_createserverpack_labelcopydirs.toString()), "cell 1 3 1 3,grow")
-        add(serverPackFiles, "cell 2 3 1 3,grow,w 10:500:,h 100!")
-        add(
+        panel.add(filesInfo, "cell 0 3 1 3,grow")
+        panel.add(ElementLabel(Gui.createserverpack_gui_createserverpack_labelcopydirs.toString()), "cell 1 3 1 3,grow")
+        panel.add(serverPackFiles, "cell 2 3 1 3,grow,w 10:500:,h 100!")
+        panel.add(
             IconActionButton(
                 guiProps.revertIcon,
                 Gui.createserverpack_gui_buttoncopydirs_revert_tip.toString()
             ) { revertServerPackFiles() },
             "cell 3 3 2 1, h 30!, aligny center, alignx center,growx"
         )
-        add(
+        panel.add(
             IconActionButton(guiProps.folderIcon, Gui.createserverpack_gui_browser.toString(), showBrowser),
             "cell 3 4 2 1, h 30!, aligny center, alignx center,growx"
         )
-        add(
+        panel.add(
             IconActionButton(
                 guiProps.resetIcon,
                 Gui.createserverpack_gui_buttoncopydirs_reset_tip.toString()
@@ -348,55 +313,58 @@ class ConfigEditorPanel(
         )
 
         // Server Pack Suffix
-        add(suffixInfo, "cell 0 6,grow")
-        add(ElementLabel(Gui.createserverpack_gui_createserverpack_labelsuffix.toString()), "cell 1 6,grow")
-        add(serverPackSuffix, "cell 2 6,grow")
+        panel.add(suffixInfo, "cell 0 6,grow")
+        panel.add(ElementLabel(Gui.createserverpack_gui_createserverpack_labelsuffix.toString()), "cell 1 6,grow")
+        panel.add(serverPackSuffix, "cell 2 6,grow")
 
         // Minecraft Version
-        add(
+        panel.add(
             StatusIcon(guiProps, Gui.createserverpack_gui_createserverpack_labelminecraft_tip.toString()),
             "cell 0 7,grow"
         )
-        add(ElementLabel(Gui.createserverpack_gui_createserverpack_labelminecraft.toString()), "cell 1 7,grow")
-        add(minecraftVersions, "cell 2 7,w 200!")
+        panel.add(ElementLabel(Gui.createserverpack_gui_createserverpack_labelminecraft.toString()), "cell 1 7,grow")
+        panel.add(minecraftVersions, "cell 2 7,w 200!")
         // Java Version Of Minecraft Version
-        add(
+        panel.add(
             StatusIcon(guiProps, Gui.createserverpack_gui_createserverpack_minecraft_java_tooltip.toString()),
             "cell 2 7, w 40!, gapleft 40"
         )
-        add(ElementLabel(Gui.createserverpack_gui_createserverpack_minecraft_java.toString(), 16), "cell 2 7")
-        add(javaVersion, "cell 2 7, w 40!")
+        panel.add(ElementLabel(Gui.createserverpack_gui_createserverpack_minecraft_java.toString(), 16), "cell 2 7")
+        panel.add(javaVersion, "cell 2 7, w 40!")
 
         // Modloader
-        add(
+        panel.add(
             StatusIcon(guiProps, Gui.createserverpack_gui_createserverpack_labelmodloader_tip.toString()),
             "cell 0 8,grow"
         )
-        add(ElementLabel(Gui.createserverpack_gui_createserverpack_labelmodloader.toString()), "cell 1 8,grow")
-        add(modloaders, "cell 2 8,w 200!")
+        panel.add(ElementLabel(Gui.createserverpack_gui_createserverpack_labelmodloader.toString()), "cell 1 8,grow")
+        panel.add(modloaders, "cell 2 8,w 200!")
         // Include Server Icon
-        add(includeIconInfo, "cell 2 8, w 40!, gapleft 40,grow")
-        add(includeIcon, "cell 2 8, w 200!")
+        panel.add(includeIconInfo, "cell 2 8, w 40!, gapleft 40,grow")
+        panel.add(includeIcon, "cell 2 8, w 200!")
         //Create ZIP Archive
-        add(
+        panel.add(
             StatusIcon(guiProps, Gui.createserverpack_gui_createserverpack_checkboxzip_tip.toString()),
             "cell 2 8, w 40!,grow"
         )
-        add(includeZip, "cell 2 8, w 200!")
+        panel.add(includeZip, "cell 2 8, w 200!")
 
         //Modloader Version
-        add(modloaderVersionInfo, "cell 0 9,grow")
-        add(ElementLabel(Gui.createserverpack_gui_createserverpack_labelmodloaderversion.toString()), "cell 1 9,grow")
-        add(modloaderVersions, "cell 2 9,w 200!")
+        panel.add(modloaderVersionInfo, "cell 0 9,grow")
+        panel.add(
+            ElementLabel(Gui.createserverpack_gui_createserverpack_labelmodloaderversion.toString()),
+            "cell 1 9,grow"
+        )
+        panel.add(modloaderVersions, "cell 2 9,w 200!")
         //Include Server Properties
-        add(includePropertiesInfo, "cell 2 9, w 40!, gapleft 40,grow")
-        add(includeProperties, "cell 2 9, w 200!")
+        panel.add(includePropertiesInfo, "cell 2 9, w 40!, gapleft 40,grow")
+        panel.add(includeProperties, "cell 2 9, w 200!")
         //Install Local Server
-        add(prepareServerInfo, "cell 2 9, w 40!,grow")
-        add(includeServer, "cell 2 9, w 200!")
+        panel.add(prepareServerInfo, "cell 2 9, w 40!,grow")
+        panel.add(includeServer, "cell 2 9, w 200!")
 
         // Advanced Settings
-        add(CollapsiblePanel(
+        panel.add(CollapsiblePanel(
             Gui.createserverpack_gui_advanced.toString(),
             AdvancedSettingsPanel(
                 exclusionsInfo,
@@ -431,7 +399,7 @@ class ConfigEditorPanel(
 
         // Plugins
         if (pluginPanels.isNotEmpty()) {
-            add(
+            panel.add(
                 CollapsiblePanel(
                     Gui.createserverpack_gui_plugins.toString(),
                     PluginsSettingsPanel(pluginPanels)
@@ -720,22 +688,24 @@ class ConfigEditorPanel(
             return
         }
 
+        val currentConfig = getCurrentConfiguration()
+
         when {
-            getClientSideModsList() != lastSavedConfig!!.clientMods
-                    || getCopyDirectoriesList() != lastSavedConfig!!.copyDirs
-                    || includeIcon.isSelected != lastSavedConfig!!.isServerIconInclusionDesired
-                    || getJavaArguments() != lastSavedConfig!!.javaArgs
-                    || getMinecraftVersion() != lastSavedConfig!!.minecraftVersion
-                    || getModloader() != lastSavedConfig!!.modloader
-                    || getModloaderVersion() != lastSavedConfig!!.modloaderVersion
-                    || getModpackDirectory() != lastSavedConfig!!.modpackDir
-                    || includeProperties.isSelected != lastSavedConfig!!.isServerPropertiesInclusionDesired
-                    || getScriptSettings() != lastSavedConfig!!.scriptSettings
-                    || getServerIconPath() != lastSavedConfig!!.serverIconPath
-                    || includeServer.isSelected != lastSavedConfig!!.isServerInstallationDesired
-                    || getServerPackSuffix() != lastSavedConfig!!.serverPackSuffix
-                    || getServerPropertiesPath() != lastSavedConfig!!.serverPropertiesPath
-                    || includeZip.isSelected != lastSavedConfig!!.isZipCreationDesired -> {
+            currentConfig.clientMods != lastSavedConfig!!.clientMods
+                    || currentConfig.copyDirs != lastSavedConfig!!.copyDirs
+                    || currentConfig.javaArgs != lastSavedConfig!!.javaArgs
+                    || currentConfig.minecraftVersion != lastSavedConfig!!.minecraftVersion
+                    || currentConfig.modloader != lastSavedConfig!!.modloader
+                    || currentConfig.modloaderVersion != lastSavedConfig!!.modloaderVersion
+                    || currentConfig.modpackDir != lastSavedConfig!!.modpackDir
+                    || currentConfig.scriptSettings != lastSavedConfig!!.scriptSettings
+                    || currentConfig.serverIconPath != lastSavedConfig!!.serverIconPath
+                    || currentConfig.serverPropertiesPath != lastSavedConfig!!.serverPropertiesPath
+                    || currentConfig.serverPackSuffix != lastSavedConfig!!.serverPackSuffix
+                    || currentConfig.isServerIconInclusionDesired != lastSavedConfig!!.isServerIconInclusionDesired
+                    || currentConfig.isServerPropertiesInclusionDesired != lastSavedConfig!!.isServerPropertiesInclusionDesired
+                    || currentConfig.isServerInstallationDesired != lastSavedConfig!!.isServerInstallationDesired
+                    || currentConfig.isZipCreationDesired != lastSavedConfig!!.isZipCreationDesired -> {
                 title.showWarningIcon()
             }
 
@@ -1308,7 +1278,7 @@ class ConfigEditorPanel(
                     modloaderVersion
                 )
                 JOptionPane.showMessageDialog(
-                    this,
+                    this.panel.parent.parent,
                     message,
                     title,
                     JOptionPane.WARNING_MESSAGE,

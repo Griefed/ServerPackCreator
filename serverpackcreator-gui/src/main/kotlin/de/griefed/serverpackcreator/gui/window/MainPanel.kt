@@ -62,7 +62,7 @@ class MainPanel(
         serverPackHandler,
         apiPlugins,
     )
-    private val logs = Logs(guiProps)
+    private val logs = Logs(apiProperties)
     private val settingsEditor = SettingsEditor(guiProps, apiProperties)
     private val controlPanel = ControlPanel(
         guiProps,
@@ -88,26 +88,12 @@ class MainPanel(
             "0[grow]0",
             "0[top]0[bottom]0[bottom]0"
         )
-        panel.add(tabs, "grow,push")
+        panel.add(tabs, "grow,push,w 50:50:, h 50:50:")
         panel.add(larsonScanner, "height 40!,growx, south")
         panel.add(controlPanel.panel, "height 160!,growx, south")
         panel.add(JSeparator(JSeparator.HORIZONTAL), "south")
         scroll.verticalScrollBar.unitIncrement = 5
         larsonScanner.loadConfig(guiProps.idleConfig)
         larsonScanner.play()
-    }
-
-    /**
-     * TODO docs
-     */
-    fun larsonIdle() {
-        larsonScanner.loadConfig(guiProps.idleConfig)
-    }
-
-    /**
-     * TODO docs
-     */
-    fun larsonBusy() {
-        larsonScanner.loadConfig(guiProps.busyConfig)
     }
 }
