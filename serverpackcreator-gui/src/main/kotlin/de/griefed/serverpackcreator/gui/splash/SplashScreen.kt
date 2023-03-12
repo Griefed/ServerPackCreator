@@ -20,7 +20,6 @@
 package de.griefed.serverpackcreator.gui.splash
 
 import de.griefed.serverpackcreator.api.utilities.ReticulatingSplines
-import de.griefed.serverpackcreator.gui.utilities.BackgroundPanel
 import de.griefed.serverpackcreator.gui.utilities.ImageUtilities
 import de.griefed.serverpackcreator.gui.utilities.getScaledInstance
 import java.awt.Color

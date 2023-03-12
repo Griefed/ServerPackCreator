@@ -164,10 +164,16 @@ class ConfigEditorPanel(
             "[left,::64]5[left]5[left,grow]5[left,::64]5[left,::64]", "30"
         )
     )
+    val propertiesQuickSelect = QuickSelect(apiProperties.propertiesQuickSelections) { setProperties() }
+    val iconQuickSelect = QuickSelect(apiProperties.iconQuickSelections) { setIcon() }
+    val title = ConfigEditorTitle(guiProps, configsTab, this)
+    var configFile: File? = null
+        private set
+
     @OptIn(DelicateCoroutinesApi::class)
     private val timer: Timer = Timer(250) {
-        val errors = mutableListOf<String>()
         GlobalScope.launch(guiProps.configDispatcher) {
+            val errors = mutableListOf<String>()
             runBlocking {
                 launch {
                     errors.addAll(validateModpackDir())
@@ -219,21 +225,17 @@ class ConfigEditorPanel(
             }
         }
     }
-    val propertiesQuickSelect = QuickSelect(apiProperties.propertiesQuickSelections) { setProperties() }
-    val iconQuickSelect = QuickSelect(apiProperties.iconQuickSelections) { setIcon() }
-    val title = ConfigEditorTitle(guiProps, configsTab, this)
-    var configFile: File? = null
-        private set
 
     init {
+        timer.stop()
+        timer.isRepeats = false
+
         viewport.view = panel
         border = null
         verticalScrollBarPolicy = VERTICAL_SCROLLBAR_AS_NEEDED
         horizontalScrollBarPolicy = HORIZONTAL_SCROLLBAR_AS_NEEDED
         verticalScrollBar.unitIncrement = 10
 
-        timer.isRepeats = false
-        timer.stop()
 
         minecraftVersions.selectedIndex = 0
         modloaders.selectedIndex = 0

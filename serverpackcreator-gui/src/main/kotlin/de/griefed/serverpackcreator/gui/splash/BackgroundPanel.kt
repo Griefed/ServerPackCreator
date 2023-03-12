@@ -27,7 +27,7 @@
  *
  * #####################################################################################################################
  */
-package de.griefed.serverpackcreator.gui.utilities
+package de.griefed.serverpackcreator.gui.splash
 
 import java.awt.*
 import javax.swing.JComponent
