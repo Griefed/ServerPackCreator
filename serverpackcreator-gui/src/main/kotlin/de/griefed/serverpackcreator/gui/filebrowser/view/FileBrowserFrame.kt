@@ -150,7 +150,6 @@ class FileBrowserFrame(
             frame.isVisible = true
             frame.toFront()
         }
-        treeScrollPane.expandPathsToModpackDir()
     }
 
     /**

@@ -43,18 +43,18 @@ class SortedTreeNode : DefaultMutableTreeNode {
 
     override fun add(newChild: MutableTreeNode?) {
         super.add(newChild)
-        children = sort()
+        children = sort(Vector(children))
     }
 
     /**
      * Sort all nodes by file-type, then by name.
      */
-    private fun sort(): Vector<TreeNode> {
-        Collections.sort(children, guiProps.typeComparator)
+    private fun sort(toSort: Vector<TreeNode>): Vector<TreeNode> {
+        Collections.sort(toSort, guiProps.typeComparator)
         val directories = mutableListOf<TreeNode>()
         val files = mutableListOf<TreeNode>()
 
-        for (child in children) {
+        for (child in toSort) {
             val t = (child as DefaultMutableTreeNode).userObject
             val f = (t as FileNode).file
             if (f.isDirectory) {
@@ -70,8 +70,8 @@ class SortedTreeNode : DefaultMutableTreeNode {
         return merge(directories, files)
     }
 
-    private fun sortAlphabetically(files: MutableList<TreeNode>) {
-        Collections.sort(files, guiProps.nameComparator)
+    private fun sortAlphabetically(entries: MutableList<TreeNode>) {
+        Collections.sort(entries, guiProps.nameComparator)
     }
 
     /**

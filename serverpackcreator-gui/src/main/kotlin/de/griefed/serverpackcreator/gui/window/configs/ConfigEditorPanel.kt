@@ -429,11 +429,15 @@ class ConfigEditorPanel(
 
     override fun saveCurrentConfiguration(): File {
         val modpackName = utilities.stringUtilities.pathSecureText(File(getModpackDirectory()).name + ".conf")
-        val config = File(apiProperties.configsDirectory, modpackName)
+        val config = if (configFile != null) {
+            configFile!!
+        } else {
+            File(apiProperties.configsDirectory, modpackName)
+        }
         lastSavedConfig = getCurrentConfiguration().save(config)
         configFile = config
         title.hideWarningIcon()
-        return config
+        return configFile!!
     }
 
     override fun getJavaArguments(): String {

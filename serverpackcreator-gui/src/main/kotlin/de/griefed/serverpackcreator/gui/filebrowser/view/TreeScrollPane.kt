@@ -43,11 +43,10 @@ import javax.swing.tree.TreePath
 class TreeScrollPane(
     frame: FileBrowserFrame,
     private val browserModel: FileBrowserModel,
-    private val configsTab: ConfigsTab,
+    configsTab: ConfigsTab,
     utilities: Utilities,
     guiProps: GuiProps
 ) {
-    private val slashRegex: Regex = "/".toRegex()
     var tree: JTree = JTree(this.browserModel.treeModel)
     var scrollPane: JScrollPane
 
@@ -68,28 +67,5 @@ class TreeScrollPane(
             300, preferredSize.getHeight().toInt()
         )
         scrollPane.preferredSize = widePreferred
-    }
-
-    /**
-     * Expand all nodes up to the modpack-directory of the currently selected config-tab.
-     *
-     * @author Griefed
-     */
-    fun expandPathsToModpackDir() {
-        val activeTab = configsTab.selectedEditor
-        if (activeTab != null) {
-            val prefixes = File(activeTab.getModpackDirectory()).absolutePath
-                .replace("\\", "/").split(slashRegex)
-                .dropLastWhile { it.isEmpty() }
-                .toTypedArray()
-            var path: TreePath? = null
-            for (prefix in prefixes) {
-                path = tree.getNextMatch(prefix, 0, Position.Bias.Forward)
-                tree.expandPath(path)
-            }
-            if (path != null) {
-                tree.selectionPath = path
-            }
-        }
     }
 }

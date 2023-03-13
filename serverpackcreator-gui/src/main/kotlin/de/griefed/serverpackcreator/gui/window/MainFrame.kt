@@ -110,7 +110,7 @@ class MainFrame(
         for (tab in mainPanel.configsTab.allTabs) {
             val config = tab as ConfigEditorPanel
             val modpackName = File(config.getModpackDirectory()).name
-            if (config.hasUnsavedChanges()) {
+            if (config.title.title != Gui.createserverpack_gui_title_new.toString() && config.hasUnsavedChanges()) {
                 mainPanel.configsTab.tabs.selectedComponent = tab
                 if (DialogUtilities.createShowGet(
                         Gui.createserverpack_gui_close_unsaved_message(modpackName),
@@ -121,11 +121,8 @@ class MainFrame(
                         guiProps.warningIcon
                     ) == 0
                 ) {
-                    config.saveCurrentConfiguration()
+                    configs.add(config.saveCurrentConfiguration().absolutePath)
                 }
-            }
-            if (config.configFile != null && config.title.title != Gui.createserverpack_gui_title_new.toString()) {
-                configs.add(config.configFile!!.absolutePath)
             }
         }
         apiProperties.storeCustomProperty("lastloaded", configs.joinToString(","))

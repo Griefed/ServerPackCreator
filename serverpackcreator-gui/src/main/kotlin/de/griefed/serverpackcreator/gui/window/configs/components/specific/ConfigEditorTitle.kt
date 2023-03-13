@@ -76,6 +76,8 @@ class ConfigEditorTitle(
         add(closeButton)
     }
 
+
+
     private fun close() {
         if (hasUnsavedChanges) {
             configsTab.tabs.selectedComponent = configEditorPanel
@@ -94,8 +96,10 @@ class ConfigEditorTitle(
         val currentTab = configsTab.tabs.selectedIndex
         configsTab.tabs.remove(configEditorPanel)
 
-        if (currentTab - 1 > 0) {
+        if (configsTab.tabs.tabCount - 1 > 0) {
             configsTab.tabs.selectedIndex = currentTab - 1
+        } else {
+            configsTab.addTab()
         }
     }
 
