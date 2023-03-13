@@ -47,7 +47,6 @@ class ScrollTextArea(
     horizontalScrollbarVisibility: Int = HORIZONTAL_SCROLLBAR_NEVER
 ) : JScrollPane(verticalScrollbarVisibility, horizontalScrollbarVisibility),
     UndoableEditListener,
-    FocusListener,
     KeyListener {
 
     constructor(text: String, documentChangeListener: DocumentChangeListener) : this(text) {
@@ -61,7 +60,6 @@ class ScrollTextArea(
         textArea.lineWrap = true
         textArea.document.addUndoableEditListener(this)
         textArea.addKeyListener(this)
-        textArea.addFocusListener(this)
         viewport.view = textArea
     }
 
@@ -81,10 +79,6 @@ class ScrollTextArea(
     override fun undoableEditHappened(e: UndoableEditEvent) {
         undoManager.addEdit(e.edit)
     }
-
-    override fun focusGained(e: FocusEvent) {}
-
-    override fun focusLost(e: FocusEvent) {}
 
     override fun keyTyped(e: KeyEvent) {}
 

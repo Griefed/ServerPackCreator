@@ -46,7 +46,6 @@ open class ScrollTextField(
     horizontalScrollbarVisibility: Int = HORIZONTAL_SCROLLBAR_AS_NEEDED
 ) : JScrollPane(VERTICAL_SCROLLBAR_NEVER, horizontalScrollbarVisibility),
     UndoableEditListener,
-    FocusListener,
     KeyListener {
 
     constructor(text: String, documentChangeListener: DocumentChangeListener) : this(text) {
@@ -69,7 +68,6 @@ open class ScrollTextField(
         textField.border = BorderFactory.createEmptyBorder(0, 5, 0, 5)
         textField.document.addUndoableEditListener(this)
         textField.addKeyListener(this)
-        textField.addFocusListener(this)
         viewport.view = textField
 
     }
@@ -81,10 +79,6 @@ open class ScrollTextField(
     override fun undoableEditHappened(e: UndoableEditEvent) {
         undoManager.addEdit(e.edit)
     }
-
-    override fun focusGained(e: FocusEvent) {}
-
-    override fun focusLost(e: FocusEvent) {}
 
     override fun keyTyped(e: KeyEvent) {}
 
