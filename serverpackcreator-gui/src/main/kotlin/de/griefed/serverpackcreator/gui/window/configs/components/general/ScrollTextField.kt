@@ -17,7 +17,6 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-
 package de.griefed.serverpackcreator.gui.window.configs.components.general
 
 import java.awt.Toolkit
@@ -25,8 +24,9 @@ import java.awt.event.FocusEvent
 import java.awt.event.FocusListener
 import java.awt.event.KeyEvent
 import java.awt.event.KeyListener
+import javax.swing.BorderFactory
 import javax.swing.JScrollPane
-import javax.swing.JTextArea
+import javax.swing.JTextField
 import javax.swing.event.DocumentListener
 import javax.swing.event.UndoableEditEvent
 import javax.swing.event.UndoableEditListener
@@ -35,17 +35,16 @@ import javax.swing.undo.CannotUndoException
 import javax.swing.undo.UndoManager
 
 /**
- * Scrollable textarea with an [UndoManager] providing up to ten undos. By default, the vertical scrollbar is
+ * Scrollable textfield with an [UndoManager] providing up to ten undos. By default, the horizontal scrollbar is
  * displayed as needed.
  *
  * @author Griefed
  */
-class ScrollTextArea(
+open class ScrollTextField(
     text: String,
-    private val textArea: JTextArea = JTextArea(text),
-    verticalScrollbarVisibility: Int = VERTICAL_SCROLLBAR_AS_NEEDED,
-    horizontalScrollbarVisibility: Int = HORIZONTAL_SCROLLBAR_NEVER
-) : JScrollPane(verticalScrollbarVisibility, horizontalScrollbarVisibility),
+    private val textField: JTextField = JTextField(text),
+    horizontalScrollbarVisibility: Int = HORIZONTAL_SCROLLBAR_AS_NEEDED
+) : JScrollPane(VERTICAL_SCROLLBAR_NEVER, horizontalScrollbarVisibility),
     UndoableEditListener,
     FocusListener,
     KeyListener {
@@ -56,26 +55,27 @@ class ScrollTextArea(
 
     private val undoManager = UndoManager()
 
-    init {
-        undoManager.limit = 10
-        textArea.lineWrap = true
-        textArea.document.addUndoableEditListener(this)
-        textArea.addKeyListener(this)
-        textArea.addFocusListener(this)
-        viewport.view = textArea
-    }
-
     var text: String
         get() {
-            return textArea.text
+            return textField.text
         }
         set(value) {
-            textArea.text = value
+            textField.text = value
         }
 
-    @Suppress("MemberVisibilityCanBePrivate")
+    init {
+        undoManager.limit = 10
+        textField.text = text
+        textField.border = BorderFactory.createEmptyBorder(0, 5, 0, 5)
+        textField.document.addUndoableEditListener(this)
+        textField.addKeyListener(this)
+        textField.addFocusListener(this)
+        viewport.view = textField
+
+    }
+
     fun addDocumentListener(listener: DocumentListener) {
-        textArea.document.addDocumentListener(listener)
+        textField.document.addDocumentListener(listener)
     }
 
     override fun undoableEditHappened(e: UndoableEditEvent) {

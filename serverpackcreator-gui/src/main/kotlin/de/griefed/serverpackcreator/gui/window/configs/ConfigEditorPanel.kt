@@ -113,11 +113,11 @@ class ConfigEditorPanel(
         }
     }
     private val javaArgs = ScrollTextArea("-Xmx4G -Xms4G", changeListener)
-    private val serverPackSuffix = ListeningTextField("", changeListener)
+    private val serverPackSuffix = ScrollTextField("", changeListener)
     private val propertiesFile = ScrollTextFileField(apiProperties.defaultServerProperties, changeListener)
     private val iconFile = ScrollTextFileField(apiProperties.defaultServerIcon, changeListener)
     private val serverPackFiles = ScrollTextArea("config,mods", changeListener)
-    private val exclusions = ScrollTextArea(apiProperties.clientSideMods(), changeListener)
+    private val exclusions = ScrollTextArea(apiProperties.clientSideMods().joinToString(","), changeListener)
     private val timer = ConfigCheckTimer(250, this, guiProps)
     private val modpackChanges = object : DocumentChangeListener {
         override fun update(e: DocumentEvent) {

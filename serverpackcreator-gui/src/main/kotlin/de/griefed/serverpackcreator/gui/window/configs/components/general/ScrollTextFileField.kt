@@ -26,34 +26,19 @@ import javax.swing.JTextField
 import javax.swing.event.DocumentListener
 
 /**
- * Scrollable textfield.
+ * Scrollable textfield with file-provisioning. The contained text is note editable directly. Data in this field is
+ * supposed to display, retrieve and provide an absolute file path.
  *
  * @author Griefed
  */
 class ScrollTextFileField(
     text: String,
-    private val textField: JTextField = JTextField(text),
+    textField: JTextField = JTextField(text),
     horizontalScrollbarVisibility: Int = HORIZONTAL_SCROLLBAR_AS_NEEDED
-) : JScrollPane(VERTICAL_SCROLLBAR_NEVER, horizontalScrollbarVisibility) {
+) : ScrollTextField(text,textField,horizontalScrollbarVisibility) {
     constructor(file: File, documentChangeListener: DocumentChangeListener) : this(file.absolutePath) {
         addDocumentListener(documentChangeListener)
     }
-
-    constructor(text: String, documentChangeListener: DocumentChangeListener) : this(text) {
-        addDocumentListener(documentChangeListener)
-    }
-
-    constructor(text: List<String>, documentChangeListener: DocumentChangeListener) : this(text.joinToString(",")) {
-        addDocumentListener(documentChangeListener)
-    }
-
-    var text: String
-        get() {
-            return textField.text
-        }
-        set(value) {
-            textField.text = value
-        }
 
     var file: File
         get() {
@@ -65,12 +50,6 @@ class ScrollTextFileField(
 
     init {
         textField.isEditable = false
-        viewport.view = textField
         file = File(text).absoluteFile
-        textField.border = BorderFactory.createEmptyBorder(0, 5, 0, 5)
-    }
-
-    fun addDocumentListener(listener: DocumentListener) {
-        textField.document.addDocumentListener(listener)
     }
 }
