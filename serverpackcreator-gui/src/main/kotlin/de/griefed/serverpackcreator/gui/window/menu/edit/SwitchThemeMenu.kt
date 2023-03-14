@@ -29,7 +29,6 @@ import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.window.MainFrame
 import javax.swing.JMenu
 import javax.swing.JMenuItem
-import javax.swing.SwingUtilities
 import javax.swing.UIManager
 import javax.swing.UnsupportedLookAndFeelException
 

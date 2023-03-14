@@ -23,7 +23,7 @@ import Gui
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.utilities.common.WebUtilities
 import de.griefed.serverpackcreator.gui.GuiProps
-import de.griefed.serverpackcreator.gui.window.configs.ConfigsTab
+import de.griefed.serverpackcreator.gui.window.configs.TabbedConfigsTab
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
 import javax.swing.JFrame
@@ -40,7 +40,7 @@ import javax.swing.text.StyledDocument
  * @author Griefed
  */
 class ConfigToHasteBinItem(
-    private val configsTabs: ConfigsTab,
+    private val tabbedConfigsTabs: TabbedConfigsTab,
     private val webUtilities: WebUtilities,
     private val apiProperties: ApiProperties,
     guiProps: GuiProps,
@@ -61,7 +61,7 @@ class ConfigToHasteBinItem(
                 File(apiProperties.homeDirectory, "serverpackcreator.conf")
             )
         ) {
-            configsTabs.selectedEditor!!.getCurrentConfiguration().save(tempFile)
+            tabbedConfigsTabs.selectedEditor!!.getCurrentConfiguration().save(tempFile)
             val urlToHasteBin: String = webUtilities.createHasteBinFromFile(tempFile)
             val textContent = "URL: %s".format(urlToHasteBin)
             try {

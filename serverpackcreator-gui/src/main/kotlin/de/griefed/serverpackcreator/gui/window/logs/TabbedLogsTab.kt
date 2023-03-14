@@ -17,15 +17,20 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.gui.window.settings
+package de.griefed.serverpackcreator.gui.window.logs
 
 import de.griefed.serverpackcreator.api.ApiProperties
-import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.components.TabPanel
 
 /**
- * TODO docs
+ * Tab for viewing the three logs ServerPackCreator creates, all in their own tab.
+ *
+ * @author Griefed
  */
-class SettingsEditor(private val guiProps: GuiProps, apiProperties: ApiProperties) : TabPanel()
-
-//TODO settings editor for guiProps(?) and apiProperties
+class TabbedLogsTab(apiProperties: ApiProperties) : TabPanel() {
+    init {
+        tabs.addTab("ServerPackCreatorLog", ServerPackCreatorLog(apiProperties))
+        tabs.addTab("ModloaderInstallerLog", ModloaderInstallerLog(apiProperties))
+        tabs.addTab("PluginsLog", PluginsLog(apiProperties))
+    }
+}

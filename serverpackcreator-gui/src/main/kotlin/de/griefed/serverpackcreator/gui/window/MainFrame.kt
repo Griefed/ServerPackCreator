@@ -21,42 +21,37 @@ package de.griefed.serverpackcreator.gui.window
 
 import Gui
 import de.griefed.larsonscanner.LarsonScanner
-import de.griefed.serverpackcreator.api.*
+import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.splash.SplashScreen
-import de.griefed.serverpackcreator.gui.utilities.DialogUtilities
-import de.griefed.serverpackcreator.gui.window.configs.ConfigEditorPanel
-import de.griefed.serverpackcreator.gui.window.menu.MainMenu
+import de.griefed.serverpackcreator.gui.window.menu.MainMenuBar
 import de.griefed.serverpackcreator.updater.MigrationManager
 import de.griefed.serverpackcreator.updater.UpdateChecker
-import org.apache.logging.log4j.kotlin.cachedLoggerOf
-import java.awt.Dimension
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
-import java.io.File
-import javax.swing.*
-import javax.swing.text.*
-import kotlin.system.exitProcess
+import javax.swing.JFrame
+import javax.swing.WindowConstants
 
 /**
  * TODO docs
  */
 class MainFrame(
-    guiProps: GuiProps,
     apiWrapper: ApiWrapper,
     updateChecker: UpdateChecker,
     splashScreen: SplashScreen,
     migrationManager: MigrationManager
 ) {
+    private val guiProps = GuiProps()
     val frame: JFrame = JFrame(Gui.createserverpack_gui_createandshowgui.toString())
-    private val updateDialogs = UpdateDialogs(guiProps, apiWrapper.utilities!!.webUtilities, apiWrapper.apiProperties, updateChecker, frame)
+    private val updateDialogs =
+        UpdateDialogs(guiProps, apiWrapper.utilities!!.webUtilities, apiWrapper.apiProperties, updateChecker, frame)
     private val larsonScanner = LarsonScanner()
     val mainPanel = MainPanel(
         guiProps,
         apiWrapper,
         larsonScanner
     )
-    private val mainMenu = MainMenu(
+    private val mainMenuBar = MainMenuBar(
         guiProps,
         apiWrapper,
         updateDialogs,
@@ -67,8 +62,8 @@ class MainFrame(
 
     init {
         frame.iconImage = guiProps.appIcon
-        frame.jMenuBar = mainMenu.menuBar
-        frame.contentPane.add(mainPanel.scroll)
+        frame.jMenuBar = mainMenuBar.menuBar
+        frame.contentPane.add(mainPanel.panel)
         frame.pack()
         frame.defaultCloseOperation = WindowConstants.EXIT_ON_CLOSE
         frame.isLocationByPlatform = true

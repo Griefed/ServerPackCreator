@@ -25,7 +25,7 @@ import de.griefed.serverpackcreator.api.utilities.common.FileUtilities
 import de.griefed.serverpackcreator.api.utilities.common.InvalidFileTypeException
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.utilities.DialogUtilities
-import de.griefed.serverpackcreator.gui.window.configs.ConfigsTab
+import de.griefed.serverpackcreator.gui.window.configs.TabbedConfigsTab
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
 import javax.swing.JFileChooser
@@ -43,7 +43,7 @@ class LoadConfigItem(
     private val mainFrame: JFrame,
     private val fileUtilities: FileUtilities,
     private val guiProps: GuiProps,
-    private val configsTab: ConfigsTab
+    private val tabbedConfigsTab: TabbedConfigsTab
 ) : JMenuItem(Gui.menubar_gui_menuitem_loadconfig.toString()) {
     private val log = cachedLoggerOf(this.javaClass)
 
@@ -64,7 +64,7 @@ class LoadConfigItem(
                 }
             }
             for (file in files) {
-                if (configsTab.tabs.tabCount > 0 &&
+                if (tabbedConfigsTab.tabs.tabCount > 0 &&
                     DialogUtilities.createShowGet(
                         Gui.menubar_gui_config_load_message(file.absolutePath),
                         Gui.menubar_gui_config_load_title.toString(),
@@ -76,9 +76,9 @@ class LoadConfigItem(
                         arrayOf(Gui.menubar_gui_config_load_current, Gui.menubar_gui_config_load_new)
                     ) == 0
                 ) {
-                    configsTab.loadConfig(file, configsTab.selectedEditor!!)
+                    tabbedConfigsTab.loadConfig(file, tabbedConfigsTab.selectedEditor!!)
                 } else {
-                    configsTab.loadConfig(file)
+                    tabbedConfigsTab.loadConfig(file)
                 }
             }
         }

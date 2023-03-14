@@ -26,7 +26,6 @@ import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.utilities.DialogUtilities
 import de.griefed.serverpackcreator.updater.UpdateChecker
 import de.griefed.versionchecker.Update
-import mdlaf.components.textpane.MaterialTextPaneUI
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.awt.Toolkit
 import java.awt.datatransfer.Clipboard
@@ -68,7 +67,6 @@ class UpdateDialogs(
             val textContent: String = Gui.update_dialog_new(update.get().url())
             val styledDocument: StyledDocument = DefaultStyledDocument()
             val simpleAttributeSet = SimpleAttributeSet()
-            val materialTextPaneUI = MaterialTextPaneUI()
             val jTextPane = JTextPane(styledDocument)
             StyleConstants.setBold(simpleAttributeSet, true)
             StyleConstants.setFontSize(simpleAttributeSet, 14)
@@ -89,7 +87,6 @@ class UpdateDialogs(
             } catch (ex: BadLocationException) {
                 log.error("Error inserting text into aboutDocument.", ex)
             }
-            materialTextPaneUI.installUI(jTextPane)
             when (DialogUtilities.createShowGet(
                 jTextPane,
                 Gui.update_dialog_available.toString(),

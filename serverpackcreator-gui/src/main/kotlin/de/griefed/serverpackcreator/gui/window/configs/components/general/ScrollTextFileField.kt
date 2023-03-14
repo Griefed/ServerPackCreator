@@ -20,10 +20,7 @@
 package de.griefed.serverpackcreator.gui.window.configs.components.general
 
 import java.io.File
-import javax.swing.BorderFactory
-import javax.swing.JScrollPane
 import javax.swing.JTextField
-import javax.swing.event.DocumentListener
 
 /**
  * Scrollable textfield with file-provisioning. The contained text is note editable directly. Data in this field is
@@ -35,7 +32,7 @@ class ScrollTextFileField(
     text: String,
     textField: JTextField = JTextField(text),
     horizontalScrollbarVisibility: Int = HORIZONTAL_SCROLLBAR_AS_NEEDED
-) : ScrollTextField(text,textField,horizontalScrollbarVisibility) {
+) : ScrollTextField(text, textField, horizontalScrollbarVisibility) {
     constructor(file: File, documentChangeListener: DocumentChangeListener) : this(file.absolutePath) {
         addDocumentListener(documentChangeListener)
     }

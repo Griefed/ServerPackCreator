@@ -22,15 +22,14 @@ package de.griefed.serverpackcreator.gui
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import de.griefed.serverpackcreator.gui.filebrowser.model.FileBrowserModel
 import de.griefed.serverpackcreator.gui.filebrowser.view.FileBrowserFrame
-import de.griefed.serverpackcreator.gui.window.configs.ConfigsTab
-import kotlinx.coroutines.*
+import de.griefed.serverpackcreator.gui.window.configs.TabbedConfigsTab
 
 /**
  * TODO docs
  */
-class FileBrowser(configsTab: ConfigsTab, guiProps: GuiProps, utilities: Utilities) {
+class FileBrowser(tabbedConfigsTab: TabbedConfigsTab, guiProps: GuiProps, utilities: Utilities) {
     private val browserModel: FileBrowserModel = FileBrowserModel(guiProps)
-    private val frame: FileBrowserFrame = FileBrowserFrame(browserModel, configsTab, guiProps, utilities)
+    private val frame: FileBrowserFrame = FileBrowserFrame(browserModel, tabbedConfigsTab, guiProps, utilities)
 
     /**
      * TODO docs

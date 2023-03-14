@@ -26,7 +26,7 @@ import de.griefed.serverpackcreator.gui.filebrowser.controller.TableSelectionLis
 import de.griefed.serverpackcreator.gui.filebrowser.model.FileBrowserModel
 import de.griefed.serverpackcreator.gui.filebrowser.model.FileNode
 import de.griefed.serverpackcreator.gui.filebrowser.model.FileTableModel
-import de.griefed.serverpackcreator.gui.window.configs.ConfigsTab
+import de.griefed.serverpackcreator.gui.window.configs.TabbedConfigsTab
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.io.File
@@ -43,7 +43,7 @@ import javax.swing.tree.DefaultMutableTreeNode
  */
 class TableScrollPane(
     private val browserModel: FileBrowserModel,
-    configsTab: ConfigsTab,
+    tabbedConfigsTab: TabbedConfigsTab,
     utilities: Utilities,
     fileDetailPanel: FileDetailPanel,
     filePreviewPanel: FilePreviewPanel
@@ -68,9 +68,9 @@ class TableScrollPane(
         table.autoResizeMode = JTable.AUTO_RESIZE_OFF
         table.columnSelectionAllowed = false
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION)
-        table.addMouseListener(TableMouseListener(table, configsTab, utilities))
+        table.addMouseListener(TableMouseListener(table, tabbedConfigsTab, utilities))
 
-        tsListener = TableSelectionListener(table, browserModel, fileDetailPanel,filePreviewPanel)
+        tsListener = TableSelectionListener(table, browserModel, fileDetailPanel, filePreviewPanel)
         tsListener.setRowCount(ftModel.rowCount)
 
         val lsm: ListSelectionModel = table.selectionModel

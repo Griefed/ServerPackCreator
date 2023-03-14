@@ -19,21 +19,20 @@
  */
 package de.griefed.serverpackcreator.gui.window
 
+import Gui
 import de.griefed.larsonscanner.LarsonScanner
-import de.griefed.serverpackcreator.api.*
+import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.components.TabPanel
 import de.griefed.serverpackcreator.gui.utilities.DialogUtilities
 import de.griefed.serverpackcreator.gui.window.configs.ConfigEditorPanel
-import de.griefed.serverpackcreator.gui.window.configs.ConfigsTab
+import de.griefed.serverpackcreator.gui.window.configs.TabbedConfigsTab
 import de.griefed.serverpackcreator.gui.window.control.ControlPanel
-import de.griefed.serverpackcreator.gui.window.logs.Logs
-import de.griefed.serverpackcreator.gui.window.settings.SettingsEditor
+import de.griefed.serverpackcreator.gui.window.logs.TabbedLogsTab
+import de.griefed.serverpackcreator.gui.window.settings.SettingsEditorTab
 import net.miginfocom.swing.MigLayout
 import java.io.File
 import javax.swing.JOptionPane
-import javax.swing.JScrollPane
-import javax.swing.JSeparator
 import kotlin.system.exitProcess
 
 /**
@@ -43,61 +42,57 @@ class MainPanel(
     private val guiProps: GuiProps,
     private val apiWrapper: ApiWrapper,
     larsonScanner: LarsonScanner
-) : TabPanel() {
-    val configsTab = ConfigsTab(guiProps, apiWrapper)
-    private val logs = Logs(apiWrapper.apiProperties)
-    private val settingsEditor = SettingsEditor(guiProps, apiWrapper.apiProperties)
+) : TabPanel(
+    MigLayout(
+        "",
+        "0[grow]0",
+        "0[top]0[bottom]0[bottom]0"
+    )
+) {
+    val tabbedConfigsTab = TabbedConfigsTab(guiProps, apiWrapper)
+    private val tabbedLogsTab = TabbedLogsTab(apiWrapper.apiProperties)
+    private val settingsEditorTab = SettingsEditorTab(guiProps, apiWrapper.apiProperties)
     private val controlPanel = ControlPanel(
         guiProps,
-        configsTab,
+        tabbedConfigsTab,
         larsonScanner,
         apiWrapper
     )
-    val scroll = JScrollPane(
-        panel,
-        JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-        JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
-    )
 
     init {
-        tabs.addTab("Configs", configsTab.panel)
-        tabs.addTab("Logs", logs.panel)
-        tabs.addTab("Settings", settingsEditor.panel)
-        panel.layout = MigLayout(
-            "",
-            "0[grow]0",
-            "0[top]0[bottom]0[bottom]0"
-        )
-        panel.add(tabs, "grow,push,w 50:50:, h 50:50:")
+        tabs.addTab("Configs", tabbedConfigsTab.panel)
+        tabs.addTab("Logs", tabbedLogsTab.panel)
+        tabs.addTab("Settings", settingsEditorTab.panel)
         panel.add(larsonScanner, "height 40!,growx, south")
         panel.add(controlPanel.panel, "height 160!,growx, south")
-        panel.add(JSeparator(JSeparator.HORIZONTAL), "south")
-        scroll.verticalScrollBar.unitIncrement = 5
         larsonScanner.loadConfig(guiProps.idleConfig)
         larsonScanner.play()
     }
 
     fun closeAndExit() {
-        if (configsTab.tabs.tabCount == 0) {
+        if (tabbedConfigsTab.tabs.tabCount == 0) {
             exitProcess(0)
         }
         val configs = mutableListOf<String>()
-        for (tab in configsTab.allTabs) {
+        for (tab in tabbedConfigsTab.allTabs) {
             val config = tab as ConfigEditorPanel
             val modpackName = File(config.getModpackDirectory()).name
             if (config.title.title != Gui.createserverpack_gui_title_new.toString() && config.hasUnsavedChanges()) {
-                configsTab.tabs.selectedComponent = tab
+                tabbedConfigsTab.tabs.selectedComponent = tab
                 if (DialogUtilities.createShowGet(
                         Gui.createserverpack_gui_close_unsaved_message(modpackName),
                         Gui.createserverpack_gui_close_unsaved_title(modpackName),
-                        panel.parent,
+                        panel,
                         JOptionPane.WARNING_MESSAGE,
                         JOptionPane.YES_NO_OPTION,
                         guiProps.warningIcon
                     ) == 0
                 ) {
-                    configs.add(config.saveCurrentConfiguration().absolutePath)
+                    config.saveCurrentConfiguration()
                 }
+            }
+            if (config.configFile != null && config.title.title != Gui.createserverpack_gui_title_new.toString()) {
+                configs.add(config.configFile!!.absolutePath)
             }
         }
         apiWrapper.apiProperties.storeCustomProperty("lastloaded", configs.joinToString(","))

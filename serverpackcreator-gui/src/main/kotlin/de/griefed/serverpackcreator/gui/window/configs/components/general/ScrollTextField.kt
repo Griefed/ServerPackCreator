@@ -20,8 +20,6 @@
 package de.griefed.serverpackcreator.gui.window.configs.components.general
 
 import java.awt.Toolkit
-import java.awt.event.FocusEvent
-import java.awt.event.FocusListener
 import java.awt.event.KeyEvent
 import java.awt.event.KeyListener
 import javax.swing.BorderFactory
@@ -87,14 +85,15 @@ open class ScrollTextField(
             e.keyCode == KeyEvent.VK_Z && e.isControlDown -> {
                 try {
                     undoManager.undo()
-                } catch (cue : CannotUndoException) {
+                } catch (cue: CannotUndoException) {
                     Toolkit.getDefaultToolkit().beep()
                 }
             }
+
             e.keyCode == KeyEvent.VK_Y && e.isControlDown -> {
                 try {
                     undoManager.redo()
-                } catch (cue : CannotRedoException) {
+                } catch (cue: CannotRedoException) {
                     Toolkit.getDefaultToolkit().beep()
                 }
             }

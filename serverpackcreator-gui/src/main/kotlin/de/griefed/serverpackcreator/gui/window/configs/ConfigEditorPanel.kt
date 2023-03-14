@@ -47,7 +47,7 @@ import javax.swing.event.DocumentEvent
  */
 class ConfigEditorPanel(
     private val guiProps: GuiProps,
-    configsTab: ConfigsTab,
+    tabbedConfigsTab: TabbedConfigsTab,
     private val apiWrapper: ApiWrapper,
     private val noVersions: DefaultComboBoxModel<String>,
     showBrowser: ActionListener
@@ -127,7 +127,7 @@ class ConfigEditorPanel(
     )
     val propertiesQuickSelect = QuickSelect(apiWrapper.apiProperties.propertiesQuickSelections) { setProperties() }
     val iconQuickSelect = QuickSelect(apiWrapper.apiProperties.iconQuickSelections) { setIcon() }
-    val title = ConfigEditorTitle(guiProps, configsTab, this)
+    val title = ConfigEditorTitle(guiProps, tabbedConfigsTab, this)
 
     var configFile: File? = null
         private set
@@ -193,7 +193,7 @@ class ConfigEditorPanel(
         panel.add(iconPreview, "cell 4 2")
 
         // Server Files
-        panel.add(filesInfo, "cell 0 3 1 3,grow")
+        panel.add(filesInfo, "cell 0 3 1 3")
         panel.add(ElementLabel(Gui.createserverpack_gui_createserverpack_labelcopydirs.toString()), "cell 1 3 1 3,grow")
         panel.add(serverPackFiles, "cell 2 3 1 3,grow,w 10:500:,h 100!")
         panel.add(

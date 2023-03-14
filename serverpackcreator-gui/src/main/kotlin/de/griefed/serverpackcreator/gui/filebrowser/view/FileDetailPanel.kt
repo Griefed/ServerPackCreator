@@ -37,10 +37,12 @@ import javax.swing.JTextField
  * @author Andrew Thompson
  * @author Griefed
  */
-class FileDetailPanel: JPanel(MigLayout(
-    "fillx",
-    "10[150!]0[grow]20"
-)) {
+class FileDetailPanel : JPanel(
+    MigLayout(
+        "fillx",
+        "10[150!]0[grow]20"
+    )
+) {
     private var fileNameLabel = JLabel(" ")
     private var lastModifiedLabel = JLabel(" ")
     private var fileSizeLabel = JLabel(" ")

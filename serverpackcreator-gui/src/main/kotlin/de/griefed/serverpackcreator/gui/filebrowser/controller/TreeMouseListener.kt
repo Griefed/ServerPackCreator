@@ -22,7 +22,7 @@ package de.griefed.serverpackcreator.gui.filebrowser.controller
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import de.griefed.serverpackcreator.gui.filebrowser.model.FileNode
 import de.griefed.serverpackcreator.gui.filebrowser.view.SelectionPopMenu
-import de.griefed.serverpackcreator.gui.window.configs.ConfigsTab
+import de.griefed.serverpackcreator.gui.window.configs.TabbedConfigsTab
 import java.awt.event.MouseEvent
 import javax.swing.JTree
 import javax.swing.tree.DefaultMutableTreeNode
@@ -34,8 +34,8 @@ import javax.swing.tree.DefaultMutableTreeNode
  * @author Griefed
  */
 class TreeMouseListener(
-    private val jTree: JTree, configsTab: ConfigsTab, utilities: Utilities
-) : SelectionPopMenu(configsTab, utilities) {
+    private val jTree: JTree, tabbedConfigsTab: TabbedConfigsTab, utilities: Utilities
+) : SelectionPopMenu(tabbedConfigsTab, utilities) {
     override fun mousePressed(mouseEvent: MouseEvent) {
         if (mouseEvent.button == MouseEvent.BUTTON3) {
             if (jTree.getPathForLocation(mouseEvent.x, mouseEvent.y) != null) {

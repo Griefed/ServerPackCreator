@@ -21,7 +21,7 @@ package de.griefed.serverpackcreator.gui.window.menu.file
 
 import Gui
 import de.griefed.serverpackcreator.gui.window.configs.ConfigEditorPanel
-import de.griefed.serverpackcreator.gui.window.configs.ConfigsTab
+import de.griefed.serverpackcreator.gui.window.configs.TabbedConfigsTab
 import javax.swing.JMenuItem
 
 /**
@@ -30,13 +30,14 @@ import javax.swing.JMenuItem
  *
  * @author Griefed
  */
-class SaveAllConfigsItem(private val configsTab: ConfigsTab) : JMenuItem(Gui.menubar_gui_menuitem_saveall.toString()) {
+class SaveAllConfigsItem(private val tabbedConfigsTab: TabbedConfigsTab) :
+    JMenuItem(Gui.menubar_gui_menuitem_saveall.toString()) {
     init {
         addActionListener { saveAll() }
     }
 
     private fun saveAll() {
-        for (tab in configsTab.allTabs) {
+        for (tab in tabbedConfigsTab.allTabs) {
             (tab as ConfigEditorPanel).saveCurrentConfiguration()
         }
     }

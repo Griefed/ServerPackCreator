@@ -43,6 +43,7 @@ class MigrationInfoItem(
     private val guiProps: GuiProps
 ) : JMenuItem(Gui.menubar_gui_migration.toString()) {
     private val log = cachedLoggerOf(this.javaClass)
+
     init {
         addActionListener { displayMigrationMessages() }
         displayMigrationMessages()

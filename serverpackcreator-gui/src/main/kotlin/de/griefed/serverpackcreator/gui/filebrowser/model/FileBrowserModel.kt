@@ -26,7 +26,6 @@ import java.util.*
 import javax.swing.Icon
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.DefaultTreeModel
-import javax.swing.tree.TreeNode
 
 /**
  * Base model from which access to the root-manager, tree-model and update routines is granted.
@@ -60,19 +59,15 @@ class FileBrowserModel(private val guiProps: GuiProps) {
      * Add grandchild-nodes to the parent for every file inside it.
      */
     fun addGrandchildNodes(root: DefaultMutableTreeNode) {
-        root.children().toList().parallelMap {node ->
+        root.children().toList().parallelMap { node ->
             addChildNodes(node as DefaultMutableTreeNode)
         }
-        /*val enumeration: Enumeration<TreeNode> = root.children()
-        while (enumeration.hasMoreElements()) {
-            val node = enumeration.nextElement() as DefaultMutableTreeNode
-            addChildNodes(node)
-        }*/
     }
 
     /**
      * Add child-nodes to the parent for every file inside it.
      */
+    @Suppress("DuplicatedCode")
     private fun addChildNodes(root: DefaultMutableTreeNode) {
         if (rootManager.isWindows) {
             val fileNode = root.userObject as FileNode
@@ -93,9 +88,8 @@ class FileBrowserModel(private val guiProps: GuiProps) {
                 }
             }
         } else {
-            val enumeration: Enumeration<*> = root.children()
-            while (enumeration.hasMoreElements()) {
-                val node = enumeration.nextElement() as DefaultMutableTreeNode
+            root.children().toList().forEach { treeNode ->
+                val node = treeNode as DefaultMutableTreeNode
                 val fileNode = node.userObject as FileNode
                 val file = fileNode.file
                 if (file.isDirectory) {

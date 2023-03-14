@@ -23,7 +23,7 @@ import Gui
 import de.griefed.larsonscanner.LarsonScanner
 import de.griefed.serverpackcreator.api.*
 import de.griefed.serverpackcreator.gui.GuiProps
-import de.griefed.serverpackcreator.gui.window.configs.ConfigsTab
+import de.griefed.serverpackcreator.gui.window.configs.TabbedConfigsTab
 import kotlinx.coroutines.*
 import net.miginfocom.swing.MigLayout
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
@@ -41,7 +41,7 @@ import javax.swing.text.*
  */
 class ControlPanel(
     private val guiProps: GuiProps,
-    private val configsTab: ConfigsTab,
+    private val tabbedConfigsTab: TabbedConfigsTab,
     private val larsonScanner: LarsonScanner,
     private val apiWrapper: ApiWrapper
 ) {
@@ -85,7 +85,7 @@ class ControlPanel(
         generate.isEnabled = false
         larsonScanner.loadConfig(guiProps.busyConfig)
         var decision = 0
-        if (configsTab.selectedEditor == null) {
+        if (tabbedConfigsTab.selectedEditor == null) {
             JOptionPane.showMessageDialog(
                 panel,
                 Gui.createserverpack_log_error_configuration_none_message.toString(),
@@ -96,7 +96,7 @@ class ControlPanel(
             readyForGeneration()
             return
         }
-        if (configsTab.selectedEditor!!.getCopyDirectories() == "lazy_mode") {
+        if (tabbedConfigsTab.selectedEditor!!.getCopyDirectories() == "lazy_mode") {
             val message = Gui.configuration_log_warn_checkconfig_copydirs_lazymode0.toString() + "\n" +
                     Gui.configuration_log_warn_checkconfig_copydirs_lazymode1.toString() + "\n" +
                     Gui.configuration_log_warn_checkconfig_copydirs_lazymode2.toString() + "\n" +
@@ -133,7 +133,7 @@ class ControlPanel(
      * @author Griefed
      */
     private fun runGenerationTasks() {
-        val activeTab = configsTab.selectedEditor!!
+        val activeTab = tabbedConfigsTab.selectedEditor!!
         val packConfig: PackConfig = activeTab.getCurrentConfiguration()
         val encounteredErrors: MutableList<String> = ArrayList(100)
 

@@ -20,7 +20,7 @@
 package de.griefed.serverpackcreator.gui.filebrowser.controller.action
 
 import Gui
-import de.griefed.serverpackcreator.gui.window.configs.ConfigsTab
+import de.griefed.serverpackcreator.gui.window.configs.TabbedConfigsTab
 import java.awt.event.ActionEvent
 import java.io.File
 import javax.swing.AbstractAction
@@ -30,7 +30,7 @@ import javax.swing.AbstractAction
  *
  * @author Griefed
  */
-class ServerPropertiesAction(private val configsTab: ConfigsTab) : AbstractAction() {
+class ServerPropertiesAction(private val tabbedConfigsTab: TabbedConfigsTab) : AbstractAction() {
     private var properties: File? = null
 
     init {
@@ -38,7 +38,7 @@ class ServerPropertiesAction(private val configsTab: ConfigsTab) : AbstractActio
     }
 
     override fun actionPerformed(e: ActionEvent) {
-        configsTab.selectedEditor?.setServerPropertiesPath(properties!!.absolutePath)
+        tabbedConfigsTab.selectedEditor?.setServerPropertiesPath(properties!!.absolutePath)
     }
 
     fun setProperties(file: File?) {

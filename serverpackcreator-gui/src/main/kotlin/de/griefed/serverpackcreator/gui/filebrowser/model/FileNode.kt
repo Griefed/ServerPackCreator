@@ -27,15 +27,12 @@ import java.io.File
  * @author Andrew Thompson
  * @author Griefed
  */
-class FileNode(val file: File): File(file.absolutePath) {
+class FileNode(val file: File) {
     var isGenerateGrandchildren = true
 
     override fun toString(): String {
-        val name = file.name
-        return if (name == "") {
+        return file.name.ifBlank {
             file.absolutePath
-        } else {
-            name
         }
     }
 }

@@ -47,7 +47,7 @@ class FileSelectionListener(
         val fileNode = node.userObject as FileNode
         AddNodes(browserModel, node)
         val file = fileNode.file
-        fileDetailPanel.setFileNode(fileNode,browserModel)
+        fileDetailPanel.setFileNode(fileNode, browserModel)
         filePreviewPanel.setFileNode(fileNode)
         if (file.isDirectory) {
             tableScrollPane.setDefaultTableModel(node)

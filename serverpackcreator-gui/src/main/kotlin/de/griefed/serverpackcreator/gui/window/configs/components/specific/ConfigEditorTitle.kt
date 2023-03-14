@@ -23,7 +23,7 @@ import Gui
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.utilities.DialogUtilities
 import de.griefed.serverpackcreator.gui.window.configs.ConfigEditorPanel
-import de.griefed.serverpackcreator.gui.window.configs.ConfigsTab
+import de.griefed.serverpackcreator.gui.window.configs.TabbedConfigsTab
 import java.awt.FlowLayout
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
@@ -35,7 +35,7 @@ import javax.swing.*
 @Suppress("unused")
 class ConfigEditorTitle(
     private val guiProps: GuiProps,
-    private val configsTab: ConfigsTab,
+    private val tabbedConfigsTab: TabbedConfigsTab,
     private val configEditorPanel: ConfigEditorPanel
 ) : JPanel(FlowLayout(FlowLayout.LEFT, 0, 0)) {
 
@@ -77,14 +77,13 @@ class ConfigEditorTitle(
     }
 
 
-
     private fun close() {
         if (hasUnsavedChanges) {
-            configsTab.tabs.selectedComponent = configEditorPanel
+            tabbedConfigsTab.tabs.selectedComponent = configEditorPanel
             if (DialogUtilities.createShowGet(
                     Gui.createserverpack_gui_close_unsaved_message(title),
                     Gui.createserverpack_gui_close_unsaved_title(title),
-                    configsTab.panel.parent,
+                    tabbedConfigsTab.panel.parent,
                     JOptionPane.WARNING_MESSAGE,
                     JOptionPane.YES_NO_OPTION,
                     guiProps.warningIcon
@@ -93,13 +92,13 @@ class ConfigEditorTitle(
                 configEditorPanel.saveCurrentConfiguration()
             }
         }
-        val currentTab = configsTab.tabs.selectedIndex
-        configsTab.tabs.remove(configEditorPanel)
+        val currentTab = tabbedConfigsTab.tabs.selectedIndex
+        tabbedConfigsTab.tabs.remove(configEditorPanel)
 
-        if (configsTab.tabs.tabCount - 1 > 0) {
-            configsTab.tabs.selectedIndex = currentTab - 1
+        if (tabbedConfigsTab.tabs.tabCount - 1 > 0) {
+            tabbedConfigsTab.tabs.selectedIndex = currentTab - 1
         } else {
-            configsTab.addTab()
+            tabbedConfigsTab.addTab()
         }
     }
 

@@ -21,8 +21,6 @@ package de.griefed.serverpackcreator.gui.window.configs
 
 import Gui
 import de.griefed.serverpackcreator.api.*
-import de.griefed.serverpackcreator.api.utilities.common.Utilities
-import de.griefed.serverpackcreator.api.versionmeta.VersionMeta
 import de.griefed.serverpackcreator.gui.FileBrowser
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.components.TabPanel
@@ -36,7 +34,7 @@ import java.util.concurrent.Executors
 import javax.swing.DefaultComboBoxModel
 
 @OptIn(DelicateCoroutinesApi::class)
-class ConfigsTab(
+class TabbedConfigsTab(
     private val guiProps: GuiProps,
     private val apiWrapper: ApiWrapper
 ) : TabPanel() {
@@ -64,7 +62,9 @@ class ConfigsTab(
                     for (tab in 0 until tabs.tabCount) {
                         (tabs.getComponentAt(tab) as ConfigEditorPanel).title.closeButton.isVisible = false
                     }
-                    (activeTab!! as ConfigEditorPanel).title.closeButton.isVisible = true
+                    if (activeTab != null) {
+                        (activeTab as ConfigEditorPanel).title.closeButton.isVisible = true
+                    }
                 }
             }
 

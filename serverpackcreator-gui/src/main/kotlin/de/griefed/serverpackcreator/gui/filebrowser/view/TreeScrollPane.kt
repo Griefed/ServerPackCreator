@@ -25,7 +25,7 @@ import de.griefed.serverpackcreator.gui.filebrowser.controller.TreeExpandListene
 import de.griefed.serverpackcreator.gui.filebrowser.controller.TreeMouseListener
 import de.griefed.serverpackcreator.gui.filebrowser.model.FileBrowserModel
 import de.griefed.serverpackcreator.gui.filebrowser.view.renderer.FileTreeCellRenderer
-import de.griefed.serverpackcreator.gui.window.configs.ConfigsTab
+import de.griefed.serverpackcreator.gui.window.configs.TabbedConfigsTab
 import java.awt.Dimension
 import javax.swing.JScrollPane
 import javax.swing.JTree
@@ -38,7 +38,7 @@ import javax.swing.JTree
  */
 class TreeScrollPane(
     browserModel: FileBrowserModel,
-    configsTab: ConfigsTab,
+    tabbedConfigsTab: TabbedConfigsTab,
     utilities: Utilities,
     fileDetailPanel: FileDetailPanel,
     filePreviewPanel: FilePreviewPanel,
@@ -49,7 +49,7 @@ class TreeScrollPane(
     init {
         viewport.view = tree
         tree.addTreeSelectionListener(
-            FileSelectionListener(browserModel,fileDetailPanel,filePreviewPanel,tableScrollPane)
+            FileSelectionListener(browserModel, fileDetailPanel, filePreviewPanel, tableScrollPane)
         )
         tree.addTreeWillExpandListener(
             TreeExpandListener(browserModel)
@@ -57,7 +57,7 @@ class TreeScrollPane(
         tree.isRootVisible = true
         tree.cellRenderer = FileTreeCellRenderer(browserModel)
         tree.showsRootHandles = true
-        tree.addMouseListener(TreeMouseListener(tree, configsTab, utilities))
+        tree.addMouseListener(TreeMouseListener(tree, tabbedConfigsTab, utilities))
         val widePreferred = Dimension(
             300, preferredSize.getHeight().toInt()
         )

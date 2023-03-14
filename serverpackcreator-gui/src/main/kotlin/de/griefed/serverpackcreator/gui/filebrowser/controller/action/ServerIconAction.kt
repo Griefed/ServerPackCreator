@@ -20,7 +20,7 @@
 package de.griefed.serverpackcreator.gui.filebrowser.controller.action
 
 import Gui
-import de.griefed.serverpackcreator.gui.window.configs.ConfigsTab
+import de.griefed.serverpackcreator.gui.window.configs.TabbedConfigsTab
 import java.awt.event.ActionEvent
 import java.io.File
 import javax.swing.AbstractAction
@@ -30,7 +30,7 @@ import javax.swing.AbstractAction
  *
  * @author Griefed
  */
-class ServerIconAction(private val configsTab: ConfigsTab) : AbstractAction() {
+class ServerIconAction(private val tabbedConfigsTab: TabbedConfigsTab) : AbstractAction() {
     private var icon: File? = null
 
     init {
@@ -39,7 +39,7 @@ class ServerIconAction(private val configsTab: ConfigsTab) : AbstractAction() {
 
     @Suppress("unused")
     override fun actionPerformed(e: ActionEvent) {
-        configsTab.selectedEditor?.setServerIconPath(icon!!.absolutePath)
+        tabbedConfigsTab.selectedEditor?.setServerIconPath(icon!!.absolutePath)
     }
 
     fun setIcon(file: File?) {

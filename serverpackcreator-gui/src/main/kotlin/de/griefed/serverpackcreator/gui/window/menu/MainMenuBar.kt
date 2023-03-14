@@ -20,13 +20,10 @@
 package de.griefed.serverpackcreator.gui.window.menu
 
 import de.griefed.larsonscanner.LarsonScanner
-import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.ApiWrapper
-import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.window.MainFrame
 import de.griefed.serverpackcreator.gui.window.UpdateDialogs
-import de.griefed.serverpackcreator.gui.window.configs.ConfigsTab
 import de.griefed.serverpackcreator.gui.window.menu.about.AboutMenu
 import de.griefed.serverpackcreator.gui.window.menu.edit.EditMenu
 import de.griefed.serverpackcreator.gui.window.menu.file.FileMenu
@@ -37,7 +34,7 @@ import javax.swing.JMenuBar
 /**
  * TODO docs
  */
-class MainMenu(
+class MainMenuBar(
     guiProps: GuiProps,
     apiWrapper: ApiWrapper,
     updateDialogs: UpdateDialogs,
@@ -48,9 +45,25 @@ class MainMenu(
     val menuBar: JMenuBar = JMenuBar()
 
     init {
-        menuBar.add(FileMenu(mainFrame.mainPanel.configsTab, apiWrapper.apiProperties, mainFrame, apiWrapper.utilities!!, guiProps))
-        menuBar.add(EditMenu(apiWrapper.utilities!!.fileUtilities, apiWrapper.apiProperties, guiProps, larsonScanner, mainFrame))
-        menuBar.add(ViewMenu(apiWrapper,migrationManager,guiProps))
+        menuBar.add(
+            FileMenu(
+                mainFrame.mainPanel.tabbedConfigsTab,
+                apiWrapper.apiProperties,
+                mainFrame,
+                apiWrapper.utilities!!,
+                guiProps
+            )
+        )
+        menuBar.add(
+            EditMenu(
+                apiWrapper.utilities!!.fileUtilities,
+                apiWrapper.apiProperties,
+                guiProps,
+                larsonScanner,
+                mainFrame
+            )
+        )
+        menuBar.add(ViewMenu(apiWrapper, migrationManager, guiProps))
         menuBar.add(AboutMenu(apiWrapper.utilities!!.webUtilities, updateDialogs))
     }
 }

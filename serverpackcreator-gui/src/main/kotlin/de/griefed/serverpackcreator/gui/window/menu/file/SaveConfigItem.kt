@@ -20,7 +20,7 @@
 package de.griefed.serverpackcreator.gui.window.menu.file
 
 import Gui
-import de.griefed.serverpackcreator.gui.window.configs.ConfigsTab
+import de.griefed.serverpackcreator.gui.window.configs.TabbedConfigsTab
 import javax.swing.JMenuItem
 
 /**
@@ -28,12 +28,13 @@ import javax.swing.JMenuItem
  *
  * @author Griefed
  */
-class SaveConfigItem(private val configsTab: ConfigsTab) : JMenuItem(Gui.menubar_gui_menuitem_saveconfig.toString()) {
+class SaveConfigItem(private val tabbedConfigsTab: TabbedConfigsTab) :
+    JMenuItem(Gui.menubar_gui_menuitem_saveconfig.toString()) {
     init {
         addActionListener { save() }
     }
 
     private fun save() {
-        configsTab.selectedEditor!!.saveCurrentConfiguration()
+        tabbedConfigsTab.selectedEditor!!.saveCurrentConfiguration()
     }
 }

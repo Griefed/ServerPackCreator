@@ -23,7 +23,7 @@ import Gui
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.filebrowser.model.FileBrowserModel
-import de.griefed.serverpackcreator.gui.window.configs.ConfigsTab
+import de.griefed.serverpackcreator.gui.window.configs.TabbedConfigsTab
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -46,13 +46,14 @@ import javax.swing.JSplitPane
 @OptIn(DelicateCoroutinesApi::class)
 class FileBrowserFrame(
     private val browserModel: FileBrowserModel,
-    configsTab: ConfigsTab,
+    tabbedConfigsTab: TabbedConfigsTab,
     guiProps: GuiProps,
     utilities: Utilities
 ) {
     private val filePreviewPanel = FilePreviewPanel(guiProps)
     private val fileDetailPanel = FileDetailPanel()
-    private val tableScrollPane = TableScrollPane(browserModel, configsTab, utilities,fileDetailPanel,filePreviewPanel)
+    private val tableScrollPane =
+        TableScrollPane(browserModel, tabbedConfigsTab, utilities, fileDetailPanel, filePreviewPanel)
     val frame: JFrame = JFrame()
 
     init {
@@ -82,7 +83,7 @@ class FileBrowserFrame(
 
             val treeScrollPane = TreeScrollPane(
                 browserModel,
-                configsTab,
+                tabbedConfigsTab,
                 utilities,
                 fileDetailPanel,
                 filePreviewPanel,

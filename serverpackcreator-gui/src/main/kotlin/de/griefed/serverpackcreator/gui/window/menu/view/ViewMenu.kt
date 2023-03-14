@@ -20,11 +20,8 @@
 package de.griefed.serverpackcreator.gui.window.menu.view
 
 import Gui
-import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.ApiWrapper
-import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import de.griefed.serverpackcreator.gui.GuiProps
-import de.griefed.serverpackcreator.gui.window.MainFrame
 import de.griefed.serverpackcreator.updater.MigrationManager
 import javax.swing.JMenu
 import javax.swing.JSeparator
@@ -45,7 +42,7 @@ class ViewMenu(apiWrapper: ApiWrapper, migrationManager: MigrationManager, guiPr
         add(PluginsDirItem(apiWrapper.utilities!!.fileUtilities, apiWrapper.apiProperties))
         add(PluginsConfigDirItem(apiWrapper.utilities!!.fileUtilities, apiWrapper.apiProperties))
         add(JSeparator())
-        add(MigrationInfoItem(apiWrapper,migrationManager,guiProps))
+        add(MigrationInfoItem(apiWrapper, migrationManager, guiProps))
         add(JSeparator())
         add(ServerPackCreatorLogItem(apiWrapper.utilities!!.fileUtilities, apiWrapper.apiProperties))
         add(PluginsLogItem(apiWrapper.utilities!!.fileUtilities, apiWrapper.apiProperties))

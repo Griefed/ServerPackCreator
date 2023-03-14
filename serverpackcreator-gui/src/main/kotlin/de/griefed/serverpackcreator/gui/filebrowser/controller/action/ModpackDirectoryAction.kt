@@ -20,7 +20,7 @@
 package de.griefed.serverpackcreator.gui.filebrowser.controller.action
 
 import Gui
-import de.griefed.serverpackcreator.gui.window.configs.ConfigsTab
+import de.griefed.serverpackcreator.gui.window.configs.TabbedConfigsTab
 import java.awt.event.ActionEvent
 import java.io.File
 import javax.swing.AbstractAction
@@ -30,7 +30,7 @@ import javax.swing.AbstractAction
  *
  * @author Griefed
  */
-class ModpackDirectoryAction(private val configsTab: ConfigsTab) : AbstractAction() {
+class ModpackDirectoryAction(private val tabbedConfigsTab: TabbedConfigsTab) : AbstractAction() {
     private var directory: File? = null
 
     init {
@@ -38,8 +38,8 @@ class ModpackDirectoryAction(private val configsTab: ConfigsTab) : AbstractActio
     }
 
     override fun actionPerformed(e: ActionEvent) {
-        configsTab.selectedEditor?.setModpackDirectory(directory!!.absolutePath)
-        configsTab.selectedEditor?.updateGuiFromSelectedModpack()
+        tabbedConfigsTab.selectedEditor?.setModpackDirectory(directory!!.absolutePath)
+        tabbedConfigsTab.selectedEditor?.updateGuiFromSelectedModpack()
     }
 
     fun setDirectory(file: File?) {

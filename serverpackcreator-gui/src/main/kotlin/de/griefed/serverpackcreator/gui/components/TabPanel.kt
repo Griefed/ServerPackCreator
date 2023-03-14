@@ -2,15 +2,15 @@ package de.griefed.serverpackcreator.gui.components
 
 import java.awt.BorderLayout
 import java.awt.Component
+import java.awt.LayoutManager
 import javax.swing.JPanel
 import javax.swing.JTabbedPane
 
-abstract class TabPanel {
-    val panel = JPanel()
+abstract class TabPanel(layout: LayoutManager = BorderLayout()) {
+    val panel = JPanel(layout, true)
     val tabs = JTabbedPane()
 
     init {
-        panel.layout = BorderLayout()
         panel.add(tabs)
     }
 
