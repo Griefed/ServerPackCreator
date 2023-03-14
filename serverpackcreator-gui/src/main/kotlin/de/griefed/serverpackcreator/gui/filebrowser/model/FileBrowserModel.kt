@@ -19,12 +19,14 @@
  */
 package de.griefed.serverpackcreator.gui.filebrowser.model
 
+import de.griefed.serverpackcreator.api.utilities.common.parallelMap
 import de.griefed.serverpackcreator.gui.GuiProps
 import java.io.File
 import java.util.*
 import javax.swing.Icon
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.DefaultTreeModel
+import javax.swing.tree.TreeNode
 
 /**
  * Base model from which access to the root-manager, tree-model and update routines is granted.
@@ -58,11 +60,14 @@ class FileBrowserModel(private val guiProps: GuiProps) {
      * Add grandchild-nodes to the parent for every file inside it.
      */
     fun addGrandchildNodes(root: DefaultMutableTreeNode) {
-        val enumeration: Enumeration<*> = root.children()
+        root.children().toList().parallelMap {node ->
+            addChildNodes(node as DefaultMutableTreeNode)
+        }
+        /*val enumeration: Enumeration<TreeNode> = root.children()
         while (enumeration.hasMoreElements()) {
             val node = enumeration.nextElement() as DefaultMutableTreeNode
             addChildNodes(node)
-        }
+        }*/
     }
 
     /**
@@ -73,14 +78,18 @@ class FileBrowserModel(private val guiProps: GuiProps) {
             val fileNode = root.userObject as FileNode
             val file = fileNode.file
             if (file.isDirectory) {
-                val files = file.listFiles()
-                files?.forEach { child ->
-                    root.add(
-                        SortedTreeNode(
-                            guiProps,
-                            FileNode(child)
+                try {
+                    file.listFiles()!!.forEach { child ->
+                        root.add(
+                            SortedTreeNode(
+                                guiProps,
+                                FileNode(child)
+                            )
                         )
-                    )
+                    }
+
+                } catch (npe: NullPointerException) {
+                    npe.printStackTrace()
                 }
             }
         } else {
@@ -91,7 +100,7 @@ class FileBrowserModel(private val guiProps: GuiProps) {
                 val file = fileNode.file
                 if (file.isDirectory) {
                     try {
-                        file.listFiles()?.forEach { child ->
+                        file.listFiles()!!.forEach { child ->
                             node.add(
                                 SortedTreeNode(
                                     guiProps,
@@ -105,6 +114,7 @@ class FileBrowserModel(private val guiProps: GuiProps) {
                 }
             }
         }
+
     }
 
     fun getFileIcon(file: File?): Icon {

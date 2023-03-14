@@ -21,8 +21,11 @@ package de.griefed.serverpackcreator.gui.window.menu.view
 
 import Gui
 import de.griefed.serverpackcreator.api.ApiProperties
+import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
+import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.window.MainFrame
+import de.griefed.serverpackcreator.updater.MigrationManager
 import javax.swing.JMenu
 import javax.swing.JSeparator
 
@@ -31,21 +34,21 @@ import javax.swing.JSeparator
  *
  * @author Griefed
  */
-class ViewMenu(utilities: Utilities, apiProperties: ApiProperties, mainFrame: MainFrame) :
+class ViewMenu(apiWrapper: ApiWrapper, migrationManager: MigrationManager, guiProps: GuiProps) :
     JMenu(Gui.menubar_gui_menu_view.toString()) {
     init {
-        add(HomeDirItem(utilities.fileUtilities, apiProperties))
-        add(ServerPacksDirItem(utilities.fileUtilities, apiProperties))
-        add(ServerFilesDirItem(utilities.fileUtilities, apiProperties))
-        add(ConfigsDirItem(utilities.fileUtilities, apiProperties))
+        add(HomeDirItem(apiWrapper.utilities!!.fileUtilities, apiWrapper.apiProperties))
+        add(ServerPacksDirItem(apiWrapper.utilities!!.fileUtilities, apiWrapper.apiProperties))
+        add(ServerFilesDirItem(apiWrapper.utilities!!.fileUtilities, apiWrapper.apiProperties))
+        add(ConfigsDirItem(apiWrapper.utilities!!.fileUtilities, apiWrapper.apiProperties))
         add(JSeparator())
-        add(PluginsDirItem(utilities.fileUtilities, apiProperties))
-        add(PluginsConfigDirItem(utilities.fileUtilities, apiProperties))
+        add(PluginsDirItem(apiWrapper.utilities!!.fileUtilities, apiWrapper.apiProperties))
+        add(PluginsConfigDirItem(apiWrapper.utilities!!.fileUtilities, apiWrapper.apiProperties))
         add(JSeparator())
-        add(MigrationInfoItem(mainFrame))
+        add(MigrationInfoItem(apiWrapper,migrationManager,guiProps))
         add(JSeparator())
-        add(ServerPackCreatorLogItem(utilities.fileUtilities, apiProperties))
-        add(PluginsLogItem(utilities.fileUtilities, apiProperties))
-        add(ModloaderInstallerLogItem(utilities.fileUtilities, apiProperties))
+        add(ServerPackCreatorLogItem(apiWrapper.utilities!!.fileUtilities, apiWrapper.apiProperties))
+        add(PluginsLogItem(apiWrapper.utilities!!.fileUtilities, apiWrapper.apiProperties))
+        add(ModloaderInstallerLogItem(apiWrapper.utilities!!.fileUtilities, apiWrapper.apiProperties))
     }
 }

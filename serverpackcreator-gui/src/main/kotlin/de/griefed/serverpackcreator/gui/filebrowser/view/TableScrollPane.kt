@@ -42,10 +42,11 @@ import javax.swing.tree.DefaultMutableTreeNode
  * @author Griefed
  */
 class TableScrollPane(
-    frame: FileBrowserFrame,
-    private val model: FileBrowserModel,
+    private val browserModel: FileBrowserModel,
     configsTab: ConfigsTab,
-    utilities: Utilities
+    utilities: Utilities,
+    fileDetailPanel: FileDetailPanel,
+    filePreviewPanel: FilePreviewPanel
 ) {
     private var ftModel: FileTableModel
     private var countLabel: JLabel
@@ -69,7 +70,7 @@ class TableScrollPane(
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION)
         table.addMouseListener(TableMouseListener(table, configsTab, utilities))
 
-        tsListener = TableSelectionListener(frame, table)
+        tsListener = TableSelectionListener(table, browserModel, fileDetailPanel,filePreviewPanel)
         tsListener.setRowCount(ftModel.rowCount)
 
         val lsm: ListSelectionModel = table.selectionModel
@@ -115,7 +116,7 @@ class TableScrollPane(
             while (enumeration.hasMoreElements()) {
                 val childNode: DefaultMutableTreeNode = enumeration.nextElement() as DefaultMutableTreeNode
                 val childFileNode: FileNode = childNode.userObject as FileNode
-                ftModel.addRow(model, childFileNode)
+                ftModel.addRow(browserModel, childFileNode)
             }
         }
         tsListener.setRowCount(ftModel.rowCount)

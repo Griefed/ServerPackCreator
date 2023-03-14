@@ -19,8 +19,10 @@
  */
 package de.griefed.serverpackcreator.gui.filebrowser.controller
 
+import de.griefed.serverpackcreator.gui.filebrowser.model.FileBrowserModel
 import de.griefed.serverpackcreator.gui.filebrowser.model.FileNode
-import de.griefed.serverpackcreator.gui.filebrowser.view.FileBrowserFrame
+import de.griefed.serverpackcreator.gui.filebrowser.view.FileDetailPanel
+import de.griefed.serverpackcreator.gui.filebrowser.view.FilePreviewPanel
 import javax.swing.JTable
 import javax.swing.ListSelectionModel
 import javax.swing.event.ListSelectionEvent
@@ -32,7 +34,12 @@ import javax.swing.event.ListSelectionListener
  * @author Andrew Thompson
  * @author Griefed
  */
-class TableSelectionListener(private val frame: FileBrowserFrame, private val jTable: JTable) : ListSelectionListener {
+class TableSelectionListener(
+    private val jTable: JTable,
+    private val browserModel: FileBrowserModel,
+    private val fileDetailPanel: FileDetailPanel,
+    private val filePreviewPanel: FilePreviewPanel
+) : ListSelectionListener {
     private var rowCount = 0
 
     fun setRowCount(rowCount: Int) {
@@ -47,8 +54,8 @@ class TableSelectionListener(private val frame: FileBrowserFrame, private val jT
                 row = jTable.convertRowIndexToModel(row)
                 val fileNode: FileNode = jTable.model
                     .getValueAt(row, 5) as FileNode
-                frame.updateFileDetail(fileNode)
-                frame.setFilePreviewNode(fileNode)
+                fileDetailPanel.setFileNode(fileNode, browserModel)
+                filePreviewPanel.setFileNode(fileNode)
             }
         }
     }

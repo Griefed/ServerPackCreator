@@ -30,6 +30,6 @@ import javax.swing.JMenuItem
  */
 class ExitItem(private val mainFrame: MainFrame) : JMenuItem(Gui.menubar_gui_menuitem_exit.toString()) {
     init {
-        addActionListener { mainFrame.closeAndExit() }
+        addActionListener { mainFrame.mainPanel.closeAndExit() }
     }
 }

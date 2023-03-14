@@ -62,21 +62,21 @@ fun main(args: Array<String>) {
 class ServerPackCreator(private val args: Array<String>) {
     private val log = cachedLoggerOf(this.javaClass)
     val commandlineParser: CommandlineParser = CommandlineParser(args)
-    val api = ApiWrapper.api(commandlineParser.propertiesFile, commandlineParser.language, false)
-    private val appInfo = JarInformation(ServerPackCreator::class.java, api.jarUtilities)
+    val apiWrapper = ApiWrapper.api(commandlineParser.propertiesFile, commandlineParser.language, false)
+    private val appInfo = JarInformation(ServerPackCreator::class.java, apiWrapper.jarUtilities)
 
     @Suppress("MemberVisibilityCanBePrivate")
-    val updateChecker = UpdateChecker(api.apiProperties)
+    val updateChecker = UpdateChecker(apiWrapper.apiProperties)
 
     @get:Synchronized
     var configurationEditor: ConfigurationEditor? = null
         get() {
             if (field == null) {
                 field = ConfigurationEditor(
-                    api.configurationHandler!!,
-                    api.apiProperties,
-                    api.utilities!!,
-                    api.versionMeta!!
+                    apiWrapper.configurationHandler!!,
+                    apiWrapper.apiProperties,
+                    apiWrapper.utilities!!,
+                    apiWrapper.versionMeta!!
                 )
             }
             return field!!
@@ -87,10 +87,10 @@ class ServerPackCreator(private val args: Array<String>) {
         log.info("App Folder:      ${appInfo.jarFolder}")
         log.info("App Path:        ${appInfo.jarFile.absolutePath}")
         log.info("App Name:        ${appInfo.jarFileName}")
-        log.info("Java version:    ${api.apiProperties.getJavaVersion()}")
-        log.info("OS architecture: ${api.apiProperties.getOSArch()}")
-        log.info("OS name:         ${api.apiProperties.getOSName()}")
-        log.info("OS version:      ${api.apiProperties.getOSVersion()}")
+        log.info("Java version:    ${apiWrapper.apiProperties.getJavaVersion()}")
+        log.info("OS architecture: ${apiWrapper.apiProperties.getOSArch()}")
+        log.info("OS name:         ${apiWrapper.apiProperties.getOSName()}")
+        log.info("OS version:      ${apiWrapper.apiProperties.getOSVersion()}")
 
         when (mode) {
             Mode.HELP -> {
@@ -104,57 +104,52 @@ class ServerPackCreator(private val args: Array<String>) {
             }
 
             Mode.WEB -> {
-                api.stageOne()
+                apiWrapper.stageOne()
                 migrationManager!!.migrate()
-                api.stageTwo()
-                api.stageThree()
+                apiWrapper.stageTwo()
+                apiWrapper.stageThree()
                 stageFour()
-                WebService(api).start(args)
+                WebService(apiWrapper).start(args)
             }
 
             Mode.CGEN -> {
-                api.stageOne()
+                apiWrapper.stageOne()
                 migrationManager!!.migrate()
-                api.stageTwo()
+                apiWrapper.stageTwo()
                 createDefaultConfig()
                 runConfigurationEditor()
                 continuedRunOptions()
             }
 
             Mode.CLI -> {
-                api.stageOne()
+                apiWrapper.stageOne()
                 migrationManager!!.migrate()
-                api.stageTwo()
-                api.stageThree()
+                apiWrapper.stageTwo()
+                apiWrapper.stageThree()
                 runHeadless()
             }
 
             Mode.GUI -> {
                 splashScreen!!
-                api.stageOne()
+                apiWrapper.stageOne()
                 migrationManager!!.migrate()
                 splashScreen!!.update(20)
-                api.stageTwo()
+                apiWrapper.stageTwo()
                 splashScreen!!.update(40)
-                api.stageThree()
+                apiWrapper.stageThree()
                 splashScreen!!.update(60)
                 stageFour()
                 splashScreen!!.update(80)
                 MainWindow(
-                    api.configurationHandler!!,
-                    api.serverPackHandler!!,
-                    api.apiProperties,
-                    api.versionMeta!!,
-                    api.utilities!!,
+                    apiWrapper,
                     updateChecker,
                     splashScreen!!,
-                    api.apiPlugins!!,
                     migrationManager!!
                 )
             }
 
             Mode.SETUP -> {
-                api.setup(force = true)
+                apiWrapper.setup(force = true)
                 log.info("Setup completed.")
                 log.debug("Exiting...")
             }
@@ -173,10 +168,10 @@ class ServerPackCreator(private val args: Array<String>) {
      * @author Griefed
      */
     private fun createDefaultConfig(): Boolean {
-        return if (!api.apiProperties.defaultConfig.exists()) {
-            api.utilities!!.jarUtilities.copyFileFromJar(
-                "de/griefed/resources/${api.apiProperties.defaultConfig.name}",
-                api.apiProperties.defaultConfig, this.javaClass
+        return if (!apiWrapper.apiProperties.defaultConfig.exists()) {
+            apiWrapper.utilities!!.jarUtilities.copyFileFromJar(
+                "de/griefed/resources/${apiWrapper.apiProperties.defaultConfig.name}",
+                apiWrapper.apiProperties.defaultConfig, this.javaClass
             )
         } else false
     }
@@ -337,7 +332,7 @@ class ServerPackCreator(private val args: Array<String>) {
      */
     @Throws(IOException::class, ParserConfigurationException::class, SAXException::class)
     private fun runHeadless() {
-        if (!api.apiProperties.defaultConfig.exists()) {
+        if (!apiWrapper.apiProperties.defaultConfig.exists()) {
             log.warn("No serverpackcreator.conf found...")
             log.info("If you want to run ServerPackCreator in CLI-mode, a serverpackcreator.conf is required.")
             log.info(
@@ -346,13 +341,13 @@ class ServerPackCreator(private val args: Array<String>) {
             exitProcess(1)
         } else {
             val packConfig = PackConfig()
-            if (api.configurationHandler!!.checkConfiguration(
-                    api.apiProperties.defaultConfig, packConfig
+            if (apiWrapper.configurationHandler!!.checkConfiguration(
+                    apiWrapper.apiProperties.defaultConfig, packConfig
                 )
             ) {
                 exitProcess(1)
             }
-            if (!api.serverPackHandler!!.run(packConfig)) {
+            if (!apiWrapper.serverPackHandler!!.run(packConfig)) {
                 exitProcess(1)
             }
         }
@@ -366,7 +361,7 @@ class ServerPackCreator(private val args: Array<String>) {
             }
             if (field == null) {
                 field = SplashScreen(
-                    api.apiProperties.apiVersion
+                    apiWrapper.apiProperties.apiVersion
                 )
             }
             return field!!
@@ -377,8 +372,8 @@ class ServerPackCreator(private val args: Array<String>) {
         get() {
             if (field == null) {
                 field = MigrationManager(
-                    api.apiProperties,
-                    api.tomlParser
+                    apiWrapper.apiProperties,
+                    apiWrapper.tomlParser
                 )
             }
             return field
@@ -404,7 +399,7 @@ class ServerPackCreator(private val args: Array<String>) {
         Executors.newSingleThreadExecutor().execute {
             log.debug("Setting up FileWatcher...")
             val fileAlterationObserver = FileAlterationObserver(
-                api.apiProperties.homeDirectory
+                apiWrapper.apiProperties.homeDirectory
             )
             val fileAlterationListener: FileAlterationListener = object : FileAlterationListener {
                 override fun onStart(observer: FileAlterationObserver) {
@@ -427,25 +422,25 @@ class ServerPackCreator(private val args: Array<String>) {
 
                 override fun onFileDelete(file: File) {
                     if (!file.toString()
-                            .contains(api.apiProperties.serverPacksDirectory.toString())
+                            .contains(apiWrapper.apiProperties.serverPacksDirectory.toString())
                         && !file.toString()
-                            .contains(api.apiProperties.modpacksDirectory.toString())
+                            .contains(apiWrapper.apiProperties.modpacksDirectory.toString())
                     ) {
-                        if (check(file, api.apiProperties.serverPackCreatorPropertiesFile)) {
-                            createFile(api.apiProperties.serverPackCreatorPropertiesFile)
-                            api.apiProperties.loadProperties()
+                        if (check(file, apiWrapper.apiProperties.serverPackCreatorPropertiesFile)) {
+                            createFile(apiWrapper.apiProperties.serverPackCreatorPropertiesFile)
+                            apiWrapper.apiProperties.loadProperties()
                             log.info("Restored serverpackcreator.properties and loaded defaults.")
-                        } else if (check(file, api.apiProperties.defaultServerProperties)) {
-                            api.checkServerFilesFile(api.apiProperties.defaultServerProperties)
+                        } else if (check(file, apiWrapper.apiProperties.defaultServerProperties)) {
+                            apiWrapper.checkServerFilesFile(apiWrapper.apiProperties.defaultServerProperties)
                             log.info("Restored default server.properties.")
-                        } else if (check(file, api.apiProperties.defaultServerIcon)) {
-                            api.checkServerFilesFile(api.apiProperties.defaultServerIcon)
+                        } else if (check(file, apiWrapper.apiProperties.defaultServerIcon)) {
+                            apiWrapper.checkServerFilesFile(apiWrapper.apiProperties.defaultServerIcon)
                             log.info("Restored default server-icon.png.")
-                        } else if (check(file, api.apiProperties.defaultShellScriptTemplate)) {
-                            api.checkServerFilesFile(api.apiProperties.defaultShellScriptTemplate)
+                        } else if (check(file, apiWrapper.apiProperties.defaultShellScriptTemplate)) {
+                            apiWrapper.checkServerFilesFile(apiWrapper.apiProperties.defaultShellScriptTemplate)
                             log.info("Restored default_template.sh.")
-                        } else if (check(file, api.apiProperties.defaultPowerShellScriptTemplate)) {
-                            api.checkServerFilesFile(api.apiProperties.defaultPowerShellScriptTemplate)
+                        } else if (check(file, apiWrapper.apiProperties.defaultPowerShellScriptTemplate)) {
+                            apiWrapper.checkServerFilesFile(apiWrapper.apiProperties.defaultPowerShellScriptTemplate)
                             log.info("Restored default_template.ps1.")
                         }
                     }
@@ -462,7 +457,7 @@ class ServerPackCreator(private val args: Array<String>) {
                 }
 
                 private fun createFile(toCreate: File) {
-                    api.utilities!!.jarUtilities.copyFileFromJar(
+                    apiWrapper.utilities!!.jarUtilities.copyFileFromJar(
                         toCreate.name, ServerPackCreator::class.java,
                         toCreate.parent
                     )
@@ -503,7 +498,7 @@ class ServerPackCreator(private val args: Array<String>) {
                 )
             } else {
                 try {
-                    api.apiProperties.i18n4kConfig.locale = Locale(userLocale)
+                    apiWrapper.apiProperties.i18n4kConfig.locale = Locale(userLocale)
                 } catch (e: RuntimeException) {
                     println(
                         "Incorrect format. ServerPackCreator currently only supports locales in the format of en_us (Language, Country)."

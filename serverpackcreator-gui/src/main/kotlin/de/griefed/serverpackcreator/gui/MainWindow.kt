@@ -24,10 +24,7 @@ import com.formdev.flatlaf.extras.FlatInspector
 import com.formdev.flatlaf.extras.FlatUIDefaultsInspector
 import com.formdev.flatlaf.fonts.jetbrains_mono.FlatJetBrainsMonoFont
 import com.formdev.flatlaf.intellijthemes.FlatDarkPurpleIJTheme
-import de.griefed.serverpackcreator.api.ApiPlugins
-import de.griefed.serverpackcreator.api.ApiProperties
-import de.griefed.serverpackcreator.api.ConfigurationHandler
-import de.griefed.serverpackcreator.api.ServerPackHandler
+import de.griefed.serverpackcreator.api.*
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import de.griefed.serverpackcreator.api.versionmeta.VersionMeta
 import de.griefed.serverpackcreator.gui.splash.SplashScreen
@@ -46,21 +43,16 @@ import javax.swing.UIManager
  */
 @OptIn(DelicateCoroutinesApi::class)
 class MainWindow(
-    private val configurationHandler: ConfigurationHandler,
-    private val serverPackHandler: ServerPackHandler,
-    private val apiProperties: ApiProperties,
-    private val versionMeta: VersionMeta,
-    private val utilities: Utilities,
+    private val apiWrapper: ApiWrapper,
     private val updateChecker: UpdateChecker,
     private val splashScreen: SplashScreen,
-    private val apiPlugins: ApiPlugins,
     private val migrationManager: MigrationManager
 ) {
     private val alphaBetaRegex = "^(.*alpha.*|.*beta.*|.*dev.*)$".toRegex()
 
     init {
         GlobalScope.launch(Dispatchers.Swing) {
-            if (apiProperties.apiVersion.matches(alphaBetaRegex)) {
+            if (apiWrapper.apiProperties.apiVersion.matches(alphaBetaRegex)) {
                 FlatInspector.install("ctrl shift alt X")
                 FlatUIDefaultsInspector.install("ctrl shift alt Y")
             }
@@ -69,7 +61,7 @@ class MainWindow(
             FlatLaf.setPreferredFontFamily(FlatJetBrainsMonoFont.FAMILY)
 
             try {
-                val themeClassName = apiProperties.retrieveCustomProperty("theme")
+                val themeClassName = apiWrapper.apiProperties.retrieveCustomProperty("theme")
                 val themeClass = Class.forName(themeClassName)
                 val instance = themeClass.getDeclaredConstructor().newInstance() as FlatLaf
                 UIManager.setLookAndFeel(instance)
@@ -79,14 +71,9 @@ class MainWindow(
             }
             MainFrame(
                 GuiProps(),
-                configurationHandler,
-                serverPackHandler,
-                apiProperties,
-                versionMeta,
-                utilities,
+                apiWrapper,
                 updateChecker,
                 splashScreen,
-                apiPlugins,
                 migrationManager
             )
         }

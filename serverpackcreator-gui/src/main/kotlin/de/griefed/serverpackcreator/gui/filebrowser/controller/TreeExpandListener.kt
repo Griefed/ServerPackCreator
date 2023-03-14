@@ -19,7 +19,6 @@
  */
 package de.griefed.serverpackcreator.gui.filebrowser.controller
 
-import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.filebrowser.model.FileBrowserModel
 import de.griefed.serverpackcreator.gui.filebrowser.runnable.AddNodes
 import javax.swing.event.TreeExpansionEvent
@@ -33,10 +32,7 @@ import javax.swing.tree.ExpandVetoException
  * @author Andrew Thompson
  * @author Griefed
  */
-class TreeExpandListener(
-    private val browserModel: FileBrowserModel,
-    private val guiProps: GuiProps
-) : TreeWillExpandListener {
+class TreeExpandListener(private val browserModel: FileBrowserModel) : TreeWillExpandListener {
 
     @Throws(ExpandVetoException::class)
     override fun treeWillCollapse(event: TreeExpansionEvent) {
@@ -46,6 +42,6 @@ class TreeExpandListener(
     override fun treeWillExpand(event: TreeExpansionEvent) {
         val path = event.path
         val node = path.lastPathComponent as DefaultMutableTreeNode
-        AddNodes(browserModel, node, guiProps)
+        AddNodes(browserModel, node)
     }
 }

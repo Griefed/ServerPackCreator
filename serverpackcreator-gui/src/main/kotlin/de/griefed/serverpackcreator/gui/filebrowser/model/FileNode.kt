@@ -27,7 +27,7 @@ import java.io.File
  * @author Andrew Thompson
  * @author Griefed
  */
-class FileNode(val file: File) {
+class FileNode(val file: File): File(file.absolutePath) {
     var isGenerateGrandchildren = true
 
     override fun toString(): String {

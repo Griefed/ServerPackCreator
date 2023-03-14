@@ -20,7 +20,6 @@
 package de.griefed.serverpackcreator.gui.filebrowser.view
 
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
-import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.filebrowser.controller.FileSelectionListener
 import de.griefed.serverpackcreator.gui.filebrowser.controller.TreeExpandListener
 import de.griefed.serverpackcreator.gui.filebrowser.controller.TreeMouseListener
@@ -28,11 +27,8 @@ import de.griefed.serverpackcreator.gui.filebrowser.model.FileBrowserModel
 import de.griefed.serverpackcreator.gui.filebrowser.view.renderer.FileTreeCellRenderer
 import de.griefed.serverpackcreator.gui.window.configs.ConfigsTab
 import java.awt.Dimension
-import java.io.File
 import javax.swing.JScrollPane
 import javax.swing.JTree
-import javax.swing.text.Position
-import javax.swing.tree.TreePath
 
 /**
  * Scroll-pane housing our tree with all our nodes.
@@ -41,31 +37,30 @@ import javax.swing.tree.TreePath
  * @author Griefed
  */
 class TreeScrollPane(
-    frame: FileBrowserFrame,
-    private val browserModel: FileBrowserModel,
+    browserModel: FileBrowserModel,
     configsTab: ConfigsTab,
     utilities: Utilities,
-    guiProps: GuiProps
-) {
-    var tree: JTree = JTree(this.browserModel.treeModel)
-    var scrollPane: JScrollPane
+    fileDetailPanel: FileDetailPanel,
+    filePreviewPanel: FilePreviewPanel,
+    tableScrollPane: TableScrollPane
+) : JScrollPane(VERTICAL_SCROLLBAR_AS_NEEDED, HORIZONTAL_SCROLLBAR_AS_NEEDED) {
+    var tree: JTree = JTree(browserModel.treeModel)
 
     init {
+        viewport.view = tree
         tree.addTreeSelectionListener(
-            FileSelectionListener(frame, this.browserModel, guiProps)
+            FileSelectionListener(browserModel,fileDetailPanel,filePreviewPanel,tableScrollPane)
         )
         tree.addTreeWillExpandListener(
-            TreeExpandListener(this.browserModel, guiProps)
+            TreeExpandListener(browserModel)
         )
         tree.isRootVisible = true
-        tree.cellRenderer = FileTreeCellRenderer(this.browserModel)
+        tree.cellRenderer = FileTreeCellRenderer(browserModel)
         tree.showsRootHandles = true
         tree.addMouseListener(TreeMouseListener(tree, configsTab, utilities))
-        scrollPane = JScrollPane(tree)
-        val preferredSize: Dimension = scrollPane.preferredSize
         val widePreferred = Dimension(
             300, preferredSize.getHeight().toInt()
         )
-        scrollPane.preferredSize = widePreferred
+        preferredSize = widePreferred
     }
 }

@@ -23,15 +23,18 @@ import Gui
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.filebrowser.model.FileBrowserModel
-import de.griefed.serverpackcreator.gui.filebrowser.model.FileNode
 import de.griefed.serverpackcreator.gui.window.configs.ConfigsTab
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.swing.Swing
 import java.awt.BorderLayout
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
 import javax.swing.JFrame
 import javax.swing.JPanel
 import javax.swing.JSplitPane
-import javax.swing.tree.DefaultMutableTreeNode
 
 /**
  * Frame housing the filebrowser allowing users to update their modpack-directory, server-icon and server-properties
@@ -40,102 +43,60 @@ import javax.swing.tree.DefaultMutableTreeNode
  * @author Andrew Thompson
  * @author Griefed
  */
+@OptIn(DelicateCoroutinesApi::class)
 class FileBrowserFrame(
     private val browserModel: FileBrowserModel,
     configsTab: ConfigsTab,
     guiProps: GuiProps,
     utilities: Utilities
 ) {
-    private val filePreviewPanel: FilePreviewPanel
-    private val fileDetailPanel: FileDetailPanel
-    private val frame: JFrame = JFrame()
-    private val splitTreeTable: JSplitPane
-    private val tableScrollPane: TableScrollPane
-    private val treeScrollPane: TreeScrollPane
-    private val tablePreviewSplit: JSplitPane
-    private val northPanel = JPanel()
-    private val southPanel = JPanel()
+    private val filePreviewPanel = FilePreviewPanel(guiProps)
+    private val fileDetailPanel = FileDetailPanel()
+    private val tableScrollPane = TableScrollPane(browserModel, configsTab, utilities,fileDetailPanel,filePreviewPanel)
+    val frame: JFrame = JFrame()
 
     init {
-        frame.title = Gui.filebrowser.toString()
-        frame.iconImage = guiProps.appIcon
-        frame.defaultCloseOperation = JFrame.HIDE_ON_CLOSE
-        frame.addWindowListener(object : WindowAdapter() {
-            override fun windowClosing(event: WindowEvent) {
-                frame.isVisible = false
-            }
-        })
-        northPanel.layout = BorderLayout()
-        tableScrollPane = TableScrollPane(this, browserModel, configsTab, utilities)
-        tableScrollPane.panel.let {
-            northPanel.add(
-                it,
-                BorderLayout.CENTER
+        GlobalScope.launch(Dispatchers.Swing) {
+            val northPanel = JPanel()
+            val southPanel = JPanel()
+            northPanel.layout = BorderLayout()
+
+            frame.title = Gui.filebrowser.toString()
+            frame.iconImage = guiProps.appIcon
+            frame.defaultCloseOperation = JFrame.HIDE_ON_CLOSE
+            frame.addWindowListener(object : WindowAdapter() {
+                override fun windowClosing(event: WindowEvent) {
+                    frame.isVisible = false
+                }
+            })
+
+            northPanel.add(tableScrollPane.panel, BorderLayout.CENTER)
+            southPanel.layout = BorderLayout()
+            southPanel.add(fileDetailPanel, BorderLayout.PAGE_START)
+            southPanel.add(filePreviewPanel, BorderLayout.CENTER)
+
+            val tablePreviewSplit = JSplitPane(JSplitPane.VERTICAL_SPLIT, northPanel, southPanel)
+            tablePreviewSplit.isOneTouchExpandable = true
+            tablePreviewSplit.dividerLocation = 200
+            tablePreviewSplit.dividerSize = 20
+
+            val treeScrollPane = TreeScrollPane(
+                browserModel,
+                configsTab,
+                utilities,
+                fileDetailPanel,
+                filePreviewPanel,
+                tableScrollPane
             )
+            val splitTreeTable = JSplitPane(JSplitPane.HORIZONTAL_SPLIT, treeScrollPane, tablePreviewSplit)
+            splitTreeTable.isOneTouchExpandable = true
+            splitTreeTable.dividerLocation = 300
+            splitTreeTable.dividerSize = 20
+            frame.add(splitTreeTable)
+            frame.pack()
+            frame.isLocationByPlatform = true
+            frame.isAutoRequestFocus = true
         }
-        southPanel.layout = BorderLayout()
-        fileDetailPanel = FileDetailPanel()
-        fileDetailPanel.panel.let { southPanel.add(it, BorderLayout.PAGE_START) }
-        filePreviewPanel = FilePreviewPanel(guiProps)
-        southPanel.add(
-            filePreviewPanel.panel,
-            BorderLayout.CENTER
-        )
-
-        tablePreviewSplit = JSplitPane(JSplitPane.VERTICAL_SPLIT, northPanel, southPanel)
-        tablePreviewSplit.isOneTouchExpandable = true
-        tablePreviewSplit.dividerLocation = 200
-        tablePreviewSplit.dividerSize = 20
-
-        treeScrollPane = TreeScrollPane(this, browserModel, configsTab, utilities, guiProps)
-        splitTreeTable = JSplitPane(
-            JSplitPane.HORIZONTAL_SPLIT,
-            treeScrollPane.scrollPane,
-            tablePreviewSplit
-        )
-        splitTreeTable.isOneTouchExpandable = true
-        splitTreeTable.dividerLocation = 300
-        splitTreeTable.dividerSize = 20
-        frame.add(splitTreeTable)
-        frame.pack()
-        frame.isLocationByPlatform = true
-        frame.isAutoRequestFocus = true
-    }
-
-    /**
-     * Update the node of the detail-panel.
-     *
-     * @author Griefed
-     */
-    fun updateFileDetail(fileNode: FileNode?) {
-        fileDetailPanel.setFileNode(fileNode, browserModel)
-    }
-
-    /**
-     * Set the filemodel of the table-of-contents table.
-     *
-     * @author Griefed
-     */
-    fun setDefaultTableModel(node: DefaultMutableTreeNode) {
-        tableScrollPane.setDefaultTableModel(node)
-    }
-
-    /**
-     * Clear the table-of-contents for a directory.
-     *
-     * @author Griefed
-     */
-    fun clearDefaultTableModel() {
-        tableScrollPane.clearDefaultTableModel()
-    }
-
-    /**
-     * Update the filenode of the filepreview-panel.
-     *
-     * @author Griefed
-     */
-    fun setFilePreviewNode(fileNode: FileNode?) {
-        fileNode?.let { filePreviewPanel.setFileNode(it) }
     }
 
     /**

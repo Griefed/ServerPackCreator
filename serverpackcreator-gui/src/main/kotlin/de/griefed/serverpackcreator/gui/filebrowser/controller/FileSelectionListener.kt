@@ -19,11 +19,12 @@
  */
 package de.griefed.serverpackcreator.gui.filebrowser.controller
 
-import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.filebrowser.model.FileBrowserModel
 import de.griefed.serverpackcreator.gui.filebrowser.model.FileNode
 import de.griefed.serverpackcreator.gui.filebrowser.runnable.AddNodes
-import de.griefed.serverpackcreator.gui.filebrowser.view.FileBrowserFrame
+import de.griefed.serverpackcreator.gui.filebrowser.view.FileDetailPanel
+import de.griefed.serverpackcreator.gui.filebrowser.view.FilePreviewPanel
+import de.griefed.serverpackcreator.gui.filebrowser.view.TableScrollPane
 import javax.swing.event.TreeSelectionEvent
 import javax.swing.event.TreeSelectionListener
 import javax.swing.tree.DefaultMutableTreeNode
@@ -35,22 +36,23 @@ import javax.swing.tree.DefaultMutableTreeNode
  * @author Griefed
  */
 class FileSelectionListener(
-    private val frame: FileBrowserFrame,
     private val browserModel: FileBrowserModel,
-    private val guiProps: GuiProps
+    private val fileDetailPanel: FileDetailPanel,
+    private val filePreviewPanel: FilePreviewPanel,
+    private val tableScrollPane: TableScrollPane
 ) : TreeSelectionListener {
 
     override fun valueChanged(event: TreeSelectionEvent) {
         val node = event.path.lastPathComponent as DefaultMutableTreeNode
         val fileNode = node.userObject as FileNode
-        AddNodes(browserModel, node, guiProps)
+        AddNodes(browserModel, node)
         val file = fileNode.file
-        frame.updateFileDetail(fileNode)
-        frame.setFilePreviewNode(fileNode)
+        fileDetailPanel.setFileNode(fileNode,browserModel)
+        filePreviewPanel.setFileNode(fileNode)
         if (file.isDirectory) {
-            frame.setDefaultTableModel(node)
+            tableScrollPane.setDefaultTableModel(node)
         } else {
-            frame.clearDefaultTableModel()
+            tableScrollPane.clearDefaultTableModel()
         }
     }
 }

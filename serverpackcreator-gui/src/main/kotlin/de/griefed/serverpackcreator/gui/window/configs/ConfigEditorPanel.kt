@@ -23,8 +23,6 @@ import Gui
 import com.electronwill.nightconfig.core.CommentedConfig
 import de.griefed.serverpackcreator.api.*
 import de.griefed.serverpackcreator.api.plugins.swinggui.ServerPackConfigTab
-import de.griefed.serverpackcreator.api.utilities.common.Utilities
-import de.griefed.serverpackcreator.api.versionmeta.VersionMeta
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.components.*
 import de.griefed.serverpackcreator.gui.window.configs.components.general.*
@@ -50,12 +48,7 @@ import javax.swing.event.DocumentEvent
 class ConfigEditorPanel(
     private val guiProps: GuiProps,
     configsTab: ConfigsTab,
-    private val configurationHandler: ConfigurationHandler,
-    private val apiProperties: ApiProperties,
-    private val versionMeta: VersionMeta,
-    private val utilities: Utilities,
-    private val serverPackHandler: ServerPackHandler,
-    apiPlugins: ApiPlugins,
+    private val apiWrapper: ApiWrapper,
     private val noVersions: DefaultComboBoxModel<String>,
     showBrowser: ActionListener
 ) : JScrollPane(), ServerPackConfigTab {
@@ -88,24 +81,25 @@ class ConfigEditorPanel(
     ) { validateInputFields() }
     private val minecraftVersions = ActionComboBox(
         DefaultComboBoxModel(
-            versionMeta.minecraft.settingsDependantVersionsArrayDescending()
+            apiWrapper.versionMeta!!.minecraft.settingsDependantVersionsArrayDescending()
         )
     ) { updateMinecraftValues() }
     private val modloaders = ActionComboBox(
         DefaultComboBoxModel(
-            apiProperties.supportedModloaders
+            apiWrapper.apiProperties.supportedModloaders
         )
     ) { updateMinecraftValues() }
     private val iconPreview = IconPreview(guiProps)
     private val javaVersion = ElementLabel("8", 16)
-    private val legacyFabricVersions = DefaultComboBoxModel(versionMeta.legacyFabric.loaderVersionsArrayDescending())
-    private val fabricVersions = DefaultComboBoxModel(versionMeta.fabric.loaderVersionsArrayDescending())
-    private val quiltVersions = DefaultComboBoxModel(versionMeta.quilt.loaderVersionsArrayDescending())
+    private val legacyFabricVersions =
+        DefaultComboBoxModel(apiWrapper.versionMeta!!.legacyFabric.loaderVersionsArrayDescending())
+    private val fabricVersions = DefaultComboBoxModel(apiWrapper.versionMeta!!.fabric.loaderVersionsArrayDescending())
+    private val quiltVersions = DefaultComboBoxModel(apiWrapper.versionMeta!!.quilt.loaderVersionsArrayDescending())
     private val modloaderVersions = ActionComboBox { validateInputFields() }
     private val aikarsFlags = AikarsFlags(this, guiProps)
     private val modpackDirectory = ScrollTextFileField("")
-    private val scriptKVPairs = ScriptKVPairs(guiProps,this)
-    private val pluginPanels = apiPlugins.getConfigPanels(this).toMutableList()
+    private val scriptKVPairs = ScriptKVPairs(guiProps, this)
+    private val pluginPanels = apiWrapper.apiPlugins!!.getConfigPanels(this).toMutableList()
     private var lastSavedConfig: PackConfig? = null
     private val changeListener = object : DocumentChangeListener {
         override fun update(e: DocumentEvent) {
@@ -114,10 +108,10 @@ class ConfigEditorPanel(
     }
     private val javaArgs = ScrollTextArea("-Xmx4G -Xms4G", changeListener)
     private val serverPackSuffix = ScrollTextField("", changeListener)
-    private val propertiesFile = ScrollTextFileField(apiProperties.defaultServerProperties, changeListener)
-    private val iconFile = ScrollTextFileField(apiProperties.defaultServerIcon, changeListener)
+    private val propertiesFile = ScrollTextFileField(apiWrapper.apiProperties.defaultServerProperties, changeListener)
+    private val iconFile = ScrollTextFileField(apiWrapper.apiProperties.defaultServerIcon, changeListener)
     private val serverPackFiles = ScrollTextArea("config,mods", changeListener)
-    private val exclusions = ScrollTextArea(apiProperties.clientSideMods().joinToString(","), changeListener)
+    private val exclusions = ScrollTextArea(apiWrapper.apiProperties.clientSideMods().joinToString(","), changeListener)
     private val timer = ConfigCheckTimer(250, this, guiProps)
     private val modpackChanges = object : DocumentChangeListener {
         override fun update(e: DocumentEvent) {
@@ -131,8 +125,8 @@ class ConfigEditorPanel(
             "[left,::64]5[left]5[left,grow]5[left,::64]5[left,::64]", "30"
         )
     )
-    val propertiesQuickSelect = QuickSelect(apiProperties.propertiesQuickSelections) { setProperties() }
-    val iconQuickSelect = QuickSelect(apiProperties.iconQuickSelections) { setIcon() }
+    val propertiesQuickSelect = QuickSelect(apiWrapper.apiProperties.propertiesQuickSelections) { setProperties() }
+    val iconQuickSelect = QuickSelect(apiWrapper.apiProperties.iconQuickSelections) { setIcon() }
     val title = ConfigEditorTitle(guiProps, configsTab, this)
 
     var configFile: File? = null
@@ -217,7 +211,7 @@ class ConfigEditorPanel(
             IconActionButton(
                 guiProps.resetIcon,
                 Gui.createserverpack_gui_buttoncopydirs_reset_tip.toString()
-            ) { setCopyDirectories(apiProperties.directoriesToInclude.toMutableList()) },
+            ) { setCopyDirectories(apiWrapper.apiProperties.directoriesToInclude.toMutableList()) },
             "cell 3 5 2 1, h 30!, aligny top, alignx center,growx"
         )
 
@@ -276,7 +270,7 @@ class ConfigEditorPanel(
                 IconActionButton(
                     guiProps.resetIcon,
                     Gui.createserverpack_gui_buttonclientmods_reset_tip.toString()
-                ) { setClientSideMods(apiProperties.clientSideMods()) },
+                ) { setClientSideMods(apiWrapper.apiProperties.clientSideMods()) },
                 javaArgs,
                 aikarsFlags,
                 scriptKVPairs,
@@ -305,12 +299,12 @@ class ConfigEditorPanel(
     }
 
     override fun setClientSideMods(entries: MutableList<String>) {
-        exclusions.text = utilities.stringUtilities.buildString(entries)
+        exclusions.text = apiWrapper.utilities!!.stringUtilities.buildString(entries)
         validateInputFields()
     }
 
     override fun setCopyDirectories(entries: MutableList<String>) {
-        serverPackFiles.text = utilities.stringUtilities.buildString(entries.toString())
+        serverPackFiles.text = apiWrapper.utilities!!.stringUtilities.buildString(entries.toString())
         validateInputFields()
     }
 
@@ -371,7 +365,7 @@ class ConfigEditorPanel(
     }
 
     override fun setServerPackSuffix(suffix: String) {
-        serverPackSuffix.text = utilities.stringUtilities.pathSecureText(suffix)
+        serverPackSuffix.text = apiWrapper.utilities!!.stringUtilities.pathSecureText(suffix)
     }
 
     override fun setServerPropertiesPath(path: String) {
@@ -387,7 +381,7 @@ class ConfigEditorPanel(
     }
 
     override fun getClientSideModsList(): MutableList<String> {
-        return utilities.listUtilities.cleanList(
+        return apiWrapper.utilities!!.listUtilities.cleanList(
             getClientSideMods().split(",")
                 .dropLastWhile { it.isEmpty() }
                 .toMutableList()
@@ -399,7 +393,7 @@ class ConfigEditorPanel(
     }
 
     override fun getCopyDirectoriesList(): MutableList<String> {
-        return utilities.listUtilities.cleanList(
+        return apiWrapper.utilities!!.listUtilities.cleanList(
             getCopyDirectories().split(",")
                 .dropLastWhile { it.isEmpty() }
                 .toMutableList()
@@ -428,11 +422,12 @@ class ConfigEditorPanel(
     }
 
     override fun saveCurrentConfiguration(): File {
-        val modpackName = utilities.stringUtilities.pathSecureText(File(getModpackDirectory()).name + ".conf")
+        val modpackName =
+            apiWrapper.utilities!!.stringUtilities.pathSecureText(File(getModpackDirectory()).name + ".conf")
         val config = if (configFile != null) {
             configFile!!
         } else {
-            File(apiProperties.configsDirectory, modpackName)
+            File(apiWrapper.apiProperties.configsDirectory, modpackName)
         }
         lastSavedConfig = getCurrentConfiguration().save(config)
         configFile = config
@@ -477,7 +472,7 @@ class ConfigEditorPanel(
         }
         val icon = iconQuickSelect.selectedItem
         if (icon != null && icon.toString() != Gui.createserverpack_gui_quickselect_choose.toString()) {
-            setServerIconPath(File(apiProperties.iconsDirectory, icon.toString()).absolutePath)
+            setServerIconPath(File(apiWrapper.apiProperties.iconsDirectory, icon.toString()).absolutePath)
             iconQuickSelect.selectedIndex = 0
         }
     }
@@ -491,13 +486,18 @@ class ConfigEditorPanel(
         }
         val properties = propertiesQuickSelect.selectedItem
         if (properties != null && properties.toString() != Gui.createserverpack_gui_quickselect_choose.toString()) {
-            setServerPropertiesPath(File(apiProperties.propertiesDirectory, properties.toString()).absolutePath)
+            setServerPropertiesPath(
+                File(
+                    apiWrapper.apiProperties.propertiesDirectory,
+                    properties.toString()
+                ).absolutePath
+            )
             propertiesQuickSelect.selectedIndex = 0
         }
     }
 
     override fun getServerPackSuffix(): String {
-        return utilities.stringUtilities.pathSecureText(serverPackSuffix.text)
+        return apiWrapper.utilities!!.stringUtilities.pathSecureText(serverPackSuffix.text)
     }
 
     override fun getServerPropertiesPath(): String {
@@ -505,7 +505,7 @@ class ConfigEditorPanel(
     }
 
     override fun isMinecraftServerAvailable(): Boolean {
-        return versionMeta.minecraft.isServerAvailable(minecraftVersions.selectedItem!!.toString())
+        return apiWrapper.versionMeta!!.minecraft.isServerAvailable(minecraftVersions.selectedItem!!.toString())
     }
 
     override fun isServerInstallationTicked(): Boolean {
@@ -538,12 +538,12 @@ class ConfigEditorPanel(
                 JOptionPane.WARNING_MESSAGE,
                 guiProps.warningIcon
             )) {
-                0 -> setJavaArguments(apiProperties.aikarsFlags)
+                0 -> setJavaArguments(apiWrapper.apiProperties.aikarsFlags)
                 1 -> {}
                 else -> {}
             }
         } else {
-            setJavaArguments(apiProperties.aikarsFlags)
+            setJavaArguments(apiWrapper.apiProperties.aikarsFlags)
         }
     }
 
@@ -552,11 +552,10 @@ class ConfigEditorPanel(
     }
 
     override fun acquireRequiredJavaVersion(): String {
-        return if (versionMeta.minecraft.getServer(getMinecraftVersion()).isPresent && versionMeta.minecraft.getServer(
-                getMinecraftVersion()
-            ).get().javaVersion().isPresent
+        return if (apiWrapper.versionMeta!!.minecraft.getServer(getMinecraftVersion()).isPresent
+            && apiWrapper.versionMeta!!.minecraft.getServer(getMinecraftVersion()).get().javaVersion().isPresent
         ) {
-            versionMeta.minecraft.getServer(getMinecraftVersion()).get().javaVersion().get().toString()
+            apiWrapper.versionMeta!!.minecraft.getServer(getMinecraftVersion()).get().javaVersion().get().toString()
         } else {
             "?"
         }
@@ -607,7 +606,7 @@ class ConfigEditorPanel(
             try {
                 setModpackDirectory(packConfig.modpackDir)
                 if (packConfig.clientMods.isEmpty()) {
-                    setClientSideMods(apiProperties.clientSideMods())
+                    setClientSideMods(apiWrapper.apiProperties.clientSideMods())
                     log.debug("Set clientMods with fallback list.")
                 } else {
                     setClientSideMods(packConfig.clientMods)
@@ -621,7 +620,7 @@ class ConfigEditorPanel(
                 setServerIconPath(packConfig.serverIconPath)
                 setServerPropertiesPath(packConfig.serverPropertiesPath)
                 if (packConfig.minecraftVersion.isEmpty()) {
-                    packConfig.minecraftVersion = versionMeta.minecraft.latestRelease().version
+                    packConfig.minecraftVersion = apiWrapper.versionMeta!!.minecraft.latestRelease().version
                 }
                 setMinecraftVersion(packConfig.minecraftVersion)
                 setModloader(packConfig.modloader)
@@ -687,7 +686,7 @@ class ConfigEditorPanel(
      * TODO docs
      */
     private fun updateFabricModel(minecraftVersion: String = minecraftVersions.selectedItem!!.toString()) {
-        if (versionMeta.fabric.isMinecraftSupported(minecraftVersion)) {
+        if (apiWrapper.versionMeta!!.fabric.isMinecraftSupported(minecraftVersion)) {
             setModloaderVersions(fabricVersions)
         } else {
             setModloaderVersions(
@@ -702,12 +701,10 @@ class ConfigEditorPanel(
      * TODO docs
      */
     private fun updateForgeModel(minecraftVersion: String = minecraftVersions.selectedItem!!.toString()) {
-        if (versionMeta.forge.supportedForgeVersionsDescendingArray(minecraftVersion).isPresent) {
+        if (apiWrapper.versionMeta!!.forge.supportedForgeVersionsDescendingArray(minecraftVersion).isPresent) {
             setModloaderVersions(
                 DefaultComboBoxModel(
-                    versionMeta.forge.supportedForgeVersionsDescendingArray(
-                        minecraftVersion
-                    ).get()
+                    apiWrapper.versionMeta!!.forge.supportedForgeVersionsDescendingArray(minecraftVersion).get()
                 )
             )
         } else {
@@ -723,7 +720,7 @@ class ConfigEditorPanel(
      * TODO docs
      */
     private fun updateQuiltModel(minecraftVersion: String = minecraftVersions.selectedItem!!.toString()) {
-        if (versionMeta.fabric.isMinecraftSupported(minecraftVersion)) {
+        if (apiWrapper.versionMeta!!.fabric.isMinecraftSupported(minecraftVersion)) {
             setModloaderVersions(quiltVersions)
         } else {
             setModloaderVersions(
@@ -738,7 +735,7 @@ class ConfigEditorPanel(
      * TODO docs
      */
     private fun updateLegacyFabricModel(minecraftVersion: String = minecraftVersions.selectedItem!!.toString()) {
-        if (versionMeta.legacyFabric.isMinecraftSupported(minecraftVersion)) {
+        if (apiWrapper.versionMeta!!.legacyFabric.isMinecraftSupported(minecraftVersion)) {
             setModloaderVersions(legacyFabricVersions)
         } else {
             setModloaderVersions(
@@ -756,7 +753,7 @@ class ConfigEditorPanel(
      */
     fun validateModpackDir(): List<String> {
         val errors: MutableList<String> = ArrayList(20)
-        if (configurationHandler.checkModpackDir(getModpackDirectory(), errors, false)) {
+        if (apiWrapper.configurationHandler!!.checkModpackDir(getModpackDirectory(), errors, false)) {
             modpackInfo.info()
         } else {
             modpackInfo.error("<html>${errors.joinToString("<br>")}</html>")
@@ -774,7 +771,7 @@ class ConfigEditorPanel(
      */
     fun validateSuffix(): List<String> {
         val errors: MutableList<String> = ArrayList(10)
-        if (utilities.stringUtilities.checkForIllegalCharacters(serverPackSuffix.text)) {
+        if (apiWrapper.utilities!!.stringUtilities.checkForIllegalCharacters(serverPackSuffix.text)) {
             suffixInfo.info()
         } else {
             errors.add(Gui.configuration_log_error_serverpack_suffix.toString())
@@ -812,7 +809,12 @@ class ConfigEditorPanel(
      */
     fun validateServerPackFiles(): List<String> {
         val errors: MutableList<String> = ArrayList(10)
-        configurationHandler.checkCopyDirs(getCopyDirectoriesList(), getModpackDirectory(), errors, false)
+        apiWrapper.configurationHandler!!.checkCopyDirs(
+            getCopyDirectoriesList(),
+            getModpackDirectory(),
+            errors,
+            false
+        )
         if (getCopyDirectories().matches(guiProps.whitespace)) {
             errors.add(Gui.configuration_log_error_formatting.toString())
         }
@@ -835,7 +837,7 @@ class ConfigEditorPanel(
     fun validateServerIcon(): List<String> {
         val errors: MutableList<String> = ArrayList(10)
         if (getServerIconPath().isNotEmpty()) {
-            if (configurationHandler.checkIconAndProperties(getServerIconPath())) {
+            if (apiWrapper.configurationHandler!!.checkIconAndProperties(getServerIconPath())) {
                 iconInfo.info()
                 includeIconInfo.info()
                 setIconPreview(File(getServerIconPath()), errors)
@@ -845,7 +847,7 @@ class ConfigEditorPanel(
                 iconPreview.updateIcon(guiProps.iconError)
             }
         } else {
-            setIconPreview(apiProperties.defaultServerIcon, errors)
+            setIconPreview(apiWrapper.apiProperties.defaultServerIcon, errors)
             iconInfo.info()
             includeIconInfo.info()
         }
@@ -862,7 +864,7 @@ class ConfigEditorPanel(
      */
     fun validateServerProperties(): List<String> {
         val errors: MutableList<String> = ArrayList(10)
-        if (configurationHandler.checkIconAndProperties(getServerPropertiesPath())) {
+        if (apiWrapper.configurationHandler!!.checkIconAndProperties(getServerPropertiesPath())) {
             propertiesInfo.info()
             includePropertiesInfo.info()
         } else {
@@ -918,42 +920,42 @@ class ConfigEditorPanel(
                     val packConfig = PackConfig()
                     var updated = false
                     if (File(getModpackDirectory(), "manifest.json").isFile) {
-                        configurationHandler.updateConfigModelFromCurseManifest(
+                        apiWrapper.configurationHandler!!.updateConfigModelFromCurseManifest(
                             packConfig, File(
                                 getModpackDirectory(), "manifest.json"
                             )
                         )
                         updated = true
                     } else if (File(getModpackDirectory(), "minecraftinstance.json").isFile) {
-                        configurationHandler.updateConfigModelFromMinecraftInstance(
+                        apiWrapper.configurationHandler!!.updateConfigModelFromMinecraftInstance(
                             packConfig, File(
                                 getModpackDirectory(), "minecraftinstance.json"
                             )
                         )
                         updated = true
                     } else if (File(getModpackDirectory(), "modrinth.index.json").isFile) {
-                        configurationHandler.updateConfigModelFromModrinthManifest(
+                        apiWrapper.configurationHandler!!.updateConfigModelFromModrinthManifest(
                             packConfig, File(
                                 getModpackDirectory(), "modrinth.index.json"
                             )
                         )
                         updated = true
                     } else if (File(getModpackDirectory(), "instance.json").isFile) {
-                        configurationHandler.updateConfigModelFromATLauncherInstance(
+                        apiWrapper.configurationHandler!!.updateConfigModelFromATLauncherInstance(
                             packConfig, File(
                                 getModpackDirectory(), "instance.json"
                             )
                         )
                         updated = true
                     } else if (File(getModpackDirectory(), "config.json").isFile) {
-                        configurationHandler.updateConfigModelFromConfigJson(
+                        apiWrapper.configurationHandler!!.updateConfigModelFromConfigJson(
                             packConfig, File(
                                 getModpackDirectory(), "config.json"
                             )
                         )
                         updated = true
                     } else if (File(getModpackDirectory(), "mmc-pack.json").isFile) {
-                        configurationHandler.updateConfigModelFromMMCPack(
+                        apiWrapper.configurationHandler!!.updateConfigModelFromMMCPack(
                             packConfig, File(
                                 getModpackDirectory(), "mmc-pack.json"
                             )
@@ -964,7 +966,7 @@ class ConfigEditorPanel(
                     val files = File(getModpackDirectory()).listFiles()
                     if (files != null && files.isNotEmpty()) {
                         for (file in files) {
-                            if (apiProperties.directoriesToInclude.contains(file.name)) {
+                            if (apiWrapper.apiProperties.directoriesToInclude.contains(file.name)) {
                                 dirsToInclude.add(file.name)
                             }
                         }
@@ -980,7 +982,7 @@ class ConfigEditorPanel(
                                 getMinecraftVersion(),
                                 getModloader(),
                                 getModloaderVersion(),
-                                utilities.stringUtilities.buildString(dirsToInclude.toList())
+                                apiWrapper.utilities!!.stringUtilities.buildString(dirsToInclude.toList())
                             ) + "   ",
                             Gui.createserverpack_gui_modpack_scan.toString(),
                             JOptionPane.INFORMATION_MESSAGE,
@@ -1055,11 +1057,13 @@ class ConfigEditorPanel(
     private fun updateRequiredJavaVersion() {
         javaVersion.text = acquireRequiredJavaVersion()
         if (javaVersion.text != "?"
-            && apiProperties.javaPath(javaVersion.text).isPresent
-            && !scriptKVPairs.getData()["SPC_JAVA_SPC"].equals(apiProperties.javaPath(javaVersion.text).get())
-            && apiProperties.isJavaScriptAutoupdateEnabled
+            && apiWrapper.apiProperties.javaPath(javaVersion.text).isPresent
+            && !scriptKVPairs.getData()["SPC_JAVA_SPC"].equals(
+                apiWrapper.apiProperties.javaPath(javaVersion.text).get()
+            )
+            && apiWrapper.apiProperties.isJavaScriptAutoupdateEnabled
         ) {
-            val path = apiProperties.javaPath(javaVersion.text).get()
+            val path = apiWrapper.apiProperties.javaPath(javaVersion.text).get()
             val data: HashMap<String, String> = scriptKVPairs.getData()
             data.replace(
                 "SPC_JAVA_SPC", path
@@ -1079,7 +1083,7 @@ class ConfigEditorPanel(
     @Suppress("MemberVisibilityCanBePrivate")
     fun checkMinecraftServer() {
         val mcVersion = minecraftVersions.selectedItem?.toString()
-        val server = versionMeta.minecraft.getServer(mcVersion!!)
+        val server = apiWrapper.versionMeta!!.minecraft.getServer(mcVersion!!)
         if (!server.isPresent) {
             prepareServerInfo.warning(Gui.configuration_log_warn_server.toString())
             JOptionPane.showMessageDialog(
@@ -1144,7 +1148,7 @@ class ConfigEditorPanel(
                 setServerInstallationTicked(false)
                 okay = false
             }
-            if (!serverPackHandler.serverDownloadable(mcVersion, modloader, modloaderVersion)) {
+            if (!apiWrapper.serverPackHandler!!.serverDownloadable(mcVersion, modloader, modloaderVersion)) {
                 val message = Gui.createserverpack_gui_createserverpack_checkboxserver_unavailable_message(
                     modloader,
                     mcVersion,
@@ -1181,7 +1185,7 @@ class ConfigEditorPanel(
      * @author Griefed
      */
     private fun checkJava(): Boolean {
-        return if (!apiProperties.javaAvailable()) {
+        return if (!apiWrapper.apiProperties.javaAvailable()) {
             when (JOptionPane.showConfirmDialog(
                 this,
                 Gui.createserverpack_gui_createserverpack_checkboxserver_confirm_message.toString(),
@@ -1223,7 +1227,7 @@ class ConfigEditorPanel(
         if (File("%s/bin/".format(System.getProperty("java.home"))).isDirectory) {
             javaChooser.currentDirectory = File("%s/bin/".format(System.getProperty("java.home")))
         } else {
-            javaChooser.currentDirectory = apiProperties.homeDirectory
+            javaChooser.currentDirectory = apiWrapper.apiProperties.homeDirectory
         }
         javaChooser.dialogTitle = Gui.createserverpack_gui_buttonjavapath_tile.toString()
         javaChooser.fileSelectionMode = JFileChooser.FILES_ONLY
@@ -1231,7 +1235,7 @@ class ConfigEditorPanel(
         javaChooser.isMultiSelectionEnabled = false
         javaChooser.preferredSize = Dimension(750, 450)
         if (javaChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-            apiProperties.javaPath = javaChooser.selectedFile.path
+            apiWrapper.apiProperties.javaPath = javaChooser.selectedFile.path
             log.debug("Set path to Java executable to: ${javaChooser.selectedFile.path}")
         }
     }
@@ -1244,9 +1248,9 @@ class ConfigEditorPanel(
      */
     private fun openServerProperties() {
         if (File(getServerPropertiesPath()).isFile) {
-            utilities.fileUtilities.openFile(getServerPropertiesPath())
+            apiWrapper.utilities!!.fileUtilities.openFile(getServerPropertiesPath())
         } else {
-            utilities.fileUtilities.openFile(apiProperties.defaultServerProperties)
+            apiWrapper.utilities!!.fileUtilities.openFile(apiWrapper.apiProperties.defaultServerProperties)
         }
     }
 

@@ -28,16 +28,9 @@ import kotlinx.coroutines.*
 /**
  * TODO docs
  */
-@OptIn(DelicateCoroutinesApi::class)
-class FileBrowser(private val configsTab: ConfigsTab, guiProps: GuiProps, utilities: Utilities) {
+class FileBrowser(configsTab: ConfigsTab, guiProps: GuiProps, utilities: Utilities) {
     private val browserModel: FileBrowserModel = FileBrowserModel(guiProps)
-    private lateinit var frame: FileBrowserFrame
-
-    init {
-        GlobalScope.launch(guiProps.fileBrowserDispatcher) {
-            frame = FileBrowserFrame(browserModel, configsTab, guiProps, utilities)
-        }
-    }
+    private val frame: FileBrowserFrame = FileBrowserFrame(browserModel, configsTab, guiProps, utilities)
 
     /**
      * TODO docs

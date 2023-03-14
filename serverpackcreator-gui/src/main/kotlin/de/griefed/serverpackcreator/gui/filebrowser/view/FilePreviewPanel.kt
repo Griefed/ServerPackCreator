@@ -22,10 +22,10 @@ package de.griefed.serverpackcreator.gui.filebrowser.view
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.filebrowser.model.FileNode
 import net.miginfocom.swing.MigLayout
-import java.awt.Canvas
 import java.awt.Dimension
 import java.awt.Graphics
 import java.awt.Image
+import java.awt.image.BufferedImage
 import javax.imageio.ImageIO
 import javax.swing.JPanel
 import javax.swing.JScrollPane
@@ -37,28 +37,30 @@ import javax.swing.JTextPane
  *
  * @author Griefed
  */
-class FilePreviewPanel(private val guiProps: GuiProps) {
+class FilePreviewPanel(private val guiProps: GuiProps) : JPanel(
+    MigLayout(
+        "",
+        "0[grow]0",
+        "0[grow]0"
+    )
+) {
     private var fileNode: FileNode? = null
-    private val iconPreview = ImageCanvas()
+    private val iconPreview = ImagePreview()
     private val textPreview = JTextPane()
-    private val textScroll =
-        JScrollPane(textPreview, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED)
+    private val textScroll = JScrollPane(
+        textPreview,
+        JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+        JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
+    )
     private val props = "properties"
     private val conf = "conf"
-    val panel = JPanel(
-        MigLayout(
-            "",
-            "0[grow]0",
-            "0[grow]0"
-        )
-    )
 
     init {
         iconPreview.isVisible = false
         textPreview.isVisible = false
         textPreview.isEditable = false
-        panel.add(iconPreview, "cell 0 0, grow, aligny center, alignx center, hidemode 3,w 10:10:,h 10:10:")
-        panel.add(textScroll, "cell 0 0, grow, aligny top, alignx left, hidemode 3,w 10:10:,h 10:10:")
+        add(iconPreview, "cell 0 0, grow, aligny center, alignx center, hidemode 3,w 10:10:,h 10:10:")
+        add(textScroll, "cell 0 0, grow, aligny top, alignx left, hidemode 3,w 10:10:,h 10:10:")
     }
 
     /**
@@ -67,26 +69,32 @@ class FilePreviewPanel(private val guiProps: GuiProps) {
      *
      * @author Griefed
      */
-    fun setFileNode(fileNode: FileNode) {
-        this.fileNode = fileNode
+    fun setFileNode(fileNode: FileNode?) {
+        this.fileNode = fileNode!!
         val name = fileNode.file.name
         if (name.matches(guiProps.imageRegex)) {
+            iconPreview.image = ImageIO.read(fileNode.file.absoluteFile)
             iconPreview.repaint()
+            textPreview.text = ""
             textPreview.isVisible = false
             textScroll.isVisible = false
             iconPreview.isVisible = true
         } else if (name.endsWith(props)) {
             textPreview.text = fileNode.file.readText()
+            iconPreview.image = null
             iconPreview.isVisible = false
             textPreview.isVisible = true
             textScroll.isVisible = true
         } else if (name.endsWith(conf)) {
             textPreview.text = fileNode.file.readText()
+            iconPreview.image = null
             iconPreview.isVisible = false
             textPreview.isVisible = true
             textScroll.isVisible = true
         } else {
+            iconPreview.image = null
             iconPreview.isVisible = false
+            textPreview.text = ""
             textPreview.isVisible = false
             textScroll.isVisible = false
         }
@@ -97,31 +105,35 @@ class FilePreviewPanel(private val guiProps: GuiProps) {
      *
      * @author Griefed
      */
-    inner class ImageCanvas : Canvas() {
+    inner class ImagePreview : JPanel() {
+        var image: BufferedImage? = null
         override fun paint(g: Graphics?) {
-            if (iconPreview.isVisible) {
-                val image = ImageIO.read(fileNode?.file?.absoluteFile)
-                val imgSize = Dimension(image.getWidth(null), image.getHeight(null))
-                val boundary = this.size
-
-                val widthRatio: Double = boundary.width.toDouble() / imgSize.width
-                val heightRatio: Double = boundary.height.toDouble() / imgSize.height
-                val ratio = widthRatio.coerceAtMost(heightRatio)
-                val newWidth = imgSize.width * ratio
-                val newHeight = imgSize.height * ratio
-
-                val startX = (boundary.width - newWidth) / 2
-                val startY = (boundary.height - newHeight) / 2
-
-                g?.drawImage(
-                    image.getScaledInstance(newWidth.toInt(), newHeight.toInt(), Image.SCALE_SMOOTH),
-                    startX.toInt(),
-                    startY.toInt(),
-                    newWidth.toInt(),
-                    newHeight.toInt(),
-                    panel
-                )
+            super.paint(g)
+            if (image == null || !iconPreview.isVisible) {
+                g?.dispose()
+                return
             }
+
+            val imgSize = Dimension(image!!.getWidth(null), image!!.getHeight(null))
+
+            val widthRatio: Double = width.toDouble() / imgSize.width
+            val heightRatio: Double = height.toDouble() / imgSize.height
+            val ratio = widthRatio.coerceAtMost(heightRatio)
+            val newWidth = imgSize.width * ratio
+            val newHeight = imgSize.height * ratio
+
+            val startX = (width - newWidth) / 2
+            val startY = (height - newHeight) / 2
+
+            g?.drawImage(
+                image!!.getScaledInstance(newWidth.toInt(), newHeight.toInt(), Image.SCALE_SMOOTH),
+                startX.toInt(),
+                startY.toInt(),
+                newWidth.toInt(),
+                newHeight.toInt(),
+                this@FilePreviewPanel
+            )
+            g?.dispose()
         }
     }
 }

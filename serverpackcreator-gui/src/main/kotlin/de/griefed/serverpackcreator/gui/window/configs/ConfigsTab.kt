@@ -38,15 +38,10 @@ import javax.swing.DefaultComboBoxModel
 @OptIn(DelicateCoroutinesApi::class)
 class ConfigsTab(
     private val guiProps: GuiProps,
-    private val configurationHandler: ConfigurationHandler,
-    private val apiProperties: ApiProperties,
-    private val versionMeta: VersionMeta,
-    private val utilities: Utilities,
-    private val serverPackHandler: ServerPackHandler,
-    private val apiPlugins: ApiPlugins,
+    private val apiWrapper: ApiWrapper
 ) : TabPanel() {
     private val log = cachedLoggerOf(this.javaClass)
-    private val fileBrowser = FileBrowser(this, guiProps, utilities)
+    private val fileBrowser = FileBrowser(this, guiProps, apiWrapper.utilities!!)
     private val choose = arrayOf(Gui.createserverpack_gui_quickselect_choose.toString())
     private val noVersions = DefaultComboBoxModel(
         arrayOf(Gui.createserverpack_gui_createserverpack_forge_none.toString())
@@ -75,7 +70,7 @@ class ConfigsTab(
 
         }
 
-        val lastLoadedConfigs = apiProperties.retrieveCustomProperty("lastloaded")
+        val lastLoadedConfigs = apiWrapper.apiProperties.retrieveCustomProperty("lastloaded")
         if (!lastLoadedConfigs.isNullOrBlank()) {
             val configs = if (lastLoadedConfigs.contains(",")) {
                 lastLoadedConfigs.split(",").map { File(it) }
@@ -95,13 +90,9 @@ class ConfigsTab(
 
     fun addTab(): ConfigEditorPanel {
         val editor = ConfigEditorPanel(
-            guiProps, this,
-            configurationHandler,
-            apiProperties,
-            versionMeta,
-            utilities,
-            serverPackHandler,
-            apiPlugins,
+            guiProps,
+            this,
+            apiWrapper,
             noVersions
         ) { fileBrowser.show() }
         tabs.add(editor)
@@ -118,13 +109,13 @@ class ConfigsTab(
      * @author Griefed
      */
     fun loadConfig(configFile: File, tab: ConfigEditorPanel = addTab()) {
-        tab.loadConfiguration(PackConfig(utilities, configFile), configFile)
+        tab.loadConfiguration(PackConfig(apiWrapper.utilities!!, configFile), configFile)
     }
 
     @Suppress("DuplicatedCode")
     private fun iconsDirectoryWatcher() {
         Executors.newSingleThreadExecutor().execute {
-            val observer = FileAlterationObserver(apiProperties.iconsDirectory)
+            val observer = FileAlterationObserver(apiWrapper.apiProperties.iconsDirectory)
             val alterations = object : FileAlterationListener {
                 override fun onStart(observer: FileAlterationObserver?) {}
                 override fun onDirectoryCreate(directory: File?) {}
@@ -151,7 +142,7 @@ class ConfigsTab(
                     for (tab in allTabs) {
                         val configTab = tab as ConfigEditorPanel
                         val model = DefaultComboBoxModel(choose)
-                        model.addAll(apiProperties.iconQuickSelections)
+                        model.addAll(apiWrapper.apiProperties.iconQuickSelections)
                         configTab.iconQuickSelect.model = model
                     }
                 }
@@ -170,7 +161,7 @@ class ConfigsTab(
     @Suppress("DuplicatedCode")
     private fun propertiesDirectoryWatcher() {
         Executors.newSingleThreadExecutor().execute {
-            val observer = FileAlterationObserver(apiProperties.propertiesDirectory)
+            val observer = FileAlterationObserver(apiWrapper.apiProperties.propertiesDirectory)
             val alterations = object : FileAlterationListener {
                 override fun onStart(observer: FileAlterationObserver?) {}
                 override fun onDirectoryCreate(directory: File?) {}
@@ -197,7 +188,7 @@ class ConfigsTab(
                     for (tab in allTabs) {
                         val configTab = tab as ConfigEditorPanel
                         val model = DefaultComboBoxModel(choose)
-                        model.addAll(apiProperties.propertiesQuickSelections)
+                        model.addAll(apiWrapper.apiProperties.propertiesQuickSelections)
                         configTab.propertiesQuickSelect.model = model
                     }
                 }

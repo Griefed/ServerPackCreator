@@ -21,6 +21,7 @@
 
 package de.griefed.serverpackcreator.api.utilities.common
 
+import kotlinx.coroutines.*
 import mu.KotlinLogging
 
 /**
@@ -219,4 +220,8 @@ fun <T> MutableCollection<T>.removeIf(filter: Affirm<in T>): Boolean {
         }
     }
     return removed
+}
+
+fun <A, B>List<A>.parallelMap(dispatcher: CoroutineDispatcher = Dispatchers.Default, function: suspend (A) -> B): List<B> = runBlocking(dispatcher) {
+    map { async(dispatcher) { function(it) } }.awaitAll()
 }

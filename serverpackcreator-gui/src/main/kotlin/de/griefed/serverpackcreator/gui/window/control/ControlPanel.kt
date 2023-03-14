@@ -21,11 +21,7 @@ package de.griefed.serverpackcreator.gui.window.control
 
 import Gui
 import de.griefed.larsonscanner.LarsonScanner
-import de.griefed.serverpackcreator.api.ApiProperties
-import de.griefed.serverpackcreator.api.ConfigurationHandler
-import de.griefed.serverpackcreator.api.PackConfig
-import de.griefed.serverpackcreator.api.ServerPackHandler
-import de.griefed.serverpackcreator.api.utilities.common.Utilities
+import de.griefed.serverpackcreator.api.*
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.window.configs.ConfigsTab
 import kotlinx.coroutines.*
@@ -47,10 +43,7 @@ class ControlPanel(
     private val guiProps: GuiProps,
     private val configsTab: ConfigsTab,
     private val larsonScanner: LarsonScanner,
-    private val configurationHandler: ConfigurationHandler,
-    private val apiProperties: ApiProperties,
-    private val serverPackHandler: ServerPackHandler,
-    utilities: Utilities
+    private val apiWrapper: ApiWrapper
 ) {
     private val log = cachedLoggerOf(this.javaClass)
     private val statusPanel = StatusPanel(guiProps)
@@ -71,7 +64,7 @@ class ControlPanel(
         generate.multiClickThreshhold = 1000
         generate.toolTipText = Gui.createserverpack_gui_buttongenerateserverpack_tip.toString()
         serverPacks.icon = guiProps.packsIcon
-        serverPacks.addActionListener { utilities.fileUtilities.openFolder(apiProperties.serverPacksDirectory) }
+        serverPacks.addActionListener { apiWrapper.utilities!!.fileUtilities.openFolder(apiWrapper.apiProperties.serverPacksDirectory) }
         serverPacks.toolTipText = Gui.createserverpack_gui_buttonserverpacks_tip.toString()
         panel.layout = MigLayout(
             "",
@@ -150,7 +143,7 @@ class ControlPanel(
             packConfig.isServerInstallationDesired = false
         }
 
-        if (!configurationHandler.checkConfiguration(packConfig, encounteredErrors, true)) {
+        if (!apiWrapper.configurationHandler!!.checkConfiguration(packConfig, encounteredErrors, true)) {
             log.info("Config check passed.")
             statusPanel.updateStatus(Gui.createserverpack_log_info_buttoncreateserverpack_checked.toString())
             generateServerPack(packConfig)
@@ -168,7 +161,7 @@ class ControlPanel(
         log.info("Starting ServerPackCreator run.")
         statusPanel.updateStatus(Gui.createserverpack_log_info_buttoncreateserverpack_generating.toString())
         try {
-            serverPackHandler.run(packConfig)
+            apiWrapper.serverPackHandler!!.run(packConfig)
             statusPanel.updateStatus(Gui.createserverpack_log_info_buttoncreateserverpack_ready.toString())
             readyForGeneration()
             if (JOptionPane.showConfirmDialog(
@@ -181,7 +174,7 @@ class ControlPanel(
                 ) == 0
             ) {
                 try {
-                    Desktop.getDesktop().open(File(serverPackHandler.getServerPackDestination(packConfig)))
+                    Desktop.getDesktop().open(File(apiWrapper.serverPackHandler!!.getServerPackDestination(packConfig)))
 
                 } catch (ex: IOException) {
                     log.error("Error opening file explorer for server pack.", ex)

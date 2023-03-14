@@ -37,7 +37,10 @@ import javax.swing.JTextField
  * @author Andrew Thompson
  * @author Griefed
  */
-class FileDetailPanel {
+class FileDetailPanel: JPanel(MigLayout(
+    "fillx",
+    "10[150!]0[grow]20"
+)) {
     private var fileNameLabel = JLabel(" ")
     private var lastModifiedLabel = JLabel(" ")
     private var fileSizeLabel = JLabel(" ")
@@ -47,26 +50,20 @@ class FileDetailPanel {
     private val lastModifiedTextLabel = ElementLabel(Gui.filebrowser_detail_last.toString())
     private val fileSizeTextLabel = ElementLabel(Gui.filebrowser_detail_size.toString())
     var fileNode: FileNode? = null
-    val panel: JPanel = JPanel(
-        MigLayout(
-            "fillx",
-            "10[150!]0[grow]20"
-        )
-    )
 
     init {
         filePathField.isEditable = false
-        panel.add(fileNameTextLabel, "cell 0 0")
-        panel.add(fileNameLabel, "cell 1 0,grow")
+        add(fileNameTextLabel, "cell 0 0")
+        add(fileNameLabel, "cell 1 0,grow")
 
-        panel.add(filePathTextLabel, "cell 0 1")
-        panel.add(filePathField, "cell 1 1,grow")
+        add(filePathTextLabel, "cell 0 1")
+        add(filePathField, "cell 1 1,grow")
 
-        panel.add(lastModifiedTextLabel, "cell 0 2")
-        panel.add(lastModifiedLabel, "cell 1 2,grow")
+        add(lastModifiedTextLabel, "cell 0 2")
+        add(lastModifiedLabel, "cell 1 2,grow")
 
-        panel.add(fileSizeTextLabel, "cell 0 3")
-        panel.add(fileSizeLabel, "cell 1 3,grow")
+        add(fileSizeTextLabel, "cell 0 3")
+        add(fileSizeLabel, "cell 1 3,grow")
     }
 
     /**
@@ -110,7 +107,7 @@ class FileDetailPanel {
      * @author Andrew Thompson
      */
     private fun generateFileSize(file: File): String {
-        val label = arrayOf("bytes", "KB", "GB", "TB")
+        val label = arrayOf("bytes", "KB", "MB", "GB", "TB")
         var dbytes = file.length().toDouble()
         var count = 0
         while (dbytes > 1000.0) {
