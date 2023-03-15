@@ -24,10 +24,7 @@ import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.filebrowser.model.FileBrowserModel
 import de.griefed.serverpackcreator.gui.window.configs.TabbedConfigsTab
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
 import java.awt.BorderLayout
 import java.awt.event.WindowAdapter
@@ -46,58 +43,63 @@ import javax.swing.JSplitPane
 @OptIn(DelicateCoroutinesApi::class)
 class FileBrowserFrame(
     private val browserModel: FileBrowserModel,
-    tabbedConfigsTab: TabbedConfigsTab,
-    guiProps: GuiProps,
-    utilities: Utilities
+    private val tabbedConfigsTab: TabbedConfigsTab,
+    private val guiProps: GuiProps,
+    private val utilities: Utilities
 ) {
-    private val filePreviewPanel = FilePreviewPanel(guiProps)
-    private val fileDetailPanel = FileDetailPanel()
-    private val tableScrollPane =
-        TableScrollPane(browserModel, tabbedConfigsTab, utilities, fileDetailPanel, filePreviewPanel)
-    val frame: JFrame = JFrame()
+    private lateinit var frame: JFrame
 
     init {
         GlobalScope.launch(Dispatchers.Swing) {
-            val northPanel = JPanel()
-            val southPanel = JPanel()
-            northPanel.layout = BorderLayout()
+            frame = async {
+                val frame = JFrame()
+                val filePreviewPanel = FilePreviewPanel(guiProps)
+                val fileDetailPanel = FileDetailPanel()
+                val tableScrollPane =
+                    TableScrollPane(browserModel, tabbedConfigsTab, utilities, fileDetailPanel, filePreviewPanel)
+                val northPanel = JPanel()
+                val southPanel = JPanel()
+                northPanel.layout = BorderLayout()
 
-            frame.title = Gui.filebrowser.toString()
-            frame.iconImage = guiProps.appIcon
-            frame.defaultCloseOperation = JFrame.HIDE_ON_CLOSE
-            frame.addWindowListener(object : WindowAdapter() {
-                override fun windowClosing(event: WindowEvent) {
-                    frame.isVisible = false
-                }
-            })
+                frame.title = Gui.filebrowser.toString()
+                frame.iconImage = guiProps.appIcon
+                frame.defaultCloseOperation = JFrame.HIDE_ON_CLOSE
+                frame.addWindowListener(object : WindowAdapter() {
+                    override fun windowClosing(event: WindowEvent) {
+                        frame.isVisible = false
+                    }
+                })
 
-            northPanel.add(tableScrollPane.panel, BorderLayout.CENTER)
-            southPanel.layout = BorderLayout()
-            southPanel.add(fileDetailPanel, BorderLayout.PAGE_START)
-            southPanel.add(filePreviewPanel, BorderLayout.CENTER)
+                northPanel.add(tableScrollPane.panel, BorderLayout.CENTER)
+                southPanel.layout = BorderLayout()
+                southPanel.add(fileDetailPanel, BorderLayout.PAGE_START)
+                southPanel.add(filePreviewPanel, BorderLayout.CENTER)
 
-            val tablePreviewSplit = JSplitPane(JSplitPane.VERTICAL_SPLIT, northPanel, southPanel)
-            tablePreviewSplit.isOneTouchExpandable = true
-            tablePreviewSplit.dividerLocation = 200
-            tablePreviewSplit.dividerSize = 20
+                val tablePreviewSplit = JSplitPane(JSplitPane.VERTICAL_SPLIT, northPanel, southPanel)
+                tablePreviewSplit.isOneTouchExpandable = true
+                tablePreviewSplit.dividerLocation = 200
+                tablePreviewSplit.dividerSize = 20
 
-            val treeScrollPane = TreeScrollPane(
-                browserModel,
-                tabbedConfigsTab,
-                utilities,
-                fileDetailPanel,
-                filePreviewPanel,
-                tableScrollPane
-            )
-            val splitTreeTable = JSplitPane(JSplitPane.HORIZONTAL_SPLIT, treeScrollPane, tablePreviewSplit)
-            splitTreeTable.isOneTouchExpandable = true
-            splitTreeTable.dividerLocation = 300
-            splitTreeTable.dividerSize = 20
-            frame.add(splitTreeTable)
-            frame.pack()
-            frame.isLocationByPlatform = true
-            frame.isAutoRequestFocus = true
+                val treeScrollPane = TreeScrollPane(
+                    browserModel,
+                    tabbedConfigsTab,
+                    utilities,
+                    fileDetailPanel,
+                    filePreviewPanel,
+                    tableScrollPane
+                )
+                val splitTreeTable = JSplitPane(JSplitPane.HORIZONTAL_SPLIT, treeScrollPane, tablePreviewSplit)
+                splitTreeTable.isOneTouchExpandable = true
+                splitTreeTable.dividerLocation = 300
+                splitTreeTable.dividerSize = 20
+                frame.add(splitTreeTable)
+                frame.pack()
+                frame.isLocationByPlatform = true
+                frame.isAutoRequestFocus = true
+                return@async frame
+            }.await()
         }
+
     }
 
     /**

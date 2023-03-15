@@ -46,11 +46,10 @@ class MainWindow(
     private val splashScreen: SplashScreen,
     private val migrationManager: MigrationManager
 ) {
-    private val alphaBetaRegex = "^(.*alpha.*|.*beta.*|.*dev.*)$".toRegex()
 
     init {
         GlobalScope.launch(Dispatchers.Swing) {
-            if (apiWrapper.apiProperties.apiVersion.matches(alphaBetaRegex)) {
+            if (apiWrapper.apiProperties.apiVersion.matches("^(.*alpha.*|.*beta.*|.*dev.*)$".toRegex())) {
                 FlatInspector.install("ctrl shift alt X")
                 FlatUIDefaultsInspector.install("ctrl shift alt Y")
             }
