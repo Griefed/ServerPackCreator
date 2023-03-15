@@ -38,7 +38,7 @@ class AdvancedSettingsPanel(
     exclusionsRevert: JButton,
     exclusionsBrowser: JButton,
     exclusionsReset: JButton,
-    startArgs: ScrollTextArea,
+    javaArgs: ScrollTextArea,
     aikarsFlags: JButton,
     scriptKVPairs: ScriptKVPairs,
     scriptKVPairsRevert: JButton,
@@ -62,7 +62,7 @@ class AdvancedSettingsPanel(
         // Java Arguments
         add(argumentsInfo, "cell 0 3 1 3")
         add(ElementLabel(Gui.createserverpack_gui_createserverpack_javaargs.toString()), "cell 1 3 1 3")
-        add(startArgs, "cell 2 3 1 3,grow,w 10:500:,h 100!")
+        add(javaArgs, "cell 2 3 1 3,grow,w 10:500:,h 100!")
         add(aikarsFlags, "cell 3 3 2 3,growy")
 
         // Script Key-Value Pairs

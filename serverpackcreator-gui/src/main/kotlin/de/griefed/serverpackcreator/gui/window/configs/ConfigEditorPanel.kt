@@ -50,6 +50,7 @@ class ConfigEditorPanel(
     tabbedConfigsTab: TabbedConfigsTab,
     private val apiWrapper: ApiWrapper,
     private val noVersions: DefaultComboBoxModel<String>,
+    componentResizer: ComponentResizer,
     showBrowser: ActionListener
 ) : JScrollPane(), ServerPackConfigTab {
     private val log = cachedLoggerOf(this.javaClass)
@@ -137,12 +138,9 @@ class ConfigEditorPanel(
         verticalScrollBarPolicy = VERTICAL_SCROLLBAR_AS_NEEDED
         horizontalScrollBarPolicy = HORIZONTAL_SCROLLBAR_AS_NEEDED
         verticalScrollBar.unitIncrement = 10
-
-
         minecraftVersions.selectedIndex = 0
         modloaders.selectedIndex = 0
         modpackDirectory.addDocumentListener(modpackChanges)
-
         updateMinecraftValues()
 
         // Modpack directory
@@ -296,6 +294,10 @@ class ConfigEditorPanel(
         }
         validateInputFields()
         lastSavedConfig = getCurrentConfiguration()
+        componentResizer.registerComponent(serverPackFiles,"cell 2 3 1 3,grow,w 10:%s:,h %s!")
+        componentResizer.registerComponent(exclusions,"cell 2 0 1 3,grow,w 10:%s:,h %s!")
+        componentResizer.registerComponent(javaArgs,"cell 2 3 1 3,grow,w 10:%s:,h %s!")
+        componentResizer.registerComponent(scriptKVPairs.scrollPanel,"cell 2 6 1 3,grow,w 10:%s:,h %s!")
     }
 
     override fun setClientSideMods(entries: MutableList<String>) {

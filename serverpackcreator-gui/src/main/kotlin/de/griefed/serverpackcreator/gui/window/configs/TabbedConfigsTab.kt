@@ -24,6 +24,7 @@ import de.griefed.serverpackcreator.api.*
 import de.griefed.serverpackcreator.gui.FileBrowser
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.components.TabPanel
+import de.griefed.serverpackcreator.gui.window.configs.components.general.ComponentResizer
 import kotlinx.coroutines.*
 import org.apache.commons.io.monitor.FileAlterationListener
 import org.apache.commons.io.monitor.FileAlterationMonitor
@@ -44,6 +45,7 @@ class TabbedConfigsTab(
     private val noVersions = DefaultComboBoxModel(
         arrayOf(Gui.createserverpack_gui_createserverpack_forge_none.toString())
     )
+    private val componentResizer = ComponentResizer()
     val selectedEditor: ConfigEditorPanel?
         get() {
             return if (activeTab != null) {
@@ -93,7 +95,8 @@ class TabbedConfigsTab(
             guiProps,
             this,
             apiWrapper,
-            noVersions
+            noVersions,
+            componentResizer
         ) { fileBrowser.show() }
         tabs.add(editor)
         tabs.setTabComponentAt(tabs.tabCount - 1, editor.title)
