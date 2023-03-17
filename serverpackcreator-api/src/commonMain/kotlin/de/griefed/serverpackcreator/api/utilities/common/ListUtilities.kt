@@ -222,6 +222,23 @@ fun <T> MutableCollection<T>.removeIf(filter: Affirm<in T>): Boolean {
     return removed
 }
 
-fun <A, B>List<A>.parallelMap(dispatcher: CoroutineDispatcher = Dispatchers.Default, function: suspend (A) -> B): List<B> = runBlocking(dispatcher) {
+/**
+ * Compute all elements in the list in parallel and continue when every element was computed.
+ *
+ * @author Griefed
+ */
+inline fun <A, B> List<A>.parallelMap(
+    dispatcher: CoroutineDispatcher = Dispatchers.Default,
+    crossinline function: suspend (A) -> B
+): List<B> = runBlocking(dispatcher) {
     map { async(dispatcher) { function(it) } }.awaitAll()
+}
+
+/**
+ * Add multiple elements to a list in one go.
+ *
+ * @author Griefed
+ */
+fun <T> MutableList<T>.addMultiple(vararg entries: T) {
+    entries.forEach { add(it) }
 }

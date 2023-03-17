@@ -1452,7 +1452,7 @@ actual class ApiProperties(
         var properties: Properties? = null
         try {
             URL(
-                "https://raw.githubusercontent.com/Griefed/ServerPackCreator/main/backend/main/resources/serverpackcreator.properties"
+                "https://raw.githubusercontent.com/Griefed/ServerPackCreator/main/serverpackcreator-api/src/jvmMain/resources/serverpackcreator.properties"
             ).openStream().use {
                 properties = Properties()
                 properties!!.load(it)
