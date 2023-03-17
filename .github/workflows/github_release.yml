@@ -235,7 +235,7 @@ jobs:
 
   news:
     runs-on: ubuntu-latest
-    needs: [release]
+    needs: [preparations, jar, installers, release]
 
     steps:
       - name: Get current date
