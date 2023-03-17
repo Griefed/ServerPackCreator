@@ -1,3 +1,10 @@
+## [4.0.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.0.2...4.0.3) (2023-03-17)
+
+
+### 🛠 Fixes
+
+* **GitHub CI:** Correct indentation in release workflow news job ([2d97f97](https://git.griefed.de/Griefed/ServerPackCreator/commit/2d97f97950ba27091df58993f756407b2959c33c))
+
 ## [4.0.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.0.1...4.0.2) (2023-03-17)
 
 
