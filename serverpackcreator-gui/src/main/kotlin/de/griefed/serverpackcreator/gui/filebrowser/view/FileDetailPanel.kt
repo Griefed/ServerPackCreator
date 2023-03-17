@@ -22,7 +22,7 @@ package de.griefed.serverpackcreator.gui.filebrowser.view
 import Gui
 import de.griefed.serverpackcreator.gui.filebrowser.model.FileBrowserModel
 import de.griefed.serverpackcreator.gui.filebrowser.model.FileNode
-import de.griefed.serverpackcreator.gui.window.configs.components.general.ElementLabel
+import de.griefed.serverpackcreator.gui.window.configs.components.ElementLabel
 import net.miginfocom.swing.MigLayout
 import java.io.File
 import java.text.SimpleDateFormat

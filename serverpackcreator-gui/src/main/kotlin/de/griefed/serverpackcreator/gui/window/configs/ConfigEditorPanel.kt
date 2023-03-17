@@ -25,8 +25,7 @@ import de.griefed.serverpackcreator.api.*
 import de.griefed.serverpackcreator.api.plugins.swinggui.ServerPackConfigTab
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.components.*
-import de.griefed.serverpackcreator.gui.window.configs.components.general.*
-import de.griefed.serverpackcreator.gui.window.configs.components.specific.*
+import de.griefed.serverpackcreator.gui.window.configs.components.*
 import kotlinx.coroutines.*
 import net.miginfocom.swing.MigLayout
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
@@ -64,36 +63,41 @@ class ConfigEditorPanel(
     private val includePropertiesInfo = IncludePropertiesInfo(guiProps)
     private val prepareServerInfo = PrepareServerInfo(guiProps)
     private val exclusionsInfo = ExclusionsInfo(guiProps)
+    private val validate = ActionListener { validateInputFields() }
     private val modpackInspect = IconActionButton(
         guiProps.inspectIcon,
         Gui.createserverpack_gui_buttonmodpackdir_scan_tip.toString()
     ) { updateGuiFromSelectedModpack() }
     private val includeIcon = ActionCheckBox(
-        Gui.createserverpack_gui_createserverpack_checkboxicon.toString()
-    ) { validateInputFields() }
+        Gui.createserverpack_gui_createserverpack_checkboxicon.toString(),
+        validate
+    )
     private val includeProperties = ActionCheckBox(
-        Gui.createserverpack_gui_createserverpack_checkboxproperties.toString()
-    ) { validateInputFields() }
+        Gui.createserverpack_gui_createserverpack_checkboxproperties.toString(),
+        validate
+    )
     private val includeZip = ActionCheckBox(
-        Gui.createserverpack_gui_createserverpack_checkboxzip.toString()
-    ) { validateInputFields() }
+        Gui.createserverpack_gui_createserverpack_checkboxzip.toString(),
+        validate
+    )
     private val includeServer = ActionCheckBox(
-        Gui.createserverpack_gui_createserverpack_checkboxserver.toString()
-    ) { validateInputFields() }
+        Gui.createserverpack_gui_createserverpack_checkboxserver.toString(),
+        validate
+    )
+    private val updateMinecraft = ActionListener { updateMinecraftValues() }
     private val minecraftVersions = ActionComboBox(
-        DefaultComboBoxModel(
-            apiWrapper.versionMeta!!.minecraft.settingsDependantVersionsArrayDescending()
-        )
-    ) { updateMinecraftValues() }
+        DefaultComboBoxModel(apiWrapper.versionMeta!!.minecraft.settingsDependantVersionsArrayDescending()),
+        updateMinecraft
+    )
     private val modloaders = ActionComboBox(
-        DefaultComboBoxModel(
-            apiWrapper.apiProperties.supportedModloaders
-        )
-    ) { updateMinecraftValues() }
+        DefaultComboBoxModel(apiWrapper.apiProperties.supportedModloaders),
+        updateMinecraft
+    )
     private val iconPreview = IconPreview(guiProps)
     private val javaVersion = ElementLabel("8", 16)
-    private val legacyFabricVersions =
-        DefaultComboBoxModel(apiWrapper.versionMeta!!.legacyFabric.loaderVersionsArrayDescending())
+    private val legacyFabricVersions = DefaultComboBoxModel(
+        apiWrapper.versionMeta!!.legacyFabric.loaderVersionsArrayDescending()
+    )
     private val fabricVersions = DefaultComboBoxModel(apiWrapper.versionMeta!!.fabric.loaderVersionsArrayDescending())
     private val quiltVersions = DefaultComboBoxModel(apiWrapper.versionMeta!!.quilt.loaderVersionsArrayDescending())
     private val modloaderVersions = ActionComboBox { validateInputFields() }
@@ -294,10 +298,10 @@ class ConfigEditorPanel(
         }
         validateInputFields()
         lastSavedConfig = getCurrentConfiguration()
-        componentResizer.registerComponent(serverPackFiles,"cell 2 3 1 3,grow,w 10:%s:,h %s!")
-        componentResizer.registerComponent(exclusions,"cell 2 0 1 3,grow,w 10:%s:,h %s!")
-        componentResizer.registerComponent(javaArgs,"cell 2 3 1 3,grow,w 10:%s:,h %s!")
-        componentResizer.registerComponent(scriptKVPairs.scrollPanel,"cell 2 6 1 3,grow,w 10:%s:,h %s!")
+        componentResizer.registerComponent(serverPackFiles, "cell 2 3 1 3,grow,w 10:500:,h %s!")
+        componentResizer.registerComponent(exclusions, "cell 2 0 1 3,grow,w 10:500:,h %s!")
+        componentResizer.registerComponent(javaArgs, "cell 2 3 1 3,grow,w 10:500:,h %s!")
+        componentResizer.registerComponent(scriptKVPairs.scrollPanel, "cell 2 6 1 3,grow,w 10:500:,h %s!")
     }
 
     override fun setClientSideMods(entries: MutableList<String>) {

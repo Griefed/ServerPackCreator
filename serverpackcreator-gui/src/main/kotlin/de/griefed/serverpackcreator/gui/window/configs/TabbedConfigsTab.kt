@@ -24,7 +24,7 @@ import de.griefed.serverpackcreator.api.*
 import de.griefed.serverpackcreator.gui.FileBrowser
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.components.TabPanel
-import de.griefed.serverpackcreator.gui.window.configs.components.general.ComponentResizer
+import de.griefed.serverpackcreator.gui.window.configs.components.ComponentResizer
 import kotlinx.coroutines.*
 import org.apache.commons.io.monitor.FileAlterationListener
 import org.apache.commons.io.monitor.FileAlterationMonitor
