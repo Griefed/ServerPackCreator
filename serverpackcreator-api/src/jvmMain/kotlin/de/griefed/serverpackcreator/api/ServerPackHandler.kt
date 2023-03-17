@@ -738,8 +738,10 @@ actual class ServerPackHandler actual constructor(
             Files.walk(Paths.get(source)).use {
                 for (path in it) {
                     try {
+                        val pathFile = path.toFile().absolutePath
+                        val sourceFile = File(source).absolutePath
                         val destFile = File(
-                            destination,path.toString().replace(File(source).absolutePath.toString(),"")
+                            destination,pathFile.replace(sourceFile,"")
                         )
                         serverPackFiles.add(
                             ServerPackFile(
