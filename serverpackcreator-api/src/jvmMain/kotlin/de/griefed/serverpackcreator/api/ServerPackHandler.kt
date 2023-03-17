@@ -227,7 +227,9 @@ actual class ServerPackHandler actual constructor(
                      */
                     serverPackFiles.addAll(
                         getExplicitFiles(
-                            directory.split(";").dropLastWhile { it.isEmpty() }.toTypedArray(), modpackDir, destination
+                            directory.split(";").dropLastWhile { it.isEmpty() }.toTypedArray(),
+                            modpackDir,
+                            destination
                         )
                     )
                 } else if (directory.startsWith("saves/")) {
@@ -269,9 +271,9 @@ actual class ServerPackHandler actual constructor(
                         )
                     )
                 } else if (File(directory).isDirectory) {
-                    serverPackFiles.addAll(getDirectoryFiles(directory, destination))
+                    serverPackFiles.addAll(getDirectoryFiles(directory, destination + File.separator + File(directory).name))
                 } else {
-                    serverPackFiles.addAll(getDirectoryFiles(clientDir, destination))
+                    serverPackFiles.addAll(getDirectoryFiles(clientDir, destination + File.separator + File(clientDir).name))
                 }
             }
             log.info("Ensuring files and/or directories are properly excluded.")
@@ -446,10 +448,7 @@ actual class ServerPackHandler actual constructor(
     }
 
     override fun installServer(
-        modLoader: String,
-        minecraftVersion: String,
-        modLoaderVersion: String,
-        destination: String
+        modLoader: String, minecraftVersion: String, modLoaderVersion: String, destination: String
     ) {
         if (!serverDownloadable(minecraftVersion, modLoader, modLoaderVersion)) {
             log.error("The servers for $minecraftVersion, $modLoader $modLoaderVersion are currently unreachable. Skipping server installation.")
@@ -610,7 +609,7 @@ actual class ServerPackHandler actual constructor(
         } else if (File(modpackDir, combination[0]).isDirectory) {
             serverPackFiles.addAll(
                 getDirectoryFiles(
-                    modpackDir + File.separator + combination[0], destination
+                    modpackDir + File.separator + combination[0], destination + File.separator + combination[1]
                 )
             )
         } else if (File(combination[0]).isFile) {
@@ -620,7 +619,11 @@ actual class ServerPackHandler actual constructor(
                 )
             )
         } else if (File(combination[0]).isDirectory) {
-            serverPackFiles.addAll(getDirectoryFiles(combination[0], destination))
+            serverPackFiles.addAll(
+                getDirectoryFiles(
+                    combination[0], destination + File.separator + combination[1]
+                )
+            )
         }
         return serverPackFiles
     }
@@ -720,7 +723,40 @@ actual class ServerPackHandler actual constructor(
         source: String, destination: String
     ): List<ServerPackFile> {
         val serverPackFiles: MutableList<ServerPackFile> = ArrayList(100)
+        /*File(source).listFiles().forEach {
+            val destFile = File(
+                destination, (it.absolutePath.replace(File(source).absolutePath, ""))
+            )
+            serverPackFiles.add(
+                ServerPackFile(
+                    it,
+                    destFile
+                )
+            )
+        }*/
         try {
+            Files.walk(Paths.get(source)).use {
+                for (path in it) {
+                    try {
+                        val destFile = File(
+                            destination,path.toString().replace(File(source).absolutePath.toString(),"")
+                        )
+                        serverPackFiles.add(
+                            ServerPackFile(
+                                path.toFile(),
+                                destFile
+                            )
+                        )
+                    } catch (ex: UnsupportedOperationException) {
+                        log.error("Couldn't gather file $path from directory $source.", ex)
+                    }
+                }
+            }
+        } catch (ex: IOException) {
+            log.error("An error occurred gathering files to copy to the server pack.", ex)
+        }
+
+        /*try {
             Files.walk(Paths.get(source)).use {
                 for (path in it) {
                     try {
@@ -738,7 +774,7 @@ actual class ServerPackHandler actual constructor(
             }
         } catch (ex: IOException) {
             log.error("An error occurred gathering files to copy to the server pack.", ex)
-        }
+        }*/
         return serverPackFiles
     }
 
