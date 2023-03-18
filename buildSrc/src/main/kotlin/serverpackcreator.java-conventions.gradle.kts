@@ -67,6 +67,32 @@ tasks.processResources {
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
 
+tasks.clean {
+    doFirst {
+        cleanup()
+    }
+}
+
+tasks.test {
+    doFirst {
+        cleanup()
+    }
+}
+
+fun cleanup() {
+    projectDir.resolve("tests")
+        .listFiles()
+        .filter { !it.name.endsWith("gitkeep") }
+        .forEach {
+            it.deleteRecursively()
+        }
+    val tests = File(projectDir,"tests").absoluteFile
+    mkdir(tests.absolutePath)
+    val gitkeep = File(tests,".gitkeep").absoluteFile
+    if (!gitkeep.exists()) {
+        File(tests,".gitkeep").writeText("Hi")
+    }
+}
 
 tasks.jar {
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
