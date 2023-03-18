@@ -2,6 +2,8 @@ name: Test
 
 on:
   push:
+    tags-ignore:
+      - '**'
   pull_request:
   workflow_dispatch:
 
