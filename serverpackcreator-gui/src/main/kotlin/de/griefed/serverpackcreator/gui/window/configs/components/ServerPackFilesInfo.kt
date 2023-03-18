@@ -21,9 +21,8 @@ package de.griefed.serverpackcreator.gui.window.configs.components
 
 import Gui
 import de.griefed.serverpackcreator.gui.GuiProps
-import de.griefed.serverpackcreator.gui.window.configs.components.StatusIcon
 
-class FilesInfo(guiProps: GuiProps) : StatusIcon(
+class ServerPackFilesInfo(guiProps: GuiProps) : StatusIcon(
     guiProps,
     Gui.createserverpack_gui_createserverpack_labelcopydirs_tip.toString()
 )

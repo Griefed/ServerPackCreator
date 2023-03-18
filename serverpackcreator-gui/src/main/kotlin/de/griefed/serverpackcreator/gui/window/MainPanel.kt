@@ -77,7 +77,7 @@ class MainPanel(
         for (tab in tabbedConfigsTab.allTabs) {
             val config = tab as ConfigEditorPanel
             val modpackName = File(config.getModpackDirectory()).name
-            if (config.title.title != Gui.createserverpack_gui_title_new.toString() && config.hasUnsavedChanges()) {
+            if (config.editorTitle.title != Gui.createserverpack_gui_title_new.toString() && config.hasUnsavedChanges()) {
                 tabbedConfigsTab.tabs.selectedComponent = tab
                 if (DialogUtilities.createShowGet(
                         Gui.createserverpack_gui_close_unsaved_message(modpackName),
@@ -91,7 +91,7 @@ class MainPanel(
                     config.saveCurrentConfiguration()
                 }
             }
-            if (config.configFile != null && config.title.title != Gui.createserverpack_gui_title_new.toString()) {
+            if (config.configFile != null && config.editorTitle.title != Gui.createserverpack_gui_title_new.toString()) {
                 configs.add(config.configFile!!.absolutePath)
             }
         }

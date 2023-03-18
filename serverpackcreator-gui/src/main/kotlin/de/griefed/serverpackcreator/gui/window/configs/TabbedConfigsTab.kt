@@ -62,10 +62,10 @@ class TabbedConfigsTab(
             GlobalScope.launch(guiProps.configDispatcher) {
                 if (tabs.tabCount != 0) {
                     for (tab in 0 until tabs.tabCount) {
-                        (tabs.getComponentAt(tab) as ConfigEditorPanel).title.closeButton.isVisible = false
+                        (tabs.getComponentAt(tab) as ConfigEditorPanel).editorTitle.closeButton.isVisible = false
                     }
                     if (activeTab != null) {
-                        (activeTab as ConfigEditorPanel).title.closeButton.isVisible = true
+                        (activeTab as ConfigEditorPanel).editorTitle.closeButton.isVisible = true
                     }
                 }
             }
@@ -87,7 +87,7 @@ class TabbedConfigsTab(
         }
 
         tabs.selectedIndex = 0
-        (activeTab!! as ConfigEditorPanel).title.closeButton.isVisible = true
+        (activeTab!! as ConfigEditorPanel).editorTitle.closeButton.isVisible = true
     }
 
     fun addTab(): ConfigEditorPanel {
@@ -99,7 +99,7 @@ class TabbedConfigsTab(
             componentResizer
         ) { fileBrowser.show() }
         tabs.add(editor)
-        tabs.setTabComponentAt(tabs.tabCount - 1, editor.title)
+        tabs.setTabComponentAt(tabs.tabCount - 1, editor.editorTitle)
         tabs.selectedIndex = tabs.tabCount - 1
         return editor
     }

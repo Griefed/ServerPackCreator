@@ -20,14 +20,18 @@
 
 package de.griefed.serverpackcreator.gui.window.configs.components
 
+import Gui
 import java.awt.Toolkit
 import java.awt.event.KeyEvent
 import java.awt.event.KeyListener
+import javax.swing.JOptionPane
 import javax.swing.JScrollPane
 import javax.swing.JTextArea
+import javax.swing.UIManager
 import javax.swing.event.DocumentListener
 import javax.swing.event.UndoableEditEvent
 import javax.swing.event.UndoableEditListener
+import javax.swing.text.DefaultHighlighter.DefaultHighlightPainter
 import javax.swing.undo.CannotRedoException
 import javax.swing.undo.CannotUndoException
 import javax.swing.undo.UndoManager
@@ -40,6 +44,7 @@ import javax.swing.undo.UndoManager
  */
 class ScrollTextArea(
     text: String,
+    areaName: String,
     private val textArea: JTextArea = JTextArea(text),
     verticalScrollbarVisibility: Int = VERTICAL_SCROLLBAR_AS_NEEDED,
     horizontalScrollbarVisibility: Int = HORIZONTAL_SCROLLBAR_NEVER
@@ -47,7 +52,7 @@ class ScrollTextArea(
     UndoableEditListener,
     KeyListener {
 
-    constructor(text: String, documentChangeListener: DocumentChangeListener) : this(text) {
+    constructor(text: String, areaName: String, documentChangeListener: DocumentChangeListener) : this(text, areaName) {
         addDocumentListener(documentChangeListener)
     }
 
@@ -59,6 +64,7 @@ class ScrollTextArea(
         textArea.document.addUndoableEditListener(this)
         textArea.addKeyListener(this)
         viewport.view = textArea
+        name = areaName
     }
 
     var text: String
@@ -97,8 +103,33 @@ class ScrollTextArea(
                     Toolkit.getDefaultToolkit().beep()
                 }
             }
+
+            e.keyCode == KeyEvent.VK_F && e.isControlDown -> {
+                searchDialog()
+            }
         }
     }
 
     override fun keyReleased(e: KeyEvent) {}
+
+    private fun searchDialog() {
+        val search = JOptionPane.showInputDialog(
+            parent,
+            Gui.createserverpack_gui_textarea_search_message.toString(),
+            Gui.createserverpack_gui_textarea_search_title(name),
+            JOptionPane.QUESTION_MESSAGE
+        )
+        if (search.isNotBlank()) {
+            for (i in 0..text.length) {
+                val end = i + search.length
+                if (end <= text.length && text.substring(i, end).equals(search, true)) {
+                    textArea.highlighter.addHighlight(
+                        i,
+                        end,
+                        DefaultHighlightPainter(UIManager.getColor("textHighlight"))
+                    )
+                }
+            }
+        }
+    }
 }

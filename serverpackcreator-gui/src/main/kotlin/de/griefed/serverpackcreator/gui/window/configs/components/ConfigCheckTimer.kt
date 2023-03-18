@@ -27,6 +27,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.awt.event.ActionListener
+import java.io.File
 import javax.swing.Timer
 
 /**
@@ -42,6 +43,7 @@ class ConfigCheckTimer(delay: Int, configEditorPanel: ConfigEditorPanel, guiProp
             runBlocking {
                 launch {
                     errors.addAll(configEditorPanel.validateModpackDir())
+                    configEditorPanel.editorTitle.title = File(configEditorPanel.getModpackDirectory()).name
                 }
                 launch {
                     errors.addAll(configEditorPanel.validateSuffix())
@@ -84,9 +86,9 @@ class ConfigCheckTimer(delay: Int, configEditorPanel: ConfigEditorPanel, guiProp
                 }
             }
             if (errors.isEmpty()) {
-                configEditorPanel.title.hideErrorIcon()
+                configEditorPanel.editorTitle.hideErrorIcon()
             } else {
-                configEditorPanel.title.setAndShowErrorIcon("<html>${errors.joinToString("<br>")}</html>")
+                configEditorPanel.editorTitle.setAndShowErrorIcon("<html>${errors.joinToString("<br>")}</html>")
             }
         }
     }) {

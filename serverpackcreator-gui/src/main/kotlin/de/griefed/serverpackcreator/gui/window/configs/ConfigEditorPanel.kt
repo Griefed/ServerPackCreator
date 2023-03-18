@@ -56,7 +56,7 @@ class ConfigEditorPanel(
     private val modpackInfo = ModpackInfo(guiProps)
     private val propertiesInfo = PropertiesInfo(guiProps)
     private val iconInfo = IconInfo(guiProps)
-    private val filesInfo = FilesInfo(guiProps)
+    private val serverPackFilesInfo = ServerPackFilesInfo(guiProps)
     private val suffixInfo = SuffixInfo(guiProps)
     private val modloaderVersionInfo = ModloaderVersionInfo(guiProps)
     private val includeIconInfo = IncludeIconInfo(guiProps)
@@ -102,7 +102,6 @@ class ConfigEditorPanel(
     private val quiltVersions = DefaultComboBoxModel(apiWrapper.versionMeta!!.quilt.loaderVersionsArrayDescending())
     private val modloaderVersions = ActionComboBox { validateInputFields() }
     private val aikarsFlags = AikarsFlags(this, guiProps)
-    private val modpackDirectory = ScrollTextFileField("")
     private val scriptKVPairs = ScriptKVPairs(guiProps, this)
     private val pluginPanels = apiWrapper.apiPlugins!!.getConfigPanels(this).toMutableList()
     private var lastSavedConfig: PackConfig? = null
@@ -111,19 +110,23 @@ class ConfigEditorPanel(
             validateInputFields()
         }
     }
-    private val javaArgs = ScrollTextArea("-Xmx4G -Xms4G", changeListener)
+    private val modpackDirectory = ScrollTextFileField(File(""), changeListener)
+    private val javaArgs =
+        ScrollTextArea("-Xmx4G -Xms4G", Gui.createserverpack_gui_createserverpack_javaargs.toString(), changeListener)
     private val serverPackSuffix = ScrollTextField("", changeListener)
     private val propertiesFile = ScrollTextFileField(apiWrapper.apiProperties.defaultServerProperties, changeListener)
     private val iconFile = ScrollTextFileField(apiWrapper.apiProperties.defaultServerIcon, changeListener)
-    private val serverPackFiles = ScrollTextArea("config,mods", changeListener)
-    private val exclusions = ScrollTextArea(apiWrapper.apiProperties.clientSideMods().joinToString(","), changeListener)
+    private val serverPackFiles = ScrollTextArea(
+        "config,mods",
+        Gui.createserverpack_gui_createserverpack_labelcopydirs.toString(),
+        changeListener
+    )
+    private val exclusions = ScrollTextArea(
+        apiWrapper.apiProperties.clientSideMods().joinToString(","),
+        Gui.createserverpack_gui_createserverpack_labelclientmods.toString(),
+        changeListener
+    )
     private val timer = ConfigCheckTimer(250, this, guiProps)
-    private val modpackChanges = object : DocumentChangeListener {
-        override fun update(e: DocumentEvent) {
-            title.title = modpackDirectory.file.name
-            validateInputFields()
-        }
-    }
     private val panel = JPanel(
         MigLayout(
             "left,wrap",
@@ -132,7 +135,7 @@ class ConfigEditorPanel(
     )
     val propertiesQuickSelect = QuickSelect(apiWrapper.apiProperties.propertiesQuickSelections) { setProperties() }
     val iconQuickSelect = QuickSelect(apiWrapper.apiProperties.iconQuickSelections) { setIcon() }
-    val title = ConfigEditorTitle(guiProps, tabbedConfigsTab, this)
+    val editorTitle = ConfigEditorTitle(guiProps, tabbedConfigsTab, this)
 
     var configFile: File? = null
         private set
@@ -144,7 +147,6 @@ class ConfigEditorPanel(
         verticalScrollBar.unitIncrement = 10
         minecraftVersions.selectedIndex = 0
         modloaders.selectedIndex = 0
-        modpackDirectory.addDocumentListener(modpackChanges)
         updateMinecraftValues()
 
         // Modpack directory
@@ -195,7 +197,7 @@ class ConfigEditorPanel(
         panel.add(iconPreview, "cell 4 2")
 
         // Server Files
-        panel.add(filesInfo, "cell 0 3 1 3")
+        panel.add(serverPackFilesInfo, "cell 0 3 1 3")
         panel.add(ElementLabel(Gui.createserverpack_gui_createserverpack_labelcopydirs.toString()), "cell 1 3 1 3,grow")
         panel.add(serverPackFiles, "cell 2 3 1 3,grow,w 10:500:,h 100!")
         panel.add(
@@ -238,21 +240,21 @@ class ConfigEditorPanel(
         // Include Server Icon
         panel.add(includeIconInfo, "cell 2 8, w 40!, gapleft 40,grow")
         panel.add(includeIcon, "cell 2 8, w 200!")
-        //Create ZIP Archive
+        // Create ZIP Archive
         panel.add(IncludeZipInfo(guiProps), "cell 2 8, w 40!,grow")
         panel.add(includeZip, "cell 2 8, w 200!")
 
-        //Modloader Version
+        // Modloader Version
         panel.add(modloaderVersionInfo, "cell 0 9,grow")
         panel.add(
             ElementLabel(Gui.createserverpack_gui_createserverpack_labelmodloaderversion.toString()),
             "cell 1 9,grow"
         )
         panel.add(modloaderVersions, "cell 2 9,w 200!")
-        //Include Server Properties
+        // Include Server Properties
         panel.add(includePropertiesInfo, "cell 2 9, w 40!, gapleft 40,grow")
         panel.add(includeProperties, "cell 2 9, w 200!")
-        //Install Local Server
+        // Install Local Server
         panel.add(prepareServerInfo, "cell 2 9, w 40!,grow")
         panel.add(includeServer, "cell 2 9, w 200!")
 
@@ -437,7 +439,7 @@ class ConfigEditorPanel(
         }
         lastSavedConfig = getCurrentConfiguration().save(config)
         configFile = config
-        title.hideWarningIcon()
+        editorTitle.hideWarningIcon()
         return configFile!!
     }
 
@@ -569,7 +571,7 @@ class ConfigEditorPanel(
 
     fun compareSettings() {
         if (lastSavedConfig == null) {
-            title.showWarningIcon()
+            editorTitle.showWarningIcon()
             return
         }
 
@@ -591,11 +593,11 @@ class ConfigEditorPanel(
                     || currentConfig.isServerPropertiesInclusionDesired != lastSavedConfig!!.isServerPropertiesInclusionDesired
                     || currentConfig.isServerInstallationDesired != lastSavedConfig!!.isServerInstallationDesired
                     || currentConfig.isZipCreationDesired != lastSavedConfig!!.isZipCreationDesired -> {
-                title.showWarningIcon()
+                editorTitle.showWarningIcon()
             }
 
             else -> {
-                title.hideWarningIcon()
+                editorTitle.hideWarningIcon()
             }
         }
     }
@@ -642,7 +644,7 @@ class ConfigEditorPanel(
                 }
                 lastSavedConfig = packConfig
                 configFile = confFile
-                title.hideWarningIcon()
+                editorTitle.hideWarningIcon()
             } catch (ex: Exception) {
                 log.error("Couldn't load configuration file.", ex)
                 JOptionPane.showMessageDialog(
@@ -825,9 +827,9 @@ class ConfigEditorPanel(
             errors.add(Gui.configuration_log_error_formatting.toString())
         }
         if (errors.isNotEmpty()) {
-            filesInfo.error("<html>${errors.joinToString("<br>")}</html>")
+            serverPackFilesInfo.error("<html>${errors.joinToString("<br>")}</html>")
         } else {
-            filesInfo.info()
+            serverPackFilesInfo.info()
         }
         for (error in errors) {
             log.error(error)
@@ -1261,6 +1263,6 @@ class ConfigEditorPanel(
     }
 
     fun hasUnsavedChanges(): Boolean {
-        return title.hasUnsavedChanges
+        return editorTitle.hasUnsavedChanges
     }
 }
