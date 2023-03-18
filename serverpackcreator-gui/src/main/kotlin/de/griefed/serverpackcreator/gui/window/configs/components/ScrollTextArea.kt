@@ -21,6 +21,7 @@
 package de.griefed.serverpackcreator.gui.window.configs.components
 
 import Gui
+import de.griefed.serverpackcreator.api.utilities.common.regexReplace
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.utilities.getScaledInstance
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -252,18 +253,7 @@ class ScrollTextArea(
             loadingAnimation.showAnimation()
             textArea.isEnabled = false
             GlobalScope.launch {
-                val regex = searchFor.text.toRegex()
-                var i = 0
-                while (i < text.length) {
-                    for (n in text.length downTo i) {
-                        if (text.substring(i, n).matches(regex)) {
-                            text = text.replaceRange(i, n, replaceWith.text)
-                            i = n
-                            break
-                        }
-                    }
-                    i++
-                }
+                text = text.regexReplace(searchFor.text.toRegex(),replaceWith.text)
                 loadingAnimation.hideAnimation()
                 textArea.isEnabled = true
             }
