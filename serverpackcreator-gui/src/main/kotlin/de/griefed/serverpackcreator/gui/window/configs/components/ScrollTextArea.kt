@@ -84,15 +84,13 @@ class ScrollTextArea(
         Gui.createserverpack_gui_textarea_replace_query.toString(),
         searchFor,
         Gui.createserverpack_gui_textarea_replace_replace.toString(),
-        replaceWith,
-        Gui.createserverpack_gui_textarea_replace_warning.toString()
+        replaceWith
     )
     private val searchAndReplaceRegex = arrayOf<Any>(
         Gui.createserverpack_gui_textarea_replace_regex_query.toString(),
         searchFor,
         Gui.createserverpack_gui_textarea_replace_regex_replace.toString(),
-        replaceWith,
-        Gui.createserverpack_gui_textarea_replace_warning.toString()
+        replaceWith
     )
 
     init {

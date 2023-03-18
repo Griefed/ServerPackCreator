@@ -23,14 +23,13 @@ import Gui
 import com.formdev.flatlaf.FlatLaf
 import com.formdev.flatlaf.extras.FlatAnimatedLafChange
 import com.formdev.flatlaf.intellijthemes.FlatAllIJThemes
+import com.formdev.flatlaf.ui.FlatMarginBorder
 import de.griefed.larsonscanner.LarsonScanner
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.window.MainFrame
-import javax.swing.JMenu
-import javax.swing.JMenuItem
-import javax.swing.UIManager
-import javax.swing.UnsupportedLookAndFeelException
+import javax.swing.*
+import javax.swing.border.MatteBorder
 
 /**
  * Menu to give the user the choice to switch between any and all available themes provided in [FlatAllIJThemes].
@@ -64,6 +63,7 @@ class SwitchThemeMenu(
             UIManager.setLookAndFeel(instance)
             updateThemeRelatedComponents()
             FlatLaf.updateUI()
+            SwingUtilities.updateComponentTreeUI(mainFrame.frame)
             FlatAnimatedLafChange.hideSnapshotWithAnimation()
             apiProperties.storeCustomProperty("theme", theme.className)
         } catch (ex: UnsupportedLookAndFeelException) {

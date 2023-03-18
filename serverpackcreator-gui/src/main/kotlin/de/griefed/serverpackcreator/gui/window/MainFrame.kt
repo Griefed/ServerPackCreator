@@ -23,10 +23,10 @@ import Gui
 import de.griefed.larsonscanner.LarsonScanner
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.gui.GuiProps
-import de.griefed.serverpackcreator.gui.splash.SplashScreen
 import de.griefed.serverpackcreator.gui.window.menu.MainMenuBar
 import de.griefed.serverpackcreator.updater.MigrationManager
 import de.griefed.serverpackcreator.updater.UpdateChecker
+import java.awt.Dimension
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
 import javax.swing.JFrame
@@ -38,43 +38,40 @@ import javax.swing.WindowConstants
 class MainFrame(
     apiWrapper: ApiWrapper,
     updateChecker: UpdateChecker,
-    splashScreen: SplashScreen,
     migrationManager: MigrationManager
 ) {
     private val guiProps = GuiProps()
-    val frame: JFrame = JFrame(Gui.createserverpack_gui_createandshowgui.toString())
-    private val updateDialogs =
-        UpdateDialogs(guiProps, apiWrapper.utilities!!.webUtilities, apiWrapper.apiProperties, updateChecker, frame)
     private val larsonScanner = LarsonScanner()
-    val mainPanel = MainPanel(
-        guiProps,
-        apiWrapper,
-        larsonScanner
-    )
-    private val mainMenuBar = MainMenuBar(
-        guiProps,
-        apiWrapper,
-        updateDialogs,
-        larsonScanner,
-        this,
-        migrationManager
-    )
+    val frame: JFrame = JFrame(Gui.createserverpack_gui_createandshowgui.toString())
+    val mainPanel = MainPanel(guiProps, apiWrapper, larsonScanner)
 
     init {
-        frame.iconImage = guiProps.appIcon
-        frame.jMenuBar = mainMenuBar.menuBar
-        frame.contentPane.add(mainPanel.panel)
-        frame.pack()
+        frame.jMenuBar = MainMenuBar(
+            guiProps,
+            apiWrapper,
+            UpdateDialogs(
+                guiProps,
+                apiWrapper.utilities!!.webUtilities,
+                apiWrapper.apiProperties,
+                updateChecker,
+                frame
+            ),
+            larsonScanner,
+            this,
+            migrationManager
+        ).menuBar
         frame.defaultCloseOperation = WindowConstants.EXIT_ON_CLOSE
-        frame.isLocationByPlatform = true
-        frame.setSize(1200, 800)
-        frame.isVisible = true
-        frame.isAutoRequestFocus = true
         frame.addWindowListener(object : WindowAdapter() {
             override fun windowClosing(event: WindowEvent) {
                 mainPanel.closeAndExit()
             }
         })
-        splashScreen.close()
+        frame.iconImage = guiProps.appIcon
+        frame.contentPane = mainPanel.panel
+        frame.isLocationByPlatform = true
+        frame.isAutoRequestFocus = true
+        frame.preferredSize = Dimension(1200,800)
+        frame.pack()
+        frame.isVisible = true
     }
 }

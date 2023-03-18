@@ -66,12 +66,13 @@ class MainWindow(
             } catch (ignored: Exception) {
                 FlatDarkPurpleIJTheme.setup()
             }
+
             MainFrame(
                 apiWrapper,
                 updateChecker,
-                splashScreen,
                 migrationManager
             )
+            splashScreen.close()
         }
     }
 }
