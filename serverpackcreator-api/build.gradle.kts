@@ -72,6 +72,10 @@ tasks.signJvmPublication {
     dependsOn(tasks.dokkaJavadocJar)
 }
 
+tasks.signKotlinMultiplatformPublication {
+    dependsOn(tasks.dokkaJavadocJar)
+}
+
 tasks.jvmSourcesJar {
     dependsOn(tasks.generateI18n4kFiles)
 }
@@ -109,4 +113,8 @@ tasks.build {
     doLast {
         tasks.dokkaJavadocJar
     }
+}
+
+tasks.withType(PublishToMavenRepository::class) {
+    dependsOn(tasks.signKotlinMultiplatformPublication,tasks.signJvmPublication)
 }
