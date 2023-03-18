@@ -80,18 +80,18 @@ tasks.test {
 }
 
 fun cleanup() {
-    projectDir.resolve("tests")
-        .listFiles()
-        .filter { !it.name.endsWith("gitkeep") }
-        .forEach {
-            it.deleteRecursively()
-        }
     val tests = File(projectDir,"tests").absoluteFile
     mkdir(tests.absolutePath)
     val gitkeep = File(tests,".gitkeep").absoluteFile
     if (!gitkeep.exists()) {
         File(tests,".gitkeep").writeText("Hi")
     }
+    projectDir.resolve("tests")
+        .listFiles()
+        .filter { !it.name.endsWith("gitkeep") }
+        .forEach {
+            it.deleteRecursively()
+        }
 }
 
 tasks.jar {

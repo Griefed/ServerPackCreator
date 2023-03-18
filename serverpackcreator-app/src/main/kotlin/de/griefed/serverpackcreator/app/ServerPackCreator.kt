@@ -94,16 +94,19 @@ class ServerPackCreator(private val args: Array<String>) {
 
         when (mode) {
             Mode.HELP -> {
+                System.setProperty("java.awt.headless", "true")
                 printHelp()
                 continuedRunOptions()
             }
 
             Mode.UPDATE -> {
+                System.setProperty("java.awt.headless", "true")
                 updateChecker.updateCheck(true)
                 continuedRunOptions()
             }
 
             Mode.WEB -> {
+                System.setProperty("java.awt.headless", "true")
                 apiWrapper.stageOne()
                 migrationManager!!.migrate()
                 apiWrapper.stageTwo()
@@ -113,6 +116,7 @@ class ServerPackCreator(private val args: Array<String>) {
             }
 
             Mode.CGEN -> {
+                System.setProperty("java.awt.headless", "true")
                 apiWrapper.stageOne()
                 migrationManager!!.migrate()
                 apiWrapper.stageTwo()
@@ -122,6 +126,7 @@ class ServerPackCreator(private val args: Array<String>) {
             }
 
             Mode.CLI -> {
+                System.setProperty("java.awt.headless", "true")
                 apiWrapper.stageOne()
                 migrationManager!!.migrate()
                 apiWrapper.stageTwo()
@@ -149,6 +154,7 @@ class ServerPackCreator(private val args: Array<String>) {
             }
 
             Mode.SETUP -> {
+                System.setProperty("java.awt.headless", "true")
                 apiWrapper.setup(force = true)
                 log.info("Setup completed.")
                 log.debug("Exiting...")
