@@ -83,13 +83,15 @@ class ScrollTextArea(
         Gui.createserverpack_gui_textarea_replace_query.toString(),
         searchFor,
         Gui.createserverpack_gui_textarea_replace_replace.toString(),
-        replaceWith
+        replaceWith,
+        Gui.createserverpack_gui_textarea_replace_warning.toString()
     )
     private val searchAndReplaceRegex = arrayOf<Any>(
         Gui.createserverpack_gui_textarea_replace_regex_query.toString(),
         searchFor,
         Gui.createserverpack_gui_textarea_replace_regex_replace.toString(),
-        replaceWith
+        replaceWith,
+        Gui.createserverpack_gui_textarea_replace_warning.toString()
     )
 
     init {
@@ -155,7 +157,7 @@ class ScrollTextArea(
     private fun searchDialog() {
         if (JOptionPane.showConfirmDialog(
                 parent,
-                searchRegex,
+                search,
                 Gui.createserverpack_gui_textarea_search_regex_title(name),
                 JOptionPane.OK_CANCEL_OPTION,
                 JOptionPane.PLAIN_MESSAGE,
