@@ -68,7 +68,14 @@ kotlin {
     }
 }
 
-// Explicit dependency to remove Gradle 8 warning
+tasks.signJvmPublication {
+    dependsOn(tasks.dokkaJavadocJar)
+}
+
+tasks.jvmSourcesJar {
+    dependsOn(tasks.generateI18n4kFiles)
+}
+
 tasks.jvmProcessResources {
     dependsOn(tasks.generateI18n4kFiles)
 }
@@ -80,51 +87,26 @@ tasks.register<Copy>("fixMissingResources") {
     into("$buildDir/resources/")
 }
 
+tasks.dokkaHtml {
+    dependsOn(tasks.generateI18n4kFiles, tasks.getByName("fixMissingResources"))
+}
+
 tasks.jvmJar {
     dependsOn(tasks.getByName("fixMissingResources"))
 }
 
-tasks.clean {
-    doFirst {
-        cleanup()
-    }
-}
-
 tasks.register<Copy>("updateManifests") {
-    dependsOn("test")
+    dependsOn(tasks.test)
     from(projectDir.resolve("tests/manifests"))
     into(projectDir.resolve("src/jvmMain/resources/de/griefed/resources/manifests"))
 }
 
-// Explicit dependency to remove Gradle 8 warning
 tasks.jvmTest {
     dependsOn(tasks.getByName("fixMissingResources"))
 }
 
-tasks.test {
-    doFirst {
-        cleanup()
-    }
-}
-
 tasks.build {
     doLast {
-        tasks.getByName("dokkaJavadocJar")
-    }
-}
-
-
-fun cleanup() {
-    projectDir.resolve("tests")
-        .listFiles()
-        .filter { !it.name.endsWith("gitkeep") }
-        .forEach {
-        it.deleteRecursively()
-    }
-    val tests = File(projectDir,"tests").absoluteFile
-    mkdir(tests.absolutePath)
-    val gitkeep = File(tests,".gitkeep").absoluteFile
-    if (!gitkeep.exists()) {
-        File(tests,".gitkeep").writeText("Hi")
+        tasks.dokkaJavadocJar
     }
 }
