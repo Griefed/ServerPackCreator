@@ -1,5 +1,33 @@
 $dokka.format:html-v1
 $dokka.linkExtension:html
+$dokka.location:////PointingToDeclaration/serverpackcreator-api/[root]/index.html
+$dokka.location:/Api///PointingToDeclaration/serverpackcreator-api/[root]/-api/index.html
+$dokka.location:/Api/configuration_log_error_checkconfig_start/#/PointingToDeclaration/serverpackcreator-api/[root]/-api/configuration_log_error_checkconfig_start.html
+$dokka.location:/Api/configuration_log_error_checkcopydirs_checkforregex/#/PointingToDeclaration/serverpackcreator-api/[root]/-api/configuration_log_error_checkcopydirs_checkforregex.html
+$dokka.location:/Api/configuration_log_error_checkcopydirs_checkforregex_invalid/#/PointingToDeclaration/serverpackcreator-api/[root]/-api/configuration_log_error_checkcopydirs_checkforregex_invalid.html
+$dokka.location:/Api/configuration_log_error_checkcopydirs_checkforregex_invalid_regex/#/PointingToDeclaration/serverpackcreator-api/[root]/-api/configuration_log_error_checkcopydirs_checkforregex_invalid_regex.html
+$dokka.location:/Api/configuration_log_error_checkcopydirs_empty/#/PointingToDeclaration/serverpackcreator-api/[root]/-api/configuration_log_error_checkcopydirs_empty.html
+$dokka.location:/Api/configuration_log_error_checkcopydirs_filenotfound/#/PointingToDeclaration/serverpackcreator-api/[root]/-api/configuration_log_error_checkcopydirs_filenotfound.html
+$dokka.location:/Api/configuration_log_error_checkcopydirs_notfound/#/PointingToDeclaration/serverpackcreator-api/[root]/-api/configuration_log_error_checkcopydirs_notfound.html
+$dokka.location:/Api/configuration_log_error_checkcopydirs_read/#/PointingToDeclaration/serverpackcreator-api/[root]/-api/configuration_log_error_checkcopydirs_read.html
+$dokka.location:/Api/configuration_log_error_checkmodloader/#/PointingToDeclaration/serverpackcreator-api/[root]/-api/configuration_log_error_checkmodloader.html
+$dokka.location:/Api/configuration_log_error_checkmodloaderandversion/#/PointingToDeclaration/serverpackcreator-api/[root]/-api/configuration_log_error_checkmodloaderandversion.html
+$dokka.location:/Api/configuration_log_error_checkmodloaderversion/#/PointingToDeclaration/serverpackcreator-api/[root]/-api/configuration_log_error_checkmodloaderversion.html
+$dokka.location:/Api/configuration_log_error_checkmodpackdir/#/PointingToDeclaration/serverpackcreator-api/[root]/-api/configuration_log_error_checkmodpackdir.html
+$dokka.location:/Api/configuration_log_error_isdir_copydir/#/PointingToDeclaration/serverpackcreator-api/[root]/-api/configuration_log_error_isdir_copydir.html
+$dokka.location:/Api/configuration_log_error_minecraft/#/PointingToDeclaration/serverpackcreator-api/[root]/-api/configuration_log_error_minecraft.html
+$dokka.location:/Api/configuration_log_error_modpackdirectory/#/PointingToDeclaration/serverpackcreator-api/[root]/-api/configuration_log_error_modpackdirectory.html
+$dokka.location:/Api/configuration_log_error_servericon/#/PointingToDeclaration/serverpackcreator-api/[root]/-api/configuration_log_error_servericon.html
+$dokka.location:/Api/configuration_log_error_serverproperties/#/PointingToDeclaration/serverpackcreator-api/[root]/-api/configuration_log_error_serverproperties.html
+$dokka.location:/Api/configuration_log_error_zip_config/#/PointingToDeclaration/serverpackcreator-api/[root]/-api/configuration_log_error_zip_config.html
+$dokka.location:/Api/configuration_log_error_zip_directories/#/PointingToDeclaration/serverpackcreator-api/[root]/-api/configuration_log_error_zip_directories.html
+$dokka.location:/Api/configuration_log_error_zip_instance/#/PointingToDeclaration/serverpackcreator-api/[root]/-api/configuration_log_error_zip_instance.html
+$dokka.location:/Api/configuration_log_error_zip_manifest/#/PointingToDeclaration/serverpackcreator-api/[root]/-api/configuration_log_error_zip_manifest.html
+$dokka.location:/Api/configuration_log_error_zip_mmcpack/#/PointingToDeclaration/serverpackcreator-api/[root]/-api/configuration_log_error_zip_mmcpack.html
+$dokka.location:/Api/configuration_log_error_zip_modsorconfig/#/PointingToDeclaration/serverpackcreator-api/[root]/-api/configuration_log_error_zip_modsorconfig.html
+$dokka.location:/Api/configuration_log_error_zip_overrides/#/PointingToDeclaration/serverpackcreator-api/[root]/-api/configuration_log_error_zip_overrides.html
+$dokka.location:/Api/localeName/#/PointingToDeclaration/serverpackcreator-api/[root]/-api/locale-name.html
+$dokka.location:/Api/localeUnlocalizedName/#/PointingToDeclaration/serverpackcreator-api/[root]/-api/locale-unlocalized-name.html
 $dokka.location:de.griefed.serverpackcreator.api.modscanning////PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api.modscanning/index.html
 $dokka.location:de.griefed.serverpackcreator.api.modscanning//bothServer/de.griefed.serverpackcreator.api.modscanning.TomlScanner#/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api.modscanning/both-server.html
 $dokka.location:de.griefed.serverpackcreator.api.modscanning//dependencyCheck/de.griefed.serverpackcreator.api.modscanning.AnnotationScanner#/PointingToDeclaration/serverpackcreator-api/de.griefed.serverpackcreator.api.modscanning/dependency-check.html
