@@ -1,3 +1,16 @@
+## [4.0.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.0.3...4.0.4) (2023-03-18)
+
+
+### 🦊 CI/CD
+
+* Create tests directory and .gitkeep first, then list files ([41fd589](https://git.griefed.de/Griefed/ServerPackCreator/commit/41fd5891e0d051a7ac85e9bb916a562c4d4d6b51))
+* **GitHub:** Do not run Qodana and test workflows on tags. Tags are only created when pipelines on GitLab finish successfully. ([176246e](https://git.griefed.de/Griefed/ServerPackCreator/commit/176246eea7ba16dd9549726567287f859405fbf7))
+
+
+### 🛠 Fixes
+
+* **Gradle:** Declare dependencies between tasks to prevent build failures in ServerPackCreator API ([965472c](https://git.griefed.de/Griefed/ServerPackCreator/commit/965472c102bcb01b7633c3e606af1ab221dc6dde))
+
 ## [4.0.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.0.2...4.0.3) (2023-03-17)
 
 
