@@ -111,20 +111,25 @@ class ConfigEditorPanel(
         }
     }
     private val modpackDirectory = ScrollTextFileField(File(""), changeListener)
-    private val javaArgs =
-        ScrollTextArea("-Xmx4G -Xms4G", Gui.createserverpack_gui_createserverpack_javaargs.toString(), changeListener)
+    private val javaArgs = ScrollTextArea(
+        "-Xmx4G -Xms4G",
+        Gui.createserverpack_gui_createserverpack_javaargs.toString(),
+        changeListener,
+        guiProps)
     private val serverPackSuffix = ScrollTextField("", changeListener)
     private val propertiesFile = ScrollTextFileField(apiWrapper.apiProperties.defaultServerProperties, changeListener)
     private val iconFile = ScrollTextFileField(apiWrapper.apiProperties.defaultServerIcon, changeListener)
     private val serverPackFiles = ScrollTextArea(
         "config,mods",
         Gui.createserverpack_gui_createserverpack_labelcopydirs.toString(),
-        changeListener
+        changeListener,
+        guiProps
     )
     private val exclusions = ScrollTextArea(
         apiWrapper.apiProperties.clientSideMods().joinToString(","),
         Gui.createserverpack_gui_createserverpack_labelclientmods.toString(),
-        changeListener
+        changeListener,
+        guiProps
     )
     private val timer = ConfigCheckTimer(250, this, guiProps)
     private val panel = JPanel(
