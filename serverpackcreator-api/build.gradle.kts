@@ -68,45 +68,53 @@ kotlin {
     }
 }
 
+tasks.signJvmPublication {
+    dependsOn(tasks.dokkaJavadocJar)
+}
+
+tasks.signKotlinMultiplatformPublication {
+    dependsOn(tasks.dokkaJavadocJar)
+}
+
+tasks.jvmSourcesJar {
+    dependsOn(tasks.generateI18n4kFiles)
+}
+
+tasks.jvmProcessResources {
+    dependsOn(tasks.generateI18n4kFiles)
+}
+
 //Fix resources missing in multiplatform jvm inDev run https://youtrack.jetbrains.com/issue/KTIJ-16582/Consumer-Kotlin-JVM-library-cannot-access-a-Kotlin-Multiplatform-JVM-target-resources-in-multi-module-Gradle-project
 tasks.register<Copy>("fixMissingResources") {
     dependsOn(tasks.jvmProcessResources)
     from("$buildDir/processedResources/jvm/main")
     into("$buildDir/resources/")
 }
+
+tasks.dokkaHtml {
+    dependsOn(tasks.generateI18n4kFiles, tasks.getByName("fixMissingResources"))
+}
+
 tasks.jvmJar {
     dependsOn(tasks.getByName("fixMissingResources"))
 }
 
-tasks.clean {
-    doFirst {
-        delete {
-            fileTree("tests") {
-                exclude(".gitkeep")
-            }
-        }
-    }
-}
-
 tasks.register<Copy>("updateManifests") {
-    dependsOn("test")
+    dependsOn(tasks.test)
     from(projectDir.resolve("tests/manifests"))
     into(projectDir.resolve("src/jvmMain/resources/de/griefed/resources/manifests"))
 }
 
-tasks.test {
-    doFirst {
-        val tests = File(projectDir,"tests").absoluteFile
-        mkdir(tests.absolutePath)
-        val gitkeep = File(tests,".gitkeep").absoluteFile
-        if (!gitkeep.exists()) {
-            File(tests,".gitkeep").writeText("Hi")
-        }
-    }
+tasks.jvmTest {
+    dependsOn(tasks.getByName("fixMissingResources"))
 }
 
 tasks.build {
     doLast {
-        tasks.getByName("dokkaJavadocJar")
+        tasks.dokkaJavadocJar
     }
+}
+
+tasks.withType(PublishToMavenRepository::class) {
+    dependsOn(tasks.signKotlinMultiplatformPublication,tasks.signJvmPublication)
 }

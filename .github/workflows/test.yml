@@ -2,6 +2,8 @@ name: Test
 
 on:
   push:
+    tags-ignore:
+      - '**'
   pull_request:
   workflow_dispatch:
 
@@ -110,17 +112,3 @@ jobs:
           path: |
             serverpackcreator-app/build/dist/*
           if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
-
-  qodana:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-      - name: 'Qodana Scan'
-        uses: JetBrains/qodana-action@v2022.3.2
-        env:
-          QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}
-        with:
-          use-caches: false
-          cache-default-branch-only: true

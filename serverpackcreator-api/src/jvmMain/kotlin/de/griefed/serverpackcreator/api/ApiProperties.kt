@@ -32,6 +32,7 @@ import java.io.IOException
 import java.io.InputStreamReader
 import java.net.URL
 import java.util.*
+import java.util.concurrent.Executors
 
 /**
  * Base settings of ServerPackCreator, such as working directories, default list of clientside-only
@@ -62,6 +63,7 @@ actual class ApiProperties(
     private val alphaBetaRegex = "^(.*alpha.*|.*beta.*)$".toRegex()
     private val serverPacksRegex = "^(?:\\./)?server-packs$".toRegex()
     private val installCacheRegex = "^(?:\\./)?installers$".toRegex()
+    private val imageRegex = ".*\\.([Pp][Nn][Gg]|[Jj][Pp][Gg]|[Jj][Pp][Ee][Gg]|[Bb][Mm][Pp])".toRegex()
     private val pVersionCheckPreRelease =
         "de.griefed.serverpackcreator.versioncheck.prerelease"
     private val pLanguage =
@@ -120,6 +122,8 @@ actual class ApiProperties(
         "de.griefed.serverpackcreator.home"
     private val pOldVersion =
         "de.griefed.serverpackcreator.version.old"
+    private val customPropertyPrefix =
+        "custom.property."
 
     @Suppress("SpellCheckingInspection")
     private var fallbackModsString =
@@ -138,6 +142,7 @@ actual class ApiProperties(
         "animation,asm,cache,changelogs,craftpresence,crash-reports,downloads,icons,libraries,local,logs,overrides,packmenu,profileImage,profileImage,resourcepacks,screenshots,server_pack,shaderpacks,simple-rpc,tv-cache"
     private var fallbackZipExclusionsString =
         "minecraft_server.MINECRAFT_VERSION.jar,server.jar,libraries/net/minecraft/server/MINECRAFT_VERSION/server-MINECRAFT_VERSION.jar"
+    private val checkedJavas = hashMapOf<String, Boolean>()
     val i18n4kConfig = I18n4kConfigDefault()
 
     /**
@@ -247,6 +252,16 @@ actual class ApiProperties(
      */
     @get:Contract(pure = true)
     val apiVersion: String = this.javaClass.getPackage().implementationVersion ?: "dev"
+
+    val devBuild: Boolean
+        get() {
+            return apiVersion == "dev"
+        }
+
+    val preRelease: Boolean
+        get() {
+            return apiVersion.matches(alphaBetaRegex)
+        }
 
     /**
      * Whether the last loaded configuration file should be saved to as well.
@@ -557,6 +572,11 @@ actual class ApiProperties(
      * `server_files`-directory inside ServerPackCreators home-directory.
      */
     val defaultServerIcon: File
+
+    /**
+     * The database used by the webservice-portion of ServerPackCreaot to do store and provide server packs and
+     * related information.
+     */
     val serverPackCreatorDatabase: File
 
     /**
@@ -612,6 +632,42 @@ actual class ApiProperties(
      * inside ServerPackCreators home-directory.
      */
     val logsDirectory: File
+
+    /**
+     * Directory in which the properties for quick selection are to be stored in and retrieved from.
+     */
+    val propertiesDirectory: File
+
+    /**
+     * Directory in which the icons for quick selection are to be stored in and retrieved from.
+     */
+    val iconsDirectory: File
+
+    /**
+     * Directory in which ServerPackCreator configurations from the GUI get saved in by default.
+     */
+    val configsDirectory: File
+
+    /**
+     * List of server properties for quick selection in a given config tab.
+     */
+    val propertiesQuickSelections: List<String>
+        get() {
+            val files = propertiesDirectory.listFiles()?.filterNotNull()
+                ?.filter { properties -> properties.name.endsWith(".properties") }
+                ?.toTypedArray() ?: arrayOf()
+            return files.map { file -> file.name }
+        }
+
+    /**
+     * List of server icons for quick selection in a given config tab.
+     */
+    val iconQuickSelections: List<String>
+        get() {
+            val files = iconsDirectory.listFiles()?.filterNotNull()?.filter { icon -> icon.name.matches(imageRegex) }
+                ?.toTypedArray() ?: arrayOf()
+            return files.map { file -> file.name }
+        }
 
     /**
      * Reload from a specific properties-file.
@@ -1236,26 +1292,36 @@ actual class ApiProperties(
         if (pathToJava.isEmpty()) {
             return false
         }
-        return when (this.fileUtilities.checkFileType(pathToJava)) {
-            FileType.FILE -> testJava(pathToJava)
+        if (checkedJavas.containsKey(pathToJava)) {
+            return checkedJavas[javaPath]!!
+        }
+        val result: Boolean
+        when (this.fileUtilities.checkFileType(pathToJava)) {
+            FileType.FILE -> {
+                result = testJava(pathToJava)
+            }
+
             FileType.LINK, FileType.SYMLINK -> {
-                try {
-                    return testJava(this.fileUtilities.resolveLink(File(pathToJava)))
+                result = try {
+                    testJava(this.fileUtilities.resolveLink(File(pathToJava)))
                 } catch (ex: InvalidFileTypeException) {
                     log.error("Could not read Java link/symlink.", ex)
+                    false
                 } catch (ex: IOException) {
                     log.error("Could not read Java link/symlink.", ex)
+                    false
                 }
-                false
             }
 
             FileType.DIRECTORY -> {
                 log.error("Directory specified. Path to Java must lead to a lnk, symlink or file.")
-                false
+                result = false
             }
 
-            FileType.INVALID -> false
+            FileType.INVALID -> result = false
         }
+        checkedJavas[javaPath] = result
+        return result
     }
 
     /**
@@ -1396,7 +1462,7 @@ actual class ApiProperties(
         var properties: Properties? = null
         try {
             URL(
-                "https://raw.githubusercontent.com/Griefed/ServerPackCreator/main/backend/main/resources/serverpackcreator.properties"
+                "https://raw.githubusercontent.com/Griefed/ServerPackCreator/main/serverpackcreator-api/src/jvmMain/resources/serverpackcreator.properties"
             ).openStream().use {
                 properties = Properties()
                 properties!!.load(it)
@@ -1483,6 +1549,39 @@ actual class ApiProperties(
         } else {
             internalProperties.setProperty(pGuiDarkMode, "false")
         }
+    }
+
+    /**
+     * Store a custom property in the serverpackcreator.properties-file. Beware that every property you add
+     * receives a prefix, to prevent clashes with any other properties.
+     *
+     * Said prefix consists of `custom.property.` followed by the property you specified coming in last.
+     *
+     * Say you have a value in the property `saved`, then the resulting property in the serverpackcreator.properties
+     * would be:
+     * * `custom.property.saved`
+     *
+     * @author Griefed
+     */
+    fun storeCustomProperty(property: String, value: String): String {
+        val customProp = "$customPropertyPrefix$property"
+        return defineProperty(customProp, value)
+    }
+
+    /**
+     * Retrieve a custom property in the serverpackcreator.properties-file. Beware that every property you retrieve this
+     * way contains a prefix, to prevent clashes with any other properties.
+     *
+     * Said prefix consists of `custom.property.` followed by the property you specified coming in last.
+     *
+     * Say you have a property `saved`, then the resulting property in the serverpackcreator.properties would be:
+     * `custom.property.saved`
+     *
+     * @author Griefed
+     */
+    fun retrieveCustomProperty(property: String): String? {
+        val customProp = "$customPropertyPrefix$property"
+        return internalProperties.getProperty(customProp)
     }
 
     /**
@@ -1603,6 +1702,9 @@ actual class ApiProperties(
         serverPackCreatorPropertiesFile = File(homeDirectory, serverPackCreatorProperties).absoluteFile
         logsDirectory = File(homeDirectory, "logs").absoluteFile
         serverFilesDirectory = File(homeDirectory, "server_files").absoluteFile
+        propertiesDirectory = File(serverFilesDirectory, "properties").absoluteFile
+        iconsDirectory = File(serverFilesDirectory, "icons").absoluteFile
+        configsDirectory = File(homeDirectory, "configs").absoluteFile
         pluginsDirectory = File(homeDirectory, "plugins").absoluteFile
         manifestsDirectory = File(homeDirectory, "manifests").absoluteFile
         serverPackCreatorDatabase =
@@ -1627,6 +1729,9 @@ actual class ApiProperties(
         legacyFabricLoaderManifest = File(manifestsDirectory, "legacy-fabric-loader-manifest.json").absoluteFile
         legacyFabricGameManifest = File(manifestsDirectory, "legacy-fabric-game-manifest.json").absoluteFile
         serverFilesDirectory.createDirectories(create = true, directory = true)
+        propertiesDirectory.createDirectories(create = true, directory = true)
+        iconsDirectory.createDirectories(create = true, directory = true)
+        configsDirectory.createDirectories(create = true, directory = true)
         workDirectory.createDirectories(create = true, directory = true)
         tempDirectory.createDirectories(create = true, directory = true)
         modpacksDirectory.createDirectories(create = true, directory = true)

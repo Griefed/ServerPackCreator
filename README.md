@@ -58,6 +58,13 @@ If you distribute server packs generated with a pre-release (alpha, beta) of Ser
 I will not be held responsible for errors in your server pack caused by you using a pre-release.
   * **TL;DR:** Don't use test to ship to prod!
 
+##### Pre-Releases:
+
+There are two kinds of pre-releases: Alphas and Betas
+
+* Alphas: Missing features, incomplete features, almost guaranteed to have bugs / errors
+* Betas: Feature complete, probably contains bugs / errors
+
 # Screenshots
 
 | CLI                 | GUI                           | WEB                                    |

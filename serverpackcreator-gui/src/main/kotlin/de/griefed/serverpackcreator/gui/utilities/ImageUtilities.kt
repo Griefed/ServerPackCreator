@@ -20,9 +20,15 @@
 package de.griefed.serverpackcreator.gui.utilities
 
 import java.awt.Image
+import java.util.*
 import javax.imageio.ImageIO
 import javax.swing.ImageIcon
 
+/**
+ * Various utilities revolving around working with images and icons.
+ *
+ * @author Griefed
+ */
 class ImageUtilities {
     companion object {
         /**
@@ -43,6 +49,20 @@ class ImageUtilities {
         @Throws(NullPointerException::class)
         fun imageIconFromResourceStream(clazz: Class<*>, name: String): ImageIcon {
             return ImageIcon(clazz.getResourceAsStream(name).readAllBytes())
+        }
+
+        /**
+         * Create an image icon from a base64 encoded image.
+         */
+        fun fromBase64(
+            encoded: String,
+            width: Int = 24,
+            height: Int = 24,
+            scaling: Int = Image.SCALE_SMOOTH
+        ): ImageIcon {
+            return ImageIcon(
+                Base64.getDecoder().decode(encoded)
+            ).getScaledInstance(width, height, scaling)
         }
     }
 }

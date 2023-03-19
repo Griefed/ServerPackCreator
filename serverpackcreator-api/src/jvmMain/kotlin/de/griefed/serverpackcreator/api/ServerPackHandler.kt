@@ -227,7 +227,9 @@ actual class ServerPackHandler actual constructor(
                      */
                     serverPackFiles.addAll(
                         getExplicitFiles(
-                            directory.split(";").dropLastWhile { it.isEmpty() }.toTypedArray(), modpackDir, destination
+                            directory.split(";").dropLastWhile { it.isEmpty() }.toTypedArray(),
+                            modpackDir,
+                            destination
                         )
                     )
                 } else if (directory.startsWith("saves/")) {
@@ -269,9 +271,9 @@ actual class ServerPackHandler actual constructor(
                         )
                     )
                 } else if (File(directory).isDirectory) {
-                    serverPackFiles.addAll(getDirectoryFiles(directory, destination))
+                    serverPackFiles.addAll(getDirectoryFiles(directory, destination + File.separator + File(directory).name))
                 } else {
-                    serverPackFiles.addAll(getDirectoryFiles(clientDir, destination))
+                    serverPackFiles.addAll(getDirectoryFiles(clientDir, destination + File.separator + File(clientDir).name))
                 }
             }
             log.info("Ensuring files and/or directories are properly excluded.")
@@ -430,19 +432,21 @@ actual class ServerPackHandler actual constructor(
     }
 
     override fun preInstallationCleanup(destination: String) {
-        File(destination, "libraries").deleteQuietly()
-        File(destination, "server.jar").deleteQuietly()
-        File(destination, "forge-installer.jar").deleteQuietly()
-        File(destination, "quilt-installer.jar").deleteQuietly()
-        File(destination, "installer.log").deleteQuietly()
-        File(destination, "forge-installer.jar.log").deleteQuietly()
-        File(destination, "legacyfabric-installer.jar").deleteQuietly()
-        File(destination, "run.bat").deleteQuietly()
-        File(destination, "run.sh").deleteQuietly()
-        File(destination, "user_jvm_args.txt").deleteQuietly()
-        File(destination, "quilt-server-launch.jar").deleteQuietly()
-        File(destination, "minecraft_server.1.16.5.jar").deleteQuietly()
-        File(destination, "forge.jar").deleteQuietly()
+        utilities.fileUtilities.deleteMultiple(
+            File(destination, "libraries"),
+            File(destination, "server.jar"),
+            File(destination, "forge-installer.jar"),
+            File(destination, "quilt-installer.jar"),
+            File(destination, "installer.log"),
+            File(destination, "forge-installer.jar.log"),
+            File(destination, "legacyfabric-installer.jar"),
+            File(destination, "run.bat"),
+            File(destination, "run.sh"),
+            File(destination, "user_jvm_args.txt"),
+            File(destination, "quilt-server-launch.jar"),
+            File(destination, "minecraft_server.1.16.5.jar"),
+            File(destination, "forge.jar")
+        )
     }
 
     override fun installServer(
@@ -454,23 +458,23 @@ actual class ServerPackHandler actual constructor(
         }
         preInstallationCleanup(destination)
         val commandArguments: MutableList<String> = ArrayList(10)
-        commandArguments.add(apiProperties.javaPath)
-        commandArguments.add("-jar")
+        commandArguments.addMultiple(apiProperties.javaPath,"-jar")
         var process: Process? = null
         when (modLoader) {
             "Fabric" -> {
+                log.info { "Installing Fabric server." }
                 installerLog.info("Starting Fabric installation.")
                 if (versionMeta.fabric.installerFor(versionMeta.fabric.releaseInstaller()).isPresent) {
                     log.info("Fabric installer successfully downloaded.")
-                    commandArguments.add(
-                        versionMeta.fabric.installerFor(versionMeta.fabric.releaseInstaller()).get().absolutePath
+                    commandArguments.addMultiple(
+                        versionMeta.fabric.installerFor(versionMeta.fabric.releaseInstaller()).get().absolutePath,
+                        "server",
+                        "-mcversion",
+                        minecraftVersion,
+                        "-loader",
+                        modLoaderVersion,
+                        "-downloadMinecraft"
                     )
-                    commandArguments.add("server")
-                    commandArguments.add("-mcversion")
-                    commandArguments.add(minecraftVersion)
-                    commandArguments.add("-loader")
-                    commandArguments.add(modLoaderVersion)
-                    commandArguments.add("-downloadMinecraft")
                 } else {
                     log.error(
                         "Something went wrong during the installation of Fabric. Maybe the Fabric servers are down or unreachable? Skipping..."
@@ -480,13 +484,14 @@ actual class ServerPackHandler actual constructor(
             }
 
             "Forge" -> {
+                log.info { "Installing Forge server." }
                 installerLog.info("Starting Forge installation.")
                 if (versionMeta.forge.installerFor(modLoaderVersion, minecraftVersion).isPresent) {
                     log.info("Forge installer successfully downloaded.")
-                    commandArguments.add(
-                        versionMeta.forge.installerFor(modLoaderVersion, minecraftVersion).get().absolutePath
+                    commandArguments.addMultiple(
+                        versionMeta.forge.installerFor(modLoaderVersion, minecraftVersion).get().absolutePath,
+                        "--installServer"
                     )
-                    commandArguments.add("--installServer")
                 } else {
                     log.error(
                         "Something went wrong during the installation of Forge. Maybe the Forge servers are down or unreachable? Skipping..."
@@ -496,17 +501,18 @@ actual class ServerPackHandler actual constructor(
             }
 
             "Quilt" -> {
+                log.info { "Installing Quilt server." }
                 installerLog.info("Starting Quilt installation.")
                 if (versionMeta.quilt.installerFor(versionMeta.quilt.releaseInstaller()).isPresent) {
                     log.info("Quilt installer successfully downloaded.")
-                    commandArguments.add(
-                        versionMeta.quilt.installerFor(versionMeta.quilt.releaseInstaller()).get().absolutePath
+                    commandArguments.addMultiple(
+                        versionMeta.quilt.installerFor(versionMeta.quilt.releaseInstaller()).get().absolutePath,
+                        "install",
+                        "server",
+                        minecraftVersion,
+                        "--download-server",
+                        "--install-dir=."
                     )
-                    commandArguments.add("install")
-                    commandArguments.add("server")
-                    commandArguments.add(minecraftVersion)
-                    commandArguments.add("--download-server")
-                    commandArguments.add("--install-dir=.")
                 } else {
                     log.error(
                         "Something went wrong during the installation of Quilt. Maybe the Quilt servers are down or unreachable? Skipping..."
@@ -516,20 +522,21 @@ actual class ServerPackHandler actual constructor(
             }
 
             "LegacyFabric" -> {
+                log.info { "Installing LegacyFabric server." }
                 installerLog.info("Starting Legacy Fabric installation.")
                 try {
                     if (versionMeta.legacyFabric.installerFor(versionMeta.legacyFabric.releaseInstaller()).isPresent) {
                         log.info("LegacyFabric installer successfully downloaded.")
-                        commandArguments.add(
+                        commandArguments.addMultiple(
                             versionMeta.legacyFabric.installerFor(versionMeta.legacyFabric.releaseInstaller())
-                                .get().absolutePath
+                                .get().absolutePath,
+                            "server",
+                            "-mcversion",
+                            minecraftVersion,
+                            "-loader",
+                            modLoaderVersion,
+                            "-downloadMinecraft"
                         )
-                        commandArguments.add("server")
-                        commandArguments.add("-mcversion")
-                        commandArguments.add(minecraftVersion)
-                        commandArguments.add("-loader")
-                        commandArguments.add(modLoaderVersion)
-                        commandArguments.add("-downloadMinecraft")
                     } else {
                         log.error(
                             "Something went wrong during the installation of LegacyFabric. Maybe the LegacyFabric servers are down or unreachable? Skipping..."
@@ -603,7 +610,7 @@ actual class ServerPackHandler actual constructor(
         } else if (File(modpackDir, combination[0]).isDirectory) {
             serverPackFiles.addAll(
                 getDirectoryFiles(
-                    modpackDir + File.separator + combination[0], destination
+                    modpackDir + File.separator + combination[0], destination + File.separator + combination[1]
                 )
             )
         } else if (File(combination[0]).isFile) {
@@ -613,7 +620,11 @@ actual class ServerPackHandler actual constructor(
                 )
             )
         } else if (File(combination[0]).isDirectory) {
-            serverPackFiles.addAll(getDirectoryFiles(combination[0], destination))
+            serverPackFiles.addAll(
+                getDirectoryFiles(
+                    combination[0], destination + File.separator + combination[1]
+                )
+            )
         }
         return serverPackFiles
     }
@@ -717,11 +728,13 @@ actual class ServerPackHandler actual constructor(
             Files.walk(Paths.get(source)).use {
                 for (path in it) {
                     try {
+                        val pathFile = path.toFile().absolutePath
+                        val sourceFile = File(source).absolutePath
+                        val destFile = File(destination,pathFile.replace(sourceFile,""))
                         serverPackFiles.add(
                             ServerPackFile(
-                                path,
-                                Paths.get(destination + File.separator + File(source).name)
-                                    .resolve(Paths.get(source).relativize(path))
+                                path.toFile(),
+                                destFile
                             )
                         )
                     } catch (ex: UnsupportedOperationException) {
@@ -732,6 +745,7 @@ actual class ServerPackHandler actual constructor(
         } catch (ex: IOException) {
             log.error("An error occurred gathering files to copy to the server pack.", ex)
         }
+
         return serverPackFiles
     }
 

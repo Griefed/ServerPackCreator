@@ -57,10 +57,13 @@ actual class TomlScanner constructor(private val tomlParser: TomlParser) :
         val idsRequiredOnServer = TreeSet<String>()
         var config: CommentedConfig
         for (modJar in jarFiles) {
+            if (modJar.name.contains("Patchouli")) {
+                println("Patchouli")
+            }
             try {
                 config = getConfig(modJar)
 
-                // get all [[dependencies.n]] which are not minecraft|forge, but required by the mod
+                // get all [[dependencies.n]] which are minecraft|forge, to determine sideness of the mod itself
                 idsRequiredOnServer.addAll(getModDependencyIdsRequiredOnServer(config))
 
                 // get all mods required on the server
@@ -178,8 +181,7 @@ actual class TomlScanner constructor(private val tomlParser: TomlParser) :
             if (confidentOnClientSide) {
                 return ids
             }
-        } catch (ignored: NullPointerException) {
-        }
+        } catch (ignored: NullPointerException) {}
         for ((key, value) in dependencies) {
             for (commentedConfig in value) {
                 try {
@@ -290,5 +292,11 @@ actual class TomlScanner constructor(private val tomlParser: TomlParser) :
      * @param config Mod- or dependency-config which contains the modId.
      * @return `side` from the passed config, in upper-case letters.
      */
-    private fun getSide(config: CommentedConfig) = config.valueMap()["side"].toString().uppercase(Locale.getDefault())
+    private fun getSide(config: CommentedConfig): String {
+        return if (config.valueMap()["side"] != null) {
+            config.valueMap()["side"].toString().uppercase(Locale.getDefault())
+        } else {
+            "BOTH"
+        }
+    }
 }

@@ -106,21 +106,18 @@ cwallet.sso.lck
 
 # Gradle
 .idea/**/gradle.xml
+.idea/gradle.xml
 .idea/**/libraries
+.idea/libraries
 
 # Gradle and Maven with auto-import
 # When using Gradle or Maven with auto-import, you should exclude module files,
 # since they will be recreated, and may cause churn.  Uncomment if using
 # auto-import.
- .idea/artifacts
- .idea/compiler.xml
- .idea/jarRepositories.xml
- .idea/modules.xml
- .idea/libraries
- .idea/*.iml
- .idea/modules
- *.iml
- *.ipr
+/.idea/
+/.idea/**
+*.iml
+*.ipr
 
 # CMake
 cmake-build-*/
@@ -288,6 +285,7 @@ lerna-debug.log*
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+!licenses/**
 
 # Runtime data
 pids
@@ -388,8 +386,6 @@ dist
 *.njsproj
 *.sln
 out
-*.ipr
-*.iml
 
 # Yarn
 yarn.lock

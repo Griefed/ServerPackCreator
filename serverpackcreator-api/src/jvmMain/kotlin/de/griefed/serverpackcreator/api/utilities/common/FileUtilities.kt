@@ -352,6 +352,17 @@ actual class FileUtilities {
             }
         }
     }
+
+    /**
+     * Delete multiple files quietly.
+     *
+     * @author Griefed
+     */
+    fun deleteMultiple(vararg files: File) {
+        for (file in files) {
+            file.deleteQuietly()
+        }
+    }
 }
 
 /**

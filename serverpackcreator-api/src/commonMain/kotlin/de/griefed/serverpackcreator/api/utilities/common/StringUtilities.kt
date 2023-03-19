@@ -271,6 +271,27 @@ fun String.escapePath(): String {
 }
 
 /**
+ * Replace all matches for the given [regex] with [replaceWith] and return the resulting string.
+ *
+ * @author Griefed
+ */
+fun String.regexReplace(regex: Regex, replaceWith: String) : String {
+    var i = 0
+    var replaced = this
+    while (i < length) {
+        for (n in length downTo i) {
+            if (substring(i,n).matches(regex)) {
+                replaced = replaceRange(i,n,replaceWith)
+                i = n
+                break
+            }
+        }
+        i++
+    }
+    return replaced
+}
+
+/**
  * Replace the character at the given [index] with the given new [character].
  * @author Griefed
  */

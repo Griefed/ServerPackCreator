@@ -30,11 +30,8 @@ allprojects {
 }
 evaluationDependsOnChildren()
 
-val serverpackcreatorApp = project("serverpackcreator-app")
-val serverpackcreatorWebFrontend = project("serverpackcreator-web-frontend")
-
-serverpackcreatorApp.tasks.getByName("build").mustRunAfter(
-    serverpackcreatorWebFrontend.tasks.getByName("build")
+project("serverpackcreator-app").tasks.getByName("build").mustRunAfter(
+    project("serverpackcreator-web-frontend").tasks.getByName("build")
 )
 
 nexusPublishing {
