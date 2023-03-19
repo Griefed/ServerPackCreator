@@ -160,9 +160,6 @@ fabric.properties
 # Compiled class file
 *.class
 
-# Log file
-*.log
-
 # BlueJ files
 *.ctxt
 
@@ -277,7 +274,6 @@ gradle-app.setting
 ### Misc ###
 
 # Logs
-logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
