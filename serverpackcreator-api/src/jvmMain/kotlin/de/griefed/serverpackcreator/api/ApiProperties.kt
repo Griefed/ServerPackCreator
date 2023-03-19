@@ -670,6 +670,8 @@ actual class ApiProperties(
 
     /**
      * Load the [propertiesFile] into the provided [props]
+     *
+     * @author Griefed
      */
     private fun loadFile(propertiesFile: File, props: Properties) {
         try {
