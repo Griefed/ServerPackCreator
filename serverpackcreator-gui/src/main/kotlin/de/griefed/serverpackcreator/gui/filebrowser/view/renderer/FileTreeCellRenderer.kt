@@ -31,8 +31,10 @@ import javax.swing.tree.TreeCellRenderer
 /**
  * Renderer for a node in the tree.
  *
+ * @author Griefed (Kotlin Conversion and minor changes)
  * @author Andrew Thompson
- * @author Griefed
+ * @see <a href="https://codereview.stackexchange.com/questions/4446/file-browser-gui">File Browser GUI</a>
+ * @license LGPL
  */
 class FileTreeCellRenderer(private val browserModel: FileBrowserModel) : TreeCellRenderer {
     private val label: JLabel = JLabel(" ")

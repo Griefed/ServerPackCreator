@@ -25,7 +25,9 @@ import de.griefed.serverpackcreator.gui.filebrowser.view.FileBrowserFrame
 import de.griefed.serverpackcreator.gui.window.configs.TabbedConfigsTab
 
 /**
- * TODO docs
+ * @author Andrew Thompson
+ * @see <a href="https://codereview.stackexchange.com/questions/4446/file-browser-gui">File Browser GUI</a>
+ * @license LGPL
  */
 class FileBrowser(tabbedConfigsTab: TabbedConfigsTab, guiProps: GuiProps, utilities: Utilities) {
     private val browserModel: FileBrowserModel = FileBrowserModel(guiProps)

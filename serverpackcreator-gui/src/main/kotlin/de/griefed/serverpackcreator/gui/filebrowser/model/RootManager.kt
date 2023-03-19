@@ -30,8 +30,10 @@ import javax.swing.tree.DefaultMutableTreeNode
  *
  * Based on whether the user is running on Windows or Linux/UNIX, the root node will be different.
  *
+ * @author Griefed (Kotlin Conversion and minor changes)
  * @author Andrew Thompson
- * @author Griefed
+ * @see <a href="https://codereview.stackexchange.com/questions/4446/file-browser-gui">File Browser GUI</a>
+ * @license LGPL
  */
 class RootManager(private val guiProps: GuiProps) {
     private val osName = System.getProperty("os.name")

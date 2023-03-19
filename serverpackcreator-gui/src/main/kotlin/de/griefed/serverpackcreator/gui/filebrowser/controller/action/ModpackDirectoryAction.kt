@@ -42,6 +42,9 @@ class ModpackDirectoryAction(private val tabbedConfigsTab: TabbedConfigsTab) : A
         tabbedConfigsTab.selectedEditor?.updateGuiFromSelectedModpack()
     }
 
+    /**
+     * @author Griefed
+     */
     fun setDirectory(file: File?) {
         directory = file
     }

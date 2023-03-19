@@ -31,8 +31,10 @@ import javax.swing.JSeparator
 /**
  * TODO docs
  *
+ * @author Griefed (Kotlin Conversion and minor changes)
  * @author Andrew Thompson
- * @author Griefed
+ * @see <a href="https://codereview.stackexchange.com/questions/4446/file-browser-gui">File Browser GUI</a>
+ * @license LGPL
  */
 open class SelectionPopMenu(tabbedConfigsTab: TabbedConfigsTab, utilities: Utilities) : MouseAdapter() {
     private val menu: JPopupMenu = JPopupMenu()
@@ -44,7 +46,6 @@ open class SelectionPopMenu(tabbedConfigsTab: TabbedConfigsTab, utilities: Utili
     private val imageRegex = ".*\\.([Pp][Nn][Gg]|[Jj][Pp][Gg]|[Jj][Pp][Ee][Gg]|[Bb][Mm][Pp])".toRegex()
     private val props: String = "properties"
 
-    // TODO move regexes to guiProps
     init {
         menu.add(open)
         menu.add(openContainingFolder)
@@ -56,12 +57,17 @@ open class SelectionPopMenu(tabbedConfigsTab: TabbedConfigsTab, utilities: Utili
 
     /**
      * Show the context menu with visibilities of contained elements based on the file-type.
+     *
+     * @author Griefed
      */
     fun show(invoker: Component?, x: Int, y: Int, file: File) {
         setVisibilities(file)
         menu.show(invoker, x, y)
     }
 
+    /**
+     * @author Griefed
+     */
     private fun setVisibilities(file: File) {
         open.setFile(file)
         openContainingFolder.setDirectory(file)

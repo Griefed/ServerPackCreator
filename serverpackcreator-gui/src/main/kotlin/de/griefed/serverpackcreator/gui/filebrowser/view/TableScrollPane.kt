@@ -38,8 +38,10 @@ import javax.swing.tree.DefaultMutableTreeNode
 /**
  * Scroll-pane housing the table for files inside a selected directory.
  *
+ * @author Griefed (Kotlin Conversion and minor changes)
  * @author Andrew Thompson
- * @author Griefed
+ * @see <a href="https://codereview.stackexchange.com/questions/4446/file-browser-gui">File Browser GUI</a>
+ * @license LGPL
  */
 class TableScrollPane(
     private val browserModel: FileBrowserModel,
@@ -94,6 +96,7 @@ class TableScrollPane(
     /**
      * Clear the tree model.
      *
+     * @author Griefed (Kotlin Conversion and minor changes)
      * @author Andrew Thompson
      */
     fun clearDefaultTableModel() {
@@ -105,6 +108,7 @@ class TableScrollPane(
     /**
      * Update the table with the given node, updating all entries and information.
      *
+     * @author Griefed (Kotlin Conversion and minor changes)
      * @author Andrew Thompson
      */
     fun setDefaultTableModel(node: DefaultMutableTreeNode) {

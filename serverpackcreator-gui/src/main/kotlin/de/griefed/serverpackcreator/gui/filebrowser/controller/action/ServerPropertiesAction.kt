@@ -41,6 +41,9 @@ class ServerPropertiesAction(private val tabbedConfigsTab: TabbedConfigsTab) : A
         tabbedConfigsTab.selectedEditor?.setServerPropertiesPath(properties!!.absolutePath)
     }
 
+    /**
+     * @author Griefed
+     */
     fun setProperties(file: File?) {
         properties = file
     }

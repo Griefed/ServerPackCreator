@@ -48,6 +48,8 @@ class SortedTreeNode : DefaultMutableTreeNode {
 
     /**
      * Sort all nodes by file-type, then by name.
+     *
+     * @author Griefed
      */
     private fun sort(toSort: Vector<TreeNode>): Vector<TreeNode> {
         Collections.sort(toSort, guiProps.typeComparator)
@@ -70,12 +72,17 @@ class SortedTreeNode : DefaultMutableTreeNode {
         return merge(directories, files)
     }
 
+    /**
+     * @author Griefed
+     */
     private fun sortAlphabetically(entries: MutableList<TreeNode>) {
         Collections.sort(entries, guiProps.nameComparator)
     }
 
     /**
      * Merge the given nodes into one.
+     *
+     * @author Griefed
      */
     private fun merge(directories: MutableList<TreeNode>, files: MutableList<TreeNode>): Vector<TreeNode> {
         val merged = mutableListOf<TreeNode>()

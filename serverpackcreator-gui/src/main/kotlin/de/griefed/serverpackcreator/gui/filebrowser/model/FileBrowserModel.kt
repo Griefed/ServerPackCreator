@@ -30,8 +30,10 @@ import javax.swing.tree.DefaultTreeModel
 /**
  * Base model from which access to the root-manager, tree-model and update routines is granted.
  *
+ * @author Griefed (Kotlin Conversion and minor changes)
  * @author Andrew Thompson
- * @author Griefed
+ * @see <a href="https://codereview.stackexchange.com/questions/4446/file-browser-gui">File Browser GUI</a>
+ * @license LGPL
  */
 class FileBrowserModel(private val guiProps: GuiProps) {
     private val rootManager: RootManager = RootManager(guiProps)
@@ -44,10 +46,18 @@ class FileBrowserModel(private val guiProps: GuiProps) {
         treeModel.setRoot(updateRoot())
     }
 
+    /**
+     * @author Griefed (Kotlin Conversion and minor changes)
+     * @author Andrew Thompson
+     */
     private fun createTreeModel(): DefaultTreeModel {
         return DefaultTreeModel(updateRoot())
     }
 
+    /**
+     * @author Griefed (Kotlin Conversion and minor changes)
+     * @author Andrew Thompson
+     */
     private fun updateRoot(): DefaultMutableTreeNode {
         val root = rootManager.root
         addChildNodes(root)
@@ -57,6 +67,9 @@ class FileBrowserModel(private val guiProps: GuiProps) {
 
     /**
      * Add grandchild-nodes to the parent for every file inside it.
+     *
+     * @author Griefed (Kotlin Conversion and minor changes)
+     * @author Andrew Thompson
      */
     fun addGrandchildNodes(root: DefaultMutableTreeNode) {
         root.children().toList().parallelMap { node ->
@@ -66,6 +79,9 @@ class FileBrowserModel(private val guiProps: GuiProps) {
 
     /**
      * Add child-nodes to the parent for every file inside it.
+     *
+     * @author Griefed (Kotlin Conversion and minor changes)
+     * @author Andrew Thompson
      */
     @Suppress("DuplicatedCode")
     private fun addChildNodes(root: DefaultMutableTreeNode) {
@@ -111,10 +127,18 @@ class FileBrowserModel(private val guiProps: GuiProps) {
 
     }
 
+    /**
+     * @author Griefed (Kotlin Conversion and minor changes)
+     * @author Andrew Thompson
+     */
     fun getFileIcon(file: File?): Icon {
         return rootManager.fileSystemView.getSystemIcon(file)
     }
 
+    /**
+     * @author Griefed (Kotlin Conversion and minor changes)
+     * @author Andrew Thompson
+     */
     fun getFileText(file: File?): String {
         return rootManager.fileSystemView.getSystemDisplayName(file)
     }

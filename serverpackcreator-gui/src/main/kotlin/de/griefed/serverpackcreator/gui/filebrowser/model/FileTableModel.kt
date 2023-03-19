@@ -31,8 +31,10 @@ import javax.swing.table.AbstractTableModel
 /**
  * Table-model which serves to display the contents of a given directory.
  *
+ * @author Griefed (Kotlin Conversion and minor changes)
  * @author Andrew Thompson
- * @author Griefed
+ * @see <a href="https://codereview.stackexchange.com/questions/4446/file-browser-gui">File Browser GUI</a>
+ * @license LGPL
  */
 class FileTableModel : AbstractTableModel() {
     private val rows: MutableList<List<Any>> = ArrayList(10)
@@ -74,6 +76,10 @@ class FileTableModel : AbstractTableModel() {
         return columns[column]
     }
 
+    /**
+     * @author Griefed (Kotlin Conversion and minor changes)
+     * @author Andrew Thompson
+     */
     fun addRow(browserModel: FileBrowserModel, fileNode: FileNode) {
         val file = fileNode.file
         val list = mutableListOf<Any>()
@@ -86,10 +92,18 @@ class FileTableModel : AbstractTableModel() {
         rows.add(list)
     }
 
+    /**
+     * @author Griefed (Kotlin Conversion and minor changes)
+     * @author Andrew Thompson
+     */
     fun removeRows() {
         rows.clear()
     }
 
+    /**
+     * @author Griefed (Kotlin Conversion and minor changes)
+     * @author Andrew Thompson
+     */
     fun setColumnWidths(table: JTable): Int {
         val centerRenderer = DateRenderer()
         centerRenderer.horizontalAlignment = JLabel.CENTER
@@ -102,6 +116,10 @@ class FileTableModel : AbstractTableModel() {
         return width + 30
     }
 
+    /**
+     * @author Griefed (Kotlin Conversion and minor changes)
+     * @author Andrew Thompson
+     */
     private fun setColumnWidth(table: JTable, column: Int, width: Int): Int {
         var columnWidth = width
         val tableColumn = table.columnModel.getColumn(column)

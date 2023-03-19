@@ -43,6 +43,9 @@ class OpenAction(private val utilities: Utilities) : AbstractAction() {
         }
     }
 
+    /**
+     * @author Griefed
+     */
     fun setFile(file: File?) {
         this.file = file
     }

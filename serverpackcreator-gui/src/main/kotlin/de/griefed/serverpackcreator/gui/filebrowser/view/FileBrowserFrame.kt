@@ -37,8 +37,10 @@ import javax.swing.JSplitPane
  * Frame housing the filebrowser allowing users to update their modpack-directory, server-icon and server-properties
  * in a very convenient way.
  *
+ * @author Griefed (Kotlin Conversion and minor changes)
  * @author Andrew Thompson
- * @author Griefed
+ * @see <a href="https://codereview.stackexchange.com/questions/4446/file-browser-gui">File Browser GUI</a>
+ * @license LGPL
  */
 @OptIn(DelicateCoroutinesApi::class)
 class FileBrowserFrame(

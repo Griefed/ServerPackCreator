@@ -34,8 +34,10 @@ import javax.swing.JTextField
 /**
  * Panel containing details about the currently selected file in the table.
  *
+ * @author Griefed (Kotlin Conversion and minor changes)
  * @author Andrew Thompson
- * @author Griefed
+ * @see <a href="https://codereview.stackexchange.com/questions/4446/file-browser-gui">File Browser GUI</a>
+ * @license LGPL
  */
 class FileDetailPanel : JPanel(
     MigLayout(
@@ -71,6 +73,7 @@ class FileDetailPanel : JPanel(
     /**
      * Update details about the selected file.
      *
+     * @author Griefed (Kotlin Conversion and minor changes)
      * @author Andrew Thompson
      */
     private fun updatePartControl(browserModel: FileBrowserModel) {
@@ -93,6 +96,7 @@ class FileDetailPanel : JPanel(
     /**
      * Get the date and time of when the file was last modified,
      *
+     * @author Griefed (Kotlin Conversion and minor changes)
      * @author Andrew Thompson
      */
     private fun generateLastModified(file: File): String {
@@ -106,22 +110,24 @@ class FileDetailPanel : JPanel(
     /**
      * Get the filesize of the selected file and, depending on the size, display it with `bytes`, `KB`, `GB`, `TB`.
      *
+     * @author Griefed (Kotlin Conversion and minor changes)
      * @author Andrew Thompson
      */
     private fun generateFileSize(file: File): String {
         val label = arrayOf("bytes", "KB", "MB", "GB", "TB")
-        var dbytes = file.length().toDouble()
+        var bytes = file.length().toDouble()
         var count = 0
-        while (dbytes > 1000.0) {
-            dbytes /= 1024.0
+        while (bytes > 1000.0) {
+            bytes /= 1024.0
             count++
         }
-        return String.format("%.3f ", dbytes) + label[count]
+        return String.format("%.3f ", bytes) + label[count]
     }
 
     /**
-     * Update the filenode.
+     * Update the file-node.
      *
+     * @author Griefed (Kotlin Conversion and minor changes)
      * @author Andrew Thompson
      */
     fun setFileNode(fileNode: FileNode?, browserModel: FileBrowserModel) {

@@ -41,6 +41,9 @@ class OpenContainingFolder(private val utilities: Utilities) : AbstractAction() 
         utilities.fileUtilities.openFolder(directory)
     }
 
+    /**
+     * @author Griefed
+     */
     fun setDirectory(file: File) {
         directory = file.parentFile
     }

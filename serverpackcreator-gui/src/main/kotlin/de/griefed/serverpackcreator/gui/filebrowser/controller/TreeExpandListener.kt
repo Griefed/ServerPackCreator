@@ -29,8 +29,10 @@ import javax.swing.tree.ExpandVetoException
 /**
  * Expansion-listener to update available nodes upon expansion, or set nodes invisible upon collapse.
  *
+ * @author Griefed (Kotlin Conversion and minor changes)
  * @author Andrew Thompson
- * @author Griefed
+ * @see <a href="https://codereview.stackexchange.com/questions/4446/file-browser-gui">File Browser GUI</a>
+ * @license LGPL
  */
 class TreeExpandListener(private val browserModel: FileBrowserModel) : TreeWillExpandListener {
 

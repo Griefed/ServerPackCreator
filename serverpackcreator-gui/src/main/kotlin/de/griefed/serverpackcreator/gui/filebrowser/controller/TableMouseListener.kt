@@ -29,8 +29,10 @@ import javax.swing.JTable
 /**
  * Mouse-listener to present the context menu upon pressing the right mouse-button on a file in the file table.
  *
+ * @author Griefed (Kotlin Conversion and minor changes)
  * @author Andrew Thompson
- * @author Griefed
+ * @see <a href="https://codereview.stackexchange.com/questions/4446/file-browser-gui">File Browser GUI</a>
+ * @license LGPL
  */
 class TableMouseListener(
     private val jTable: JTable, tabbedConfigsTab: TabbedConfigsTab, utilities: Utilities

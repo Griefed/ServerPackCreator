@@ -32,8 +32,10 @@ import javax.swing.tree.DefaultMutableTreeNode
 /**
  * Listen to node-selections in the file-tree of our filebrowser and add nodes upon opening of a directory.
  *
+ * @author Griefed (Kotlin Conversion and minor changes)
  * @author Andrew Thompson
- * @author Griefed
+ * @see <a href="https://codereview.stackexchange.com/questions/4446/file-browser-gui">File Browser GUI</a>
+ * @license LGPL
  */
 class FileSelectionListener(
     private val browserModel: FileBrowserModel,

@@ -31,8 +31,10 @@ import javax.swing.event.ListSelectionListener
 /**
  * Listener to update the detail and preview panels upon selection of a file in the file-table.
  *
+ * @author Griefed (Kotlin Conversion and minor changes)
  * @author Andrew Thompson
- * @author Griefed
+ * @see <a href="https://codereview.stackexchange.com/questions/4446/file-browser-gui">File Browser GUI</a>
+ * @license LGPL
  */
 class TableSelectionListener(
     private val jTable: JTable,
@@ -42,6 +44,10 @@ class TableSelectionListener(
 ) : ListSelectionListener {
     private var rowCount = 0
 
+    /**
+     * @author Griefed (Kotlin Conversion and minor changes)
+     * @author Andrew Thompson
+     */
     fun setRowCount(rowCount: Int) {
         this.rowCount = rowCount
     }

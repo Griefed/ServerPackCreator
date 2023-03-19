@@ -42,6 +42,9 @@ class ServerIconAction(private val tabbedConfigsTab: TabbedConfigsTab) : Abstrac
         tabbedConfigsTab.selectedEditor?.setServerIconPath(icon!!.absolutePath)
     }
 
+    /**
+     * @author Griefed
+     */
     fun setIcon(file: File?) {
         icon = file
     }
