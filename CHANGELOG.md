@@ -1,3 +1,10 @@
+## [5.0.0-alpha.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.0.1...5.0.0-alpha.1) (2023-03-19)
+
+
+### ✨ Milestone
+
+* GUI-rework for better UX, usability, expandability and more features ([5e7d540](https://git.griefed.de/Griefed/ServerPackCreator/commit/5e7d54045d2635916ab517a719f65c7615f2f6bb))
+
 ## [4.0.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.0.0...4.0.1) (2023-03-01)
 
 
