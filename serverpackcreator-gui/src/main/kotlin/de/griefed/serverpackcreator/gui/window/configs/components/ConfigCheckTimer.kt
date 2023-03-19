@@ -21,7 +21,7 @@ package de.griefed.serverpackcreator.gui.window.configs.components
 
 import Gui
 import de.griefed.serverpackcreator.gui.GuiProps
-import de.griefed.serverpackcreator.gui.window.configs.ConfigEditorPanel
+import de.griefed.serverpackcreator.gui.window.configs.ConfigEditor
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -36,59 +36,59 @@ import javax.swing.Timer
  * @author Griefed
  */
 @OptIn(DelicateCoroutinesApi::class)
-class ConfigCheckTimer(delay: Int, configEditorPanel: ConfigEditorPanel, guiProps: GuiProps) : Timer(delay,
+class ConfigCheckTimer(delay: Int, configEditor: ConfigEditor, guiProps: GuiProps) : Timer(delay,
     ActionListener {
         GlobalScope.launch(guiProps.configDispatcher) {
             val errors = mutableListOf<String>()
             runBlocking {
                 launch {
-                    errors.addAll(configEditorPanel.validateModpackDir())
-                    configEditorPanel.editorTitle.title = File(configEditorPanel.getModpackDirectory()).name
+                    errors.addAll(configEditor.validateModpackDir())
+                    configEditor.editorTitle.title = File(configEditor.getModpackDirectory()).name
                 }
                 launch {
-                    errors.addAll(configEditorPanel.validateSuffix())
+                    errors.addAll(configEditor.validateSuffix())
                 }
                 launch {
-                    errors.addAll(configEditorPanel.validateExclusions())
+                    errors.addAll(configEditor.validateExclusions())
                 }
                 launch {
-                    errors.addAll(configEditorPanel.validateServerPackFiles())
+                    errors.addAll(configEditor.validateServerPackFiles())
                 }
                 launch {
-                    errors.addAll(configEditorPanel.validateServerIcon())
+                    errors.addAll(configEditor.validateServerIcon())
                 }
                 launch {
-                    errors.addAll(configEditorPanel.validateServerProperties())
+                    errors.addAll(configEditor.validateServerProperties())
                 }
                 launch {
-                    if (!configEditorPanel.checkServer()) {
+                    if (!configEditor.checkServer()) {
                         errors.add(
                             Gui.createserverpack_gui_createserverpack_checkboxserver_unavailable_title(
-                                configEditorPanel.getMinecraftVersion(),
-                                configEditorPanel.getModloader(),
-                                configEditorPanel.getModloaderVersion()
+                                configEditor.getMinecraftVersion(),
+                                configEditor.getModloader(),
+                                configEditor.getModloaderVersion()
                             )
                         )
                     }
                 }
                 launch {
-                    if (configEditorPanel.getModloaderVersion() == Gui.createserverpack_gui_createserverpack_forge_none.toString()) {
+                    if (configEditor.getModloaderVersion() == Gui.createserverpack_gui_createserverpack_forge_none.toString()) {
                         errors.add(
                             Gui.configuration_log_error_minecraft_modloader(
-                                configEditorPanel.getMinecraftVersion(),
-                                configEditorPanel.getModloader()
+                                configEditor.getMinecraftVersion(),
+                                configEditor.getModloader()
                             )
                         )
                     }
                 }
                 launch {
-                    configEditorPanel.compareSettings()
+                    configEditor.compareSettings()
                 }
             }
             if (errors.isEmpty()) {
-                configEditorPanel.editorTitle.hideErrorIcon()
+                configEditor.editorTitle.hideErrorIcon()
             } else {
-                configEditorPanel.editorTitle.setAndShowErrorIcon("<html>${errors.joinToString("<br>")}</html>")
+                configEditor.editorTitle.setAndShowErrorIcon("<html>${errors.joinToString("<br>")}</html>")
             }
         }
     }) {

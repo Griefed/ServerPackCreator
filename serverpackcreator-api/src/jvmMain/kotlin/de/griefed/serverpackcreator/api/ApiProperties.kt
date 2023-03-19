@@ -253,6 +253,16 @@ actual class ApiProperties(
     @get:Contract(pure = true)
     val apiVersion: String = this.javaClass.getPackage().implementationVersion ?: "dev"
 
+    val devBuild: Boolean
+        get() {
+            return apiVersion == "dev"
+        }
+
+    val preRelease: Boolean
+        get() {
+            return apiVersion.matches(alphaBetaRegex)
+        }
+
     /**
      * Whether the last loaded configuration file should be saved to as well.
      *

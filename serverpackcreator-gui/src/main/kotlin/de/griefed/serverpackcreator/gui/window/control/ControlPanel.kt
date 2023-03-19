@@ -24,14 +24,14 @@ import de.griefed.larsonscanner.LarsonScanner
 import de.griefed.serverpackcreator.api.*
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.window.configs.TabbedConfigsTab
+import de.griefed.serverpackcreator.gui.window.control.components.GenerationButton
+import de.griefed.serverpackcreator.gui.window.control.components.ServerPacksButton
 import kotlinx.coroutines.*
 import net.miginfocom.swing.MigLayout
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.awt.Desktop
-import java.awt.event.ActionListener
 import java.io.File
 import java.io.IOException
-import javax.swing.JButton
 import javax.swing.JOptionPane
 import javax.swing.JPanel
 import javax.swing.text.*
@@ -47,31 +47,25 @@ class ControlPanel(
 ) {
     private val log = cachedLoggerOf(this.javaClass)
     private val statusPanel = StatusPanel(guiProps)
-    private val generate = JButton(Gui.createserverpack_gui_buttongenerateserverpack.toString())
-    private val serverPacks = JButton(Gui.createserverpack_gui_buttonserverpacks.toString())
-    val panel = JPanel()
 
     @OptIn(DelicateCoroutinesApi::class)
-    private val generateAction = ActionListener {
+    private val runGeneration = GenerationButton(guiProps) {
         GlobalScope.launch(guiProps.generationDispatcher) {
             launchGeneration()
         }
     }
+    private val serverPacks = ServerPacksButton(guiProps) {
+        apiWrapper.utilities!!.fileUtilities.openFolder(apiWrapper.apiProperties.serverPacksDirectory)
+    }
+    val panel = JPanel()
 
     init {
-        generate.icon = guiProps.genIcon
-        generate.addActionListener(generateAction)
-        generate.multiClickThreshhold = 1000
-        generate.toolTipText = Gui.createserverpack_gui_buttongenerateserverpack_tip.toString()
-        serverPacks.icon = guiProps.packsIcon
-        serverPacks.addActionListener { apiWrapper.utilities!!.fileUtilities.openFolder(apiWrapper.apiProperties.serverPacksDirectory) }
-        serverPacks.toolTipText = Gui.createserverpack_gui_buttonserverpacks_tip.toString()
         panel.layout = MigLayout(
             "",
             "0[200!]0[grow]0",
             "0[75!,bottom]10[75!,top]0"
         )
-        panel.add(generate, "cell 0 0 1 1,grow,height 50!,width 150!,align center")
+        panel.add(runGeneration, "cell 0 0 1 1,grow,height 50!,width 150!,align center")
         panel.add(serverPacks, "cell 0 1 1 1,grow,height 50!,width 150!,align center")
         panel.add(statusPanel.panel, "cell 1 0 1 2,grow,push, h 160!")
     }
@@ -82,7 +76,7 @@ class ControlPanel(
      * @author Griefed
      */
     private fun launchGeneration() {
-        generate.isEnabled = false
+        runGeneration.isEnabled = false
         larsonScanner.loadConfig(guiProps.busyConfig)
         var decision = 0
         if (tabbedConfigsTab.selectedEditor == null) {
@@ -123,7 +117,7 @@ class ControlPanel(
      * @author Griefed
      */
     private fun readyForGeneration() {
-        generate.isEnabled = true
+        runGeneration.isEnabled = true
         larsonScanner.loadConfig(guiProps.idleConfig)
     }
 

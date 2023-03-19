@@ -24,13 +24,15 @@ import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.utilities.DialogUtilities
 import de.griefed.serverpackcreator.updater.MigrationManager
-import org.apache.logging.log4j.kotlin.cachedLoggerOf
-import java.awt.Dimension
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.swing.Swing
+import javax.swing.JLabel
 import javax.swing.JMenuItem
 import javax.swing.JOptionPane
 import javax.swing.JScrollPane
-import javax.swing.JTextPane
-import javax.swing.text.*
 
 /**
  * Menu item to display any available migration messages to the user.
@@ -42,7 +44,6 @@ class MigrationInfoItem(
     private val migrationManager: MigrationManager,
     private val guiProps: GuiProps
 ) : JMenuItem(Gui.menubar_gui_migration.toString()) {
-    private val log = cachedLoggerOf(this.javaClass)
 
     init {
         addActionListener { displayMigrationMessages() }
@@ -54,53 +55,88 @@ class MigrationInfoItem(
      *
      * @author Griefed
      */
-    fun displayMigrationMessages() {
-        val styledDocument: StyledDocument = DefaultStyledDocument()
-        val simpleAttributeSet = SimpleAttributeSet()
-        StyleConstants.setBold(simpleAttributeSet, true)
-        StyleConstants.setFontSize(simpleAttributeSet, 14)
-        StyleConstants.setAlignment(simpleAttributeSet, StyleConstants.ALIGN_LEFT)
-        styledDocument.setParagraphAttributes(
-            0, styledDocument.length, simpleAttributeSet, false
-        )
-        val jTextPane = JTextPane(styledDocument)
-        jTextPane.setCharacterAttributes(simpleAttributeSet, true)
-
-        val messages = StringBuilder()
-        if (apiWrapper.apiProperties.apiVersion != "dev") {
-            if (migrationManager.migrationMessages.isEmpty()) {
-                messages.append("No migrations occurred. :)")
-            } else {
-                for (message in migrationManager.migrationMessages) {
-                    messages.append(message.get()).append("\n")
-                }
+    @OptIn(DelicateCoroutinesApi::class)
+    private fun displayMigrationMessages() {
+        val label = JLabel("<html>")
+        val lineBreak = "<br>"
+        if (!apiWrapper.apiProperties.devBuild && !apiWrapper.apiProperties.preRelease) {
+            for (message in migrationManager.migrationMessages) {
+                label.text += message.get()
+                label.text += lineBreak
             }
         } else {
-            messages.append("No migrations will occur in a dev-version of SPC.")
+            label.text += "<b>Migrations will not occur in a dev, alpha or beta version of ServerPackCreator.</b>"
+            label.text += lineBreak
+            label.text += lineBreak
+            label.text += "<b>This message serves as a test message for development.</b>"
+            label.text += lineBreak
+            label.text += lineBreak
+            label.text += "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut"
+            label.text += lineBreak
+            label.text += "labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris"
+            label.text += lineBreak
+            label.text += "nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit"
+            label.text += lineBreak
+            label.text += "esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt"
+            label.text += lineBreak
+            label.text += "in culpa qui officia deserunt mollit anim id est laborum."
+            label.text += lineBreak
+            label.text += "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto"
+            label.text += lineBreak
+            label.text += lineBreak
+            label.text += "beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt."
+            label.text += lineBreak
+            label.text += lineBreak
+            label.text += "Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem."
+            label.text += lineBreak
+            label.text += lineBreak
+            label.text += "Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit"
+            label.text += lineBreak
+            label.text += lineBreak
+            label.text += "esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?"
+            label.text += lineBreak
+            label.text += "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut"
+            label.text += lineBreak
+            label.text += "labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris"
+            label.text += lineBreak
+            label.text += "nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit"
+            label.text += lineBreak
+            label.text += "esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt"
+            label.text += lineBreak
+            label.text += "in culpa qui officia deserunt mollit anim id est laborum."
+            label.text += lineBreak
+            label.text += "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto"
+            label.text += lineBreak
+            label.text += lineBreak
+            label.text += "beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt."
+            label.text += lineBreak
+            label.text += lineBreak
+            label.text += "Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem."
+            label.text += lineBreak
+            label.text += lineBreak
+            label.text += "Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit"
+            label.text += lineBreak
+            label.text += lineBreak
+            label.text += "esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?"
         }
+        label.text += "</html>"
+        val scroll =
+            JScrollPane(label, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED)
 
-        try {
-            styledDocument.insertString(0, messages.toString(), simpleAttributeSet)
-        } catch (ex: BadLocationException) {
-            log.error("Error inserting text into aboutDocument.", ex)
+        if (migrationManager.migrationMessages.isNotEmpty() || (apiWrapper.apiProperties.devBuild || apiWrapper.apiProperties.preRelease)) {
+            GlobalScope.launch(Dispatchers.Swing) {
+                DialogUtilities.createDialog(
+                    scroll,
+                    Gui.migration_message_title.toString(),
+                    this@MigrationInfoItem,
+                    JOptionPane.INFORMATION_MESSAGE,
+                    JOptionPane.DEFAULT_OPTION,
+                    guiProps.infoIcon,
+                    true, true,
+                    null, null,
+                    800, 600
+                )
+            }
         }
-
-        val scrollPane = JScrollPane(
-            jTextPane,
-            JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-            JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
-        )
-        scrollPane.preferredSize = Dimension(800, 400)
-        jTextPane.isEditable = false
-
-        DialogUtilities.createDialog(
-            scrollPane,
-            Gui.migration_message_title.toString(),
-            this,
-            JOptionPane.INFORMATION_MESSAGE,
-            JOptionPane.DEFAULT_OPTION,
-            guiProps.infoIcon,
-            true
-        )
     }
 }

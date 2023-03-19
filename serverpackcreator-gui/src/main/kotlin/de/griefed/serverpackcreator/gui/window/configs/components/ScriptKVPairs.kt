@@ -21,7 +21,7 @@ package de.griefed.serverpackcreator.gui.window.configs.components
 
 import Gui
 import de.griefed.serverpackcreator.gui.GuiProps
-import de.griefed.serverpackcreator.gui.window.configs.ConfigEditorPanel
+import de.griefed.serverpackcreator.gui.window.configs.ConfigEditor
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.awt.Component
 import java.awt.event.*
@@ -53,7 +53,7 @@ import javax.swing.text.JTextComponent
  * @author Griefed
  */
 @Suppress("unused")
-class ScriptKVPairs(guiProps: GuiProps, configEditorPanel: ConfigEditorPanel) : JTable(
+class ScriptKVPairs(guiProps: GuiProps, configEditor: ConfigEditor) : JTable(
     DefaultTableModel(
         arrayOf<Any>(
             Gui.createserverpack_gui_createserverpack_scriptsettings_table_column_variable.toString(),
@@ -92,7 +92,7 @@ class ScriptKVPairs(guiProps: GuiProps, configEditorPanel: ConfigEditorPanel) : 
         this.rowSorter = sorter
         scrollPanel = JScrollPane(this)
         clearData()
-        model.addTableModelListener { configEditorPanel.validateInputFields() }
+        model.addTableModelListener { configEditor.validateInputFields() }
     }
 
     /**

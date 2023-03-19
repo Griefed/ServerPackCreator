@@ -22,7 +22,7 @@ package de.griefed.serverpackcreator.gui.window.configs.components
 import Gui
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.utilities.DialogUtilities
-import de.griefed.serverpackcreator.gui.window.configs.ConfigEditorPanel
+import de.griefed.serverpackcreator.gui.window.configs.ConfigEditor
 import de.griefed.serverpackcreator.gui.window.configs.TabbedConfigsTab
 import java.awt.FlowLayout
 import java.awt.event.MouseAdapter
@@ -36,7 +36,7 @@ import javax.swing.*
 class ConfigEditorTitle(
     private val guiProps: GuiProps,
     private val tabbedConfigsTab: TabbedConfigsTab,
-    private val configEditorPanel: ConfigEditorPanel
+    private val configEditor: ConfigEditor
 ) : JPanel(FlowLayout(FlowLayout.LEFT, 0, 0)) {
 
     private val errorIconLabel = JLabel(guiProps.smallErrorIcon)
@@ -79,7 +79,7 @@ class ConfigEditorTitle(
 
     private fun close() {
         if (hasUnsavedChanges) {
-            tabbedConfigsTab.tabs.selectedComponent = configEditorPanel
+            tabbedConfigsTab.tabs.selectedComponent = configEditor
             if (DialogUtilities.createShowGet(
                     Gui.createserverpack_gui_close_unsaved_message(title),
                     Gui.createserverpack_gui_close_unsaved_title(title),
@@ -89,11 +89,11 @@ class ConfigEditorTitle(
                     guiProps.warningIcon
                 ) == 0
             ) {
-                configEditorPanel.saveCurrentConfiguration()
+                configEditor.saveCurrentConfiguration()
             }
         }
         val currentTab = tabbedConfigsTab.tabs.selectedIndex
-        tabbedConfigsTab.tabs.remove(configEditorPanel)
+        tabbedConfigsTab.tabs.remove(configEditor)
 
         if (tabbedConfigsTab.tabs.tabCount - 1 > 0) {
             tabbedConfigsTab.tabs.selectedIndex = currentTab - 1

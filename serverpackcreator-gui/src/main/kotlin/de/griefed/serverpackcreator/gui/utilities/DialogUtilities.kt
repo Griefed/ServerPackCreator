@@ -20,6 +20,7 @@
 package de.griefed.serverpackcreator.gui.utilities
 
 import java.awt.Component
+import java.awt.Dimension
 import javax.swing.Icon
 import javax.swing.JDialog
 import javax.swing.JOptionPane
@@ -68,18 +69,29 @@ class DialogUtilities {
             messageType: Int = JOptionPane.PLAIN_MESSAGE, optionType: Int = JOptionPane.DEFAULT_OPTION,
             icon: Icon? = null,
             resizable: Boolean = false, display: Boolean = true,
-            options: Array<*>? = null, initialValue: Any? = null
+            options: Array<*>? = null, initialValue: Any? = null,
+            width: Int? = null, height: Int? = null
         ): JDialog {
-            val dialog = createOptionPane(
+            val optionPane = createOptionPane(
                 message,
                 messageType, optionType,
                 icon,
                 options,
                 initialValue
-            ).createDialog(
+            )
+
+            val dialog = optionPane.createDialog(
                 parent,
                 title
             )
+
+            if (width != null && height != null) {
+                optionPane.minimumSize = Dimension(width,height)
+                optionPane.size = Dimension(width,height)
+                dialog.minimumSize = Dimension(width,height)
+                dialog.size = Dimension(width,height)
+            }
+
             dialog.isResizable = resizable
             dialog.isVisible = display
             return dialog

@@ -25,7 +25,7 @@ import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.components.TabPanel
 import de.griefed.serverpackcreator.gui.utilities.DialogUtilities
-import de.griefed.serverpackcreator.gui.window.configs.ConfigEditorPanel
+import de.griefed.serverpackcreator.gui.window.configs.ConfigEditor
 import de.griefed.serverpackcreator.gui.window.configs.TabbedConfigsTab
 import de.griefed.serverpackcreator.gui.window.control.ControlPanel
 import de.griefed.serverpackcreator.gui.window.logs.TabbedLogsTab
@@ -75,7 +75,7 @@ class MainPanel(
         }
         val configs = mutableListOf<String>()
         for (tab in tabbedConfigsTab.allTabs) {
-            val config = tab as ConfigEditorPanel
+            val config = tab as ConfigEditor
             val modpackName = File(config.getModpackDirectory()).name
             if (config.editorTitle.title != Gui.createserverpack_gui_title_new.toString() && config.hasUnsavedChanges()) {
                 tabbedConfigsTab.tabs.selectedComponent = tab

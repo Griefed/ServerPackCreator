@@ -46,10 +46,10 @@ class TabbedConfigsTab(
         arrayOf(Gui.createserverpack_gui_createserverpack_forge_none.toString())
     )
     private val componentResizer = ComponentResizer()
-    val selectedEditor: ConfigEditorPanel?
+    val selectedEditor: ConfigEditor?
         get() {
             return if (activeTab != null) {
-                activeTab as ConfigEditorPanel
+                activeTab as ConfigEditor
             } else {
                 null
             }
@@ -62,10 +62,10 @@ class TabbedConfigsTab(
             GlobalScope.launch(guiProps.configDispatcher) {
                 if (tabs.tabCount != 0) {
                     for (tab in 0 until tabs.tabCount) {
-                        (tabs.getComponentAt(tab) as ConfigEditorPanel).editorTitle.closeButton.isVisible = false
+                        (tabs.getComponentAt(tab) as ConfigEditor).editorTitle.closeButton.isVisible = false
                     }
                     if (activeTab != null) {
-                        (activeTab as ConfigEditorPanel).editorTitle.closeButton.isVisible = true
+                        (activeTab as ConfigEditor).editorTitle.closeButton.isVisible = true
                     }
                 }
             }
@@ -87,11 +87,11 @@ class TabbedConfigsTab(
         }
 
         tabs.selectedIndex = 0
-        (activeTab!! as ConfigEditorPanel).editorTitle.closeButton.isVisible = true
+        (activeTab!! as ConfigEditor).editorTitle.closeButton.isVisible = true
     }
 
-    fun addTab(): ConfigEditorPanel {
-        val editor = ConfigEditorPanel(
+    fun addTab(): ConfigEditor {
+        val editor = ConfigEditor(
             guiProps,
             this,
             apiWrapper,
@@ -111,7 +111,7 @@ class TabbedConfigsTab(
      * @param configFile The configuration file to parse and load into the GUI.
      * @author Griefed
      */
-    fun loadConfig(configFile: File, tab: ConfigEditorPanel = addTab()) {
+    fun loadConfig(configFile: File, tab: ConfigEditor = addTab()) {
         tab.loadConfiguration(PackConfig(apiWrapper.utilities!!, configFile), configFile)
     }
 
@@ -143,7 +143,7 @@ class TabbedConfigsTab(
                         return
                     }
                     for (tab in allTabs) {
-                        val configTab = tab as ConfigEditorPanel
+                        val configTab = tab as ConfigEditor
                         val model = DefaultComboBoxModel(choose)
                         model.addAll(apiWrapper.apiProperties.iconQuickSelections)
                         configTab.iconQuickSelect.model = model
@@ -189,7 +189,7 @@ class TabbedConfigsTab(
                         return
                     }
                     for (tab in allTabs) {
-                        val configTab = tab as ConfigEditorPanel
+                        val configTab = tab as ConfigEditor
                         val model = DefaultComboBoxModel(choose)
                         model.addAll(apiWrapper.apiProperties.propertiesQuickSelections)
                         configTab.propertiesQuickSelect.model = model

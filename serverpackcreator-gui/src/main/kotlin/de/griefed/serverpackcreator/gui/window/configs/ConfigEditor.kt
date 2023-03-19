@@ -44,7 +44,7 @@ import javax.swing.event.DocumentEvent
  *
  * @author Griefed
  */
-class ConfigEditorPanel(
+class ConfigEditor(
     private val guiProps: GuiProps,
     tabbedConfigsTab: TabbedConfigsTab,
     private val apiWrapper: ApiWrapper,
@@ -64,9 +64,11 @@ class ConfigEditorPanel(
     private val prepareServerInfo = PrepareServerInfo(guiProps)
     private val exclusionsInfo = ExclusionsInfo(guiProps)
     private val validate = ActionListener { validateInputFields() }
-    private val modpackInspect = IconActionButton(
+    private val modpackInspect = BalloonTipButton(
+        null,
         guiProps.inspectIcon,
-        Gui.createserverpack_gui_buttonmodpackdir_scan_tip.toString()
+        Gui.createserverpack_gui_buttonmodpackdir_scan_tip.toString(),
+        guiProps
     ) { updateGuiFromSelectedModpack() }
     private val includeIcon = ActionCheckBox(
         Gui.createserverpack_gui_createserverpack_checkboxicon.toString(),
@@ -115,7 +117,8 @@ class ConfigEditorPanel(
         "-Xmx4G -Xms4G",
         Gui.createserverpack_gui_createserverpack_javaargs.toString(),
         changeListener,
-        guiProps)
+        guiProps
+    )
     private val serverPackSuffix = ScrollTextField("", changeListener)
     private val propertiesFile = ScrollTextFileField(apiWrapper.apiProperties.defaultServerProperties, changeListener)
     private val iconFile = ScrollTextFileField(apiWrapper.apiProperties.defaultServerIcon, changeListener)
@@ -159,9 +162,11 @@ class ConfigEditorPanel(
         panel.add(ElementLabel(Gui.createserverpack_gui_createserverpack_labelmodpackdir.toString()), "cell 1 0,grow")
         panel.add(modpackDirectory, "cell 2 0,grow")
         panel.add(
-            IconActionButton(
+            BalloonTipButton(
+                null,
                 guiProps.folderIcon,
                 Gui.createserverpack_gui_browser.toString(),
+                guiProps,
                 showBrowser
             ),
             "cell 3 0, h 30!,w 30!"
@@ -178,13 +183,21 @@ class ConfigEditorPanel(
         panel.add(ElementLabel(Gui.createserverpack_gui_quickselect.toString()), "cell 2 1")
         panel.add(propertiesQuickSelect, "cell 2 1,w 200!")
         panel.add(
-            IconActionButton(guiProps.folderIcon, Gui.createserverpack_gui_browser.toString(), showBrowser),
+            BalloonTipButton(
+                null,
+                guiProps.folderIcon,
+                Gui.createserverpack_gui_browser.toString(),
+                guiProps,
+                showBrowser
+            ),
             "cell 3 1"
         )
         panel.add(
-            IconActionButton(
+            BalloonTipButton(
+                null,
                 guiProps.openIcon,
-                Gui.createserverpack_gui_createserverpack_button_open_properties.toString()
+                Gui.createserverpack_gui_createserverpack_button_open_properties.toString(),
+                guiProps
             ) { openServerProperties() },
             "cell 4 1"
         )
@@ -196,7 +209,13 @@ class ConfigEditorPanel(
         panel.add(ElementLabel(Gui.createserverpack_gui_quickselect.toString()), "cell 2 2")
         panel.add(iconQuickSelect, "cell 2 2,w 200!")
         panel.add(
-            IconActionButton(guiProps.folderIcon, Gui.createserverpack_gui_browser.toString(), showBrowser),
+            BalloonTipButton(
+                null,
+                guiProps.folderIcon,
+                Gui.createserverpack_gui_browser.toString(),
+                guiProps,
+                showBrowser
+            ),
             "cell 3 2"
         )
         panel.add(iconPreview, "cell 4 2")
@@ -206,20 +225,30 @@ class ConfigEditorPanel(
         panel.add(ElementLabel(Gui.createserverpack_gui_createserverpack_labelcopydirs.toString()), "cell 1 3 1 3,grow")
         panel.add(serverPackFiles, "cell 2 3 1 3,grow,w 10:500:,h 100!")
         panel.add(
-            IconActionButton(
+            BalloonTipButton(
+                null,
                 guiProps.revertIcon,
-                Gui.createserverpack_gui_buttoncopydirs_revert_tip.toString()
+                Gui.createserverpack_gui_buttoncopydirs_revert_tip.toString(),
+                guiProps
             ) { revertServerPackFiles() },
             "cell 3 3 2 1, h 30!, aligny center, alignx center,growx"
         )
         panel.add(
-            IconActionButton(guiProps.folderIcon, Gui.createserverpack_gui_browser.toString(), showBrowser),
+            BalloonTipButton(
+                null,
+                guiProps.folderIcon,
+                Gui.createserverpack_gui_browser.toString(),
+                guiProps,
+                showBrowser
+            ),
             "cell 3 4 2 1, h 30!, aligny center, alignx center,growx"
         )
         panel.add(
-            IconActionButton(
+            BalloonTipButton(
+                null,
                 guiProps.resetIcon,
-                Gui.createserverpack_gui_buttoncopydirs_reset_tip.toString()
+                Gui.createserverpack_gui_buttoncopydirs_reset_tip.toString(),
+                guiProps
             ) { setCopyDirectories(apiWrapper.apiProperties.directoriesToInclude.toMutableList()) },
             "cell 3 5 2 1, h 30!, aligny top, alignx center,growx"
         )
@@ -271,25 +300,39 @@ class ConfigEditorPanel(
                 JavaArgsInfo(guiProps),
                 ScriptSettingsInfo(guiProps),
                 exclusions,
-                IconActionButton(
+                BalloonTipButton(
+                    null,
                     guiProps.revertIcon,
-                    Gui.createserverpack_gui_buttonclientmods_revert_tip.toString()
+                    Gui.createserverpack_gui_buttonclientmods_revert_tip.toString(),
+                    guiProps
                 ) { revertExclusions() },
-                IconActionButton(guiProps.folderIcon, Gui.createserverpack_gui_browser.toString(), showBrowser),
-                IconActionButton(
+                BalloonTipButton(
+                    null,
+                    guiProps.folderIcon,
+                    Gui.createserverpack_gui_browser.toString(),
+                    guiProps,
+                    showBrowser
+                ),
+                BalloonTipButton(
+                    null,
                     guiProps.resetIcon,
-                    Gui.createserverpack_gui_buttonclientmods_reset_tip.toString()
+                    Gui.createserverpack_gui_buttonclientmods_reset_tip.toString(),
+                    guiProps
                 ) { setClientSideMods(apiWrapper.apiProperties.clientSideMods()) },
                 javaArgs,
                 aikarsFlags,
                 scriptKVPairs,
-                IconActionButton(
+                BalloonTipButton(
+                    null,
                     guiProps.revertIcon,
-                    Gui.createserverpack_gui_revert.toString()
+                    Gui.createserverpack_gui_revert.toString(),
+                    guiProps
                 ) { revertScriptKVPairs() },
-                IconActionButton(
+                BalloonTipButton(
+                    null,
                     guiProps.resetIcon,
-                    Gui.createserverpack_gui_reset.toString()
+                    Gui.createserverpack_gui_reset.toString(),
+                    guiProps
                 ) { resetScriptKVPairs() }
             )
         ), "cell 0 10 5,grow")
@@ -653,7 +696,7 @@ class ConfigEditorPanel(
             } catch (ex: Exception) {
                 log.error("Couldn't load configuration file.", ex)
                 JOptionPane.showMessageDialog(
-                    this@ConfigEditorPanel,
+                    this@ConfigEditor,
                     Gui.createserverpack_gui_config_load_error_message.toString() + " " + ex.cause + "   ",
                     Gui.createserverpack_gui_config_load_error.toString(),
                     JOptionPane.ERROR_MESSAGE,
@@ -990,7 +1033,7 @@ class ConfigEditorPanel(
                         setModloaderVersion(packConfig.modloaderVersion)
                         setCopyDirectories(ArrayList(dirsToInclude))
                         JOptionPane.showMessageDialog(
-                            this@ConfigEditorPanel,
+                            this@ConfigEditor,
                             Gui.createserverpack_gui_modpack_scan_message(
                                 getMinecraftVersion(),
                                 getModloader(),

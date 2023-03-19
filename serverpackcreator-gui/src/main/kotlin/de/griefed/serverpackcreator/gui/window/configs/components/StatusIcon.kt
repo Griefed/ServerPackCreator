@@ -41,7 +41,7 @@ abstract class StatusIcon(private val guiProps: GuiProps, private val infoToolTi
             false
         )
         balloonTip.isVisible = false
-        this.addMouseListener(object : MouseListener {
+        addMouseListener(object : MouseListener {
             override fun mouseClicked(e: MouseEvent?) {
                 balloonTip.style = guiProps.balloonStyle
                 balloonTip.isVisible = true
