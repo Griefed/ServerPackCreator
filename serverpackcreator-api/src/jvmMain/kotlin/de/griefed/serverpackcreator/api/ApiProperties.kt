@@ -32,7 +32,6 @@ import java.io.IOException
 import java.io.InputStreamReader
 import java.net.URL
 import java.util.*
-import java.util.concurrent.Executors
 
 /**
  * Base settings of ServerPackCreator, such as working directories, default list of clientside-only
@@ -670,61 +669,58 @@ actual class ApiProperties(
         }
 
     /**
+     * Load the [propertiesFile] into the provided [props]
+     */
+    private fun loadFile(propertiesFile: File, props: Properties) {
+        try {
+            propertiesFile.inputStream().use {
+                props.load(it)
+                internalProperties.putAll(props)
+            }
+            log.info("Loaded properties from $propertiesFile.")
+        } catch (ex: Exception) {
+            log.error("Couldn't read properties from $propertiesFile.", ex)
+        }
+    }
+
+    /**
      * Reload from a specific properties-file.
      *
      * @param propertiesFile The properties-file with which to loadProperties the settings and
      * configuration.
      * @author Griefed
      */
+    @Suppress("DuplicatedCode")
     fun loadProperties(propertiesFile: File = File(serverPackCreatorProperties)) {
         val props = Properties()
+        val jarFolderFile = File(jarInformation.jarFolder, serverPackCreatorProperties)
+        val homeDirFile = File(
+            File(System.getProperty("user.home"), "ServerPackCreator").absoluteFile,
+            "serverpackcreator.properties"
+        )
+        val relativeDirFile = File(serverPackCreatorProperties)
+
         // Load the properties file from the classpath, providing default values.
         try {
             this.javaClass.getResourceAsStream("/$serverPackCreatorProperties").use {
-                internalProperties.load(it)
+                props.load(it)
             }
+            log.info("Loaded properties from classpath.")
         } catch (ex: Exception) {
-            log.error("Couldn't read properties file.", ex)
+            log.error("Couldn't read properties from classpath.", ex)
         }
 
         // If our properties-file exists in SPCs home directory, load it.
-        if (File(jarInformation.jarFolder, serverPackCreatorProperties).exists()) {
-            try {
-                File(jarInformation.jarFolder, serverPackCreatorProperties).inputStream().use {
-                    props.load(it)
-                    internalProperties.putAll(props)
-                }
-            } catch (ex: IOException) {
-                log.error("Couldn't read properties file.", ex)
-            }
-        }
-
+        loadFile(jarFolderFile,props)
+        // If our properties-file exists in the users home dir ServerPackCreator-dir, load it.
+        loadFile(homeDirFile,props)
         // If our properties-file in the directory from which the user is executing SPC exists, load it.
-        if (File(serverPackCreatorProperties).exists()) {
-            try {
-                File(serverPackCreatorProperties).inputStream().use {
-                    props.load(it)
-                    internalProperties.putAll(props)
-                }
-            } catch (ex: IOException) {
-                log.error("Couldn't read properties file.", ex)
-            }
-        }
-
+        loadFile(relativeDirFile,props)
         // Load the specified properties-file.
-        if (propertiesFile.absoluteFile.exists()) {
-            try {
-                propertiesFile.absoluteFile.inputStream().use {
-                    props.load(it)
-                    internalProperties.putAll(props)
-                    log.info("Loading file: " + propertiesFile.path)
-                }
-            } catch (ex: IOException) {
-                log.error("Couldn't read properties file.", ex)
-            }
-        } else {
-            log.info(propertiesFile.absoluteFile.path + " does not exist.")
-        }
+        loadFile(propertiesFile,props)
+
+        internalProperties.putAll(props)
+
         setHome()
         if (updateFallback()) {
             log.info("Fallback lists updated.")
