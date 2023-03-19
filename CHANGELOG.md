@@ -1,3 +1,50 @@
+## [5.0.0-alpha.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-alpha.1...5.0.0-alpha.2) (2023-03-19)
+
+
+### ✨ Milestone
+
+* Migrate to Kotlin, Multimodule, API Multiplatform, Java 17 ([b4f5481](https://git.griefed.de/Griefed/ServerPackCreator/commit/b4f54819139fe86ffab4881f2082d27ed4890c18))
+* Migrate to Kotlin, Multimodule, SPC API Kotlin Multiplatform preparations, JDK 17 ([3a4909f](https://git.griefed.de/Griefed/ServerPackCreator/commit/3a4909f337047bac26b2dcf08dbe8cbe86ad1d2b))
+
+
+### 📔 Docs
+
+* Set name for feature asks correctly. ([15670e1](https://git.griefed.de/Griefed/ServerPackCreator/commit/15670e145afba00e4659a58e335c50a54516b89b))
+* Some minor README improvements. Disclaimers, warnings, wiki and help. ([fbaf66f](https://git.griefed.de/Griefed/ServerPackCreator/commit/fbaf66f3287807602fb7e90cb6bd1df1202ce565))
+* **GitHub:** Improve the feature and improvement templates by rephrasing them from requests to asks instead. ([0125c02](https://git.griefed.de/Griefed/ServerPackCreator/commit/0125c0264a5541c3b73256b1b9b10331780b07f8))
+
+
+### 📦 Other
+
+* Fix Gradle deprecation warnings and upgrade to Gradle 8.0.2 ([f4ebc10](https://git.griefed.de/Griefed/ServerPackCreator/commit/f4ebc105fa19fb88cb1c885e7e858f08f0942ace))
+* Move web-frontend configuration to buildSrc ([d3892e3](https://git.griefed.de/Griefed/ServerPackCreator/commit/d3892e36943cde91bd26af21e0ccbd96839b73b1))
+* Small explanation about pre-releases. ([b24f9e9](https://git.griefed.de/Griefed/ServerPackCreator/commit/b24f9e9521e5de949448a8c8504d3028ddff6064))
+* Update license report ([b8f4e6f](https://git.griefed.de/Griefed/ServerPackCreator/commit/b8f4e6f2bfadbe7e6e6162ab2107811ec6ffb7ff))
+* Update manifests ([ab6704a](https://git.griefed.de/Griefed/ServerPackCreator/commit/ab6704a085f0e4bab9d6f4559907158ab9d8c7c0))
+* **deps:** update dependency @quasar/extras to v1.15.11 ([b62c3e3](https://git.griefed.de/Griefed/ServerPackCreator/commit/b62c3e312ee7072c2ce52df121f5edc2f5fcb750))
+* **deps:** update dependency quasar to v2.11.7 ([8a2c853](https://git.griefed.de/Griefed/ServerPackCreator/commit/8a2c853dd1187ecf673ea988face062e958c94ae))
+* **deps:** update dependency terser to v5.16.5 ([e7ee2de](https://git.griefed.de/Griefed/ServerPackCreator/commit/e7ee2de9c6da647c9ffdfefb879c3eb3bb72ed93))
+
+
+### 🦊 CI/CD
+
+* Move Qodana job to separate workflow ([b9fde3b](https://git.griefed.de/Griefed/ServerPackCreator/commit/b9fde3b210dbad5256c16b8b675265fe9a3094e8))
+* Re-introduce Discord newspost about new release to release-workflow ([18ae97e](https://git.griefed.de/Griefed/ServerPackCreator/commit/18ae97eb78440b740756de2ca33f9d8cd54a1454))
+
+
+### 🧪 Tests
+
+* Check correct directory ([a3291f2](https://git.griefed.de/Griefed/ServerPackCreator/commit/a3291f2a968b319557b49e2eb9fd62341e80ea30))
+* Properly cleanup before running tests ([969dacf](https://git.griefed.de/Griefed/ServerPackCreator/commit/969dacf6c23fdcaf6eebf14592a5d165855e3758))
+* Split run tests into modloader-related, separate tests ([4dcd820](https://git.griefed.de/Griefed/ServerPackCreator/commit/4dcd820e7850c2c843cc8949761b8eafe4cc2fb1))
+
+
+### 🛠 Fixes
+
+* **CI:** Hopefully correctly setup publishing jobs to artifacts get published on various repos ([0493f3f](https://git.griefed.de/Griefed/ServerPackCreator/commit/0493f3fbcb6431d5f90e212b5f178c1e77cd4fe1))
+* **CI:** Hopefully fix publishing jobs. Switch to publishAll. ([344c1c1](https://git.griefed.de/Griefed/ServerPackCreator/commit/344c1c1a325b45ec55f90bb260274d3ca0e507e1))
+* **CI:** Please, OSSRH-job, work this time. ([0783330](https://git.griefed.de/Griefed/ServerPackCreator/commit/078333043acff0d3776386473a814d6074fa8353))
+
 ## [5.0.0-alpha.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.0.1...5.0.0-alpha.1) (2023-03-19)
 
 
