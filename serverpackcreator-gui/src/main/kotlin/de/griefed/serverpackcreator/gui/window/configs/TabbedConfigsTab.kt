@@ -21,7 +21,7 @@ package de.griefed.serverpackcreator.gui.window.configs
 
 import Gui
 import de.griefed.serverpackcreator.api.*
-import de.griefed.serverpackcreator.gui.FileBrowser
+import de.griefed.serverpackcreator.gui.window.configs.filebrowser.FileBrowser
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.components.TabPanel
 import de.griefed.serverpackcreator.gui.window.configs.components.ComponentResizer

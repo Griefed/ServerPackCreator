@@ -22,10 +22,10 @@ package de.griefed.serverpackcreator.gui
 import com.formdev.flatlaf.extras.FlatSVGIcon
 import de.griefed.larsonscanner.LarsonScanner.ScannerConfig
 import de.griefed.serverpackcreator.api.utilities.ReticulatingSplines
-import de.griefed.serverpackcreator.gui.filebrowser.view.renderer.FileNameComparator
-import de.griefed.serverpackcreator.gui.filebrowser.view.renderer.FileTypeComparator
 import de.griefed.serverpackcreator.gui.utilities.ImageUtilities
 import de.griefed.serverpackcreator.gui.utilities.getScaledInstance
+import de.griefed.serverpackcreator.gui.window.configs.filebrowser.view.renderer.FileNameComparator
+import de.griefed.serverpackcreator.gui.window.configs.filebrowser.view.renderer.FileTypeComparator
 import kotlinx.coroutines.asCoroutineDispatcher
 import net.java.balloontip.styles.BalloonTipStyle
 import net.java.balloontip.styles.EdgedBalloonStyle
