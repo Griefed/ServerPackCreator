@@ -34,7 +34,7 @@ import javax.swing.tree.TreeCellRenderer
  * @author Griefed (Kotlin Conversion and minor changes)
  * @author Andrew Thompson
  * @see <a href="https://codereview.stackexchange.com/questions/4446/file-browser-gui">File Browser GUI</a>
- * @license LGPL
+ * @license LGPLFile
  */
 class FileTreeCellRenderer(private val browserModel: FileBrowserModel) : TreeCellRenderer {
     private val label: JLabel = JLabel(" ")
@@ -52,11 +52,16 @@ class FileTreeCellRenderer(private val browserModel: FileBrowserModel) : TreeCel
         row: Int,
         hasFocus: Boolean
     ): Component {
-        val node: DefaultMutableTreeNode = value as DefaultMutableTreeNode
-        val fileNode: FileNode = node.userObject as FileNode
-        val file: File = fileNode.file
-        label.icon = browserModel.getFileIcon(file)
-        label.text = browserModel.getFileText(file)
+        val node = value as DefaultMutableTreeNode
+        if (node.userObject != null) {
+            val fileNode = node.userObject as FileNode
+            val file = fileNode.file
+            label.icon = browserModel.getFileIcon(file)
+            label.text = browserModel.getFileText(file)
+        } else {
+            label.icon = null
+            label.text = ""
+        }
         return label
     }
 }

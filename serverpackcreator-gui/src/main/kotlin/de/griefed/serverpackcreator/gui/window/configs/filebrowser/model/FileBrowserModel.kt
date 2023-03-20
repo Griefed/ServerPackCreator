@@ -21,6 +21,7 @@ package de.griefed.serverpackcreator.gui.window.configs.filebrowser.model
 
 import de.griefed.serverpackcreator.api.utilities.common.parallelMap
 import de.griefed.serverpackcreator.gui.GuiProps
+import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
 import java.util.*
 import javax.swing.Icon
@@ -36,6 +37,7 @@ import javax.swing.tree.DefaultTreeModel
  * @license LGPL
  */
 class FileBrowserModel(private val guiProps: GuiProps) {
+    private val log = cachedLoggerOf(this.javaClass)
     private val rootManager: RootManager = RootManager(guiProps)
     val treeModel: DefaultTreeModel = createTreeModel()
 
@@ -91,16 +93,20 @@ class FileBrowserModel(private val guiProps: GuiProps) {
             if (file.isDirectory) {
                 try {
                     file.listFiles()!!.forEach { child ->
-                        root.add(
-                            SortedTreeNode(
-                                guiProps,
-                                FileNode(child)
+                        try {
+                            root.add(
+                                SortedTreeNode(
+                                    guiProps,
+                                    FileNode(child)
+                                )
                             )
-                        )
+                        } catch (npe: Exception) {
+                            log.warn("Couldn't access $child.")
+                        }
                     }
 
                 } catch (npe: NullPointerException) {
-                    npe.printStackTrace()
+                    log.warn("Couldn't access $file.")
                 }
             }
         } else {
@@ -111,15 +117,20 @@ class FileBrowserModel(private val guiProps: GuiProps) {
                 if (file.isDirectory) {
                     try {
                         file.listFiles()!!.forEach { child ->
-                            node.add(
-                                SortedTreeNode(
-                                    guiProps,
-                                    FileNode(child)
+                            try {
+                                node.add(
+                                    SortedTreeNode(
+                                        guiProps,
+                                        FileNode(child)
+                                    )
                                 )
-                            )
+                            } catch (npe: Exception) {
+                                log.warn("Couldn't access $child.")
+                            }
                         }
                     } catch (npe: NullPointerException) {
-                        npe.printStackTrace()
+                        log.warn("Couldn't access $file.")
+                        root.remove(treeNode)
                     }
                 }
             }

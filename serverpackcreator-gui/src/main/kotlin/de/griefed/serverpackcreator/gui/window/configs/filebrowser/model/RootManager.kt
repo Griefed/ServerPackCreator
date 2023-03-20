@@ -37,6 +37,9 @@ import javax.swing.tree.DefaultMutableTreeNode
  */
 class RootManager(private val guiProps: GuiProps) {
     private val osName = System.getProperty("os.name")
+    val isOSX = osName.contains("Mac", ignoreCase = true)
+    val isLinux = osName.contains("Linux", ignoreCase = true)
+    val isWindows = osName.contains("Windows",ignoreCase = true)
     val fileSystemView: FileSystemView = FileSystemView.getFileSystemView()
 
     @get:Throws(IllegalStateException::class)
@@ -45,7 +48,13 @@ class RootManager(private val guiProps: GuiProps) {
             if (isWindows) {
                 return myComputer
             }
-            val roots = File.listRoots()
+
+            val roots = if (isLinux || isOSX) {
+                File.listRoots()[0].listFiles()
+            } else {
+                File.listRoots()
+            }
+
             val rootNode = SortedTreeNode(guiProps)
             if (roots.isNotEmpty()) {
                 for (root in roots) {
@@ -74,11 +83,4 @@ class RootManager(private val guiProps: GuiProps) {
             }
             throw IllegalStateException("My Computer not available!")
         }
-
-    private val isOSX: Boolean
-        get() = osName.contains("Mac", ignoreCase = true)
-    private val isLinux: Boolean
-        get() = osName.contains("Linux", ignoreCase = true)
-    private val isWindows: Boolean
-        get() = osName.contains("Windows",ignoreCase = true)
 }
