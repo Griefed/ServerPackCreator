@@ -28,6 +28,7 @@ import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import org.jetbrains.annotations.Contract
 import java.io.BufferedReader
 import java.io.File
+import java.io.FileNotFoundException
 import java.io.IOException
 import java.io.InputStreamReader
 import java.net.URL
@@ -680,8 +681,10 @@ actual class ApiProperties(
                 internalProperties.putAll(props)
             }
             log.info("Loaded properties from $propertiesFile.")
+        } catch (ex: FileNotFoundException) {
+            log.warn("Properties-file does not exist: ${propertiesFile.absolutePath}.")
         } catch (ex: Exception) {
-            log.error("Couldn't read properties from $propertiesFile.", ex)
+            log.error("Couldn't read properties from ${propertiesFile.absolutePath}.", ex)
         }
     }
 
@@ -695,12 +698,12 @@ actual class ApiProperties(
     @Suppress("DuplicatedCode")
     fun loadProperties(propertiesFile: File = File(serverPackCreatorProperties)) {
         val props = Properties()
-        val jarFolderFile = File(jarInformation.jarFolder, serverPackCreatorProperties)
+        val jarFolderFile = File(jarInformation.jarFolder.absoluteFile, serverPackCreatorProperties).absoluteFile
         val homeDirFile = File(
             File(System.getProperty("user.home"), "ServerPackCreator").absoluteFile,
             "serverpackcreator.properties"
-        )
-        val relativeDirFile = File(serverPackCreatorProperties)
+        ).absoluteFile
+        val relativeDirFile = File(serverPackCreatorProperties).absoluteFile
 
         // Load the properties file from the classpath, providing default values.
         try {
