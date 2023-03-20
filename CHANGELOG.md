@@ -1,3 +1,22 @@
+## [5.0.0-alpha.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-alpha.2...5.0.0-alpha.3) (2023-03-20)
+
+
+### :scissors: Refactor
+
+* Improve os-decision in filebrowser ([fa071ed](https://git.griefed.de/Griefed/ServerPackCreator/commit/fa071edcbe7acfd3b877549aab18dbee9b32c3ec))
+
+
+### 📦 Other
+
+* Improve logging of properties file which we tried to load ([44ce4ae](https://git.griefed.de/Griefed/ServerPackCreator/commit/44ce4aee64201eec8f08bae71f1f8a1b3df75034))
+* Note about pre-release installers ([aee835e](https://git.griefed.de/Griefed/ServerPackCreator/commit/aee835ee2c87cb5da351127ca170b8d872ea46c9))
+
+
+### 🛠 Fixes
+
+* alibi commit to trigger the generation of a pre-release :-P ([1b4408e](https://git.griefed.de/Griefed/ServerPackCreator/commit/1b4408e66d047d74c65ae27c400c2a17d398bedc))
+* Filebrowser not initializing on UNIX systems. Thanks to [@kreezxil](https://git.griefed.de/kreezxil) for the report. ([e7a6649](https://git.griefed.de/Griefed/ServerPackCreator/commit/e7a6649dc5e9cf168f6e427cd17c0e44d228a255))
+
 ## [5.0.0-alpha.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-alpha.1...5.0.0-alpha.2) (2023-03-19)
 
 
