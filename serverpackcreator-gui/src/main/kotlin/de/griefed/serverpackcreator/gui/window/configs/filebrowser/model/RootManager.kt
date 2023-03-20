@@ -76,11 +76,9 @@ class RootManager(private val guiProps: GuiProps) {
         }
 
     private val isOSX: Boolean
-        get() = osName.equals("Max OS X", ignoreCase = true)
+        get() = osName.contains("Mac", ignoreCase = true)
     private val isLinux: Boolean
-        get() = osName.equals("Linux", ignoreCase = true)
-    private val isSolaris: Boolean
-        get() = osName.equals("SunOS", ignoreCase = true)
-    val isWindows: Boolean
-        get() = !(isOSX || isLinux || isSolaris) && osName.lowercase().contains("windows")
+        get() = osName.contains("Linux", ignoreCase = true)
+    private val isWindows: Boolean
+        get() = osName.contains("Windows",ignoreCase = true)
 }
