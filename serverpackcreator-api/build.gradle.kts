@@ -36,7 +36,7 @@ kotlin {
                 api("com.electronwill.night-config:toml:3.6.6")
                 api("com.fasterxml.jackson.core:jackson-databind:2.14.2")
                 api("com.github.vatbub:mslinks:1.0.6.2")
-                api("net.lingala.zip4j:zip4j:2.11.2")
+                api("net.lingala.zip4j:zip4j:2.11.5")
                 api("org.apache.logging.log4j:log4j-api-kotlin:1.2.0")
                 api("org.apache.logging.log4j:log4j-core:2.20.0")
                 api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
