@@ -38,7 +38,7 @@ kotlin {
                 api("com.github.vatbub:mslinks:1.0.6.2")
                 api("net.lingala.zip4j:zip4j:2.11.2")
                 api("org.apache.logging.log4j:log4j-api-kotlin:1.2.0")
-                api("org.apache.logging.log4j:log4j-core:2.19.0")
+                api("org.apache.logging.log4j:log4j-core:2.20.0")
                 api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
                 api("org.pf4j:pf4j:3.8.0")
             }
