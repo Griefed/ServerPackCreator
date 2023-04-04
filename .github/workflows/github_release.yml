@@ -22,7 +22,7 @@ jobs:
       # EXTRACT TAG FROM PUSH
       - name: Get tag
         id: tag
-        uses: tj-actions/branch-names@v6.3
+        uses: tj-actions/branch-names@v6.5
       - name: Use tag
         run: echo ${{steps.tag.outputs.tag}}
 
@@ -48,7 +48,7 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - uses: gradle/gradle-build-action@v2.3.3
+      - uses: gradle/gradle-build-action@v2.4.0
         with:
           gradle-version: wrapper
 
@@ -113,7 +113,7 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - uses: gradle/gradle-build-action@v2.3.3
+      - uses: gradle/gradle-build-action@v2.4.0
         with:
           gradle-version: wrapper
 
@@ -171,7 +171,7 @@ jobs:
 
       # GET DESCRIPTION
       - name: Extract version changelog
-        uses: sergeysova/jq-action@v2.2.1
+        uses: sergeysova/jq-action@v2.3.0
         id: description
         with:
           cmd: "jq .description version.json -r | sed -e 's/\\n/\\n/g' > description.txt"
@@ -228,7 +228,7 @@ jobs:
 
       # DEPLOY TO GH-PAGES
       - name: Deploy to GitHub-Pages
-        uses: JamesIves/github-pages-deploy-action@v4.4.0
+        uses: JamesIves/github-pages-deploy-action@v4.4.1
         with:
           branch: gh-pages
           folder: serverpackcreator-api/build/dokka
