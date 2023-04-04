@@ -17,7 +17,7 @@ jobs:
     steps:
       # GET THE LATEST CODE
       - name: Checkout latest code
-        uses: actions/checkout@v3.1.0
+        uses: actions/checkout@v3.5.0
         with:
           fetch-depth: 0
 
@@ -35,7 +35,7 @@ jobs:
     steps:
       # GET THE LATEST CODE
       - name: Checkout latest code
-        uses: actions/checkout@v3.1.0
+        uses: actions/checkout@v3.5.0
         with:
           fetch-depth: 0
 
@@ -100,7 +100,7 @@ jobs:
     steps:
       # GET THE LATEST CODE
       - name: Checkout latest code
-        uses: actions/checkout@v3.1.0
+        uses: actions/checkout@v3.5.0
         with:
           fetch-depth: 0
 
@@ -160,7 +160,7 @@ jobs:
     steps:
       # GET THE LATEST CODE
       - name: Checkout latest code
-        uses: actions/checkout@v3.1.0
+        uses: actions/checkout@v3.5.0
         with:
           fetch-depth: 0
 
