@@ -171,7 +171,7 @@ jobs:
 
       # GET DESCRIPTION
       - name: Extract version changelog
-        uses: sergeysova/jq-action@v2.2.1
+        uses: sergeysova/jq-action@v2.3.0
         id: description
         with:
           cmd: "jq .description version.json -r | sed -e 's/\\n/\\n/g' > description.txt"
