@@ -12,14 +12,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-      - uses: actions/checkout@v3.1.0
+      - uses: actions/checkout@v3.5.0
 
       - name: Get branch name
         id: branch-name
         uses: tj-actions/branch-names@v6.3
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v3.6.0
+        uses: actions/setup-java@v3.11.0
         with:
           distribution: 'zulu'
           java-version: '17'
@@ -36,7 +36,7 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew -Pversion=${{ steps.branch-name.outputs.current_branch }} build --info --full-stacktrace
 
-      - uses: actions/upload-artifact@v3.1.1
+      - uses: actions/upload-artifact@v3.1.2
         if: ${{ always() }}
         with:
           name: build-artifacts
@@ -61,13 +61,13 @@ jobs:
     steps:
       # GET THE LATEST CODE
       - name: Checkout latest code
-        uses: actions/checkout@v3.1.0
+        uses: actions/checkout@v3.5.0
         with:
           fetch-depth: 0
 
       # BUILD PROJECT AND PUBLISH
       - name: Set up JDK 17
-        uses: actions/setup-java@v3.6.0
+        uses: actions/setup-java@v3.11.0
         with:
           distribution: 'zulu'
           java-version: '17'
@@ -105,7 +105,7 @@ jobs:
 
       # UPLOAD OS-SPECIFICS
       - name: Upload
-        uses: actions/upload-artifact@v3.1.1
+        uses: actions/upload-artifact@v3.1.2
         if: ${{ always() }}
         with:
           name: build-artifacts
