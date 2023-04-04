@@ -24,7 +24,7 @@ jobs:
       # EXTRACT TAG FROM PUSH
       - name: Get tag
         id: tag
-        uses: tj-actions/branch-names@v6.3
+        uses: tj-actions/branch-names@v6.5
       - name: Use tag
         run: echo ${{steps.tag.outputs.tag}}
 
@@ -50,7 +50,7 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - uses: gradle/gradle-build-action@v2.3.3
+      - uses: gradle/gradle-build-action@v2.4.0
         with:
           gradle-version: wrapper
 
@@ -115,7 +115,7 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - uses: gradle/gradle-build-action@v2.3.3
+      - uses: gradle/gradle-build-action@v2.4.0
         with:
           gradle-version: wrapper
 
@@ -173,7 +173,7 @@ jobs:
 
       # GET DESCRIPTION
       - name: Extract version changelog
-        uses: sergeysova/jq-action@v2.2.1
+        uses: sergeysova/jq-action@v2.3.0
         id: description
         with:
           cmd: "jq .description version.json -r | sed -e 's/\\n/\\n/g' > description.txt && echo \"\n\n---\n\n### Note\n\n#### Alphas\n\nAlphas are feature-incomplete and very likely to have bugs. Before submitting an issue, please check the corresponding [milestone](https://git.griefed.de/Griefed/ServerPackCreator/-/milestones) of this releases major version to see whether an issue for yours already exists there.\nDoing so saves both you and me a lot of time. Thanks in advance!\n\n#### Betas\n\nBetas are feature-complete and probably have bugs.\n\n#### Installers\n\nWhen using pre-release installers, please uninstall previous versions of ServerPackCreator before installing a newer one.\" | sed -e 's/\\n/\\n/g' >> description.txt"

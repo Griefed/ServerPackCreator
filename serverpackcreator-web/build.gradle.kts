@@ -37,7 +37,7 @@ dependencies {
     api("org.springframework.boot:spring-boot-starter-data-jpa:2.7.7")
     api("org.springframework.boot:spring-boot-starter-artemis:2.7.7")
     api("com.github.gwenn:sqlite-dialect:0.1.2")
-    api("org.xerial:sqlite-jdbc:3.40.0.0")
+    api("org.xerial:sqlite-jdbc:3.41.2.1")
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.2")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.2")
     testImplementation("org.springframework.boot:spring-boot-starter-test:2.7.7")
