@@ -13,7 +13,7 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                api("io.github.microutils:kotlin-logging:3.0.4")
+                api("io.github.microutils:kotlin-logging:3.0.5")
                 api("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
                 api("de.jensklingenberg.ktorfit:ktorfit-lib:1.0.0-beta16")
                 api("de.comahe.i18n4k:i18n4k-core:0.5.0")
