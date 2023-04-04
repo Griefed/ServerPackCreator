@@ -34,7 +34,7 @@ kotlin {
                 implementation(files("$buildDir/resources/"))
                 api("de.comahe.i18n4k:i18n4k-core-jvm:0.5.0")
                 api("com.electronwill.night-config:toml:3.6.6")
-                api("com.fasterxml.jackson.core:jackson-databind:2.14.0")
+                api("com.fasterxml.jackson.core:jackson-databind:2.14.2")
                 api("com.github.vatbub:mslinks:1.0.6.2")
                 api("net.lingala.zip4j:zip4j:2.11.2")
                 api("org.apache.logging.log4j:log4j-api-kotlin:1.2.0")
