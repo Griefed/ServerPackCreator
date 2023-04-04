@@ -30,8 +30,8 @@ configurations {
 dependencies {
     api(project(":serverpackcreator-api"))
     api("org.jetbrains.kotlin:kotlin-reflect:1.8.0")
-    api("com.fasterxml.jackson.module:jackson-module-kotlin:2.14.0")
     api("org.apache.activemq:artemis-jms-server:2.28.0")
+    api("com.fasterxml.jackson.module:jackson-module-kotlin:2.14.2")
     api("org.springframework.boot:spring-boot-starter-web:2.7.7")
     api("org.springframework.boot:spring-boot-starter-log4j2:2.7.7")
     api("org.springframework.boot:spring-boot-starter-data-jpa:2.7.7")
