@@ -130,7 +130,7 @@ jobs:
       - name: Build Image
         run: |
           jpackage \
-            --app-version "dev" \
+            --app-version "6.6.6" \
             --copyright "Copyright (C) 2023 Griefed" \
             --description "Create server packs from Minecraft Forge, Fabric, Quilt or LegacyFabric modpacks." \
             --dest serverpackcreator-app/build/dist \
@@ -252,7 +252,7 @@ jobs:
       - name: Build Image
         run: |
           jpackage `
-            --app-version "dev" `
+            --app-version "6.6.6" `
             --copyright "Copyright (C) 2023 Griefed" `
             --description "Create server packs from Minecraft Forge, Fabric, Quilt or LegacyFabric modpacks." `
             --dest "serverpackcreator-app\build\dist" `
@@ -366,7 +366,7 @@ jobs:
       - name: Build Image
         run: |
           jpackage \
-            --app-version "dev" \
+            --app-version "6.6.6" \
             --copyright "Copyright (C) 2023 Griefed" \
             --description "Create server packs from Minecraft Forge, Fabric, Quilt or LegacyFabric modpacks." \
             --dest serverpackcreator-app/build/dist \
