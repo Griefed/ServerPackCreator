@@ -109,7 +109,6 @@ tasks.jpackage {
         linuxAppRelease = appVersion
         linuxDebMaintainer = "griefed@griefed.de"
         linuxMenuGroup = "Utility;Java;"
-        linuxPackageName = "ServerPackCreator"
         linuxRpmLicenseType = "LGPL-2.1"
         linuxShortcut = true
     }
