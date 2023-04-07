@@ -163,7 +163,7 @@ jobs:
         with:
           name: ubuntu-installer-artifacts
           path: |
-            "serverpackcreator-app/build/dist/ServerPackCreator-Portable-MacOS.tar"
+            serverpackcreator-app/build/dist/ServerPackCreator-Portable-MacOS.tar
           if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
 
   windows-01:
@@ -274,8 +274,8 @@ jobs:
         uses: thedoctor0/zip-release@0.7.1
         with:
           type: 'zip'
-          directory: "serverpackcreator-app\build\dist"
-          path: "serverpackcreator-app\build\dist\ServerPackCreator"
+          directory: 'serverpackcreator-app\build\dist'
+          path: 'serverpackcreator-app\build\dist\ServerPackCreator'
           filename: 'ServerPackCreator-Portable-Windows.zip'
 
       # UPLOAD OS-SPECIFICS
@@ -285,7 +285,7 @@ jobs:
         with:
           name: ubuntu-installer-artifacts
           path: |
-            "serverpackcreator-app\build\dist\ServerPackCreator-Portable-Windows.zip"
+            'serverpackcreator-app\build\dist\ServerPackCreator-Portable-Windows.zip'
           if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
 
   ubuntu-01:
