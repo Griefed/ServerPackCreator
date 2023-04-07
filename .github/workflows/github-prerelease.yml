@@ -125,7 +125,7 @@ jobs:
 
       - name: Rename MacOs
         if: matrix.os == 'macos-latest'
-        run: mv serverpackcreator-app/build/dist/ServerPackCreator*.dmg serverpackcreator-app/build/dist/ServerPackCreator-Installer-MacOS-${{ needs.preparations.outputs.version }}.dmg
+        run: mv serverpackcreator-app/build/dist/ServerPackCreator* serverpackcreator-app/build/dist/ServerPackCreator-Installer-MacOS-${{ needs.preparations.outputs.version }}.pkg
 
       - name: Artifacts
         uses: actions/upload-artifact@v3.1.2
@@ -257,6 +257,31 @@ jobs:
         with:
           cmd: "jq .description version.json -r | sed -e 's/\\n/\\n/g' > description.txt && echo \"\n\n---\n\n### Note\n\n#### Alphas\n\nAlphas are feature-incomplete and very likely to have bugs. Before submitting an issue, please check the corresponding [milestone](https://git.griefed.de/Griefed/ServerPackCreator/-/milestones) of this releases major version to see whether an issue for yours already exists there.\nDoing so saves both you and me a lot of time. Thanks in advance!\n\n#### Betas\n\nBetas are feature-complete and probably have bugs.\n\n#### Installers\n\nWhen using pre-release installers, please uninstall previous versions of ServerPackCreator before installing a newer one.\" | sed -e 's/\\n/\\n/g' >> description.txt"
           multiline: true
+
+      - name: General Info
+        id: info
+        uses: jaywcjlove/github-action-read-file@main
+        with:
+          path: misc/INFO.md
+
+      - name: Dafuq # Otherwise we wouldn't be able to work with the file. Because reasons...
+        run: sudo chown $USER description.txt
+
+      - name: Check length and truncate if needed
+        run: |
+          if [[ $(wc -c description.txt | awk '{print $1}') -ge 8000 ]]; then
+            truncate -s 8000 description.txt
+            printf "\n\n............\n\nRelease notes truncated. For more details, see the [CHANGELOG](https://github.com/Griefed/ServerPackCreator/blob/main/CHANGELOG.md).\n\n" >> description.txt
+          fi
+
+      - name: Append Release Info
+        uses: "DamianReeves/write-file-action@master"
+        with:
+          path: description.txt
+          write-mode: append
+          contents: |
+            ${{ steps.preinfo.outputs.content }}
+            ${{ steps.info.outputs.content }}
 
       - uses: actions/download-artifact@v3.0.2
         with:
