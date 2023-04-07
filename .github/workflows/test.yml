@@ -148,6 +148,9 @@ jobs:
             --vendor "griefed.de" \
             --verbose
 
+      - name: List
+        run: ls -ahl serverpackcreator-app/build/dist
+
       - name: Archive
         uses: thedoctor0/zip-release@0.7.1
         with:
@@ -270,6 +273,9 @@ jobs:
             --vendor "griefed.de" `
             --verbose
 
+      - name: List
+        run: dir serverpackcreator-app\build\dist
+
       - name: Archive
         uses: thedoctor0/zip-release@0.7.1
         with:
@@ -385,7 +391,7 @@ jobs:
             --verbose
 
       - name: List
-        run: ls -ahl serverpackcreator-app/build/dist &&
+        run: ls -ahl serverpackcreator-app/build/dist
 
       - name: Archive
         uses: thedoctor0/zip-release@0.7.1
