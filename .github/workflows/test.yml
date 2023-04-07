@@ -155,8 +155,8 @@ jobs:
         uses: thedoctor0/zip-release@0.7.1
         with:
           type: 'tar'
-          directory: serverpackcreator-app/build/dist
-          path: serverpackcreator-app/build/dist/ServerPackCreator
+          directory: serverpackcreator-app/build/dist/
+          path: ServerPackCreator.app
           filename: 'ServerPackCreator-Portable-MacOS.tar'
 
       # UPLOAD OS-SPECIFICS
@@ -281,7 +281,7 @@ jobs:
         with:
           type: 'zip'
           directory: 'serverpackcreator-app\build\dist'
-          path: 'serverpackcreator-app\build\dist\ServerPackCreator'
+          path: 'ServerPackCreator'
           filename: 'ServerPackCreator-Portable-Windows.zip'
 
       # UPLOAD OS-SPECIFICS
@@ -398,7 +398,7 @@ jobs:
         with:
           type: 'tar'
           directory: serverpackcreator-app/build/dist
-          path: serverpackcreator-app/build/dist/ServerPackCreator
+          path: ServerPackCreator
           filename: 'ServerPackCreator-Portable-Linux.tar'
 
       # UPLOAD OS-SPECIFICS
