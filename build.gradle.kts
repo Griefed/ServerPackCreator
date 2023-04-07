@@ -4,7 +4,7 @@ import org.gradle.plugins.ide.idea.model.IdeaLanguageLevel
 plugins {
     idea
     kotlin("jvm")
-    id("io.github.gradle-nexus.publish-plugin") version "1.1.0"
+    id("io.github.gradle-nexus.publish-plugin") version "1.3.0"
     id("com.github.jk1.dependency-license-report")
 }
 

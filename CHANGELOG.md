@@ -71,6 +71,61 @@
 
 * GUI-rework for better UX, usability, expandability and more features ([5e7d540](https://git.griefed.de/Griefed/ServerPackCreator/commit/5e7d54045d2635916ab517a719f65c7615f2f6bb))
 
+## [4.0.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.0.3...4.0.4) (2023-03-18)
+
+
+### 🦊 CI/CD
+
+* Create tests directory and .gitkeep first, then list files ([41fd589](https://git.griefed.de/Griefed/ServerPackCreator/commit/41fd5891e0d051a7ac85e9bb916a562c4d4d6b51))
+* **GitHub:** Do not run Qodana and test workflows on tags. Tags are only created when pipelines on GitLab finish successfully. ([176246e](https://git.griefed.de/Griefed/ServerPackCreator/commit/176246eea7ba16dd9549726567287f859405fbf7))
+
+
+### 🛠 Fixes
+
+* **Gradle:** Declare dependencies between tasks to prevent build failures in ServerPackCreator API ([965472c](https://git.griefed.de/Griefed/ServerPackCreator/commit/965472c102bcb01b7633c3e606af1ab221dc6dde))
+
+## [4.0.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.0.2...4.0.3) (2023-03-17)
+
+
+### 🛠 Fixes
+
+* **GitHub CI:** Correct indentation in release workflow news job ([2d97f97](https://git.griefed.de/Griefed/ServerPackCreator/commit/2d97f97950ba27091df58993f756407b2959c33c))
+
+## [4.0.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.0.1...4.0.2) (2023-03-17)
+
+
+### 📦 Other
+
+* Fix Gradle deprecation warnings and upgrade to Gradle 8.0.2 ([f4ebc10](https://git.griefed.de/Griefed/ServerPackCreator/commit/f4ebc105fa19fb88cb1c885e7e858f08f0942ace))
+* Move web-frontend configuration to buildSrc ([d3892e3](https://git.griefed.de/Griefed/ServerPackCreator/commit/d3892e36943cde91bd26af21e0ccbd96839b73b1))
+* Small explanation about pre-releases. ([b24f9e9](https://git.griefed.de/Griefed/ServerPackCreator/commit/b24f9e9521e5de949448a8c8504d3028ddff6064))
+* Update license report ([b8f4e6f](https://git.griefed.de/Griefed/ServerPackCreator/commit/b8f4e6f2bfadbe7e6e6162ab2107811ec6ffb7ff))
+* Update manifests ([ab6704a](https://git.griefed.de/Griefed/ServerPackCreator/commit/ab6704a085f0e4bab9d6f4559907158ab9d8c7c0))
+* **deps:** update dependency @quasar/extras to v1.15.11 ([b62c3e3](https://git.griefed.de/Griefed/ServerPackCreator/commit/b62c3e312ee7072c2ce52df121f5edc2f5fcb750))
+* **deps:** update dependency quasar to v2.11.7 ([8a2c853](https://git.griefed.de/Griefed/ServerPackCreator/commit/8a2c853dd1187ecf673ea988face062e958c94ae))
+* **deps:** update dependency terser to v5.16.5 ([e7ee2de](https://git.griefed.de/Griefed/ServerPackCreator/commit/e7ee2de9c6da647c9ffdfefb879c3eb3bb72ed93))
+
+
+### 🦊 CI/CD
+
+* Move Qodana job to separate workflow ([b9fde3b](https://git.griefed.de/Griefed/ServerPackCreator/commit/b9fde3b210dbad5256c16b8b675265fe9a3094e8))
+* Re-introduce Discord newspost about new release to release-workflow ([18ae97e](https://git.griefed.de/Griefed/ServerPackCreator/commit/18ae97eb78440b740756de2ca33f9d8cd54a1454))
+
+
+### 🧪 Tests
+
+* Check correct directory ([a3291f2](https://git.griefed.de/Griefed/ServerPackCreator/commit/a3291f2a968b319557b49e2eb9fd62341e80ea30))
+* Properly cleanup before running tests ([969dacf](https://git.griefed.de/Griefed/ServerPackCreator/commit/969dacf6c23fdcaf6eebf14592a5d165855e3758))
+* Split run tests into modloader-related, separate tests ([4dcd820](https://git.griefed.de/Griefed/ServerPackCreator/commit/4dcd820e7850c2c843cc8949761b8eafe4cc2fb1))
+
+
+### 🛠 Fixes
+
+* Correct link to the GitHub serverpackcreator.properties for automated exclusion-list updates. ([90d96f2](https://git.griefed.de/Griefed/ServerPackCreator/commit/90d96f2c82d2777052ff6403742c7824b9d0d01c))
+* Fix bug introduced in fix for [#454](https://git.griefed.de/Griefed/ServerPackCreator/issues/454) which resulted in in modpack-foreign directories not being copied correctly. ([619d54e](https://git.griefed.de/Griefed/ServerPackCreator/commit/619d54e3a9e4711cab036f1a079c380756a6ea53))
+* **Explicit Files:** Copy explicit file-definitions to their correct destinations. Thanks to @ClaudiusMinimus for the report in [#453](https://git.griefed.de/Griefed/ServerPackCreator/issues/453). Closes [#454](https://git.griefed.de/Griefed/ServerPackCreator/issues/454) ([261dd5f](https://git.griefed.de/Griefed/ServerPackCreator/commit/261dd5f2e03d2994b52d333e125201cbc914feca))
+* **Modscanning:** If a Forge mods mods.toml-file specifies no side, assume BOTH to prevent false positives. Thanks to @ClaudiusMinimus for the report in [#453](https://git.griefed.de/Griefed/ServerPackCreator/issues/453) ([1d3f167](https://git.griefed.de/Griefed/ServerPackCreator/commit/1d3f1677584595178bbf59173ffbe57d74d17f9c))
+
 ## [4.0.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.0.0...4.0.1) (2023-03-01)
 
 

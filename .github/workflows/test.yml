@@ -12,14 +12,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-      - uses: actions/checkout@v3.1.0
+      - uses: actions/checkout@v3.5.0
 
       - name: Get branch name
         id: branch-name
-        uses: tj-actions/branch-names@v6.3
+        uses: tj-actions/branch-names@v6.5
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v3.6.0
+        uses: actions/setup-java@v3.11.0
         with:
           distribution: 'zulu'
           java-version: '17'
@@ -29,14 +29,14 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - uses: gradle/gradle-build-action@v2.3.3
+      - uses: gradle/gradle-build-action@v2.4.0
         with:
           gradle-version: wrapper
 
       - name: Build with Gradle
         run: ./gradlew -Pversion=${{ steps.branch-name.outputs.current_branch }} build --info --full-stacktrace
 
-      - uses: actions/upload-artifact@v3.1.1
+      - uses: actions/upload-artifact@v3.1.2
         if: ${{ always() }}
         with:
           name: build-artifacts
@@ -52,22 +52,18 @@ jobs:
             serverpackcreator-plugin-example/build
           if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
 
-  installers:
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [macos-latest,ubuntu-latest,windows-latest]
-    runs-on: ${{ matrix.os }}
+  mac-01:
+    runs-on: macos-latest
     steps:
       # GET THE LATEST CODE
       - name: Checkout latest code
-        uses: actions/checkout@v3.1.0
+        uses: actions/checkout@v3.5.0
         with:
           fetch-depth: 0
 
       # BUILD PROJECT AND PUBLISH
       - name: Set up JDK 17
-        uses: actions/setup-java@v3.6.0
+        uses: actions/setup-java@v3.11.0
         with:
           distribution: 'zulu'
           java-version: '17'
@@ -77,7 +73,51 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - uses: gradle/gradle-build-action@v2.3.3
+      - uses: gradle/gradle-build-action@v2.4.0
+        with:
+          gradle-version: wrapper
+
+      - name: Build installer
+        env:
+          GITHUB_ACTOR: ${{ secrets.GITHUB_ACTOR }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./gradlew :serverpackcreator-app:jpackage --info --full-stacktrace
+
+      - name: Rename
+        run: mv serverpackcreator-app/build/dist/* serverpackcreator-app/build/dist/ServerPackCreator-Installer-MacOS-dev.dmg
+
+      # UPLOAD OS-SPECIFICS
+      - name: Upload
+        uses: actions/upload-artifact@v3.1.2
+        if: ${{ always() }}
+        with:
+          name: mac-installer-artifacts
+          path: |
+            serverpackcreator-app/build
+          if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
+
+  windows-01:
+    runs-on: windows-latest
+    steps:
+      # GET THE LATEST CODE
+      - name: Checkout latest code
+        uses: actions/checkout@v3.5.0
+        with:
+          fetch-depth: 0
+
+      # BUILD PROJECT AND PUBLISH
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3.11.0
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+          check-latest: true
+          cache: 'gradle'
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - uses: gradle/gradle-build-action@v2.4.0
         with:
           gradle-version: wrapper
 
@@ -91,24 +131,59 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./gradlew :serverpackcreator-app:jpackage --info --full-stacktrace
 
-      - name: Rename MacOs
-        if: matrix.os == 'macos-latest'
-        run: mv serverpackcreator-app/build/dist/* serverpackcreator-app/build/dist/ServerPackCreator-Installer-MacOS-dev.dmg
-
-      - name: Rename Windows
-        if: matrix.os == 'windows-latest'
+      - name: Rename
         run: mv serverpackcreator-app/build/dist/* serverpackcreator-app/build/dist/ServerPackCreator-Installer-Windows-dev.msi
 
-      - name: Rename Ubuntu
-        if: matrix.os == 'ubuntu-latest'
+      # UPLOAD OS-SPECIFICS
+      - name: Upload
+        uses: actions/upload-artifact@v3.1.2
+        if: ${{ always() }}
+        with:
+          name: windows-installer-artifacts
+          path: |
+            serverpackcreator-app/build
+          if-no-files-found: warn # 'warn' or 'ig
+
+  ubuntu-01:
+    runs-on: ubuntu-latest
+    steps:
+      # GET THE LATEST CODE
+      - name: Checkout latest code
+        uses: actions/checkout@v3.5.0
+        with:
+          fetch-depth: 0
+
+      # BUILD PROJECT AND PUBLISH
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3.11.0
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+          check-latest: true
+          cache: 'gradle'
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - uses: gradle/gradle-build-action@v2.4.0
+        with:
+          gradle-version: wrapper
+
+      - name: Build installer
+        env:
+          GITHUB_ACTOR: ${{ secrets.GITHUB_ACTOR }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./gradlew :serverpackcreator-app:jpackage --info --full-stacktrace
+
+      - name: Rename
         run: mv serverpackcreator-app/build/dist/* serverpackcreator-app/build/dist/ServerPackCreator-Installer-Ubuntu-dev-amd64.deb
 
       # UPLOAD OS-SPECIFICS
       - name: Upload
-        uses: actions/upload-artifact@v3.1.1
+        uses: actions/upload-artifact@v3.1.2
         if: ${{ always() }}
         with:
-          name: build-artifacts
+          name: ubuntu-installer-artifacts
           path: |
-            serverpackcreator-app/build/dist/*
+            serverpackcreator-app/build
           if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
