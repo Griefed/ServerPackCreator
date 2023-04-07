@@ -1,4 +1,6 @@
 import java.time.LocalDate
+import java.util.*
+
 plugins {
     id("serverpackcreator.application-conventions")
 }
@@ -70,7 +72,7 @@ tasks.jpackage {
     } else {
         ver
     }
-    copyright = "Copyright (C) 2022 Griefed"
+    copyright = "Copyright (C) ${Calendar.getInstance().get(Calendar.YEAR)} Griefed"
     destination = "$buildDir/dist"
     icon = File(packagerResources, "app.png").path
     input = "$buildDir/jars"
@@ -85,8 +87,9 @@ tasks.jpackage {
     verbose = true
     mac {
         icon = File(packagerResources, "app.icns").path
-        type = org.panteleyev.jpackage.ImageType.DMG
+        type = org.panteleyev.jpackage.ImageType.PKG
         macAppCategory = "utilities"
+        macPackageIdentifier = "ServerPackCreator"
         macPackageName = "ServerPackCreator"
     }
     windows {
@@ -95,6 +98,7 @@ tasks.jpackage {
         winConsole = true
         winMenu = true
         winMenuGroup = "ServerPackCreator"
+        winPerUserInstall = false
         winShortcut = true
         winShortcutPrompt = true
     }
@@ -105,6 +109,7 @@ tasks.jpackage {
         linuxAppRelease = appVersion
         linuxDebMaintainer = "griefed@griefed.de"
         linuxMenuGroup = "Utility;Java;"
+        linuxPackageName = "ServerPackCreator"
         linuxRpmLicenseType = "LGPL-2.1"
         linuxShortcut = true
     }
