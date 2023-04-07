@@ -251,23 +251,23 @@ jobs:
 
       - name: Build Image
         run: |
-          jpackage \
-            --app-version "dev" \
-            --copyright "Copyright (C) 2023 Griefed" \
-            --description "Create server packs from Minecraft Forge, Fabric, Quilt or LegacyFabric modpacks." \
-            --dest "serverpackcreator-app\build\dist" \
-            --icon "serverpackcreator-app\jpackagerResources\app.ico" \
-            --input "serverpackcreator-app\build\jars" \
-            --java-options "-Dfile.encoding=UTF-8" \
-            --java-options "-Dlog4j2.formatMsgNoLookups=true" \
-            --main-class de.griefed.serverpackcreator.app.ServerPackCreatorKt \
-            --main-jar serverpackcreator-app-dev-plain.jar \
-            --name ServerPackCreator \
-            --resource-dir "serverpackcreator-app\jpackagerResources" \
-            --runtime-image "C:\hostedtoolcache\windows\Java_Zulu_jdk\17.0.6-10\x64" \
-            --temp "serverpackcreator-app\build\tmp\jpackager" \
-            --type "app-image" \
-            --vendor "griefed.de" \
+          jpackage `
+            --app-version "dev" `
+            --copyright "Copyright (C) 2023 Griefed" `
+            --description "Create server packs from Minecraft Forge, Fabric, Quilt or LegacyFabric modpacks." `
+            --dest "serverpackcreator-app\build\dist" `
+            --icon "serverpackcreator-app\jpackagerResources\app.ico" `
+            --input "serverpackcreator-app\build\jars" `
+            --java-options "-Dfile.encoding=UTF-8" `
+            --java-options "-Dlog4j2.formatMsgNoLookups=true" `
+            --main-class de.griefed.serverpackcreator.app.ServerPackCreatorKt `
+            --main-jar serverpackcreator-app-dev-plain.jar `
+            --name ServerPackCreator `
+            --resource-dir "serverpackcreator-app\jpackagerResources" `
+            --runtime-image "C:\hostedtoolcache\windows\Java_Zulu_jdk\17.0.6-10\x64" `
+            --temp "serverpackcreator-app\build\tmp\jpackager" `
+            --type "app-image" `
+            --vendor "griefed.de" `
             --verbose
 
       - name: Archive
@@ -384,12 +384,15 @@ jobs:
             --vendor "griefed.de" \
             --verbose
 
+      - name: List
+        run: ls -ahl serverpackcreator-app/build/dist &&
+
       - name: Archive
         uses: thedoctor0/zip-release@0.7.1
         with:
           type: 'tar'
           directory: serverpackcreator-app/build/dist
-          path: serverpackcreator-app/build/distServerPackCreator
+          path: serverpackcreator-app/build/dist/ServerPackCreator
           filename: 'ServerPackCreator-Portable-Linux.tar'
 
       # UPLOAD OS-SPECIFICS
