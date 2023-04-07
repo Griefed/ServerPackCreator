@@ -13,9 +13,9 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                api("io.github.microutils:kotlin-logging:3.0.4")
+                api("io.github.microutils:kotlin-logging:3.0.5")
                 api("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
-                api("de.jensklingenberg.ktorfit:ktorfit-lib:1.0.0-beta16")
+                api("de.jensklingenberg.ktorfit:ktorfit-lib:1.0.1")
                 api("de.comahe.i18n4k:i18n4k-core:0.5.0")
             }
         }
@@ -34,21 +34,21 @@ kotlin {
                 implementation(files("$buildDir/resources/"))
                 api("de.comahe.i18n4k:i18n4k-core-jvm:0.5.0")
                 api("com.electronwill.night-config:toml:3.6.6")
-                api("com.fasterxml.jackson.core:jackson-databind:2.14.0")
+                api("com.fasterxml.jackson.core:jackson-databind:2.14.2")
                 api("com.github.vatbub:mslinks:1.0.6.2")
-                api("net.lingala.zip4j:zip4j:2.11.2")
+                api("net.lingala.zip4j:zip4j:2.11.5")
                 api("org.apache.logging.log4j:log4j-api-kotlin:1.2.0")
-                api("org.apache.logging.log4j:log4j-core:2.19.0")
+                api("org.apache.logging.log4j:log4j-core:2.20.0")
                 api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
-                api("org.pf4j:pf4j:3.8.0")
+                api("org.pf4j:pf4j:3.9.0")
             }
         }
         val jvmTest by getting {
             dependencies {
                 implementation(kotlin("test"))
-                implementation("org.jetbrains.kotlin:kotlin-test:1.8.0")
-                implementation("org.junit.jupiter:junit-jupiter-api:5.9.1")
-                implementation("org.junit.jupiter:junit-jupiter-engine:5.9.1")
+                implementation("org.jetbrains.kotlin:kotlin-test:1.8.20")
+                implementation("org.junit.jupiter:junit-jupiter-api:5.9.2")
+                implementation("org.junit.jupiter:junit-jupiter-engine:5.9.2")
             }
         }
 // Uncomment if you wish to start developing the JS component
