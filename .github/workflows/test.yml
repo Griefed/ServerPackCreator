@@ -207,7 +207,7 @@ jobs:
         uses: thedoctor0/zip-release@0.7.1
         with:
           type: 'zip'
-          directory: 'serverpackcreator-app\build\dist'
+          directory: serverpackcreator-app/build/dist
           path: 'ServerPackCreator'
           filename: 'ServerPackCreator-Portable-Windows.zip'
 
@@ -221,7 +221,7 @@ jobs:
         with:
           name: windows-installer-artifacts
           path: |
-            'serverpackcreator-app\build\dist\ServerPackCreator-Portable-Windows.zip'
+            serverpackcreator-app/build/dist/ServerPackCreator-Portable-Windows.zip
           if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
 
   ubuntu-01:
