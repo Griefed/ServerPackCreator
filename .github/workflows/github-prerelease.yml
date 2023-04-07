@@ -125,9 +125,18 @@ jobs:
 
       - name: Rename MacOs
         if: matrix.os == 'macos-latest'
-        run: mv serverpackcreator-app/build/dist/ServerPackCreator* serverpackcreator-app/build/dist/ServerPackCreator-Installer-MacOS-${{ needs.preparations.outputs.version }}.pkg
+        run: mv serverpackcreator-app/build/dist/ServerPackCreator*.pkg serverpackcreator-app/build/dist/ServerPackCreator-Installer-MacOS-${{ needs.preparations.outputs.version }}.pkg
 
       - name: Artifacts
+        uses: actions/upload-artifact@v3.1.2
+        if: ${{ always() }}
+        with:
+          name: release-artifacts
+          path: |
+            serverpackcreator-app/build/dist/*
+          if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
+
+      - name: Installer Artifacts
         uses: actions/upload-artifact@v3.1.2
         if: ${{ always() }}
         with:
@@ -181,6 +190,15 @@ jobs:
         uses: actions/upload-artifact@v3.1.2
         if: ${{ always() }}
         with:
+          name: release-artifacts
+          path: |
+            serverpackcreator-app/build/dist/*
+          if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
+
+      - name: Installer Artifacts
+        uses: actions/upload-artifact@v3.1.2
+        if: ${{ always() }}
+        with:
           name: windows-installer-artifacts
           path: |
             serverpackcreator-app/build
@@ -224,6 +242,15 @@ jobs:
         run: mv serverpackcreator-app/build/dist/serverpackcreator*.deb serverpackcreator-app/build/dist/ServerPackCreator-Installer-Ubuntu-${{ needs.preparations.outputs.version }}-amd64.deb
 
       - name: Artifacts
+        uses: actions/upload-artifact@v3.1.2
+        if: ${{ always() }}
+        with:
+          name: release-artifacts
+          path: |
+            serverpackcreator-app/build/dist/*
+          if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
+
+      - name: Installer Artifacts
         uses: actions/upload-artifact@v3.1.2
         if: ${{ always() }}
         with:
@@ -300,7 +327,7 @@ jobs:
           prerelease: true
           fail_on_unmatched_files: false
           files: |
-            ServerPackCreator-Installer-MacOS-${{ needs.preparations.outputs.version }}.dmg
+            ServerPackCreator-Installer-MacOS-${{ needs.preparations.outputs.version }}.pkg
             ServerPackCreator-Installer-Windows-${{ needs.preparations.outputs.version }}.msi
             ServerPackCreator-Installer-Ubuntu-${{ needs.preparations.outputs.version }}-amd64.deb
             serverpackcreator-app/build/libs/ServerPackCreator-${{ needs.preparations.outputs.version }}.jar
