@@ -282,7 +282,7 @@ jobs:
         uses: actions/upload-artifact@v3.1.2
         if: ${{ always() }}
         with:
-          name: release-artifacts
+          name: ubuntu-installer-artifacts
           path: |
             serverpackcreator-app/build/dist/ServerPackCreator-${{ needs.preparations.outputs.version }}-Portable-Windows.zip
           if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`

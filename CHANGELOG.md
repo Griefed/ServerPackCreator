@@ -1,3 +1,10 @@
+## [5.0.0-alpha.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-alpha.3...5.0.0-alpha.4) (2023-04-07)
+
+
+### 🛠 Fixes
+
+* Produce PKG instead of DMG for macOS ([7d695e3](https://git.griefed.de/Griefed/ServerPackCreator/commit/7d695e372079aa664e8df177d4a521d09f5f93e3))
+
 ## [5.0.0-alpha.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-alpha.2...5.0.0-alpha.3) (2023-03-20)
 
 
