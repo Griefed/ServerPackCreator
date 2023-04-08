@@ -108,7 +108,7 @@ tasks.jpackage {
         linuxAppCategory = "utils"
         linuxAppRelease = appVersion
         linuxDebMaintainer = "griefed@griefed.de"
-        linuxMenuGroup = "Utility;Java;"
+        linuxMenuGroup = "Utility;FileTools;Java;"
         linuxRpmLicenseType = "LGPL-2.1"
         linuxShortcut = true
     }
