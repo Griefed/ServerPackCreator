@@ -354,7 +354,7 @@ jobs:
           export PATH=./squashfs-root/usr/bin:${PATH} && \
           appimagetool \
             ServerPackCreator.AppDir \
-            ServerPackCreator-Portable-x86_64.AppImage
+            ServerPackCreator-Portable-Linux-x86_64.AppImage
 
       # UPLOAD OS-SPECIFICS
       - name: Upload
