@@ -1,3 +1,11 @@
+## [5.0.0-alpha.6](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-alpha.5...5.0.0-alpha.6) (2023-04-08)
+
+
+### 🛠 Fixes
+
+* When merging goes wrong. Horribly wrong. ([99f6901](https://git.griefed.de/Griefed/ServerPackCreator/commit/99f6901e80687736964027b6f62a023678b8fdf1))
+* **CI:** Whoops. Use Powershell-syntax in Windows job to split version ([b846291](https://git.griefed.de/Griefed/ServerPackCreator/commit/b8462919ce0cb37d0245da5bbfe601b2714cc1dc))
+
 ## [5.0.0-alpha.5](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-alpha.4...5.0.0-alpha.5) (2023-04-08)
 
 
