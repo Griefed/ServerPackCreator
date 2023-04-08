@@ -193,7 +193,7 @@ jobs:
             serverpackcreator-app/build/dist/ServerPackCreator-${{ needs.preparations.outputs.version }}-Installer-Windows.msi
           if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
 
-      - name: Installer Artifacts
+      - name: Upload
         uses: actions/upload-artifact@v3.1.2
         if: ${{ always() }}
         with:
@@ -329,18 +329,18 @@ jobs:
         run: ls serverpackcreator-app/build/dist/
 
       - name: Rename
-        run: mv serverpackcreator-app/build/dist/serverpackcreator*.deb serverpackcreator-app/build/dist/ServerPackCreator-Installer-Ubuntu-${{ needs.preparations.outputs.version }}-amd64.deb
+        run: mv serverpackcreator-app/build/dist/serverpackcreator*.deb serverpackcreator-app/build/dist/ServerPackCreator-${{ needs.preparations.outputs.version }}-Installer-Ubuntu-amd64.deb
 
       - name: Artifacts
         uses: actions/upload-artifact@v3.1.2
         if: ${{ always() }}
         with:
-          name: ubuntu-installer-artifacts
+          name: release-artifacts
           path: |
-            serverpackcreator-app/build
+            serverpackcreator-app/build/dist/ServerPackCreator-${{ needs.preparations.outputs.version }}-Installer-Ubuntu-amd64.deb
           if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
 
-      - name: Installer Artifacts
+      - name: Upload
         uses: actions/upload-artifact@v3.1.2
         if: ${{ always() }}
         with:
@@ -454,7 +454,7 @@ jobs:
         with:
           name: ubuntu-installer-artifacts
           path: |
-            serverpackcreator-app/build/dist/ServerPackCreator-${{ needs.preparations.outputs.version }}-Portable-Linux-x86_64.AppImage
+            serverpackcreator-app/build
           if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
 
   release:
@@ -524,11 +524,13 @@ jobs:
           prerelease: false
           fail_on_unmatched_files: false
           files: |
-            ServerPackCreator-Installer-MacOS-${{ needs.preparations.outputs.version }}.pkg
-            ServerPackCreator-Installer-Windows-${{ needs.preparations.outputs.version }}.msi
-            ServerPackCreator-Installer-Ubuntu-${{ needs.preparations.outputs.version }}-amd64.deb
+            ServerPackCreator-${{ needs.preparations.outputs.version }}-Installer-MacOS.pkg
+            ServerPackCreator-${{ needs.preparations.outputs.version }}-Installer-Windows.msi
+            ServerPackCreator-${{ needs.preparations.outputs.version }}-Installer-Ubuntu-amd64.deb
+            ServerPackCreator-${{ needs.preparations.outputs.version }}-Portable-Windows.zip
+            ServerPackCreator-${{ needs.preparations.outputs.version }}-Portable-Linux-x86_64.AppImage
             serverpackcreator-app/build/libs/ServerPackCreator-${{ needs.preparations.outputs.version }}.jar
-            serverpackcreator-plugin-example/build/libs/serverpackcreator-plugin-example-${{ needs.preparations.outputs.version }}.jar
+            serverpackcreator-plugin-example/build/libs/ServerPackCreator-${{ needs.preparations.outputs.version }}-Example-Plugin.jar
 
   pages:
     runs-on: ubuntu-latest

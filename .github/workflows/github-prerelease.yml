@@ -88,7 +88,7 @@ jobs:
           name: release-artifacts
           path: |
             serverpackcreator-app/build/libs/ServerPackCreator-${{ needs.preparations.outputs.version }}.jar
-            serverpackcreator-plugin-example/build/libs/serverpackcreator-plugin-example-${{ needs.preparations.outputs.version }}.jar
+            serverpackcreator-plugin-example/build/libs/ServerPackCreator-${{ needs.preparations.outputs.version }}-Example-Plugin.jar
           if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
 
   mac-01:
@@ -137,7 +137,7 @@ jobs:
             serverpackcreator-app/build/dist/ServerPackCreator-${{ needs.preparations.outputs.version }}-Installer-MacOS.pkg
           if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
 
-      - name: Installer Artifacts
+      - name: Upload
         uses: actions/upload-artifact@v3.1.2
         if: ${{ always() }}
         with:
@@ -195,7 +195,7 @@ jobs:
             serverpackcreator-app/build/dist/ServerPackCreator-${{ needs.preparations.outputs.version }}-Installer-Windows.msi
           if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
 
-      - name: Installer Artifacts
+      - name: Upload
         uses: actions/upload-artifact@v3.1.2
         if: ${{ always() }}
         with:
@@ -282,7 +282,7 @@ jobs:
         uses: actions/upload-artifact@v3.1.2
         if: ${{ always() }}
         with:
-          name: ubuntu-installer-artifacts
+          name: release-artifacts
           path: |
             serverpackcreator-app/build/dist/ServerPackCreator-${{ needs.preparations.outputs.version }}-Portable-Windows.zip
           if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
@@ -343,7 +343,7 @@ jobs:
             serverpackcreator-app/build/dist/ServerPackCreator-${{ needs.preparations.outputs.version }}-Installer-Ubuntu-amd64.deb
           if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
 
-      - name: Installer Artifacts
+      - name: Upload
         uses: actions/upload-artifact@v3.1.2
         if: ${{ always() }}
         with:
@@ -458,7 +458,7 @@ jobs:
         with:
           name: ubuntu-installer-artifacts
           path: |
-            serverpackcreator-app/build/dist/ServerPackCreator-${{ needs.preparations.outputs.version }}-Portable-Linux-x86_64.AppImage
+            serverpackcreator-app/build
           if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
 
   prerelease:
