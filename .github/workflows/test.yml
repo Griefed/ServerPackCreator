@@ -323,13 +323,36 @@ jobs:
       - name: List
         run: ls -ahl serverpackcreator-app/build/dist
 
-      - name: Archive
-        uses: thedoctor0/zip-release@0.7.1
-        with:
-          type: 'tar'
-          directory: serverpackcreator-app/build/dist
-          path: ServerPackCreator
-          filename: 'ServerPackCreator-Portable-Linux.tar'
+      - name: Create AppImage
+        run: |
+          mkdir -p serverpackcreator-app/build/dist/ServerPackCreator.AppDir/usr/share/applications && \
+          mkdir -p serverpackcreator-app/build/dist/ServerPackCreator.AppDir/usr/icons/hicolor/512x512 && \
+          mkdir -p serverpackcreator-app/build/dist/ServerPackCreator.AppDir/usr/icons/hicolor/scalable && \
+          cp -rf serverpackcreator-app/build/dist/ServerPackCreator/* \
+                 serverpackcreator-app/build/dist/ServerPackCreator.AppDir && \
+          cp serverpackcreator-app/jpackagerResources/ServerPackCreator.desktop \
+             serverpackcreator-app/build/dist/ServerPackCreator.AppDir/usr/share/applications/ServerPackCreator.desktop && \
+          cp serverpackcreator-app/jpackagerResources/serverpackcreator.png \
+             serverpackcreator-app/build/dist/ServerPackCreator.AppDir/usr/icons/hicolor/512x512/ServerPackCreator.png && \
+          cp serverpackcreator-app/jpackagerResources/serverpackcreator.svg \
+             serverpackcreator-app/build/dist/ServerPackCreator.AppDir/usr/icons/hicolor/scalable/ServerPackCreator.svg && \
+          cd serverpackcreator-app/build/dist/ServerPackCreator.AppDir && \
+            ln -s bin/ServerPackCreator \
+                  AppRun && \
+            ln -s usr/share/applications/ServerPackCreator.desktop \
+                  ServerPackCreator.desktop && \
+            ln -s usr/icons/hicolor/512x512/ServerPackCreator.png \
+                  ServerPackCreator.png && \
+            ln -s usr/icons/hicolor/scalable/ServerPackCreator.svg \
+                  ServerPackCreator.svg && \
+            cd .. && \
+          curl \
+            -L https://github.com/AppImage/AppImageKit/releases/download/13/appimagetool-x86_64.AppImage \
+            -o appimagetool.AppImage && \
+          chmod +x appimagetool.AppImage && \
+          ./appimagetool.AppImage \
+            ServerPackCreator.AppDir \
+            ServerPackCreator-Portable-x86_64.AppImage
 
       # UPLOAD OS-SPECIFICS
       - name: Upload
@@ -338,5 +361,5 @@ jobs:
         with:
           name: ubuntu-installer-artifacts
           path: |
-            serverpackcreator-app/build/dist/ServerPackCreator-Portable-Linux.tar
+            serverpackcreator-app/build/dist/ServerPackCreator-Portable-Linux-x86_64.AppImage
           if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
