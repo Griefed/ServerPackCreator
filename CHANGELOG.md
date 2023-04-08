@@ -1,3 +1,10 @@
+## [5.0.0-alpha.5](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-alpha.4...5.0.0-alpha.5) (2023-04-08)
+
+
+### 🦊 CI/CD
+
+* Add portable release packages and enhance release notes with additional information as well as truncation if certain length reached ([4864a66](https://git.griefed.de/Griefed/ServerPackCreator/commit/4864a6685035526a6659f8a83164f79acb54a7e3))
+
 ## [5.0.0-alpha.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-alpha.3...5.0.0-alpha.4) (2023-04-07)
 
 
