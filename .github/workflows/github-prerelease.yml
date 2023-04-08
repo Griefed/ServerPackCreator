@@ -241,7 +241,7 @@ jobs:
 
       - name: Build Image
         run: |
-          $Version = ${{ needs.preparations.outputs.version }}.split("-")
+          $Version = "${{ needs.preparations.outputs.version }}".split("-")
           jpackage `
             --app-version "${Version[0]}" `
             --copyright "Copyright (C) 2023 Griefed" `
