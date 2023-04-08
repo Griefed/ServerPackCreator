@@ -137,7 +137,7 @@ jobs:
             serverpackcreator-app/build/dist/ServerPackCreator-${{ needs.preparations.outputs.version }}-Installer-MacOS.pkg
           if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
 
-      - name: Installer Artifacts
+      - name: Upload
         uses: actions/upload-artifact@v3.1.2
         if: ${{ always() }}
         with:
@@ -195,7 +195,7 @@ jobs:
             serverpackcreator-app/build/dist/ServerPackCreator-${{ needs.preparations.outputs.version }}-Installer-Windows.msi
           if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
 
-      - name: Installer Artifacts
+      - name: Upload
         uses: actions/upload-artifact@v3.1.2
         if: ${{ always() }}
         with:
@@ -241,9 +241,9 @@ jobs:
 
       - name: Build Image
         run: |
-          IFS="-" read -ra VERSION <<<"${{ needs.preparations.outputs.version }}"
+          $Version = ${{ needs.preparations.outputs.version }}.split("-")
           jpackage `
-            --app-version "${VERSION[0]}" `
+            --app-version "${Version[0]}" `
             --copyright "Copyright (C) 2023 Griefed" `
             --description "Create server packs from Minecraft Forge, Fabric, Quilt or LegacyFabric modpacks." `
             --dest "serverpackcreator-app\build\dist" `
@@ -343,7 +343,7 @@ jobs:
             serverpackcreator-app/build/dist/ServerPackCreator-${{ needs.preparations.outputs.version }}-Installer-Ubuntu-amd64.deb
           if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
 
-      - name: Installer Artifacts
+      - name: Upload
         uses: actions/upload-artifact@v3.1.2
         if: ${{ always() }}
         with:
@@ -458,7 +458,7 @@ jobs:
         with:
           name: ubuntu-installer-artifacts
           path: |
-            serverpackcreator-app/build/dist/ServerPackCreator-${{ needs.preparations.outputs.version }}-Portable-Linux-x86_64.AppImage
+            serverpackcreator-app/build
           if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
 
   prerelease:

@@ -85,7 +85,7 @@ tasks.jpackage {
     verbose = true
     mac {
         icon = File(packagerResources, "app.icns").path
-        type = org.panteleyev.jpackage.ImageType.DMG
+        type = org.panteleyev.jpackage.ImageType.PKG
         macAppCategory = "utilities"
         macPackageName = "ServerPackCreator"
     }
