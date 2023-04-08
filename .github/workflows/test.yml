@@ -350,7 +350,9 @@ jobs:
             -L https://github.com/AppImage/AppImageKit/releases/download/13/appimagetool-x86_64.AppImage \
             -o appimagetool.AppImage && \
           chmod +x appimagetool.AppImage && \
-          ./appimagetool.AppImage \
+          ./appimagetool.AppImage --appimage-extract && \
+          export PATH=./squashfs-root/usr/bin:${PATH} && \
+          appimagetool \
             ServerPackCreator.AppDir \
             ServerPackCreator-Portable-x86_64.AppImage
 
