@@ -1,3 +1,15 @@
+## [5.0.0-alpha.7](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-alpha.6...5.0.0-alpha.7) (2023-04-08)
+
+
+### 🦊 CI/CD
+
+* Add portable release packages for Windows and Linux ([90e185f](https://git.griefed.de/Griefed/ServerPackCreator/commit/90e185f239671be061f5d6ba754e2c2cd0526b53))
+
+
+### 🛠 Fixes
+
+* **CI:** I hate Batch and I hate Powershell. Bash for the win. ([36cde61](https://git.griefed.de/Griefed/ServerPackCreator/commit/36cde616277e6b3b60dcbaba42eafa263470f32a))
+
 ## [5.0.0-alpha.6](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-alpha.5...5.0.0-alpha.6) (2023-04-08)
 
 
