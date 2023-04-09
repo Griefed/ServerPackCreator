@@ -34,6 +34,10 @@ actual class SystemUtilities {
         "A:", "B:", "C:", "D:", "E:", "F:", "G:", "H:", "I:", "J:", "K:", "L:", "M:", "N:",
         "O:", "P:", "Q:", "R:", "S:", "T:", "U:", "V:", "W:", "X:", "Y:", "Z:"
     )
+    private val javaPathSuffix = "%s/bin/java"
+    private val javaHome = System.getProperty("java.home")
+    private val pathPrefix = "/"
+    private val exeSuffix = "%s.exe"
 
     /**
      * Automatically acquire the path to the systems default Java installation.
@@ -44,13 +48,13 @@ actual class SystemUtilities {
     actual fun acquireJavaPathFromSystem(): String {
         log.debug("Acquiring path to Java installation from system properties...")
         var javaPath = "Couldn't acquire JavaPath"
-        if (File(System.getProperty("java.home")).exists()) {
-            javaPath = "%s/bin/java".format(System.getProperty("java.home"))
-            if (!javaPath.startsWith("/")) {
+        if (File(javaHome).exists()) {
+            javaPath = javaPathSuffix.format(javaHome)
+            if (!javaPath.startsWith(pathPrefix)) {
                 for (letter in windowsDrives) {
                     if (javaPath.startsWith(letter)) {
                         log.debug("We're running on Windows. Ensuring javaPath ends with .exe")
-                        javaPath = "%s.exe".format(javaPath)
+                        javaPath = exeSuffix.format(javaPath)
                     }
                 }
             }

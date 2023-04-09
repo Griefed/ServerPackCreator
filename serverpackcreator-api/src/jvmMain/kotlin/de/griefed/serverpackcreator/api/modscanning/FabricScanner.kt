@@ -34,11 +34,17 @@ import java.util.*
  *
  * @author Griefed
  */
-actual class FabricScanner constructor(
+actual class FabricScanner(
     private val objectMapper: ObjectMapper,
     private val utilities: Utilities
 ) : JsonBasedScanner(), Scanner<TreeSet<File>, Collection<File>> {
     private val log = cachedLoggerOf(this.javaClass)
+    private val jar = "jar"
+    private val fabricModJson = "fabric.mod.json"
+    private val id = "id"
+    private val client = "client"
+    private val environment = "environment"
+    private val depends = "depends"
 
     /**
      * Scan the `fabric.mod.json`-files in mod JAR-files of a given directory for their
@@ -79,50 +85,45 @@ actual class FabricScanner constructor(
         modDependencies: TreeSet<String>
     ) {
         for (mod in filesInModsDir) {
-            if (mod.name.endsWith("jar")) {
-                var modId: String
+            if (!mod.name.endsWith(jar)) {
+                continue
+            }
+            var modId: String
+            try {
+                val modJson: JsonNode = getJarJson(mod, fabricModJson, objectMapper)
+                modId = utilities.jsonUtilities.getNestedText(modJson, id)
+
+                // Get this mods' id/name
                 try {
-                    val modJson: JsonNode = getJarJson(mod, "fabric.mod.json", objectMapper)
-                    modId = utilities.jsonUtilities.getNestedText(modJson, "id")
-
-                    // Get this mods' id/name
-                    try {
-                        if (utilities.jsonUtilities
-                                .nestedTextEqualsIgnoreCase(modJson, "client", "environment")
-                        ) {
-                            clientMods.add(modId)
-                            log.debug("Added clientMod: $modId")
-                        }
-                    } catch (ignored: NullPointerException) {
+                    if (utilities.jsonUtilities
+                            .nestedTextEqualsIgnoreCase(modJson, client, environment)
+                    ) {
+                        clientMods.add(modId)
+                        log.debug("Added clientMod: $modId")
                     }
-                    if (modId == "chipped") {
-                        println("Hoi")
-                    }
+                } catch (ignored: NullPointerException) {
+                }
 
-                    // Get this mods dependencies
-                    try {
-                        for (dependency in utilities.jsonUtilities.getFieldNames(modJson, "depends")) {
-                            if (!dependency.matches(dependencyExclusions)) {
-                                try {
-                                    log.debug(
-                                        "Added dependency $dependency for $modId (${mod.name})."
-                                    )
-                                    modDependencies.add(dependency)
-                                } catch (ex: NullPointerException) {
-                                    log.debug("No dependencies for $modId (${mod.name}).")
-                                }
+                // Get this mods dependencies
+                try {
+                    for (dependency in utilities.jsonUtilities.getFieldNames(modJson, depends)) {
+                        if (!dependency.matches(dependencyExclusions)) {
+                            try {
+                                log.debug("Added dependency $dependency for $modId (${mod.name}).")
+                                modDependencies.add(dependency)
+                            } catch (ex: NullPointerException) {
+                                log.debug("No dependencies for $modId (${mod.name}).")
                             }
                         }
-                    } catch (ignored: NullPointerException) {
                     }
-                } catch (ex: Exception) {
-                    if (ex.toString().startsWith("java.lang.NullPointerException")) {
-                        log.warn("Couldn't scan $mod as it contains no fabric.mod.json.")
-                    } else {
-                        log.error("Couldn't scan $mod", ex)
-                    }
+                } catch (ignored: NullPointerException) {
                 }
+            } catch (ex: NullPointerException) {
+                log.warn("Couldn't scan $mod as it contains no fabric.mod.json.")
+            } catch (ex: Exception) {
+                log.error("Couldn't scan $mod", ex)
             }
+
         }
     }
 
@@ -132,17 +133,15 @@ actual class FabricScanner constructor(
             var modIdToCheck: String
             var addToDelta = false
             try {
-                val modJson: JsonNode = getJarJson(mod, "fabric.mod.json", objectMapper)
+                val modJson: JsonNode = getJarJson(mod, fabricModJson, objectMapper)
 
                 // Get the modId
-                modIdToCheck = utilities.jsonUtilities.getNestedText(modJson, "id")
+                modIdToCheck = utilities.jsonUtilities.getNestedText(modJson, id)
                 try {
-                    if (utilities.jsonUtilities
-                            .nestedTextEqualsIgnoreCase(modJson, "client", "environment")
+                    if (utilities.jsonUtilities.nestedTextEqualsIgnoreCase(modJson, client, environment)
+                        && clientMods.contains(modIdToCheck)
                     ) {
-                        if (clientMods.contains(modIdToCheck)) {
-                            addToDelta = true
-                        }
+                        addToDelta = true
                     }
                 } catch (ignored: NullPointerException) {
                 }

@@ -50,6 +50,9 @@ class LegacyFabricInstaller(
         private set
     var release: String? = null
         private set
+    private val latestElement = "latest"
+    private val releaseElement = "release"
+    private val version = "version"
 
     /**
      * Update all lists of available versions with new information gathered from the manifest.
@@ -60,28 +63,24 @@ class LegacyFabricInstaller(
     @Throws(ParserConfigurationException::class, IOException::class, SAXException::class)
     fun update() {
         val installerManifest: Document = utilities.xmlUtilities.getXml(installerManifest)
-        latest = installerManifest
-            .getElementsByTagName("latest")
-            .item(0)
-            .childNodes
-            .item(0)
-            .nodeValue
-        release = installerManifest
-            .getElementsByTagName("release")
-            .item(0)
-            .childNodes
-            .item(0)
-            .nodeValue
+        val latestElements = installerManifest.getElementsByTagName(latestElement)
+        val latestNode = latestElements.item(0)
+        val latestChildren = latestNode.childNodes
+        val latestItem = latestChildren.item(0)
+        latest = latestItem.nodeValue
+
+        val releaseElements = installerManifest.getElementsByTagName(releaseElement)
+        val releaseNode = releaseElements.item(0)
+        val releaseChildren = releaseNode.childNodes
+        val releaseItem = releaseChildren.item(0)
+        release = releaseItem.nodeValue
         allVersions.clear()
-        for (i in 0 until installerManifest.getElementsByTagName("version").length) {
-            allVersions.add(
-                installerManifest
-                    .getElementsByTagName("version")
-                    .item(i)
-                    .childNodes
-                    .item(0)
-                    .nodeValue
-            )
+        val elements = installerManifest.getElementsByTagName(version)
+        for (i in 0 until elements.length) {
+            val node = elements.item(i)
+            val children = node.childNodes
+            val item = children.item(0)
+            allVersions.add(item.nodeValue)
         }
     }
 
@@ -116,9 +115,8 @@ class LegacyFabricInstaller(
     @Throws(MalformedURLException::class)
     fun specificURL(version: String) =
         if (allVersions.contains(version)) {
-            Optional.of(
-                URL(installerUrlTemplate.format(version, version))
-            )
+            val url = installerUrlTemplate.format(version, version)
+            Optional.of(URL(url))
         } else {
             Optional.empty()
         }

@@ -447,9 +447,9 @@ actual class MinecraftMeta(
      */
     fun getServer(minecraftVersion: String): Optional<MinecraftServer> {
         try {
-            if (minecraftServerMeta.meta[minecraftVersion]!!.url().isPresent
-                && minecraftServerMeta.meta[minecraftVersion]!!.javaVersion().isPresent
-            ) {
+            val url = minecraftServerMeta.meta[minecraftVersion]!!.url()
+            val javaVersion = minecraftServerMeta.meta[minecraftVersion]!!.javaVersion()
+            if (url.isPresent && javaVersion.isPresent) {
                 return Optional.ofNullable(minecraftServerMeta.meta[minecraftVersion])
             }
         } catch (ignored: Exception) {

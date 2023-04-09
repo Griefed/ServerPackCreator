@@ -574,7 +574,7 @@ actual class ApiProperties(
     val defaultServerIcon: File
 
     /**
-     * The database used by the webservice-portion of ServerPackCreaot to do store and provide server packs and
+     * The database used by the webservice-portion of ServerPackCreator to do store and provide server packs and
      * related information.
      */
     val serverPackCreatorDatabase: File
@@ -1708,8 +1708,9 @@ actual class ApiProperties(
         configsDirectory = File(homeDirectory, "configs").absoluteFile
         pluginsDirectory = File(homeDirectory, "plugins").absoluteFile
         manifestsDirectory = File(homeDirectory, "manifests").absoluteFile
-        serverPackCreatorDatabase =
-            File(internalProperties.getProperty("spring.datasource.url", "").replace("jdbc:sqlite:", "")).absoluteFile
+        val springDataSource = internalProperties.getProperty("spring.datasource.url", "")
+        val cleaned = springDataSource.replace("jdbc:sqlite:", "")
+        serverPackCreatorDatabase = File(cleaned).absoluteFile
         defaultConfig = File(homeDirectory, "serverpackcreator.conf").absoluteFile
         workDirectory = File(homeDirectory, "work").absoluteFile
         pluginsConfigsDirectory = File(pluginsDirectory, "config").absoluteFile

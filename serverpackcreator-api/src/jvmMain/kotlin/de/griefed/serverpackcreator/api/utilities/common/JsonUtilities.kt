@@ -36,7 +36,7 @@ import java.net.URL
  * @author Griefed
  */
 @Suppress("unused")
-actual class JsonUtilities constructor(
+actual class JsonUtilities(
     private val objectMapper: ObjectMapper = ObjectMapper()
         .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
         .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY)

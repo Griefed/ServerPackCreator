@@ -53,6 +53,9 @@ internal class QuiltInstaller(
         private set
     var releaseInstallerUrl: URL? = null
         private set
+    private val latest = "latest"
+    private val release = "release"
+    private val version = "version"
 
     /**
      * Update the Quilt installer versions by parsing the Fabric loader manifest.
@@ -63,36 +66,33 @@ internal class QuiltInstaller(
     @Throws(ParserConfigurationException::class, IOException::class, SAXException::class)
     fun update() {
         val document: Document = utilities.xmlUtilities.getXml(manifest)
-        latestInstaller = document
-            .getElementsByTagName("latest")
-            .item(0)
-            .childNodes
-            .item(0)
-            .nodeValue
-        releaseInstaller = document
-            .getElementsByTagName("release")
-            .item(0)
-            .childNodes
-            .item(0)
-            .nodeValue
+        val latestElements = document.getElementsByTagName(latest)
+        val latestNode = latestElements.item(0)
+        val latestChildren = latestNode.childNodes
+        val latestItem = latestChildren.item(0)
+        latestInstaller = latestItem.nodeValue
+        val releaseElements = document.getElementsByTagName(release)
+        val releaseNode = releaseElements.item(0)
+        val releaseChildren = releaseNode.childNodes
+        val releaseItem = releaseChildren.item(0)
+        releaseInstaller = releaseItem.nodeValue
+        val latestUrl = installerUrlTemplate.format(latestInstaller, latestInstaller)
         try {
-            latestInstallerUrl = URL(installerUrlTemplate.format(latestInstaller, latestInstaller))
+            latestInstallerUrl = URL(latestUrl)
         } catch (ignored: MalformedURLException) {
         }
+        val releaseUrl = installerUrlTemplate.format(releaseInstaller, releaseInstaller)
         try {
-            releaseInstallerUrl = URL(installerUrlTemplate.format(releaseInstaller, releaseInstaller))
+            releaseInstallerUrl = URL(releaseUrl)
         } catch (ignored: MalformedURLException) {
         }
         installers.clear()
-        for (i in 0 until document.getElementsByTagName("version").length) {
-            installers.add(
-                document
-                    .getElementsByTagName("version")
-                    .item(i)
-                    .childNodes
-                    .item(0)
-                    .nodeValue
-            )
+        val elements = document.getElementsByTagName(version)
+        for (i in 0 until elements.length) {
+            val node = elements.item(i)
+            val children = node.childNodes
+            val item = children.item(0)
+            installers.add(item.nodeValue)
         }
         installerUrlMeta.clear()
         for (version in installers) {

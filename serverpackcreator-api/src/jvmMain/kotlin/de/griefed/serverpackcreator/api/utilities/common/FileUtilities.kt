@@ -44,6 +44,7 @@ import kotlin.streams.asStream
 actual class FileUtilities {
     private val log = cachedLoggerOf(this.javaClass)
     private val windowsDrivers = "^[A-Za-z]:.*".toRegex()
+    private val lnk = "lnk"
 
     /**
      * Move a file from source to destination, and replace the destination file if it exists.
@@ -105,7 +106,7 @@ actual class FileUtilities {
      * @author Griefed
      */
     actual fun checkFileType(file: File): FileType {
-        if (file.name.endsWith("lnk")) {
+        if (file.name.endsWith(lnk)) {
             return FileType.LINK
         }
         if (file.isDirectory) {
@@ -136,7 +137,7 @@ actual class FileUtilities {
      * @author Griefed
      */
     actual fun isLink(file: File) =
-        if (file.name.endsWith("lnk")) {
+        if (file.name.endsWith(lnk)) {
             true
         } else !file.toString().matches(windowsDrivers) && file.toPath().isSymbolicLink()
 
