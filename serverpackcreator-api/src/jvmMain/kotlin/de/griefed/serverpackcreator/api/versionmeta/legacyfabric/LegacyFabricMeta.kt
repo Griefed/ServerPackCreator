@@ -72,9 +72,9 @@ actual class LegacyFabricMeta actual constructor(
 
     actual override fun releaseInstaller() = installerVersions.release!!
 
-    actual override fun loaderVersionsListAscending() = loaderVersions.allVersions
+    actual override fun loaderVersionsListAscending() = loaderVersionsListDescending().reversed().toMutableList()
 
-    actual override fun loaderVersionsListDescending() = loaderVersionsListAscending().reversed()
+    actual override fun loaderVersionsListDescending() = loaderVersions.allVersions
 
     actual override fun loaderVersionsArrayAscending() = loaderVersionsListAscending().toTypedArray()
 
@@ -82,7 +82,7 @@ actual class LegacyFabricMeta actual constructor(
 
     actual override fun installerVersionsListAscending() = installerVersions.allVersions
 
-    actual override fun installerVersionsListDescending() = installerVersionsListAscending().reversed()
+    actual override fun installerVersionsListDescending() = installerVersionsListAscending().reversed().toMutableList()
 
     actual override fun installerVersionsArrayAscending() = installerVersionsListAscending().toTypedArray()
 
