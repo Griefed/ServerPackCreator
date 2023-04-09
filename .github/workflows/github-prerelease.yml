@@ -243,7 +243,7 @@ jobs:
         run: |
           $Version = "${{ needs.preparations.outputs.version }}".split("-")
           jpackage `
-            --app-version "${Version[0]}" `
+            --app-version $Version[0] `
             --copyright "Copyright (C) 2023 Griefed" `
             --description "Create server packs from Minecraft Forge, Fabric, Quilt or LegacyFabric modpacks." `
             --dest "serverpackcreator-app\build\dist" `
