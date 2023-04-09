@@ -500,11 +500,10 @@ actual class ConfigurationHandler constructor(
 
     actual override fun ensureScriptSettingsDefaults(packConfig: PackConfig) {
         val server = versionMeta.minecraft.getServer(packConfig.minecraftVersion)
-        val url = versionMeta.minecraft.getServer(packConfig.minecraftVersion).get().url()
-        if (!server.isPresent || !url.isPresent) {
+        if (!server.isPresent || !server.get().url().isPresent) {
             packConfig.scriptSettings["SPC_MINECRAFT_SERVER_URL_SPC"] = ""
         } else {
-            packConfig.scriptSettings["SPC_MINECRAFT_SERVER_URL_SPC"] = url.get().toString()
+            packConfig.scriptSettings["SPC_MINECRAFT_SERVER_URL_SPC"] = server.get().url().get().toString()
         }
         packConfig.scriptSettings["SPC_SERVERPACKCREATOR_VERSION_SPC"] = apiProperties.apiVersion
         packConfig.scriptSettings["SPC_MINECRAFT_VERSION_SPC"] = packConfig.minecraftVersion
