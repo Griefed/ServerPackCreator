@@ -1,3 +1,10 @@
+## [5.0.0-alpha.8](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-alpha.7...5.0.0-alpha.8) (2023-04-09)
+
+
+### 🛠 Fixes
+
+* **CI:** Can you please work now? Pretty please with a cherry on top? ([655b9c8](https://git.griefed.de/Griefed/ServerPackCreator/commit/655b9c8fa6bc862cd5f1cc9692137cabe8308ac6))
+
 ## [5.0.0-alpha.7](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-alpha.6...5.0.0-alpha.7) (2023-04-08)
 
 
