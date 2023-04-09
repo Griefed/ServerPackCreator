@@ -514,7 +514,7 @@ actual class ServerPackHandler actual constructor(
                         "server",
                         minecraftVersion,
                         "--download-server",
-                        "--install-dir=."
+                        "--install-dir=\"$destination\""
                     )
                 } else {
                     log.error(
