@@ -63,7 +63,7 @@ class MainMenuBar(
                 mainFrame
             )
         )
-        menuBar.add(ViewMenu(apiWrapper, migrationManager, guiProps))
+        menuBar.add(ViewMenu(apiWrapper, migrationManager, guiProps,mainFrame))
         menuBar.add(AboutMenu(apiWrapper.utilities!!.webUtilities, updateDialogs))
     }
 }
