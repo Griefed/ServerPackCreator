@@ -131,6 +131,11 @@ class GuiProps {
         defaultSize,
         defaultSize
     )
+    val resizeIndicator = ImageUtilities.fromBase64(
+        "iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAAGzCI4dAAAABGdBTUEAALGPC/xhBQAAAYRpQ0NQSUNDIHByb2ZpbGUAACiRfZE9SMNAHMVf00q1tDjYQcQhQ3VqQVTEUapYBAulrdCqg8mlX9CkIUlxcRRcCw5+LFYdXJx1dXAVBMEPEFcXJ0UXKfF/aaFFjAfH/Xh373H3DhCaVaaavglA1SwjnYiLufyq6H+FDwGEEMWAxEw9mVnMwnV83cPD17sYz3I/9+cIKQWTAR6ReI7phkW8QTyzaemc94nDrCwpxOfEUYMuSPzIdbnNb5xLDgs8M2xk0/PEYWKx1MNyD7OyoRJPE0cUVaN8IddmhfMWZ7VaZ5178hcGC9pKhus0R5HAEpJIQYSMOiqowkKMVo0UE2naj7v4Rxx/ilwyuSpg5FhADSokxw/+B7+7NYtTk+2kYBzoe7HtjzHAvwu0Grb9fWzbrRPA+wxcaV1/rQnMfpLe6GqRI2BwG7i47mryHnC5Aww/6ZIhOZKXplAsAu9n9E15YOgWCKy1e+vs4/QByFJXyzfAwSEwXqLsdZd39/f29u+ZTn8/Wb1ynSd49nMAAAAGYktHRABxAHEAcU/AMc0AAAAJcEhZcwAALiMAAC4jAXilP3YAAAAHdElNRQfnBAoOBSFmKA4vAAAAGXRFWHRDb21tZW50AENyZWF0ZWQgd2l0aCBHSU1QV4EOFwAAAChJREFUGNNjYIABRicnp/8MyABThLAMToChhYmB6oCxsLAQr7MI2gkApIMJcM65GrkAAAAASUVORK5CYII=",
+        8,
+        10
+    )
     val infoIcon = FlatSVGIcon("de/griefed/resources/gui/svg/informationDialog.svg", defaultSize, defaultSize)
     val warningIcon = FlatSVGIcon("de/griefed/resources/gui/svg/warningDialog.svg", defaultSize, defaultSize)
     val errorIcon = FlatSVGIcon("de/griefed/resources/gui/svg/errorDialog.svg", defaultSize, defaultSize)

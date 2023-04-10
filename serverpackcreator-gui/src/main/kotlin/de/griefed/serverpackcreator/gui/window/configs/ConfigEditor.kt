@@ -21,12 +21,15 @@ package de.griefed.serverpackcreator.gui.window.configs
 
 import Gui
 import com.electronwill.nightconfig.core.CommentedConfig
-import de.griefed.serverpackcreator.api.*
+import de.griefed.serverpackcreator.api.ApiWrapper
+import de.griefed.serverpackcreator.api.PackConfig
 import de.griefed.serverpackcreator.api.plugins.swinggui.ServerPackConfigTab
 import de.griefed.serverpackcreator.gui.GuiProps
-import de.griefed.serverpackcreator.gui.components.*
+import de.griefed.serverpackcreator.gui.components.BalloonTipButton
 import de.griefed.serverpackcreator.gui.window.configs.components.*
-import kotlinx.coroutines.*
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import net.miginfocom.swing.MigLayout
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.awt.Dimension
@@ -157,133 +160,140 @@ class ConfigEditor(
         modloaders.selectedIndex = 0
         updateMinecraftValues()
 
+        val modpackLabel = ElementLabel(Gui.createserverpack_gui_createserverpack_labelmodpackdir.toString())
+        val modpackShowBrowser = BalloonTipButton(
+            null, guiProps.folderIcon, Gui.createserverpack_gui_browser.toString(),
+            guiProps, showBrowser
+        )
+        val propertiesLabel = ElementLabel(Gui.createserverpack_gui_createserverpack_labelpropertiespath.toString())
+        val quickSelectLabel = ElementLabel(Gui.createserverpack_gui_quickselect.toString())
+        val propertiesShowBrowser = BalloonTipButton(
+            null, guiProps.folderIcon, Gui.createserverpack_gui_browser.toString(),
+            guiProps, showBrowser
+        )
+        val openProperties = BalloonTipButton(
+            null, guiProps.openIcon, Gui.createserverpack_gui_createserverpack_button_open_properties.toString(),
+            guiProps
+        ) { openServerProperties() }
+        val iconLabel = ElementLabel(Gui.createserverpack_gui_createserverpack_labeliconpath.toString())
+        val iconQuickSelectLabel = ElementLabel(Gui.createserverpack_gui_quickselect.toString())
+        val iconShowBrowser = BalloonTipButton(
+            null, guiProps.folderIcon, Gui.createserverpack_gui_browser.toString(),
+            guiProps, showBrowser
+        )
+        val filesLabel = ElementLabel(Gui.createserverpack_gui_createserverpack_labelcopydirs.toString())
+        val filesRevert = BalloonTipButton(
+            null, guiProps.revertIcon, Gui.createserverpack_gui_buttoncopydirs_revert_tip.toString(),
+            guiProps
+        ) { revertServerPackFiles() }
+        val filesShowBrowser = BalloonTipButton(
+            null, guiProps.folderIcon, Gui.createserverpack_gui_browser.toString(),
+            guiProps, showBrowser
+        )
+        val filesReset = BalloonTipButton(
+            null, guiProps.resetIcon, Gui.createserverpack_gui_buttoncopydirs_reset_tip.toString(),
+            guiProps
+        ) { setCopyDirectories(apiWrapper.apiProperties.directoriesToInclude.toMutableList()) }
+        val suffixLabel = ElementLabel(Gui.createserverpack_gui_createserverpack_labelsuffix.toString())
+        val mcVersionInfo = MinecraftVersionInfo(guiProps)
+        val mcVersionLabel = ElementLabel(Gui.createserverpack_gui_createserverpack_labelminecraft.toString())
+        val javaVersionInfo = JavaVersionInfo(guiProps)
+        val javaVersionLabel = ElementLabel(Gui.createserverpack_gui_createserverpack_minecraft_java.toString(), 16)
+        val modloaderInfo = ModloaderInfo(guiProps)
+        val modloaderLabel = ElementLabel(Gui.createserverpack_gui_createserverpack_labelmodloader.toString())
+        val zipInfo = IncludeZipInfo(guiProps)
+        val modloaderVersionLabel = ElementLabel(
+            Gui.createserverpack_gui_createserverpack_labelmodloaderversion.toString()
+        )
+        val modsRevert = BalloonTipButton(
+            null, guiProps.revertIcon, Gui.createserverpack_gui_buttonclientmods_revert_tip.toString(),
+            guiProps
+        ) { revertExclusions() }
+        val modsShowBrowser = BalloonTipButton(
+            null, guiProps.folderIcon, Gui.createserverpack_gui_browser.toString(),
+            guiProps, showBrowser
+        )
+        val modsReset = BalloonTipButton(
+            null, guiProps.resetIcon, Gui.createserverpack_gui_buttonclientmods_reset_tip.toString(),
+            guiProps
+        ) { setClientSideMods(apiWrapper.apiProperties.clientSideMods()) }
+        val kvRevert = BalloonTipButton(
+            null, guiProps.revertIcon, Gui.createserverpack_gui_revert.toString(),
+            guiProps
+        ) { revertScriptKVPairs() }
+        val kvReset = BalloonTipButton(
+            null, guiProps.resetIcon, Gui.createserverpack_gui_reset.toString(),
+            guiProps
+        ) { resetScriptKVPairs() }
+        val advancedSettingsPanel = AdvancedSettingsPanel(
+            exclusionsInfo, JavaArgsInfo(guiProps), ScriptSettingsInfo(guiProps),
+            exclusions, modsRevert, modsShowBrowser, modsReset, javaArgs, aikarsFlags, scriptKVPairs, kvRevert, kvReset
+        )
+        val advancedSettings = CollapsiblePanel(Gui.createserverpack_gui_advanced.toString(), advancedSettingsPanel)
+        val pluginSettings = PluginsSettingsPanel(pluginPanels)
+        val pluginPanel = CollapsiblePanel(Gui.createserverpack_gui_plugins.toString(), pluginSettings)
+
         // Modpack directory
         panel.add(modpackInfo, "cell 0 0,grow")
-        panel.add(ElementLabel(Gui.createserverpack_gui_createserverpack_labelmodpackdir.toString()), "cell 1 0,grow")
+        panel.add(modpackLabel, "cell 1 0,grow")
         panel.add(modpackDirectory, "cell 2 0,grow")
-        panel.add(
-            BalloonTipButton(
-                null,
-                guiProps.folderIcon,
-                Gui.createserverpack_gui_browser.toString(),
-                guiProps,
-                showBrowser
-            ),
-            "cell 3 0, h 30!,w 30!"
-        )
+        panel.add(modpackShowBrowser, "cell 3 0, h 30!,w 30!")
         panel.add(modpackInspect, "cell 4 0")
 
         // Server Properties
         panel.add(propertiesInfo, "cell 0 1,grow")
-        panel.add(
-            ElementLabel(Gui.createserverpack_gui_createserverpack_labelpropertiespath.toString()),
-            "cell 1 1,grow"
-        )
+        panel.add(propertiesLabel)
         panel.add(propertiesFile, "cell 2 1, split 3,grow, w 50:50:")
-        panel.add(ElementLabel(Gui.createserverpack_gui_quickselect.toString()), "cell 2 1")
+        panel.add(quickSelectLabel, "cell 2 1")
         panel.add(propertiesQuickSelect, "cell 2 1,w 200!")
-        panel.add(
-            BalloonTipButton(
-                null,
-                guiProps.folderIcon,
-                Gui.createserverpack_gui_browser.toString(),
-                guiProps,
-                showBrowser
-            ),
-            "cell 3 1"
-        )
-        panel.add(
-            BalloonTipButton(
-                null,
-                guiProps.openIcon,
-                Gui.createserverpack_gui_createserverpack_button_open_properties.toString(),
-                guiProps
-            ) { openServerProperties() },
-            "cell 4 1"
-        )
+        panel.add(propertiesShowBrowser, "cell 3 1")
+        panel.add(openProperties, "cell 4 1")
 
         // Server Icon
         panel.add(iconInfo, "cell 0 2,grow")
-        panel.add(ElementLabel(Gui.createserverpack_gui_createserverpack_labeliconpath.toString()), "cell 1 2,grow")
+        panel.add(iconLabel, "cell 1 2,grow")
         panel.add(iconFile, "cell 2 2, split 2,grow, w 50:50:")
-        panel.add(ElementLabel(Gui.createserverpack_gui_quickselect.toString()), "cell 2 2")
+        panel.add(iconQuickSelectLabel, "cell 2 2")
         panel.add(iconQuickSelect, "cell 2 2,w 200!")
-        panel.add(
-            BalloonTipButton(
-                null,
-                guiProps.folderIcon,
-                Gui.createserverpack_gui_browser.toString(),
-                guiProps,
-                showBrowser
-            ),
-            "cell 3 2"
-        )
+        panel.add(iconShowBrowser, "cell 3 2")
         panel.add(iconPreview, "cell 4 2")
 
         // Server Files
         panel.add(serverPackFilesInfo, "cell 0 3 1 3")
-        panel.add(ElementLabel(Gui.createserverpack_gui_createserverpack_labelcopydirs.toString()), "cell 1 3 1 3,grow")
+        panel.add(filesLabel, "cell 1 3 1 3,grow")
         panel.add(serverPackFiles, "cell 2 3 1 3,grow,w 10:500:,h 100!")
-        panel.add(
-            BalloonTipButton(
-                null,
-                guiProps.revertIcon,
-                Gui.createserverpack_gui_buttoncopydirs_revert_tip.toString(),
-                guiProps
-            ) { revertServerPackFiles() },
-            "cell 3 3 2 1, h 30!, aligny center, alignx center,growx"
-        )
-        panel.add(
-            BalloonTipButton(
-                null,
-                guiProps.folderIcon,
-                Gui.createserverpack_gui_browser.toString(),
-                guiProps,
-                showBrowser
-            ),
-            "cell 3 4 2 1, h 30!, aligny center, alignx center,growx"
-        )
-        panel.add(
-            BalloonTipButton(
-                null,
-                guiProps.resetIcon,
-                Gui.createserverpack_gui_buttoncopydirs_reset_tip.toString(),
-                guiProps
-            ) { setCopyDirectories(apiWrapper.apiProperties.directoriesToInclude.toMutableList()) },
-            "cell 3 5 2 1, h 30!, aligny top, alignx center,growx"
-        )
+        panel.add(filesRevert, "cell 3 3 2 1, h 30!, aligny center, alignx center,growx")
+        panel.add(filesShowBrowser, "cell 3 4 2 1, h 30!, aligny center, alignx center,growx")
+        panel.add(filesReset, "cell 3 5 2 1, h 30!, aligny top, alignx center,growx")
 
         // Server Pack Suffix
         panel.add(suffixInfo, "cell 0 6,grow")
-        panel.add(ElementLabel(Gui.createserverpack_gui_createserverpack_labelsuffix.toString()), "cell 1 6,grow")
+        panel.add(suffixLabel, "cell 1 6,grow")
         panel.add(serverPackSuffix, "cell 2 6,grow")
 
         // Minecraft Version
-        panel.add(MinecraftVersionInfo(guiProps), "cell 0 7,grow")
-        panel.add(ElementLabel(Gui.createserverpack_gui_createserverpack_labelminecraft.toString()), "cell 1 7,grow")
+        panel.add(mcVersionInfo, "cell 0 7,grow")
+        panel.add(mcVersionLabel, "cell 1 7,grow")
         panel.add(minecraftVersions, "cell 2 7,w 200!")
         // Java Version Of Minecraft Version
-        panel.add(JavaVersionInfo(guiProps), "cell 2 7, w 40!, gapleft 40")
-        panel.add(ElementLabel(Gui.createserverpack_gui_createserverpack_minecraft_java.toString(), 16), "cell 2 7")
+        panel.add(javaVersionInfo, "cell 2 7, w 40!, gapleft 40")
+        panel.add(javaVersionLabel, "cell 2 7")
         panel.add(javaVersion, "cell 2 7, w 40!")
 
         // Modloader
-        panel.add(ModloaderInfo(guiProps), "cell 0 8,grow")
-        panel.add(ElementLabel(Gui.createserverpack_gui_createserverpack_labelmodloader.toString()), "cell 1 8,grow")
+        panel.add(modloaderInfo, "cell 0 8,grow")
+        panel.add(modloaderLabel, "cell 1 8,grow")
         panel.add(modloaders, "cell 2 8,w 200!")
         // Include Server Icon
         panel.add(includeIconInfo, "cell 2 8, w 40!, gapleft 40,grow")
         panel.add(includeIcon, "cell 2 8, w 200!")
         // Create ZIP Archive
-        panel.add(IncludeZipInfo(guiProps), "cell 2 8, w 40!,grow")
+        panel.add(zipInfo, "cell 2 8, w 40!,grow")
         panel.add(includeZip, "cell 2 8, w 200!")
 
         // Modloader Version
         panel.add(modloaderVersionInfo, "cell 0 9,grow")
-        panel.add(
-            ElementLabel(Gui.createserverpack_gui_createserverpack_labelmodloaderversion.toString()),
-            "cell 1 9,grow"
-        )
+        panel.add(modloaderVersionLabel, "cell 1 9,grow")
         panel.add(modloaderVersions, "cell 2 9,w 200!")
         // Include Server Properties
         panel.add(includePropertiesInfo, "cell 2 9, w 40!, gapleft 40,grow")
@@ -293,58 +303,11 @@ class ConfigEditor(
         panel.add(includeServer, "cell 2 9, w 200!")
 
         // Advanced Settings
-        panel.add(CollapsiblePanel(
-            Gui.createserverpack_gui_advanced.toString(),
-            AdvancedSettingsPanel(
-                exclusionsInfo,
-                JavaArgsInfo(guiProps),
-                ScriptSettingsInfo(guiProps),
-                exclusions,
-                BalloonTipButton(
-                    null,
-                    guiProps.revertIcon,
-                    Gui.createserverpack_gui_buttonclientmods_revert_tip.toString(),
-                    guiProps
-                ) { revertExclusions() },
-                BalloonTipButton(
-                    null,
-                    guiProps.folderIcon,
-                    Gui.createserverpack_gui_browser.toString(),
-                    guiProps,
-                    showBrowser
-                ),
-                BalloonTipButton(
-                    null,
-                    guiProps.resetIcon,
-                    Gui.createserverpack_gui_buttonclientmods_reset_tip.toString(),
-                    guiProps
-                ) { setClientSideMods(apiWrapper.apiProperties.clientSideMods()) },
-                javaArgs,
-                aikarsFlags,
-                scriptKVPairs,
-                BalloonTipButton(
-                    null,
-                    guiProps.revertIcon,
-                    Gui.createserverpack_gui_revert.toString(),
-                    guiProps
-                ) { revertScriptKVPairs() },
-                BalloonTipButton(
-                    null,
-                    guiProps.resetIcon,
-                    Gui.createserverpack_gui_reset.toString(),
-                    guiProps
-                ) { resetScriptKVPairs() }
-            )
-        ), "cell 0 10 5,grow")
+        panel.add(advancedSettings, "cell 0 10 5,grow")
 
         // Plugins
         if (pluginPanels.isNotEmpty()) {
-            panel.add(
-                CollapsiblePanel(
-                    Gui.createserverpack_gui_plugins.toString(),
-                    PluginsSettingsPanel(pluginPanels)
-                ), "cell 0 11 5,grow"
-            )
+            panel.add(pluginPanel, "cell 0 11 5,grow")
         }
         validateInputFields()
         lastSavedConfig = getCurrentConfiguration()
@@ -975,7 +938,7 @@ class ConfigEditor(
                 try {
                     val updateMessage = StringBuilder()
                     val packConfig = PackConfig()
-                    apiWrapper.configurationHandler!!.checkManifests(modpack.absolutePath,packConfig)
+                    apiWrapper.configurationHandler!!.checkManifests(modpack.absolutePath, packConfig)
                     val dirsToInclude = TreeSet(getCopyDirectoriesList())
                     val files = modpack.listFiles()
                     if (files != null && files.isNotEmpty()) {
@@ -987,23 +950,33 @@ class ConfigEditor(
                     }
                     if (packConfig.minecraftVersion.isNotBlank()) {
                         setMinecraftVersion(packConfig.minecraftVersion)
-                        updateMessage.append(Gui.createserverpack_gui_modpack_scan_minecraft(packConfig.minecraftVersion)).append("\n")
+                        updateMessage.append(Gui.createserverpack_gui_modpack_scan_minecraft(packConfig.minecraftVersion))
+                            .append("\n")
                     }
                     if (packConfig.modloader.isNotBlank()) {
                         setModloader(packConfig.modloader)
-                        updateMessage.append(Gui.createserverpack_gui_modpack_scan_modloader(packConfig.modloader)).append("\n")
+                        updateMessage.append(Gui.createserverpack_gui_modpack_scan_modloader(packConfig.modloader))
+                            .append("\n")
                     }
                     if (packConfig.modloaderVersion.isNotBlank()) {
                         setModloaderVersion(packConfig.modloaderVersion)
-                        updateMessage.append(Gui.createserverpack_gui_modpack_scan_modloader_version(packConfig.modloaderVersion)).append("\n")
+                        updateMessage.append(Gui.createserverpack_gui_modpack_scan_modloader_version(packConfig.modloaderVersion))
+                            .append("\n")
                     }
                     if (packConfig.serverIconPath.isNotBlank()) {
                         setServerIconPath(packConfig.serverIconPath)
-                        updateMessage.append(Gui.createserverpack_gui_modpack_scan_icon(packConfig.serverIconPath)).append("\n")
+                        updateMessage.append(Gui.createserverpack_gui_modpack_scan_icon(packConfig.serverIconPath))
+                            .append("\n")
                     }
                     if (dirsToInclude.isNotEmpty()) {
                         setCopyDirectories(ArrayList(dirsToInclude))
-                        updateMessage.append(Gui.createserverpack_gui_modpack_scan_directories(dirsToInclude.joinToString(", "))).append("\n")
+                        updateMessage.append(
+                            Gui.createserverpack_gui_modpack_scan_directories(
+                                dirsToInclude.joinToString(
+                                    ", "
+                                )
+                            )
+                        ).append("\n")
                     }
                     JOptionPane.showMessageDialog(
                         this@ConfigEditor,
