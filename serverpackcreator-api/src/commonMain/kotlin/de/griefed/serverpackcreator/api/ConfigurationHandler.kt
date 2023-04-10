@@ -56,7 +56,7 @@ expect class ConfigurationHandler {
     fun checkZipArchive(pathToZip: String, encounteredErrors: MutableList<String>): Boolean
     fun unzipDestination(destination: String): String
     fun suggestCopyDirs(modpackDir: String): ArrayList<String>
-    fun checkManifests(destination: String, packConfig: PackConfig, encounteredErrors: MutableList<String>): String?
+    fun checkManifests(destination: String, packConfig: PackConfig, encounteredErrors: MutableList<String> = mutableListOf()): String?
     fun checkServerPacksForIncrement(source: String, destination: String): String
     fun printConfigurationModel(
         modpackDirectory: String,

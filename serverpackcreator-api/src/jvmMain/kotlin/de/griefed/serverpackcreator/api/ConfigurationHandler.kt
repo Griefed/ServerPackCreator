@@ -28,6 +28,7 @@ import de.griefed.serverpackcreator.api.utilities.common.isNotValidZipFile
 import de.griefed.serverpackcreator.api.versionmeta.VersionMeta
 import net.lingala.zip4j.ZipFile
 import java.io.IOException
+import java.net.URL
 import java.nio.file.*
 import java.util.*
 import java.util.regex.PatternSyntaxException
@@ -804,107 +805,95 @@ actual class ConfigurationHandler constructor(
         destination: String, packConfig: PackConfig, encounteredErrors: MutableList<String>
     ): String? {
         var packName: String? = null
-        val manifest = File(destination, "manifest.json")
-        val minecraftInstance = File(destination, "minecraftinstance.json")
-        val modrinth = File(destination, "modrinth.index.json")
-        val instance = File(destination, "instance.json")
-        val config = File(destination, "config.json")
-        val mmc = File(destination, "mmc-pack.json")
-        val instanceConfig = File(destination, "instance.cfg")
-        if (manifest.exists()) {
-            try {
-                updateConfigModelFromCurseManifest(packConfig, manifest)
-                packName = updatePackName(packConfig, "name")
-            } catch (ex: IOException) {
-                log.error("Error parsing CurseForge manifest.json from ZIP-file.", ex)
+        val manifestJson = File(destination, "manifest.json")
+        val minecraftInstanceJson = File(destination, "minecraftinstance.json")
+        val modrinthIndexJson = File(destination, "modrinth.index.json")
+        val instanceJson = File(destination, "instance.json")
+        val configJson = File(destination, "config.json")
+        val mmcPackJson = File(destination, "mmc-pack.json")
+        val instanceCfg = File(destination, "instance.cfg")
+        when {
+            minecraftInstanceJson.exists() -> {
+                // Check minecraftinstance.json usually created by Overwolf's CurseForge launcher.
+                try {
+                    updateConfigModelFromMinecraftInstance(packConfig, minecraftInstanceJson)
+                    packName = updatePackName(packConfig, "name")
+                } catch (ex: IOException) {
+                    log.error("Error parsing minecraftinstance.json from ZIP-file.", ex)
 
-                // This log is meant to be read by the user, therefore we allow translation.
-                encounteredErrors.add(Api.configuration_log_error_zip_manifest.toString())
-            }
-
-            // Check minecraftinstance.json usually created by Overwolf's CurseForge launcher.
-        } else if (minecraftInstance.exists()) {
-            try {
-                updateConfigModelFromMinecraftInstance(packConfig, minecraftInstance)
-                packName = updatePackName(packConfig, "name")
-            } catch (ex: IOException) {
-                log.error("Error parsing minecraftinstance.json from ZIP-file.", ex)
-
-                // This log is meant to be read by the user, therefore we allow translation.
-                encounteredErrors.add(Api.configuration_log_error_zip_instance.toString())
-            }
-
-            // Check modrinth.index.json usually available if the modpack is from Modrinth
-        } else if (modrinth.exists()) {
-            try {
-                updateConfigModelFromModrinthManifest(packConfig, modrinth)
-                packName = updatePackName(packConfig, "name")
-            } catch (ex: IOException) {
-                log.error("Error parsing modrinth.index.json from ZIP-file.", ex)
-
-                // This log is meant to be read by the user, therefore we allow translation.
-                encounteredErrors.add(Api.configuration_log_error_zip_config.toString())
-            }
-
-            // Check instance.json usually created by ATLauncher
-        } else if (instance.exists()) {
-            try {
-                updateConfigModelFromATLauncherInstance(packConfig, File(destination, "instance.json"))
-
-                // If JSON was acquired, get the name of the modpack and overwrite newDestination using
-                // modpack name.
-                packConfig.modpackJson?.let {
-                    utilities.jsonUtilities.getNestedText(
-                        it, "launcher", "name"
-                    )
+                    // This log is meant to be read by the user, therefore we allow translation.
+                    encounteredErrors.add(Api.configuration_log_error_zip_instance.toString())
                 }
-                packName = packConfig.modpackJson?.let {
-                    utilities.jsonUtilities.getNestedText(
-                        it, "launcher", "name"
-                    )
-                }
-            } catch (ex: IOException) {
-                log.error("Error parsing config.json from ZIP-file.", ex)
-
-                // This log is meant to be read by the user, therefore we allow translation.
-                encounteredErrors.add(Api.configuration_log_error_zip_config.toString())
             }
 
-            // Check the config.json usually created by GDLauncher.
-        } else if (config.exists()) {
-            try {
-                updateConfigModelFromConfigJson(packConfig, config)
+            instanceJson.exists() -> {
+                // Check instance.json usually created by ATLauncher
+                try {
+                    updateConfigModelFromATLauncherInstance(packConfig, File(destination, "instance.json"))
+                    packName = updatePackName(packConfig, "launcher", "name")
+                } catch (ex: IOException) {
+                    log.error("Error parsing config.json from ZIP-file.", ex)
 
-                // If JSON was acquired, get the name of the modpack and overwrite newDestination using
-                // modpack name.
-                packName = packConfig.modpackJson?.let {
-                    utilities.jsonUtilities.getNestedText(
-                        it, "loader", "sourceName"
-                    )
+                    // This log is meant to be read by the user, therefore we allow translation.
+                    encounteredErrors.add(Api.configuration_log_error_zip_config.toString())
                 }
-            } catch (ex: IOException) {
-                log.error("Error parsing config.json from ZIP-file.", ex)
-
-                // This log is meant to be read by the user, therefore we allow translation.
-                encounteredErrors.add(Api.configuration_log_error_zip_config.toString())
             }
 
-            // Check mmc-pack.json usually created by MultiMC.
-        } else if (mmc.exists()) {
-            try {
-                updateConfigModelFromMMCPack(packConfig, mmc)
-            } catch (ex: IOException) {
-                log.error("Error parsing mmc-pack.json from ZIP-file.", ex)
+            manifestJson.exists() -> {
+                try {
+                    updateConfigModelFromCurseManifest(packConfig, manifestJson)
+                    packName = updatePackName(packConfig, "name")
+                } catch (ex: IOException) {
+                    log.error("Error parsing CurseForge manifest.json from ZIP-file.", ex)
 
-                // This log is meant to be read by the user, therefore we allow translation.
-                encounteredErrors.add(Api.configuration_log_error_zip_mmcpack.toString())
-            }
-            try {
-                if (instanceConfig.exists()) {
-                    packName = updateDestinationFromInstanceCfg(instanceConfig)
+                    // This log is meant to be read by the user, therefore we allow translation.
+                    encounteredErrors.add(Api.configuration_log_error_zip_manifest.toString())
                 }
-            } catch (ex: IOException) {
-                log.error("Couldn't read instance.cfg.", ex)
+            }
+
+            modrinthIndexJson.exists() -> {
+                // Check modrinth.index.json usually available if the modpack is from Modrinth
+                try {
+                    updateConfigModelFromModrinthManifest(packConfig, modrinthIndexJson)
+                    packName = updatePackName(packConfig, "name")
+                } catch (ex: IOException) {
+                    log.error("Error parsing modrinth.index.json from ZIP-file.", ex)
+
+                    // This log is meant to be read by the user, therefore we allow translation.
+                    encounteredErrors.add(Api.configuration_log_error_zip_config.toString())
+                }
+            }
+
+            configJson.exists() -> {
+                // Check the config.json usually created by GDLauncher.
+                try {
+                    updateConfigModelFromConfigJson(packConfig, configJson)
+                    packName = updatePackName(packConfig, "loader", "sourceName")
+                } catch (ex: IOException) {
+                    log.error("Error parsing config.json from ZIP-file.", ex)
+
+                    // This log is meant to be read by the user, therefore we allow translation.
+                    encounteredErrors.add(Api.configuration_log_error_zip_config.toString())
+                }
+            }
+
+            mmcPackJson.exists() -> {
+                // Check mmc-pack.json usually created by MultiMC.
+                try {
+                    updateConfigModelFromMMCPack(packConfig, mmcPackJson)
+                } catch (ex: IOException) {
+                    log.error("Error parsing mmc-pack.json from ZIP-file.", ex)
+
+                    // This log is meant to be read by the user, therefore we allow translation.
+                    encounteredErrors.add(Api.configuration_log_error_zip_mmcpack.toString())
+                }
+                try {
+                    if (instanceCfg.exists()) {
+                        packName = updateDestinationFromInstanceCfg(instanceCfg)
+                    }
+                } catch (ex: IOException) {
+                    log.error("Couldn't read instance.cfg.", ex)
+                }
             }
         }
         return packName
@@ -1048,12 +1037,21 @@ actual class ConfigurationHandler constructor(
     @Throws(IOException::class)
     actual override fun updateConfigModelFromMinecraftInstance(packConfig: PackConfig, minecraftInstance: File) {
         packConfig.modpackJson = utilities.jsonUtilities.getJson(minecraftInstance)
-        val base = packConfig.modpackJson!!.get("baseModLoader")
+        val json = packConfig.modpackJson!!
+        val base = json.get("baseModLoader")
         val modloaderInfo = base.get("name").asText()
         val modloader = modloaderInfo.split("-")[0]
         packConfig.modloader = getModLoaderCase(modloader)
         packConfig.modloaderVersion = base.get("forgeVersion").asText()
         packConfig.minecraftVersion = base.get("minecraftVersion").asText()
+        val urlPath = arrayOf("installedModpack", "thumbnailUrl")
+        val namePath = arrayOf("name")
+        try {
+            getAndSetIcon(json, packConfig, urlPath, namePath)
+        } catch (_: NullPointerException) {
+        } catch (ex: Exception) {
+            log.error("Error acquiring icon.", ex)
+        }
     }
 
     @Throws(IOException::class)
@@ -1086,11 +1084,30 @@ actual class ConfigurationHandler constructor(
     @Throws(IOException::class)
     actual override fun updateConfigModelFromATLauncherInstance(packConfig: PackConfig, manifest: File) {
         packConfig.modpackJson = utilities.jsonUtilities.getJson(manifest)
-        packConfig.minecraftVersion = packConfig.modpackJson!!.get("id").asText()
-        val launcher = packConfig.modpackJson!!.get("launcher")
+        val json = packConfig.modpackJson!!
+        packConfig.minecraftVersion = json.get("id").asText()
+        val launcher = json.get("launcher")
         val loaderVersion = launcher.get("loaderVersion")
         packConfig.modloader = loaderVersion.get("type").asText()
         packConfig.modloaderVersion = loaderVersion.get("version").asText()
+        val urlPath = arrayOf("launcher", "curseForgeProject", "logo", "thumbnailUrl")
+        val namePath = arrayOf("launcher", "name")
+        try {
+            getAndSetIcon(json, packConfig, urlPath, namePath)
+        } catch (_: NullPointerException) {
+        } catch (ex: Exception) {
+            log.error("Error acquiring icon.", ex)
+        }
+    }
+
+    @Throws(NullPointerException::class)
+    private fun getAndSetIcon(json: JsonNode, packConfig: PackConfig, urlPath: Array<String>, namePath: Array<String>) {
+        val iconUrl = URL(utilities.jsonUtilities.getNestedText(json, *urlPath))
+        val iconName = utilities.jsonUtilities.getNestedText(json, *namePath) + ".png"
+        val iconFile = File(apiProperties.iconsDirectory.absolutePath, iconName)
+        if (utilities.webUtilities.downloadFile(iconFile, iconUrl)) {
+            packConfig.serverIconPath = iconFile.absolutePath
+        }
     }
 
     @Throws(IOException::class)
@@ -1099,7 +1116,8 @@ actual class ConfigurationHandler constructor(
         val loader = packConfig.modpackJson!!.get("loader")
         packConfig.modloader = getModLoaderCase(loader.get("loaderType").asText())
         packConfig.minecraftVersion = loader.get("mcVersion").asText()
-        packConfig.modloaderVersion = loader.get("loaderVersion").asText().replace(packConfig.minecraftVersion + "-", "")
+        packConfig.modloaderVersion =
+            loader.get("loaderVersion").asText().replace(packConfig.minecraftVersion + "-", "")
     }
 
     @Throws(IOException::class)

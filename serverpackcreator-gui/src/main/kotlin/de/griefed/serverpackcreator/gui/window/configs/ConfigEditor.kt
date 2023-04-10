@@ -970,56 +970,14 @@ class ConfigEditor(
     @OptIn(DelicateCoroutinesApi::class)
     fun updateGuiFromSelectedModpack() {
         GlobalScope.launch(guiProps.configDispatcher) {
-            modpackInspect.isEnabled = false
-            if (File(getModpackDirectory()).isDirectory) {
+            val modpack = File(getModpackDirectory()).absoluteFile
+            if (modpack.isDirectory) {
                 try {
+                    val updateMessage = StringBuilder()
                     val packConfig = PackConfig()
-                    var updated = false
-                    if (File(getModpackDirectory(), "manifest.json").isFile) {
-                        apiWrapper.configurationHandler!!.updateConfigModelFromCurseManifest(
-                            packConfig, File(
-                                getModpackDirectory(), "manifest.json"
-                            )
-                        )
-                        updated = true
-                    } else if (File(getModpackDirectory(), "minecraftinstance.json").isFile) {
-                        apiWrapper.configurationHandler!!.updateConfigModelFromMinecraftInstance(
-                            packConfig, File(
-                                getModpackDirectory(), "minecraftinstance.json"
-                            )
-                        )
-                        updated = true
-                    } else if (File(getModpackDirectory(), "modrinth.index.json").isFile) {
-                        apiWrapper.configurationHandler!!.updateConfigModelFromModrinthManifest(
-                            packConfig, File(
-                                getModpackDirectory(), "modrinth.index.json"
-                            )
-                        )
-                        updated = true
-                    } else if (File(getModpackDirectory(), "instance.json").isFile) {
-                        apiWrapper.configurationHandler!!.updateConfigModelFromATLauncherInstance(
-                            packConfig, File(
-                                getModpackDirectory(), "instance.json"
-                            )
-                        )
-                        updated = true
-                    } else if (File(getModpackDirectory(), "config.json").isFile) {
-                        apiWrapper.configurationHandler!!.updateConfigModelFromConfigJson(
-                            packConfig, File(
-                                getModpackDirectory(), "config.json"
-                            )
-                        )
-                        updated = true
-                    } else if (File(getModpackDirectory(), "mmc-pack.json").isFile) {
-                        apiWrapper.configurationHandler!!.updateConfigModelFromMMCPack(
-                            packConfig, File(
-                                getModpackDirectory(), "mmc-pack.json"
-                            )
-                        )
-                        updated = true
-                    }
+                    apiWrapper.configurationHandler!!.checkManifests(modpack.absolutePath,packConfig)
                     val dirsToInclude = TreeSet(getCopyDirectoriesList())
-                    val files = File(getModpackDirectory()).listFiles()
+                    val files = modpack.listFiles()
                     if (files != null && files.isNotEmpty()) {
                         for (file in files) {
                             if (apiWrapper.apiProperties.directoriesToInclude.contains(file.name)) {
@@ -1027,29 +985,37 @@ class ConfigEditor(
                             }
                         }
                     }
-                    if (updated) {
+                    if (packConfig.minecraftVersion.isNotBlank()) {
                         setMinecraftVersion(packConfig.minecraftVersion)
-                        setModloader(packConfig.modloader)
-                        setModloaderVersion(packConfig.modloaderVersion)
-                        setCopyDirectories(ArrayList(dirsToInclude))
-                        JOptionPane.showMessageDialog(
-                            this@ConfigEditor,
-                            Gui.createserverpack_gui_modpack_scan_message(
-                                getMinecraftVersion(),
-                                getModloader(),
-                                getModloaderVersion(),
-                                apiWrapper.utilities!!.stringUtilities.buildString(dirsToInclude.toList())
-                            ) + "   ",
-                            Gui.createserverpack_gui_modpack_scan.toString(),
-                            JOptionPane.INFORMATION_MESSAGE,
-                            guiProps.infoIcon
-                        )
+                        updateMessage.append(Gui.createserverpack_gui_modpack_scan_minecraft(packConfig.minecraftVersion)).append("\n")
                     }
+                    if (packConfig.modloader.isNotBlank()) {
+                        setModloader(packConfig.modloader)
+                        updateMessage.append(Gui.createserverpack_gui_modpack_scan_modloader(packConfig.modloader)).append("\n")
+                    }
+                    if (packConfig.modloaderVersion.isNotBlank()) {
+                        setModloaderVersion(packConfig.modloaderVersion)
+                        updateMessage.append(Gui.createserverpack_gui_modpack_scan_modloader_version(packConfig.modloaderVersion)).append("\n")
+                    }
+                    if (packConfig.serverIconPath.isNotBlank()) {
+                        setServerIconPath(packConfig.serverIconPath)
+                        updateMessage.append(Gui.createserverpack_gui_modpack_scan_icon(packConfig.serverIconPath)).append("\n")
+                    }
+                    if (dirsToInclude.isNotEmpty()) {
+                        setCopyDirectories(ArrayList(dirsToInclude))
+                        updateMessage.append(Gui.createserverpack_gui_modpack_scan_directories(dirsToInclude.joinToString(", "))).append("\n")
+                    }
+                    JOptionPane.showMessageDialog(
+                        this@ConfigEditor,
+                        Gui.createserverpack_gui_modpack_scan_message(updateMessage.toString()),
+                        Gui.createserverpack_gui_modpack_scan.toString(),
+                        JOptionPane.INFORMATION_MESSAGE,
+                        guiProps.infoIcon
+                    )
                 } catch (ex: IOException) {
                     log.error("Couldn't update GUI from modpack manifests.", ex)
                 }
             }
-            modpackInspect.isEnabled = true
         }
     }
 
