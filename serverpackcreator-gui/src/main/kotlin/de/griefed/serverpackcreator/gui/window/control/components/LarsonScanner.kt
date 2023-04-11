@@ -27,6 +27,8 @@ package de.griefed.serverpackcreator.gui.window.control.components
 import java.awt.*
 import javax.swing.JComponent
 import javax.swing.JPanel
+import kotlin.math.ceil
+import kotlin.math.floor
 import kotlin.math.roundToInt
 
 
@@ -1761,7 +1763,7 @@ class LarsonScanner : JPanel {
             }
             if (increasePosition) {
                 // Going left to right
-                posDrawn = position + numberOfElements * elementWidth
+                posDrawn = position + (numberOfElements * elementWidth)
                 if (posDrawn >= width) {
                     /*
                      * We are entering the nether on the right side, so we draw the brightest element at the
@@ -1782,7 +1784,9 @@ class LarsonScanner : JPanel {
                      * We are leaving the nether on the left side, so we need to draw that the next element
                      * after the ones already visible to create the illusion of the eye emerging.
                      */
-                    elementToDraw = ((numberOfElements - posDrawn / elementWidth - 1).roundToInt().toByte())
+                    val part = posDrawn / elementWidth
+                    val preElement = numberOfElements - floor(part)
+                    elementToDraw = (preElement - 1).roundToInt().toByte()
                     elementColour = eyeColours[elementToDraw.toInt()]
                     if (useGradients) {
                         elementCenter = getCenter(0.0)
