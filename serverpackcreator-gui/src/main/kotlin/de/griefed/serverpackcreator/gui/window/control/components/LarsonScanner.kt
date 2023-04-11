@@ -25,9 +25,9 @@
 package de.griefed.serverpackcreator.gui.window.control.components
 
 import java.awt.*
-import java.util.concurrent.TimeUnit
 import javax.swing.JComponent
 import javax.swing.JPanel
+import kotlin.math.roundToInt
 
 
 /**
@@ -89,7 +89,7 @@ class LarsonScanner : JPanel {
      * Convenience constructor allowing you to specify the interval at which the position changes. For
      * more information regarding possible settings, see [LarsonScanner].
      *
-     * @param updateInterval [Short] Interval in milliseconds at which to scroll.
+     * @param updateInterval Interval in milliseconds at which to scroll.
      * @author Griefed
      */
     constructor(updateInterval: Short) : super() {
@@ -107,8 +107,8 @@ class LarsonScanner : JPanel {
      * well as the background colours for the scanner and the eye. For more information regarding
      * possible settings, see [LarsonScanner].
      *
-     * @param interval [Short] Interval in milliseconds at which to scroll.
-     * @param backgroundColor [Color] The background colour for the scanner and the eye.
+     * @param interval Interval in milliseconds at which to scroll.
+     * @param backgroundColor The background colour for the scanner and the eye.
      * @author Griefed
      */
     constructor(interval: Short, backgroundColor: Color) : super() {
@@ -126,9 +126,9 @@ class LarsonScanner : JPanel {
      * background colours for the scanner and the eye, and the color of the eye. For more information
      * regarding possible settings, see [LarsonScanner].
      *
-     * @param interval [Short] Interval in milliseconds at which to scroll.
-     * @param backgroundColor [Color] The background colour for the scanner and the eye.
-     * @param eyeColor [Color] The color of the eye.
+     * @param interval Interval in milliseconds at which to scroll.
+     * @param backgroundColor The background colour for the scanner and the eye.
+     * @param eyeColor The color of the eye.
      * @author Griefed
      */
     constructor(interval: Short, backgroundColor: Color, eyeColor: Color) : super() {
@@ -874,6 +874,7 @@ class LarsonScanner : JPanel {
 
         /**
          * Alpha-array. For more information, see [LarsonScanner.alphas].
+         *
          * @author Griefed
          */
         @set:Throws(IllegalArgumentException::class)
@@ -1200,7 +1201,8 @@ class LarsonScanner : JPanel {
         @get:Synchronized
         @Volatile
         var isRunning = true
-        var eyeColours = arrayOf(DEFAULT_EYE_COLOUR, DEFAULT_EYE_COLOUR, DEFAULT_EYE_COLOUR, DEFAULT_EYE_COLOUR, DEFAULT_EYE_COLOUR)
+        var eyeColours =
+            arrayOf(DEFAULT_EYE_COLOUR, DEFAULT_EYE_COLOUR, DEFAULT_EYE_COLOUR, DEFAULT_EYE_COLOUR, DEFAULT_EYE_COLOUR)
             set(value) {
                 require(value.size == eye.numberOfElements.toInt()) {
                     "Color-array must contain exactly ${eye.numberOfElements} entries. Specified ${value.size}"
@@ -1218,9 +1220,10 @@ class LarsonScanner : JPanel {
         var partitionDivider = 5.0
         var lastSetRenderingQuality = 0
         var alphas = shortArrayOf(100, 200, 255, 200, 100)
-        private var position: Short = 0
+        private var previousTime: Long = System.currentTimeMillis()
+        private var position: Double = System.currentTimeMillis().toDouble()
         var interval: Short = 100
-        var divider: Short = 25
+        var divider: Short = 250
         var numberOfElements: Byte = 5
         private var increasePosition = true
         var forceAspectRatio = false
@@ -1301,7 +1304,7 @@ class LarsonScanner : JPanel {
         override fun run() {
             while (true) {
                 try {
-                    Thread.sleep(eye.interval.toLong())
+                    //Thread.sleep(eye.interval.toLong())
                     if (this.isRunning) {
                         eye.updatePosition()
                         eye.repaint()
@@ -1360,25 +1363,25 @@ class LarsonScanner : JPanel {
             super.paintComponent(g)
             updateValues()
             val g2d = g as Graphics2D
+            val fillHeight = height.roundToInt() + 10
             g2d.setRenderingHints(renderingHints)
-            val startY: Byte = 0
             g2d.color = this.background
-            g2d.fillRect(0, 0, width.toInt(), height.toInt())
+            g2d.fillRect(0, 0, width.roundToInt(), fillHeight)
             if (ovalShaped) {
                 if (cylonAnimation) {
-                    drawCylonOval(g2d, startY)
+                    drawCylonOval(g2d)
                 } else {
-                    drawKittOval(g2d, startY)
+                    drawKittOval(g2d)
                 }
             } else {
                 if (cylonAnimation) {
-                    drawCylonRect(g2d, startY)
+                    drawCylonRect(g2d)
                 } else {
-                    drawKittRect(g2d, startY)
+                    drawKittRect(g2d)
                 }
             }
-            g2d.drawRect(-10, -10, width.toInt() + 20, height.toInt() + 20)
-            Toolkit.getDefaultToolkit().sync()
+            g2d.drawRect(0, -10, width.roundToInt(), fillHeight)
+            g2d.dispose()
         }
 
         /**
@@ -1488,8 +1491,6 @@ class LarsonScanner : JPanel {
          * @author Griefed
          */
         fun setNewEyeValues() {
-            setSize(width.toInt(), height.toInt())
-
             // The eye itself is to be a fifth of the whole width
             partition = width / partitionDivider
             elementWidth = partition / numberOfElements.toDouble()
@@ -1504,11 +1505,9 @@ class LarsonScanner : JPanel {
          * animation behaves, see [LarsonScanner.useCylonAnimation].
          *
          * @param g2d To fill and draw with.
-         * @param startY The play of an element along the Y-axis.
          * @author Griefed
          */
-        @Suppress("SameParameterValue")
-        private fun drawCylonOval(g2d: Graphics2D, startY: Byte) {
+        private fun drawCylonOval(g2d: Graphics2D) {
             for (element in 0 until numberOfElements) {
                 val startOfElement = calcCylonOvalStart(element.toByte())
                 if (useGradients) {
@@ -1518,7 +1517,7 @@ class LarsonScanner : JPanel {
                 } else {
                     g2d.color = eyeColours[element]
                 }
-                g2d.fillOval(startOfElement.toInt(), startY.toInt(), elementWidth.toInt(), height.toInt())
+                g2d.fillOval(startOfElement.roundToInt(),0, elementWidth.roundToInt(), height.roundToInt())
             }
         }
 
@@ -1529,8 +1528,8 @@ class LarsonScanner : JPanel {
          * Divide the width of an element by two and add that to the play of the current element
          * being drawn.
          *
-         * @param start [Double] The play point of the element currently being drawn.
-         * @return [Double] The Y-coordinate of the center of the element currently being drawn.
+         * @param start The play point of the element currently being drawn.
+         * @return The Y-coordinate of the center of the element currently being drawn.
          * @author Griefed
          */
         private fun getCenter(start: Double): Double {
@@ -1572,11 +1571,11 @@ class LarsonScanner : JPanel {
          * gradients extend from the 2D center point of the current element to the height of one
          * element.
          *
-         * @param element [Byte] The number of the element currently being drawn.
-         * @param centerX [Double] The X-coordinate of the center of the element currently being
+         * @param element The number of the element currently being drawn.
+         * @param centerX The X-coordinate of the center of the element currently being
          * drawn.
-         * @param color [Color] The color of the element currently being drawn.
-         * @return [RadialGradientPaint] A radial gradient for the currently being drawn,
+         * @param color The color of the element currently being drawn.
+         * @return A radial gradient for the currently being drawn,
          * oval-shaped, element.
          * @author Griefed
          */
@@ -1585,7 +1584,7 @@ class LarsonScanner : JPanel {
         ): RadialGradientPaint {
             val alphaColour = colourWithAlpha(alphas[element.toInt()], color)
             val colors = arrayOf(alphaColour, background)
-            val radius = Point(centerX.toInt(), (height / 2).toInt())
+            val radius = Point(centerX.roundToInt(), (height / 2).roundToInt())
             val fraction = (0.5f * height).toFloat()
             return RadialGradientPaint(radius, fraction, fractions, colors)
         }
@@ -1595,12 +1594,10 @@ class LarsonScanner : JPanel {
          * used for painting, otherwise our rectangles are painted with solid colours. For details on
          * how this animation behaves, see [LarsonScanner.useCylonAnimation].
          *
-         * @param g2d [Graphics2D] to fill and draw with.
-         * @param startY [Byte] The play of an element along the Y-axis.
+         * @param g2d Fill and draw with.
          * @author Griefed
          */
-        @Suppress("SameParameterValue")
-        private fun drawCylonRect(g2d: Graphics2D, startY: Byte) {
+        private fun drawCylonRect(g2d: Graphics2D) {
             for (element in 0 until numberOfElements) {
                 val startOfElement = calcCylonRectStart(element.toByte())
                 if (useGradients) {
@@ -1615,7 +1612,7 @@ class LarsonScanner : JPanel {
                 } else {
                     g2d.color = eyeColours[element]
                 }
-                g2d.fillRect(startOfElement.toInt(), startY.toInt(), elementWidth.toInt(), height.toInt())
+                g2d.fillRect(startOfElement.roundToInt(), 0, elementWidth.roundToInt(), height.roundToInt())
             }
         }
 
@@ -1681,21 +1678,16 @@ class LarsonScanner : JPanel {
          * the left of the center element must have gradients which increase in color intensity towards
          * the center of the eye.
          *
-         *
          * Every gradient for these rectangular shapes is drawn from:
-         *
          *
          *  * `X-coordinate:` Acquired from [calcCylonRectStart]
          *  * `Y-coordinate:` Half of the height of one element.
          *
-         *
          * to:
-         *
          *
          *  * `X-coordinate:` Acquired from [calcCylonRectStart] plus the
          * width of one element.
          *  * `Y-coordinate:` Half of the height of one element.
-         *
          *
          * @param element The number of the current element being drawn.
          * @param startX The X-coordinate where the current element starts.
@@ -1755,10 +1747,9 @@ class LarsonScanner : JPanel {
          * animation behaves, see [LarsonScanner.useCylonAnimation].
          *
          * @param g2d Fill and draw with.
-         * @param startY The play of an element along the Y-axis.
          * @author Griefed
          */
-        private fun drawKittOval(g2d: Graphics2D, startY: Byte) {
+        private fun drawKittOval(g2d: Graphics2D) {
             var startOfElement: Double
             val posDrawn: Double
             var elementToDraw: Byte
@@ -1766,12 +1757,12 @@ class LarsonScanner : JPanel {
             val elementColour: Color
             for (element in 0 until numberOfElements) {
                 startOfElement = calcKittOvalStart(element.toByte())
-                addKittOval(g2d, startY, startOfElement, element.toByte())
+                addKittOval(g2d, startOfElement, element.toByte())
             }
             if (increasePosition) {
                 // Going left to right
                 posDrawn = position + numberOfElements * elementWidth
-                if (posDrawn > width) {
+                if (posDrawn >= width) {
                     /*
                      * We are entering the nether on the right side, so we draw the brightest element at the
                      * most right position to create the illusion of the elements gathering.
@@ -1785,13 +1776,13 @@ class LarsonScanner : JPanel {
                     } else {
                         g2d.color = elementColour
                     }
-                    g2d.fillOval(startOfElement.toInt(), startY.toInt(), elementWidth.toInt(), height.toInt())
+                    g2d.fillOval(startOfElement.roundToInt(),0, elementWidth.roundToInt(), height.roundToInt())
                 } else if (position < 0) {
                     /*
                      * We are leaving the nether on the left side, so we need to draw that the next element
                      * after the ones already visible to create the illusion of the eye emerging.
                      */
-                    elementToDraw = ((numberOfElements - posDrawn / elementWidth - 1).toInt().toByte())
+                    elementToDraw = ((numberOfElements - posDrawn / elementWidth - 1).roundToInt().toByte())
                     elementColour = eyeColours[elementToDraw.toInt()]
                     if (useGradients) {
                         elementCenter = getCenter(0.0)
@@ -1799,7 +1790,7 @@ class LarsonScanner : JPanel {
                     } else {
                         g2d.color = elementColour
                     }
-                    g2d.fillOval(0, startY.toInt(), elementWidth.toInt(), height.toInt())
+                    g2d.fillOval(0, 0, elementWidth.roundToInt(), height.roundToInt())
                 }
             } else {
                 // Going right to left
@@ -1817,19 +1808,19 @@ class LarsonScanner : JPanel {
                     } else {
                         g2d.color = elementColour
                     }
-                    g2d.fillOval(0, startY.toInt(), elementWidth.toInt(), height.toInt())
+                    g2d.fillOval(0, 0, elementWidth.roundToInt(), height.roundToInt())
                 } else if (position >= width) {
                     /*
                      * We are leaving the nether on the right side, so we need to draw the next element
                      * after the ones already visible to create the illusion of the eye emerging.
                      */
                     startOfElement = width - elementWidth
-                    elementToDraw = ((position - width) / elementWidth).toInt().toByte()
+                    elementToDraw = ((position - width) / elementWidth).roundToInt().toByte()
                     if (elementToDraw >= numberOfElements) {
                         elementToDraw = (numberOfElements - 1).toByte()
                     }
                     if (elementToDraw < numberOfElements) {
-                        addKittOval(g2d, startY, startOfElement, elementToDraw)
+                        addKittOval(g2d, startOfElement, elementToDraw)
                     }
                 }
             }
@@ -1839,13 +1830,12 @@ class LarsonScanner : JPanel {
          * Helper method to slightly cleanup [drawKittOval].
          *
          * @param g2d Fill and draw with.
-         * @param startY The play of an element along the Y-axis.
          * @param startOfElement The play of the current element along the Larson
          * Scanner.
          * @param element The element we are currently drawing.
          * @author Griefed
          */
-        private fun addKittOval(g2d: Graphics2D, startY: Byte, startOfElement: Double, element: Byte) {
+        private fun addKittOval(g2d: Graphics2D, startOfElement: Double, element: Byte) {
             val elementColour = eyeColours[element.toInt()]
             if (useGradients) {
                 val elementCenter = getCenter(startOfElement)
@@ -1853,7 +1843,7 @@ class LarsonScanner : JPanel {
             } else {
                 g2d.color = elementColour
             }
-            g2d.fillOval(startOfElement.toInt(), startY.toInt(), elementWidth.toInt(), height.toInt())
+            g2d.fillOval(startOfElement.roundToInt(), 0, elementWidth.roundToInt(), height.roundToInt())
         }
 
         /**
@@ -1914,10 +1904,10 @@ class LarsonScanner : JPanel {
          */
         private fun kittRadialGradient(element: Byte, centerX: Double, color: Color): RadialGradientPaint {
             val alphaFraction = 255.0 / numberOfElements
-            val alpha = (alphaFraction * (element + 1)).toInt().toShort()
+            val alpha = (alphaFraction * (element + 1)).roundToInt().toShort()
             val colour = colourWithAlpha(alpha, color)
             val colors = arrayOf(colour, background)
-            val point = Point(centerX.toInt(), (height / 2).toInt())
+            val point = Point(centerX.roundToInt(), (height / 2).roundToInt())
             val radius = (0.5f * height).toFloat()
             return RadialGradientPaint(point, radius, fractions, colors)
         }
@@ -1928,12 +1918,11 @@ class LarsonScanner : JPanel {
          * how this animation behaves, see [LarsonScanner.useCylonAnimation].
          *
          * @param g2d Fill and draw with.
-         * @param startY The play of an element along the Y-axis.
          * @author Griefed
          */
         @Suppress("SameParameterValue")
-        private fun drawKittRect(g2d: Graphics2D, startY: Byte) {
-            var startOfElement: Double
+        private fun drawKittRect(g2d: Graphics2D) {
+            var startOfElement = 0.0
             val posDrawn: Double
             var elementToDraw: Byte
             val elementCenter: Double
@@ -1944,25 +1933,27 @@ class LarsonScanner : JPanel {
                 } else {
                     g2d.color = eyeColours[element]
                 }
-                g2d.fillRect(startOfElement.toInt(), startY.toInt(), elementWidth.toInt(), height.toInt())
+                g2d.fillRect(startOfElement.roundToInt(), 0, elementWidth.roundToInt(), height.roundToInt())
             }
             if (increasePosition) {
                 // Going left to right
-                posDrawn = position + numberOfElements * elementWidth + (numberOfElements - 2) * gapWidth
-                if (posDrawn > width) {
+                val totalGapWidth = (numberOfElements - 1) * gapWidth
+                val totalElementWidth = numberOfElements * elementWidth
+                posDrawn = position + totalElementWidth + totalGapWidth
+                if (posDrawn >= width) {
                     /*
                      * We are entering the nether on the right side, so we draw the brightest element at the
                      * most right position to create the illusion of the elements gathering.
                      */
                     startOfElement = width - elementWidth
                     g2d.color = eyeColours[numberOfElements - 1]
-                    g2d.fillRect(startOfElement.toInt(), startY.toInt(), elementWidth.toInt(), height.toInt())
-                } else if (position < 0) {
+                    g2d.fillRect(startOfElement.roundToInt(), 0, elementWidth.roundToInt(), height.roundToInt())
+                } else if (position <= 0) {
                     /*
                      * We are leaving the nether on the left side, so we need to draw that the next element
                      * after the ones already visible to create the illusion of the eye emerging.
                      */
-                    elementToDraw = (numberOfElements - posDrawn / elementWidth - 1).toInt().toByte()
+                    elementToDraw = (numberOfElements - posDrawn / elementWidth - 1).roundToInt().toByte()
                     if (elementToDraw in 0 until numberOfElements) {
                         if (useGradients) {
                             elementCenter = getCenter(0.0)
@@ -1970,13 +1961,12 @@ class LarsonScanner : JPanel {
                         } else {
                             g2d.color = eyeColours[elementToDraw.toInt()]
                         }
-                        g2d.fillRect(0, startY.toInt(), elementWidth.toInt(), height.toInt())
+                        g2d.fillRect(0, 0, elementWidth.roundToInt(), height.roundToInt())
                     }
                 }
             } else {
                 // Going right to left
-                posDrawn = position - numberOfElements * elementWidth + (numberOfElements - 2) * gapWidth
-                if (posDrawn <= 0) {
+                if (startOfElement <= 0) {
                     /*
                      * We are entering the nether on the left side, so we draw the brightest element at the
                      * most left position to create the illusion of the elements gathering.
@@ -1987,14 +1977,14 @@ class LarsonScanner : JPanel {
                     } else {
                         g2d.color = eyeColours[numberOfElements - 1]
                     }
-                    g2d.fillRect(0, startY.toInt(), elementWidth.toInt(), height.toInt())
+                    g2d.fillRect(0, 0, elementWidth.roundToInt(), height.roundToInt())
                 } else if (position >= width) {
                     /*
                      * We are leaving the nether on the right side, so we need to draw that the next element
                      * after the ones already visible to create the illusion of the eye emerging.
                      */
                     startOfElement = width - elementWidth
-                    elementToDraw = ((position - width) / elementWidth).toInt().toByte()
+                    elementToDraw = ((position - width) / elementWidth).roundToInt().toByte()
                     if (elementToDraw >= numberOfElements) {
                         elementToDraw = (numberOfElements - 1).toByte()
                     }
@@ -2006,7 +1996,7 @@ class LarsonScanner : JPanel {
                             g2d.color = eyeColours[elementToDraw.toInt()]
                         }
                     }
-                    g2d.fillRect(startOfElement.toInt(), startY.toInt(), elementWidth.toInt(), height.toInt())
+                    g2d.fillRect(startOfElement.roundToInt(), 0, elementWidth.roundToInt(), height.roundToInt())
                 }
             }
         }
@@ -2034,7 +2024,7 @@ class LarsonScanner : JPanel {
          */
         private fun calcKittRectStart(element: Byte): Double {
             if (element.toInt() == 0) {
-                return position.toDouble()
+                return position
             }
             return if (increasePosition) {
                 position + element * (elementWidth + gapWidth)
@@ -2065,8 +2055,8 @@ class LarsonScanner : JPanel {
          * @author Griefed
          */
         private fun kittRectGradient(element: Byte, startX: Double): GradientPaint {
-            val alphaOne = (255.0 / numberOfElements * (element + 1).toDouble()).toInt().toShort()
-            val alphaTwo = (255.0 / numberOfElements * (element + 1).toDouble()).toInt().toShort()
+            val alphaOne = (255.0 / numberOfElements * (element + 1).toDouble()).roundToInt().toShort()
+            val alphaTwo = (255.0 / numberOfElements * (element + 1).toDouble()).roundToInt().toShort()
             val x1 = startX.toFloat()
             val y1 = (height / 2.0).toFloat()
             val x2 = (startX + elementWidth).toFloat()
@@ -2149,31 +2139,28 @@ class LarsonScanner : JPanel {
             if (position < 0) {
                 // switch to left to right
                 increasePosition = true
-                position = 0
+                position = 0.0
                 return
             } else if (position > width) {
                 // switch to right to left
                 increasePosition = false
-                position = width.toInt().toShort()
+                position = width
                 return
             }
-            if (useDivider) {
-                if (increasePosition && position < width) {
-                    // left to right
-                    position = (position + width / divider).toInt().toShort()
-                } else if (!increasePosition && position > 0) {
-                    // right to left
-                    position = (position - width / divider).toInt().toShort()
-                }
+            val deltaTime = System.currentTimeMillis() - previousTime
+            val positionChange = if (useDivider) {
+                deltaTime * interval.toDouble() / divider.toDouble()
             } else {
-                if (increasePosition && position < width) {
-                    // left to right
-                    position++
-                } else if (!increasePosition && position > 0) {
-                    // right to left
-                    position--
-                }
+                deltaTime * interval.toDouble() / 1000.0
             }
+            if (increasePosition && position < width) {
+                // left to right
+                position += positionChange
+            } else if (!increasePosition && position > 0) {
+                // right to left
+                position -= positionChange
+            }
+            previousTime = System.currentTimeMillis()
         }
 
         /**
@@ -2192,31 +2179,28 @@ class LarsonScanner : JPanel {
             if (position < maxNegative) {
                 // switch to left to right
                 increasePosition = true
-                position = maxNegative.toInt().toShort()
+                position = maxNegative
                 return
             } else if (position > maxWidth) {
                 // switch to right to left
                 increasePosition = false
-                position = maxWidth.toInt().toShort()
+                position = maxWidth
                 return
             }
-            if (useDivider) {
-                if (increasePosition && position < maxWidth) {
-                    // left to right
-                    position = (position + maxWidth / divider).toInt().toShort()
-                } else if (!increasePosition && position > maxNegative) {
-                    // right to left
-                    position = (position - maxWidth / divider).toInt().toShort()
-                }
+            val deltaTime = System.currentTimeMillis() - previousTime
+            val positionChange = if (useDivider) {
+                deltaTime * interval.toDouble() / divider.toDouble()
             } else {
-                if (increasePosition && position < maxWidth) {
-                    // left to right
-                    position++
-                } else if (!increasePosition && position > maxNegative) {
-                    // right to left
-                    position--
-                }
+                deltaTime * interval.toDouble() / 1000.0
             }
+            if (increasePosition && position < maxWidth) {
+                // left to right
+                position += positionChange
+            } else if (!increasePosition && position > maxNegative) {
+                // right to left
+                position -= positionChange
+            }
+            previousTime = System.currentTimeMillis()
         }
     }
 
