@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui.window.menu
 
-import de.griefed.larsonscanner.LarsonScanner
+import de.griefed.serverpackcreator.gui.window.control.components.LarsonScanner
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.window.MainFrame

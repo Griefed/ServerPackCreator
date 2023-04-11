@@ -49,6 +49,7 @@ class FileBrowserFrame(
     private val guiProps: GuiProps,
     private val utilities: Utilities
 ) {
+    @Volatile
     private lateinit var frame: JFrame
 
     init {
@@ -57,8 +58,10 @@ class FileBrowserFrame(
                 val frame = JFrame()
                 val filePreviewPanel = FilePreviewPanel(guiProps)
                 val fileDetailPanel = FileDetailPanel()
-                val tableScrollPane =
-                    TableScrollPane(browserModel, tabbedConfigsTab, utilities, fileDetailPanel, filePreviewPanel)
+                val tableScrollPane = TableScrollPane(
+                    browserModel, tabbedConfigsTab, utilities,
+                    fileDetailPanel, filePreviewPanel
+                )
                 val northPanel = JPanel()
                 val southPanel = JPanel()
                 northPanel.layout = BorderLayout()
@@ -83,12 +86,8 @@ class FileBrowserFrame(
                 tablePreviewSplit.dividerSize = 20
 
                 val treeScrollPane = TreeScrollPane(
-                    browserModel,
-                    tabbedConfigsTab,
-                    utilities,
-                    fileDetailPanel,
-                    filePreviewPanel,
-                    tableScrollPane
+                    browserModel, tabbedConfigsTab, utilities,
+                    fileDetailPanel, filePreviewPanel, tableScrollPane
                 )
                 val splitTreeTable = JSplitPane(JSplitPane.HORIZONTAL_SPLIT, treeScrollPane, tablePreviewSplit)
                 splitTreeTable.isOneTouchExpandable = true

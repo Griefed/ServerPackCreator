@@ -20,13 +20,16 @@
 package de.griefed.serverpackcreator.gui.window.control
 
 import Gui
-import de.griefed.larsonscanner.LarsonScanner
-import de.griefed.serverpackcreator.api.*
+import de.griefed.serverpackcreator.gui.window.control.components.LarsonScanner
+import de.griefed.serverpackcreator.api.ApiWrapper
+import de.griefed.serverpackcreator.api.PackConfig
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.window.configs.TabbedConfigsTab
 import de.griefed.serverpackcreator.gui.window.control.components.GenerationButton
 import de.griefed.serverpackcreator.gui.window.control.components.ServerPacksButton
-import kotlinx.coroutines.*
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import net.miginfocom.swing.MigLayout
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.awt.Desktop
@@ -34,7 +37,6 @@ import java.io.File
 import java.io.IOException
 import javax.swing.JOptionPane
 import javax.swing.JPanel
-import javax.swing.text.*
 
 /**
  * TODO docs
