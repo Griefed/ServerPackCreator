@@ -52,7 +52,7 @@ import javax.swing.SwingUtilities
  */
 class ComponentResizer(
     dragInsets: Insets = Insets(5, 5, 5, 5),
-    private var snapSize: Dimension = Dimension(1, 1)
+    private var snapSize: Dimension = Dimension(1, 1),
 ) : MouseAdapter() {
 
     private val south = 4
@@ -122,11 +122,20 @@ class ComponentResizer(
         val source = e.component
         val location = e.point
         direction = 0
-        when {
-            location.y > source.height - dragInsets.bottom - 1 -> {
+        if (source is ResizeIndicatorScrollPane) {
+            val handleBarPosition = source.handleBarPosition!!
+            val x = handleBarPosition.x
+            val maxX = handleBarPosition.width + handleBarPosition.x
+            val y = handleBarPosition.y
+            val maxY = handleBarPosition.height + handleBarPosition.y
+            if (location.x in x..maxX && location.y in y..maxY) {
                 direction += south
             }
+        } else if (location.y > source.height - dragInsets.bottom - 1) {
+            direction += south
+
         }
+
 
         //  Mouse is no longer over a resizable border
         when (direction) {
@@ -160,7 +169,9 @@ class ComponentResizer(
 
     override fun mousePressed(e: MouseEvent) {
         //	The mouseMoved event continually updates this variable
-        if (direction == 0) return
+        if (direction == 0) {
+            return
+        }
 
         //  Setup for resizing. All future dragging calculations are done based
         //  on the original bounds of the component and mouse pressed location.

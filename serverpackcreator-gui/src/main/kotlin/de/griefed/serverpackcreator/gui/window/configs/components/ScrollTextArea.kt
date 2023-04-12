@@ -51,7 +51,7 @@ class ScrollTextArea(
     private val textArea: JTextArea = JTextArea(text),
     verticalScrollbarVisibility: Int = VERTICAL_SCROLLBAR_ALWAYS,
     horizontalScrollbarVisibility: Int = HORIZONTAL_SCROLLBAR_NEVER
-) : ResizeIndicatorScrollPane(guiProps, verticalScrollbarVisibility, horizontalScrollbarVisibility),
+) : ResizeIndicatorScrollPane(guiProps,textArea,verticalScrollbarVisibility, horizontalScrollbarVisibility),
     UndoableEditListener,
     KeyListener {
 
@@ -94,6 +94,7 @@ class ScrollTextArea(
         textArea.lineWrap = true
         textArea.document.addUndoableEditListener(this)
         textArea.addKeyListener(this)
+
         viewport.view = textArea
         name = areaName
     }
