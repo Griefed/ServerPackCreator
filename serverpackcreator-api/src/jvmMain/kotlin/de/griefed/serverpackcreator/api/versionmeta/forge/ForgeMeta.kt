@@ -376,7 +376,7 @@ actual class ForgeMeta actual constructor(
             val destination = File(installerDirectory, "$forgeVersion-$minecraftVersion.jar")
             if (!destination.isFile) {
                 val url = installerUrl(forgeVersion).get()
-                val downloaded = utilities.webUtilities.downloadFile(destination,url)
+                val downloaded = utilities.webUtilities.downloadFile(destination, url)
                 if (downloaded) {
                     Optional.of(destination)
                 } else {

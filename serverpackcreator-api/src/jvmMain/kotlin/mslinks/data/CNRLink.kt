@@ -25,12 +25,15 @@ import java.nio.charset.StandardCharsets
 @Suppress("unused")
 class CNRLink : Serializable {
     private var flags: CNRLinkFlags?
+
     @Suppress("MemberVisibilityCanBePrivate")
     var networkType: Int
         private set
+
     @Suppress("MemberVisibilityCanBePrivate")
     var netName: String?
         private set
+
     @Suppress("MemberVisibilityCanBePrivate")
     var deviceName: String? = null
         private set
@@ -44,13 +47,21 @@ class CNRLink : Serializable {
     constructor(data: ByteReader) {
         val pos = data.position
         val size = data.read4bytes().toInt()
-        if (size < 0x14) throw ShellLinkException()
+        if (size < 0x14) {
+            throw ShellLinkException()
+        }
         flags = CNRLinkFlags(data)
         val nnoffset = data.read4bytes().toInt()
         var dnoffset = data.read4bytes().toInt()
-        if (!flags!!.isValidDevice) dnoffset = 0
+        if (!flags!!.isValidDevice) {
+            dnoffset = 0
+        }
         networkType = data.read4bytes().toInt()
-        if (flags!!.isValidNetType) checkNpType(networkType) else networkType = 0
+        if (flags!!.isValidNetType) {
+            checkNpType(networkType)
+        } else {
+            networkType = 0
+        }
         var nnoffsetU = 0
         var dnoffsetU = 0
         if (nnoffset > 0x14) {
@@ -78,7 +89,9 @@ class CNRLink : Serializable {
         val mod = Modifier.PUBLIC or Modifier.STATIC or Modifier.FINAL
         for (f in this.javaClass.fields) {
             try {
-                if (f.modifiers and mod == mod && type == f[null] as Int) return
+                if (f.modifiers and mod == mod && type == f[null] as Int) {
+                    return
+                }
             } catch (_: Exception) {
             }
         }
@@ -91,27 +104,39 @@ class CNRLink : Serializable {
         val u: Boolean
         val ce = StandardCharsets.US_ASCII.newEncoder()
         u = !ce.canEncode(netName) || deviceName != null && !ce.canEncode(deviceName)
-        if (u) size += 8
+        if (u) {
+            size += 8
+        }
         val netnameB: ByteArray?
         var devnameB: ByteArray? = null
         netnameB = netName!!.toByteArray()
-        if (deviceName != null) devnameB = deviceName!!.toByteArray()
+        if (deviceName != null) {
+            devnameB = deviceName!!.toByteArray()
+        }
         size += netnameB.size + 1
-        if (devnameB != null) size += devnameB.size + 1
+        if (devnameB != null) {
+            size += devnameB.size + 1
+        }
         if (u) {
             size += netName!!.length * 2 + 2
-            if (deviceName != null) size += deviceName!!.length * 2 + 2
+            if (deviceName != null) {
+                size += deviceName!!.length * 2 + 2
+            }
         }
         bw.write4bytes(size.toLong())
         flags!!.serialize(bw)
         var off = 20
-        if (u) off += 8
+        if (u) {
+            off += 8
+        }
         bw.write4bytes(off.toLong()) // netname offset
         off += netnameB.size + 1
         if (devnameB != null) {
             bw.write4bytes(off.toLong()) // devname offset
             off += devnameB.size + 1
-        } else bw.write4bytes(0)
+        } else {
+            bw.write4bytes(0)
+        }
         bw.write4bytes(networkType.toLong())
         if (u) {
             bw.write4bytes(off.toLong())
@@ -119,7 +144,9 @@ class CNRLink : Serializable {
             if (deviceName != null) {
                 bw.write4bytes(off.toLong())
                 off += deviceName!!.length * 2 + 2
-            } else bw.write4bytes(0)
+            } else {
+                bw.write4bytes(0)
+            }
         }
         bw.write(netnameB)
         bw.write(0)
@@ -128,10 +155,14 @@ class CNRLink : Serializable {
             bw.write(0)
         }
         if (u) {
-            for (i in 0 until netName!!.length) bw.write2bytes(netName!![i].code.toLong())
+            for (i in 0 until netName!!.length) {
+                bw.write2bytes(netName!![i].code.toLong())
+            }
             bw.write2bytes(0)
             if (deviceName != null) {
-                for (i in 0 until deviceName!!.length) bw.write2bytes(deviceName!![i].code.toLong())
+                for (i in 0 until deviceName!!.length) {
+                    bw.write2bytes(deviceName!![i].code.toLong())
+                }
                 bw.write2bytes(0)
             }
         }
@@ -144,7 +175,7 @@ class CNRLink : Serializable {
     fun setNetworkType(n: Int): CNRLink {
         networkType = if (n == 0) {
             flags!!.clearValidNetType()
-            n
+            0
         } else {
             checkNpType(n)
             flags!!.setValidNetType()
@@ -157,7 +188,9 @@ class CNRLink : Serializable {
      * if s is null take no effect
      */
     fun setNetName(s: String?): CNRLink {
-        if (s != null) netName = s
+        if (s != null) {
+            netName = s
+        }
         return this
     }
 

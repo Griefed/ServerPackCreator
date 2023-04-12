@@ -33,9 +33,15 @@ class Filetime : GregorianCalendar, Serializable {
     }
 
     override fun equals(other: Any?): Boolean {
-        if (other === this) return true
-        if (other == null || javaClass != other.javaClass) return false
-        if (!super.equals(other)) return false
+        if (other === this) {
+            return true
+        }
+        if (other == null || javaClass != other.javaClass) {
+            return false
+        }
+        if (!super.equals(other)) {
+            return false
+        }
         val obj = other as Filetime
         return residue == obj.residue
     }

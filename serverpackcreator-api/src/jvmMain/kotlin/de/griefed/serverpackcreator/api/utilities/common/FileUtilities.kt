@@ -111,15 +111,19 @@ actual class FileUtilities {
             file.name.endsWith(lnk) -> {
                 FileType.LINK
             }
+
             file.isDirectory -> {
                 FileType.DIRECTORY
             }
+
             file.toPath().isSymbolicLink() -> {
                 FileType.SYMLINK
             }
+
             file.isFile -> {
                 FileType.FILE
             }
+
             else -> FileType.INVALID
         }
     }
@@ -182,13 +186,22 @@ actual class FileUtilities {
                 try {
                     resolveLink(link, type).toString()
                 } catch (ex: InvalidFileTypeException) {
-                    log.error("Somehow an invalid FileType was specified: $link, type $type. Please report this on GitHub!", ex)
+                    log.error(
+                        "Somehow an invalid FileType was specified: $link, type $type. Please report this on GitHub!",
+                        ex
+                    )
                     link.absolutePath
                 } catch (ex: InvalidLinkException) {
-                    log.error("Somehow an invalid FileType was specified: $link, type $type. Please report this on GitHub!", ex)
+                    log.error(
+                        "Somehow an invalid FileType was specified: $link, type $type. Please report this on GitHub!",
+                        ex
+                    )
                     link.absolutePath
                 } catch (ex: ShellLinkException) {
-                    log.error("Somehow an invalid FileType was specified: $link, type $type. Please report this on GitHub!", ex)
+                    log.error(
+                        "Somehow an invalid FileType was specified: $link, type $type. Please report this on GitHub!",
+                        ex
+                    )
                     link.absolutePath
                 }
             }

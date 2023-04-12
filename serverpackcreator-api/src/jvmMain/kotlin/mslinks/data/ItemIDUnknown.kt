@@ -21,6 +21,7 @@ import java.io.IOException
 
 open class ItemIDUnknown(flags: Int) : ItemID(flags) {
     protected lateinit var data: ByteArray
+
     @Throws(IOException::class, ShellLinkException::class)
     override fun load(br: ByteReader, maxSize: Int) {
         val startPos = br.position

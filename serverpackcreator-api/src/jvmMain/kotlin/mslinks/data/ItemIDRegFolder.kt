@@ -24,7 +24,9 @@ class ItemIDRegFolder : ItemIDRegItem {
     constructor() : super(GROUP_COMPUTER or TYPE_DRIVE_REGITEM)
     constructor(flags: Int) : super(flags or GROUP_COMPUTER) {
         val subType = typeFlags and ID_TYPE_INGROUPMASK
-        if (subType != TYPE_DRIVE_REGITEM) throw UnsupportedItemIDException(typeFlags)
+        if (subType != TYPE_DRIVE_REGITEM) {
+            throw UnsupportedItemIDException(typeFlags)
+        }
     }
 
     @Throws(IOException::class, ShellLinkException::class)

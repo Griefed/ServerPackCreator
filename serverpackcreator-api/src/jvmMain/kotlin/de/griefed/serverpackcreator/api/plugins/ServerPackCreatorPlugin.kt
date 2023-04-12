@@ -48,7 +48,7 @@ import java.net.URL
  * @author Griefed
  */
 @Suppress("unused")
-abstract class ServerPackCreatorPlugin constructor(wrapper: PluginWrapper) : Plugin(wrapper), BaseInformation {
+abstract class ServerPackCreatorPlugin(wrapper: PluginWrapper) : Plugin(wrapper), BaseInformation {
     private val log = cachedLoggerOf(this.javaClass)
     final override val name: String
     final override val description: String
@@ -64,7 +64,7 @@ abstract class ServerPackCreatorPlugin constructor(wrapper: PluginWrapper) : Plu
         val clazz = this.javaClass.simpleName + ".class"
         val classPath = this.javaClass.getResource(clazz)!!.toString()
         val classPathIndex = classPath.lastIndexOf("!") + 1
-        val url = URL(classPath.substring(0,classPathIndex) + "/plugin.toml")
+        val url = URL(classPath.substring(0, classPathIndex) + "/plugin.toml")
         val pluginToml: CommentedConfig
         url.openStream().use {
             pluginToml = TomlFormat.instance().createParser().parse(it)

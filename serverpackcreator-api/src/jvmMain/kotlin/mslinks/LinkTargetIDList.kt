@@ -29,14 +29,18 @@ class LinkTargetIDList : LinkedList<ItemID?>, Serializable {
         var pos = data.position
         while (true) {
             val itemSize = data.read2bytes().toInt()
-            if (itemSize == 0) break
+            if (itemSize == 0) {
+                break
+            }
             val typeFlags = data.read()
             val item: ItemID = ItemID.createItem(typeFlags)
             item.load(data, itemSize - 3)
             add(item)
         }
         pos = data.position - pos
-        if (pos != size) throw ShellLinkException("unexpected size of LinkTargetIDList")
+        if (pos != size) {
+            throw ShellLinkException("unexpected size of LinkTargetIDList")
+        }
     }
 
     @Throws(IOException::class)
@@ -63,14 +67,22 @@ class LinkTargetIDList : LinkedList<ItemID?>, Serializable {
         get() = canBuildPath()
 
     fun canBuildPath(): Boolean {
-        for (i in this) if (i is ItemIDUnknown) return false
+        for (i in this) {
+            if (i is ItemIDUnknown) {
+                return false
+            }
+        }
         return true
     }
 
     fun canBuildAbsolutePath(): Boolean {
-        if (size < 2) return false
+        if (size < 2) {
+            return false
+        }
         val firstId = first as? ItemIDRoot ?: return false
-        if (firstId.clsid != Registry.CLSID_COMPUTER) return false
+        if (firstId.clsid != Registry.CLSID_COMPUTER) {
+            return false
+        }
         val secondId = get(1)
         return secondId is ItemIDDrive
     }

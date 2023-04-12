@@ -23,7 +23,6 @@ import net.lingala.zip4j.ZipFile
 import java.io.File
 import java.net.URL
 import java.nio.file.Paths
-import kotlin.jvm.Throws
 
 private val jar = "^jar:(file:.*[.]jar)!/.*".toRegex()
 private val jarJar = "^(file:.*[.]jar)!.*[.]jar".toRegex()

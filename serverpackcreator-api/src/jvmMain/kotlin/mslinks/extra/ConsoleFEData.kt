@@ -32,7 +32,9 @@ class ConsoleFEData : Serializable {
     }
 
     constructor(br: ByteReader, sz: Int) {
-        if (sz != size) throw ShellLinkException()
+        if (sz != size) {
+            throw ShellLinkException()
+        }
         val t = br.read4bytes().toInt()
         language = ids[t ushr 16]
     }

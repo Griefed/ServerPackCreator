@@ -57,7 +57,9 @@ class GUID : Serializable {
 
     constructor(id: String) {
         var s = id
-        if (s[0] == '{' && s[s.length - 1] == '}') s = s.substring(1, s.length - 1)
+        if (s[0] == '{' && s[s.length - 1] == '}') {
+            s = s.substring(1, s.length - 1)
+        }
         val p = s.split("-".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
         var b = parse(p[0])
         d1 = Bytes.makeIntB(b[0], b[1], b[2], b[3])
@@ -86,8 +88,12 @@ class GUID : Serializable {
     }
 
     override fun equals(other: Any?): Boolean {
-        if (other === this) return true
-        if (other == null || javaClass != other.javaClass) return false
+        if (other === this) {
+            return true
+        }
+        if (other == null || javaClass != other.javaClass) {
+            return false
+        }
         val g = other as GUID
         return d1 == g.d1 && d2 == g.d2 && d3 == g.d3 && d4 == g.d4 && d5 == g.d5
     }

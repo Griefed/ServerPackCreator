@@ -39,9 +39,13 @@ class Tracker : Serializable {
     }
 
     constructor(br: ByteReader, sz: Int) {
-        if (sz != size) throw ShellLinkException()
+        if (sz != size) {
+            throw ShellLinkException()
+        }
         val len = br.read4bytes().toInt()
-        if (len < 0x58) throw ShellLinkException()
+        if (len < 0x58) {
+            throw ShellLinkException()
+        }
         br.read4bytes()
         val pos = br.position
         netbiosName = br.readString(16)
@@ -60,7 +64,9 @@ class Tracker : Serializable {
         bw.write4bytes(0)
         val b = netbiosName!!.toByteArray()
         bw.write(b)
-        for (i in 0 until 16 - b.size) bw.write(0)
+        for (i in 0 until 16 - b.size) {
+            bw.write(0)
+        }
         d1.serialize(bw)
         d2.serialize(bw)
         db1.serialize(bw)
@@ -69,7 +75,9 @@ class Tracker : Serializable {
 
     @Throws(ShellLinkException::class)
     fun setNetbiosName(s: String): Tracker {
-        if (s.length > 16) throw ShellLinkException("netbios name length must be <= 16")
+        if (s.length > 16) {
+            throw ShellLinkException("netbios name length must be <= 16")
+        }
         netbiosName = s
         return this
     }

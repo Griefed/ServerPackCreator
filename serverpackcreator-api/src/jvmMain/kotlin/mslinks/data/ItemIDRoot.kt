@@ -23,7 +23,9 @@ class ItemIDRoot : ItemIDRegItem {
     constructor() : super(GROUP_ROOT or TYPE_ROOT_REGITEM)
     constructor(flags: Int) : super(flags or GROUP_ROOT) {
         val subType = typeFlags and ID_TYPE_INGROUPMASK
-        if (subType != TYPE_ROOT_REGITEM) throw UnsupportedItemIDException(typeFlags)
+        if (subType != TYPE_ROOT_REGITEM) {
+            throw UnsupportedItemIDException(typeFlags)
+        }
     }
 
     @Throws(IOException::class, ShellLinkException::class)
@@ -34,6 +36,10 @@ class ItemIDRoot : ItemIDRegItem {
     }
 
     override fun toString(): String {
-        return if (clsid == Registry.CLSID_COMPUTER) "" else super.toString()
+        return if (clsid == Registry.CLSID_COMPUTER) {
+            ""
+        } else {
+            super.toString()
+        }
     }
 }

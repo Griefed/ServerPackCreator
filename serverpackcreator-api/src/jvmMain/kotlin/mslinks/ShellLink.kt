@@ -76,21 +76,42 @@ class ShellLink {
     private fun parse(data: ByteReader) {
         header = ShellLinkHeader(data)
         val lf = header!!.linkFlags
-        if (lf.hasLinkTargetIDList()) targetIdList = LinkTargetIDList(data)
-        if (lf.hasLinkInfo()) linkInfo = LinkInfo(data)
-        if (lf.hasName()) name = data.readUnicodeStringSizePadded()
-        if (lf.hasRelativePath()) relativePath = data.readUnicodeStringSizePadded()
-        if (lf.hasWorkingDir()) workingDir = data.readUnicodeStringSizePadded()
-        if (lf.hasArguments()) cMDArgs = data.readUnicodeStringSizePadded()
-        if (lf.hasIconLocation()) iconLocation = data.readUnicodeStringSizePadded()
+        if (lf.hasLinkTargetIDList()) {
+            targetIdList = LinkTargetIDList(data)
+        }
+        if (lf.hasLinkInfo()) {
+            linkInfo = LinkInfo(data)
+        }
+        if (lf.hasName()) {
+            name = data.readUnicodeStringSizePadded()
+        }
+        if (lf.hasRelativePath()) {
+            relativePath = data.readUnicodeStringSizePadded()
+        }
+        if (lf.hasWorkingDir()) {
+            workingDir = data.readUnicodeStringSizePadded()
+        }
+        if (lf.hasArguments()) {
+            cMDArgs = data.readUnicodeStringSizePadded()
+        }
+        if (lf.hasIconLocation()) {
+            iconLocation = data.readUnicodeStringSizePadded()
+        }
         while (true) {
             val size = data.read4bytes().toInt()
-            if (size < 4) break
+            if (size < 4) {
+                break
+            }
             val sign = data.read4bytes().toInt()
             try {
                 val cl: Class<*>? = extraTypes[sign]
-                if (cl != null) extra[sign] = cl.getConstructor(ByteReader::class.java, Int::class.javaPrimitiveType)
-                    .newInstance(data, size) as Serializable else extra[sign] = Stub(data, size, sign)
+                if (cl != null) {
+                    val constructor = cl.getConstructor(ByteReader::class.java, Int::class.javaPrimitiveType)
+                    val instance = constructor.newInstance(data, size)
+                    extra[sign] = instance as Serializable
+                } else {
+                    extra[sign] = Stub(data, size, sign)
+                }
             } catch (e: InstantiationException) {
                 e.printStackTrace()
             } catch (e: IllegalAccessException) {
@@ -118,14 +139,30 @@ class ShellLink {
     fun serialize(bw: ByteWriter) {
         val lf = header!!.linkFlags
         header!!.serialize(bw)
-        if (lf.hasLinkTargetIDList()) targetIdList!!.serialize(bw)
-        if (lf.hasLinkInfo()) linkInfo!!.serialize(bw)
-        if (lf.hasName()) bw.writeUnicodeStringSizePadded(name)
-        if (lf.hasRelativePath()) bw.writeUnicodeStringSizePadded(relativePath)
-        if (lf.hasWorkingDir()) bw.writeUnicodeStringSizePadded(workingDir)
-        if (lf.hasArguments()) bw.writeUnicodeStringSizePadded(cMDArgs)
-        if (lf.hasIconLocation()) bw.writeUnicodeStringSizePadded(iconLocation)
-        for (i in extra.values) i!!.serialize(bw)
+        if (lf.hasLinkTargetIDList()) {
+            targetIdList!!.serialize(bw)
+        }
+        if (lf.hasLinkInfo()) {
+            linkInfo!!.serialize(bw)
+        }
+        if (lf.hasName()) {
+            bw.writeUnicodeStringSizePadded(name)
+        }
+        if (lf.hasRelativePath()) {
+            bw.writeUnicodeStringSizePadded(relativePath)
+        }
+        if (lf.hasWorkingDir()) {
+            bw.writeUnicodeStringSizePadded(workingDir)
+        }
+        if (lf.hasArguments()) {
+            bw.writeUnicodeStringSizePadded(cMDArgs)
+        }
+        if (lf.hasIconLocation()) {
+            bw.writeUnicodeStringSizePadded(iconLocation)
+        }
+        for (i in extra.values) {
+            i!!.serialize(bw)
+        }
         bw.write4bytes(0)
     }
 
@@ -156,23 +193,33 @@ class ShellLink {
     }
 
     fun setName(s: String?): ShellLink {
-        if (s == null) header!!.linkFlags.clearHasName() else header!!.linkFlags.setHasName()
+        if (s == null) {
+            header!!.linkFlags.clearHasName()
+        } else {
+            header!!.linkFlags.setHasName()
+        }
         name = s
         return this
     }
 
     fun setRelativePath(s: String?): ShellLink {
         var temp = s
-        if (temp == null) header!!.linkFlags.clearHasRelativePath() else {
+        if (temp == null) {
+            header!!.linkFlags.clearHasRelativePath()
+        } else {
             header!!.linkFlags.setHasRelativePath()
-            if (!temp.startsWith(".")) temp = ".\\$temp"
+            if (!temp.startsWith(".")) {
+                temp = ".\\$temp"
+            }
         }
         relativePath = temp
         return this
     }
 
     fun setWorkingDir(s: String?): ShellLink {
-        if (s == null) header!!.linkFlags.clearHasWorkingDir() else {
+        if (s == null) {
+            header!!.linkFlags.clearHasWorkingDir()
+        } else {
             header!!.linkFlags.setHasWorkingDir()
         }
         workingDir = s
@@ -180,13 +227,19 @@ class ShellLink {
     }
 
     fun setCMDArgs(s: String?): ShellLink {
-        if (s == null) header!!.linkFlags.clearHasArguments() else header!!.linkFlags.setHasArguments()
+        if (s == null) {
+            header!!.linkFlags.clearHasArguments()
+        } else {
+            header!!.linkFlags.setHasArguments()
+        }
         cMDArgs = s
         return this
     }
 
     fun setIconLocation(s: String?): ShellLink {
-        if (s == null) header!!.linkFlags.clearHasIconLocation() else {
+        if (s == null) {
+            header!!.linkFlags.clearHasIconLocation()
+        } else {
             header!!.linkFlags.setHasIconLocation()
         }
         iconLocation = s
@@ -269,9 +322,14 @@ class ShellLink {
         if (envBlock != null && envBlock.variable!!.isNotBlank()) {
             return envBlock.variable
         }
-        return if (header!!.linkFlags
-                .hasLinkTargetIDList() && targetIdList != null && targetIdList!!.canBuildPath()
-        ) targetIdList!!.buildPath() else "<unknown>"
+        return if (header!!.linkFlags.hasLinkTargetIDList()
+            && targetIdList != null
+            && targetIdList!!.canBuildPath()
+        ) {
+            targetIdList!!.buildPath()
+        } else {
+            "<unknown>"
+        }
     }
 
     private fun getExtraDataBlock(signature: Int): Serializable? {
@@ -324,7 +382,9 @@ class ShellLink {
                 helper.setNetworkTarget(targetAbsPath)
             } else {
                 val parts = targetAbsPath.split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-                if (parts.size == 2) helper.setLocalTarget(parts[0], parts[1])
+                if (parts.size == 2) {
+                    helper.setLocalTarget(parts[0], parts[1])
+                }
             }
         } catch (_: ShellLinkException) {
         }

@@ -38,7 +38,9 @@ class HotKeyFlags : Serializable {
         get() = keys[low]
 
     fun setKey(k: String?): HotKeyFlags {
-        if (k != null && k != "") low = keysr[k]!!
+        if (k != null && k != "") {
+            low = keysr[k]!!
+        }
         return this
     }
 
@@ -156,7 +158,9 @@ class HotKeyFlags : Serializable {
         private val keysr = HashMap<String, Byte>()
 
         init {
-            for ((key, value) in keys) keysr[value] = key
+            for ((key, value) in keys) {
+                keysr[value] = key
+            }
         }
     }
 }

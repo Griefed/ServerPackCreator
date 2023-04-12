@@ -27,7 +27,9 @@ class LinkInfoFlags : BitSet32 {
     }
 
     private fun reset() {
-        for (i in 2..31) clear(i)
+        for (i in 2..31) {
+            clear(i)
+        }
     }
 
     fun hasVolumeIDAndLocalBasePath(): Boolean {

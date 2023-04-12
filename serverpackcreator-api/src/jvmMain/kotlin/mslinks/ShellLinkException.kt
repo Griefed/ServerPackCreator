@@ -16,5 +16,5 @@ package mslinks
 
 open class ShellLinkException : Exception {
     constructor() : super()
-    constructor(msg: String?) : super(msg)
+    constructor(msg: String) : super(msg)
 }

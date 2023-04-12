@@ -30,7 +30,6 @@ import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import java.io.File
 import java.io.FileNotFoundException
 import java.nio.charset.StandardCharsets
-import java.util.*
 
 /**
  * A PackConfig contains the settings required to create a server pack.

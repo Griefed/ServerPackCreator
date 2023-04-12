@@ -25,10 +25,15 @@ object Registry {
     private val registry = ArrayList<Entry>()
     private val indexClsids = HashMap<GUID?, Entry>()
     private val indexNames = HashMap<String, Entry>()
+
     @Throws(ShellLinkException::class)
     fun registerClsid(clsid: GUID, name: String, vararg allowedItemIdTypes: Class<*>) {
-        if (indexClsids.containsKey(clsid)) throw ShellLinkException("Registry already contains $clsid")
-        if (indexNames.containsKey(name)) throw ShellLinkException("Registry already contains $name")
+        if (indexClsids.containsKey(clsid)) {
+            throw ShellLinkException("Registry already contains $clsid")
+        }
+        if (indexNames.containsKey(name)) {
+            throw ShellLinkException("Registry already contains $name")
+        }
         registerClsidInternal(clsid, name, *allowedItemIdTypes)
     }
 
@@ -45,10 +50,7 @@ object Registry {
         if (allowedItemIdTypes.isNotEmpty()) {
             entry.allowedItemIdTypes = allowedItemIdTypes as Array<Class<*>>
         } else {
-            entry.allowedItemIdTypes =
-                arrayOf(
-                    ItemIDRegItem::class.java
-                )
+            entry.allowedItemIdTypes = arrayOf(ItemIDRegItem::class.java)
         }
         registry.add(entry)
         indexClsids[clsid] = entry
@@ -57,7 +59,9 @@ object Registry {
 
     @Throws(UnsupportedCLSIDException::class)
     fun getName(clsid: GUID?): String? {
-        if (!indexClsids.containsKey(clsid)) throw UnsupportedCLSIDException(clsid)
+        if (!indexClsids.containsKey(clsid)) {
+            throw UnsupportedCLSIDException(clsid)
+        }
         val entry = indexClsids[clsid]
         return entry!!.name
     }
@@ -65,16 +69,23 @@ object Registry {
     @Throws(ShellLinkException::class)
     fun getClsid(name: String): GUID? {
         val temp = name.lowercase(Locale.getDefault())
-        if (!indexNames.containsKey(temp)) throw ShellLinkException("$temp is not found")
+        if (!indexNames.containsKey(temp)) {
+            throw ShellLinkException("$temp is not found")
+        }
         val entry = indexNames[temp]
         return entry!!.clsid
     }
 
     fun canUseClsidIn(clsid: GUID?, itemIdClass: Class<*>?): Boolean {
-        if (!indexClsids.containsKey(clsid)) return false
+        if (!indexClsids.containsKey(clsid)) {
+            return false
+        }
         val entry = indexClsids[clsid]
         for (i in entry!!.allowedItemIdTypes) {
-            if (itemIdClass?.let { i.isAssignableFrom(it) } == true) return true
+            val check = itemIdClass?.let { i.isAssignableFrom(it) }
+            if (check == true) {
+                return true
+            }
         }
         return false
     }
@@ -84,10 +95,13 @@ object Registry {
     }
 
     val CLSID_COMPUTER: GUID
+
     @Suppress("MemberVisibilityCanBePrivate")
     val CLSID_DESKTOP: GUID
+
     @Suppress("MemberVisibilityCanBePrivate")
     val CLSID_DOCUMENTS: GUID
+
     @Suppress("MemberVisibilityCanBePrivate")
     val CLSID_DOWNLOADS: GUID
 

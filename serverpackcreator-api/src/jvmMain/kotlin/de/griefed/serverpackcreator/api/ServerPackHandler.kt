@@ -271,9 +271,19 @@ actual class ServerPackHandler actual constructor(
                         )
                     )
                 } else if (File(directory).isDirectory) {
-                    serverPackFiles.addAll(getDirectoryFiles(directory, destination + File.separator + File(directory).name))
+                    serverPackFiles.addAll(
+                        getDirectoryFiles(
+                            directory,
+                            destination + File.separator + File(directory).name
+                        )
+                    )
                 } else {
-                    serverPackFiles.addAll(getDirectoryFiles(clientDir, destination + File.separator + File(clientDir).name))
+                    serverPackFiles.addAll(
+                        getDirectoryFiles(
+                            clientDir,
+                            destination + File.separator + File(clientDir).name
+                        )
+                    )
                 }
             }
             log.info("Ensuring files and/or directories are properly excluded.")
@@ -458,7 +468,7 @@ actual class ServerPackHandler actual constructor(
         }
         preInstallationCleanup(destination)
         val commandArguments: MutableList<String> = ArrayList(10)
-        commandArguments.addMultiple(apiProperties.javaPath,"-jar")
+        commandArguments.addMultiple(apiProperties.javaPath, "-jar")
         var process: Process? = null
         when (modLoader) {
             "Fabric" -> {
@@ -466,7 +476,8 @@ actual class ServerPackHandler actual constructor(
                 installerLog.info("Starting Fabric installation.")
                 if (versionMeta.fabric.installerFor(versionMeta.fabric.releaseInstaller()).isPresent) {
                     log.info("Fabric installer successfully downloaded.")
-                    val installer = versionMeta.fabric.installerFor(versionMeta.fabric.releaseInstaller()).get().absolutePath
+                    val installer =
+                        versionMeta.fabric.installerFor(versionMeta.fabric.releaseInstaller()).get().absolutePath
                     commandArguments.addMultiple(
                         installer,
                         "server",
@@ -489,7 +500,8 @@ actual class ServerPackHandler actual constructor(
                 installerLog.info("Starting Forge installation.")
                 if (versionMeta.forge.installerFor(modLoaderVersion, minecraftVersion).isPresent) {
                     log.info("Forge installer successfully downloaded.")
-                    val installer = versionMeta.forge.installerFor(modLoaderVersion, minecraftVersion).get().absolutePath
+                    val installer =
+                        versionMeta.forge.installerFor(modLoaderVersion, minecraftVersion).get().absolutePath
                     commandArguments.addMultiple(
                         installer,
                         "--installServer"
@@ -507,7 +519,8 @@ actual class ServerPackHandler actual constructor(
                 installerLog.info("Starting Quilt installation.")
                 if (versionMeta.quilt.installerFor(versionMeta.quilt.releaseInstaller()).isPresent) {
                     log.info("Quilt installer successfully downloaded.")
-                    val installer = versionMeta.quilt.installerFor(versionMeta.quilt.releaseInstaller()).get().absolutePath
+                    val installer =
+                        versionMeta.quilt.installerFor(versionMeta.quilt.releaseInstaller()).get().absolutePath
                     commandArguments.addMultiple(
                         installer,
                         "install",
@@ -530,8 +543,9 @@ actual class ServerPackHandler actual constructor(
                 try {
                     if (versionMeta.legacyFabric.installerFor(versionMeta.legacyFabric.releaseInstaller()).isPresent) {
                         log.info("LegacyFabric installer successfully downloaded.")
-                        val installer = versionMeta.legacyFabric.installerFor(versionMeta.legacyFabric.releaseInstaller())
-                            .get().absolutePath
+                        val installer =
+                            versionMeta.legacyFabric.installerFor(versionMeta.legacyFabric.releaseInstaller())
+                                .get().absolutePath
                         commandArguments.addMultiple(
                             installer,
                             "server",
@@ -734,7 +748,7 @@ actual class ServerPackHandler actual constructor(
                     try {
                         val pathFile = path.toFile().absolutePath
                         val sourceFile = File(source).absolutePath
-                        val destFile = File(destination,pathFile.replace(sourceFile,""))
+                        val destFile = File(destination, pathFile.replace(sourceFile, ""))
                         serverPackFiles.add(
                             ServerPackFile(
                                 path.toFile(),

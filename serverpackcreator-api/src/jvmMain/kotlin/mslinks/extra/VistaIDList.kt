@@ -27,12 +27,16 @@ class VistaIDList : Serializable {
 
     constructor()
     constructor(br: ByteReader, size: Int) {
-        if (size < 0xa) throw ShellLinkException()
+        if (size < 0xa) {
+            throw ShellLinkException()
+        }
         var s = br.read2bytes().toInt()
         while (s != 0) {
             s -= 2
             val b = ByteArray(s)
-            for (i in 0 until s) b[i] = br.read().toByte()
+            for (i in 0 until s) {
+                b[i] = br.read().toByte()
+            }
             list.add(b)
             s = br.read2bytes().toInt()
         }
@@ -41,18 +45,24 @@ class VistaIDList : Serializable {
     @Throws(IOException::class)
     override fun serialize(bw: ByteWriter) {
         var size = 10
-        for (i in list) size += i.size + 2
+        for (i in list) {
+            size += i.size + 2
+        }
         bw.write2bytes(size.toLong())
         for (i in list) {
             bw.write2bytes((i.size + 2).toLong())
-            for (j in i) bw.write(j.toInt())
+            for (j in i) {
+                bw.write(j.toInt())
+            }
         }
         bw.write2bytes(0)
     }
 
     override fun toString(): String {
         val sb = StringBuilder()
-        for (b in list) sb.append(String(b) + "\n")
+        for (b in list) {
+            sb.append(String(b) + "\n")
+        }
         return sb.toString()
     }
 

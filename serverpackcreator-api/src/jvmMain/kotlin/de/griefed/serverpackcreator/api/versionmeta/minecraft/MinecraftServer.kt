@@ -24,7 +24,6 @@ import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import de.griefed.serverpackcreator.api.versionmeta.Type
 import java.io.File
-import java.io.IOException
 import java.net.URL
 import java.util.*
 

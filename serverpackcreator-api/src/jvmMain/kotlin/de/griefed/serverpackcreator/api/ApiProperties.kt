@@ -26,11 +26,7 @@ import de.comahe.i18n4k.toTag
 import de.griefed.serverpackcreator.api.utilities.common.*
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import org.jetbrains.annotations.Contract
-import java.io.BufferedReader
-import java.io.File
-import java.io.FileNotFoundException
-import java.io.IOException
-import java.io.InputStreamReader
+import java.io.*
 import java.net.URL
 import java.util.*
 
@@ -716,13 +712,13 @@ actual class ApiProperties(
         }
 
         // If our properties-file exists in SPCs home directory, load it.
-        loadFile(jarFolderFile,props)
+        loadFile(jarFolderFile, props)
         // If our properties-file exists in the users home dir ServerPackCreator-dir, load it.
-        loadFile(homeDirFile,props)
+        loadFile(homeDirFile, props)
         // If our properties-file in the directory from which the user is executing SPC exists, load it.
-        loadFile(relativeDirFile,props)
+        loadFile(relativeDirFile, props)
         // Load the specified properties-file.
-        loadFile(propertiesFile,props)
+        loadFile(propertiesFile, props)
 
         internalProperties.putAll(props)
 

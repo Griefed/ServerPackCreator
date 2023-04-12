@@ -26,6 +26,7 @@ class VolumeID : Serializable {
     @Suppress("MemberVisibilityCanBePrivate")
     var driveType: Int
         private set
+
     @Suppress("MemberVisibilityCanBePrivate")
     var serialNumber: Int
         private set
@@ -108,10 +109,14 @@ class VolumeID : Serializable {
 
     @Throws(ShellLinkException::class)
     fun setDriveType(n: Int): VolumeID {
-        return if (n == DRIVE_UNKNOWN || n == DRIVE_NO_ROOT_DIR || n == DRIVE_REMOVABLE || n == DRIVE_FIXED || n == DRIVE_REMOTE || n == DRIVE_CDROM || n == DRIVE_RAMDISK) {
-            driveType = n
-            this
-        } else throw ShellLinkException("incorrect drive type")
+        return when (n) {
+            DRIVE_UNKNOWN, DRIVE_NO_ROOT_DIR, DRIVE_REMOVABLE, DRIVE_FIXED, DRIVE_REMOTE, DRIVE_CDROM, DRIVE_RAMDISK -> {
+                driveType = n
+                this
+            }
+
+            else -> throw ShellLinkException("incorrect drive type")
+        }
     }
 
     fun setSerialNumber(n: Int): VolumeID {

@@ -281,6 +281,7 @@ actual class TomlScanner(private val tomlParser: TomlParser) :
             val mods = configValueMap[mods] as ArrayList<*>
             val modConfig = mods[0] as CommentedConfig
             val id = getModId(modConfig)
+
             @Suppress("UNCHECKED_CAST")
             val entry = configValueMap[dependencies] as ArrayList<CommentedConfig>
             modDependencies[id] = entry

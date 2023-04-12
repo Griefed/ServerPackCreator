@@ -27,7 +27,9 @@ open class ItemIDDrive(flags: Int) : ItemID(flags or GROUP_COMPUTER) {
 
     init {
         val subType = typeFlags and ID_TYPE_INGROUPMASK
-        if (subType == 0) throw UnsupportedItemIDException(typeFlags)
+        if (subType == 0) {
+            throw UnsupportedItemIDException(typeFlags)
+        }
     }
 
     @Throws(IOException::class, ShellLinkException::class)
@@ -61,16 +63,24 @@ open class ItemIDDrive(flags: Int) : ItemID(flags or GROUP_COMPUTER) {
     @Deprecated("")
     @Throws(ShellLinkException::class)
     override fun setName(s: String?): ItemIDDrive {
-        if (s == null) return this
-        name = if (Pattern.matches("\\w:\\\\", s)) s else if (Pattern.matches(
-                "\\w:",
+        if (s == null) {
+            return this
+        }
+        name = when {
+            Pattern.matches("\\w:\\\\", s) -> {
                 s
-            )
-        ) s + "\\" else if (Pattern.matches(
-                "\\w",
-                s
-            )
-        ) "$s:\\" else throw ShellLinkException("wrong drive name: $s")
+            }
+
+            Pattern.matches("\\w:", s) -> {
+                s + "\\"
+            }
+
+            Pattern.matches("\\w", s) -> {
+                "$s:\\"
+            }
+
+            else -> throw ShellLinkException("wrong drive name: $s")
+        }
         return this
     }
 }
