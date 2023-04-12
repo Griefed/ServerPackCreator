@@ -134,7 +134,7 @@ class ComponentResizer(
                 source.cursor = sourceCursor
             }
 
-            4, 6, 12 -> {
+            4 -> {
                 // use the appropriate resizable cursor
                 val cursorType = cursors[direction]!!
                 val cursor = Cursor.getPredefinedCursor(cursorType)
@@ -202,7 +202,9 @@ class ComponentResizer(
      * resizing started.
      */
     override fun mouseDragged(e: MouseEvent) {
-        if (!resizing) return
+        if (!resizing) {
+            return
+        }
         val source = e.component
         val dragged = e.point
         SwingUtilities.convertPointToScreen(dragged, source)
@@ -210,24 +212,28 @@ class ComponentResizer(
     }
 
     private fun changeBounds(source: Component, direction: Int, bounds: Rectangle?, pressed: Point?, current: Point) {
+        if (direction != 4 && direction != 6 && direction != 12) {
+            return
+        }
         //  Start with original location and size
         val x = bounds!!.x
         val y = bounds.y
-        val width = bounds.width
         var height = bounds.height
 
         //  Resizing the West or North border affects the size and location
-        when (south) {
-            direction and south -> {
-                var drag = getDragDistance(current.y, pressed!!.y, snapSize.height)
-                val maximum = (maximumSize.height - y).coerceAtMost(maximumSize.height)
-                drag = getDragBounded(drag, snapSize.height, height, minimumSize.height, maximum)
-                height += drag
-            }
-        }
+        var drag = getDragDistance(current.y, pressed!!.y, snapSize.height)
+        val maximum = (maximumSize.height - y).coerceAtMost(maximumSize.height)
+        drag = getDragBounded(drag, snapSize.height, height, minimumSize.height, maximum)
+        height += drag
+
         val layout = source.parent.layout as MigLayout
         layout.setComponentConstraints(source, components[source]?.format(height))
-        source.setBounds(x, y, width - snapSize.width, height)
+        source.setBounds(x, y, source.width, height)
+        if (source is JComponent) {
+            source.autoscrolls = autoscroll
+            source.rootPane.grabFocus()
+            source.grabFocus()
+        }
         source.revalidate()
     }
 
