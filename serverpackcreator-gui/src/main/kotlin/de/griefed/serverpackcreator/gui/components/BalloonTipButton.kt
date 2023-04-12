@@ -21,7 +21,8 @@ open class BalloonTipButton(text: String?, icon: Icon, toolTip: String, guiProps
         icon: Icon,
         toolTip: String,
         guiProps: GuiProps,
-        actionListener: ActionListener) : this(
+        actionListener: ActionListener
+    ) : this(
         text,
         icon,
         toolTip,

@@ -20,9 +20,9 @@
 package de.griefed.serverpackcreator.gui.window
 
 import Gui
-import de.griefed.serverpackcreator.gui.window.control.components.LarsonScanner
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.gui.GuiProps
+import de.griefed.serverpackcreator.gui.window.control.components.LarsonScanner
 import de.griefed.serverpackcreator.gui.window.menu.MainMenuBar
 import de.griefed.serverpackcreator.updater.MigrationManager
 import de.griefed.serverpackcreator.updater.UpdateChecker
@@ -70,7 +70,7 @@ class MainFrame(
         frame.contentPane = mainPanel.panel
         frame.isLocationByPlatform = true
         frame.isAutoRequestFocus = true
-        frame.preferredSize = Dimension(1200,800)
+        frame.preferredSize = Dimension(1200, 800)
         frame.pack()
         frame.isVisible = true
     }

@@ -19,11 +19,11 @@
  */
 package de.griefed.serverpackcreator.gui.window.menu
 
-import de.griefed.serverpackcreator.gui.window.control.components.LarsonScanner
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.window.MainFrame
 import de.griefed.serverpackcreator.gui.window.UpdateDialogs
+import de.griefed.serverpackcreator.gui.window.control.components.LarsonScanner
 import de.griefed.serverpackcreator.gui.window.menu.about.AboutMenu
 import de.griefed.serverpackcreator.gui.window.menu.edit.EditMenu
 import de.griefed.serverpackcreator.gui.window.menu.file.FileMenu
@@ -63,7 +63,7 @@ class MainMenuBar(
                 mainFrame
             )
         )
-        menuBar.add(ViewMenu(apiWrapper, migrationManager, guiProps,mainFrame))
+        menuBar.add(ViewMenu(apiWrapper, migrationManager, guiProps, mainFrame))
         menuBar.add(AboutMenu(apiWrapper.utilities!!.webUtilities, updateDialogs))
     }
 }

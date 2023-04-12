@@ -39,7 +39,7 @@ class RootManager(private val guiProps: GuiProps) {
     private val osName = System.getProperty("os.name")
     val isOSX = osName.contains("Mac", ignoreCase = true)
     val isLinux = osName.contains("Linux", ignoreCase = true)
-    val isWindows = osName.contains("Windows",ignoreCase = true)
+    val isWindows = osName.contains("Windows", ignoreCase = true)
     val fileSystemView: FileSystemView = FileSystemView.getFileSystemView()
 
     @get:Throws(IllegalStateException::class)

@@ -90,7 +90,7 @@ class ScriptKVPairs(guiProps: GuiProps, configEditor: ConfigEditor) : JTable(
             sorter.setSortable(column, false)
         }
         this.rowSorter = sorter
-        scrollPanel = ResizeIndicatorScrollPane(guiProps,this)
+        scrollPanel = ResizeIndicatorScrollPane(guiProps, this)
         clearData()
         model.addTableModelListener { configEditor.validateInputFields() }
     }

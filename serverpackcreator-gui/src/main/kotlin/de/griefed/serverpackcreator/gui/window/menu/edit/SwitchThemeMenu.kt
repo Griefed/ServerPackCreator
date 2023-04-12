@@ -23,10 +23,10 @@ import Gui
 import com.formdev.flatlaf.FlatLaf
 import com.formdev.flatlaf.extras.FlatAnimatedLafChange
 import com.formdev.flatlaf.intellijthemes.FlatAllIJThemes
-import de.griefed.serverpackcreator.gui.window.control.components.LarsonScanner
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.window.MainFrame
+import de.griefed.serverpackcreator.gui.window.control.components.LarsonScanner
 import javax.swing.*
 
 /**

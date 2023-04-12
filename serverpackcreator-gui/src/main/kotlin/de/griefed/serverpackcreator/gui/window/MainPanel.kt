@@ -20,7 +20,6 @@
 package de.griefed.serverpackcreator.gui.window
 
 import Gui
-import de.griefed.serverpackcreator.gui.window.control.components.LarsonScanner
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.components.TabPanel
@@ -28,6 +27,7 @@ import de.griefed.serverpackcreator.gui.utilities.DialogUtilities
 import de.griefed.serverpackcreator.gui.window.configs.ConfigEditor
 import de.griefed.serverpackcreator.gui.window.configs.TabbedConfigsTab
 import de.griefed.serverpackcreator.gui.window.control.ControlPanel
+import de.griefed.serverpackcreator.gui.window.control.components.LarsonScanner
 import de.griefed.serverpackcreator.gui.window.logs.TabbedLogsTab
 import de.griefed.serverpackcreator.gui.window.settings.SettingsEditorTab
 import net.miginfocom.swing.MigLayout

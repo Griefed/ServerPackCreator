@@ -22,9 +22,9 @@ class Splashes {
         splashWidth,
         splashHeight,
     )
-    val splashes = arrayOf(splashOne,splashTwo,splashThree)
-    val getRandomSplash : ImageIcon
+    val splashes = arrayOf(splashOne, splashTwo, splashThree)
+    val getRandomSplash: ImageIcon
         get() {
-            return splashes[Random.nextInt(0,splashes.size)]
+            return splashes[Random.nextInt(0, splashes.size)]
         }
 }

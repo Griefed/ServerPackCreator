@@ -31,7 +31,7 @@ import de.griefed.serverpackcreator.gui.window.configs.filebrowser.view.FileBrow
  * @license LGPL
  */
 class FileBrowser(tabbedConfigsTab: TabbedConfigsTab, guiProps: GuiProps, utilities: Utilities) {
-    private val browserModel: FileBrowserModel = FileBrowserModel(guiProps,utilities.fileUtilities)
+    private val browserModel: FileBrowserModel = FileBrowserModel(guiProps, utilities.fileUtilities)
     private val frame: FileBrowserFrame = FileBrowserFrame(browserModel, tabbedConfigsTab, guiProps, utilities)
 
     /**

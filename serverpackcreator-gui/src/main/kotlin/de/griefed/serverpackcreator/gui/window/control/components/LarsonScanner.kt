@@ -27,7 +27,6 @@ package de.griefed.serverpackcreator.gui.window.control.components
 import java.awt.*
 import javax.swing.JComponent
 import javax.swing.JPanel
-import kotlin.math.ceil
 import kotlin.math.floor
 import kotlin.math.roundToInt
 
@@ -1519,7 +1518,7 @@ class LarsonScanner : JPanel {
                 } else {
                     g2d.color = eyeColours[element]
                 }
-                g2d.fillOval(startOfElement.roundToInt(),0, elementWidth.roundToInt(), height.roundToInt())
+                g2d.fillOval(startOfElement.roundToInt(), 0, elementWidth.roundToInt(), height.roundToInt())
             }
         }
 
@@ -1778,7 +1777,7 @@ class LarsonScanner : JPanel {
                     } else {
                         g2d.color = elementColour
                     }
-                    g2d.fillOval(startOfElement.roundToInt(),0, elementWidth.roundToInt(), height.roundToInt())
+                    g2d.fillOval(startOfElement.roundToInt(), 0, elementWidth.roundToInt(), height.roundToInt())
                 } else if (position < 0) {
                     /*
                      * We are leaving the nether on the left side, so we need to draw that the next element

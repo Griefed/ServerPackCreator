@@ -86,10 +86,10 @@ class DialogUtilities {
             )
 
             if (width != null && height != null) {
-                optionPane.minimumSize = Dimension(width,height)
-                optionPane.size = Dimension(width,height)
-                dialog.minimumSize = Dimension(width,height)
-                dialog.size = Dimension(width,height)
+                optionPane.minimumSize = Dimension(width, height)
+                optionPane.size = Dimension(width, height)
+                dialog.minimumSize = Dimension(width, height)
+                dialog.size = Dimension(width, height)
             }
 
             dialog.isResizable = resizable

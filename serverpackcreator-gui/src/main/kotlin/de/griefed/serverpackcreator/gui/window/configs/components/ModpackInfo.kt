@@ -21,7 +21,6 @@ package de.griefed.serverpackcreator.gui.window.configs.components
 
 import Gui
 import de.griefed.serverpackcreator.gui.GuiProps
-import de.griefed.serverpackcreator.gui.window.configs.components.StatusIcon
 
 class ModpackInfo(guiProps: GuiProps) : StatusIcon(
     guiProps,

@@ -23,17 +23,18 @@ class DirectoryLinkIcon : FlatAbstractIcon(16, 16, UIManager.getColor("Objects.G
             val arc2 = 0.5
             path = FlatUIUtils.createPath(
                 // bottom-right
-                14.5,13.5-arc,  FlatUIUtils.QUAD_TO, 14.5,13.5, 14.5-arc,13.5,
+                14.5, 13.5 - arc, FlatUIUtils.QUAD_TO, 14.5, 13.5, 14.5 - arc, 13.5,
                 // bottom-left
-                1.5+arc,13.5,   FlatUIUtils.QUAD_TO, 1.5,13.5,  1.5,13.5-arc,
+                1.5 + arc, 13.5, FlatUIUtils.QUAD_TO, 1.5, 13.5, 1.5, 13.5 - arc,
                 // top-left
-                1.5,2.5+arc,    FlatUIUtils.QUAD_TO, 1.5,2.5,   1.5+arc,2.5,
+                1.5, 2.5 + arc, FlatUIUtils.QUAD_TO, 1.5, 2.5, 1.5 + arc, 2.5,
                 // top-mid-left
-                6.5-arc2,2.5,   FlatUIUtils.QUAD_TO, 6.5,2.5,   6.5+arc2,2.5+arc2,
+                6.5 - arc2, 2.5, FlatUIUtils.QUAD_TO, 6.5, 2.5, 6.5 + arc2, 2.5 + arc2,
                 // top-mid-right
-                8.5,4.5,
+                8.5, 4.5,
                 // top-right
-                14.5-arc,4.5,   FlatUIUtils.QUAD_TO, 14.5,4.5,  14.5,4.5+arc )
+                14.5 - arc, 4.5, FlatUIUtils.QUAD_TO, 14.5, 4.5, 14.5, 4.5 + arc
+            )
         }
         g.draw(path)
 

@@ -22,7 +22,6 @@ package de.griefed.serverpackcreator.gui.window.configs.filebrowser.view.rendere
 import de.griefed.serverpackcreator.gui.window.configs.filebrowser.model.FileBrowserModel
 import de.griefed.serverpackcreator.gui.window.configs.filebrowser.model.FileNode
 import java.awt.Component
-import java.io.File
 import javax.swing.JLabel
 import javax.swing.JTree
 import javax.swing.tree.DefaultMutableTreeNode

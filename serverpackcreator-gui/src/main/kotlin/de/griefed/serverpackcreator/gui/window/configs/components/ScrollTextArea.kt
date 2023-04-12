@@ -22,13 +22,10 @@ package de.griefed.serverpackcreator.gui.window.configs.components
 import Gui
 import de.griefed.serverpackcreator.api.utilities.common.regexReplace
 import de.griefed.serverpackcreator.gui.GuiProps
-import de.griefed.serverpackcreator.gui.utilities.ImageUtilities
-import de.griefed.serverpackcreator.gui.utilities.getScaledInstance
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.awt.BorderLayout
-import java.awt.Graphics
 import java.awt.Toolkit
 import java.awt.event.KeyEvent
 import java.awt.event.KeyListener
@@ -54,7 +51,7 @@ class ScrollTextArea(
     private val textArea: JTextArea = JTextArea(text),
     verticalScrollbarVisibility: Int = VERTICAL_SCROLLBAR_ALWAYS,
     horizontalScrollbarVisibility: Int = HORIZONTAL_SCROLLBAR_NEVER
-) : ResizeIndicatorScrollPane(guiProps,verticalScrollbarVisibility, horizontalScrollbarVisibility),
+) : ResizeIndicatorScrollPane(guiProps, verticalScrollbarVisibility, horizontalScrollbarVisibility),
     UndoableEditListener,
     KeyListener {
 
@@ -91,7 +88,6 @@ class ScrollTextArea(
         Gui.createserverpack_gui_textarea_replace_regex_replace.toString(),
         replaceWith
     )
-    var showResizeIcon = true
 
     init {
         undoManager.limit = 10

@@ -1,5 +1,6 @@
 package de.griefed.serverpackcreator.gui.window.control.components
 
+import Gui
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.components.BalloonTipButton
 import java.awt.event.ActionListener
@@ -9,7 +10,7 @@ import java.awt.event.ActionListener
  *
  * @author Griefed
  */
-class ServerPacksButton(guiProps: GuiProps, openPacksAction: ActionListener): BalloonTipButton(
+class ServerPacksButton(guiProps: GuiProps, openPacksAction: ActionListener) : BalloonTipButton(
     Gui.createserverpack_gui_buttonserverpacks.toString(),
     guiProps.packsIcon,
     Gui.createserverpack_gui_buttonserverpacks_tip.toString(),
