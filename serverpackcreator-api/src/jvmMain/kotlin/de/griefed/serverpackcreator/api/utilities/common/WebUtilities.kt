@@ -36,7 +36,7 @@ import javax.net.ssl.HttpsURLConnection
  * @author Griefed
  */
 @Suppress("unused")
-actual class WebUtilities constructor(private val apiProperties: ApiProperties) {
+actual class WebUtilities(private val apiProperties: ApiProperties) {
     private val log = cachedLoggerOf(this.javaClass)
 
     /**

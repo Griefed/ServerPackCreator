@@ -23,6 +23,7 @@ import Gui
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.utilities.DialogUtilities
+import de.griefed.serverpackcreator.gui.window.MainFrame
 import de.griefed.serverpackcreator.updater.MigrationManager
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
@@ -42,7 +43,8 @@ import javax.swing.JScrollPane
 class MigrationInfoItem(
     private val apiWrapper: ApiWrapper,
     private val migrationManager: MigrationManager,
-    private val guiProps: GuiProps
+    private val guiProps: GuiProps,
+    private val mainFrame: MainFrame
 ) : JMenuItem(Gui.menubar_gui_migration.toString()) {
 
     init {
@@ -128,7 +130,7 @@ class MigrationInfoItem(
                 DialogUtilities.createDialog(
                     scroll,
                     Gui.migration_message_title.toString(),
-                    this@MigrationInfoItem,
+                    mainFrame.frame,
                     JOptionPane.INFORMATION_MESSAGE,
                     JOptionPane.DEFAULT_OPTION,
                     guiProps.infoIcon,

@@ -67,8 +67,8 @@ actual abstract class ExtensionTab protected constructor(
     protected fun saveConfiguration() {
         SwingUtilities.invokeLater {
             if (pluginConfig.isPresent && configFile.isPresent) {
-                TomlFormat.instance().createWriter()
-                    .write(
+                val tomlWriter = TomlFormat.instance().createWriter()
+                tomlWriter.write(
                         pluginConfig.get(), configFile.get(), WritingMode.REPLACE,
                         Charsets.UTF_8
                     )

@@ -47,9 +47,11 @@ class ListUtilities {
             return "[]"
         }
         val stringBuilder = StringBuilder()
-        stringBuilder.append("[\"").append(listToEncapsulate[0].replace("\\", "/")).append("\"")
+        var encapsulated = listToEncapsulate[0].replace("\\", "/")
+        stringBuilder.append("[\"").append(encapsulated).append("\"")
         for (i in 1 until listToEncapsulate.size) {
-            stringBuilder.append(",\"").append(listToEncapsulate[i].replace("\\", "/")).append("\"")
+            encapsulated = listToEncapsulate[i].replace("\\", "/")
+            stringBuilder.append(",\"").append(encapsulated).append("\"")
         }
         stringBuilder.append("]")
         return stringBuilder.toString()

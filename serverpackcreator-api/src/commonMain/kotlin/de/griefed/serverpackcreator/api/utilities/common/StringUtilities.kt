@@ -87,9 +87,11 @@ class StringUtilities {
     fun pathSecureText(text: String): String {
         var secured = text
         while (secured.endsWith(".") || secured.endsWith(" ")) {
-            secured = secured.replace(secured.substring(secured.length - 1), "")
+            val toReplace = secured.substring(secured.length - 1)
+            secured = secured.replace(toReplace, "")
         }
-        return secured.replace("/", "")
+        return secured
+            .replace("/", "")
             .replace("<", "")
             .replace(">", "")
             .replace(":", "")
@@ -153,9 +155,11 @@ class StringUtilities {
     fun pathSecureTextAlternative(text: String): String {
         var secured = text
         while (secured.endsWith(".") || secured.endsWith(" ")) {
-            secured = secured.replace(secured.substring(secured.length - 1), "")
+            val toReplace = secured.substring(secured.length - 1)
+            secured = secured.replace(toReplace, "")
         }
-        return secured.replace("<", "")
+        return secured
+            .replace("<", "")
             .replace(">", "")
             .replace(":", "")
             .replace("\"", "")

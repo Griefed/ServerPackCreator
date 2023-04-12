@@ -19,8 +19,11 @@
  */
 package de.griefed.serverpackcreator.gui.window.configs.filebrowser.model
 
+import de.griefed.serverpackcreator.api.utilities.common.FileUtilities
 import de.griefed.serverpackcreator.api.utilities.common.parallelMap
 import de.griefed.serverpackcreator.gui.GuiProps
+import de.griefed.serverpackcreator.gui.window.configs.filebrowser.view.renderer.DirectoryLinkIcon
+import de.griefed.serverpackcreator.gui.window.configs.filebrowser.view.renderer.FileLinkIcon
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
 import java.util.*
@@ -36,7 +39,7 @@ import javax.swing.tree.DefaultTreeModel
  * @see <a href="https://codereview.stackexchange.com/questions/4446/file-browser-gui">File Browser GUI</a>
  * @license LGPL
  */
-class FileBrowserModel(private val guiProps: GuiProps) {
+class FileBrowserModel(private val guiProps: GuiProps, private val fileUtilities: FileUtilities) {
     private val log = cachedLoggerOf(this.javaClass)
     private val rootManager: RootManager = RootManager(guiProps)
     val treeModel: DefaultTreeModel = createTreeModel()
@@ -143,7 +146,18 @@ class FileBrowserModel(private val guiProps: GuiProps) {
      * @author Andrew Thompson
      */
     fun getFileIcon(file: File?): Icon {
-        return rootManager.fileSystemView.getSystemIcon(file)
+        //TODO if link, different icon
+        return if (file != null && fileUtilities.isLink(file)) {
+            val resolved = fileUtilities.resolveLink(file)
+            val resolvedFile = File(resolved)
+            if (resolvedFile.isFile) {
+                FileLinkIcon()
+            } else {
+                DirectoryLinkIcon()
+            }
+        } else {
+            rootManager.fileSystemView.getSystemIcon(file)
+        }
     }
 
     /**

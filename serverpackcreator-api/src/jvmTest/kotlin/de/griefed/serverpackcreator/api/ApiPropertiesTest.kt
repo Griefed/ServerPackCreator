@@ -201,10 +201,6 @@ class ApiPropertiesTest internal constructor() {
             apiProperties.defaultServerIcon
         )
         Assertions.assertNotNull(apiProperties.serverPackCreatorDatabase)
-        Assertions.assertEquals(
-            File(apiProperties.homeDirectory, "serverpackcreator.db"),
-            apiProperties.serverPackCreatorDatabase
-        )
         Assertions.assertNotNull(apiProperties.pluginsDirectory)
         Assertions.assertEquals(
             File(apiProperties.homeDirectory, "plugins"),

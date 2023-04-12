@@ -23,13 +23,11 @@ import Gui
 import com.formdev.flatlaf.FlatLaf
 import com.formdev.flatlaf.extras.FlatAnimatedLafChange
 import com.formdev.flatlaf.intellijthemes.FlatAllIJThemes
-import com.formdev.flatlaf.ui.FlatMarginBorder
-import de.griefed.larsonscanner.LarsonScanner
+import de.griefed.serverpackcreator.gui.window.control.components.LarsonScanner
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.window.MainFrame
 import javax.swing.*
-import javax.swing.border.MatteBorder
 
 /**
  * Menu to give the user the choice to switch between any and all available themes provided in [FlatAllIJThemes].

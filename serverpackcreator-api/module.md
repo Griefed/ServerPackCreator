@@ -94,3 +94,28 @@ and
 * [de.griefed.serverpackcreator.api.plugins.serverpackhandler.PostGenExtension]
 * [de.griefed.serverpackcreator.api.plugins.swinggui.ConfigPanelExtension] and [de.griefed.serverpackcreator.plugins.swinggui.ExtensionConfigPanel]
 * [de.griefed.serverpackcreator.api.plugins.swinggui.TabExtension] and [de.griefed.serverpackcreator.plugins.swinggui.ExtensionTab]
+
+# Package io
+
+Read-utilities for [mslinks]
+
+# Package mslinks
+
+Retrieved from [DmitriiShamrikov/mslinks](https://github.com/DmitriiShamrikov/mslinks) and altered for use in ServerPackCreator
+
+Licensed under [WTFPL](https://github.com/DmitriiShamrikov/mslinks/blob/master/LICENSE), more at [wtfpl.net](http://www.wtfpl.net/about/)
+
+Library for parsing and creating Windows shortcut files (.lnk)
+
+This is an implementation of [Shell Link (.LNK) Binary File Format](http://msdn.microsoft.com/en-us/library/dd871305.aspx) plus some reverse engineering. The library doesn't depend on any Windows-specific API, so it can be used in any environment.
+
+This library allows opening existing .lnk files as well as creating new ones from scrath. You can set up many properties of the link such as working directory, command line arguments, icon, console text color, etc. The supported targets include:
+* Files and directories on local filesystem with a drive letter as a root (absolute paths like `C:\path\to\target`)
+* Files and directories in Samba shares (network paths like `\\host\share\path\to\target`)
+* Files and directories in special Windows folders, such as Desktop, Documents, Downloads, etc. See available [GUIDs](https://github.com/DmitriiShamrikov/mslinks/wiki/GUIDs-table)
+
+What is not supported (yet):
+* Environment variables. They can be used in target path, but they are substituted at creation time, meaning the variables are taken from your (caller) environment, not the user's one
+* Non-filesystem targets like Control Panel, Printers, etc
+
+The composition of classes reflect the data layout described in the format [specification](http://msdn.microsoft.com/en-us/library/dd871305.aspx), so it's recommended to take a look there if you are looking for something specific or want a detailed explanation of flags and constants. Otherwise, you can use `ShellLinkHelper` class that provides methods for some general tasks.

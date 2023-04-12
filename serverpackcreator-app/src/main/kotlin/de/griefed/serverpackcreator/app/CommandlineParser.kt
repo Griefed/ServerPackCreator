@@ -46,7 +46,7 @@ open class CommandlineParser(args: Array<String>) {
     var propertiesFile: File = File("serverpackcreator.properties")
 
     init {
-        val argsList: List<String> = listOf(*args)
+        val argsList = args.toList()
 
         /*
         * Check whether a language locale was specified by the user.

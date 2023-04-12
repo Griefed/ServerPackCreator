@@ -466,8 +466,9 @@ actual class ServerPackHandler actual constructor(
                 installerLog.info("Starting Fabric installation.")
                 if (versionMeta.fabric.installerFor(versionMeta.fabric.releaseInstaller()).isPresent) {
                     log.info("Fabric installer successfully downloaded.")
+                    val installer = versionMeta.fabric.installerFor(versionMeta.fabric.releaseInstaller()).get().absolutePath
                     commandArguments.addMultiple(
-                        versionMeta.fabric.installerFor(versionMeta.fabric.releaseInstaller()).get().absolutePath,
+                        installer,
                         "server",
                         "-mcversion",
                         minecraftVersion,
@@ -488,8 +489,9 @@ actual class ServerPackHandler actual constructor(
                 installerLog.info("Starting Forge installation.")
                 if (versionMeta.forge.installerFor(modLoaderVersion, minecraftVersion).isPresent) {
                     log.info("Forge installer successfully downloaded.")
+                    val installer = versionMeta.forge.installerFor(modLoaderVersion, minecraftVersion).get().absolutePath
                     commandArguments.addMultiple(
-                        versionMeta.forge.installerFor(modLoaderVersion, minecraftVersion).get().absolutePath,
+                        installer,
                         "--installServer"
                     )
                 } else {
@@ -505,13 +507,14 @@ actual class ServerPackHandler actual constructor(
                 installerLog.info("Starting Quilt installation.")
                 if (versionMeta.quilt.installerFor(versionMeta.quilt.releaseInstaller()).isPresent) {
                     log.info("Quilt installer successfully downloaded.")
+                    val installer = versionMeta.quilt.installerFor(versionMeta.quilt.releaseInstaller()).get().absolutePath
                     commandArguments.addMultiple(
-                        versionMeta.quilt.installerFor(versionMeta.quilt.releaseInstaller()).get().absolutePath,
+                        installer,
                         "install",
                         "server",
                         minecraftVersion,
                         "--download-server",
-                        "--install-dir=."
+                        "--install-dir=\"$destination\""
                     )
                 } else {
                     log.error(
@@ -527,9 +530,10 @@ actual class ServerPackHandler actual constructor(
                 try {
                     if (versionMeta.legacyFabric.installerFor(versionMeta.legacyFabric.releaseInstaller()).isPresent) {
                         log.info("LegacyFabric installer successfully downloaded.")
+                        val installer = versionMeta.legacyFabric.installerFor(versionMeta.legacyFabric.releaseInstaller())
+                            .get().absolutePath
                         commandArguments.addMultiple(
-                            versionMeta.legacyFabric.installerFor(versionMeta.legacyFabric.releaseInstaller())
-                                .get().absolutePath,
+                            installer,
                             "server",
                             "-mcversion",
                             minecraftVersion,
@@ -554,8 +558,8 @@ actual class ServerPackHandler actual constructor(
             log.info("Starting server installation for Minecraft $minecraftVersion, $modLoader $modLoaderVersion.")
             val processBuilder =
                 ProcessBuilder(commandArguments).directory(File(destination).absoluteFile).redirectErrorStream(true)
-            log.debug("ProcessBuilder command: ${processBuilder.command()}")
-            log.debug("Executing in: ${File(destination)}")
+            log.debug("ProcessBuilder command: {}", processBuilder.command())
+            log.debug("Executing in: {}", File(destination))
             process = processBuilder.start()
             process.inputStream.use { input ->
                 input.bufferedReader().use { buff ->

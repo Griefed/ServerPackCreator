@@ -44,6 +44,9 @@ internal class FabricLoader(
         private set
     var release: String? = null
         private set
+    private val latestElement = "latest"
+    private val releaseElement = "release"
+    private val version = "version"
 
     /**
      * Update the Fabric loader versions by parsing the Fabric loader manifest.
@@ -54,28 +57,25 @@ internal class FabricLoader(
     @Throws(ParserConfigurationException::class, IOException::class, SAXException::class)
     fun update() {
         val document: Document = utilities.xmlUtilities.getXml(loaderManifest)
-        latest = document
-            .getElementsByTagName("latest")
-            .item(0)
-            .childNodes
-            .item(0)
-            .nodeValue
-        release = document
-            .getElementsByTagName("release")
-            .item(0)
-            .childNodes
-            .item(0)
-            .nodeValue
+        val latestElements = document.getElementsByTagName(latestElement)
+        val latestNode = latestElements.item(0)
+        val latestChildren = latestNode.childNodes
+        val latestItem = latestChildren.item(0)
+        latest = latestItem.nodeValue
+
+        val releaseElements = document.getElementsByTagName(releaseElement)
+        val releaseNode = releaseElements.item(0)
+        val releaseChildren = releaseNode.childNodes
+        val releaseItem = releaseChildren.item(0)
+        release = releaseItem.nodeValue
         loaders.clear()
-        for (i in 0 until document.getElementsByTagName("version").length) {
-            loaders.add(
-                document
-                    .getElementsByTagName("version")
-                    .item(i)
-                    .childNodes
-                    .item(0)
-                    .nodeValue
-            )
+
+        val elements = document.getElementsByTagName(version)
+        for (i in 0 until elements.length) {
+            val node = elements.item(i)
+            val children = node.childNodes
+            val item = children.item(0)
+            loaders.add(item.nodeValue)
         }
     }
 

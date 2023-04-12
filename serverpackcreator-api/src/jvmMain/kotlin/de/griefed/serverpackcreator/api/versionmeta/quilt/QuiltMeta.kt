@@ -92,11 +92,9 @@ actual class QuiltMeta(
         if (isInstallerUrlAvailable(version)) {
             val destination = File(installerDirectory, "$version.jar")
             if (!destination.isFile) {
-                if (utilities.webUtilities.downloadFile(
-                        destination,
-                        quiltInstaller.installerUrlMeta[version]!!
-                    )
-                ) {
+                val url = quiltInstaller.installerUrlMeta[version]!!
+                val downloaded = utilities.webUtilities.downloadFile(destination,url)
+                if (downloaded) {
                     Optional.of(destination)
                 } else {
                     Optional.empty()

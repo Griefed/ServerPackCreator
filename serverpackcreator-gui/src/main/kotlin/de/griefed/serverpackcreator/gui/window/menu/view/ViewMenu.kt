@@ -22,6 +22,7 @@ package de.griefed.serverpackcreator.gui.window.menu.view
 import Gui
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.gui.GuiProps
+import de.griefed.serverpackcreator.gui.window.MainFrame
 import de.griefed.serverpackcreator.updater.MigrationManager
 import javax.swing.JMenu
 import javax.swing.JSeparator
@@ -31,7 +32,7 @@ import javax.swing.JSeparator
  *
  * @author Griefed
  */
-class ViewMenu(apiWrapper: ApiWrapper, migrationManager: MigrationManager, guiProps: GuiProps) :
+class ViewMenu(apiWrapper: ApiWrapper, migrationManager: MigrationManager, guiProps: GuiProps,mainFrame: MainFrame) :
     JMenu(Gui.menubar_gui_menu_view.toString()) {
     init {
         add(HomeDirItem(apiWrapper.utilities!!.fileUtilities, apiWrapper.apiProperties))
@@ -42,7 +43,7 @@ class ViewMenu(apiWrapper: ApiWrapper, migrationManager: MigrationManager, guiPr
         add(PluginsDirItem(apiWrapper.utilities!!.fileUtilities, apiWrapper.apiProperties))
         add(PluginsConfigDirItem(apiWrapper.utilities!!.fileUtilities, apiWrapper.apiProperties))
         add(JSeparator())
-        add(MigrationInfoItem(apiWrapper, migrationManager, guiProps))
+        add(MigrationInfoItem(apiWrapper, migrationManager, guiProps,mainFrame))
         add(JSeparator())
         add(ServerPackCreatorLogItem(apiWrapper.utilities!!.fileUtilities, apiWrapper.apiProperties))
         add(PluginsLogItem(apiWrapper.utilities!!.fileUtilities, apiWrapper.apiProperties))

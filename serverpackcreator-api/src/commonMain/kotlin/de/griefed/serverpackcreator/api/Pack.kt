@@ -97,10 +97,9 @@ abstract class Pack<F, J, out P> {
     fun setCopyDirs(newCopyDirs: ArrayList<String>) {
         copyDirs.clear()
         newCopyDirs.removeIf { entry: String ->
-            entry.equals(
-                "server_pack",
-                ignoreCase = true
-            ) || entry.matches(whitespace) || entry.isEmpty()
+            entry.equals("server_pack", ignoreCase = true)
+                    || entry.matches(whitespace)
+                    || entry.isEmpty()
         }
         copyDirs.addAll(newCopyDirs)
     }

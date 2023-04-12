@@ -61,8 +61,10 @@ abstract class ServerPackCreatorPlugin constructor(wrapper: PluginWrapper) : Plu
     val id: String = wrapper.pluginId
 
     init {
-        val classPath = this.javaClass.getResource(this.javaClass.simpleName + ".class")!!.toString()
-        val url = URL(classPath.substring(0, classPath.lastIndexOf("!") + 1) + "/plugin.toml")
+        val clazz = this.javaClass.simpleName + ".class"
+        val classPath = this.javaClass.getResource(clazz)!!.toString()
+        val classPathIndex = classPath.lastIndexOf("!") + 1
+        val url = URL(classPath.substring(0,classPathIndex) + "/plugin.toml")
         val pluginToml: CommentedConfig
         url.openStream().use {
             pluginToml = TomlFormat.instance().createParser().parse(it)

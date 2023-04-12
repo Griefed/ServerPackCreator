@@ -49,11 +49,11 @@ expect class LegacyFabricMeta(
     override fun latestInstaller(): String
     override fun releaseInstaller(): String
     override fun loaderVersionsListAscending(): MutableList<String>
-    override fun loaderVersionsListDescending(): List<String>
+    override fun loaderVersionsListDescending(): MutableList<String>
     override fun loaderVersionsArrayAscending(): Array<String>
     override fun loaderVersionsArrayDescending(): Array<String>
     override fun installerVersionsListAscending(): MutableList<String>
-    override fun installerVersionsListDescending(): List<String>
+    override fun installerVersionsListDescending(): MutableList<String>
     override fun installerVersionsArrayAscending(): Array<String>
     override fun installerVersionsArrayDescending(): Array<String>
     override fun installerFor(version: String): Optional<File>

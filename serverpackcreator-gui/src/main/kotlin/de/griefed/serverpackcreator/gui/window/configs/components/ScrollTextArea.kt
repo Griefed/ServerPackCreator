@@ -17,22 +17,21 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-
 package de.griefed.serverpackcreator.gui.window.configs.components
 
 import Gui
 import de.griefed.serverpackcreator.api.utilities.common.regexReplace
 import de.griefed.serverpackcreator.gui.GuiProps
+import de.griefed.serverpackcreator.gui.utilities.ImageUtilities
 import de.griefed.serverpackcreator.gui.utilities.getScaledInstance
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.awt.BorderLayout
-import java.awt.Image
+import java.awt.Graphics
 import java.awt.Toolkit
 import java.awt.event.KeyEvent
 import java.awt.event.KeyListener
-import java.util.*
 import javax.swing.*
 import javax.swing.event.DocumentListener
 import javax.swing.event.UndoableEditEvent
@@ -53,9 +52,9 @@ class ScrollTextArea(
     areaName: String,
     private val guiProps: GuiProps,
     private val textArea: JTextArea = JTextArea(text),
-    verticalScrollbarVisibility: Int = VERTICAL_SCROLLBAR_AS_NEEDED,
+    verticalScrollbarVisibility: Int = VERTICAL_SCROLLBAR_ALWAYS,
     horizontalScrollbarVisibility: Int = HORIZONTAL_SCROLLBAR_NEVER
-) : JScrollPane(verticalScrollbarVisibility, horizontalScrollbarVisibility),
+) : ResizeIndicatorScrollPane(guiProps,verticalScrollbarVisibility, horizontalScrollbarVisibility),
     UndoableEditListener,
     KeyListener {
 
@@ -92,6 +91,7 @@ class ScrollTextArea(
         Gui.createserverpack_gui_textarea_replace_regex_replace.toString(),
         replaceWith
     )
+    var showResizeIcon = true
 
     init {
         undoManager.limit = 10
@@ -251,7 +251,7 @@ class ScrollTextArea(
             loadingAnimation.showAnimation()
             textArea.isEnabled = false
             GlobalScope.launch {
-                text = text.regexReplace(searchFor.text.toRegex(),replaceWith.text)
+                text = text.regexReplace(searchFor.text.toRegex(), replaceWith.text)
                 loadingAnimation.hideAnimation()
                 textArea.isEnabled = true
             }

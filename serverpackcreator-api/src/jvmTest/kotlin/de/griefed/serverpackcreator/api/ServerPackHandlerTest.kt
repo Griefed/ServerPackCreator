@@ -38,12 +38,12 @@ internal class ServerPackHandlerTest {
         val shell = File(applicationProperties.serverPacksDirectory, "forge_tests/start.sh")
         val vars = File(applicationProperties.serverPacksDirectory, "forge_tests/variables.txt")
         val forgeZip = ZipFile(File(applicationProperties.serverPacksDirectory, "forge_tests_server_pack.zip"))
-        val forgeDir = File(applicationProperties.serverPacksDirectory, "forge_tests")
-        val props = File(forgeDir, "server.properties")
         configurationHandler.checkConfiguration(
             File("src/jvmTest/resources/testresources/spcconfs/serverpackcreator.conf"),
             packConfig
         )
+        val forgeDir = serverPackHandler.getServerPackDestination(packConfig)
+        val props = File(forgeDir, "server.properties")
         Assertions.assertTrue(serverPackHandler.run(packConfig))
         Assertions.assertTrue(File(forgeDir, "libraries").isDirectory)
         Assertions.assertTrue(File(forgeDir, "config").isDirectory)
@@ -209,12 +209,12 @@ internal class ServerPackHandlerTest {
     @Suppress("SpellCheckingInspection")
     @Test
     fun fabricTest() {
-        val fabricDir = File(applicationProperties.serverPacksDirectory, "fabric_tests")
         val packConfig = PackConfig()
         configurationHandler.checkConfiguration(
             File("src/jvmTest/resources/testresources/spcconfs/serverpackcreator_fabric.conf"),
             packConfig
         )
+        val fabricDir = serverPackHandler.getServerPackDestination(packConfig)
         Assertions.assertTrue(serverPackHandler.run(packConfig))
         Assertions.assertTrue(
             File(
@@ -231,12 +231,12 @@ internal class ServerPackHandlerTest {
     @Suppress("SpellCheckingInspection")
     @Test
     fun quiltTest() {
-        val quiltDir = File(applicationProperties.serverPacksDirectory, "quilt_tests")
         val packConfig = PackConfig()
         configurationHandler.checkConfiguration(
             File("src/jvmTest/resources/testresources/spcconfs/serverpackcreator_quilt.conf"),
             packConfig
         )
+        val quiltDir = serverPackHandler.getServerPackDestination(packConfig)
         Assertions.assertTrue(serverPackHandler.run(packConfig))
         Assertions.assertTrue(
             File(
@@ -253,12 +253,12 @@ internal class ServerPackHandlerTest {
     @Suppress("SpellCheckingInspection")
     @Test
     fun legacyFabricTest() {
-        val legacyFabricDir = File(applicationProperties.serverPacksDirectory, "legacyfabric_tests")
         val packConfig = PackConfig()
         configurationHandler.checkConfiguration(
             File("src/jvmTest/resources/testresources/spcconfs/serverpackcreator_legacyfabric.conf"),
             packConfig
         )
+        val legacyFabricDir = serverPackHandler.getServerPackDestination(packConfig)
         Assertions.assertTrue(serverPackHandler.run(packConfig))
         Assertions.assertTrue(
             File(

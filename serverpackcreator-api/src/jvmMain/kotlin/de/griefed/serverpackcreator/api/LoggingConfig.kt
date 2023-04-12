@@ -57,29 +57,30 @@ class LoggingConfig : ConfigurationFactory() {
      * @author Griefed
      */
     init {
+        System.setProperty("log4j2.formatMsgNoLookups", "true")
         val sysInfo: HashMap<String, String> = JarUtilities().jarInformation(LoggingConfig::class.java)
         var dev = false
         val path: String
         val properties = Properties()
         val userHome = System.getProperty("user.home")
+        val spcProps = "ServerPackCreator${File.separator}serverpackcreator.properties"
+        val homeProps = File(userHome, spcProps)
+        val jarPath = sysInfo["jarPath"]!!
+        val jarFile = File(jarPath)
 
         this.javaClass.getResourceAsStream("/serverpackcreator.properties").use {
             properties.load(it)
         }
 
-        if (File(userHome, "ServerPackCreator${File.separator}serverpackcreator.properties").isFile
-            && File(sysInfo["jarPath"]!!).isFile
+        if (homeProps.isFile && jarFile.isFile
         ) {
-            File(
-                System.getProperty("user.home"),
-                "ServerPackCreator${File.separator}serverpackcreator.properties"
-            ).inputStream().use {
+            File(userHome,spcProps).inputStream().use {
                 properties.load(it)
             }
-        } else if (File(sysInfo["jarPath"], "serverpackcreator.properties").isFile
-            && File(sysInfo["jarPath"]!!).isFile
+        } else if (File(jarPath, "serverpackcreator.properties").isFile
+            && jarFile.isFile
         ) {
-            File(sysInfo["jarPath"], "serverpackcreator.properties").inputStream().use {
+            File(jarPath, "serverpackcreator.properties").inputStream().use {
                 properties.load(it)
             }
         } else if (File("serverpackcreator.properties").isFile) {
@@ -91,12 +92,12 @@ class LoggingConfig : ConfigurationFactory() {
         val home = if (properties.containsKey("de.griefed.serverpackcreator.home")) {
             File(properties.getProperty("de.griefed.serverpackcreator.home"))
         } else {
-            if (File(sysInfo["jarPath"] as String).isDirectory) {
+            if (File(jarPath).isDirectory) {
                 // Dev environment
                 dev = true
                 File(File("tests").absolutePath)
             } else {
-                File(System.getProperty("user.home"), "ServerPackCreator")
+                File(userHome, "ServerPackCreator")
             }
         }
         home.createDirectories(create = true, directory = true)
@@ -133,7 +134,6 @@ class LoggingConfig : ConfigurationFactory() {
                 println("Error reading/writing log4j2.xml. $ex")
             }
         }
-        System.setProperty("log4j2.formatMsgNoLookups", "true")
     }
 
     override fun getSupportedTypes() = suffixes

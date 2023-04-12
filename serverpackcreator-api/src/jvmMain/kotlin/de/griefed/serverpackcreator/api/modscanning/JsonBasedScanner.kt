@@ -74,11 +74,7 @@ abstract class JsonBasedScanner {
         for (dependency in modDependencies) {
             clientMods.removeIf { mod: String ->
                 if (mod == dependency) {
-                    log.debug(
-                        "Removing "
-                                + dependency
-                                + " from list of clientmods as it is a dependency for another mod."
-                    )
+                    log.debug("Removing $dependency from list of clientmods as it is a dependency for another mod.")
                     return@removeIf true
                 } else {
                     return@removeIf false

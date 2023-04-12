@@ -221,7 +221,7 @@ class MigrationManager constructor(
      * @author Griefed
      */
     private fun older(
-        old: Array<Int>, checkAgainst: Array<Int>
+        old: IntArray, checkAgainst: IntArray
     ): Boolean {
         // Current MAJOR version smaller?
         if (checkAgainst[0] < old[0]) {
@@ -243,8 +243,8 @@ class MigrationManager constructor(
      * @return Array containing the major, minor and patch numbers.
      * @author Griefed
      */
-    private fun semantics(version: String): Array<Int> {
-        return version.split(Regex("\\.")).map { it.toInt() }.toTypedArray()
+    private fun semantics(version: String): IntArray {
+        return version.split(Regex("\\.")).map { it.toInt() }.toIntArray()
     }
 
     /**
@@ -290,7 +290,7 @@ class MigrationManager constructor(
      * @author Griefed
      */
     private fun newer(
-        old: Array<Int>, checkAgainst: Array<Int>
+        old: IntArray, checkAgainst: IntArray
     ): Boolean {
         // Method MAJOR bigger?
         if (checkAgainst[0] > old[0]) {
@@ -315,9 +315,7 @@ class MigrationManager constructor(
      * same.
      * @author Griefed
      */
-    private fun oldOrSame(
-        old: Array<Int>, checkAgainst: Array<Int>
-    ): Boolean {
+    private fun oldOrSame(old: IntArray, checkAgainst: IntArray): Boolean {
         return checkAgainst[0] <= old[0] && checkAgainst[1] <= old[1] && checkAgainst[2] <= old[2]
     }
 
@@ -330,12 +328,8 @@ class MigrationManager constructor(
      * version.
      * @author Griefed
      */
-    private fun isNewerOrSame(
-        current: String, checkAgainst: String
-    ): Boolean {
-        return newOrSame(
-            semantics(current), semantics(checkAgainst)
-        )
+    private fun isNewerOrSame(current: String, checkAgainst: String): Boolean {
+        return newOrSame(semantics(current), semantics(checkAgainst))
     }
 
     /**
@@ -348,9 +342,7 @@ class MigrationManager constructor(
      * same.
      * @author Griefed
      */
-    private fun newOrSame(
-        current: Array<Int>, checkAgainst: Array<Int>
-    ): Boolean {
+    private fun newOrSame(current: IntArray, checkAgainst: IntArray): Boolean {
         return checkAgainst[0] >= current[0] && checkAgainst[1] >= current[1] && checkAgainst[2] >= current[2]
     }
 

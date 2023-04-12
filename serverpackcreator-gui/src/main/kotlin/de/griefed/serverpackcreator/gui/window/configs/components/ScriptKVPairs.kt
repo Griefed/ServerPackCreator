@@ -64,7 +64,7 @@ class ScriptKVPairs(guiProps: GuiProps, configEditor: ConfigEditor) : JTable(
     ), null, null
 ) {
     private val log = cachedLoggerOf(this.javaClass)
-    val scrollPanel: JScrollPane
+    val scrollPanel: ResizeIndicatorScrollPane
 
     init {
         setRowHeight(25)
@@ -90,7 +90,7 @@ class ScriptKVPairs(guiProps: GuiProps, configEditor: ConfigEditor) : JTable(
             sorter.setSortable(column, false)
         }
         this.rowSorter = sorter
-        scrollPanel = JScrollPane(this)
+        scrollPanel = ResizeIndicatorScrollPane(guiProps,this)
         clearData()
         model.addTableModelListener { configEditor.validateInputFields() }
     }
