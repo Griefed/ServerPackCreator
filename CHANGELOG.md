@@ -1,3 +1,17 @@
+## [5.0.0-alpha.10](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-alpha.9...5.0.0-alpha.10) (2023-04-14)
+
+
+### :scissors: Refactor
+
+* Improve readibility here and there. Run IDEA rearrangement ([708e24b](https://git.griefed.de/Griefed/ServerPackCreator/commit/708e24badb89cd7f52fc4cc9235afbcd697e643b))
+* Run IDEA cleanups ([396fb01](https://git.griefed.de/Griefed/ServerPackCreator/commit/396fb0148e11b9d300c9f8be6f03a12dce66bd62))
+
+
+### 💎 Improvements
+
+* Make the whole handlebar usable for resizing of allowed components ([4187668](https://git.griefed.de/Griefed/ServerPackCreator/commit/4187668f7d9f981ad82f830bebe21ad72d0f54b9))
+* Resize component imediately and rearrange other components respectively ([b103af5](https://git.griefed.de/Griefed/ServerPackCreator/commit/b103af5a4d1db043421220c88281a24ec23a68ce))
+
 ## [5.0.0-alpha.5](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-alpha.4...5.0.0-alpha.5) (2023-04-08)
 
 
