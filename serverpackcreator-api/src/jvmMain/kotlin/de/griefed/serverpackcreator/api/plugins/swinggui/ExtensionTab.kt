@@ -69,9 +69,9 @@ actual abstract class ExtensionTab protected constructor(
             if (pluginConfig.isPresent && configFile.isPresent) {
                 val tomlWriter = TomlFormat.instance().createWriter()
                 tomlWriter.write(
-                        pluginConfig.get(), configFile.get(), WritingMode.REPLACE,
-                        Charsets.UTF_8
-                    )
+                    pluginConfig.get(), configFile.get(), WritingMode.REPLACE,
+                    Charsets.UTF_8
+                )
                 log.info("Configuration saved.")
             } else {
                 log.info("No configuration or configuration file available.")

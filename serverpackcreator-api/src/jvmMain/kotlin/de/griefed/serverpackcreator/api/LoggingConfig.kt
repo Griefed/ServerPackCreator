@@ -74,7 +74,7 @@ class LoggingConfig : ConfigurationFactory() {
 
         if (homeProps.isFile && jarFile.isFile
         ) {
-            File(userHome,spcProps).inputStream().use {
+            File(userHome, spcProps).inputStream().use {
                 properties.load(it)
             }
         } else if (File(jarPath, "serverpackcreator.properties").isFile

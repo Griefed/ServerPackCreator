@@ -4,7 +4,7 @@ import de.griefed.serverpackcreator.gui.utilities.ImageUtilities
 import javax.swing.JButton
 import kotlin.system.exitProcess
 
-class ExitButton(width : Int) : JButton() {
+class ExitButton(width: Int) : JButton() {
     init {
         val size = 16
         icon = ImageUtilities.fromBase64(

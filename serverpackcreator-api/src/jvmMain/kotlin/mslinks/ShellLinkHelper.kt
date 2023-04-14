@@ -33,6 +33,12 @@ class ShellLinkHelper(var link: ShellLink) {
         ForceTypeFile
     }
 
+    private val backForwardSlashRegex = "^(\\\\|/)".toRegex()
+    private val backSlash = "\\"
+    private val backSlashChar = '\\'
+    private val backSlashBackSlash = "\\\\"
+
+
     /**
      * Sets LAN target path
      * @param path is an absolute in the form '\\host\share\path\to\target'
@@ -51,12 +57,20 @@ class ShellLinkHelper(var link: ShellLink) {
     @Throws(ShellLinkException::class)
     fun setNetworkTarget(path: String, options: Options): ShellLinkHelper {
         var tempPath = path
-        if (!tempPath.startsWith("\\")) tempPath = "\\" + tempPath
-        if (!tempPath.startsWith("\\\\")) tempPath = "\\" + tempPath
-        val p1 = tempPath.indexOf('\\', 2) // hostname
-        val p2 = tempPath.indexOf('\\', p1 + 1) // share name
+        if (!tempPath.startsWith(backSlash)) {
+            tempPath = backSlash + tempPath
+        }
+        if (!tempPath.startsWith(backSlashBackSlash)) {
+            tempPath = backSlash + tempPath
+        }
+        val p1 = tempPath.indexOf(backSlashChar, 2) // hostname
+        val p2 = tempPath.indexOf(backSlashChar, p1 + 1) // share name
         if (p1 != -1) {
-            val info = if (link.header!!.linkFlags.hasLinkInfo()) link.linkInfo else link.createLinkInfo()
+            val info = if (link.header!!.linkFlags.hasLinkInfo()) {
+                link.linkInfo
+            } else {
+                link.createLinkInfo()
+            }
             if (p2 != -1) {
                 info!!.createCommonNetworkRelativeLink().setNetName(tempPath.substring(0, p2))
                 info.setCommonPathSuffix(tempPath.substring(p2 + 1))
@@ -67,7 +81,10 @@ class ShellLinkHelper(var link: ShellLink) {
             link.header!!.fileAttributesFlags.setDirectory()
             val forceFile = options == Options.ForceTypeFile
             val forceDirectory = options == Options.ForceTypeDirectory
-            if (forceFile || !forceDirectory && Files.isRegularFile(Paths.get(tempPath))) {
+            if (forceFile
+                || !forceDirectory
+                && Files.isRegularFile(Paths.get(tempPath))
+            ) {
                 link.header!!.fileAttributesFlags.clearDirectory()
             }
         } else {
@@ -109,11 +126,17 @@ class ShellLinkHelper(var link: ShellLink) {
         idList.add(driveItem)
 
         // each segment of the path is directory
-        tempAbsolutePath = tempAbsolutePath.replace("^(\\\\|\\/)".toRegex(), "")
+        tempAbsolutePath = tempAbsolutePath.replace(backForwardSlashRegex, "")
         val absoluteTargetPath = driveItem.name + tempAbsolutePath
-        val path = tempAbsolutePath.split("\\\\|\\/".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-        for (i in path) idList.add(ItemIDFS(ItemID.TYPE_FS_DIRECTORY).setName(i))
-        val info = if (link.header!!.linkFlags.hasLinkInfo()) link.linkInfo else link.createLinkInfo()
+        val path = tempAbsolutePath.split(backForwardSlashRegex).dropLastWhile { it.isEmpty() }.toTypedArray()
+        for (i in path) {
+            idList.add(ItemIDFS(ItemID.TYPE_FS_DIRECTORY).setName(i))
+        }
+        val info = if (link.header!!.linkFlags.hasLinkInfo()) {
+            link.linkInfo
+        } else {
+            link.createLinkInfo()
+        }
         info!!.createVolumeID().setDriveType(VolumeID.DRIVE_FIXED)
         info.setLocalBasePath(absoluteTargetPath)
         link.header!!.fileAttributesFlags.setDirectory()
@@ -136,7 +159,6 @@ class ShellLinkHelper(var link: ShellLink) {
      */
     @Throws(ShellLinkException::class)
     fun setSpecialFolderTarget(root: GUID?, path: String, options: Options): ShellLinkHelper {
-        var tempPath = path
         if (options != Options.ForceTypeFile && options != Options.ForceTypeDirectory) {
             throw ShellLinkException("The type of target is not specified. You have to specify whether it is a file or a directory.")
         }
@@ -146,8 +168,13 @@ class ShellLinkHelper(var link: ShellLink) {
         idList.add(ItemIDRoot().setClsid(root))
 
         // each segment of the path is directory
-        tempPath = tempPath.replace("^(\\\\|\\/)".toRegex(), "")
-        val pathSegments = tempPath.split("\\\\|\\/".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+        pathDirectory(path, idList, options)
+        return this
+    }
+
+    private fun pathDirectory(path: String, idList: LinkTargetIDList, options: Options) {
+        val tempPath = path.replace(backForwardSlashRegex, "")
+        val pathSegments = tempPath.split(backForwardSlashRegex).dropLastWhile { it.isEmpty() }.toTypedArray()
         for (i in pathSegments) {
             idList.add(ItemIDFS(ItemID.TYPE_FS_DIRECTORY).setName(i))
         }
@@ -156,7 +183,6 @@ class ShellLinkHelper(var link: ShellLink) {
             link.header!!.fileAttributesFlags.clearDirectory()
             idList.last!!.setTypeFlags(ItemID.TYPE_FS_FILE)
         }
-        return this
     }
 
     /**
@@ -167,7 +193,6 @@ class ShellLinkHelper(var link: ShellLink) {
      */
     @Throws(ShellLinkException::class)
     fun setDesktopRelativeTarget(path: String, options: Options): ShellLinkHelper {
-        var tempPath = path
         if (options != Options.ForceTypeFile && options != Options.ForceTypeDirectory) {
             throw ShellLinkException("The type of target is not specified. You have to specify whether it is a file or a directory.")
         }
@@ -177,16 +202,7 @@ class ShellLinkHelper(var link: ShellLink) {
         // no root item here
 
         // each segment of the path is directory
-        tempPath = tempPath.replace("^(\\\\|\\/)".toRegex(), "")
-        val pathSegments = tempPath.split("\\\\|\\/".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-        for (i in pathSegments) {
-            idList.add(ItemIDFS(ItemID.TYPE_FS_DIRECTORY).setName(i))
-        }
-        link.header!!.fileAttributesFlags.setDirectory()
-        if (options == Options.ForceTypeFile) {
-            link.header!!.fileAttributesFlags.clearDirectory()
-            idList.last!!.setTypeFlags(ItemID.TYPE_FS_FILE)
-        }
+        pathDirectory(path, idList, options)
         return this
     }
 
@@ -225,6 +241,9 @@ class ShellLinkHelper(var link: ShellLink) {
     }
 
     companion object {
+        private const val backSlash = "\\"
+        private const val backSlashBackSlash = "\\\\"
+
         /**
          * Universal all-by-default creation of the link
          * @param target - absolute path for the target file in windows format (e.g. C:\path\to\file.txt)
@@ -238,7 +257,7 @@ class ShellLinkHelper(var link: ShellLink) {
             var tempTarget = target
             tempTarget = resolveEnvVariables(tempTarget)
             val helper = ShellLinkHelper(ShellLink())
-            if (tempTarget.startsWith("\\\\")) {
+            if (tempTarget.startsWith(backSlashBackSlash)) {
                 helper.setNetworkTarget(tempTarget)
             } else {
                 val parts = tempTarget.split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
@@ -253,7 +272,7 @@ class ShellLinkHelper(var link: ShellLink) {
             var tempPath = path
             for ((key, value) in env) {
                 val p = Pattern.quote(key)
-                val r = value.replace("\\", "\\\\")
+                val r = value.replace(backSlash, backSlashBackSlash)
                 tempPath = Pattern.compile("%$p%", Pattern.CASE_INSENSITIVE).matcher(tempPath).replaceAll(r)
             }
             return tempPath

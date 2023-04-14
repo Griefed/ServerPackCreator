@@ -29,7 +29,9 @@ class LinkFlags : BitSet32 {
     private fun reset() {
         clear(11)
         clear(16)
-        for (i in 27..31) clear(i)
+        for (i in 27..31) {
+            clear(i)
+        }
     }
 
     fun hasLinkTargetIDList(): Boolean {

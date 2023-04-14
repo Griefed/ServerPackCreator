@@ -99,7 +99,7 @@ actual class LegacyFabricMeta actual constructor(
             val destination = File(installerDirectory, "$version.jar")
             if (!destination.isFile) {
                 val url = installerVersions.specificURL(version).get()
-                val downloaded = utilities.webUtilities.downloadFile(destination,url)
+                val downloaded = utilities.webUtilities.downloadFile(destination, url)
                 if (downloaded) {
                     Optional.of(destination)
                 } else {

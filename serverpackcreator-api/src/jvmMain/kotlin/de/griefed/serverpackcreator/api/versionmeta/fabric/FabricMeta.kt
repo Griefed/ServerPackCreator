@@ -104,7 +104,7 @@ actual class FabricMeta(
             val destination = File(installerDirectory, "$version.jar")
             if (!destination.isFile) {
                 val url = fabricInstaller.installerUrlMeta[version]!!
-                val downloaded = utilities.webUtilities.downloadFile(destination,url)
+                val downloaded = utilities.webUtilities.downloadFile(destination, url)
                 if (downloaded) {
                     Optional.of(destination)
                 } else {
@@ -125,7 +125,7 @@ actual class FabricMeta(
         val destination = File(launchersDirectory, "$minecraftVersion-$fabricVersion.jar")
         return if (!destination.isFile) {
             val url = fabricInstaller.improvedLauncherUrl(minecraftVersion, fabricVersion)
-            val downloaded = utilities.webUtilities.downloadFile(destination,url)
+            val downloaded = utilities.webUtilities.downloadFile(destination, url)
             if (downloaded) {
                 Optional.of(destination)
             } else {

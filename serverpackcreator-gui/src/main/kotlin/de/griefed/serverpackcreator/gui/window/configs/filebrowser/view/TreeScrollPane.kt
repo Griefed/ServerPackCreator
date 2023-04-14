@@ -20,8 +20,8 @@
 package de.griefed.serverpackcreator.gui.window.configs.filebrowser.view
 
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
-import de.griefed.serverpackcreator.gui.window.configs.filebrowser.controller.FileSelectionListener
 import de.griefed.serverpackcreator.gui.window.configs.TabbedConfigsTab
+import de.griefed.serverpackcreator.gui.window.configs.filebrowser.controller.FileSelectionListener
 import de.griefed.serverpackcreator.gui.window.configs.filebrowser.controller.TreeExpandListener
 import de.griefed.serverpackcreator.gui.window.configs.filebrowser.controller.TreeMouseListener
 import de.griefed.serverpackcreator.gui.window.configs.filebrowser.model.FileBrowserModel

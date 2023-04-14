@@ -35,6 +35,7 @@ import java.awt.*
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.JComponent
+import javax.swing.JViewport
 import javax.swing.SwingUtilities
 
 /**
@@ -52,7 +53,7 @@ import javax.swing.SwingUtilities
  */
 class ComponentResizer(
     dragInsets: Insets = Insets(5, 5, 5, 5),
-    private var snapSize: Dimension = Dimension(1, 1)
+    private var snapSize: Dimension = Dimension(1, 1),
 ) : MouseAdapter() {
 
     private val south = 4
@@ -98,12 +99,16 @@ class ComponentResizer(
     fun registerComponent(component: Component, constraint: String) {
         component.addMouseListener(this)
         component.addMouseMotionListener(this)
+        if (component is ResizeIndicatorScrollPane) {
+            component.viewport.view.addMouseListener(this)
+            component.viewport.view.addMouseMotionListener(this)
+        }
         components[component] = constraint
     }
 
     /**
      * When the components minimum size is less than the drag insets then
-     * we can't determine which border should be resized so we need to
+     * we can't determine which border should be resized, so we need to
      * prevent this from happening.
      */
     private fun validateMinimumAndInsets(minimum: Dimension, drag: Insets?) {
@@ -117,80 +122,128 @@ class ComponentResizer(
         }
     }
 
-    @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
     override fun mouseMoved(e: MouseEvent) {
-        val source = e.component
+        val source = getSource(e)
         val location = e.point
         direction = 0
-        when {
-            location.y > source.height - dragInsets.bottom - 1 -> {
-                direction += south
-            }
+
+        val handleBarPosition = source.handleBarPosition!!
+        val x = handleBarPosition.x - source.insets.left
+        val maxX = handleBarPosition.width + handleBarPosition.x + source.insets.right
+        val y = handleBarPosition.y - source.insets.top
+        val maxY = handleBarPosition.height + handleBarPosition.y + source.insets.bottom
+        if (location.x in x..maxX && location.y in y..maxY) {
+            direction += south
         }
 
         //  Mouse is no longer over a resizable border
         when (direction) {
             0 -> {
-                source.cursor = sourceCursor
+                updateCursor(e,sourceCursor!!)
             }
 
-            4, 6, 12 -> {
+            4 -> {
                 // use the appropriate resizable cursor
                 val cursorType = cursors[direction]!!
                 val cursor = Cursor.getPredefinedCursor(cursorType)
-                source.cursor = cursor
+                updateCursor(e,cursor)
             }
+        }
+    }
+
+    private fun changeBounds(e:MouseEvent,source: Component, direction: Int, bounds: Rectangle?, pressed: Point?, current: Point) {
+        if (direction != 4 && direction != 6 && direction != 12) {
+            return
+        }
+        //  Start with original location and size
+        val x = bounds!!.x
+        val y = bounds.y
+        var height = bounds.height
+
+        //  Resizing the West or North border affects the size and location
+        var drag = getDragDistance(current.y, pressed!!.y, snapSize.height)
+        val maximum = (maximumSize.height - y).coerceAtMost(maximumSize.height)
+        drag = getDragBounded(drag, snapSize.height, height, minimumSize.height, maximum)
+        height += drag
+
+        val layout: MigLayout
+        if (source is ResizeIndicatorScrollPane) {
+            layout = source.parent.layout as MigLayout
+            layout.setComponentConstraints(source, components[source]?.format(height))
+        }
+
+        source.setBounds(x, y, source.width, height)
+        if (source is JComponent) {
+            updateAutoscrolls(e,autoscroll)
+            source.rootPane.grabFocus()
+            source.grabFocus()
+        }
+        source.revalidate()
+    }
+
+    private fun getSource(e: MouseEvent): ResizeIndicatorScrollPane {
+        return if (e.component is ResizeIndicatorScrollPane) {
+            e.component as ResizeIndicatorScrollPane
+        } else {
+            e.component.parent.parent as ResizeIndicatorScrollPane
         }
     }
 
     override fun mouseEntered(e: MouseEvent) {
         if (!resizing) {
-            val source = e.component
+            val source = getSource(e)
             sourceCursor = source.cursor
         }
     }
 
-    @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
     override fun mouseExited(e: MouseEvent) {
         if (!resizing) {
-            val source = e.component
-            source.cursor = sourceCursor
+            updateCursor(e,sourceCursor!!)
         }
+    }
+
+    private fun updateCursor(e: MouseEvent, cursor: Cursor) {
+        val source = getSource(e)
+        source.cursor = cursor
+        e.component.cursor = cursor
     }
 
     override fun mousePressed(e: MouseEvent) {
         //	The mouseMoved event continually updates this variable
-        if (direction == 0) return
+        if (direction == 0) {
+            return
+        }
 
         //  Setup for resizing. All future dragging calculations are done based
         //  on the original bounds of the component and mouse pressed location.
         resizing = true
-        val source = e.component
+        val source = getSource(e)
         pressed = e.point
         SwingUtilities.convertPointToScreen(pressed, source)
         bounds = source.bounds
 
         //  Making sure autoscrolls is false will allow for smoother resizing
         //  of components
-        if (source is JComponent) {
-            autoscroll = source.autoscrolls
-            source.autoscrolls = false
-        }
+        autoscroll = source.autoscrolls
+        updateAutoscrolls(e,false)
+    }
+
+    private fun updateAutoscrolls(e: MouseEvent, setting: Boolean) {
+        val source = getSource(e)
+        source.autoscrolls = setting
+        (e.component as JComponent).autoscrolls = setting
     }
 
     /**
      * Restore the original state of the Component
      */
-    @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
     override fun mouseReleased(e: MouseEvent) {
         resizing = false
-        val source = e.component
-        source.cursor = sourceCursor
-        if (source is JComponent) {
-            source.autoscrolls = autoscroll
-            source.rootPane.grabFocus()
-            source.grabFocus()
-        }
+        val source = getSource(e)
+        updateCursor(e,sourceCursor!!)
+        updateAutoscrolls(e, autoscroll)
+        source.rootPane.grabFocus()
+        source.grabFocus()
     }
 
     /**
@@ -202,33 +255,13 @@ class ComponentResizer(
      * resizing started.
      */
     override fun mouseDragged(e: MouseEvent) {
-        if (!resizing) return
-        val source = e.component
+        if (!resizing) {
+            return
+        }
+        val source = getSource(e)
         val dragged = e.point
         SwingUtilities.convertPointToScreen(dragged, source)
-        changeBounds(source, direction, bounds, pressed, dragged)
-    }
-
-    private fun changeBounds(source: Component, direction: Int, bounds: Rectangle?, pressed: Point?, current: Point) {
-        //  Start with original location and size
-        val x = bounds!!.x
-        val y = bounds.y
-        val width = bounds.width
-        var height = bounds.height
-
-        //  Resizing the West or North border affects the size and location
-        when (south) {
-            direction and south -> {
-                var drag = getDragDistance(current.y, pressed!!.y, snapSize.height)
-                val maximum = (maximumSize.height - y).coerceAtMost(maximumSize.height)
-                drag = getDragBounded(drag, snapSize.height, height, minimumSize.height, maximum)
-                height += drag
-            }
-        }
-        val layout = source.parent.layout as MigLayout
-        layout.setComponentConstraints(source, components[source]?.format(height))
-        source.setBounds(x, y, width - snapSize.width, height)
-        source.revalidate()
+        changeBounds(e,source, direction, bounds, pressed, dragged)
     }
 
     /**

@@ -27,8 +27,10 @@ open class ItemIDFS(flags: Int) : ItemID(flags or GROUP_FS) {
         protected set
     var attributes: Short = 0
         protected set
+
     @Suppress("MemberVisibilityCanBePrivate")
     protected var shortname: String? = null
+
     @Suppress("MemberVisibilityCanBePrivate")
     protected var longname: String? = null
 
@@ -39,19 +41,25 @@ open class ItemIDFS(flags: Int) : ItemID(flags or GROUP_FS) {
     @Throws(UnsupportedItemIDException::class)
     private fun onTypeFlagsChanged() {
         val subType = typeFlags and ID_TYPE_INGROUPMASK
-        if (subType and TYPE_FS_DIRECTORY == 0 && subType and TYPE_FS_FILE == 0) throw UnsupportedItemIDException(
-            typeFlags
-        )
+        if (subType and TYPE_FS_DIRECTORY == 0 && subType and TYPE_FS_FILE == 0) {
+            throw UnsupportedItemIDException(typeFlags)
+        }
 
         // don't allow flipping unicode flag at will to avoid inconsistency 
         if (longname != null) {
-            typeFlags =
-                if (isLongFilename(longname!!)) typeFlags or TYPE_FS_UNICODE else typeFlags and TYPE_FS_UNICODE.inv()
+            typeFlags = if (isLongFilename(longname!!)) {
+                typeFlags or TYPE_FS_UNICODE
+            } else {
+                typeFlags and TYPE_FS_UNICODE.inv()
+            }
         }
 
         // attribute directory flag should match the typeFlag directory flag
-        attributes =
-            if (subType and TYPE_FS_DIRECTORY != 0) (attributes.toInt() or FILE_ATTRIBUTE_DIRECTORY).toShort() else (attributes.toInt() and FILE_ATTRIBUTE_DIRECTORY.inv()).toShort()
+        attributes = if (subType and TYPE_FS_DIRECTORY != 0) {
+            (attributes.toInt() or FILE_ATTRIBUTE_DIRECTORY).toShort()
+        } else {
+            (attributes.toInt() and FILE_ATTRIBUTE_DIRECTORY.inv()).toShort()
+        }
     }
 
     @Throws(IOException::class, ShellLinkException::class)
@@ -116,7 +124,9 @@ open class ItemIDFS(flags: Int) : ItemID(flags or GROUP_FS) {
                 longname = br.readUnicodeStringNullTerm(startPos + hiddenSize - br.position)
 
                 // we don't serialize hidden parts so add unicode flag
-                if (longname != shortname) typeFlags = typeFlags or TYPE_FS_UNICODE
+                if (longname != shortname) {
+                    typeFlags = typeFlags or TYPE_FS_UNICODE
+                }
                 break
             }
         }
@@ -139,8 +149,14 @@ open class ItemIDFS(flags: Int) : ItemID(flags or GROUP_FS) {
     }
 
     override fun toString(): String {
-        var name = if (typeFlags and TYPE_FS_UNICODE != 0) longname else shortname
-        if (typeFlags and TYPE_FS_DIRECTORY != 0) name += "\\"
+        var name = if (typeFlags and TYPE_FS_UNICODE != 0) {
+            longname
+        } else {
+            shortname
+        }
+        if (typeFlags and TYPE_FS_DIRECTORY != 0) {
+            name += "\\"
+        }
         return name!!
     }
 
@@ -171,7 +187,11 @@ open class ItemIDFS(flags: Int) : ItemID(flags or GROUP_FS) {
     }
 
     override val name: String?
-        get() = if (longname != null && longname != "") longname else shortname
+        get() = if (longname != null && longname != "") {
+            longname
+        } else {
+            shortname
+        }
 
     @Deprecated("")
     @Throws(ShellLinkException::class)

@@ -20,11 +20,11 @@
 package de.griefed.serverpackcreator.gui.window.menu.edit
 
 import Gui
-import de.griefed.serverpackcreator.gui.window.control.components.LarsonScanner
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.utilities.common.FileUtilities
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.window.MainFrame
+import de.griefed.serverpackcreator.gui.window.control.components.LarsonScanner
 import javax.swing.JMenu
 
 /**

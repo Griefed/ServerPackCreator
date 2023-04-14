@@ -24,16 +24,31 @@ import java.nio.charset.StandardCharsets
 import java.util.*
 
 @Suppress("unused")
-open class ItemID : Serializable {
+abstract class ItemID : Serializable {
     protected var typeFlags = 0
         get() {
-            return if (internalItemId != null) internalItemId!!.typeFlags else field
+            return if (internalItemId != null) {
+                internalItemId!!.typeFlags
+            } else {
+                field
+            }
         }
 
-    /**
-     * @Deprecated Instances of this class should not be created directly. The class is going to be abstract
-     */
-    @Deprecated("")
+    constructor()
+
+    constructor(d: ByteArray) {
+        val br = ByteReader(ByteArrayInputStream(d))
+        val flags = br.read()
+        internalItemId = createItem(flags)
+        internalItemId!!.load(br, d.size - 1)
+    }
+
+    constructor(br: ByteReader, maxSize: Int) {
+        val flags = br.read()
+        internalItemId = createItem(flags)
+        internalItemId!!.load(br, maxSize - 1)
+    }
+
     constructor(flags: Int) {
         typeFlags = flags
 
@@ -55,7 +70,11 @@ open class ItemID : Serializable {
 
     @Throws(IOException::class)
     override fun serialize(bw: ByteWriter) {
-        if (internalItemId != null) internalItemId!!.serialize(bw) else bw.write(typeFlags)
+        if (internalItemId != null) {
+            internalItemId!!.serialize(bw)
+        } else {
+            bw.write(typeFlags)
+        }
     }
 
     override fun toString(): String {
@@ -65,12 +84,11 @@ open class ItemID : Serializable {
     @Throws(ShellLinkException::class)
     open fun setTypeFlags(flags: Int): ItemID {
         if (flags and ID_TYPE_GROUPMASK != 0) {
-            throw ShellLinkException(
-                "ItemID group cannot be changed. " +
-                        "Create a new instance of an appropriate type instead."
-            )
+            throw ShellLinkException("ItemID group cannot be changed. Create a new instance of an appropriate type instead.")
         }
-        if (flags and ID_TYPE_JUNCTION != 0) throw ShellLinkException("Junctions are not supported")
+        if (flags and ID_TYPE_JUNCTION != 0) {
+            throw ShellLinkException("Junctions are not supported")
+        }
         typeFlags = typeFlags and ID_TYPE_GROUPMASK or (flags and ID_TYPE_INGROUPMASK)
         return this
     }
@@ -79,37 +97,10 @@ open class ItemID : Serializable {
     private var internalItemId: ItemID? = null
 
     /**
-     * @Deprecated Instances of this class should not be created directly. The class is going to be abstract
+     * @Deprecated Use [ItemIDDrive] or [ItemIDFS]
      */
-    @Deprecated("")
-    constructor()
-
-    /**
-     * @Deprecated Instances of this class should not be created directly. The class is going to be abstract
-     */
-    @Deprecated("")
-    constructor(d: ByteArray) {
-        val br = ByteReader(ByteArrayInputStream(d))
-        val flags = br.read()
-        internalItemId = createItem(flags)
-        internalItemId!!.load(br, d.size - 1)
-    }
-
-    /**
-     * @Deprecated Instances of this class should not be created directly. The class is going to be abstract
-     */
-    @Deprecated("")
-    constructor(br: ByteReader, maxSize: Int) {
-        val flags = br.read()
-        internalItemId = createItem(flags)
-        internalItemId!!.load(br, maxSize - 1)
-    }
-
     @get:Deprecated("")
     open val name: String?
-        /**
-         * @Deprecated Use [ItemIDDrive] or [ItemIDFS]
-         */
         get() {
             if (internalItemId is ItemIDDrive) {
                 return (internalItemId as ItemIDDrive).name
@@ -122,7 +113,7 @@ open class ItemID : Serializable {
     /**
      * @Deprecated Use [ItemIDDrive] or [ItemIDFS]
      */
-    @Deprecated("")
+    @Deprecated("Use [ItemIDDrive] or [ItemIDFS]")
     @Throws(ShellLinkException::class)
     open fun setName(s: String?): ItemID {
         if (internalItemId is ItemIDDrive) {
@@ -133,14 +124,16 @@ open class ItemID : Serializable {
         return this
     }
 
+    /**
+     * @Deprecated Use [ItemIDFS]
+     */
     @get:Deprecated("")
     open val size: Int
-        /**
-         * @Deprecated Use [ItemIDFS]
-         */
         get() = if (internalItemId is ItemIDFS) {
             (internalItemId as ItemIDFS).size
-        } else 0
+        } else {
+            0
+        }
 
     /**
      * @Deprecated Use [ItemIDFS]
@@ -172,24 +165,36 @@ open class ItemID : Serializable {
             return this
         }
         if (t == TYPE_FILE || t == TYPE_DIRECTORY || t == TYPE_FILE_OLD || t == TYPE_DIRECTORY_OLD) {
-            if (internalItemId is ItemIDFS) {
-                (internalItemId as ItemIDFS).setTypeFlags(t and ID_TYPE_INGROUPMASK)
-            } else if (internalItemId is ItemIDDrive) {
-                val driveId = internalItemId as ItemIDDrive
-                internalItemId = ItemIDFS(t).setName(driveId.name)
-            } else if (internalItemId == null) {
-                internalItemId = ItemIDFS(t)
+            when (internalItemId) {
+                is ItemIDFS -> {
+                    (internalItemId as ItemIDFS).setTypeFlags(t and ID_TYPE_INGROUPMASK)
+                }
+
+                is ItemIDDrive -> {
+                    val driveId = internalItemId as ItemIDDrive
+                    internalItemId = ItemIDFS(t).setName(driveId.name)
+                }
+
+                null -> {
+                    internalItemId = ItemIDFS(t)
+                }
             }
             return this
         }
         if (t == TYPE_DRIVE || t == TYPE_DRIVE_OLD) {
-            if (internalItemId is ItemIDDrive) {
-                (internalItemId as ItemIDDrive).setTypeFlags(t and ID_TYPE_INGROUPMASK)
-            } else if (internalItemId is ItemIDFS) {
-                val fsId = internalItemId as ItemIDFS
-                internalItemId = ItemIDDrive(t).setName(fsId.name)
-            } else if (internalItemId == null) {
-                internalItemId = ItemIDDrive(t)
+            when (internalItemId) {
+                is ItemIDDrive -> {
+                    (internalItemId as ItemIDDrive).setTypeFlags(t and ID_TYPE_INGROUPMASK)
+                }
+
+                is ItemIDFS -> {
+                    val fsId = internalItemId as ItemIDFS
+                    internalItemId = ItemIDDrive(t).setName(fsId.name)
+                }
+
+                null -> {
+                    internalItemId = ItemIDDrive(t)
+                }
             }
             return this
         }
@@ -254,15 +259,22 @@ open class ItemID : Serializable {
         // GROUP_CONTROLPANEL
         const val TYPE_CONTROL_REGITEM = 0x0
         const val TYPE_CONTROL_REGITEM_EX = 0x1
+
         @Throws(ShellLinkException::class)
         fun createItem(typeFlags: Int): ItemID {
-            if (typeFlags and ID_TYPE_JUNCTION != 0) throw ShellLinkException("junctions are not supported")
+            if (typeFlags and ID_TYPE_JUNCTION != 0) {
+                throw ShellLinkException("junctions are not supported")
+            }
             val group = typeFlags and ID_TYPE_GROUPMASK
             val subGroup = typeFlags and ID_TYPE_INGROUPMASK
             return when (group) {
                 GROUP_ROOT -> ItemIDRoot(typeFlags)
                 GROUP_COMPUTER -> {
-                    if (subGroup == TYPE_DRIVE_REGITEM) ItemIDRegFolder(typeFlags) else ItemIDDrive(typeFlags)
+                    if (subGroup == TYPE_DRIVE_REGITEM) {
+                        ItemIDRegFolder(typeFlags)
+                    } else {
+                        ItemIDDrive(typeFlags)
+                    }
                 }
 
                 GROUP_FS -> ItemIDFS(typeFlags)
@@ -272,8 +284,12 @@ open class ItemID : Serializable {
 
         @JvmStatic
         protected fun isLongFilename(filename: String): Boolean {
-            if (filename[0] == '.' || filename[filename.length - 1] == '.') return true
-            if (!filename.matches("^\\p{ASCII}+$".toRegex())) return true
+            if (filename[0] == '.' || filename[filename.length - 1] == '.') {
+                return true
+            }
+            if (!filename.matches("^\\p{ASCII}+$".toRegex())) {
+                return true
+            }
 
             // no matter whether it is file or directory
             val dotIdx = filename.lastIndexOf('.')
@@ -288,25 +304,40 @@ open class ItemID : Serializable {
         @JvmStatic
         protected fun generateShortName(longname: String): String {
             // assume that it is actually long, don't check it again
-            var longname = longname
-            longname = longname.replace("\\.$|^\\.".toRegex(), "")
-            val dotIdx = longname.lastIndexOf('.')
-            var baseName = if (dotIdx == -1) longname else longname.substring(0, dotIdx)
-            var ext = if (dotIdx == -1) "" else longname.substring(dotIdx + 1)
+            var longName = longname
+            longName = longName.replace("\\.$|^\\.".toRegex(), "")
+            val dotIdx = longName.lastIndexOf('.')
+            var baseName = if (dotIdx == -1) {
+                longName
+            } else {
+                longName.substring(0, dotIdx)
+            }
+            var ext = if (dotIdx == -1) {
+                ""
+            } else {
+                longName.substring(dotIdx + 1)
+            }
             ext = ext.replace(" ", "").replace("[\\.\"\\/\\\\\\[\\]:;=,\\+]".toRegex(), "_")
-            ext = ext.substring(0, Math.min(3, ext.length))
+            ext = ext.substring(0, 3.coerceAtMost(ext.length))
             baseName = baseName.replace(" ", "").replace("[\\.\"\\/\\\\\\[\\]:;=,\\+]".toRegex(), "_")
-            baseName = baseName.substring(0, Math.min(6, baseName.length))
+            baseName = baseName.substring(0, 6.coerceAtMost(baseName.length))
 
             // well, for same short names we should use "~2", "~3" and so on,
-            // but actual index is generated by os while creating a file and stored in filesystem
+            // but actual index is generated by os while creating a file and stored in filesystem,
             // so it is not possible to get actual one
-            val shortname = StringBuilder(baseName + "~1" + if (ext.isEmpty()) "" else ".$ext")
+            val append = if (ext.isEmpty()) {
+                ""
+            } else {
+                ".$ext"
+            }
+            val shortname = StringBuilder("$baseName~1$append")
 
             // i have no idea how non-asci symbols are converted in dos names
             val asciiEncoder = StandardCharsets.US_ASCII.newEncoder()
-            for (i in 0 until shortname.length) {
-                if (!asciiEncoder.canEncode(shortname[i])) shortname.setCharAt(i, '_')
+            for (i in shortname.indices) {
+                if (!asciiEncoder.canEncode(shortname[i])) {
+                    shortname.setCharAt(i, '_')
+                }
             }
             return shortname.toString().uppercase(Locale.getDefault())
         }

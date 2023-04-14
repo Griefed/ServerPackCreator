@@ -52,9 +52,13 @@ class ShellLinkHeader : Serializable {
 
     constructor(data: ByteReader) {
         val size = data.read4bytes().toInt()
-        if (size != headerSize) throw ShellLinkException()
+        if (size != headerSize) {
+            throw ShellLinkException()
+        }
         val g = GUID(data)
-        if (g != clsid) throw ShellLinkException()
+        if (g != clsid) {
+            throw ShellLinkException()
+        }
         linkFlags = LinkFlags(data)
         fileAttributesFlags = FileAttributesFlags(data)
         creationTime = Filetime(data)
@@ -63,7 +67,9 @@ class ShellLinkHeader : Serializable {
         fileSize = data.read4bytes().toInt()
         iconIndex = data.read4bytes().toInt()
         showCommand = data.read4bytes().toInt()
-        if (showCommand != SW_SHOWNORMAL && showCommand != SW_SHOWMAXIMIZED && showCommand != SW_SHOWMINNOACTIVE) throw ShellLinkException()
+        if (showCommand != SW_SHOWNORMAL && showCommand != SW_SHOWMAXIMIZED && showCommand != SW_SHOWMINNOACTIVE) {
+            throw ShellLinkException()
+        }
         hotKeyFlags = HotKeyFlags(data)
         data.read2bytes()
         data.read8bytes()

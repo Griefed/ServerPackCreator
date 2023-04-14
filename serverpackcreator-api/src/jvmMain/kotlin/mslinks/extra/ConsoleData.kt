@@ -24,15 +24,19 @@ import java.io.IOException
 @Suppress("MemberVisibilityCanBePrivate", "unused")
 class ConsoleData : Serializable {
     val consoleFlags = ConsoleFlags(0)
+
     /** get index in array returned by getColorTable() method  */
     var textColor: Int
         private set
+
     /** get index in array returned by getColorTable() method  */
     var textBackground: Int
         private set
+
     /** get index in array returned by getColorTable() method  */
     var popupTextColor: Int
         private set
+
     /** get index in array returned by getColorTable() method  */
     var popupTextBackground: Int
         private set
@@ -89,7 +93,9 @@ class ConsoleData : Serializable {
     }
 
     constructor(br: ByteReader, sz: Int) {
-        if (sz != size) throw ShellLinkException()
+        if (sz != size) {
+            throw ShellLinkException()
+        }
         var t = br.read2bytes().toInt()
         textColor = t and 0xf
         textBackground = t and 0xf0 shr 4
@@ -102,7 +108,9 @@ class ConsoleData : Serializable {
         br.read8bytes()
         fontSize = br.read4bytes().toInt() ushr 16
         br.read4bytes()
-        if (br.read4bytes().toInt() >= 700) consoleFlags.setBoldFont()
+        if (br.read4bytes().toInt() >= 700) {
+            consoleFlags.setBoldFont()
+        }
         font = when (br.read().toChar()) {
             'T' -> Font.Terminal
             'L' -> Font.LucidaConsole
@@ -115,21 +123,35 @@ class ConsoleData : Serializable {
             t <= 25 -> {
                 CursorSize.Small
             }
+
             t <= 50 -> {
                 CursorSize.Medium
             }
+
             else -> {
                 CursorSize.Large
             }
         }
-        if (br.read4bytes().toInt() != 0) consoleFlags.setFullscreen()
-        if (br.read4bytes().toInt() != 0) consoleFlags.setQuickEdit()
-        if (br.read4bytes().toInt() != 0) consoleFlags.setInsertMode()
-        if (br.read4bytes().toInt() != 0) consoleFlags.setAutoPosition()
+        if (br.read4bytes().toInt() != 0) {
+            consoleFlags.setFullscreen()
+        }
+        if (br.read4bytes().toInt() != 0) {
+            consoleFlags.setQuickEdit()
+        }
+        if (br.read4bytes().toInt() != 0) {
+            consoleFlags.setInsertMode()
+        }
+        if (br.read4bytes().toInt() != 0) {
+            consoleFlags.setAutoPosition()
+        }
         historySize = br.read4bytes().toInt()
         historyBuffers = br.read4bytes().toInt()
-        if (br.read4bytes().toInt() != 0) consoleFlags.setHistoryDup()
-        for (i in 0..15) colorTable[i] = br.read4bytes().toInt()
+        if (br.read4bytes().toInt() != 0) {
+            consoleFlags.setHistoryDup()
+        }
+        for (i in 0..15) {
+            colorTable[i] = br.read4bytes().toInt()
+        }
     }
 
     @Throws(IOException::class)
@@ -143,8 +165,18 @@ class ConsoleData : Serializable {
         windowPos.serialize(bw)
         bw.write8bytes(0)
         bw.write4bytes((fontSize shl 16).toLong())
-        bw.write4bytes((if (font == Font.Terminal) 0x30 else 0x36).toLong())
-        bw.write4bytes((if (consoleFlags.isBoldFont) 700 else 0).toLong())
+        var byteToWrite = if (font == Font.Terminal) {
+            0x30
+        } else {
+            0x36
+        }
+        bw.write4bytes(byteToWrite.toLong())
+        byteToWrite = if (consoleFlags.isBoldFont) {
+            700
+        } else {
+            0
+        }
+        bw.write4bytes(byteToWrite.toLong())
         var fn = ""
         when (font) {
             Font.Terminal -> fn = "Terminal"
@@ -153,21 +185,50 @@ class ConsoleData : Serializable {
             else -> {}
         }
         bw.writeUnicodeStringNullTerm(fn)
-        for (i in fn.length + 1..31) bw.write2bytes(0)
+        for (i in fn.length + 1..31) {
+            bw.write2bytes(0)
+        }
         when (cursorSize) {
             CursorSize.Small -> bw.write4bytes(0)
             CursorSize.Medium -> bw.write4bytes(26)
             CursorSize.Large -> bw.write4bytes(51)
             else -> {}
         }
-        bw.write4bytes((if (consoleFlags.isFullscreen) 1 else 0).toLong())
-        bw.write4bytes((if (consoleFlags.isQuickEdit) 1 else 0).toLong())
-        bw.write4bytes((if (consoleFlags.isInsertMode) 1 else 0).toLong())
-        bw.write4bytes((if (consoleFlags.isAutoPosition) 1 else 0).toLong())
+        byteToWrite = if (consoleFlags.isFullscreen) {
+            1
+        } else {
+            0
+        }
+        bw.write4bytes(byteToWrite.toLong())
+        byteToWrite = if (consoleFlags.isQuickEdit) {
+            1
+        } else {
+            0
+        }
+        bw.write4bytes(byteToWrite.toLong())
+        byteToWrite = if (consoleFlags.isInsertMode) {
+            1
+        } else {
+            0
+        }
+        bw.write4bytes(byteToWrite.toLong())
+        byteToWrite = if (consoleFlags.isAutoPosition) {
+            1
+        } else {
+            0
+        }
+        bw.write4bytes(byteToWrite.toLong())
         bw.write4bytes(historySize.toLong())
         bw.write4bytes(historyBuffers.toLong())
-        bw.write4bytes((if (consoleFlags.isHistoryDup) 1 else 0).toLong())
-        for (i in 0..15) bw.write4bytes(colorTable[i].toLong())
+        byteToWrite = if (consoleFlags.isHistoryDup) {
+            1
+        } else {
+            0
+        }
+        bw.write4bytes(byteToWrite.toLong())
+        for (i in 0..15) {
+            bw.write4bytes(colorTable[i].toLong())
+        }
     }
 
     /** set index in array returned by getColorTable() method  */

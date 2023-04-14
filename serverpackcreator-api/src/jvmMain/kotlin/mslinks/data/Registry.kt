@@ -12,7 +12,7 @@
 	distributed under the License is distributed on an "AS IS" BASIS,
 	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
-@file:Suppress("unused")
+@file:Suppress("unused", "SpellCheckingInspection")
 
 package mslinks.data
 
@@ -20,14 +20,20 @@ import mslinks.ShellLinkException
 import mslinks.UnsupportedCLSIDException
 import java.util.*
 
+@Suppress("JoinDeclarationAndAssignment")
 object Registry {
     private val registry = ArrayList<Entry>()
     private val indexClsids = HashMap<GUID?, Entry>()
     private val indexNames = HashMap<String, Entry>()
+
     @Throws(ShellLinkException::class)
     fun registerClsid(clsid: GUID, name: String, vararg allowedItemIdTypes: Class<*>) {
-        if (indexClsids.containsKey(clsid)) throw ShellLinkException("Registry already contains $clsid")
-        if (indexNames.containsKey(name)) throw ShellLinkException("Registry already contains $name")
+        if (indexClsids.containsKey(clsid)) {
+            throw ShellLinkException("Registry already contains $clsid")
+        }
+        if (indexNames.containsKey(name)) {
+            throw ShellLinkException("Registry already contains $name")
+        }
         registerClsidInternal(clsid, name, *allowedItemIdTypes)
     }
 
@@ -44,10 +50,7 @@ object Registry {
         if (allowedItemIdTypes.isNotEmpty()) {
             entry.allowedItemIdTypes = allowedItemIdTypes as Array<Class<*>>
         } else {
-            entry.allowedItemIdTypes =
-                arrayOf(
-                    ItemIDRegItem::class.java
-                )
+            entry.allowedItemIdTypes = arrayOf(ItemIDRegItem::class.java)
         }
         registry.add(entry)
         indexClsids[clsid] = entry
@@ -56,7 +59,9 @@ object Registry {
 
     @Throws(UnsupportedCLSIDException::class)
     fun getName(clsid: GUID?): String? {
-        if (!indexClsids.containsKey(clsid)) throw UnsupportedCLSIDException(clsid)
+        if (!indexClsids.containsKey(clsid)) {
+            throw UnsupportedCLSIDException(clsid)
+        }
         val entry = indexClsids[clsid]
         return entry!!.name
     }
@@ -64,16 +69,23 @@ object Registry {
     @Throws(ShellLinkException::class)
     fun getClsid(name: String): GUID? {
         val temp = name.lowercase(Locale.getDefault())
-        if (!indexNames.containsKey(temp)) throw ShellLinkException("$temp is not found")
+        if (!indexNames.containsKey(temp)) {
+            throw ShellLinkException("$temp is not found")
+        }
         val entry = indexNames[temp]
         return entry!!.clsid
     }
 
     fun canUseClsidIn(clsid: GUID?, itemIdClass: Class<*>?): Boolean {
-        if (!indexClsids.containsKey(clsid)) return false
+        if (!indexClsids.containsKey(clsid)) {
+            return false
+        }
         val entry = indexClsids[clsid]
         for (i in entry!!.allowedItemIdTypes) {
-            if (itemIdClass?.let { i.isAssignableFrom(it) } == true) return true
+            val check = itemIdClass?.let { i.isAssignableFrom(it) }
+            if (check == true) {
+                return true
+            }
         }
         return false
     }
@@ -83,19 +95,23 @@ object Registry {
     }
 
     val CLSID_COMPUTER: GUID
+
     @Suppress("MemberVisibilityCanBePrivate")
     val CLSID_DESKTOP: GUID
+
     @Suppress("MemberVisibilityCanBePrivate")
     val CLSID_DOCUMENTS: GUID
+
     @Suppress("MemberVisibilityCanBePrivate")
-    val CLSID_DOWLOADS: GUID
+    val CLSID_DOWNLOADS: GUID
+
 
     init {
-        CLSID_COMPUTER = registerClsid("{20d04fe0-3aea-1069-a2d8-08002b30309d}", "Computer", ItemIDRoot::class.java)
+        CLSID_COMPUTER = registerClsid("{20D04FE0-3AEA-1069-A2D8-08002B30309D}", "Computer", ItemIDRoot::class.java)
 
         // Windows XP+
         registerClsid("{D20EA4E1-3957-11D2-A40B-0C5020524153}", "CommonAdministrativeTools")
-        CLSID_DOCUMENTS = registerClsid("{450D8FBA-AD25-11D0-98A8-0800361B1103}", "Documents")
+        registerClsid("{450D8FBA-AD25-11D0-98A8-0800361B1103}", "Documents")
         registerClsid("{645FF040-5081-101B-9F08-00AA002F954E}", "RecycleBin")
         registerClsid("{D20EA4E1-3957-11D2-A40B-0C5020524152}", "Fonts") // WinXP ONLY
 
@@ -109,7 +125,7 @@ object Registry {
         // Windows 10+
         registerClsid("{0DB7E03F-FC29-4DC6-9020-FF41B59E513A}", "3DObjects")
         CLSID_DESKTOP = registerClsid("{B4BFCC3A-DB2C-424C-B029-7FE99A87C641}", "Desktop")
-        CLSID_DOWLOADS = registerClsid("{374DE290-123F-4565-9164-39C4925E467B}", "Downloads")
+        CLSID_DOWNLOADS = registerClsid("{374DE290-123F-4565-9164-39C4925E467B}", "Downloads")
         registerClsid("{D3162B92-9365-467A-956B-92703ACA08AF}", "LocalDocuments")
         registerClsid("{088E3905-0323-4B02-9826-5D99428E115F}", "LocalDownloads")
         registerClsid("{3DFDF296-DBEC-4FB4-81D1-6A3438BCF4DE}", "LocalMusic")
@@ -121,9 +137,11 @@ object Registry {
         registerClsid("{018D5C66-4533-4307-9B53-224DE2ED1FE6}", "OneDrive")
         registerClsid("{A8CDFF1C-4878-43BE-B5FD-F8091C1C60D0}", "Personal")
         registerClsid("{F8278C54-A712-415B-B593-B77A2BE0DDA9}", "Profile")
-        registerClsid("{59031A47-3F72-44A7-89C5-5595FE6B30EE}", "Profile")
         registerClsid("{5B934B42-522B-4C34-BBFE-37A3EF7B9C90}", "Public_1")
-        registerClsid("{DFD50261-23A3-0253-0400-000000004F02}", "Documents")
+
+        //added by Griefed
+        registerClsid("{59031A47-3F72-44A7-89C5-5595FE6B30EE}", "UserProfile")
+        CLSID_DOCUMENTS = registerClsid("{DFD50261-23A3-0253-0400-000000004F02}", "Documents")
     }
 
     class RegistryEnumeration : Iterable<GUID?> {

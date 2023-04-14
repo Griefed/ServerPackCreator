@@ -121,6 +121,7 @@ cwallet.sso.lck
 .idea/modules.xml
 .idea/*.iml
 .idea/modules
+.idea/inspectionProfiles/
 *.iml
 *.ipr
 

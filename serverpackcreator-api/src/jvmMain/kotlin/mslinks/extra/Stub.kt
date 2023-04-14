@@ -27,7 +27,9 @@ class Stub(br: ByteReader, sz: Int, sgn: Int) : Serializable {
         val len = sz - 8
         sign = sgn
         data = ByteArray(len)
-        for (i in 0 until len) data[i] = br.read().toByte()
+        for (i in 0 until len) {
+            data[i] = br.read().toByte()
+        }
     }
 
     @Throws(IOException::class)

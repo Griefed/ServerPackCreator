@@ -41,8 +41,12 @@ class ByteReader(private val stream: InputStream) : InputStream() {
 
     @Throws(IOException::class)
     fun seek(n: Int): Boolean {
-        if (n <= 0) return false
-        for (i in 0 until n) read()
+        if (n <= 0) {
+            return false
+        }
+        for (i in 0 until n) {
+            read()
+        }
         return true
     }
 
@@ -74,7 +78,11 @@ class ByteReader(private val stream: InputStream) : InputStream() {
     fun read2bytes(): Long {
         val b0 = read().toLong()
         val b1 = read().toLong()
-        return if (le) b0 or (b1 shl 8) else b1 or (b0 shl 8)
+        return if (le) {
+            b0 or (b1 shl 8)
+        } else {
+            b1 or (b0 shl 8)
+        }
     }
 
     @Throws(IOException::class)
@@ -82,7 +90,11 @@ class ByteReader(private val stream: InputStream) : InputStream() {
         val b0 = read().toLong()
         val b1 = read().toLong()
         val b2 = read().toLong()
-        return if (le) b0 or (b1 shl 8) or (b2 shl 16) else b2 or (b1 shl 8) or (b0 shl 16)
+        return if (le) {
+            b0 or (b1 shl 8) or (b2 shl 16)
+        } else {
+            b2 or (b1 shl 8) or (b0 shl 16)
+        }
     }
 
     @Throws(IOException::class)
@@ -91,7 +103,11 @@ class ByteReader(private val stream: InputStream) : InputStream() {
         val b1 = read().toLong()
         val b2 = read().toLong()
         val b3 = read().toLong()
-        return if (le) b0 or (b1 shl 8) or (b2 shl 16) or (b3 shl 24) else b3 or (b2 shl 8) or (b1 shl 16) or (b0 shl 24)
+        return if (le) {
+            b0 or (b1 shl 8) or (b2 shl 16) or (b3 shl 24)
+        } else {
+            b3 or (b2 shl 8) or (b1 shl 16) or (b0 shl 24)
+        }
     }
 
     @Throws(IOException::class)
@@ -101,7 +117,11 @@ class ByteReader(private val stream: InputStream) : InputStream() {
         val b2 = read().toLong()
         val b3 = read().toLong()
         val b4 = read().toLong()
-        return if (le) b0 or (b1 shl 8) or (b2 shl 16) or (b3 shl 24) or (b4 shl 32) else b4 or (b3 shl 8) or (b2 shl 16) or (b1 shl 24) or (b0 shl 32)
+        return if (le) {
+            b0 or (b1 shl 8) or (b2 shl 16) or (b3 shl 24) or (b4 shl 32)
+        } else {
+            b4 or (b3 shl 8) or (b2 shl 16) or (b1 shl 24) or (b0 shl 32)
+        }
     }
 
     @Throws(IOException::class)
@@ -112,7 +132,11 @@ class ByteReader(private val stream: InputStream) : InputStream() {
         val b3 = read().toLong()
         val b4 = read().toLong()
         val b5 = read().toLong()
-        return if (le) b0 or (b1 shl 8) or (b2 shl 16) or (b3 shl 24) or (b4 shl 32) or (b5 shl 40) else b5 or (b4 shl 8) or (b3 shl 16) or (b2 shl 24) or (b1 shl 32) or (b0 shl 40)
+        return if (le) {
+            b0 or (b1 shl 8) or (b2 shl 16) or (b3 shl 24) or (b4 shl 32) or (b5 shl 40)
+        } else {
+            b5 or (b4 shl 8) or (b3 shl 16) or (b2 shl 24) or (b1 shl 32) or (b0 shl 40)
+        }
     }
 
     @Throws(IOException::class)
@@ -124,7 +148,11 @@ class ByteReader(private val stream: InputStream) : InputStream() {
         val b4 = read().toLong()
         val b5 = read().toLong()
         val b6 = read().toLong()
-        return if (le) b0 or (b1 shl 8) or (b2 shl 16) or (b3 shl 24) or (b4 shl 32) or (b5 shl 40) or (b6 shl 48) else b6 or (b5 shl 8) or (b4 shl 16) or (b3 shl 24) or (b2 shl 32) or (b1 shl 40) or (b0 shl 48)
+        return if (le) {
+            b0 or (b1 shl 8) or (b2 shl 16) or (b3 shl 24) or (b4 shl 32) or (b5 shl 40) or (b6 shl 48)
+        } else {
+            b6 or (b5 shl 8) or (b4 shl 16) or (b3 shl 24) or (b2 shl 32) or (b1 shl 40) or (b0 shl 48)
+        }
     }
 
     @Throws(IOException::class)
@@ -137,7 +165,11 @@ class ByteReader(private val stream: InputStream) : InputStream() {
         val b5 = read().toLong()
         val b6 = read().toLong()
         val b7 = read().toLong()
-        return if (le) b0 or (b1 shl 8) or (b2 shl 16) or (b3 shl 24) or (b4 shl 32) or (b5 shl 40) or (b6 shl 48) or (b7 shl 56) else b7 or (b6 shl 8) or (b5 shl 16) or (b4 shl 24) or (b3 shl 32) or (b2 shl 40) or (b1 shl 48) or (b0 shl 56)
+        return if (le) {
+            b0 or (b1 shl 8) or (b2 shl 16) or (b3 shl 24) or (b4 shl 32) or (b5 shl 40) or (b6 shl 48) or (b7 shl 56)
+        } else {
+            b7 or (b6 shl 8) or (b5 shl 16) or (b4 shl 24) or (b3 shl 32) or (b2 shl 40) or (b1 shl 48) or (b0 shl 56)
+        }
     }
 
     /**
@@ -146,16 +178,24 @@ class ByteReader(private val stream: InputStream) : InputStream() {
      */
     @Throws(IOException::class)
     fun readString(sz: Int): String? {
-        if (sz == 0) return null
+        if (sz == 0) {
+            return null
+        }
         val buf = ByteArray(sz)
         var i = 0
         while (i < sz) {
             val b = read()
-            if (b == 0) break
+            if (b == 0) {
+                break
+            }
             buf[i] = b.toByte()
             i++
         }
-        return if (i == 0) null else String(buf, 0, i)
+        return if (i == 0) {
+            null
+        } else {
+            String(buf, 0, i)
+        }
     }
 
     /**
@@ -164,16 +204,24 @@ class ByteReader(private val stream: InputStream) : InputStream() {
      */
     @Throws(IOException::class)
     fun readUnicodeStringNullTerm(sz: Int): String? {
-        if (sz == 0) return null
+        if (sz == 0) {
+            return null
+        }
         val buf = CharArray(sz)
         var i = 0
         while (i < sz) {
             val c = Char(read2bytes().toUShort())
-            if (c.code == 0) break
+            if (c.code == 0) {
+                break
+            }
             buf[i] = c
             i++
         }
-        return if (i == 0) null else String(buf, 0, i)
+        return if (i == 0) {
+            null
+        } else {
+            String(buf, 0, i)
+        }
     }
 
     /**
@@ -183,7 +231,9 @@ class ByteReader(private val stream: InputStream) : InputStream() {
     fun readUnicodeStringSizePadded(): String {
         val c = read2bytes().toInt()
         val buf = CharArray(c)
-        for (i in 0 until c) buf[i] = Char(read2bytes().toUShort())
+        for (i in 0 until c) {
+            buf[i] = Char(read2bytes().toUShort())
+        }
         return String(buf)
     }
 }

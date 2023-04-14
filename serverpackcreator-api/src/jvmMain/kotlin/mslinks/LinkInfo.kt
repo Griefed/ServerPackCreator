@@ -83,10 +83,13 @@ class LinkInfo : Serializable {
         val pos = bw.position
         var hsize = 28
         val ce = StandardCharsets.US_ASCII.newEncoder()
-        if (localBasePath != null && !ce.canEncode(localBasePath) || commonPathSuffix != null && !ce.canEncode(
-                commonPathSuffix
-            )
-        ) hsize += 8
+        if (localBasePath != null
+            && !ce.canEncode(localBasePath)
+            || commonPathSuffix != null
+            && !ce.canEncode(commonPathSuffix)
+        ) {
+            hsize += 8
+        }
         var vidB: ByteArray? = null
         var localbasepathB: ByteArray? = null
         var cnrlinkB: ByteArray? = null
@@ -100,17 +103,22 @@ class LinkInfo : Serializable {
             cnrlinkB = toByteArray(commonNetworkRelativeLink)
             commonpathsuffixB = commonPathSuffix!!.toByteArray()
         }
-        var size = (hsize
-                + (vidB?.size ?: 0)
-                + (if (localbasepathB == null) 0 else localbasepathB.size + 1)
-                + (cnrlinkB?.size ?: 0)
-                + commonpathsuffixB!!.size + 1)
+        val basePathSize = if (localbasepathB == null) {
+            0
+        } else {
+            localbasepathB.size + 1
+        }
+        val vibBSize = vidB?.size ?: 0
+        val cnrlinkBSize = cnrlinkB?.size ?: 0
+        var size = (hsize + vibBSize + basePathSize + cnrlinkBSize + commonpathsuffixB!!.size + 1)
         if (hsize > 28) {
             if (lif.hasVolumeIDAndLocalBasePath()) {
                 size += localBasePath!!.length * 2 + 2
                 size += 1
             }
-            if (lif.hasCommonNetworkRelativeLinkAndPathSuffix()) size += commonPathSuffix!!.length * 2
+            if (lif.hasCommonNetworkRelativeLinkAndPathSuffix()) {
+                size += commonPathSuffix!!.length * 2
+            }
             size += 2
         }
         bw.write4bytes(size.toLong())
@@ -170,7 +178,9 @@ class LinkInfo : Serializable {
                 bw.writeUnicodeStringNullTerm(commonPathSuffix)
             }
         }
-        while (bw.position < pos + size) bw.write(0)
+        while (bw.position < pos + size) {
+            bw.write(0)
+        }
     }
 
     @Throws(IOException::class)
@@ -196,9 +206,13 @@ class LinkInfo : Serializable {
      * If s is null takes no effect
      */
     fun setLocalBasePath(s: String?): LinkInfo {
-        if (s == null) return this
+        if (s == null) {
+            return this
+        }
         localBasePath = s
-        if (volumeID == null) volumeID = VolumeID()
+        if (volumeID == null) {
+            volumeID = VolumeID()
+        }
         lif.setVolumeIDAndLocalBasePath()
         return this
     }
@@ -218,9 +232,13 @@ class LinkInfo : Serializable {
      * If s is null takes no effect
      */
     fun setCommonPathSuffix(s: String?): LinkInfo {
-        if (s == null) return this
+        if (s == null) {
+            return this
+        }
         commonPathSuffix = s
-        if (commonNetworkRelativeLink == null) commonNetworkRelativeLink = CNRLink()
+        if (commonNetworkRelativeLink == null) {
+            commonNetworkRelativeLink = CNRLink()
+        }
         lif.setCommonNetworkRelativeLinkAndPathSuffix()
         return this
     }
@@ -229,11 +247,17 @@ class LinkInfo : Serializable {
         if (localBasePath != null) {
             var path: String = localBasePath!!
             if (commonPathSuffix != null && commonPathSuffix != "") {
-                if (path[path.length - 1] != File.separatorChar) path += File.separatorChar
+                if (path[path.length - 1] != File.separatorChar) {
+                    path += File.separatorChar
+                }
                 path += commonPathSuffix
             }
             return path
         }
-        return if (commonNetworkRelativeLink != null && commonPathSuffix != null) commonNetworkRelativeLink!!.netName + "\\" + commonPathSuffix else null
+        return if (commonNetworkRelativeLink != null && commonPathSuffix != null) {
+            commonNetworkRelativeLink!!.netName + "\\" + commonPathSuffix
+        } else {
+            null
+        }
     }
 }

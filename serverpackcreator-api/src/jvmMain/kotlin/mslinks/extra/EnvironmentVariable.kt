@@ -30,14 +30,18 @@ class EnvironmentVariable : Serializable {
     }
 
     constructor(br: ByteReader, sz: Int) {
-        if (sz != size) throw ShellLinkException()
+        if (sz != size) {
+            throw ShellLinkException()
+        }
         var pos = br.position
         variable = br.readString(260)
         br.seekTo(pos + 260)
         pos = br.position
         val unicodeStr = br.readUnicodeStringNullTerm(260)
         br.seekTo(pos + 520)
-        if (unicodeStr != null && unicodeStr != "") variable = unicodeStr
+        if (unicodeStr != null && unicodeStr != "") {
+            variable = unicodeStr
+        }
     }
 
     @Throws(IOException::class)
@@ -46,9 +50,15 @@ class EnvironmentVariable : Serializable {
         bw.write4bytes(signature.toLong())
         val b = variable!!.toByteArray()
         bw.write(b)
-        for (i in 0 until 260 - b.size) bw.write(0)
-        for (i in 0 until variable!!.length) bw.write2bytes(variable!![i].code.toLong())
-        for (i in 0 until 260 - variable!!.length) bw.write2bytes(0)
+        for (i in 0 until 260 - b.size) {
+            bw.write(0)
+        }
+        for (i in 0 until variable!!.length) {
+            bw.write2bytes(variable!![i].code.toLong())
+        }
+        for (i in 0 until 260 - variable!!.length) {
+            bw.write2bytes(0)
+        }
     }
 
     fun setVariable(s: String?): EnvironmentVariable {

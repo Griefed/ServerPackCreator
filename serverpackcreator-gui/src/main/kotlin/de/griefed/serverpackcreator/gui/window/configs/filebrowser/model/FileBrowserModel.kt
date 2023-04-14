@@ -26,7 +26,6 @@ import de.griefed.serverpackcreator.gui.window.configs.filebrowser.view.renderer
 import de.griefed.serverpackcreator.gui.window.configs.filebrowser.view.renderer.FileLinkIcon
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
-import java.util.*
 import javax.swing.Icon
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.DefaultTreeModel
