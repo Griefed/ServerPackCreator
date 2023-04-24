@@ -671,14 +671,15 @@ actual class ApiProperties(
      * @author Griefed
      */
     private fun loadFile(propertiesFile: File, props: Properties) {
+        if (!propertiesFile.isFile) {
+            log.warn("Properties-file does not exist: ${propertiesFile.absolutePath}.")
+            return
+        }
         try {
             propertiesFile.inputStream().use {
                 props.load(it)
-                internalProperties.putAll(props)
             }
             log.info("Loaded properties from $propertiesFile.")
-        } catch (ex: FileNotFoundException) {
-            log.warn("Properties-file does not exist: ${propertiesFile.absolutePath}.")
         } catch (ex: Exception) {
             log.error("Couldn't read properties from ${propertiesFile.absolutePath}.", ex)
         }
@@ -855,8 +856,9 @@ actual class ApiProperties(
      */
     @Suppress("SameParameterValue")
     private fun getFileListProperty(key: String, defaultValue: String, filePrefix: String): List<File> {
-        val files: MutableList<File> = ArrayList(10)
-        for (entry in getListProperty(key, defaultValue)) {
+        val files: MutableList<File> = ArrayList(4)
+        val entries = getListProperty(key, defaultValue)
+        for (entry in entries) {
             files.add(File(filePrefix + entry))
         }
         return files
@@ -1087,15 +1089,10 @@ actual class ApiProperties(
      * @author Griefed
      */
     private fun computeScriptTemplates() {
+        val prefix = homeDirectory.toString() + File.separator + "server_files" + File.separator
+        val entries = getFileListProperty(pServerPackScriptTemplates,fallbackScriptTemplates,prefix)
         scriptTemplates.clear()
-        scriptTemplates.addAll(
-            getFileListProperty(
-                pServerPackScriptTemplates,
-                fallbackScriptTemplates,
-                homeDirectory.toString() + File.separator + "server_files"
-                        + File.separator
-            )
-        )
+        scriptTemplates.addAll(entries)
         log.info("Using script templates:")
         for (template in scriptTemplates) {
             log.info("    " + template.path)
