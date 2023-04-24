@@ -155,6 +155,7 @@ jobs:
 
       # BUILD PROJECT AND PUBLISH
       - name: Set up JDK 17
+        id: java
         uses: actions/setup-java@v3.11.0
         with:
           distribution: 'zulu'
@@ -194,7 +195,7 @@ jobs:
             --main-jar serverpackcreator-app-dev-plain.jar `
             --name ServerPackCreator `
             --resource-dir "serverpackcreator-app\jpackagerResources" `
-            --runtime-image "C:\hostedtoolcache\windows\Java_Zulu_jdk\17.0.6-10\x64" `
+            --runtime-image "${{ steps.java.outputs.path }}" `
             --temp "serverpackcreator-app\build\tmp\jpackager" `
             --type "app-image" `
             --vendor "griefed.de" `
@@ -279,6 +280,7 @@ jobs:
 
       # BUILD PROJECT AND PUBLISH
       - name: Set up JDK 17
+        id: java
         uses: actions/setup-java@v3.11.0
         with:
           distribution: 'zulu'
@@ -314,7 +316,7 @@ jobs:
             --main-jar serverpackcreator-app-dev-plain.jar \
             --name ServerPackCreator \
             --resource-dir serverpackcreator-app/jpackagerResources \
-            --runtime-image /opt/hostedtoolcache/Java_Zulu_jdk/17.0.6-10/x64 \
+            --runtime-image ${{ steps.java.outputs.path }} \
             --temp serverpackcreator-app/build/tmp/jpackager \
             --type "app-image" \
             --vendor "griefed.de" \
