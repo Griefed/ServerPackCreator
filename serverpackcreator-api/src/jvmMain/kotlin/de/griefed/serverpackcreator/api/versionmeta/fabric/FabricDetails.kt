@@ -19,7 +19,6 @@
  */
 package de.griefed.serverpackcreator.api.versionmeta.fabric
 
-import org.jetbrains.annotations.Contract
 import java.util.*
 
 /**
@@ -34,7 +33,6 @@ class FabricDetails internal constructor() {
      * @return The Fabric loader ID for the requested Minecraft and Fabric versions.
      * @author Griefed
      */
-    @get:Contract(pure = true)
     val id: String? = null
 
     /**
@@ -43,7 +41,6 @@ class FabricDetails internal constructor() {
      * @return The Minecraft version of this Fabric loader.
      * @author Griefed
      */
-    @get:Contract(pure = true)
     val inheritsFrom: String? = null
 
     /**
@@ -52,7 +49,6 @@ class FabricDetails internal constructor() {
      * @return The release date of this Fabric loader.
      * @author Griefed
      */
-    @get:Contract(pure = true)
     val releaseTime: Date? = null
 
     /**
@@ -62,7 +58,6 @@ class FabricDetails internal constructor() {
      * @return The date of this Fabric loader.
      * @author Griefed
      */
-    @get:Contract(pure = true)
     val time: Date? = null
 
     /**
@@ -71,7 +66,6 @@ class FabricDetails internal constructor() {
      * @return Release type of this Fabric loader.
      * @author Griefed
      */
-    @get:Contract(pure = true)
     val type: String? = null
 
     /**
@@ -80,7 +74,6 @@ class FabricDetails internal constructor() {
      * @return Main class.
      * @author Griefed
      */
-    @get:Contract(pure = true)
     val mainClass: String? = null
 
     /**
@@ -89,7 +82,6 @@ class FabricDetails internal constructor() {
      * @return Arguments of this Fabric loader.
      * @author Griefed
      */
-    @get:Contract(pure = true)
     val arguments: FabricArguments? = null
 
     /**
@@ -98,6 +90,5 @@ class FabricDetails internal constructor() {
      * @return Library-list used by this Fabric loader.
      * @author Griefed
      */
-    @get:Contract(pure = true)
     val libraries: List<FabricLibrary>? = null
 }

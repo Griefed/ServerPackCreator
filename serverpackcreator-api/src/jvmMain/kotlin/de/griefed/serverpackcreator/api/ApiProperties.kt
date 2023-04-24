@@ -25,8 +25,10 @@ import de.comahe.i18n4k.i18n4k
 import de.comahe.i18n4k.toTag
 import de.griefed.serverpackcreator.api.utilities.common.*
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
-import org.jetbrains.annotations.Contract
-import java.io.*
+import java.io.BufferedReader
+import java.io.File
+import java.io.IOException
+import java.io.InputStreamReader
 import java.net.URL
 import java.util.*
 
@@ -161,14 +163,12 @@ actual class ApiProperties(
     /**
      * Directories to include in a server pack.
      */
-    @get:Contract(pure = true)
     var directoriesToInclude = TreeSet(fallbackDirectoriesInclusionString.split(","))
         private set
 
     /**
      * Directories to exclude from a server pack.
      */
-    @get:Contract(pure = true)
     var directoriesToExclude = TreeSet(fallbackDirectoriesExclusionString.split(","))
         private set
 
@@ -181,35 +181,30 @@ actual class ApiProperties(
      *
      * Should you want these filters to be expanded, open an issue on [GitHub](https://github.com/Griefed/ServerPackCreator/issues)
      */
-    @get:Contract(pure = true)
     var zipArchiveExclusions = TreeSet(fallbackZipExclusionsString.split(","))
         private set
 
     /**
      * String-list of clientside-only mods to exclude from server packs.
      */
-    @get:Contract(pure = true)
     var clientsideMods = TreeSet(fallbackModsString.split(","))
         private set
 
     /**
      * Regex-list of clientside-only mods to exclude from server packs.
      */
-    @get:Contract(pure = true)
     var clientsideModsRegex = TreeSet(fallbackModsRegex.split(","))
         private set
 
     /**
      * Default SPC properties.
      */
-    @get:Contract(pure = true)
     val serverPackCreatorProperties =
         "serverpackcreator.properties"
 
     /**
      * Modloaders supported by ServerPackCreator.
      */
-    @get:Contract(pure = true)
     var supportedModloaders = arrayOf("Fabric", "Forge", "Quilt", "LegacyFabric")
         private set
 
@@ -219,13 +214,11 @@ actual class ApiProperties(
      * * key: Java version
      * * value: Path to the Java .exe or binary
      */
-    @get:Contract(pure = true)
     val javaPaths = HashMap<String, String>(256)
 
     /**
      * Start-script templates to use during server pack generation.
      */
-    @get:Contract(pure = true)
     var scriptTemplates: TreeSet<File> = TreeSet<File>()
         private set
 
@@ -239,14 +232,12 @@ actual class ApiProperties(
      *  * [ExclusionFilter.REGEX]
      *  * [ExclusionFilter.EITHER]
      */
-    @get:Contract(pure = true)
     var exclusionFilter = ExclusionFilter.START
         private set
 
     /**
      * The version of the ServerPackCreator API.
      */
-    @get:Contract(pure = true)
     val apiVersion: String = this.javaClass.getPackage().implementationVersion ?: "dev"
 
     val devBuild: Boolean
@@ -265,7 +256,6 @@ actual class ApiProperties(
      * @return Whether the last loaded configuration file should be saved to as well.
      * @author Griefed
      */
-    @get:Contract(pure = true)
     var isSavingOfLastLoadedConfEnabled = false
         private set
 
@@ -274,42 +264,36 @@ actual class ApiProperties(
      * `de.griefed.serverpackcreator.versioncheck.prerelease`, returns `true` if checks for available PreReleases are
      * enabled, `false` if no checks for available PreReleases should be made.
      */
-    @get:Contract(pure = true)
     var isCheckingForPreReleasesEnabled = false
         private set
 
     /**
      * Whether the exclusion of files from the ZIP-archive of the server pack is enabled.
      */
-    @get:Contract(pure = true)
     var isZipFileExclusionEnabled = true
         private set
 
     /**
      * Is auto excluding of clientside-only mods enabled.
      */
-    @get:Contract(pure = true)
     var isAutoExcludingModsEnabled = true
         private set
 
     /**
      * Whether overwriting of already existing server packs is enabled.
      */
-    @get:Contract(pure = true)
     var isServerPacksOverwriteEnabled = true
         private set
 
     /**
      * Whether cleanup procedures after server pack generation are enabled.
      */
-    @get:Contract(pure = true)
     var isServerPackCleanupEnabled = true
         private set
 
     /**
      * Whether Minecraft pre-releases and snapshots are available to the user in, for example, the GUI.
      */
-    @get:Contract(pure = true)
     var isMinecraftPreReleasesAvailabilityEnabled = false
         private set
 
@@ -317,7 +301,6 @@ actual class ApiProperties(
      * Whether to automatically update the `SPC_JAVA_SPC`-placeholder in the script variables
      * table with a Java path matching the required Java version for the Minecraft server.
      */
-    @get:Contract(pure = true)
     var isJavaScriptAutoupdateEnabled = true
         private set
 
@@ -325,7 +308,6 @@ actual class ApiProperties(
      * Aikars Flags commonly used for Minecraft servers to improve performance in various places.
      */
     @Suppress("SpellCheckingInspection")
-    @get:Contract(pure = true)
     var aikarsFlags: String =
         "-Xms4G -Xmx4G -XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200 -XX:+UnlockExperimentalVMOptions -XX:+DisableExplicitGC -XX:+AlwaysPreTouch -XX:G1NewSizePercent=30 -XX:G1MaxNewSizePercent=40 -XX:G1HeapRegionSize=8M -XX:G1ReservePercent=20 -XX:G1HeapWastePercent=5 -XX:G1MixedGCCountTarget=4 -XX:InitiatingHeapOccupancyPercent=15 -XX:G1MixedGCLiveThresholdPercent=90 -XX:G1RSetUpdatingPauseTimePercent=5 -XX:SurvivorRatio=32 -XX:+PerfDisableSharedMem -XX:MaxTenuringThreshold=1 -Dusing.aikars.flags=https://mcflags.emc.gs -Daikars.new.flags=true"
         private set
@@ -333,27 +315,23 @@ actual class ApiProperties(
     /**
      * Language used by ServerPackCreator.
      */
-    @get:Contract(pure = true)
     var language = Locale("en", "GB")
         private set
 
     /**
      * URL to the HasteBin server where logs and configs are uploaded to.
      */
-    @get:Contract(pure = true)
     var hasteBinServerUrl = "https://haste.zneix.eu/documents"
         private set
 
     /**
      * Java installation used for installing the modloader server during server pack creation.
      */
-    @get:Contract(pure = true)
     var javaPath = "java"
 
     /**
      * Maximum disk usage in percent until Artemis stops accepting new entries.
      */
-    @get:Contract(pure = true)
     var queueMaxDiskUsage = 90
         private set
 
@@ -1090,7 +1068,7 @@ actual class ApiProperties(
      */
     private fun computeScriptTemplates() {
         val prefix = homeDirectory.toString() + File.separator + "server_files" + File.separator
-        val entries = getFileListProperty(pServerPackScriptTemplates,fallbackScriptTemplates,prefix)
+        val entries = getFileListProperty(pServerPackScriptTemplates, fallbackScriptTemplates, prefix)
         scriptTemplates.clear()
         scriptTemplates.addAll(entries)
         log.info("Using script templates:")
