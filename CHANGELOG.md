@@ -1,3 +1,10 @@
+## [4.0.6](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.0.5...4.0.6) (2023-04-24)
+
+
+### 🛠 Fixes
+
+* **GH#458:** Persistently load and store properties ([c60d13f](https://git.griefed.de/Griefed/ServerPackCreator/commit/c60d13f1bccd2a8155b2eb9722299d0a332f501f)), closes [GH#458](https://git.griefed.de/Griefed/GH/issues/458)
+
 ## [4.0.5](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.0.4...4.0.5) (2023-04-08)
 
 
