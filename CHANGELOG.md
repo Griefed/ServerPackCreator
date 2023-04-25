@@ -1,3 +1,15 @@
+## [4.1.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.0.6...4.1.0) (2023-04-25)
+
+
+### 💎 Improvements
+
+* Tell people to backup their ServerPackCreator directory in their home-directory, if they are considering using alphas or betas. ([6c35e22](https://git.griefed.de/Griefed/ServerPackCreator/commit/6c35e22d8665f887262b0a56509fffcb27e1e366))
+
+
+### 🦊 CI/CD
+
+* Use output from Java setup for path acquisition ([c3ac1b7](https://git.griefed.de/Griefed/ServerPackCreator/commit/c3ac1b7af0a9bf1a888ea6b2e9dc0b295ee093ce))
+
 ## [4.0.6](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.0.5...4.0.6) (2023-04-24)
 
 
