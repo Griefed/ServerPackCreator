@@ -1,3 +1,10 @@
+## [4.1.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.1.0...4.1.1) (2023-04-26)
+
+
+### 👀 Reverts
+
+* Remove Konkrete from default list of clientside-only mods list. Thanks to @ACrazyD for the report! ([9b10d59](https://git.griefed.de/Griefed/ServerPackCreator/commit/9b10d59d5d810b3922b105c8ef2fab1895bf0a6b))
+
 ## [4.1.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.0.6...4.1.0) (2023-04-25)
 
 
