@@ -20,7 +20,9 @@
 package de.griefed.serverpackcreator.gui.window.configs.components
 
 import de.griefed.serverpackcreator.gui.GuiProps
-import java.awt.*
+import java.awt.Component
+import java.awt.Graphics
+import java.awt.Rectangle
 import javax.swing.JScrollPane
 
 /**

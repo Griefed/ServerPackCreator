@@ -28,7 +28,7 @@
  * #####################################################################################################################
  *
  */
-package de.griefed.serverpackcreator.gui.components
+package de.griefed.serverpackcreator.gui.window.logs.components
 
 import java.awt.event.AdjustmentEvent
 import java.awt.event.AdjustmentListener

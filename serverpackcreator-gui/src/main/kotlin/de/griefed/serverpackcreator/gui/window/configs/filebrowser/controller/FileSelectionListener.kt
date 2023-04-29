@@ -19,12 +19,16 @@
  */
 package de.griefed.serverpackcreator.gui.window.configs.filebrowser.controller
 
+import de.griefed.serverpackcreator.api.utilities.common.FileUtilities
+import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.window.configs.filebrowser.model.FileBrowserModel
 import de.griefed.serverpackcreator.gui.window.configs.filebrowser.model.FileNode
+import de.griefed.serverpackcreator.gui.window.configs.filebrowser.model.SortedTreeNode
 import de.griefed.serverpackcreator.gui.window.configs.filebrowser.runnable.AddNodes
 import de.griefed.serverpackcreator.gui.window.configs.filebrowser.view.FileDetailPanel
 import de.griefed.serverpackcreator.gui.window.configs.filebrowser.view.FilePreviewPanel
 import de.griefed.serverpackcreator.gui.window.configs.filebrowser.view.TableScrollPane
+import java.io.File
 import javax.swing.event.TreeSelectionEvent
 import javax.swing.event.TreeSelectionListener
 import javax.swing.tree.DefaultMutableTreeNode
@@ -41,18 +45,22 @@ class FileSelectionListener(
     private val browserModel: FileBrowserModel,
     private val fileDetailPanel: FileDetailPanel,
     private val filePreviewPanel: FilePreviewPanel,
-    private val tableScrollPane: TableScrollPane
+    private val tableScrollPane: TableScrollPane,
+    private val fileUtilities: FileUtilities,
+    private val guiProps: GuiProps
 ) : TreeSelectionListener {
 
     override fun valueChanged(event: TreeSelectionEvent) {
         val node = event.path.lastPathComponent as DefaultMutableTreeNode
         val fileNode = node.userObject as FileNode
-        AddNodes(browserModel, node)
-        val file = fileNode.file
-        fileDetailPanel.setFileNode(fileNode, browserModel)
-        filePreviewPanel.setFileNode(fileNode)
-        if (file.isDirectory) {
-            tableScrollPane.setDefaultTableModel(node)
+        val resolved = File(fileUtilities.resolveLink(fileNode.file)).absoluteFile
+        val resolvedNode = FileNode(resolved)
+        val sortedNode = SortedTreeNode(guiProps, resolvedNode)
+        AddNodes(browserModel, sortedNode)
+        fileDetailPanel.setFileNode(resolvedNode, browserModel)
+        filePreviewPanel.setFileNode(resolvedNode)
+        if (resolved.isDirectory) {
+            tableScrollPane.setDefaultTableModel(sortedNode)
         } else {
             tableScrollPane.clearDefaultTableModel()
         }

@@ -52,8 +52,8 @@ into the world of programming. And here we are.
 
 * You are still expected to be knowledgeable about your modpack, server packs in general, server administration and managing your Java installations. ServerPackCreator is not intended to take all the work off your shoulders!
 
-* When using alpha, beta or in-dev version of ServerPackCreator, it is advised to do so in a different directory than your
-regular ServerPackCreator installation. Things *will* break with alpha releases, stuff *may* break when using beta releases.
+* When using alpha, beta or in-dev version of ServerPackCreator, it is advised to make a backup of your ServerPackCreator-directory in your home-directory.
+Things will break with alpha releases, stuff may break when using beta releases.
 If you distribute server packs generated with a pre-release (alpha, beta) of ServerPackCreator, you do so at your own risk.
 I will not be held responsible for errors in your server pack caused by you using a pre-release.
   * **TL;DR:** Don't use test to ship to prod!
@@ -64,6 +64,13 @@ There are two kinds of pre-releases: Alphas and Betas
 
 * Alphas: Missing features, incomplete features, almost guaranteed to have bugs / errors
 * Betas: Feature complete, probably contains bugs / errors
+
+# Milestones
+
+ServerPackCreator is divided into major milestones. For a glimpse of upcoming features and the progress being made, check out
+my [issue tracker](https://issues.griefed.dev/agiles/138-2/current). You can select the milestone you are interested in in
+the top left, where it says "No milestone" (default selection).
+No, you may not report issues through that particular issue tracker. Reporting is done purely through GitHub. 😊
 
 # Screenshots
 

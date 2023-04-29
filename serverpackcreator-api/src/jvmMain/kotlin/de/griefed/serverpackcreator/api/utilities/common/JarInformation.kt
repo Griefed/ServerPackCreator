@@ -19,7 +19,6 @@
  */
 package de.griefed.serverpackcreator.api.utilities.common
 
-import org.jetbrains.annotations.Contract
 import java.io.File
 
 /**
@@ -46,7 +45,6 @@ class JarInformation(clazz: Class<*>, jarUtilities: JarUtilities = JarUtilities(
      * @return Folder containing the ServerPackCreator.exe or JAR-file.
      * @author Griefed
      */
-    @get:Contract(pure = true)
     val jarFolder: File
 
     /**
@@ -55,7 +53,6 @@ class JarInformation(clazz: Class<*>, jarUtilities: JarUtilities = JarUtilities(
      * @return The .exe or JAR-file of ServerPackCreator.
      * @author Griefed
      */
-    @get:Contract(pure = true)
     val jarFile: File
 
     /**
@@ -64,7 +61,6 @@ class JarInformation(clazz: Class<*>, jarUtilities: JarUtilities = JarUtilities(
      * @return The name of the .exe or JAR-file.
      * @author Griefed
      */
-    @get:Contract(pure = true)
     val jarFileName: String
 
     /**
@@ -73,7 +69,6 @@ class JarInformation(clazz: Class<*>, jarUtilities: JarUtilities = JarUtilities(
      * @return Java version.
      * @author Griefed
      */
-    @get:Contract(pure = true)
     val javaVersion: String
 
     /**
@@ -82,7 +77,6 @@ class JarInformation(clazz: Class<*>, jarUtilities: JarUtilities = JarUtilities(
      * @return Arch.
      * @author Griefed
      */
-    @get:Contract(pure = true)
     val osArch: String
 
     /**
@@ -91,7 +85,6 @@ class JarInformation(clazz: Class<*>, jarUtilities: JarUtilities = JarUtilities(
      * @return OS name.
      * @author Griefed
      */
-    @get:Contract(pure = true)
     val osName: String
 
     /**
@@ -100,7 +93,6 @@ class JarInformation(clazz: Class<*>, jarUtilities: JarUtilities = JarUtilities(
      * @return Version of the OS.
      * @author Griefed
      */
-    @get:Contract(pure = true)
     val osVersion: String
 
     /**
@@ -109,7 +101,6 @@ class JarInformation(clazz: Class<*>, jarUtilities: JarUtilities = JarUtilities(
      * @return `true` if a .exe was/is used.
      * @author Griefed
      */
-    @get:Contract(pure = true)
     val isExe: Boolean
 
     init {

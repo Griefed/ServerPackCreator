@@ -19,8 +19,6 @@
  */
 package de.griefed.serverpackcreator.api.versionmeta.fabric
 
-import org.jetbrains.annotations.Contract
-
 /**
  * A Fabric intermediary.
  *
@@ -34,7 +32,6 @@ class FabricIntermediary internal constructor() {
      * @return maven mapping.
      * @author Griefed
      */
-    @get:Contract(pure = true)
     val maven: String? = null
 
     /**
@@ -43,7 +40,6 @@ class FabricIntermediary internal constructor() {
      * @return The version of this intermediary.
      * @author Griefed
      */
-    @get:Contract(pure = true)
     val version: String? = null
 
     /**
@@ -52,6 +48,5 @@ class FabricIntermediary internal constructor() {
      * @return Whether this intermediary is considered stable.
      * @author Griefed
      */
-    @get:Contract(pure = true)
     val isStable = false
 }
