@@ -112,6 +112,10 @@ actual class FileUtilities {
                 FileType.LINK
             }
 
+            file.name.matches("::\\{[0-9a-zA-Z-]+\\}".toRegex()) -> {
+                FileType.FILE
+            }
+
             file.isDirectory -> {
                 FileType.DIRECTORY
             }

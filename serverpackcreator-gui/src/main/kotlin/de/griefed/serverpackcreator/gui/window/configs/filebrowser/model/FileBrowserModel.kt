@@ -19,6 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui.window.configs.filebrowser.model
 
+import de.griefed.serverpackcreator.api.utilities.common.FileType
 import de.griefed.serverpackcreator.api.utilities.common.FileUtilities
 import de.griefed.serverpackcreator.api.utilities.common.parallelMap
 import de.griefed.serverpackcreator.gui.GuiProps
@@ -87,21 +88,20 @@ class FileBrowserModel(private val guiProps: GuiProps, private val fileUtilities
      * @author Griefed (Kotlin Conversion and minor changes)
      * @author Andrew Thompson
      */
-    @Suppress("DuplicatedCode")
     private fun addChildNodes(root: DefaultMutableTreeNode) {
+        var node: DefaultMutableTreeNode
+        var sortedNode: SortedTreeNode
+        var fileNode: FileNode
+        var file: File
         if (rootManager.isWindows) {
-            val fileNode = root.userObject as FileNode
-            val file = fileNode.file
+            fileNode = root.userObject as FileNode
+            file = getFile(fileNode.file)
             if (file.isDirectory) {
                 try {
                     file.listFiles()!!.forEach { child ->
                         try {
-                            root.add(
-                                SortedTreeNode(
-                                    guiProps,
-                                    FileNode(child)
-                                )
-                            )
+                            sortedNode = SortedTreeNode(guiProps, FileNode(child))
+                            root.add(sortedNode)
                         } catch (npe: Exception) {
                             log.warn("Couldn't access $child.")
                         }
@@ -113,19 +113,15 @@ class FileBrowserModel(private val guiProps: GuiProps, private val fileUtilities
             }
         } else {
             root.children().toList().forEach { treeNode ->
-                val node = treeNode as DefaultMutableTreeNode
-                val fileNode = node.userObject as FileNode
-                val file = fileNode.file
+                node = treeNode as DefaultMutableTreeNode
+                fileNode = node.userObject as FileNode
+                file = getFile(fileNode.file)
                 if (file.isDirectory) {
                     try {
                         file.listFiles()!!.forEach { child ->
                             try {
-                                node.add(
-                                    SortedTreeNode(
-                                        guiProps,
-                                        FileNode(child)
-                                    )
-                                )
+                                sortedNode = SortedTreeNode(guiProps, FileNode(child))
+                                node.add(sortedNode)
                             } catch (npe: Exception) {
                                 log.warn("Couldn't access $child.")
                             }
@@ -137,7 +133,20 @@ class FileBrowserModel(private val guiProps: GuiProps, private val fileUtilities
                 }
             }
         }
+    }
 
+    /**
+     * @author Griefed
+     */
+    private fun getFile(file: File): File {
+        val resolved: String
+        val type = fileUtilities.checkFileType(file)
+        return if (type == FileType.FILE || type == FileType.DIRECTORY) {
+            file
+        } else {
+            resolved = fileUtilities.resolveLink(file)
+            File(resolved)
+        }
     }
 
     /**
@@ -145,16 +154,20 @@ class FileBrowserModel(private val guiProps: GuiProps, private val fileUtilities
      * @author Andrew Thompson
      */
     fun getFileIcon(file: File?): Icon {
-        return if (file != null && fileUtilities.isLink(file)) {
-            val resolved = fileUtilities.resolveLink(file)
-            val resolvedFile = File(resolved)
-            if (resolvedFile.isFile) {
-                FileLinkIcon()
+        return try {
+            if (file != null && fileUtilities.isLink(file)) {
+                val resolved = fileUtilities.resolveLink(file)
+                val resolvedFile = File(resolved)
+                if (resolvedFile.isDirectory) {
+                    DirectoryLinkIcon()
+                } else {
+                    FileLinkIcon()
+                }
             } else {
-                DirectoryLinkIcon()
+                rootManager.fileSystemView.getSystemIcon(file)
             }
-        } else {
-            rootManager.fileSystemView.getSystemIcon(file)
+        } catch (ex: NullPointerException) {
+            FileLinkIcon()
         }
     }
 

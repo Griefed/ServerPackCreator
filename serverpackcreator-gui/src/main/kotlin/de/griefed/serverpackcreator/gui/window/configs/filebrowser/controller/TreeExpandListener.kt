@@ -19,8 +19,13 @@
  */
 package de.griefed.serverpackcreator.gui.window.configs.filebrowser.controller
 
+import de.griefed.serverpackcreator.api.utilities.common.FileUtilities
+import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.window.configs.filebrowser.model.FileBrowserModel
+import de.griefed.serverpackcreator.gui.window.configs.filebrowser.model.FileNode
+import de.griefed.serverpackcreator.gui.window.configs.filebrowser.model.SortedTreeNode
 import de.griefed.serverpackcreator.gui.window.configs.filebrowser.runnable.AddNodes
+import java.io.File
 import javax.swing.event.TreeExpansionEvent
 import javax.swing.event.TreeWillExpandListener
 import javax.swing.tree.DefaultMutableTreeNode
@@ -34,7 +39,10 @@ import javax.swing.tree.ExpandVetoException
  * @see <a href="https://codereview.stackexchange.com/questions/4446/file-browser-gui">File Browser GUI</a>
  * @license LGPL
  */
-class TreeExpandListener(private val browserModel: FileBrowserModel) : TreeWillExpandListener {
+class TreeExpandListener(
+    private val browserModel: FileBrowserModel,
+    private val guiProps: GuiProps,
+    private val fileUtilities: FileUtilities) : TreeWillExpandListener {
 
     @Throws(ExpandVetoException::class)
     override fun treeWillCollapse(event: TreeExpansionEvent) {

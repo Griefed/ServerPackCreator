@@ -58,9 +58,7 @@ class TreeScrollPane(
                 tableScrollPane, utilities.fileUtilities, guiProps
             )
         )
-        tree.addTreeWillExpandListener(
-            TreeExpandListener(browserModel)
-        )
+        tree.addTreeWillExpandListener(TreeExpandListener(browserModel,guiProps,utilities.fileUtilities))
         tree.isRootVisible = true
         tree.cellRenderer = FileTreeCellRenderer(browserModel)
         tree.showsRootHandles = true
