@@ -124,7 +124,7 @@ class TableScrollPane(
     fun setDefaultTableModel(node: DefaultMutableTreeNode) {
         ftModel.removeRows()
         val fileNode: FileNode = node.userObject as FileNode
-        val resolved = File(utilities.fileUtilities.resolveLink(fileNode.file))
+        val resolved = File(utilities.fileUtilities.resolveLink(fileNode.file)).absoluteFile
         var childNode: FileNode
         if (resolved.isDirectory) {
             val files = resolved.listFiles()
