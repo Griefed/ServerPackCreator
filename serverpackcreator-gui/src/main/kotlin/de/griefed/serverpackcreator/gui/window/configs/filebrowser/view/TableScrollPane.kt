@@ -45,7 +45,7 @@ import javax.swing.tree.DefaultMutableTreeNode
 class TableScrollPane(
     private val browserModel: FileBrowserModel,
     tabbedConfigsTab: TabbedConfigsTab,
-    utilities: Utilities,
+    private val utilities: Utilities,
     fileDetailPanel: FileDetailPanel,
     filePreviewPanel: FilePreviewPanel
 ) {
@@ -124,13 +124,13 @@ class TableScrollPane(
     fun setDefaultTableModel(node: DefaultMutableTreeNode) {
         ftModel.removeRows()
         val fileNode: FileNode = node.userObject as FileNode
-        val file: File = fileNode.file
-        if (file.isDirectory) {
-            val enumeration: Enumeration<*> = node.children()
-            while (enumeration.hasMoreElements()) {
-                val childNode: DefaultMutableTreeNode = enumeration.nextElement() as DefaultMutableTreeNode
-                val childFileNode: FileNode = childNode.userObject as FileNode
-                ftModel.addRow(browserModel, childFileNode)
+        val resolved = File(utilities.fileUtilities.resolveLink(fileNode.file))
+        var childNode: FileNode
+        if (resolved.isDirectory) {
+            val files = resolved.listFiles()
+            for (file in files) {
+                childNode = FileNode(file)
+                ftModel.addRow(browserModel,childNode)
             }
         }
         tsListener.setRowCount(ftModel.rowCount)

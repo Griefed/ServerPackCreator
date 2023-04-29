@@ -145,7 +145,6 @@ class FileBrowserModel(private val guiProps: GuiProps, private val fileUtilities
      * @author Andrew Thompson
      */
     fun getFileIcon(file: File?): Icon {
-        //TODO if link, different icon
         return if (file != null && fileUtilities.isLink(file)) {
             val resolved = fileUtilities.resolveLink(file)
             val resolvedFile = File(resolved)
