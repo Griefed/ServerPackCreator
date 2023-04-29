@@ -87,7 +87,8 @@ class FileBrowserFrame(
 
                 val treeScrollPane = TreeScrollPane(
                     browserModel, tabbedConfigsTab, utilities,
-                    fileDetailPanel, filePreviewPanel, tableScrollPane
+                    fileDetailPanel, filePreviewPanel, tableScrollPane,
+                    guiProps
                 )
                 val splitTreeTable = JSplitPane(JSplitPane.HORIZONTAL_SPLIT, treeScrollPane, tablePreviewSplit)
                 splitTreeTable.isOneTouchExpandable = true

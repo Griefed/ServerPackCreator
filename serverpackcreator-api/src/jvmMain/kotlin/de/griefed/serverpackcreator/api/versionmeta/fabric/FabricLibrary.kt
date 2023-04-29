@@ -19,8 +19,6 @@
  */
 package de.griefed.serverpackcreator.api.versionmeta.fabric
 
-import org.jetbrains.annotations.Contract
-
 /**
  * Library information.
  *
@@ -33,7 +31,6 @@ class FabricLibrary internal constructor() {
      * @return Library-name.
      * @author Griefed
      */
-    @get:Contract(pure = true)
     val name: String? = null
 
     /**
@@ -42,6 +39,5 @@ class FabricLibrary internal constructor() {
      * @return Library-URL as a String.
      * @author Griefed
      */
-    @get:Contract(pure = true)
     val url: String? = null
 }

@@ -20,6 +20,7 @@
 package de.griefed.serverpackcreator.gui.window.configs.filebrowser.view
 
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
+import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.window.configs.TabbedConfigsTab
 import de.griefed.serverpackcreator.gui.window.configs.filebrowser.controller.FileSelectionListener
 import de.griefed.serverpackcreator.gui.window.configs.filebrowser.controller.TreeExpandListener
@@ -44,7 +45,8 @@ class TreeScrollPane(
     utilities: Utilities,
     fileDetailPanel: FileDetailPanel,
     filePreviewPanel: FilePreviewPanel,
-    tableScrollPane: TableScrollPane
+    tableScrollPane: TableScrollPane,
+    guiProps: GuiProps
 ) : JScrollPane(VERTICAL_SCROLLBAR_AS_NEEDED, HORIZONTAL_SCROLLBAR_AS_NEEDED) {
     var tree: JTree = JTree(browserModel.treeModel)
 
@@ -52,15 +54,11 @@ class TreeScrollPane(
         viewport.view = tree
         tree.addTreeSelectionListener(
             FileSelectionListener(
-                browserModel,
-                fileDetailPanel,
-                filePreviewPanel,
-                tableScrollPane
+                browserModel, fileDetailPanel, filePreviewPanel,
+                tableScrollPane, utilities.fileUtilities, guiProps
             )
         )
-        tree.addTreeWillExpandListener(
-            TreeExpandListener(browserModel)
-        )
+        tree.addTreeWillExpandListener(TreeExpandListener(browserModel,guiProps,utilities.fileUtilities))
         tree.isRootVisible = true
         tree.cellRenderer = FileTreeCellRenderer(browserModel)
         tree.showsRootHandles = true

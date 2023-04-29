@@ -35,7 +35,6 @@ import java.awt.*
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.JComponent
-import javax.swing.JViewport
 import javax.swing.SwingUtilities
 
 /**
@@ -139,19 +138,26 @@ class ComponentResizer(
         //  Mouse is no longer over a resizable border
         when (direction) {
             0 -> {
-                updateCursor(e,sourceCursor!!)
+                updateCursor(e, sourceCursor!!)
             }
 
             4 -> {
                 // use the appropriate resizable cursor
                 val cursorType = cursors[direction]!!
                 val cursor = Cursor.getPredefinedCursor(cursorType)
-                updateCursor(e,cursor)
+                updateCursor(e, cursor)
             }
         }
     }
 
-    private fun changeBounds(e:MouseEvent,source: Component, direction: Int, bounds: Rectangle?, pressed: Point?, current: Point) {
+    private fun changeBounds(
+        e: MouseEvent,
+        source: Component,
+        direction: Int,
+        bounds: Rectangle?,
+        pressed: Point?,
+        current: Point
+    ) {
         if (direction != 4 && direction != 6 && direction != 12) {
             return
         }
@@ -174,7 +180,7 @@ class ComponentResizer(
 
         source.setBounds(x, y, source.width, height)
         if (source is JComponent) {
-            updateAutoscrolls(e,autoscroll)
+            updateAutoscrolls(e, autoscroll)
             source.rootPane.grabFocus()
             source.grabFocus()
         }
@@ -198,7 +204,7 @@ class ComponentResizer(
 
     override fun mouseExited(e: MouseEvent) {
         if (!resizing) {
-            updateCursor(e,sourceCursor!!)
+            updateCursor(e, sourceCursor!!)
         }
     }
 
@@ -225,7 +231,7 @@ class ComponentResizer(
         //  Making sure autoscrolls is false will allow for smoother resizing
         //  of components
         autoscroll = source.autoscrolls
-        updateAutoscrolls(e,false)
+        updateAutoscrolls(e, false)
     }
 
     private fun updateAutoscrolls(e: MouseEvent, setting: Boolean) {
@@ -240,7 +246,7 @@ class ComponentResizer(
     override fun mouseReleased(e: MouseEvent) {
         resizing = false
         val source = getSource(e)
-        updateCursor(e,sourceCursor!!)
+        updateCursor(e, sourceCursor!!)
         updateAutoscrolls(e, autoscroll)
         source.rootPane.grabFocus()
         source.grabFocus()
@@ -261,7 +267,7 @@ class ComponentResizer(
         val source = getSource(e)
         val dragged = e.point
         SwingUtilities.convertPointToScreen(dragged, source)
-        changeBounds(e,source, direction, bounds, pressed, dragged)
+        changeBounds(e, source, direction, bounds, pressed, dragged)
     }
 
     /**
