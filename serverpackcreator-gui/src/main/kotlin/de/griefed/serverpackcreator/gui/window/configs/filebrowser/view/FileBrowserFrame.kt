@@ -71,7 +71,7 @@ class FileBrowserFrame(
                 frame.defaultCloseOperation = JFrame.HIDE_ON_CLOSE
                 frame.addWindowListener(object : WindowAdapter() {
                     override fun windowClosing(event: WindowEvent) {
-                        frame.isVisible = false
+                        hide()
                     }
                 })
 
@@ -125,5 +125,6 @@ class FileBrowserFrame(
      */
     fun hide() {
         frame.isVisible = false
+        browserModel.reload()
     }
 }

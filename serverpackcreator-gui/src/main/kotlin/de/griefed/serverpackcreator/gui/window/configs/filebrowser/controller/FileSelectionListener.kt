@@ -51,16 +51,16 @@ class FileSelectionListener(
 ) : TreeSelectionListener {
 
     override fun valueChanged(event: TreeSelectionEvent) {
-        val node = event.path.lastPathComponent as DefaultMutableTreeNode
+        val node = event.path.lastPathComponent as SortedTreeNode
         val fileNode = node.userObject as FileNode
         val resolved = File(fileUtilities.resolveLink(fileNode.file)).absoluteFile
         val resolvedNode = FileNode(resolved)
         val sortedNode = SortedTreeNode(guiProps, resolvedNode)
-        AddNodes(browserModel, sortedNode)
+        AddNodes(browserModel, node)
         fileDetailPanel.setFileNode(resolvedNode, browserModel)
         filePreviewPanel.setFileNode(resolvedNode)
         if (resolved.isDirectory) {
-            tableScrollPane.setDefaultTableModel(sortedNode)
+            tableScrollPane.setDefaultTableModel(node)
         } else {
             tableScrollPane.clearDefaultTableModel()
         }

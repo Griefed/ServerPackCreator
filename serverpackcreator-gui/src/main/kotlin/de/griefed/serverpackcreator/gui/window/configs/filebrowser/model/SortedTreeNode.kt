@@ -57,7 +57,7 @@ class SortedTreeNode : DefaultMutableTreeNode {
         val files = mutableListOf<TreeNode>()
 
         for (child in toSort) {
-            val t = (child as DefaultMutableTreeNode).userObject
+            val t = (child as SortedTreeNode).userObject
             val f = (t as FileNode).file
             if (f.isDirectory) {
                 directories.add(child)
