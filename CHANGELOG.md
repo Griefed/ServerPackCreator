@@ -1,3 +1,10 @@
+## [5.0.0-alpha.11](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-alpha.10...5.0.0-alpha.11) (2023-04-29)
+
+
+### 💎 Improvements
+
+* Resolve links in the filebrowser ([6ed1121](https://git.griefed.de/Griefed/ServerPackCreator/commit/6ed1121c6180e89b0f3865f90b6ba54844d6161b))
+
 ## [5.0.0-alpha.10](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-alpha.9...5.0.0-alpha.10) (2023-04-14)
 
 
