@@ -26,7 +26,6 @@ import de.griefed.serverpackcreator.gui.window.configs.filebrowser.model.SortedT
 import de.griefed.serverpackcreator.gui.window.configs.filebrowser.view.SelectionPopMenu
 import java.awt.event.MouseEvent
 import javax.swing.JTree
-import javax.swing.tree.DefaultMutableTreeNode
 
 /**
  * Mouse-listener to display the context-menu when a user presses the right mouse-button on a node.

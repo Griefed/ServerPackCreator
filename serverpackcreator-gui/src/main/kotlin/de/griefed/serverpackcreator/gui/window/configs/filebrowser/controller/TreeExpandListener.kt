@@ -19,16 +19,12 @@
  */
 package de.griefed.serverpackcreator.gui.window.configs.filebrowser.controller
 
-import de.griefed.serverpackcreator.api.utilities.common.parallelMap
 import de.griefed.serverpackcreator.gui.window.configs.filebrowser.model.FileBrowserModel
-import de.griefed.serverpackcreator.gui.window.configs.filebrowser.model.FileNode
 import de.griefed.serverpackcreator.gui.window.configs.filebrowser.model.SortedTreeNode
 import de.griefed.serverpackcreator.gui.window.configs.filebrowser.runnable.AddNodes
 import javax.swing.event.TreeExpansionEvent
 import javax.swing.event.TreeWillExpandListener
-import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.ExpandVetoException
-import javax.swing.tree.MutableTreeNode
 
 /**
  * Expansion-listener to update available nodes upon expansion, or set nodes invisible upon collapse.

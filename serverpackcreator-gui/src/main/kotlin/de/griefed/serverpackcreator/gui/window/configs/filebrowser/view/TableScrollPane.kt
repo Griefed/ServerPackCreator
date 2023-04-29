@@ -30,7 +30,6 @@ import java.awt.BorderLayout
 import java.awt.Dimension
 import java.io.File
 import java.text.NumberFormat
-import java.util.*
 import javax.swing.*
 import javax.swing.tree.DefaultMutableTreeNode
 
@@ -130,7 +129,7 @@ class TableScrollPane(
             val files = resolved.listFiles()
             for (file in files) {
                 childNode = FileNode(file)
-                ftModel.addRow(browserModel,childNode)
+                ftModel.addRow(browserModel, childNode)
             }
         }
         tsListener.setRowCount(ftModel.rowCount)

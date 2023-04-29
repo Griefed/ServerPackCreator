@@ -21,7 +21,6 @@ package de.griefed.serverpackcreator.gui.window.configs.filebrowser.view.rendere
 
 import de.griefed.serverpackcreator.gui.window.configs.filebrowser.model.FileNode
 import de.griefed.serverpackcreator.gui.window.configs.filebrowser.model.SortedTreeNode
-import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.TreeNode
 
 /**

@@ -31,7 +31,6 @@ import de.griefed.serverpackcreator.gui.window.configs.filebrowser.view.TableScr
 import java.io.File
 import javax.swing.event.TreeSelectionEvent
 import javax.swing.event.TreeSelectionListener
-import javax.swing.tree.DefaultMutableTreeNode
 
 /**
  * Listen to node-selections in the file-tree of our filebrowser and add nodes upon opening of a directory.
