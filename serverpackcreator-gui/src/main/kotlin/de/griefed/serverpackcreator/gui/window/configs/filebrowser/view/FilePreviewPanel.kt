@@ -21,6 +21,7 @@ package de.griefed.serverpackcreator.gui.window.configs.filebrowser.view
 
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.window.configs.filebrowser.model.FileNode
+import de.griefed.serverpackcreator.gui.window.configs.filebrowser.view.renderer.ImagePreviewRenderer
 import net.miginfocom.swing.MigLayout
 import java.awt.Dimension
 import java.awt.Graphics
@@ -45,7 +46,7 @@ class FilePreviewPanel(private val guiProps: GuiProps) : JPanel(
     )
 ) {
     private var fileNode: FileNode? = null
-    private val iconPreview = ImagePreview()
+    private val iconPreview = ImagePreviewRenderer()
     private val textPreview = JTextPane()
     private val textScroll = JScrollPane(
         textPreview,
@@ -73,7 +74,7 @@ class FilePreviewPanel(private val guiProps: GuiProps) : JPanel(
         this.fileNode = fileNode!!
         val name = fileNode.file.name
         if (name.matches(guiProps.imageRegex)) {
-            iconPreview.image = ImageIO.read(fileNode.file.absoluteFile)
+            iconPreview.updateImage(ImageIO.read(fileNode.file.absoluteFile))
             iconPreview.repaint()
             textPreview.text = ""
             textPreview.isVisible = false
@@ -81,59 +82,22 @@ class FilePreviewPanel(private val guiProps: GuiProps) : JPanel(
             iconPreview.isVisible = true
         } else if (name.endsWith(props)) {
             textPreview.text = fileNode.file.readText()
-            iconPreview.image = null
+            iconPreview.updateImage(null)
             iconPreview.isVisible = false
             textPreview.isVisible = true
             textScroll.isVisible = true
         } else if (name.endsWith(conf)) {
             textPreview.text = fileNode.file.readText()
-            iconPreview.image = null
+            iconPreview.updateImage(null)
             iconPreview.isVisible = false
             textPreview.isVisible = true
             textScroll.isVisible = true
         } else {
-            iconPreview.image = null
+            iconPreview.updateImage(null)
             iconPreview.isVisible = false
             textPreview.text = ""
             textPreview.isVisible = false
             textScroll.isVisible = false
-        }
-    }
-
-    /**
-     * Canvas in which an image preview is displayed in.
-     *
-     * @author Griefed
-     */
-    inner class ImagePreview : JPanel() {
-        var image: BufferedImage? = null
-        override fun paint(g: Graphics?) {
-            super.paint(g)
-            if (image == null || !iconPreview.isVisible) {
-                g?.dispose()
-                return
-            }
-
-            val imgSize = Dimension(image!!.getWidth(null), image!!.getHeight(null))
-
-            val widthRatio: Double = width.toDouble() / imgSize.width
-            val heightRatio: Double = height.toDouble() / imgSize.height
-            val ratio = widthRatio.coerceAtMost(heightRatio)
-            val newWidth = imgSize.width * ratio
-            val newHeight = imgSize.height * ratio
-
-            val startX = (width - newWidth) / 2
-            val startY = (height - newHeight) / 2
-
-            g?.drawImage(
-                image!!.getScaledInstance(newWidth.toInt(), newHeight.toInt(), Image.SCALE_SMOOTH),
-                startX.toInt(),
-                startY.toInt(),
-                newWidth.toInt(),
-                newHeight.toInt(),
-                this@FilePreviewPanel
-            )
-            g?.dispose()
         }
     }
 }
