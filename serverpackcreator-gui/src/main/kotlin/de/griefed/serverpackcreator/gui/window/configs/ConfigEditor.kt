@@ -132,8 +132,12 @@ class ConfigEditor(
             "[left,::64]5[left]5[left,grow]5[left,::64]5[left,::64]", "30"
         )
     )
-    val propertiesQuickSelect = QuickSelect(apiWrapper.apiProperties.propertiesQuickSelections) { setProperties() }
-    val iconQuickSelect = QuickSelect(apiWrapper.apiProperties.iconQuickSelections) { setIcon() }
+    val propertiesQuickSelect = QuickSelect(
+        apiWrapper.apiProperties.propertiesQuickSelections
+    ) { setProperties() }
+    val iconQuickSelect = QuickSelect(
+        apiWrapper.apiProperties.iconQuickSelections
+    ) { setIcon() }
     val editorTitle = ConfigEditorTitle(guiProps, tabbedConfigsTab, this)
 
     var configFile: File? = null
