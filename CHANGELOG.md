@@ -1,3 +1,16 @@
+## [5.0.0-alpha.12](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-alpha.11...5.0.0-alpha.12) (2023-04-30)
+
+
+### :scissors: Refactor
+
+* Import optimizations, cleanups ([027f841](https://git.griefed.de/Griefed/ServerPackCreator/commit/027f841f175a7b4ca4de96ed6402fe813062d297))
+
+
+### 💎 Improvements
+
+* Show regular image preview, as well as server icon preview in filebrowser upon image selection ([ae07938](https://git.griefed.de/Griefed/ServerPackCreator/commit/ae07938c480f1ac545f09ddfc9861166c331aaa0))
+* Update treemodel in filebrowser upon closing. Update node upon collapsing. ([e05e5de](https://git.griefed.de/Griefed/ServerPackCreator/commit/e05e5de1c1da3c138e933eda7f5f3a4b95b891a1))
+
 ## [5.0.0-alpha.11](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-alpha.10...5.0.0-alpha.11) (2023-04-29)
 
 
