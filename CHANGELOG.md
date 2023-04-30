@@ -1,3 +1,10 @@
+## [4.1.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.1.1...4.1.2) (2023-04-30)
+
+
+### 🛠 Fixes
+
+* Remove configured from the default list of clientside-only mods. Thanks to [@nvb-uy](https://git.griefed.de/nvb-uy) for the report! ([f84db90](https://git.griefed.de/Griefed/ServerPackCreator/commit/f84db90cd088c5e1b909821aaf3e1a51bfc8f570))
+
 ## [4.1.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.1.0...4.1.1) (2023-04-26)
 
 
