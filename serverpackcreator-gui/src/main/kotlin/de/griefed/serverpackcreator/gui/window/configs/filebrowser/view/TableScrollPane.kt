@@ -129,7 +129,7 @@ class TableScrollPane(
             val files = resolved.listFiles()
             for (file in files) {
                 childNode = FileNode(file)
-                ftModel.addRow(browserModel, childNode)
+                ftModel.addRow(browserModel,childNode)
             }
         }
         tsListener.setRowCount(ftModel.rowCount)

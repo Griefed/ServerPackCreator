@@ -55,11 +55,11 @@ class FileSelectionListener(
         val resolved = File(fileUtilities.resolveLink(fileNode.file)).absoluteFile
         val resolvedNode = FileNode(resolved)
         val sortedNode = SortedTreeNode(guiProps, resolvedNode)
-        AddNodes(browserModel, node)
+        AddNodes(browserModel, sortedNode)
         fileDetailPanel.setFileNode(resolvedNode, browserModel)
         filePreviewPanel.setFileNode(resolvedNode)
         if (resolved.isDirectory) {
-            tableScrollPane.setDefaultTableModel(node)
+            tableScrollPane.setDefaultTableModel(sortedNode)
         } else {
             tableScrollPane.clearDefaultTableModel()
         }

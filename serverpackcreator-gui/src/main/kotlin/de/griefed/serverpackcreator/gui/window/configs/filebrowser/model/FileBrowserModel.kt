@@ -89,53 +89,50 @@ class FileBrowserModel(private val guiProps: GuiProps, private val fileUtilities
      * @author Griefed (Kotlin Conversion and minor changes)
      * @author Andrew Thompson
      */
-    fun addChildNodes(root: DefaultMutableTreeNode) {
+    private fun addChildNodes(root: DefaultMutableTreeNode) {
         var node: DefaultMutableTreeNode
+        var sortedNode: SortedTreeNode
         var fileNode: FileNode
         var file: File
-        val children: List<TreeNode>
         if (rootManager.isWindows) {
             fileNode = root.userObject as FileNode
             file = getFile(fileNode.file)
-            if (!file.isDirectory) {
-                return
-            }
-            try {
-                addFileToNode(file, root)
-            } catch (npe: NullPointerException) {
-                log.warn("Couldn't access $file.")
-            }
-        } else {
-            children = root.children().toList()
-            for (treeNode in children) {
-                node = treeNode as SortedTreeNode
-                fileNode = node.userObject as FileNode
-                file = getFile(fileNode.file)
-                if (!file.isDirectory) {
-                    return
-                }
+            if (file.isDirectory) {
                 try {
-                    addFileToNode(file, root)
+                    file.listFiles()!!.forEach { child ->
+                        try {
+                            sortedNode = SortedTreeNode(guiProps, FileNode(child))
+                            root.add(sortedNode)
+                        } catch (npe: Exception) {
+                            log.warn("Couldn't access $child.")
+                        }
+                    }
+
                 } catch (npe: NullPointerException) {
                     log.warn("Couldn't access $file.")
                     root.remove(treeNode)
                 }
             }
-        }
-    }
-
-    /**
-     * @author Griefed
-     */
-    private fun addFileToNode(parent: File, root: DefaultMutableTreeNode) {
-        var sortedNode: SortedTreeNode
-        val files = parent.listFiles()!!
-        for (child in files) {
-            try {
-                sortedNode = SortedTreeNode(guiProps, FileNode(child))
-                root.add(sortedNode)
-            } catch (npe: Exception) {
-                log.warn("Couldn't access $child.")
+        } else {
+            root.children().toList().forEach { treeNode ->
+                node = treeNode as DefaultMutableTreeNode
+                fileNode = node.userObject as FileNode
+                file = getFile(fileNode.file)
+                if (file.isDirectory) {
+                    try {
+                        file.listFiles()!!.forEach { child ->
+                            try {
+                                sortedNode = SortedTreeNode(guiProps, FileNode(child))
+                                node.add(sortedNode)
+                            } catch (npe: Exception) {
+                                log.warn("Couldn't access $child.")
+                            }
+                        }
+                    } catch (npe: NullPointerException) {
+                        log.warn("Couldn't access $file.")
+                        root.remove(treeNode)
+                    }
+                }
             }
         }
     }
