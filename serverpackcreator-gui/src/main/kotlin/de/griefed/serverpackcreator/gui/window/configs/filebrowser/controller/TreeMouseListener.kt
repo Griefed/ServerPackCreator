@@ -22,10 +22,10 @@ package de.griefed.serverpackcreator.gui.window.configs.filebrowser.controller
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import de.griefed.serverpackcreator.gui.window.configs.TabbedConfigsTab
 import de.griefed.serverpackcreator.gui.window.configs.filebrowser.model.FileNode
+import de.griefed.serverpackcreator.gui.window.configs.filebrowser.model.SortedTreeNode
 import de.griefed.serverpackcreator.gui.window.configs.filebrowser.view.SelectionPopMenu
 import java.awt.event.MouseEvent
 import javax.swing.JTree
-import javax.swing.tree.DefaultMutableTreeNode
 
 /**
  * Mouse-listener to display the context-menu when a user presses the right mouse-button on a node.
@@ -42,7 +42,7 @@ class TreeMouseListener(
         if (mouseEvent.button == MouseEvent.BUTTON3) {
             if (jTree.getPathForLocation(mouseEvent.x, mouseEvent.y) != null) {
                 val treePath = jTree.getPathForLocation(mouseEvent.x, mouseEvent.y)!!
-                val treeNode = treePath.lastPathComponent as DefaultMutableTreeNode
+                val treeNode = treePath.lastPathComponent as SortedTreeNode
                 val fileNode = treeNode.userObject as FileNode
                 val file = fileNode.file
                 show(jTree, mouseEvent.x, mouseEvent.y, file)

@@ -21,10 +21,10 @@ package de.griefed.serverpackcreator.gui.window.configs.filebrowser.view.rendere
 
 import de.griefed.serverpackcreator.gui.window.configs.filebrowser.model.FileBrowserModel
 import de.griefed.serverpackcreator.gui.window.configs.filebrowser.model.FileNode
+import de.griefed.serverpackcreator.gui.window.configs.filebrowser.model.SortedTreeNode
 import java.awt.Component
 import javax.swing.JLabel
 import javax.swing.JTree
-import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.TreeCellRenderer
 
 /**
@@ -51,7 +51,7 @@ class FileTreeCellRenderer(private val browserModel: FileBrowserModel) : TreeCel
         row: Int,
         hasFocus: Boolean
     ): Component {
-        val node = value as DefaultMutableTreeNode
+        val node = value as SortedTreeNode
         if (node.userObject != null) {
             val fileNode = node.userObject as FileNode
             val file = fileNode.file

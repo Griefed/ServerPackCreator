@@ -68,26 +68,20 @@ class ConfigEditor(
     private val exclusionsInfo = ExclusionsInfo(guiProps)
     private val validate = ActionListener { validateInputFields() }
     private val modpackInspect = BalloonTipButton(
-        null,
-        guiProps.inspectIcon,
-        Gui.createserverpack_gui_buttonmodpackdir_scan_tip.toString(),
-        guiProps
+        null, guiProps.inspectIcon,
+        Gui.createserverpack_gui_buttonmodpackdir_scan_tip.toString(), guiProps
     ) { updateGuiFromSelectedModpack() }
     private val includeIcon = ActionCheckBox(
-        Gui.createserverpack_gui_createserverpack_checkboxicon.toString(),
-        validate
+        Gui.createserverpack_gui_createserverpack_checkboxicon.toString(), validate
     )
     private val includeProperties = ActionCheckBox(
-        Gui.createserverpack_gui_createserverpack_checkboxproperties.toString(),
-        validate
+        Gui.createserverpack_gui_createserverpack_checkboxproperties.toString(), validate
     )
     private val includeZip = ActionCheckBox(
-        Gui.createserverpack_gui_createserverpack_checkboxzip.toString(),
-        validate
+        Gui.createserverpack_gui_createserverpack_checkboxzip.toString(), validate
     )
     private val includeServer = ActionCheckBox(
-        Gui.createserverpack_gui_createserverpack_checkboxserver.toString(),
-        validate
+        Gui.createserverpack_gui_createserverpack_checkboxserver.toString(), validate
     )
     private val updateMinecraft = ActionListener { updateMinecraftValues() }
     private val minecraftVersions = ActionComboBox(
@@ -95,8 +89,7 @@ class ConfigEditor(
         updateMinecraft
     )
     private val modloaders = ActionComboBox(
-        DefaultComboBoxModel(apiWrapper.apiProperties.supportedModloaders),
-        updateMinecraft
+        DefaultComboBoxModel(apiWrapper.apiProperties.supportedModloaders), updateMinecraft
     )
     private val iconPreview = IconPreview(guiProps)
     private val javaVersion = ElementLabel("8", 16)
@@ -117,25 +110,20 @@ class ConfigEditor(
     }
     private val modpackDirectory = ScrollTextFileField(File(""), changeListener)
     private val javaArgs = ScrollTextArea(
-        "-Xmx4G -Xms4G",
-        Gui.createserverpack_gui_createserverpack_javaargs.toString(),
-        changeListener,
-        guiProps
+        "-Xmx4G -Xms4G", Gui.createserverpack_gui_createserverpack_javaargs.toString(),
+        changeListener, guiProps
     )
     private val serverPackSuffix = ScrollTextField("", changeListener)
     private val propertiesFile = ScrollTextFileField(apiWrapper.apiProperties.defaultServerProperties, changeListener)
     private val iconFile = ScrollTextFileField(apiWrapper.apiProperties.defaultServerIcon, changeListener)
     private val serverPackFiles = ScrollTextArea(
-        "config,mods",
-        Gui.createserverpack_gui_createserverpack_labelcopydirs.toString(),
-        changeListener,
-        guiProps
+        "config,mods", Gui.createserverpack_gui_createserverpack_labelcopydirs.toString(),
+        changeListener, guiProps
     )
     private val exclusions = ScrollTextArea(
         apiWrapper.apiProperties.clientSideMods().joinToString(","),
         Gui.createserverpack_gui_createserverpack_labelclientmods.toString(),
-        changeListener,
-        guiProps
+        changeListener, guiProps
     )
     private val timer = ConfigCheckTimer(250, this, guiProps)
     private val panel = JPanel(
@@ -144,8 +132,12 @@ class ConfigEditor(
             "[left,::64]5[left]5[left,grow]5[left,::64]5[left,::64]", "30"
         )
     )
-    val propertiesQuickSelect = QuickSelect(apiWrapper.apiProperties.propertiesQuickSelections) { setProperties() }
-    val iconQuickSelect = QuickSelect(apiWrapper.apiProperties.iconQuickSelections) { setIcon() }
+    val propertiesQuickSelect = QuickSelect(
+        apiWrapper.apiProperties.propertiesQuickSelections
+    ) { setProperties() }
+    val iconQuickSelect = QuickSelect(
+        apiWrapper.apiProperties.iconQuickSelections
+    ) { setIcon() }
     val editorTitle = ConfigEditorTitle(guiProps, tabbedConfigsTab, this)
 
     var configFile: File? = null
