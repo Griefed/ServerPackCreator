@@ -38,6 +38,7 @@ class ImagePreviewRenderer(
         isOneTouchExpandable = true
         dividerLocation = 640
         dividerSize = 20
+        resizeWeight = 0.5
     }
 
     /**
