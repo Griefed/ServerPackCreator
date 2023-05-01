@@ -56,7 +56,7 @@ actual class ApiProperties(
 ) {
     private val log = cachedLoggerOf(this.javaClass)
     private val internalProperties = Properties()
-    private val jarInformation: JarInformation = JarInformation(ApiProperties::class.java, jarUtilities)
+    private val jarInformation: JarInformation = JarInformation(this.javaClass, jarUtilities)
     private val trueFalseRegex = "^(true|false)$".toRegex()
     private val alphaBetaRegex = "^(.*alpha.*|.*beta.*)$".toRegex()
     private val serverPacksRegex = "^(?:\\./)?server-packs$".toRegex()
@@ -199,8 +199,7 @@ actual class ApiProperties(
     /**
      * Default SPC properties.
      */
-    val serverPackCreatorProperties =
-        "serverpackcreator.properties"
+    val serverPackCreatorProperties = "serverpackcreator.properties"
 
     /**
      * Modloaders supported by ServerPackCreator.
@@ -673,10 +672,9 @@ actual class ApiProperties(
     fun loadProperties(propertiesFile: File = File(serverPackCreatorProperties)) {
         val props = Properties()
         val jarFolderFile = File(jarInformation.jarFolder.absoluteFile, serverPackCreatorProperties).absoluteFile
-        val homeDirFile = File(
-            File(System.getProperty("user.home"), "ServerPackCreator").absoluteFile,
-            "serverpackcreator.properties"
-        ).absoluteFile
+        val userHome = System.getProperty("user.home")
+        val serverPackCreatorHomeDir = File(userHome, "ServerPackCreator").absoluteFile
+        val homeDirFile = File(serverPackCreatorHomeDir,serverPackCreatorProperties).absoluteFile
         val relativeDirFile = File(serverPackCreatorProperties).absoluteFile
 
         // Load the properties file from the classpath, providing default values.
