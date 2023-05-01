@@ -20,6 +20,8 @@
 package de.griefed.serverpackcreator.api.utilities.common
 
 import java.io.File
+import java.nio.file.Path
+import java.nio.file.Paths
 
 /**
  * Stores values gathered by [JarUtilities.jarInformation] for easy access. Values
@@ -42,7 +44,6 @@ class JarInformation(clazz: Class<*>, jarUtilities: JarUtilities = JarUtilities(
     /**
      * The folder containing the ServerPackCreator.exe or JAR-file.
      *
-     * @return Folder containing the ServerPackCreator.exe or JAR-file.
      * @author Griefed
      */
     val jarFolder: File
@@ -50,15 +51,18 @@ class JarInformation(clazz: Class<*>, jarUtilities: JarUtilities = JarUtilities(
     /**
      * The .exe or JAR-file of ServerPackCreator.
      *
-     * @return The .exe or JAR-file of ServerPackCreator.
      * @author Griefed
      */
     val jarFile: File
 
     /**
+     * The path to the JAR-file or .exe of ServerPachCreator
+     */
+    val jarPath: Path
+
+    /**
      * The name of the .exe or JAR-file.
      *
-     * @return The name of the .exe or JAR-file.
      * @author Griefed
      */
     val jarFileName: String
@@ -66,7 +70,6 @@ class JarInformation(clazz: Class<*>, jarUtilities: JarUtilities = JarUtilities(
     /**
      * The Java version used to run ServerPackCreator.
      *
-     * @return Java version.
      * @author Griefed
      */
     val javaVersion: String
@@ -74,7 +77,6 @@ class JarInformation(clazz: Class<*>, jarUtilities: JarUtilities = JarUtilities(
     /**
      * Architecture of the operating system on which ServerPackCreator is running on.
      *
-     * @return Arch.
      * @author Griefed
      */
     val osArch: String
@@ -82,7 +84,6 @@ class JarInformation(clazz: Class<*>, jarUtilities: JarUtilities = JarUtilities(
     /**
      * The name of the operating system on which ServerPackCreator is running on.
      *
-     * @return OS name.
      * @author Griefed
      */
     val osName: String
@@ -90,7 +91,6 @@ class JarInformation(clazz: Class<*>, jarUtilities: JarUtilities = JarUtilities(
     /**
      * The version of the OS on which ServerPackCreator is running on.
      *
-     * @return Version of the OS.
      * @author Griefed
      */
     val osVersion: String
@@ -98,7 +98,6 @@ class JarInformation(clazz: Class<*>, jarUtilities: JarUtilities = JarUtilities(
     /**
      * Whether a .exe or JAR-file was used for running ServerPackCreator.
      *
-     * @return `true` if a .exe was/is used.
      * @author Griefed
      */
     val isExe: Boolean
@@ -106,7 +105,8 @@ class JarInformation(clazz: Class<*>, jarUtilities: JarUtilities = JarUtilities(
     init {
         val sysInfo = HashMap<String, String>(10)
         sysInfo.putAll(jarUtilities.jarInformation(clazz))
-        jarFile = sysInfo["jarPath"]?.let { File(it) }!!
+        jarPath = Paths.get(sysInfo["jarPath"]!!)
+        jarFile = jarPath.toFile()
         jarFolder = if (jarFile.isFile) {
             jarFile.parentFile
         } else {

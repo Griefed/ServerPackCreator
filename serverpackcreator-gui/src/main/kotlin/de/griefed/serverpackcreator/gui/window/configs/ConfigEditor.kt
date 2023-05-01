@@ -1241,7 +1241,19 @@ class ConfigEditor(
         }
     }
 
+    /**
+     * `true` if this tab has unsaved changes.
+     * @author Griefed
+     */
     fun hasUnsavedChanges(): Boolean {
         return editorTitle.hasUnsavedChanges
+    }
+
+    /**
+     * `true` if this is a new tab with default values and is unchanged.
+     * @author Griefed
+     */
+    fun isNewTab(): Boolean {
+        return editorTitle.title == Gui.createserverpack_gui_title_new.toString()
     }
 }

@@ -54,6 +54,7 @@ class ControlPanel(
     private val runGeneration = GenerationButton(guiProps) {
         GlobalScope.launch(guiProps.generationDispatcher) {
             launchGeneration()
+            readyForGeneration()
         }
     }
     private val serverPacks = ServerPacksButton(guiProps) {
@@ -89,7 +90,6 @@ class ControlPanel(
                 JOptionPane.INFORMATION_MESSAGE, guiProps.largeInfoIcon
             )
             statusPanel.updateStatus(Gui.createserverpack_log_error_configuration_none_message.toString())
-            readyForGeneration()
             return
         }
         if (tabbedConfigsTab.selectedEditor!!.getCopyDirectories() == "lazy_mode") {
@@ -109,7 +109,6 @@ class ControlPanel(
         log.debug("Case $decision")
         when (decision) {
             0 -> runGenerationTasks()
-            else -> readyForGeneration()
         }
     }
 
@@ -146,8 +145,6 @@ class ControlPanel(
         } else {
             generationFailed(encounteredErrors)
         }
-        encounteredErrors.clear()
-        readyForGeneration()
     }
 
     /**
@@ -159,7 +156,6 @@ class ControlPanel(
         try {
             apiWrapper.serverPackHandler!!.run(packConfig)
             statusPanel.updateStatus(Gui.createserverpack_log_info_buttoncreateserverpack_ready.toString())
-            readyForGeneration()
             if (JOptionPane.showConfirmDialog(
                     panel.parent,
                     Gui.createserverpack_gui_createserverpack_openfolder_browse.toString(),
@@ -191,7 +187,6 @@ class ControlPanel(
             for (i in encounteredErrors.indices) {
                 errors.append(i + 1).append(": ").append(encounteredErrors[i]).append("    ").append("\n")
             }
-            readyForGeneration()
             JOptionPane.showMessageDialog(
                 panel.parent,
                 errors,

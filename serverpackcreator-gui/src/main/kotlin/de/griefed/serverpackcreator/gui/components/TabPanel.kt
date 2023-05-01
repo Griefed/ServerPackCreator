@@ -20,18 +20,23 @@
  */
 package de.griefed.serverpackcreator.gui.components
 
+import net.miginfocom.swing.MigLayout
 import java.awt.BorderLayout
 import java.awt.Component
 import java.awt.LayoutManager
 import javax.swing.JPanel
 import javax.swing.JTabbedPane
 
-abstract class TabPanel(layout: LayoutManager = BorderLayout()) {
+abstract class TabPanel(layout: LayoutManager = BorderLayout(), tabsConstraints: String? = null) {
     val panel = JPanel(layout, true)
     val tabs = JTabbedPane()
 
     init {
-        panel.add(tabs)
+        if (layout is MigLayout && tabsConstraints != null) {
+            panel.add(tabs,tabsConstraints)
+        } else {
+            panel.add(tabs)
+        }
     }
 
     val activeTab: Component?
