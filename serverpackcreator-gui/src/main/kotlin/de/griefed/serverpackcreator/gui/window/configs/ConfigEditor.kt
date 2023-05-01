@@ -1254,6 +1254,6 @@ class ConfigEditor(
      * @author Griefed
      */
     fun isNewTab(): Boolean {
-        return editorTitle.title == Gui.createserverpack_gui_title_new.toString() && !editorTitle.hasUnsavedChanges
+        return editorTitle.title == Gui.createserverpack_gui_title_new.toString()
     }
 }

@@ -30,6 +30,7 @@ import java.awt.Dimension
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
 import javax.swing.JFrame
+import javax.swing.JRootPane
 import javax.swing.WindowConstants
 
 /**
@@ -69,5 +70,7 @@ class MainFrame(
         frame.preferredSize = Dimension(1200, 800)
         frame.pack()
         frame.isVisible = true
+        larsonScanner.loadConfig(guiProps.idleConfig)
+        larsonScanner.play()
     }
 }
