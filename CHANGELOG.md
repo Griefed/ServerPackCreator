@@ -1,3 +1,22 @@
+## [5.0.0-alpha.13](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-alpha.12...5.0.0-alpha.13) (2023-05-01)
+
+
+### :scissors: Refactor
+
+* Readibility improvements ([6adf7fe](https://git.griefed.de/Griefed/ServerPackCreator/commit/6adf7fea930c3295120a95d6f05b2e0167cfbbec))
+* Some minor readability changes ([78b38b3](https://git.griefed.de/Griefed/ServerPackCreator/commit/78b38b32d126b3381787ebdf8455fe64bc863dcc))
+
+
+### 💎 Improvements
+
+* Set image preview resize weight, improving behaviour after filebrowser window resize ([4b5be4f](https://git.griefed.de/Griefed/ServerPackCreator/commit/4b5be4f22e4f5180ad81d56c485607dc8682a9fb))
+
+
+### 🛠 Fixes
+
+* Setup logging config with correct filepaths ([679c799](https://git.griefed.de/Griefed/ServerPackCreator/commit/679c79934b878437fa838c8e29c1a6112a3e9dd7))
+* Stop main tabs-panel from resizing and locking after server pack generation ([639fc70](https://git.griefed.de/Griefed/ServerPackCreator/commit/639fc706a7e4a03c0ce24434c1124ab72b0669dd))
+
 ## [5.0.0-alpha.12](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-alpha.11...5.0.0-alpha.12) (2023-04-30)
 
 
