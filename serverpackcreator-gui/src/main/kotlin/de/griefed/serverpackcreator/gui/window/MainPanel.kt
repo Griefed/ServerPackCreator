@@ -47,17 +47,13 @@ class MainPanel(
         "",
         "0[grow]0",
         "0[top]0[bottom]0[bottom]0"
-    )
+    ),
+    "growx,growy,north"
 ) {
     val tabbedConfigsTab = TabbedConfigsTab(guiProps, apiWrapper)
     private val tabbedLogsTab = TabbedLogsTab(apiWrapper.apiProperties)
     private val settingsEditorTab = SettingsEditorTab(guiProps, apiWrapper.apiProperties)
-    private val controlPanel = ControlPanel(
-        guiProps,
-        tabbedConfigsTab,
-        larsonScanner,
-        apiWrapper
-    )
+    private val controlPanel = ControlPanel(guiProps, tabbedConfigsTab, larsonScanner, apiWrapper)
 
     init {
         tabs.addTab("Configs", tabbedConfigsTab.panel)
@@ -65,8 +61,6 @@ class MainPanel(
         tabs.addTab("Settings", settingsEditorTab.panel)
         panel.add(larsonScanner, "height 40!,growx, south")
         panel.add(controlPanel.panel, "height 160!,growx, south")
-        larsonScanner.loadConfig(guiProps.idleConfig)
-        larsonScanner.play()
     }
 
     fun closeAndExit() {
@@ -77,7 +71,7 @@ class MainPanel(
         for (tab in tabbedConfigsTab.allTabs) {
             val config = tab as ConfigEditor
             val modpackName = File(config.getModpackDirectory()).name
-            if (!config.isNewTab()) {
+            if (!config.isNewTab() && config.hasUnsavedChanges()) {
                 tabbedConfigsTab.tabs.selectedComponent = tab
                 if (DialogUtilities.createShowGet(
                         Gui.createserverpack_gui_close_unsaved_message(modpackName),
