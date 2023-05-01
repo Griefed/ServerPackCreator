@@ -46,26 +46,22 @@ class MainFrame(
     val mainPanel = MainPanel(guiProps, apiWrapper, larsonScanner)
 
     init {
-        frame.jMenuBar = MainMenuBar(
-            guiProps,
-            apiWrapper,
-            UpdateDialogs(
-                guiProps,
-                apiWrapper.utilities!!.webUtilities,
-                apiWrapper.apiProperties,
-                updateChecker,
-                frame
-            ),
-            larsonScanner,
-            this,
-            migrationManager
-        ).menuBar
-        frame.defaultCloseOperation = WindowConstants.EXIT_ON_CLOSE
-        frame.addWindowListener(object : WindowAdapter() {
+        val closeAndExit = object : WindowAdapter() {
             override fun windowClosing(event: WindowEvent) {
                 mainPanel.closeAndExit()
             }
-        })
+        }
+        val updateDialogs = UpdateDialogs(
+            guiProps, apiWrapper.utilities!!.webUtilities,
+            apiWrapper.apiProperties, updateChecker, frame
+        )
+        val menu = MainMenuBar(
+            guiProps, apiWrapper, updateDialogs,
+            larsonScanner, this, migrationManager
+        )
+        frame.jMenuBar = menu.menuBar
+        frame.defaultCloseOperation = WindowConstants.EXIT_ON_CLOSE
+        frame.addWindowListener(closeAndExit)
         frame.iconImage = guiProps.appIcon
         frame.contentPane = mainPanel.panel
         frame.isLocationByPlatform = true

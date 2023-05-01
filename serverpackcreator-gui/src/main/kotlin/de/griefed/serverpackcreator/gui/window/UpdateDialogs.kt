@@ -42,6 +42,7 @@ import javax.swing.text.*
  *
  * @author Griefed
  */
+@Suppress("MemberVisibilityCanBePrivate")
 class UpdateDialogs(
     private val guiProps: GuiProps,
     private val webUtilities: WebUtilities,
@@ -68,6 +69,8 @@ class UpdateDialogs(
             val styledDocument: StyledDocument = DefaultStyledDocument()
             val simpleAttributeSet = SimpleAttributeSet()
             val jTextPane = JTextPane(styledDocument)
+            val clipboard: Clipboard = Toolkit.getDefaultToolkit().systemClipboard
+            val options = arrayOfNulls<String>(3)
             StyleConstants.setBold(simpleAttributeSet, true)
             StyleConstants.setFontSize(simpleAttributeSet, 14)
             jTextPane.setCharacterAttributes(simpleAttributeSet, true)
@@ -77,8 +80,6 @@ class UpdateDialogs(
             )
             jTextPane.isOpaque = false
             jTextPane.isEditable = false
-            val clipboard: Clipboard = Toolkit.getDefaultToolkit().systemClipboard
-            val options = arrayOfNulls<String>(3)
             options[0] = Gui.update_dialog_yes.toString()
             options[1] = Gui.update_dialog_no.toString()
             options[2] = Gui.update_dialog_clipboard.toString()

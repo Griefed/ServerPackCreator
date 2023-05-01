@@ -77,7 +77,7 @@ class MainPanel(
         for (tab in tabbedConfigsTab.allTabs) {
             val config = tab as ConfigEditor
             val modpackName = File(config.getModpackDirectory()).name
-            if (config.editorTitle.title != Gui.createserverpack_gui_title_new.toString() && config.hasUnsavedChanges()) {
+            if (!config.isNewTab()) {
                 tabbedConfigsTab.tabs.selectedComponent = tab
                 if (DialogUtilities.createShowGet(
                         Gui.createserverpack_gui_close_unsaved_message(modpackName),
