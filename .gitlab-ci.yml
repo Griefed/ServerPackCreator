@@ -12,7 +12,7 @@ variables:
   GRADLE_USER_HOME: "$CI_PROJECT_DIR/.gradle"
 
 services:
-  - name: ghcr.io/griefed/gitlab-ci-cd:2.2.9
+  - name: ghcr.io/griefed/gitlab-ci-cd:2.2.10
     alias: docker
 
 workflow:
@@ -91,7 +91,7 @@ Build Test:
 
 Generate Release:
   stage: Release
-  image: ghcr.io/griefed/gitlab-ci-cd:2.2.9
+  image: ghcr.io/griefed/gitlab-ci-cd:2.2.10
   needs:
     - job: Build Test
       artifacts: false

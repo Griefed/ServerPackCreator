@@ -15,7 +15,7 @@ kotlin {
             dependencies {
                 api("io.github.microutils:kotlin-logging:3.0.5")
                 api("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
-                api("de.jensklingenberg.ktorfit:ktorfit-lib:1.0.1")
+                api("de.jensklingenberg.ktorfit:ktorfit-lib:1.1.0")
                 api("de.comahe.i18n4k:i18n4k-core:0.5.0")
             }
         }
@@ -46,9 +46,9 @@ kotlin {
         val jvmTest by getting {
             dependencies {
                 implementation(kotlin("test"))
-                implementation("org.jetbrains.kotlin:kotlin-test:1.8.20")
-                implementation("org.junit.jupiter:junit-jupiter-api:5.9.2")
-                implementation("org.junit.jupiter:junit-jupiter-engine:5.9.2")
+                implementation("org.junit.jupiter:junit-jupiter-api:5.9.3")
+                implementation("org.junit.jupiter:junit-jupiter-engine:5.9.3")
+                implementation("org.jetbrains.kotlin:kotlin-test:1.8.21")
             }
         }
 // Uncomment if you wish to start developing the JS component
