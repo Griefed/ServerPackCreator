@@ -21,8 +21,8 @@ dependencies {
     api(project(":serverpackcreator-web"))
     api(project(":serverpackcreator-updater"))
     api("de.griefed:versionchecker:1.1.5")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.2")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.2")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.3")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.3")
 }
 
 springBoot {
