@@ -38,8 +38,8 @@ dependencies {
     api("org.springframework.boot:spring-boot-starter-artemis:2.7.11")
     api("com.github.gwenn:sqlite-dialect:0.1.2")
     api("org.xerial:sqlite-jdbc:3.41.2.1")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.2")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.2")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.3")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.3")
     testImplementation("org.springframework.boot:spring-boot-starter-test:2.7.11")
     developmentOnly("org.springframework.boot:spring-boot-devtools:2.7.11")
 }
