@@ -28,22 +28,22 @@
   },
   "dependencies": {
     "@quasar/cli": "2.0.0",
-    "@quasar/extras": "1.15.11",
+    "@quasar/extras": "1.16.3",
     "axios": "1.3.4",
-    "core-js": "3.27.1",
+    "core-js": "3.30.1",
     "quasar": "2.11.10",
     "tsparticles": "1.43.1",
     "vue": "3.2.47",
     "vue-class-component": "^8.0.0-rc.1"
   },
   "devDependencies": {
-    "terser": "5.16.8",
-    "@babel/eslint-parser": "7.19.1",
+    "terser": "5.17.1",
+    "@babel/eslint-parser": "7.21.8",
     "@quasar/app": "3.3.3",
     "eslint": "8.26.0",
-    "@types/node": "18.15.11",
+    "@types/node": "18.16.3",
     "eslint-config-prettier": "8.5.0",
-    "eslint-plugin-vue": "9.10.0",
+    "eslint-plugin-vue": "9.11.0",
     "eslint-webpack-plugin": "3.2.0",
     "minimist": "1.2.8"
   },

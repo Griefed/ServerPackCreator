@@ -15,7 +15,7 @@ jobs:
     steps:
       # GET THE LATEST CODE
       - name: Checkout latest code
-        uses: actions/checkout@v3.5.0
+        uses: actions/checkout@v3.5.2
         with:
           fetch-depth: 0
 
@@ -33,7 +33,7 @@ jobs:
     steps:
       # GET THE LATEST CODE
       - name: Checkout latest code
-        uses: actions/checkout@v3.5.0
+        uses: actions/checkout@v3.5.2
         with:
           fetch-depth: 0
 
@@ -48,7 +48,7 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - uses: gradle/gradle-build-action@v2.4.0
+      - uses: gradle/gradle-build-action@v2.4.2
         with:
           gradle-version: wrapper
 
@@ -95,7 +95,7 @@ jobs:
     steps:
       # GET THE LATEST CODE
       - name: Checkout latest code
-        uses: actions/checkout@v3.5.0
+        uses: actions/checkout@v3.5.2
         with:
           fetch-depth: 0
 
@@ -110,7 +110,7 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - uses: gradle/gradle-build-action@v2.4.0
+      - uses: gradle/gradle-build-action@v2.4.2
         with:
           gradle-version: wrapper
 
@@ -150,7 +150,7 @@ jobs:
     steps:
       # GET THE LATEST CODE
       - name: Checkout latest code
-        uses: actions/checkout@v3.5.0
+        uses: actions/checkout@v3.5.2
         with:
           fetch-depth: 0
 
@@ -165,7 +165,7 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - uses: gradle/gradle-build-action@v2.4.0
+      - uses: gradle/gradle-build-action@v2.4.2
         with:
           gradle-version: wrapper
 
@@ -208,7 +208,7 @@ jobs:
     steps:
       # GET THE LATEST CODE
       - name: Checkout latest code
-        uses: actions/checkout@v3.5.0
+        uses: actions/checkout@v3.5.2
         with:
           fetch-depth: 0
 
@@ -225,7 +225,7 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - uses: gradle/gradle-build-action@v2.4.0
+      - uses: gradle/gradle-build-action@v2.4.2
         with:
           gradle-version: wrapper
 
@@ -301,7 +301,7 @@ jobs:
     steps:
       # GET THE LATEST CODE
       - name: Checkout latest code
-        uses: actions/checkout@v3.5.0
+        uses: actions/checkout@v3.5.2
         with:
           fetch-depth: 0
 
@@ -316,7 +316,7 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - uses: gradle/gradle-build-action@v2.4.0
+      - uses: gradle/gradle-build-action@v2.4.2
         with:
           gradle-version: wrapper
 
@@ -356,7 +356,7 @@ jobs:
     steps:
       # GET THE LATEST CODE
       - name: Checkout latest code
-        uses: actions/checkout@v3.5.0
+        uses: actions/checkout@v3.5.2
         with:
           fetch-depth: 0
 
@@ -373,7 +373,7 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - uses: gradle/gradle-build-action@v2.4.0
+      - uses: gradle/gradle-build-action@v2.4.2
         with:
           gradle-version: wrapper
 
@@ -466,7 +466,7 @@ jobs:
     steps:
       # GET THE LATEST CODE
       - name: Checkout latest code
-        uses: actions/checkout@v3.5.0
+        uses: actions/checkout@v3.5.2
         with:
           fetch-depth: 0
 
