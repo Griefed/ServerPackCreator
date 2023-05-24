@@ -21,7 +21,7 @@ $LegacyFabricInstallerVersion = $ExternalVariables['LEGACYFABRIC_INSTALLER_VERSI
 $FabricInstallerVersion = $ExternalVariables['FABRIC_INSTALLER_VERSION']
 $QuiltInstallerVersion =$ExternalVariables['QUILT_INSTALLER_VERSION']
 $MinecraftServerUrl = $ExternalVariables['MINECRAFT_SERVER_URL']
-$JavaArgs = $ExternalVariables['JAVAARGS']
+$JavaArgs = $ExternalVariables['JAVA_ARGS']
 $Java = $ExternalVariables['JAVA']
 
 if ($Java[0] -eq '"')
