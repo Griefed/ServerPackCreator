@@ -17,35 +17,23 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.gui.window.configs.filebrowser.controller.action
+package de.griefed.serverpackcreator.gui.window.configs.components
 
-import Gui
-import de.griefed.serverpackcreator.gui.window.configs.TabbedConfigsTab
-import java.awt.event.ActionEvent
+import java.awt.Dimension
 import java.io.File
-import javax.swing.AbstractAction
+import javax.swing.JFileChooser
+import javax.swing.filechooser.FileNameExtensionFilter
 
-/**
- * Action to set the modpack-directory of the currently active config-tab to the in the filebrowser selected directory.
- *
- * @author Griefed
- */
-class ModpackDirectoryAction(private val tabbedConfigsTab: TabbedConfigsTab) : AbstractAction() {
-    private var directory: File? = null
-
+class ClientModsChooser(current: File?, dimension: Dimension):JFileChooser(current) {
+    constructor(dimension: Dimension) : this(null,dimension)
     init {
-        putValue(NAME, Gui.filebrowser_action_modpack.toString())
-    }
-
-    override fun actionPerformed(e: ActionEvent) {
-        tabbedConfigsTab.selectedEditor?.setModpackDirectory(directory!!.absolutePath)
-        tabbedConfigsTab.selectedEditor?.updateGuiFromSelectedModpack()
-    }
-
-    /**
-     * @author Griefed
-     */
-    fun setDirectory(file: File?) {
-        directory = file
+        dialogTitle = Gui.createserverpack_gui_buttonclientmods_title.toString()
+        fileSelectionMode = JFileChooser.FILES_ONLY
+        fileFilter = FileNameExtensionFilter(
+            Gui.createserverpack_gui_buttonclientmods_filter.toString(), "jar"
+        )
+        isAcceptAllFileFilterUsed = false
+        isMultiSelectionEnabled = true
+        preferredSize = dimension
     }
 }

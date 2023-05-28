@@ -17,34 +17,23 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.gui.window.configs.filebrowser.controller.action
+package de.griefed.serverpackcreator.gui.window.configs.components
 
-import Gui
-import de.griefed.serverpackcreator.gui.window.configs.TabbedConfigsTab
-import java.awt.event.ActionEvent
+import java.awt.Dimension
 import java.io.File
-import javax.swing.AbstractAction
+import javax.swing.JFileChooser
+import javax.swing.filechooser.FileNameExtensionFilter
 
-/**
- * Action to set the server.properties in the currently active config-tab to the in the filebrowser selected properties.
- *
- * @author Griefed
- */
-class ServerPropertiesAction(private val tabbedConfigsTab: TabbedConfigsTab) : AbstractAction() {
-    private var properties: File? = null
-
+class ModpackChooser(current: File?, dimension: Dimension) : JFileChooser(current) {
+    constructor(dimension: Dimension): this(null,dimension)
     init {
-        putValue(NAME, Gui.filebrowser_action_properties.toString())
-    }
-
-    override fun actionPerformed(e: ActionEvent) {
-        tabbedConfigsTab.selectedEditor?.setServerPropertiesPath(properties!!.absolutePath)
-    }
-
-    /**
-     * @author Griefed
-     */
-    fun setProperties(file: File?) {
-        properties = file
+        dialogTitle = Gui.createserverpack_gui_buttonmodpackdir_title.toString()
+        fileSelectionMode = JFileChooser.FILES_AND_DIRECTORIES
+        fileFilter = FileNameExtensionFilter(
+            Gui.createserverpack_gui_createserverpack_chooser_modpack_filter.toString(), "zip"
+        )
+        isAcceptAllFileFilterUsed = false
+        isMultiSelectionEnabled = false
+        preferredSize = dimension
     }
 }

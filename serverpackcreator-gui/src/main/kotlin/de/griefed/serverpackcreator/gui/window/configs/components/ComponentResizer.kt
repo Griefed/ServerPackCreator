@@ -217,6 +217,7 @@ class ComponentResizer(
     override fun mousePressed(e: MouseEvent) {
         //	The mouseMoved event continually updates this variable
         if (direction == 0) {
+            //getSource(e).rootPane.grabFocus()
             return
         }
 
@@ -248,8 +249,8 @@ class ComponentResizer(
         val source = getSource(e)
         updateCursor(e, sourceCursor!!)
         updateAutoscrolls(e, autoscroll)
-        source.rootPane.grabFocus()
-        source.grabFocus()
+        //source.rootPane.grabFocus()
+        //source.grabFocus()
     }
 
     /**

@@ -25,7 +25,6 @@ import de.griefed.serverpackcreator.api.PackConfig
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.components.TabPanel
 import de.griefed.serverpackcreator.gui.window.configs.components.ComponentResizer
-import de.griefed.serverpackcreator.gui.window.configs.filebrowser.FileBrowser
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -43,7 +42,6 @@ class TabbedConfigsTab(
     private val apiWrapper: ApiWrapper
 ) : TabPanel() {
     private val log = cachedLoggerOf(this.javaClass)
-    private val fileBrowser = FileBrowser(this, guiProps, apiWrapper.utilities!!)
     private val choose = arrayOf(Gui.createserverpack_gui_quickselect_choose.toString())
     private val noVersions = DefaultComboBoxModel(
         arrayOf(Gui.createserverpack_gui_createserverpack_forge_none.toString())
@@ -100,7 +98,7 @@ class TabbedConfigsTab(
             apiWrapper,
             noVersions,
             componentResizer
-        ) { fileBrowser.show() }
+        )
         tabs.add(editor)
         tabs.setTabComponentAt(tabs.tabCount - 1, editor.editorTitle)
         tabs.selectedIndex = tabs.tabCount - 1

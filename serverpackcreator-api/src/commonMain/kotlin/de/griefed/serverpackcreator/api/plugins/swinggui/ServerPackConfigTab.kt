@@ -34,7 +34,7 @@ import de.griefed.serverpackcreator.api.utilities.File
 @Suppress("unused")
 interface ServerPackConfigTab {
     fun setClientSideMods(entries: MutableList<String>)
-    fun setCopyDirectories(entries: MutableList<String>)
+    fun setServerFiles(entries: MutableList<String>)
     fun setIconInclusionTicked(ticked: Boolean)
     fun setJavaArguments(javaArguments: String)
     fun setMinecraftVersion(version: String)
@@ -51,8 +51,8 @@ interface ServerPackConfigTab {
 
     fun getClientSideMods(): String
     fun getClientSideModsList(): MutableList<String>
-    fun getCopyDirectories(): String
-    fun getCopyDirectoriesList(): MutableList<String>
+    fun getServerFiles(): String
+    fun getServerFilesList(): MutableList<String>
     fun getCurrentConfiguration(): PackConfig
     fun saveCurrentConfiguration(): File
     fun getJavaArguments(): String

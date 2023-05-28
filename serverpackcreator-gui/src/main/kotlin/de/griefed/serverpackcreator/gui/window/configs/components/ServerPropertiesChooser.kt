@@ -17,22 +17,23 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.gui.window.configs.filebrowser.view.renderer
+package de.griefed.serverpackcreator.gui.window.configs.components
 
-import java.text.SimpleDateFormat
-import javax.swing.table.DefaultTableCellRenderer
+import java.awt.Dimension
+import java.io.File
+import javax.swing.JFileChooser
+import javax.swing.filechooser.FileNameExtensionFilter
 
-/**
- * Date renderer to be used on the file tables.
- *
- * @author Griefed (Kotlin Conversion and minor changes)
- * @author Andrew Thompson
- * @see <a href="https://codereview.stackexchange.com/questions/4446/file-browser-gui">File Browser GUI</a>
- * @license LGPL
- */
-class DateRenderer : DefaultTableCellRenderer() {
-    private val formatter: SimpleDateFormat = SimpleDateFormat("dd MMM yyyy")
-    override fun setValue(value: Any) {
-        text = formatter.format(value)
+class ServerPropertiesChooser(current: File?, dimension: Dimension) : JFileChooser(current) {
+    constructor(dimension: Dimension) : this(null,dimension)
+    init {
+        dialogTitle = Gui.createserverpack_gui_createserverpack_chooser_properties_title.toString()
+        fileSelectionMode = JFileChooser.FILES_ONLY
+        fileFilter = FileNameExtensionFilter(
+            Gui.createserverpack_gui_createserverpack_chooser_properties_filter.toString(), "properties"
+        )
+        isAcceptAllFileFilterUsed = false
+        isMultiSelectionEnabled = false
+        preferredSize = dimension
     }
 }
