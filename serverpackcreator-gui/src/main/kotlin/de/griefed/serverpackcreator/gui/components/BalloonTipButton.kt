@@ -36,17 +36,8 @@ import javax.swing.Timer
 open class BalloonTipButton(text: String?, icon: Icon, toolTip: String, guiProps: GuiProps) : JButton(text, icon) {
     private val toolTipLabel = JLabel(toolTip)
 
-    constructor(
-        text: String?,
-        icon: Icon,
-        toolTip: String,
-        guiProps: GuiProps,
-        actionListener: ActionListener
-    ) : this(
-        text,
-        icon,
-        toolTip,
-        guiProps
+    constructor(text: String?, icon: Icon, toolTip: String, guiProps: GuiProps, actionListener: ActionListener) : this(
+        text, icon, toolTip, guiProps
     ) {
         addActionListener(actionListener)
     }

@@ -17,23 +17,19 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.gui.window.configs.filebrowser.view.renderer
+package de.griefed.serverpackcreator.gui.window.configs.components
 
-import de.griefed.serverpackcreator.gui.window.configs.filebrowser.model.FileNode
-import de.griefed.serverpackcreator.gui.window.configs.filebrowser.model.SortedTreeNode
-import javax.swing.tree.TreeNode
+import java.awt.Dimension
+import java.io.File
+import javax.swing.JFileChooser
 
-/**
- * File-name comparator to allow sorting at various places.
- *
- * @author Griefed
- */
-class FileNameComparator : Comparator<TreeNode> {
-    override fun compare(o1: TreeNode, o2: TreeNode): Int {
-        val t1 = (o1 as SortedTreeNode).userObject
-        val t2 = (o2 as SortedTreeNode).userObject
-        val f1 = (t1 as FileNode).file
-        val f2 = (t2 as FileNode).file
-        return f1.name.compareTo(f2.name)
+class ServerFilesChooser(current: File?, dimension: Dimension) : JFileChooser(current) {
+    constructor(dimension: Dimension): this(null,dimension)
+    init {
+        dialogTitle = Gui.createserverpack_gui_buttoncopydirs_title.toString()
+        fileSelectionMode = JFileChooser.FILES_AND_DIRECTORIES
+        isAcceptAllFileFilterUsed = true
+        isMultiSelectionEnabled = true
+        preferredSize = dimension
     }
 }

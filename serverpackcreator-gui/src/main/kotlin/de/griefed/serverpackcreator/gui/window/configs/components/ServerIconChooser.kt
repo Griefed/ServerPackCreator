@@ -17,26 +17,23 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.gui.window.configs.filebrowser.runnable
+package de.griefed.serverpackcreator.gui.window.configs.components
 
-import de.griefed.serverpackcreator.gui.window.configs.filebrowser.model.FileBrowserModel
-import de.griefed.serverpackcreator.gui.window.configs.filebrowser.model.FileNode
-import javax.swing.tree.DefaultMutableTreeNode
+import java.awt.Dimension
+import java.io.File
+import javax.swing.JFileChooser
+import javax.swing.filechooser.FileNameExtensionFilter
 
-/**
- * Add nodes for every file in the parent-node.
- *
- * @author Griefed (Kotlin Conversion and minor changes)
- * @author Andrew Thompson
- * @see <a href="https://codereview.stackexchange.com/questions/4446/file-browser-gui">File Browser GUI</a>
- * @license LGPL
- */
-class AddNodes(browserModel: FileBrowserModel, node: DefaultMutableTreeNode) {
+class ServerIconChooser(current: File?, dimension: Dimension): JFileChooser(current) {
+    constructor(dimension: Dimension) : this(null,dimension)
     init {
-        val fileNode: FileNode = node.userObject as FileNode
-        if (fileNode.isGenerateGrandchildren) {
-            browserModel.addGrandchildNodes(node)
-            fileNode.isGenerateGrandchildren = false
-        }
+        dialogTitle = Gui.createserverpack_gui_createserverpack_chooser_icon_title.toString()
+        fileSelectionMode = JFileChooser.FILES_ONLY
+        fileFilter = FileNameExtensionFilter(
+            Gui.createserverpack_gui_createserverpack_chooser_icon_filter.toString(), "png", "jpg", "jpeg", "bmp"
+        )
+        isAcceptAllFileFilterUsed = false
+        isMultiSelectionEnabled = false
+        preferredSize = dimension
     }
 }

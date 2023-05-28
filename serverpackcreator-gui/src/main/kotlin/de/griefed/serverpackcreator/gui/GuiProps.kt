@@ -23,8 +23,6 @@ import com.formdev.flatlaf.extras.FlatSVGIcon
 import de.griefed.serverpackcreator.api.utilities.ReticulatingSplines
 import de.griefed.serverpackcreator.gui.utilities.ImageUtilities
 import de.griefed.serverpackcreator.gui.utilities.getScaledInstance
-import de.griefed.serverpackcreator.gui.window.configs.filebrowser.view.renderer.FileNameComparator
-import de.griefed.serverpackcreator.gui.window.configs.filebrowser.view.renderer.FileTypeComparator
 import de.griefed.serverpackcreator.gui.window.control.components.LarsonScanner.ScannerConfig
 import kotlinx.coroutines.asCoroutineDispatcher
 import net.java.balloontip.styles.BalloonTipStyle
@@ -266,8 +264,6 @@ class GuiProps {
                 UIManager.getColor("TabbedPane.underlineColor")
             )
         }
-    val typeComparator = FileTypeComparator()
-    val nameComparator = FileNameComparator()
     val whitespace = "^.*,\\s*\\\\*$".toRegex()
     val imageRegex = ".*\\.([Pp][Nn][Gg]|[Jj][Pp][Gg]|[Jj][Pp][Ee][Gg]|[Bb][Mm][Pp])".toRegex()
     val defaultScriptKVSetting = hashMapOf("SPC_JAVA_SPC" to "java")
