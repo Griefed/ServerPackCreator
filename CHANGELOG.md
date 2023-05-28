@@ -1,3 +1,20 @@
+## [5.0.0-alpha.14](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-alpha.13...5.0.0-alpha.14) (2023-05-28)
+
+
+### 👀 Reverts
+
+* Switch custom filebrowser back to JFileChooser ([78f1bfe](https://git.griefed.de/Griefed/ServerPackCreator/commit/78f1bfe5963055a1cdf640bb3e0f99b2dcf10c10))
+
+
+### 📦 Other
+
+* Update fallback clientside mods. Thanks to MoonstruckLucii for the suggestions! ([e5ed80a](https://git.griefed.de/Griefed/ServerPackCreator/commit/e5ed80afadf331bbbe321cdfcfe1b837c9713a82))
+
+
+### 🛠 Fixes
+
+* Make textareas editable again ([8dabb78](https://git.griefed.de/Griefed/ServerPackCreator/commit/8dabb7851b8a496fdf43b17a1ec3072357872688))
+
 ## [5.0.0-alpha.13](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-alpha.12...5.0.0-alpha.13) (2023-05-01)
 
 
