@@ -24,14 +24,24 @@ $MinecraftServerUrl = $ExternalVariables['MINECRAFT_SERVER_URL']
 $JavaArgs = $ExternalVariables['JAVA_ARGS']
 $Java = $ExternalVariables['JAVA']
 
+# Clean up quotes from the Java variable
 if ($Java[0] -eq '"')
 {
     $Java = $Java.Substring(1,$Java.Length-1)
 }
-
 if ($Java[$Java.Length-1] -eq '"')
 {
     $Java = $Java.Substring(0,$Java.Length-1)
+}
+
+# Clean up quotes from the Java Args variable
+if ($JavaArgs[0] -eq '"')
+{
+    $JavaArgs = $JavaArgs.Substring(1,$JavaArgs.Length-1)
+}
+if ($JavaArgs[$JavaArgs.Length-1] -eq '"')
+{
+    $JavaArgs = $JavaArgs.Substring(0,$JavaArgs.Length-1)
 }
 
 # Variables with do_not_manually_edit are set automatically during script execution,
