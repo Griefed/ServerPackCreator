@@ -1,3 +1,15 @@
+## [5.0.0-alpha.15](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-alpha.14...5.0.0-alpha.15) (2023-05-29)
+
+
+### 📦 Other
+
+* Update dependencies ([7a25a22](https://git.griefed.de/Griefed/ServerPackCreator/commit/7a25a22a91edd25b6c1750fc0b9a5e9c682883ae))
+
+
+### 🛠 Fixes
+
+* Cleanup Java args quotes in Powershell script. Thanks to @nvb-uy/ for the report! ([fddf974](https://git.griefed.de/Griefed/ServerPackCreator/commit/fddf974971c810028906bbe90c56144c8b8ff74a))
+
 ## [5.0.0-alpha.14](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-alpha.13...5.0.0-alpha.14) (2023-05-28)
 
 
