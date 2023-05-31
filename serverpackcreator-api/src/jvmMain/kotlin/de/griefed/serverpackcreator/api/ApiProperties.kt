@@ -279,6 +279,7 @@ actual class ApiProperties(
                 "clickadv-," +
                 "clienttweaks-," +
                 "combat_music-," +
+                "connectedness-," +
                 "controllable-," +
                 "cullleaves-," +
                 "cullparticles-," +
@@ -374,6 +375,7 @@ actual class ApiProperties(
                 "preciseblockplacing-," +
                 "realm-of-lost-souls-," +
                 "rebrand-," +
+                "reforgium-," +
                 "replanter-," +
                 "rubidium-," +
                 "rubidium_extras-," +
@@ -558,6 +560,7 @@ actual class ApiProperties(
                 "^clickadv-.*$," +
                 "^clienttweaks-.*$," +
                 "^combat_music-.*$," +
+                "^connectedness-.*$," +
                 "^controllable-.*$," +
                 "^cullleaves-.*$," +
                 "^cullparticles-.*$," +
@@ -653,6 +656,7 @@ actual class ApiProperties(
                 "^preciseblockplacing-.*$," +
                 "^realm-of-lost-souls-.*$," +
                 "^rebrand-.*$," +
+                "^reforgium-.*$," +
                 "^replanter-.*$," +
                 "^rubidium-.*$," +
                 "^rubidium_extras-.*$," +
