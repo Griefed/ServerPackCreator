@@ -1,3 +1,10 @@
+## [4.1.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.1.3...4.1.4) (2023-05-29)
+
+
+### 🛠 Fixes
+
+* Cleanup Java args quotes in Powershell script. Thanks to @nvb-uy/ for the report! ([07b0a02](https://git.griefed.de/Griefed/ServerPackCreator/commit/07b0a0239669763408708466a7ae543a8b770f42))
+
 ## [4.1.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.1.2...4.1.3) (2023-05-24)
 
 
