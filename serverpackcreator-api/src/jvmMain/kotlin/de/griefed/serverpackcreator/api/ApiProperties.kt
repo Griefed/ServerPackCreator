@@ -390,6 +390,7 @@ actual class ApiProperties(
                 "smartcursor-," +
                 "smoothboot-," +
                 "smoothfocus-," +
+                "sodium-fabric-," +
                 "sounddeviceoptions-," +
                 "soundreloader-," +
                 "spoticraft-," +
@@ -671,6 +672,7 @@ actual class ApiProperties(
                 "^smartcursor-.*$," +
                 "^smoothboot-.*$," +
                 "^smoothfocus-.*$," +
+                "^sodium-fabric-.*$," +
                 "^sounddeviceoptions-.*$," +
                 "^soundreloader-.*$," +
                 "^spoticraft-.*$," +
