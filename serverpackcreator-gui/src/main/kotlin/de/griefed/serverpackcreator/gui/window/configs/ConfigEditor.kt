@@ -220,7 +220,7 @@ class ConfigEditor(
         val clientModsReset = BalloonTipButton(
             null, guiProps.resetIcon, Gui.createserverpack_gui_buttonclientmods_reset_tip.toString(),
             guiProps
-        ) { setClientSideMods(apiWrapper.apiProperties.clientSideMods()) }
+        ) { resetClientMods() }
         val kvRevert = BalloonTipButton(
             null, guiProps.revertIcon, Gui.createserverpack_gui_revert.toString(),
             guiProps
@@ -402,7 +402,6 @@ class ConfigEditor(
         }
     }
 
-
     override fun setClientSideMods(entries: MutableList<String>) {
         exclusions.text = apiWrapper.utilities!!.stringUtilities.buildString(entries)
         validateInputFields()
@@ -568,6 +567,31 @@ class ConfigEditor(
         return iconFile.text
     }
 
+    private fun resetClientMods() {
+        val current = getClientSideModsList()
+        val default = apiWrapper.apiProperties.clientSideMods()
+        if (!default.any { mod -> !default.contains(mod) }) {
+            when (JOptionPane.showConfirmDialog(
+                this,
+                Gui.createserverpack_gui_buttonclientmods_reset_merge_message.toString(),
+                Gui.createserverpack_gui_buttonclientmods_reset_merge_title.toString(),
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.WARNING_MESSAGE,
+                guiProps.warningIcon
+            )) {
+                0 -> {
+                    val set = TreeSet<String>()
+                    set.addAll(current)
+                    set.addAll(default)
+                    setClientSideMods(set.toMutableList())
+                }
+                1 -> setClientSideMods(default)
+            }
+        } else {
+            setClientSideMods(default)
+        }
+    }
+
     /**
      * TODO docs
      */
@@ -591,12 +615,8 @@ class ConfigEditor(
         }
         val properties = propertiesQuickSelect.selectedItem
         if (properties != null && properties.toString() != Gui.createserverpack_gui_quickselect_choose.toString()) {
-            setServerPropertiesPath(
-                File(
-                    apiWrapper.apiProperties.propertiesDirectory,
-                    properties.toString()
-                ).absolutePath
-            )
+            val serverProps = File(apiWrapper.apiProperties.propertiesDirectory,properties.toString())
+            setServerPropertiesPath(serverProps.absolutePath)
             propertiesQuickSelect.selectedIndex = 0
         }
     }
