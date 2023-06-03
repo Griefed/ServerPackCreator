@@ -862,7 +862,7 @@ actual class ApiProperties(
      */
     var directoriesToInclude = TreeSet(fallbackDirectoriesInclusionString.split(","))
         get() {
-            val entries = getListProperty(pConfigurationDirectoriesMustInclude,fallbackDirectoriesInclusionString)
+            val entries = getListProperty(pConfigurationDirectoriesMustInclude, fallbackDirectoriesInclusionString)
             field.addAll(entries)
             return field
         }
@@ -878,7 +878,7 @@ actual class ApiProperties(
      */
     var directoriesToExclude = TreeSet(fallbackDirectoriesExclusionString.split(","))
         get() {
-            val prop = getListProperty(pConfigurationDirectoriesShouldExclude,fallbackDirectoriesExclusionString)
+            val prop = getListProperty(pConfigurationDirectoriesShouldExclude, fallbackDirectoriesExclusionString)
             val use = TreeSet(prop)
             use.removeIf { n -> directoriesToInclude.contains(n) }
             field.clear()
@@ -906,7 +906,7 @@ actual class ApiProperties(
      */
     var zipArchiveExclusions = TreeSet(fallbackZipExclusionsString.split(","))
         get() {
-            val entries = getListProperty(pServerPackZipExclusions,fallbackZipExclusionsString)
+            val entries = getListProperty(pServerPackZipExclusions, fallbackZipExclusionsString)
             field.addAll(entries)
             return field
         }
@@ -1376,7 +1376,7 @@ actual class ApiProperties(
             return field
         }
         set(value) {
-            internalProps.setProperty(pConfigurationDirectoriesServerPacks,value.absolutePath)
+            internalProps.setProperty(pConfigurationDirectoriesServerPacks, value.absolutePath)
             field = value.absoluteFile
             log.info("Server packs directory set to: $field")
         }
@@ -1705,7 +1705,7 @@ actual class ApiProperties(
      */
     fun loadProperties(propertiesFile: File = File(serverPackCreatorProperties)) {
         val props = Properties()
-        val jarFolderFile = File(jarInformation.jarFolder.absoluteFile,serverPackCreatorProperties).absoluteFile
+        val jarFolderFile = File(jarInformation.jarFolder.absoluteFile, serverPackCreatorProperties).absoluteFile
         val userHome = System.getProperty("user.home")
         val serverPackCreatorHomeDir = File(userHome, "ServerPackCreator").absoluteFile
         val homeDirFile = File(serverPackCreatorHomeDir, serverPackCreatorProperties).absoluteFile
