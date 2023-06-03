@@ -57,11 +57,6 @@ actual class ApiProperties(
     private val log = cachedLoggerOf(javaClass)
     private val internalProps = Properties()
     private val jarInformation: JarInformation = JarInformation(javaClass, jarUtilities)
-    private val trueFalseRegex = "^(true|false)$".toRegex()
-    private val alphaBetaRegex = "^(.*alpha.*|.*beta.*)$".toRegex()
-    private val serverPacksRegex = "^(?:\\./)?server-packs$".toRegex()
-    private val installCacheRegex = "^(?:\\./)?installers$".toRegex()
-    private val imageRegex = ".*\\.([Pp][Nn][Gg]|[Jj][Pp][Gg]|[Jj][Pp][Ee][Gg]|[Bb][Mm][Pp])".toRegex()
     private val pVersionCheckPreRelease =
         "de.griefed.serverpackcreator.versioncheck.prerelease"
     private val pLanguage =
@@ -732,6 +727,9 @@ actual class ApiProperties(
             " -Daikars.new.flags=true"
     private val serverPackCreatorProperties = "serverpackcreator.properties"
     private val checkedJavas = hashMapOf<String, Boolean>()
+    val trueFalseRegex = "^(true|false)$".toRegex()
+    val alphaBetaRegex = "^(.*alpha.*|.*beta.*)$".toRegex()
+    val serverPacksRegex = "^(?:\\./)?server-packs$".toRegex()
     val i18n4kConfig = I18n4kConfigDefault()
 
     /**
@@ -1607,30 +1605,9 @@ actual class ApiProperties(
     val propertiesDirectory: File = File(serverFilesDirectory, "properties").absoluteFile
 
     /**
-     * List of server properties for quick selection in a given config tab.
-     */
-    val propertiesQuickSelections: List<String>
-        get() {
-            val files = propertiesDirectory.listFiles()?.filterNotNull()
-                ?.filter { properties -> properties.name.endsWith(".properties") }
-                ?.toTypedArray() ?: arrayOf()
-            return files.map { file -> file.name }
-        }
-
-    /**
      * Directory in which the icons for quick selection are to be stored in and retrieved from.
      */
     val iconsDirectory: File = File(serverFilesDirectory, "icons").absoluteFile
-
-    /**
-     * List of server icons for quick selection in a given config tab.
-     */
-    val iconQuickSelections: List<String>
-        get() {
-            val files = iconsDirectory.listFiles()?.filterNotNull()?.filter { icon -> icon.name.matches(imageRegex) }
-                ?.toTypedArray() ?: arrayOf()
-            return files.map { file -> file.name }
-        }
 
     /**
      * Default server.properties-file used by Minecraft servers. This file resides in the

@@ -266,6 +266,7 @@ class GuiProps {
         }
     val whitespace = "^.*,\\s*\\\\*$".toRegex()
     val imageRegex = ".*\\.([Pp][Nn][Gg]|[Jj][Pp][Gg]|[Jj][Pp][Ee][Gg]|[Bb][Mm][Pp])".toRegex()
+    val propertiesRegex = ".*\\.([Pp][Rr][Oo][Pp][Ee][Rr][Tt][Ii][Ee][Ss])".toRegex()
     val defaultScriptKVSetting = hashMapOf("SPC_JAVA_SPC" to "java")
     val configDispatcher = Executors.newFixedThreadPool(5).asCoroutineDispatcher()
     val fileBrowserDispatcher = Executors.newFixedThreadPool(5).asCoroutineDispatcher()

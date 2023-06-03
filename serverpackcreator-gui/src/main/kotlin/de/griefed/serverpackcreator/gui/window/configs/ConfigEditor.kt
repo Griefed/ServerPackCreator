@@ -145,10 +145,10 @@ class ConfigEditor(
         )
     )
     val propertiesQuickSelect = QuickSelect(
-        apiWrapper.apiProperties.propertiesQuickSelections
+        tabbedConfigsTab.propertiesQuickSelections()
     ) { setProperties() }
     val iconQuickSelect = QuickSelect(
-        apiWrapper.apiProperties.iconQuickSelections
+        tabbedConfigsTab.iconQuickSelections()
     ) { setIcon() }
     val editorTitle = ConfigEditorTitle(guiProps, tabbedConfigsTab, this)
 

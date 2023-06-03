@@ -146,7 +146,7 @@ class TabbedConfigsTab(
                     for (tab in allTabs) {
                         val configTab = tab as ConfigEditor
                         val model = DefaultComboBoxModel(choose)
-                        model.addAll(apiWrapper.apiProperties.iconQuickSelections)
+                        model.addAll(iconQuickSelections())
                         configTab.iconQuickSelect.model = model
                     }
                 }
@@ -192,7 +192,7 @@ class TabbedConfigsTab(
                     for (tab in allTabs) {
                         val configTab = tab as ConfigEditor
                         val model = DefaultComboBoxModel(choose)
-                        model.addAll(apiWrapper.apiProperties.propertiesQuickSelections)
+                        model.addAll(propertiesQuickSelections())
                         configTab.propertiesQuickSelect.model = model
                     }
                 }
@@ -206,5 +206,34 @@ class TabbedConfigsTab(
                 log.error("Error starting the FileWatcher Monitor.", ex)
             }
         }
+    }
+
+    /**
+     * List of server icons for quick selection in a given config tab.
+     *
+     * @author Griefed
+     */
+    fun iconQuickSelections(): List<String> {
+        return getNames(apiWrapper.apiProperties.iconsDirectory,guiProps.imageRegex)
+    }
+
+    /**
+     * Acquire all files-names for the passed [directory], filtered using the passed [matcher].
+     *
+     * @author Griefed
+     */
+    private fun getNames(directory: File, matcher: Regex): List<String> {
+        val files = directory.listFiles()!!
+        val filtered = files.filter { file -> file.name.matches(matcher) }
+        return filtered.map { file -> file.name }
+    }
+
+    /**
+     * List of server properties for quick selection in a given config tab.
+     *
+     * @author Griefed
+     */
+    fun propertiesQuickSelections(): List<String> {
+        return getNames(apiWrapper.apiProperties.propertiesDirectory,guiProps.propertiesRegex)
     }
 }
