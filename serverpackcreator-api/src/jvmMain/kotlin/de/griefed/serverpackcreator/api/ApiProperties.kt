@@ -1237,7 +1237,7 @@ actual class ApiProperties(
      */
     var javaPath = "java"
         get() {
-            val prop = internalProps.getProperty(pJavaForServerInstall)
+            val prop = internalProps.getProperty(pJavaForServerInstall,"")
             field = if (checkJavaPath(prop)) {
                 prop
             } else {
@@ -1783,7 +1783,7 @@ actual class ApiProperties(
      * @author Griefed
      */
     private fun acquireProperty(key: String, defaultValue: String) =
-        if (internalProps.getProperty(key) == null) {
+        if (internalProps.getProperty(key).isNullOrBlank()) {
             defineProperty(key, defaultValue)
         } else {
             internalProps.getProperty(key, defaultValue)
