@@ -28,7 +28,7 @@ class ClientModsChooser(current: File?, dimension: Dimension):JFileChooser(curre
     constructor(dimension: Dimension) : this(null,dimension)
     init {
         dialogTitle = Gui.createserverpack_gui_buttonclientmods_title.toString()
-        fileSelectionMode = JFileChooser.FILES_ONLY
+        fileSelectionMode = FILES_ONLY
         fileFilter = FileNameExtensionFilter(
             Gui.createserverpack_gui_buttonclientmods_filter.toString(), "jar"
         )

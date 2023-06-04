@@ -27,7 +27,7 @@ class ServerFilesChooser(current: File?, dimension: Dimension) : JFileChooser(cu
     constructor(dimension: Dimension): this(null,dimension)
     init {
         dialogTitle = Gui.createserverpack_gui_buttoncopydirs_title.toString()
-        fileSelectionMode = JFileChooser.FILES_AND_DIRECTORIES
+        fileSelectionMode = FILES_AND_DIRECTORIES
         isAcceptAllFileFilterUsed = true
         isMultiSelectionEnabled = true
         preferredSize = dimension

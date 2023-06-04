@@ -28,7 +28,7 @@ class ServerPropertiesChooser(current: File?, dimension: Dimension) : JFileChoos
     constructor(dimension: Dimension) : this(null,dimension)
     init {
         dialogTitle = Gui.createserverpack_gui_createserverpack_chooser_properties_title.toString()
-        fileSelectionMode = JFileChooser.FILES_ONLY
+        fileSelectionMode = FILES_ONLY
         fileFilter = FileNameExtensionFilter(
             Gui.createserverpack_gui_createserverpack_chooser_properties_filter.toString(), "properties"
         )
