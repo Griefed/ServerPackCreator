@@ -20,8 +20,12 @@
 package de.griefed.serverpackcreator.gui.window.menu.about
 
 import Gui
+import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.api.utilities.common.WebUtilities
+import de.griefed.serverpackcreator.gui.GuiProps
+import de.griefed.serverpackcreator.gui.window.MainFrame
 import de.griefed.serverpackcreator.gui.window.UpdateDialogs
+import de.griefed.serverpackcreator.updater.MigrationManager
 import javax.swing.JMenu
 import javax.swing.JSeparator
 
@@ -31,10 +35,18 @@ import javax.swing.JSeparator
  *
  * @author Griefed
  */
-class AboutMenu(webUtilities: WebUtilities, updateDialogs: UpdateDialogs) :
+class AboutMenu(
+    webUtilities: WebUtilities,
+    updateDialogs: UpdateDialogs,
+    apiWrapper: ApiWrapper,
+    migrationManager: MigrationManager,
+    guiProps: GuiProps,
+    mainFrame: MainFrame
+) :
     JMenu(Gui.menubar_gui_menu_about.toString()) {
     init {
         add(UpdateCheckItem(updateDialogs))
+        add(MigrationInfoItem(apiWrapper, migrationManager, guiProps, mainFrame))
         add(JSeparator())
         add(WikiHelpItem(webUtilities))
         add(WikiHowToItem(webUtilities))

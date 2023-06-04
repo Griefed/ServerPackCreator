@@ -69,7 +69,7 @@ class MainLogToHasteBinItem(
             }
             displayUploadUrl(urlToHasteBin, spcLogWindowTextPane)
         } else {
-            fileTooLargeDialog()
+            errorDialog(Gui.menubar_gui_filetoolarge.toString(),Gui.menubar_gui_filetoolargetitle.toString())
         }
     }
 }

@@ -20,31 +20,26 @@
 package de.griefed.serverpackcreator.gui.window.menu.edit
 
 import Gui
-import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.utilities.common.FileUtilities
-import de.griefed.serverpackcreator.gui.GuiProps
-import de.griefed.serverpackcreator.gui.window.MainFrame
 import de.griefed.serverpackcreator.gui.window.configs.TabbedConfigsTab
-import javax.swing.JMenu
-import javax.swing.JSeparator
+import java.io.File
+import javax.swing.JMenuItem
 
 /**
- * Menu related to editing files or switching the current theme.
+ * Open the server-icon of the currently selected editor in the users default image-viewer.
  *
  * @author Griefed
  */
-class EditMenu(
-    apiProperties: ApiProperties,
-    guiProps: GuiProps,
-    mainFrame: MainFrame,
-    fileUtilities: FileUtilities,
-    tabbedConfigsTab: TabbedConfigsTab
-) : JMenu(Gui.menubar_gui_menu_edit.toString()) {
+class EditIconItem(private val fileUtilities: FileUtilities, private val tabbedConfigsTab: TabbedConfigsTab) :
+    JMenuItem(Gui.menubar_gui_menuitem_icon.toString()) {
     init {
-        add(OpenModpackItem(fileUtilities,tabbedConfigsTab))
-        add(EditPropertiesItem(fileUtilities,tabbedConfigsTab))
-        add(EditIconItem(fileUtilities,tabbedConfigsTab))
-        add(JSeparator())
-        add(UpdateDefaultModslistItem(apiProperties,mainFrame.frame,guiProps))
+        addActionListener { openIcon() }
+    }
+
+    private fun openIcon() {
+        if (tabbedConfigsTab.selectedEditor == null || !File(tabbedConfigsTab.selectedEditor!!.getServerIconPath()).isFile) {
+            return
+        }
+        fileUtilities.openFile(tabbedConfigsTab.selectedEditor!!.getServerIconPath())
     }
 }

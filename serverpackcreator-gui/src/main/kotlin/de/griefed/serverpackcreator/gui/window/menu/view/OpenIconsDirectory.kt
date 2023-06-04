@@ -17,34 +17,26 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.gui.window.menu.edit
+package de.griefed.serverpackcreator.gui.window.menu.view
 
 import Gui
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.utilities.common.FileUtilities
-import de.griefed.serverpackcreator.gui.GuiProps
-import de.griefed.serverpackcreator.gui.window.MainFrame
-import de.griefed.serverpackcreator.gui.window.configs.TabbedConfigsTab
-import javax.swing.JMenu
-import javax.swing.JSeparator
+import javax.swing.JMenuItem
 
 /**
- * Menu related to editing files or switching the current theme.
+ * Menu item to open the directory containing server-icons for quick selection.
  *
  * @author Griefed
  */
-class EditMenu(
-    apiProperties: ApiProperties,
-    guiProps: GuiProps,
-    mainFrame: MainFrame,
-    fileUtilities: FileUtilities,
-    tabbedConfigsTab: TabbedConfigsTab
-) : JMenu(Gui.menubar_gui_menu_edit.toString()) {
+class OpenIconsDirectory(private val fileUtilities: FileUtilities, private val apiProperties: ApiProperties) :
+    JMenuItem(Gui.menubar_gui_menuitem_servericon.toString()) {
+
     init {
-        add(OpenModpackItem(fileUtilities,tabbedConfigsTab))
-        add(EditPropertiesItem(fileUtilities,tabbedConfigsTab))
-        add(EditIconItem(fileUtilities,tabbedConfigsTab))
-        add(JSeparator())
-        add(UpdateDefaultModslistItem(apiProperties,mainFrame.frame,guiProps))
+        addActionListener { openIcon() }
+    }
+
+    private fun openIcon() {
+        fileUtilities.openFile(apiProperties.iconsDirectory)
     }
 }

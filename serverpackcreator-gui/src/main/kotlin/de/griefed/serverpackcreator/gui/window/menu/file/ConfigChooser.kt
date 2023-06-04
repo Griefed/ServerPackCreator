@@ -18,7 +18,7 @@ class ConfigChooser(apiProperties: ApiProperties, title: String) : JFileChooser(
         fileSelectionMode = FILES_ONLY
         fileFilter = FileNameExtensionFilter(Gui.createserverpack_gui_buttonloadconfig_filter.toString(), "conf")
         isAcceptAllFileFilterUsed = false
-        isMultiSelectionEnabled = false
+        isMultiSelectionEnabled = true
         preferredSize = Dimension(750, 450)
     }
 }

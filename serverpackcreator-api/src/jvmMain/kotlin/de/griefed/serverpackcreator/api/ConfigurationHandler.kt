@@ -1263,7 +1263,7 @@ actual class ConfigurationHandler constructor(
 
             // This log is meant to be read by the user, therefore we allow translation.
             encounteredErrors.add(Api.configuration_log_error_checkmodpackdir.toString())
-        } else if (!File(modpackDir).isDirectory) {
+        } else if (!File(modpackDir).exists()) {
             if (printLog) {
                 log.warn("Couldn't find directory $modpackDir.")
             }

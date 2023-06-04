@@ -30,7 +30,6 @@ import java.awt.Dimension
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
 import javax.swing.JFrame
-import javax.swing.JRootPane
 import javax.swing.WindowConstants
 
 /**
@@ -41,10 +40,9 @@ class MainFrame(
     updateChecker: UpdateChecker,
     migrationManager: MigrationManager
 ) {
-    private val guiProps = GuiProps()
-    private val larsonScanner = LarsonScanner()
+    private val guiProps = GuiProps(apiWrapper.apiProperties)
     val frame: JFrame = JFrame(Gui.createserverpack_gui_createandshowgui.toString())
-    val mainPanel = MainPanel(guiProps, apiWrapper, larsonScanner)
+    val mainPanel = MainPanel(guiProps, apiWrapper, guiProps.larsonScanner)
 
     init {
         val closeAndExit = object : WindowAdapter() {
@@ -58,7 +56,7 @@ class MainFrame(
         )
         val menu = MainMenuBar(
             guiProps, apiWrapper, updateDialogs,
-            larsonScanner, this, migrationManager
+            this, migrationManager
         )
         frame.jMenuBar = menu.menuBar
         frame.defaultCloseOperation = WindowConstants.EXIT_ON_CLOSE
@@ -70,7 +68,7 @@ class MainFrame(
         frame.preferredSize = Dimension(1200, 800)
         frame.pack()
         frame.isVisible = true
-        larsonScanner.loadConfig(guiProps.idleConfig)
-        larsonScanner.play()
+        guiProps.larsonScanner.loadConfig(guiProps.idleConfig)
+        guiProps.larsonScanner.play()
     }
 }

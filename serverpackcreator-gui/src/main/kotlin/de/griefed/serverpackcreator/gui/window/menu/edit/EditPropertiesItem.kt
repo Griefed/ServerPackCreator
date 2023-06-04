@@ -20,25 +20,26 @@
 package de.griefed.serverpackcreator.gui.window.menu.edit
 
 import Gui
-import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.utilities.common.FileUtilities
+import de.griefed.serverpackcreator.gui.window.configs.TabbedConfigsTab
 import java.io.File
 import javax.swing.JMenuItem
 
 /**
- * Menu item to open the default server.properties file in the users default app.
+ * Open the server.properties of the currently selected editor in the users default text editor.
  *
  * @author Griefed
  */
-class DefaultServerPropertiesItem(private val fileUtilities: FileUtilities, apiProperties: ApiProperties) :
-    JMenuItem(Gui.menubar_gui_menuitem_serverproperties.toString()) {
-    private val properties = File(apiProperties.serverFilesDirectory, "server.properties")
-
+class EditPropertiesItem(private val fileUtilities: FileUtilities, private val tabbedConfigsTab: TabbedConfigsTab) :
+    JMenuItem(Gui.menubar_gui_menuitem_properties.toString()) {
     init {
         addActionListener { openProperties() }
     }
 
     private fun openProperties() {
-        fileUtilities.openFile(properties)
+        if (tabbedConfigsTab.selectedEditor == null || !File(tabbedConfigsTab.selectedEditor!!.getServerPropertiesPath()).isFile) {
+            return
+        }
+        fileUtilities.openFile(tabbedConfigsTab.selectedEditor!!.getServerPropertiesPath())
     }
 }

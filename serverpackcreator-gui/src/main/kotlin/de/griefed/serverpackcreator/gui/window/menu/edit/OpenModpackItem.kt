@@ -20,25 +20,34 @@
 package de.griefed.serverpackcreator.gui.window.menu.edit
 
 import Gui
-import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.utilities.common.FileUtilities
+import de.griefed.serverpackcreator.gui.window.configs.TabbedConfigsTab
 import java.io.File
 import javax.swing.JMenuItem
 
 /**
- * Open the default server-icon.png in the users default app.
+ * Open the modpack of the currently selected editor.
+ * If the modpack is a directory, the users default explorer is used. If the modpack is a ZIP-archive, the users default
+ * archive-viewer is used.
  *
  * @author Griefed
  */
-class DefaultServerIconItem(private val fileUtilities: FileUtilities, apiProperties: ApiProperties) :
-    JMenuItem(Gui.menubar_gui_menuitem_servericon.toString()) {
-    private val icon = File(apiProperties.serverFilesDirectory, "server-icon.png")
-
+class OpenModpackItem(private val fileUtilities: FileUtilities, private val tabbedConfigsTab: TabbedConfigsTab) :
+    JMenuItem(Gui.menubar_gui_menuitem_modpack.toString()) {
     init {
-        addActionListener { openIcon() }
+        addActionListener { openModpack() }
     }
 
-    private fun openIcon() {
-        fileUtilities.openFile(icon)
+    private fun openModpack() {
+        if (tabbedConfigsTab.selectedEditor == null || !File(tabbedConfigsTab.selectedEditor!!.getModpackDirectory()).exists()) {
+            return
+        }
+        val modpack = File(tabbedConfigsTab.selectedEditor!!.getModpackDirectory())
+        if (modpack.isFile) {
+            fileUtilities.openFile(modpack)
+        } else {
+            fileUtilities.openFolder(modpack)
+        }
+
     }
 }

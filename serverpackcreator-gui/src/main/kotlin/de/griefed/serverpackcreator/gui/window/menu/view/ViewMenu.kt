@@ -22,8 +22,6 @@ package de.griefed.serverpackcreator.gui.window.menu.view
 import Gui
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.gui.GuiProps
-import de.griefed.serverpackcreator.gui.window.MainFrame
-import de.griefed.serverpackcreator.updater.MigrationManager
 import javax.swing.JMenu
 import javax.swing.JSeparator
 
@@ -32,21 +30,28 @@ import javax.swing.JSeparator
  *
  * @author Griefed
  */
-class ViewMenu(apiWrapper: ApiWrapper, migrationManager: MigrationManager, guiProps: GuiProps, mainFrame: MainFrame) :
+class ViewMenu(
+    apiWrapper: ApiWrapper,
+    guiProps: GuiProps
+) :
     JMenu(Gui.menubar_gui_menu_view.toString()) {
     init {
-        add(HomeDirItem(apiWrapper.utilities!!.fileUtilities, apiWrapper.apiProperties))
-        add(ServerPacksDirItem(apiWrapper.utilities!!.fileUtilities, apiWrapper.apiProperties))
-        add(ServerFilesDirItem(apiWrapper.utilities!!.fileUtilities, apiWrapper.apiProperties))
-        add(ConfigsDirItem(apiWrapper.utilities!!.fileUtilities, apiWrapper.apiProperties))
+        val fileUtilities = apiWrapper.utilities!!.fileUtilities
+        val apiProperties = apiWrapper.apiProperties
+        add(HomeDirItem(fileUtilities, apiProperties))
+        add(ServerPacksDirItem(fileUtilities, apiProperties))
+        add(ServerFilesDirItem(fileUtilities, apiProperties))
+        add(OpenPropertiesDirectory(fileUtilities, apiProperties))
+        add(OpenIconsDirectory(fileUtilities, apiProperties))
+        add(ConfigsDirItem(fileUtilities, apiProperties))
         add(JSeparator())
-        add(PluginsDirItem(apiWrapper.utilities!!.fileUtilities, apiWrapper.apiProperties))
-        add(PluginsConfigDirItem(apiWrapper.utilities!!.fileUtilities, apiWrapper.apiProperties))
+        add(PluginsDirItem(fileUtilities, apiProperties))
+        add(PluginsConfigDirItem(fileUtilities, apiProperties))
         add(JSeparator())
-        add(MigrationInfoItem(apiWrapper, migrationManager, guiProps, mainFrame))
+        add(ServerPackCreatorLogItem(fileUtilities, apiProperties))
+        add(PluginsLogItem(fileUtilities, apiProperties))
+        add(ModloaderInstallerLogItem(fileUtilities, apiProperties))
         add(JSeparator())
-        add(ServerPackCreatorLogItem(apiWrapper.utilities!!.fileUtilities, apiWrapper.apiProperties))
-        add(PluginsLogItem(apiWrapper.utilities!!.fileUtilities, apiWrapper.apiProperties))
-        add(ModloaderInstallerLogItem(apiWrapper.utilities!!.fileUtilities, apiWrapper.apiProperties))
+        add(SwitchThemeMenu(guiProps))
     }
 }

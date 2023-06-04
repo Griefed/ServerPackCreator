@@ -44,7 +44,7 @@ class FileMenu(
         add(SaveAllConfigsItem(tabbedConfigsTab))
         add(JSeparator())
         add(MainLogToHasteBinItem(utilities.webUtilities, apiProperties, guiProps, mainFrame.frame))
-        add(ConfigToHasteBinItem(tabbedConfigsTab, utilities.webUtilities, apiProperties, guiProps, mainFrame.frame))
+        add(ConfigToHasteBinItem(tabbedConfigsTab, utilities.webUtilities, guiProps, mainFrame.frame))
         add(JSeparator())
         add(ExitItem(mainFrame))
     }

@@ -19,18 +19,25 @@
  */
 package de.griefed.serverpackcreator.gui
 
+import com.formdev.flatlaf.FlatLaf
+import com.formdev.flatlaf.extras.FlatAnimatedLafChange
 import com.formdev.flatlaf.extras.FlatSVGIcon
+import com.formdev.flatlaf.intellijthemes.FlatDarkPurpleIJTheme
+import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.utilities.ReticulatingSplines
 import de.griefed.serverpackcreator.gui.utilities.ImageUtilities
 import de.griefed.serverpackcreator.gui.utilities.getScaledInstance
+import de.griefed.serverpackcreator.gui.window.control.components.LarsonScanner
 import de.griefed.serverpackcreator.gui.window.control.components.LarsonScanner.ScannerConfig
 import kotlinx.coroutines.asCoroutineDispatcher
 import net.java.balloontip.styles.BalloonTipStyle
 import net.java.balloontip.styles.EdgedBalloonStyle
+import java.awt.Frame
 import java.awt.Image
 import java.util.*
 import java.util.concurrent.Executors
 import javax.swing.ImageIcon
+import javax.swing.SwingUtilities
 import javax.swing.UIManager
 
 /**
@@ -39,7 +46,7 @@ import javax.swing.UIManager
  * @author Griefed
  */
 @Suppress("unused", "RedundantSuppression")
-class GuiProps {
+class GuiProps(private val apiProperties: ApiProperties) {
     @Suppress("MemberVisibilityCanBePrivate")
     val smallSize = 18
 
@@ -192,13 +199,17 @@ class GuiProps {
     val infoIcon = FlatSVGIcon("de/griefed/resources/gui/svg/informationDialog.svg", defaultSize, defaultSize)
     val warningIcon = FlatSVGIcon("de/griefed/resources/gui/svg/warningDialog.svg", defaultSize, defaultSize)
     val errorIcon = FlatSVGIcon("de/griefed/resources/gui/svg/errorDialog.svg", defaultSize, defaultSize)
+    val checkmarkIcon = FlatSVGIcon("de/griefed/resources/gui/svg/checkmark.svg", defaultSize, defaultSize)
     val smallInfoIcon = FlatSVGIcon("de/griefed/resources/gui/svg/informationDialog.svg", smallSize, smallSize)
     val smallWarningIcon = FlatSVGIcon("de/griefed/resources/gui/svg/warningDialog.svg", smallSize, smallSize)
     val smallErrorIcon = FlatSVGIcon("de/griefed/resources/gui/svg/errorDialog.svg", smallSize, smallSize)
+    val smallCheckmarkIcon = FlatSVGIcon("de/griefed/resources/gui/svg/checkmark.svg", smallSize, smallSize)
     val largeInfoIcon = FlatSVGIcon("de/griefed/resources/gui/svg/informationDialog.svg", largeSize, largeSize)
     val largeWarningIcon = FlatSVGIcon("de/griefed/resources/gui/svg/warningDialog.svg", largeSize, largeSize)
     val largeErrorIcon = FlatSVGIcon("de/griefed/resources/gui/svg/errorDialog.svg", largeSize, largeSize)
+    val largeCheckmarkIcon = FlatSVGIcon("de/griefed/resources/gui/svg/checkmark.svg", largeSize, largeSize)
     val reticulatingSplines: ReticulatingSplines = ReticulatingSplines()
+    val larsonScanner = LarsonScanner()
     val idleConfig: ScannerConfig
         get() {
             return ScannerConfig(
@@ -271,4 +282,50 @@ class GuiProps {
     val configDispatcher = Executors.newFixedThreadPool(5).asCoroutineDispatcher()
     val fileBrowserDispatcher = Executors.newFixedThreadPool(5).asCoroutineDispatcher()
     val generationDispatcher = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
+    var currentTheme: FlatLaf = FlatDarkPurpleIJTheme()
+        get() {
+            val themeClassName = apiProperties.retrieveCustomProperty("theme")
+            val themeClass = Class.forName(themeClassName)
+            field = themeClass.getDeclaredConstructor().newInstance() as FlatLaf
+            return field
+        }
+        set(value) {
+            field = value
+            FlatAnimatedLafChange.showSnapshot()
+            UIManager.setLookAndFeel(field)
+            updateThemeRelatedComponents()
+            FlatLaf.updateUI()
+            for (frame in Frame.getFrames()) {
+                SwingUtilities.updateComponentTreeUI(frame)
+            }
+            FlatAnimatedLafChange.hideSnapshotWithAnimation()
+            apiProperties.storeCustomProperty("theme", field.javaClass.name)
+        }
+
+    /**
+     * Update the [larsonScanner] and [guiProps] configurations to match the current theme.
+     *
+     * @author Griefed
+     */
+    private fun updateThemeRelatedComponents() {
+        val panelBackgroundColour = UIManager.getColor("Panel.background")
+        val tabbedPaneFocusColor = UIManager.getColor("TabbedPane.focusColor")
+        busyConfig.eyeBackgroundColour = panelBackgroundColour
+        busyConfig.scannerBackgroundColour = panelBackgroundColour
+        idleConfig.eyeBackgroundColour = panelBackgroundColour
+        idleConfig.scannerBackgroundColour = panelBackgroundColour
+        val config = larsonScanner.currentConfig
+        config.eyeBackgroundColour = panelBackgroundColour
+        config.scannerBackgroundColour = panelBackgroundColour
+        config.eyeColours = arrayOf(
+            tabbedPaneFocusColor,
+            tabbedPaneFocusColor,
+            tabbedPaneFocusColor,
+            tabbedPaneFocusColor,
+            tabbedPaneFocusColor,
+            tabbedPaneFocusColor,
+            tabbedPaneFocusColor
+        )
+        larsonScanner.loadConfig(config)
+    }
 }

@@ -79,17 +79,17 @@ abstract class HasteBinMenuItem(
     }
 
     /**
-     * Opens a dialog informing the user that a file exceeds 10 MB in size.
+     * Display an error dialog with the given [title] and [message].
      *
      * @author Griefed
      */
-    fun fileTooLargeDialog() {
+    fun errorDialog(message: String, title: String) {
         JOptionPane.showConfirmDialog(
             mainFrame,
-            Gui.menubar_gui_filetoolarge.toString(),
-            Gui.menubar_gui_filetoolargetitle.toString(),
+            message,
+            title,
             JOptionPane.DEFAULT_OPTION,
-            JOptionPane.WARNING_MESSAGE,
+            JOptionPane.ERROR_MESSAGE,
             guiProps.hasteBinIcon
         )
     }
