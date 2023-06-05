@@ -308,7 +308,6 @@ actual class ApiProperties(
                 "fabricemotes-," +
                 "fancymenu_," +
                 "fancymenu_video_extension," +
-                "findme-," +
                 "flickerfix-," +
                 "fm_audio_extension_," +
                 "forgemod_VoxelMap-," +
@@ -590,7 +589,6 @@ actual class ApiProperties(
                 "^fabricemotes-.*$," +
                 "^fancymenu_.*$," +
                 "^fancymenu_video_extension.*$," +
-                "^findme-.*$," +
                 "^flickerfix-.*$," +
                 "^fm_audio_extension_.*$," +
                 "^forgemod_VoxelMap-.*$," +
