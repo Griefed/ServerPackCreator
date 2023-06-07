@@ -17,22 +17,18 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.gui.window.configs.components
+package de.griefed.serverpackcreator.gui.window.configs.components.serverfiles
 
 import java.awt.Dimension
 import java.io.File
 import javax.swing.JFileChooser
-import javax.swing.filechooser.FileNameExtensionFilter
 
-class ClientModsChooser(current: File?, dimension: Dimension):JFileChooser(current) {
-    constructor(dimension: Dimension) : this(null,dimension)
+class ServerFilesChooser(current: File?, dimension: Dimension) : JFileChooser(current) {
+    constructor(dimension: Dimension): this(null,dimension)
     init {
-        dialogTitle = Gui.createserverpack_gui_buttonclientmods_title.toString()
-        fileSelectionMode = FILES_ONLY
-        fileFilter = FileNameExtensionFilter(
-            Gui.createserverpack_gui_buttonclientmods_filter.toString(), "jar"
-        )
-        isAcceptAllFileFilterUsed = false
+        dialogTitle = Gui.createserverpack_gui_buttoncopydirs_title.toString()
+        fileSelectionMode = FILES_AND_DIRECTORIES
+        isAcceptAllFileFilterUsed = true
         isMultiSelectionEnabled = true
         preferredSize = dimension
     }

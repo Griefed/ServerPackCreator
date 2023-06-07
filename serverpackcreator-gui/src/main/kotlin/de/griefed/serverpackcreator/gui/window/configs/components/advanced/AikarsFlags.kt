@@ -17,11 +17,13 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.gui.window.configs.components
+package de.griefed.serverpackcreator.gui.window.configs.components.advanced
 
 import Gui
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.window.configs.ConfigEditor
+import de.griefed.serverpackcreator.gui.window.configs.components.CompoundIcon
+import de.griefed.serverpackcreator.gui.window.configs.components.TextIcon
 import net.java.balloontip.BalloonTip
 import java.awt.event.MouseEvent
 import java.awt.event.MouseListener

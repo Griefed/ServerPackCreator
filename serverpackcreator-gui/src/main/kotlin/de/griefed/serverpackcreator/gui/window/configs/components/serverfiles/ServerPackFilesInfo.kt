@@ -17,12 +17,13 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.gui.window.configs.components
+package de.griefed.serverpackcreator.gui.window.configs.components.serverfiles
 
 import Gui
 import de.griefed.serverpackcreator.gui.GuiProps
+import de.griefed.serverpackcreator.gui.window.configs.components.StatusIcon
 
-class ScriptSettingsInfo(guiProps: GuiProps) : StatusIcon(
+class ServerPackFilesInfo(guiProps: GuiProps) : StatusIcon(
     guiProps,
-    Gui.createserverpack_gui_createserverpack_scriptsettings_label_tooltip.toString()
+    Gui.createserverpack_gui_createserverpack_labelcopydirs_tip.toString()
 )

@@ -126,8 +126,8 @@ actual class ApiProperties(
     private val pSpringDatasourceUrl =
         "spring.datasource.url"
 
-    @Suppress("SpellCheckingInspection", "MemberVisibilityCanBePrivate")
-    val fallbackModsString =
+    @Suppress("SpellCheckingInspection")
+    private var fallbackModsString =
         "3dskinlayers-," +
                 "Absolutely-Not-A-Zoom-Mod-," +
                 "AdvancedChat-," +
@@ -146,6 +146,7 @@ actual class ApiProperties(
                 "BetterAnimationsCollection-," +
                 "BetterDarkMode-," +
                 "BetterF3-," +
+                "BetterFog-," +
                 "BetterFoliage-," +
                 "BetterPingDisplay-," +
                 "BetterPlacement-," +
@@ -194,6 +195,7 @@ actual class ApiProperties(
                 "HealthOverlay-," +
                 "HeldItemTooltips-," +
                 "HorseStatsMod-," +
+                "ImmediatelyFastReforged-," +
                 "InventoryEssentials_," +
                 "InventoryHud_[1.17.1].forge-," +
                 "InventorySpam-," +
@@ -243,6 +245,7 @@ actual class ApiProperties(
                 "SimpleWorldTimer-," +
                 "SoundFilters-," +
                 "SpawnerFix-," +
+                "StylishEffects-," +
                 "TextruesRubidiumOptions-," +
                 "TRansliterationLib-," +
                 "TipTheScales-," +
@@ -313,7 +316,6 @@ actual class ApiProperties(
                 "fabricemotes-," +
                 "fancymenu_," +
                 "fancymenu_video_extension," +
-                "findme-," +
                 "flickerfix-," +
                 "fm_audio_extension_," +
                 "forgemod_VoxelMap-," +
@@ -341,6 +343,7 @@ actual class ApiProperties(
                 "lazydfu-," +
                 "light-overlay-," +
                 "lightfallclient-," +
+                "lightspeed-," +
                 "loadmyresources_," +
                 "lock_minecart_view-," +
                 "lootbeams-," +
@@ -379,6 +382,9 @@ actual class ApiProperties(
                 "phosphor-," +
                 "preciseblockplacing-," +
                 "realm-of-lost-souls-," +
+                "rebind_narrator-," +
+                "rebind-narrator-," +
+                "rebindnarrator-," +
                 "rebrand-," +
                 "reforgium-," +
                 "replanter-," +
@@ -404,12 +410,13 @@ actual class ApiProperties(
                 "torohealth-," +
                 "totaldarkness," +
                 "toughnessbar-," +
+                "whats-that-slot-forge-," +
                 "wisla-," +
                 "xlifeheartcolors-," +
                 "yisthereautojump-"
 
-    @Suppress("SpellCheckingInspection", "MemberVisibilityCanBePrivate")
-    val fallbackModsRegex =
+    @Suppress("SpellCheckingInspection")
+    private var fallbackModsRegex =
         "^3dskinlayers-.*$," +
                 "^Absolutely-Not-A-Zoom-Mod-.*$," +
                 "^AdvancedChat-.*$," +
@@ -428,6 +435,7 @@ actual class ApiProperties(
                 "^BetterAnimationsCollection-.*$," +
                 "^BetterDarkMode-.*$," +
                 "^BetterF3-.*$," +
+                "^BetterFog-.*$," +
                 "^BetterFoliage-.*$," +
                 "^BetterPingDisplay-.*$," +
                 "^BetterPlacement-.*$," +
@@ -476,6 +484,7 @@ actual class ApiProperties(
                 "^HealthOverlay-.*$," +
                 "^HeldItemTooltips-.*$," +
                 "^HorseStatsMod-.*$," +
+                "^ImmediatelyFastReforged-.*$," +
                 "^InventoryEssentials_.*$," +
                 "^InventoryHud_\\[1\\.17\\.1\\]\\.forge-.*$," +
                 "^InventorySpam-.*$," +
@@ -525,6 +534,7 @@ actual class ApiProperties(
                 "^SimpleWorldTimer-.*$," +
                 "^SoundFilters-.*$," +
                 "^SpawnerFix-.*$," +
+                "^StylishEffects-.*$," +
                 "^TextruesRubidiumOptions-.*$," +
                 "^TRansliterationLib-.*$," +
                 "^TipTheScales-.*$," +
@@ -579,6 +589,7 @@ actual class ApiProperties(
                 "^discordrpc-.*$," +
                 "^drippyloadingscreen-.*$," +
                 "^drippyloadingscreen_.*$," +
+                "^durabilitytooltip-.*$," +
                 "^dynamic-fps-.*$," +
                 "^dynamic-music-.*$," +
                 "^dynamiclights-.*$," +
@@ -595,7 +606,6 @@ actual class ApiProperties(
                 "^fabricemotes-.*$," +
                 "^fancymenu_.*$," +
                 "^fancymenu_video_extension.*$," +
-                "^findme-.*$," +
                 "^flickerfix-.*$," +
                 "^fm_audio_extension_.*$," +
                 "^forgemod_VoxelMap-.*$," +
@@ -623,6 +633,7 @@ actual class ApiProperties(
                 "^lazydfu-.*$," +
                 "^light-overlay-.*$," +
                 "^lightfallclient-.*$," +
+                "^lightspeed-.*$," +
                 "^loadmyresources_.*$," +
                 "^lock_minecart_view-.*$," +
                 "^lootbeams-.*$," +
@@ -661,6 +672,9 @@ actual class ApiProperties(
                 "^phosphor-.*$," +
                 "^preciseblockplacing-.*$," +
                 "^realm-of-lost-souls-.*$," +
+                "^rebind_narrator-.*$," +
+                "^rebind-narrator-.*$," +
+                "^rebindnarrator-.*$," +
                 "^rebrand-.*$," +
                 "^reforgium-.*$," +
                 "^replanter-.*$," +
@@ -686,6 +700,7 @@ actual class ApiProperties(
                 "^torohealth-.*$," +
                 "^totaldarkness.*$," +
                 "^toughnessbar-.*$," +
+                "^whats-that-slot-forge-.*$," +
                 "^wisla-.*$," +
                 "^xlifeheartcolors-.*$," +
                 "^yisthereautojump-.*$"
