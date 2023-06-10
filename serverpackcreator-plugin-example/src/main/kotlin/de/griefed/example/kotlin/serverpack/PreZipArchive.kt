@@ -44,13 +44,7 @@ import java.util.*
 @Extension
 class PreZipArchive : PreZipExtension {
     private val pluginsLog = LogManager.getLogger("AddonsLogger")
-    private var tomlWriter: TomlWriter? = null
-        get() {
-            if (field == null) {
-                field = TomlWriter()
-            }
-            return field
-        }
+    private var tomlWriter: TomlWriter = TomlWriter()
 
     /**
      * @param versionMeta         Instance of [VersionMeta] so you can work with available
@@ -86,14 +80,14 @@ class PreZipArchive : PreZipExtension {
         if (pluginConfig.isPresent) {
             pluginsLog.info("I got passed the following configuration:")
             val stringWriter = StringWriter()
-            tomlWriter!!.write(pluginConfig.get(), stringWriter)
+            tomlWriter.write(pluginConfig.get(), stringWriter)
             pluginsLog.info(stringWriter)
         }
         pluginsLog.info("I got passed the following pack specific configuration(s):")
         for (i in packSpecificConfigs.indices) {
             pluginsLog.info("Configuration $i of ${packSpecificConfigs.size}:")
             val stringWriter = StringWriter()
-            tomlWriter!!.write(packSpecificConfigs[i], stringWriter)
+            tomlWriter.write(packSpecificConfigs[i], stringWriter)
             pluginsLog.info(stringWriter)
         }
     }

@@ -28,9 +28,7 @@ class ApiPluginsTest {
         apiPlugins.loadPlugins()
         apiPlugins.startPlugins()
         for (plugin in apiPlugins.plugins) {
-            Assertions.assertTrue(
-                apiPlugins.getAllExtensionsOfPlugin(plugin, PostGenExtension::class.java).isNotEmpty()
-            )
+            Assertions.assertTrue(apiPlugins.getAllExtensionsOfPlugin(plugin, PostGenExtension::class.java).isNotEmpty())
             Assertions.assertTrue(apiPlugins.getAllExtensionsOfPlugin(plugin, TabExtension::class.java).isNotEmpty())
             Assertions.assertTrue(apiPlugins.getAllExtensionsOfPlugin(plugin, PreGenExtension::class.java).isNotEmpty())
             Assertions.assertTrue(apiPlugins.getAllExtensionsOfPlugin(plugin, PreZipExtension::class.java).isNotEmpty())
