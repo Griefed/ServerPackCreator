@@ -48,17 +48,16 @@ import java.net.URL
  * @author Griefed
  */
 @Suppress("unused")
-abstract class ServerPackCreatorPlugin constructor(wrapper: PluginWrapper) : Plugin(wrapper), BaseInformation {
+abstract class ServerPackCreatorPlugin(val context: PluginContext) : Plugin(), BaseInformation {
     private val log = cachedLoggerOf(this.javaClass)
     final override val name: String
     final override val description: String
     final override val author: String
     final override val version: String
+    val id: String
 
     @Suppress("MemberVisibilityCanBePrivate")
     protected val pluginsLog = logger("PluginsLogger")
-
-    val id: String = wrapper.pluginId
 
     init {
         val classPath = this.javaClass.getResource(this.javaClass.simpleName + ".class")!!.toString()
@@ -67,6 +66,7 @@ abstract class ServerPackCreatorPlugin constructor(wrapper: PluginWrapper) : Plu
         url.openStream().use {
             pluginToml = TomlFormat.instance().createParser().parse(it)
         }
+        id = pluginToml.get("id")
         name = pluginToml.get("name")
         description = pluginToml.get("description")
         author = pluginToml.get("author")
