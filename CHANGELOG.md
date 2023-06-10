@@ -1,3 +1,19 @@
+## [4.1.5](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.1.4...4.1.5) (2023-06-10)
+
+
+### 📦 Other
+
+* Add BetterFog, ImmediatelyFastReforged,StylishEffects,lightspeed,whats-that-slot and rebind_narrator to clientside-mods. Thanks to @ModernGamingWorld for the report! ([d0091a0](https://git.griefed.de/Griefed/ServerPackCreator/commit/d0091a0f286f71639f43ffd82d6962fcc54140fc))
+* Add Connectedness and Reforgium to the clientside-mods list. Thanks to [@nvb-uy](https://git.griefed.de/nvb-uy) for the report! ([8a55a3a](https://git.griefed.de/Griefed/ServerPackCreator/commit/8a55a3abc1e78f40712123115be8df699c7924fa))
+* Add sodium to the clientside-mods list. Thanks to [@nvb-uy](https://git.griefed.de/nvb-uy) for the report! ([a2d4a75](https://git.griefed.de/Griefed/ServerPackCreator/commit/a2d4a75b29ff824d58aab6e807a1883b00f90086))
+* Cleanups ([1d812d4](https://git.griefed.de/Griefed/ServerPackCreator/commit/1d812d485e9a6bdd1550eb53d28c2eb4983cd09c))
+* Remove FindMe from clientside-mods. Thanks to [@nvb-uy](https://git.griefed.de/nvb-uy) for the report! ([ae38e58](https://git.griefed.de/Griefed/ServerPackCreator/commit/ae38e587e333d4edb0b82d870861ad2c23de1182))
+
+
+### 🛠 Fixes
+
+* Update plugin-ecosystem to pf4j's new context-system, removing deprecation-warnings ([320ab88](https://git.griefed.de/Griefed/ServerPackCreator/commit/320ab886721925aad43acdba6d67af7675b18931))
+
 ## [4.1.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.1.3...4.1.4) (2023-05-29)
 
 
