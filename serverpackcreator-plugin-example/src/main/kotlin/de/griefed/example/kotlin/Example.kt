@@ -24,6 +24,7 @@
  */
 package de.griefed.example.kotlin
 
+import de.griefed.serverpackcreator.api.plugins.PluginContext
 import de.griefed.serverpackcreator.api.plugins.ServerPackCreatorPlugin
 import org.pf4j.PluginWrapper
 
@@ -31,4 +32,4 @@ import org.pf4j.PluginWrapper
  * Extremely simplified plugin by extending [ServerPackCreatorPlugin], which takes care of the basics for you.
  * @author Griefed
  */
-class Example(wrapper: PluginWrapper?) : ServerPackCreatorPlugin(wrapper!!)
+class Example(context: PluginContext) : ServerPackCreatorPlugin(context)

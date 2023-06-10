@@ -65,11 +65,6 @@ class ServerFilesEditor(
     val filesReset = BalloonTipButton(
         null, guiProps.resetIcon, Gui.createserverpack_gui_buttoncopydirs_reset_tip.toString(), guiProps
     ) { setServerFiles(apiProperties.directoriesToInclude.toMutableList()) }
-    var isGlobalFilter: Boolean = true
-        get() {
-            return source.text.isBlank()
-        }
-        private set
 
     init {
         dividerLocation = 150
@@ -137,6 +132,10 @@ class ServerFilesEditor(
 
     fun removeEntry(index: Int) {
         inclusionModel.remove(index)
+    }
+
+    fun isGlobalFilter(): Boolean {
+        return source.text.isBlank()
     }
 
     private fun removeSelectedEntry() {
