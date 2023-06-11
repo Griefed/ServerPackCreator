@@ -8,6 +8,9 @@ additional functionality. This example plugin demonstrates an implementation for
 This repository demonstrates how extension for ServerPackCreator are implemented, one small example for every extension
 point available in ServerPackCreator.
 
+Looking for a real world example for a plugin for ServerPackCreator?
+Take a look at [spc-nekodetector-plugin](https://github.com/Griefed/spc-nekodetector-plugin)!
+
 ## 1.1 Plugin details
 
 Take care to edit this section in the [build.gradle.kts](build.gradle.kts)-file if you forked, or intent on forking, this repository.
