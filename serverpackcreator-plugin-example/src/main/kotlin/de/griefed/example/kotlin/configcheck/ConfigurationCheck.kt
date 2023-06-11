@@ -43,13 +43,7 @@ import java.util.*
 @Suppress("unused")
 @Extension
 class ConfigurationCheck : ConfigCheckExtension {
-    private var tomlWriter: TomlWriter? = null
-        get() {
-            if (field == null) {
-                field = TomlWriter()
-            }
-            return field
-        }
+    private var tomlWriter: TomlWriter = TomlWriter()
 
     /**
      * @param versionMeta         Instance of [VersionMeta] so you can work with available
@@ -90,14 +84,14 @@ class ConfigurationCheck : ConfigCheckExtension {
         if (pluginConfig.isPresent) {
             LOG_ADDONS.info("I got passed the following configuration:")
             val stringWriter = StringWriter()
-            tomlWriter!!.write(pluginConfig.get(), stringWriter)
+            tomlWriter.write(pluginConfig.get(), stringWriter)
             LOG_ADDONS.info(stringWriter)
         }
         LOG_ADDONS.info("I got passed the following pack specific configuration(s):")
         for (i in packSpecificConfigs.indices) {
             LOG_ADDONS.info("Configuration $i of ${packSpecificConfigs.size}:")
             val stringWriter = StringWriter()
-            tomlWriter!!.write(packSpecificConfigs[i], stringWriter)
+            tomlWriter.write(packSpecificConfigs[i], stringWriter)
             LOG_ADDONS.info(stringWriter)
             if (packSpecificConfigs[i].get<Any>("text").toString().isNotEmpty()) {
                 bool = true
