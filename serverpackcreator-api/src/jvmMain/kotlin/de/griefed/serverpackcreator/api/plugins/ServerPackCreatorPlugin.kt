@@ -48,7 +48,7 @@ import java.net.URL
  * @author Griefed
  */
 @Suppress("unused")
-abstract class ServerPackCreatorPlugin(private val context: PluginContext) : Plugin(), BaseInformation {
+abstract class ServerPackCreatorPlugin(val context: PluginContext) : Plugin(), BaseInformation {
     private val log = cachedLoggerOf(this.javaClass)
     final override val name: String
     final override val description: String
