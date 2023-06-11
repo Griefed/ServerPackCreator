@@ -78,9 +78,9 @@ actual class ApiPlugins(
     }
 
     /**
-     * Retrieve the config.toml of an plugin and store it in the `plugins/config`-directory,
+     * Retrieve the config.toml of a plugin and store it in the `plugins/config`-directory,
      * using the ID of the plugin as the name for the extracted file. `plugin.toml`-files must be
-     * stored in the root of an plugin JAR-file in order for ServerPackCreator to be reliably be able to
+     * stored in the root of a plugin JAR-file in order for ServerPackCreator to be reliably be able to
      * retrieve it.
      *
      * A given plugin does not have to provide a config.toml, as not every plugin
