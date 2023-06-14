@@ -46,22 +46,22 @@ expect class ConfigurationHandler {
     ): Boolean
 
     fun ensureScriptSettingsDefaults(packConfig: PackConfig)
-    fun checkCopyDirs(
-        directoriesToCopy: MutableList<String>,
+    fun checkInclusions(
+        inclusions: MutableList<InclusionSpecification>,
         modpackDir: String,
-        encounteredErrors: MutableList<String>,
-        printLog: Boolean
+        encounteredErrors: MutableList<String> = ArrayList(5),
+        printLog: Boolean = true
     ): Boolean
 
     fun checkZipArchive(pathToZip: String, encounteredErrors: MutableList<String>): Boolean
     fun unzipDestination(destination: String): String
-    fun suggestCopyDirs(modpackDir: String): ArrayList<String>
+    fun suggestCopyDirs(modpackDir: String): ArrayList<InclusionSpecification>
     fun checkManifests(destination: String, packConfig: PackConfig, encounteredErrors: MutableList<String> = mutableListOf()): String?
     fun checkServerPacksForIncrement(source: String, destination: String): String
     fun printConfigurationModel(
         modpackDirectory: String,
         clientsideMods: List<String>,
-        copyDirectories: List<String>,
+        inclusions: List<InclusionSpecification>,
         installServer: Boolean,
         minecraftVer: String,
         modloader: String,

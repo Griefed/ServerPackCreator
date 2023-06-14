@@ -22,13 +22,13 @@ package de.griefed.serverpackcreator.gui.window.configs
 import Gui
 import com.electronwill.nightconfig.core.CommentedConfig
 import de.griefed.serverpackcreator.api.ApiWrapper
+import de.griefed.serverpackcreator.api.InclusionSpecification
 import de.griefed.serverpackcreator.api.PackConfig
 import de.griefed.serverpackcreator.api.plugins.swinggui.ServerPackConfigTab
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.components.BalloonTipButton
 import de.griefed.serverpackcreator.gui.window.configs.components.*
 import de.griefed.serverpackcreator.gui.window.configs.components.advanced.*
-import de.griefed.serverpackcreator.gui.window.configs.components.serverfiles.ServerFilesChooser
 import de.griefed.serverpackcreator.gui.window.configs.components.serverfiles.ServerFilesEditor
 import de.griefed.serverpackcreator.gui.window.configs.components.serverfiles.ServerPackFilesInfo
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -130,7 +130,7 @@ class ConfigEditor(
     private val propertiesFile = ScrollTextFileField(apiWrapper.apiProperties.defaultServerProperties, changeListener)
     private val iconFile = ScrollTextFileField(apiWrapper.apiProperties.defaultServerIcon, changeListener)
 
-    private val serverPackFiles = ServerFilesEditor(chooserDimension,guiProps,this,apiWrapper.apiProperties)
+    private val serverPackFiles = ServerFilesEditor(chooserDimension, guiProps, this, apiWrapper)
     private val exclusions = ScrollTextArea(
         apiWrapper.apiProperties.clientSideMods().joinToString(","),
         Gui.createserverpack_gui_createserverpack_labelclientmods.toString(),
@@ -265,7 +265,7 @@ class ConfigEditor(
         // Server Files
         panel.add(serverPackFilesInfo, "cell 0 3 1 3")
         panel.add(filesLabel, "cell 1 3 1 3,grow")
-        panel.add(serverPackFiles,"cell 2 3 3 3, grow, w 10:500:, h 150!")
+        panel.add(serverPackFiles, "cell 2 3 3 3, grow, w 10:500:, h 150!")
 
         // Server Pack Suffix
         panel.add(suffixInfo, "cell 0 6,grow")
@@ -381,7 +381,7 @@ class ConfigEditor(
         validateInputFields()
     }
 
-    override fun setServerFiles(entries: MutableList<String>) {
+    override fun setInclusions(entries: MutableList<InclusionSpecification>) {
         serverPackFiles.setServerFiles(entries)
     }
 
@@ -465,22 +465,14 @@ class ConfigEditor(
         )
     }
 
-    override fun getServerFiles(): String {
-        return serverPackFiles.getServerFiles().joinToString(",")
-    }
-
-    override fun getServerFilesList(): MutableList<String> {
-        return apiWrapper.utilities!!.listUtilities.cleanList(
-            getServerFiles().split(",")
-                .dropLastWhile { it.isEmpty() }
-                .toMutableList()
-        )
+    override fun getServerFiles(): MutableList<InclusionSpecification> {
+        return serverPackFiles.getServerFiles()
     }
 
     override fun getCurrentConfiguration(): PackConfig {
         return PackConfig(
             getClientSideModsList(),
-            getServerFilesList(),
+            getServerFiles(),
             getModpackDirectory(),
             getMinecraftVersion(),
             getModloader(),
@@ -670,7 +662,7 @@ class ConfigEditor(
 
         when {
             currentConfig.clientMods != lastSavedConfig!!.clientMods
-                    || currentConfig.copyDirs != lastSavedConfig!!.copyDirs
+                    || currentConfig.inclusions != lastSavedConfig!!.inclusions
                     || currentConfig.javaArgs != lastSavedConfig!!.javaArgs
                     || currentConfig.minecraftVersion != lastSavedConfig!!.minecraftVersion
                     || currentConfig.modloader != lastSavedConfig!!.modloader
@@ -710,10 +702,13 @@ class ConfigEditor(
                 } else {
                     setClientSideMods(packConfig.clientMods)
                 }
-                if (packConfig.copyDirs.isEmpty()) {
-                    setServerFiles(mutableListOf("mods", "config"))
+                if (packConfig.inclusions.isEmpty()) {
+                    val inclusions = mutableListOf<InclusionSpecification>()
+                    inclusions.add(InclusionSpecification(("mods")))
+                    inclusions.add(InclusionSpecification(("config")))
+                    setInclusions(inclusions)
                 } else {
-                    setServerFiles(packConfig.copyDirs)
+                    setInclusions(packConfig.inclusions)
                 }
                 setScriptVariables(packConfig.scriptSettings)
                 setServerIconPath(packConfig.serverIconPath)
@@ -908,15 +903,12 @@ class ConfigEditor(
      */
     fun validateServerPackFiles(): List<String> {
         val errors: MutableList<String> = ArrayList(10)
-        apiWrapper.configurationHandler!!.checkCopyDirs(
-            getServerFilesList(),
+        apiWrapper.configurationHandler!!.checkInclusions(
+            getServerFiles(),
             getModpackDirectory(),
             errors,
             false
         )
-        if (getServerFiles().matches(guiProps.whitespace)) {
-            errors.add(Gui.configuration_log_error_formatting.toString())
-        }
         if (errors.isNotEmpty()) {
             serverPackFilesInfo.error("<html>${errors.joinToString("<br>")}</html>")
         } else {
@@ -1019,12 +1011,13 @@ class ConfigEditor(
                     val updateMessage = StringBuilder()
                     val packConfig = PackConfig()
                     apiWrapper.configurationHandler!!.checkManifests(modpack.absolutePath, packConfig)
-                    val dirsToInclude = TreeSet(getServerFilesList())
+                    val inclusions = getServerFiles()
                     val files = modpack.listFiles()
                     if (files != null && files.isNotEmpty()) {
                         for (file in files) {
-                            if (apiWrapper.apiProperties.directoriesToInclude.contains(file.name)) {
-                                dirsToInclude.add(file.name)
+                            if (apiWrapper.apiProperties.directoriesToInclude.contains(file.name) &&
+                                !inclusions.any { inclusion -> inclusion.source == file.name }) {
+                                inclusions.add(InclusionSpecification(file.name))
                             }
                         }
                     }
@@ -1048,13 +1041,12 @@ class ConfigEditor(
                         updateMessage.append(Gui.createserverpack_gui_modpack_scan_icon(packConfig.serverIconPath))
                             .append("\n")
                     }
-                    if (dirsToInclude.isNotEmpty()) {
-                        setServerFiles(ArrayList(dirsToInclude))
+                    if (inclusions.isNotEmpty()) {
+                        setInclusions(ArrayList(inclusions))
+
                         updateMessage.append(
                             Gui.createserverpack_gui_modpack_scan_directories(
-                                dirsToInclude.joinToString(
-                                    ", "
-                                )
+                                inclusions.joinToString(", ") { inclusion -> inclusion.source }
                             )
                         ).append("\n")
                     }

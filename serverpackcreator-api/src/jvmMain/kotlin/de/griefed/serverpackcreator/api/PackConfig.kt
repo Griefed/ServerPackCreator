@@ -73,7 +73,7 @@ actual open class PackConfig actual constructor() : Pack<File, JsonNode, PackCon
      */
     actual constructor(
         clientMods: List<String>,
-        copyDirs: List<String>,
+        copyDirs: List<InclusionSpecification>,
         modpackDir: String,
         minecraftVersion: String,
         modLoader: String,
@@ -90,7 +90,7 @@ actual open class PackConfig actual constructor() : Pack<File, JsonNode, PackCon
         pluginsConfigs: HashMap<String, ArrayList<CommentedConfig>>
     ) : this() {
         this.clientMods.addAll(clientMods)
-        this.copyDirs.addAll(copyDirs)
+        this.inclusions.addAll(copyDirs)
         this.modpackDir = modpackDir
         this.minecraftVersion = minecraftVersion
         this.modloader = modLoader
@@ -125,8 +125,27 @@ actual open class PackConfig actual constructor() : Pack<File, JsonNode, PackCon
         }
         val config = FileConfig.of(configFile, TomlFormat.instance())
         config.load()
+
+        if ((config.getOrElse("copyDirs", mutableListOf<String>()) as ArrayList<String>).isNotEmpty()) {
+            val inclusions = migrateCopyDirsToInclusions(config.get("copyDirs"))
+            setInclusions(inclusions)
+        } else {
+            val inclusions = config.get<ArrayList<CommentedConfig>>("inclusions")
+            val inclusionSpecs = ArrayList<InclusionSpecification>()
+            for (inclusion in inclusions) {
+                inclusionSpecs.add(
+                    InclusionSpecification(
+                        inclusion.get("source"),
+                        inclusion.get("destination"),
+                        inclusion.get("inclusionFilter"),
+                        inclusion.get("exclusionFilter")
+                    )
+                )
+            }
+            setInclusions(inclusionSpecs)
+        }
+
         setClientMods(config.getOrElse("clientMods", listOf("")) as ArrayList<String>)
-        setCopyDirs(config.getOrElse("copyDirs", listOf("")) as ArrayList<String>)
         modpackDir = config.getOrElse("modpackDir", "")
         minecraftVersion = config.getOrElse("minecraftVersion", "")
         modloader = config.getOrElse("modLoader", "")
@@ -158,6 +177,41 @@ actual open class PackConfig actual constructor() : Pack<File, JsonNode, PackCon
         config.close()
     }
 
+    private fun migrateCopyDirsToInclusions(copyDirs: ArrayList<Any>): ArrayList<InclusionSpecification> {
+        val inclusions = ArrayList<InclusionSpecification>()
+        var entries: List<String>
+        var inclusion: InclusionSpecification
+        for (dir in copyDirs) {
+            if (dir is InclusionSpecification) {
+                inclusions.add(dir)
+            } else if (dir is String) {
+                if (dir.contains(";")) {
+                    entries = dir.split(";")
+                    inclusion = InclusionSpecification(entries[0], entries[1])
+                    inclusions.add(inclusion)
+                } else if (dir.contains("==")) {
+                    entries = dir.split("==")
+                    inclusion = InclusionSpecification(entries[0], null, entries[1])
+                    inclusions.add(inclusion)
+                } else if (dir.startsWith("!")) {
+                    val cleaned = dir.substring(1)
+                    if (cleaned.contains("==")) {
+                        entries = dir.split("==")
+                        inclusion = InclusionSpecification(entries[0], null, null, entries[1])
+                        inclusions.add(inclusion)
+                    } else {
+                        inclusion = InclusionSpecification("", null, null, cleaned)
+                        inclusions.add(inclusion)
+                    }
+                } else {
+                    inclusion = InclusionSpecification(dir, null, null, null)
+                    inclusions.add(inclusion)
+                }
+            }
+        }
+        return inclusions
+    }
+
     actual override fun save(destination: File): PackConfig {
         val conf = TomlFormat.instance().createConfig()
         conf.set<Any>(
@@ -173,11 +227,22 @@ actual open class PackConfig actual constructor() : Pack<File, JsonNode, PackCon
             "\n Path to a custom server-icon.png-file to include in the server pack."
         )
         conf.set<Any>("serverIconPath", serverIconPath)
+
+
         conf.setComment(
-            "copyDirs",
-            "\n Name of directories or files to include in serverpack.\n When specifying \"saves/world_name\", \"world_name\" will be copied to the base directory of the serverpack\n for immediate use with the server. Automatically set when projectID,fileID for modpackDir has been specified.\n Example: [config,mods,scripts]"
+            "inclusions",
+            "\n Server pack inclusion specifications.\n Requires at minimum a source declaration, with destination and filters being optional.\n An inclusion filter determines which files get included from the source, whilst the exclusion filter excludes."
         )
-        conf.set<Any>("copyDirs", copyDirs)
+        val inclusionsList = mutableListOf<CommentedConfig>()
+        var inclusionConfig: Config
+        var inclusionMap: HashMap<String,String>
+        for (inclusion in inclusions) {
+            inclusionConfig = TomlFormat.newConfig()
+            inclusionMap = inclusion.asHashMap()
+            inclusionConfig.valueMap().putAll(inclusionMap)
+            inclusionsList.add(inclusionConfig)
+        }
+        conf.set<Any>("inclusions", inclusionsList)
         conf.setComment(
             "serverPackSuffix",
             "\n Suffix to append to the server pack to be generated. Can be left blank/empty."

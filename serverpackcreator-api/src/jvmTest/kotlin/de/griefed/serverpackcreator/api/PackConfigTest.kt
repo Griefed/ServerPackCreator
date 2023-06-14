@@ -10,17 +10,6 @@ import javax.xml.parsers.ParserConfigurationException
 class PackConfigTest internal constructor() {
 
     @Test
-    fun getSetCopyDirsTest() {
-        val testList = arrayListOf("config", "mods", "scripts", "seeds", "defaultconfigs", "server_pack")
-        val getList = arrayListOf("config", "mods", "scripts", "seeds", "defaultconfigs")
-        val packConfig = PackConfig()
-        packConfig.setCopyDirs(testList)
-        Assertions.assertNotNull(packConfig.copyDirs)
-        Assertions.assertFalse(packConfig.copyDirs.contains("server_pack"))
-        Assertions.assertEquals(getList, packConfig.copyDirs)
-    }
-
-    @Test
     fun getSetModLoaderTest() {
         var modloader = "FoRgE"
         val packConfig = PackConfig()

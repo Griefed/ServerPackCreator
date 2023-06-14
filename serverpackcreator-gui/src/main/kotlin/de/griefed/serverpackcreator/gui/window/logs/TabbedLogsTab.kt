@@ -32,5 +32,5 @@ class TabbedLogsTab(apiProperties: ApiProperties) : TabPanel() {
         tabs.addTab("ServerPackCreatorLog", ServerPackCreatorLog(apiProperties))
         tabs.addTab("ModloaderInstallerLog", ModloaderInstallerLog(apiProperties))
         tabs.addTab("PluginsLog", PluginsLog(apiProperties))
-    }
+    }// TODO replace with i18n keys
 }

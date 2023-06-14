@@ -200,7 +200,7 @@ abstract class Configuration<F, P> {
     fun printConfigurationModel(packConfig: Pack<*, *, *>) = printConfigurationModel(
         packConfig.modpackDir,
         packConfig.clientMods,
-        packConfig.copyDirs,
+        packConfig.inclusions,
         packConfig.isServerInstallationDesired,
         packConfig.minecraftVersion,
         packConfig.modloader,
@@ -262,7 +262,7 @@ abstract class Configuration<F, P> {
      * specified a `source/file;destination/file`-combination, it is checked whether the
      * specified source-file exists on the host.
      *
-     * @param directoriesToCopy Directories, or `source/file;destination/file`-combinations, to
+     * @param inclusions Directories, or `source/file;destination/file`-combinations, to
      * check for existence.
      * `source/file;destination/file`-combinations must be absolute
      * paths to the source-file.
@@ -272,8 +272,8 @@ abstract class Configuration<F, P> {
      * was not found, false is returned.
      * @author Griefed
      */
-    abstract fun checkCopyDirs(
-        directoriesToCopy: MutableList<String>,
+    abstract fun checkInclusions(
+        inclusions: MutableList<InclusionSpecification>,
         modpackDir: String,
         encounteredErrors: MutableList<String> = ArrayList(5),
         printLog: Boolean = true
@@ -312,7 +312,7 @@ abstract class Configuration<F, P> {
      * @return Directories inside the modpack, excluding well known client-side only directories.
      * @author Griefed
      */
-    abstract fun suggestCopyDirs(modpackDir: String): ArrayList<String>
+    abstract fun suggestCopyDirs(modpackDir: String): ArrayList<InclusionSpecification>
 
     /**
      * Check whether various manifests from various launchers exist and use them to update our
@@ -357,7 +357,7 @@ abstract class Configuration<F, P> {
      * @param modpackDirectory     The used modpackDir field either from a configuration file or from
      * configuration setup.
      * @param clientsideMods       List of clientside-only mods to exclude from the server pack...
-     * @param copyDirectories      List of directories in the modpack which are to be included in the
+     * @param inclusions      List of directories in the modpack which are to be included in the
      * server pack.
      * @param installServer        Whether to install the modloader server in the server pack.
      * @param minecraftVer         The Minecraft version the modpack uses.
@@ -381,7 +381,7 @@ abstract class Configuration<F, P> {
     abstract fun printConfigurationModel(
         modpackDirectory: String,
         clientsideMods: List<String>,
-        copyDirectories: List<String>,
+        inclusions: List<InclusionSpecification>,
         installServer: Boolean,
         minecraftVer: String,
         modloader: String,
