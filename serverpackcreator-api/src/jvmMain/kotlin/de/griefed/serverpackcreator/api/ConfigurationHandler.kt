@@ -507,6 +507,7 @@ actual class ConfigurationHandler(
                 )
             }
             inclusions.removeIf { entry -> entry.source == "lazy_mode" }
+            inclusions.removeIf { entry -> entry.isGlobalFilter() }
             for (inclusion in inclusions) {
                 val modpackSource = File(modpackDir, inclusion.source)
                 if (!File(inclusion.source).exists() && !modpackSource.exists()) {
