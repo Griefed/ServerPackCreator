@@ -261,7 +261,9 @@ actual class ServerPackHandler actual constructor(
         val inclusionDestinationFile = File(destination, inclusionSourceFile.name)
         when {
             inclusion.isGlobalFilter() -> {
-                exclusions.add(inclusion.exclusionFilter!!.toRegex())
+                if (inclusion.hasExclusionFilter()) {
+                    exclusions.add(inclusion.exclusionFilter!!.toRegex())
+                }
             }
 
             inclusion.hasDestination() -> {
