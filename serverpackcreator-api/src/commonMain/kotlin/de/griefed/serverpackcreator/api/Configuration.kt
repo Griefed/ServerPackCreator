@@ -397,31 +397,6 @@ abstract class Configuration<F, P> {
     )
 
     /**
-     * Check the given entry for valid regex. In order for an entry to be valid, it must
-     *
-     *  * Contain `==`
-     *  * Optionally start with `==`. When starting with `==`
-     *  *
-     *  * The left side of `==` must specify an existing directory
-     *  * The right side of `==` must be the regex to match files and/or directories
-     *
-     * @param modpackDir        The modpacks directory which will be checked when the entry starts
-     * with `==`
-     * @param entry             The regex, or file/directory and regex, combination.
-     * @param exclusion         Whether the checks are for exclusions (`true`) or files and/or
-     * directories, or inclusions (`false`).
-     * @param encounteredErrors A list to which all encountered errors are saved to.
-     * @return `true` when no errors were encountered.
-     * @author Griefed
-     */
-    abstract fun checkRegex(
-        modpackDir: String,
-        entry: String,
-        exclusion: Boolean,
-        encounteredErrors: MutableList<String> = ArrayList(1)
-    ): Boolean
-
-    /**
      * Acquire a list of directories in the base-directory of a ZIP-file.
      *
      * @param zipFile The ZIP-archive to get the list of files from.
@@ -531,38 +506,6 @@ abstract class Configuration<F, P> {
     abstract fun updateDestinationFromInstanceCfg(instanceCfg: F): String
 
     /**
-     * Exclusion regex checks when the entry is prefixed with an `!`.
-     *
-     * @param modpackDir        The modpacks directory which will be checked when the entry starts
-     * with `==`
-     * @param entry             The regex, or file/directory and regex, combination.
-     * @param encounteredErrors A list to which all encountered errors are saved to.
-     * @return `true` if the specified entry matched existing file(s) or directories.
-     * @author Griefed
-     */
-    abstract fun exclusionRegexCheck(
-        modpackDir: String,
-        entry: String,
-        encounteredErrors: MutableList<String> = mutableListOf()
-    ): Boolean
-
-    /**
-     * Inclusion regex checks.
-     *
-     * @param modpackDir        The modpacks directory which will be checked when the entry starts
-     * with `==`
-     * @param entry             The regex, or file/directory and regex, combination.
-     * @param encounteredErrors A list to which all encountered errors are saved to.
-     * @return `true` if the specified entry matched existing file(s) or directories.
-     * @author Griefed
-     */
-    abstract fun inclusionRegexCheck(
-        modpackDir: String,
-        entry: String,
-        encounteredErrors: MutableList<String> = mutableListOf()
-    ): Boolean
-
-    /**
      * Ensures the modloader is normalized to first letter upper case and rest lower case. Basically
      * allows the user to input Forge or Fabric in any combination of upper- and lowercase and
      * ServerPackCreator will still be able to work with the users input.
@@ -582,16 +525,6 @@ abstract class Configuration<F, P> {
     } else {
         "Forge"
     }
-
-    /**
-     * Walk through each file in the specified source-directory and perform regex-matches using the
-     * specified regex. The number of matches found is printed to the logs.
-     *
-     * @param source The source directory to walk through and perform regex-matches on.
-     * @param regex  The regex to use for finding matches within the specified source-directory.
-     * @author Griefed
-     */
-    abstract fun countRegexMatches(source: F, regex: Regex)
 
     /**
      * Check the passed directory for existence and whether it is a directory, rather than a file.

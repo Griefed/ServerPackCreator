@@ -35,6 +35,7 @@ import java.net.MalformedURLException
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.util.*
+import java.util.regex.PatternSyntaxException
 import javax.imageio.ImageIO
 
 /**
@@ -262,7 +263,11 @@ actual class ServerPackHandler actual constructor(
         when {
             inclusion.isGlobalFilter() -> {
                 if (inclusion.hasExclusionFilter()) {
-                    exclusions.add(inclusion.exclusionFilter!!.toRegex())
+                    try {
+                        exclusions.add(inclusion.exclusionFilter!!.toRegex())
+                    } catch (ex: PatternSyntaxException) {
+                        log.error("Invalid exclusion-regex specified: ${inclusion.exclusionFilter}.",ex)
+                    }
                 }
             }
 
@@ -330,12 +335,22 @@ actual class ServerPackHandler actual constructor(
         val inclusionFilter = if (inclusionSpec.inclusionFilter.isNullOrBlank()) {
             null
         } else {
-            inclusionSpec.inclusionFilter!!.toRegex()
+            try {
+                inclusionSpec.inclusionFilter!!.toRegex()
+            } catch (ex: PatternSyntaxException) {
+                log.error("Invalid inclusion-regex specified: ${inclusionSpec.inclusionFilter}.",ex)
+                null
+            }
         }
         val exclusionFilter = if (inclusionSpec.exclusionFilter.isNullOrBlank()) {
             null
         } else {
-            inclusionSpec.exclusionFilter!!.toRegex()
+            try {
+                inclusionSpec.exclusionFilter!!.toRegex()
+            } catch (ex: PatternSyntaxException) {
+                log.error("Invalid exclusion-regex specified: ${inclusionSpec.exclusionFilter}.",ex)
+                null
+            }
         }
         if (inclusionFilter != null) {
             for (file in acquired) {
@@ -772,29 +787,6 @@ actual class ServerPackHandler actual constructor(
         // Exclude user-specified mods from copying.
         excludeUserSpecifiedMod(userSpecifiedClientMods, modsInModpack)
         return ArrayList(modsInModpack)
-    }
-
-    override fun getRegexMatches(modpackDir: String, destination: String, entry: String): List<ServerPackFile> {
-        val serverPackFiles: MutableList<ServerPackFile> = ArrayList(100)
-        if (entry.startsWith("==") && entry.length > 2) {
-            regexWalk(
-                File(modpackDir), destination, entry.substring(2).toRegex(), serverPackFiles
-            )
-        } else if (entry.contains("==") && entry.split("==").dropLastWhile { it.isEmpty() }.toTypedArray().size == 2) {
-            val regexInclusion = entry.split("==").dropLastWhile { it.isEmpty() }.toTypedArray()
-            if (File(modpackDir, regexInclusion[0]).isDirectory) {
-                regexWalk(
-                    File(
-                        modpackDir, regexInclusion[0]
-                    ), destination, regexInclusion[1].toRegex(), serverPackFiles
-                )
-            } else if (File(regexInclusion[0]).isDirectory) {
-                regexWalk(
-                    File(regexInclusion[0]), destination, regexInclusion[1].toRegex(), serverPackFiles
-                )
-            }
-        }
-        return serverPackFiles
     }
 
     override fun getDirectoryFiles(source: String, destination: String): List<ServerPackFile> {

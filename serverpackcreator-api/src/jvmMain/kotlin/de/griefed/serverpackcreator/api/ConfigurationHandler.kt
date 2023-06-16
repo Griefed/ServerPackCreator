@@ -110,9 +110,9 @@ actual class ConfigurationHandler(
             encounteredErrors.add(
                 Api.configuration_log_error_servericon(packConfig.serverIconPath)
             )
-        } else if (packConfig.serverIconPath.isNotEmpty() && File(packConfig.serverIconPath).exists() && !utilities.fileUtilities.isReadPermissionSet(
-                packConfig.serverIconPath
-            )
+        } else if (packConfig.serverIconPath.isNotEmpty()
+            && File(packConfig.serverIconPath).exists()
+            && !utilities.fileUtilities.isReadPermissionSet(packConfig.serverIconPath)
         ) {
             configHasError = true
             log.error("No read-permission for ${packConfig.serverIconPath}")
@@ -130,9 +130,9 @@ actual class ConfigurationHandler(
             encounteredErrors.add(
                 Api.configuration_log_error_serverproperties(packConfig.serverPropertiesPath)
             )
-        } else if (packConfig.serverPropertiesPath.isNotEmpty() && File(packConfig.serverPropertiesPath).exists() && !utilities.fileUtilities.isReadPermissionSet(
-                packConfig.serverPropertiesPath
-            )
+        } else if (packConfig.serverPropertiesPath.isNotEmpty()
+            && File(packConfig.serverPropertiesPath).exists()
+            && !utilities.fileUtilities.isReadPermissionSet(packConfig.serverPropertiesPath)
         ) {
             configHasError = true
             log.error("No read-permission for ${packConfig.serverPropertiesPath}")
@@ -507,8 +507,10 @@ actual class ConfigurationHandler(
                 )
             }
             inclusions.removeIf { entry -> entry.source == "lazy_mode" }
-            inclusions.removeIf { entry -> entry.isGlobalFilter() }
             for (inclusion in inclusions) {
+                if (inclusion.isGlobalFilter()) {
+                    continue
+                }
                 val modpackSource = File(modpackDir, inclusion.source)
                 if (!File(inclusion.source).exists() && !modpackSource.exists()) {
                     configCorrect = false
@@ -530,8 +532,8 @@ actual class ConfigurationHandler(
                 if (inclusion.hasInclusionFilter()) {
                     try {
                         inclusion.inclusionFilter!!.toRegex()
-                    } catch (ex: Exception) {
-                        log.error("Invalid inclusion-regex specified: ${inclusion.inclusionFilter}.")
+                    } catch (ex: PatternSyntaxException) {
+                        log.error("Invalid inclusion-regex specified: ${inclusion.inclusionFilter}.",ex)
                         configCorrect = false
                         // This log is meant to be read by the user, therefore we allow translation.
                         encounteredErrors.add("Invalid inclusion-regex specified: ${inclusion.inclusionFilter}.")
@@ -540,8 +542,8 @@ actual class ConfigurationHandler(
                 if (inclusion.hasExclusionFilter()) {
                     try {
                         inclusion.exclusionFilter!!.toRegex()
-                    } catch (ex: Exception) {
-                        log.error("Invalid exclusion-regex specified: ${inclusion.exclusionFilter}.")
+                    } catch (ex: PatternSyntaxException) {
+                        log.error("Invalid exclusion-regex specified: ${inclusion.exclusionFilter}.",ex)
                         configCorrect = false
                         // This log is meant to be read by the user, therefore we allow translation.
                         encounteredErrors.add("Invalid exclusion-regex specified: ${inclusion.exclusionFilter}.")
@@ -814,27 +816,6 @@ actual class ConfigurationHandler(
         }
     }
 
-    actual override fun checkRegex(
-        modpackDir: String,
-        entry: String,
-        exclusion: Boolean,
-        encounteredErrors: MutableList<String>
-    ) = try {
-        if (exclusion) {
-            exclusionRegexCheck(modpackDir, entry, encounteredErrors)
-        } else {
-            inclusionRegexCheck(modpackDir, entry, encounteredErrors)
-        }
-    } catch (ex: PatternSyntaxException) {
-        log.error("Invalid regex specified: $entry. Error near regex-index ${ex.index}.")
-        encounteredErrors.add(
-            Api.configuration_log_error_checkcopydirs_checkforregex_invalid_regex(
-                entry, ex.index
-            )
-        )
-        false
-    }
-
     @Throws(
         IllegalArgumentException::class,
         FileSystemAlreadyExistsException::class,
@@ -1000,99 +981,6 @@ actual class ConfigurationHandler(
             name = properties.getProperty("name", null)
         }
         return name
-    }
-
-    actual override fun exclusionRegexCheck(modpackDir: String, entry: String, encounteredErrors: MutableList<String>) =
-        if (entry.startsWith("!==") && entry.length > 3) {
-            val source = File(modpackDir)
-            countRegexMatches(source, entry.toRegex())
-            true
-        } else if (entry.contains("==") && entry.split("==").dropLastWhile { it.isEmpty() }.toTypedArray().size == 2) {
-            val sourceRegex = entry.split("==").dropLastWhile { it.isEmpty() }.toTypedArray()
-
-            /*
-            * Matches inside modpack-directory
-            */
-            val file = File(modpackDir, sourceRegex[0].substring(1))
-            val sourceFile = File(sourceRegex[0].substring(1))
-            if (file.isDirectory) {
-                countRegexMatches(file, sourceRegex[1].toRegex())
-                true
-
-                /*
-                * Matches inside directory outside modpack-directory
-                */
-            } else if (sourceFile.isDirectory) {
-                countRegexMatches(sourceFile, sourceRegex[1].toRegex())
-                true
-            } else {
-                encounteredErrors.add(Api.configuration_log_error_checkcopydirs_checkforregex(sourceRegex[0]))
-                false
-            }
-        } else {
-            encounteredErrors.add(Api.configuration_log_error_checkcopydirs_checkforregex_invalid.toString())
-            false
-        }
-
-    actual override fun inclusionRegexCheck(modpackDir: String, entry: String, encounteredErrors: MutableList<String>) =
-        if (entry.startsWith("==") && entry.length > 2) {
-            val source = File(modpackDir)
-            countRegexMatches(source, entry.toRegex())
-            true
-
-            /*
-            * Check for matches in the specified directory
-            */
-        } else if (entry.contains("==") && entry.split("==").dropLastWhile { it.isEmpty() }.toTypedArray().size == 2) {
-            val sourceRegex = entry.split("==").dropLastWhile { it.isEmpty() }.toTypedArray()
-
-            /*
-            * Matches inside modpack-directory
-            */
-            val file = File(modpackDir, sourceRegex[0])
-            val sourceFile = File(sourceRegex[0])
-            if (file.isDirectory) {
-                countRegexMatches(file, sourceRegex[1].toRegex())
-                true
-
-                /*
-                 * Matches inside directory outside modpack-directory
-                 */
-            } else if (sourceFile.isDirectory) {
-                countRegexMatches(sourceFile, sourceRegex[1].toRegex())
-                true
-            } else {
-                encounteredErrors.add(Api.configuration_log_error_checkcopydirs_checkforregex(sourceRegex[0]))
-                false
-            }
-        } else {
-            encounteredErrors.add(Api.configuration_log_error_checkcopydirs_checkforregex_invalid.toString())
-            false
-        }
-
-    actual override fun countRegexMatches(source: File, regex: Regex) {
-        var counter = 0
-        var toMatch: String
-        try {
-            Files.walk(source.toPath()).use {
-                for (path in it) {
-                    toMatch = path.toFile().absolutePath.replace(
-                        source.absolutePath, ""
-                    )
-                    if (toMatch.startsWith(File.separator)) {
-                        toMatch = toMatch.substring(1)
-                    }
-                    if (toMatch.matches(regex)) {
-                        counter += 1
-                    }
-                }
-            }
-        } catch (ex: IOException) {
-            log.error("Could not check your regex entry \"$regex\" in directory $source", ex)
-        }
-        log.info(
-            "Regex \"$regex\" matched $counter files/folders."
-        )
     }
 
     actual override fun checkModpackDir(

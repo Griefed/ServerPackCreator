@@ -401,21 +401,6 @@ abstract class ServerPack<F, TS, TF> {
     ): List<ServerPackFile>
 
     /**
-     * Acquire all files and directories for the given regex in a list of [ServerPackFile] for a
-     * given regex-entry from the configuration models copyDirs.
-     *
-     * @param modpackDir  The path to the modpack directory in which to check for existence of the
-     * passed list of directories.
-     * @param destination The destination where the files should be copied to.
-     * @param entry       The regex, or file/directory and regex, combination.
-     * @return List of [ServerPackFile] which will be included in the server pack.
-     * @author Griefed
-     */
-    abstract fun getRegexMatches(
-        modpackDir: String, destination: String, entry: String
-    ): List<ServerPackFile>
-
-    /**
      * Recursively acquire all files and directories inside the given directory as a list of
      * [ServerPackFile].
      *

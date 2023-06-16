@@ -76,10 +76,6 @@ expect class ConfigurationHandler {
         scriptSettings: HashMap<String, String>
     )
 
-    fun checkRegex(
-        modpackDir: String, entry: String, exclusion: Boolean, encounteredErrors: MutableList<String>
-    ): Boolean
-
     fun getDirectoriesInModpackZipBaseDirectory(zipFile: File): List<String>
     fun updateConfigModelFromCurseManifest(packConfig: PackConfig, manifest: File)
     fun updatePackName(packConfig: PackConfig, vararg childNodes: String): String?
@@ -89,9 +85,6 @@ expect class ConfigurationHandler {
     fun updateConfigModelFromConfigJson(packConfig: PackConfig, config: File)
     fun updateConfigModelFromMMCPack(packConfig: PackConfig, mmcPack: File)
     fun updateDestinationFromInstanceCfg(instanceCfg: File): String
-    fun exclusionRegexCheck(modpackDir: String, entry: String, encounteredErrors: MutableList<String>): Boolean
-    fun inclusionRegexCheck(modpackDir: String, entry: String, encounteredErrors: MutableList<String>): Boolean
-    fun countRegexMatches(source: File, regex: Regex)
     fun checkModpackDir(modpackDir: String, encounteredErrors: MutableList<String>, printLog: Boolean): Boolean
     fun getAllFilesAndDirectoriesInModpackZip(zipFile: File): List<String>
     fun getDirectoriesInModpackZip(zipFile: File): List<String>
