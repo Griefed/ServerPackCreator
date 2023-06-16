@@ -349,7 +349,7 @@ actual class ServerPackHandler actual constructor(
             processed.removeIf { file ->
                 val source = file.sourceFile.absolutePath.replace(modpackDir + File.separator, "")
                 return@removeIf if (source.matches(exclusionFilter)) {
-                    log.debug("${file.sourceFile} matched Inclusion-Filter $inclusionFilter.")
+                    log.debug("${file.sourceFile} matched Inclusion-Filter $exclusionFilter.")
                     true
                 } else {
                     false
