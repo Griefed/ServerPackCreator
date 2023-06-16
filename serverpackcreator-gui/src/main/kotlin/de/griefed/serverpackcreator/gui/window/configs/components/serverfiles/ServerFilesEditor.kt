@@ -108,7 +108,7 @@ class ServerFilesEditor(
         rightPanel.add(sourceLabel, "cell 1 0")
         rightPanel.add(source, "cell 2 0, grow, w 50:50:")
         rightPanel.add(expertPanel, "cell 1 1 2 3, grow, w 50:50:, hidemode 3")
-        rightPanel.add(scrollTip, "cell 1 1 2 3, grow, w 50:50:, hidemode 3")
+        rightPanel.add(scrollTip, "cell 1 1 2 3, grow, w 50:50:, h 80::, hidemode 3")
         rightPanel.add(filesShowBrowser, "cell 3 0")
         rightPanel.add(filesRevert, "cell 3 1")
         rightPanel.add(filesReset, "cell 3 2")
@@ -142,6 +142,14 @@ class ServerFilesEditor(
 
     fun updateTip() {
         try {
+            if (selectedInclusion!!.isGlobalFilter()) {
+                tip.text = if (selectedInclusion!!.hasInclusionFilter()) {
+                    "Global inclusion filters do not have any effect on the server pack generation."
+                } else {
+                    "This global exclusion filter would exclude anything matching '${selectedInclusion!!.exclusionFilter}'."
+                }
+                return
+            }
             val acquired = apiWrapper.serverPackHandler!!.getServerFiles(
                 selectedInclusion!!,
                 configEditor.getModpackDirectory(),
@@ -156,6 +164,7 @@ class ServerFilesEditor(
                 tipContent += file.sourceFile.absolutePath.replace(configEditor.getModpackDirectory() + File.separator,"") + "\n"
             }
             tip.text = tipContent
+            tip.grabFocus()
         } catch (ex: Exception) {
             log.error("Couldn't acquire files to include. ",ex)
         }
