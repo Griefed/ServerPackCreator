@@ -823,8 +823,15 @@ actual class ServerPackHandler actual constructor(
     }
 
     override fun excludeFileOrDirectory(modpackDir: String, fileToCheckFor: File, exclusions: List<Regex>): Boolean {
-        val cleaned = fileToCheckFor.absolutePath.replace(modpackDir, "")
-        return exclusions.any { regex -> cleaned.matches(regex) }
+        val cleaned = fileToCheckFor.absolutePath.replace(File(modpackDir).absolutePath + File.separator, "")
+        return exclusions.any { regex ->
+            if (cleaned.matches(regex)) {
+                log.info("Excluding '$cleaned' as per global exclusion filter '$regex'.")
+                return@any true
+            } else {
+                return@any false
+            }
+        }
     }
 
     override fun serverDownloadable(mcVersion: String, modloader: String, modloaderVersion: String) = when (modloader) {
