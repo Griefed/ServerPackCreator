@@ -312,7 +312,7 @@ abstract class Configuration<F, P> {
      * @return Directories inside the modpack, excluding well known client-side only directories.
      * @author Griefed
      */
-    abstract fun suggestCopyDirs(modpackDir: String): ArrayList<InclusionSpecification>
+    abstract fun suggestInclusions(modpackDir: String): ArrayList<InclusionSpecification>
 
     /**
      * Check whether various manifests from various launchers exist and use them to update our

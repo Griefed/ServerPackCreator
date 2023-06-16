@@ -74,59 +74,60 @@ internal class ConfigurationHandlerTest {
     }
 
     @Test
-    fun checkCopyDirsTest() {
+    fun checkInclusionsTest() {
         val modpackDir = "src/jvmTest/resources/forge_tests"
-        val copyDirs = mutableListOf<InclusionSpecification>()
-        copyDirs.add(InclusionSpecification("config"))
-        copyDirs.add(InclusionSpecification("mods"))
-        copyDirs.add(InclusionSpecification("scripts"))
-        copyDirs.add(InclusionSpecification("seeds"))
-        copyDirs.add(InclusionSpecification("defaultconfigs"))
-        Assertions.assertTrue(configurationHandler.checkInclusions(copyDirs, modpackDir, ArrayList(100)))
+        val inclusions = mutableListOf<InclusionSpecification>()
+        inclusions.add(InclusionSpecification("config"))
+        inclusions.add(InclusionSpecification("mods"))
+        inclusions.add(InclusionSpecification("scripts"))
+        inclusions.add(InclusionSpecification("seeds"))
+        inclusions.add(InclusionSpecification("defaultconfigs"))
+        Assertions.assertTrue(configurationHandler.checkInclusions(inclusions, modpackDir, ArrayList(100)))
     }
 
     @Suppress("SpellCheckingInspection")
     @Test
-    fun checkCopyDirsTestFalse() {
+    fun checkInclusionsTestFalse() {
         val modpackDir = "src/jvmTest/resources/forge_tests"
-        val copyDirs = mutableListOf<InclusionSpecification>()
-        copyDirs.add(InclusionSpecification("config"))
-        copyDirs.add(InclusionSpecification("modss"))
-        copyDirs.add(InclusionSpecification("scriptss"))
-        copyDirs.add(InclusionSpecification("seedss"))
-        copyDirs.add(InclusionSpecification("defaultconfigss"))
-        Assertions.assertFalse(configurationHandler.checkInclusions(copyDirs, modpackDir, ArrayList(100)))
+        val inclusions = mutableListOf<InclusionSpecification>()
+        inclusions.add(InclusionSpecification("config"))
+        inclusions.add(InclusionSpecification("modss"))
+        inclusions.add(InclusionSpecification("scriptss"))
+        inclusions.add(InclusionSpecification("seedss"))
+        inclusions.add(InclusionSpecification("defaultconfigss"))
+        Assertions.assertFalse(configurationHandler.checkInclusions(inclusions, modpackDir, ArrayList(100)))
     }
 
     @Test
-    fun checkCopyDirsTestFiles() {
+    fun checkInclusionsTestFiles() {
         val modpackDir = "src/jvmTest/resources/forge_tests"
-        val copyDirs = mutableListOf<InclusionSpecification>()
-        copyDirs.add(InclusionSpecification("config"))
-        copyDirs.add(InclusionSpecification("mods"))
-        copyDirs.add(InclusionSpecification("scripts"))
-        copyDirs.add(InclusionSpecification("seeds"))
-        copyDirs.add(InclusionSpecification("defaultconfigs"))
-        copyDirs.add(InclusionSpecification("test.txt","test.txt"))
-        copyDirs.add(InclusionSpecification("test2.txt","test2.txt"))
-        Assertions.assertTrue(configurationHandler.checkInclusions(copyDirs, modpackDir, ArrayList(100)))
+        val inclusions = mutableListOf<InclusionSpecification>()
+        inclusions.add(InclusionSpecification("config"))
+        inclusions.add(InclusionSpecification("mods"))
+        inclusions.add(InclusionSpecification("scripts"))
+        inclusions.add(InclusionSpecification("seeds"))
+        inclusions.add(InclusionSpecification("defaultconfigs"))
+        inclusions.add(InclusionSpecification("test.txt","test.txt"))
+        inclusions.add(InclusionSpecification("test2.txt","test2.txt"))
+        val value = configurationHandler.checkInclusions(inclusions, modpackDir, mutableListOf())
+        Assertions.assertTrue(value)
     }
 
     @Suppress("SpellCheckingInspection")
     @Test
-    fun checkCopyDirsTestFilesFalse() {
+    fun checkInclusionsTestFilesFalse() {
         val modpackDir = "src/jvmTest/resources/forge_tests"
-        val copyDirs = mutableListOf<InclusionSpecification>()
-        copyDirs.add(InclusionSpecification("config"))
-        copyDirs.add(InclusionSpecification("mods"))
-        copyDirs.add(InclusionSpecification("scripts"))
-        copyDirs.add(InclusionSpecification("seeds"))
-        copyDirs.add(InclusionSpecification("defaultconfigs"))
-        copyDirs.add(InclusionSpecification("READMEee.md","README.md"))
-        copyDirs.add(InclusionSpecification("LICENSEee","LICENSE"))
-        copyDirs.add(InclusionSpecification("LICENSEee","test/LICENSE"))
-        copyDirs.add(InclusionSpecification("LICENSEee","test/license.md"))
-        Assertions.assertFalse(configurationHandler.checkInclusions(copyDirs, modpackDir, ArrayList(100)))
+        val inclusions = mutableListOf<InclusionSpecification>()
+        inclusions.add(InclusionSpecification("config"))
+        inclusions.add(InclusionSpecification("mods"))
+        inclusions.add(InclusionSpecification("scripts"))
+        inclusions.add(InclusionSpecification("seeds"))
+        inclusions.add(InclusionSpecification("defaultconfigs"))
+        inclusions.add(InclusionSpecification("READMEee.md","README.md"))
+        inclusions.add(InclusionSpecification("LICENSEee","LICENSE"))
+        inclusions.add(InclusionSpecification("LICENSEee","test/LICENSE"))
+        inclusions.add(InclusionSpecification("LICENSEee","test/license.md"))
+        Assertions.assertFalse(configurationHandler.checkInclusions(inclusions, modpackDir, ArrayList(100)))
     }
 
     @Test
@@ -200,16 +201,16 @@ internal class ConfigurationHandlerTest {
             "TipTheScales",
             "WorldNameRandomizer"
         )
-        val copyDirs = ArrayList<InclusionSpecification>()
-        copyDirs.add(InclusionSpecification("config"))
-        copyDirs.add(InclusionSpecification("mods"))
-        copyDirs.add(InclusionSpecification("scripts"))
-        copyDirs.add(InclusionSpecification("seeds"))
-        copyDirs.add(InclusionSpecification("defaultconfigs"))
+        val inclusions = ArrayList<InclusionSpecification>()
+        inclusions.add(InclusionSpecification("config"))
+        inclusions.add(InclusionSpecification("mods"))
+        inclusions.add(InclusionSpecification("scripts"))
+        inclusions.add(InclusionSpecification("seeds"))
+        inclusions.add(InclusionSpecification("defaultconfigs"))
         val packConfig = PackConfig()
         packConfig.modpackDir = "src/jvmTest/resources/forge_tests"
         packConfig.setClientMods(clientMods)
-        packConfig.setInclusions(copyDirs)
+        packConfig.setInclusions(inclusions)
         packConfig.isServerInstallationDesired = true
         packConfig.isServerIconInclusionDesired = true
         packConfig.isServerPropertiesInclusionDesired = true
@@ -355,15 +356,15 @@ internal class ConfigurationHandlerTest {
             "TipTheScales",
             "WorldNameRandomizer"
         )
-        val copyDirs = ArrayList<InclusionSpecification>()
-        copyDirs.add(InclusionSpecification("config"))
-        copyDirs.add(InclusionSpecification("mods"))
-        copyDirs.add(InclusionSpecification("scripts"))
-        copyDirs.add(InclusionSpecification("seeds"))
-        copyDirs.add(InclusionSpecification("defaultconfigs"))
+        val inclusions = ArrayList<InclusionSpecification>()
+        inclusions.add(InclusionSpecification("config"))
+        inclusions.add(InclusionSpecification("mods"))
+        inclusions.add(InclusionSpecification("scripts"))
+        inclusions.add(InclusionSpecification("seeds"))
+        inclusions.add(InclusionSpecification("defaultconfigs"))
         packConfig.modpackDir = "src/jvmTest/resources/forge_tests"
         packConfig.setClientMods(clientMods)
-        packConfig.setInclusions(copyDirs)
+        packConfig.setInclusions(inclusions)
         packConfig.isServerIconInclusionDesired = true
         packConfig.isServerIconInclusionDesired = true
         packConfig.isServerPropertiesInclusionDesired = true
@@ -454,12 +455,12 @@ internal class ConfigurationHandlerTest {
             "TipTheScales",
             "WorldNameRandomizer"
         )
-        val copyDirs = ArrayList<InclusionSpecification>()
-        copyDirs.add(InclusionSpecification("config"))
-        copyDirs.add(InclusionSpecification("mods"))
-        copyDirs.add(InclusionSpecification("scripts"))
-        copyDirs.add(InclusionSpecification("seeds"))
-        copyDirs.add(InclusionSpecification("defaultconfigs"))
+        val inclusions = ArrayList<InclusionSpecification>()
+        inclusions.add(InclusionSpecification("config"))
+        inclusions.add(InclusionSpecification("mods"))
+        inclusions.add(InclusionSpecification("scripts"))
+        inclusions.add(InclusionSpecification("seeds"))
+        inclusions.add(InclusionSpecification("defaultconfigs"))
         val javaPath: String
         var autoJavaPath = System.getProperty("java.home").replace("\\", "/") + "/bin/java"
         if (autoJavaPath.startsWith("C:")) {
@@ -475,7 +476,7 @@ internal class ConfigurationHandlerTest {
         Assertions.assertNotNull(
             PackConfig(
                 clientMods,
-                copyDirs,
+                inclusions,
                 "src/jvmTest/resources/fabric_tests",
                 javaPath,
                 "1.16.5",
@@ -523,12 +524,12 @@ internal class ConfigurationHandlerTest {
             "TipTheScales",
             "WorldNameRandomizer"
         )
-        val copyDirs = ArrayList<InclusionSpecification>()
-        copyDirs.add(InclusionSpecification("config"))
-        copyDirs.add(InclusionSpecification("mods"))
-        copyDirs.add(InclusionSpecification("scripts"))
-        copyDirs.add(InclusionSpecification("seeds"))
-        copyDirs.add(InclusionSpecification("defaultconfigs"))
+        val inclusions = ArrayList<InclusionSpecification>()
+        inclusions.add(InclusionSpecification("config"))
+        inclusions.add(InclusionSpecification("mods"))
+        inclusions.add(InclusionSpecification("scripts"))
+        inclusions.add(InclusionSpecification("seeds"))
+        inclusions.add(InclusionSpecification("defaultconfigs"))
         val javaPath: String
         var autoJavaPath = System.getProperty("java.home").replace("\\", "/") + "/bin/java"
         if (autoJavaPath.startsWith("C:")) {
@@ -543,7 +544,7 @@ internal class ConfigurationHandlerTest {
         Assertions.assertNotNull(
             PackConfig(
                 clientMods,
-                copyDirs,
+                inclusions,
                 "src/jvmTest/resources/forge_tests",
                 javaPath,
                 "1.16.5",
@@ -595,13 +596,13 @@ internal class ConfigurationHandlerTest {
                 "WorldNameRandomizer"
             )
         )
-        val copyDirs = ArrayList<InclusionSpecification>()
-        copyDirs.add(InclusionSpecification("config"))
-        copyDirs.add(InclusionSpecification("mods"))
-        copyDirs.add(InclusionSpecification("scripts"))
-        copyDirs.add(InclusionSpecification("seeds"))
-        copyDirs.add(InclusionSpecification("defaultconfigs"))
-        packConfig.setInclusions(copyDirs)
+        val inclusions = ArrayList<InclusionSpecification>()
+        inclusions.add(InclusionSpecification("config"))
+        inclusions.add(InclusionSpecification("mods"))
+        inclusions.add(InclusionSpecification("scripts"))
+        inclusions.add(InclusionSpecification("seeds"))
+        inclusions.add(InclusionSpecification("defaultconfigs"))
+        packConfig.setInclusions(inclusions)
         packConfig.isServerInstallationDesired = true
         packConfig.isServerIconInclusionDesired = true
         packConfig.isServerPropertiesInclusionDesired = true
@@ -671,13 +672,13 @@ internal class ConfigurationHandlerTest {
                 "WorldNameRandomizer"
             )
         )
-        val copyDirs = ArrayList<InclusionSpecification>()
-        copyDirs.add(InclusionSpecification("config"))
-        copyDirs.add(InclusionSpecification("mods"))
-        copyDirs.add(InclusionSpecification("scripts"))
-        copyDirs.add(InclusionSpecification("seeds"))
-        copyDirs.add(InclusionSpecification("defaultconfigs"))
-        packConfig.setInclusions(copyDirs)
+        val inclusions = ArrayList<InclusionSpecification>()
+        inclusions.add(InclusionSpecification("config"))
+        inclusions.add(InclusionSpecification("mods"))
+        inclusions.add(InclusionSpecification("scripts"))
+        inclusions.add(InclusionSpecification("seeds"))
+        inclusions.add(InclusionSpecification("defaultconfigs"))
+        packConfig.setInclusions(inclusions)
         packConfig.isServerInstallationDesired = true
         packConfig.isServerIconInclusionDesired = true
         packConfig.isServerPropertiesInclusionDesired = true
@@ -824,8 +825,8 @@ internal class ConfigurationHandlerTest {
     }
 
     @Test
-    fun suggestCopyDirsTest() {
-        val dirs: List<InclusionSpecification> = configurationHandler.suggestCopyDirs("src/jvmTest/resources/fabric_tests")
+    fun suggestInclusionsTest() {
+        val dirs: List<InclusionSpecification> = configurationHandler.suggestInclusions("src/jvmTest/resources/fabric_tests")
         dirs.any { inclusion -> inclusion.source == "config" }
         dirs.any { inclusion -> inclusion.source == "defaultconfigs" }
         dirs.any { inclusion -> inclusion.source == "mods" }

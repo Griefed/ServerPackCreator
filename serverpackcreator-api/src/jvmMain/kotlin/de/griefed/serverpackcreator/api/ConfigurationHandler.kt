@@ -57,7 +57,7 @@ actual class ConfigurationHandler(
     private val apiPlugins: ApiPlugins
 ) : Configuration<File, Path>() {
     private val zipRegex = "\\.[Zz][Ii][Pp]".toRegex()
-    private val destinationRegex = "^([a-zA-Z0-9]+[/\\\\a-zA-Z0-9 ]*)$".toRegex()
+    private val destinationRegex = "^[a-zA-Z0-9]+[/\\\\a-zA-Z0-9 .]+".toRegex()
 
     actual override fun checkConfiguration(
         configFile: File, packConfig: PackConfig, encounteredErrors: MutableList<String>, quietCheck: Boolean
@@ -325,7 +325,7 @@ actual class ConfigurationHandler(
         utilities.fileUtilities.unzipArchive(packConfig.modpackDir, unzippedModpack)
 
         // Expand the already set copyDirs with suggestions from extracted ZIP-archive.
-        val newCopyDirs = suggestCopyDirs(unzippedModpack)
+        val newCopyDirs = suggestInclusions(unzippedModpack)
         for (entry in packConfig.inclusions) {
             if (!newCopyDirs.contains(entry)) {
                 newCopyDirs.add(entry)
@@ -611,7 +611,7 @@ actual class ConfigurationHandler(
         return File(dest).path
     }
 
-    actual override fun suggestCopyDirs(modpackDir: String): ArrayList<InclusionSpecification> {
+    actual override fun suggestInclusions(modpackDir: String): ArrayList<InclusionSpecification> {
         // This log is meant to be read by the user, therefore we allow translation.
         log.info("Preparing a list of directories to include in server pack...")
         var doNotInclude: String
