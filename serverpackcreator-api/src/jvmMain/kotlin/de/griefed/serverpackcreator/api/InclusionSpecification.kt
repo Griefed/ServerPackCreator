@@ -45,11 +45,11 @@ actual class InclusionSpecification actual constructor(
     actual var exclusionFilter: String?
 ) {
     actual fun hasInclusionFilter(): Boolean {
-        return inclusionFilter != null
+        return inclusionFilter != null && inclusionFilter!!.isNotBlank()
     }
 
     actual fun hasExclusionFilter(): Boolean {
-        return exclusionFilter != null
+        return exclusionFilter != null && exclusionFilter!!.isNotBlank()
     }
 
     actual fun hasDestination(): Boolean {
