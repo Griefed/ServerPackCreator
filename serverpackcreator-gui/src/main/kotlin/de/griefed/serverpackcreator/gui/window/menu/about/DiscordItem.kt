@@ -33,9 +33,12 @@ class DiscordItem(private val webUtilities: WebUtilities) : JMenuItem(Gui.menuba
     private val discord = URI.create("https://discord.griefed.de")
 
     init {
-        addActionListener { openDiscord() }
+        this.addActionListener { openDiscord() }
     }
 
+    /**
+     * @author Griefed
+     */
     private fun openDiscord() {
         webUtilities.openLinkInBrowser(discord)
     }

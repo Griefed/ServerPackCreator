@@ -23,6 +23,12 @@ import Gui
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.window.configs.components.StatusIcon
 
+/**
+ * Status icon for script-settings exclusions to inform a user about the status of the specified pairs and display
+ * any encountered errors in a hover-tooltip.
+ *
+ * @author Griefed
+ */
 class ScriptSettingsInfo(guiProps: GuiProps) : StatusIcon(
     guiProps,
     Gui.createserverpack_gui_createserverpack_scriptsettings_label_tooltip.toString()

@@ -28,7 +28,12 @@ import javax.swing.JLabel
 import javax.swing.JPanel
 
 /**
- * TODO docs
+ * Advanced settings panel allowing a user to configure various aspects of a server pack config, such as
+ * * clientside-mods to exclude
+ * * JVM args/flags to use when starting the server
+ * * Key-Value pairs to provide during script generation, in case a user makes use of custom script templates
+ *
+ * @author Griefed
  */
 class AdvancedSettingsPanel(
     exclusionsInfo: JLabel,

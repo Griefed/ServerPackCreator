@@ -24,7 +24,9 @@ import javax.swing.DefaultComboBoxModel
 import javax.swing.JComboBox
 
 /**
- * TODO docs
+ * Combobox initialized with an action listener.
+ *
+ * @author Griefed
  */
 class ActionComboBox(actionListener: ActionListener) : JComboBox<String>() {
     constructor(
@@ -37,6 +39,6 @@ class ActionComboBox(actionListener: ActionListener) : JComboBox<String>() {
     }
 
     init {
-        addActionListener(actionListener)
+        this.addActionListener(actionListener)
     }
 }

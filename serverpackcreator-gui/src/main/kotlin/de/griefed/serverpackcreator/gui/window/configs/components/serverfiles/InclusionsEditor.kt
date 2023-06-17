@@ -88,9 +88,19 @@ class InclusionsEditor(
         val inclusionLabel = ElementLabel(Gui.createserverpack_gui_inclusions_editor_inclusion.toString())
         val exclusionLabel = ElementLabel(Gui.createserverpack_gui_inclusions_editor_exclusion.toString())
         val leftPanel = JPanel(BorderLayout())
-        val fileAdd = BalloonTipButton(null, guiProps.addIcon, Gui.createserverpack_gui_inclusions_editor_add.toString(), guiProps) { addEntry("") }
+        val fileAdd = BalloonTipButton(
+            null,
+            guiProps.addIcon,
+            Gui.createserverpack_gui_inclusions_editor_add.toString(),
+            guiProps
+        ) { addEntry("") }
         val fileRemove =
-            BalloonTipButton(null, guiProps.deleteIcon, Gui.createserverpack_gui_inclusions_editor_delete.toString(), guiProps) { removeSelectedEntry() }
+            BalloonTipButton(
+                null,
+                guiProps.deleteIcon,
+                Gui.createserverpack_gui_inclusions_editor_delete.toString(),
+                guiProps
+            ) { removeSelectedEntry() }
         val filesShowBrowser = BalloonTipButton(
             null, guiProps.folderIcon, Gui.createserverpack_gui_browser.toString(), guiProps
         ) { selectInclusions() }
@@ -107,22 +117,22 @@ class InclusionsEditor(
                 "30"
             )
         )
-        val sourceListener = object: DocumentChangeListener {
+        val sourceListener = object : DocumentChangeListener {
             override fun update(e: DocumentEvent) {
                 sourceWasEdited()
             }
         }
-        val destinationListener = object: DocumentChangeListener {
+        val destinationListener = object : DocumentChangeListener {
             override fun update(e: DocumentEvent) {
                 destinationWasEdited()
             }
         }
-        val inclusionListener = object: DocumentChangeListener {
+        val inclusionListener = object : DocumentChangeListener {
             override fun update(e: DocumentEvent) {
                 inclusionFilterWasEdited()
             }
         }
-        val exclusionListener = object: DocumentChangeListener {
+        val exclusionListener = object : DocumentChangeListener {
             override fun update(e: DocumentEvent) {
                 exclusionFilterWasEdited()
             }
@@ -135,7 +145,7 @@ class InclusionsEditor(
         list.layoutOrientation = JList.HORIZONTAL_WRAP
         list.selectionMode = ListSelectionModel.SINGLE_SELECTION
         list.cellRenderer = InclusionSpecificationRenderer()
-        list.addListSelectionListener { event -> selectionOccured(event) }
+        list.addListSelectionListener { event -> selectionOccurred(event) }
         leftPanel.add(listScroller, BorderLayout.CENTER)
         tip.isEditable = false
         tip.text = Gui.createserverpack_gui_inclusions_editor_tip_default.toString()
@@ -176,6 +186,9 @@ class InclusionsEditor(
         timer.isRepeats = false
     }
 
+    /**
+     * @author Griefed
+     */
     private fun updateTip() {
         try {
             if (selectedInclusion!!.isGlobalFilter()) {
@@ -197,17 +210,23 @@ class InclusionsEditor(
             )
             var tipContent = Gui.createserverpack_gui_inclusions_editor_tip_prefix.toString()
             for (file in acquired) {
-                tipContent += file.sourceFile.absolutePath.replace(configEditor.getModpackDirectory() + File.separator,"") + "\n"
+                tipContent += file.sourceFile.absolutePath.replace(
+                    configEditor.getModpackDirectory() + File.separator,
+                    ""
+                ) + "\n"
             }
             tip.text = tipContent
             tip.grabFocus()
         } catch (ex: Exception) {
-            log.error("Couldn't acquire files to include. ",ex)
+            log.error("Couldn't acquire files to include. ", ex)
         }
     }
 
+    /**
+     * @author Griefed
+     */
     fun sourceWasEdited() {
-        if (File(configEditor.getModpackDirectory(),source.text).exists() || File(source.text).exists()) {
+        if (File(configEditor.getModpackDirectory(), source.text).exists() || File(source.text).exists()) {
             list.selectedValue.source = source.text
             timer.restart()
             list.updateUI()
@@ -219,6 +238,9 @@ class InclusionsEditor(
         configEditor.validateInputFields()
     }
 
+    /**
+     * @author Griefed
+     */
     fun destinationWasEdited() {
         if (apiWrapper.stringUtilities.checkForIllegalCharacters(destination.text)) {
             list.selectedValue.destination = destination.text
@@ -229,6 +251,9 @@ class InclusionsEditor(
         }
     }
 
+    /**
+     * @author Griefed
+     */
     fun inclusionFilterWasEdited() {
         try {
             inclusionFilter.text.toRegex()
@@ -237,10 +262,13 @@ class InclusionsEditor(
             inclusionInfo.info()
         } catch (ex: PatternSyntaxException) {
             timer.stop()
-            inclusionInfo.error(Gui.createserverpack_gui_inclusions_editor_filter_error(ex.message ?: ex.description))
+            inclusionInfo.error(Gui.createserverpack_gui_inclusions_editor_filter_error(ex.description))
         }
     }
 
+    /**
+     * @author Griefed
+     */
     fun exclusionFilterWasEdited() {
         try {
             exclusionFilter.text.toRegex()
@@ -249,11 +277,14 @@ class InclusionsEditor(
             exclusionInfo.info()
         } catch (ex: PatternSyntaxException) {
             timer.stop()
-            exclusionInfo.error(Gui.createserverpack_gui_inclusions_editor_filter_error(ex.message ?: ex.description))
+            exclusionInfo.error(Gui.createserverpack_gui_inclusions_editor_filter_error(ex.description))
         }
     }
 
-    private fun selectionOccured(event: ListSelectionEvent) {
+    /**
+     * @author Griefed
+     */
+    private fun selectionOccurred(event: ListSelectionEvent) {
         when {
             event.valueIsAdjusting -> return
             list.selectedIndex == -1 -> return
@@ -266,6 +297,9 @@ class InclusionsEditor(
         timer.restart()
     }
 
+    /**
+     * @author Griefed
+     */
     private fun toggleVisibility() {
         expertPanel.isVisible = !expertPanel.isVisible
         scrollTip.isVisible = !scrollTip.isVisible
@@ -276,7 +310,10 @@ class InclusionsEditor(
         }
     }
 
-    fun setInclusionsFromStringList(entries: List<String>) {
+    /**
+     * @author Griefed
+     */
+    private fun setInclusionsFromStringList(entries: List<String>) {
         val specifications = mutableListOf<InclusionSpecification>()
         for (entry in entries) {
             specifications.add(InclusionSpecification(entry))
@@ -284,6 +321,9 @@ class InclusionsEditor(
         setServerFiles(specifications)
     }
 
+    /**
+     * @author Griefed
+     */
     fun setServerFiles(entries: List<InclusionSpecification>) {
         inclusionModel.clear()
         inclusionModel.addAll(entries)
@@ -291,24 +331,39 @@ class InclusionsEditor(
         configEditor.validateInputFields()
     }
 
+    /**
+     * @author Griefed
+     */
     fun getServerFiles(): MutableList<InclusionSpecification> {
         return inclusionModel.elements().toList().toMutableList()
     }
 
+    /**
+     * @author Griefed
+     */
     @Suppress("SameParameterValue")
     private fun addEntry(entry: String) {
         addEntry(InclusionSpecification(entry))
     }
 
+    /**
+     * @author Griefed
+     */
     private fun addEntry(entry: InclusionSpecification) {
         inclusionModel.addElement(entry)
         list.selectedIndex = list.lastVisibleIndex
     }
 
+    /**
+     * @author Griefed
+     */
     private fun removeEntry(index: Int): InclusionSpecification {
         return inclusionModel.remove(index)
     }
 
+    /**
+     * @author Griefed
+     */
     private fun removeSelectedEntry() {
         var selected = list.selectedIndex
         removeEntry(list.selectedIndex)
@@ -319,6 +374,9 @@ class InclusionsEditor(
         }
     }
 
+    /**
+     * @author Griefed
+     */
     private fun selectInclusions() {
         val inclusionSourceChooser = if (File(configEditor.getModpackDirectory()).isDirectory) {
             InclusionSourceChooser(File(configEditor.getModpackDirectory()), chooserDimension)
@@ -342,6 +400,9 @@ class InclusionsEditor(
         }
     }
 
+    /**
+     * @author Griefed
+     */
     private fun revertInclusions() {
         if (configEditor.lastSavedConfig != null) {
             configEditor.setInclusions(configEditor.lastSavedConfig!!.inclusions)

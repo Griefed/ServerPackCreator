@@ -24,6 +24,11 @@ import java.awt.Color
 import java.awt.Font
 import javax.swing.JLabel
 
+/**
+ * ServerPackCreators version to be displayed on the splashscreen.
+ *
+ * @author Griefed
+ */
 class Version(width: Int, height: Int, version: String, color: Color) : JLabel(version) {
     init {
         font = Font("arial", Font.BOLD, 15)

@@ -37,9 +37,12 @@ class UpdateDefaultModslistItem(
     private val guiProps: GuiProps
 ) : JMenuItem(Gui.menubar_gui_menuitem_updatefallback.toString()) {
     init {
-        addActionListener { updateFallbacks() }
+        this.addActionListener { updateFallbacks() }
     }
 
+    /**
+     * @author Griefed
+     */
     private fun updateFallbacks() {
         if (apiProperties.updateFallback()) {
             JOptionPane.showMessageDialog(

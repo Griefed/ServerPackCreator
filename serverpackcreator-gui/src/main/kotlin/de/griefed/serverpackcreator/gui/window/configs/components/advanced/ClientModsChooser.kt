@@ -19,13 +19,20 @@
  */
 package de.griefed.serverpackcreator.gui.window.configs.components.advanced
 
+import Gui
 import java.awt.Dimension
 import java.io.File
 import javax.swing.JFileChooser
 import javax.swing.filechooser.FileNameExtensionFilter
 
-class ClientModsChooser(current: File?, dimension: Dimension):JFileChooser(current) {
-    constructor(dimension: Dimension) : this(null,dimension)
+/**
+ * File-chooser to select mod-JARs to add to the clientside-mods list of a server pack config.
+ *
+ * @author Griefed
+ */
+class ClientModsChooser(current: File?, dimension: Dimension) : JFileChooser(current) {
+    constructor(dimension: Dimension) : this(null, dimension)
+
     init {
         dialogTitle = Gui.createserverpack_gui_buttonclientmods_title.toString()
         fileSelectionMode = FILES_ONLY

@@ -34,9 +34,12 @@ class WikiHowToItem(private val webUtilities: WebUtilities) :
     private val howto = URI.create("https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-HowTo")
 
     init {
-        addActionListener { openHowTo() }
+        this.addActionListener { openHowTo() }
     }
 
+    /**
+     * @author Griefed
+     */
     private fun openHowTo() {
         webUtilities.openLinkInBrowser(howto)
     }

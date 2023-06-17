@@ -32,12 +32,15 @@ import javax.swing.ListCellRenderer
  *
  * @author Griefed
  */
-class InclusionSpecificationRenderer : JLabel(),ListCellRenderer<InclusionSpecification>{
+class InclusionSpecificationRenderer : JLabel(), ListCellRenderer<InclusionSpecification> {
 
     init {
         isOpaque = true
     }
 
+    /**
+     * @author Griefed
+     */
     override fun getListCellRendererComponent(
         list: JList<out InclusionSpecification>,
         value: InclusionSpecification,

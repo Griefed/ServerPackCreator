@@ -35,9 +35,12 @@ import javax.swing.JMenuItem
 class OpenModpackItem(private val fileUtilities: FileUtilities, private val tabbedConfigsTab: TabbedConfigsTab) :
     JMenuItem(Gui.menubar_gui_menuitem_modpack.toString()) {
     init {
-        addActionListener { openModpack() }
+        this.addActionListener { openModpack() }
     }
 
+    /**
+     * @author Griefed
+     */
     private fun openModpack() {
         if (tabbedConfigsTab.selectedEditor == null || !File(tabbedConfigsTab.selectedEditor!!.getModpackDirectory()).exists()) {
             return

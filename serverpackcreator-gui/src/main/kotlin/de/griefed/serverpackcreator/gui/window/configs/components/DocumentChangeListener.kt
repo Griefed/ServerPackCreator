@@ -23,12 +23,16 @@ import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
 
 /**
- * TODO docs
+ * DocumentChangeListener to fire when the text of a textarea of text-field is changed.
+ *
+ * @author Griefed
  */
 interface DocumentChangeListener : DocumentListener {
 
     /**
-     * TODO docs
+     * Convenience method called by [insertUpdate], [removeUpdate] and [changedUpdate] upon change of the document.
+     *
+     * @author Griefed
      */
     fun update(e: DocumentEvent)
 

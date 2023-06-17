@@ -33,9 +33,12 @@ class WikiHelpItem(private val webUtilities: WebUtilities) : JMenuItem(Gui.menub
     private val help = URI.create("https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-Help")
 
     init {
-        addActionListener { openHelp() }
+        this.addActionListener { openHelp() }
     }
 
+    /**
+     * @author Griefed
+     */
     private fun openHelp() {
         webUtilities.openLinkInBrowser(help)
     }

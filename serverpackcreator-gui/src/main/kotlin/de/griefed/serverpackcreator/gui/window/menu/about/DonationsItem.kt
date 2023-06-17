@@ -33,9 +33,12 @@ class DonationsItem(private val webUtilities: WebUtilities) : JMenuItem(Gui.menu
     private val donations = URI.create("https://github.com/sponsors/Griefed")
 
     init {
-        addActionListener { openDonations() }
+        this.addActionListener { openDonations() }
     }
 
+    /**
+     * @author Griefed
+     */
     private fun openDonations() {
         webUtilities.openLinkInBrowser(donations)
     }

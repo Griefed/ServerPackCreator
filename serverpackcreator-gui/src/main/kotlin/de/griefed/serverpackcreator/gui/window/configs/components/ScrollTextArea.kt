@@ -61,7 +61,7 @@ class ScrollTextArea(
         documentChangeListener: DocumentChangeListener,
         guiProps: GuiProps
     ) : this(text, areaName, guiProps) {
-        addDocumentListener(documentChangeListener)
+        this.addDocumentListener(documentChangeListener)
     }
 
     private val undoManager = UndoManager()
@@ -107,17 +107,26 @@ class ScrollTextArea(
             textArea.text = value
         }
 
+    /**
+     * @author Griefed
+     */
     @Suppress("MemberVisibilityCanBePrivate")
     fun addDocumentListener(listener: DocumentListener) {
         textArea.document.addDocumentListener(listener)
     }
 
+    /**
+     * @author Griefed
+     */
     override fun undoableEditHappened(e: UndoableEditEvent) {
         undoManager.addEdit(e.edit)
     }
 
     override fun keyTyped(e: KeyEvent) {}
 
+    /**
+     * @author Griefed
+     */
     override fun keyPressed(e: KeyEvent) {
         textArea.highlighter.removeAllHighlights()
         when {
@@ -149,6 +158,9 @@ class ScrollTextArea(
 
     override fun keyReleased(e: KeyEvent) {}
 
+    /**
+     * @author Griefed
+     */
     @OptIn(DelicateCoroutinesApi::class)
     private fun searchDialog() {
         if (JOptionPane.showConfirmDialog(
@@ -183,6 +195,9 @@ class ScrollTextArea(
         }
     }
 
+    /**
+     * @author Griefed
+     */
     @OptIn(DelicateCoroutinesApi::class)
     private fun searchRegexDialog() {
         if (JOptionPane.showConfirmDialog(
@@ -220,6 +235,9 @@ class ScrollTextArea(
 
     }
 
+    /**
+     * @author Griefed
+     */
     private fun searchAndReplace() {
         if (JOptionPane.showConfirmDialog(
                 parent,
@@ -234,6 +252,9 @@ class ScrollTextArea(
         }
     }
 
+    /**
+     * @author Griefed
+     */
     @OptIn(DelicateCoroutinesApi::class)
     private fun searchRegexAndReplace() {
         if (JOptionPane.showConfirmDialog(
@@ -255,6 +276,9 @@ class ScrollTextArea(
         }
     }
 
+    /**
+     * @author Griefed
+     */
     inner class LoadingAnimation : JWindow() {
 
         init {
@@ -265,12 +289,18 @@ class ScrollTextArea(
             isVisible = false
         }
 
+        /**
+         * @author Griefed
+         */
         fun showAnimation() {
             setLocationRelativeTo(this@ScrollTextArea)
             isVisible = true
             toFront()
         }
 
+        /**
+         * @author Griefed
+         */
         fun hideAnimation() {
             isVisible = false
         }

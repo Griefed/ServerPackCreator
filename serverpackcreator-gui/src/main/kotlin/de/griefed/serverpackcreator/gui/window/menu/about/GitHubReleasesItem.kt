@@ -34,9 +34,12 @@ class GitHubReleasesItem(private val webUtilities: WebUtilities) :
     private val releases = URI.create("https://github.com/Griefed/ServerPackCreator/releases")
 
     init {
-        addActionListener { openReleases() }
+        this.addActionListener { openReleases() }
     }
 
+    /**
+     * @author Griefed
+     */
     private fun openReleases() {
         webUtilities.openLinkInBrowser(releases)
     }

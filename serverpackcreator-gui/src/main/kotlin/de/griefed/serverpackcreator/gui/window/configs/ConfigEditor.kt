@@ -30,7 +30,6 @@ import de.griefed.serverpackcreator.gui.components.BalloonTipButton
 import de.griefed.serverpackcreator.gui.window.configs.components.*
 import de.griefed.serverpackcreator.gui.window.configs.components.advanced.*
 import de.griefed.serverpackcreator.gui.window.configs.components.serverfiles.InclusionsEditor
-import de.griefed.serverpackcreator.gui.window.configs.components.serverfiles.InclusionsInfo
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -315,6 +314,9 @@ class ConfigEditor(
         componentResizer.registerComponent(scriptKVPairs.scrollPanel, "cell 2 6 1 3,grow,w 10:500:,h %s!")
     }
 
+    /**
+     * @author Griefed
+     */
     private fun selectModpackDirectory() {
         val chooser = if (File(getModpackDirectory()).isDirectory) {
             ModpackChooser(File(getModpackDirectory()), chooserDimension)
@@ -333,6 +335,9 @@ class ConfigEditor(
         }
     }
 
+    /**
+     * @author Griefed
+     */
     private fun selectServerProperties() {
         val serverPropertiesChooser = if (File(getServerPropertiesPath()).isFile) {
             ServerPropertiesChooser(File(getServerPropertiesPath()), chooserDimension)
@@ -344,6 +349,9 @@ class ConfigEditor(
         }
     }
 
+    /**
+     * @author Griefed
+     */
     private fun selectServerIcon() {
         val serverIconChooser = if (File(getServerIconPath()).isFile) {
             ServerIconChooser(File(getServerIconPath()), chooserDimension)
@@ -355,6 +363,9 @@ class ConfigEditor(
         }
     }
 
+    /**
+     * @author Griefed
+     */
     private fun selectClientMods() {
         val clientModsChooser = if (File(getModpackDirectory(), "mods").isDirectory) {
             ClientModsChooser(File(getModpackDirectory(), "mods"), chooserDimension)
@@ -374,23 +385,38 @@ class ConfigEditor(
         }
     }
 
+    /**
+     * @author Griefed
+     */
     override fun setClientSideMods(entries: MutableList<String>) {
         exclusions.text = apiWrapper.utilities!!.stringUtilities.buildString(entries)
         validateInputFields()
     }
 
+    /**
+     * @author Griefed
+     */
     override fun setInclusions(entries: MutableList<InclusionSpecification>) {
         inclusionsEditor.setServerFiles(entries)
     }
 
+    /**
+     * @author Griefed
+     */
     override fun setIconInclusionTicked(ticked: Boolean) {
         includeIcon.isSelected = ticked
     }
 
+    /**
+     * @author Griefed
+     */
     override fun setJavaArguments(javaArguments: String) {
         javaArgs.text = javaArguments
     }
 
+    /**
+     * @author Griefed
+     */
     override fun setMinecraftVersion(version: String) {
         for (i in 0 until minecraftVersions.model.size) {
             if (minecraftVersions.model.getElementAt(i) == version) {
@@ -400,6 +426,9 @@ class ConfigEditor(
         }
     }
 
+    /**
+     * @author Griefed
+     */
     override fun setModloader(modloader: String) {
         when (modloader) {
             "Fabric" -> modloaders.selectedIndex = 0
@@ -410,6 +439,9 @@ class ConfigEditor(
         setModloaderVersionsModel()
     }
 
+    /**
+     * @author Griefed
+     */
     override fun setModloaderVersion(version: String) {
         for (i in 0 until modloaderVersions.model.size) {
             if (modloaderVersions.model.getElementAt(i) == version) {
@@ -419,42 +451,72 @@ class ConfigEditor(
         }
     }
 
+    /**
+     * @author Griefed
+     */
     override fun setModpackDirectory(directory: String) {
         modpackDirectory.text = directory
     }
 
+    /**
+     * @author Griefed
+     */
     override fun setPropertiesInclusionTicked(ticked: Boolean) {
         includeProperties.isSelected = ticked
     }
 
+    /**
+     * @author Griefed
+     */
     override fun setScriptVariables(variables: HashMap<String, String>) {
         scriptKVPairs.loadData(variables)
     }
 
+    /**
+     * @author Griefed
+     */
     override fun setServerIconPath(path: String) {
         iconFile.text = path
     }
 
+    /**
+     * @author Griefed
+     */
     override fun setServerInstallationTicked(ticked: Boolean) {
         includeServer.isSelected = ticked
     }
 
+    /**
+     * @author Griefed
+     */
     override fun setServerPackSuffix(suffix: String) {
         serverPackSuffix.text = apiWrapper.utilities!!.stringUtilities.pathSecureText(suffix)
     }
 
+    /**
+     * @author Griefed
+     */
     override fun setServerPropertiesPath(path: String) {
         propertiesFile.text = path
     }
 
+    /**
+     * @author Griefed
+     */
     override fun setZipArchiveCreationTicked(ticked: Boolean) {
         includeZip.isSelected = ticked
     }
 
+    /**
+     * @author Griefed
+     */
     override fun getClientSideMods(): String {
         return exclusions.text.replace(", ", ",")
     }
 
+    /**
+     * @author Griefed
+     */
     override fun getClientSideModsList(): MutableList<String> {
         return apiWrapper.utilities!!.listUtilities.cleanList(
             getClientSideMods().split(",")
@@ -463,10 +525,16 @@ class ConfigEditor(
         )
     }
 
+    /**
+     * @author Griefed
+     */
     override fun getInclusions(): MutableList<InclusionSpecification> {
         return inclusionsEditor.getServerFiles()
     }
 
+    /**
+     * @author Griefed
+     */
     override fun getCurrentConfiguration(): PackConfig {
         return PackConfig(
             getClientSideModsList(),
@@ -488,6 +556,9 @@ class ConfigEditor(
         )
     }
 
+    /**
+     * @author Griefed
+     */
     override fun saveCurrentConfiguration(): File {
         val modpackName =
             apiWrapper.utilities!!.stringUtilities.pathSecureText(File(getModpackDirectory()).name + ".conf")
@@ -502,34 +573,58 @@ class ConfigEditor(
         return configFile!!
     }
 
+    /**
+     * @author Griefed
+     */
     override fun getJavaArguments(): String {
         return javaArgs.text
     }
 
+    /**
+     * @author Griefed
+     */
     override fun getMinecraftVersion(): String {
         return minecraftVersions.selectedItem!!.toString()
     }
 
+    /**
+     * @author Griefed
+     */
     override fun getModloader(): String {
         return modloaders.selectedItem!!.toString()
     }
 
+    /**
+     * @author Griefed
+     */
     override fun getModloaderVersion(): String {
         return modloaderVersions.selectedItem!!.toString()
     }
 
+    /**
+     * @author Griefed
+     */
     override fun getModpackDirectory(): String {
         return modpackDirectory.text
     }
 
+    /**
+     * @author Griefed
+     */
     override fun getScriptSettings(): HashMap<String, String> {
         return scriptKVPairs.getData()
     }
 
+    /**
+     * @author Griefed
+     */
     override fun getServerIconPath(): String {
         return iconFile.text
     }
 
+    /**
+     * @author Griefed
+     */
     private fun resetClientMods() {
         val current = getClientSideModsList()
         val default = apiWrapper.apiProperties.clientSideMods()
@@ -557,7 +652,7 @@ class ConfigEditor(
     }
 
     /**
-     * TODO docs
+     * @author Griefed
      */
     private fun setIcon() {
         if (iconQuickSelect.selectedIndex == 0) {
@@ -571,7 +666,7 @@ class ConfigEditor(
     }
 
     /**
-     * TODO docs
+     * @author Griefed
      */
     private fun setProperties() {
         if (propertiesQuickSelect.selectedIndex == 0) {
@@ -585,38 +680,65 @@ class ConfigEditor(
         }
     }
 
+    /**
+     * @author Griefed
+     */
     override fun getServerPackSuffix(): String {
         return apiWrapper.utilities!!.stringUtilities.pathSecureText(serverPackSuffix.text)
     }
 
+    /**
+     * @author Griefed
+     */
     override fun getServerPropertiesPath(): String {
         return propertiesFile.text
     }
 
+    /**
+     * @author Griefed
+     */
     override fun isMinecraftServerAvailable(): Boolean {
         return apiWrapper.versionMeta!!.minecraft.isServerAvailable(minecraftVersions.selectedItem!!.toString())
     }
 
+    /**
+     * @author Griefed
+     */
     override fun isServerInstallationTicked(): Boolean {
         return includeServer.isSelected
     }
 
+    /**
+     * @author Griefed
+     */
     override fun isServerIconInclusionTicked(): Boolean {
         return includeIcon.isSelected
     }
 
+    /**
+     * @author Griefed
+     */
     override fun isServerPropertiesInclusionTicked(): Boolean {
         return includeProperties.isSelected
     }
 
+    /**
+     * @author Griefed
+     */
     override fun isZipArchiveCreationTicked(): Boolean {
         return includeZip.isSelected
     }
 
+    /**
+     * @author Griefed
+     */
     override fun clearScriptVariables() {
         scriptKVPairs.clearData()
     }
 
+    /**
+     * @author Griefed
+     */
     override fun setAikarsFlagsAsJavaArguments() {
         if (getJavaArguments().isNotEmpty()) {
             when (JOptionPane.showConfirmDialog(
@@ -636,10 +758,16 @@ class ConfigEditor(
         }
     }
 
+    /**
+     * @author Griefed
+     */
     override fun validateInputFields() {
         timer.restart()
     }
 
+    /**
+     * @author Griefed
+     */
     override fun acquireRequiredJavaVersion(): String {
         return if (apiWrapper.versionMeta!!.minecraft.getServer(getMinecraftVersion()).isPresent
             && apiWrapper.versionMeta!!.minecraft.getServer(getMinecraftVersion()).get().javaVersion().isPresent
@@ -650,6 +778,9 @@ class ConfigEditor(
         }
     }
 
+    /**
+     * @author Griefed
+     */
     fun compareSettings() {
         if (lastSavedConfig == null) {
             editorTitle.showWarningIcon()
@@ -747,6 +878,7 @@ class ConfigEditor(
      * the specified Minecraft version.
      *
      * @param minecraftVersion The Minecraft version to work with in the GUI update.
+     *
      * @author Griefed
      */
     private fun setModloaderVersionsModel(minecraftVersion: String = minecraftVersions.selectedItem!!.toString()) {
@@ -762,7 +894,7 @@ class ConfigEditor(
     }
 
     /**
-     * TODO docs
+     * @author Griefed
      */
     private fun setModloaderVersions(
         model: DefaultComboBoxModel<String>,
@@ -775,7 +907,7 @@ class ConfigEditor(
     }
 
     /**
-     * TODO docs
+     * @author Griefed
      */
     private fun updateFabricModel(minecraftVersion: String = minecraftVersions.selectedItem!!.toString()) {
         if (apiWrapper.versionMeta!!.fabric.isMinecraftSupported(minecraftVersion)) {
@@ -790,7 +922,7 @@ class ConfigEditor(
     }
 
     /**
-     * TODO docs
+     * @author Griefed
      */
     private fun updateForgeModel(minecraftVersion: String = minecraftVersions.selectedItem!!.toString()) {
         if (apiWrapper.versionMeta!!.forge.supportedForgeVersionsDescendingArray(minecraftVersion).isPresent) {
@@ -809,7 +941,7 @@ class ConfigEditor(
     }
 
     /**
-     * TODO docs
+     * @author Griefed
      */
     private fun updateQuiltModel(minecraftVersion: String = minecraftVersions.selectedItem!!.toString()) {
         if (apiWrapper.versionMeta!!.fabric.isMinecraftSupported(minecraftVersion)) {
@@ -824,7 +956,7 @@ class ConfigEditor(
     }
 
     /**
-     * TODO docs
+     * @author Griefed
      */
     private fun updateLegacyFabricModel(minecraftVersion: String = minecraftVersions.selectedItem!!.toString()) {
         if (apiWrapper.versionMeta!!.legacyFabric.isMinecraftSupported(minecraftVersion)) {
@@ -967,7 +1099,9 @@ class ConfigEditor(
     }
 
     /**
-     * TODO docs
+     * Updates the icon preview using the given [icon]-file.
+     *
+     * @author Griefed
      */
     private fun setIconPreview(icon: File, errors: MutableList<String>) {
         try {
@@ -983,6 +1117,8 @@ class ConfigEditor(
      * in our serverpackcreator.conf.
      *
      * @return Map containing lists of CommentedConfigs mapped to the corresponding pluginID.
+     *
+     * @author Griefed
      */
     private fun getExtensionsConfigs(): HashMap<String, ArrayList<CommentedConfig>> {
         val configs: HashMap<String, ArrayList<CommentedConfig>> = HashMap(10)
@@ -1064,7 +1200,7 @@ class ConfigEditor(
     }
 
     /**
-     * TODO docs
+     * @author Griefed
      */
     private fun revertScriptKVPairs() {
         if (lastSavedConfig != null) {
@@ -1073,7 +1209,7 @@ class ConfigEditor(
     }
 
     /**
-     * TODO docs
+     * @author Griefed
      */
     private fun resetScriptKVPairs() {
         setScriptVariables(guiProps.defaultScriptKVSetting)
@@ -1105,7 +1241,7 @@ class ConfigEditor(
     }
 
     /**
-     * TODO docs
+     * @author Griefed
      */
     private fun updateRequiredJavaVersion() {
         javaVersion.text = acquireRequiredJavaVersion()
@@ -1189,6 +1325,7 @@ class ConfigEditor(
      * clearing the selection of the checkbox.
      *
      * @return `true` if, and only if, no problem was encountered.
+     *
      * @author Griefed
      */
     fun checkServer(): Boolean {
@@ -1235,6 +1372,7 @@ class ConfigEditor(
      * warned about the consequences of not setting the Javapath.
      *
      * @return `true` if Java is available or was configured by the user.
+     *
      * @author Griefed
      */
     private fun checkJava(): Boolean {
@@ -1309,6 +1447,7 @@ class ConfigEditor(
 
     /**
      * `true` if this tab has unsaved changes.
+     *
      * @author Griefed
      */
     fun hasUnsavedChanges(): Boolean {
@@ -1317,6 +1456,7 @@ class ConfigEditor(
 
     /**
      * `true` if this is a new tab with default values and is unchanged.
+     *
      * @author Griefed
      */
     fun isNewTab(): Boolean {

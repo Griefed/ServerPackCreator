@@ -35,9 +35,12 @@ class ModloaderInstallerLogItem(
     private val apiProperties: ApiProperties
 ) : JMenuItem(Gui.menubar_gui_menuitem_modloaderlog.toString()) {
     init {
-        addActionListener { openModloaderInstallerLog() }
+        this.addActionListener { openModloaderInstallerLog() }
     }
 
+    /**
+     * @author Griefed
+     */
     private fun openModloaderInstallerLog() {
         fileUtilities.openFile(File(apiProperties.logsDirectory, "modloader_installer.log"))
     }

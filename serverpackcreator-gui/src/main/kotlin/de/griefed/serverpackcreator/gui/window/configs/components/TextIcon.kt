@@ -106,6 +106,8 @@ class TextIcon(
 
     /**
      * Calculate the size of the Icon using the FontMetrics of the Font.
+     *
+     * @author Rob Camick
      */
     private fun calculateIconDimensions() {
         val fm = component.getFontMetrics(font)
@@ -137,6 +139,8 @@ class TextIcon(
      * Set the text to be rendered on the Icon
      *
      * @param text The text to be rendered on the Icon
+     *
+     * @author Rob Camick
      */
     private fun setText(text: String) {
         this.text = text
@@ -150,6 +154,8 @@ class TextIcon(
      * @param g the graphics context
      * @param x the X coordinate of the icon's top-left corner
      * @param y the Y coordinate of the icon's top-left corner
+     *
+     * @author Rob Camick
      */
     override fun paintIcon(
         c: Component,
@@ -178,13 +184,13 @@ class TextIcon(
         }
         g2.dispose()
     }
-    //
-    //  Implement the Icon Interface
-    //
+
     /**
      * Gets the width of this icon.
      *
      * @return the width of the icon in pixels.
+     *
+     * @author Rob Camick
      */
     override fun getIconWidth(): Int {
         return iconWidth
@@ -194,14 +200,16 @@ class TextIcon(
      * Gets the height of this icon.
      *
      * @return the height of the icon in pixels.
+     *
+     * @author Rob Camick
      */
     override fun getIconHeight(): Int {
         return iconHeight
     }
 
-    //
-    //  Implement the PropertyChangeListener interface
-    //
+    /**
+     * @author Rob Camick
+     */
     override fun propertyChange(e: PropertyChangeEvent) {
         //  Handle font change when using the default font
         if (font == null) {
@@ -209,6 +217,9 @@ class TextIcon(
         }
     }
 
+    /**
+     * @author Rob Camick
+     */
     enum class Layout {
         HORIZONTAL, VERTICAL
     }

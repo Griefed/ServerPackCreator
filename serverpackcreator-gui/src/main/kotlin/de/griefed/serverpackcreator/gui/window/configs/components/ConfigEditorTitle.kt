@@ -30,7 +30,10 @@ import java.awt.event.MouseEvent
 import javax.swing.*
 
 /**
- * TODO docs
+ * Title of a config editor tab in the main GUI, managing the close operation of a selected tab and displays icons
+ * when a given config contains errors or unsaved changes.
+ *
+ * @author Griefed
  */
 @Suppress("unused")
 class ConfigEditorTitle(
@@ -76,7 +79,9 @@ class ConfigEditorTitle(
         add(closeButton)
     }
 
-
+    /**
+     * @author Griefed
+     */
     private fun close() {
         if (hasUnsavedChanges) {
             tabbedConfigsTab.tabs.selectedComponent = configEditor
@@ -104,6 +109,8 @@ class ConfigEditorTitle(
 
     /**
      * Show the error icon, indicating the configuration has errors.
+     *
+     * @author Griefed
      */
     fun setAndShowErrorIcon(tooltip: String = Gui.configuration_title_error.toString()) {
         errorIconLabel.isVisible = true
@@ -112,6 +119,8 @@ class ConfigEditorTitle(
 
     /**
      * Show the warning icon, indicating the configuration has unsaved changes.
+     *
+     * @author Griefed
      */
     fun showWarningIcon() {
         warningIconLabel.isVisible = true
@@ -119,6 +128,8 @@ class ConfigEditorTitle(
 
     /**
      * Hide the error icon, indicating the configuration is free from errors.
+     *
+     * @author Griefed
      */
     fun hideErrorIcon() {
         errorIconLabel.isVisible = false
@@ -126,6 +137,8 @@ class ConfigEditorTitle(
 
     /**
      * Hide the warning icon, indicating the configuration has no unsaved changes.
+     *
+     * @author Griefed
      */
     fun hideWarningIcon() {
         warningIconLabel.isVisible = false

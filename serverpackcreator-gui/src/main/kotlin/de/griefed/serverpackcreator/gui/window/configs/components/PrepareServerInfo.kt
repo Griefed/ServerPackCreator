@@ -22,6 +22,12 @@ package de.griefed.serverpackcreator.gui.window.configs.components
 import Gui
 import de.griefed.serverpackcreator.gui.GuiProps
 
+/**
+ * Status icon for server installation to inform a user about the installation of the server pack server in a
+ * hover-tooltip.
+ *
+ * @author Griefed
+ */
 class PrepareServerInfo(guiProps: GuiProps) : StatusIcon(
     guiProps,
     Gui.createserverpack_gui_createserverpack_checkboxserver_tip.toString()

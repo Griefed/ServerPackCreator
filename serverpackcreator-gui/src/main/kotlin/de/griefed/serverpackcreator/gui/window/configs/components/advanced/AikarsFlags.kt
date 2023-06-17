@@ -30,9 +30,14 @@ import java.awt.event.MouseListener
 import javax.swing.JButton
 import javax.swing.JLabel
 
+/**
+ * Button to set a server pack configs JVM flags to Aikars commonly used flags.
+ *
+ * @author Griefed
+ */
 class AikarsFlags(configEditor: ConfigEditor, guiProps: GuiProps) : JButton() {
     init {
-        addActionListener { configEditor.setAikarsFlagsAsJavaArguments() }
+        this.addActionListener { configEditor.setAikarsFlagsAsJavaArguments() }
         toolTipText = null
         val balloonTip = BalloonTip(
             this,
@@ -41,7 +46,7 @@ class AikarsFlags(configEditor: ConfigEditor, guiProps: GuiProps) : JButton() {
             false
         )
         balloonTip.isVisible = false
-        addMouseListener(object : MouseListener {
+        this.addMouseListener(object : MouseListener {
             override fun mouseClicked(e: MouseEvent?) {
                 balloonTip.style = guiProps.balloonStyle
                 balloonTip.isVisible = true

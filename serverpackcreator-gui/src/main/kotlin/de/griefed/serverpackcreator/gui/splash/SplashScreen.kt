@@ -22,6 +22,11 @@ package de.griefed.serverpackcreator.gui.splash
 import de.griefed.serverpackcreator.api.utilities.ReticulatingSplines
 import javax.swing.JWindow
 
+/**
+ * Splashscreen to display during initialization of ServerPackCreator.
+ *
+ * @author Griefed
+ */
 class SplashScreen(version: String) {
     private val reticulatingSplines = ReticulatingSplines()
     private val splash = JWindow()
@@ -49,10 +54,16 @@ class SplashScreen(version: String) {
         splash.isVisible = true
     }
 
+    /**
+     * @author Griefed
+     */
     fun close() {
         splash.dispose()
     }
 
+    /**
+     * @author Griefed
+     */
     fun update(progress: Int) {
         text.reticulate()
         bar.value = progress

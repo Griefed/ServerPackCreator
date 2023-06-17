@@ -31,6 +31,6 @@ import javax.swing.JMenuItem
 class NewConfigItem(private val tabbedConfigsTab: TabbedConfigsTab) :
     JMenuItem(Gui.menubar_gui_menuitem_newconfig.toString()) {
     init {
-        addActionListener { tabbedConfigsTab.addTab() }
+        this.addActionListener { tabbedConfigsTab.addTab() }
     }
 }

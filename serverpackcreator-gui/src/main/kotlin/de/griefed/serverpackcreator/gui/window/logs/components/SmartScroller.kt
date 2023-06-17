@@ -112,13 +112,14 @@ class SmartScroller @JvmOverloads constructor(
      * Analyze every adjustment event to determine when the viewport needs to be repositioned.
      *
      * @param e Adjustment event to analyse
+     *
      * @author Rob Camick
      */
     private fun checkScrollBar(e: AdjustmentEvent) {
         /*
-     * The scroll bar listModel contains information needed to determine
-     * whether the viewport should be repositioned or not.
-     */
+         * The scroll bar listModel contains information needed to determine
+         * whether the viewport should be repositioned or not.
+         */
         val scrollBar = e.source as JScrollBar
         val listModel = scrollBar.model
         var value = listModel.value
@@ -161,11 +162,17 @@ class SmartScroller @JvmOverloads constructor(
     }
 }
 
+/**
+ * @author Rob Camick
+ */
 enum class ScrollDirection {
     HORIZONTAL,
     VERTICAL
 }
 
+/**
+ * @author Rob Camick
+ */
 enum class ViewPortPosition {
     START,
     END,

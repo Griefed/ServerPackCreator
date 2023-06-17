@@ -33,9 +33,12 @@ class OpenIconsDirectory(private val fileUtilities: FileUtilities, private val a
     JMenuItem(Gui.menubar_gui_menuitem_servericon.toString()) {
 
     init {
-        addActionListener { openIcon() }
+        this.addActionListener { openIcon() }
     }
 
+    /**
+     * @author Griefed
+     */
     private fun openIcon() {
         fileUtilities.openFile(apiProperties.iconsDirectory)
     }

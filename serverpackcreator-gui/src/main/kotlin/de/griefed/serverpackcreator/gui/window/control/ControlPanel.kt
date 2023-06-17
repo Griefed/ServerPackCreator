@@ -39,7 +39,12 @@ import javax.swing.JOptionPane
 import javax.swing.JPanel
 
 /**
- * TODO docs
+ * Control panel giving the user the ability to start a server pack generation from the currently selected server pack
+ * config tab, as well as the option to open the server pack directory which houses all generated packs. The latest
+ * log messages of the INFO type are displayed and a [LarsonScanner] indicating whether a generation is taking place or
+ * not.
+ *
+ * @author Griefed
  */
 class ControlPanel(
     private val guiProps: GuiProps,
@@ -148,7 +153,7 @@ class ControlPanel(
     }
 
     /**
-     * TODO docs
+     * @author Griefed
      */
     private fun generateServerPack(packConfig: PackConfig) {
         log.info("Starting ServerPackCreator run.")
@@ -178,7 +183,7 @@ class ControlPanel(
     }
 
     /**
-     * TODO docs
+     * @author Griefed
      */
     private fun generationFailed(encounteredErrors: List<String>) {
         statusPanel.updateStatus(Gui.createserverpack_gui_buttongenerateserverpack_fail.toString())

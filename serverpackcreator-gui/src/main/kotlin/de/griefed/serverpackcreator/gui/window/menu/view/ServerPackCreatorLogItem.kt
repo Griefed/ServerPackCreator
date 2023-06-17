@@ -35,9 +35,12 @@ class ServerPackCreatorLogItem(
     private val apiProperties: ApiProperties
 ) : JMenuItem(Gui.menubar_gui_menuitem_spclog.toString()) {
     init {
-        addActionListener { openServerPackCreatorLog() }
+        this.addActionListener { openServerPackCreatorLog() }
     }
 
+    /**
+     * @author Griefed
+     */
     private fun openServerPackCreatorLog() {
         fileUtilities.openFile(File(apiProperties.logsDirectory, "serverpackcreator.log"))
     }

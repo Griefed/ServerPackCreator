@@ -32,9 +32,12 @@ import javax.swing.JMenuItem
 class PluginsConfigDirItem(private val fileUtilities: FileUtilities, private val apiProperties: ApiProperties) :
     JMenuItem(Gui.menubar_gui_menuitem_pluginsconfigsdir.toString()) {
     init {
-        addActionListener { openPluginsConfigsDir() }
+        this.addActionListener { openPluginsConfigsDir() }
     }
 
+    /**
+     * @author Griefed
+     */
     private fun openPluginsConfigsDir() {
         fileUtilities.openFolder(apiProperties.pluginsConfigsDirectory)
     }

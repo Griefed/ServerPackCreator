@@ -24,7 +24,10 @@ import net.miginfocom.swing.MigLayout
 import javax.swing.JPanel
 
 /**
- * TODO docs
+ * Collapsible panel for plugins which allow a user to customize server pack specific aspects. Each plugin which registers
+ * a panel receives a separate panel from this class via use of [createCollapsiblePluginPanel].
+ *
+ * @author Griefed
  */
 class PluginsSettingsPanel(pluginPanels: List<ExtensionConfigPanel>) : JPanel(
     MigLayout(
@@ -41,7 +44,9 @@ class PluginsSettingsPanel(pluginPanels: List<ExtensionConfigPanel>) : JPanel(
     }
 
     /**
-     * TODO docs
+     * Create a collapsible panel for the provided [pluginPanel].
+     *
+     * @author Griefed
      */
     private fun createCollapsiblePluginPanel(pluginPanel: ExtensionConfigPanel): JPanel {
         return CollapsiblePanel(pluginPanel.extensionName, pluginPanel)

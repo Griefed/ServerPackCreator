@@ -27,6 +27,11 @@ import java.awt.LayoutManager
 import javax.swing.JPanel
 import javax.swing.JTabbedPane
 
+/**
+ * Base tab-panel from which various panels in ServerPackCreator extend to make use of tabs.
+ *
+ * @author Griefed
+ */
 abstract class TabPanel(layout: LayoutManager = BorderLayout(), tabsConstraints: String? = null) {
     val panel = JPanel(layout, true)
     val tabs = JTabbedPane()

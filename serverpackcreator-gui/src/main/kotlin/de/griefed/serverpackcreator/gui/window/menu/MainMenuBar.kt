@@ -31,7 +31,10 @@ import de.griefed.serverpackcreator.updater.MigrationManager
 import javax.swing.JMenuBar
 
 /**
- * TODO docs
+ * Main menubar displaying and allowing for various actions, such as config loading and saving, theme changing, opening
+ * various directories, etc. etc..
+ *
+ * @author Griefed
  */
 class MainMenuBar(
     guiProps: GuiProps,

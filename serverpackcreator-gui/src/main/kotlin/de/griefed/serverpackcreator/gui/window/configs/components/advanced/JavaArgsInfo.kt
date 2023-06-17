@@ -23,6 +23,12 @@ import Gui
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.window.configs.components.StatusIcon
 
+/**
+ * Status icon for JVM args to inform a user about the status of the args/flags and display
+ * any encountered errors in a hover-tooltip.
+ *
+ * @author Griefed
+ */
 class JavaArgsInfo(guiProps: GuiProps) : StatusIcon(
     guiProps,
     Gui.createserverpack_gui_createserverpack_javaargs_tip.toString()

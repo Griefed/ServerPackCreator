@@ -25,13 +25,16 @@ import javax.swing.DefaultComboBoxModel
 import javax.swing.JComboBox
 
 /**
- * TODO docs
+ * Quick selection combobox allowing a user to set either the properties or icon from a choice of acquired files in the
+ * respective directories.
+ *
+ * @author Griefed
  */
 class QuickSelect(content: List<String>, actionListener: ActionListener) : JComboBox<String>() {
     init {
         val choose = DefaultComboBoxModel(arrayOf(Gui.createserverpack_gui_quickselect_choose.toString()))
         choose.addAll(content)
         model = choose
-        addActionListener(actionListener)
+        this.addActionListener(actionListener)
     }
 }

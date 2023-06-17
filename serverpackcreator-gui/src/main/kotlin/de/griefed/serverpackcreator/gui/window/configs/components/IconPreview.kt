@@ -29,7 +29,9 @@ import javax.swing.ImageIcon
 import javax.swing.JLabel
 
 /**
- * TODO docs
+ * Smallish image preview for server icons.
+ *
+ * @author Griefed
  */
 class IconPreview(guiProps: GuiProps) : JLabel(guiProps.serverIcon) {
     private val bigPreview = JLabel(scaled(guiProps.serverIcon))
@@ -43,7 +45,7 @@ class IconPreview(guiProps: GuiProps) : JLabel(guiProps.serverIcon) {
             false
         )
         balloonTip.isVisible = false
-        addMouseListener(object : MouseListener {
+        this.addMouseListener(object : MouseListener {
             override fun mouseClicked(e: MouseEvent?) {
                 balloonTip.style = guiProps.balloonStyle
                 balloonTip.isVisible = true
@@ -72,14 +74,14 @@ class IconPreview(guiProps: GuiProps) : JLabel(guiProps.serverIcon) {
     }
 
     /**
-     * TODO docs
+     * @author Griefed
      */
     private fun scaled(icon: ImageIcon, width: Int = 128, height: Int = 128): ImageIcon {
         return icon.getScaledInstance(width, height, Image.SCALE_SMOOTH)
     }
 
     /**
-     * TODO docs
+     * @author Griefed
      */
     fun updateIcon(newIcon: ImageIcon) {
         icon = scaled(newIcon, 32, 32)

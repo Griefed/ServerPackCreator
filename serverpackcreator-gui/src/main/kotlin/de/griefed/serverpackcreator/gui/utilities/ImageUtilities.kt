@@ -34,6 +34,7 @@ class ImageUtilities {
         /**
          * Create an [Image] from a stream acquired from a resource, where [name] is the path to the resource in you JAR
          * or classpath.
+         *
          * @author Griefed
          */
         @Throws(NullPointerException::class)
@@ -44,6 +45,7 @@ class ImageUtilities {
         /**
          * Create an [ImageIcon] from a stream acquired from a resource, where [name] is the path to the resource in
          * you JAR or classpath.
+         *
          * @author Griefed
          */
         @Throws(NullPointerException::class)
@@ -53,6 +55,8 @@ class ImageUtilities {
 
         /**
          * Create an image icon from a base64 encoded image.
+         *
+         * @author Griefed
          */
         fun fromBase64(
             encoded: String,
@@ -69,6 +73,7 @@ class ImageUtilities {
 
 /**
  * Scale the image icon to the specified [width] and [height], using the specified scaling-method [scaling].
+ *
  * @author Griefed
  */
 fun ImageIcon.getScaledInstance(width: Int, height: Int, scaling: Int = Image.SCALE_SMOOTH): ImageIcon {

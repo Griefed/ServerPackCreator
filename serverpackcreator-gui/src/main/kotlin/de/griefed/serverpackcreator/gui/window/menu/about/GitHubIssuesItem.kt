@@ -33,9 +33,12 @@ class GitHubIssuesItem(private val webUtilities: WebUtilities) : JMenuItem(Gui.m
     private val issues = URI.create("https://github.com/Griefed/ServerPackCreator/issues")
 
     init {
-        addActionListener { openIssues() }
+        this.addActionListener { openIssues() }
     }
 
+    /**
+     * @author Griefed
+     */
     private fun openIssues() {
         webUtilities.openLinkInBrowser(issues)
     }

@@ -56,7 +56,7 @@ class MigrationInfoItem(
 
     init {
         migrationWindowTextPane.isEditable = false
-        addActionListener { displayMigrationMessages() }
+        this.addActionListener { displayMigrationMessages() }
         displayMigrationMessages()
     }
 
@@ -136,10 +136,16 @@ class MigrationInfoItem(
         }
     }
 
+    /**
+     * @author Griefed
+     */
     private fun addText(text: String) {
         migrationWindowTextPane.text += text
     }
 
+    /**
+     * @author Griefed
+     */
     private fun addLineBreak(amount: Int = 1) {
         for (i in 0 until amount) {
             addText(lineBreak)

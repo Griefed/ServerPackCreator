@@ -32,9 +32,12 @@ import javax.swing.JMenuItem
 class HomeDirItem(private val fileUtilities: FileUtilities, private val apiProperties: ApiProperties) :
     JMenuItem(Gui.menubar_gui_menuitem_spcdir.toString()) {
     init {
-        addActionListener { openHomeDir() }
+        this.addActionListener { openHomeDir() }
     }
 
+    /**
+     * @author Griefed
+     */
     private fun openHomeDir() {
         fileUtilities.openFolder(apiProperties.homeDirectory)
     }

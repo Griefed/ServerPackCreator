@@ -34,6 +34,6 @@ class ConfigsDirItem(
     apiProperties: ApiProperties
 ) : JMenuItem(Gui.menubar_gui_menuitem_configdir.toString()) {
     init {
-        addActionListener { fileUtilities.openFolder(apiProperties.configsDirectory) }
+        this.addActionListener { fileUtilities.openFolder(apiProperties.configsDirectory) }
     }
 }

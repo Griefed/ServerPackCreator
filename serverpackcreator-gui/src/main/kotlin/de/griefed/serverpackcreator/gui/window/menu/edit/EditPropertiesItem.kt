@@ -33,9 +33,12 @@ import javax.swing.JMenuItem
 class EditPropertiesItem(private val fileUtilities: FileUtilities, private val tabbedConfigsTab: TabbedConfigsTab) :
     JMenuItem(Gui.menubar_gui_menuitem_properties.toString()) {
     init {
-        addActionListener { openProperties() }
+        this.addActionListener { openProperties() }
     }
 
+    /**
+     * @author Griefed
+     */
     private fun openProperties() {
         if (tabbedConfigsTab.selectedEditor == null || !File(tabbedConfigsTab.selectedEditor!!.getServerPropertiesPath()).isFile) {
             return

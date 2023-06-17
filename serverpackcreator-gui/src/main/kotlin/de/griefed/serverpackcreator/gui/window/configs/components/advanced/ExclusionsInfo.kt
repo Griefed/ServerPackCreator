@@ -23,6 +23,12 @@ import Gui
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.window.configs.components.StatusIcon
 
+/**
+ * Status icon for clientside-mods exclusions to inform a user about the status of the specified exclusions and display
+ * any encountered errors in a hover-tooltip.
+ *
+ * @author Griefed
+ */
 class ExclusionsInfo(guiProps: GuiProps) : StatusIcon(
     guiProps,
     Gui.createserverpack_gui_createserverpack_labelclientmods_tip.toString()
