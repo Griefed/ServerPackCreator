@@ -31,9 +31,12 @@ import javax.swing.JMenuItem
 class SaveConfigItem(private val tabbedConfigsTab: TabbedConfigsTab) :
     JMenuItem(Gui.menubar_gui_menuitem_saveconfig.toString()) {
     init {
-        addActionListener { save() }
+        this.addActionListener { save() }
     }
 
+    /**
+     * @author Griefed
+     */
     private fun save() {
         tabbedConfigsTab.selectedEditor!!.saveCurrentConfiguration()
     }

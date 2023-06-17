@@ -41,6 +41,10 @@ open class ResizeIndicatorScrollPane(
     var handleBarPosition: Rectangle? = null
         private set
 
+    /**
+     * @author Rob Camick
+     * @author Griefed
+     */
     override fun paint(g: Graphics?) {
         super.paint(g)
         paintComponents(g)

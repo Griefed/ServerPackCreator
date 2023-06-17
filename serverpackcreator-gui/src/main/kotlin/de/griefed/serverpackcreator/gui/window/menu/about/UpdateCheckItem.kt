@@ -32,6 +32,6 @@ import javax.swing.JMenuItem
 class UpdateCheckItem(private val updateDialogs: UpdateDialogs) :
     JMenuItem(Gui.menubar_gui_menuitem_updates.toString()) {
     init {
-        addActionListener { updateDialogs.checkForUpdate() }
+        this.addActionListener { updateDialogs.checkForUpdate() }
     }
 }

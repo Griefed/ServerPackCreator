@@ -24,6 +24,11 @@ import java.awt.Color
 import java.awt.Font
 import javax.swing.JLabel
 
+/**
+ * Draw By Griefed in the splashscreen.
+ *
+ * @author Griefed
+ */
 class By(width: Int, height: Int, colour: Color) : JLabel("By Griefed") {
     init {
         font = Font("arial", Font.BOLD, 15)

@@ -50,9 +50,12 @@ class MainLogToHasteBinItem(
     private val spcLogWindowTextPane: JTextPane = JTextPane(spcLogDocument)
 
     init {
-        addActionListener { uploadLog() }
+        this.addActionListener { uploadLog() }
     }
 
+    /**
+     * @author Griefed
+     */
     private fun uploadLog() {
         if (webUtilities.hasteBinPreChecks(
                 File(apiProperties.logsDirectory, "serverpackcreator.log")

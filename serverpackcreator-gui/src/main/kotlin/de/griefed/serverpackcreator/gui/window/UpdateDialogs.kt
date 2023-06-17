@@ -115,6 +115,9 @@ class UpdateDialogs(
         }
     }
 
+    /**
+     * @author Griefed
+     */
     fun checkForUpdate() {
         if (!displayUpdateDialog()) {
             DialogUtilities.createDialog(

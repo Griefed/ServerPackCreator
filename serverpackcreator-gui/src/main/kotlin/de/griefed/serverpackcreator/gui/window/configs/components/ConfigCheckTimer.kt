@@ -52,7 +52,7 @@ class ConfigCheckTimer(delay: Int, configEditor: ConfigEditor, guiProps: GuiProp
                     errors.addAll(configEditor.validateExclusions())
                 }
                 launch {
-                    errors.addAll(configEditor.validateServerPackFiles())
+                    errors.addAll(configEditor.validateInclusions())
                 }
                 launch {
                     errors.addAll(configEditor.validateServerIcon())

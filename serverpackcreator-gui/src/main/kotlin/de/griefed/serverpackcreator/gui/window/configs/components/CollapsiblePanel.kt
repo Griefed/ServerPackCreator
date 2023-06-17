@@ -29,7 +29,6 @@ import javax.swing.JPanel
 import javax.swing.border.Border
 import javax.swing.border.TitledBorder
 
-
 /**
  * [CodeRanch Expand-Collapse-Panels](https://coderanch.com/t/341737/java/Expand-Collapse-Panels)
  * @author rgd
@@ -40,6 +39,9 @@ class CollapsiblePanel(
     private var border: TitledBorder = BorderFactory.createTitledBorder(title)
 ) : JPanel() {
 
+    /**
+     * @author rgd
+     */
     private var titleListener: MouseAdapter = object : MouseAdapter() {
         override fun mouseClicked(e: MouseEvent) {
             val border: Border = getBorder()
@@ -54,6 +56,9 @@ class CollapsiblePanel(
         }
     }
 
+    /**
+     * @author rgd
+     */
     private var contentComponentListener: ComponentListener = object : ComponentAdapter() {
         override fun componentShown(e: ComponentEvent) {
             updateBorderTitle()
@@ -64,6 +69,9 @@ class CollapsiblePanel(
         }
     }
 
+    /**
+     * @author rgd
+     */
     override fun add(comp: Component): Component {
         comp.addComponentListener(contentComponentListener)
         val r = super.add(comp)
@@ -71,6 +79,9 @@ class CollapsiblePanel(
         return r
     }
 
+    /**
+     * @author rgd
+     */
     override fun add(name: String, comp: Component): Component {
         comp.addComponentListener(contentComponentListener)
         val r = super.add(name, comp)
@@ -78,6 +89,9 @@ class CollapsiblePanel(
         return r
     }
 
+    /**
+     * @author rgd
+     */
     override fun add(comp: Component, index: Int): Component {
         comp.addComponentListener(contentComponentListener)
         val r = super.add(comp, index)
@@ -85,29 +99,44 @@ class CollapsiblePanel(
         return r
     }
 
+    /**
+     * @author rgd
+     */
     override fun add(comp: Component, constraints: Any) {
         comp.addComponentListener(contentComponentListener)
         super.add(comp, constraints)
         updateBorderTitle()
     }
 
+    /**
+     * @author rgd
+     */
     override fun add(comp: Component, constraints: Any, index: Int) {
         comp.addComponentListener(contentComponentListener)
         super.add(comp, constraints, index)
         updateBorderTitle()
     }
 
+    /**
+     * @author rgd
+     */
     override fun remove(index: Int) {
         val comp = getComponent(index)
         comp.removeComponentListener(contentComponentListener)
         super.remove(index)
     }
 
+    /**
+     * @author rgd
+     */
     override fun remove(comp: Component) {
         comp.removeComponentListener(contentComponentListener)
         super.remove(comp)
     }
 
+    /**
+     * @author rgd
+     */
     override fun removeAll() {
         for (c in components) {
             c.removeComponentListener(contentComponentListener)
@@ -115,6 +144,9 @@ class CollapsiblePanel(
         super.removeAll()
     }
 
+    /**
+     * @author rgd
+     */
     fun toggleVisibility(visible: Boolean = hasInvisibleComponent()) {
         for (c in components) {
             c.isVisible = visible
@@ -122,6 +154,9 @@ class CollapsiblePanel(
         updateBorderTitle()
     }
 
+    /**
+     * @author rgd
+     */
     fun updateBorderTitle() {
         var arrow = ""
         if (componentCount > 0) {
@@ -131,6 +166,9 @@ class CollapsiblePanel(
         repaint()
     }
 
+    /**
+     * @author rgd
+     */
     private fun hasInvisibleComponent(): Boolean {
         for (c in components) {
             if (!c.isVisible) {

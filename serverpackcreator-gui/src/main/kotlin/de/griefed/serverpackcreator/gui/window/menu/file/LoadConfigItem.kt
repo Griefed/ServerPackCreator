@@ -48,9 +48,12 @@ class LoadConfigItem(
     private val log = cachedLoggerOf(this.javaClass)
 
     init {
-        addActionListener { loadConfigFile() }
+        this.addActionListener { loadConfigFile() }
     }
 
+    /**
+     * @author Griefed
+     */
     private fun loadConfigFile() {
         val configChooser = ConfigChooser(apiProperties, Gui.createserverpack_gui_buttonloadconfig_title.toString())
         configChooser.isMultiSelectionEnabled = true

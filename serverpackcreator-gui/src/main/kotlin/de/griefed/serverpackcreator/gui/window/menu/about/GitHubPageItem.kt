@@ -33,9 +33,12 @@ class GitHubPageItem(private val webUtilities: WebUtilities) : JMenuItem(Gui.men
     private val page = URI.create("https://github.com/Griefed/ServerPackCreator")
 
     init {
-        addActionListener { openPage() }
+        this.addActionListener { openPage() }
     }
 
+    /**
+     * @author Griefed
+     */
     private fun openPage() {
         webUtilities.openLinkInBrowser(page)
     }

@@ -36,7 +36,9 @@ import javax.swing.JOptionPane
 import kotlin.system.exitProcess
 
 /**
- * TODO docs
+ * Main Panel, displayed in the [MainFrame], housing the config tabs, log tabs and settings.
+ *
+ * @author Griefed
  */
 class MainPanel(
     private val guiProps: GuiProps,
@@ -63,6 +65,9 @@ class MainPanel(
         panel.add(controlPanel.panel, "height 160!,growx, south")
     }
 
+    /**
+     * @author Griefed
+     */
     fun closeAndExit() {
         if (tabbedConfigsTab.tabs.tabCount == 0) {
             exitProcess(0)

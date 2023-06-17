@@ -36,6 +36,11 @@ import java.io.File
 import java.util.concurrent.Executors
 import javax.swing.DefaultComboBoxModel
 
+/**
+ * Tabbed pane housing every server pack config tab.
+ *
+ * @author Griefed
+ */
 @OptIn(DelicateCoroutinesApi::class)
 class TabbedConfigsTab(
     private val guiProps: GuiProps,
@@ -91,6 +96,9 @@ class TabbedConfigsTab(
         (activeTab!! as ConfigEditor).editorTitle.closeButton.isVisible = true
     }
 
+    /**
+     * @author Griefed
+     */
     fun addTab(): ConfigEditor {
         val editor = ConfigEditor(
             guiProps,
@@ -110,12 +118,16 @@ class TabbedConfigsTab(
      * ServerPackCreator.
      *
      * @param configFile The configuration file to parse and load into the GUI.
+     *
      * @author Griefed
      */
     fun loadConfig(configFile: File, tab: ConfigEditor = addTab()) {
         tab.loadConfiguration(PackConfig(apiWrapper.utilities!!, configFile), configFile)
     }
 
+    /**
+     * @author Griefed
+     */
     @Suppress("DuplicatedCode")
     private fun iconsDirectoryWatcher() {
         Executors.newSingleThreadExecutor().execute {
@@ -162,6 +174,9 @@ class TabbedConfigsTab(
         }
     }
 
+    /**
+     * @author Griefed
+     */
     @Suppress("DuplicatedCode")
     private fun propertiesDirectoryWatcher() {
         Executors.newSingleThreadExecutor().execute {
@@ -214,7 +229,7 @@ class TabbedConfigsTab(
      * @author Griefed
      */
     fun iconQuickSelections(): List<String> {
-        return getNames(apiWrapper.apiProperties.iconsDirectory,guiProps.imageRegex)
+        return getNames(apiWrapper.apiProperties.iconsDirectory, guiProps.imageRegex)
     }
 
     /**
@@ -234,6 +249,6 @@ class TabbedConfigsTab(
      * @author Griefed
      */
     fun propertiesQuickSelections(): List<String> {
-        return getNames(apiWrapper.apiProperties.propertiesDirectory,guiProps.propertiesRegex)
+        return getNames(apiWrapper.apiProperties.propertiesDirectory, guiProps.propertiesRegex)
     }
 }

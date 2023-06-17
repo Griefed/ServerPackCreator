@@ -24,6 +24,11 @@ import de.griefed.serverpackcreator.gui.utilities.ImageUtilities
 import javax.swing.JButton
 import kotlin.system.exitProcess
 
+/**
+ * Display an exit button in the splash screen to quit SPC before it is fully started.
+ *
+ * @author Griefed
+ */
 class ExitButton(width: Int) : JButton() {
     init {
         val size = 16

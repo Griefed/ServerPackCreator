@@ -25,6 +25,11 @@ import javax.swing.JProgressBar
 import javax.swing.plaf.basic.BasicProgressBarUI
 import kotlin.math.roundToInt
 
+/**
+ * Progressbar to display in the splashscreen to give a vague sense of how far SPC is loaded.
+ *
+ * @author Griefed
+ */
 class Progress(width: Int, height: Int, props: SplashProps) : JProgressBar() {
     init {
         val offset = 20f

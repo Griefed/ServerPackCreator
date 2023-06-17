@@ -23,7 +23,9 @@ import java.awt.font.TextAttribute
 import javax.swing.JLabel
 
 /**
- * TODO docs
+ * Label to display in front of various components in ServerPackCreator.
+ *
+ * @author Griefed
  */
 class ElementLabel(text: String, private var size: Int = 0) : JLabel(text) {
     init {

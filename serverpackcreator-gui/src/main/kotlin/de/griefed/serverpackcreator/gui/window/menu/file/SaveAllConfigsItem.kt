@@ -33,7 +33,7 @@ import javax.swing.JMenuItem
 class SaveAllConfigsItem(private val tabbedConfigsTab: TabbedConfigsTab) :
     JMenuItem(Gui.menubar_gui_menuitem_saveall.toString()) {
     init {
-        addActionListener { saveAll() }
+        this.addActionListener { saveAll() }
     }
 
     private fun saveAll() {

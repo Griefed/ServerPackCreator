@@ -47,7 +47,7 @@ open class ScrollTextField(
     KeyListener {
 
     constructor(text: String, documentChangeListener: DocumentChangeListener) : this(text) {
-        addDocumentListener(documentChangeListener)
+        this.addDocumentListener(documentChangeListener)
     }
 
     private val undoManager = UndoManager()
@@ -70,16 +70,25 @@ open class ScrollTextField(
 
     }
 
+    /**
+     * @author Griefed
+     */
     fun addDocumentListener(listener: DocumentListener) {
         textField.document.addDocumentListener(listener)
     }
 
+    /**
+     * @author Griefed
+     */
     override fun undoableEditHappened(e: UndoableEditEvent) {
         undoManager.addEdit(e.edit)
     }
 
     override fun keyTyped(e: KeyEvent) {}
 
+    /**
+     * @author Griefed
+     */
     override fun keyPressed(e: KeyEvent) {
         when {
             e.keyCode == KeyEvent.VK_Z && e.isControlDown -> {

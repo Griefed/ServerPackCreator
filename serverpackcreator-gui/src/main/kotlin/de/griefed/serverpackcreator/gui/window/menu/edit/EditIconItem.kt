@@ -33,9 +33,12 @@ import javax.swing.JMenuItem
 class EditIconItem(private val fileUtilities: FileUtilities, private val tabbedConfigsTab: TabbedConfigsTab) :
     JMenuItem(Gui.menubar_gui_menuitem_icon.toString()) {
     init {
-        addActionListener { openIcon() }
+        this.addActionListener { openIcon() }
     }
 
+    /**
+     * @author Griefed
+     */
     private fun openIcon() {
         if (tabbedConfigsTab.selectedEditor == null || !File(tabbedConfigsTab.selectedEditor!!.getServerIconPath()).isFile) {
             return

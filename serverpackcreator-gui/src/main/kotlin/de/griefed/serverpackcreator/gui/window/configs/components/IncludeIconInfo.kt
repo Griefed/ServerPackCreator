@@ -22,6 +22,12 @@ package de.griefed.serverpackcreator.gui.window.configs.components
 import Gui
 import de.griefed.serverpackcreator.gui.GuiProps
 
+/**
+ * Status icon for server-icon inclusion to inform a user about the status of the icon and inclusion and display
+ * any encountered errors in a hover-tooltip.
+ *
+ * @author Griefed
+ */
 class IncludeIconInfo(guiProps: GuiProps) : StatusIcon(
     guiProps,
     Gui.createserverpack_gui_createserverpack_checkboxicon_tip.toString()

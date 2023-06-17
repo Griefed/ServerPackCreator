@@ -74,11 +74,6 @@ class ComponentResizer(
             field = value
         }
     private val components = hashMapOf<Component, String>()
-
-    /**
-     * Specify the maximum size for the component. The component will still
-     * be constrained by the size of its parent.
-     */
     private var maximumSize = Dimension(Int.MAX_VALUE, Int.MAX_VALUE)
 
     init {
@@ -94,6 +89,9 @@ class ComponentResizer(
      * @param component The component the listeners are added to.
      * @param constraint The miglayout constraints to update. Use {0} and {1} for width and height respectively, i.e.
      * "cell 2 3 1 3,grow,w 10:{0}:,h {1}!"
+     *
+     * @author Rob Camick
+     * @author Griefed
      */
     fun registerComponent(component: Component, constraint: String) {
         component.addMouseListener(this)
@@ -109,6 +107,9 @@ class ComponentResizer(
      * When the components minimum size is less than the drag insets then
      * we can't determine which border should be resized, so we need to
      * prevent this from happening.
+     *
+     * @author Rob Camick
+     * @author Griefed
      */
     private fun validateMinimumAndInsets(minimum: Dimension, drag: Insets?) {
         val minimumWidth = drag!!.left + drag.right
@@ -121,6 +122,10 @@ class ComponentResizer(
         }
     }
 
+    /**
+     * @author Rob Camick
+     * @author Griefed
+     */
     override fun mouseMoved(e: MouseEvent) {
         val source = getSource(e)
         val location = e.point
@@ -150,6 +155,10 @@ class ComponentResizer(
         }
     }
 
+    /**
+     * @author Rob Camick
+     * @author Griefed
+     */
     private fun changeBounds(
         e: MouseEvent,
         source: Component,
@@ -187,6 +196,10 @@ class ComponentResizer(
         source.revalidate()
     }
 
+    /**
+     * @author Rob Camick
+     * @author Griefed
+     */
     private fun getSource(e: MouseEvent): ResizeIndicatorScrollPane {
         return if (e.component is ResizeIndicatorScrollPane) {
             e.component as ResizeIndicatorScrollPane
@@ -195,6 +208,10 @@ class ComponentResizer(
         }
     }
 
+    /**
+     * @author Rob Camick
+     * @author Griefed
+     */
     override fun mouseEntered(e: MouseEvent) {
         if (!resizing) {
             val source = getSource(e)
@@ -202,18 +219,30 @@ class ComponentResizer(
         }
     }
 
+    /**
+     * @author Rob Camick
+     * @author Griefed
+     */
     override fun mouseExited(e: MouseEvent) {
         if (!resizing) {
             updateCursor(e, sourceCursor!!)
         }
     }
 
+    /**
+     * @author Rob Camick
+     * @author Griefed
+     */
     private fun updateCursor(e: MouseEvent, cursor: Cursor) {
         val source = getSource(e)
         source.cursor = cursor
         e.component.cursor = cursor
     }
 
+    /**
+     * @author Rob Camick
+     * @author Griefed
+     */
     override fun mousePressed(e: MouseEvent) {
         //	The mouseMoved event continually updates this variable
         if (direction == 0) {
@@ -235,6 +264,10 @@ class ComponentResizer(
         updateAutoscrolls(e, false)
     }
 
+    /**
+     * @author Rob Camick
+     * @author Griefed
+     */
     private fun updateAutoscrolls(e: MouseEvent, setting: Boolean) {
         val source = getSource(e)
         source.autoscrolls = setting
@@ -243,14 +276,14 @@ class ComponentResizer(
 
     /**
      * Restore the original state of the Component
+     *
+     * @author Rob Camick
+     * @author Griefed
      */
     override fun mouseReleased(e: MouseEvent) {
         resizing = false
-        val source = getSource(e)
         updateCursor(e, sourceCursor!!)
         updateAutoscrolls(e, autoscroll)
-        //source.rootPane.grabFocus()
-        //source.grabFocus()
     }
 
     /**
@@ -260,6 +293,9 @@ class ComponentResizer(
      *
      * All calculations are done using the bounds of the component when the
      * resizing started.
+     *
+     * @author Rob Camick
+     * @author Griefed
      */
     override fun mouseDragged(e: MouseEvent) {
         if (!resizing) {
@@ -273,6 +309,9 @@ class ComponentResizer(
 
     /**
      *  Determine how far the mouse has moved from where dragging started
+     *
+     * @author Rob Camick
+     * @author Griefed
      */
     private fun getDragDistance(larger: Int, smaller: Int, snapSize: Int): Int {
         val halfway = snapSize / 2
@@ -288,6 +327,9 @@ class ComponentResizer(
 
     /**
      *  Adjust the drag value to be within the minimum and maximum range.
+     *
+     * @author Rob Camick
+     * @author Griefed
      */
     private fun getDragBounded(drag: Int, snapSize: Int, dimension: Int, minimum: Int, maximum: Int): Int {
         var newDrag = drag

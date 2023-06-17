@@ -34,6 +34,6 @@ class ServerPacksDirItem(
     apiProperties: ApiProperties
 ) : JMenuItem(Gui.menubar_gui_menuitem_serverpacksdir.toString()) {
     init {
-        addActionListener { fileUtilities.openFolder(apiProperties.serverPacksDirectory) }
+        this.addActionListener { fileUtilities.openFolder(apiProperties.serverPacksDirectory) }
     }
 }

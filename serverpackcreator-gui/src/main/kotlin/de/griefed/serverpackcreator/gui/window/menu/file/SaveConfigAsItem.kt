@@ -41,9 +41,12 @@ class SaveConfigAsItem(
     private val log = cachedLoggerOf(this.javaClass)
 
     init {
-        addActionListener { saveAs() }
+        this.addActionListener { saveAs() }
     }
 
+    /**
+     * @author Griefed
+     */
     private fun saveAs() {
         val configChooser = ConfigChooser(apiProperties, Gui.menubar_gui_menuitem_saveas_title.toString())
         if (configChooser.showOpenDialog(mainFrame) == JFileChooser.APPROVE_OPTION) {

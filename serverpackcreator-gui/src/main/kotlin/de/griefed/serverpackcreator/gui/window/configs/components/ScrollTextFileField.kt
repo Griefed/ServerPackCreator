@@ -34,7 +34,7 @@ class ScrollTextFileField(
     horizontalScrollbarVisibility: Int = HORIZONTAL_SCROLLBAR_AS_NEEDED
 ) : ScrollTextField(text, textField, horizontalScrollbarVisibility) {
     constructor(file: File, documentChangeListener: DocumentChangeListener) : this(file.absolutePath) {
-        addDocumentListener(documentChangeListener)
+        this.addDocumentListener(documentChangeListener)
     }
 
     var file: File

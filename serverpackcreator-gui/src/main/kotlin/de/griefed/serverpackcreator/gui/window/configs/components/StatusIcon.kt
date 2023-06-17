@@ -26,7 +26,10 @@ import java.awt.event.MouseListener
 import javax.swing.JLabel
 
 /**
- * TODO docs
+ * Status icon to display either an info-, warning-, or error-icon. A status icon also implements [BalloonTip] to display
+ * info, warning or error messages.
+ *
+ * @author Griefed
  */
 abstract class StatusIcon(private val guiProps: GuiProps, private val infoToolTip: String) : JLabel() {
     private val tooltTipLabel = JLabel(infoToolTip)
@@ -41,7 +44,7 @@ abstract class StatusIcon(private val guiProps: GuiProps, private val infoToolTi
             false
         )
         balloonTip.isVisible = false
-        addMouseListener(object : MouseListener {
+        this.addMouseListener(object : MouseListener {
             override fun mouseClicked(e: MouseEvent?) {
                 balloonTip.style = guiProps.balloonStyle
                 balloonTip.isVisible = true
@@ -69,7 +72,10 @@ abstract class StatusIcon(private val guiProps: GuiProps, private val infoToolTi
     }
 
     /**
-     * TODO docs
+     * Update the error tooltip with the given [tooltip] and set the icon to the error-icon, indicating that there was...
+     * well...an error.
+     *
+     * @author Griefed
      */
     fun error(tooltip: String) {
         icon = guiProps.errorIcon
@@ -77,7 +83,9 @@ abstract class StatusIcon(private val guiProps: GuiProps, private val infoToolTi
     }
 
     /**
-     * TODO docs
+     * Set the icon to the info-icon and the tooltip with which this status icon was initialized with.
+     *
+     * @author Griefed
      */
     fun info() {
         icon = guiProps.infoIcon
@@ -85,7 +93,10 @@ abstract class StatusIcon(private val guiProps: GuiProps, private val infoToolTi
     }
 
     /**
-     * TODO docs
+     * Update the warning tooltip with the given [tooltip] and set the icon to the warning-icon, indicating that there was...
+     * well...a warning.
+     *
+     * @author Griefed
      */
     fun warning(tooltip: String) {
         icon = guiProps.warningIcon

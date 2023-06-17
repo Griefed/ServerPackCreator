@@ -22,6 +22,12 @@ package de.griefed.serverpackcreator.gui.window.configs.components
 import Gui
 import de.griefed.serverpackcreator.gui.GuiProps
 
+/**
+ * Status icon for the Java version to inform a user about the required Java version of the server for the specified
+ * Minecraft version in a hover-tooltip.
+ *
+ * @author Griefed
+ */
 class JavaVersionInfo(guiProps: GuiProps) : StatusIcon(
     guiProps,
     Gui.createserverpack_gui_createserverpack_minecraft_java_tooltip.toString()

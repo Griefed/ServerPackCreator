@@ -24,6 +24,11 @@ import de.griefed.serverpackcreator.gui.utilities.ImageUtilities
 import javax.swing.ImageIcon
 import kotlin.random.Random
 
+/**
+ * Splash images to use as the background in the splashscreen.
+ *
+ * @author Griefed
+ */
 class Splashes {
     private val splashWidth = 600
     private val splashHeight = 337

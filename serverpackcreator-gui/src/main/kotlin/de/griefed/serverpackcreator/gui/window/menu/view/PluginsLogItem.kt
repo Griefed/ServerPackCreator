@@ -35,9 +35,12 @@ class PluginsLogItem(
     private val apiProperties: ApiProperties
 ) : JMenuItem(Gui.menubar_gui_menuitem_pluginlog.toString()) {
     init {
-        addActionListener { openPluginsLog() }
+        this.addActionListener { openPluginsLog() }
     }
 
+    /**
+     * @author Griefed
+     */
     private fun openPluginsLog() {
         fileUtilities.openFile(File(apiProperties.logsDirectory, "plugins.log"))
     }

@@ -23,10 +23,12 @@ import java.awt.event.ActionListener
 import javax.swing.JCheckBox
 
 /**
- * TODO docs
+ * Checkbox initialized with an action listener.
+ *
+ * @author Griefed
  */
 class ActionCheckBox(title: String, actionListener: ActionListener) : JCheckBox(title) {
     init {
-        addActionListener(actionListener)
+        this.addActionListener(actionListener)
     }
 }

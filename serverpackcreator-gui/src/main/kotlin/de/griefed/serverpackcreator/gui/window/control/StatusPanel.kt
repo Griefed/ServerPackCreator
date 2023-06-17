@@ -25,7 +25,9 @@ import javax.swing.JLabel
 import javax.swing.JPanel
 
 /**
- * TODO docs
+ * Status panel housing the [StatusLabel], to display them in the [ControlPanel].
+ *
+ * @author Griefed
  */
 class StatusPanel(guiProps: GuiProps) {
     val panel = JPanel()

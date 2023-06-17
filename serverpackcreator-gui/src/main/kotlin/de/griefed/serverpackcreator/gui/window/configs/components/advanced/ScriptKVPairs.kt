@@ -98,6 +98,8 @@ class ScriptKVPairs(guiProps: GuiProps, configEditor: ConfigEditor) : JTable(
 
     /**
      * Override to provide Select All editing functionality
+     *
+     * @author Rob Camick
      */
     override fun editCellAt(
         row: Int,
@@ -111,6 +113,8 @@ class ScriptKVPairs(guiProps: GuiProps, configEditor: ConfigEditor) : JTable(
 
     /**
      * Select the text when editing on a text related cell is started
+     *
+     * @author Rob Camick
      */
     private fun selectAll(e: EventObject?) {
         val editor: Component = editorComponent as? JTextComponent ?: return
@@ -185,6 +189,11 @@ class ScriptKVPairs(guiProps: GuiProps, configEditor: ConfigEditor) : JTable(
         return data
     }
 
+    /**
+     * Button colums to add to the table
+     *
+     * @author Griefed
+     */
     inner class ButtonColumns(
         column: Int,
         guiProps: GuiProps,
@@ -238,7 +247,7 @@ class ScriptKVPairs(guiProps: GuiProps, configEditor: ConfigEditor) : JTable(
         }
 
         /**
-         * TODO docs
+         * @author Griefed
          */
         fun clearRow(tableModel: DefaultTableModel, modelRow: Int) {
             tableModel.setValueAt("", modelRow, 0)
@@ -289,6 +298,7 @@ class ScriptKVPairs(guiProps: GuiProps, configEditor: ConfigEditor) : JTable(
          * The foreground color of the button when the cell has focus
          *
          * @param focusBorder the foreground color
+         * @author Griefed
          */
         @Suppress("unused")
         private fun setFocusBorder(focusBorder: Border?) {
@@ -307,10 +317,16 @@ class ScriptKVPairs(guiProps: GuiProps, configEditor: ConfigEditor) : JTable(
             return editButton
         }
 
+        /**
+         * @author Griefed
+         */
         override fun getCellEditorValue(): Any? {
             return editorValue
         }
 
+        /**
+         * @author Griefed
+         */
         override fun getTableCellRendererComponent(
             table: JTable,
             value: Any?,
@@ -336,6 +352,8 @@ class ScriptKVPairs(guiProps: GuiProps, configEditor: ConfigEditor) : JTable(
 
         /**
          * The button has been pressed. Stop editing and invoke the custom Action
+         *
+         * @author Griefed
          */
         override fun actionPerformed(e: ActionEvent) {
             val row: Int = this@ScriptKVPairs.convertRowIndexToModel(this@ScriptKVPairs.editingRow)
@@ -353,6 +371,8 @@ class ScriptKVPairs(guiProps: GuiProps, configEditor: ConfigEditor) : JTable(
          * When the mouse is pressed the editor is invoked. If you then drag the mouse to another cell
          * before releasing it, the editor is still active. Make sure editing is stopped when the mouse
          * is released.
+         *
+         * @author Griefed
          */
         override fun mousePressed(e: MouseEvent) {
             if (this@ScriptKVPairs.isEditing && this@ScriptKVPairs.cellEditor == this) {
@@ -360,6 +380,9 @@ class ScriptKVPairs(guiProps: GuiProps, configEditor: ConfigEditor) : JTable(
             }
         }
 
+        /**
+         * @author Griefed
+         */
         override fun mouseReleased(e: MouseEvent) {
             if (isButtonColumnEditor && this@ScriptKVPairs.isEditing) {
                 this@ScriptKVPairs.cellEditor.stopCellEditing()
@@ -374,7 +397,9 @@ class ScriptKVPairs(guiProps: GuiProps, configEditor: ConfigEditor) : JTable(
     }
 
     /**
-     * TODO docs
+     * Column types to determine which button to display in a given button column.
+     *
+     * @author Griefed
      */
     enum class ColumnType {
         /**

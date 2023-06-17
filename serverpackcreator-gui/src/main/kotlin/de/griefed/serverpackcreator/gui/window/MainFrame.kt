@@ -33,7 +33,9 @@ import javax.swing.JFrame
 import javax.swing.WindowConstants
 
 /**
- * TODO docs
+ * Main Frame of ServerPackCreator, housing [MainPanel], [MainMenuBar].
+ *
+ * @author Griefed
  */
 class MainFrame(
     apiWrapper: ApiWrapper,

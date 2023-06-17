@@ -22,6 +22,12 @@ package de.griefed.serverpackcreator.gui.window.configs.components
 import Gui
 import de.griefed.serverpackcreator.gui.GuiProps
 
+/**
+ * Status icon for the server pack suffix to inform a user about the status of the specified suffix and display
+ * any encountered errors in a hover-tooltip.
+ *
+ * @author Griefed
+ */
 class SuffixInfo(guiProps: GuiProps) : StatusIcon(
     guiProps,
     Gui.createserverpack_gui_createserverpack_labelsuffix_tip.toString()

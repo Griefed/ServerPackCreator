@@ -20,10 +20,24 @@
 package de.griefed.serverpackcreator.gui.window.configs.components.serverfiles
 
 import Gui
-import de.griefed.serverpackcreator.gui.GuiProps
-import de.griefed.serverpackcreator.gui.window.configs.components.StatusIcon
+import java.awt.Dimension
+import java.io.File
+import javax.swing.JFileChooser
 
-class ServerPackFilesInfo(guiProps: GuiProps) : StatusIcon(
-    guiProps,
-    Gui.createserverpack_gui_createserverpack_labelcopydirs_tip.toString()
-)
+/**
+ * File-chooser allowing a user to select files to add to the inclusions. Every file selected ends up as a separate
+ * entry in the list of inclusions, which in turn allows a user to specify separate filters and destinations.
+ *
+ * @author Griefed
+ */
+class InclusionSourceChooser(current: File?, dimension: Dimension) : JFileChooser(current) {
+    constructor(dimension: Dimension) : this(null, dimension)
+
+    init {
+        dialogTitle = Gui.createserverpack_gui_buttoncopydirs_title.toString()
+        fileSelectionMode = FILES_AND_DIRECTORIES
+        isAcceptAllFileFilterUsed = true
+        isMultiSelectionEnabled = true
+        preferredSize = dimension
+    }
+}

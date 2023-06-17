@@ -28,6 +28,12 @@ import de.griefed.serverpackcreator.gui.window.configs.TabbedConfigsTab
 import javax.swing.JMenu
 import javax.swing.JSeparator
 
+/**
+ * File menu to present the user all file-related operations, such as starting a new server pack config, loading a config,
+ * saving the currently selected config, saving all currently opened configs etc.
+ *
+ * @author Griefed
+ */
 class FileMenu(
     tabbedConfigsTab: TabbedConfigsTab,
     apiProperties: ApiProperties,

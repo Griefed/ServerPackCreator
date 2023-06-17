@@ -51,6 +51,9 @@ class ConfigToHasteBinItem(
         addActionListener { uploadConfig() }
     }
 
+    /**
+     * @author Griefed
+     */
     private fun uploadConfig() {
         if (tabbedConfigsTabs.selectedEditor == null || tabbedConfigsTabs.selectedEditor!!.configFile == null) {
             errorDialog(Gui.menubar_gui_noconfig_message.toString(),Gui.menubar_gui_noconfig_title.toString())

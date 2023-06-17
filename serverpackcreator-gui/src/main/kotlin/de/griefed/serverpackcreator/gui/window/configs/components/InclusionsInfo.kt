@@ -17,19 +17,18 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.gui.window.configs.components.serverfiles
+package de.griefed.serverpackcreator.gui.window.configs.components
 
-import java.awt.Dimension
-import java.io.File
-import javax.swing.JFileChooser
+import Gui
+import de.griefed.serverpackcreator.gui.GuiProps
 
-class ServerFilesChooser(current: File?, dimension: Dimension) : JFileChooser(current) {
-    constructor(dimension: Dimension): this(null,dimension)
-    init {
-        dialogTitle = Gui.createserverpack_gui_buttoncopydirs_title.toString()
-        fileSelectionMode = FILES_AND_DIRECTORIES
-        isAcceptAllFileFilterUsed = true
-        isMultiSelectionEnabled = true
-        preferredSize = dimension
-    }
-}
+/**
+ * Status icon for [de.griefed.serverpackcreator.gui.window.configs.components.serverfiles.InclusionsEditor] to inform
+ * a user about the status of the specified inclusions and display any encountered errors in a hover-tooltip.
+ *
+ * @author Griefed
+ */
+class InclusionsInfo(guiProps: GuiProps) : StatusIcon(
+    guiProps,
+    Gui.createserverpack_gui_createserverpack_labelcopydirs_tip.toString()
+)

@@ -32,6 +32,8 @@ import javax.swing.Timer
 
 /**
  * Regular JButton but with a [BalloonTip] instead of the regular old Java-Style tooltip.
+ *
+ * @author Griefed
  */
 open class BalloonTipButton(text: String?, icon: Icon, toolTip: String, guiProps: GuiProps) : JButton(text, icon) {
     private val toolTipLabel = JLabel(toolTip)
@@ -39,7 +41,7 @@ open class BalloonTipButton(text: String?, icon: Icon, toolTip: String, guiProps
     constructor(text: String?, icon: Icon, toolTip: String, guiProps: GuiProps, actionListener: ActionListener) : this(
         text, icon, toolTip, guiProps
     ) {
-        addActionListener(actionListener)
+        this.addActionListener(actionListener)
     }
 
     init {
@@ -57,7 +59,7 @@ open class BalloonTipButton(text: String?, icon: Icon, toolTip: String, guiProps
         }
         timer.stop()
         timer.isRepeats = false
-        addMouseListener(object : MouseListener {
+        this.addMouseListener(object : MouseListener {
             override fun mouseClicked(e: MouseEvent?) {}
 
             override fun mousePressed(e: MouseEvent?) {}

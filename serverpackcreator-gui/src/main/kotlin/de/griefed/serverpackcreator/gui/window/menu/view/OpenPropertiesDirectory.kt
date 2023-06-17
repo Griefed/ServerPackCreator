@@ -33,9 +33,12 @@ class OpenPropertiesDirectory(private val fileUtilities: FileUtilities, private 
     JMenuItem(Gui.menubar_gui_menuitem_serverproperties.toString()) {
 
     init {
-        addActionListener { openProperties() }
+        this.addActionListener { openProperties() }
     }
 
+    /**
+     * @author Griefed
+     */
     private fun openProperties() {
         fileUtilities.openFile(apiProperties.propertiesDirectory)
     }

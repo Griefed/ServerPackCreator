@@ -80,6 +80,7 @@ class CompoundIcon(
      * @param g The graphics context
      * @param xCoord The X coordinate of the icon's top-left corner
      * @param yCoord The Y coordinate of the icon's top-left corner
+     *
      * @author Rob Camick
      */
     override fun paintIcon(
@@ -126,6 +127,7 @@ class CompoundIcon(
      * Gets the width of this icon.
      *
      * @return The width of the icon in pixels.
+     *
      * @author Rob Camick
      */
     override fun getIconWidth(): Int {
@@ -151,6 +153,7 @@ class CompoundIcon(
      * Gets the height of this icon.
      *
      * @return The height of the icon in pixels.
+     *
      * @author Rob Camick
      */
     override fun getIconHeight(): Int {
@@ -175,6 +178,7 @@ class CompoundIcon(
      *  When the icon value is smaller than the maximum value of all icons the
      *  icon needs to be aligned appropriately. Calculate the offset to be used
      *  when painting the icon to achieve the proper alignment.
+     *
      *  @author Rob Camick
      */
     private fun getOffset(
@@ -186,6 +190,9 @@ class CompoundIcon(
         return offset.roundToInt()
     }
 
+    /**
+     * @author Rob Camick
+     */
     enum class Axis {
         X_AXIS, Y_AXIS, Z_AXIS
     }

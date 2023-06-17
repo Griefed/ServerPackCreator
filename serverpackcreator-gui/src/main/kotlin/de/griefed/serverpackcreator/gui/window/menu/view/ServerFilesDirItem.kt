@@ -32,9 +32,12 @@ import javax.swing.JMenuItem
 class ServerFilesDirItem(private val fileUtilities: FileUtilities, private val apiProperties: ApiProperties) :
     JMenuItem(Gui.menubar_gui_menuitem_serverfilesdir.toString()) {
     init {
-        addActionListener { openServerFilesDir() }
+        this.addActionListener { openServerFilesDir() }
     }
 
+    /**
+     * @author Griefed
+     */
     private fun openServerFilesDir() {
         fileUtilities.openFolder(apiProperties.serverFilesDirectory)
     }

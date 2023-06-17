@@ -24,6 +24,11 @@ import de.griefed.serverpackcreator.api.utilities.ReticulatingSplines
 import java.awt.Font
 import javax.swing.JLabel
 
+/**
+ * Reticulation to generate nonsense messages to display in the splashscreen.
+ *
+ * @author Griefed
+ */
 class Reticulation(
     width: Int,
     height: Int,
@@ -39,6 +44,11 @@ class Reticulation(
         reticulate()
     }
 
+    /**
+     * Generate a new reticulation.
+     *
+     * @author Griefed
+     */
     fun reticulate() {
         text = reticulatingSplines.reticulate()
     }

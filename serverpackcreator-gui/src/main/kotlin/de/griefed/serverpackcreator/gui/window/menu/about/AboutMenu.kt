@@ -42,8 +42,7 @@ class AboutMenu(
     migrationManager: MigrationManager,
     guiProps: GuiProps,
     mainFrame: MainFrame
-) :
-    JMenu(Gui.menubar_gui_menu_about.toString()) {
+) : JMenu(Gui.menubar_gui_menu_about.toString()) {
     init {
         add(UpdateCheckItem(updateDialogs))
         add(MigrationInfoItem(apiWrapper, migrationManager, guiProps, mainFrame))
