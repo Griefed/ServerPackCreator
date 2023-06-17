@@ -162,9 +162,7 @@ actual class ApiPlugins(
      * @author Griefed
      */
     private fun extensionsInfo(extensions: List<ExtensionInformation>) {
-        if (extensions.isEmpty()) {
-            log.info("No ${extensions.javaClass.canonicalName} available.")
-        } else {
+        if (extensions.isNotEmpty()) {
             for (extension in extensions) {
                 log.info("  Name:       ${extension.name}(${extension.extensionId})")
                 log.info("    Description: ${extension.description}")
