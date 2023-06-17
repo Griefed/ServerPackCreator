@@ -17,12 +17,13 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.gui.window.configs.components
+package de.griefed.serverpackcreator.gui.window.configs.components.advanced
 
 import Gui
 import de.griefed.serverpackcreator.gui.GuiProps
+import de.griefed.serverpackcreator.gui.window.configs.components.StatusIcon
 
-class JavaArgsInfo(guiProps: GuiProps) : StatusIcon(
+class ScriptSettingsInfo(guiProps: GuiProps) : StatusIcon(
     guiProps,
-    Gui.createserverpack_gui_createserverpack_javaargs_tip.toString()
+    Gui.createserverpack_gui_createserverpack_scriptsettings_label_tooltip.toString()
 )

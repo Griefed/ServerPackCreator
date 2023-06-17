@@ -36,7 +36,7 @@ import javax.swing.border.TitledBorder
  */
 class CollapsiblePanel(
     private var title: String = "Collapsible Panel",
-    private val panel: JPanel,
+    panel: JPanel,
     private var border: TitledBorder = BorderFactory.createTitledBorder(title)
 ) : JPanel() {
 

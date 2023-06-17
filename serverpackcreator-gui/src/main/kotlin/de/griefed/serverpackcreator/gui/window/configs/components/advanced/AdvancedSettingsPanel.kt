@@ -17,9 +17,11 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.gui.window.configs.components
+package de.griefed.serverpackcreator.gui.window.configs.components.advanced
 
 import Gui
+import de.griefed.serverpackcreator.gui.window.configs.components.ElementLabel
+import de.griefed.serverpackcreator.gui.window.configs.components.ScrollTextArea
 import net.miginfocom.swing.MigLayout
 import javax.swing.JButton
 import javax.swing.JLabel

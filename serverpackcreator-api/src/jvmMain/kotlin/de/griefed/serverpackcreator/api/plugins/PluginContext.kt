@@ -17,12 +17,13 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.gui.window.configs.components
+package de.griefed.serverpackcreator.api.plugins
 
-import Gui
-import de.griefed.serverpackcreator.gui.GuiProps
+import org.pf4j.RuntimeMode
 
-class ServerPackFilesInfo(guiProps: GuiProps) : StatusIcon(
-    guiProps,
-    Gui.createserverpack_gui_createserverpack_labelcopydirs_tip.toString()
-)
+/**
+ * Plugin context which provides a [runtimeMode] to plugins.
+ *
+ * @author Griefed
+ */
+class PluginContext(private val runtimeMode: RuntimeMode)

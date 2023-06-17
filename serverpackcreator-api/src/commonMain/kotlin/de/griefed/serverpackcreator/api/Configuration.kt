@@ -200,7 +200,7 @@ abstract class Configuration<F, P> {
     fun printConfigurationModel(packConfig: Pack<*, *, *>) = printConfigurationModel(
         packConfig.modpackDir,
         packConfig.clientMods,
-        packConfig.copyDirs,
+        packConfig.inclusions,
         packConfig.isServerInstallationDesired,
         packConfig.minecraftVersion,
         packConfig.modloader,
@@ -262,7 +262,7 @@ abstract class Configuration<F, P> {
      * specified a `source/file;destination/file`-combination, it is checked whether the
      * specified source-file exists on the host.
      *
-     * @param directoriesToCopy Directories, or `source/file;destination/file`-combinations, to
+     * @param inclusions Directories, or `source/file;destination/file`-combinations, to
      * check for existence.
      * `source/file;destination/file`-combinations must be absolute
      * paths to the source-file.
@@ -272,8 +272,8 @@ abstract class Configuration<F, P> {
      * was not found, false is returned.
      * @author Griefed
      */
-    abstract fun checkCopyDirs(
-        directoriesToCopy: MutableList<String>,
+    abstract fun checkInclusions(
+        inclusions: MutableList<InclusionSpecification>,
         modpackDir: String,
         encounteredErrors: MutableList<String> = ArrayList(5),
         printLog: Boolean = true
@@ -312,7 +312,7 @@ abstract class Configuration<F, P> {
      * @return Directories inside the modpack, excluding well known client-side only directories.
      * @author Griefed
      */
-    abstract fun suggestCopyDirs(modpackDir: String): ArrayList<String>
+    abstract fun suggestInclusions(modpackDir: String): ArrayList<InclusionSpecification>
 
     /**
      * Check whether various manifests from various launchers exist and use them to update our
@@ -357,7 +357,7 @@ abstract class Configuration<F, P> {
      * @param modpackDirectory     The used modpackDir field either from a configuration file or from
      * configuration setup.
      * @param clientsideMods       List of clientside-only mods to exclude from the server pack...
-     * @param copyDirectories      List of directories in the modpack which are to be included in the
+     * @param inclusions      List of directories in the modpack which are to be included in the
      * server pack.
      * @param installServer        Whether to install the modloader server in the server pack.
      * @param minecraftVer         The Minecraft version the modpack uses.
@@ -381,7 +381,7 @@ abstract class Configuration<F, P> {
     abstract fun printConfigurationModel(
         modpackDirectory: String,
         clientsideMods: List<String>,
-        copyDirectories: List<String>,
+        inclusions: List<InclusionSpecification>,
         installServer: Boolean,
         minecraftVer: String,
         modloader: String,
@@ -395,31 +395,6 @@ abstract class Configuration<F, P> {
         serverPropertiesPath: String,
         scriptSettings: HashMap<String, String>
     )
-
-    /**
-     * Check the given entry for valid regex. In order for an entry to be valid, it must
-     *
-     *  * Contain `==`
-     *  * Optionally start with `==`. When starting with `==`
-     *  *
-     *  * The left side of `==` must specify an existing directory
-     *  * The right side of `==` must be the regex to match files and/or directories
-     *
-     * @param modpackDir        The modpacks directory which will be checked when the entry starts
-     * with `==`
-     * @param entry             The regex, or file/directory and regex, combination.
-     * @param exclusion         Whether the checks are for exclusions (`true`) or files and/or
-     * directories, or inclusions (`false`).
-     * @param encounteredErrors A list to which all encountered errors are saved to.
-     * @return `true` when no errors were encountered.
-     * @author Griefed
-     */
-    abstract fun checkRegex(
-        modpackDir: String,
-        entry: String,
-        exclusion: Boolean,
-        encounteredErrors: MutableList<String> = ArrayList(1)
-    ): Boolean
 
     /**
      * Acquire a list of directories in the base-directory of a ZIP-file.
@@ -531,38 +506,6 @@ abstract class Configuration<F, P> {
     abstract fun updateDestinationFromInstanceCfg(instanceCfg: F): String
 
     /**
-     * Exclusion regex checks when the entry is prefixed with an `!`.
-     *
-     * @param modpackDir        The modpacks directory which will be checked when the entry starts
-     * with `==`
-     * @param entry             The regex, or file/directory and regex, combination.
-     * @param encounteredErrors A list to which all encountered errors are saved to.
-     * @return `true` if the specified entry matched existing file(s) or directories.
-     * @author Griefed
-     */
-    abstract fun exclusionRegexCheck(
-        modpackDir: String,
-        entry: String,
-        encounteredErrors: MutableList<String> = mutableListOf()
-    ): Boolean
-
-    /**
-     * Inclusion regex checks.
-     *
-     * @param modpackDir        The modpacks directory which will be checked when the entry starts
-     * with `==`
-     * @param entry             The regex, or file/directory and regex, combination.
-     * @param encounteredErrors A list to which all encountered errors are saved to.
-     * @return `true` if the specified entry matched existing file(s) or directories.
-     * @author Griefed
-     */
-    abstract fun inclusionRegexCheck(
-        modpackDir: String,
-        entry: String,
-        encounteredErrors: MutableList<String> = mutableListOf()
-    ): Boolean
-
-    /**
      * Ensures the modloader is normalized to first letter upper case and rest lower case. Basically
      * allows the user to input Forge or Fabric in any combination of upper- and lowercase and
      * ServerPackCreator will still be able to work with the users input.
@@ -582,16 +525,6 @@ abstract class Configuration<F, P> {
     } else {
         "Forge"
     }
-
-    /**
-     * Walk through each file in the specified source-directory and perform regex-matches using the
-     * specified regex. The number of matches found is printed to the logs.
-     *
-     * @param source The source directory to walk through and perform regex-matches on.
-     * @param regex  The regex to use for finding matches within the specified source-directory.
-     * @author Griefed
-     */
-    abstract fun countRegexMatches(source: F, regex: Regex)
 
     /**
      * Check the passed directory for existence and whether it is a directory, rather than a file.

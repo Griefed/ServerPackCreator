@@ -50,13 +50,14 @@ import kotlin.io.path.moveTo
  *
  * @author Griefed
  */
-actual class ConfigurationHandler constructor(
+actual class ConfigurationHandler(
     private val versionMeta: VersionMeta,
     private val apiProperties: ApiProperties,
     private val utilities: Utilities,
     private val apiPlugins: ApiPlugins
 ) : Configuration<File, Path>() {
-    private val modpackRegex = "\\.[Zz][Ii][Pp]".toRegex()
+    private val zipRegex = "\\.[Zz][Ii][Pp]".toRegex()
+    private val destinationRegex = "^[a-zA-Z0-9]+[/\\\\a-zA-Z0-9 .]+".toRegex()
 
     actual override fun checkConfiguration(
         configFile: File, packConfig: PackConfig, encounteredErrors: MutableList<String>, quietCheck: Boolean
@@ -64,7 +65,7 @@ actual class ConfigurationHandler constructor(
         try {
             val fileConf = PackConfig(utilities, configFile)
             packConfig.setClientMods(fileConf.clientMods)
-            packConfig.setCopyDirs(fileConf.copyDirs)
+            packConfig.setInclusions(fileConf.inclusions)
             packConfig.modpackDir = fileConf.modpackDir
             packConfig.minecraftVersion = fileConf.minecraftVersion
             packConfig.modloader = fileConf.modloader
@@ -109,9 +110,9 @@ actual class ConfigurationHandler constructor(
             encounteredErrors.add(
                 Api.configuration_log_error_servericon(packConfig.serverIconPath)
             )
-        } else if (packConfig.serverIconPath.isNotEmpty() && File(packConfig.serverIconPath).exists() && !utilities.fileUtilities.isReadPermissionSet(
-                packConfig.serverIconPath
-            )
+        } else if (packConfig.serverIconPath.isNotEmpty()
+            && File(packConfig.serverIconPath).exists()
+            && !utilities.fileUtilities.isReadPermissionSet(packConfig.serverIconPath)
         ) {
             configHasError = true
             log.error("No read-permission for ${packConfig.serverIconPath}")
@@ -129,9 +130,9 @@ actual class ConfigurationHandler constructor(
             encounteredErrors.add(
                 Api.configuration_log_error_serverproperties(packConfig.serverPropertiesPath)
             )
-        } else if (packConfig.serverPropertiesPath.isNotEmpty() && File(packConfig.serverPropertiesPath).exists() && !utilities.fileUtilities.isReadPermissionSet(
-                packConfig.serverPropertiesPath
-            )
+        } else if (packConfig.serverPropertiesPath.isNotEmpty()
+            && File(packConfig.serverPropertiesPath).exists()
+            && !utilities.fileUtilities.isReadPermissionSet(packConfig.serverPropertiesPath)
         ) {
             configHasError = true
             log.error("No read-permission for ${packConfig.serverPropertiesPath}")
@@ -254,89 +255,34 @@ actual class ConfigurationHandler constructor(
                 log.error("Couldn't resolve link for server-properties.", ex)
             }
         }
-        if (packConfig.copyDirs.isNotEmpty()) {
-            val copyDirs: ArrayList<String> = packConfig.copyDirs
-            var copyDirChanges = false
+        if (packConfig.inclusions.isNotEmpty()) {
+            val copyDirs: ArrayList<InclusionSpecification> = packConfig.inclusions
+            val fileUtils = utilities.fileUtilities
+            var inclusionChanges = false
+            var entry: InclusionSpecification
             var link: String
-            for (i in packConfig.copyDirs.indices) {
-                val entry = copyDirs[i]
-                val equalsArray = entry.split("==").dropLastWhile { it.isEmpty() }.toTypedArray()
-                val semicolonArray = entry.split(";").dropLastWhile { it.isEmpty() }.toTypedArray()
-                val fileUtils = utilities.fileUtilities
-                try {
-                    if (!entry.startsWith("==") && entry.contains("==") && equalsArray.size == 2) {
+            for (inclusion in packConfig.inclusions.indices) {
+                entry = packConfig.inclusions[inclusion]
 
-                        if (fileUtils.isLink(equalsArray[0])) {
-                            link = fileUtils.resolveLink(equalsArray[0])
-                            copyDirs[i] = "$link==${equalsArray[1]}"
-                            log.info("Resolved regex-directory link to: ${copyDirs[i]}")
-                            copyDirChanges = true
-                        }
-
-                    } else if (entry.contains(";") && semicolonArray.size == 2) {
-
-                        // Source;Destination-combination
-                        if (fileUtils.isLink(semicolonArray[0])) {
-                            link = fileUtils.resolveLink(semicolonArray[0])
-                            copyDirs[i] = "$link;${semicolonArray[1]}"
-                            log.info("Resolved copy-directories link to: ${copyDirs[i]}")
-                            copyDirChanges = true
-
-                        } else if (fileUtils.isLink("${packConfig.modpackDir}${File.separator}${semicolonArray[0]}")) {
-                            val file = "${packConfig.modpackDir}${File.separator}${semicolonArray[0]}"
-                            link = fileUtils.resolveLink(file)
-                            copyDirs[i] = "$link;${semicolonArray[1]}"
-                            log.info("Resolved copy-directories link to: ${copyDirs[i]}")
-                            copyDirChanges = true
-                        }
-
-                    } else if (entry.startsWith("!")) {
-
-                        if (entry.contains("==") && equalsArray.size == 2) {
-                            val file = equalsArray[0].substring(1)
-                            if (fileUtils.isLink(file)) {
-                                link = fileUtils.resolveLink(file)
-                                val target = equalsArray[1]
-                                copyDirs[i] = "!$link==$target"
-                                log.info("Resolved regex-directory link to: ${copyDirs[i]}")
-                                copyDirChanges = true
-                            }
-
-                        } else if (fileUtils.isLink(entry.substring(1))) {
-                            val file = entry.substring(1)
-                            val resolved = fileUtils.resolveLink(file)
-                            copyDirs[i] = "!$resolved"
-                            log.info("Resolved copy-directories link to: ${copyDirs[i]}")
-                            copyDirChanges = true
-
-                        } else if (fileUtils.isLink("${packConfig.modpackDir}${File.separator}${entry.substring(1)}")) {
-                            val file = "!${packConfig.modpackDir}${File.separator}${entry.substring(1)}"
-                            copyDirs[i] = fileUtils.resolveLink(file)
-                            log.info("Resolved copy-directories link to: ${copyDirs[i]}")
-                            copyDirChanges = true
-
-                        }
-                    } else if (fileUtils.isLink(entry)) {
-                        // Regular entry, may be absolute path or relative one
-                        copyDirs[i] = fileUtils.resolveLink(entry)
-                        log.info("Resolved to: ${packConfig.modpackDir}")
-                        copyDirChanges = true
-
-                    } else if (fileUtils.isLink(packConfig.modpackDir + File.separator + entry)) {
-                        copyDirs[i] = fileUtils.resolveLink("${packConfig.modpackDir}${File.separator}$entry")
-                        log.info("Resolved copy-directories link to: ${copyDirs[i]}")
-                        copyDirChanges = true
-
-                    }
-
-                } catch (ex: InvalidFileTypeException) {
-                    log.error("Couldn't resolve link for copy-directories entry: ${copyDirs[i]}", ex)
-                } catch (ex: IOException) {
-                    log.error("Couldn't resolve link for copy-directories entry: ${copyDirs[i]}", ex)
+                if (!entry.source.startsWith(packConfig.modpackDir)
+                    && !entry.source.matches(destinationRegex)
+                    && fileUtils.isLink(entry.source)
+                ) {
+                    link = fileUtils.resolveLink(entry.source)
+                    entry.source = link
+                    inclusionChanges = true
+                    log.info("Resolved source to $link.")
+                } else if (entry.source.matches(destinationRegex)
+                    && fileUtils.isLink(packConfig.modpackDir + File.separator + entry.source)
+                ) {
+                    link = fileUtils.resolveLink("${packConfig.modpackDir}${File.separator}${entry.source}")
+                    entry.source = link
+                    inclusionChanges = true
+                    log.info("Resolved copy-directories link to: $link")
                 }
             }
-            if (copyDirChanges) {
-                packConfig.setCopyDirs(copyDirs)
+            if (inclusionChanges) {
+                packConfig.setInclusions(copyDirs)
             }
         }
     }
@@ -349,7 +295,7 @@ actual class ConfigurationHandler constructor(
 
     actual override fun isDir(packConfig: PackConfig, encounteredErrors: MutableList<String>): Boolean {
         var configHasError = false
-        if (checkCopyDirs(packConfig.copyDirs, packConfig.modpackDir, encounteredErrors)) {
+        if (checkInclusions(packConfig.inclusions, packConfig.modpackDir, encounteredErrors)) {
             log.debug("copyDirs setting check passed.")
         } else {
             configHasError = true
@@ -366,7 +312,7 @@ actual class ConfigurationHandler constructor(
 
         // modpackDir points at a ZIP-file. Get the path to the would be modpack directory.
         val name = File(packConfig.modpackDir).name
-        val cleaned = name.replace(modpackRegex, "")
+        val cleaned = name.replace(zipRegex, "")
         var unzippedModpack = "${apiProperties.modpacksDirectory}${File.separator}$cleaned"
         if (checkZipArchive(Paths.get(packConfig.modpackDir).toAbsolutePath().toString(), encounteredErrors)) {
             return true
@@ -379,13 +325,13 @@ actual class ConfigurationHandler constructor(
         utilities.fileUtilities.unzipArchive(packConfig.modpackDir, unzippedModpack)
 
         // Expand the already set copyDirs with suggestions from extracted ZIP-archive.
-        val newCopyDirs = suggestCopyDirs(unzippedModpack)
-        for (entry in packConfig.copyDirs) {
+        val newCopyDirs = suggestInclusions(unzippedModpack)
+        for (entry in packConfig.inclusions) {
             if (!newCopyDirs.contains(entry)) {
                 newCopyDirs.add(entry)
             }
         }
-        packConfig.setCopyDirs(newCopyDirs)
+        packConfig.setInclusions(newCopyDirs)
 
         // If various manifests exist, gather as much information as possible.
         // Check CurseForge manifest available if a modpack was exported through a client like
@@ -520,22 +466,22 @@ actual class ConfigurationHandler constructor(
             versionMeta.legacyFabric.releaseInstaller()
     }
 
-    actual override fun checkCopyDirs(
-        directoriesToCopy: MutableList<String>,
+    actual override fun checkInclusions(
+        inclusions: MutableList<InclusionSpecification>,
         modpackDir: String,
         encounteredErrors: MutableList<String>,
         printLog: Boolean
     ): Boolean {
         var configCorrect = true
-        directoriesToCopy.removeIf { entry: String? -> entry!!.matches(whitespace) || entry.isEmpty() }
-        if (directoriesToCopy.isEmpty()) {
+        val hasLazy = inclusions.any { entry -> entry.source == "lazy_mode" }
+        if (inclusions.isEmpty()) {
             configCorrect = false
             if (printLog) {
                 log.error("No directories or files specified for copying. This would result in an empty server pack.")
             }
             // This log is meant to be read by the user, therefore we allow translation.
             encounteredErrors.add(Api.configuration_log_error_checkcopydirs_empty.toString())
-        } else if (directoriesToCopy.size == 1 && directoriesToCopy[0] == "lazy_mode") {
+        } else if (inclusions.size == 1 && hasLazy) {
             if (printLog) {
                 log.warn(
                     "!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!"
@@ -554,161 +500,53 @@ actual class ConfigurationHandler constructor(
                 )
             }
         } else {
-            if (directoriesToCopy.size > 1 && directoriesToCopy.contains("lazy_mode") && printLog) {
+            if (inclusions.size > 1 && hasLazy && printLog) {
                 log.warn(
                     "You specified lazy mode in your configuration, but your copyDirs configuration contains other"
                             + " entries. To use the lazy mode, only specify \"lazy_mode\" and nothing else. Ignoring lazy mode."
                 )
             }
-            directoriesToCopy.removeIf { entry: String? -> entry == "lazy_mode" }
-            for (directory in directoriesToCopy) {
-
-                // Check whether the user specified a source;destination-combination
-                if (directory.contains(";")) {
-                    val sourceDestinationCombo = directory.split(";").dropLastWhile { it.isEmpty() }.toTypedArray()
-                    val modpackSource = File(modpackDir, sourceDestinationCombo[0])
-                    val source = File(sourceDestinationCombo[0])
-                    if (!modpackSource.isFile && !modpackSource.isDirectory && !source.isFile && !source.isDirectory) {
-                        configCorrect = false
-                        if (printLog) {
-                            log.error("Copy-file $modpackSource does not exist. Please specify existing files.")
-                        }
-                        // This log is meant to be read by the user, therefore we allow translation.
-                        encounteredErrors.add(
-                            Api.configuration_log_error_checkcopydirs_filenotfound(
-                                modpackSource
-                            )
+            inclusions.removeIf { entry -> entry.source == "lazy_mode" }
+            for (inclusion in inclusions) {
+                if (inclusion.isGlobalFilter()) {
+                    continue
+                }
+                val modpackSource = File(modpackDir, inclusion.source)
+                if (!File(inclusion.source).exists() && !modpackSource.exists()) {
+                    configCorrect = false
+                    if (printLog) {
+                        log.error("Source ${inclusion.source} does not exist. Please specify existing files.")
+                    }
+                    // This log is meant to be read by the user, therefore we allow translation.
+                    encounteredErrors.add(
+                        Api.configuration_log_error_checkcopydirs_filenotfound(
+                            inclusion.source
                         )
-                    } else {
-                        val fileThree = "$modpackDir${File.separator}${sourceDestinationCombo[0]}"
-                        if (modpackSource.exists() && !utilities.fileUtilities.isReadPermissionSet(fileThree)) {
-                            configCorrect = false
-                            if (printLog) {
-                                log.error("No read-permission for $fileThree")
-                            }
-                            // This log is meant to be read by the user, therefore we allow translation.
-                            encounteredErrors.add(
-                                Api.configuration_log_error_checkcopydirs_read(fileThree)
-                            )
-                        } else if (modpackSource.exists() && !utilities.fileUtilities.isReadPermissionSet(fileThree)) {
-                            configCorrect = false
-                            if (printLog) {
-                                log.error("No read-permission for $fileThree")
-                            }
-                            // This log is meant to be read by the user, therefore we allow translation.
-                            encounteredErrors.add(Api.configuration_log_error_checkcopydirs_read(fileThree))
-                        } else if (source.exists()
-                            && !utilities.fileUtilities.isReadPermissionSet(sourceDestinationCombo[0])
-                        ) {
-                            configCorrect = false
-                            if (printLog) {
-                                log.error("No read-permission for ${sourceDestinationCombo[0]}")
-                            }
-                            // This log is meant to be read by the user, therefore we allow translation.
-                            encounteredErrors.add(
-                                Api.configuration_log_error_checkcopydirs_read(
-                                    sourceDestinationCombo[0]
-                                )
-                            )
-                        }
-                        if (modpackSource.isDirectory) {
-                            for (file in modpackSource.listFiles()!!) {
-                                if (!utilities.fileUtilities.isReadPermissionSet(file)) {
-                                    configCorrect = false
-                                    if (printLog) {
-                                        log.error("No read-permission for $file")
-                                    }
-                                    // This log is meant to be read by the user, therefore we allow translation.
-                                    encounteredErrors.add(Api.configuration_log_error_checkcopydirs_read(file))
-                                }
-                            }
-                        } else if (source.isDirectory) {
-                            for (file in source.listFiles()!!) {
-                                if (!utilities.fileUtilities.isReadPermissionSet(file)) {
-                                    configCorrect = false
-                                    if (printLog) {
-                                        log.error("No read-permission for $file")
-                                    }
-                                    // This log is meant to be read by the user, therefore we allow translation.
-                                    encounteredErrors.add(Api.configuration_log_error_checkcopydirs_read(file))
-                                }
-                            }
-                        }
-                    }
-
-                    // Add an entry to the list of directories/files to exclude if it starts with !
-                } else if (directory.startsWith("!")) {
-                    val toExclude = directory.substring(1)
-                    if (toExclude.contains("==")) {
-                        if (!checkRegex(modpackDir, directory, true, encounteredErrors)) {
-                            configCorrect = false
-                        }
-                    } else {
-                        val fileOrDirectory = File(modpackDir, toExclude)
-                        if (fileOrDirectory.isFile && printLog) {
-                            log.warn("File $toExclude will be ignored.")
-                        } else if (fileOrDirectory.isDirectory && printLog) {
-                            log.warn("Directory $toExclude will be ignored.")
-                        } else if (printLog) {
-                            log.warn("Could not determine whether $fileOrDirectory is a file or directory.")
-                        }
-                    }
-                } else if (directory.contains("==")) {
-                    if (!checkRegex(modpackDir, directory, false, encounteredErrors)) {
+                    )
+                }
+                if (inclusion.hasDestination() && !inclusion.destination!!.matches(destinationRegex)) {
+                    log.warn("Invalid destination specified: ${inclusion.destination}.")
+                    inclusion.destination = null
+                    configCorrect = false
+                }
+                if (inclusion.hasInclusionFilter()) {
+                    try {
+                        inclusion.inclusionFilter!!.toRegex()
+                    } catch (ex: PatternSyntaxException) {
+                        log.error("Invalid inclusion-regex specified: ${inclusion.inclusionFilter}.",ex)
                         configCorrect = false
-                    }
-
-                    // Check if the entry exists
-                } else {
-                    val dirToCheck = File(modpackDir, directory)
-                    if (!dirToCheck.exists() && !File(directory).exists() && !File(directory).isFile && !File(directory).isDirectory) {
-                        configCorrect = false
-                        if (printLog) {
-                            log.error(
-                                "Copy-file or copy-directory $directory does not exist. Please specify existing directories or files."
-                            )
-                        }
                         // This log is meant to be read by the user, therefore we allow translation.
-                        encounteredErrors.add(Api.configuration_log_error_checkcopydirs_notfound(directory))
-                    } else {
-                        if (dirToCheck.exists() && !utilities.fileUtilities.isReadPermissionSet(dirToCheck)) {
-                            configCorrect = false
-                            if (printLog) {
-                                log.error("No read-permission for $dirToCheck")
-                            }
-                            // This log is meant to be read by the user, therefore we allow translation.
-                            encounteredErrors.add(Api.configuration_log_error_checkcopydirs_read(dirToCheck))
-                        } else if (File(directory).exists() && !utilities.fileUtilities.isReadPermissionSet(directory)) {
-                            configCorrect = false
-                            if (printLog) {
-                                log.error("No read-permission for $directory")
-                            }
-                            // This log is meant to be read by the user, therefore we allow translation.
-                            encounteredErrors.add(Api.configuration_log_error_checkcopydirs_read(directory))
-                        }
-                        if (dirToCheck.isDirectory) {
-                            for (file in dirToCheck.listFiles()!!) {
-                                if (!utilities.fileUtilities.isReadPermissionSet(file)) {
-                                    configCorrect = false
-                                    if (printLog) {
-                                        log.error("No read-permission for $file")
-                                    }
-                                    // This log is meant to be read by the user, therefore we allow translation.
-                                    encounteredErrors.add(Api.configuration_log_error_checkcopydirs_read(file))
-                                }
-                            }
-                        } else if (File(directory).isDirectory) {
-                            for (file in File(directory).listFiles()!!) {
-                                if (!utilities.fileUtilities.isReadPermissionSet(file)) {
-                                    configCorrect = false
-                                    if (printLog) {
-                                        log.error("No read-permission for $file")
-                                    }
-                                    // This log is meant to be read by the user, therefore we allow translation.
-                                    encounteredErrors.add(Api.configuration_log_error_checkcopydirs_read(file))
-                                }
-                            }
-                        }
+                        encounteredErrors.add("Invalid inclusion-regex specified: ${inclusion.inclusionFilter}.")
+                    }
+                }
+                if (inclusion.hasExclusionFilter()) {
+                    try {
+                        inclusion.exclusionFilter!!.toRegex()
+                    } catch (ex: PatternSyntaxException) {
+                        log.error("Invalid exclusion-regex specified: ${inclusion.exclusionFilter}.",ex)
+                        configCorrect = false
+                        // This log is meant to be read by the user, therefore we allow translation.
+                        encounteredErrors.add("Invalid exclusion-regex specified: ${inclusion.exclusionFilter}.")
                     }
                 }
             }
@@ -776,16 +614,17 @@ actual class ConfigurationHandler constructor(
         return File(dest).path
     }
 
-    actual override fun suggestCopyDirs(modpackDir: String): ArrayList<String> {
+    actual override fun suggestInclusions(modpackDir: String): ArrayList<InclusionSpecification> {
         // This log is meant to be read by the user, therefore we allow translation.
         log.info("Preparing a list of directories to include in server pack...")
+        var doNotInclude: String
         val listDirectoriesInModpack = File(modpackDir).listFiles()
-        val dirsInModpack: ArrayList<String> = ArrayList(100)
+        val dirsInModpack: ArrayList<InclusionSpecification> = ArrayList(100)
         try {
             assert(listDirectoriesInModpack != null)
             for (dir in listDirectoriesInModpack!!) {
                 if (dir.isDirectory) {
-                    dirsInModpack.add(dir.name)
+                    dirsInModpack.add(InclusionSpecification(dir.name))
                 }
             }
         } catch (np: NullPointerException) {
@@ -795,7 +634,8 @@ actual class ConfigurationHandler constructor(
             )
         }
         for (i in apiProperties.directoriesToExclude.indices) {
-            dirsInModpack.removeIf { it.contains(apiProperties.directoriesToExclude.toList()[i]) }
+            doNotInclude = apiProperties.directoriesToExclude.toList()[i]
+            dirsInModpack.removeIf { it.source == doNotInclude }
         }
         log.info("Modpack directory checked. Suggested directories for copyDirs-setting are: $dirsInModpack")
         return dirsInModpack
@@ -924,7 +764,7 @@ actual class ConfigurationHandler constructor(
     actual override fun printConfigurationModel(
         modpackDirectory: String,
         clientsideMods: List<String>,
-        copyDirectories: List<String>,
+        inclusions: List<InclusionSpecification>,
         installServer: Boolean,
         minecraftVer: String,
         modloader: String,
@@ -949,9 +789,13 @@ actual class ConfigurationHandler constructor(
             utilities.listUtilities.printListToLogChunked(clientsideMods, 5, "    ", true)
         }
         // This log is meant to be read by the user, therefore we allow translation.
-        log.info("Directories to copy:")
-        for (directory in copyDirectories) {
-            log.info("    %s".format(directory))
+        log.info("Inclusions:")
+        for (i in inclusions.indices) {
+            log.info("Inclusion $i:")
+            log.info("    %s".format(inclusions[i].source))
+            log.info("    %s".format(inclusions[i].destination))
+            log.info("    %s".format(inclusions[i].inclusionFilter))
+            log.info("    %s".format(inclusions[i].exclusionFilter))
         }
         // This log is meant to be read by the user, therefore we allow translation.
         log.info("Include server installation:       $installServer")
@@ -970,24 +814,6 @@ actual class ConfigurationHandler constructor(
             log.info("  Placeholder: $key")
             log.info("        Value: $value")
         }
-    }
-
-    actual override fun checkRegex(
-        modpackDir: String, entry: String, exclusion: Boolean, encounteredErrors: MutableList<String>
-    ) = try {
-        if (exclusion) {
-            exclusionRegexCheck(modpackDir, entry, encounteredErrors)
-        } else {
-            inclusionRegexCheck(modpackDir, entry, encounteredErrors)
-        }
-    } catch (ex: PatternSyntaxException) {
-        log.error("Invalid regex specified: $entry. Error near regex-index ${ex.index}.")
-        encounteredErrors.add(
-            Api.configuration_log_error_checkcopydirs_checkforregex_invalid_regex(
-                entry, ex.index
-            )
-        )
-        false
     }
 
     @Throws(
@@ -1157,99 +983,6 @@ actual class ConfigurationHandler constructor(
         return name
     }
 
-    actual override fun exclusionRegexCheck(modpackDir: String, entry: String, encounteredErrors: MutableList<String>) =
-        if (entry.startsWith("!==") && entry.length > 3) {
-            val source = File(modpackDir)
-            countRegexMatches(source, entry.toRegex())
-            true
-        } else if (entry.contains("==") && entry.split("==").dropLastWhile { it.isEmpty() }.toTypedArray().size == 2) {
-            val sourceRegex = entry.split("==").dropLastWhile { it.isEmpty() }.toTypedArray()
-
-            /*
-            * Matches inside modpack-directory
-            */
-            val file = File(modpackDir, sourceRegex[0].substring(1))
-            val sourceFile = File(sourceRegex[0].substring(1))
-            if (file.isDirectory) {
-                countRegexMatches(file, sourceRegex[1].toRegex())
-                true
-
-                /*
-                * Matches inside directory outside modpack-directory
-                */
-            } else if (sourceFile.isDirectory) {
-                countRegexMatches(sourceFile, sourceRegex[1].toRegex())
-                true
-            } else {
-                encounteredErrors.add(Api.configuration_log_error_checkcopydirs_checkforregex(sourceRegex[0]))
-                false
-            }
-        } else {
-            encounteredErrors.add(Api.configuration_log_error_checkcopydirs_checkforregex_invalid.toString())
-            false
-        }
-
-    actual override fun inclusionRegexCheck(modpackDir: String, entry: String, encounteredErrors: MutableList<String>) =
-        if (entry.startsWith("==") && entry.length > 2) {
-            val source = File(modpackDir)
-            countRegexMatches(source, entry.toRegex())
-            true
-
-            /*
-            * Check for matches in the specified directory
-            */
-        } else if (entry.contains("==") && entry.split("==").dropLastWhile { it.isEmpty() }.toTypedArray().size == 2) {
-            val sourceRegex = entry.split("==").dropLastWhile { it.isEmpty() }.toTypedArray()
-
-            /*
-            * Matches inside modpack-directory
-            */
-            val file = File(modpackDir, sourceRegex[0])
-            val sourceFile = File(sourceRegex[0])
-            if (file.isDirectory) {
-                countRegexMatches(file, sourceRegex[1].toRegex())
-                true
-
-                /*
-                 * Matches inside directory outside modpack-directory
-                 */
-            } else if (sourceFile.isDirectory) {
-                countRegexMatches(sourceFile, sourceRegex[1].toRegex())
-                true
-            } else {
-                encounteredErrors.add(Api.configuration_log_error_checkcopydirs_checkforregex(sourceRegex[0]))
-                false
-            }
-        } else {
-            encounteredErrors.add(Api.configuration_log_error_checkcopydirs_checkforregex_invalid.toString())
-            false
-        }
-
-    actual override fun countRegexMatches(source: File, regex: Regex) {
-        var counter = 0
-        var toMatch: String
-        try {
-            Files.walk(source.toPath()).use {
-                for (path in it) {
-                    toMatch = path.toFile().absolutePath.replace(
-                        source.absolutePath, ""
-                    )
-                    if (toMatch.startsWith(File.separator)) {
-                        toMatch = toMatch.substring(1)
-                    }
-                    if (toMatch.matches(regex)) {
-                        counter += 1
-                    }
-                }
-            }
-        } catch (ex: IOException) {
-            log.error("Could not check your regex entry \"$regex\" in directory $source", ex)
-        }
-        log.info(
-            "Regex \"$regex\" matched $counter files/folders."
-        )
-    }
-
     actual override fun checkModpackDir(
         modpackDir: String,
         encounteredErrors: MutableList<String>,
@@ -1263,7 +996,7 @@ actual class ConfigurationHandler constructor(
 
             // This log is meant to be read by the user, therefore we allow translation.
             encounteredErrors.add(Api.configuration_log_error_checkmodpackdir.toString())
-        } else if (!File(modpackDir).isDirectory) {
+        } else if (!File(modpackDir).exists()) {
             if (printLog) {
                 log.warn("Couldn't find directory $modpackDir.")
             }

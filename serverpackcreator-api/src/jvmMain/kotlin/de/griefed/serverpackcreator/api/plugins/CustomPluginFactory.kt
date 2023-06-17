@@ -17,12 +17,28 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.gui.window.configs.components
+package de.griefed.serverpackcreator.api.plugins
 
-import Gui
-import de.griefed.serverpackcreator.gui.GuiProps
+import org.apache.logging.log4j.kotlin.cachedLoggerOf
+import org.pf4j.DefaultPluginFactory
+import org.pf4j.Plugin
+import org.pf4j.PluginWrapper
 
-class ScriptSettingsInfo(guiProps: GuiProps) : StatusIcon(
-    guiProps,
-    Gui.createserverpack_gui_createserverpack_scriptsettings_label_tooltip.toString()
-)
+/**
+ * Custom plugin factory to enforce plugins having a context in which they run.
+ *
+ * @author Griefed
+ */
+class CustomPluginFactory: DefaultPluginFactory() {
+    private val log = cachedLoggerOf(this.javaClass)
+    override fun createInstance(pluginClass: Class<*>, pluginWrapper: PluginWrapper): Plugin? {
+        val context = PluginContext(pluginWrapper.runtimeMode)
+        try {
+            val constructor = pluginClass.getConstructor(PluginContext::class.java)
+            return constructor.newInstance(context) as Plugin
+        } catch (e: Exception) {
+            log.error("Could not instantiate plugin.", e)
+        }
+        return null
+    }
+}

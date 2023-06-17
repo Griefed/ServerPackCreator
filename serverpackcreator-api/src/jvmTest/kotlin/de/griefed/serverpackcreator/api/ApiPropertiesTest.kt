@@ -213,7 +213,6 @@ class ApiPropertiesTest internal constructor() {
         )
         Assertions.assertNotNull(apiProperties.serverPacksDirectory)
         Assertions.assertNotNull(apiProperties.directoriesToExclude)
-        Assertions.assertFalse(apiProperties.isSavingOfLastLoadedConfEnabled)
         Assertions.assertFalse(apiProperties.isCheckingForPreReleasesEnabled)
         Assertions.assertEquals(90, apiProperties.queueMaxDiskUsage)
         Assertions.assertEquals("dev", apiProperties.apiVersion)

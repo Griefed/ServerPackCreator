@@ -17,23 +17,29 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.gui.window.configs.components
+package de.griefed.serverpackcreator.gui.window.menu.edit
 
-import java.awt.Dimension
+import Gui
+import de.griefed.serverpackcreator.api.utilities.common.FileUtilities
+import de.griefed.serverpackcreator.gui.window.configs.TabbedConfigsTab
 import java.io.File
-import javax.swing.JFileChooser
-import javax.swing.filechooser.FileNameExtensionFilter
+import javax.swing.JMenuItem
 
-class ClientModsChooser(current: File?, dimension: Dimension):JFileChooser(current) {
-    constructor(dimension: Dimension) : this(null,dimension)
+/**
+ * Open the server.properties of the currently selected editor in the users default text editor.
+ *
+ * @author Griefed
+ */
+class EditPropertiesItem(private val fileUtilities: FileUtilities, private val tabbedConfigsTab: TabbedConfigsTab) :
+    JMenuItem(Gui.menubar_gui_menuitem_properties.toString()) {
     init {
-        dialogTitle = Gui.createserverpack_gui_buttonclientmods_title.toString()
-        fileSelectionMode = JFileChooser.FILES_ONLY
-        fileFilter = FileNameExtensionFilter(
-            Gui.createserverpack_gui_buttonclientmods_filter.toString(), "jar"
-        )
-        isAcceptAllFileFilterUsed = false
-        isMultiSelectionEnabled = true
-        preferredSize = dimension
+        addActionListener { openProperties() }
+    }
+
+    private fun openProperties() {
+        if (tabbedConfigsTab.selectedEditor == null || !File(tabbedConfigsTab.selectedEditor!!.getServerPropertiesPath()).isFile) {
+            return
+        }
+        fileUtilities.openFile(tabbedConfigsTab.selectedEditor!!.getServerPropertiesPath())
     }
 }

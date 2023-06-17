@@ -17,7 +17,7 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.gui.window.menu.file
+package de.griefed.serverpackcreator.gui.window.menu.edit
 
 import Gui
 import de.griefed.serverpackcreator.api.ApiProperties
@@ -31,7 +31,7 @@ import javax.swing.JOptionPane
  *
  * @author Griefed
  */
-class UpdateFallbackModslistItem(
+class UpdateDefaultModslistItem(
     private val apiProperties: ApiProperties,
     private val mainFrame: JFrame,
     private val guiProps: GuiProps

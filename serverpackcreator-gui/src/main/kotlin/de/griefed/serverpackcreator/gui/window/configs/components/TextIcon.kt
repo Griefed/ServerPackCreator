@@ -61,7 +61,7 @@ import kotlin.math.roundToInt
  *
  * @author Rob Camick
  */
-class TextIcon constructor(
+class TextIcon(
     private val component: JComponent,
     private var text: String,
     private val layout: Layout = Layout.HORIZONTAL

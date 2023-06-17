@@ -24,8 +24,9 @@ import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.utilities.common.FileUtilities
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.window.MainFrame
-import de.griefed.serverpackcreator.gui.window.control.components.LarsonScanner
+import de.griefed.serverpackcreator.gui.window.configs.TabbedConfigsTab
 import javax.swing.JMenu
+import javax.swing.JSeparator
 
 /**
  * Menu related to editing files or switching the current theme.
@@ -33,15 +34,17 @@ import javax.swing.JMenu
  * @author Griefed
  */
 class EditMenu(
-    fileUtilities: FileUtilities,
     apiProperties: ApiProperties,
     guiProps: GuiProps,
-    larsonScanner: LarsonScanner,
-    mainFrame: MainFrame
+    mainFrame: MainFrame,
+    fileUtilities: FileUtilities,
+    tabbedConfigsTab: TabbedConfigsTab
 ) : JMenu(Gui.menubar_gui_menu_edit.toString()) {
     init {
-        add(DefaultServerPropertiesItem(fileUtilities, apiProperties))
-        add(DefaultServerIconItem(fileUtilities, apiProperties))
-        add(SwitchThemeMenu(guiProps, larsonScanner, apiProperties, mainFrame))
+        add(OpenModpackItem(fileUtilities,tabbedConfigsTab))
+        add(EditPropertiesItem(fileUtilities,tabbedConfigsTab))
+        add(EditIconItem(fileUtilities,tabbedConfigsTab))
+        add(JSeparator())
+        add(UpdateDefaultModslistItem(apiProperties,mainFrame.frame,guiProps))
     }
 }

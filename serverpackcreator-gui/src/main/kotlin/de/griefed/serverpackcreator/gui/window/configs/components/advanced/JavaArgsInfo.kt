@@ -17,19 +17,13 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.gui.window.configs.components
+package de.griefed.serverpackcreator.gui.window.configs.components.advanced
 
-import java.awt.Dimension
-import java.io.File
-import javax.swing.JFileChooser
+import Gui
+import de.griefed.serverpackcreator.gui.GuiProps
+import de.griefed.serverpackcreator.gui.window.configs.components.StatusIcon
 
-class ServerFilesChooser(current: File?, dimension: Dimension) : JFileChooser(current) {
-    constructor(dimension: Dimension): this(null,dimension)
-    init {
-        dialogTitle = Gui.createserverpack_gui_buttoncopydirs_title.toString()
-        fileSelectionMode = JFileChooser.FILES_AND_DIRECTORIES
-        isAcceptAllFileFilterUsed = true
-        isMultiSelectionEnabled = true
-        preferredSize = dimension
-    }
-}
+class JavaArgsInfo(guiProps: GuiProps) : StatusIcon(
+    guiProps,
+    Gui.createserverpack_gui_createserverpack_javaargs_tip.toString()
+)

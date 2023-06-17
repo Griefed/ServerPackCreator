@@ -28,7 +28,7 @@ class ServerIconChooser(current: File?, dimension: Dimension): JFileChooser(curr
     constructor(dimension: Dimension) : this(null,dimension)
     init {
         dialogTitle = Gui.createserverpack_gui_createserverpack_chooser_icon_title.toString()
-        fileSelectionMode = JFileChooser.FILES_ONLY
+        fileSelectionMode = FILES_ONLY
         fileFilter = FileNameExtensionFilter(
             Gui.createserverpack_gui_createserverpack_chooser_icon_filter.toString(), "png", "jpg", "jpeg", "bmp"
         )

@@ -22,11 +22,15 @@ package de.griefed.serverpackcreator.gui.window.configs
 import Gui
 import com.electronwill.nightconfig.core.CommentedConfig
 import de.griefed.serverpackcreator.api.ApiWrapper
+import de.griefed.serverpackcreator.api.InclusionSpecification
 import de.griefed.serverpackcreator.api.PackConfig
 import de.griefed.serverpackcreator.api.plugins.swinggui.ServerPackConfigTab
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.components.BalloonTipButton
 import de.griefed.serverpackcreator.gui.window.configs.components.*
+import de.griefed.serverpackcreator.gui.window.configs.components.advanced.*
+import de.griefed.serverpackcreator.gui.window.configs.components.serverfiles.ServerFilesEditor
+import de.griefed.serverpackcreator.gui.window.configs.components.serverfiles.ServerPackFilesInfo
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -109,7 +113,7 @@ class ConfigEditor(
     private val aikarsFlags = AikarsFlags(this, guiProps)
     private val scriptKVPairs = ScriptKVPairs(guiProps, this)
     private val pluginPanels = apiWrapper.apiPlugins!!.getConfigPanels(this).toMutableList()
-    private var lastSavedConfig: PackConfig? = null
+    var lastSavedConfig: PackConfig? = null
     private val changeListener = object : DocumentChangeListener {
         override fun update(e: DocumentEvent) {
             validateInputFields()
@@ -125,12 +129,8 @@ class ConfigEditor(
     private val serverPackSuffix = ScrollTextField("", changeListener)
     private val propertiesFile = ScrollTextFileField(apiWrapper.apiProperties.defaultServerProperties, changeListener)
     private val iconFile = ScrollTextFileField(apiWrapper.apiProperties.defaultServerIcon, changeListener)
-    private val serverPackFiles = ScrollTextArea(
-        "config,mods",
-        Gui.createserverpack_gui_createserverpack_labelcopydirs.toString(),
-        changeListener,
-        guiProps
-    )
+
+    private val serverPackFiles = ServerFilesEditor(chooserDimension, guiProps, this, apiWrapper)
     private val exclusions = ScrollTextArea(
         apiWrapper.apiProperties.clientSideMods().joinToString(","),
         Gui.createserverpack_gui_createserverpack_labelclientmods.toString(),
@@ -141,14 +141,15 @@ class ConfigEditor(
     private val panel = JPanel(
         MigLayout(
             "left,wrap",
-            "[left,::64]5[left]5[left,grow]5[left,::64]5[left,::64]", "30"
+            "[left,::64]5[left]5[left,grow]5[left,::64]5[left,::64]",
+            "30"
         )
     )
     val propertiesQuickSelect = QuickSelect(
-        apiWrapper.apiProperties.propertiesQuickSelections
+        tabbedConfigsTab.propertiesQuickSelections()
     ) { setProperties() }
     val iconQuickSelect = QuickSelect(
-        apiWrapper.apiProperties.iconQuickSelections
+        tabbedConfigsTab.iconQuickSelections()
     ) { setIcon() }
     val editorTitle = ConfigEditorTitle(guiProps, tabbedConfigsTab, this)
 
@@ -186,18 +187,6 @@ class ConfigEditor(
             guiProps
         ) { selectServerIcon() }
         val filesLabel = ElementLabel(Gui.createserverpack_gui_createserverpack_labelcopydirs.toString())
-        val filesRevert = BalloonTipButton(
-            null, guiProps.revertIcon, Gui.createserverpack_gui_buttoncopydirs_revert_tip.toString(),
-            guiProps
-        ) { revertServerPackFiles() }
-        val filesShowBrowser = BalloonTipButton(
-            null, guiProps.folderIcon, Gui.createserverpack_gui_browser.toString(),
-            guiProps
-        ) {selectServerFiles()}
-        val filesReset = BalloonTipButton(
-            null, guiProps.resetIcon, Gui.createserverpack_gui_buttoncopydirs_reset_tip.toString(),
-            guiProps
-        ) { setServerFiles(apiWrapper.apiProperties.directoriesToInclude.toMutableList()) }
         val suffixLabel = ElementLabel(Gui.createserverpack_gui_createserverpack_labelsuffix.toString())
         val mcVersionInfo = MinecraftVersionInfo(guiProps)
         val mcVersionLabel = ElementLabel(Gui.createserverpack_gui_createserverpack_labelminecraft.toString())
@@ -220,7 +209,7 @@ class ConfigEditor(
         val clientModsReset = BalloonTipButton(
             null, guiProps.resetIcon, Gui.createserverpack_gui_buttonclientmods_reset_tip.toString(),
             guiProps
-        ) { setClientSideMods(apiWrapper.apiProperties.clientSideMods()) }
+        ) { resetClientMods() }
         val kvRevert = BalloonTipButton(
             null, guiProps.revertIcon, Gui.createserverpack_gui_revert.toString(),
             guiProps
@@ -230,13 +219,24 @@ class ConfigEditor(
             guiProps
         ) { resetScriptKVPairs() }
         val advancedSettingsPanel = AdvancedSettingsPanel(
-            exclusionsInfo, JavaArgsInfo(guiProps), ScriptSettingsInfo(guiProps),
-            exclusions, clientModsRevert, clientModsShowBrowser, clientModsReset, javaArgs, aikarsFlags, scriptKVPairs, kvRevert, kvReset
+            exclusionsInfo,
+            JavaArgsInfo(guiProps),
+            ScriptSettingsInfo(guiProps),
+            exclusions,
+            clientModsRevert,
+            clientModsShowBrowser,
+            clientModsReset,
+            javaArgs,
+            aikarsFlags,
+            scriptKVPairs,
+            kvRevert,
+            kvReset
         )
         val advancedSettings = CollapsiblePanel(Gui.createserverpack_gui_advanced.toString(), advancedSettingsPanel)
         val pluginSettings = PluginsSettingsPanel(pluginPanels)
         val pluginPanel = CollapsiblePanel(Gui.createserverpack_gui_plugins.toString(), pluginSettings)
 
+        // "cell column row width height"
         // Modpack directory
         panel.add(modpackInfo, "cell 0 0,grow")
         panel.add(modpackLabel, "cell 1 0,grow")
@@ -265,15 +265,12 @@ class ConfigEditor(
         // Server Files
         panel.add(serverPackFilesInfo, "cell 0 3 1 3")
         panel.add(filesLabel, "cell 1 3 1 3,grow")
-        panel.add(serverPackFiles, "cell 2 3 1 3,grow,w 10:500:,h 100!")
-        panel.add(filesRevert, "cell 3 3 2 1, h 30!, aligny center, alignx center,growx")
-        panel.add(filesShowBrowser, "cell 3 4 2 1, h 30!, aligny center, alignx center,growx")
-        panel.add(filesReset, "cell 3 5 2 1, h 30!, aligny top, alignx center,growx")
+        panel.add(serverPackFiles, "cell 2 3 3 3, grow, w 10:500:, h 150:30%:80%")
 
         // Server Pack Suffix
         panel.add(suffixInfo, "cell 0 6,grow")
         panel.add(suffixLabel, "cell 1 6,grow")
-        panel.add(serverPackSuffix, "cell 2 6,grow")
+        panel.add(serverPackSuffix, "cell 2 6 3 1,grow")
 
         // Minecraft Version
         panel.add(mcVersionInfo, "cell 0 7,grow")
@@ -315,7 +312,6 @@ class ConfigEditor(
         }
         validateInputFields()
         lastSavedConfig = getCurrentConfiguration()
-        componentResizer.registerComponent(serverPackFiles, "cell 2 3 1 3,grow,w 10:500:,h %s!")
         componentResizer.registerComponent(exclusions, "cell 2 0 1 3,grow,w 10:500:,h %s!")
         componentResizer.registerComponent(javaArgs, "cell 2 3 1 3,grow,w 10:500:,h %s!")
         componentResizer.registerComponent(scriptKVPairs.scrollPanel, "cell 2 6 1 3,grow,w 10:500:,h %s!")
@@ -361,31 +357,9 @@ class ConfigEditor(
         }
     }
 
-    private fun selectServerFiles() {
-        val serverFilesChooser = if (File(getModpackDirectory()).isDirectory) {
-            ServerFilesChooser(File(getModpackDirectory()),chooserDimension)
-        } else {
-            ServerFilesChooser(chooserDimension)
-        }
-        if (serverFilesChooser.showOpenDialog(parent) == JFileChooser.APPROVE_OPTION) {
-            val selection: Array<File> = serverFilesChooser.selectedFiles
-            val serverFiles: TreeSet<String> = TreeSet()
-            serverFiles.addAll(getServerFilesList())
-            for (entry in selection) {
-                if (entry.path.startsWith(getModpackDirectory())) {
-                    serverFiles.add(entry.path.replace(getModpackDirectory() + File.separator,""))
-                } else {
-                    serverFiles.add(entry.path)
-                }
-            }
-            setServerFiles(serverFiles.toMutableList())
-            log.debug("Selected directories: $serverFiles")
-        }
-    }
-
     private fun selectClientMods() {
-        val clientModsChooser = if (File(getModpackDirectory(),"mods").isDirectory) {
-            ClientModsChooser(File(getModpackDirectory(),"mods"),chooserDimension)
+        val clientModsChooser = if (File(getModpackDirectory(), "mods").isDirectory) {
+            ClientModsChooser(File(getModpackDirectory(), "mods"), chooserDimension)
         } else {
             ClientModsChooser(chooserDimension)
         }
@@ -402,15 +376,13 @@ class ConfigEditor(
         }
     }
 
-
     override fun setClientSideMods(entries: MutableList<String>) {
         exclusions.text = apiWrapper.utilities!!.stringUtilities.buildString(entries)
         validateInputFields()
     }
 
-    override fun setServerFiles(entries: MutableList<String>) {
-        serverPackFiles.text = apiWrapper.utilities!!.stringUtilities.buildString(entries.toString())
-        validateInputFields()
+    override fun setInclusions(entries: MutableList<InclusionSpecification>) {
+        serverPackFiles.setServerFiles(entries)
     }
 
     override fun setIconInclusionTicked(ticked: Boolean) {
@@ -493,22 +465,14 @@ class ConfigEditor(
         )
     }
 
-    override fun getServerFiles(): String {
-        return serverPackFiles.text.replace(", ", ",")
-    }
-
-    override fun getServerFilesList(): MutableList<String> {
-        return apiWrapper.utilities!!.listUtilities.cleanList(
-            getServerFiles().split(",")
-                .dropLastWhile { it.isEmpty() }
-                .toMutableList()
-        )
+    override fun getServerFiles(): MutableList<InclusionSpecification> {
+        return serverPackFiles.getServerFiles()
     }
 
     override fun getCurrentConfiguration(): PackConfig {
         return PackConfig(
             getClientSideModsList(),
-            getServerFilesList(),
+            getServerFiles(),
             getModpackDirectory(),
             getMinecraftVersion(),
             getModloader(),
@@ -568,6 +532,32 @@ class ConfigEditor(
         return iconFile.text
     }
 
+    private fun resetClientMods() {
+        val current = getClientSideModsList()
+        val default = apiWrapper.apiProperties.clientSideMods()
+        if (!default.any { mod -> !default.contains(mod) }) {
+            when (JOptionPane.showConfirmDialog(
+                this,
+                Gui.createserverpack_gui_buttonclientmods_reset_merge_message.toString(),
+                Gui.createserverpack_gui_buttonclientmods_reset_merge_title.toString(),
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.WARNING_MESSAGE,
+                guiProps.warningIcon
+            )) {
+                0 -> {
+                    val set = TreeSet<String>()
+                    set.addAll(current)
+                    set.addAll(default)
+                    setClientSideMods(set.toMutableList())
+                }
+
+                1 -> setClientSideMods(default)
+            }
+        } else {
+            setClientSideMods(default)
+        }
+    }
+
     /**
      * TODO docs
      */
@@ -591,12 +581,8 @@ class ConfigEditor(
         }
         val properties = propertiesQuickSelect.selectedItem
         if (properties != null && properties.toString() != Gui.createserverpack_gui_quickselect_choose.toString()) {
-            setServerPropertiesPath(
-                File(
-                    apiWrapper.apiProperties.propertiesDirectory,
-                    properties.toString()
-                ).absolutePath
-            )
+            val serverProps = File(apiWrapper.apiProperties.propertiesDirectory, properties.toString())
+            setServerPropertiesPath(serverProps.absolutePath)
             propertiesQuickSelect.selectedIndex = 0
         }
     }
@@ -676,7 +662,7 @@ class ConfigEditor(
 
         when {
             currentConfig.clientMods != lastSavedConfig!!.clientMods
-                    || currentConfig.copyDirs != lastSavedConfig!!.copyDirs
+                    || currentConfig.inclusions != lastSavedConfig!!.inclusions
                     || currentConfig.javaArgs != lastSavedConfig!!.javaArgs
                     || currentConfig.minecraftVersion != lastSavedConfig!!.minecraftVersion
                     || currentConfig.modloader != lastSavedConfig!!.modloader
@@ -716,10 +702,13 @@ class ConfigEditor(
                 } else {
                     setClientSideMods(packConfig.clientMods)
                 }
-                if (packConfig.copyDirs.isEmpty()) {
-                    setServerFiles(mutableListOf("mods", "config"))
+                if (packConfig.inclusions.isEmpty()) {
+                    val inclusions = mutableListOf<InclusionSpecification>()
+                    inclusions.add(InclusionSpecification(("mods")))
+                    inclusions.add(InclusionSpecification(("config")))
+                    setInclusions(inclusions)
                 } else {
-                    setServerFiles(packConfig.copyDirs)
+                    setInclusions(packConfig.inclusions)
                 }
                 setScriptVariables(packConfig.scriptSettings)
                 setServerIconPath(packConfig.serverIconPath)
@@ -914,15 +903,12 @@ class ConfigEditor(
      */
     fun validateServerPackFiles(): List<String> {
         val errors: MutableList<String> = ArrayList(10)
-        apiWrapper.configurationHandler!!.checkCopyDirs(
-            getServerFilesList(),
+        apiWrapper.configurationHandler!!.checkInclusions(
+            getServerFiles(),
             getModpackDirectory(),
             errors,
             false
         )
-        if (getServerFiles().matches(guiProps.whitespace)) {
-            errors.add(Gui.configuration_log_error_formatting.toString())
-        }
         if (errors.isNotEmpty()) {
             serverPackFilesInfo.error("<html>${errors.joinToString("<br>")}</html>")
         } else {
@@ -1025,12 +1011,13 @@ class ConfigEditor(
                     val updateMessage = StringBuilder()
                     val packConfig = PackConfig()
                     apiWrapper.configurationHandler!!.checkManifests(modpack.absolutePath, packConfig)
-                    val dirsToInclude = TreeSet(getServerFilesList())
+                    val inclusions = getServerFiles()
                     val files = modpack.listFiles()
                     if (files != null && files.isNotEmpty()) {
                         for (file in files) {
-                            if (apiWrapper.apiProperties.directoriesToInclude.contains(file.name)) {
-                                dirsToInclude.add(file.name)
+                            if (apiWrapper.apiProperties.directoriesToInclude.contains(file.name) &&
+                                !inclusions.any { inclusion -> inclusion.source == file.name }) {
+                                inclusions.add(InclusionSpecification(file.name))
                             }
                         }
                     }
@@ -1054,13 +1041,12 @@ class ConfigEditor(
                         updateMessage.append(Gui.createserverpack_gui_modpack_scan_icon(packConfig.serverIconPath))
                             .append("\n")
                     }
-                    if (dirsToInclude.isNotEmpty()) {
-                        setServerFiles(ArrayList(dirsToInclude))
+                    if (inclusions.isNotEmpty()) {
+                        setInclusions(ArrayList(inclusions))
+
                         updateMessage.append(
                             Gui.createserverpack_gui_modpack_scan_directories(
-                                dirsToInclude.joinToString(
-                                    ", "
-                                )
+                                inclusions.joinToString(", ") { inclusion -> inclusion.source }
                             )
                         ).append("\n")
                     }
@@ -1103,19 +1089,6 @@ class ConfigEditor(
     private fun revertExclusions() {
         if (lastSavedConfig != null) {
             setClientSideMods(lastSavedConfig!!.clientMods)
-            validateInputFields()
-        }
-    }
-
-    /**
-     * Reverts the list of copy directories to the value of the last loaded configuration, if one is
-     * available.
-     *
-     * @author Griefed
-     */
-    private fun revertServerPackFiles() {
-        if (lastSavedConfig != null) {
-            setServerFiles(lastSavedConfig!!.copyDirs)
             validateInputFields()
         }
     }

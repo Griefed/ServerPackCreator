@@ -35,7 +35,7 @@ abstract class Pack<F, J, out P> {
     protected val whitespace = "\\s+".toRegex()
 
     val clientMods: ArrayList<String> = ArrayList(1000)
-    val copyDirs: ArrayList<String> = ArrayList(100)
+    val inclusions: ArrayList<InclusionSpecification> = ArrayList(100)
     val scriptSettings = HashMap<String, String>(100)
     val pluginsConfigs = HashMap<String, ArrayList<CommentedConfig>>(20)
     var modpackDir = ""
@@ -94,14 +94,9 @@ abstract class Pack<F, J, out P> {
         clientMods.addAll(newClientMods)
     }
 
-    fun setCopyDirs(newCopyDirs: ArrayList<String>) {
-        copyDirs.clear()
-        newCopyDirs.removeIf { entry: String ->
-            entry.equals("server_pack", ignoreCase = true)
-                    || entry.matches(whitespace)
-                    || entry.isEmpty()
-        }
-        copyDirs.addAll(newCopyDirs)
+    fun setInclusions(newCopyDirs: ArrayList<InclusionSpecification>) {
+        inclusions.clear()
+        inclusions.addAll(newCopyDirs)
     }
 
     fun setScriptSettings(settings: HashMap<String, String>) {
@@ -112,7 +107,7 @@ abstract class Pack<F, J, out P> {
     override fun toString(): String {
         return "Pack(" +
                 " clientMods=$clientMods," +
-                " copyDirs=$copyDirs," +
+                " copyDirs=$inclusions," +
                 " scriptSettings=$scriptSettings," +
                 " pluginsConfigs=$pluginsConfigs," +
                 " modpackDir='$modpackDir'," +
@@ -128,6 +123,4 @@ abstract class Pack<F, J, out P> {
                 " isServerPropertiesInclusionDesired=$isServerPropertiesInclusionDesired," +
                 " isZipCreationDesired=$isZipCreationDesired)"
     }
-
-
 }

@@ -28,7 +28,7 @@ class ModpackChooser(current: File?, dimension: Dimension) : JFileChooser(curren
     constructor(dimension: Dimension): this(null,dimension)
     init {
         dialogTitle = Gui.createserverpack_gui_buttonmodpackdir_title.toString()
-        fileSelectionMode = JFileChooser.FILES_AND_DIRECTORIES
+        fileSelectionMode = FILES_AND_DIRECTORIES
         fileFilter = FileNameExtensionFilter(
             Gui.createserverpack_gui_createserverpack_chooser_modpack_filter.toString(), "zip"
         )

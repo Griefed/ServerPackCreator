@@ -54,12 +54,6 @@ open class ResizeIndicatorScrollPane(
             guiProps.handleBar.iconWidth,
             guiProps.handleBar.iconHeight
         )
-
-        /*val x = insets.left
-        val y = height - guiProps.resizeIndicator.iconHeight
-        val width = width - insets.right - x
-        val scaled = guiProps.resizeIndicator.getScaledInstance(width, guiProps.resizeIndicator.iconHeight)
-        scaled.paintIcon(this, g, x, y)*/
         guiProps.handleBar.paintIcon(this, g, handleBarPosition!!.x, handleBarPosition!!.y)
     }
 }

@@ -17,28 +17,19 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.gui.window.menu.edit
+package de.griefed.serverpackcreator.gui.window.configs.components.serverfiles
 
-import Gui
-import de.griefed.serverpackcreator.api.ApiProperties
-import de.griefed.serverpackcreator.api.utilities.common.FileUtilities
+import java.awt.Dimension
 import java.io.File
-import javax.swing.JMenuItem
+import javax.swing.JFileChooser
 
-/**
- * Menu item to open the default server.properties file in the users default app.
- *
- * @author Griefed
- */
-class DefaultServerPropertiesItem(private val fileUtilities: FileUtilities, apiProperties: ApiProperties) :
-    JMenuItem(Gui.menubar_gui_menuitem_serverproperties.toString()) {
-    private val properties = File(apiProperties.serverFilesDirectory, "server.properties")
-
+class ServerFilesChooser(current: File?, dimension: Dimension) : JFileChooser(current) {
+    constructor(dimension: Dimension): this(null,dimension)
     init {
-        addActionListener { openProperties() }
-    }
-
-    private fun openProperties() {
-        fileUtilities.openFile(properties)
+        dialogTitle = Gui.createserverpack_gui_buttoncopydirs_title.toString()
+        fileSelectionMode = FILES_AND_DIRECTORIES
+        isAcceptAllFileFilterUsed = true
+        isMultiSelectionEnabled = true
+        preferredSize = dimension
     }
 }

@@ -17,28 +17,23 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.gui.window.menu.edit
+package de.griefed.serverpackcreator.gui.window.configs.components.advanced
 
-import Gui
-import de.griefed.serverpackcreator.api.ApiProperties
-import de.griefed.serverpackcreator.api.utilities.common.FileUtilities
+import java.awt.Dimension
 import java.io.File
-import javax.swing.JMenuItem
+import javax.swing.JFileChooser
+import javax.swing.filechooser.FileNameExtensionFilter
 
-/**
- * Open the default server-icon.png in the users default app.
- *
- * @author Griefed
- */
-class DefaultServerIconItem(private val fileUtilities: FileUtilities, apiProperties: ApiProperties) :
-    JMenuItem(Gui.menubar_gui_menuitem_servericon.toString()) {
-    private val icon = File(apiProperties.serverFilesDirectory, "server-icon.png")
-
+class ClientModsChooser(current: File?, dimension: Dimension):JFileChooser(current) {
+    constructor(dimension: Dimension) : this(null,dimension)
     init {
-        addActionListener { openIcon() }
-    }
-
-    private fun openIcon() {
-        fileUtilities.openFile(icon)
+        dialogTitle = Gui.createserverpack_gui_buttonclientmods_title.toString()
+        fileSelectionMode = FILES_ONLY
+        fileFilter = FileNameExtensionFilter(
+            Gui.createserverpack_gui_buttonclientmods_filter.toString(), "jar"
+        )
+        isAcceptAllFileFilterUsed = false
+        isMultiSelectionEnabled = true
+        preferredSize = dimension
     }
 }

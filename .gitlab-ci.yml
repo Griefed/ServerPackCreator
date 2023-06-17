@@ -56,6 +56,9 @@ Build Test:
       - serverpackcreator-web-frontend/dist
       - serverpackcreator-plugin-example/build
     expire_in: 1 week
+    reports:
+      junit:
+        - serverpackcreator-api/build/test-results/jvmTest/TEST-*.xml
   cache:
     - key:
         files:

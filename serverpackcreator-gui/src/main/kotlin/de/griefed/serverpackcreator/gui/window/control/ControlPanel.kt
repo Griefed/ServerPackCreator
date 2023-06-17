@@ -92,7 +92,7 @@ class ControlPanel(
             statusPanel.updateStatus(Gui.createserverpack_log_error_configuration_none_message.toString())
             return
         }
-        if (tabbedConfigsTab.selectedEditor!!.getServerFiles() == "lazy_mode") {
+        if (tabbedConfigsTab.selectedEditor!!.getServerFiles().any { inclusion -> inclusion.source == "lazy_mode" }) {
             val message = Gui.configuration_log_warn_checkconfig_copydirs_lazymode0.toString() + "\n" +
                     Gui.configuration_log_warn_checkconfig_copydirs_lazymode1.toString() + "\n" +
                     Gui.configuration_log_warn_checkconfig_copydirs_lazymode2.toString() + "\n" +

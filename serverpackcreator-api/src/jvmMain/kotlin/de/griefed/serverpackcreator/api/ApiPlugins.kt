@@ -22,6 +22,7 @@ package de.griefed.serverpackcreator.api
 import com.electronwill.nightconfig.core.CommentedConfig
 import com.electronwill.nightconfig.core.file.FileNotFoundAction
 import com.electronwill.nightconfig.toml.TomlParser
+import de.griefed.serverpackcreator.api.plugins.CustomPluginFactory
 import de.griefed.serverpackcreator.api.plugins.ExtensionException
 import de.griefed.serverpackcreator.api.plugins.ExtensionInformation
 import de.griefed.serverpackcreator.api.plugins.configurationhandler.ConfigCheckExtension
@@ -37,10 +38,7 @@ import de.griefed.serverpackcreator.api.versionmeta.VersionMeta
 import net.lingala.zip4j.ZipFile
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import org.apache.logging.log4j.kotlin.logger
-import org.pf4j.ExtensionFactory
-import org.pf4j.JarPluginManager
-import org.pf4j.PluginWrapper
-import org.pf4j.SingletonExtensionFactory
+import org.pf4j.*
 import java.io.File
 import java.nio.charset.StandardCharsets
 import java.util.*
@@ -60,7 +58,7 @@ import javax.swing.JTabbedPane
  * @author Griefed
  */
 @Suppress("unused", "MemberVisibilityCanBePrivate")
-actual class ApiPlugins constructor(
+actual class ApiPlugins(
     tomlParser: TomlParser,
     private val apiProperties: ApiProperties,
     private val versionMeta: VersionMeta,
@@ -81,9 +79,9 @@ actual class ApiPlugins constructor(
     }
 
     /**
-     * Retrieve the config.toml of an plugin and store it in the `plugins/config`-directory,
+     * Retrieve the config.toml of a plugin and store it in the `plugins/config`-directory,
      * using the ID of the plugin as the name for the extracted file. `plugin.toml`-files must be
-     * stored in the root of an plugin JAR-file in order for ServerPackCreator to be reliably be able to
+     * stored in the root of a plugin JAR-file in order for ServerPackCreator to be reliably be able to
      * retrieve it.
      *
      * A given plugin does not have to provide a config.toml, as not every plugin
@@ -164,9 +162,7 @@ actual class ApiPlugins constructor(
      * @author Griefed
      */
     private fun extensionsInfo(extensions: List<ExtensionInformation>) {
-        if (extensions.isEmpty()) {
-            log.info("No ${extensions.javaClass.canonicalName} available.")
-        } else {
+        if (extensions.isNotEmpty()) {
             for (extension in extensions) {
                 log.info("  Name:       ${extension.name}(${extension.extensionId})")
                 log.info("    Description: ${extension.description}")
@@ -217,6 +213,9 @@ actual class ApiPlugins constructor(
             TabExtension::class.java.name
         )
 
+    override fun createPluginFactory(): PluginFactory {
+        return CustomPluginFactory()
+    }
 
     /**
      * Get the global plugin configuration for an plugin of the passed ID. The configuration is wrapped

@@ -108,7 +108,7 @@ enum class Mode constructor(private val argument: String) {
     LANG("-lang");
 
     /**
-     * Textual representation of this mode.
+     * Textual representation of this mode or argument.
      *
      * @return Textual representation of this mode.
      * @author Griefed
