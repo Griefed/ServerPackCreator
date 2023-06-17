@@ -52,7 +52,7 @@ interface ServerPackConfigTab {
 
     fun getClientSideMods(): String
     fun getClientSideModsList(): MutableList<String>
-    fun getServerFiles(): List<InclusionSpecification>
+    fun getInclusions(): List<InclusionSpecification>
     fun getCurrentConfiguration(): PackConfig
     fun saveCurrentConfiguration(): File
     fun getJavaArguments(): String

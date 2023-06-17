@@ -50,7 +50,7 @@ import javax.swing.event.ListSelectionEvent
  *
  * @author Griefed
  */
-class ServerFilesEditor(
+class InclusionsEditor(
     private val chooserDimension: Dimension,
     private val guiProps: GuiProps,
     private val configEditor: ConfigEditor,
@@ -72,6 +72,7 @@ class ServerFilesEditor(
     private val timer: Timer
     private val toggleVisibility = JToggleButton(guiProps.toggleHelpIcon)
     private val scrollTip = JScrollPane(tip)
+    private val delay = 250
     private val expertPanel = JPanel(
         MigLayout(
             "left,wrap",
@@ -167,11 +168,11 @@ class ServerFilesEditor(
         destination.addDocumentListener(destinationListener)
         inclusionFilter.addDocumentListener(inclusionListener)
         exclusionFilter.addDocumentListener(exclusionListener)
-        timer = Timer(2000) {
+        timer = Timer(delay) {
             updateTip()
         }
         timer.stop()
-        timer.delay = 2000
+        timer.delay = delay
         timer.isRepeats = false
     }
 
@@ -206,13 +207,26 @@ class ServerFilesEditor(
     }
 
     fun sourceWasEdited() {
-        list.selectedValue.source = source.text
-        timer.restart()
-        list.updateUI()
+        if (File(configEditor.getModpackDirectory(),source.text).exists() || File(source.text).exists()) {
+            list.selectedValue.source = source.text
+            timer.restart()
+            list.updateUI()
+            sourceInfo.info()
+        } else {
+            timer.stop()
+            sourceInfo.error(Gui.createserverpack_gui_inclusions_editor_source_error(source.text))
+        }
+        configEditor.validateInputFields()
     }
 
     fun destinationWasEdited() {
-        list.selectedValue.destination = destination.text
+        if (apiWrapper.stringUtilities.checkForIllegalCharacters(destination.text)) {
+            list.selectedValue.destination = destination.text
+            destinationInfo.info()
+        } else {
+            timer.stop()
+            destinationInfo.error(Gui.createserverpack_gui_inclusions_editor_destination_error(destination.text))
+        }
     }
 
     fun inclusionFilterWasEdited() {
@@ -222,7 +236,8 @@ class ServerFilesEditor(
             timer.restart()
             inclusionInfo.info()
         } catch (ex: PatternSyntaxException) {
-            inclusionInfo.error(ex.message ?: ex.description)
+            timer.stop()
+            inclusionInfo.error(Gui.createserverpack_gui_inclusions_editor_filter_error(ex.message ?: ex.description))
         }
     }
 
@@ -233,7 +248,8 @@ class ServerFilesEditor(
             timer.restart()
             exclusionInfo.info()
         } catch (ex: PatternSyntaxException) {
-            exclusionInfo.error(ex.message ?: ex.description)
+            timer.stop()
+            exclusionInfo.error(Gui.createserverpack_gui_inclusions_editor_filter_error(ex.message ?: ex.description))
         }
     }
 
@@ -304,13 +320,13 @@ class ServerFilesEditor(
     }
 
     private fun selectInclusions() {
-        val serverFilesChooser = if (File(configEditor.getModpackDirectory()).isDirectory) {
-            ServerFilesChooser(File(configEditor.getModpackDirectory()), chooserDimension)
+        val inclusionSourceChooser = if (File(configEditor.getModpackDirectory()).isDirectory) {
+            InclusionSourceChooser(File(configEditor.getModpackDirectory()), chooserDimension)
         } else {
-            ServerFilesChooser(chooserDimension)
+            InclusionSourceChooser(chooserDimension)
         }
-        if (serverFilesChooser.showOpenDialog(parent) == JFileChooser.APPROVE_OPTION) {
-            val selection: Array<File> = serverFilesChooser.selectedFiles
+        if (inclusionSourceChooser.showOpenDialog(parent) == JFileChooser.APPROVE_OPTION) {
+            val selection: Array<File> = inclusionSourceChooser.selectedFiles
             val serverFiles: MutableList<InclusionSpecification> = mutableListOf()
             serverFiles.addAll(getServerFiles())
             for (entry in selection) {

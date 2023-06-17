@@ -29,8 +29,8 @@ import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.components.BalloonTipButton
 import de.griefed.serverpackcreator.gui.window.configs.components.*
 import de.griefed.serverpackcreator.gui.window.configs.components.advanced.*
-import de.griefed.serverpackcreator.gui.window.configs.components.serverfiles.ServerFilesEditor
-import de.griefed.serverpackcreator.gui.window.configs.components.serverfiles.ServerPackFilesInfo
+import de.griefed.serverpackcreator.gui.window.configs.components.serverfiles.InclusionsEditor
+import de.griefed.serverpackcreator.gui.window.configs.components.serverfiles.InclusionsInfo
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -62,7 +62,7 @@ class ConfigEditor(
     private val modpackInfo = ModpackInfo(guiProps)
     private val propertiesInfo = PropertiesInfo(guiProps)
     private val iconInfo = IconInfo(guiProps)
-    private val serverPackFilesInfo = ServerPackFilesInfo(guiProps)
+    private val inclusionsInfo = InclusionsInfo(guiProps)
     private val suffixInfo = SuffixInfo(guiProps)
     private val modloaderVersionInfo = ModloaderVersionInfo(guiProps)
     private val includeIconInfo = IncludeIconInfo(guiProps)
@@ -129,8 +129,7 @@ class ConfigEditor(
     private val serverPackSuffix = ScrollTextField("", changeListener)
     private val propertiesFile = ScrollTextFileField(apiWrapper.apiProperties.defaultServerProperties, changeListener)
     private val iconFile = ScrollTextFileField(apiWrapper.apiProperties.defaultServerIcon, changeListener)
-
-    private val serverPackFiles = ServerFilesEditor(chooserDimension, guiProps, this, apiWrapper)
+    private val inclusionsEditor = InclusionsEditor(chooserDimension, guiProps, this, apiWrapper)
     private val exclusions = ScrollTextArea(
         apiWrapper.apiProperties.clientSideMods().joinToString(","),
         Gui.createserverpack_gui_createserverpack_labelclientmods.toString(),
@@ -152,7 +151,6 @@ class ConfigEditor(
         tabbedConfigsTab.iconQuickSelections()
     ) { setIcon() }
     val editorTitle = ConfigEditorTitle(guiProps, tabbedConfigsTab, this)
-
     var configFile: File? = null
         private set
 
@@ -263,9 +261,9 @@ class ConfigEditor(
         panel.add(iconPreview, "cell 4 2")
 
         // Server Files
-        panel.add(serverPackFilesInfo, "cell 0 3 1 3")
+        panel.add(inclusionsInfo, "cell 0 3 1 3")
         panel.add(filesLabel, "cell 1 3 1 3,grow")
-        panel.add(serverPackFiles, "cell 2 3 3 3, grow, w 10:500:, h 150:30%:80%")
+        panel.add(inclusionsEditor, "cell 2 3 3 3, grow, w 10:500:, h 150:30%:80%")
 
         // Server Pack Suffix
         panel.add(suffixInfo, "cell 0 6,grow")
@@ -382,7 +380,7 @@ class ConfigEditor(
     }
 
     override fun setInclusions(entries: MutableList<InclusionSpecification>) {
-        serverPackFiles.setServerFiles(entries)
+        inclusionsEditor.setServerFiles(entries)
     }
 
     override fun setIconInclusionTicked(ticked: Boolean) {
@@ -465,14 +463,14 @@ class ConfigEditor(
         )
     }
 
-    override fun getServerFiles(): MutableList<InclusionSpecification> {
-        return serverPackFiles.getServerFiles()
+    override fun getInclusions(): MutableList<InclusionSpecification> {
+        return inclusionsEditor.getServerFiles()
     }
 
     override fun getCurrentConfiguration(): PackConfig {
         return PackConfig(
             getClientSideModsList(),
-            getServerFiles(),
+            getInclusions(),
             getModpackDirectory(),
             getMinecraftVersion(),
             getModloader(),
@@ -901,18 +899,18 @@ class ConfigEditor(
      *
      * @author Griefed
      */
-    fun validateServerPackFiles(): List<String> {
+    fun validateInclusions(): List<String> {
         val errors: MutableList<String> = ArrayList(10)
         apiWrapper.configurationHandler!!.checkInclusions(
-            getServerFiles(),
+            getInclusions(),
             getModpackDirectory(),
             errors,
             false
         )
         if (errors.isNotEmpty()) {
-            serverPackFilesInfo.error("<html>${errors.joinToString("<br>")}</html>")
+            inclusionsInfo.error("<html>${errors.joinToString("<br>")}</html>")
         } else {
-            serverPackFilesInfo.info()
+            inclusionsInfo.info()
         }
         for (error in errors) {
             log.error(error)
@@ -1011,12 +1009,13 @@ class ConfigEditor(
                     val updateMessage = StringBuilder()
                     val packConfig = PackConfig()
                     apiWrapper.configurationHandler!!.checkManifests(modpack.absolutePath, packConfig)
-                    val inclusions = getServerFiles()
+                    val inclusions = getInclusions()
                     val files = modpack.listFiles()
                     if (files != null && files.isNotEmpty()) {
                         for (file in files) {
                             if (apiWrapper.apiProperties.directoriesToInclude.contains(file.name) &&
-                                !inclusions.any { inclusion -> inclusion.source == file.name }) {
+                                !inclusions.any { inclusion -> inclusion.source == file.name }
+                            ) {
                                 inclusions.add(InclusionSpecification(file.name))
                             }
                         }
