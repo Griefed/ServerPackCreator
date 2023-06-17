@@ -1,3 +1,57 @@
+## [5.0.0-alpha.16](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-alpha.15...5.0.0-alpha.16) (2023-06-17)
+
+
+### :scissors: Refactor
+
+* Don't print info if not extensions are available ([b807614](https://git.griefed.de/Griefed/ServerPackCreator/commit/b8076145dc350cf78d42e4a24c41f9ab7c777fc2))
+* Initialize tomlWriter in a better way ([7b452a6](https://git.griefed.de/Griefed/ServerPackCreator/commit/7b452a69a274a49fce398cc67e3dbe48cc10d18d))
+* Make context public in plugin class ([acaf305](https://git.griefed.de/Griefed/ServerPackCreator/commit/acaf305aef62052583bed8772b08a9d3bcd404e9))
+* Minor cleanups ([c8ad6f0](https://git.griefed.de/Griefed/ServerPackCreator/commit/c8ad6f05aabc3fd1660339f90c0a86554bffc1ee))
+* Minor readability changes ([d027666](https://git.griefed.de/Griefed/ServerPackCreator/commit/d027666b02c9e04f3b9f0d12025e9f34cfe1d7e3))
+* Move quick-selection assignment to gui ([3865a31](https://git.griefed.de/Griefed/ServerPackCreator/commit/3865a31557b1ca15172685c928f15c8b4eb6b539))
+* Rearrange and simplify properties ([6cfe433](https://git.griefed.de/Griefed/ServerPackCreator/commit/6cfe43320bbed49b66b071c7e5883c2f653ef9c5))
+* Some whitespace ([7f50cb0](https://git.griefed.de/Griefed/ServerPackCreator/commit/7f50cb03d639d6f153ffc87e1e070ba093b0ef63))
+
+
+### 💎 Improvements
+
+* Allow resizing of server files editor within limits. Update text appropriate to selected inclusion. ([b422407](https://git.griefed.de/Griefed/ServerPackCreator/commit/b422407d23273e6808a18eab0bfd24d4b627b914))
+* Ask for merge if clientside-list contains custom values and reset was triggered ([befe6a2](https://git.griefed.de/Griefed/ServerPackCreator/commit/befe6a208ec24e99e11f64ae90f7462766a7e7bc))
+* General improvements to the menubar. Additions, changes, removals, reorderings. ([8339482](https://git.griefed.de/Griefed/ServerPackCreator/commit/8339482ab2605179a342ec39069af3741597a9f8))
+* Rework of the file and directory inclusions ([3d54593](https://git.griefed.de/Griefed/ServerPackCreator/commit/3d54593b8514e15105cc614aca7759ec4f8285c6))
+
+
+### 📦 Other
+
+* Add sodium to the clientside-mods list. Thanks to [@nvb-uy](https://git.griefed.de/nvb-uy) for the report! ([88d6d2e](https://git.griefed.de/Griefed/ServerPackCreator/commit/88d6d2e02eec72213f1fe3555f91861786a29595))
+* Info about real world plugin example ([f72cc3e](https://git.griefed.de/Griefed/ServerPackCreator/commit/f72cc3e615910723f489504d6ed03795a335162c))
+* Small typo ([978944b](https://git.griefed.de/Griefed/ServerPackCreator/commit/978944b0baa71c067b9194d115f1bec8303060f2))
+
+
+### 🦊 CI/CD
+
+* Hopefully display test results in GitLab pipelines again ([ca0a5dc](https://git.griefed.de/Griefed/ServerPackCreator/commit/ca0a5dcf4b5ec5e7c96e6a72d50fa7c70e2a9924))
+
+
+### 🧪 Tests
+
+* Correct regex for exclusion tests ([23c2197](https://git.griefed.de/Griefed/ServerPackCreator/commit/23c2197c703de71ab575f5930e415a66414552ad))
+* Replace explicit separator with regex ([a566d92](https://git.griefed.de/Griefed/ServerPackCreator/commit/a566d92d1380cb3f9e3c9f71b7094806ea6ee557))
+
+
+### 🛠 Fixes
+
+* Allow files as destination ([d5b24bb](https://git.griefed.de/Griefed/ServerPackCreator/commit/d5b24bb1db9c5ec04805de48e4b64cfac53959d8))
+* Check filters whether they consist of only whitespace ([957292e](https://git.griefed.de/Griefed/ServerPackCreator/commit/957292ed7611758a0652665bed41da7903ba94ce))
+* Do not check global filters during source checks ([b777597](https://git.griefed.de/Griefed/ServerPackCreator/commit/b7775971bfc03d5fbe95afb27f20459489d05a2e))
+* Fix regression introduced during property refactoring ([9c007e7](https://git.griefed.de/Griefed/ServerPackCreator/commit/9c007e78b339f55b8b4dc33d7d14ef6e320f1a9c))
+* If tabs are available, select next one after closing one ([51a2ba7](https://git.griefed.de/Griefed/ServerPackCreator/commit/51a2ba7a60cdb0853454fc2616f87a6a7a6f1872))
+* Only add global exclusion filters to global exclusions during generation ([3eb127c](https://git.griefed.de/Griefed/ServerPackCreator/commit/3eb127c870bbb6477ec21c180274465c4929827b))
+* Print correct value to debug log ([45fec58](https://git.griefed.de/Griefed/ServerPackCreator/commit/45fec58c37f8712de4f7b3c2b02b847cd62f2bab))
+* Remove modpack prefix from file to check ([05b11cb](https://git.griefed.de/Griefed/ServerPackCreator/commit/05b11cbf4fd0940f77f3116b301cde3a318180c3))
+* Try and fix regex processing ([2e853fd](https://git.griefed.de/Griefed/ServerPackCreator/commit/2e853fdd827e8825ca61dfe5cc4d3a22ca119b95))
+* Update plugin-ecosystem to pf4j's new context-system, removing deprecation-warnings ([d9f637f](https://git.griefed.de/Griefed/ServerPackCreator/commit/d9f637fc797119a1a3cdd00178bc147d7142df0a))
+
 ## [5.0.0-alpha.15](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-alpha.14...5.0.0-alpha.15) (2023-05-29)
 
 
