@@ -78,7 +78,7 @@ class ConfigEditorTitle(
 
 
     private fun close() {
-        if (hasUnsavedChanges) {
+        if (hasUnsavedChanges) { //TODO if tab is closed it is not removed
             tabbedConfigsTab.tabs.selectedComponent = configEditor
             if (DialogUtilities.createShowGet(
                     Gui.createserverpack_gui_close_unsaved_message(title),
@@ -95,7 +95,7 @@ class ConfigEditorTitle(
         val currentTab = tabbedConfigsTab.tabs.selectedIndex
         tabbedConfigsTab.tabs.remove(configEditor)
 
-        if (tabbedConfigsTab.tabs.tabCount - 1 > 0) {
+        if (tabbedConfigsTab.tabs.tabCount != 0) {
             tabbedConfigsTab.tabs.selectedIndex = currentTab - 1
         } else {
             tabbedConfigsTab.addTab()
