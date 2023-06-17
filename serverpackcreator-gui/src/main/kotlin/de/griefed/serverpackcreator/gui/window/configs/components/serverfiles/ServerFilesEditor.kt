@@ -1,3 +1,22 @@
+/* Copyright (C) 2023  Griefed
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
+ * USA
+ *
+ * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
+ */
 package de.griefed.serverpackcreator.gui.window.configs.components.serverfiles
 
 import Gui
@@ -14,43 +33,44 @@ import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.io.File
+import java.util.regex.PatternSyntaxException
 import javax.swing.*
 import javax.swing.event.DocumentEvent
 import javax.swing.event.ListSelectionEvent
 
+/**
+ * Editor for [InclusionSpecification] for a given server pack. This editor allows you to specify the
+ * * source
+ * * destination
+ * * inclusion-filter
+ * * exclusion-filter
+ *
+ * A text-pane will also be updated when selecting an InclusionSpecification and show you the files which would be included
+ * depending on your source and filters.
+ *
+ * @author Griefed
+ */
 class ServerFilesEditor(
     private val chooserDimension: Dimension,
     private val guiProps: GuiProps,
     private val configEditor: ConfigEditor,
     private val apiWrapper: ApiWrapper
-
 ) : JSplitPane(HORIZONTAL_SPLIT) {
     private val log = cachedLoggerOf(this.javaClass)
-    private val leftPanel = JPanel(BorderLayout())
-    private val rightPanel = JPanel(
-        MigLayout(
-            "left,wrap",
-            "0[left,::64]5[left,::150]5[left,grow]5[left,::64]5[left,::64]0",
-            "30"
-        )
-    )
     private val inclusionModel = DefaultListModel<InclusionSpecification>()
     private val list = JList(inclusionModel)
-    private val listScroller = JScrollPane(list)
     private val source = ScrollTextField("")
     private val sourceInfo = SourceInfo(guiProps)
-    private val sourceLabel = ElementLabel("Source:")
     private val destination = ScrollTextField("")
     private val destinationInfo = DestinationInfo(guiProps)
-    private val destinationLabel = ElementLabel("Destination:")
     private val inclusionFilter = ScrollTextField("")
     private val inclusionInfo = InclusionInfo(guiProps)
-    private val inclusionLabel = ElementLabel("Inclusion-Filter:")
     private val exclusionFilter = ScrollTextField("")
     private val exclusionInfo = ExclusionInfo(guiProps)
-    private val exclusionLabel = ElementLabel("Exclusion-Filter:")
-    private val toggleVisibility = JToggleButton(guiProps.toggleHelpIcon)
     private val tip = JTextPane()
+    private var selectedInclusion: InclusionSpecification? = null
+    private val timer: Timer
+    private val toggleVisibility = JToggleButton(guiProps.toggleHelpIcon)
     private val scrollTip = JScrollPane(tip)
     private val expertPanel = JPanel(
         MigLayout(
@@ -59,22 +79,54 @@ class ServerFilesEditor(
             "30"
         )
     )
-    private val fileAdd = BalloonTipButton(null, guiProps.addIcon, "Add a new entry", guiProps) { addEntry("") }
-    private val fileRemove =
-        BalloonTipButton(null, guiProps.deleteIcon, "Delete selected entry", guiProps) { removeSelectedEntry() }
-    private val filesShowBrowser = BalloonTipButton(
-        null, guiProps.folderIcon, Gui.createserverpack_gui_browser.toString(), guiProps
-    ) { selectInclusions() }
-    val filesRevert = BalloonTipButton(
-        null, guiProps.revertIcon, Gui.createserverpack_gui_buttoncopydirs_revert_tip.toString(), guiProps
-    ) { revertInclusions() }
-    val filesReset = BalloonTipButton(
-        null, guiProps.resetIcon, Gui.createserverpack_gui_buttoncopydirs_reset_tip.toString(), guiProps
-    ) { setInclusionsFromStringList(apiWrapper.apiProperties.directoriesToInclude.toMutableList()) }
-    private var selectedInclusion: InclusionSpecification? = null
-    val timer: Timer
 
     init {
+        val listScroller = JScrollPane(list)
+        val sourceLabel = ElementLabel(Gui.createserverpack_gui_inclusions_editor_source.toString())
+        val destinationLabel = ElementLabel(Gui.createserverpack_gui_inclusions_editor_destination.toString())
+        val inclusionLabel = ElementLabel(Gui.createserverpack_gui_inclusions_editor_inclusion.toString())
+        val exclusionLabel = ElementLabel(Gui.createserverpack_gui_inclusions_editor_exclusion.toString())
+        val leftPanel = JPanel(BorderLayout())
+        val fileAdd = BalloonTipButton(null, guiProps.addIcon, Gui.createserverpack_gui_inclusions_editor_add.toString(), guiProps) { addEntry("") }
+        val fileRemove =
+            BalloonTipButton(null, guiProps.deleteIcon, Gui.createserverpack_gui_inclusions_editor_delete.toString(), guiProps) { removeSelectedEntry() }
+        val filesShowBrowser = BalloonTipButton(
+            null, guiProps.folderIcon, Gui.createserverpack_gui_browser.toString(), guiProps
+        ) { selectInclusions() }
+        val filesRevert = BalloonTipButton(
+            null, guiProps.revertIcon, Gui.createserverpack_gui_buttoncopydirs_revert_tip.toString(), guiProps
+        ) { revertInclusions() }
+        val filesReset = BalloonTipButton(
+            null, guiProps.resetIcon, Gui.createserverpack_gui_buttoncopydirs_reset_tip.toString(), guiProps
+        ) { setInclusionsFromStringList(apiWrapper.apiProperties.directoriesToInclude.toMutableList()) }
+        val rightPanel = JPanel(
+            MigLayout(
+                "left,wrap",
+                "0[left,::64]5[left,::150]5[left,grow]5[left,::64]5[left,::64]0",
+                "30"
+            )
+        )
+        val sourceListener = object: DocumentChangeListener {
+            override fun update(e: DocumentEvent) {
+                sourceWasEdited()
+            }
+        }
+        val destinationListener = object: DocumentChangeListener {
+            override fun update(e: DocumentEvent) {
+                destinationWasEdited()
+            }
+        }
+        val inclusionListener = object: DocumentChangeListener {
+            override fun update(e: DocumentEvent) {
+                inclusionFilterWasEdited()
+            }
+        }
+        val exclusionListener = object: DocumentChangeListener {
+            override fun update(e: DocumentEvent) {
+                exclusionFilterWasEdited()
+            }
+        }
+
         dividerLocation = 150
         setLeftComponent(leftPanel)
         setRightComponent(rightPanel)
@@ -85,8 +137,7 @@ class ServerFilesEditor(
         list.addListSelectionListener { event -> selectionOccured(event) }
         leftPanel.add(listScroller, BorderLayout.CENTER)
         tip.isEditable = false
-        tip.text =
-            "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.\n\nDuis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis at vero eros et accumsan et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla facilisi. Lorem ipsum dolor sit amet."
+        tip.text = Gui.createserverpack_gui_inclusions_editor_tip_default.toString()
         expertPanel.isVisible = false
         scrollTip.isVisible = true
         toggleVisibility.addActionListener { toggleVisibility() }
@@ -112,26 +163,10 @@ class ServerFilesEditor(
         rightPanel.add(filesShowBrowser, "cell 3 0")
         rightPanel.add(filesRevert, "cell 3 1")
         rightPanel.add(filesReset, "cell 3 2")
-        source.addDocumentListener(object: DocumentChangeListener {
-            override fun update(e: DocumentEvent) {
-                sourceWasEdited()
-            }
-        })
-        destination.addDocumentListener(object: DocumentChangeListener {
-            override fun update(e: DocumentEvent) {
-                destinationWasEdited()
-            }
-        })
-        inclusionFilter.addDocumentListener(object: DocumentChangeListener {
-            override fun update(e: DocumentEvent) {
-                inclusionFilterWasEdited()
-            }
-        })
-        exclusionFilter.addDocumentListener(object: DocumentChangeListener {
-            override fun update(e: DocumentEvent) {
-                exclusionFilterWasEdited()
-            }
-        })
+        source.addDocumentListener(sourceListener)
+        destination.addDocumentListener(destinationListener)
+        inclusionFilter.addDocumentListener(inclusionListener)
+        exclusionFilter.addDocumentListener(exclusionListener)
         timer = Timer(2000) {
             updateTip()
         }
@@ -140,13 +175,13 @@ class ServerFilesEditor(
         timer.isRepeats = false
     }
 
-    fun updateTip() {
+    private fun updateTip() {
         try {
             if (selectedInclusion!!.isGlobalFilter()) {
                 tip.text = if (selectedInclusion!!.hasInclusionFilter()) {
-                    "Global inclusion filters do not have any effect on the server pack generation."
+                    Gui.createserverpack_gui_inclusions_editor_tip_global_inclusions.toString()
                 } else {
-                    "This global exclusion filter would exclude anything matching '${selectedInclusion!!.exclusionFilter}'."
+                    Gui.createserverpack_gui_inclusions_editor_tip_global_exclusions(selectedInclusion!!.exclusionFilter!!)
                 }
                 return
             }
@@ -159,7 +194,7 @@ class ServerFilesEditor(
                 configEditor.getMinecraftVersion(),
                 configEditor.getModloader()
             )
-            var tipContent = "The following files would be included with this Inclusion-Specification:\n"
+            var tipContent = Gui.createserverpack_gui_inclusions_editor_tip_prefix.toString()
             for (file in acquired) {
                 tipContent += file.sourceFile.absolutePath.replace(configEditor.getModpackDirectory() + File.separator,"") + "\n"
             }
@@ -181,13 +216,25 @@ class ServerFilesEditor(
     }
 
     fun inclusionFilterWasEdited() {
-        list.selectedValue.inclusionFilter = inclusionFilter.text
-        timer.restart()
+        try {
+            inclusionFilter.text.toRegex()
+            list.selectedValue.inclusionFilter = inclusionFilter.text
+            timer.restart()
+            inclusionInfo.info()
+        } catch (ex: PatternSyntaxException) {
+            inclusionInfo.error(ex.message ?: ex.description)
+        }
     }
 
     fun exclusionFilterWasEdited() {
-        list.selectedValue.exclusionFilter = exclusionFilter.text
-        timer.restart()
+        try {
+            exclusionFilter.text.toRegex()
+            list.selectedValue.exclusionFilter = exclusionFilter.text
+            timer.restart()
+            exclusionInfo.info()
+        } catch (ex: PatternSyntaxException) {
+            exclusionInfo.error(ex.message ?: ex.description)
+        }
     }
 
     private fun selectionOccured(event: ListSelectionEvent) {
@@ -232,16 +279,17 @@ class ServerFilesEditor(
         return inclusionModel.elements().toList().toMutableList()
     }
 
-    fun addEntry(entry: String) {
+    @Suppress("SameParameterValue")
+    private fun addEntry(entry: String) {
         addEntry(InclusionSpecification(entry))
     }
 
-    fun addEntry(entry: InclusionSpecification) {
+    private fun addEntry(entry: InclusionSpecification) {
         inclusionModel.addElement(entry)
         list.selectedIndex = list.lastVisibleIndex
     }
 
-    fun removeEntry(index: Int): InclusionSpecification {
+    private fun removeEntry(index: Int): InclusionSpecification {
         return inclusionModel.remove(index)
     }
 
@@ -278,12 +326,6 @@ class ServerFilesEditor(
         }
     }
 
-    /**
-     * Reverts the list of copy directories to the value of the last loaded configuration, if one is
-     * available.
-     *
-     * @author Griefed
-     */
     private fun revertInclusions() {
         if (configEditor.lastSavedConfig != null) {
             configEditor.setInclusions(configEditor.lastSavedConfig!!.inclusions)

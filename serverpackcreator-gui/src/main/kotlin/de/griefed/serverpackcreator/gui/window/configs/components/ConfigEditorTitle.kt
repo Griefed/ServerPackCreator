@@ -78,7 +78,7 @@ class ConfigEditorTitle(
 
 
     private fun close() {
-        if (hasUnsavedChanges) { //TODO if tab is closed it is not removed
+        if (hasUnsavedChanges) {
             tabbedConfigsTab.tabs.selectedComponent = configEditor
             if (DialogUtilities.createShowGet(
                     Gui.createserverpack_gui_close_unsaved_message(title),
