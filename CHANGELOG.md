@@ -1,3 +1,20 @@
+## [5.0.0-alpha.17](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-alpha.16...5.0.0-alpha.17) (2023-06-17)
+
+
+### :scissors: Refactor
+
+* Rearrange editor and provide feedback in case of faulty regex ([2d1d124](https://git.griefed.de/Griefed/ServerPackCreator/commit/2d1d1242d513fc438131e8d3d7b3ad797e805976))
+
+
+### 📔 Docs
+
+* Provide descriptions for classes and tag code ([4a1bc5b](https://git.griefed.de/Griefed/ServerPackCreator/commit/4a1bc5b48bc83e7101de0e4a929799238135ec47))
+
+
+### 🛠 Fixes
+
+* Run checks when editing inclusions and display errors appropriately ([5dbc432](https://git.griefed.de/Griefed/ServerPackCreator/commit/5dbc43235fd6bc74853756a8506c4a9bdf79aea5))
+
 ## [5.0.0-alpha.16](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-alpha.15...5.0.0-alpha.16) (2023-06-17)
 
 
