@@ -153,6 +153,7 @@ actual class ApiProperties(
                 "CTM-," +
                 "ChunkAnimator-," +
                 "ClientTweaks_," +
+                "CompletionistsIndex-," +
                 "Controller Support-," +
                 "Controlling-," +
                 "CraftPresence-," +
@@ -202,6 +203,7 @@ actual class ApiProperties(
                 "JustEnoughCalculation-," +
                 "JustEnoughEffects-," +
                 "JustEnoughProfessions-," +
+                "LeaveMyBarsAlone-," +
                 "LLOverlayReloaded-," +
                 "LOTRDRP-," +
                 "LegendaryTooltips," +
@@ -295,6 +297,7 @@ actual class ApiProperties(
                 "discordrpc-," +
                 "drippyloadingscreen-," +
                 "drippyloadingscreen_," +
+                "durabilitytooltip-," +
                 "dynamic-fps-," +
                 "dynamic-music-," +
                 "dynamiclights-," +
@@ -442,6 +445,7 @@ actual class ApiProperties(
                 "^CTM-.*$," +
                 "^ChunkAnimator-.*$," +
                 "^ClientTweaks_.*$," +
+                "^CompletionistsIndex-.*$," +
                 "^Controller Support-.*$," +
                 "^Controlling-.*$," +
                 "^CraftPresence-.*$," +
@@ -491,6 +495,7 @@ actual class ApiProperties(
                 "^JustEnoughCalculation-.*$," +
                 "^JustEnoughEffects-.*$," +
                 "^JustEnoughProfessions-.*$," +
+                "^LeaveMyBarsAlone-.*$," +
                 "^LLOverlayReloaded-.*$," +
                 "^LOTRDRP-.*$," +
                 "^LegendaryTooltips-.*$," +
@@ -584,6 +589,7 @@ actual class ApiProperties(
                 "^discordrpc-.*$," +
                 "^drippyloadingscreen-.*$," +
                 "^drippyloadingscreen_.*$," +
+                "^durabilitytooltip-.*$," +
                 "^durabilitytooltip-.*$," +
                 "^dynamic-fps-.*$," +
                 "^dynamic-music-.*$," +
