@@ -15,8 +15,7 @@ exclude:
       - .jpb
       - .runConfigurations
       - build
-      - buildSrc/.gradle
-      - buildSrc/build
+      - buildSrc
       - gradle
       - img
       - licenses
