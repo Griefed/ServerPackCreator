@@ -2,8 +2,6 @@ name: Qodana Scan
 
 on:
   push:
-    tags-ignore:
-      - '**'
   pull_request:
 
 jobs:
@@ -18,5 +16,6 @@ jobs:
         env:
           QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}
         with:
-          use-caches: true
+          use-caches: false
+          upload-result: true
           cache-default-branch-only: true
