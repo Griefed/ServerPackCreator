@@ -262,7 +262,12 @@ class InclusionsEditor(
             inclusionInfo.info()
         } catch (ex: PatternSyntaxException) {
             timer.stop()
-            inclusionInfo.error(Gui.createserverpack_gui_inclusions_editor_filter_error(ex.description))
+            var exception = ex.message ?: ex.description
+            exception = exception
+                .replace("\t","%20")
+                .replace("\n","<br>")
+                .replace(" ","&nbsp;")
+            inclusionInfo.error("<html>${Gui.createserverpack_gui_inclusions_editor_filter_error(exception)}</html>")
         }
     }
 
@@ -277,7 +282,12 @@ class InclusionsEditor(
             exclusionInfo.info()
         } catch (ex: PatternSyntaxException) {
             timer.stop()
-            exclusionInfo.error(Gui.createserverpack_gui_inclusions_editor_filter_error(ex.description))
+            var exception = ex.message ?: ex.description
+            exception = exception
+                .replace("\t","&nbsp;&nbsp;&nbsp;&nbsp;")
+                .replace("\n","<br>")
+                .replace(" ","&nbsp;")
+            exclusionInfo.error("<html>${Gui.createserverpack_gui_inclusions_editor_filter_error(exception)}</html>")
         }
     }
 
