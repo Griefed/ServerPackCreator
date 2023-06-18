@@ -29,7 +29,7 @@ import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.components.BalloonTipButton
 import de.griefed.serverpackcreator.gui.window.configs.components.*
 import de.griefed.serverpackcreator.gui.window.configs.components.advanced.*
-import de.griefed.serverpackcreator.gui.window.configs.components.serverfiles.InclusionsEditor
+import de.griefed.serverpackcreator.gui.window.configs.components.inclusions.InclusionsEditor
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
