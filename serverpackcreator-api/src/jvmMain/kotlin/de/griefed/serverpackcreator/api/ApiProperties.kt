@@ -363,7 +363,6 @@ actual class ApiProperties(
                 "mobplusplus-," +
                 "modcredits-," +
                 "modernworldcreation_," +
-                "modmenu-," +
                 "modnametooltip-," +
                 "modnametooltip_," +
                 "moreoverlays-," +
@@ -656,7 +655,6 @@ actual class ApiProperties(
                 "^mobplusplus-.*$," +
                 "^modcredits-.*$," +
                 "^modernworldcreation_.*$," +
-                "^modmenu-.*$," +
                 "^modnametooltip-.*$," +
                 "^modnametooltip_.*$," +
                 "^moreoverlays-.*$," +
