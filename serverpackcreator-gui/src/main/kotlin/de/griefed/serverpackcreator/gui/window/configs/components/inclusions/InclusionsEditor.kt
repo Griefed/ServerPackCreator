@@ -242,7 +242,7 @@ class InclusionsEditor(
      * @author Griefed
      */
     fun destinationWasEdited() {
-        if (apiWrapper.stringUtilities.checkForIllegalCharacters(destination.text)) {
+        if (apiWrapper.stringUtilities.checkForInvalidPathCharacters(destination.text)) {
             list.selectedValue.destination = destination.text
             destinationInfo.info()
         } else {

@@ -57,7 +57,6 @@ actual class ConfigurationHandler(
     private val apiPlugins: ApiPlugins
 ) : Configuration<File, Path>() {
     private val zipRegex = "\\.[Zz][Ii][Pp]".toRegex()
-    private val destinationRegex = "^[a-zA-Z0-9]+[/\\\\a-zA-Z0-9 .]+".toRegex()
 
     actual override fun checkConfiguration(
         configFile: File, packConfig: PackConfig, encounteredErrors: MutableList<String>, quietCheck: Boolean
@@ -264,17 +263,12 @@ actual class ConfigurationHandler(
             for (inclusion in packConfig.inclusions.indices) {
                 entry = packConfig.inclusions[inclusion]
 
-                if (!entry.source.startsWith(packConfig.modpackDir)
-                    && !entry.source.matches(destinationRegex)
-                    && fileUtils.isLink(entry.source)
-                ) {
+                if (!entry.source.startsWith(packConfig.modpackDir) && fileUtils.isLink(entry.source)) {
                     link = fileUtils.resolveLink(entry.source)
                     entry.source = link
                     inclusionChanges = true
                     log.info("Resolved source to $link.")
-                } else if (entry.source.matches(destinationRegex)
-                    && fileUtils.isLink(packConfig.modpackDir + File.separator + entry.source)
-                ) {
+                } else if (fileUtils.isLink(packConfig.modpackDir + File.separator + entry.source)) {
                     link = fileUtils.resolveLink("${packConfig.modpackDir}${File.separator}${entry.source}")
                     entry.source = link
                     inclusionChanges = true
@@ -524,7 +518,8 @@ actual class ConfigurationHandler(
                         )
                     )
                 }
-                if (inclusion.hasDestination() && !inclusion.destination!!.matches(destinationRegex)) {
+                if (inclusion.hasDestination()
+                    && !utilities.stringUtilities.checkForInvalidPathCharacters(inclusion.destination!!)) {
                     log.warn("Invalid destination specified: ${inclusion.destination}.")
                     inclusion.destination = null
                     configCorrect = false
@@ -533,7 +528,7 @@ actual class ConfigurationHandler(
                     try {
                         inclusion.inclusionFilter!!.toRegex()
                     } catch (ex: PatternSyntaxException) {
-                        log.error("Invalid inclusion-regex specified: ${inclusion.inclusionFilter}.",ex)
+                        log.error("Invalid inclusion-regex specified: ${inclusion.inclusionFilter}.", ex)
                         configCorrect = false
                         // This log is meant to be read by the user, therefore we allow translation.
                         encounteredErrors.add("Invalid inclusion-regex specified: ${inclusion.inclusionFilter}.")
@@ -543,7 +538,7 @@ actual class ConfigurationHandler(
                     try {
                         inclusion.exclusionFilter!!.toRegex()
                     } catch (ex: PatternSyntaxException) {
-                        log.error("Invalid exclusion-regex specified: ${inclusion.exclusionFilter}.",ex)
+                        log.error("Invalid exclusion-regex specified: ${inclusion.exclusionFilter}.", ex)
                         configCorrect = false
                         // This log is meant to be read by the user, therefore we allow translation.
                         encounteredErrors.add("Invalid exclusion-regex specified: ${inclusion.exclusionFilter}.")

@@ -262,7 +262,7 @@ class ConfigEditor(
         // Server Files
         panel.add(inclusionsInfo, "cell 0 3 1 3")
         panel.add(filesLabel, "cell 1 3 1 3,grow")
-        panel.add(inclusionsEditor, "cell 2 3 3 3, grow, w 10:500:, h 150:30%:80%")
+        panel.add(inclusionsEditor, "cell 2 3 3 3, grow, w 10:500:, h 150:225:300")
 
         // Server Pack Suffix
         panel.add(suffixInfo, "cell 0 6,grow")

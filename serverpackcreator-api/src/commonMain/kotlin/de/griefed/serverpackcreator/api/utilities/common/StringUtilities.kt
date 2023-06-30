@@ -232,6 +232,51 @@ class StringUtilities {
                 && !text.contains("`")
                 && !text.contains("´")
                 && !text.contains("="))
+
+    /**
+     * Check the passed string whether it contains characters invalid in a path-declaration:
+     *  * **&#60;**
+     *  * **&#62;**
+     *  * **&#58;**
+     *  * **&#34;**
+     *  * **&#124;**
+     *  * **&#63;**
+     *  * **&#42;**
+     *  * **&#35;**
+     *  * **&#37;**
+     *  * **&#38;**
+     *  * **&#123;**
+     *  * **&#125;**
+     *  * **&#36;**
+     *  * **&#33;**
+     *  * **&#64;**
+     *  * **&#180;**
+     *  * **&#96;**
+     *  * **&#61;**
+     *
+     * @param text The text you want to check.
+     * @return `true` if none of these characters were found.
+     * @author Griefed
+     */
+    fun checkForInvalidPathCharacters(text: String) =
+        (!text.contains("<")
+                || !text.contains(">")
+                || !text.contains(":")
+                || !text.contains("\"")
+                || !text.contains("|")
+                || !text.contains("?")
+                || !text.contains("*")
+                || !text.contains("#")
+                || !text.contains("%")
+                || !text.contains("&")
+                || !text.contains("{")
+                || !text.contains("}")
+                || !text.contains("$")
+                || !text.contains("!")
+                || !text.contains("@")
+                || !text.contains("`")
+                || !text.contains("´")
+                || !text.contains("="))
 }
 
 /**
@@ -279,13 +324,13 @@ fun String.escapePath(): String {
  *
  * @author Griefed
  */
-fun String.regexReplace(regex: Regex, replaceWith: String) : String {
+fun String.regexReplace(regex: Regex, replaceWith: String): String {
     var i = 0
     var replaced = this
     while (i < length) {
         for (n in length downTo i) {
-            if (substring(i,n).matches(regex)) {
-                replaced = replaceRange(i,n,replaceWith)
+            if (substring(i, n).matches(regex)) {
+                replaced = replaceRange(i, n, replaceWith)
                 i = n
                 break
             }
