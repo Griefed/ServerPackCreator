@@ -531,7 +531,7 @@ actual class ConfigurationHandler(
                         log.error("Invalid inclusion-regex specified: ${inclusion.inclusionFilter}.", ex)
                         configCorrect = false
                         // This log is meant to be read by the user, therefore we allow translation.
-                        encounteredErrors.add("Invalid inclusion-regex specified: ${inclusion.inclusionFilter}.")
+                        encounteredErrors.add(Api.configuration_log_error_checkcopydirs_inclusion(inclusion.inclusionFilter ?: ""))
                     }
                 }
                 if (inclusion.hasExclusionFilter()) {
@@ -541,7 +541,7 @@ actual class ConfigurationHandler(
                         log.error("Invalid exclusion-regex specified: ${inclusion.exclusionFilter}.", ex)
                         configCorrect = false
                         // This log is meant to be read by the user, therefore we allow translation.
-                        encounteredErrors.add("Invalid exclusion-regex specified: ${inclusion.exclusionFilter}.")
+                        encounteredErrors.add(Api.configuration_log_error_checkcopydirs_inclusion(inclusion.exclusionFilter ?: ""))
                     }
                 }
             }
