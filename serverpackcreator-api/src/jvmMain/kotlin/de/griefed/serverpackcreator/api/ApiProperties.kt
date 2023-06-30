@@ -417,7 +417,7 @@ actual class ApiProperties(
                 "xlifeheartcolors-," +
                 "yisthereautojump-"
 
-    @Suppress("SpellCheckingInspection")
+/*    @Suppress("SpellCheckingInspection")
     private var fallbackModsRegex =
         "^3dskinlayers-.*$," +
                 "^Absolutely-Not-A-Zoom-Mod-.*$," +
@@ -707,7 +707,7 @@ actual class ApiProperties(
                 "^whats-that-slot-forge-.*$," +
                 "^wisla-.*$," +
                 "^xlifeheartcolors-.*$," +
-                "^yisthereautojump-.*$"
+                "^yisthereautojump-.*$"*/
 
     @Suppress("MemberVisibilityCanBePrivate")
     val fallbackDirectoriesInclusionString =
@@ -762,7 +762,14 @@ actual class ApiProperties(
      * Regex-list of clientside-only mods to exclude from server packs.
      */
     @Suppress("MemberVisibilityCanBePrivate")
-    var clientsideModsRegex = TreeSet(fallbackModsRegex.split(","))
+    var clientsideModsRegex: TreeSet<String> = TreeSet()
+        get() {
+            field.clear()
+            for (mod in clientsideMods) {
+                field.add("^$mod.*$")
+            }
+            return field
+        }
         private set
 
     /**
@@ -1754,14 +1761,6 @@ actual class ApiProperties(
             clientsideMods.joinToString(",")
         )
 
-
-        // Regex list
-        clientsideModsRegex.addAll(
-            getListProperty(
-                pConfigurationFallbackModsListRegex,
-                fallbackModsRegex
-            )
-        )
         internalProps.setProperty(
             pConfigurationFallbackModsListRegex,
             clientsideModsRegex.joinToString(",")
@@ -1809,10 +1808,7 @@ actual class ApiProperties(
         key: String,
         defaultValue: String
     ) = if (acquireProperty(key, defaultValue).contains(",")) {
-        acquireProperty(
-            key,
-            defaultValue
-        )
+        acquireProperty(key,defaultValue)
             .split(",")
             .dropLastWhile { it.isEmpty() }
     } else {
@@ -1952,6 +1948,7 @@ actual class ApiProperties(
      */
     @Suppress("MemberVisibilityCanBePrivate")
     fun saveToDisk(propertiesFile: File) {
+        cleanupInternalProps()
         try {
             propertiesFile.outputStream().use {
                 internalProps.store(
@@ -1963,6 +1960,15 @@ actual class ApiProperties(
         } catch (ex: IOException) {
             log.error("Couldn't write properties-file.", ex)
         }
+    }
+
+    /**
+     * Removes unwanted properties. Called during the save-operation, to ensure that legacy-properties are removed.
+     *
+     * @author Griefed
+     */
+    private fun cleanupInternalProps() {
+        internalProps.remove(pConfigurationFallbackModsListRegex)
     }
 
     /**
@@ -2106,21 +2112,6 @@ actual class ApiProperties(
                 clientsideMods.clear()
                 clientsideMods.addAll(internalProps.getProperty(pConfigurationFallbackModsList).split(","))
                 log.info("The fallback-list for clientside only mods has been updated to: $clientsideMods")
-                updated = true
-            }
-            if (properties!!.getProperty(pConfigurationFallbackModsListRegex) != null
-                && internalProps.getProperty(pConfigurationFallbackModsListRegex)
-                != properties!!.getProperty(pConfigurationFallbackModsListRegex)
-            ) {
-                internalProps.setProperty(
-                    pConfigurationFallbackModsListRegex,
-                    properties!!.getProperty(pConfigurationFallbackModsListRegex)
-                )
-                clientsideModsRegex.clear()
-                clientsideModsRegex.addAll(
-                    internalProps.getProperty(pConfigurationFallbackModsListRegex).split(",")
-                )
-                log.info("The fallback regex-list for clientside only mods has been updated to: $clientsideModsRegex")
                 updated = true
             }
         }
