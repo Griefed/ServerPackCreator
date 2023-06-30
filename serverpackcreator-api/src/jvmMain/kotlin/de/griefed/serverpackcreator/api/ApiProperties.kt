@@ -61,6 +61,8 @@ actual class ApiProperties(
         "de.griefed.serverpackcreator.versioncheck.prerelease"
     private val pLanguage =
         "de.griefed.serverpackcreator.language"
+    private val pConfigurationFallbackUpdateURL =
+        "de.griefed.serverpackcreator.configuration.fallback.updateurl"
     private val pConfigurationFallbackModsList =
         "de.griefed.serverpackcreator.configuration.fallbackmodslist"
     private val pConfigurationFallbackModsListRegex =
@@ -996,7 +998,6 @@ actual class ApiProperties(
     /**
      * Start-script templates to use during server pack generation.
      */
-    @Suppress("SetterBackingFieldAssignment")
     var scriptTemplates: TreeSet<File> = TreeSet<File>()
         get() {
             val entries = getFileListProperty(
@@ -2091,7 +2092,7 @@ actual class ApiProperties(
         var properties: Properties? = null
         try {
             URL(
-                "https://raw.githubusercontent.com/Griefed/ServerPackCreator/main/serverpackcreator-api/src/jvmMain/resources/serverpackcreator.properties"
+                acquireProperty(pConfigurationFallbackUpdateURL,"https://raw.githubusercontent.com/Griefed/ServerPackCreator/main/serverpackcreator-api/src/jvmMain/resources/serverpackcreator.properties")
             ).openStream().use {
                 properties = Properties()
                 properties!!.load(it)
