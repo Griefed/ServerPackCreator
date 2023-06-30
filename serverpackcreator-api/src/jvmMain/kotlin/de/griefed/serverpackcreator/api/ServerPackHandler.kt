@@ -276,8 +276,12 @@ actual class ServerPackHandler actual constructor(
                     acquired = getExplicitFiles(inclusion.source, inclusion.destination!!, modpackDir, destination)
                     processed = runFilters(acquired, inclusion, modpackDir)
                     serverPackFiles.addAll(processed)
+                } else if (File(clientDir).isDirectory) {
+                    acquired = getExplicitFiles(clientDir, inclusion.destination!!, modpackDir, destination)
+                    processed = runFilters(acquired, inclusion, modpackDir)
+                    serverPackFiles.addAll(processed)
                 } else {
-                    serverPackFile = ServerPackFile(inclusionSourceFile, inclusionDestinationFile)
+                    serverPackFile = ServerPackFile(inclusionSourceFile, File(destination,inclusion.destination ?: inclusionSourceFile.name))
                     serverPackFiles.add(serverPackFile)
                 }
             }
