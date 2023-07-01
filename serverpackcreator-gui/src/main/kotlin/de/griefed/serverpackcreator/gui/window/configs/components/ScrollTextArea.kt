@@ -151,7 +151,7 @@ class ScrollTextArea(
 
             e.keyCode == KeyEvent.VK_R && e.isControlDown && !e.isShiftDown -> searchAndReplace()
 
-            e.keyCode == KeyEvent.VK_F && e.isShiftDown && e.isControlDown -> searchRegexDialog()
+            e.keyCode == KeyEvent.VK_F && e.isControlDown && e.isShiftDown-> searchRegexDialog()
 
             e.keyCode == KeyEvent.VK_R && e.isControlDown && e.isShiftDown -> searchRegexAndReplace()
         }
@@ -180,7 +180,7 @@ class ScrollTextArea(
         if (JOptionPane.showConfirmDialog(
                 parent,
                 search,
-                Gui.createserverpack_gui_textarea_search_regex_title(name),
+                Gui.createserverpack_gui_textarea_search_title(name),
                 JOptionPane.OK_CANCEL_OPTION,
                 JOptionPane.PLAIN_MESSAGE,
                 guiProps.inspectMediumIcon
