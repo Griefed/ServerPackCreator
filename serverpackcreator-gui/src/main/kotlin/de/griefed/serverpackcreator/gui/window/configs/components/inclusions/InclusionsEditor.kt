@@ -67,11 +67,10 @@ class InclusionsEditor(
     private val inclusionInfo = InclusionInfo(guiProps)
     private val exclusionFilter = ScrollTextField("")
     private val exclusionInfo = ExclusionInfo(guiProps)
-    private val tip = JTextPane()
+    private val tip = InclusionTip(Gui.createserverpack_gui_inclusions_editor_tip_name.toString(),guiProps)
     private var selectedInclusion: InclusionSpecification? = null
     private val timer: Timer
     private val toggleVisibility = JToggleButton(guiProps.toggleHelpIcon)
-    private val scrollTip = JScrollPane(tip)
     private val delay = 250
     private val expertPanel = JPanel(
         MigLayout(
@@ -147,10 +146,8 @@ class InclusionsEditor(
         list.cellRenderer = InclusionSpecificationRenderer()
         list.addListSelectionListener { event -> selectionOccurred(event) }
         leftPanel.add(listScroller, BorderLayout.CENTER)
-        tip.isEditable = false
         tip.text = Gui.createserverpack_gui_inclusions_editor_tip_default.toString()
         expertPanel.isVisible = false
-        scrollTip.isVisible = true
         toggleVisibility.addActionListener { toggleVisibility() }
 
         expertPanel.add(destinationInfo, "cell 0 0")
@@ -170,7 +167,7 @@ class InclusionsEditor(
         rightPanel.add(sourceLabel, "cell 1 0")
         rightPanel.add(source, "cell 2 0, grow, w 50:50:")
         rightPanel.add(expertPanel, "cell 1 1 2 3, grow, w 50:50:, hidemode 3")
-        rightPanel.add(scrollTip, "cell 1 1 2 3, grow, w 50:50:, h 150:200:, hidemode 3")
+        rightPanel.add(tip, "cell 1 1 2 3, grow, w 50:50:, h 150:200:, hidemode 3")
         rightPanel.add(filesShowBrowser, "cell 3 0")
         rightPanel.add(filesRevert, "cell 3 1")
         rightPanel.add(filesReset, "cell 3 2")
@@ -312,7 +309,7 @@ class InclusionsEditor(
      */
     private fun toggleVisibility() {
         expertPanel.isVisible = !expertPanel.isVisible
-        scrollTip.isVisible = !scrollTip.isVisible
+        tip.isVisible = !tip.isVisible
         if (expertPanel.isVisible) {
             toggleVisibility.icon = guiProps.toggleExpertIcon
         } else {
