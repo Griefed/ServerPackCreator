@@ -170,7 +170,7 @@ class InclusionsEditor(
         rightPanel.add(sourceLabel, "cell 1 0")
         rightPanel.add(source, "cell 2 0, grow, w 50:50:")
         rightPanel.add(expertPanel, "cell 1 1 2 3, grow, w 50:50:, hidemode 3")
-        rightPanel.add(scrollTip, "cell 1 1 2 3, grow, w 50:50:, h 80::, hidemode 3")
+        rightPanel.add(scrollTip, "cell 1 1 2 3, grow, w 50:50:, h 150:200:, hidemode 3")
         rightPanel.add(filesShowBrowser, "cell 3 0")
         rightPanel.add(filesRevert, "cell 3 1")
         rightPanel.add(filesReset, "cell 3 2")

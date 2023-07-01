@@ -67,7 +67,7 @@ class MainFrame(
         frame.contentPane = mainPanel.panel
         frame.isLocationByPlatform = true
         frame.isAutoRequestFocus = true
-        frame.preferredSize = Dimension(1100, 800)
+        frame.preferredSize = Dimension(1100, 860)
         frame.pack()
         frame.isVisible = true
         guiProps.larsonScanner.loadConfig(guiProps.idleConfig)
