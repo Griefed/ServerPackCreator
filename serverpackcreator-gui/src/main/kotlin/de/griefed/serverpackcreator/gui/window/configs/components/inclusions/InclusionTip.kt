@@ -25,7 +25,6 @@ import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.awt.BorderLayout
 import java.awt.event.KeyEvent
 import java.awt.event.KeyListener
 import javax.swing.*
@@ -48,7 +47,6 @@ class InclusionTip(
     horizontalScrollbarVisibility
 ), KeyListener {
 
-    private val loadingAnimation = LoadingAnimation()
     private val searchFor = JTextField(100)
     private val search = arrayOf<Any>(
         Gui.createserverpack_gui_textarea_search_message.toString(),
@@ -117,7 +115,6 @@ class InclusionTip(
                 guiProps.inspectMediumIcon
             ) == JOptionPane.OK_OPTION
         ) {
-            loadingAnimation.showAnimation()
             GlobalScope.launch {
                 var i = 0
                 while (i < textPane.text.length) {
@@ -133,7 +130,6 @@ class InclusionTip(
                         i++
                     }
                 }
-                loadingAnimation.hideAnimation()
                 textPane.isEnabled = true
             }
         }
@@ -154,7 +150,6 @@ class InclusionTip(
                 guiProps.inspectMediumIcon
             ) == JOptionPane.OK_OPTION
         ) {
-            loadingAnimation.showAnimation()
             textPane.isEnabled = false
             GlobalScope.launch {
                 val regex = searchFor.text.toRegex()
@@ -173,40 +168,8 @@ class InclusionTip(
                     }
                     i++
                 }
-                loadingAnimation.hideAnimation()
                 textPane.isEnabled = true
             }
-        }
-
-    }
-
-    /**
-     * @author Griefed
-     */
-    inner class LoadingAnimation : JWindow() {
-
-        init {
-            contentPane = JPanel()
-            contentPane.layout = BorderLayout()
-            contentPane.add(JLabel(guiProps.loadingAnimation), BorderLayout.CENTER)
-            setSize(guiProps.loadingAnimation.iconWidth, guiProps.loadingAnimation.iconHeight)
-            isVisible = false
-        }
-
-        /**
-         * @author Griefed
-         */
-        fun showAnimation() {
-            setLocationRelativeTo(this@InclusionTip)
-            isVisible = true
-            toFront()
-        }
-
-        /**
-         * @author Griefed
-         */
-        fun hideAnimation() {
-            isVisible = false
         }
     }
 }

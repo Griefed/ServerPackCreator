@@ -28,6 +28,9 @@ import de.griefed.serverpackcreator.gui.window.configs.ConfigEditor
 import de.griefed.serverpackcreator.gui.window.configs.components.DocumentChangeListener
 import de.griefed.serverpackcreator.gui.window.configs.components.ElementLabel
 import de.griefed.serverpackcreator.gui.window.configs.components.ScrollTextField
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import net.miginfocom.swing.MigLayout
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.awt.BorderLayout
@@ -50,6 +53,7 @@ import javax.swing.event.ListSelectionEvent
  *
  * @author Griefed
  */
+@OptIn(DelicateCoroutinesApi::class)
 class InclusionsEditor(
     private val chooserDimension: Dimension,
     private val guiProps: GuiProps,
@@ -67,7 +71,7 @@ class InclusionsEditor(
     private val inclusionInfo = InclusionInfo(guiProps)
     private val exclusionFilter = ScrollTextField("")
     private val exclusionInfo = ExclusionInfo(guiProps)
-    private val tip = InclusionTip(Gui.createserverpack_gui_inclusions_editor_tip_name.toString(),guiProps)
+    private val tip = InclusionTip(Gui.createserverpack_gui_inclusions_editor_tip_name.toString(), guiProps)
     private var selectedInclusion: InclusionSpecification? = null
     private val timer: Timer
     private val toggleVisibility = JToggleButton(guiProps.toggleHelpIcon)
@@ -176,7 +180,9 @@ class InclusionsEditor(
         inclusionFilter.addDocumentListener(inclusionListener)
         exclusionFilter.addDocumentListener(exclusionListener)
         timer = Timer(delay) {
-            updateTip()
+            GlobalScope.launch(guiProps.fileBrowserDispatcher) {
+                updateTip()
+            }
         }
         timer.stop()
         timer.delay = delay
@@ -214,6 +220,7 @@ class InclusionsEditor(
             }
             tip.text = tipContent
             tip.grabFocus()
+            tip.updateUI()
         } catch (ex: Exception) {
             log.error("Couldn't acquire files to include. ", ex)
         }
@@ -261,9 +268,9 @@ class InclusionsEditor(
             timer.stop()
             var exception = ex.message ?: ex.description
             exception = exception
-                .replace("\t","%20")
-                .replace("\n","<br>")
-                .replace(" ","&nbsp;")
+                .replace("\t", "%20")
+                .replace("\n", "<br>")
+                .replace(" ", "&nbsp;")
             inclusionInfo.error("<html>${Gui.createserverpack_gui_inclusions_editor_filter_error(exception)}</html>")
         }
     }
@@ -281,9 +288,9 @@ class InclusionsEditor(
             timer.stop()
             var exception = ex.message ?: ex.description
             exception = exception
-                .replace("\t","&nbsp;&nbsp;&nbsp;&nbsp;")
-                .replace("\n","<br>")
-                .replace(" ","&nbsp;")
+                .replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;")
+                .replace("\n", "<br>")
+                .replace(" ", "&nbsp;")
             exclusionInfo.error("<html>${Gui.createserverpack_gui_inclusions_editor_filter_error(exception)}</html>")
         }
     }
