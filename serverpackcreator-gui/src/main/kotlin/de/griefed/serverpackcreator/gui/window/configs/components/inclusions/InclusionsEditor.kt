@@ -17,7 +17,7 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.gui.window.configs.components.serverfiles
+package de.griefed.serverpackcreator.gui.window.configs.components.inclusions
 
 import Gui
 import de.griefed.serverpackcreator.api.ApiWrapper
@@ -28,6 +28,9 @@ import de.griefed.serverpackcreator.gui.window.configs.ConfigEditor
 import de.griefed.serverpackcreator.gui.window.configs.components.DocumentChangeListener
 import de.griefed.serverpackcreator.gui.window.configs.components.ElementLabel
 import de.griefed.serverpackcreator.gui.window.configs.components.ScrollTextField
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import net.miginfocom.swing.MigLayout
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.awt.BorderLayout
@@ -50,6 +53,7 @@ import javax.swing.event.ListSelectionEvent
  *
  * @author Griefed
  */
+@OptIn(DelicateCoroutinesApi::class)
 class InclusionsEditor(
     private val chooserDimension: Dimension,
     private val guiProps: GuiProps,
@@ -67,11 +71,10 @@ class InclusionsEditor(
     private val inclusionInfo = InclusionInfo(guiProps)
     private val exclusionFilter = ScrollTextField("")
     private val exclusionInfo = ExclusionInfo(guiProps)
-    private val tip = JTextPane()
+    private val tip = InclusionTip(Gui.createserverpack_gui_inclusions_editor_tip_name.toString(), guiProps)
     private var selectedInclusion: InclusionSpecification? = null
     private val timer: Timer
     private val toggleVisibility = JToggleButton(guiProps.toggleHelpIcon)
-    private val scrollTip = JScrollPane(tip)
     private val delay = 250
     private val expertPanel = JPanel(
         MigLayout(
@@ -147,10 +150,8 @@ class InclusionsEditor(
         list.cellRenderer = InclusionSpecificationRenderer()
         list.addListSelectionListener { event -> selectionOccurred(event) }
         leftPanel.add(listScroller, BorderLayout.CENTER)
-        tip.isEditable = false
         tip.text = Gui.createserverpack_gui_inclusions_editor_tip_default.toString()
         expertPanel.isVisible = false
-        scrollTip.isVisible = true
         toggleVisibility.addActionListener { toggleVisibility() }
 
         expertPanel.add(destinationInfo, "cell 0 0")
@@ -170,7 +171,7 @@ class InclusionsEditor(
         rightPanel.add(sourceLabel, "cell 1 0")
         rightPanel.add(source, "cell 2 0, grow, w 50:50:")
         rightPanel.add(expertPanel, "cell 1 1 2 3, grow, w 50:50:, hidemode 3")
-        rightPanel.add(scrollTip, "cell 1 1 2 3, grow, w 50:50:, h 80::, hidemode 3")
+        rightPanel.add(tip, "cell 1 1 2 3, grow, w 50:50:, h 150:200:, hidemode 3")
         rightPanel.add(filesShowBrowser, "cell 3 0")
         rightPanel.add(filesRevert, "cell 3 1")
         rightPanel.add(filesReset, "cell 3 2")
@@ -179,7 +180,9 @@ class InclusionsEditor(
         inclusionFilter.addDocumentListener(inclusionListener)
         exclusionFilter.addDocumentListener(exclusionListener)
         timer = Timer(delay) {
-            updateTip()
+            GlobalScope.launch(guiProps.fileBrowserDispatcher) {
+                updateTip()
+            }
         }
         timer.stop()
         timer.delay = delay
@@ -217,6 +220,7 @@ class InclusionsEditor(
             }
             tip.text = tipContent
             tip.grabFocus()
+            tip.updateUI()
         } catch (ex: Exception) {
             log.error("Couldn't acquire files to include. ", ex)
         }
@@ -242,7 +246,7 @@ class InclusionsEditor(
      * @author Griefed
      */
     fun destinationWasEdited() {
-        if (apiWrapper.stringUtilities.checkForIllegalCharacters(destination.text)) {
+        if (apiWrapper.stringUtilities.checkForInvalidPathCharacters(destination.text)) {
             list.selectedValue.destination = destination.text
             destinationInfo.info()
         } else {
@@ -262,7 +266,12 @@ class InclusionsEditor(
             inclusionInfo.info()
         } catch (ex: PatternSyntaxException) {
             timer.stop()
-            inclusionInfo.error(Gui.createserverpack_gui_inclusions_editor_filter_error(ex.description))
+            var exception = ex.message ?: ex.description
+            exception = exception
+                .replace("\t", "%20")
+                .replace("\n", "<br>")
+                .replace(" ", "&nbsp;")
+            inclusionInfo.error("<html>${Gui.createserverpack_gui_inclusions_editor_filter_error(exception)}</html>")
         }
     }
 
@@ -277,7 +286,12 @@ class InclusionsEditor(
             exclusionInfo.info()
         } catch (ex: PatternSyntaxException) {
             timer.stop()
-            exclusionInfo.error(Gui.createserverpack_gui_inclusions_editor_filter_error(ex.description))
+            var exception = ex.message ?: ex.description
+            exception = exception
+                .replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;")
+                .replace("\n", "<br>")
+                .replace(" ", "&nbsp;")
+            exclusionInfo.error("<html>${Gui.createserverpack_gui_inclusions_editor_filter_error(exception)}</html>")
         }
     }
 
@@ -302,7 +316,7 @@ class InclusionsEditor(
      */
     private fun toggleVisibility() {
         expertPanel.isVisible = !expertPanel.isVisible
-        scrollTip.isVisible = !scrollTip.isVisible
+        tip.isVisible = !tip.isVisible
         if (expertPanel.isVisible) {
             toggleVisibility.icon = guiProps.toggleExpertIcon
         } else {

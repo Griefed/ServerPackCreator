@@ -148,25 +148,34 @@ class ScriptKVPairs(guiProps: GuiProps, configEditor: ConfigEditor) : JTable(
     fun loadData(data: HashMap<String, String>) {
         clearData()
         var row = 0
+        val model = model as DefaultTableModel
+        if (!data.containsKey("SPC_JAVA_SPC")) {
+            data["SPC_JAVA_SPC"] = "java"
+        }
         for ((key, value) in data) {
-            model.setValueAt(key, row, 0)
-            model.setValueAt(value, row, 1)
+            if (key.isBlank() && value.isBlank()) {
+                continue
+            }
+            model.insertRow(row, arrayOf(key,value))
             row += 1
         }
     }
 
     /**
-     * Clear the table of all data. Only leave SPC_JAVA_SPC behind.
+     * Clear the table of all data.
      *
      * @author Griefed
      */
     fun clearData() {
+        val model = model as DefaultTableModel
         for (row in 0 until model.rowCount) {
             model.setValueAt("", row, 0)
-            model.setValueAt("", row, 1)
         }
-        model.setValueAt("SPC_JAVA_SPC", 0, 0)
-        model.setValueAt("java", 0, 1)
+        for (row in model.rowCount - 1 downTo 0) {
+            if (model.getValueAt(row,0).toString().isBlank()) {
+                model.removeRow(row)
+            }
+        }
     }
 
     /**

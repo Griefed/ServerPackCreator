@@ -17,19 +17,19 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.gui.window.configs.components.serverfiles
+package de.griefed.serverpackcreator.gui.window.configs.components.inclusions
 
 import Gui
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.window.configs.components.StatusIcon
 
 /**
- * Status icon for exclusion-filter to inform a user about the status of the specified filter and display
+ * Status icon for source-specification to inform a user about the status of the specified source and display
  * any encountered errors in a hover-tooltip.
  *
  * @author Griefed
  */
-class ExclusionInfo(guiProps: GuiProps) : StatusIcon(
+class SourceInfo(guiProps: GuiProps) : StatusIcon(
     guiProps,
-    Gui.createserverpack_gui_inclusions_editor_exclusion_info.toString()
+    Gui.createserverpack_gui_inclusions_editor_source_info.toString()
 )

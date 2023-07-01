@@ -9,7 +9,9 @@ This repository demonstrates how extension for ServerPackCreator are implemented
 point available in ServerPackCreator.
 
 Looking for a real world example for a plugin for ServerPackCreator?
-Take a look at [spc-nekodetector-plugin](https://github.com/Griefed/spc-nekodetector-plugin)!
+Take a look at
+- [spc-nekodetector-plugin](https://github.com/Griefed/spc-nekodetector-plugin)!
+- [spc-jneedle-plugin](https://github.com/Griefed/spc-jneedle-plugin)!
 
 ## 1.1 Plugin details
 

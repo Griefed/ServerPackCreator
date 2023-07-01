@@ -23,7 +23,7 @@ import Gui
 import de.griefed.serverpackcreator.gui.GuiProps
 
 /**
- * Status icon for [de.griefed.serverpackcreator.gui.window.configs.components.serverfiles.InclusionsEditor] to inform
+ * Status icon for [de.griefed.serverpackcreator.gui.window.configs.components.inclusions.InclusionsEditor] to inform
  * a user about the status of the specified inclusions and display any encountered errors in a hover-tooltip.
  *
  * @author Griefed

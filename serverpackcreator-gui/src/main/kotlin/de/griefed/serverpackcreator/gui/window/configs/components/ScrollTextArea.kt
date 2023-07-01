@@ -24,6 +24,7 @@ import de.griefed.serverpackcreator.api.utilities.common.regexReplace
 import de.griefed.serverpackcreator.gui.GuiProps
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.awt.BorderLayout
 import java.awt.Toolkit
@@ -150,7 +151,7 @@ class ScrollTextArea(
 
             e.keyCode == KeyEvent.VK_R && e.isControlDown && !e.isShiftDown -> searchAndReplace()
 
-            e.keyCode == KeyEvent.VK_F && e.isShiftDown && e.isControlDown -> searchRegexDialog()
+            e.keyCode == KeyEvent.VK_F && e.isControlDown && e.isShiftDown-> searchRegexDialog()
 
             e.keyCode == KeyEvent.VK_R && e.isControlDown && e.isShiftDown -> searchRegexAndReplace()
         }
@@ -162,11 +163,24 @@ class ScrollTextArea(
      * @author Griefed
      */
     @OptIn(DelicateCoroutinesApi::class)
+    private fun requestFocus(component: JComponent) {
+        GlobalScope.launch {
+            delay(250)
+            component.requestFocus()
+            component.grabFocus()
+        }
+    }
+
+    /**
+     * @author Griefed
+     */
+    @OptIn(DelicateCoroutinesApi::class)
     private fun searchDialog() {
+        requestFocus(searchFor)
         if (JOptionPane.showConfirmDialog(
                 parent,
                 search,
-                Gui.createserverpack_gui_textarea_search_regex_title(name),
+                Gui.createserverpack_gui_textarea_search_title(name),
                 JOptionPane.OK_CANCEL_OPTION,
                 JOptionPane.PLAIN_MESSAGE,
                 guiProps.inspectMediumIcon
@@ -200,6 +214,7 @@ class ScrollTextArea(
      */
     @OptIn(DelicateCoroutinesApi::class)
     private fun searchRegexDialog() {
+        requestFocus(searchFor)
         if (JOptionPane.showConfirmDialog(
                 parent,
                 searchRegex,
@@ -239,6 +254,7 @@ class ScrollTextArea(
      * @author Griefed
      */
     private fun searchAndReplace() {
+        requestFocus(searchFor)
         if (JOptionPane.showConfirmDialog(
                 parent,
                 searchAndReplace,
@@ -257,6 +273,7 @@ class ScrollTextArea(
      */
     @OptIn(DelicateCoroutinesApi::class)
     private fun searchRegexAndReplace() {
+        requestFocus(searchFor)
         if (JOptionPane.showConfirmDialog(
                 parent,
                 searchAndReplaceRegex,

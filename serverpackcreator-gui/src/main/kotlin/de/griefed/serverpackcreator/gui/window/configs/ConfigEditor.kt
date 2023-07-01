@@ -29,7 +29,7 @@ import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.components.BalloonTipButton
 import de.griefed.serverpackcreator.gui.window.configs.components.*
 import de.griefed.serverpackcreator.gui.window.configs.components.advanced.*
-import de.griefed.serverpackcreator.gui.window.configs.components.serverfiles.InclusionsEditor
+import de.griefed.serverpackcreator.gui.window.configs.components.inclusions.InclusionsEditor
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -262,7 +262,7 @@ class ConfigEditor(
         // Server Files
         panel.add(inclusionsInfo, "cell 0 3 1 3")
         panel.add(filesLabel, "cell 1 3 1 3,grow")
-        panel.add(inclusionsEditor, "cell 2 3 3 3, grow, w 10:500:, h 150:30%:80%")
+        panel.add(inclusionsEditor, "cell 2 3 3 3, grow, w 10:500:, h 150:225:300")
 
         // Server Pack Suffix
         panel.add(suffixInfo, "cell 0 6,grow")
@@ -1105,6 +1105,7 @@ class ConfigEditor(
      */
     private fun setIconPreview(icon: File, errors: MutableList<String>) {
         try {
+            iconPreview.loading()
             iconPreview.updateIcon(ImageIcon(ImageIO.read(icon)))
         } catch (ex: IOException) {
             log.error("Error generating server icon preview.", ex)

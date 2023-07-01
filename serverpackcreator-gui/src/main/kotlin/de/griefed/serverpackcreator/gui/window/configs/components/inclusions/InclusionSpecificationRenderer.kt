@@ -17,7 +17,7 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.gui.window.configs.components.serverfiles
+package de.griefed.serverpackcreator.gui.window.configs.components.inclusions
 
 import de.griefed.serverpackcreator.api.InclusionSpecification
 import java.awt.Component

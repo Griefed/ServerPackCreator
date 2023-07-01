@@ -61,6 +61,8 @@ actual class ApiProperties(
         "de.griefed.serverpackcreator.versioncheck.prerelease"
     private val pLanguage =
         "de.griefed.serverpackcreator.language"
+    private val pConfigurationFallbackUpdateURL =
+        "de.griefed.serverpackcreator.configuration.fallback.updateurl"
     private val pConfigurationFallbackModsList =
         "de.griefed.serverpackcreator.configuration.fallbackmodslist"
     private val pConfigurationFallbackModsListRegex =
@@ -158,6 +160,7 @@ actual class ApiProperties(
                 "CTM-," +
                 "ChunkAnimator-," +
                 "ClientTweaks_," +
+                "CompletionistsIndex-," +
                 "Controller Support-," +
                 "Controlling-," +
                 "CraftPresence-," +
@@ -207,6 +210,7 @@ actual class ApiProperties(
                 "JustEnoughCalculation-," +
                 "JustEnoughEffects-," +
                 "JustEnoughProfessions-," +
+                "LeaveMyBarsAlone-," +
                 "LLOverlayReloaded-," +
                 "LOTRDRP-," +
                 "LegendaryTooltips," +
@@ -300,6 +304,7 @@ actual class ApiProperties(
                 "discordrpc-," +
                 "drippyloadingscreen-," +
                 "drippyloadingscreen_," +
+                "durabilitytooltip-," +
                 "dynamic-fps-," +
                 "dynamic-music-," +
                 "dynamiclights-," +
@@ -360,7 +365,6 @@ actual class ApiProperties(
                 "mobplusplus-," +
                 "modcredits-," +
                 "modernworldcreation_," +
-                "modmenu-," +
                 "modnametooltip-," +
                 "modnametooltip_," +
                 "moreoverlays-," +
@@ -415,7 +419,7 @@ actual class ApiProperties(
                 "xlifeheartcolors-," +
                 "yisthereautojump-"
 
-    @Suppress("SpellCheckingInspection")
+/*    @Suppress("SpellCheckingInspection")
     private var fallbackModsRegex =
         "^3dskinlayers-.*$," +
                 "^Absolutely-Not-A-Zoom-Mod-.*$," +
@@ -447,6 +451,7 @@ actual class ApiProperties(
                 "^CTM-.*$," +
                 "^ChunkAnimator-.*$," +
                 "^ClientTweaks_.*$," +
+                "^CompletionistsIndex-.*$," +
                 "^Controller Support-.*$," +
                 "^Controlling-.*$," +
                 "^CraftPresence-.*$," +
@@ -496,6 +501,7 @@ actual class ApiProperties(
                 "^JustEnoughCalculation-.*$," +
                 "^JustEnoughEffects-.*$," +
                 "^JustEnoughProfessions-.*$," +
+                "^LeaveMyBarsAlone-.*$," +
                 "^LLOverlayReloaded-.*$," +
                 "^LOTRDRP-.*$," +
                 "^LegendaryTooltips-.*$," +
@@ -590,6 +596,7 @@ actual class ApiProperties(
                 "^drippyloadingscreen-.*$," +
                 "^drippyloadingscreen_.*$," +
                 "^durabilitytooltip-.*$," +
+                "^durabilitytooltip-.*$," +
                 "^dynamic-fps-.*$," +
                 "^dynamic-music-.*$," +
                 "^dynamiclights-.*$," +
@@ -650,7 +657,6 @@ actual class ApiProperties(
                 "^mobplusplus-.*$," +
                 "^modcredits-.*$," +
                 "^modernworldcreation_.*$," +
-                "^modmenu-.*$," +
                 "^modnametooltip-.*$," +
                 "^modnametooltip_.*$," +
                 "^moreoverlays-.*$," +
@@ -703,7 +709,7 @@ actual class ApiProperties(
                 "^whats-that-slot-forge-.*$," +
                 "^wisla-.*$," +
                 "^xlifeheartcolors-.*$," +
-                "^yisthereautojump-.*$"
+                "^yisthereautojump-.*$"*/
 
     @Suppress("MemberVisibilityCanBePrivate")
     val fallbackDirectoriesInclusionString =
@@ -758,7 +764,14 @@ actual class ApiProperties(
      * Regex-list of clientside-only mods to exclude from server packs.
      */
     @Suppress("MemberVisibilityCanBePrivate")
-    var clientsideModsRegex = TreeSet(fallbackModsRegex.split(","))
+    var clientsideModsRegex: TreeSet<String> = TreeSet()
+        get() {
+            field.clear()
+            for (mod in clientsideMods) {
+                field.add("^$mod.*$")
+            }
+            return field
+        }
         private set
 
     /**
@@ -985,7 +998,6 @@ actual class ApiProperties(
     /**
      * Start-script templates to use during server pack generation.
      */
-    @Suppress("SetterBackingFieldAssignment")
     var scriptTemplates: TreeSet<File> = TreeSet<File>()
         get() {
             val entries = getFileListProperty(
@@ -1750,14 +1762,6 @@ actual class ApiProperties(
             clientsideMods.joinToString(",")
         )
 
-
-        // Regex list
-        clientsideModsRegex.addAll(
-            getListProperty(
-                pConfigurationFallbackModsListRegex,
-                fallbackModsRegex
-            )
-        )
         internalProps.setProperty(
             pConfigurationFallbackModsListRegex,
             clientsideModsRegex.joinToString(",")
@@ -1805,10 +1809,7 @@ actual class ApiProperties(
         key: String,
         defaultValue: String
     ) = if (acquireProperty(key, defaultValue).contains(",")) {
-        acquireProperty(
-            key,
-            defaultValue
-        )
+        acquireProperty(key,defaultValue)
             .split(",")
             .dropLastWhile { it.isEmpty() }
     } else {
@@ -1948,6 +1949,7 @@ actual class ApiProperties(
      */
     @Suppress("MemberVisibilityCanBePrivate")
     fun saveToDisk(propertiesFile: File) {
+        cleanupInternalProps()
         try {
             propertiesFile.outputStream().use {
                 internalProps.store(
@@ -1959,6 +1961,15 @@ actual class ApiProperties(
         } catch (ex: IOException) {
             log.error("Couldn't write properties-file.", ex)
         }
+    }
+
+    /**
+     * Removes unwanted properties. Called during the save-operation, to ensure that legacy-properties are removed.
+     *
+     * @author Griefed
+     */
+    private fun cleanupInternalProps() {
+        internalProps.remove(pConfigurationFallbackModsListRegex)
     }
 
     /**
@@ -2081,7 +2092,7 @@ actual class ApiProperties(
         var properties: Properties? = null
         try {
             URL(
-                "https://raw.githubusercontent.com/Griefed/ServerPackCreator/main/serverpackcreator-api/src/jvmMain/resources/serverpackcreator.properties"
+                acquireProperty(pConfigurationFallbackUpdateURL,"https://raw.githubusercontent.com/Griefed/ServerPackCreator/main/serverpackcreator-api/src/jvmMain/resources/serverpackcreator.properties")
             ).openStream().use {
                 properties = Properties()
                 properties!!.load(it)
@@ -2102,21 +2113,6 @@ actual class ApiProperties(
                 clientsideMods.clear()
                 clientsideMods.addAll(internalProps.getProperty(pConfigurationFallbackModsList).split(","))
                 log.info("The fallback-list for clientside only mods has been updated to: $clientsideMods")
-                updated = true
-            }
-            if (properties!!.getProperty(pConfigurationFallbackModsListRegex) != null
-                && internalProps.getProperty(pConfigurationFallbackModsListRegex)
-                != properties!!.getProperty(pConfigurationFallbackModsListRegex)
-            ) {
-                internalProps.setProperty(
-                    pConfigurationFallbackModsListRegex,
-                    properties!!.getProperty(pConfigurationFallbackModsListRegex)
-                )
-                clientsideModsRegex.clear()
-                clientsideModsRegex.addAll(
-                    internalProps.getProperty(pConfigurationFallbackModsListRegex).split(",")
-                )
-                log.info("The fallback regex-list for clientside only mods has been updated to: $clientsideModsRegex")
                 updated = true
             }
         }
