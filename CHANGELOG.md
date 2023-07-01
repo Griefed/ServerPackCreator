@@ -1,3 +1,51 @@
+## [5.0.0-alpha.18](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-alpha.17...5.0.0-alpha.18) (2023-07-01)
+
+
+### :scissors: Refactor
+
+* Rename package to match classes and purpose ([618c032](https://git.griefed.de/Griefed/ServerPackCreator/commit/618c032296456ec341cb1b4a8153141c6968831d))
+
+
+### 💎 Improvements
+
+* Acquire default regex list from string fallback list ([c513e02](https://git.griefed.de/Griefed/ServerPackCreator/commit/c513e021a042dfbc1272da13a5eb5e0d981cb559))
+* Display loading gif upon updating of the server icon preview ([6c41f52](https://git.griefed.de/Griefed/ServerPackCreator/commit/6c41f52277abab156150fa8c70e8c69632bd28a5))
+* Grab focus on search-field upon opening search dialog ([fea671b](https://git.griefed.de/Griefed/ServerPackCreator/commit/fea671ba0ffb6b65ee17e03123165431d3a4f11f))
+* Make inclusion files tip searchable ([79f0129](https://git.griefed.de/Griefed/ServerPackCreator/commit/79f0129fcca1cae9494dca800008c6c2c0c5f3a9))
+* Remove loading animation from tip. Slightly improve file acquisition performance. ([ee48999](https://git.griefed.de/Griefed/ServerPackCreator/commit/ee48999b83846a10f4a7151fbc52c9b474467184))
+
+
+### 📦 Other
+
+* Add CompletionistIndex, LeaveMyBarsAlone, DurabilityTooltip to list of clientside mods. Thanks to @ModernGamingWorld for the reports! ([f635cb3](https://git.griefed.de/Griefed/ServerPackCreator/commit/f635cb3f699ef3b383cf7ff14721448cd96bb210))
+* Add jNeedle plugin to example-list ([39ad2bd](https://git.griefed.de/Griefed/ServerPackCreator/commit/39ad2bdb0e170b7e3df55028e9fce53d6acf978b))
+* Add missing i18n-keys ([c00a2a4](https://git.griefed.de/Griefed/ServerPackCreator/commit/c00a2a4d10902839286cb11aafb911044f3d34c1))
+* Adjust height to better fit inclusion-editor initial height ([d01bc30](https://git.griefed.de/Griefed/ServerPackCreator/commit/d01bc30cd4e4c994f71062f1e0e17c16a31c2a8e))
+* License header etc. ([994388f](https://git.griefed.de/Griefed/ServerPackCreator/commit/994388f254b0443531f55f04181e478b408fba63))
+* List jNeedle plugin as example ([23cf821](https://git.griefed.de/Griefed/ServerPackCreator/commit/23cf821427c88af4bede434aafeaae57c9ce3017))
+* Remove modmenu from list of clientside mods as newer versions appear to be required on the server now. Thanks to [@nvb-uy](https://git.griefed.de/nvb-uy) for the report! ([12a729f](https://git.griefed.de/Griefed/ServerPackCreator/commit/12a729f5fb12e5cc6844b407199bf63b163680f5))
+
+
+### 🦊 CI/CD
+
+* Disable Qodana caching. Upload results to job artifacts because why not ([b5f8605](https://git.griefed.de/Griefed/ServerPackCreator/commit/b5f860513219184f776f509433689a9eeba1664a))
+* Do not inspect buildSrc ([9cf785f](https://git.griefed.de/Griefed/ServerPackCreator/commit/9cf785fb2dd06a708b1b42d722ae79cfaa72cad7))
+* Remove Qodana workflow as it appears to be incompatible with buildSrc ([9c695f4](https://git.griefed.de/Griefed/ServerPackCreator/commit/9c695f41b823401e9e716c065c1a8e12cd0752df))
+
+
+### 🚀 Features
+
+* Allow configuration of URL from which fallback modslist is updated ([e56411b](https://git.griefed.de/Griefed/ServerPackCreator/commit/e56411b2e6463542368ec7b4f4c96c2fffca53ba))
+
+
+### 🛠 Fixes
+
+* Clear script variables table upon reset ([f7759cb](https://git.griefed.de/Griefed/ServerPackCreator/commit/f7759cb89342f4fe6796a1ecf1ba08e0dc16d537))
+* Improve error display for filters. Not perfect, but better. ([7ccd09f](https://git.griefed.de/Griefed/ServerPackCreator/commit/7ccd09fa88f2d935b9a4479ecef30dc47149a358))
+* Respect destination-specification for directories ([f48baf4](https://git.griefed.de/Griefed/ServerPackCreator/commit/f48baf4396385181241ec9d5b5b7c2a35f54f028))
+* Save destination after editing and do not clear or remove unnecessarily ([40d08b3](https://git.griefed.de/Griefed/ServerPackCreator/commit/40d08b326c1b5cbf8fb76e5124615562f728d498))
+* Use correct i18n key for regular search ([4b13c21](https://git.griefed.de/Griefed/ServerPackCreator/commit/4b13c2178c7da1dde99e3cf478f59512e0c7843d))
+
 ## [5.0.0-alpha.17](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-alpha.16...5.0.0-alpha.17) (2023-06-17)
 
 
