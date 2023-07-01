@@ -1105,6 +1105,7 @@ class ConfigEditor(
      */
     private fun setIconPreview(icon: File, errors: MutableList<String>) {
         try {
+            iconPreview.loading()
             iconPreview.updateIcon(ImageIcon(ImageIO.read(icon)))
         } catch (ex: IOException) {
             log.error("Error generating server icon preview.", ex)

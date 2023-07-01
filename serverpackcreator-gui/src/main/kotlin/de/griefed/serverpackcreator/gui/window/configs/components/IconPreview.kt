@@ -21,6 +21,9 @@ package de.griefed.serverpackcreator.gui.window.configs.components
 
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.utilities.getScaledInstance
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import net.java.balloontip.BalloonTip
 import java.awt.Image
 import java.awt.event.MouseEvent
@@ -33,17 +36,16 @@ import javax.swing.JLabel
  *
  * @author Griefed
  */
-class IconPreview(guiProps: GuiProps) : JLabel(guiProps.serverIcon) {
+class IconPreview(private val guiProps: GuiProps) : JLabel(guiProps.serverIcon) {
     private val bigPreview = JLabel(scaled(guiProps.serverIcon))
-    private val balloonTip: BalloonTip
+    private val balloonTip: BalloonTip = BalloonTip(
+        this,
+        bigPreview,
+        guiProps.balloonStyle,
+        false
+    )
 
     init {
-        balloonTip = BalloonTip(
-            this,
-            bigPreview,
-            guiProps.balloonStyle,
-            false
-        )
         balloonTip.isVisible = false
         this.addMouseListener(object : MouseListener {
             override fun mouseClicked(e: MouseEvent?) {
@@ -69,7 +71,6 @@ class IconPreview(guiProps: GuiProps) : JLabel(guiProps.serverIcon) {
             override fun mouseExited(e: MouseEvent?) {
                 balloonTip.isVisible = false
             }
-
         })
     }
 
@@ -80,11 +81,21 @@ class IconPreview(guiProps: GuiProps) : JLabel(guiProps.serverIcon) {
         return icon.getScaledInstance(width, height, Image.SCALE_SMOOTH)
     }
 
+    fun loading() {
+        icon = guiProps.loadingAnimation32
+        bigPreview.icon = guiProps.loadingAnimation128
+    }
+
     /**
      * @author Griefed
      */
+    @OptIn(DelicateCoroutinesApi::class)
     fun updateIcon(newIcon: ImageIcon) {
-        icon = scaled(newIcon, 32, 32)
-        bigPreview.icon = scaled(newIcon)
+        GlobalScope.launch {
+            icon = scaled(newIcon, 32, 32)
+        }
+        GlobalScope.launch {
+            bigPreview.icon = scaled(newIcon)
+        }
     }
 }
