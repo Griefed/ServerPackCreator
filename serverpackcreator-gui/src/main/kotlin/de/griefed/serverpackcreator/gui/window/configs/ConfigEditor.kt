@@ -125,7 +125,7 @@ class ConfigEditor(
         changeListener,
         guiProps
     )
-    private val serverPackSuffix = ScrollTextField("", changeListener)
+    private val serverPackSuffix = ScrollTextField("","suffix",apiWrapper.apiProperties, changeListener)
     private val propertiesFile = ScrollTextFileField(apiWrapper.apiProperties.defaultServerProperties, changeListener)
     private val iconFile = ScrollTextFileField(apiWrapper.apiProperties.defaultServerIcon, changeListener)
     private val inclusionsEditor = InclusionsEditor(chooserDimension, guiProps, this, apiWrapper)

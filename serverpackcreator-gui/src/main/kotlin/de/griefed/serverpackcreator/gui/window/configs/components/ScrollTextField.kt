@@ -19,12 +19,15 @@
  */
 package de.griefed.serverpackcreator.gui.window.configs.components
 
+import de.griefed.serverpackcreator.api.ApiProperties
+import de.griefed.serverpackcreator.api.ApiWrapper
 import java.awt.Toolkit
 import java.awt.event.KeyEvent
 import java.awt.event.KeyListener
 import javax.swing.BorderFactory
 import javax.swing.JScrollPane
 import javax.swing.JTextField
+import javax.swing.KeyStroke
 import javax.swing.event.DocumentListener
 import javax.swing.event.UndoableEditEvent
 import javax.swing.event.UndoableEditListener
@@ -40,13 +43,15 @@ import javax.swing.undo.UndoManager
  */
 open class ScrollTextField(
     text: String,
+    identifier: String? = null,
+    apiProperties: ApiProperties? = ApiWrapper.api().apiProperties,
     private val textField: JTextField = JTextField(text),
     horizontalScrollbarVisibility: Int = HORIZONTAL_SCROLLBAR_AS_NEEDED
 ) : JScrollPane(VERTICAL_SCROLLBAR_NEVER, horizontalScrollbarVisibility),
     UndoableEditListener,
     KeyListener {
 
-    constructor(text: String, documentChangeListener: DocumentChangeListener) : this(text) {
+    constructor(text: String, identifier: String?,apiProperties: ApiProperties?, documentChangeListener: DocumentChangeListener) : this(text, identifier,apiProperties) {
         this.addDocumentListener(documentChangeListener)
     }
 
@@ -67,7 +72,13 @@ open class ScrollTextField(
         textField.document.addUndoableEditListener(this)
         textField.addKeyListener(this)
         viewport.view = textField
-
+        if (!identifier.isNullOrBlank()) {
+            val autoComplete = AutoComplete(textField,apiProperties!!,identifier)
+            addDocumentListener(autoComplete)
+            inputMap.put(KeyStroke.getKeyStroke("ENTER"),"commit")
+            actionMap.put("commit",autoComplete.CommitAction())
+            //focusTraversalKeysEnabled = true
+        }
     }
 
     /**

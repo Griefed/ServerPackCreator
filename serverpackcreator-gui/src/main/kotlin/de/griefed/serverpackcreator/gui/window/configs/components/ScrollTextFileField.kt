@@ -32,7 +32,7 @@ class ScrollTextFileField(
     text: String,
     textField: JTextField = JTextField(text),
     horizontalScrollbarVisibility: Int = HORIZONTAL_SCROLLBAR_AS_NEEDED
-) : ScrollTextField(text, textField, horizontalScrollbarVisibility) {
+) : ScrollTextField(text,null,null, textField, horizontalScrollbarVisibility) {
     constructor(file: File, documentChangeListener: DocumentChangeListener) : this(file.absolutePath) {
         this.addDocumentListener(documentChangeListener)
     }
