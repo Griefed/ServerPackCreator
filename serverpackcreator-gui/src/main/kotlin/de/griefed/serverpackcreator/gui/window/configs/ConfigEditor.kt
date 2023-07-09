@@ -1065,7 +1065,7 @@ class ConfigEditor(
             } else {
                 iconInfo.error(Gui.configuration_log_error_servericon_error.toString())
                 includeIconInfo.error(Gui.configuration_log_warn_icon.toString())
-                iconPreview.updateIcon(guiProps.iconError)
+                iconPreview.updateIcon(guiProps.iconError,true)
             }
         } else {
             setIconPreview(apiWrapper.apiProperties.defaultServerIcon, errors)
@@ -1105,8 +1105,7 @@ class ConfigEditor(
      */
     private fun setIconPreview(icon: File, errors: MutableList<String>) {
         try {
-            iconPreview.loading()
-            iconPreview.updateIcon(ImageIcon(ImageIO.read(icon)))
+            iconPreview.updateIcon(icon)
         } catch (ex: IOException) {
             log.error("Error generating server icon preview.", ex)
             errors.add(Gui.configuration_log_error_servericon_error.toString())
