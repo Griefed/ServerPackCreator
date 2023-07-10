@@ -27,13 +27,13 @@ import java.awt.event.KeyListener
 import javax.swing.BorderFactory
 import javax.swing.JScrollPane
 import javax.swing.JTextField
-import javax.swing.KeyStroke
 import javax.swing.event.DocumentListener
 import javax.swing.event.UndoableEditEvent
 import javax.swing.event.UndoableEditListener
 import javax.swing.undo.CannotRedoException
 import javax.swing.undo.CannotUndoException
 import javax.swing.undo.UndoManager
+
 
 /**
  * Scrollable textfield with an [UndoManager] providing up to ten undos. By default, the horizontal scrollbar is
@@ -43,7 +43,7 @@ import javax.swing.undo.UndoManager
  */
 open class ScrollTextField(
     text: String,
-    identifier: String? = null,
+    val identifier: String? = null,
     apiProperties: ApiProperties? = ApiWrapper.api().apiProperties,
     private val textField: JTextField = JTextField(text),
     horizontalScrollbarVisibility: Int = HORIZONTAL_SCROLLBAR_AS_NEEDED
@@ -51,11 +51,17 @@ open class ScrollTextField(
     UndoableEditListener,
     KeyListener {
 
-    constructor(text: String, identifier: String?,apiProperties: ApiProperties?, documentChangeListener: DocumentChangeListener) : this(text, identifier,apiProperties) {
+    constructor(
+        text: String,
+        identifier: String?,
+        apiProperties: ApiProperties?,
+        documentChangeListener: DocumentChangeListener
+    ) : this(text, identifier, apiProperties) {
         this.addDocumentListener(documentChangeListener)
     }
 
     private val undoManager = UndoManager()
+    val suggestionProvider: SuggestionProvider?
 
     var text: String
         get() {
@@ -72,12 +78,10 @@ open class ScrollTextField(
         textField.document.addUndoableEditListener(this)
         textField.addKeyListener(this)
         viewport.view = textField
-        if (!identifier.isNullOrBlank()) {
-            val autoComplete = AutoComplete(textField,apiProperties!!,identifier)
-            addDocumentListener(autoComplete)
-            inputMap.put(KeyStroke.getKeyStroke("ENTER"),"commit")
-            actionMap.put("commit",autoComplete.CommitAction())
-            //focusTraversalKeysEnabled = true
+        suggestionProvider = if (!identifier.isNullOrBlank()) {
+            SuggestionProvider(textField, apiProperties!!, identifier)
+        } else {
+            null
         }
     }
 
