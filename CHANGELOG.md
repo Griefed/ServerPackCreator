@@ -1,3 +1,21 @@
+## [5.0.0-alpha.19](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-alpha.18...5.0.0-alpha.19) (2023-07-11)
+
+
+### ⏩ Performance
+
+* Prevent unnecessary icon updates if the icon was not changed ([26a61ad](https://git.griefed.de/Griefed/ServerPackCreator/commit/26a61ad863d9fe69b6275476ed678cc854b57ad0))
+
+
+### 💎 Improvements
+
+* **AutoCompletion:** Don't suggest if only one equal match is available, customize limit of presented suggestions ([751cfec](https://git.griefed.de/Griefed/ServerPackCreator/commit/751cfecb14b375a695494b053138eab4a83ce477))
+
+
+### 🚀 Features
+
+* **AutoCompletion:** Groundwork for optional autocompletion for certain areas. ([f5cedf5](https://git.griefed.de/Griefed/ServerPackCreator/commit/f5cedf5020304144c08d329f7d238883c0a7893b))
+* **AutoCompletion:** Provide and save suggestions for suffix, clientmods, java args, source, destination, inclusion, exclusion ([9e02a11](https://git.griefed.de/Griefed/ServerPackCreator/commit/9e02a11bd7c279d58f192085feb67e5b3c47130d))
+
 ## [5.0.0-alpha.18](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-alpha.17...5.0.0-alpha.18) (2023-07-01)
 
 
