@@ -35,6 +35,17 @@ import javax.swing.text.BadLocationException
 import javax.swing.text.JTextComponent
 import javax.swing.text.Utilities
 
+/**
+ * Suggestion provider which will open a dropdown menu in textfield and textareas, from which the user may select any entry
+ * and apply it via pressing ENTER.
+ *
+ * Suggestions are acquired from ServerPackCreators properties, using the [identifier] with which this provider was instantiated
+ * with.
+ *
+ * This feature is inspired by [Java Swing - Dropdown Text Suggestion Component Example](https://www.logicbig.com/tutorials/java-swing/text-suggestion-component.html)
+ *
+ * @author Griefed
+ */
 class SuggestionProvider(
     private val sourceComponent: JTextComponent,
     private val apiProperties: ApiProperties,
@@ -50,12 +61,10 @@ class SuggestionProvider(
             when (e.keyCode) {
                 KeyEvent.VK_ENTER -> {
                     if (suggestionMenu.isVisible) {
-                        val selectedIndex = suggestionList.selectedIndex
-                        if (selectedIndex != -1) {
+                        if (suggestionList.selectedIndex != -1) {
                             suggestionMenu.isVisible = false
-                            val selectedValue = suggestionList.selectedValue
                             disableTextEvent = true
-                            setSelectedText(sourceComponent, selectedValue)
+                            setSelectedText(sourceComponent, suggestionList.selectedValue)
                             disableTextEvent = false
                             e.consume()
                         }
@@ -64,9 +73,8 @@ class SuggestionProvider(
 
                 KeyEvent.VK_UP -> {
                     if (suggestionMenu.isVisible && suggestionListModel.size > 0) {
-                        val selectedIndex = suggestionList.selectedIndex
-                        if (selectedIndex > 0) {
-                            suggestionList.selectedIndex = selectedIndex - 1
+                        if (suggestionList.selectedIndex > 0) {
+                            suggestionList.selectedIndex--
                             e.consume()
                         }
                     }
@@ -74,9 +82,8 @@ class SuggestionProvider(
 
                 KeyEvent.VK_DOWN -> {
                     if (suggestionMenu.isVisible && suggestionListModel.size > 0) {
-                        val selectedIndex = suggestionList.selectedIndex
-                        if (selectedIndex < suggestionListModel.size) {
-                            suggestionList.selectedIndex = selectedIndex + 1
+                        if (suggestionList.selectedIndex < suggestionListModel.size) {
+                            suggestionList.selectedIndex++
                             e.consume()
                         }
                     }
@@ -112,6 +119,10 @@ class SuggestionProvider(
         sourceComponent.addKeyListener(keyAdapter)
     }
 
+    /**
+     * @author Griefed
+     * @author LogicBig (https://www.logicbig.com/)
+     */
     private fun showPopup(suggestions: List<String>) {
         suggestionListModel.clear()
         suggestionListModel.addAll(suggestions)
@@ -123,10 +134,14 @@ class SuggestionProvider(
         suggestionMenu.show(sourceComponent, location.getX().toInt(), location.getY().toInt())
     }
 
-    private fun getPopupLocation(invoker: JTextComponent): Point? {
-        val caretPosition = invoker.caretPosition
+    /**
+     * @author Griefed
+     * @author LogicBig (https://www.logicbig.com/)
+     */
+    private fun getPopupLocation(component: JTextComponent): Point? {
+        val caretPosition = component.caretPosition
         try {
-            val rectangle2D = invoker.modelToView2D(caretPosition)
+            val rectangle2D = component.modelToView2D(caretPosition)
             val yPos = (rectangle2D.y + rectangle2D.height).toInt()
             return Point(rectangle2D.x.toInt(), yPos)
         } catch (ex: BadLocationException) {
@@ -135,19 +150,23 @@ class SuggestionProvider(
         return null
     }
 
-    private fun setSelectedText(invoker: JTextComponent, selectedValue: String) {
-        val textAt = invoker.caretPosition
+    /**
+     * @author Griefed
+     * @author LogicBig (https://www.logicbig.com/)
+     */
+    private fun setSelectedText(component: JTextComponent, selectedValue: String) {
+        val textAt = component.caretPosition
         try {
-            val trimmed = invoker.getText(textAt - 1, 1).trim { it <= ' ' }
+            val trimmed = component.getText(textAt - 1, 1).trim { it <= ' ' }
             if (textAt == 0 || trimmed.isEmpty()) {
-                invoker.document.insertString(textAt, selectedValue, null)
+                component.document.insertString(textAt, selectedValue, null)
             } else {
-                val previousWordIndex = Utilities.getPreviousWord(invoker, textAt)
-                val text = invoker.getText(previousWordIndex, textAt - previousWordIndex)
+                val previousWordIndex = Utilities.getPreviousWord(component, textAt)
+                val text = component.getText(previousWordIndex, textAt - previousWordIndex)
                 if (selectedValue.startsWith(text)) {
-                    invoker.document.insertString(textAt, selectedValue.substring(text.length), null)
+                    component.document.insertString(textAt, selectedValue.substring(text.length), null)
                 } else {
-                    invoker.document.insertString(textAt, selectedValue, null)
+                    component.document.insertString(textAt, selectedValue, null)
                 }
             }
         } catch (ex: BadLocationException) {
@@ -155,24 +174,28 @@ class SuggestionProvider(
         }
     }
 
-    private fun getSuggestions(invoker: JTextComponent): List<String> {
+    /**
+     * @author Griefed
+     * @author LogicBig (https://www.logicbig.com/)
+     */
+    private fun getSuggestions(component: JTextComponent): List<String> {
         try {
-            val cp = invoker.caretPosition
+            val cp = component.caretPosition
             if (cp != 0) {
-                val text = invoker.getText(cp - 1, 1)
+                val text = component.getText(cp - 1, 1)
                 if (text.trim { it <= ' ' }.isEmpty()) {
                     return listOf()
                 }
             }
-            val previousWordIndex = Utilities.getPreviousWord(invoker, cp)
+            val previousWordIndex = Utilities.getPreviousWord(component, cp)
             val text = try {
-                if (invoker.getText(previousWordIndex - 1, 1).matches("\\W".toRegex())) {
-                    invoker.getText(previousWordIndex - 1, cp - previousWordIndex + 1)
+                if (component.getText(previousWordIndex - 1, 1).matches("\\W".toRegex())) {
+                    component.getText(previousWordIndex - 1, cp - previousWordIndex + 1)
                 } else {
-                    invoker.getText(previousWordIndex, cp - previousWordIndex)
+                    component.getText(previousWordIndex, cp - previousWordIndex)
                 }
             } catch (other: BadLocationException) {
-                invoker.getText(previousWordIndex, cp - previousWordIndex)
+                component.getText(previousWordIndex, cp - previousWordIndex)
             }
             return truncatedSuggestions(text.trim { it <= ' ' })
         } catch (_: BadLocationException) {
@@ -180,12 +203,22 @@ class SuggestionProvider(
         return listOf()
     }
 
-    private fun truncatedSuggestions(input: String): List<String> {
+    /**
+     * @author Griefed
+     */
+    private fun truncatedSuggestions(text: String): List<String> {
         val entries = allSuggestions()
-        return entries.stream().filter { s -> s.startsWith(input, ignoreCase = true) }.limit(20)
-            .collect(Collectors.toList())
+        val truncated = entries.filter { entry -> entry.startsWith(text,ignoreCase = true) }
+        return if (truncated.size == 1 && truncated[0] == text) {
+            listOf()
+        } else {
+            truncated.stream().limit(apiProperties.retrieveCustomProperty("autocomplete.limit")?.toLong()?: 10).collect(Collectors.toList())
+        }
     }
 
+    /**
+     * @author Griefed
+     */
     fun allSuggestions(): TreeSet<String> {
         val property = apiProperties.retrieveCustomProperty("autocomplete.$identifier").toString().trim { it <= ' ' }
         val entries = TreeSet<String>()
