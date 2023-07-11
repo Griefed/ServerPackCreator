@@ -20,6 +20,8 @@
 package de.griefed.serverpackcreator.gui.window.configs.components
 
 import Gui
+import de.griefed.serverpackcreator.api.ApiProperties
+import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.api.utilities.common.regexReplace
 import de.griefed.serverpackcreator.gui.GuiProps
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -30,6 +32,7 @@ import java.awt.BorderLayout
 import java.awt.Toolkit
 import java.awt.event.KeyEvent
 import java.awt.event.KeyListener
+import java.util.*
 import javax.swing.*
 import javax.swing.event.DocumentListener
 import javax.swing.event.UndoableEditEvent
@@ -48,6 +51,7 @@ import javax.swing.undo.UndoManager
 class ScrollTextArea(
     text: String,
     areaName: String,
+    apiProperties: ApiProperties? = ApiWrapper.api().apiProperties,
     private val guiProps: GuiProps,
     private val textArea: JTextArea = JTextArea(text),
     verticalScrollbarVisibility: Int = VERTICAL_SCROLLBAR_ALWAYS,
@@ -59,9 +63,10 @@ class ScrollTextArea(
     constructor(
         text: String,
         areaName: String,
+        apiProperties: ApiProperties? = ApiWrapper.api().apiProperties,
         documentChangeListener: DocumentChangeListener,
         guiProps: GuiProps
-    ) : this(text, areaName, guiProps) {
+    ) : this(text, areaName, apiProperties, guiProps) {
         this.addDocumentListener(documentChangeListener)
     }
 
@@ -89,6 +94,8 @@ class ScrollTextArea(
         Gui.createserverpack_gui_textarea_replace_regex_replace.toString(),
         replaceWith
     )
+    val suggestionProvider: SuggestionProvider?
+    val identifier: String
 
     init {
         undoManager.limit = 10
@@ -98,6 +105,12 @@ class ScrollTextArea(
 
         viewport.view = textArea
         name = areaName
+        identifier = name.lowercase().replace(" ","")
+        suggestionProvider = if (identifier.isNotBlank()) {
+            SuggestionProvider(textArea, apiProperties!!, identifier)
+        } else {
+            null
+        }
     }
 
     var text: String
@@ -151,7 +164,7 @@ class ScrollTextArea(
 
             e.keyCode == KeyEvent.VK_R && e.isControlDown && !e.isShiftDown -> searchAndReplace()
 
-            e.keyCode == KeyEvent.VK_F && e.isControlDown && e.isShiftDown-> searchRegexDialog()
+            e.keyCode == KeyEvent.VK_F && e.isControlDown && e.isShiftDown -> searchRegexDialog()
 
             e.keyCode == KeyEvent.VK_R && e.isControlDown && e.isShiftDown -> searchRegexAndReplace()
         }

@@ -55,7 +55,9 @@ class ConfigCheckTimer(delay: Int, configEditor: ConfigEditor, guiProps: GuiProp
                     errors.addAll(configEditor.validateInclusions())
                 }
                 launch {
-                    errors.addAll(configEditor.validateServerIcon())
+                    try {
+                        errors.addAll(configEditor.validateServerIcon())
+                    } catch (_: OutOfMemoryError) {}
                 }
                 launch {
                     errors.addAll(configEditor.validateServerProperties())

@@ -53,23 +53,22 @@ import javax.swing.event.ListSelectionEvent
  *
  * @author Griefed
  */
-@OptIn(DelicateCoroutinesApi::class)
 class InclusionsEditor(
     private val chooserDimension: Dimension,
     private val guiProps: GuiProps,
     private val configEditor: ConfigEditor,
-    private val apiWrapper: ApiWrapper
+    private val apiWrapper: ApiWrapper,
+    private val source: ScrollTextField,
+    private val destination: ScrollTextField,
+    private val inclusionFilter: ScrollTextField,
+    private val exclusionFilter: ScrollTextField
 ) : JSplitPane(HORIZONTAL_SPLIT) {
     private val log = cachedLoggerOf(this.javaClass)
     private val inclusionModel = DefaultListModel<InclusionSpecification>()
     private val list = JList(inclusionModel)
-    private val source = ScrollTextField("")
     private val sourceInfo = SourceInfo(guiProps)
-    private val destination = ScrollTextField("")
     private val destinationInfo = DestinationInfo(guiProps)
-    private val inclusionFilter = ScrollTextField("")
     private val inclusionInfo = InclusionInfo(guiProps)
-    private val exclusionFilter = ScrollTextField("")
     private val exclusionInfo = ExclusionInfo(guiProps)
     private val tip = InclusionTip(Gui.createserverpack_gui_inclusions_editor_tip_name.toString(), guiProps)
     private var selectedInclusion: InclusionSpecification? = null
@@ -180,9 +179,7 @@ class InclusionsEditor(
         inclusionFilter.addDocumentListener(inclusionListener)
         exclusionFilter.addDocumentListener(exclusionListener)
         timer = Timer(delay) {
-            GlobalScope.launch(guiProps.fileBrowserDispatcher) {
-                updateTip()
-            }
+            updateTip()
         }
         timer.stop()
         timer.delay = delay
@@ -192,38 +189,51 @@ class InclusionsEditor(
     /**
      * @author Griefed
      */
+    @OptIn(DelicateCoroutinesApi::class)
     private fun updateTip() {
-        try {
-            if (selectedInclusion!!.isGlobalFilter()) {
-                tip.text = if (selectedInclusion!!.hasInclusionFilter()) {
-                    Gui.createserverpack_gui_inclusions_editor_tip_global_inclusions.toString()
-                } else {
-                    Gui.createserverpack_gui_inclusions_editor_tip_global_exclusions(selectedInclusion!!.exclusionFilter!!)
+        GlobalScope.launch(guiProps.fileBrowserDispatcher) {
+            try {
+                if (source.text.isBlank()) {
+                    tip.text = ""
+                    return@launch
                 }
-                return
+                if (selectedInclusion!!.isGlobalFilter()) {
+                    tip.text = if (selectedInclusion!!.hasInclusionFilter()) {
+                        Gui.createserverpack_gui_inclusions_editor_tip_global_inclusions.toString()
+                    } else {
+                        Gui.createserverpack_gui_inclusions_editor_tip_global_exclusions(selectedInclusion!!.exclusionFilter!!)
+                    }
+                    return@launch
+                }
+                val acquired = apiWrapper.serverPackHandler!!.getServerFiles(
+                    selectedInclusion!!,
+                    configEditor.getModpackDirectory(),
+                    apiWrapper.serverPackHandler!!.getServerPackDestination(configEditor.getCurrentConfiguration()),
+                    mutableListOf(),
+                    configEditor.getClientSideModsList(),
+                    configEditor.getMinecraftVersion(),
+                    configEditor.getModloader()
+                )
+                var tipContent = Gui.createserverpack_gui_inclusions_editor_tip_prefix.toString()
+                for (file in acquired) {
+                    tipContent += file.sourceFile.absolutePath.replace(
+                        configEditor.getModpackDirectory() + File.separator,
+                        ""
+                    ) + "\n"
+                }
+                tip.text = tipContent
+                //tip.grabFocus()
+                try {
+                    tip.updateUI()
+                } catch (_: NullPointerException) {}
+            } catch (ex: Exception) {
+                log.error("Couldn't acquire files to include. ", ex)
             }
-            val acquired = apiWrapper.serverPackHandler!!.getServerFiles(
-                selectedInclusion!!,
-                configEditor.getModpackDirectory(),
-                apiWrapper.serverPackHandler!!.getServerPackDestination(configEditor.getCurrentConfiguration()),
-                mutableListOf(),
-                configEditor.getClientSideModsList(),
-                configEditor.getMinecraftVersion(),
-                configEditor.getModloader()
-            )
-            var tipContent = Gui.createserverpack_gui_inclusions_editor_tip_prefix.toString()
-            for (file in acquired) {
-                tipContent += file.sourceFile.absolutePath.replace(
-                    configEditor.getModpackDirectory() + File.separator,
-                    ""
-                ) + "\n"
-            }
-            tip.text = tipContent
-            tip.grabFocus()
-            tip.updateUI()
-        } catch (ex: Exception) {
-            log.error("Couldn't acquire files to include. ", ex)
         }
+    }
+
+    fun updateIndex() {
+        list.selectedIndex = 0
     }
 
     /**

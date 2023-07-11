@@ -19,6 +19,8 @@
  */
 package de.griefed.serverpackcreator.gui.window.configs.components
 
+import de.griefed.serverpackcreator.api.ApiProperties
+import de.griefed.serverpackcreator.api.ApiWrapper
 import java.awt.Toolkit
 import java.awt.event.KeyEvent
 import java.awt.event.KeyListener
@@ -32,6 +34,7 @@ import javax.swing.undo.CannotRedoException
 import javax.swing.undo.CannotUndoException
 import javax.swing.undo.UndoManager
 
+
 /**
  * Scrollable textfield with an [UndoManager] providing up to ten undos. By default, the horizontal scrollbar is
  * displayed as needed.
@@ -40,17 +43,25 @@ import javax.swing.undo.UndoManager
  */
 open class ScrollTextField(
     text: String,
+    val identifier: String? = null,
+    apiProperties: ApiProperties? = ApiWrapper.api().apiProperties,
     private val textField: JTextField = JTextField(text),
     horizontalScrollbarVisibility: Int = HORIZONTAL_SCROLLBAR_AS_NEEDED
 ) : JScrollPane(VERTICAL_SCROLLBAR_NEVER, horizontalScrollbarVisibility),
     UndoableEditListener,
     KeyListener {
 
-    constructor(text: String, documentChangeListener: DocumentChangeListener) : this(text) {
+    constructor(
+        text: String,
+        identifier: String?,
+        apiProperties: ApiProperties?,
+        documentChangeListener: DocumentChangeListener
+    ) : this(text, identifier, apiProperties) {
         this.addDocumentListener(documentChangeListener)
     }
 
     private val undoManager = UndoManager()
+    val suggestionProvider: SuggestionProvider?
 
     var text: String
         get() {
@@ -67,7 +78,11 @@ open class ScrollTextField(
         textField.document.addUndoableEditListener(this)
         textField.addKeyListener(this)
         viewport.view = textField
-
+        suggestionProvider = if (!identifier.isNullOrBlank()) {
+            SuggestionProvider(textField, apiProperties!!, identifier)
+        } else {
+            null
+        }
     }
 
     /**

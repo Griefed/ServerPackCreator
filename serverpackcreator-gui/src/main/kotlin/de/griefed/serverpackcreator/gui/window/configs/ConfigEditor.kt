@@ -40,7 +40,6 @@ import java.awt.event.ActionListener
 import java.io.File
 import java.io.IOException
 import java.util.*
-import javax.imageio.ImageIO
 import javax.swing.*
 import javax.swing.event.DocumentEvent
 
@@ -122,16 +121,31 @@ class ConfigEditor(
     private val javaArgs = ScrollTextArea(
         "-Xmx4G -Xms4G",
         Gui.createserverpack_gui_createserverpack_javaargs.toString(),
+        apiWrapper.apiProperties,
         changeListener,
         guiProps
     )
-    private val serverPackSuffix = ScrollTextField("", changeListener)
+    private val serverPackSuffix = ScrollTextField("", "suffix", apiWrapper.apiProperties, changeListener)
     private val propertiesFile = ScrollTextFileField(apiWrapper.apiProperties.defaultServerProperties, changeListener)
     private val iconFile = ScrollTextFileField(apiWrapper.apiProperties.defaultServerIcon, changeListener)
-    private val inclusionsEditor = InclusionsEditor(chooserDimension, guiProps, this, apiWrapper)
+    private val source = ScrollTextField("", "source", apiWrapper.apiProperties)
+    private val destination = ScrollTextField("", "destination", apiWrapper.apiProperties)
+    private val inclusionFilter = ScrollTextField("", "inclusion", apiWrapper.apiProperties)
+    private val exclusionFilter = ScrollTextField("", "exclusion", apiWrapper.apiProperties)
+    private val inclusionsEditor = InclusionsEditor(
+        chooserDimension,
+        guiProps,
+        this,
+        apiWrapper,
+        source,
+        destination,
+        inclusionFilter,
+        exclusionFilter
+    )
     private val exclusions = ScrollTextArea(
         apiWrapper.apiProperties.clientSideMods().joinToString(","),
         Gui.createserverpack_gui_createserverpack_labelclientmods.toString(),
+        apiWrapper.apiProperties,
         changeListener,
         guiProps
     )
@@ -570,7 +584,58 @@ class ConfigEditor(
         lastSavedConfig = getCurrentConfiguration().save(config)
         configFile = config
         editorTitle.hideWarningIcon()
+        saveSuggestions()
         return configFile!!
+    }
+
+    private fun saveSuggestions() {
+        val suffixSuggestions = serverPackSuffix.suggestionProvider!!.allSuggestions()
+        suffixSuggestions.add(serverPackSuffix.text)
+        apiWrapper.apiProperties.storeCustomProperty(
+            "autocomplete.${serverPackSuffix.identifier!!}",
+            suffixSuggestions.joinToString(",") { entry -> entry.trim { it <= ' ' } }.trim { it <= ' ' })
+
+        val clientModsSuggestions = exclusions.suggestionProvider!!.allSuggestions()
+        clientModsSuggestions.addAll(exclusions.text.split(",").map { entry -> entry.trim { it <= ' ' } })
+        apiWrapper.apiProperties.storeCustomProperty(
+            "autocomplete.${exclusions.identifier}",
+            clientModsSuggestions.joinToString(",") { entry -> entry.trim { it <= ' ' } }.trim { it <= ' ' })
+
+        val javaArgsSuggestions = javaArgs.suggestionProvider!!.allSuggestions()
+        javaArgsSuggestions.addAll(javaArgs.text.split(" ").map { entry -> entry.trim { it <= ' ' } })
+        apiWrapper.apiProperties.storeCustomProperty(
+            "autocomplete.${javaArgs.identifier}",
+            javaArgsSuggestions.joinToString(",") { entry -> entry.trim { it <= ' ' } }.trim { it <= ' ' })
+
+        val sourceSuggestions = source.suggestionProvider!!.allSuggestions()
+        val destinationSuggestions = destination.suggestionProvider!!.allSuggestions()
+        val inclusionSuggestions = inclusionFilter.suggestionProvider!!.allSuggestions()
+        val exclusionSuggestions = exclusionFilter.suggestionProvider!!.allSuggestions()
+        for (spec in inclusionsEditor.getServerFiles()) {
+            sourceSuggestions.add(spec.source)
+            spec.destination?.let { destinationSuggestions.add(it) }
+            spec.inclusionFilter?.let { inclusionSuggestions.add(it) }
+            spec.exclusionFilter?.let { exclusionSuggestions.add(it) }
+        }
+        sourceSuggestions.removeIf { entry -> entry.isBlank() }
+        destinationSuggestions.removeIf { entry -> entry.isBlank() }
+        inclusionSuggestions.removeIf { entry -> entry.isBlank() }
+        exclusionSuggestions.removeIf { entry -> entry.isBlank() }
+        apiWrapper.apiProperties.storeCustomProperty(
+            "autocomplete.${source.identifier}",
+            sourceSuggestions.joinToString(",") { entry -> entry.trim { it <= ' ' } }.trim { it <= ' ' })
+
+        apiWrapper.apiProperties.storeCustomProperty(
+            "autocomplete.${destination.identifier}",
+            destinationSuggestions.joinToString(",") { entry -> entry.trim { it <= ' ' } }.trim { it <= ' ' })
+
+        apiWrapper.apiProperties.storeCustomProperty(
+            "autocomplete.${inclusionFilter.identifier}",
+            inclusionSuggestions.joinToString(",") { entry -> entry.trim { it <= ' ' } }.trim { it <= ' ' })
+
+        apiWrapper.apiProperties.storeCustomProperty(
+            "autocomplete.${exclusionFilter.identifier}",
+            exclusionSuggestions.joinToString(",") { entry -> entry.trim { it <= ' ' } }.trim { it <= ' ' })
     }
 
     /**
@@ -839,6 +904,7 @@ class ConfigEditor(
                 } else {
                     setInclusions(packConfig.inclusions)
                 }
+                inclusionsEditor.updateIndex()
                 setScriptVariables(packConfig.scriptSettings)
                 setServerIconPath(packConfig.serverIconPath)
                 setServerPropertiesPath(packConfig.serverPropertiesPath)
@@ -1065,7 +1131,7 @@ class ConfigEditor(
             } else {
                 iconInfo.error(Gui.configuration_log_error_servericon_error.toString())
                 includeIconInfo.error(Gui.configuration_log_warn_icon.toString())
-                iconPreview.updateIcon(guiProps.iconError)
+                iconPreview.updateIcon(guiProps.iconError, true)
             }
         } else {
             setIconPreview(apiWrapper.apiProperties.defaultServerIcon, errors)
@@ -1105,8 +1171,7 @@ class ConfigEditor(
      */
     private fun setIconPreview(icon: File, errors: MutableList<String>) {
         try {
-            iconPreview.loading()
-            iconPreview.updateIcon(ImageIcon(ImageIO.read(icon)))
+            iconPreview.updateIcon(icon)
         } catch (ex: IOException) {
             log.error("Error generating server icon preview.", ex)
             errors.add(Gui.configuration_log_error_servericon_error.toString())

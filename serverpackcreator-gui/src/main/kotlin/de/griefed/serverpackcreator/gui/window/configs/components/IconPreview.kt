@@ -28,6 +28,8 @@ import net.java.balloontip.BalloonTip
 import java.awt.Image
 import java.awt.event.MouseEvent
 import java.awt.event.MouseListener
+import java.io.File
+import javax.imageio.ImageIO
 import javax.swing.ImageIcon
 import javax.swing.JLabel
 
@@ -44,6 +46,7 @@ class IconPreview(private val guiProps: GuiProps) : JLabel(guiProps.serverIcon) 
         guiProps.balloonStyle,
         false
     )
+    private var lastLoadedIcon: File? = null
 
     init {
         balloonTip.isVisible = false
@@ -81,21 +84,29 @@ class IconPreview(private val guiProps: GuiProps) : JLabel(guiProps.serverIcon) 
         return icon.getScaledInstance(width, height, Image.SCALE_SMOOTH)
     }
 
-    fun loading() {
+    fun updateIcon(newIcon: File) {
+        if (lastLoadedIcon != null && lastLoadedIcon!!.absolutePath == newIcon.absolutePath) {
+            return
+        }
         icon = guiProps.loadingAnimation32
         bigPreview.icon = guiProps.loadingAnimation128
+        lastLoadedIcon = newIcon.absoluteFile
+        updateIcon(ImageIcon(ImageIO.read(newIcon)))
     }
 
     /**
      * @author Griefed
      */
     @OptIn(DelicateCoroutinesApi::class)
-    fun updateIcon(newIcon: ImageIcon) {
+    fun updateIcon(newIcon: ImageIcon, reset: Boolean = false) {
         GlobalScope.launch {
             icon = scaled(newIcon, 32, 32)
         }
         GlobalScope.launch {
             bigPreview.icon = scaled(newIcon)
+        }
+        if (reset) {
+            lastLoadedIcon = null
         }
     }
 }
