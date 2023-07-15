@@ -67,6 +67,7 @@ class InclusionTip(
         set(value) {
             field = value
             textPane.text = value
+            verticalScrollBar.value = 0
         }
         get() {
             return textPane.text
