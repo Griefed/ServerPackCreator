@@ -29,10 +29,11 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.awt.BorderLayout
+import java.awt.GraphicsEnvironment
 import java.awt.Toolkit
+import java.awt.Window
 import java.awt.event.KeyEvent
 import java.awt.event.KeyListener
-import java.util.*
 import javax.swing.*
 import javax.swing.event.DocumentListener
 import javax.swing.event.UndoableEditEvent
@@ -71,7 +72,6 @@ class ScrollTextArea(
     }
 
     private val undoManager = UndoManager()
-    private val loadingAnimation = LoadingAnimation()
     private val searchFor = JTextField(100)
     private val replaceWith = JTextField(100)
     private val search = arrayOf<Any>(
@@ -105,7 +105,7 @@ class ScrollTextArea(
 
         viewport.view = textArea
         name = areaName
-        identifier = name.lowercase().replace(" ","")
+        identifier = name.lowercase().replace(" ", "")
         suggestionProvider = if (identifier.isNotBlank()) {
             SuggestionProvider(textArea, apiProperties!!, identifier)
         } else {
@@ -162,9 +162,9 @@ class ScrollTextArea(
 
             e.keyCode == KeyEvent.VK_F && e.isControlDown && !e.isShiftDown -> searchDialog()
 
-            e.keyCode == KeyEvent.VK_R && e.isControlDown && !e.isShiftDown -> searchAndReplace()
-
             e.keyCode == KeyEvent.VK_F && e.isControlDown && e.isShiftDown -> searchRegexDialog()
+
+            e.keyCode == KeyEvent.VK_R && e.isControlDown && !e.isShiftDown -> searchAndReplace()
 
             e.keyCode == KeyEvent.VK_R && e.isControlDown && e.isShiftDown -> searchRegexAndReplace()
         }
@@ -199,7 +199,6 @@ class ScrollTextArea(
                 guiProps.inspectMediumIcon
             ) == JOptionPane.OK_OPTION
         ) {
-            loadingAnimation.showAnimation()
             textArea.isEnabled = false
             GlobalScope.launch {
                 var i = 0
@@ -216,7 +215,6 @@ class ScrollTextArea(
                         i++
                     }
                 }
-                loadingAnimation.hideAnimation()
                 textArea.isEnabled = true
             }
         }
@@ -237,7 +235,6 @@ class ScrollTextArea(
                 guiProps.inspectMediumIcon
             ) == JOptionPane.OK_OPTION
         ) {
-            loadingAnimation.showAnimation()
             textArea.isEnabled = false
             GlobalScope.launch {
                 val regex = searchFor.text.toRegex()
@@ -256,7 +253,6 @@ class ScrollTextArea(
                     }
                     i++
                 }
-                loadingAnimation.hideAnimation()
                 textArea.isEnabled = true
             }
         }
@@ -296,43 +292,11 @@ class ScrollTextArea(
                 guiProps.inspectMediumIcon
             ) == JOptionPane.OK_OPTION
         ) {
-            loadingAnimation.showAnimation()
             textArea.isEnabled = false
             GlobalScope.launch {
                 text = text.regexReplace(searchFor.text.toRegex(), replaceWith.text)
-                loadingAnimation.hideAnimation()
                 textArea.isEnabled = true
             }
-        }
-    }
-
-    /**
-     * @author Griefed
-     */
-    inner class LoadingAnimation : JWindow() {
-
-        init {
-            contentPane = JPanel()
-            contentPane.layout = BorderLayout()
-            contentPane.add(JLabel(guiProps.loadingAnimation), BorderLayout.CENTER)
-            setSize(guiProps.loadingAnimation.iconWidth, guiProps.loadingAnimation.iconHeight)
-            isVisible = false
-        }
-
-        /**
-         * @author Griefed
-         */
-        fun showAnimation() {
-            setLocationRelativeTo(this@ScrollTextArea)
-            isVisible = true
-            toFront()
-        }
-
-        /**
-         * @author Griefed
-         */
-        fun hideAnimation() {
-            isVisible = false
         }
     }
 }
