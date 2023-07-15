@@ -259,6 +259,7 @@ class InclusionsEditor(
         if (apiWrapper.stringUtilities.checkForInvalidPathCharacters(destination.text)) {
             list.selectedValue.destination = destination.text
             destinationInfo.info()
+            list.updateUI()
         } else {
             timer.stop()
             destinationInfo.error(Gui.createserverpack_gui_inclusions_editor_destination_error(destination.text))
@@ -274,6 +275,7 @@ class InclusionsEditor(
             list.selectedValue.inclusionFilter = inclusionFilter.text
             timer.restart()
             inclusionInfo.info()
+            list.updateUI()
         } catch (ex: PatternSyntaxException) {
             timer.stop()
             var exception = ex.message ?: ex.description
@@ -294,6 +296,7 @@ class InclusionsEditor(
             list.selectedValue.exclusionFilter = exclusionFilter.text
             timer.restart()
             exclusionInfo.info()
+            list.updateUI()
         } catch (ex: PatternSyntaxException) {
             timer.stop()
             var exception = ex.message ?: ex.description
