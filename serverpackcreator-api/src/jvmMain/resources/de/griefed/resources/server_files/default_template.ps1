@@ -11,7 +11,7 @@ if ( (New-Object Security.Principal.WindowsPrincipal([Security.Principal.Windows
 # Acquire variable hashtable from variables.txt
 $ExternalVariablesFile = Split-Path $script:MyInvocation.MyCommand.Path
 $ExternalVariablesFile += "\variables.txt"
-$ExternalVariables = Get-Content -raw -Path $ExternalVariablesFile | ConvertFrom-StringData
+$ExternalVariables = Get-Content -raw -LiteralPath $ExternalVariablesFile | ConvertFrom-StringData
 
 # Set our in-script variables from contents of variables.txt-hashtable
 $MinecraftVersion = $ExternalVariables['MINECRAFT_VERSION']
