@@ -1,3 +1,24 @@
+## [4.2.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.1.5...4.2.0) (2023-07-15)
+
+
+### 💎 Improvements
+
+* Refresh user_jvm_args.txt on launch. Improve readibility. ([46de35d](https://git.griefed.de/Griefed/ServerPackCreator/commit/46de35df6c27efb4bd2c62f6cf358d776d8cd2a9))
+
+
+### 📦 Other
+
+* Add CompletionistIndex, LeaveMyBarsAlone, DurabilityTooltip to list of clientside mods. Thanks to @ModernGamingWorld for the reports! ([5e5e06a](https://git.griefed.de/Griefed/ServerPackCreator/commit/5e5e06aa36d0d9019c821cf245a938e99d88bfe6))
+* Info about real world plugin example ([4b37249](https://git.griefed.de/Griefed/ServerPackCreator/commit/4b37249e04b9dfc773c4a20fe846283477cd2c7f))
+* List jNeedle plugin as example ([3a50c58](https://git.griefed.de/Griefed/ServerPackCreator/commit/3a50c588af3958b97702f7dbbc2549aae3cd09a4))
+* Remove modmenu from list of clientside mods as newer versions appear to be required on the server now. Thanks to [@nvb-uy](https://git.griefed.de/nvb-uy) for the report! ([936eea3](https://git.griefed.de/Griefed/ServerPackCreator/commit/936eea35024548454c49aca482af35fedf91997a))
+* Small typo ([670c655](https://git.griefed.de/Griefed/ServerPackCreator/commit/670c655b6b67ccbfd564144377a675ccd494ec31))
+
+
+### 🛠 Fixes
+
+* **GH#462:** Use -LiteralPath to ensure compatibility to older versions of PowerShell. Thanks to @Frontear for the report! ([280522d](https://git.griefed.de/Griefed/ServerPackCreator/commit/280522dc9d96a3c7fac0e6190ed9bcddf6255330)), closes [GH#462](https://git.griefed.de/Griefed/GH/issues/462)
+
 ## [4.1.5](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.1.4...4.1.5) (2023-06-10)
 
 
