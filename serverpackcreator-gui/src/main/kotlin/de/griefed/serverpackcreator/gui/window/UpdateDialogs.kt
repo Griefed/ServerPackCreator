@@ -51,6 +51,11 @@ class UpdateDialogs(
     private val mainFrame: JFrame
 ) {
     private val log = cachedLoggerOf(this.javaClass)
+    var update: Optional<Update> = updateChecker.checkForUpdate(
+        apiProperties.apiVersion,
+        apiProperties.isCheckingForPreReleasesEnabled
+    )
+        private set
 
     /**
      * If an update for ServerPackCreator is available, display a dialog letting the user choose whether they want to
@@ -59,11 +64,7 @@ class UpdateDialogs(
      * @return `true` if an update was found and the dialog displayed.
      * @author Griefed
      */
-    fun displayUpdateDialog(): Boolean {
-        val update: Optional<Update> = updateChecker.checkForUpdate(
-            apiProperties.apiVersion,
-            apiProperties.isCheckingForPreReleasesEnabled
-        )
+    private fun displayUpdateDialog(): Boolean {
         return if (update.isPresent) {
             val textContent: String = Gui.update_dialog_new(update.get().url())
             val styledDocument: StyledDocument = DefaultStyledDocument()
@@ -118,7 +119,8 @@ class UpdateDialogs(
     /**
      * @author Griefed
      */
-    fun checkForUpdate() {
+    fun checkForUpdate(): Boolean {
+        update = updateChecker.checkForUpdate(apiProperties.apiVersion, apiProperties.isCheckingForPreReleasesEnabled)
         if (!displayUpdateDialog()) {
             DialogUtilities.createDialog(
                 Gui.menubar_gui_menuitem_updates_none.toString() + "   ",
@@ -129,5 +131,6 @@ class UpdateDialogs(
                 resizable = true
             )
         }
+        return update.isPresent
     }
 }

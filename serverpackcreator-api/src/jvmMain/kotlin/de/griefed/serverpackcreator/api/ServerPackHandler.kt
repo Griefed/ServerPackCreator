@@ -286,12 +286,6 @@ actual class ServerPackHandler actual constructor(
                 }
             }
 
-            inclusion.source.startsWith("saves/") -> {
-                acquired = getSaveFiles(clientDir, inclusion.source, destination)
-                processed = runFilters(acquired, inclusion, modpackDir)
-                serverPackFiles.addAll(processed)
-            }
-
             inclusion.source.startsWith("mods") -> {
                 try {
                     File(serverDir).createDirectories()

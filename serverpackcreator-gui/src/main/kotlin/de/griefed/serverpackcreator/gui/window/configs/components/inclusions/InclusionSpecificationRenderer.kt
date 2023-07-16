@@ -48,6 +48,7 @@ class InclusionSpecificationRenderer : JLabel(), ListCellRenderer<InclusionSpeci
         isSelected: Boolean,
         cellHasFocus: Boolean
     ): Component {
+
         text = if (value.isGlobalFilter()) {
             if (value.hasInclusionFilter()) {
                 "(I) ${value.inclusionFilter}"
@@ -55,7 +56,25 @@ class InclusionSpecificationRenderer : JLabel(), ListCellRenderer<InclusionSpeci
                 "(E) ${value.exclusionFilter}"
             }
         } else {
-            value.source
+            val prefix = StringBuilder()
+            if (value.hasDestination()) {
+                prefix.append("D")
+            } else {
+                prefix.append("-")
+            }
+            if (value.hasInclusionFilter()) {
+                prefix.append("I")
+            } else {
+                prefix.append("-")
+            }
+            if (value.hasExclusionFilter()) {
+                prefix.append("E")
+            } else {
+                prefix.append("-")
+            }
+
+            prefix.append(" ${value.source}")
+            prefix.toString()
         }
 
         if (isSelected) {

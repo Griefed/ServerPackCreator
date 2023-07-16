@@ -56,7 +56,8 @@ licenseReport {
 
     renderers = arrayOf<com.github.jk1.license.render.ReportRenderer>(
         com.github.jk1.license.render.InventoryHtmlReportRenderer("index.html", "Dependency Licences"),
-        com.github.jk1.license.render.InventoryMarkdownReportRenderer("licences.md", "Dependency Licenses")
+        com.github.jk1.license.render.InventoryMarkdownReportRenderer("licences.md", "Dependency Licenses"),
+        com.github.jk1.license.render.TextReportRenderer()
     )
 }
 
@@ -64,6 +65,7 @@ val appPlugins = File("serverpackcreator-app/tests/plugins")
 val apiPlugins = File("serverpackcreator-api/src/jvmTest/resources/testresources/plugins")
 val kotlinPlugin =
     project.childProjects["serverpackcreator-plugin-example"]?.tasks?.jar?.get()?.archiveFile?.get()?.asFile?.toPath()
+val licenseReports = File("licenses")
 
 tasks.register<Delete>("cleanAppPlugins") {
     delete(
@@ -98,4 +100,19 @@ tasks.register<Copy>("copyPluginsApiUnitTests") {
     )
     from(kotlinPlugin!!)
     into(apiPlugins)
+}
+
+tasks.register<Delete>("cleanLicenseReport") {
+    delete(licenseReports)
+    delete(projectDir.resolve("serverpackcreator-gui/src/main/resources/de/griefed/resources/gui/THIRD-PARTY-NOTICES.txt"))
+}
+
+tasks.register<Copy>("copyLicenseReport") {
+    from(rootDir.resolve("licenses/THIRD-PARTY-NOTICES.txt"))
+    into(rootDir.resolve("serverpackcreator-gui/src/main/resources/de/griefed/resources/gui"))
+}
+
+tasks.generateLicenseReport {
+    mustRunAfter(tasks.getByName("cleanLicenseReport"))
+    finalizedBy(tasks.getByName("copyLicenseReport"))
 }

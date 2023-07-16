@@ -23,6 +23,7 @@ import Gui
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.api.utilities.common.WebUtilities
 import de.griefed.serverpackcreator.gui.GuiProps
+import de.griefed.serverpackcreator.gui.components.BalloonTipButton
 import de.griefed.serverpackcreator.gui.window.MainFrame
 import de.griefed.serverpackcreator.gui.window.UpdateDialogs
 import de.griefed.serverpackcreator.updater.MigrationManager
@@ -41,10 +42,11 @@ class AboutMenu(
     apiWrapper: ApiWrapper,
     migrationManager: MigrationManager,
     guiProps: GuiProps,
-    mainFrame: MainFrame
+    mainFrame: MainFrame,
+    updateButton: BalloonTipButton
 ) : JMenu(Gui.menubar_gui_menu_about.toString()) {
     init {
-        add(UpdateCheckItem(updateDialogs))
+        add(UpdateCheckItem(updateDialogs,updateButton))
         add(MigrationInfoItem(apiWrapper, migrationManager, guiProps, mainFrame))
         add(JSeparator())
         add(WikiHelpItem(webUtilities))
@@ -57,5 +59,7 @@ class AboutMenu(
         add(DiscordItem(webUtilities))
         add(JSeparator())
         add(DonationsItem(webUtilities))
+        add(JSeparator())
+        add(ThirdPartyNoticesItem(mainFrame,guiProps))
     }
 }
