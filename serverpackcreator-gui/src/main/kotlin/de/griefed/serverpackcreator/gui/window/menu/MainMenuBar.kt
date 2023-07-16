@@ -21,6 +21,7 @@ package de.griefed.serverpackcreator.gui.window.menu
 
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.gui.GuiProps
+import de.griefed.serverpackcreator.gui.components.BalloonTipButton
 import de.griefed.serverpackcreator.gui.window.MainFrame
 import de.griefed.serverpackcreator.gui.window.UpdateDialogs
 import de.griefed.serverpackcreator.gui.window.menu.about.AboutMenu
@@ -28,7 +29,9 @@ import de.griefed.serverpackcreator.gui.window.menu.edit.EditMenu
 import de.griefed.serverpackcreator.gui.window.menu.file.FileMenu
 import de.griefed.serverpackcreator.gui.window.menu.view.ViewMenu
 import de.griefed.serverpackcreator.updater.MigrationManager
+import javax.swing.JButton
 import javax.swing.JMenuBar
+import javax.swing.JMenuItem
 
 /**
  * Main menubar displaying and allowing for various actions, such as config loading and saving, theme changing, opening
@@ -44,8 +47,13 @@ class MainMenuBar(
     migrationManager: MigrationManager
 ) {
     val menuBar: JMenuBar = JMenuBar()
+    private val updateButton = BalloonTipButton(null,guiProps.updateAnimation, "Update available!", guiProps)
 
     init {
+        updateButton.isBorderPainted = false
+        updateButton.isContentAreaFilled = false
+        updateButton.isVisible = updateDialogs.update.isPresent
+
         menuBar.add(
             FileMenu(
                 mainFrame.mainPanel.tabbedConfigsTab,
@@ -77,8 +85,10 @@ class MainMenuBar(
                 apiWrapper,
                 migrationManager,
                 guiProps,
-                mainFrame
+                mainFrame,
+                updateButton
             )
         )
+        menuBar.add(updateButton)
     }
 }

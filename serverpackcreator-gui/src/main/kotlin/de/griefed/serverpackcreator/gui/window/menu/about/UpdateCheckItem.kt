@@ -20,7 +20,9 @@
 package de.griefed.serverpackcreator.gui.window.menu.about
 
 import Gui
+import de.griefed.serverpackcreator.gui.components.BalloonTipButton
 import de.griefed.serverpackcreator.gui.window.UpdateDialogs
+import java.awt.event.ActionListener
 import javax.swing.JMenuItem
 
 /**
@@ -29,9 +31,11 @@ import javax.swing.JMenuItem
  *
  * @author Griefed
  */
-class UpdateCheckItem(private val updateDialogs: UpdateDialogs) :
+class UpdateCheckItem(private val updateDialogs: UpdateDialogs, private val updateButton: BalloonTipButton) :
     JMenuItem(Gui.menubar_gui_menuitem_updates.toString()) {
     init {
-        this.addActionListener { updateDialogs.checkForUpdate() }
+        val listener = ActionListener { updateButton.isVisible = updateDialogs.checkForUpdate() }
+        updateButton.addActionListener(listener)
+        this.addActionListener(listener)
     }
 }
