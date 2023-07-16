@@ -58,7 +58,9 @@ jobs:
         env:
           GITHUB_ACTOR: ${{ secrets.GITHUB_ACTOR }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./gradlew -Pversion="${{ needs.preparations.outputs.version }}" build --info --full-stacktrace -x :serverpackcreator-api:jvmTest -x :serverpackcreator-web:test
+        run: |
+          ./gradlew -Pversion="${{ needs.preparations.outputs.version }}" generateLicenseReport --info --full-stacktrace
+          ./gradlew -Pversion="${{ needs.preparations.outputs.version }}" build --info --full-stacktrace -x :serverpackcreator-api:jvmTest -x :serverpackcreator-web:test
 
       # UPLOAD ARTIFACTS
       - uses: actions/upload-artifact@v3.1.2
@@ -120,7 +122,9 @@ jobs:
         env:
           GITHUB_ACTOR: ${{ secrets.GITHUB_ACTOR }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./gradlew :serverpackcreator-app:jpackage -Pversion="${{ needs.preparations.outputs.version }}" --info --full-stacktrace -x :serverpackcreator-api:jvmTest -x :serverpackcreator-web:test
+        run: |
+          ./gradlew -Pversion="${{ needs.preparations.outputs.version }}" generateLicenseReport --info --full-stacktrace
+          ./gradlew :serverpackcreator-app:jpackage -Pversion="${{ needs.preparations.outputs.version }}" --info --full-stacktrace -x :serverpackcreator-api:jvmTest -x :serverpackcreator-web:test
 
       - name: List After Build
         run: ls serverpackcreator-app/build/dist/
@@ -178,7 +182,9 @@ jobs:
         env:
           GITHUB_ACTOR: ${{ secrets.GITHUB_ACTOR }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./gradlew :serverpackcreator-app:jpackage -Pversion="${{ needs.preparations.outputs.version }}" --info --full-stacktrace -x :serverpackcreator-api:jvmTest -x :serverpackcreator-web:test
+        run: |
+          ./gradlew -Pversion="${{ needs.preparations.outputs.version }}" generateLicenseReport --info --full-stacktrace
+          ./gradlew :serverpackcreator-app:jpackage -Pversion="${{ needs.preparations.outputs.version }}" --info --full-stacktrace -x :serverpackcreator-api:jvmTest -x :serverpackcreator-web:test
 
       - name: List After Build
         run: ls serverpackcreator-app/build/dist/
@@ -238,7 +244,9 @@ jobs:
         env:
           GITHUB_ACTOR: ${{ secrets.GITHUB_ACTOR }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./gradlew -Pversion="${{ needs.preparations.outputs.version }}" :serverpackcreator-app:build :serverpackcreator-app:copyDependencies :serverpackcreator-app:copyJar :serverpackcreator-app:cleanTmpPackager --info --full-stacktrace
+        run: |
+          ./gradlew -Pversion="${{ needs.preparations.outputs.version }}" generateLicenseReport --info --full-stacktrace
+          ./gradlew -Pversion="${{ needs.preparations.outputs.version }}" :serverpackcreator-app:build :serverpackcreator-app:copyDependencies :serverpackcreator-app:copyJar :serverpackcreator-app:cleanTmpPackager --info --full-stacktrace
 
       - name: Build Image
         run: |
@@ -327,7 +335,9 @@ jobs:
         env:
           GITHUB_ACTOR: ${{ secrets.GITHUB_ACTOR }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./gradlew :serverpackcreator-app:jpackage -Pversion="${{ needs.preparations.outputs.version }}" --info --full-stacktrace -x :serverpackcreator-api:jvmTest -x :serverpackcreator-web:test
+        run: |
+          ./gradlew -Pversion="${{ needs.preparations.outputs.version }}" generateLicenseReport --info --full-stacktrace
+          ./gradlew :serverpackcreator-app:jpackage -Pversion="${{ needs.preparations.outputs.version }}" --info --full-stacktrace -x :serverpackcreator-api:jvmTest -x :serverpackcreator-web:test
 
       - name: List After Build
         run: ls serverpackcreator-app/build/dist/
@@ -384,7 +394,9 @@ jobs:
         env:
           GITHUB_ACTOR: ${{ secrets.GITHUB_ACTOR }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./gradlew -Pversion="${{ needs.preparations.outputs.version }}" :serverpackcreator-app:build :serverpackcreator-app:copyDependencies :serverpackcreator-app:copyJar :serverpackcreator-app:cleanTmpPackager --info --full-stacktrace
+        run: |
+          ./gradlew -Pversion="${{ needs.preparations.outputs.version }}" generateLicenseReport --info --full-stacktrace
+          ./gradlew -Pversion="${{ needs.preparations.outputs.version }}" :serverpackcreator-app:build :serverpackcreator-app:copyDependencies :serverpackcreator-app:copyJar :serverpackcreator-app:cleanTmpPackager --info --full-stacktrace
 
       - name: Build Image
         run: |

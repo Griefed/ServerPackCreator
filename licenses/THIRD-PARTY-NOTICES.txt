@@ -1,5 +1,5 @@
 
-Dependency License Report for serverpackcreator dev
+Dependency License Report for serverpackcreator 5.0.0
 
 1. Group: com.electronwill.night-config  Name: toml  Version: 3.6.6
 
@@ -3596,5 +3596,5 @@ SUCH DAMAGE.
 --------------------------------------------------------------------------------
 
 
-This report was generated at Sun Jul 16 12:45:32 CEST 2023.
+This report was generated at Sun Jul 16 13:50:14 CEST 2023.
 

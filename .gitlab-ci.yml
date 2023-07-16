@@ -127,6 +127,7 @@ Build Release:
     - chmod +x gradlew
   script:
     - echo "**** Building ServerPackCreator ****"
+    - "./gradlew generateLicenseReport -Pversion=${CI_COMMIT_TAG} --info --full-stacktrace"
     - "./gradlew build -Pversion=${CI_COMMIT_TAG} --info --full-stacktrace -x :serverpackcreator-api:jvmTest -x :serverpackcreator-web:test"
     - echo "**** Listing build directory ****"
     - LC_COLLATE=C ls -ahl --group-directories-first --color=auto */build

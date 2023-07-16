@@ -34,7 +34,9 @@ jobs:
           gradle-version: wrapper
 
       - name: Build with Gradle
-        run: ./gradlew -Pversion=${{ steps.branch-name.outputs.current_branch }} build --info --full-stacktrace
+        run: |
+          ./gradlew -Pversion=${{ steps.branch-name.outputs.current_branch }} generateLicenseReport --info --full-stacktrace
+          ./gradlew -Pversion=${{ steps.branch-name.outputs.current_branch }} build --info --full-stacktrace
 
       - uses: actions/upload-artifact@v3.1.2
         if: ${{ always() }}
@@ -81,7 +83,9 @@ jobs:
         env:
           GITHUB_ACTOR: ${{ secrets.GITHUB_ACTOR }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./gradlew :serverpackcreator-app:jpackage --info --full-stacktrace
+        run: |
+          ./gradlew -Pversion=${{ steps.branch-name.outputs.current_branch }} generateLicenseReport --info --full-stacktrace
+          ./gradlew :serverpackcreator-app:jpackage --info --full-stacktrace
 
       - name: Rename
         run: mv serverpackcreator-app/build/dist/* serverpackcreator-app/build/dist/ServerPackCreator-Installer-MacOS-dev.pkg
@@ -129,7 +133,9 @@ jobs:
         env:
           GITHUB_ACTOR: ${{ secrets.GITHUB_ACTOR }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./gradlew :serverpackcreator-app:jpackage --info --full-stacktrace
+        run: |
+          ./gradlew -Pversion=${{ steps.branch-name.outputs.current_branch }} generateLicenseReport --info --full-stacktrace
+          ./gradlew :serverpackcreator-app:jpackage --info --full-stacktrace
 
       - name: Rename
         run: mv serverpackcreator-app/build/dist/* serverpackcreator-app/build/dist/ServerPackCreator-Installer-Windows-dev.msi
@@ -178,7 +184,9 @@ jobs:
         env:
           GITHUB_ACTOR: ${{ secrets.GITHUB_ACTOR }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./gradlew :serverpackcreator-app:build :serverpackcreator-app:copyDependencies :serverpackcreator-app:copyJar :serverpackcreator-app:cleanTmpPackager --info --full-stacktrace
+        run: |
+          ./gradlew -Pversion=${{ steps.branch-name.outputs.current_branch }} generateLicenseReport --info --full-stacktrace
+          ./gradlew :serverpackcreator-app:build :serverpackcreator-app:copyDependencies :serverpackcreator-app:copyJar :serverpackcreator-app:cleanTmpPackager --info --full-stacktrace
 
       - name: Build Image
         run: |
@@ -254,7 +262,9 @@ jobs:
         env:
           GITHUB_ACTOR: ${{ secrets.GITHUB_ACTOR }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./gradlew :serverpackcreator-app:jpackage --info --full-stacktrace
+        run: |
+          ./gradlew -Pversion=${{ steps.branch-name.outputs.current_branch }} generateLicenseReport --info --full-stacktrace
+          ./gradlew :serverpackcreator-app:jpackage --info --full-stacktrace
 
       - name: Rename
         run: mv serverpackcreator-app/build/dist/* serverpackcreator-app/build/dist/ServerPackCreator-Installer-Ubuntu-dev-amd64.deb
@@ -299,7 +309,9 @@ jobs:
         env:
           GITHUB_ACTOR: ${{ secrets.GITHUB_ACTOR }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./gradlew :serverpackcreator-app:build :serverpackcreator-app:copyDependencies :serverpackcreator-app:copyJar :serverpackcreator-app:cleanTmpPackager --info --full-stacktrace
+        run: |
+          ./gradlew -Pversion=${{ steps.branch-name.outputs.current_branch }} generateLicenseReport --info --full-stacktrace
+          ./gradlew :serverpackcreator-app:build :serverpackcreator-app:copyDependencies :serverpackcreator-app:copyJar :serverpackcreator-app:cleanTmpPackager --info --full-stacktrace
 
       - name: Build Image
         run: |
