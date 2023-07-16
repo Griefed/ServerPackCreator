@@ -1,3 +1,43 @@
+## [5.0.0-alpha.20](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-alpha.19...5.0.0-alpha.20) (2023-07-16)
+
+
+### 👀 Reverts
+
+* Remove loading animation from ScrollTextAreas ([c273e79](https://git.griefed.de/Griefed/ServerPackCreator/commit/c273e7928c7ec04c78e75b039dc520913b9612d8))
+
+
+### 💎 Improvements
+
+* Display indicators for destination, inclusion and exclusion ([7fd2b2c](https://git.griefed.de/Griefed/ServerPackCreator/commit/7fd2b2cceabb4dd338ce59056ad6564a217554e4))
+* Refresh user_jvm_args.txt on launch. Improve readibility. ([b5ccfb3](https://git.griefed.de/Griefed/ServerPackCreator/commit/b5ccfb35f16afa8f504c34ffd1ea1e8c7b32405d))
+* Scroll to top of tip upon change ([575a3a2](https://git.griefed.de/Griefed/ServerPackCreator/commit/575a3a2cb10c0ff707ee8b52ada2b814f757fdf7))
+
+
+### 📦 Other
+
+* Update license report and manifests ([00a0081](https://git.griefed.de/Griefed/ServerPackCreator/commit/00a008173b9c04ba9110b559f31dd74d6150e6f7))
+
+
+### 🦊 CI/CD
+
+* Update license report upon release build ([4a8bfe0](https://git.griefed.de/Griefed/ServerPackCreator/commit/4a8bfe0da67c46e13e6a5bc12d428398ac280e35))
+
+
+### 🧨 Breaking changes!
+
+* Remove explicit save-copy procedure ([630357b](https://git.griefed.de/Griefed/ServerPackCreator/commit/630357bf40e2b7556a8de138847747bc0fd7550d))
+
+
+### 🚀 Features
+
+* Animated button in menubar if an update is available ([8a7a013](https://git.griefed.de/Griefed/ServerPackCreator/commit/8a7a013bdd116a7de35fa2d96c1fa66411b3957d))
+* Menu item for window with third party notices ([6fdd92f](https://git.griefed.de/Griefed/ServerPackCreator/commit/6fdd92f7d70cdc7d1df0d68b73966e025f5b010f))
+
+
+### 🛠 Fixes
+
+* **GH#462:** Use -LiteralPath to ensure compatibility to older versions of PowerShell. Thanks to @Frontear for the report! ([f3038db](https://git.griefed.de/Griefed/ServerPackCreator/commit/f3038dbbcf6b4c2923fcd3595200552d388f49d7)), closes [GH#462](https://git.griefed.de/Griefed/GH/issues/462)
+
 ## [5.0.0-alpha.19](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-alpha.18...5.0.0-alpha.19) (2023-07-11)
 
 
