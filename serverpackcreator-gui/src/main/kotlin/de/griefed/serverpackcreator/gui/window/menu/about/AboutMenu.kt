@@ -57,5 +57,7 @@ class AboutMenu(
         add(DiscordItem(webUtilities))
         add(JSeparator())
         add(DonationsItem(webUtilities))
+        add(JSeparator())
+        add(ThirdPartyNoticesItem(mainFrame,guiProps))
     }
 }

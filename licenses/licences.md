@@ -1,7 +1,7 @@
 
 # Dependency Licenses
 ## Dependency License Report
-_2023-07-11 20:55:50 MESZ_
+_2023-07-16 12:45:31 MESZ_
 ## Apache License, Version 2.0
 
 **1** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-databind` **Version:** `2.15.0` 
