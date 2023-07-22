@@ -5,9 +5,6 @@ profile:
 include:
   - name: CheckDependencyLicenses
 exclude:
-  - name: FieldMayBeStatic
-  - name: KotlinAnnotator
-  - name: KotlinRedundantDiagnosticSuppress
   - name: SystemOutErr
   - name: All
     paths:
