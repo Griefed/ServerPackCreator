@@ -24,7 +24,7 @@ idea {
 allprojects {
     repositories {
         maven {
-            url = uri("https://nexus.griefed.dev/repository/maven-central/")
+            url = uri("https://nexus.griefed.dev/repository/maven-public/")
         }
         gradlePluginPortal()
         google()
