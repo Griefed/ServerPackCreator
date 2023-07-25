@@ -252,6 +252,7 @@ actual class ApiProperties(
                 "ToastControl-," +
                 "TravelersTitles-," +
                 "VoidFog-," +
+                "VR-Combat_," +
                 "WindowedFullscreen-," +
                 "WorldNameRandomizer-," +
                 "[1.12.2]DamageIndicatorsMod-," +
@@ -543,6 +544,7 @@ actual class ApiProperties(
                 "^ToastControl-.*$," +
                 "^TravelersTitles-.*$," +
                 "^VoidFog-.*$," +
+                "^VR-Combat_.*$," +
                 "^WindowedFullscreen-.*$," +
                 "^WorldNameRandomizer-.*$," +
                 "^\\[1\\.12\\.2\\]DamageIndicatorsMod-.*$," +
