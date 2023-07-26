@@ -357,7 +357,8 @@ class MainMenuBar(
         configChooser!!.isAcceptAllFileFilterUsed = false
         configChooser!!.isMultiSelectionEnabled = false
         configChooser!!.preferredSize = chooserDimension
-        if (configChooser!!.showOpenDialog(serverPackCreatorWindow) == JFileChooser.APPROVE_OPTION) {
+        configChooser!!.dialogType = JFileChooser.SAVE_DIALOG
+        if (configChooser!!.showSaveDialog(serverPackCreatorWindow) == JFileChooser.APPROVE_OPTION) {
             if (configChooser!!.selectedFile.path.endsWith(".conf")) {
                 tabCreateServerPack.saveConfig(
                     File(configChooser!!.selectedFile.path)
