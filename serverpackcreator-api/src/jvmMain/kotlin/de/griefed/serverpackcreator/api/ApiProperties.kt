@@ -347,6 +347,7 @@ actual class ApiProperties(
                 "keymap-," +
                 "keywizard-," +
                 "lazydfu-," +
+                "lib39-," +
                 "light-overlay-," +
                 "lightfallclient-," +
                 "lightspeed-," +
