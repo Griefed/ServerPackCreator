@@ -12,7 +12,7 @@ variables:
   GRADLE_USER_HOME: "$CI_PROJECT_DIR/.gradle"
 
 services:
-  - name: ghcr.io/griefed/gitlab-ci-cd:2.2.10
+  - name: docker.griefed.dev/griefed/gitlab-ci-cd:2.2.10
     alias: docker
 
 workflow:
@@ -27,7 +27,7 @@ workflow:
 
 Build Test:
   stage: Tests
-  image: ghcr.io/griefed/baseimage-ubuntu-jdk17-kotlin:1.0.4
+  image: docker.griefed.dev/griefed/baseimage-ubuntu-jdk17-kotlin:1.0.4
   before_script:
     - echo "**** Running in $CI_JOB_ID ****"
     - echo "**** Java location ****"
@@ -74,7 +74,7 @@ Build Test:
 # TODO reactivate with milestone 6
 #Docker Test:
 #  stage: Tests
-#  image: ghcr.io/griefed/gitlab-ci-cd:2.2.1
+#  image: docker.griefed.dev/griefed/gitlab-ci-cd:2.2.1
 #  needs:
 #    - job: Build Test
 #      artifacts: true
@@ -91,7 +91,7 @@ Build Test:
 
 Generate Release:
   stage: Release
-  image: ghcr.io/griefed/gitlab-ci-cd:2.2.10
+  image: docker.griefed.dev/griefed/gitlab-ci-cd:2.2.10
   needs:
     - job: Build Test
       artifacts: false
@@ -106,7 +106,7 @@ Generate Release:
 
 Build Release:
   stage: Build Release
-  image: ghcr.io/griefed/baseimage-ubuntu-jdk17-kotlin:1.0.4
+  image: docker.griefed.dev/griefed/baseimage-ubuntu-jdk17-kotlin:1.0.4
   needs:
     - job: Build Test
       artifacts: false
@@ -154,7 +154,7 @@ Build Release:
 
 Sign Java Publication:
   stage: Build Release
-  image: ghcr.io/griefed/baseimage-ubuntu-jdk17-kotlin:1.0.4
+  image: docker.griefed.dev/griefed/baseimage-ubuntu-jdk17-kotlin:1.0.4
   needs:
     - job: Build Release
       artifacts: false
@@ -184,7 +184,7 @@ Sign Java Publication:
 
 Publish GitHub:
   stage: Build Release
-  image: ghcr.io/griefed/baseimage-ubuntu-jdk17-kotlin:1.0.4
+  image: docker.griefed.dev/griefed/baseimage-ubuntu-jdk17-kotlin:1.0.4
   needs:
     - job: Sign Java Publication
       optional: false
@@ -206,7 +206,7 @@ Publish GitHub:
 
 Publish GitLab:
   stage: Build Release
-  image: ghcr.io/griefed/baseimage-ubuntu-jdk17-kotlin:1.0.4
+  image: docker.griefed.dev/griefed/baseimage-ubuntu-jdk17-kotlin:1.0.4
   needs:
     - job: Sign Java Publication
       optional: false
@@ -228,7 +228,7 @@ Publish GitLab:
 
 Publish GitGriefed:
   stage: Build Release
-  image: ghcr.io/griefed/baseimage-ubuntu-jdk17-kotlin:1.0.4
+  image: docker.griefed.dev/griefed/baseimage-ubuntu-jdk17-kotlin:1.0.4
   needs:
     - job: Sign Java Publication
       optional: false
@@ -250,7 +250,7 @@ Publish GitGriefed:
 
 Publish OSSRH:
   stage: Build Release
-  image: ghcr.io/griefed/baseimage-ubuntu-jdk17-kotlin:1.0.4
+  image: docker.griefed.dev/griefed/baseimage-ubuntu-jdk17-kotlin:1.0.4
   needs:
     - job: Sign Java Publication
       optional: false
@@ -273,7 +273,7 @@ Publish OSSRH:
 # TODO reactivate with milestone 6
 #Build Docker Release:
 #  stage: Build Release
-#  image: ghcr.io/griefed/gitlab-ci-cd:2.2.1
+#  image: docker.griefed.dev/griefed/gitlab-ci-cd:2.2.1
 #  needs:
 #    - job: Build Test
 #      artifacts: true
@@ -297,7 +297,7 @@ Publish OSSRH:
 # TODO reactivate with milestone 6
 #Build Docker PreRelease:
 #  stage: Build Release
-#  image: ghcr.io/griefed/gitlab-ci-cd:2.2.1
+#  image: docker.griefed.dev/griefed/gitlab-ci-cd:2.2.1
 #  needs:
 #    - job: Build Test
 #      artifacts: true
@@ -318,7 +318,7 @@ Publish OSSRH:
 
 pages:
   stage: Documentation
-  image: ghcr.io/griefed/baseimage-ubuntu-jdk17-kotlin:1.0.4
+  image: docker.griefed.dev/griefed/baseimage-ubuntu-jdk17-kotlin:1.0.4
   allow_failure: true
   before_script:
     - which java
