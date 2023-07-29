@@ -1,3 +1,16 @@
+## [4.2.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.2.0...4.2.1) (2023-07-28)
+
+
+### 📦 Other
+
+* Add lib39 to list of clientside mods. Thanks to [@nvb-uy](https://git.griefed.de/nvb-uy) for the report! ([f05dd08](https://git.griefed.de/Griefed/ServerPackCreator/commit/f05dd08a6a7dc4980e8932ee3407a731c82a15f3))
+* Add physics-mod and vr-combat to clientside-list. Thanks to @ModernGamingWorld and [@nvb-uy](https://git.griefed.de/nvb-uy) ([c1ba97b](https://git.griefed.de/Griefed/ServerPackCreator/commit/c1ba97b896a3766f4857f982e7390f6ac42f11b9))
+
+
+### 🛠 Fixes
+
+* Use save-dialog instead of open-dialog for config save as ([dd973c9](https://git.griefed.de/Griefed/ServerPackCreator/commit/dd973c9da5e61981ba76e17441cb78fa7065168e))
+
 ## [4.2.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.1.5...4.2.0) (2023-07-15)
 
 
