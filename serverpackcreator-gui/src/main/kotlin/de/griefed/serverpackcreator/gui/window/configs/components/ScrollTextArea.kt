@@ -107,7 +107,7 @@ class ScrollTextArea(
         name = areaName
         identifier = name.lowercase().replace(" ", "")
         suggestionProvider = if (identifier.isNotBlank()) {
-            SuggestionProvider(textArea, apiProperties!!, identifier)
+            SuggestionProvider(guiProps,textArea, apiProperties!!, identifier)
         } else {
             null
         }

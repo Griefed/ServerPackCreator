@@ -21,6 +21,7 @@ package de.griefed.serverpackcreator.gui.window.configs.components
 
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.ApiWrapper
+import de.griefed.serverpackcreator.gui.GuiProps
 import java.awt.Toolkit
 import java.awt.event.KeyEvent
 import java.awt.event.KeyListener
@@ -42,6 +43,7 @@ import javax.swing.undo.UndoManager
  * @author Griefed
  */
 open class ScrollTextField(
+    guiProps: GuiProps,
     text: String,
     val identifier: String? = null,
     apiProperties: ApiProperties? = ApiWrapper.api().apiProperties,
@@ -52,11 +54,12 @@ open class ScrollTextField(
     KeyListener {
 
     constructor(
+        guiProps: GuiProps,
         text: String,
         identifier: String?,
         apiProperties: ApiProperties?,
         documentChangeListener: DocumentChangeListener
-    ) : this(text, identifier, apiProperties) {
+    ) : this(guiProps, text, identifier, apiProperties) {
         this.addDocumentListener(documentChangeListener)
     }
 
@@ -79,7 +82,7 @@ open class ScrollTextField(
         textField.addKeyListener(this)
         viewport.view = textField
         suggestionProvider = if (!identifier.isNullOrBlank()) {
-            SuggestionProvider(textField, apiProperties!!, identifier)
+            SuggestionProvider(guiProps,textField, apiProperties!!, identifier)
         } else {
             null
         }

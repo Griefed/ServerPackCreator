@@ -117,7 +117,7 @@ class ConfigEditor(
             validateInputFields()
         }
     }
-    private val modpackDirectory = ScrollTextFileField(File(""), changeListener)
+    private val modpackDirectory = ScrollTextFileField(guiProps,File(""), changeListener)
     private val javaArgs = ScrollTextArea(
         "-Xmx4G -Xms4G",
         Gui.createserverpack_gui_createserverpack_javaargs.toString(),
@@ -125,13 +125,13 @@ class ConfigEditor(
         changeListener,
         guiProps
     )
-    private val serverPackSuffix = ScrollTextField("", "suffix", apiWrapper.apiProperties, changeListener)
-    private val propertiesFile = ScrollTextFileField(apiWrapper.apiProperties.defaultServerProperties, changeListener)
-    private val iconFile = ScrollTextFileField(apiWrapper.apiProperties.defaultServerIcon, changeListener)
-    private val source = ScrollTextField("", "source", apiWrapper.apiProperties)
-    private val destination = ScrollTextField("", "destination", apiWrapper.apiProperties)
-    private val inclusionFilter = ScrollTextField("", "inclusion", apiWrapper.apiProperties)
-    private val exclusionFilter = ScrollTextField("", "exclusion", apiWrapper.apiProperties)
+    private val serverPackSuffix = ScrollTextField(guiProps,"", "suffix", apiWrapper.apiProperties, changeListener)
+    private val propertiesFile = ScrollTextFileField(guiProps,apiWrapper.apiProperties.defaultServerProperties, changeListener)
+    private val iconFile = ScrollTextFileField(guiProps,apiWrapper.apiProperties.defaultServerIcon, changeListener)
+    private val source = ScrollTextField(guiProps,"", "source", apiWrapper.apiProperties)
+    private val destination = ScrollTextField(guiProps,"", "destination", apiWrapper.apiProperties)
+    private val inclusionFilter = ScrollTextField(guiProps,"", "inclusion", apiWrapper.apiProperties)
+    private val exclusionFilter = ScrollTextField(guiProps,"", "exclusion", apiWrapper.apiProperties)
     private val inclusionsEditor = InclusionsEditor(
         chooserDimension,
         guiProps,
@@ -591,19 +591,19 @@ class ConfigEditor(
     private fun saveSuggestions() {
         val suffixSuggestions = serverPackSuffix.suggestionProvider!!.allSuggestions()
         suffixSuggestions.add(serverPackSuffix.text)
-        apiWrapper.apiProperties.storeCustomProperty(
+        guiProps.storeGuiProperty(
             "autocomplete.${serverPackSuffix.identifier!!}",
             suffixSuggestions.joinToString(",") { entry -> entry.trim { it <= ' ' } }.trim { it <= ' ' })
 
         val clientModsSuggestions = exclusions.suggestionProvider!!.allSuggestions()
         clientModsSuggestions.addAll(exclusions.text.split(",").map { entry -> entry.trim { it <= ' ' } })
-        apiWrapper.apiProperties.storeCustomProperty(
+        guiProps.storeGuiProperty(
             "autocomplete.${exclusions.identifier}",
             clientModsSuggestions.joinToString(",") { entry -> entry.trim { it <= ' ' } }.trim { it <= ' ' })
 
         val javaArgsSuggestions = javaArgs.suggestionProvider!!.allSuggestions()
         javaArgsSuggestions.addAll(javaArgs.text.split(" ").map { entry -> entry.trim { it <= ' ' } })
-        apiWrapper.apiProperties.storeCustomProperty(
+        guiProps.storeGuiProperty(
             "autocomplete.${javaArgs.identifier}",
             javaArgsSuggestions.joinToString(",") { entry -> entry.trim { it <= ' ' } }.trim { it <= ' ' })
 
@@ -621,19 +621,19 @@ class ConfigEditor(
         destinationSuggestions.removeIf { entry -> entry.isBlank() }
         inclusionSuggestions.removeIf { entry -> entry.isBlank() }
         exclusionSuggestions.removeIf { entry -> entry.isBlank() }
-        apiWrapper.apiProperties.storeCustomProperty(
+        guiProps.storeGuiProperty(
             "autocomplete.${source.identifier}",
             sourceSuggestions.joinToString(",") { entry -> entry.trim { it <= ' ' } }.trim { it <= ' ' })
 
-        apiWrapper.apiProperties.storeCustomProperty(
+        guiProps.storeGuiProperty(
             "autocomplete.${destination.identifier}",
             destinationSuggestions.joinToString(",") { entry -> entry.trim { it <= ' ' } }.trim { it <= ' ' })
 
-        apiWrapper.apiProperties.storeCustomProperty(
+        guiProps.storeGuiProperty(
             "autocomplete.${inclusionFilter.identifier}",
             inclusionSuggestions.joinToString(",") { entry -> entry.trim { it <= ' ' } }.trim { it <= ' ' })
 
-        apiWrapper.apiProperties.storeCustomProperty(
+        guiProps.storeGuiProperty(
             "autocomplete.${exclusionFilter.identifier}",
             exclusionSuggestions.joinToString(",") { entry -> entry.trim { it <= ' ' } }.trim { it <= ' ' })
     }

@@ -94,7 +94,7 @@ class MainPanel(
                 configs.add(config.configFile!!.absolutePath)
             }
         }
-        apiWrapper.apiProperties.storeCustomProperty("lastloaded", configs.joinToString(","))
+        guiProps.storeGuiProperty("lastloaded", configs.joinToString(","))
         apiWrapper.apiProperties.saveToDisk(apiWrapper.apiProperties.serverPackCreatorPropertiesFile)
         exitProcess(0)
     }

@@ -20,6 +20,7 @@
 package de.griefed.serverpackcreator.gui.window.configs.components
 
 import de.griefed.serverpackcreator.api.ApiProperties
+import de.griefed.serverpackcreator.gui.GuiProps
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.awt.Point
 import java.awt.event.KeyAdapter
@@ -47,6 +48,7 @@ import javax.swing.text.Utilities
  * @author Griefed
  */
 class SuggestionProvider(
+    private val guiProps: GuiProps,
     private val sourceComponent: JTextComponent,
     private val apiProperties: ApiProperties,
     private val identifier: String
@@ -212,7 +214,7 @@ class SuggestionProvider(
         return if (truncated.size == 1 && truncated[0] == text) {
             listOf()
         } else {
-            truncated.stream().limit(apiProperties.retrieveCustomProperty("autocomplete.limit")?.toLong()?: 10).collect(Collectors.toList())
+            truncated.stream().limit(guiProps.getGuiProperty("autocomplete.limit")?.toLong()?: 10).collect(Collectors.toList())
         }
     }
 
@@ -220,7 +222,7 @@ class SuggestionProvider(
      * @author Griefed
      */
     fun allSuggestions(): TreeSet<String> {
-        val property = apiProperties.retrieveCustomProperty("autocomplete.$identifier").toString().trim { it <= ' ' }
+        val property = guiProps.getGuiProperty("autocomplete.$identifier").toString().trim { it <= ' ' }
         val entries = TreeSet<String>()
         if (property == "null") {
             return entries

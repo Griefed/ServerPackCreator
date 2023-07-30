@@ -20,17 +20,23 @@
 package de.griefed.serverpackcreator.gui.window
 
 import Gui
+import com.formdev.flatlaf.FlatLaf
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.gui.GuiProps
-import de.griefed.serverpackcreator.gui.window.control.components.LarsonScanner
 import de.griefed.serverpackcreator.gui.window.menu.MainMenuBar
 import de.griefed.serverpackcreator.updater.MigrationManager
 import de.griefed.serverpackcreator.updater.UpdateChecker
+import java.awt.AWTEvent
 import java.awt.Dimension
+import java.awt.Font
+import java.awt.Toolkit
+import java.awt.event.KeyEvent
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
 import javax.swing.JFrame
+import javax.swing.UIManager
 import javax.swing.WindowConstants
+import javax.swing.plaf.FontUIResource
 
 /**
  * Main Frame of ServerPackCreator, housing [MainPanel], [MainMenuBar].
@@ -38,11 +44,11 @@ import javax.swing.WindowConstants
  * @author Griefed
  */
 class MainFrame(
+    guiProps: GuiProps,
     apiWrapper: ApiWrapper,
     updateChecker: UpdateChecker,
     migrationManager: MigrationManager
 ) {
-    private val guiProps = GuiProps(apiWrapper.apiProperties)
     val frame: JFrame = JFrame(Gui.createserverpack_gui_createandshowgui.toString())
     val mainPanel = MainPanel(guiProps, apiWrapper, guiProps.larsonScanner)
 
@@ -72,5 +78,28 @@ class MainFrame(
         frame.isVisible = true
         guiProps.larsonScanner.loadConfig(guiProps.idleConfig)
         guiProps.larsonScanner.play()
+        /*Toolkit.getDefaultToolkit().addAWTEventListener({ e: AWTEvent ->
+            val event = e as KeyEvent
+            if (event.id == KeyEvent.KEY_RELEASED) {
+                val currentFont = UIManager.get("defaultFont") as Font
+                when {
+                    event.keyCode == KeyEvent.VK_UP && event.isControlDown && event.isShiftDown -> {
+                        UIManager.put(
+                            "defaultFont",
+                            FontUIResource(currentFont.fontName, currentFont.style, currentFont.size + 1)
+                        )
+                        FlatLaf.updateUI()
+                    }
+
+                    event.keyCode == KeyEvent.VK_DOWN && event.isControlDown && event.isShiftDown -> {
+                        UIManager.put(
+                            "defaultFont",
+                            FontUIResource(currentFont.fontName, currentFont.style, currentFont.size - 1)
+                        )
+                        FlatLaf.updateUI()
+                    }
+                }
+            }
+        }, AWTEvent.KEY_EVENT_MASK)*/
     }
 }

@@ -78,7 +78,7 @@ class TabbedConfigsTab(
 
         }
 
-        val lastLoadedConfigs = apiWrapper.apiProperties.retrieveCustomProperty("lastloaded")
+        val lastLoadedConfigs = guiProps.getGuiProperty("lastloaded")
         if (!lastLoadedConfigs.isNullOrBlank()) {
             val configs = if (lastLoadedConfigs.contains(",")) {
                 lastLoadedConfigs.split(",").map { File(it) }

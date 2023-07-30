@@ -342,11 +342,13 @@ class GuiProps(private val apiProperties: ApiProperties) {
     val configDispatcher = Executors.newFixedThreadPool(5).asCoroutineDispatcher()
     val fileBrowserDispatcher = Executors.newFixedThreadPool(5).asCoroutineDispatcher()
     val generationDispatcher = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
+    private val guiPropertyPrefix = "gui."
     var currentTheme: FlatLaf = FlatDarkPurpleIJTheme()
         get() {
-            val themeClassName = apiProperties.retrieveCustomProperty("theme")
+            val themeClassName = getGuiProperty("theme", FlatDarkPurpleIJTheme().javaClass.name)
             val themeClass = Class.forName(themeClassName)
-            field = themeClass.getDeclaredConstructor().newInstance() as FlatLaf
+            val theme: FlatLaf = themeClass.getDeclaredConstructor().newInstance() as FlatLaf
+            field = theme
             return field
         }
         set(value) {
@@ -359,7 +361,7 @@ class GuiProps(private val apiProperties: ApiProperties) {
                 SwingUtilities.updateComponentTreeUI(frame)
             }
             FlatAnimatedLafChange.hideSnapshotWithAnimation()
-            apiProperties.storeCustomProperty("theme", field.javaClass.name)
+            storeGuiProperty("theme", field.javaClass.name)
         }
 
     /**
@@ -387,5 +389,13 @@ class GuiProps(private val apiProperties: ApiProperties) {
             tabbedPaneFocusColor
         )
         larsonScanner.loadConfig(config)
+    }
+
+    fun getGuiProperty(key: String, default: String? = null): String? {
+        return apiProperties.retrieveCustomProperty("$guiPropertyPrefix$key") ?: default
+    }
+
+    fun storeGuiProperty(key: String, value: String) {
+        apiProperties.storeCustomProperty("$guiPropertyPrefix$key", value)
     }
 }

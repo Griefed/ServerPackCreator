@@ -49,6 +49,7 @@ class MainWindow(
     private val splashScreen: SplashScreen,
     private val migrationManager: MigrationManager
 ) {
+    private val guiProps = GuiProps(apiWrapper.apiProperties)
 
     init {
         GlobalScope.launch(Dispatchers.Swing) {
@@ -60,17 +61,14 @@ class MainWindow(
             FlatJetBrainsMonoFont.install()
             FlatLaf.setPreferredFontFamily(FlatJetBrainsMonoFont.FAMILY)
 
-            try {
-                val themeClassName = apiWrapper.apiProperties.retrieveCustomProperty("theme")
-                val themeClass = Class.forName(themeClassName)
-                val instance = themeClass.getDeclaredConstructor().newInstance() as FlatLaf
-                UIManager.setLookAndFeel(instance)
-                FlatLaf.updateUI()
-            } catch (ignored: Exception) {
-                FlatDarkPurpleIJTheme.setup()
-            }
+            val themeClassName = guiProps.getGuiProperty("theme", FlatDarkPurpleIJTheme().javaClass.name)
+            val themeClass = Class.forName(themeClassName)
+            val instance = themeClass.getDeclaredConstructor().newInstance() as FlatLaf
+            UIManager.setLookAndFeel(instance)
+            FlatLaf.updateUI()
 
             MainFrame(
+                guiProps,
                 apiWrapper,
                 updateChecker,
                 migrationManager
