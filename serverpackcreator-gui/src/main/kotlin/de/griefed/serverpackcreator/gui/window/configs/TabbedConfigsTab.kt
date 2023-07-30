@@ -22,9 +22,13 @@ package de.griefed.serverpackcreator.gui.window.configs
 import Gui
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.api.PackConfig
+import de.griefed.serverpackcreator.api.utilities.common.InvalidFileTypeException
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.components.TabPanel
+import de.griefed.serverpackcreator.gui.utilities.DialogUtilities
+import de.griefed.serverpackcreator.gui.window.MainFrame
 import de.griefed.serverpackcreator.gui.window.configs.components.ComponentResizer
+import de.griefed.serverpackcreator.gui.window.menu.file.ConfigChooser
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -35,6 +39,8 @@ import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
 import java.util.concurrent.Executors
 import javax.swing.DefaultComboBoxModel
+import javax.swing.JFileChooser
+import javax.swing.JOptionPane
 
 /**
  * Tabbed pane housing every server pack config tab.
@@ -44,7 +50,8 @@ import javax.swing.DefaultComboBoxModel
 @OptIn(DelicateCoroutinesApi::class)
 class TabbedConfigsTab(
     private val guiProps: GuiProps,
-    private val apiWrapper: ApiWrapper
+    private val apiWrapper: ApiWrapper,
+    private val mainFrame: MainFrame
 ) : TabPanel() {
     private val log = cachedLoggerOf(this.javaClass)
     private val choose = arrayOf(Gui.createserverpack_gui_quickselect_choose.toString())
@@ -113,6 +120,12 @@ class TabbedConfigsTab(
         return editor
     }
 
+    fun saveAll() {
+        for (tab in allTabs) {
+            (tab as ConfigEditor).saveCurrentConfiguration()
+        }
+    }
+
     /**
      * When the GUI has finished loading, try and load the existing serverpackcreator.conf-file into
      * ServerPackCreator.
@@ -123,6 +136,42 @@ class TabbedConfigsTab(
      */
     fun loadConfig(configFile: File, tab: ConfigEditor = addTab()) {
         tab.loadConfiguration(PackConfig(apiWrapper.utilities!!, configFile), configFile)
+    }
+
+    /**
+     * @author Griefed
+     */
+    fun loadConfigFile() {
+        val configChooser = ConfigChooser(apiWrapper.apiProperties, Gui.createserverpack_gui_buttonloadconfig_title.toString())
+        configChooser.isMultiSelectionEnabled = true
+        if (configChooser.showOpenDialog(mainFrame.frame) == JFileChooser.APPROVE_OPTION) {
+            val files = configChooser.selectedFiles.map { file ->
+                try {
+                    File(apiWrapper.fileUtilities.resolveLink(file)).absoluteFile
+                } catch (ex: InvalidFileTypeException) {
+                    log.error("Could not resolve link/symlink. Using entry from user input for checks.", ex)
+                    file.absoluteFile
+                }
+            }
+            for (file in files) {
+                if (tabs.tabCount > 0 &&
+                    DialogUtilities.createShowGet(
+                        Gui.menubar_gui_config_load_message(file.absolutePath),
+                        Gui.menubar_gui_config_load_title.toString(),
+                        mainFrame.frame,
+                        JOptionPane.QUESTION_MESSAGE,
+                        JOptionPane.YES_NO_OPTION,
+                        guiProps.warningIcon,
+                        false,
+                        arrayOf(Gui.menubar_gui_config_load_current, Gui.menubar_gui_config_load_new)
+                    ) == 0
+                ) {
+                    loadConfig(file, selectedEditor!!)
+                } else {
+                    loadConfig(file)
+                }
+            }
+        }
     }
 
     /**

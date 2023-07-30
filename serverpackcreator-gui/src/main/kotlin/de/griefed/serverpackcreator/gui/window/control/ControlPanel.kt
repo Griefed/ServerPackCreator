@@ -55,13 +55,7 @@ class ControlPanel(
     private val log = cachedLoggerOf(this.javaClass)
     private val statusPanel = StatusPanel(guiProps)
 
-    @OptIn(DelicateCoroutinesApi::class)
-    private val runGeneration = GenerationButton(guiProps) {
-        GlobalScope.launch(guiProps.generationDispatcher) {
-            launchGeneration()
-            readyForGeneration()
-        }
-    }
+    private val runGeneration = GenerationButton(guiProps) { generate() }
     private val serverPacks = ServerPacksButton(guiProps) {
         apiWrapper.utilities!!.fileUtilities.openFolder(apiWrapper.apiProperties.serverPacksDirectory)
     }
@@ -78,8 +72,16 @@ class ControlPanel(
         panel.add(statusPanel.panel, "cell 1 0 1 2,grow,push, h 160!")
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
+    fun generate() {
+        GlobalScope.launch(guiProps.generationDispatcher) {
+            launchGeneration()
+            readyForGeneration()
+        }
+    }
+
     /**
-     * Upon button-press, check the entered configuration and if successfull, generate a server pack.
+     * Upon button-press, check the entered configuration and if successful, generate a server pack.
      *
      * @author Griefed
      */

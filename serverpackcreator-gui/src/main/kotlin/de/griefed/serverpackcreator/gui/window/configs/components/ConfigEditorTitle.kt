@@ -80,9 +80,11 @@ class ConfigEditorTitle(
     }
 
     /**
+     * Close this tab. If this config has unsaved changes, ask whether this config should be saved first.
+     *
      * @author Griefed
      */
-    private fun close() {
+    fun close() {
         if (hasUnsavedChanges) {
             tabbedConfigsTab.tabs.selectedComponent = configEditor
             if (DialogUtilities.createShowGet(

@@ -43,7 +43,8 @@ import kotlin.system.exitProcess
 class MainPanel(
     private val guiProps: GuiProps,
     private val apiWrapper: ApiWrapper,
-    larsonScanner: LarsonScanner
+    larsonScanner: LarsonScanner,
+    mainFrame: MainFrame
 ) : TabPanel(
     MigLayout(
         "",
@@ -52,10 +53,10 @@ class MainPanel(
     ),
     "growx,growy,north"
 ) {
-    val tabbedConfigsTab = TabbedConfigsTab(guiProps, apiWrapper)
-    private val tabbedLogsTab = TabbedLogsTab(apiWrapper.apiProperties)
-    private val settingsEditorTab = SettingsEditorTab(guiProps, apiWrapper.apiProperties)
-    private val controlPanel = ControlPanel(guiProps, tabbedConfigsTab, larsonScanner, apiWrapper)
+    val tabbedConfigsTab = TabbedConfigsTab(guiProps, apiWrapper, mainFrame)
+    val tabbedLogsTab = TabbedLogsTab(apiWrapper.apiProperties)
+    val settingsEditorTab = SettingsEditorTab(guiProps, apiWrapper.apiProperties)
+    val controlPanel = ControlPanel(guiProps, tabbedConfigsTab, larsonScanner, apiWrapper)
 
     init {
         tabs.addTab("Configs", tabbedConfigsTab.panel)

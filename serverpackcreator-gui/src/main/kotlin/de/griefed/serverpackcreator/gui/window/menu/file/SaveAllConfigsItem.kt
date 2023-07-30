@@ -37,8 +37,6 @@ class SaveAllConfigsItem(private val tabbedConfigsTab: TabbedConfigsTab) :
     }
 
     private fun saveAll() {
-        for (tab in tabbedConfigsTab.allTabs) {
-            (tab as ConfigEditor).saveCurrentConfiguration()
-        }
+        tabbedConfigsTab.saveAll()
     }
 }
