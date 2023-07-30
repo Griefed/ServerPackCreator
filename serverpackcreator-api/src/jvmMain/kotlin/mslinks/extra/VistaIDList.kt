@@ -67,6 +67,6 @@ class VistaIDList : Serializable {
     }
 
     companion object {
-        const val signature = -0x5ffffff4
+        const val SIGNATURE = -0x5ffffff4
     }
 }

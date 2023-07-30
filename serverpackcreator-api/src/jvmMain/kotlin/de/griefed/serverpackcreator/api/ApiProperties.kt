@@ -459,8 +459,11 @@ actual class ApiProperties(
             " -Daikars.new.flags=true"
     private val serverPackCreatorProperties = "serverpackcreator.properties"
     private val checkedJavas = hashMapOf<String, Boolean>()
+    @Suppress("MemberVisibilityCanBePrivate")
     val trueFalseRegex = "^(true|false)$".toRegex()
+    @Suppress("MemberVisibilityCanBePrivate")
     val alphaBetaRegex = "^(.*alpha.*|.*beta.*)$".toRegex()
+    @Suppress("MemberVisibilityCanBePrivate")
     val serverPacksRegex = "^(?:\\./)?server-packs$".toRegex()
     val i18n4kConfig = I18n4kConfigDefault()
 
@@ -709,6 +712,7 @@ actual class ApiProperties(
     /**
      * Start-script templates to use during server pack generation.
      */
+    @Suppress("SetterBackingFieldAssignment")
     var scriptTemplates: TreeSet<File> = TreeSet<File>()
         get() {
             val entries = getFileListProperty(

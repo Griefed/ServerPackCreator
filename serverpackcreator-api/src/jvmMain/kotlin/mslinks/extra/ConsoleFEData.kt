@@ -32,7 +32,7 @@ class ConsoleFEData : Serializable {
     }
 
     constructor(br: ByteReader, sz: Int) {
-        if (sz != size) {
+        if (sz != SIZE) {
             throw ShellLinkException()
         }
         val t = br.read4bytes().toInt()
@@ -41,8 +41,8 @@ class ConsoleFEData : Serializable {
 
     @Throws(IOException::class)
     override fun serialize(bw: ByteWriter) {
-        bw.write4bytes(size.toLong())
-        bw.write4bytes(signature.toLong())
+        bw.write4bytes(SIZE.toLong())
+        bw.write4bytes(SIGNATURE.toLong())
         bw.write4bytes((langs[language]!! shl 16).toLong())
     }
 
@@ -52,8 +52,8 @@ class ConsoleFEData : Serializable {
     }
 
     companion object {
-        const val signature = -0x5ffffffc
-        const val size = 0xc
+        const val SIGNATURE = -0x5ffffffc
+        const val SIZE = 0xc
         private val langData = arrayOf<Any>(
             "ar", 0x0001,
             "bg", 0x0002,

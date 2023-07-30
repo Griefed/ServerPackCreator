@@ -63,7 +63,7 @@ import java.util.*
  * @author Griefed
  */
 @Suppress("unused")
-class MigrationManager constructor(
+class MigrationManager(
     private val apiProperties: ApiProperties, private val tomlParser: TomlParser
 ) {
     private val log = cachedLoggerOf(this.javaClass)

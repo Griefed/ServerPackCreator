@@ -28,10 +28,7 @@ import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.awt.BorderLayout
-import java.awt.GraphicsEnvironment
 import java.awt.Toolkit
-import java.awt.Window
 import java.awt.event.KeyEvent
 import java.awt.event.KeyListener
 import javax.swing.*
@@ -107,7 +104,7 @@ class ScrollTextArea(
         name = areaName
         identifier = name.lowercase().replace(" ", "")
         suggestionProvider = if (identifier.isNotBlank()) {
-            SuggestionProvider(guiProps,textArea, apiProperties!!, identifier)
+            SuggestionProvider(guiProps, textArea, identifier)
         } else {
             null
         }

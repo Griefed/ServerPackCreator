@@ -21,7 +21,6 @@ package de.griefed.serverpackcreator.gui.window.menu.file
 
 import Gui
 import de.griefed.serverpackcreator.gui.window.configs.TabbedConfigsTab
-import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import javax.swing.JMenuItem
 
 /**

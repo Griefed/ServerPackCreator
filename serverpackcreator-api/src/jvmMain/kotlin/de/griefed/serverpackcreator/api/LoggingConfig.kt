@@ -205,10 +205,9 @@ class LoggingConfig : ConfigurationFactory() {
      */
     private fun getXmlConfig(sourceFile: File, loggerContext: LoggerContext): CustomXmlConfiguration {
         val configSource: ConfigurationSource
-        val custom: CustomXmlConfiguration
         val stream = sourceFile.inputStream()
         configSource = ConfigurationSource(stream, sourceFile)
-        custom = CustomXmlConfiguration(loggerContext, configSource)
+        val custom = CustomXmlConfiguration(loggerContext, configSource)
         stream.close()
         return custom
     }

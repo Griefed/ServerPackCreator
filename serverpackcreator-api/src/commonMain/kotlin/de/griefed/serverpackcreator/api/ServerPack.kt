@@ -375,8 +375,8 @@ abstract class ServerPack<F, TS, TF> {
      * file, a singular [ServerPackFile] is returned. If the source is a directory, then all
      * files in said directory are returned.
      *
-     * @param combination Array containing a source-file/directory;destination-file/directory
-     * combination.
+     * @param source source-file/directory
+     * @param destination destination-file/directory
      * @param modpackDir  The modpack-directory.
      * @param serverPackDestination The destination, normally the server pack-directory.
      * @return List of [ServerPackFile].

@@ -39,7 +39,7 @@ class Tracker : Serializable {
     }
 
     constructor(br: ByteReader, sz: Int) {
-        if (sz != size) {
+        if (sz != SIZE) {
             throw ShellLinkException()
         }
         val len = br.read4bytes().toInt()
@@ -58,8 +58,8 @@ class Tracker : Serializable {
 
     @Throws(IOException::class)
     override fun serialize(bw: ByteWriter) {
-        bw.write4bytes(size.toLong())
-        bw.write4bytes(signature.toLong())
+        bw.write4bytes(SIZE.toLong())
+        bw.write4bytes(SIGNATURE.toLong())
         bw.write4bytes(0x58)
         bw.write4bytes(0)
         val b = netbiosName!!.toByteArray()
@@ -83,7 +83,7 @@ class Tracker : Serializable {
     }
 
     companion object {
-        const val signature = -0x5ffffffd
-        const val size = 0x60
+        const val SIGNATURE = -0x5ffffffd
+        const val SIZE = 0x60
     }
 }

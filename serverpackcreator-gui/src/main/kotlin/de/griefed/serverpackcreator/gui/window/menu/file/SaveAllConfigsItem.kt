@@ -20,7 +20,6 @@
 package de.griefed.serverpackcreator.gui.window.menu.file
 
 import Gui
-import de.griefed.serverpackcreator.gui.window.configs.ConfigEditor
 import de.griefed.serverpackcreator.gui.window.configs.TabbedConfigsTab
 import javax.swing.JMenuItem
 

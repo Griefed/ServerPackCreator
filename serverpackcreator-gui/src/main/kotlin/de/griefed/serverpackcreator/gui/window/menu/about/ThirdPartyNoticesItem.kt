@@ -20,7 +20,6 @@
 package de.griefed.serverpackcreator.gui.window.menu.about
 
 import Gui
-import de.griefed.serverpackcreator.api.utilities.common.readText
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.utilities.DialogUtilities
 import de.griefed.serverpackcreator.gui.window.MainFrame
@@ -29,14 +28,18 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.swing.Swing
-import javax.swing.*
+import javax.swing.JMenuItem
+import javax.swing.JOptionPane
+import javax.swing.JScrollPane
+import javax.swing.JTextPane
 
 /**
  * Menu item to display the license report of used dependencies in ServerPackCreator.
  *
  * @author Griefed
  */
-class ThirdPartyNoticesItem(private val mainFrame: MainFrame, private val guiProps: GuiProps) : JMenuItem(Gui.menubar_gui_menuitem_licensereport.toString()) {
+class ThirdPartyNoticesItem(private val mainFrame: MainFrame, private val guiProps: GuiProps) :
+    JMenuItem(Gui.menubar_gui_menuitem_licensereport.toString()) {
     private val thirdPartyNoticesWindowTextPane: JTextPane = JTextPane()
     private val thirdPartyNoticesScrollPane = JScrollPane(
         thirdPartyNoticesWindowTextPane,
@@ -47,7 +50,8 @@ class ThirdPartyNoticesItem(private val mainFrame: MainFrame, private val guiPro
     init {
         thirdPartyNoticesWindowTextPane.isEditable = false
         thirdPartyNoticesWindowTextPane.text =
-            this.javaClass.classLoader.getResource("de/griefed/resources/gui/THIRD-PARTY-NOTICES.txt")?.readText() ?: "Could not read ressource"
+            this.javaClass.classLoader.getResource("de/griefed/resources/gui/THIRD-PARTY-NOTICES.txt")?.readText()
+                ?: "Could not read ressource"
         this.addActionListener { displayThirdPartyNotices() }
 
     }

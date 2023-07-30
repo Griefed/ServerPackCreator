@@ -17,12 +17,13 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-@file:Suppress("DuplicatedCode")
+@file:Suppress("DuplicatedCode", "unused")
 
 package de.griefed.serverpackcreator.api.utilities.common
 
 import kotlinx.coroutines.*
 import mu.KotlinLogging
+import kotlin.coroutines.CoroutineContext
 
 /**
  * Utility-class revolving around Lists.
@@ -229,11 +230,12 @@ fun <T> MutableCollection<T>.removeIf(filter: Affirm<in T>): Boolean {
  *
  * @author Griefed
  */
+@OptIn(DelicateCoroutinesApi::class)
 inline fun <A, B> List<A>.parallelMap(
-    dispatcher: CoroutineDispatcher = Dispatchers.Default,
+    context: CoroutineContext = newSingleThreadContext("parallelMap"),
     crossinline function: suspend (A) -> B
-): List<B> = runBlocking(dispatcher) {
-    map { async(dispatcher) { function(it) } }.awaitAll()
+): List<B> = runBlocking(context) {
+    map { async { function(it) } }.awaitAll()
 }
 
 /**

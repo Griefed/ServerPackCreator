@@ -20,7 +20,6 @@
 package de.griefed.serverpackcreator.gui.window.configs.components
 
 import java.awt.Font
-import java.awt.font.TextAttribute
 import javax.swing.JLabel
 import javax.swing.UIManager
 import javax.swing.plaf.FontUIResource

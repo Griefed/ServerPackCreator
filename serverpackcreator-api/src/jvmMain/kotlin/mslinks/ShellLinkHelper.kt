@@ -241,8 +241,8 @@ class ShellLinkHelper(var link: ShellLink) {
     }
 
     companion object {
-        private const val backSlash = "\\"
-        private const val backSlashBackSlash = "\\\\"
+        private const val BACKSLASH = "\\"
+        private const val BACKSLASH_BACKSLASH = "\\\\"
 
         /**
          * Universal all-by-default creation of the link
@@ -257,7 +257,7 @@ class ShellLinkHelper(var link: ShellLink) {
             var tempTarget = target
             tempTarget = resolveEnvVariables(tempTarget)
             val helper = ShellLinkHelper(ShellLink())
-            if (tempTarget.startsWith(backSlashBackSlash)) {
+            if (tempTarget.startsWith(BACKSLASH_BACKSLASH)) {
                 helper.setNetworkTarget(tempTarget)
             } else {
                 val parts = tempTarget.split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
@@ -272,7 +272,7 @@ class ShellLinkHelper(var link: ShellLink) {
             var tempPath = path
             for ((key, value) in env) {
                 val p = Pattern.quote(key)
-                val r = value.replace(backSlash, backSlashBackSlash)
+                val r = value.replace(BACKSLASH, BACKSLASH_BACKSLASH)
                 tempPath = Pattern.compile("%$p%", Pattern.CASE_INSENSITIVE).matcher(tempPath).replaceAll(r)
             }
             return tempPath

@@ -54,7 +54,9 @@ class MainPanel(
     "growx,growy,north"
 ) {
     val tabbedConfigsTab = TabbedConfigsTab(guiProps, apiWrapper, mainFrame)
+    @Suppress("MemberVisibilityCanBePrivate")
     val tabbedLogsTab = TabbedLogsTab(apiWrapper.apiProperties)
+    @Suppress("MemberVisibilityCanBePrivate")
     val settingsEditorTab = SettingsEditorTab(guiProps, apiWrapper.apiProperties)
     val controlPanel = ControlPanel(guiProps, tabbedConfigsTab, larsonScanner, apiWrapper)
 
@@ -91,6 +93,7 @@ class MainPanel(
                     config.saveCurrentConfiguration()
                 }
             }
+            @Suppress("KotlinConstantConditions")
             if (config.configFile != null && config.editorTitle.title != Gui.createserverpack_gui_title_new.toString()) {
                 configs.add(config.configFile!!.absolutePath)
             }

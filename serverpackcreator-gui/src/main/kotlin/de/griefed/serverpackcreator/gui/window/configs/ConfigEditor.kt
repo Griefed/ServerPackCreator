@@ -724,6 +724,7 @@ class ConfigEditor(
             return
         }
         val icon = iconQuickSelect.selectedItem
+        @Suppress("KotlinConstantConditions")
         if (icon != null && icon.toString() != Gui.createserverpack_gui_quickselect_choose.toString()) {
             setServerIconPath(File(apiWrapper.apiProperties.iconsDirectory, icon.toString()).absolutePath)
             iconQuickSelect.selectedIndex = 0
@@ -738,6 +739,7 @@ class ConfigEditor(
             return
         }
         val properties = propertiesQuickSelect.selectedItem
+        @Suppress("KotlinConstantConditions")
         if (properties != null && properties.toString() != Gui.createserverpack_gui_quickselect_choose.toString()) {
             val serverProps = File(apiWrapper.apiProperties.propertiesDirectory, properties.toString())
             setServerPropertiesPath(serverProps.absolutePath)
@@ -1526,6 +1528,7 @@ class ConfigEditor(
      * @author Griefed
      */
     fun isNewTab(): Boolean {
+        @Suppress("KotlinConstantConditions")
         return editorTitle.title == Gui.createserverpack_gui_title_new.toString()
     }
 }

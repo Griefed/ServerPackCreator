@@ -82,7 +82,7 @@ open class ScrollTextField(
         textField.addKeyListener(this)
         viewport.view = textField
         suggestionProvider = if (!identifier.isNullOrBlank()) {
-            SuggestionProvider(guiProps,textField, apiProperties!!, identifier)
+            SuggestionProvider(guiProps, textField, identifier)
         } else {
             null
         }

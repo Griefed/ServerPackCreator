@@ -19,7 +19,6 @@
  */
 package de.griefed.serverpackcreator.gui.window.configs.components
 
-import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.gui.GuiProps
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.awt.Point
@@ -50,7 +49,6 @@ import javax.swing.text.Utilities
 class SuggestionProvider(
     private val guiProps: GuiProps,
     private val sourceComponent: JTextComponent,
-    private val apiProperties: ApiProperties,
     private val identifier: String
 ) {
     private val log = cachedLoggerOf(this.javaClass)

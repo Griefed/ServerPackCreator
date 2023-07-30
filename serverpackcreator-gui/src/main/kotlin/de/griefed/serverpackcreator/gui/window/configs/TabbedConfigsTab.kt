@@ -134,6 +134,7 @@ class TabbedConfigsTab(
      *
      * @author Griefed
      */
+    @Suppress("MemberVisibilityCanBePrivate")
     fun loadConfig(configFile: File, tab: ConfigEditor = addTab()) {
         tab.loadConfiguration(PackConfig(apiWrapper.utilities!!, configFile), configFile)
     }

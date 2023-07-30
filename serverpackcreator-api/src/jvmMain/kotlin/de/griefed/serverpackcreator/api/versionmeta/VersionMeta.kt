@@ -61,7 +61,7 @@ import javax.xml.parsers.ParserConfigurationException
  *
  * @author Griefed
  */
-actual class VersionMeta constructor(
+actual class VersionMeta(
     private val minecraftManifest: File,
     private val forgeManifest: File,
     private val fabricManifest: File,
