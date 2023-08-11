@@ -27,9 +27,9 @@ import java.nio.file.Paths
 private val jar = "^jar:(file:.*[.]jar)!/.*".toRegex()
 private val jarJar = "^(file:.*[.]jar)!.*[.]jar".toRegex()
 private val nested = ".*[.]jar!.*[.]jar".toRegex()
-private val jarFile = "jar:file:"
-private val file = "file:"
 private val tmpDir = System.getProperty("java.io.tmpdir")
+private const val JAR_FILE = "jar:file:"
+private const val JAR = "file:"
 
 /**
  * Acquire the JAR-file which contains this class. If JAR-file is a nested JAR-file, meaning the class is inside
@@ -52,7 +52,7 @@ fun <T : Any> Class<T>.source(
     val classResource: URL = this.getResource(clazz) ?: throw JarAccessException("Class resource is null")
     val url = classResource.toString()
     var source: File? = null
-    if (url.startsWith(jarFile)) {
+    if (url.startsWith(JAR_FILE)) {
 
         var path = url.replace(jar, "$1")
         if (rootOnly && path.matches(jarJar)) {
@@ -66,7 +66,7 @@ fun <T : Any> Class<T>.source(
             throw JarAccessException("Invalid Jar File URL String")
         }
 
-    } else if (url.startsWith(file)) {
+    } else if (url.startsWith(JAR)) {
         try {
             val uri = URL(url).toURI()
             val file = Paths.get(uri).toFile()

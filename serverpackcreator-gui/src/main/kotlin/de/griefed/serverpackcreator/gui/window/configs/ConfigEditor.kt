@@ -117,7 +117,7 @@ class ConfigEditor(
             validateInputFields()
         }
     }
-    private val modpackDirectory = ScrollTextFileField(File(""), changeListener)
+    private val modpackDirectory = ScrollTextFileField(guiProps,File(""), changeListener)
     private val javaArgs = ScrollTextArea(
         "-Xmx4G -Xms4G",
         Gui.createserverpack_gui_createserverpack_javaargs.toString(),
@@ -125,13 +125,13 @@ class ConfigEditor(
         changeListener,
         guiProps
     )
-    private val serverPackSuffix = ScrollTextField("", "suffix", apiWrapper.apiProperties, changeListener)
-    private val propertiesFile = ScrollTextFileField(apiWrapper.apiProperties.defaultServerProperties, changeListener)
-    private val iconFile = ScrollTextFileField(apiWrapper.apiProperties.defaultServerIcon, changeListener)
-    private val source = ScrollTextField("", "source", apiWrapper.apiProperties)
-    private val destination = ScrollTextField("", "destination", apiWrapper.apiProperties)
-    private val inclusionFilter = ScrollTextField("", "inclusion", apiWrapper.apiProperties)
-    private val exclusionFilter = ScrollTextField("", "exclusion", apiWrapper.apiProperties)
+    private val serverPackSuffix = ScrollTextField(guiProps,"", "suffix", apiWrapper.apiProperties, changeListener)
+    private val propertiesFile = ScrollTextFileField(guiProps,apiWrapper.apiProperties.defaultServerProperties, changeListener)
+    private val iconFile = ScrollTextFileField(guiProps,apiWrapper.apiProperties.defaultServerIcon, changeListener)
+    private val source = ScrollTextField(guiProps,"", "source", apiWrapper.apiProperties)
+    private val destination = ScrollTextField(guiProps,"", "destination", apiWrapper.apiProperties)
+    private val inclusionFilter = ScrollTextField(guiProps,"", "inclusion", apiWrapper.apiProperties)
+    private val exclusionFilter = ScrollTextField(guiProps,"", "exclusion", apiWrapper.apiProperties)
     private val inclusionsEditor = InclusionsEditor(
         chooserDimension,
         guiProps,
@@ -447,6 +447,7 @@ class ConfigEditor(
         when (modloader) {
             "Fabric" -> modloaders.selectedIndex = 0
             "Forge" -> modloaders.selectedIndex = 1
+            "NeoForge" -> modloaders.selectedIndex = 4
             "Quilt" -> modloaders.selectedIndex = 2
             "LegacyFabric" -> modloaders.selectedIndex = 3
         }
@@ -591,19 +592,19 @@ class ConfigEditor(
     private fun saveSuggestions() {
         val suffixSuggestions = serverPackSuffix.suggestionProvider!!.allSuggestions()
         suffixSuggestions.add(serverPackSuffix.text)
-        apiWrapper.apiProperties.storeCustomProperty(
+        guiProps.storeGuiProperty(
             "autocomplete.${serverPackSuffix.identifier!!}",
             suffixSuggestions.joinToString(",") { entry -> entry.trim { it <= ' ' } }.trim { it <= ' ' })
 
         val clientModsSuggestions = exclusions.suggestionProvider!!.allSuggestions()
         clientModsSuggestions.addAll(exclusions.text.split(",").map { entry -> entry.trim { it <= ' ' } })
-        apiWrapper.apiProperties.storeCustomProperty(
+        guiProps.storeGuiProperty(
             "autocomplete.${exclusions.identifier}",
             clientModsSuggestions.joinToString(",") { entry -> entry.trim { it <= ' ' } }.trim { it <= ' ' })
 
         val javaArgsSuggestions = javaArgs.suggestionProvider!!.allSuggestions()
         javaArgsSuggestions.addAll(javaArgs.text.split(" ").map { entry -> entry.trim { it <= ' ' } })
-        apiWrapper.apiProperties.storeCustomProperty(
+        guiProps.storeGuiProperty(
             "autocomplete.${javaArgs.identifier}",
             javaArgsSuggestions.joinToString(",") { entry -> entry.trim { it <= ' ' } }.trim { it <= ' ' })
 
@@ -621,19 +622,19 @@ class ConfigEditor(
         destinationSuggestions.removeIf { entry -> entry.isBlank() }
         inclusionSuggestions.removeIf { entry -> entry.isBlank() }
         exclusionSuggestions.removeIf { entry -> entry.isBlank() }
-        apiWrapper.apiProperties.storeCustomProperty(
+        guiProps.storeGuiProperty(
             "autocomplete.${source.identifier}",
             sourceSuggestions.joinToString(",") { entry -> entry.trim { it <= ' ' } }.trim { it <= ' ' })
 
-        apiWrapper.apiProperties.storeCustomProperty(
+        guiProps.storeGuiProperty(
             "autocomplete.${destination.identifier}",
             destinationSuggestions.joinToString(",") { entry -> entry.trim { it <= ' ' } }.trim { it <= ' ' })
 
-        apiWrapper.apiProperties.storeCustomProperty(
+        guiProps.storeGuiProperty(
             "autocomplete.${inclusionFilter.identifier}",
             inclusionSuggestions.joinToString(",") { entry -> entry.trim { it <= ' ' } }.trim { it <= ' ' })
 
-        apiWrapper.apiProperties.storeCustomProperty(
+        guiProps.storeGuiProperty(
             "autocomplete.${exclusionFilter.identifier}",
             exclusionSuggestions.joinToString(",") { entry -> entry.trim { it <= ' ' } }.trim { it <= ' ' })
     }
@@ -724,6 +725,7 @@ class ConfigEditor(
             return
         }
         val icon = iconQuickSelect.selectedItem
+        @Suppress("KotlinConstantConditions")
         if (icon != null && icon.toString() != Gui.createserverpack_gui_quickselect_choose.toString()) {
             setServerIconPath(File(apiWrapper.apiProperties.iconsDirectory, icon.toString()).absolutePath)
             iconQuickSelect.selectedIndex = 0
@@ -738,6 +740,7 @@ class ConfigEditor(
             return
         }
         val properties = propertiesQuickSelect.selectedItem
+        @Suppress("KotlinConstantConditions")
         if (properties != null && properties.toString() != Gui.createserverpack_gui_quickselect_choose.toString()) {
             val serverProps = File(apiWrapper.apiProperties.propertiesDirectory, properties.toString())
             setServerPropertiesPath(serverProps.absolutePath)
@@ -953,6 +956,7 @@ class ConfigEditor(
             1 -> updateForgeModel(minecraftVersion)
             2 -> updateQuiltModel(minecraftVersion)
             3 -> updateLegacyFabricModel(minecraftVersion)
+            4 -> updateNeoForgeModel(minecraftVersion)
             else -> {
                 log.error("Invalid modloader selected.")
             }
@@ -995,6 +999,25 @@ class ConfigEditor(
             setModloaderVersions(
                 DefaultComboBoxModel(
                     apiWrapper.versionMeta!!.forge.supportedForgeVersionsDescendingArray(minecraftVersion).get()
+                )
+            )
+        } else {
+            setModloaderVersions(
+                noVersions,
+                guiProps.errorIcon,
+                Gui.configuration_log_error_minecraft_modloader(getMinecraftVersion(), getModloader())
+            )
+        }
+    }
+
+    /**
+     * @author Griefed
+     */
+    private fun updateNeoForgeModel(minecraftVersion: String = minecraftVersions.selectedItem!!.toString()) {
+        if (apiWrapper.versionMeta!!.neoForge.supportedNeoForgeVersionsDescendingArray(minecraftVersion).isPresent) {
+            setModloaderVersions(
+                DefaultComboBoxModel(
+                    apiWrapper.versionMeta!!.neoForge.supportedNeoForgeVersionsDescendingArray(minecraftVersion).get()
                 )
             )
         } else {
@@ -1526,6 +1549,7 @@ class ConfigEditor(
      * @author Griefed
      */
     fun isNewTab(): Boolean {
+        @Suppress("KotlinConstantConditions")
         return editorTitle.title == Gui.createserverpack_gui_title_new.toString()
     }
 }

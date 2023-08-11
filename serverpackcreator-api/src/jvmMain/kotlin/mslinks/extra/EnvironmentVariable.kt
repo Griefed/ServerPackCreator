@@ -30,7 +30,7 @@ class EnvironmentVariable : Serializable {
     }
 
     constructor(br: ByteReader, sz: Int) {
-        if (sz != size) {
+        if (sz != SIZE) {
             throw ShellLinkException()
         }
         var pos = br.position
@@ -46,8 +46,8 @@ class EnvironmentVariable : Serializable {
 
     @Throws(IOException::class)
     override fun serialize(bw: ByteWriter) {
-        bw.write4bytes(size.toLong())
-        bw.write4bytes(signature.toLong())
+        bw.write4bytes(SIZE.toLong())
+        bw.write4bytes(SIGNATURE.toLong())
         val b = variable!!.toByteArray()
         bw.write(b)
         for (i in 0 until 260 - b.size) {
@@ -67,7 +67,7 @@ class EnvironmentVariable : Serializable {
     }
 
     companion object {
-        const val signature = -0x5fffffff
-        const val size = 0x314
+        const val SIGNATURE = -0x5fffffff
+        const val SIZE = 0x314
     }
 }

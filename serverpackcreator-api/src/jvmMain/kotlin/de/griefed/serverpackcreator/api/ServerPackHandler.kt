@@ -354,7 +354,7 @@ actual class ServerPackHandler actual constructor(
             for (file in acquired) {
                 if (file.sourceFile.absolutePath.replace(modpackDir + File.separator, "").matches(inclusionFilter)) {
                     processed.add(file)
-                    log.debug("$file matched Inclusion-Filter $inclusionFilter.")
+                    log.debug("{} matched Inclusion-Filter {}.", file, inclusionFilter)
                 }
             }
         } else {
@@ -364,7 +364,7 @@ actual class ServerPackHandler actual constructor(
             processed.removeIf { file ->
                 val source = file.sourceFile.absolutePath.replace(modpackDir + File.separator, "")
                 return@removeIf if (source.matches(exclusionFilter)) {
-                    log.debug("${file.sourceFile} matched Inclusion-Filter $exclusionFilter.")
+                    log.debug("{} matched Inclusion-Filter {}.", file.sourceFile, exclusionFilter)
                     true
                 } else {
                     false
@@ -575,6 +575,25 @@ actual class ServerPackHandler actual constructor(
                 } else {
                     log.error(
                         "Something went wrong during the installation of Forge. Maybe the Forge servers are down or unreachable? Skipping..."
+                    )
+                    return
+                }
+            }
+
+            "NeoForge" -> {
+                log.info { "Installing Forge server." }
+                installerLog.info("Starting Forge installation.")
+                if (versionMeta.neoForge.installerFor(modLoaderVersion, minecraftVersion).isPresent) {
+                    log.info("NeoForge installer successfully downloaded.")
+                    val installer =
+                        versionMeta.neoForge.installerFor(modLoaderVersion, minecraftVersion).get().absolutePath
+                    commandArguments.addMultiple(
+                        installer,
+                        "--installServer"
+                    )
+                } else {
+                    log.error(
+                        "Something went wrong during the installation of NeoForge. Maybe the NeoForge servers are down or unreachable? Skipping..."
                     )
                     return
                 }
@@ -910,8 +929,8 @@ actual class ServerPackHandler actual constructor(
                             )
                         )
                         log.debug("Including through regex-match:")
-                        log.debug("    SOURCE: $path")
-                        log.debug("    DESTINATION: $add")
+                        log.debug("    SOURCE: {}", path)
+                        log.debug("    DESTINATION: {}", add)
                     }
                 }
             }

@@ -176,7 +176,7 @@ class TextIcon(
         } else if (layout == Layout.VERTICAL) {
             var offsetY = fm.ascent - fm.descent + padding
             val incrementY = fm.height - fm.descent
-            for (i in 0 until text.length) {
+            for (i in text.indices) {
                 val offsetX = ((iconWidth - stringWidths[i]) / 2.0f).roundToInt()
                 strings[i]?.let { g2.drawString(it, x + offsetX, y + offsetY) }
                 offsetY += incrementY

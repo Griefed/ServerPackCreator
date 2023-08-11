@@ -44,6 +44,7 @@ internal class FabricInstaller(
     @Suppress("MemberVisibilityCanBePrivate")
     val installerUrlTemplate =
         "https://maven.fabricmc.net/net/fabricmc/fabric-installer/%s/fabric-installer-%s.jar"
+    @Suppress("MemberVisibilityCanBePrivate")
     val improvedLauncherUrlTemplate = "https://meta.fabricmc.net/v2/versions/loader/%s/%s/%s/server/jar"
     private val latest = "latest"
     private val release = "release"

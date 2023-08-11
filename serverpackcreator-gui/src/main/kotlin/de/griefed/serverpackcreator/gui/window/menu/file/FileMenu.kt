@@ -43,7 +43,7 @@ class FileMenu(
 ) : JMenu(Gui.menubar_gui_menu_file.toString()) {
     init {
         add(NewConfigItem(tabbedConfigsTab))
-        add(LoadConfigItem(apiProperties, mainFrame.frame, utilities.fileUtilities, guiProps, tabbedConfigsTab))
+        add(LoadConfigItem(tabbedConfigsTab))
         add(JSeparator())
         add(SaveConfigItem(tabbedConfigsTab))
         add(SaveConfigAsItem(apiProperties, mainFrame.frame, tabbedConfigsTab))

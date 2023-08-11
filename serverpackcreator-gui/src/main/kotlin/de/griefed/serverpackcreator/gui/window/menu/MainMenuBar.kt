@@ -29,9 +29,7 @@ import de.griefed.serverpackcreator.gui.window.menu.edit.EditMenu
 import de.griefed.serverpackcreator.gui.window.menu.file.FileMenu
 import de.griefed.serverpackcreator.gui.window.menu.view.ViewMenu
 import de.griefed.serverpackcreator.updater.MigrationManager
-import javax.swing.JButton
 import javax.swing.JMenuBar
-import javax.swing.JMenuItem
 
 /**
  * Main menubar displaying and allowing for various actions, such as config loading and saving, theme changing, opening
@@ -47,7 +45,7 @@ class MainMenuBar(
     migrationManager: MigrationManager
 ) {
     val menuBar: JMenuBar = JMenuBar()
-    private val updateButton = BalloonTipButton(null,guiProps.updateAnimation, "Update available!", guiProps)
+    private val updateButton = BalloonTipButton(null, guiProps.updateAnimation, "Update available!", guiProps)
 
     init {
         updateButton.isBorderPainted = false

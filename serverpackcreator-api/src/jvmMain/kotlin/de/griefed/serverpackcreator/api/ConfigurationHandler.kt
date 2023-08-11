@@ -388,6 +388,17 @@ actual class ConfigurationHandler(
             false
         }
 
+        "NeoForge" -> if (versionMeta.neoForge.isNeoForgeAndMinecraftCombinationValid(minecraftVersion, modloaderVersion)) {
+            true
+        } else {
+            encounteredErrors.add(
+                Api.configuration_log_error_checkmodloaderandversion(
+                    minecraftVersion, modloader, modloaderVersion
+                )
+            )
+            false
+        }
+
         "Fabric" -> if (versionMeta.fabric.isVersionValid(modloaderVersion) && versionMeta.fabric.getLoaderDetails(
                 minecraftVersion,
                 modloaderVersion

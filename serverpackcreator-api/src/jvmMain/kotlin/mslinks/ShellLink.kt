@@ -255,42 +255,42 @@ class ShellLink {
     }
 
     val consoleData: ConsoleData?
-        get() = getExtraDataBlock(ConsoleData.signature) as ConsoleData?
+        get() = getExtraDataBlock(ConsoleData.SIGNATURE) as ConsoleData?
 
     fun removeConsoleData(): ShellLink {
-        extra.remove(ConsoleData.signature)
+        extra.remove(ConsoleData.SIGNATURE)
         return this
     }
 
     val consoleFEData: ConsoleFEData?
-        get() = getExtraDataBlock(ConsoleFEData.signature) as ConsoleFEData?
+        get() = getExtraDataBlock(ConsoleFEData.SIGNATURE) as ConsoleFEData?
 
     fun removeConsoleFEData(): ShellLink {
-        extra.remove(ConsoleFEData.signature)
+        extra.remove(ConsoleFEData.SIGNATURE)
         return this
     }
 
     val environmentVariable: EnvironmentVariable?
-        get() = getExtraDataBlock(EnvironmentVariable.signature) as EnvironmentVariable?
+        get() = getExtraDataBlock(EnvironmentVariable.SIGNATURE) as EnvironmentVariable?
 
     fun removeEnvironmentVariable(): ShellLink {
-        extra.remove(EnvironmentVariable.signature)
+        extra.remove(EnvironmentVariable.SIGNATURE)
         return this
     }
 
     val tracker: Tracker?
-        get() = getExtraDataBlock(Tracker.signature) as Tracker?
+        get() = getExtraDataBlock(Tracker.SIGNATURE) as Tracker?
 
     fun removeTracker(): ShellLink {
-        extra.remove(Tracker.signature)
+        extra.remove(Tracker.SIGNATURE)
         return this
     }
 
     val vistaIDList: VistaIDList?
-        get() = getExtraDataBlock(VistaIDList.signature) as VistaIDList?
+        get() = getExtraDataBlock(VistaIDList.SIGNATURE) as VistaIDList?
 
     fun removeVistaIDList(): ShellLink {
-        extra.remove(VistaIDList.signature)
+        extra.remove(VistaIDList.SIGNATURE)
         return this
     }
 
@@ -318,7 +318,7 @@ class ShellLink {
         ) {
             return linkFileSource!!.resolveSibling(relativePath!!).normalize().toString()
         }
-        val envBlock = extra[EnvironmentVariable.signature] as EnvironmentVariable?
+        val envBlock = extra[EnvironmentVariable.SIGNATURE] as EnvironmentVariable?
         if (envBlock != null && envBlock.variable!!.isNotBlank()) {
             return envBlock.variable
         }
@@ -395,11 +395,11 @@ class ShellLink {
         const val VERSION = "1.1.0"
         private val extraTypes = HashMap<Int, Class<out Serializable>>(
             hashMapOf(
-                ConsoleData.signature to ConsoleData::class.java,
-                ConsoleFEData.signature to ConsoleFEData::class.java,
-                Tracker.signature to Tracker::class.java,
-                VistaIDList.signature to VistaIDList::class.java,
-                EnvironmentVariable.signature to EnvironmentVariable::class.java
+                ConsoleData.SIGNATURE to ConsoleData::class.java,
+                ConsoleFEData.SIGNATURE to ConsoleFEData::class.java,
+                Tracker.SIGNATURE to Tracker::class.java,
+                VistaIDList.SIGNATURE to VistaIDList::class.java,
+                EnvironmentVariable.SIGNATURE to EnvironmentVariable::class.java
             )
         )
 

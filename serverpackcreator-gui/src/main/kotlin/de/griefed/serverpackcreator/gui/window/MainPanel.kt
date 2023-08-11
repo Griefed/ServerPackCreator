@@ -43,7 +43,8 @@ import kotlin.system.exitProcess
 class MainPanel(
     private val guiProps: GuiProps,
     private val apiWrapper: ApiWrapper,
-    larsonScanner: LarsonScanner
+    larsonScanner: LarsonScanner,
+    mainFrame: MainFrame
 ) : TabPanel(
     MigLayout(
         "",
@@ -52,10 +53,12 @@ class MainPanel(
     ),
     "growx,growy,north"
 ) {
-    val tabbedConfigsTab = TabbedConfigsTab(guiProps, apiWrapper)
-    private val tabbedLogsTab = TabbedLogsTab(apiWrapper.apiProperties)
-    private val settingsEditorTab = SettingsEditorTab(guiProps, apiWrapper.apiProperties)
-    private val controlPanel = ControlPanel(guiProps, tabbedConfigsTab, larsonScanner, apiWrapper)
+    val tabbedConfigsTab = TabbedConfigsTab(guiProps, apiWrapper, mainFrame)
+    @Suppress("MemberVisibilityCanBePrivate")
+    val tabbedLogsTab = TabbedLogsTab(apiWrapper.apiProperties)
+    @Suppress("MemberVisibilityCanBePrivate")
+    val settingsEditorTab = SettingsEditorTab(guiProps, apiWrapper.apiProperties)
+    val controlPanel = ControlPanel(guiProps, tabbedConfigsTab, larsonScanner, apiWrapper)
 
     init {
         tabs.addTab("Configs", tabbedConfigsTab.panel)
@@ -90,11 +93,12 @@ class MainPanel(
                     config.saveCurrentConfiguration()
                 }
             }
+            @Suppress("KotlinConstantConditions")
             if (config.configFile != null && config.editorTitle.title != Gui.createserverpack_gui_title_new.toString()) {
                 configs.add(config.configFile!!.absolutePath)
             }
         }
-        apiWrapper.apiProperties.storeCustomProperty("lastloaded", configs.joinToString(","))
+        guiProps.storeGuiProperty("lastloaded", configs.joinToString(","))
         apiWrapper.apiProperties.saveToDisk(apiWrapper.apiProperties.serverPackCreatorPropertiesFile)
         exitProcess(0)
     }

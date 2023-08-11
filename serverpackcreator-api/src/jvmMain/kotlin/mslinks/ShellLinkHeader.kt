@@ -52,7 +52,7 @@ class ShellLinkHeader : Serializable {
 
     constructor(data: ByteReader) {
         val size = data.read4bytes().toInt()
-        if (size != headerSize) {
+        if (size != HEADER_SIZE) {
             throw ShellLinkException()
         }
         val g = GUID(data)
@@ -95,7 +95,7 @@ class ShellLinkHeader : Serializable {
 
     @Throws(IOException::class)
     override fun serialize(bw: ByteWriter) {
-        bw.write4bytes(headerSize.toLong())
+        bw.write4bytes(HEADER_SIZE.toLong())
         clsid.serialize(bw)
         linkFlags.serialize(bw)
         fileAttributesFlags.serialize(bw)
@@ -111,7 +111,7 @@ class ShellLinkHeader : Serializable {
     }
 
     companion object {
-        private const val headerSize = 0x0000004C
+        private const val HEADER_SIZE = 0x0000004C
         private val clsid = GUID("00021401-0000-0000-C000-000000000046")
         const val SW_SHOWNORMAL = 1
         const val SW_SHOWMAXIMIZED = 3

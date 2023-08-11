@@ -49,7 +49,8 @@ class SaveConfigAsItem(
      */
     private fun saveAs() {
         val configChooser = ConfigChooser(apiProperties, Gui.menubar_gui_menuitem_saveas_title.toString())
-        if (configChooser.showOpenDialog(mainFrame) == JFileChooser.APPROVE_OPTION) {
+        configChooser.dialogType = JFileChooser.SAVE_DIALOG
+        if (configChooser.showSaveDialog(mainFrame) == JFileChooser.APPROVE_OPTION) {
             if (configChooser.selectedFile.path.endsWith(".conf")) {
                 tabbedConfigsTab.selectedEditor!!.getCurrentConfiguration().save(
                     configChooser.selectedFile.absoluteFile

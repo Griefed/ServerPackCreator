@@ -17,6 +17,8 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
+@file:Suppress("unused")
+
 package de.griefed.serverpackcreator.gui.utilities
 
 import java.awt.Image

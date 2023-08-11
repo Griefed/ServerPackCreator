@@ -25,7 +25,7 @@ package de.griefed.serverpackcreator.app
  *
  * @author Griefed
  */
-enum class Mode constructor(private val argument: String) {
+enum class Mode(private val argument: String) {
     /**
      * **Priority 0**
      *

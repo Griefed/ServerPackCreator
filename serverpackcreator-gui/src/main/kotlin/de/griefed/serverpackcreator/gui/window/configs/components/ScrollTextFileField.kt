@@ -19,6 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui.window.configs.components
 
+import de.griefed.serverpackcreator.gui.GuiProps
 import java.io.File
 import javax.swing.JTextField
 
@@ -29,11 +30,12 @@ import javax.swing.JTextField
  * @author Griefed
  */
 class ScrollTextFileField(
+    guiProps: GuiProps,
     text: String,
     textField: JTextField = JTextField(text),
     horizontalScrollbarVisibility: Int = HORIZONTAL_SCROLLBAR_AS_NEEDED
-) : ScrollTextField(text,null,null, textField, horizontalScrollbarVisibility) {
-    constructor(file: File, documentChangeListener: DocumentChangeListener) : this(file.absolutePath) {
+) : ScrollTextField(guiProps,text,null,null, textField, horizontalScrollbarVisibility) {
+    constructor(guiProps: GuiProps,file: File, documentChangeListener: DocumentChangeListener) : this(guiProps,file.absolutePath) {
         this.addDocumentListener(documentChangeListener)
     }
 

@@ -30,10 +30,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.swing.Swing
-import javax.swing.*
-import javax.swing.text.DefaultStyledDocument
-import javax.swing.text.SimpleAttributeSet
-import javax.swing.text.StyledDocument
+import javax.swing.JMenuItem
+import javax.swing.JOptionPane
+import javax.swing.JScrollPane
+import javax.swing.JTextPane
 
 /**
  * Menu item to display any available migration messages to the user.
@@ -128,9 +128,9 @@ class MigrationInfoItem(
                     JOptionPane.INFORMATION_MESSAGE,
                     JOptionPane.DEFAULT_OPTION,
                     guiProps.infoIcon,
-                    true, true,
-                    null, null,
-                    800, 600
+                    resizable = true, display = true,
+                    options = null, initialValue = null,
+                    width = 800, height = 600
                 )
             }
         }

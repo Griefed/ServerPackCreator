@@ -19,8 +19,10 @@
  */
 package de.griefed.serverpackcreator.gui.window.configs.components
 
-import java.awt.font.TextAttribute
+import java.awt.Font
 import javax.swing.JLabel
+import javax.swing.UIManager
+import javax.swing.plaf.FontUIResource
 
 /**
  * Label to display in front of various components in ServerPackCreator.
@@ -32,11 +34,16 @@ class ElementLabel(text: String, private var size: Int = 0) : JLabel(text) {
         if (size == 0) {
             size = font.size
         }
-        font = font.deriveFont(
-            mutableMapOf(
-                Pair(TextAttribute.WEIGHT, TextAttribute.WEIGHT_BOLD),
-                Pair(TextAttribute.SIZE, size)
-            )
-        )
+        updateFont()
+    }
+
+    override fun updateUI() {
+        super.updateUI()
+        updateFont()
+    }
+
+    private fun updateFont() {
+        val currentFont = UIManager.get("defaultFont") as Font
+        font = FontUIResource(currentFont.fontName, Font.BOLD, currentFont.size)
     }
 }

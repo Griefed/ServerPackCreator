@@ -93,7 +93,7 @@ class ConsoleData : Serializable {
     }
 
     constructor(br: ByteReader, sz: Int) {
-        if (sz != size) {
+        if (sz != SIZE) {
             throw ShellLinkException()
         }
         var t = br.read2bytes().toInt()
@@ -156,8 +156,8 @@ class ConsoleData : Serializable {
 
     @Throws(IOException::class)
     override fun serialize(bw: ByteWriter) {
-        bw.write4bytes(size.toLong())
-        bw.write4bytes(signature.toLong())
+        bw.write4bytes(SIZE.toLong())
+        bw.write4bytes(SIGNATURE.toLong())
         bw.write2bytes((textColor or (textBackground shl 4)).toLong())
         bw.write2bytes((popupTextColor or (popupTextBackground shl 4)).toLong())
         bufferSize.serialize(bw)
@@ -296,8 +296,8 @@ class ConsoleData : Serializable {
     }
 
     companion object {
-        const val signature = -0x5ffffffe
-        const val size = 0xcc
+        const val SIGNATURE = -0x5ffffffe
+        const val SIZE = 0xcc
         fun rgb(r: Int, g: Int, b: Int): Int {
             return r and 0xff or (g and 0xff shl 8) or (b and 0xff shl 16)
         }

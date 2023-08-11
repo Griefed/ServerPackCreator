@@ -24,13 +24,8 @@ import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.utilities.common.WebUtilities
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.window.configs.TabbedConfigsTab
-import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import javax.swing.JFrame
 import javax.swing.JTextPane
-import javax.swing.text.BadLocationException
-import javax.swing.text.DefaultStyledDocument
-import javax.swing.text.SimpleAttributeSet
-import javax.swing.text.StyledDocument
 
 /**
  * Menu item to upload the currently selected configuration to the in the [ApiProperties.hasteBinServerUrl] configured
@@ -56,16 +51,17 @@ class ConfigToHasteBinItem(
      */
     private fun uploadConfig() {
         if (tabbedConfigsTabs.selectedEditor == null || tabbedConfigsTabs.selectedEditor!!.configFile == null) {
-            errorDialog(Gui.menubar_gui_noconfig_message.toString(),Gui.menubar_gui_noconfig_title.toString())
+            errorDialog(Gui.menubar_gui_noconfig_message.toString(), Gui.menubar_gui_noconfig_title.toString())
             return
         }
         if (webUtilities.hasteBinPreChecks(tabbedConfigsTabs.selectedEditor!!.configFile!!)) {
-            val urlToHasteBin: String = webUtilities.createHasteBinFromFile(tabbedConfigsTabs.selectedEditor!!.configFile!!)
+            val urlToHasteBin: String =
+                webUtilities.createHasteBinFromFile(tabbedConfigsTabs.selectedEditor!!.configFile!!)
             val textContent = "URL: %s".format(urlToHasteBin)
             configWindowTextPane.text = textContent
             displayUploadUrl(urlToHasteBin, configWindowTextPane)
         } else {
-            errorDialog(Gui.menubar_gui_filetoolarge.toString(),Gui.menubar_gui_filetoolargetitle.toString())
+            errorDialog(Gui.menubar_gui_filetoolarge.toString(), Gui.menubar_gui_filetoolargetitle.toString())
         }
     }
 }

@@ -604,6 +604,7 @@ class LarsonScanner : JPanel {
      *
      * @author Griefed
      */
+    @Suppress("MemberVisibilityCanBePrivate")
     fun pause() {
         eye.pauseAnimation()
     }

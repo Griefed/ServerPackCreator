@@ -25,6 +25,7 @@ import java.io.IOException
 open class ItemIDFS(flags: Int) : ItemID(flags or GROUP_FS) {
     override var size = 0
         protected set
+    @Suppress("MemberVisibilityCanBePrivate")
     var attributes: Short = 0
         protected set
 
@@ -218,7 +219,7 @@ open class ItemIDFS(flags: Int) : ItemID(flags or GROUP_FS) {
         protected const val HIDDEN_ID_IDFOLDEREX = 4 //  IDFOLDEREX, extended data for CFSFolder
         protected const val HIDDEN_ID_DOCFINDDATA = 5 //  DocFind's private attached data (not persisted)
         protected const val HIDDEN_ID_PERSONALIZED = 6 //  personalized like (My Docs/Zeke's Docs)
-        protected const val HIDDEN_ID_recycle2 = 7 //  recycle
+        protected const val HIDDEN_ID_RECYCLE2 = 7 //  recycle
         protected const val HIDDEN_ID_RECYCLEBINDATA = 8 //  RecycleBin private data (not persisted)
         protected const val HIDDEN_ID_RECYCLEBINORIGINAL = 9 //  the original unthunked path for RecycleBin items
         protected const val HIDDEN_ID_PARENTFOLDER = 10 //  merged folder uses this to encode the source folder.

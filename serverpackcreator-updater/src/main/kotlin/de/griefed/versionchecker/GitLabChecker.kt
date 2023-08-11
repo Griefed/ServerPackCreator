@@ -21,6 +21,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+@file:Suppress("unused")
+
 package de.griefed.versionchecker
 
 import com.fasterxml.jackson.databind.JsonNode
