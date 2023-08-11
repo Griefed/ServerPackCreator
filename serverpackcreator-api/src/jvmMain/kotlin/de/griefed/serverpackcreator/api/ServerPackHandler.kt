@@ -580,6 +580,25 @@ actual class ServerPackHandler actual constructor(
                 }
             }
 
+            "NeoForge" -> {
+                log.info { "Installing Forge server." }
+                installerLog.info("Starting Forge installation.")
+                if (versionMeta.neoForge.installerFor(modLoaderVersion, minecraftVersion).isPresent) {
+                    log.info("NeoForge installer successfully downloaded.")
+                    val installer =
+                        versionMeta.neoForge.installerFor(modLoaderVersion, minecraftVersion).get().absolutePath
+                    commandArguments.addMultiple(
+                        installer,
+                        "--installServer"
+                    )
+                } else {
+                    log.error(
+                        "Something went wrong during the installation of NeoForge. Maybe the NeoForge servers are down or unreachable? Skipping..."
+                    )
+                    return
+                }
+            }
+
             "Quilt" -> {
                 log.info { "Installing Quilt server." }
                 installerLog.info("Starting Quilt installation.")
