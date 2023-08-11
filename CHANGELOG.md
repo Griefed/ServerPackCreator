@@ -1,3 +1,39 @@
+## [5.0.0-alpha.21](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-alpha.20...5.0.0-alpha.21) (2023-08-11)
+
+
+### :scissors: Refactor
+
+* Preparations for fontsize change. Improve gui-prop handling. ([3c571c8](https://git.griefed.de/Griefed/ServerPackCreator/commit/3c571c8cdb09fce6bbf5f22282aff7547a9c79d7))
+
+
+### 📦 Other
+
+* Add lib39 to list of clientside mods. Thanks to [@nvb-uy](https://git.griefed.de/nvb-uy) for the report! ([086ba96](https://git.griefed.de/Griefed/ServerPackCreator/commit/086ba96645f99bfff1449af26673498737106758))
+* Add physics-mod and vr-combat to clientside-list. Thanks to @ModernGamingWorld and [@nvb-uy](https://git.griefed.de/nvb-uy) ([99113a1](https://git.griefed.de/Griefed/ServerPackCreator/commit/99113a1fbc156f883a4880acd2a25452d647d3e5))
+* Security policy thingy ([d77762b](https://git.griefed.de/Griefed/ServerPackCreator/commit/d77762b4701cf521b86adca12dca5c74a3245459))
+
+
+### 🦊 CI/CD
+
+* Use maven proxy in other places as well ([8ef7ee2](https://git.griefed.de/Griefed/ServerPackCreator/commit/8ef7ee296701db8ed96e6ddc6f5c432d7263d67f))
+* Use maven proxy to reduce load on maven central and improve download times on our own infrastructure ([738acdf](https://git.griefed.de/Griefed/ServerPackCreator/commit/738acdfc9bf7af9fe6a65e87c74b38a5da66f7c9))
+* Enable some checks again ([8855ca4](https://git.griefed.de/Griefed/ServerPackCreator/commit/8855ca4d51be2bad369866502de652be06e03826))
+* Reactivate Qodana GitHub job ([6480dec](https://git.griefed.de/Griefed/ServerPackCreator/commit/6480dec7aed7d3b429351254aa76c02b592d7594))
+* Use docker proxy to reduce traffic ([9b717ed](https://git.griefed.de/Griefed/ServerPackCreator/commit/9b717edb54456da2dae978956aba361d21a62ec4))
+* Use Qodana recommended starting point ([7b3d681](https://git.griefed.de/Griefed/ServerPackCreator/commit/7b3d68103f52af73641fbfe4deed386b14305471))
+
+
+### 🚀 Features
+
+* Key-combinations to improve usability. CTRL + W closes the current tab, CTRL + T opens a new tab, CTRL + S saves the current tab, CTRL + LSHIFT + S saves all tabs, CTRL + L opens the file selection for loading, CTRL + G generates the current tab. ([992cc9f](https://git.griefed.de/Griefed/ServerPackCreator/commit/992cc9f632a50665dd429d53294d7f5b9c4d3944))
+* Support NeoForge modloader ([7ad2f66](https://git.griefed.de/Griefed/ServerPackCreator/commit/7ad2f6693ecbc339c11458f418346da994f74b2e))
+
+
+### 🛠 Fixes
+
+* Use save-dialog instead of open-dialog for config save as ([051a6e9](https://git.griefed.de/Griefed/ServerPackCreator/commit/051a6e9ddc38b689df1de4e74082a85c2d341d37))
+* Various Qodana-recommended fixes and refactorings ([f783481](https://git.griefed.de/Griefed/ServerPackCreator/commit/f783481170ee295ceb937d8e9ed383671339f93d))
+
 ## [5.0.0-alpha.20](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-alpha.19...5.0.0-alpha.20) (2023-07-16)
 
 
