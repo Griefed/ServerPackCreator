@@ -157,6 +157,11 @@ class BeanConfiguration @Autowired constructor() {
     }
 
     @Bean
+    fun neoForgeManifest(): File {
+        return apiWrapper().apiProperties.neoForgeVersionManifest
+    }
+
+    @Bean
     fun fabricManifest(): File {
         return apiWrapper().apiProperties.fabricVersionManifest
     }

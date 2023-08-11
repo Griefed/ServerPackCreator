@@ -491,7 +491,7 @@ actual class ApiProperties(
     /**
      * Modloaders supported by ServerPackCreator.
      */
-    val supportedModloaders = arrayOf("Fabric", "Forge", "Quilt", "LegacyFabric")
+    val supportedModloaders = arrayOf("Fabric", "Forge", "Quilt", "LegacyFabric", "NeoForge")
 
     /**
      * The folder containing the ServerPackCreator.exe or JAR-file.
@@ -1229,6 +1229,15 @@ actual class ApiProperties(
      * inside ServerPackCreators home-directory.
      */
     val forgeVersionManifest: File = File(manifestsDirectory, "forge-manifest.json").absoluteFile
+
+    /**
+     * NeoForge version manifest containing information about available NeoForge loader versions.
+     *
+     *
+     * By default, the `neoforge-manifest.xml`-file resides in the `manifests`-directory
+     * inside ServerPackCreators home-directory.
+     */
+    val neoForgeVersionManifest: File = File(manifestsDirectory, "neoforge-manifest.xml").absoluteFile
 
     /**
      * Fabric version manifest containing information about available Fabric loader versions.

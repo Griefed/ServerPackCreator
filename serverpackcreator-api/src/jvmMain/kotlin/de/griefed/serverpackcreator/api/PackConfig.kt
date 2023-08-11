@@ -296,7 +296,7 @@ actual open class PackConfig actual constructor() : Pack<File, JsonNode, PackCon
         conf.set<Any>("minecraftVersion", minecraftVersion)
         conf.setComment(
             "modLoader",
-            "\n Which modloader to install. Must be either \"Forge\", \"Fabric\", \"Quilt\" or \"LegacyFabric\".\n Automatically set when projectID,fileID for modpackDir has been specified.\n Only needed if includeServerInstallation is true."
+            "\n Which modloader to install. Must be either \"Forge\", \"NeoForge\", \"Fabric\", \"Quilt\" or \"LegacyFabric\".\n Automatically set when projectID,fileID for modpackDir has been specified.\n Only needed if includeServerInstallation is true."
         )
         conf.set<Any>("modLoader", modloader)
         val plugins: Config = TomlFormat.newConfig()
