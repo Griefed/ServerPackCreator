@@ -95,18 +95,15 @@ actual class FabricScanner constructor(
                         }
                     } catch (ignored: NullPointerException) {
                     }
-                    if (modId == "chipped") {
-                        println("Hoi")
-                    }
 
                     // Get this mods dependencies
                     try {
-                        for (dependency in utilities.jsonUtilities.getFieldNames(modJson, "depends")) {
+                        val dependencies = utilities.jsonUtilities.getFieldNames(modJson, "depends")
+                        for (dependency in dependencies) {
+                            log.debug("Checking dependency $dependency for $mod.")
                             if (!dependency.matches(dependencyExclusions)) {
                                 try {
-                                    log.debug(
-                                        "Added dependency $dependency for $modId (${mod.name})."
-                                    )
+                                    log.debug("Added dependency $dependency for $modId (${mod.name}).")
                                     modDependencies.add(dependency)
                                 } catch (ex: NullPointerException) {
                                     log.debug("No dependencies for $modId (${mod.name}).")
