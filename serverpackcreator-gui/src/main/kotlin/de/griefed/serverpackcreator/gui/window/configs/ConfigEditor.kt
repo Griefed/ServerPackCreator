@@ -447,6 +447,7 @@ class ConfigEditor(
         when (modloader) {
             "Fabric" -> modloaders.selectedIndex = 0
             "Forge" -> modloaders.selectedIndex = 1
+            "NeoForge" -> modloaders.selectedIndex = 4
             "Quilt" -> modloaders.selectedIndex = 2
             "LegacyFabric" -> modloaders.selectedIndex = 3
         }
@@ -955,6 +956,7 @@ class ConfigEditor(
             1 -> updateForgeModel(minecraftVersion)
             2 -> updateQuiltModel(minecraftVersion)
             3 -> updateLegacyFabricModel(minecraftVersion)
+            4 -> updateNeoForgeModel(minecraftVersion)
             else -> {
                 log.error("Invalid modloader selected.")
             }
@@ -997,6 +999,25 @@ class ConfigEditor(
             setModloaderVersions(
                 DefaultComboBoxModel(
                     apiWrapper.versionMeta!!.forge.supportedForgeVersionsDescendingArray(minecraftVersion).get()
+                )
+            )
+        } else {
+            setModloaderVersions(
+                noVersions,
+                guiProps.errorIcon,
+                Gui.configuration_log_error_minecraft_modloader(getMinecraftVersion(), getModloader())
+            )
+        }
+    }
+
+    /**
+     * @author Griefed
+     */
+    private fun updateNeoForgeModel(minecraftVersion: String = minecraftVersions.selectedItem!!.toString()) {
+        if (apiWrapper.versionMeta!!.neoForge.supportedNeoForgeVersionsDescendingArray(minecraftVersion).isPresent) {
+            setModloaderVersions(
+                DefaultComboBoxModel(
+                    apiWrapper.versionMeta!!.neoForge.supportedNeoForgeVersionsDescendingArray(minecraftVersion).get()
                 )
             )
         } else {

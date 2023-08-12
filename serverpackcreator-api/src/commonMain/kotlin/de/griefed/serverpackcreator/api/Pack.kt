@@ -29,6 +29,7 @@ import de.griefed.serverpackcreator.api.utilities.CommentedConfig
 @Suppress("MemberVisibilityCanBePrivate")
 abstract class Pack<F, J, out P> {
     protected val forge = "^forge$".toRegex()
+    protected val neoForge = "^neoforge$".toRegex()
     protected val fabric = "^fabric$".toRegex()
     protected val quilt = "^quilt$".toRegex()
     protected val legacyFabric = "^legacyfabric$".toRegex()
@@ -49,6 +50,8 @@ abstract class Pack<F, J, out P> {
         set(newModLoader) {
             if (newModLoader.lowercase().matches(forge)) {
                 field = "Forge"
+            } else if (newModLoader.lowercase().matches(neoForge)) {
+                field = "NeoForge"
             } else if (newModLoader.lowercase().matches(fabric)) {
                 field = "Fabric"
             } else if (newModLoader.lowercase().matches(quilt)) {

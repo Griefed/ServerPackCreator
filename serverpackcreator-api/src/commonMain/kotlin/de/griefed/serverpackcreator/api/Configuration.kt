@@ -33,6 +33,7 @@ import mu.KotlinLogging
 abstract class Configuration<F, P> {
     protected val log = KotlinLogging.logger {}
     protected val forge = "^forge$".toRegex()
+    protected val neoForge = "^neoforge$".toRegex()
     protected val fabric = "^fabric$".toRegex()
     protected val quilt = "^quilt$".toRegex()
     protected val legacyFabric = "^legacyfabric$".toRegex()
@@ -160,6 +161,7 @@ abstract class Configuration<F, P> {
      */
     fun checkModloader(modloader: String) =
         if (modloader.lowercase().matches(forge)
+            || modloader.lowercase().matches(neoForge)
             || modloader.lowercase().matches(fabric)
             || modloader.lowercase().matches(quilt)
             || modloader.lowercase().matches(legacyFabric)
@@ -223,9 +225,7 @@ abstract class Configuration<F, P> {
      * @author Griefed
      */
     fun printEncounteredErrors(encounteredErrors: List<String>) {
-        log.error(
-            "Encountered ${encounteredErrors.size} errors during the configuration check."
-        )
+        log.error("Encountered ${encounteredErrors.size} errors during the configuration check.")
         var encounteredErrorNumber: Int
         for (i in encounteredErrors.indices) {
             encounteredErrorNumber = i + 1
