@@ -21,7 +21,7 @@ package de.griefed.serverpackcreator.gui.window.configs.components.advanced
 
 import Gui
 import de.griefed.serverpackcreator.gui.GuiProps
-import de.griefed.serverpackcreator.gui.window.configs.components.StatusIcon
+import de.griefed.serverpackcreator.gui.components.StatusIcon
 
 /**
  * Status icon for script-settings exclusions to inform a user about the status of the specified pairs and display

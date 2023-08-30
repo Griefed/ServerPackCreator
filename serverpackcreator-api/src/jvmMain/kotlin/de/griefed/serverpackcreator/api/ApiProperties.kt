@@ -57,6 +57,7 @@ actual class ApiProperties(
     private val log = cachedLoggerOf(javaClass)
     private val internalProps = Properties()
     private val jarInformation: JarInformation = JarInformation(javaClass, jarUtilities)
+    private val userHome = System.getProperty("user.home")
     private val pVersionCheckPreRelease =
         "de.griefed.serverpackcreator.versioncheck.prerelease"
     private val pLanguage =
@@ -457,12 +458,25 @@ actual class ApiProperties(
             " -XX:MaxTenuringThreshold=1" +
             " -Dusing.aikars.flags=https://mcflags.emc.gs" +
             " -Daikars.new.flags=true"
+    val fallbackUpdateURL =
+        "https://raw.githubusercontent.com/Griefed/ServerPackCreator/main/serverpackcreator-api/src/jvmMain/resources/serverpackcreator.properties"
+    val fallbackExclusionFilter = ExclusionFilter.START
+    val fallbackOverwriteEnabled = true
+    val fallbackJavaScriptAutoupdateEnabled = true
+    val fallbackCheckingForPreReleasesEnabled = false
+    val fallbackZipFileExclusionEnabled = true
+    val fallbackServerPackCleanupEnabled = true
+    val fallbackMinecraftPreReleasesAvailabilityEnabled = false
+    val fallbackAutoExcludingModsEnabled = true
     private val serverPackCreatorProperties = "serverpackcreator.properties"
     private val checkedJavas = hashMapOf<String, Boolean>()
+
     @Suppress("MemberVisibilityCanBePrivate")
     val trueFalseRegex = "^(true|false)$".toRegex()
+
     @Suppress("MemberVisibilityCanBePrivate")
     val alphaBetaRegex = "^(.*alpha.*|.*beta.*)$".toRegex()
+
     @Suppress("MemberVisibilityCanBePrivate")
     val serverPacksRegex = "^(?:\\./)?server-packs$".toRegex()
     val i18n4kConfig = I18n4kConfigDefault()
@@ -594,9 +608,6 @@ actual class ApiProperties(
      */
     val defaultPowerShellScriptTemplate = File("default_template.ps1")
 
-    @Suppress("MemberVisibilityCanBePrivate")
-    val fallbackScriptTemplates = "${defaultShellScriptTemplate.name},${defaultPowerShellScriptTemplate.name}"
-
     /**
      * Directories to include in a server pack.
      */
@@ -710,6 +721,18 @@ actual class ApiProperties(
         }
 
     /**
+     * Default list of script templates used by ServerPackCreator.
+     *
+     * @author Griefed
+     */
+    fun defaultScriptTemplates(): List<File> {
+        val templates = mutableListOf<File>()
+        templates.add(File(serverFilesDirectory.absolutePath, defaultShellScriptTemplate.name))
+        templates.add(File(serverFilesDirectory.absolutePath, defaultPowerShellScriptTemplate.name))
+        return templates.toList()
+    }
+
+    /**
      * Start-script templates to use during server pack generation.
      */
     @Suppress("SetterBackingFieldAssignment")
@@ -741,6 +764,20 @@ actual class ApiProperties(
         }
 
     /**
+     * The URL from which a .properties-file is read during updating of the fallback clientside-mods list.
+     * The default can be found in [fallbackUpdateURL].
+     */
+    var updateUrl = URL(fallbackUpdateURL)
+        get() {
+            field = URL(acquireProperty(pConfigurationFallbackUpdateURL, fallbackUpdateURL))
+            return field
+        }
+        set(value) {
+            defineProperty(pConfigurationFallbackUpdateURL, value.toString())
+            field = value
+        }
+
+    /**
      * The filter method with which to determine whether a user-specified clientside-only mod should
      * be excluded from the server pack. Available settings are:
      *
@@ -750,7 +787,7 @@ actual class ApiProperties(
      *  * [ExclusionFilter.REGEX]
      *  * [ExclusionFilter.EITHER]
      */
-    var exclusionFilter = ExclusionFilter.START
+    var exclusionFilter = fallbackExclusionFilter
         get() {
             val prop = acquireProperty(pServerPackAutoDiscoveryFilterMethod, "START")
             field = try {
@@ -762,12 +799,12 @@ actual class ApiProperties(
                     "START" -> ExclusionFilter.START
                     else -> {
                         log.error("Invalid filter specified. Defaulting to START.")
-                        ExclusionFilter.START
+                        fallbackExclusionFilter
                     }
                 }
             } catch (ex: NullPointerException) {
                 log.error("No filter specified. Defaulting to START.")
-                ExclusionFilter.START
+                fallbackExclusionFilter
             }
             return field
         }
@@ -782,9 +819,9 @@ actual class ApiProperties(
      * `de.griefed.serverpackcreator.versioncheck.prerelease`, returns `true` if checks for available PreReleases are
      * enabled, `false` if no checks for available PreReleases should be made.
      */
-    var isCheckingForPreReleasesEnabled = false
+    var isCheckingForPreReleasesEnabled = fallbackCheckingForPreReleasesEnabled
         get() {
-            field = getBoolProperty(pVersionCheckPreRelease, false)
+            field = getBoolProperty(pVersionCheckPreRelease, fallbackCheckingForPreReleasesEnabled)
             return field
         }
         set(value) {
@@ -796,9 +833,9 @@ actual class ApiProperties(
     /**
      * Whether the exclusion of files from the ZIP-archive of the server pack is enabled.
      */
-    var isZipFileExclusionEnabled = true
+    var isZipFileExclusionEnabled = fallbackZipFileExclusionEnabled
         get() {
-            field = getBoolProperty(pServerPackZipExclusionEnabled, true)
+            field = getBoolProperty(pServerPackZipExclusionEnabled, fallbackZipFileExclusionEnabled)
             return field
         }
         set(value) {
@@ -810,9 +847,9 @@ actual class ApiProperties(
     /**
      * Is auto excluding of clientside-only mods enabled.
      */
-    var isAutoExcludingModsEnabled = true
+    var isAutoExcludingModsEnabled = fallbackAutoExcludingModsEnabled
         get() {
-            var value = getBoolProperty(pServerPackAutoDiscoveryEnabled, true)
+            var value = getBoolProperty(pServerPackAutoDiscoveryEnabled, fallbackAutoExcludingModsEnabled)
             try {
                 val legacyProp = internalProps.getProperty(pServerPackAutoDiscoveryEnabledLegacy)
                 if (legacyProp.matches(trueFalseRegex)) {
@@ -838,9 +875,9 @@ actual class ApiProperties(
     /**
      * Whether overwriting of already existing server packs is enabled.
      */
-    var isServerPacksOverwriteEnabled = true
+    var isServerPacksOverwriteEnabled = fallbackOverwriteEnabled
         get() {
-            field = getBoolProperty(pServerPackOverwriteEnabled, true)
+            field = getBoolProperty(pServerPackOverwriteEnabled, fallbackOverwriteEnabled)
             return field
         }
         set(value) {
@@ -852,9 +889,9 @@ actual class ApiProperties(
     /**
      * Whether cleanup procedures after server pack generation are enabled.
      */
-    var isServerPackCleanupEnabled = true
+    var isServerPackCleanupEnabled = fallbackServerPackCleanupEnabled
         get() {
-            field = getBoolProperty(pServerPackCleanupEnabled, true)
+            field = getBoolProperty(pServerPackCleanupEnabled, fallbackServerPackCleanupEnabled)
             return field
         }
         set(value) {
@@ -866,9 +903,9 @@ actual class ApiProperties(
     /**
      * Whether Minecraft pre-releases and snapshots are available to the user in, for example, the GUI.
      */
-    var isMinecraftPreReleasesAvailabilityEnabled = false
+    var isMinecraftPreReleasesAvailabilityEnabled = fallbackMinecraftPreReleasesAvailabilityEnabled
         get() {
-            field = getBoolProperty(pAllowUseMinecraftSnapshots, false)
+            field = getBoolProperty(pAllowUseMinecraftSnapshots, fallbackMinecraftPreReleasesAvailabilityEnabled)
             return field
         }
         set(value) {
@@ -881,9 +918,9 @@ actual class ApiProperties(
      * Whether to automatically update the `SPC_JAVA_SPC`-placeholder in the script variables
      * table with a Java path matching the required Java version for the Minecraft server.
      */
-    var isJavaScriptAutoupdateEnabled = true
+    var isJavaScriptAutoupdateEnabled = fallbackJavaScriptAutoupdateEnabled
         get() {
-            field = getBoolProperty(pScriptVariablesAutoUpdateJavaPathsEnabled, true)
+            field = getBoolProperty(pScriptVariablesAutoUpdateJavaPathsEnabled, fallbackJavaScriptAutoupdateEnabled)
             return field
         }
         set(value) {
@@ -977,7 +1014,7 @@ actual class ApiProperties(
      */
     var javaPath = "java"
         get() {
-            val prop = internalProps.getProperty(pJavaForServerInstall,"")
+            val prop = internalProps.getProperty(pJavaForServerInstall, "")
             field = if (checkJavaPath(prop)) {
                 prop
             } else {
@@ -1020,6 +1057,24 @@ actual class ApiProperties(
         }
 
     /**
+     * Default home-directory for ServerPackCreator. If there's no user-home, then the directory containing the
+     * ServerPackCreator JAR will be used as the home-directory for ServerPackCreator.
+     *
+     * @author Griefed
+     */
+    fun defaultHomeDirectory(): File {
+        return if (userHome.isNotEmpty() && File(userHome).isDirectory) {
+            File(userHome, "ServerPackCreator").absoluteFile
+        } else {
+            if (jarInformation.jarFile.isDirectory) {
+                File(File("").absolutePath).absoluteFile
+            } else {
+                jarInformation.jarFolder.absoluteFile
+            }
+        }
+    }
+
+    /**
      * ServerPackCreators home directory, in which all important files and folders are stored in.
      *
      * Stored in `serverpackcreator.properties` under the
@@ -1032,19 +1087,10 @@ actual class ApiProperties(
     var homeDirectory: File = File(System.getProperty("user.home"), "ServerPackCreator").absoluteFile
         get() {
             val prop = internalProps.getProperty(pHomeDirectory)
-            val userHome = System.getProperty("user.home")
             field = if (internalProps.containsKey(pHomeDirectory) && File(prop).absoluteFile.isDirectory) {
                 File(prop).absoluteFile
-            } else if (userHome.isNotEmpty()
-                && File(userHome).isDirectory
-            ) {
-                File(userHome, "ServerPackCreator").absoluteFile
             } else {
-                if (jarInformation.jarFile.isDirectory) {
-                    File(File("").absolutePath).absoluteFile
-                } else {
-                    jarInformation.jarFolder.absoluteFile
-                }
+                defaultHomeDirectory()
             }
             if (!field.isDirectory) {
                 field.createDirectories(create = true, directory = true)
@@ -1093,6 +1139,10 @@ actual class ApiProperties(
             log.info("Set Tomcat base-directory to: $field")
         }
 
+    fun defaultServerPacksDirectory(): File {
+        return File(homeDirectory, "server-packs").absoluteFile
+    }
+
     /**
      * Directory in which generated server packs, or server packs being generated, are stored in, as
      * well as their ZIP-archives, if created.
@@ -1106,7 +1156,7 @@ actual class ApiProperties(
         get() {
             val prop = internalProps.getProperty(pConfigurationDirectoriesServerPacks)
             val directory: File = if (prop.isEmpty() || prop.matches(serverPacksRegex)) {
-                File(homeDirectory, "server-packs")
+                defaultServerPacksDirectory()
             } else {
                 File(internalProps.getProperty(pConfigurationDirectoriesServerPacks))
             }
@@ -1350,6 +1400,9 @@ actual class ApiProperties(
      */
     val serverFilesDirectory: File = File(homeDirectory, "server_files").absoluteFile
 
+    @Suppress("MemberVisibilityCanBePrivate")
+    val fallbackScriptTemplates = defaultScriptTemplates().joinToString(",")
+
     /**
      * Directory in which the properties for quick selection are to be stored in and retrieved from.
      */
@@ -1514,6 +1567,7 @@ actual class ApiProperties(
      *
      * @param key   The key in which to store the property.
      * @param value The value to store in the specified key.
+     * @return The [value] to which the [key] was set to.
      * @author Griefed
      */
     private fun defineProperty(key: String, value: String): String {
@@ -1533,7 +1587,7 @@ actual class ApiProperties(
         key: String,
         defaultValue: String
     ) = if (acquireProperty(key, defaultValue).contains(",")) {
-        acquireProperty(key,defaultValue)
+        acquireProperty(key, defaultValue)
             .split(",")
             .dropLastWhile { it.isEmpty() }
     } else {
@@ -1633,7 +1687,7 @@ actual class ApiProperties(
      * acquire the path automatically.
      * @author Griefed
      */
-    private fun acquireJavaPath(pathToJava: String = ""): String {
+    fun acquireJavaPath(pathToJava: String = ""): String {
         var checkedJavaPath: String
         try {
             if (pathToJava.isNotEmpty()) {
@@ -1816,7 +1870,7 @@ actual class ApiProperties(
         var properties: Properties? = null
         try {
             URL(
-                acquireProperty(pConfigurationFallbackUpdateURL,"https://raw.githubusercontent.com/Griefed/ServerPackCreator/main/serverpackcreator-api/src/jvmMain/resources/serverpackcreator.properties")
+                acquireProperty(pConfigurationFallbackUpdateURL, fallbackUpdateURL)
             ).openStream().use {
                 properties = Properties()
                 properties!!.load(it)

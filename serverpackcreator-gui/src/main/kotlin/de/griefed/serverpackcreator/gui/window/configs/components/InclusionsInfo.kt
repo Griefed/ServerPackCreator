@@ -21,6 +21,7 @@ package de.griefed.serverpackcreator.gui.window.configs.components
 
 import Gui
 import de.griefed.serverpackcreator.gui.GuiProps
+import de.griefed.serverpackcreator.gui.components.StatusIcon
 
 /**
  * Status icon for [de.griefed.serverpackcreator.gui.window.configs.components.inclusions.InclusionsEditor] to inform

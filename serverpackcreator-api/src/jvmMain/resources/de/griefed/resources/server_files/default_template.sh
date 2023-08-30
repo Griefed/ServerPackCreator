@@ -338,8 +338,8 @@ case ${MODLOADER} in
     ;;
 
   "NeoForge")
-      setup_forge
-      ;;
+    setup_neoforge
+    ;;
 
   "Fabric")
     setup_fabric

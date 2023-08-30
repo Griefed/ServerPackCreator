@@ -21,6 +21,7 @@ package de.griefed.serverpackcreator.gui.window.configs.components
 
 import Gui
 import de.griefed.serverpackcreator.gui.GuiProps
+import de.griefed.serverpackcreator.gui.components.StatusIcon
 
 /**
  * Status icon for the Minecraft version to inform a user about the status of the specified version and display

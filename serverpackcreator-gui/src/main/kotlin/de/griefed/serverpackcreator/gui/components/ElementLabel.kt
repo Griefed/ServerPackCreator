@@ -17,18 +17,33 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.gui.window.configs.components
+package de.griefed.serverpackcreator.gui.components
 
-import java.awt.event.ActionListener
-import javax.swing.JCheckBox
+import java.awt.Font
+import javax.swing.JLabel
+import javax.swing.UIManager
+import javax.swing.plaf.FontUIResource
 
 /**
- * Checkbox initialized with an action listener.
+ * Label to display in front of various components in ServerPackCreator.
  *
  * @author Griefed
  */
-class ActionCheckBox(title: String, actionListener: ActionListener) : JCheckBox(title) {
+class ElementLabel(text: String, private var size: Int = 0) : JLabel(text) {
     init {
-        this.addActionListener(actionListener)
+        if (size == 0) {
+            size = font.size
+        }
+        updateFont()
+    }
+
+    override fun updateUI() {
+        super.updateUI()
+        updateFont()
+    }
+
+    private fun updateFont() {
+        val currentFont = UIManager.get("defaultFont") as Font
+        font = FontUIResource(currentFont.fontName, Font.BOLD, currentFont.size)
     }
 }

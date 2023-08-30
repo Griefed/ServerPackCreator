@@ -106,7 +106,9 @@ actual class FabricScanner(
 
                 // Get this mods dependencies
                 try {
-                    for (dependency in utilities.jsonUtilities.getFieldNames(modJson, depends)) {
+                    val dependencies = utilities.jsonUtilities.getFieldNames(modJson, depends)
+                    for (dependency in dependencies) {
+                        log.debug("Checking dependency $dependency for $mod.")
                         if (!dependency.matches(dependencyExclusions)) {
                             try {
                                 log.debug("Added dependency $dependency for $modId (${mod.name}).")
