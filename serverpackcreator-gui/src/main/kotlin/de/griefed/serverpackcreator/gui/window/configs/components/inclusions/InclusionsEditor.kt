@@ -25,9 +25,9 @@ import de.griefed.serverpackcreator.api.InclusionSpecification
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.components.BalloonTipButton
 import de.griefed.serverpackcreator.gui.window.configs.ConfigEditor
-import de.griefed.serverpackcreator.gui.window.configs.components.DocumentChangeListener
-import de.griefed.serverpackcreator.gui.window.configs.components.ElementLabel
-import de.griefed.serverpackcreator.gui.window.configs.components.ScrollTextField
+import de.griefed.serverpackcreator.gui.components.DocumentChangeListener
+import de.griefed.serverpackcreator.gui.components.ElementLabel
+import de.griefed.serverpackcreator.gui.components.ScrollTextField
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch

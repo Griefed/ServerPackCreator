@@ -17,11 +17,12 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.gui.window.configs.components
+package de.griefed.serverpackcreator.gui.components
 
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.gui.GuiProps
+import de.griefed.serverpackcreator.gui.window.configs.components.SuggestionProvider
 import java.awt.Toolkit
 import java.awt.event.KeyEvent
 import java.awt.event.KeyListener

@@ -29,7 +29,7 @@ import de.griefed.serverpackcreator.gui.window.configs.TabbedConfigsTab
 import de.griefed.serverpackcreator.gui.window.control.ControlPanel
 import de.griefed.serverpackcreator.gui.window.control.components.LarsonScanner
 import de.griefed.serverpackcreator.gui.window.logs.TabbedLogsTab
-import de.griefed.serverpackcreator.gui.window.settings.SettingsEditorTab
+import de.griefed.serverpackcreator.gui.window.settings.SettingsEditorsTab
 import net.miginfocom.swing.MigLayout
 import java.io.File
 import javax.swing.JOptionPane
@@ -54,16 +54,18 @@ class MainPanel(
     "growx,growy,north"
 ) {
     val tabbedConfigsTab = TabbedConfigsTab(guiProps, apiWrapper, mainFrame)
+
     @Suppress("MemberVisibilityCanBePrivate")
     val tabbedLogsTab = TabbedLogsTab(apiWrapper.apiProperties)
+
     @Suppress("MemberVisibilityCanBePrivate")
-    val settingsEditorTab = SettingsEditorTab(guiProps, apiWrapper.apiProperties)
+    val settingsEditorsTab = SettingsEditorsTab(guiProps, apiWrapper.apiProperties, mainFrame)
     val controlPanel = ControlPanel(guiProps, tabbedConfigsTab, larsonScanner, apiWrapper)
 
     init {
         tabs.addTab("Configs", tabbedConfigsTab.panel)
         tabs.addTab("Logs", tabbedLogsTab.panel)
-        tabs.addTab("Settings", settingsEditorTab.panel)
+        tabs.addTab("Settings", settingsEditorsTab.panel)
         panel.add(larsonScanner, "height 40!,growx, south")
         panel.add(controlPanel.panel, "height 160!,growx, south")
     }

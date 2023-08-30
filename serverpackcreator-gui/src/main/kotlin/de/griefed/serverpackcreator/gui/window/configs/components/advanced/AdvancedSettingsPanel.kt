@@ -20,8 +20,8 @@
 package de.griefed.serverpackcreator.gui.window.configs.components.advanced
 
 import Gui
-import de.griefed.serverpackcreator.gui.window.configs.components.ElementLabel
-import de.griefed.serverpackcreator.gui.window.configs.components.ScrollTextArea
+import de.griefed.serverpackcreator.gui.components.ElementLabel
+import de.griefed.serverpackcreator.gui.components.ScrollTextArea
 import net.miginfocom.swing.MigLayout
 import javax.swing.JButton
 import javax.swing.JLabel

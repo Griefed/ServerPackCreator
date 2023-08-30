@@ -17,7 +17,7 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.gui.window.configs.components
+package de.griefed.serverpackcreator.gui.components
 
 import de.griefed.serverpackcreator.gui.GuiProps
 import net.java.balloontip.BalloonTip
@@ -31,7 +31,7 @@ import javax.swing.JLabel
  *
  * @author Griefed
  */
-abstract class StatusIcon(private val guiProps: GuiProps, private val infoToolTip: String) : JLabel() {
+open class StatusIcon(private val guiProps: GuiProps, private val infoToolTip: String) : JLabel() {
     private val tooltTipLabel = JLabel(infoToolTip)
 
     init {

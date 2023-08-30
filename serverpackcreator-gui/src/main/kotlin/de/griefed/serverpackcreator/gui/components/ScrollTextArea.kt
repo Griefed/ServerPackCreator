@@ -17,13 +17,13 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.gui.window.configs.components
+package de.griefed.serverpackcreator.gui.components
 
 import Gui
-import de.griefed.serverpackcreator.api.ApiProperties
-import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.api.utilities.common.regexReplace
 import de.griefed.serverpackcreator.gui.GuiProps
+import de.griefed.serverpackcreator.gui.window.configs.components.ResizeIndicatorScrollPane
+import de.griefed.serverpackcreator.gui.window.configs.components.SuggestionProvider
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
@@ -49,7 +49,6 @@ import javax.swing.undo.UndoManager
 class ScrollTextArea(
     text: String,
     areaName: String,
-    apiProperties: ApiProperties? = ApiWrapper.api().apiProperties,
     private val guiProps: GuiProps,
     private val textArea: JTextArea = JTextArea(text),
     verticalScrollbarVisibility: Int = VERTICAL_SCROLLBAR_ALWAYS,
@@ -61,10 +60,9 @@ class ScrollTextArea(
     constructor(
         text: String,
         areaName: String,
-        apiProperties: ApiProperties? = ApiWrapper.api().apiProperties,
         documentChangeListener: DocumentChangeListener,
         guiProps: GuiProps
-    ) : this(text, areaName, apiProperties, guiProps) {
+    ) : this(text, areaName, guiProps) {
         this.addDocumentListener(documentChangeListener)
     }
 

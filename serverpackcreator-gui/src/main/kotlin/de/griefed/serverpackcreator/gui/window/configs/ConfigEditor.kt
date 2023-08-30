@@ -26,7 +26,7 @@ import de.griefed.serverpackcreator.api.InclusionSpecification
 import de.griefed.serverpackcreator.api.PackConfig
 import de.griefed.serverpackcreator.api.plugins.swinggui.ServerPackConfigTab
 import de.griefed.serverpackcreator.gui.GuiProps
-import de.griefed.serverpackcreator.gui.components.BalloonTipButton
+import de.griefed.serverpackcreator.gui.components.*
 import de.griefed.serverpackcreator.gui.window.configs.components.*
 import de.griefed.serverpackcreator.gui.window.configs.components.advanced.*
 import de.griefed.serverpackcreator.gui.window.configs.components.inclusions.InclusionsEditor
@@ -121,7 +121,6 @@ class ConfigEditor(
     private val javaArgs = ScrollTextArea(
         "-Xmx4G -Xms4G",
         Gui.createserverpack_gui_createserverpack_javaargs.toString(),
-        apiWrapper.apiProperties,
         changeListener,
         guiProps
     )
@@ -145,7 +144,6 @@ class ConfigEditor(
     private val exclusions = ScrollTextArea(
         apiWrapper.apiProperties.clientSideMods().joinToString(","),
         Gui.createserverpack_gui_createserverpack_labelclientmods.toString(),
-        apiWrapper.apiProperties,
         changeListener,
         guiProps
     )
