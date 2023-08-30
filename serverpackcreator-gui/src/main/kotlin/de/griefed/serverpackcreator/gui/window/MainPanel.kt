@@ -65,7 +65,7 @@ class MainPanel(
     init {
         tabs.addTab("Configs", tabbedConfigsTab.panel)
         tabs.addTab("Logs", tabbedLogsTab.panel)
-        tabs.addTab("Settings", settingsEditorsTab.panel)
+        tabs.addTab("Settings (WIP, not fully implemented)", settingsEditorsTab.panel)
         panel.add(larsonScanner, "height 40!,growx, south")
         panel.add(controlPanel.panel, "height 160!,growx, south")
     }
