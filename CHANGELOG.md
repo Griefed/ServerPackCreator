@@ -1,3 +1,20 @@
+## [5.0.0-alpha.22](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-alpha.21...5.0.0-alpha.22) (2023-08-30)
+
+
+### 📦 Other
+
+* Add debug logging for Fabric dependency checks ([5d24a8c](https://git.griefed.de/Griefed/ServerPackCreator/commit/5d24a8c6e8f851fe3de031b375649c3c14884501))
+
+
+### 🚀 Features
+
+* **Settings:** Progress towards allowing easier changing of SPC configuration ([8a3c8b6](https://git.griefed.de/Griefed/ServerPackCreator/commit/8a3c8b6dc99e29bf8dc729ff26948e669eb4c38b))
+
+
+### 🛠 Fixes
+
+* Run correct checks when the modloader is NeoForge. Thanks to @Conhaque for the report! ([66ff32d](https://git.griefed.de/Griefed/ServerPackCreator/commit/66ff32d41ac1832c75392096a402243ac59116dc))
+
 ## [5.0.0-alpha.21](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-alpha.20...5.0.0-alpha.21) (2023-08-11)
 
 
