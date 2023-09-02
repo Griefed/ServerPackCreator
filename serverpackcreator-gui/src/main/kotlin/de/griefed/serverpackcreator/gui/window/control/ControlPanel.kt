@@ -146,6 +146,14 @@ class ControlPanel(
         }
 
         if (!apiWrapper.configurationHandler!!.checkConfiguration(packConfig, encounteredErrors, true)) {
+            if (activeTab.getModpackDirectory().endsWith(".zip",ignoreCase = true)) {
+                JOptionPane.showMessageDialog(
+                    panel.parent,
+                    Gui.createserverpack_gui_config_zip_info_message.toString(),
+                    Gui.createserverpack_gui_config_zip_info_title.toString(),
+                    JOptionPane.INFORMATION_MESSAGE
+                )
+            }
             log.info("Config check passed.")
             statusPanel.updateStatus(Gui.createserverpack_log_info_buttoncreateserverpack_checked.toString())
             generateServerPack(packConfig)
