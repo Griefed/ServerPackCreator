@@ -1706,6 +1706,14 @@ class TabCreateServerPack(
                 log.info("Starting ServerPackCreator run.")
                 updateStatus(Gui.createserverpack_log_info_buttoncreateserverpack_generating.toString())
                 try {
+                    if (getModpackDirectory().endsWith(".zip",ignoreCase = true)) {
+                        JOptionPane.showMessageDialog(
+                            serverPackPanel,
+                            Gui.createserverpack_gui_config_zip_info_message.toString(),
+                            Gui.createserverpack_gui_config_zip_info_title.toString(),
+                            JOptionPane.INFORMATION_MESSAGE
+                        )
+                    }
                     serverPackHandler.run(packConfig)
                     loadConfig(apiProperties.defaultConfig)
                     updateStatus(
