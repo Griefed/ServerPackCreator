@@ -848,11 +848,10 @@ actual class ServerPackHandler actual constructor(
     override fun serverDownloadable(mcVersion: String, modloader: String, modloaderVersion: String) = when (modloader) {
         "Fabric" -> utilities.webUtilities.isReachable(versionMeta.fabric.releaseInstallerUrl())
 
-        "Forge" -> (versionMeta.forge.getForgeInstance(
-            mcVersion, modloaderVersion
-        ).isPresent && utilities.webUtilities.isReachable(
-            versionMeta.forge.getForgeInstance(mcVersion, modloaderVersion).get().installerUrl
-        ))
+        "Forge" -> {
+            val instance = versionMeta.forge.getForgeInstance(mcVersion, modloaderVersion)
+            instance.isPresent && utilities.webUtilities.isReachable(instance.get().installerUrl)
+        }
 
         "Quilt" -> utilities.webUtilities.isReachable(versionMeta.quilt.releaseInstallerUrl())
 
@@ -862,6 +861,11 @@ actual class ServerPackHandler actual constructor(
             } catch (e: MalformedURLException) {
                 false
             }
+        }
+
+        "NeoForge" -> {
+            val instance = versionMeta.neoForge.getNeoForgeInstance(mcVersion,modloaderVersion)
+            instance.isPresent && utilities.webUtilities.isReachable(instance.get().installerUrl)
         }
 
         else -> false
