@@ -1,3 +1,15 @@
+## [5.0.0-alpha.24](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-alpha.23...5.0.0-alpha.24) (2023-09-07)
+
+
+### 📦 Other
+
+* Add Essential and MemoryUsageScreen to clientside mods. Thanks to @Devilswarchild and @BlakeIsMyWaifu for the reports! ([f8b7a9a](https://git.griefed.de/Griefed/ServerPackCreator/commit/f8b7a9a50fbbb503ef8413ee64fec288e475a03c))
+
+
+### 🛠 Fixes
+
+* Check for NeoForge installer availability ([7c230f4](https://git.griefed.de/Griefed/ServerPackCreator/commit/7c230f4300b587d18caf2c8b13f2a90e7177a76f))
+
 ## [5.0.0-alpha.23](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-alpha.22...5.0.0-alpha.23) (2023-09-07)
 
 
