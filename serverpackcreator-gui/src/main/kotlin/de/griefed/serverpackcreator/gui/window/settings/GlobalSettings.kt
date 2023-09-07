@@ -56,13 +56,13 @@ class GlobalSettings(guiProps: GuiProps, apiProperties: ApiProperties, component
     val zipLabel = ElementLabel("ZIP-Exclusions")
     val zipSetting = ScrollTextArea(apiProperties.zipArchiveExclusions.joinToString(", "),"ZIP-Exclusions",guiProps)
     val zipRevert = BalloonTipButton(null, guiProps.revertIcon, "Revert changes.", guiProps) { zipSetting.text = apiProperties.zipArchiveExclusions.joinToString(", ") }
-    val zipReset = BalloonTipButton(null,guiProps.resetIcon,"Reset to default value",guiProps) { zipSetting.text = apiProperties.fallbackZipExclusionsString }
+    val zipReset = BalloonTipButton(null,guiProps.resetIcon,"Reset to default value",guiProps) { zipSetting.text = apiProperties.fallbackZipExclusions.joinToString(",") }
 
     val inclusionsIcon = StatusIcon(guiProps, "Recommended inclusions in server pack")
     val inclusionsLabel = ElementLabel("Recommended Inclusions")
     val inclusionsSetting = ScrollTextArea(apiProperties.directoriesToInclude.joinToString(", "),"Recommended Inclusions",guiProps)
     val inclusionsRevert = BalloonTipButton(null, guiProps.revertIcon, "Revert changes.", guiProps) { inclusionsSetting.text = apiProperties.directoriesToInclude.joinToString(", ") }
-    val inclusionsReset = BalloonTipButton(null,guiProps.resetIcon,"Reset to default value",guiProps) { inclusionsSetting.text = apiProperties.fallbackDirectoriesInclusionString }
+    val inclusionsReset = BalloonTipButton(null,guiProps.resetIcon,"Reset to default value",guiProps) { inclusionsSetting.text = apiProperties.fallbackDirectoriesInclusion.joinToString(",") }
 
     val aikarsIcon = StatusIcon(guiProps, "Global Aikars flags used when pressing the \"Use Aikars Flags\"-button in a server pack config tab")
     val aikarsLabel = ElementLabel("Global Aikars Flags")

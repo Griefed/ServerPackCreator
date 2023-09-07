@@ -130,310 +130,364 @@ actual class ApiProperties(
         "spring.datasource.url"
 
     @Suppress("SpellCheckingInspection")
-    private var fallbackModsString =
-        "3dskinlayers-," +
-                "Absolutely-Not-A-Zoom-Mod-," +
-                "AdvancedChat-," +
-                "AdvancedChatCore-," +
-                "AdvancedChatHUD-," +
-                "AdvancedCompas-," +
-                "Ambience," +
-                "AmbientEnvironment-," +
-                "AmbientSounds_," +
-                "AreYouBlind-," +
-                "Armor Status HUD-," +
-                "ArmorSoundTweak-," +
-                "BH-Menu-," +
-                "Batty's Coordinates PLUS Mod," +
-                "BetterAdvancements-," +
-                "BetterAnimationsCollection-," +
-                "BetterDarkMode-," +
-                "BetterF3-," +
-                "BetterFog-," +
-                "BetterFoliage-," +
-                "BetterPingDisplay-," +
-                "BetterPlacement-," +
-                "BetterTaskbar-," +
-                "BetterThirdPerson," +
-                "BetterTitleScreen-," +
-                "Blur-," +
-                "BorderlessWindow-," +
-                "CTM-," +
-                "ChunkAnimator-," +
-                "ClientTweaks_," +
-                "CompletionistsIndex-," +
-                "Controller Support-," +
-                "Controlling-," +
-                "CraftPresence-," +
-                "CullLessLeaves-Reforged-," +
-                "CustomCursorMod-," +
-                "CustomMainMenu-," +
-                "DefaultOptions_," +
-                "DefaultSettings-," +
-                "DeleteWorldsToTrash-," +
-                "DetailArmorBar-," +
-                "Ding-," +
-                "DistantHorizons-," +
-                "DripSounds-," +
-                "Durability101-," +
-                "DurabilityNotifier-," +
-                "DynamicSurroundings-," +
-                "DynamicSurroundingsHuds-," +
-                "EffectsLeft-," +
-                "EiraMoticons_," +
-                "EnchantmentDescriptions-," +
-                "EnhancedVisuals_," +
-                "EquipmentCompare-," +
-                "FPS-Monitor-," +
-                "FabricCustomCursorMod-," +
-                "Fallingleaves-," +
-                "FancySpawnEggs," +
-                "FancyVideo-API-," +
-                "FirstPersonMod," +
-                "FogTweaker-," +
-                "ForgeCustomCursorMod-," +
-                "FpsReducer-," +
-                "FpsReducer2-," +
-                "FullscreenWindowed-," +
-                "GameMenuModOption-," +
-                "HealthOverlay-," +
-                "HeldItemTooltips-," +
-                "HorseStatsMod-," +
-                "ImmediatelyFastReforged-," +
-                "InventoryEssentials_," +
-                "InventoryHud_[1.17.1].forge-," +
-                "InventorySpam-," +
-                "InventoryTweaks-," +
-                "ItemBorders-," +
-                "ItemPhysicLite_," +
-                "ItemStitchingFix-," +
-                "JBRA-Client-," +
-                "JustEnoughCalculation-," +
-                "JustEnoughEffects-," +
-                "JustEnoughProfessions-," +
-                "LeaveMyBarsAlone-," +
-                "LLOverlayReloaded-," +
-                "LOTRDRP-," +
-                "LegendaryTooltips," +
-                "LegendaryTooltips-," +
-                "LightOverlay-," +
-                "MoBends," +
-                "MouseTweaks-," +
-                "MyServerIsCompatible-," +
-                "Neat ," +
-                "Neat-," +
-                "NekosEnchantedBooks-," +
-                "NoAutoJump-," +
-                "NoFog-," +
-                "Notes-," +
-                "NotifMod-," +
-                "OldJavaWarning-," +
-                "OptiFine," +
-                "OptiFine_," +
-                "OptiForge," +
-                "OptiForge-," +
-                "OverflowingBars-," +
-                "PackMenu-," +
-                "PackModeMenu-," +
-                "PickUpNotifier-," +
-                "Ping-," +
-                "PingHUD-," +
-                "PresenceFootsteps-," +
-                "RPG-HUD-," +
-                "ReAuth-," +
-                "Reforgium-," +
-                "ResourceLoader-," +
-                "ResourcePackOrganizer," +
-                "ShoulderSurfing-," +
-                "ShulkerTooltip-," +
-                "SimpleDiscordRichPresence-," +
-                "SimpleWorldTimer-," +
-                "SoundFilters-," +
-                "SpawnerFix-," +
-                "StylishEffects-," +
-                "TextruesRubidiumOptions-," +
-                "TRansliterationLib-," +
-                "TipTheScales-," +
-                "Tips-," +
-                "Toast Control-," +
-                "Toast-Control-," +
-                "ToastControl-," +
-                "TravelersTitles-," +
-                "VR-Combat_," +
-                "VoidFog-," +
-                "WindowedFullscreen-," +
-                "WorldNameRandomizer-," +
-                "[1.12.2]DamageIndicatorsMod-," +
-                "[1.12.2]bspkrscore-," +
-                "antighost-," +
-                "anviltooltipmod-," +
-                "appleskin-," +
-                "armorchroma-," +
-                "armorpointspp-," +
-                "auditory-," +
-                "authme-," +
-                "auto-reconnect-," +
-                "autojoin-," +
-                "autoreconnect-," +
-                "axolotl-item-fix-," +
-                "backtools-," +
-                "bannerunlimited-," +
-                "beenfo-1.19-," +
-                "better-recipe-book-," +
-                "betterbiomeblend-," +
-                "bhmenu-," +
-                "blur-," +
-                "borderless-mining-," +
-                "catalogue-," +
-                "charmonium-," +
-                "chat_heads-," +
-                "cherishedworlds-," +
-                "cirback-1.0-," +
-                "classicbar-," +
-                "clickadv-," +
-                "clienttweaks-," +
-                "combat_music-," +
-                "connectedness-," +
-                "controllable-," +
-                "cullleaves-," +
-                "cullparticles-," +
-                "custom-crosshair-mod-," +
-                "customdiscordrpc-," +
-                "darkness-," +
-                "dashloader-," +
-                "defaultoptions-," +
-                "desiredservers-," +
-                "discordrpc-," +
-                "drippyloadingscreen-," +
-                "drippyloadingscreen_," +
-                "durabilitytooltip-," +
-                "dynamic-fps-," +
-                "dynamic-music-," +
-                "dynamiclights-," +
-                "dynmus-," +
-                "effective-," +
-                "eggtab-," +
-                "eguilib-," +
-                "eiramoticons-," +
-                "enchantment-lore-," +
-                "entity-texture-features-," +
-                "entityculling-," +
-                "exhaustedstamina-," +
-                "extremesoundmuffler-," +
-                "fabricemotes-," +
-                "fancymenu_," +
-                "fancymenu_video_extension," +
-                "flickerfix-," +
-                "fm_audio_extension_," +
-                "forgemod_VoxelMap-," +
-                "freelook-," +
-                "galacticraft-rpc-," +
-                "gamestagesviewer-," +
-                "grid-," +
-                "helium-," +
-                "hiddenrecipebook_," +
-                "hiddenrecipebook-," +
-                "infinitemusic-," +
-                "inventoryprofiles," +
-                "invtweaks-," +
-                "itemzoom," +
-                "itlt-," +
-                "jeed-," +
-                "jehc-," +
-                "jeiintegration_," +
-                "just-enough-harvestcraft-," +
-                "justenoughbeacons-," +
-                "justenoughdrags-," +
-                "justzoom_," +
-                "keymap-," +
-                "keywizard-," +
-                "lazydfu-," +
-                "lib39-," +
-                "light-overlay-," +
-                "lightfallclient-," +
-                "lightspeed-," +
-                "loadmyresources_," +
-                "lock_minecart_view-," +
-                "lootbeams-," +
-                "lwl-," +
-                "magnesium_extras-," +
-                "maptooltip-," +
-                "massunbind," +
-                "mcbindtype-," +
-                "mcwifipnp-," +
-                "medievalmusic-," +
-                "mightyarchitect-," +
-                "mindful-eating-," +
-                "minetogether-," +
-                "mobplusplus-," +
-                "modcredits-," +
-                "modernworldcreation_," +
-                "modnametooltip-," +
-                "modnametooltip_," +
-                "moreoverlays-," +
-                "mousewheelie-," +
-                "movement-vision-," +
-                "multihotbar-," +
-                "music-duration-reducer-," +
-                "musicdr-," +
-                "neiRecipeHandlers-," +
-                "ngrok-lan-expose-mod-," +
-                "no_nv_flash-," +
-                "nopotionshift_," +
-                "notenoughanimations-," +
-                "oculus-," +
-                "ornaments-," +
-                "overloadedarmorbar-," +
-                "panorama-," +
-                "paperdoll-," +
-                "physics-mod-," +
-                "phosphor-," +
-                "preciseblockplacing-," +
-                "realm-of-lost-souls-," +
-                "rebind_narrator-," +
-                "rebind-narrator-," +
-                "rebindnarrator-," +
-                "rebrand-," +
-                "reforgium-," +
-                "replanter-," +
-                "rubidium-," +
-                "rubidium_extras-," +
-                "screenshot-to-clipboard-," +
-                "shutupexperimentalsettings-," +
-                "shutupmodelloader-," +
-                "signtools-," +
-                "simple-rpc-," +
-                "simpleautorun-," +
-                "smartcursor-," +
-                "smoothboot-," +
-                "smoothfocus-," +
-                "sodium-fabric-," +
-                "sounddeviceoptions-," +
-                "soundreloader-," +
-                "spoticraft-," +
-                "tconplanner-," +
-                "timestamps-," +
-                "tooltipscroller-," +
-                "torchoptimizer-," +
-                "torohealth-," +
-                "totaldarkness," +
-                "toughnessbar-," +
-                "whats-that-slot-forge-," +
-                "wisla-," +
-                "xlifeheartcolors-," +
-                "yisthereautojump-"
+    private var fallbackMods = TreeSet(
+        listOf(
+            "3dskinlayers-",
+            "Absolutely-Not-A-Zoom-Mod-",
+            "AdvancedChat-",
+            "AdvancedChatCore-",
+            "AdvancedChatHUD-",
+            "AdvancedCompas-",
+            "Ambience",
+            "AmbientEnvironment-",
+            "AmbientSounds_",
+            "AreYouBlind-",
+            "Armor Status HUD-",
+            "ArmorSoundTweak-",
+            "BH-Menu-",
+            "Batty's Coordinates PLUS Mod",
+            "BetterAdvancements-",
+            "BetterAnimationsCollection-",
+            "BetterDarkMode-",
+            "BetterF3-",
+            "BetterFog-",
+            "BetterFoliage-",
+            "BetterPingDisplay-",
+            "BetterPlacement-",
+            "BetterTaskbar-",
+            "BetterThirdPerson",
+            "BetterTitleScreen-",
+            "Blur-",
+            "BorderlessWindow-",
+            "CTM-",
+            "ChunkAnimator-",
+            "ClientTweaks_",
+            "CompletionistsIndex-",
+            "Controller Support-",
+            "Controlling-",
+            "CraftPresence-",
+            "CullLessLeaves-Reforged-",
+            "CustomCursorMod-",
+            "CustomMainMenu-",
+            "DefaultOptions_",
+            "DefaultSettings-",
+            "DeleteWorldsToTrash-",
+            "DetailArmorBar-",
+            "Ding-",
+            "DistantHorizons-",
+            "DripSounds-",
+            "Durability101-",
+            "DurabilityNotifier-",
+            "DynamicSurroundings-",
+            "DynamicSurroundingsHuds-",
+            "EffectsLeft-",
+            "EiraMoticons_",
+            "EnchantmentDescriptions-",
+            "EnhancedVisuals_",
+            "EquipmentCompare-",
+            "FPS-Monitor-",
+            "FabricCustomCursorMod-",
+            "Fallingleaves-",
+            "FancySpawnEggs",
+            "FancyVideo-API-",
+            "FirstPersonMod",
+            "FogTweaker-",
+            "ForgeCustomCursorMod-",
+            "FpsReducer-",
+            "FpsReducer2-",
+            "FullscreenWindowed-",
+            "GameMenuModOption-",
+            "HealthOverlay-",
+            "HeldItemTooltips-",
+            "HorseStatsMod-",
+            "ImmediatelyFastReforged-",
+            "InventoryEssentials_",
+            "InventoryHud_[1.17.1].forge-",
+            "InventorySpam-",
+            "InventoryTweaks-",
+            "ItemBorders-",
+            "ItemPhysicLite_",
+            "ItemStitchingFix-",
+            "JBRA-Client-",
+            "JustEnoughCalculation-",
+            "JustEnoughEffects-",
+            "JustEnoughProfessions-",
+            "LeaveMyBarsAlone-",
+            "LLOverlayReloaded-",
+            "LOTRDRP-",
+            "LegendaryTooltips",
+            "LegendaryTooltips-",
+            "LightOverlay-",
+            "MoBends",
+            "MouseTweaks-",
+            "MyServerIsCompatible-",
+            "Neat ",
+            "Neat-",
+            "NekosEnchantedBooks-",
+            "NoAutoJump-",
+            "NoFog-",
+            "Notes-",
+            "NotifMod-",
+            "OldJavaWarning-",
+            "OptiFine",
+            "OptiFine_",
+            "OptiForge",
+            "OptiForge-",
+            "OverflowingBars-",
+            "PackMenu-",
+            "PackModeMenu-",
+            "PickUpNotifier-",
+            "Ping-",
+            "PingHUD-",
+            "PresenceFootsteps-",
+            "RPG-HUD-",
+            "ReAuth-",
+            "Reforgium-",
+            "ResourceLoader-",
+            "ResourcePackOrganizer",
+            "ShoulderSurfing-",
+            "ShulkerTooltip-",
+            "SimpleDiscordRichPresence-",
+            "SimpleWorldTimer-",
+            "SoundFilters-",
+            "SpawnerFix-",
+            "StylishEffects-",
+            "TextruesRubidiumOptions-",
+            "TRansliterationLib-",
+            "TipTheScales-",
+            "Tips-",
+            "Toast Control-",
+            "Toast-Control-",
+            "ToastControl-",
+            "TravelersTitles-",
+            "VR-Combat_",
+            "VoidFog-",
+            "WindowedFullscreen-",
+            "WorldNameRandomizer-",
+            "[1.12.2]DamageIndicatorsMod-",
+            "[1.12.2]bspkrscore-",
+            "antighost-",
+            "anviltooltipmod-",
+            "appleskin-",
+            "armorchroma-",
+            "armorpointspp-",
+            "auditory-",
+            "authme-",
+            "auto-reconnect-",
+            "autojoin-",
+            "autoreconnect-",
+            "axolotl-item-fix-",
+            "backtools-",
+            "bannerunlimited-",
+            "beenfo-1.19-",
+            "better-recipe-book-",
+            "betterbiomeblend-",
+            "bhmenu-",
+            "blur-",
+            "borderless-mining-",
+            "catalogue-",
+            "charmonium-",
+            "chat_heads-",
+            "cherishedworlds-",
+            "cirback-1.0-",
+            "classicbar-",
+            "clickadv-",
+            "clienttweaks-",
+            "combat_music-",
+            "connectedness-",
+            "controllable-",
+            "cullleaves-",
+            "cullparticles-",
+            "custom-crosshair-mod-",
+            "customdiscordrpc-",
+            "darkness-",
+            "dashloader-",
+            "defaultoptions-",
+            "desiredservers-",
+            "discordrpc-",
+            "drippyloadingscreen-",
+            "drippyloadingscreen_",
+            "durabilitytooltip-",
+            "dynamic-fps-",
+            "dynamic-music-",
+            "dynamiclights-",
+            "dynmus-",
+            "effective-",
+            "eggtab-",
+            "eguilib-",
+            "eiramoticons-",
+            "enchantment-lore-",
+            "entity-texture-features-",
+            "entityculling-",
+            "essential_",
+            "exhaustedstamina-",
+            "extremesoundmuffler-",
+            "fabricemotes-",
+            "fancymenu_",
+            "fancymenu_video_extension",
+            "flickerfix-",
+            "fm_audio_extension_",
+            "forgemod_VoxelMap-",
+            "freelook-",
+            "galacticraft-rpc-",
+            "gamestagesviewer-",
+            "grid-",
+            "helium-",
+            "hiddenrecipebook_",
+            "hiddenrecipebook-",
+            "infinitemusic-",
+            "inventoryprofiles",
+            "invtweaks-",
+            "itemzoom",
+            "itlt-",
+            "jeed-",
+            "jehc-",
+            "jeiintegration_",
+            "just-enough-harvestcraft-",
+            "justenoughbeacons-",
+            "justenoughdrags-",
+            "justzoom_",
+            "keymap-",
+            "keywizard-",
+            "lazydfu-",
+            "lib39-",
+            "light-overlay-",
+            "lightfallclient-",
+            "lightspeed-",
+            "loadmyresources_",
+            "lock_minecart_view-",
+            "lootbeams-",
+            "lwl-",
+            "magnesium_extras-",
+            "maptooltip-",
+            "massunbind",
+            "mcbindtype-",
+            "mcwifipnp-",
+            "medievalmusic-",
+            "memoryusagescreen-",
+            "mightyarchitect-",
+            "mindful-eating-",
+            "minetogether-",
+            "mobplusplus-",
+            "modcredits-",
+            "modernworldcreation_",
+            "modnametooltip-",
+            "modnametooltip_",
+            "moreoverlays-",
+            "mousewheelie-",
+            "movement-vision-",
+            "multihotbar-",
+            "music-duration-reducer-",
+            "musicdr-",
+            "neiRecipeHandlers-",
+            "ngrok-lan-expose-mod-",
+            "no_nv_flash-",
+            "nopotionshift_",
+            "notenoughanimations-",
+            "oculus-",
+            "ornaments-",
+            "overloadedarmorbar-",
+            "panorama-",
+            "paperdoll-",
+            "physics-mod-",
+            "phosphor-",
+            "preciseblockplacing-",
+            "realm-of-lost-souls-",
+            "rebind_narrator-",
+            "rebind-narrator-",
+            "rebindnarrator-",
+            "rebrand-",
+            "reforgium-",
+            "replanter-",
+            "rubidium-",
+            "rubidium_extras-",
+            "screenshot-to-clipboard-",
+            "shutupexperimentalsettings-",
+            "shutupmodelloader-",
+            "signtools-",
+            "simple-rpc-",
+            "simpleautorun-",
+            "smartcursor-",
+            "smoothboot-",
+            "smoothfocus-",
+            "sodium-fabric-",
+            "sounddeviceoptions-",
+            "soundreloader-",
+            "spoticraft-",
+            "tconplanner-",
+            "timestamps-",
+            "tooltipscroller-",
+            "torchoptimizer-",
+            "torohealth-",
+            "totaldarkness",
+            "toughnessbar-",
+            "whats-that-slot-forge-",
+            "wisla-",
+            "xlifeheartcolors-",
+            "yisthereautojump-"
+        )
+    )
 
     @Suppress("MemberVisibilityCanBePrivate")
-    val fallbackDirectoriesInclusionString =
-        "addonpacks,blueprints,config,configs,customnpcs,defaultconfigs,global_data_packs,global_packs,kubejs,maps,mods,openloader,scripts,schematics,shrines-saves,structures,structurize,worldshape,Zoestria"
+    val fallbackDirectoriesInclusion = TreeSet(
+        listOf(
+            "addonpacks",
+            "blueprints",
+            "config",
+            "configs",
+            "customnpcs",
+            "defaultconfigs",
+            "global_data_packs",
+            "global_packs",
+            "kubejs",
+            "maps",
+            "mods",
+            "openloader",
+            "scripts",
+            "schematics",
+            "shrines-saves",
+            "structures",
+            "structurize",
+            "worldshape",
+            "Zoestria"
+        )
+    )
 
     @Suppress("MemberVisibilityCanBePrivate")
-    val fallbackDirectoriesExclusionString =
-        "animation,asm,cache,changelogs,craftpresence,crash-reports,downloads,icons,libraries,local,logs,overrides,packmenu,profileImage,profileImage,resourcepacks,screenshots,server_pack,shaderpacks,simple-rpc,tv-cache"
+    val fallbackDirectoriesExclusion = TreeSet(
+        listOf(
+            "animation",
+            "asm",
+            "cache",
+            "changelogs",
+            "craftpresence",
+            "crash-reports",
+            "downloads",
+            "icons",
+            "libraries",
+            "local",
+            "logs",
+            "overrides",
+            "packmenu",
+            "profileImage",
+            "profileImage",
+            "resourcepacks",
+            "screenshots",
+            "server_pack",
+            "shaderpacks",
+            "simple-rpc",
+            "tv-cache"
+        )
+    )
 
     @Suppress("MemberVisibilityCanBePrivate")
-    val fallbackZipExclusionsString =
-        "minecraft_server.MINECRAFT_VERSION.jar,server.jar,libraries/net/minecraft/server/MINECRAFT_VERSION/server-MINECRAFT_VERSION.jar"
+    val fallbackZipExclusions = TreeSet(
+        listOf(
+            "minecraft_server.MINECRAFT_VERSION.jar",
+            "server.jar",
+            "libraries/net/minecraft/server/MINECRAFT_VERSION/server-MINECRAFT_VERSION.jar"
+        )
+    )
 
     @Suppress("MemberVisibilityCanBePrivate")
     val fallbackAikarsFlags = "-Xms4G" +
@@ -485,7 +539,7 @@ actual class ApiProperties(
      * String-list of clientside-only mods to exclude from server packs.
      */
     @Suppress("MemberVisibilityCanBePrivate")
-    var clientsideMods = TreeSet(fallbackModsString.split(","))
+    var clientsideMods = fallbackMods
         private set
 
     /**
@@ -611,9 +665,9 @@ actual class ApiProperties(
     /**
      * Directories to include in a server pack.
      */
-    var directoriesToInclude = TreeSet(fallbackDirectoriesInclusionString.split(","))
+    var directoriesToInclude = fallbackDirectoriesInclusion
         get() {
-            val entries = getListProperty(pConfigurationDirectoriesMustInclude, fallbackDirectoriesInclusionString)
+            val entries = getListProperty(pConfigurationDirectoriesMustInclude, fallbackDirectoriesInclusion.joinToString(","))
             field.addAll(entries)
             return field
         }
@@ -627,9 +681,9 @@ actual class ApiProperties(
     /**
      * Directories to exclude from a server pack.
      */
-    var directoriesToExclude = TreeSet(fallbackDirectoriesExclusionString.split(","))
+    var directoriesToExclude = fallbackDirectoriesExclusion
         get() {
-            val prop = getListProperty(pConfigurationDirectoriesShouldExclude, fallbackDirectoriesExclusionString)
+            val prop = getListProperty(pConfigurationDirectoriesShouldExclude, fallbackDirectoriesExclusion.joinToString(","))
             val use = TreeSet(prop)
             use.removeIf { n -> directoriesToInclude.contains(n) }
             field.clear()
@@ -655,9 +709,9 @@ actual class ApiProperties(
      *
      * Should you want these filters to be expanded, open an issue on [GitHub](https://github.com/Griefed/ServerPackCreator/issues)
      */
-    var zipArchiveExclusions = TreeSet(fallbackZipExclusionsString.split(","))
+    var zipArchiveExclusions = fallbackZipExclusions
         get() {
-            val entries = getListProperty(pServerPackZipExclusions, fallbackZipExclusionsString)
+            val entries = getListProperty(pServerPackZipExclusions, fallbackZipExclusions.joinToString(","))
             field.addAll(entries)
             return field
         }
@@ -1531,7 +1585,7 @@ actual class ApiProperties(
         clientsideMods.addAll(
             getListProperty(
                 pConfigurationFallbackModsList,
-                fallbackModsString
+                fallbackMods.joinToString(",")
             )
         )
         internalProps.setProperty(
