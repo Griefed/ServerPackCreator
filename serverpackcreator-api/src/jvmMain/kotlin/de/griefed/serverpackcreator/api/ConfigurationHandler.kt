@@ -830,16 +830,23 @@ actual class ConfigurationHandler(
         SecurityException::class
     )
     actual override fun getDirectoriesInModpackZipBaseDirectory(zipFile: File): List<String> {
-        val baseDirectories: MutableList<String> = ArrayList(100)
+        val baseDirectories: TreeSet<String> = TreeSet()
+        var headerBeginning: String
         ZipFile(zipFile).use {
             val headers = it.fileHeaders
             for (header in headers) {
-                if (header.fileName.matches(zipCheck)) {
-                    baseDirectories.add(header.fileName)
+                try {
+                    headerBeginning = header.fileName.substring(0,header.fileName.indexOfFirst { char -> char == '/' } + 1)
+                    log.debug("Header beginning $headerBeginning")
+                    if (headerBeginning.matches(zipCheck)) {
+                        baseDirectories.add(headerBeginning)
+                    }
+                } catch (ex: StringIndexOutOfBoundsException) {
+                    log.debug("Could not parse ${header.fileName}")
                 }
             }
         }
-        return baseDirectories
+        return baseDirectories.toList()
     }
 
     @Throws(IOException::class)
