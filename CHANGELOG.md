@@ -1,3 +1,15 @@
+## [5.0.0-alpha.23](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-alpha.22...5.0.0-alpha.23) (2023-09-07)
+
+
+### 💎 Improvements
+
+* Hint about server pack contents generated from ZIP-archives ([e2107d2](https://git.griefed.de/Griefed/ServerPackCreator/commit/e2107d20b23694411e4768459130993938b663a6))
+
+
+### 🛠 Fixes
+
+* Correctly check ZIP-entries ([0cd02cf](https://git.griefed.de/Griefed/ServerPackCreator/commit/0cd02cf471ebd52a1afc967134374595cd3b7b62))
+
 ## [5.0.0-alpha.22](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-alpha.21...5.0.0-alpha.22) (2023-08-30)
 
 
