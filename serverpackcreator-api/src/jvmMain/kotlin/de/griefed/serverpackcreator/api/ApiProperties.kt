@@ -310,6 +310,7 @@ actual class ApiProperties(
                 "enchantment-lore-," +
                 "entity-texture-features-," +
                 "entityculling-," +
+                "essential_," +
                 "exhaustedstamina-," +
                 "extremesoundmuffler-," +
                 "fabricemotes-," +
@@ -354,6 +355,7 @@ actual class ApiProperties(
                 "mcbindtype-," +
                 "mcwifipnp-," +
                 "medievalmusic-," +
+                "memoryusagescreen-," +
                 "mightyarchitect-," +
                 "mindful-eating-," +
                 "minetogether-," +
@@ -604,6 +606,7 @@ actual class ApiProperties(
                 "^enchantment-lore-.*$," +
                 "^entity-texture-features-.*$," +
                 "^entityculling-.*$," +
+                "^essential_.*$," +
                 "^exhaustedstamina-.*$," +
                 "^extremesoundmuffler-.*$," +
                 "^fabricemotes-.*$," +
@@ -648,6 +651,7 @@ actual class ApiProperties(
                 "^mcbindtype-.*$," +
                 "^mcwifipnp-.*$," +
                 "^medievalmusic-.*$," +
+                "^memoryusagescreen-.*$," +
                 "^mightyarchitect-.*$," +
                 "^mindful-eating-.*$," +
                 "^minetogether-.*$," +
