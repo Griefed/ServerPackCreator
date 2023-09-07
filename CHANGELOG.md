@@ -1,3 +1,25 @@
+## [4.3.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.2.1...4.3.0) (2023-09-02)
+
+
+### 💎 Improvements
+
+* Hint about server pack contents generated from ZIP-archives ([e0a9ac3](https://git.griefed.de/Griefed/ServerPackCreator/commit/e0a9ac30ec435868982ff37550e42f6e4a2fa625))
+
+
+### 📦 Other
+
+* Add debug logging for fabric dependency checks ([a7d9422](https://git.griefed.de/Griefed/ServerPackCreator/commit/a7d94228503d2bda01fe2bcd3b0689ecb11b022f))
+
+
+### 🦊 CI/CD
+
+* Use docker proxy to reduce traffic ([509f454](https://git.griefed.de/Griefed/ServerPackCreator/commit/509f454f07da48d8100cdbe163f289a8163fa854))
+
+
+### 🛠 Fixes
+
+* Correctly check ZIP-entries ([fb7da8a](https://git.griefed.de/Griefed/ServerPackCreator/commit/fb7da8a0fded267fd77019776474ec07ffd70810))
+
 ## [4.2.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.2.0...4.2.1) (2023-07-28)
 
 
