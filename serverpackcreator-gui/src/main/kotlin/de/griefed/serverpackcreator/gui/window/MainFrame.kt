@@ -96,4 +96,9 @@ class MainFrame(
             }
         }, AWTEvent.KEY_EVENT_MASK)*/
     }
+
+    fun toFront() {
+        frame.toFront()
+        frame.requestFocus()
+    }
 }

@@ -20,10 +20,13 @@
 package de.griefed.serverpackcreator.gui.window.settings
 
 import de.griefed.serverpackcreator.api.ApiProperties
+import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.components.TabPanel
 import de.griefed.serverpackcreator.gui.window.MainFrame
 import de.griefed.serverpackcreator.gui.window.configs.components.ComponentResizer
+import de.griefed.serverpackcreator.gui.window.settings.components.SettingsHandling
+import java.awt.BorderLayout
 
 /**
  * TODO docs
@@ -31,11 +34,12 @@ import de.griefed.serverpackcreator.gui.window.configs.components.ComponentResiz
 class SettingsEditorsTab(guiProps: GuiProps, apiProperties: ApiProperties, mainFrame: MainFrame) :
     TabPanel() {
 
+    private val componentResizer = ComponentResizer()
+    val global = GlobalSettings(guiProps, apiProperties, componentResizer, mainFrame)
+    val webservice = WebserviceSettings(guiProps)
+    val gui = GuiSettings(guiProps)
+
     init {
-        val componentResizer = ComponentResizer()
-        val global = GlobalSettings(guiProps, apiProperties, componentResizer, mainFrame)
-        val webservice = WebserviceSettings(guiProps)
-        val gui = GuiSettings(guiProps)
         tabs.add(global)
         tabs.setTabComponentAt(tabs.tabCount - 1, global.title)
         tabs.add(gui)
@@ -43,20 +47,6 @@ class SettingsEditorsTab(guiProps: GuiProps, apiProperties: ApiProperties, mainF
         tabs.add(webservice)
         tabs.setTabComponentAt(tabs.tabCount - 1, webservice.title)
         tabs.selectedIndex = 0
-    }
-
-    fun save() {
-        TODO("Save all tabs configs")
-    }
-
-    fun load() {
-        TODO("load from serverpackcreator.properties")
+        panel.add(SettingsHandling(guiProps, this, apiProperties).panel, BorderLayout.SOUTH)
     }
 }
-
-//TODO settings editor for guiProps(?) and apiProperties
-
-/*TODO
-    Save Last Loaded Config (still used?)
-    de.griefed.serverpackcreator.configuration.saveloadedconfig
- */

@@ -32,6 +32,7 @@ import de.griefed.serverpackcreator.gui.window.control.components.LarsonScanner.
 import kotlinx.coroutines.asCoroutineDispatcher
 import net.java.balloontip.styles.BalloonTipStyle
 import net.java.balloontip.styles.EdgedBalloonStyle
+import java.awt.Font
 import java.awt.Frame
 import java.awt.Image
 import java.util.*
@@ -39,6 +40,7 @@ import java.util.concurrent.Executors
 import javax.swing.ImageIcon
 import javax.swing.SwingUtilities
 import javax.swing.UIManager
+import javax.swing.plaf.FontUIResource
 
 /**
  * Properties used at various places across the whole of the ServerPackCreator GUI, such as icons.
@@ -362,6 +364,36 @@ class GuiProps(private val apiProperties: ApiProperties) {
             }
             FlatAnimatedLafChange.hideSnapshotWithAnimation()
             storeGuiProperty("theme", field.javaClass.name)
+        }
+    var startFocusEnabled: Boolean
+        get() {
+            val prop = getGuiProperty("focus.start", "false")
+            return prop == "true"
+        }
+        set(value) {
+            storeGuiProperty("focus.start",value.toString())
+        }
+    var generationFocusEnabled: Boolean
+        get() {
+            val prop = getGuiProperty("focus.generation", "false")
+            return prop == "true"
+        }
+        set(value) {
+            storeGuiProperty("focus.generation",value.toString())
+        }
+    var fontSize: Int
+        get() {
+            val prop = getGuiProperty("font.size","12")
+            return if (prop != null) {
+                return prop.toInt()
+            } else {
+                12
+            }
+        }
+        set(value) {
+            storeGuiProperty("font.size",value.toString())
+            val currentFont = UIManager.get("defaultFont") as Font
+            UIManager.put("defaultFont",FontUIResource(currentFont.fontName, currentFont.style, value))
         }
 
     /**
