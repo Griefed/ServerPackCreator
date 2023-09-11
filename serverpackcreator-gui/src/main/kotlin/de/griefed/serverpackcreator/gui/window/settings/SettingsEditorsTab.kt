@@ -36,7 +36,7 @@ class SettingsEditorsTab(guiProps: GuiProps, apiProperties: ApiProperties, mainF
 
     private val componentResizer = ComponentResizer()
     val global = GlobalSettings(guiProps, apiProperties, componentResizer, mainFrame)
-    val webservice = WebserviceSettings(guiProps)
+    val webservice = WebserviceSettings(guiProps, apiProperties,mainFrame)
     val gui = GuiSettings(guiProps)
 
     init {

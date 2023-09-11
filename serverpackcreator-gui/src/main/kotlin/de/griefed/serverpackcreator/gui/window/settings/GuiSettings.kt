@@ -24,69 +24,67 @@ import de.griefed.serverpackcreator.gui.components.BalloonTipButton
 import de.griefed.serverpackcreator.gui.components.ElementLabel
 import de.griefed.serverpackcreator.gui.components.StatusIcon
 import de.griefed.serverpackcreator.gui.window.settings.components.Editor
-import java.awt.Font
 import javax.swing.JCheckBox
 import javax.swing.JSlider
-import javax.swing.UIManager
 
 class GuiSettings(guiProps: GuiProps) : Editor("Gui", guiProps) {
 
     val fontSizeIcon = StatusIcon(guiProps,"Size of fonts in ServerPackCreators GUI.")
     val fontSizeLabel = ElementLabel("Font Size")
-    val fontSizeSlider = JSlider(8,76,guiProps.fontSize)
+    val fontSizeSetting = JSlider(8,76,guiProps.fontSize)
     val fontSizeRevert = BalloonTipButton(null,guiProps.revertIcon,"Revert changes", guiProps) {
-        fontSizeSlider.value = guiProps.fontSize
+        fontSizeSetting.value = guiProps.fontSize
     }
     val fontSizeReset = BalloonTipButton(null,guiProps.resetIcon,"Reset to default value",guiProps) {
-        fontSizeSlider.value = 12
+        fontSizeSetting.value = 12
     }
 
     val startFocusIcon = StatusIcon(guiProps,"Whether ServerPackCreator should be focused after starting.")
     val startFocusLabel = ElementLabel("Focus On Start")
-    val startFocusEnabled = JCheckBox()
+    val startFocusSetting = JCheckBox()
     val startFocusRevert = BalloonTipButton(null,guiProps.revertIcon,"Revert changes",guiProps) {
-        startFocusEnabled.isSelected = guiProps.startFocusEnabled
+        startFocusSetting.isSelected = guiProps.startFocusEnabled
     }
     val startFocusReset = BalloonTipButton(null,guiProps.resetIcon,"Reset to default value",guiProps) {
-        startFocusEnabled.isSelected = false
+        startFocusSetting.isSelected = false
     }
 
     val generationFocusIcon = StatusIcon(guiProps,"Whether ServerPackCreator should be focused after a server pack has been generated.")
     val generationFocusLabel = ElementLabel("Focus After Generation")
-    val generationFocusEnabled = JCheckBox()
+    val generationFocusSetting = JCheckBox()
     val generationFocusRevert = BalloonTipButton(null,guiProps.revertIcon,"Revert changes",guiProps) {
-        generationFocusEnabled.isSelected = guiProps.generationFocusEnabled
+        generationFocusSetting.isSelected = guiProps.generationFocusEnabled
     }
     val generationFocusReset = BalloonTipButton(null,guiProps.resetIcon,"Reset to default value",guiProps) {
-        generationFocusEnabled.isSelected = false
+        generationFocusSetting.isSelected = false
     }
 
     init {
-        startFocusEnabled.isSelected = guiProps.startFocusEnabled
-        generationFocusEnabled.isSelected = guiProps.generationFocusEnabled
-        fontSizeSlider.paintTicks = true
-        fontSizeSlider.paintLabels = true
-        fontSizeSlider.majorTickSpacing = 4
-        fontSizeSlider.minorTickSpacing = 2
+        startFocusSetting.isSelected = guiProps.startFocusEnabled
+        generationFocusSetting.isSelected = guiProps.generationFocusEnabled
+        fontSizeSetting.paintTicks = true
+        fontSizeSetting.paintLabels = true
+        fontSizeSetting.majorTickSpacing = 4
+        fontSizeSetting.minorTickSpacing = 2
 
         var y = 0
         panel.add(fontSizeIcon, "cell 0 $y")
         panel.add(fontSizeLabel, "cell 1 $y")
-        panel.add(fontSizeSlider, "cell 2 $y, grow")
+        panel.add(fontSizeSetting, "cell 2 $y, grow")
         panel.add(fontSizeRevert, "cell 3 $y")
         panel.add(fontSizeReset, "cell 4 $y")
 
         y++
         panel.add(startFocusIcon, "cell 0 $y")
         panel.add(startFocusLabel, "cell 1 $y")
-        panel.add(startFocusEnabled, "cell 2 $y, grow")
+        panel.add(startFocusSetting, "cell 2 $y, grow")
         panel.add(startFocusRevert, "cell 3 $y")
         panel.add(startFocusReset, "cell 4 $y")
 
         y++
         panel.add(generationFocusIcon, "cell 0 $y")
         panel.add(generationFocusLabel, "cell 1 $y")
-        panel.add(generationFocusEnabled, "cell 2 $y, grow")
+        panel.add(generationFocusSetting, "cell 2 $y, grow")
         panel.add(generationFocusRevert, "cell 3 $y")
         panel.add(generationFocusReset, "cell 4 $y")
     }

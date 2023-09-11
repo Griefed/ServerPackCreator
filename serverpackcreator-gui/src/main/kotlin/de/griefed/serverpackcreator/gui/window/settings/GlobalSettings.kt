@@ -42,7 +42,7 @@ class GlobalSettings(guiProps: GuiProps, apiProperties: ApiProperties, component
     val homeReset = BalloonTipButton(null,guiProps.resetIcon,"Reset to default value",guiProps) { homeSetting.file = apiProperties.defaultHomeDirectory() }
     val homeChoose = BalloonTipButton(null,guiProps.folderIcon,"Select directory",guiProps) {
         val homeChooser = HomeDirChooser(apiProperties,"Home Directory Chooser")
-        if (homeChooser.showSaveDialog(mainFrame.frame) == JFileChooser.APPROVE_OPTION) {
+        if (homeChooser.showSaveDialog(mainFrame.frame) == JFileChooser.SAVE_DIALOG) {
             homeSetting.file = homeChooser.selectedFile.absoluteFile
         }
     }
@@ -54,7 +54,7 @@ class GlobalSettings(guiProps: GuiProps, apiProperties: ApiProperties, component
     val javaReset = BalloonTipButton(null,guiProps.resetIcon,"Reset to default value",guiProps) { javaSetting.file = File(apiProperties.acquireJavaPath()).absoluteFile }
     val javaChoose = BalloonTipButton(null,guiProps.folderIcon,"Select executable",guiProps) {
         val javaChooser = JavaChooser(apiProperties,"Java Executable Chooser")
-        if (javaChooser.showSaveDialog(mainFrame.frame) == JFileChooser.APPROVE_OPTION) {
+        if (javaChooser.showSaveDialog(mainFrame.frame) == JFileChooser.SAVE_DIALOG) {
             javaSetting.file = javaChooser.selectedFile.absoluteFile
         }
     }
@@ -66,7 +66,7 @@ class GlobalSettings(guiProps: GuiProps, apiProperties: ApiProperties, component
     val serverPacksReset = BalloonTipButton(null,guiProps.resetIcon,"Reset to default value",guiProps) { serverPacksSetting.file = apiProperties.defaultServerPacksDirectory() }
     val serverPacksChoose = BalloonTipButton(null,guiProps.folderIcon,"Select directory",guiProps) {
         val serverPackDirChooser = ServerPackDirChooser(apiProperties,"Server Pack Directory Chooser")
-        if (serverPackDirChooser.showSaveDialog(mainFrame.frame) == JFileChooser.APPROVE_OPTION) {
+        if (serverPackDirChooser.showSaveDialog(mainFrame.frame) == JFileChooser.SAVE_DIALOG) {
             serverPacksSetting.file = serverPackDirChooser.selectedFile.absoluteFile
         }
     }
@@ -96,7 +96,7 @@ class GlobalSettings(guiProps: GuiProps, apiProperties: ApiProperties, component
     val scriptReset = BalloonTipButton(null,guiProps.resetIcon,"Reset to default value",guiProps) { scriptSetting.text = apiProperties.defaultScriptTemplates().joinToString(", ") }
     val scriptChoose = BalloonTipButton(null,guiProps.folderIcon,"Select directory",guiProps) {
         val scriptChooser = ScriptTemplatesChooser(apiProperties,"Script Template Chooser")
-        if (scriptChooser.showSaveDialog(mainFrame.frame) == JFileChooser.APPROVE_OPTION) {
+        if (scriptChooser.showSaveDialog(mainFrame.frame) == JFileChooser.SAVE_DIALOG) {
             scriptSetting.text = scriptChooser.selectedFiles.joinToString(", ") { it.absolutePath }
         }
     }

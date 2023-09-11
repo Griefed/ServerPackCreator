@@ -522,6 +522,10 @@ actual class ApiProperties(
     val fallbackServerPackCleanupEnabled = true
     val fallbackMinecraftPreReleasesAvailabilityEnabled = false
     val fallbackAutoExcludingModsEnabled = true
+    val fallbackArtemisQueueMaxDiskUsage = 90
+    val fallbackCleanupSchedule = "0 0 0 * * *"
+    val fallbackVersionSchedule = "0 0 0 * * *"
+    val fallbackDatabaseCleanupSchedule = "0 0 0 * * *"
     private val serverPackCreatorProperties = "serverpackcreator.properties"
     private val checkedJavas = hashMapOf<String, Boolean>()
 
@@ -1089,7 +1093,7 @@ actual class ApiProperties(
     /**
      * Maximum disk usage in percent until Artemis stops accepting new entries.
      */
-    var queueMaxDiskUsage = 90
+    var artemisQueueMaxDiskUsage = 90
         get() {
             val usage = getIntProperty(pSpringArtemisQueueMaxDiskUsage, 90)
             field = if (usage in 0..100) {
@@ -1109,6 +1113,38 @@ actual class ApiProperties(
                 log.error("Invalid max disk usage specified: $value.")
             }
         }
+
+    var webserviceCleanupSchedule: String
+        get() {
+            return internalProps.getProperty("de.griefed.serverpackcreator.spring.schedules.database.cleanup")
+        }
+        set(value) {
+            internalProps.setProperty("de.griefed.serverpackcreator.spring.schedules.database.cleanup",value)
+        }
+
+    var webserviceVersionSchedule: String
+        get() {
+            return internalProps.getProperty("de.griefed.serverpackcreator.spring.schedules.versions.refresh")
+        }
+        set(value) {
+            internalProps.setProperty("de.griefed.serverpackcreator.spring.schedules.versions.refresh",value)
+        }
+
+    var webserviceDatabaseCleanupSchedule: String
+        get() {
+            return internalProps.getProperty("de.griefed.serverpackcreator.spring.schedules.files.cleanup")
+        }
+        set(value) {
+            internalProps.setProperty("de.griefed.serverpackcreator.spring.schedules.files.cleanup",value)
+        }
+
+    fun defaultWebserviceDatabase(): File {
+        return File(userHome,"serverpackcreator.db")
+    }
+
+    fun defaultArtemisDataDirectory(): File {
+        return File(workDirectory, "artemis")
+    }
 
     /**
      * Default home-directory for ServerPackCreator. If there's no user-home, then the directory containing the
@@ -1193,6 +1229,10 @@ actual class ApiProperties(
             log.info("Set Tomcat base-directory to: $field")
         }
 
+    fun defaultTomcatBaseDirectory(): File {
+        return homeDirectory.absoluteFile
+    }
+
     fun defaultServerPacksDirectory(): File {
         return File(homeDirectory, "server-packs").absoluteFile
     }
@@ -1237,7 +1277,7 @@ actual class ApiProperties(
     @Suppress("MemberVisibilityCanBePrivate")
     var tomcatLogsDirectory: File = logsDirectory
         get() {
-            val default = File("${homeDirectory}${File.separator}logs").absolutePath
+            val default = File(homeDirectory,"logs").absolutePath
             val dir = internalProps.getProperty(pTomcatLogsDirectory, default)
             field = File(dir).absoluteFile
             return field
@@ -1247,6 +1287,10 @@ actual class ApiProperties(
             field = value.absoluteFile
             log.info("Set Tomcat logs-directory to: $field")
         }
+
+    fun defaultTomcatLogsDirectory(): File {
+        return File(homeDirectory,"logs").absoluteFile
+    }
 
     /**
      * Directory to which default/fallback manifests are copied to during the startup of
@@ -2066,7 +2110,7 @@ actual class ApiProperties(
         log.info("Checking for pre-releases set to:   $isCheckingForPreReleasesEnabled")
         log.info("Zip-file exclusion enabled set to:  $isZipFileExclusionEnabled")
         log.info("HasteBin documents endpoint set to: $hasteBinServerUrl")
-        log.info("Queue max disk usage set to:        $queueMaxDiskUsage")
+        log.info("Queue max disk usage set to:        $artemisQueueMaxDiskUsage")
         log.info("Directories which must always be included set to: $directoriesToInclude")
         log.info("Directories which must always be excluded set to: $directoriesToExclude")
         log.info("Cleanup of already existing server packs set to:  $isServerPackCleanupEnabled")
