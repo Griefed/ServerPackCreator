@@ -28,7 +28,7 @@ import java.io.File
 import javax.swing.JFileChooser
 import javax.swing.JSlider
 
-class WebserviceSettings(guiProps: GuiProps, apiProperties: ApiProperties, mainFrame: MainFrame) : Editor("Webservice", guiProps) {
+class WebserviceSettings(guiProps: GuiProps, private val apiProperties: ApiProperties, mainFrame: MainFrame) : Editor("Webservice", guiProps) {
 
     val artemisDataDirectoryIcon = StatusIcon(guiProps, "Data directory for Artemis Queue System")
     val artemisDataDirectoryLabel = ElementLabel("Artemis Data Directory")
@@ -170,10 +170,24 @@ class WebserviceSettings(guiProps: GuiProps, apiProperties: ApiProperties, mainF
     }
 
     override fun loadSettings() {
-        TODO("Not yet implemented")
+        artemisDataDirectorySetting.file = apiProperties.artemisDataDirectory.absoluteFile
+        artemisQueueMaxDiskUsageSetting.value = apiProperties.artemisQueueMaxDiskUsage
+        databaseFileSetting.file = apiProperties.serverPackCreatorDatabase.absoluteFile
+        cleanupScheduleSetting.text = apiProperties.webserviceCleanupSchedule
+        logDirectorySetting.file = apiProperties.tomcatLogsDirectory.absoluteFile
+        baseDirSetting.file = apiProperties.tomcatBaseDirectory.absoluteFile
+        versionScheduleSetting.text = apiProperties.webserviceVersionSchedule
+        databaseCleanupScheduleSetting.text = apiProperties.webserviceDatabaseCleanupSchedule
     }
 
     override fun saveSettings() {
-        TODO("Not yet implemented")
+        apiProperties.artemisDataDirectory = artemisDataDirectorySetting.file.absoluteFile
+        apiProperties.artemisQueueMaxDiskUsage = artemisQueueMaxDiskUsageSetting.value
+        apiProperties.serverPackCreatorDatabase = databaseFileSetting.file.absoluteFile
+        apiProperties.webserviceCleanupSchedule = cleanupScheduleSetting.text
+        apiProperties.tomcatLogsDirectory = logDirectorySetting.file.absoluteFile
+        apiProperties.tomcatBaseDirectory = baseDirSetting.file.absoluteFile
+        apiProperties.webserviceVersionSchedule = versionScheduleSetting.text
+        apiProperties.webserviceDatabaseCleanupSchedule = databaseCleanupScheduleSetting.text
     }
 }

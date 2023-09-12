@@ -1445,7 +1445,7 @@ actual class ApiProperties(
      * Data directory for Artemis` queue-processing.
      */
     @Suppress("MemberVisibilityCanBePrivate")
-    var artemisDataDirectory: File = File(workDirectory, "artemis")
+    var artemisDataDirectory: File = File(workDirectory, "artemis").absoluteFile
         get() {
             val default = File(workDirectory, "artemis").absolutePath
             val dir = internalProps.getProperty(pArtemisDataDirectory, default)
@@ -1522,12 +1522,20 @@ actual class ApiProperties(
      * `server_files`-directory inside ServerPackCreators home-directory.
      */
     val defaultServerIcon: File = File(serverFilesDirectory, "server-icon.png").absoluteFile
-
+    // TODO change to var with getter to accomodate api changes during runtime
     /**
      * The database used by the webservice-portion of ServerPackCreator to do store and provide server packs and
      * related information.
      */
-    val serverPackCreatorDatabase: File = File(jdbcDatabaseUrl.replace("jdbc:sqlite:", "")).absoluteFile
+    var serverPackCreatorDatabase: File = File(jdbcDatabaseUrl.replace("jdbc:sqlite:", "")).absoluteFile
+        get() {
+            field = File(jdbcDatabaseUrl.replace("jdbc:sqlite:", "")).absoluteFile
+            return field
+        }
+        set(value) {
+            field = value.absoluteFile
+            jdbcDatabaseUrl = field.absolutePath
+        }
 
     /**
      * Directory in which plugins for ServerPackCreator are to be placed in.
