@@ -1199,18 +1199,33 @@ actual class ApiProperties(
      * ServerPackCreator and provided the settings, properties and configurations for the currently
      * running instance.
      */
-    val serverPackCreatorPropertiesFile: File = File(homeDirectory, serverPackCreatorProperties).absoluteFile
+    var serverPackCreatorPropertiesFile: File = File(homeDirectory, serverPackCreatorProperties).absoluteFile
+        get() {
+            field = File(homeDirectory, serverPackCreatorProperties).absoluteFile
+            return field
+        }
+        private set
 
     /**
      * Default configuration-file for a server pack generation inside ServerPackCreators
      * home-directory.
      */
-    val defaultConfig: File = File(homeDirectory, "serverpackcreator.conf").absoluteFile
+    var defaultConfig: File = File(homeDirectory, "serverpackcreator.conf").absoluteFile
+        get() {
+            field = File(homeDirectory, "serverpackcreator.conf").absoluteFile
+            return field
+        }
+        private set
 
     /**
      * Directory in which ServerPackCreator configurations from the GUI get saved in by default.
      */
-    val configsDirectory: File = File(homeDirectory, "configs").absoluteFile
+    var configsDirectory: File = File(homeDirectory, "configs").absoluteFile
+        get() {
+            field = File(homeDirectory, "configs").absoluteFile
+            return field
+        }
+        private set
 
     /**
      * Base-directory for Tomcat, used by the webservice-side of ServerPackCreator.
@@ -1269,7 +1284,12 @@ actual class ApiProperties(
      * Storage location for logs created by ServerPackCreator. This is the `logs`-directory
      * inside ServerPackCreators home-directory.
      */
-    val logsDirectory: File = File(homeDirectory, "logs").absoluteFile
+    var logsDirectory: File = File(homeDirectory, "logs").absoluteFile
+        get() {
+            field = File(homeDirectory, "logs").absoluteFile
+            return field
+        }
+        private set
 
     /**
      * Logs-directory for Tomcat, used by the webservice-side of ServerPackCreator.
@@ -1302,7 +1322,12 @@ actual class ApiProperties(
      *
      * By default, this is the `manifests`-directory inside ServerPackCreators home-directory.
      */
-    val manifestsDirectory: File = File(homeDirectory, "manifests").absoluteFile
+    var manifestsDirectory: File = File(homeDirectory, "manifests").absoluteFile
+        get() {
+            field = File(homeDirectory, "manifests").absoluteFile
+            return field
+        }
+        private set
 
     /**
      * The Fabric intermediaries manifest containing all required information about Fabrics
@@ -1312,8 +1337,12 @@ actual class ApiProperties(
      * By default, the `fabric-intermediaries-manifest.json`-file resides in the
      * `manifests`-directory inside ServerPackCreators home-directory.
      */
-    val fabricIntermediariesManifest: File =
-        File(manifestsDirectory, "fabric-intermediaries-manifest.json").absoluteFile
+    var fabricIntermediariesManifest: File = File(manifestsDirectory, "fabric-intermediaries-manifest.json").absoluteFile
+        get() {
+            field = File(manifestsDirectory, "fabric-intermediaries-manifest.json").absoluteFile
+            return field
+        }
+        private set
 
     /**
      * The LegacyFabric game version manifest containing information about which Minecraft version
@@ -1323,7 +1352,12 @@ actual class ApiProperties(
      * By default, the `legacy-fabric-game-manifest.json`-file resides in the
      * `manifests`-directory inside ServerPackCreators home-directory.
      */
-    val legacyFabricGameManifest: File = File(manifestsDirectory, "legacy-fabric-game-manifest.json").absoluteFile
+    var legacyFabricGameManifest: File = File(manifestsDirectory, "legacy-fabric-game-manifest.json").absoluteFile
+        get() {
+            field = File(manifestsDirectory, "legacy-fabric-game-manifest.json").absoluteFile
+            return field
+        }
+        private set
 
     /**
      * LegacyFabric loader manifest containing information about Fabric loader maven versions.
@@ -1331,7 +1365,12 @@ actual class ApiProperties(
      * By default, the `legacy-fabric-loader-manifest.json`-file resides in the
      * `manifests`-directory inside ServerPackCreators home-directory.
      */
-    val legacyFabricLoaderManifest: File = File(manifestsDirectory, "legacy-fabric-loader-manifest.json").absoluteFile
+    var legacyFabricLoaderManifest: File = File(manifestsDirectory, "legacy-fabric-loader-manifest.json").absoluteFile
+        get() {
+            field = File(manifestsDirectory, "legacy-fabric-loader-manifest.json").absoluteFile
+            return field
+        }
+        private set
 
     /**
      * LegacyFabric installer manifest containing information about available LegacyFabric installers
@@ -1340,8 +1379,12 @@ actual class ApiProperties(
      * By default, the `legacy-fabric-installer-manifest.xml`-file resides in the
      * `manifests`-directory inside ServerPackCreators home-directory.
      */
-    val legacyFabricInstallerManifest: File =
-        File(manifestsDirectory, "legacy-fabric-installer-manifest.xml").absoluteFile
+    var legacyFabricInstallerManifest: File = File(manifestsDirectory, "legacy-fabric-installer-manifest.xml").absoluteFile
+        get() {
+            field = File(manifestsDirectory, "legacy-fabric-installer-manifest.xml").absoluteFile
+            return field
+        }
+        private set
 
     /**
      * Fabric installer manifest containing information about available Fabric installers with which
@@ -1350,7 +1393,12 @@ actual class ApiProperties(
      * By default, the `fabric-installer-manifest.xml`-file resides in the
      * `manifests`-directory inside ServerPackCreators home-directory.
      */
-    val fabricInstallerManifest: File = File(manifestsDirectory, "fabric-installer-manifest.xml").absoluteFile
+    var fabricInstallerManifest: File = File(manifestsDirectory, "fabric-installer-manifest.xml").absoluteFile
+        get() {
+            field = File(manifestsDirectory, "fabric-installer-manifest.xml").absoluteFile
+            return field
+        }
+        private set
 
     /**
      * Quilt version manifest containing information about available Quilt loader versions.
@@ -1358,7 +1406,12 @@ actual class ApiProperties(
      * By default, the `quilt-manifest.xml`-file resides in the `manifests`-directory
      * inside ServerPackCreators home-directory.
      */
-    val quiltVersionManifest: File = File(manifestsDirectory, "quilt-manifest.xml").absoluteFile
+    var quiltVersionManifest: File = File(manifestsDirectory, "quilt-manifest.xml").absoluteFile
+        get() {
+            field = File(manifestsDirectory, "quilt-manifest.xml").absoluteFile
+            return field
+        }
+        private set
 
     /**
      * Quilt installer manifest containing information about available Quilt installers with which to
@@ -1367,7 +1420,12 @@ actual class ApiProperties(
      * By default, the `quilt-installer-manifest.xml`-file resides in the
      * `manifests`-directory inside ServerPackCreators home-directory.
      */
-    val quiltInstallerManifest: File = File(manifestsDirectory, "quilt-installer-manifest.xml").absoluteFile
+    var quiltInstallerManifest: File = File(manifestsDirectory, "quilt-installer-manifest.xml").absoluteFile
+        get() {
+            field = File(manifestsDirectory, "quilt-installer-manifest.xml").absoluteFile
+            return field
+        }
+        private set
 
     /**
      * Forge version manifest containing information about available Forge loader versions.
@@ -1376,7 +1434,12 @@ actual class ApiProperties(
      * By default, the `forge-manifest.json`-file resides in the `manifests`-directory
      * inside ServerPackCreators home-directory.
      */
-    val forgeVersionManifest: File = File(manifestsDirectory, "forge-manifest.json").absoluteFile
+    var forgeVersionManifest: File = File(manifestsDirectory, "forge-manifest.json").absoluteFile
+        get() {
+            field = File(manifestsDirectory, "forge-manifest.json").absoluteFile
+            return field
+        }
+        private set
 
     /**
      * NeoForge version manifest containing information about available NeoForge loader versions.
@@ -1385,7 +1448,12 @@ actual class ApiProperties(
      * By default, the `neoforge-manifest.xml`-file resides in the `manifests`-directory
      * inside ServerPackCreators home-directory.
      */
-    val neoForgeVersionManifest: File = File(manifestsDirectory, "neoforge-manifest.xml").absoluteFile
+    var neoForgeVersionManifest: File = File(manifestsDirectory, "neoforge-manifest.xml").absoluteFile
+        get() {
+            field = File(manifestsDirectory, "neoforge-manifest.xml").absoluteFile
+            return field
+        }
+        private set
 
     /**
      * Fabric version manifest containing information about available Fabric loader versions.
@@ -1394,7 +1462,12 @@ actual class ApiProperties(
      * By default, the `fabric-manifest.xml`-file resides in the `manifests`-directory
      * inside ServerPackCreators home-directory.
      */
-    val fabricVersionManifest: File = File(manifestsDirectory, "fabric-manifest.xml").absoluteFile
+    var fabricVersionManifest: File = File(manifestsDirectory, "fabric-manifest.xml").absoluteFile
+        get() {
+            field = File(manifestsDirectory, "fabric-manifest.xml").absoluteFile
+            return field
+        }
+        private set
 
     /**
      * Directory to which Minecraft server manifests are copied during the startup of
@@ -1410,7 +1483,12 @@ actual class ApiProperties(
      * By default, this is the `mcserver`-directory inside the `manifests`-directory
      * inside ServerPackCreators home-directory.
      */
-    val minecraftServerManifestsDirectory: File = File(manifestsDirectory, "mcserver").absoluteFile
+    var minecraftServerManifestsDirectory: File = File(manifestsDirectory, "mcserver").absoluteFile
+        get() {
+            field = File(manifestsDirectory, "mcserver").absoluteFile
+            return field
+        }
+        private set
 
     /**
      * Minecraft version manifest containing information about available Minecraft versions.
@@ -1418,7 +1496,12 @@ actual class ApiProperties(
      * By default, the `minecraft-manifest.json`-file resides in the `manifests`-directory
      * inside ServerPackCreators home-directory.
      */
-    val minecraftVersionManifest: File = File(manifestsDirectory, "minecraft-manifest.json").absoluteFile
+    var minecraftVersionManifest: File = File(manifestsDirectory, "minecraft-manifest.json").absoluteFile
+        get() {
+            field = File(manifestsDirectory, "minecraft-manifest.json").absoluteFile
+            return field
+        }
+        private set
 
     /**
      * Work-directory for storing temporary, non-critical, files and directories.
@@ -1431,7 +1514,12 @@ actual class ApiProperties(
      *
      * By default, this is the `work`-directory inside ServerPackCreators home-directory.
      */
-    val workDirectory: File = File(homeDirectory, "work").absoluteFile
+    var workDirectory: File = File(homeDirectory, "work").absoluteFile
+        get() {
+            field = File(homeDirectory, "work").absoluteFile
+            return field
+        }
+        private set
 
     /**
      * Caching directory for various types of installers. Mainly used by the version-meta for caching modloaders
@@ -1439,7 +1527,12 @@ actual class ApiProperties(
      *
      * @author Griefed
      */
-    val installerCacheDirectory: File = File(workDirectory, "installers").absoluteFile
+    var installerCacheDirectory: File = File(workDirectory, "installers").absoluteFile
+        get() {
+            field = File(workDirectory, "installers").absoluteFile
+            return field
+        }
+        private set
 
     /**
      * Data directory for Artemis` queue-processing.
@@ -1474,7 +1567,12 @@ actual class ApiProperties(
      *
      * By default, this directory is `work/temp` inside ServerPackCreators home-directory.
      */
-    val tempDirectory: File = File(workDirectory, "temp").absoluteFile
+    var tempDirectory: File = File(workDirectory, "temp").absoluteFile
+        get() {
+            field = File(workDirectory, "temp").absoluteFile
+            return field
+        }
+        private set
 
     /**
      * Modpacks directory in which uploaded modpack ZIP-archives and extracted modpacks are stored.
@@ -1482,7 +1580,12 @@ actual class ApiProperties(
      * By default, this is the `modpacks`-directory inside the `temp`-directory inside
      * ServerPackCreators home-directory.
      */
-    val modpacksDirectory: File = File(tempDirectory, "modpacks").absoluteFile
+    var modpacksDirectory: File = File(tempDirectory, "modpacks").absoluteFile
+        get() {
+            field = File(tempDirectory, "modpacks").absoluteFile
+            return field
+        }
+        private set
 
     /**
      * Directory in which default server-files are stored in.
@@ -1496,7 +1599,12 @@ actual class ApiProperties(
      *
      * By default, this directory is `server_files` inside ServerPackCreators home-directory.
      */
-    val serverFilesDirectory: File = File(homeDirectory, "server_files").absoluteFile
+    var serverFilesDirectory: File = File(homeDirectory, "server_files").absoluteFile
+        get() {
+            field = File(homeDirectory, "server_files").absoluteFile
+            return field
+        }
+        private set
 
     @Suppress("MemberVisibilityCanBePrivate")
     val fallbackScriptTemplates = defaultScriptTemplates().joinToString(",")
@@ -1504,25 +1612,45 @@ actual class ApiProperties(
     /**
      * Directory in which the properties for quick selection are to be stored in and retrieved from.
      */
-    val propertiesDirectory: File = File(serverFilesDirectory, "properties").absoluteFile
+    var propertiesDirectory: File = File(serverFilesDirectory, "properties").absoluteFile
+        get() {
+            field = File(serverFilesDirectory, "properties").absoluteFile
+            return field
+        }
+        private set
 
     /**
      * Directory in which the icons for quick selection are to be stored in and retrieved from.
      */
-    val iconsDirectory: File = File(serverFilesDirectory, "icons").absoluteFile
+    var iconsDirectory: File = File(serverFilesDirectory, "icons").absoluteFile
+        get() {
+            field = File(serverFilesDirectory, "icons").absoluteFile
+            return field
+        }
+        private set
 
     /**
      * Default server.properties-file used by Minecraft servers. This file resides in the
      * `server_files`-directory inside ServerPackCreators home-directory.
      */
-    val defaultServerProperties: File = File(serverFilesDirectory, "server.properties").absoluteFile
+    var defaultServerProperties: File = File(serverFilesDirectory, "server.properties").absoluteFile
+        get() {
+            field = File(serverFilesDirectory, "server.properties").absoluteFile
+            return field
+        }
+        private set
 
     /**
      * Default server-icon.png-file used by Minecraft servers. This file resides in the
      * `server_files`-directory inside ServerPackCreators home-directory.
      */
-    val defaultServerIcon: File = File(serverFilesDirectory, "server-icon.png").absoluteFile
-    // TODO change to var with getter to accomodate api changes during runtime
+    var defaultServerIcon: File = File(serverFilesDirectory, "server-icon.png").absoluteFile
+        get() {
+            field = File(serverFilesDirectory, "server-icon.png").absoluteFile
+            return field
+        }
+        private set
+
     /**
      * The database used by the webservice-portion of ServerPackCreator to do store and provide server packs and
      * related information.
@@ -1547,7 +1675,12 @@ actual class ApiProperties(
      *
      * By default, this is the `plugins`-directory inside the ServerPackCreator home-directory.
      */
-    val pluginsDirectory: File = File(homeDirectory, "plugins").absoluteFile
+    var pluginsDirectory: File = File(homeDirectory, "plugins").absoluteFile
+        get() {
+            field = File(homeDirectory, "plugins").absoluteFile
+            return field
+        }
+        private set
 
     /**
      * Directory in which plugin-specific configurations are stored in.
@@ -1561,7 +1694,12 @@ actual class ApiProperties(
      * By default, this is the `config`-directory inside the `plugins`-directory inside
      * ServerPackCreators home-directory.
      */
-    val pluginsConfigsDirectory: File = File(pluginsDirectory, "config").absoluteFile
+    var pluginsConfigsDirectory: File = File(pluginsDirectory, "config").absoluteFile
+        get() {
+            field = File(pluginsDirectory, "config").absoluteFile
+            return field
+        }
+        private set
 
     /**
      * Load the [propertiesFile] into the provided [props]
