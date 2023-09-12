@@ -37,7 +37,7 @@ class WebserviceSettings(guiProps: GuiProps, apiProperties: ApiProperties, mainF
     val artemisDataDirectoryReset = BalloonTipButton(null,guiProps.resetIcon,"Reset to default value",guiProps) { artemisDataDirectorySetting.file = apiProperties.defaultArtemisDataDirectory().absoluteFile }
     val artemisDataDirectoryChoose = BalloonTipButton(null,guiProps.folderIcon,"Select directory",guiProps) {
         val artemisChooser = ArtemisDataDirChooser(apiProperties,"Artemis Data Directory Chooser")
-        if (artemisChooser.showSaveDialog(mainFrame.frame) == JFileChooser.SAVE_DIALOG) {
+        if (artemisChooser.showSaveDialog(mainFrame.frame) == JFileChooser.APPROVE_OPTION) {
             artemisDataDirectorySetting.file = artemisChooser.selectedFile.absoluteFile
         }
     }
@@ -55,7 +55,7 @@ class WebserviceSettings(guiProps: GuiProps, apiProperties: ApiProperties, mainF
     val databaseFileReset = BalloonTipButton(null,guiProps.resetIcon,"Reset to default value",guiProps) { databaseFileSetting.file = apiProperties.defaultWebserviceDatabase().absoluteFile }
     val databaseFileChoose = BalloonTipButton(null,guiProps.folderIcon,"Select directory",guiProps) {
         val webserviceChooser = WebserviceDBDirChooser(apiProperties,"Webservice Database Directory Chooser")
-        if (webserviceChooser.showSaveDialog(mainFrame.frame) == JFileChooser.SAVE_DIALOG) {
+        if (webserviceChooser.showSaveDialog(mainFrame.frame) == JFileChooser.APPROVE_OPTION) {
             databaseFileSetting.file = File(webserviceChooser.selectedFile.absoluteFile,"serverpackcreator.db").absoluteFile
         }
     }
@@ -73,7 +73,7 @@ class WebserviceSettings(guiProps: GuiProps, apiProperties: ApiProperties, mainF
     val logDirectoryReset = BalloonTipButton(null,guiProps.resetIcon,"Reset to default value",guiProps) { logDirectorySetting.file = apiProperties.defaultTomcatLogsDirectory().absoluteFile }
     val logDirectoryChoose = BalloonTipButton(null,guiProps.folderIcon,"Select directory",guiProps) {
         val logDirectoryChooser = TomcatLogDirChooser(apiProperties,"Tomcat Log Directory Chooser")
-        if (logDirectoryChooser.showSaveDialog(mainFrame.frame) == JFileChooser.SAVE_DIALOG) {
+        if (logDirectoryChooser.showSaveDialog(mainFrame.frame) == JFileChooser.APPROVE_OPTION) {
             logDirectorySetting.file = logDirectoryChooser.selectedFile.absoluteFile
         }
     }
@@ -85,7 +85,7 @@ class WebserviceSettings(guiProps: GuiProps, apiProperties: ApiProperties, mainF
     val baseDirReset = BalloonTipButton(null,guiProps.resetIcon,"Reset to default value",guiProps) { baseDirSetting.file = apiProperties.defaultTomcatBaseDirectory().absoluteFile }
     val baseDirChoose = BalloonTipButton(null,guiProps.folderIcon,"Select directory",guiProps) {
         val baseDirChooser = TomcatBaseDirChooser(apiProperties,"Tomcat Base Directory Chooser")
-        if (baseDirChooser.showSaveDialog(mainFrame.frame) == JFileChooser.SAVE_DIALOG) {
+        if (baseDirChooser.showSaveDialog(mainFrame.frame) == JFileChooser.APPROVE_OPTION) {
             baseDirSetting.file = baseDirChooser.selectedFile.absoluteFile
         }
     }
