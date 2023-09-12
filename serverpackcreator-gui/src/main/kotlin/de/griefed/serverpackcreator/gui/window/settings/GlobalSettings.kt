@@ -20,6 +20,7 @@
 package de.griefed.serverpackcreator.gui.window.settings
 
 import Gui
+import de.comahe.i18n4k.Locale
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.ExclusionFilter
 import de.griefed.serverpackcreator.gui.GuiProps
@@ -28,12 +29,13 @@ import de.griefed.serverpackcreator.gui.window.MainFrame
 import de.griefed.serverpackcreator.gui.window.configs.components.ComponentResizer
 import de.griefed.serverpackcreator.gui.window.settings.components.*
 import java.io.File
+import java.net.URL
 import javax.swing.DefaultComboBoxModel
 import javax.swing.JCheckBox
 import javax.swing.JComboBox
 import javax.swing.JFileChooser
 
-class GlobalSettings(guiProps: GuiProps, apiProperties: ApiProperties, componentResizer: ComponentResizer, mainFrame: MainFrame) : Editor("Global", guiProps) {
+class GlobalSettings(guiProps: GuiProps, private val apiProperties: ApiProperties, componentResizer: ComponentResizer, mainFrame: MainFrame) : Editor("Global", guiProps) {
 
     val homeIcon = StatusIcon(guiProps, "Home directory setting")
     val homeLabel = ElementLabel("Home Directory")
@@ -162,6 +164,8 @@ class GlobalSettings(guiProps: GuiProps, apiProperties: ApiProperties, component
     val autodetectionReset = BalloonTipButton(null,guiProps.resetIcon,"Reset to default value",guiProps) { autodetectionSetting.isSelected = apiProperties.fallbackAutoExcludingModsEnabled }
 
     init {
+        languageSetting.selectedItem = apiProperties.i18n4kConfig.locale
+        exclusionSetting.selectedItem = apiProperties.exclusionFilter
         overwriteSetting.isSelected = apiProperties.isServerPacksOverwriteEnabled
         javaVariableSetting.isSelected = apiProperties.isJavaScriptAutoupdateEnabled
         prereleaseSetting.isSelected = apiProperties.isCheckingForPreReleasesEnabled
@@ -308,10 +312,42 @@ class GlobalSettings(guiProps: GuiProps, apiProperties: ApiProperties, component
     }
 
     override fun loadSettings() {
-        TODO("Not yet implemented")
+        homeSetting.file = apiProperties.homeDirectory.absoluteFile
+        javaSetting.file = File(apiProperties.javaPath).absoluteFile
+        serverPacksSetting.file = apiProperties.serverPacksDirectory.absoluteFile
+        zipSetting.text = apiProperties.zipArchiveExclusions.joinToString(", ")
+        inclusionsSetting.text = apiProperties.directoriesToInclude.joinToString(", ")
+        aikarsSetting.text = apiProperties.aikarsFlags
+        scriptSetting.text = apiProperties.scriptTemplates.joinToString(", ")
+        fallbackURLSetting.text = apiProperties.updateUrl.toString()
+        exclusionSetting.selectedItem = apiProperties.exclusionFilter
+        languageSetting.selectedItem = apiProperties.i18n4kConfig.locale
+        overwriteSetting.isSelected = apiProperties.isServerPacksOverwriteEnabled
+        javaVariableSetting.isSelected = apiProperties.isJavaScriptAutoupdateEnabled
+        prereleaseSetting.isSelected = apiProperties.isCheckingForPreReleasesEnabled
+        zipExclusionsSetting.isSelected = apiProperties.isZipFileExclusionEnabled
+        cleanupSetting.isSelected = apiProperties.isServerPackCleanupEnabled
+        snapshotsSetting.isSelected = apiProperties.isMinecraftPreReleasesAvailabilityEnabled
+        autodetectionSetting.isSelected = apiProperties.isAutoExcludingModsEnabled
     }
 
     override fun saveSettings() {
-        TODO("Not yet implemented")
+        apiProperties.homeDirectory = homeSetting.file.absoluteFile
+        apiProperties.javaPath = javaSetting.file.absolutePath
+        apiProperties.serverPacksDirectory = serverPacksSetting.file.absoluteFile
+        apiProperties.zipArchiveExclusions.addAll(zipSetting.text.replace(", ",",").split(","))
+        apiProperties.directoriesToInclude.addAll(inclusionsSetting.text.replace(", ",",").split(","))
+        apiProperties.aikarsFlags = aikarsSetting.text
+        apiProperties.scriptTemplates.addAll(scriptSetting.text.replace(", ",",").split(",").map { File(it) })
+        apiProperties.updateUrl = URL(fallbackURLSetting.text)
+        apiProperties.exclusionFilter = exclusionSetting.selectedItem as ExclusionFilter
+        apiProperties.language = languageSetting.selectedItem as Locale
+        apiProperties.isServerPacksOverwriteEnabled = overwriteSetting.isSelected
+        apiProperties.isJavaScriptAutoupdateEnabled = javaVariableSetting.isSelected
+        apiProperties.isCheckingForPreReleasesEnabled = prereleaseSetting.isSelected
+        apiProperties.isZipFileExclusionEnabled = zipExclusionsSetting.isSelected
+        apiProperties.isServerPackCleanupEnabled = cleanupSetting.isSelected
+        apiProperties.isMinecraftPreReleasesAvailabilityEnabled = snapshotsSetting.isSelected
+        apiProperties.isAutoExcludingModsEnabled = autodetectionSetting.isSelected
     }
 }
