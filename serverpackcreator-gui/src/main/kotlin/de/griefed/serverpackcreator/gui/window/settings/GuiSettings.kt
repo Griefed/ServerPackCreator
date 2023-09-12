@@ -27,7 +27,7 @@ import de.griefed.serverpackcreator.gui.window.settings.components.Editor
 import javax.swing.JCheckBox
 import javax.swing.JSlider
 
-class GuiSettings(guiProps: GuiProps) : Editor("Gui", guiProps) {
+class GuiSettings(private val guiProps: GuiProps) : Editor("Gui", guiProps) {
 
     val fontSizeIcon = StatusIcon(guiProps,"Size of fonts in ServerPackCreators GUI.")
     val fontSizeLabel = ElementLabel("Font Size")
@@ -90,10 +90,14 @@ class GuiSettings(guiProps: GuiProps) : Editor("Gui", guiProps) {
     }
 
     override fun loadSettings() {
-        TODO("Not yet implemented")
+        fontSizeSetting.value = guiProps.fontSize
+        startFocusSetting.isSelected = guiProps.startFocusEnabled
+        generationFocusSetting.isSelected = guiProps.generationFocusEnabled
     }
 
     override fun saveSettings() {
-        TODO("Not yet implemented")
+        guiProps.fontSize = fontSizeSetting.value
+        guiProps.startFocusEnabled = startFocusSetting.isSelected
+        guiProps.generationFocusEnabled = generationFocusSetting.isSelected
     }
 }
