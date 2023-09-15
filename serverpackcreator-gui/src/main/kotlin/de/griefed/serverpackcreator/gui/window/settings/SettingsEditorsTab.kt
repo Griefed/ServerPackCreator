@@ -20,7 +20,6 @@
 package de.griefed.serverpackcreator.gui.window.settings
 
 import de.griefed.serverpackcreator.api.ApiProperties
-import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.components.TabPanel
 import de.griefed.serverpackcreator.gui.window.MainFrame
@@ -47,6 +46,6 @@ class SettingsEditorsTab(guiProps: GuiProps, apiProperties: ApiProperties, mainF
         tabs.add(webservice)
         tabs.setTabComponentAt(tabs.tabCount - 1, webservice.title)
         tabs.selectedIndex = 0
-        panel.add(SettingsHandling(guiProps, this, apiProperties).panel, BorderLayout.SOUTH)
+        panel.add(SettingsHandling(guiProps, this, apiProperties, mainFrame).panel, BorderLayout.SOUTH)
     }
 }

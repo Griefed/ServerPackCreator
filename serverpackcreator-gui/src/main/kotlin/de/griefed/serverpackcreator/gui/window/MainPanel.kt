@@ -101,7 +101,7 @@ class MainPanel(
             }
         }
         guiProps.storeGuiProperty("lastloaded", configs.joinToString(","))
-        apiWrapper.apiProperties.saveToDisk(apiWrapper.apiProperties.serverPackCreatorPropertiesFile)
+        apiWrapper.apiProperties.saveProperties(apiWrapper.apiProperties.serverPackCreatorPropertiesFile)
         exitProcess(0)
     }
 }

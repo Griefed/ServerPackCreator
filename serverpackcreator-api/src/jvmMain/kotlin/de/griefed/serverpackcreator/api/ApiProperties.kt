@@ -29,8 +29,11 @@ import java.io.BufferedReader
 import java.io.File
 import java.io.IOException
 import java.io.InputStreamReader
+import java.io.OutputStream
+import java.lang.StringBuilder
 import java.net.URL
 import java.util.*
+import java.util.stream.Collectors
 
 /**
  * Base settings of ServerPackCreator, such as working directories, default list of clientside-only
@@ -56,8 +59,11 @@ actual class ApiProperties(
 ) {
     private val log = cachedLoggerOf(javaClass)
     private val internalProps = Properties()
+    private val overridesProps = Properties()
+    private val serverPackCreatorProperties = "serverpackcreator.properties"
     private val jarInformation: JarInformation = JarInformation(javaClass, jarUtilities)
-    private val userHome = System.getProperty("user.home")
+    private val jarFolderProperties: File =
+        File(jarInformation.jarFolder.absoluteFile, serverPackCreatorProperties).absoluteFile
     private val pVersionCheckPreRelease =
         "de.griefed.serverpackcreator.versioncheck.prerelease"
     private val pLanguage =
@@ -128,6 +134,13 @@ actual class ApiProperties(
         "spring.artemis.embedded.data-directory"
     private val pSpringDatasourceUrl =
         "spring.datasource.url"
+    val overrideProperties: File = File(jarInformation.jarFolder.absoluteFile, "overrides.properties")
+
+    val home: File = if (System.getProperty("user.home").isNotEmpty()) {
+        File(System.getProperty("user.home"))
+    } else {
+        jarInformation.jarFolder.absoluteFile
+    }
 
     @Suppress("SpellCheckingInspection")
     private var fallbackMods = TreeSet(
@@ -526,7 +539,6 @@ actual class ApiProperties(
     val fallbackCleanupSchedule = "0 0 0 * * *"
     val fallbackVersionSchedule = "0 0 0 * * *"
     val fallbackDatabaseCleanupSchedule = "0 0 0 * * *"
-    private val serverPackCreatorProperties = "serverpackcreator.properties"
     private val checkedJavas = hashMapOf<String, Boolean>()
 
     @Suppress("MemberVisibilityCanBePrivate")
@@ -671,7 +683,8 @@ actual class ApiProperties(
      */
     var directoriesToInclude = fallbackDirectoriesInclusion
         get() {
-            val entries = getListProperty(pConfigurationDirectoriesMustInclude, fallbackDirectoriesInclusion.joinToString(","))
+            val entries =
+                getListProperty(pConfigurationDirectoriesMustInclude, fallbackDirectoriesInclusion.joinToString(","))
             field.addAll(entries)
             return field
         }
@@ -687,7 +700,8 @@ actual class ApiProperties(
      */
     var directoriesToExclude = fallbackDirectoriesExclusion
         get() {
-            val prop = getListProperty(pConfigurationDirectoriesShouldExclude, fallbackDirectoriesExclusion.joinToString(","))
+            val prop =
+                getListProperty(pConfigurationDirectoriesShouldExclude, fallbackDirectoriesExclusion.joinToString(","))
             val use = TreeSet(prop)
             use.removeIf { n -> directoriesToInclude.contains(n) }
             field.clear()
@@ -1119,7 +1133,7 @@ actual class ApiProperties(
             return internalProps.getProperty("de.griefed.serverpackcreator.spring.schedules.database.cleanup")
         }
         set(value) {
-            internalProps.setProperty("de.griefed.serverpackcreator.spring.schedules.database.cleanup",value)
+            internalProps.setProperty("de.griefed.serverpackcreator.spring.schedules.database.cleanup", value)
         }
 
     var webserviceVersionSchedule: String
@@ -1127,7 +1141,7 @@ actual class ApiProperties(
             return internalProps.getProperty("de.griefed.serverpackcreator.spring.schedules.versions.refresh")
         }
         set(value) {
-            internalProps.setProperty("de.griefed.serverpackcreator.spring.schedules.versions.refresh",value)
+            internalProps.setProperty("de.griefed.serverpackcreator.spring.schedules.versions.refresh", value)
         }
 
     var webserviceDatabaseCleanupSchedule: String
@@ -1135,11 +1149,11 @@ actual class ApiProperties(
             return internalProps.getProperty("de.griefed.serverpackcreator.spring.schedules.files.cleanup")
         }
         set(value) {
-            internalProps.setProperty("de.griefed.serverpackcreator.spring.schedules.files.cleanup",value)
+            internalProps.setProperty("de.griefed.serverpackcreator.spring.schedules.files.cleanup", value)
         }
 
     fun defaultWebserviceDatabase(): File {
-        return File(userHome,"serverpackcreator.db")
+        return File(home, "serverpackcreator.db")
     }
 
     fun defaultArtemisDataDirectory(): File {
@@ -1153,34 +1167,26 @@ actual class ApiProperties(
      * @author Griefed
      */
     fun defaultHomeDirectory(): File {
-        return if (userHome.isNotEmpty() && File(userHome).isDirectory) {
-            File(userHome, "ServerPackCreator").absoluteFile
-        } else {
-            if (jarInformation.jarFile.isDirectory) {
-                File(File("").absolutePath).absoluteFile
-            } else {
-                jarInformation.jarFolder.absoluteFile
-            }
-        }
+        return File(home, "ServerPackCreator").absoluteFile
     }
 
     /**
      * ServerPackCreators home directory, in which all important files and folders are stored in.
      *
-     * Stored in `serverpackcreator.properties` under the
-     * `de.griefed.serverpackcreator.home`- property.
+     * Changes made to this variable are stored in a overrides.properties inside the installation directory of the
+     * ServerPackCreator application.
      *
      * Every operation is based on this home-directory, with the exception being the
      * [serverPacksDirectory], which can be configured independently of ServerPackCreators
      * home-directory.
      */
-    var homeDirectory: File = File(System.getProperty("user.home"), "ServerPackCreator").absoluteFile
+    var homeDirectory: File = File(home, "ServerPackCreator").absoluteFile
         get() {
             val prop = internalProps.getProperty(pHomeDirectory)
             field = if (internalProps.containsKey(pHomeDirectory) && File(prop).absoluteFile.isDirectory) {
                 File(prop).absoluteFile
             } else {
-                defaultHomeDirectory()
+                File(home, "ServerPackCreator").absoluteFile
             }
             if (!field.isDirectory) {
                 field.createDirectories(create = true, directory = true)
@@ -1189,6 +1195,7 @@ actual class ApiProperties(
         }
         set(value) {
             internalProps.setProperty(pHomeDirectory, value.absolutePath)
+            overridesProps.setProperty(pHomeDirectory, value.absolutePath)
             field = value.absoluteFile
             log.info("Home directory set to: $field")
             log.warn("Restart ServerPackCreator for this change to take full effect.")
@@ -1297,7 +1304,7 @@ actual class ApiProperties(
     @Suppress("MemberVisibilityCanBePrivate")
     var tomcatLogsDirectory: File = logsDirectory
         get() {
-            val default = File(homeDirectory,"logs").absolutePath
+            val default = File(homeDirectory, "logs").absolutePath
             val dir = internalProps.getProperty(pTomcatLogsDirectory, default)
             field = File(dir).absoluteFile
             return field
@@ -1309,7 +1316,7 @@ actual class ApiProperties(
         }
 
     fun defaultTomcatLogsDirectory(): File {
-        return File(homeDirectory,"logs").absoluteFile
+        return File(homeDirectory, "logs").absoluteFile
     }
 
     /**
@@ -1337,7 +1344,8 @@ actual class ApiProperties(
      * By default, the `fabric-intermediaries-manifest.json`-file resides in the
      * `manifests`-directory inside ServerPackCreators home-directory.
      */
-    var fabricIntermediariesManifest: File = File(manifestsDirectory, "fabric-intermediaries-manifest.json").absoluteFile
+    var fabricIntermediariesManifest: File =
+        File(manifestsDirectory, "fabric-intermediaries-manifest.json").absoluteFile
         get() {
             field = File(manifestsDirectory, "fabric-intermediaries-manifest.json").absoluteFile
             return field
@@ -1379,7 +1387,8 @@ actual class ApiProperties(
      * By default, the `legacy-fabric-installer-manifest.xml`-file resides in the
      * `manifests`-directory inside ServerPackCreators home-directory.
      */
-    var legacyFabricInstallerManifest: File = File(manifestsDirectory, "legacy-fabric-installer-manifest.xml").absoluteFile
+    var legacyFabricInstallerManifest: File =
+        File(manifestsDirectory, "legacy-fabric-installer-manifest.xml").absoluteFile
         get() {
             field = File(manifestsDirectory, "legacy-fabric-installer-manifest.xml").absoluteFile
             return field
@@ -1731,8 +1740,7 @@ actual class ApiProperties(
     fun loadProperties(propertiesFile: File = File(serverPackCreatorProperties)) {
         val props = Properties()
         val jarFolderFile = File(jarInformation.jarFolder.absoluteFile, serverPackCreatorProperties).absoluteFile
-        val userHome = System.getProperty("user.home")
-        val serverPackCreatorHomeDir = File(userHome, "ServerPackCreator").absoluteFile
+        val serverPackCreatorHomeDir = File(home, "ServerPackCreator").absoluteFile
         val homeDirFile = File(serverPackCreatorHomeDir, serverPackCreatorProperties).absoluteFile
         val relativeDirFile = File(serverPackCreatorProperties).absoluteFile
 
@@ -1754,6 +1762,8 @@ actual class ApiProperties(
         loadFile(relativeDirFile, props)
         // Load the specified properties-file.
         loadFile(propertiesFile, props)
+        // Load all values from the overrides-properties
+        loadFile(overrideProperties, props)
 
         internalProps.putAll(props)
 
@@ -1762,7 +1772,8 @@ actual class ApiProperties(
         } else {
             setFallbackModsList()
         }
-        saveToDisk(File(homeDirectory, serverPackCreatorProperties).absoluteFile)
+        //Store properties in the configured SPC home-directory
+        saveProperties(File(homeDirectory, serverPackCreatorProperties).absoluteFile)
     }
 
     /**
@@ -1970,7 +1981,7 @@ actual class ApiProperties(
      * @author Griefed
      */
     @Suppress("MemberVisibilityCanBePrivate")
-    fun saveToDisk(propertiesFile: File) {
+    fun saveProperties(propertiesFile: File) {
         cleanupInternalProps()
         try {
             propertiesFile.outputStream().use {
@@ -1983,6 +1994,31 @@ actual class ApiProperties(
         } catch (ex: IOException) {
             log.error("Couldn't write properties-file.", ex)
         }
+    }
+
+    /**
+     * Write the overrides-properties which, as the name implies, will override any other property loaded previously during [loadProperties].
+     * CAUTION: Depending on the type of installation, the overrides.properties will reside inside a directory which
+     * requires root/admin-privileges to write in. The directory in which this file will be created in is [getJarFolder].
+     *
+     * @author Griefed
+     */
+    fun saveOverrides() {
+        try {
+            overrideProperties.outputStream().use {
+                overridesProps.store(
+                    it,
+                    "Property A from this file will always override property A from any other loaded property. Handle with care!"
+                )
+            }
+        } catch (ex: IOException) {
+            log.error("Couldn't write properties-file.", ex)
+        }
+    }
+
+    fun overridesAsString(): String {
+        return overridesProps.entries.stream().map { it.key.toString() + ":" + it.value.toString() }
+            .collect(Collectors.joining("\n"))
     }
 
     /**
@@ -2083,7 +2119,7 @@ actual class ApiProperties(
      */
     fun changeLocale(locale: Locale) {
         language = locale
-        saveToDisk(serverPackCreatorPropertiesFile)
+        saveProperties(serverPackCreatorPropertiesFile)
         log.info("Changed locale to $language")
     }
 
@@ -2139,7 +2175,7 @@ actual class ApiProperties(
             }
         }
         if (updated) {
-            saveToDisk(File(homeDirectory, serverPackCreatorProperties).absoluteFile)
+            saveProperties(File(homeDirectory, serverPackCreatorProperties).absoluteFile)
         }
         return updated
     }
@@ -2213,7 +2249,7 @@ actual class ApiProperties(
      */
     fun setOldVersion(version: String) {
         internalProps.setProperty(pOldVersion, version)
-        saveToDisk(serverPackCreatorPropertiesFile)
+        saveProperties(serverPackCreatorPropertiesFile)
     }
 
     /**

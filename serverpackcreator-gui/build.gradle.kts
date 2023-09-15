@@ -21,6 +21,7 @@ dependencies {
     api("com.miglayout:miglayout-swing:11.0")
     api("com.formdev:svgSalamander:1.1.4")
     api("net.java.balloontip:balloontip:1.2.4.1")
+    api("com.github.dyorgio.runtime:run-as-root:1.2.3")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.3")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.3")
