@@ -23,6 +23,7 @@ import Gui
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.api.PackConfig
 import de.griefed.serverpackcreator.gui.GuiProps
+import de.griefed.serverpackcreator.gui.window.MainFrame
 import de.griefed.serverpackcreator.gui.window.configs.TabbedConfigsTab
 import de.griefed.serverpackcreator.gui.window.control.components.GenerationButton
 import de.griefed.serverpackcreator.gui.window.control.components.LarsonScanner
@@ -50,7 +51,8 @@ class ControlPanel(
     private val guiProps: GuiProps,
     private val tabbedConfigsTab: TabbedConfigsTab,
     private val larsonScanner: LarsonScanner,
-    private val apiWrapper: ApiWrapper
+    private val apiWrapper: ApiWrapper,
+    private val mainFrame: MainFrame
 ) {
     private val log = cachedLoggerOf(this.javaClass)
     private val statusPanel = StatusPanel(guiProps)
@@ -171,6 +173,9 @@ class ControlPanel(
         try {
             apiWrapper.serverPackHandler!!.run(packConfig)
             statusPanel.updateStatus(Gui.createserverpack_log_info_buttoncreateserverpack_ready.toString())
+            if (guiProps.generationFocusEnabled) {
+                mainFrame.toFront()
+            }
             if (JOptionPane.showConfirmDialog(
                     panel.parent,
                     Gui.createserverpack_gui_createserverpack_openfolder_browse.toString(),

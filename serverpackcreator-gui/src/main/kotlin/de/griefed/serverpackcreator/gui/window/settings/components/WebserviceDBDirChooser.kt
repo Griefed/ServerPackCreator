@@ -24,13 +24,13 @@ import java.awt.Dimension
 import javax.swing.JFileChooser
 
 /**
- * Customized filechooser for picking ServerPackCreator server pack directory.
+ * Customized filechooser for picking ServerPackCreator webservice-database directory.
  *
  * @author Griefed
  */
-class ServerPackDirChooser(apiProperties: ApiProperties, title: String) : JFileChooser() {
+class WebserviceDBDirChooser(apiProperties: ApiProperties, title: String) : JFileChooser() {
     init {
-        currentDirectory = apiProperties.serverPacksDirectory
+        currentDirectory = apiProperties.serverPackCreatorDatabase.parentFile
         dialogTitle = title
         fileSelectionMode = DIRECTORIES_ONLY
         isAcceptAllFileFilterUsed = false

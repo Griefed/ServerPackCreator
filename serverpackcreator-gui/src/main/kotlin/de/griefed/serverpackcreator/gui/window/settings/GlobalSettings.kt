@@ -1,6 +1,26 @@
+/* Copyright (C) 2023  Griefed
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
+ * USA
+ *
+ * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
+ */
 package de.griefed.serverpackcreator.gui.window.settings
 
 import Gui
+import de.comahe.i18n4k.Locale
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.ExclusionFilter
 import de.griefed.serverpackcreator.gui.GuiProps
@@ -9,12 +29,13 @@ import de.griefed.serverpackcreator.gui.window.MainFrame
 import de.griefed.serverpackcreator.gui.window.configs.components.ComponentResizer
 import de.griefed.serverpackcreator.gui.window.settings.components.*
 import java.io.File
+import java.net.URL
 import javax.swing.DefaultComboBoxModel
 import javax.swing.JCheckBox
 import javax.swing.JComboBox
 import javax.swing.JFileChooser
 
-class GlobalSettings(guiProps: GuiProps, apiProperties: ApiProperties, componentResizer: ComponentResizer, mainFrame: MainFrame) : Editor("Global", guiProps) {
+class GlobalSettings(guiProps: GuiProps, private val apiProperties: ApiProperties, componentResizer: ComponentResizer, mainFrame: MainFrame) : Editor("Global", guiProps) {
 
     val homeIcon = StatusIcon(guiProps, "Home directory setting")
     val homeLabel = ElementLabel("Home Directory")
@@ -143,6 +164,8 @@ class GlobalSettings(guiProps: GuiProps, apiProperties: ApiProperties, component
     val autodetectionReset = BalloonTipButton(null,guiProps.resetIcon,"Reset to default value",guiProps) { autodetectionSetting.isSelected = apiProperties.fallbackAutoExcludingModsEnabled }
 
     init {
+        languageSetting.selectedItem = apiProperties.i18n4kConfig.locale
+        exclusionSetting.selectedItem = apiProperties.exclusionFilter
         overwriteSetting.isSelected = apiProperties.isServerPacksOverwriteEnabled
         javaVariableSetting.isSelected = apiProperties.isJavaScriptAutoupdateEnabled
         prereleaseSetting.isSelected = apiProperties.isCheckingForPreReleasesEnabled
@@ -288,23 +311,43 @@ class GlobalSettings(guiProps: GuiProps, apiProperties: ApiProperties, component
         componentResizer.registerComponent(scriptSetting,"cell 2 $scriptY, grow, w 10:500:,h %s!")
     }
 
-    override fun getSettings(): HashMap<String, Any> {
-        TODO("Not yet implemented")
+    override fun loadSettings() {
+        homeSetting.file = apiProperties.homeDirectory.absoluteFile
+        javaSetting.file = File(apiProperties.javaPath).absoluteFile
+        serverPacksSetting.file = apiProperties.serverPacksDirectory.absoluteFile
+        zipSetting.text = apiProperties.zipArchiveExclusions.joinToString(", ")
+        inclusionsSetting.text = apiProperties.directoriesToInclude.joinToString(", ")
+        aikarsSetting.text = apiProperties.aikarsFlags
+        scriptSetting.text = apiProperties.scriptTemplates.joinToString(", ")
+        fallbackURLSetting.text = apiProperties.updateUrl.toString()
+        exclusionSetting.selectedItem = apiProperties.exclusionFilter
+        languageSetting.selectedItem = apiProperties.i18n4kConfig.locale
+        overwriteSetting.isSelected = apiProperties.isServerPacksOverwriteEnabled
+        javaVariableSetting.isSelected = apiProperties.isJavaScriptAutoupdateEnabled
+        prereleaseSetting.isSelected = apiProperties.isCheckingForPreReleasesEnabled
+        zipExclusionsSetting.isSelected = apiProperties.isZipFileExclusionEnabled
+        cleanupSetting.isSelected = apiProperties.isServerPackCleanupEnabled
+        snapshotsSetting.isSelected = apiProperties.isMinecraftPreReleasesAvailabilityEnabled
+        autodetectionSetting.isSelected = apiProperties.isAutoExcludingModsEnabled
     }
 
-    override fun loadSettings(settings: HashMap<String, Any>) {
-        TODO("Not yet implemented")
-    }
-
-    override fun restoreSettings() {
-        TODO("Not yet implemented")
-    }
-
-    override fun loadDefaults() {
-        TODO("Not yet implemented")
-    }
-
-    override fun importSettings() {
-        TODO("Not yet implemented")
+    override fun saveSettings() {
+        apiProperties.homeDirectory = homeSetting.file.absoluteFile
+        apiProperties.javaPath = javaSetting.file.absolutePath
+        apiProperties.serverPacksDirectory = serverPacksSetting.file.absoluteFile
+        apiProperties.zipArchiveExclusions.addAll(zipSetting.text.replace(", ",",").split(","))
+        apiProperties.directoriesToInclude.addAll(inclusionsSetting.text.replace(", ",",").split(","))
+        apiProperties.aikarsFlags = aikarsSetting.text
+        apiProperties.scriptTemplates.addAll(scriptSetting.text.replace(", ",",").split(",").map { File(it) })
+        apiProperties.updateUrl = URL(fallbackURLSetting.text)
+        apiProperties.exclusionFilter = exclusionSetting.selectedItem as ExclusionFilter
+        apiProperties.language = languageSetting.selectedItem as Locale
+        apiProperties.isServerPacksOverwriteEnabled = overwriteSetting.isSelected
+        apiProperties.isJavaScriptAutoupdateEnabled = javaVariableSetting.isSelected
+        apiProperties.isCheckingForPreReleasesEnabled = prereleaseSetting.isSelected
+        apiProperties.isZipFileExclusionEnabled = zipExclusionsSetting.isSelected
+        apiProperties.isServerPackCleanupEnabled = cleanupSetting.isSelected
+        apiProperties.isMinecraftPreReleasesAvailabilityEnabled = snapshotsSetting.isSelected
+        apiProperties.isAutoExcludingModsEnabled = autodetectionSetting.isSelected
     }
 }

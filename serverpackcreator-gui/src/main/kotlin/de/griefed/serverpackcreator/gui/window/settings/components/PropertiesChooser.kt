@@ -21,21 +21,24 @@ package de.griefed.serverpackcreator.gui.window.settings.components
 
 import de.griefed.serverpackcreator.api.ApiProperties
 import java.awt.Dimension
+import java.io.File
 import javax.swing.JFileChooser
+import javax.swing.filechooser.FileNameExtensionFilter
 
 /**
- * Customized filechooser for picking ServerPackCreator server pack directory.
+ * Customized filechooser for picking the Java executable with which server installations will be performed.
  *
  * @author Griefed
  */
-class ServerPackDirChooser(apiProperties: ApiProperties, title: String) : JFileChooser() {
+class PropertiesChooser(apiProperties: ApiProperties, title: String) : JFileChooser() {
     init {
-        currentDirectory = apiProperties.serverPacksDirectory
+        currentDirectory = apiProperties.serverPackCreatorPropertiesFile.parentFile
         dialogTitle = title
-        fileSelectionMode = DIRECTORIES_ONLY
+        fileSelectionMode = FILES_ONLY
         isAcceptAllFileFilterUsed = false
+        addChoosableFileFilter(FileNameExtensionFilter("Properties","properties"))
         isMultiSelectionEnabled = false
-        dialogType = SAVE_DIALOG
+        dialogType = OPEN_DIALOG
         preferredSize = Dimension(750, 450)
     }
 }

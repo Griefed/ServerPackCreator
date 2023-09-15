@@ -77,7 +77,7 @@ tasks.jpackage {
     icon = File(packagerResources, "app.png").path
     input = "$buildDir/jars"
     javaOptions = listOf("-Dfile.encoding=UTF-8", "-Dlog4j2.formatMsgNoLookups=true")
-    licenseFile = parent.path + "/LICENSE"
+    licenseFile = parent.path + "/licenses/THIRD-PARTY-NOTICES.txt"
     mainJar = tasks.jar.get().archiveFileName.get()
     mainClass = "de.griefed.serverpackcreator.app.ServerPackCreatorKt"
     resourceDir = packagerResources.path
@@ -95,7 +95,7 @@ tasks.jpackage {
     windows {
         icon = File(packagerResources, "app.ico").path
         type = org.panteleyev.jpackage.ImageType.MSI
-        winConsole = true
+        winConsole = false
         winMenu = true
         winMenuGroup = "ServerPackCreator"
         winPerUserInstall = false

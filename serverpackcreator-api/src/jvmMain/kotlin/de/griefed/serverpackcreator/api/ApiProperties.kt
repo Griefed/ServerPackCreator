@@ -29,8 +29,11 @@ import java.io.BufferedReader
 import java.io.File
 import java.io.IOException
 import java.io.InputStreamReader
+import java.io.OutputStream
+import java.lang.StringBuilder
 import java.net.URL
 import java.util.*
+import java.util.stream.Collectors
 
 /**
  * Base settings of ServerPackCreator, such as working directories, default list of clientside-only
@@ -56,8 +59,11 @@ actual class ApiProperties(
 ) {
     private val log = cachedLoggerOf(javaClass)
     private val internalProps = Properties()
+    private val overridesProps = Properties()
+    private val serverPackCreatorProperties = "serverpackcreator.properties"
     private val jarInformation: JarInformation = JarInformation(javaClass, jarUtilities)
-    private val userHome = System.getProperty("user.home")
+    private val jarFolderProperties: File =
+        File(jarInformation.jarFolder.absoluteFile, serverPackCreatorProperties).absoluteFile
     private val pVersionCheckPreRelease =
         "de.griefed.serverpackcreator.versioncheck.prerelease"
     private val pLanguage =
@@ -128,6 +134,13 @@ actual class ApiProperties(
         "spring.artemis.embedded.data-directory"
     private val pSpringDatasourceUrl =
         "spring.datasource.url"
+    val overrideProperties: File = File(jarInformation.jarFolder.absoluteFile, "overrides.properties")
+
+    val home: File = if (System.getProperty("user.home").isNotEmpty()) {
+        File(System.getProperty("user.home"))
+    } else {
+        jarInformation.jarFolder.absoluteFile
+    }
 
     @Suppress("SpellCheckingInspection")
     private var fallbackMods = TreeSet(
@@ -522,7 +535,10 @@ actual class ApiProperties(
     val fallbackServerPackCleanupEnabled = true
     val fallbackMinecraftPreReleasesAvailabilityEnabled = false
     val fallbackAutoExcludingModsEnabled = true
-    private val serverPackCreatorProperties = "serverpackcreator.properties"
+    val fallbackArtemisQueueMaxDiskUsage = 90
+    val fallbackCleanupSchedule = "0 0 0 * * *"
+    val fallbackVersionSchedule = "0 0 0 * * *"
+    val fallbackDatabaseCleanupSchedule = "0 0 0 * * *"
     private val checkedJavas = hashMapOf<String, Boolean>()
 
     @Suppress("MemberVisibilityCanBePrivate")
@@ -667,7 +683,8 @@ actual class ApiProperties(
      */
     var directoriesToInclude = fallbackDirectoriesInclusion
         get() {
-            val entries = getListProperty(pConfigurationDirectoriesMustInclude, fallbackDirectoriesInclusion.joinToString(","))
+            val entries =
+                getListProperty(pConfigurationDirectoriesMustInclude, fallbackDirectoriesInclusion.joinToString(","))
             field.addAll(entries)
             return field
         }
@@ -683,7 +700,8 @@ actual class ApiProperties(
      */
     var directoriesToExclude = fallbackDirectoriesExclusion
         get() {
-            val prop = getListProperty(pConfigurationDirectoriesShouldExclude, fallbackDirectoriesExclusion.joinToString(","))
+            val prop =
+                getListProperty(pConfigurationDirectoriesShouldExclude, fallbackDirectoriesExclusion.joinToString(","))
             val use = TreeSet(prop)
             use.removeIf { n -> directoriesToInclude.contains(n) }
             field.clear()
@@ -1089,7 +1107,7 @@ actual class ApiProperties(
     /**
      * Maximum disk usage in percent until Artemis stops accepting new entries.
      */
-    var queueMaxDiskUsage = 90
+    var artemisQueueMaxDiskUsage = 90
         get() {
             val usage = getIntProperty(pSpringArtemisQueueMaxDiskUsage, 90)
             field = if (usage in 0..100) {
@@ -1110,6 +1128,38 @@ actual class ApiProperties(
             }
         }
 
+    var webserviceCleanupSchedule: String
+        get() {
+            return internalProps.getProperty("de.griefed.serverpackcreator.spring.schedules.database.cleanup")
+        }
+        set(value) {
+            internalProps.setProperty("de.griefed.serverpackcreator.spring.schedules.database.cleanup", value)
+        }
+
+    var webserviceVersionSchedule: String
+        get() {
+            return internalProps.getProperty("de.griefed.serverpackcreator.spring.schedules.versions.refresh")
+        }
+        set(value) {
+            internalProps.setProperty("de.griefed.serverpackcreator.spring.schedules.versions.refresh", value)
+        }
+
+    var webserviceDatabaseCleanupSchedule: String
+        get() {
+            return internalProps.getProperty("de.griefed.serverpackcreator.spring.schedules.files.cleanup")
+        }
+        set(value) {
+            internalProps.setProperty("de.griefed.serverpackcreator.spring.schedules.files.cleanup", value)
+        }
+
+    fun defaultWebserviceDatabase(): File {
+        return File(home, "serverpackcreator.db")
+    }
+
+    fun defaultArtemisDataDirectory(): File {
+        return File(workDirectory, "artemis")
+    }
+
     /**
      * Default home-directory for ServerPackCreator. If there's no user-home, then the directory containing the
      * ServerPackCreator JAR will be used as the home-directory for ServerPackCreator.
@@ -1117,34 +1167,26 @@ actual class ApiProperties(
      * @author Griefed
      */
     fun defaultHomeDirectory(): File {
-        return if (userHome.isNotEmpty() && File(userHome).isDirectory) {
-            File(userHome, "ServerPackCreator").absoluteFile
-        } else {
-            if (jarInformation.jarFile.isDirectory) {
-                File(File("").absolutePath).absoluteFile
-            } else {
-                jarInformation.jarFolder.absoluteFile
-            }
-        }
+        return File(home, "ServerPackCreator").absoluteFile
     }
 
     /**
      * ServerPackCreators home directory, in which all important files and folders are stored in.
      *
-     * Stored in `serverpackcreator.properties` under the
-     * `de.griefed.serverpackcreator.home`- property.
+     * Changes made to this variable are stored in a overrides.properties inside the installation directory of the
+     * ServerPackCreator application.
      *
      * Every operation is based on this home-directory, with the exception being the
      * [serverPacksDirectory], which can be configured independently of ServerPackCreators
      * home-directory.
      */
-    var homeDirectory: File = File(System.getProperty("user.home"), "ServerPackCreator").absoluteFile
+    var homeDirectory: File = File(home, "ServerPackCreator").absoluteFile
         get() {
             val prop = internalProps.getProperty(pHomeDirectory)
             field = if (internalProps.containsKey(pHomeDirectory) && File(prop).absoluteFile.isDirectory) {
                 File(prop).absoluteFile
             } else {
-                defaultHomeDirectory()
+                File(home, "ServerPackCreator").absoluteFile
             }
             if (!field.isDirectory) {
                 field.createDirectories(create = true, directory = true)
@@ -1153,6 +1195,7 @@ actual class ApiProperties(
         }
         set(value) {
             internalProps.setProperty(pHomeDirectory, value.absolutePath)
+            overridesProps.setProperty(pHomeDirectory, value.absolutePath)
             field = value.absoluteFile
             log.info("Home directory set to: $field")
             log.warn("Restart ServerPackCreator for this change to take full effect.")
@@ -1163,18 +1206,33 @@ actual class ApiProperties(
      * ServerPackCreator and provided the settings, properties and configurations for the currently
      * running instance.
      */
-    val serverPackCreatorPropertiesFile: File = File(homeDirectory, serverPackCreatorProperties).absoluteFile
+    var serverPackCreatorPropertiesFile: File = File(homeDirectory, serverPackCreatorProperties).absoluteFile
+        get() {
+            field = File(homeDirectory, serverPackCreatorProperties).absoluteFile
+            return field
+        }
+        private set
 
     /**
      * Default configuration-file for a server pack generation inside ServerPackCreators
      * home-directory.
      */
-    val defaultConfig: File = File(homeDirectory, "serverpackcreator.conf").absoluteFile
+    var defaultConfig: File = File(homeDirectory, "serverpackcreator.conf").absoluteFile
+        get() {
+            field = File(homeDirectory, "serverpackcreator.conf").absoluteFile
+            return field
+        }
+        private set
 
     /**
      * Directory in which ServerPackCreator configurations from the GUI get saved in by default.
      */
-    val configsDirectory: File = File(homeDirectory, "configs").absoluteFile
+    var configsDirectory: File = File(homeDirectory, "configs").absoluteFile
+        get() {
+            field = File(homeDirectory, "configs").absoluteFile
+            return field
+        }
+        private set
 
     /**
      * Base-directory for Tomcat, used by the webservice-side of ServerPackCreator.
@@ -1192,6 +1250,10 @@ actual class ApiProperties(
             field = value.absoluteFile
             log.info("Set Tomcat base-directory to: $field")
         }
+
+    fun defaultTomcatBaseDirectory(): File {
+        return homeDirectory.absoluteFile
+    }
 
     fun defaultServerPacksDirectory(): File {
         return File(homeDirectory, "server-packs").absoluteFile
@@ -1229,7 +1291,12 @@ actual class ApiProperties(
      * Storage location for logs created by ServerPackCreator. This is the `logs`-directory
      * inside ServerPackCreators home-directory.
      */
-    val logsDirectory: File = File(homeDirectory, "logs").absoluteFile
+    var logsDirectory: File = File(homeDirectory, "logs").absoluteFile
+        get() {
+            field = File(homeDirectory, "logs").absoluteFile
+            return field
+        }
+        private set
 
     /**
      * Logs-directory for Tomcat, used by the webservice-side of ServerPackCreator.
@@ -1237,7 +1304,7 @@ actual class ApiProperties(
     @Suppress("MemberVisibilityCanBePrivate")
     var tomcatLogsDirectory: File = logsDirectory
         get() {
-            val default = File("${homeDirectory}${File.separator}logs").absolutePath
+            val default = File(homeDirectory, "logs").absolutePath
             val dir = internalProps.getProperty(pTomcatLogsDirectory, default)
             field = File(dir).absoluteFile
             return field
@@ -1247,6 +1314,10 @@ actual class ApiProperties(
             field = value.absoluteFile
             log.info("Set Tomcat logs-directory to: $field")
         }
+
+    fun defaultTomcatLogsDirectory(): File {
+        return File(homeDirectory, "logs").absoluteFile
+    }
 
     /**
      * Directory to which default/fallback manifests are copied to during the startup of
@@ -1258,7 +1329,12 @@ actual class ApiProperties(
      *
      * By default, this is the `manifests`-directory inside ServerPackCreators home-directory.
      */
-    val manifestsDirectory: File = File(homeDirectory, "manifests").absoluteFile
+    var manifestsDirectory: File = File(homeDirectory, "manifests").absoluteFile
+        get() {
+            field = File(homeDirectory, "manifests").absoluteFile
+            return field
+        }
+        private set
 
     /**
      * The Fabric intermediaries manifest containing all required information about Fabrics
@@ -1268,8 +1344,13 @@ actual class ApiProperties(
      * By default, the `fabric-intermediaries-manifest.json`-file resides in the
      * `manifests`-directory inside ServerPackCreators home-directory.
      */
-    val fabricIntermediariesManifest: File =
+    var fabricIntermediariesManifest: File =
         File(manifestsDirectory, "fabric-intermediaries-manifest.json").absoluteFile
+        get() {
+            field = File(manifestsDirectory, "fabric-intermediaries-manifest.json").absoluteFile
+            return field
+        }
+        private set
 
     /**
      * The LegacyFabric game version manifest containing information about which Minecraft version
@@ -1279,7 +1360,12 @@ actual class ApiProperties(
      * By default, the `legacy-fabric-game-manifest.json`-file resides in the
      * `manifests`-directory inside ServerPackCreators home-directory.
      */
-    val legacyFabricGameManifest: File = File(manifestsDirectory, "legacy-fabric-game-manifest.json").absoluteFile
+    var legacyFabricGameManifest: File = File(manifestsDirectory, "legacy-fabric-game-manifest.json").absoluteFile
+        get() {
+            field = File(manifestsDirectory, "legacy-fabric-game-manifest.json").absoluteFile
+            return field
+        }
+        private set
 
     /**
      * LegacyFabric loader manifest containing information about Fabric loader maven versions.
@@ -1287,7 +1373,12 @@ actual class ApiProperties(
      * By default, the `legacy-fabric-loader-manifest.json`-file resides in the
      * `manifests`-directory inside ServerPackCreators home-directory.
      */
-    val legacyFabricLoaderManifest: File = File(manifestsDirectory, "legacy-fabric-loader-manifest.json").absoluteFile
+    var legacyFabricLoaderManifest: File = File(manifestsDirectory, "legacy-fabric-loader-manifest.json").absoluteFile
+        get() {
+            field = File(manifestsDirectory, "legacy-fabric-loader-manifest.json").absoluteFile
+            return field
+        }
+        private set
 
     /**
      * LegacyFabric installer manifest containing information about available LegacyFabric installers
@@ -1296,8 +1387,13 @@ actual class ApiProperties(
      * By default, the `legacy-fabric-installer-manifest.xml`-file resides in the
      * `manifests`-directory inside ServerPackCreators home-directory.
      */
-    val legacyFabricInstallerManifest: File =
+    var legacyFabricInstallerManifest: File =
         File(manifestsDirectory, "legacy-fabric-installer-manifest.xml").absoluteFile
+        get() {
+            field = File(manifestsDirectory, "legacy-fabric-installer-manifest.xml").absoluteFile
+            return field
+        }
+        private set
 
     /**
      * Fabric installer manifest containing information about available Fabric installers with which
@@ -1306,7 +1402,12 @@ actual class ApiProperties(
      * By default, the `fabric-installer-manifest.xml`-file resides in the
      * `manifests`-directory inside ServerPackCreators home-directory.
      */
-    val fabricInstallerManifest: File = File(manifestsDirectory, "fabric-installer-manifest.xml").absoluteFile
+    var fabricInstallerManifest: File = File(manifestsDirectory, "fabric-installer-manifest.xml").absoluteFile
+        get() {
+            field = File(manifestsDirectory, "fabric-installer-manifest.xml").absoluteFile
+            return field
+        }
+        private set
 
     /**
      * Quilt version manifest containing information about available Quilt loader versions.
@@ -1314,7 +1415,12 @@ actual class ApiProperties(
      * By default, the `quilt-manifest.xml`-file resides in the `manifests`-directory
      * inside ServerPackCreators home-directory.
      */
-    val quiltVersionManifest: File = File(manifestsDirectory, "quilt-manifest.xml").absoluteFile
+    var quiltVersionManifest: File = File(manifestsDirectory, "quilt-manifest.xml").absoluteFile
+        get() {
+            field = File(manifestsDirectory, "quilt-manifest.xml").absoluteFile
+            return field
+        }
+        private set
 
     /**
      * Quilt installer manifest containing information about available Quilt installers with which to
@@ -1323,7 +1429,12 @@ actual class ApiProperties(
      * By default, the `quilt-installer-manifest.xml`-file resides in the
      * `manifests`-directory inside ServerPackCreators home-directory.
      */
-    val quiltInstallerManifest: File = File(manifestsDirectory, "quilt-installer-manifest.xml").absoluteFile
+    var quiltInstallerManifest: File = File(manifestsDirectory, "quilt-installer-manifest.xml").absoluteFile
+        get() {
+            field = File(manifestsDirectory, "quilt-installer-manifest.xml").absoluteFile
+            return field
+        }
+        private set
 
     /**
      * Forge version manifest containing information about available Forge loader versions.
@@ -1332,7 +1443,12 @@ actual class ApiProperties(
      * By default, the `forge-manifest.json`-file resides in the `manifests`-directory
      * inside ServerPackCreators home-directory.
      */
-    val forgeVersionManifest: File = File(manifestsDirectory, "forge-manifest.json").absoluteFile
+    var forgeVersionManifest: File = File(manifestsDirectory, "forge-manifest.json").absoluteFile
+        get() {
+            field = File(manifestsDirectory, "forge-manifest.json").absoluteFile
+            return field
+        }
+        private set
 
     /**
      * NeoForge version manifest containing information about available NeoForge loader versions.
@@ -1341,7 +1457,12 @@ actual class ApiProperties(
      * By default, the `neoforge-manifest.xml`-file resides in the `manifests`-directory
      * inside ServerPackCreators home-directory.
      */
-    val neoForgeVersionManifest: File = File(manifestsDirectory, "neoforge-manifest.xml").absoluteFile
+    var neoForgeVersionManifest: File = File(manifestsDirectory, "neoforge-manifest.xml").absoluteFile
+        get() {
+            field = File(manifestsDirectory, "neoforge-manifest.xml").absoluteFile
+            return field
+        }
+        private set
 
     /**
      * Fabric version manifest containing information about available Fabric loader versions.
@@ -1350,7 +1471,12 @@ actual class ApiProperties(
      * By default, the `fabric-manifest.xml`-file resides in the `manifests`-directory
      * inside ServerPackCreators home-directory.
      */
-    val fabricVersionManifest: File = File(manifestsDirectory, "fabric-manifest.xml").absoluteFile
+    var fabricVersionManifest: File = File(manifestsDirectory, "fabric-manifest.xml").absoluteFile
+        get() {
+            field = File(manifestsDirectory, "fabric-manifest.xml").absoluteFile
+            return field
+        }
+        private set
 
     /**
      * Directory to which Minecraft server manifests are copied during the startup of
@@ -1366,7 +1492,12 @@ actual class ApiProperties(
      * By default, this is the `mcserver`-directory inside the `manifests`-directory
      * inside ServerPackCreators home-directory.
      */
-    val minecraftServerManifestsDirectory: File = File(manifestsDirectory, "mcserver").absoluteFile
+    var minecraftServerManifestsDirectory: File = File(manifestsDirectory, "mcserver").absoluteFile
+        get() {
+            field = File(manifestsDirectory, "mcserver").absoluteFile
+            return field
+        }
+        private set
 
     /**
      * Minecraft version manifest containing information about available Minecraft versions.
@@ -1374,7 +1505,12 @@ actual class ApiProperties(
      * By default, the `minecraft-manifest.json`-file resides in the `manifests`-directory
      * inside ServerPackCreators home-directory.
      */
-    val minecraftVersionManifest: File = File(manifestsDirectory, "minecraft-manifest.json").absoluteFile
+    var minecraftVersionManifest: File = File(manifestsDirectory, "minecraft-manifest.json").absoluteFile
+        get() {
+            field = File(manifestsDirectory, "minecraft-manifest.json").absoluteFile
+            return field
+        }
+        private set
 
     /**
      * Work-directory for storing temporary, non-critical, files and directories.
@@ -1387,7 +1523,12 @@ actual class ApiProperties(
      *
      * By default, this is the `work`-directory inside ServerPackCreators home-directory.
      */
-    val workDirectory: File = File(homeDirectory, "work").absoluteFile
+    var workDirectory: File = File(homeDirectory, "work").absoluteFile
+        get() {
+            field = File(homeDirectory, "work").absoluteFile
+            return field
+        }
+        private set
 
     /**
      * Caching directory for various types of installers. Mainly used by the version-meta for caching modloaders
@@ -1395,13 +1536,18 @@ actual class ApiProperties(
      *
      * @author Griefed
      */
-    val installerCacheDirectory: File = File(workDirectory, "installers").absoluteFile
+    var installerCacheDirectory: File = File(workDirectory, "installers").absoluteFile
+        get() {
+            field = File(workDirectory, "installers").absoluteFile
+            return field
+        }
+        private set
 
     /**
      * Data directory for Artemis` queue-processing.
      */
     @Suppress("MemberVisibilityCanBePrivate")
-    var artemisDataDirectory: File = File(workDirectory, "artemis")
+    var artemisDataDirectory: File = File(workDirectory, "artemis").absoluteFile
         get() {
             val default = File(workDirectory, "artemis").absolutePath
             val dir = internalProps.getProperty(pArtemisDataDirectory, default)
@@ -1430,7 +1576,12 @@ actual class ApiProperties(
      *
      * By default, this directory is `work/temp` inside ServerPackCreators home-directory.
      */
-    val tempDirectory: File = File(workDirectory, "temp").absoluteFile
+    var tempDirectory: File = File(workDirectory, "temp").absoluteFile
+        get() {
+            field = File(workDirectory, "temp").absoluteFile
+            return field
+        }
+        private set
 
     /**
      * Modpacks directory in which uploaded modpack ZIP-archives and extracted modpacks are stored.
@@ -1438,7 +1589,12 @@ actual class ApiProperties(
      * By default, this is the `modpacks`-directory inside the `temp`-directory inside
      * ServerPackCreators home-directory.
      */
-    val modpacksDirectory: File = File(tempDirectory, "modpacks").absoluteFile
+    var modpacksDirectory: File = File(tempDirectory, "modpacks").absoluteFile
+        get() {
+            field = File(tempDirectory, "modpacks").absoluteFile
+            return field
+        }
+        private set
 
     /**
      * Directory in which default server-files are stored in.
@@ -1452,7 +1608,12 @@ actual class ApiProperties(
      *
      * By default, this directory is `server_files` inside ServerPackCreators home-directory.
      */
-    val serverFilesDirectory: File = File(homeDirectory, "server_files").absoluteFile
+    var serverFilesDirectory: File = File(homeDirectory, "server_files").absoluteFile
+        get() {
+            field = File(homeDirectory, "server_files").absoluteFile
+            return field
+        }
+        private set
 
     @Suppress("MemberVisibilityCanBePrivate")
     val fallbackScriptTemplates = defaultScriptTemplates().joinToString(",")
@@ -1460,30 +1621,58 @@ actual class ApiProperties(
     /**
      * Directory in which the properties for quick selection are to be stored in and retrieved from.
      */
-    val propertiesDirectory: File = File(serverFilesDirectory, "properties").absoluteFile
+    var propertiesDirectory: File = File(serverFilesDirectory, "properties").absoluteFile
+        get() {
+            field = File(serverFilesDirectory, "properties").absoluteFile
+            return field
+        }
+        private set
 
     /**
      * Directory in which the icons for quick selection are to be stored in and retrieved from.
      */
-    val iconsDirectory: File = File(serverFilesDirectory, "icons").absoluteFile
+    var iconsDirectory: File = File(serverFilesDirectory, "icons").absoluteFile
+        get() {
+            field = File(serverFilesDirectory, "icons").absoluteFile
+            return field
+        }
+        private set
 
     /**
      * Default server.properties-file used by Minecraft servers. This file resides in the
      * `server_files`-directory inside ServerPackCreators home-directory.
      */
-    val defaultServerProperties: File = File(serverFilesDirectory, "server.properties").absoluteFile
+    var defaultServerProperties: File = File(serverFilesDirectory, "server.properties").absoluteFile
+        get() {
+            field = File(serverFilesDirectory, "server.properties").absoluteFile
+            return field
+        }
+        private set
 
     /**
      * Default server-icon.png-file used by Minecraft servers. This file resides in the
      * `server_files`-directory inside ServerPackCreators home-directory.
      */
-    val defaultServerIcon: File = File(serverFilesDirectory, "server-icon.png").absoluteFile
+    var defaultServerIcon: File = File(serverFilesDirectory, "server-icon.png").absoluteFile
+        get() {
+            field = File(serverFilesDirectory, "server-icon.png").absoluteFile
+            return field
+        }
+        private set
 
     /**
      * The database used by the webservice-portion of ServerPackCreator to do store and provide server packs and
      * related information.
      */
-    val serverPackCreatorDatabase: File = File(jdbcDatabaseUrl.replace("jdbc:sqlite:", "")).absoluteFile
+    var serverPackCreatorDatabase: File = File(jdbcDatabaseUrl.replace("jdbc:sqlite:", "")).absoluteFile
+        get() {
+            field = File(jdbcDatabaseUrl.replace("jdbc:sqlite:", "")).absoluteFile
+            return field
+        }
+        set(value) {
+            field = value.absoluteFile
+            jdbcDatabaseUrl = field.absolutePath
+        }
 
     /**
      * Directory in which plugins for ServerPackCreator are to be placed in.
@@ -1495,7 +1684,12 @@ actual class ApiProperties(
      *
      * By default, this is the `plugins`-directory inside the ServerPackCreator home-directory.
      */
-    val pluginsDirectory: File = File(homeDirectory, "plugins").absoluteFile
+    var pluginsDirectory: File = File(homeDirectory, "plugins").absoluteFile
+        get() {
+            field = File(homeDirectory, "plugins").absoluteFile
+            return field
+        }
+        private set
 
     /**
      * Directory in which plugin-specific configurations are stored in.
@@ -1509,7 +1703,12 @@ actual class ApiProperties(
      * By default, this is the `config`-directory inside the `plugins`-directory inside
      * ServerPackCreators home-directory.
      */
-    val pluginsConfigsDirectory: File = File(pluginsDirectory, "config").absoluteFile
+    var pluginsConfigsDirectory: File = File(pluginsDirectory, "config").absoluteFile
+        get() {
+            field = File(pluginsDirectory, "config").absoluteFile
+            return field
+        }
+        private set
 
     /**
      * Load the [propertiesFile] into the provided [props]
@@ -1541,8 +1740,7 @@ actual class ApiProperties(
     fun loadProperties(propertiesFile: File = File(serverPackCreatorProperties)) {
         val props = Properties()
         val jarFolderFile = File(jarInformation.jarFolder.absoluteFile, serverPackCreatorProperties).absoluteFile
-        val userHome = System.getProperty("user.home")
-        val serverPackCreatorHomeDir = File(userHome, "ServerPackCreator").absoluteFile
+        val serverPackCreatorHomeDir = File(home, "ServerPackCreator").absoluteFile
         val homeDirFile = File(serverPackCreatorHomeDir, serverPackCreatorProperties).absoluteFile
         val relativeDirFile = File(serverPackCreatorProperties).absoluteFile
 
@@ -1564,6 +1762,8 @@ actual class ApiProperties(
         loadFile(relativeDirFile, props)
         // Load the specified properties-file.
         loadFile(propertiesFile, props)
+        // Load all values from the overrides-properties
+        loadFile(overrideProperties, props)
 
         internalProps.putAll(props)
 
@@ -1572,7 +1772,8 @@ actual class ApiProperties(
         } else {
             setFallbackModsList()
         }
-        saveToDisk(File(homeDirectory, serverPackCreatorProperties).absoluteFile)
+        //Store properties in the configured SPC home-directory
+        saveProperties(File(homeDirectory, serverPackCreatorProperties).absoluteFile)
     }
 
     /**
@@ -1780,7 +1981,7 @@ actual class ApiProperties(
      * @author Griefed
      */
     @Suppress("MemberVisibilityCanBePrivate")
-    fun saveToDisk(propertiesFile: File) {
+    fun saveProperties(propertiesFile: File) {
         cleanupInternalProps()
         try {
             propertiesFile.outputStream().use {
@@ -1793,6 +1994,31 @@ actual class ApiProperties(
         } catch (ex: IOException) {
             log.error("Couldn't write properties-file.", ex)
         }
+    }
+
+    /**
+     * Write the overrides-properties which, as the name implies, will override any other property loaded previously during [loadProperties].
+     * CAUTION: Depending on the type of installation, the overrides.properties will reside inside a directory which
+     * requires root/admin-privileges to write in. The directory in which this file will be created in is [getJarFolder].
+     *
+     * @author Griefed
+     */
+    fun saveOverrides() {
+        try {
+            overrideProperties.outputStream().use {
+                overridesProps.store(
+                    it,
+                    "Property A from this file will always override property A from any other loaded property. Handle with care!"
+                )
+            }
+        } catch (ex: IOException) {
+            log.error("Couldn't write properties-file.", ex)
+        }
+    }
+
+    fun overridesAsString(): String {
+        return overridesProps.entries.stream().map { it.key.toString() + ":" + it.value.toString() }
+            .collect(Collectors.joining("\n"))
     }
 
     /**
@@ -1893,7 +2119,7 @@ actual class ApiProperties(
      */
     fun changeLocale(locale: Locale) {
         language = locale
-        saveToDisk(serverPackCreatorPropertiesFile)
+        saveProperties(serverPackCreatorPropertiesFile)
         log.info("Changed locale to $language")
     }
 
@@ -1949,7 +2175,7 @@ actual class ApiProperties(
             }
         }
         if (updated) {
-            saveToDisk(File(homeDirectory, serverPackCreatorProperties).absoluteFile)
+            saveProperties(File(homeDirectory, serverPackCreatorProperties).absoluteFile)
         }
         return updated
     }
@@ -2023,7 +2249,7 @@ actual class ApiProperties(
      */
     fun setOldVersion(version: String) {
         internalProps.setProperty(pOldVersion, version)
-        saveToDisk(serverPackCreatorPropertiesFile)
+        saveProperties(serverPackCreatorPropertiesFile)
     }
 
     /**
@@ -2066,7 +2292,7 @@ actual class ApiProperties(
         log.info("Checking for pre-releases set to:   $isCheckingForPreReleasesEnabled")
         log.info("Zip-file exclusion enabled set to:  $isZipFileExclusionEnabled")
         log.info("HasteBin documents endpoint set to: $hasteBinServerUrl")
-        log.info("Queue max disk usage set to:        $queueMaxDiskUsage")
+        log.info("Queue max disk usage set to:        $artemisQueueMaxDiskUsage")
         log.info("Directories which must always be included set to: $directoriesToInclude")
         log.info("Directories which must always be excluded set to: $directoriesToExclude")
         log.info("Cleanup of already existing server packs set to:  $isServerPackCleanupEnabled")

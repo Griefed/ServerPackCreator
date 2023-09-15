@@ -24,13 +24,13 @@ import java.awt.Dimension
 import javax.swing.JFileChooser
 
 /**
- * Customized filechooser for picking ServerPackCreator server pack directory.
+ * Customized filechooser for picking ServerPackCreator Tomcat log-directory.
  *
  * @author Griefed
  */
-class ServerPackDirChooser(apiProperties: ApiProperties, title: String) : JFileChooser() {
+class TomcatLogDirChooser(apiProperties: ApiProperties, title: String) : JFileChooser() {
     init {
-        currentDirectory = apiProperties.serverPacksDirectory
+        currentDirectory = apiProperties.tomcatLogsDirectory
         dialogTitle = title
         fileSelectionMode = DIRECTORIES_ONLY
         isAcceptAllFileFilterUsed = false

@@ -214,7 +214,7 @@ class ApiPropertiesTest internal constructor() {
         Assertions.assertNotNull(apiProperties.serverPacksDirectory)
         Assertions.assertNotNull(apiProperties.directoriesToExclude)
         Assertions.assertFalse(apiProperties.isCheckingForPreReleasesEnabled)
-        Assertions.assertEquals(90, apiProperties.queueMaxDiskUsage)
+        Assertions.assertEquals(90, apiProperties.artemisQueueMaxDiskUsage)
         Assertions.assertEquals("dev", apiProperties.apiVersion)
     }
 }
