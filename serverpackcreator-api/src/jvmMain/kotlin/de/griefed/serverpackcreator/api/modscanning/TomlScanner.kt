@@ -57,9 +57,6 @@ actual class TomlScanner constructor(private val tomlParser: TomlParser) :
         val idsRequiredOnServer = TreeSet<String>()
         var config: CommentedConfig
         for (modJar in jarFiles) {
-            if (modJar.name.contains("Patchouli")) {
-                println("Patchouli")
-            }
             try {
                 config = getConfig(modJar)
 
