@@ -286,7 +286,7 @@ actual class ServerPackHandler actual constructor(
                 }
             }
 
-            inclusion.source.startsWith("mods") -> {
+            inclusion.source == "mods" -> {
                 try {
                     File(serverDir).createDirectories()
                 } catch (ignored: IOException) {
