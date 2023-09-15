@@ -1,3 +1,15 @@
+## [5.0.0-alpha.25](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-alpha.24...5.0.0-alpha.25) (2023-09-15)
+
+
+### 🚀 Features
+
+* Load and save settings ([dca4bca](https://git.griefed.de/Griefed/ServerPackCreator/commit/dca4bcab3207266f24f8ab87697ffab5542c921c))
+
+
+### 🛠 Fixes
+
+* Prevent folder-inclusions from running the mods-scan if they happen to be inside the mods-directory ([be23d94](https://git.griefed.de/Griefed/ServerPackCreator/commit/be23d943d48052e566ff2b44824945a22f0834c9))
+
 ## [5.0.0-alpha.24](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-alpha.23...5.0.0-alpha.24) (2023-09-07)
 
 
