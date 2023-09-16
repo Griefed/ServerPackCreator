@@ -656,7 +656,7 @@ actual class ServerPackHandler actual constructor(
         modsDir: String, userSpecifiedClientMods: List<String>, minecraftVersion: String, modloader: String
     ): List<File> {
         log.info("Preparing a list of mods to include in server pack...")
-        val filesInModsDir: Collection<File> = File(modsDir).filteredWalk(modFileEndings, FilterType.ENDS_WITH)
+        val filesInModsDir: Collection<File> = File(modsDir).list().filter { entry -> modFileEndings.any { entry.endsWith(it) } }.map { File(it) }
         val modsInModpack = TreeSet(filesInModsDir)
         val autodiscoveredClientMods: MutableList<File> = ArrayList(100)
 
@@ -723,17 +723,6 @@ actual class ServerPackHandler actual constructor(
         source: String, destination: String
     ): List<ServerPackFile> {
         val serverPackFiles: MutableList<ServerPackFile> = ArrayList(100)
-        /*File(source).listFiles().forEach {
-            val destFile = File(
-                destination, (it.absolutePath.replace(File(source).absolutePath, ""))
-            )
-            serverPackFiles.add(
-                ServerPackFile(
-                    it,
-                    destFile
-                )
-            )
-        }*/
         try {
             Files.walk(Paths.get(source)).use {
                 for (path in it) {
@@ -757,26 +746,6 @@ actual class ServerPackHandler actual constructor(
         } catch (ex: IOException) {
             log.error("An error occurred gathering files to copy to the server pack.", ex)
         }
-
-        /*try {
-            Files.walk(Paths.get(source)).use {
-                for (path in it) {
-                    try {
-                        serverPackFiles.add(
-                            ServerPackFile(
-                                path,
-                                Paths.get(destination + File.separator + File(source).name)
-                                    .resolve(Paths.get(source).relativize(path))
-                            )
-                        )
-                    } catch (ex: UnsupportedOperationException) {
-                        log.error("Couldn't gather file $path from directory $source.", ex)
-                    }
-                }
-            }
-        } catch (ex: IOException) {
-            log.error("An error occurred gathering files to copy to the server pack.", ex)
-        }*/
         return serverPackFiles
     }
 
