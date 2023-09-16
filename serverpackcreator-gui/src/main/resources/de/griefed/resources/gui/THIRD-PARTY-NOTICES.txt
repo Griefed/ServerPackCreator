@@ -1,5 +1,5 @@
 
-Dependency License Report for serverpackcreator 5.0.0
+Dependency License Report for serverpackcreator dev
 
 1. Group: com.electronwill.night-config  Name: toml  Version: 3.6.6
 
@@ -1210,7 +1210,15 @@ POM License: The 2-Clause BSD License - https://opensource.org/licenses/BSD-2-Cl
 
 --------------------------------------------------------------------------------
 
-10. Group: com.github.gwenn  Name: sqlite-dialect  Version: 0.1.2
+10. Group: com.github.dyorgio.runtime  Name: run-as-root  Version: 1.2.3
+
+POM Project URL: https://github.com/dyorgio/run-as-root
+
+POM License: Apache License, Version 2.0 - https://www.apache.org/licenses/LICENSE-2.0
+
+--------------------------------------------------------------------------------
+
+11. Group: com.github.gwenn  Name: sqlite-dialect  Version: 0.1.2
 
 POM Project URL: https://github.com/gwenn/sqlite-dialect
 
@@ -1218,13 +1226,13 @@ POM License: PUBLIC DOMAIN - http://unlicense.org/
 
 --------------------------------------------------------------------------------
 
-11. Group: com.miglayout  Name: miglayout-swing  Version: 11.0
+12. Group: com.miglayout  Name: miglayout-swing  Version: 11.0
 
 POM License: BSD Zero Clause License - https://opensource.org/licenses/0BSD
 
 --------------------------------------------------------------------------------
 
-12. Group: commons-io  Name: commons-io  Version: 2.11.0
+13. Group: commons-io  Name: commons-io  Version: 2.11.0
 
 Project URL: https://commons.apache.org/proper/commons-io/
 
@@ -1450,11 +1458,11 @@ The Apache Software Foundation (https://www.apache.org/).
 
 --------------------------------------------------------------------------------
 
-13. Group: de.comahe.i18n4k  Name: i18n4k-core  Version: 0.5.0
+14. Group: de.comahe.i18n4k  Name: i18n4k-core  Version: 0.5.0
 
 No license information found
 
-14. Group: de.comahe.i18n4k  Name: i18n4k-core-jvm  Version: 0.5.0
+15. Group: de.comahe.i18n4k  Name: i18n4k-core-jvm  Version: 0.5.0
 
 POM Project URL: https://comahe-de.github.io/i18n4k/
 
@@ -1462,7 +1470,7 @@ POM License: Apache License, Version 2.0 - https://www.apache.org/licenses/LICEN
 
 --------------------------------------------------------------------------------
 
-15. Group: de.griefed  Name: versionchecker  Version: 1.1.5
+16. Group: de.griefed  Name: versionchecker  Version: 1.1.5
 
 POM Project URL: https://git.griefed.de/Griefed/VersionChecker.git
 
@@ -1470,15 +1478,15 @@ POM License: MIT License - https://opensource.org/licenses/MIT
 
 --------------------------------------------------------------------------------
 
-16. Group: de.jensklingenberg.ktorfit  Name: ktorfit-lib  Version: 1.1.0
+17. Group: de.jensklingenberg.ktorfit  Name: ktorfit-lib  Version: 1.1.0
 
 No license information found
 
-17. Group: io.github.microutils  Name: kotlin-logging  Version: 3.0.5
+18. Group: io.github.microutils  Name: kotlin-logging  Version: 3.0.5
 
 No license information found
 
-18. Group: net.java.balloontip  Name: balloontip  Version: 1.2.4.1
+19. Group: net.java.balloontip  Name: balloontip  Version: 1.2.4.1
 
 POM Project URL: http://balloontip.java.net/
 
@@ -1486,7 +1494,7 @@ POM License: The 3-Clause BSD License - https://opensource.org/licenses/BSD-3-Cl
 
 --------------------------------------------------------------------------------
 
-19. Group: net.lingala.zip4j  Name: zip4j  Version: 2.11.5
+20. Group: net.lingala.zip4j  Name: zip4j  Version: 2.11.5
 
 Manifest license URL: https://www.apache.org/licenses/LICENSE-2.0
 
@@ -1496,7 +1504,7 @@ POM License: Apache License, Version 2.0 - https://www.apache.org/licenses/LICEN
 
 --------------------------------------------------------------------------------
 
-20. Group: org.apache.activemq  Name: artemis-jms-server  Version: 2.28.0
+21. Group: org.apache.activemq  Name: artemis-jms-server  Version: 2.28.0
 
 POM License: Apache License, Version 2.0 - https://www.apache.org/licenses/LICENSE-2.0
 
@@ -1720,7 +1728,7 @@ The Apache Software Foundation (http://www.apache.org/).
 
 --------------------------------------------------------------------------------
 
-21. Group: org.apache.logging.log4j  Name: log4j-api-kotlin  Version: 1.2.0
+22. Group: org.apache.logging.log4j  Name: log4j-api-kotlin  Version: 1.2.0
 
 Manifest Project URL: https://logging.apache.org/log4j/kotlin/log4j-api-kotlin/
 
@@ -1948,7 +1956,7 @@ The Apache Software Foundation (http://www.apache.org/).
 
 --------------------------------------------------------------------------------
 
-22. Group: org.apache.logging.log4j  Name: log4j-core  Version: 2.20.0
+23. Group: org.apache.logging.log4j  Name: log4j-core  Version: 2.20.0
 
 Manifest Project URL: https://www.apache.org/
 
@@ -2175,11 +2183,11 @@ ResolverUtil.java
 Copyright 2005-2006 Tim Fennell
 --------------------------------------------------------------------------------
 
-23. Group: org.jetbrains.kotlin  Name: kotlin-bom  Version: 1.8.21
+24. Group: org.jetbrains.kotlin  Name: kotlin-bom  Version: 1.8.21
 
 No license information found
 
-24. Group: org.jetbrains.kotlin  Name: kotlin-reflect  Version: 1.8.20
+25. Group: org.jetbrains.kotlin  Name: kotlin-reflect  Version: 1.8.20
 
 POM Project URL: https://kotlinlang.org/
 
@@ -2187,7 +2195,7 @@ POM License: Apache License, Version 2.0 - https://www.apache.org/licenses/LICEN
 
 --------------------------------------------------------------------------------
 
-25. Group: org.jetbrains.kotlin  Name: kotlin-reflect  Version: 1.8.21
+26. Group: org.jetbrains.kotlin  Name: kotlin-reflect  Version: 1.8.21
 
 POM Project URL: https://kotlinlang.org/
 
@@ -2195,7 +2203,7 @@ POM License: Apache License, Version 2.0 - https://www.apache.org/licenses/LICEN
 
 --------------------------------------------------------------------------------
 
-26. Group: org.jetbrains.kotlin  Name: kotlin-stdlib  Version: 1.8.21
+27. Group: org.jetbrains.kotlin  Name: kotlin-stdlib  Version: 1.8.21
 
 POM Project URL: https://kotlinlang.org/
 
@@ -2203,7 +2211,7 @@ POM License: Apache License, Version 2.0 - https://www.apache.org/licenses/LICEN
 
 --------------------------------------------------------------------------------
 
-27. Group: org.jetbrains.kotlin  Name: kotlin-stdlib-common  Version: 1.8.21
+28. Group: org.jetbrains.kotlin  Name: kotlin-stdlib-common  Version: 1.8.21
 
 POM Project URL: https://kotlinlang.org/
 
@@ -2211,7 +2219,7 @@ POM License: Apache License, Version 2.0 - https://www.apache.org/licenses/LICEN
 
 --------------------------------------------------------------------------------
 
-28. Group: org.jetbrains.kotlin  Name: kotlin-stdlib-jdk8  Version: 1.8.21
+29. Group: org.jetbrains.kotlin  Name: kotlin-stdlib-jdk8  Version: 1.8.21
 
 POM Project URL: https://kotlinlang.org/
 
@@ -2219,11 +2227,11 @@ POM License: Apache License, Version 2.0 - https://www.apache.org/licenses/LICEN
 
 --------------------------------------------------------------------------------
 
-29. Group: org.jetbrains.kotlinx  Name: kotlinx-coroutines-core  Version: 1.6.4
+30. Group: org.jetbrains.kotlinx  Name: kotlinx-coroutines-core  Version: 1.6.4
 
 No license information found
 
-30. Group: org.jetbrains.kotlinx  Name: kotlinx-coroutines-swing  Version: 1.6.4
+31. Group: org.jetbrains.kotlinx  Name: kotlinx-coroutines-swing  Version: 1.6.4
 
 POM Project URL: https://github.com/Kotlin/kotlinx.coroutines
 
@@ -2231,17 +2239,17 @@ POM License: Apache License, Version 2.0 - https://www.apache.org/licenses/LICEN
 
 --------------------------------------------------------------------------------
 
-31. Group: org.jetbrains.kotlinx  Name: kotlinx-datetime  Version: 0.4.0
+32. Group: org.jetbrains.kotlinx  Name: kotlinx-datetime  Version: 0.4.0
 
 No license information found
 
-32. Group: org.pf4j  Name: pf4j  Version: 3.9.0
+33. Group: org.pf4j  Name: pf4j  Version: 3.9.0
 
 POM License: Apache License, Version 2.0 - https://www.apache.org/licenses/LICENSE-2.0
 
 --------------------------------------------------------------------------------
 
-33. Group: org.springframework.boot  Name: spring-boot-devtools  Version: 2.7.10
+34. Group: org.springframework.boot  Name: spring-boot-devtools  Version: 2.7.10
 
 POM Project URL: https://spring.io/projects/spring-boot
 
@@ -2463,7 +2471,7 @@ This product is licensed to you under the Apache License, Version 2.0
 the License.
 --------------------------------------------------------------------------------
 
-34. Group: org.springframework.boot  Name: spring-boot-starter-artemis  Version: 2.7.10
+35. Group: org.springframework.boot  Name: spring-boot-starter-artemis  Version: 2.7.10
 
 POM Project URL: https://spring.io/projects/spring-boot
 
@@ -2685,7 +2693,7 @@ This product is licensed to you under the Apache License, Version 2.0
 the License.
 --------------------------------------------------------------------------------
 
-35. Group: org.springframework.boot  Name: spring-boot-starter-data-jpa  Version: 2.7.10
+36. Group: org.springframework.boot  Name: spring-boot-starter-data-jpa  Version: 2.7.10
 
 POM Project URL: https://spring.io/projects/spring-boot
 
@@ -2907,7 +2915,7 @@ This product is licensed to you under the Apache License, Version 2.0
 the License.
 --------------------------------------------------------------------------------
 
-36. Group: org.springframework.boot  Name: spring-boot-starter-log4j2  Version: 2.7.10
+37. Group: org.springframework.boot  Name: spring-boot-starter-log4j2  Version: 2.7.10
 
 POM Project URL: https://spring.io/projects/spring-boot
 
@@ -3129,7 +3137,7 @@ This product is licensed to you under the Apache License, Version 2.0
 the License.
 --------------------------------------------------------------------------------
 
-37. Group: org.springframework.boot  Name: spring-boot-starter-web  Version: 2.7.10
+38. Group: org.springframework.boot  Name: spring-boot-starter-web  Version: 2.7.10
 
 POM Project URL: https://spring.io/projects/spring-boot
 
@@ -3351,7 +3359,7 @@ This product is licensed to you under the Apache License, Version 2.0
 the License.
 --------------------------------------------------------------------------------
 
-38. Group: org.xerial  Name: sqlite-jdbc  Version: 3.41.2.1
+39. Group: org.xerial  Name: sqlite-jdbc  Version: 3.41.2.1
 
 Manifest license URL: https://www.apache.org/licenses/LICENSE-2.0
 
@@ -3596,5 +3604,5 @@ SUCH DAMAGE.
 --------------------------------------------------------------------------------
 
 
-This report was generated at Sun Jul 16 13:50:14 CEST 2023.
+This report was generated at Sat Sep 16 15:00:06 CEST 2023.
 

@@ -77,7 +77,7 @@ tasks.jpackage {
     icon = File(packagerResources, "app.png").path
     input = "$buildDir/jars"
     javaOptions = listOf("-Dfile.encoding=UTF-8", "-Dlog4j2.formatMsgNoLookups=true")
-    licenseFile = parent.path + "/licenses/THIRD-PARTY-NOTICES.txt"
+    licenseFile = parent.path + "/licenses/LICENSE-AGREEMENT"
     mainJar = tasks.jar.get().archiveFileName.get()
     mainClass = "de.griefed.serverpackcreator.app.ServerPackCreatorKt"
     resourceDir = packagerResources.path
