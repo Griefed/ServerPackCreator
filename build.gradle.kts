@@ -1,3 +1,4 @@
+import de.griefed.common.gradle.LicenseAgreementRenderer
 import de.griefed.common.gradle.SubprojectLicenseFilter
 import org.gradle.plugins.ide.idea.model.IdeaLanguageLevel
 
@@ -60,7 +61,7 @@ licenseReport {
     renderers = arrayOf<com.github.jk1.license.render.ReportRenderer>(
         com.github.jk1.license.render.InventoryHtmlReportRenderer("index.html", "Dependency Licences"),
         com.github.jk1.license.render.InventoryMarkdownReportRenderer("licences.md", "Dependency Licenses"),
-        com.github.jk1.license.render.TextReportRenderer()
+        LicenseAgreementRenderer("LICENSE-AGREEMENT")
     )
 }
 
@@ -107,11 +108,11 @@ tasks.register<Copy>("copyPluginsApiUnitTests") {
 
 tasks.register<Delete>("cleanLicenseReport") {
     delete(licenseReports)
-    delete(projectDir.resolve("serverpackcreator-gui/src/main/resources/de/griefed/resources/gui/THIRD-PARTY-NOTICES.txt"))
+    delete(projectDir.resolve("serverpackcreator-gui/src/main/resources/de/griefed/resources/gui/LICENSE-AGREEMENT"))
 }
 
 tasks.register<Copy>("copyLicenseReport") {
-    from(rootDir.resolve("licenses/THIRD-PARTY-NOTICES.txt"))
+    from(rootDir.resolve("licenses/LICENSE-AGREEMENT"))
     into(rootDir.resolve("serverpackcreator-gui/src/main/resources/de/griefed/resources/gui"))
 }
 

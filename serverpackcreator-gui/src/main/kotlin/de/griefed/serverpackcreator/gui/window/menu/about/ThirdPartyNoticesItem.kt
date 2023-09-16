@@ -50,7 +50,7 @@ class ThirdPartyNoticesItem(private val mainFrame: MainFrame, private val guiPro
     init {
         thirdPartyNoticesWindowTextPane.isEditable = false
         thirdPartyNoticesWindowTextPane.text =
-            this.javaClass.classLoader.getResource("de/griefed/resources/gui/THIRD-PARTY-NOTICES.txt")?.readText()
+            this.javaClass.classLoader.getResource("de/griefed/resources/gui/LICENSE-AGREEMENT")?.readText()
                 ?: "Could not read ressource"
         this.addActionListener { displayThirdPartyNotices() }
 

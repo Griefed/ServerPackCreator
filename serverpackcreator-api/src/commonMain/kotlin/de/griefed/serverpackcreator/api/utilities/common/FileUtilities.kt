@@ -200,7 +200,8 @@ expect fun File.regexWalk(
 expect fun File.filteredWalk(
     filters: List<String>,
     filterType: FilterType = FilterType.CONTAINS,
-    direction: FileWalkDirection = FileWalkDirection.TOP_DOWN
+    direction: FileWalkDirection = FileWalkDirection.TOP_DOWN,
+    recursive: Boolean = true
 ): MutableList<File>
 
 /**
