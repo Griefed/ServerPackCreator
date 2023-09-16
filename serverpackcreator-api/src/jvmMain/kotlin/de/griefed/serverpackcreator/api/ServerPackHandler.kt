@@ -30,6 +30,7 @@ import org.apache.logging.log4j.kotlin.logger
 import java.awt.Image
 import java.awt.image.BufferedImage
 import java.io.File
+import java.io.FilenameFilter
 import java.io.IOException
 import java.net.MalformedURLException
 import java.nio.file.Files
@@ -766,7 +767,7 @@ actual class ServerPackHandler actual constructor(
         modloader: String
     ): List<File> {
         log.info("Preparing a list of mods to include in server pack...")
-        val filesInModsDir: Collection<File> = File(modsDir).filteredWalk(modFileEndings, FilterType.ENDS_WITH)
+        val filesInModsDir: Collection<File> = File(modsDir).list().filter { entry -> modFileEndings.any { entry.endsWith(it) } }.map { File(it) }
         val modsInModpack = TreeSet(filesInModsDir)
         val autodiscoveredClientMods: MutableList<File> = ArrayList(100)
 
