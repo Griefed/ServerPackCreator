@@ -240,7 +240,7 @@ actual class ServerPackHandler actual constructor(
                     * of the server pack, instead of a saves-directory inside the modpack.
                     */
                     serverPackFiles.addAll(getSaveFiles(clientDir, directory, destination))
-                } else if (directory.endsWith("mods")) {
+                } else if (directory == "mods") {
 
                     /*
                     * If the entry starts with mods, we need to run our checks for clientside-only mods as well as exclude any
