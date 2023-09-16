@@ -67,16 +67,13 @@ class MainWindow(
             UIManager.setLookAndFeel(instance)
             FlatLaf.updateUI()
 
-            val frame = MainFrame(
+            MainFrame(
                 guiProps,
                 apiWrapper,
                 updateChecker,
                 migrationManager
             )
             splashScreen.close()
-            if (guiProps.startFocusEnabled) {
-                frame.toFront()
-            }
         }
     }
 }

@@ -49,6 +49,7 @@ import javax.swing.plaf.FontUIResource
  */
 @Suppress("unused", "RedundantSuppression")
 class GuiProps(private val apiProperties: ApiProperties) {
+
     @Suppress("MemberVisibilityCanBePrivate")
     val smallSize = 18
 
@@ -387,35 +388,42 @@ class GuiProps(private val apiProperties: ApiProperties) {
             FlatAnimatedLafChange.hideSnapshotWithAnimation()
             storeGuiProperty("theme", field.javaClass.name)
         }
-    var startFocusEnabled: Boolean
+    var startFocusEnabled: Boolean = getGuiProperty("focus.start", "false").toBoolean()
         get() {
             val prop = getGuiProperty("focus.start", "false")
-            return prop == "true"
+            field = prop == "true"
+            return field
         }
         set(value) {
+            field = value
             storeGuiProperty("focus.start",value.toString())
         }
-    var generationFocusEnabled: Boolean
+    var generationFocusEnabled: Boolean = getGuiProperty("focus.generation", "false").toBoolean()
         get() {
             val prop = getGuiProperty("focus.generation", "false")
-            return prop == "true"
+            field = prop == "true"
+            return field
         }
         set(value) {
+            field = value
             storeGuiProperty("focus.generation",value.toString())
         }
-    var fontSize: Int
+    var fontSize: Int = getGuiProperty("font.size","12")!!.toInt()
         get() {
             val prop = getGuiProperty("font.size","12")
-            return if (prop != null) {
+            field = if (prop != null) {
                 return prop.toInt()
             } else {
                 12
             }
+            return field
         }
         set(value) {
+            field = value
             storeGuiProperty("font.size",value.toString())
             val currentFont = UIManager.get("defaultFont") as Font
             UIManager.put("defaultFont",FontUIResource(currentFont.fontName, currentFont.style, value))
+            FlatLaf.updateUI()
         }
 
     /**
@@ -451,5 +459,12 @@ class GuiProps(private val apiProperties: ApiProperties) {
 
     fun storeGuiProperty(key: String, value: String) {
         apiProperties.storeCustomProperty("$guiPropertyPrefix$key", value)
+    }
+
+    fun initFont() {
+        val value = getGuiProperty("font.size","12")!!.toInt()
+        val currentFont = UIManager.get("defaultFont") as Font
+        UIManager.put("defaultFont",FontUIResource(currentFont.fontName, currentFont.style, value))
+        FlatLaf.updateUI()
     }
 }

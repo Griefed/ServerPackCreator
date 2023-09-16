@@ -68,33 +68,14 @@ class MainFrame(
         frame.isAutoRequestFocus = true
         frame.preferredSize = Dimension(1100, 860)
         frame.pack()
+        guiProps.initFont()
         frame.isVisible = true
         guiProps.larsonScanner.loadConfig(guiProps.idleConfig)
         guiProps.larsonScanner.play()
         KeyComboManager(guiProps,apiWrapper,updateChecker,updateDialogs,migrationManager,frame,mainPanel,menu)
-        /*Toolkit.getDefaultToolkit().addAWTEventListener({ e: AWTEvent ->
-            val event = e as KeyEvent
-            if (event.id == KeyEvent.KEY_RELEASED) {
-                val currentFont = UIManager.get("defaultFont") as Font
-                when {
-                    event.keyCode == KeyEvent.VK_UP && event.isControlDown && event.isShiftDown -> {
-                        UIManager.put(
-                            "defaultFont",
-                            FontUIResource(currentFont.fontName, currentFont.style, currentFont.size + 1)
-                        )
-                        FlatLaf.updateUI()
-                    }
-
-                    event.keyCode == KeyEvent.VK_DOWN && event.isControlDown && event.isShiftDown -> {
-                        UIManager.put(
-                            "defaultFont",
-                            FontUIResource(currentFont.fontName, currentFont.style, currentFont.size - 1)
-                        )
-                        FlatLaf.updateUI()
-                    }
-                }
-            }
-        }, AWTEvent.KEY_EVENT_MASK)*/
+        if (guiProps.startFocusEnabled) {
+            toFront()
+        }
     }
 
     fun toFront() {
