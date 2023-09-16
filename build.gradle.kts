@@ -108,11 +108,11 @@ tasks.register<Copy>("copyPluginsApiUnitTests") {
 
 tasks.register<Delete>("cleanLicenseReport") {
     delete(licenseReports)
-    delete(projectDir.resolve("serverpackcreator-gui/src/main/resources/de/griefed/resources/gui/THIRD-PARTY-NOTICES.txt"))
+    delete(projectDir.resolve("serverpackcreator-gui/src/main/resources/de/griefed/resources/gui/LICENSE-AGREEMENT"))
 }
 
 tasks.register<Copy>("copyLicenseReport") {
-    from(rootDir.resolve("licenses/THIRD-PARTY-NOTICES.txt"))
+    from(rootDir.resolve("licenses/LICENSE-AGREEMENT"))
     into(rootDir.resolve("serverpackcreator-gui/src/main/resources/de/griefed/resources/gui"))
 }
 
