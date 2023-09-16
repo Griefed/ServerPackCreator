@@ -766,7 +766,7 @@ actual class ServerPackHandler actual constructor(
         modloader: String
     ): List<File> {
         log.info("Preparing a list of mods to include in server pack...")
-        val filesInModsDir: Collection<File> = File(modsDir).list().filter { entry -> modFileEndings.any { entry.endsWith(it) } }.map { File(it) }
+        val filesInModsDir: Collection<File> = File(modsDir).filteredWalk(modFileEndings, FilterType.ENDS_WITH, FileWalkDirection.TOP_DOWN, recursive = false)
         val modsInModpack = TreeSet(filesInModsDir)
         val autodiscoveredClientMods: MutableList<File> = ArrayList(100)
 
