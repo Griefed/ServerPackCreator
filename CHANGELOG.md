@@ -1,3 +1,18 @@
+## [5.0.0-alpha.26](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-alpha.25...5.0.0-alpha.26) (2023-09-16)
+
+
+### 📦 Other
+
+* Custom license renderer to get a decent license agreement ([0c0ef12](https://git.griefed.de/Griefed/ServerPackCreator/commit/0c0ef124537d70b5b940ca047306b03895f85c1d))
+* Display new license agreement in About Third Party Notices ([fa13be3](https://git.griefed.de/Griefed/ServerPackCreator/commit/fa13be38e0b84eb17a83fcdec390d39b11803be9))
+
+
+### 🛠 Fixes
+
+* Fix the previous fix of only considering JARs in the mods-directory and nothing else ([4d2c382](https://git.griefed.de/Griefed/ServerPackCreator/commit/4d2c38284cfc5b4b7ac1d0e422d51b897c527227))
+* Only consider JARs in file acquisition from mods-directory ([7bb6807](https://git.griefed.de/Griefed/ServerPackCreator/commit/7bb68074f743f34b30cb702d718c39c3da7f68c5))
+* Retrieve focus and font size so it actually has an effect ([4a0c066](https://git.griefed.de/Griefed/ServerPackCreator/commit/4a0c06628c1e5bf8fb3c61e2273edf8969590176))
+
 ## [5.0.0-alpha.25](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-alpha.24...5.0.0-alpha.25) (2023-09-15)
 
 
