@@ -418,19 +418,32 @@ actual fun File.regexWalk(filters: List<Regex>, direction: FileWalkDirection): M
 actual fun File.filteredWalk(
     filters: List<String>,
     filterType: FilterType,
-    direction: FileWalkDirection
+    direction: FileWalkDirection,
+    recursive: Boolean
 ): MutableList<File> =
     when (filterType) {
         FilterType.CONTAINS -> {
-            this.walk(direction).asStream().filter { filters.contains(it.name) }.toList()
+            if (recursive) {
+                this.walk(direction).asStream().filter { filters.contains(it.name) }.toList()
+            } else {
+                this.walk(direction).maxDepth(1).asStream().filter { filters.contains(it.name) }.toList()
+            }
         }
 
         FilterType.ENDS_WITH -> {
-            this.walk(direction).asStream().filter { filters.endsWith(it.name) }.toList()
+            if (recursive) {
+                this.walk(direction).asStream().filter { filters.endsWith(it.name) }.toList()
+            } else {
+                this.walk(direction).maxDepth(1).asStream().filter { filters.endsWith(it.name) }.toList()
+            }
         }
 
         FilterType.STARTS_WITH -> {
-            this.walk(direction).asStream().filter { filters.startsWith(it.name) }.toList()
+            if (recursive) {
+                this.walk(direction).asStream().filter { filters.startsWith(it.name) }.toList()
+            } else {
+                this.walk(direction).maxDepth(1).asStream().filter { filters.endsWith(it.name) }.toList()
+            }
         }
     }
 

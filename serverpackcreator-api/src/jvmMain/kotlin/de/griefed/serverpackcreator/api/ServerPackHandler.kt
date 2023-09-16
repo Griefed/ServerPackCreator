@@ -240,7 +240,7 @@ actual class ServerPackHandler actual constructor(
                     * of the server pack, instead of a saves-directory inside the modpack.
                     */
                     serverPackFiles.addAll(getSaveFiles(clientDir, directory, destination))
-                } else if (directory == "mods") {
+                } else if (directory.endsWith("mods")) {
 
                     /*
                     * If the entry starts with mods, we need to run our checks for clientside-only mods as well as exclude any
@@ -656,7 +656,7 @@ actual class ServerPackHandler actual constructor(
         modsDir: String, userSpecifiedClientMods: List<String>, minecraftVersion: String, modloader: String
     ): List<File> {
         log.info("Preparing a list of mods to include in server pack...")
-        val filesInModsDir: Collection<File> = File(modsDir).list().filter { entry -> modFileEndings.any { entry.endsWith(it) } }.map { File(it) }
+        val filesInModsDir: Collection<File> = File(modsDir).filteredWalk(modFileEndings, FilterType.ENDS_WITH, FileWalkDirection.TOP_DOWN, recursive = false)
         val modsInModpack = TreeSet(filesInModsDir)
         val autodiscoveredClientMods: MutableList<File> = ArrayList(100)
 
