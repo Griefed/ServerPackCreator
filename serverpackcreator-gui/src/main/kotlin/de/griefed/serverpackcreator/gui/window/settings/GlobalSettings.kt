@@ -44,7 +44,7 @@ class GlobalSettings(
     mainFrame: MainFrame,
     changeListener: DocumentChangeListener,
     actionListener: ActionListener
-) : Editor("Global", guiProps) {
+) : Editor(Gui.settings_global.toString(), guiProps) {
 
     val homeIcon = StatusIcon(guiProps, Gui.settings_global_home_tooltip.toString())
     val homeLabel = ElementLabel(Gui.settings_global_home_label.toString())
