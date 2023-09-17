@@ -1,7 +1,7 @@
 
 # Dependency Licenses
 ## Dependency License Report
-_2023-09-16 15:40:36 MESZ_
+_2023-09-17 11:02:35 MESZ_
 ## Apache License, Version 2.0
 
 **1** **Group:** `com.fasterxml.jackson.core` **Name:** `jackson-databind` **Version:** `2.15.0` 
@@ -89,19 +89,19 @@ _2023-09-16 15:40:36 MESZ_
 > - **POM Project URL**: [https://kotlinlang.org/](https://kotlinlang.org/)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
-**16** **Group:** `org.jetbrains.kotlin` **Name:** `kotlin-reflect` **Version:** `1.8.21` 
+**16** **Group:** `org.jetbrains.kotlin` **Name:** `kotlin-reflect` **Version:** `1.9.10` 
 > - **POM Project URL**: [https://kotlinlang.org/](https://kotlinlang.org/)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
-**17** **Group:** `org.jetbrains.kotlin` **Name:** `kotlin-stdlib` **Version:** `1.8.21` 
+**17** **Group:** `org.jetbrains.kotlin` **Name:** `kotlin-stdlib` **Version:** `1.9.10` 
 > - **POM Project URL**: [https://kotlinlang.org/](https://kotlinlang.org/)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
-**18** **Group:** `org.jetbrains.kotlin` **Name:** `kotlin-stdlib-common` **Version:** `1.8.21` 
+**18** **Group:** `org.jetbrains.kotlin` **Name:** `kotlin-stdlib-common` **Version:** `1.9.10` 
 > - **POM Project URL**: [https://kotlinlang.org/](https://kotlinlang.org/)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
-**19** **Group:** `org.jetbrains.kotlin` **Name:** `kotlin-stdlib-jdk8` **Version:** `1.8.21` 
+**19** **Group:** `org.jetbrains.kotlin` **Name:** `kotlin-stdlib-jdk8` **Version:** `1.9.10` 
 > - **POM Project URL**: [https://kotlinlang.org/](https://kotlinlang.org/)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
@@ -206,7 +206,7 @@ _2023-09-16 15:40:36 MESZ_
 
 **38** **Group:** `io.github.microutils` **Name:** `kotlin-logging` **Version:** `3.0.5` 
 
-**39** **Group:** `org.jetbrains.kotlin` **Name:** `kotlin-bom` **Version:** `1.8.21` 
+**39** **Group:** `org.jetbrains.kotlin` **Name:** `kotlin-bom` **Version:** `1.9.10` 
 
 **40** **Group:** `org.jetbrains.kotlinx` **Name:** `kotlinx-coroutines-core` **Version:** `1.6.4` 
 

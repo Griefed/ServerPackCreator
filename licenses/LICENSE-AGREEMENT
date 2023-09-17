@@ -1,5 +1,13 @@
 ServerPackCreator license agreement:
 
+By using a dev- / pre-release version of ServerPackCreator, you agree to do so at your own risk.
+You agree to take responsibility for distributing a possibly faulty server pack
+and will not hold Griefed, or any other party responsible for ServerPackCreator,
+accountable should any issues / problems / errors arise from the use of said 
+software's dev- / pre-release version.
+You may, however, report issues encountered when using this version on GitHub:
+https://github.com/Griefed/ServerPackCreator/issues
+
 ServerPackCreator dev license:
 
                   GNU LESSER GENERAL PUBLIC LICENSE
@@ -2983,7 +2991,7 @@ Copyright 2005-2006 Tim Fennell
 (24 of 39)
 Group:   org.jetbrains.kotlin
 Name:    kotlin-bom
-Version: 1.8.21
+Version: 1.9.10
 No license information found
 
 
@@ -3012,7 +3020,7 @@ URL: https://www.apache.org/licenses/LICENSE-2.0
 (26 of 39)
 Group:   org.jetbrains.kotlin
 Name:    kotlin-reflect
-Version: 1.8.21
+Version: 1.9.10
 POM Project URL: https://kotlinlang.org/
 
 
@@ -3032,7 +3040,7 @@ URL: https://www.apache.org/licenses/LICENSE-2.0
 (27 of 39)
 Group:   org.jetbrains.kotlin
 Name:    kotlin-stdlib
-Version: 1.8.21
+Version: 1.9.10
 POM Project URL: https://kotlinlang.org/
 
 
@@ -3052,7 +3060,7 @@ URL: https://www.apache.org/licenses/LICENSE-2.0
 (28 of 39)
 Group:   org.jetbrains.kotlin
 Name:    kotlin-stdlib-common
-Version: 1.8.21
+Version: 1.9.10
 POM Project URL: https://kotlinlang.org/
 
 
@@ -3072,7 +3080,7 @@ URL: https://www.apache.org/licenses/LICENSE-2.0
 (29 of 39)
 Group:   org.jetbrains.kotlin
 Name:    kotlin-stdlib-jdk8
-Version: 1.8.21
+Version: 1.9.10
 POM Project URL: https://kotlinlang.org/
 
 

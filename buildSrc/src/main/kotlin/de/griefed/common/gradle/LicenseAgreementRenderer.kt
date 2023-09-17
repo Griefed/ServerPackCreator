@@ -45,6 +45,15 @@ class LicenseAgreementRenderer(private val fileName: String = "LICENSE-AGREEMENT
         output = File(data.project.rootDir,"licenses/${fileName}")
         output.writeText("")
         output.appendText("ServerPackCreator license agreement:\n\n")
+        if (project.version.toString().matches(".*(dev|alpha|beta).*".toRegex())) {
+            output.appendText("By using a dev- / pre-release version of ServerPackCreator, you agree to do so at your own risk.\n")
+            output.appendText("You agree to take responsibility for distributing a possibly faulty server pack\n")
+            output.appendText("and will not hold Griefed, or any other party responsible for ServerPackCreator,\n")
+            output.appendText("accountable should any issues / problems / errors arise from the use of said\n")
+            output.appendText("software's dev- / pre-release version.\n")
+            output.appendText("You may, however, report issues encountered when using this version on GitHub:\n")
+            output.appendText("https://github.com/Griefed/ServerPackCreator/issues\n\n")
+        }
         output.appendText("ServerPackCreator ${project.version} license:\n\n")
         output.appendText(File(data.project.rootDir,"LICENSE").readText() + "\n\n")
         output.appendText("Used libraries / dependencies licenses:\n\n")
