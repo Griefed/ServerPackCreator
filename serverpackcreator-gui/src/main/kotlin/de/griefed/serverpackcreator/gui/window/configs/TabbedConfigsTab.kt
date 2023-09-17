@@ -25,6 +25,7 @@ import de.griefed.serverpackcreator.api.PackConfig
 import de.griefed.serverpackcreator.api.utilities.common.InvalidFileTypeException
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.components.TabPanel
+import de.griefed.serverpackcreator.gui.components.TabTitle
 import de.griefed.serverpackcreator.gui.utilities.DialogUtilities
 import de.griefed.serverpackcreator.gui.window.MainFrame
 import de.griefed.serverpackcreator.gui.window.configs.components.ComponentResizer
@@ -67,6 +68,8 @@ class TabbedConfigsTab(
                 null
             }
         }
+
+    val title = TabTitle(guiProps,"Configs")
 
     init {
         iconsDirectoryWatcher()
@@ -123,6 +126,14 @@ class TabbedConfigsTab(
     fun saveAll() {
         for (tab in allTabs) {
             (tab as ConfigEditor).saveCurrentConfiguration()
+        }
+    }
+
+    fun checkAll() {
+        if (allTabs.any { (it as ConfigEditor).hasUnsavedChanges() }) {
+            title.showWarningIcon()
+        } else {
+            title.hideWarningIcon()
         }
     }
 

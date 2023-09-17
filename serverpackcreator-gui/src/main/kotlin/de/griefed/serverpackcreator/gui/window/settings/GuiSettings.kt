@@ -20,18 +20,20 @@
 package de.griefed.serverpackcreator.gui.window.settings
 
 import de.griefed.serverpackcreator.gui.GuiProps
-import de.griefed.serverpackcreator.gui.components.BalloonTipButton
-import de.griefed.serverpackcreator.gui.components.ElementLabel
-import de.griefed.serverpackcreator.gui.components.StatusIcon
+import de.griefed.serverpackcreator.gui.components.*
 import de.griefed.serverpackcreator.gui.window.settings.components.Editor
-import javax.swing.JCheckBox
-import javax.swing.JSlider
+import java.awt.event.ActionListener
+import javax.swing.event.ChangeListener
 
-class GuiSettings(private val guiProps: GuiProps) : Editor("Gui", guiProps) {
+class GuiSettings(
+    private val guiProps: GuiProps,
+    actionListener: ActionListener,
+    changeListener: ChangeListener
+) : Editor("Gui", guiProps) {
 
     val fontSizeIcon = StatusIcon(guiProps,"Size of fonts in ServerPackCreators GUI.")
     val fontSizeLabel = ElementLabel("Font Size")
-    val fontSizeSetting = JSlider(8,76,guiProps.fontSize)
+    val fontSizeSetting = ActionSlider(8,76,guiProps.fontSize,changeListener)
     val fontSizeRevert = BalloonTipButton(null,guiProps.revertIcon,"Revert changes", guiProps) {
         fontSizeSetting.value = guiProps.fontSize
     }
@@ -41,7 +43,7 @@ class GuiSettings(private val guiProps: GuiProps) : Editor("Gui", guiProps) {
 
     val startFocusIcon = StatusIcon(guiProps,"Whether ServerPackCreator should be focused after starting.")
     val startFocusLabel = ElementLabel("Focus On Start")
-    val startFocusSetting = JCheckBox()
+    val startFocusSetting = ActionCheckBox(actionListener)
     val startFocusRevert = BalloonTipButton(null,guiProps.revertIcon,"Revert changes",guiProps) {
         startFocusSetting.isSelected = guiProps.startFocusEnabled
     }
@@ -51,7 +53,7 @@ class GuiSettings(private val guiProps: GuiProps) : Editor("Gui", guiProps) {
 
     val generationFocusIcon = StatusIcon(guiProps,"Whether ServerPackCreator should be focused after a server pack has been generated.")
     val generationFocusLabel = ElementLabel("Focus After Generation")
-    val generationFocusSetting = JCheckBox()
+    val generationFocusSetting = ActionCheckBox(actionListener)
     val generationFocusRevert = BalloonTipButton(null,guiProps.revertIcon,"Revert changes",guiProps) {
         generationFocusSetting.isSelected = guiProps.generationFocusEnabled
     }
@@ -60,8 +62,7 @@ class GuiSettings(private val guiProps: GuiProps) : Editor("Gui", guiProps) {
     }
 
     init {
-        startFocusSetting.isSelected = guiProps.startFocusEnabled
-        generationFocusSetting.isSelected = guiProps.generationFocusEnabled
+        loadSettings()
         fontSizeSetting.paintTicks = true
         fontSizeSetting.paintLabels = true
         fontSizeSetting.majorTickSpacing = 4
@@ -99,5 +100,15 @@ class GuiSettings(private val guiProps: GuiProps) : Editor("Gui", guiProps) {
         guiProps.fontSize = fontSizeSetting.value
         guiProps.startFocusEnabled = startFocusSetting.isSelected
         guiProps.generationFocusEnabled = generationFocusSetting.isSelected
+    }
+
+    override fun validateSettings(): List<String> {
+        return listOf("")
+    }
+
+    override fun hasUnsavedChanges(): Boolean {
+        return fontSizeSetting.value != guiProps.fontSize ||
+            startFocusSetting.isSelected != guiProps.startFocusEnabled ||
+            generationFocusSetting.isSelected != guiProps.generationFocusEnabled
     }
 }

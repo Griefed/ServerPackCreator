@@ -28,9 +28,9 @@ import javax.swing.JComboBox
  *
  * @author Griefed
  */
-class ActionComboBox(actionListener: ActionListener) : JComboBox<String>() {
+class ActionComboBox<E>(actionListener: ActionListener) : JComboBox<E>() {
     constructor(
-        defaultComboBoxModel: DefaultComboBoxModel<String>,
+        defaultComboBoxModel: DefaultComboBoxModel<E>,
         actionListener: ActionListener
     ) : this(
         actionListener

@@ -24,8 +24,8 @@ import net.miginfocom.swing.MigLayout
 import javax.swing.JPanel
 import javax.swing.JScrollPane
 
-abstract class Editor(title: String, guiProps : GuiProps) : JScrollPane(), SettingsEditor {
-    val title = EditorTitle(title,guiProps)
+abstract class Editor(name: String, guiProps : GuiProps) : JScrollPane(), SettingsEditor {
+    val title = SettingsTitle(guiProps)
     val panel = JPanel(
         MigLayout(
             "left,wrap",
@@ -35,6 +35,7 @@ abstract class Editor(title: String, guiProps : GuiProps) : JScrollPane(), Setti
     )
 
     init {
+        title.title = name
         viewport.view = panel
         verticalScrollBarPolicy = VERTICAL_SCROLLBAR_AS_NEEDED
         horizontalScrollBarPolicy = HORIZONTAL_SCROLLBAR_AS_NEEDED

@@ -26,13 +26,19 @@ import de.griefed.serverpackcreator.gui.window.MainFrame
 import de.griefed.serverpackcreator.gui.window.settings.components.*
 import java.io.File
 import javax.swing.JFileChooser
-import javax.swing.JSlider
+import javax.swing.event.ChangeListener
 
-class WebserviceSettings(guiProps: GuiProps, private val apiProperties: ApiProperties, mainFrame: MainFrame) : Editor("Webservice", guiProps) {
+class WebserviceSettings(
+    guiProps: GuiProps,
+    private val apiProperties: ApiProperties,
+    mainFrame: MainFrame,
+    documentChangeListener: DocumentChangeListener,
+    changeListener: ChangeListener
+) : Editor("Webservice", guiProps) {
 
     val artemisDataDirectoryIcon = StatusIcon(guiProps, "Data directory for Artemis Queue System")
     val artemisDataDirectoryLabel = ElementLabel("Artemis Data Directory")
-    val artemisDataDirectorySetting = ScrollTextFileField(guiProps,apiProperties.artemisDataDirectory.absolutePath)
+    val artemisDataDirectorySetting = ScrollTextFileField(guiProps,apiProperties.artemisDataDirectory.absoluteFile, documentChangeListener)
     val artemisDataDirectoryRevert = BalloonTipButton(null,guiProps.revertIcon,"Revert changes.",guiProps) { artemisDataDirectorySetting.file = apiProperties.artemisDataDirectory.absoluteFile }
     val artemisDataDirectoryReset = BalloonTipButton(null,guiProps.resetIcon,"Reset to default value",guiProps) { artemisDataDirectorySetting.file = apiProperties.defaultArtemisDataDirectory().absoluteFile }
     val artemisDataDirectoryChoose = BalloonTipButton(null,guiProps.folderIcon,"Select directory",guiProps) {
@@ -44,13 +50,13 @@ class WebserviceSettings(guiProps: GuiProps, private val apiProperties: ApiPrope
 
     val artemisQueueMaxDiskUsageIcon = StatusIcon(guiProps,"Max disk usage by Artemis, in absolute percentages.")
     val artemisQueueMaxDiskUsageLabel = ElementLabel("Artemis Max Disk Usage")
-    val artemisQueueMaxDiskUsageSetting = JSlider(10,90,apiProperties.artemisQueueMaxDiskUsage)
+    val artemisQueueMaxDiskUsageSetting = ActionSlider(10,90,apiProperties.artemisQueueMaxDiskUsage, changeListener)
     val artemisQueueMaxDiskUsageRevert = BalloonTipButton(null,guiProps.revertIcon,"Revert changes.",guiProps) { artemisQueueMaxDiskUsageSetting.value = apiProperties.artemisQueueMaxDiskUsage }
     val artemisQueueMaxDiskUsageReset = BalloonTipButton(null,guiProps.resetIcon,"Reset to default value", guiProps) { artemisQueueMaxDiskUsageSetting.value = apiProperties.fallbackArtemisQueueMaxDiskUsage }
 
     val databaseFileIcon = StatusIcon(guiProps,"Webservice database file")
     val databaseFileLabel = ElementLabel("Database File")
-    val databaseFileSetting = ScrollTextFileField(guiProps,apiProperties.serverPackCreatorDatabase.absolutePath)
+    val databaseFileSetting = ScrollTextFileField(guiProps,apiProperties.serverPackCreatorDatabase.absoluteFile, documentChangeListener)
     val databaseFileRevert = BalloonTipButton(null,guiProps.revertIcon,"Revert changes.",guiProps) { databaseFileSetting.file = apiProperties.serverPackCreatorDatabase.absoluteFile }
     val databaseFileReset = BalloonTipButton(null,guiProps.resetIcon,"Reset to default value",guiProps) { databaseFileSetting.file = apiProperties.defaultWebserviceDatabase().absoluteFile }
     val databaseFileChoose = BalloonTipButton(null,guiProps.folderIcon,"Select directory",guiProps) {
@@ -62,13 +68,13 @@ class WebserviceSettings(guiProps: GuiProps, private val apiProperties: ApiPrope
 
     val cleanupScheduleIcon = StatusIcon(guiProps,"Schedule by which the webservice will perform cleanup operations")
     val cleanupScheduleLabel = ElementLabel("Cleanup Schedule")
-    val cleanupScheduleSetting = ScrollTextField(guiProps,apiProperties.webserviceCleanupSchedule)
+    val cleanupScheduleSetting = ScrollTextField(guiProps,apiProperties.webserviceCleanupSchedule, "Cleanup Schedule", apiProperties, documentChangeListener)
     val cleanupRevert = BalloonTipButton(null,guiProps.revertIcon,"Revert changes.",guiProps) { cleanupScheduleSetting.text = apiProperties.webserviceCleanupSchedule }
     val cleanupReset = BalloonTipButton(null,guiProps.resetIcon,"Reset to default value",guiProps) { cleanupScheduleSetting.text = apiProperties.fallbackCleanupSchedule }
 
     val logDirectoryIcon = StatusIcon(guiProps,"Directory which contains the Tomcat Access logs")
     val logDirectoryLabel = ElementLabel("Tomcat Access Log Directory")
-    val logDirectorySetting = ScrollTextFileField(guiProps,apiProperties.tomcatLogsDirectory.absolutePath)
+    val logDirectorySetting = ScrollTextFileField(guiProps,apiProperties.tomcatLogsDirectory.absoluteFile, documentChangeListener)
     val logDirectoryRevert = BalloonTipButton(null,guiProps.revertIcon,"Revert changes.",guiProps) { logDirectorySetting.file = apiProperties.tomcatLogsDirectory.absoluteFile }
     val logDirectoryReset = BalloonTipButton(null,guiProps.resetIcon,"Reset to default value",guiProps) { logDirectorySetting.file = apiProperties.defaultTomcatLogsDirectory().absoluteFile }
     val logDirectoryChoose = BalloonTipButton(null,guiProps.folderIcon,"Select directory",guiProps) {
@@ -80,7 +86,7 @@ class WebserviceSettings(guiProps: GuiProps, private val apiProperties: ApiPrope
 
     val baseDirIcon = StatusIcon(guiProps,"Base directory for Tomcat")
     val baseDirLabel = ElementLabel("Tomcat Base Directory")
-    val baseDirSetting = ScrollTextFileField(guiProps,apiProperties.tomcatBaseDirectory.absolutePath)
+    val baseDirSetting = ScrollTextFileField(guiProps,apiProperties.tomcatBaseDirectory.absoluteFile, documentChangeListener)
     val baseDirRevert = BalloonTipButton(null,guiProps.revertIcon,"Revert changes.",guiProps) { baseDirSetting.file = apiProperties.tomcatBaseDirectory.absoluteFile }
     val baseDirReset = BalloonTipButton(null,guiProps.resetIcon,"Reset to default value",guiProps) { baseDirSetting.file = apiProperties.defaultTomcatBaseDirectory().absoluteFile }
     val baseDirChoose = BalloonTipButton(null,guiProps.folderIcon,"Select directory",guiProps) {
@@ -92,17 +98,18 @@ class WebserviceSettings(guiProps: GuiProps, private val apiProperties: ApiPrope
 
     val versionScheduleIcon = StatusIcon(guiProps,"Schedule by which the webservice will perform version meta updates")
     val versionScheduleLabel = ElementLabel("Version Schedule")
-    val versionScheduleSetting = ScrollTextField(guiProps,apiProperties.webserviceVersionSchedule)
+    val versionScheduleSetting = ScrollTextField(guiProps,apiProperties.webserviceVersionSchedule, "Version Schedule", apiProperties, documentChangeListener)
     val versionRevert = BalloonTipButton(null,guiProps.revertIcon,"Revert changes.",guiProps) { versionScheduleSetting.text = apiProperties.webserviceVersionSchedule }
     val versionReset = BalloonTipButton(null,guiProps.resetIcon,"Reset to default value",guiProps) { versionScheduleSetting.text = apiProperties.fallbackVersionSchedule }
 
     val databaseCleanupScheduleIcon = StatusIcon(guiProps,"Schedule by which the webservice will perform database cleanup operations")
     val databaseCleanupScheduleLabel = ElementLabel("Database Cleanup Schedule")
-    val databaseCleanupScheduleSetting = ScrollTextField(guiProps,apiProperties.webserviceDatabaseCleanupSchedule)
+    val databaseCleanupScheduleSetting = ScrollTextField(guiProps,apiProperties.webserviceDatabaseCleanupSchedule, "Database Schedule", apiProperties, documentChangeListener)
     val databaseCleanupRevert = BalloonTipButton(null,guiProps.revertIcon,"Revert changes.",guiProps) { databaseCleanupScheduleSetting.text = apiProperties.webserviceDatabaseCleanupSchedule }
     val databaseCleanupReset = BalloonTipButton(null,guiProps.resetIcon,"Reset to default value",guiProps) { databaseCleanupScheduleSetting.text = apiProperties.fallbackDatabaseCleanupSchedule }
 
     init {
+        loadSettings()
         artemisQueueMaxDiskUsageSetting.paintTicks = true
         artemisQueueMaxDiskUsageSetting.paintLabels = true
         artemisQueueMaxDiskUsageSetting.majorTickSpacing = 10
@@ -189,5 +196,20 @@ class WebserviceSettings(guiProps: GuiProps, private val apiProperties: ApiPrope
         apiProperties.tomcatBaseDirectory = baseDirSetting.file.absoluteFile
         apiProperties.webserviceVersionSchedule = versionScheduleSetting.text
         apiProperties.webserviceDatabaseCleanupSchedule = databaseCleanupScheduleSetting.text
+    }
+
+    override fun validateSettings(): List<String> {
+        return listOf("")
+    }
+
+    override fun hasUnsavedChanges(): Boolean {
+        return artemisDataDirectorySetting.file != apiProperties.artemisDataDirectory.absoluteFile ||
+        artemisQueueMaxDiskUsageSetting.value != apiProperties.artemisQueueMaxDiskUsage ||
+        databaseFileSetting.file != apiProperties.serverPackCreatorDatabase.absoluteFile ||
+        cleanupScheduleSetting.text != apiProperties.webserviceCleanupSchedule ||
+        logDirectorySetting.file != apiProperties.tomcatLogsDirectory.absoluteFile ||
+        baseDirSetting.file != apiProperties.tomcatBaseDirectory.absoluteFile ||
+        versionScheduleSetting.text != apiProperties.webserviceVersionSchedule ||
+        databaseCleanupScheduleSetting.text != apiProperties.webserviceDatabaseCleanupSchedule
     }
 }

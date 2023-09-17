@@ -107,7 +107,7 @@ class ConfigEditor(
     )
     private val fabricVersions = DefaultComboBoxModel(apiWrapper.versionMeta!!.fabric.loaderVersionsArrayDescending())
     private val quiltVersions = DefaultComboBoxModel(apiWrapper.versionMeta!!.quilt.loaderVersionsArrayDescending())
-    private val modloaderVersions = ActionComboBox { validateInputFields() }
+    private val modloaderVersions = ActionComboBox<String> { validateInputFields() }
     private val aikarsFlags = AikarsFlags(this, guiProps)
     private val scriptKVPairs = ScriptKVPairs(guiProps, this)
     private val pluginPanels = apiWrapper.apiPlugins!!.getConfigPanels(this).toMutableList()
@@ -147,7 +147,7 @@ class ConfigEditor(
         changeListener,
         guiProps
     )
-    private val timer = ConfigCheckTimer(250, this, guiProps)
+    private val timer = ConfigCheckTimer(250, this, guiProps,tabbedConfigsTab)
     private val panel = JPanel(
         MigLayout(
             "left,wrap",

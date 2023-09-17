@@ -21,6 +21,7 @@ package de.griefed.serverpackcreator.gui.window.configs.components
 
 import Gui
 import de.griefed.serverpackcreator.gui.GuiProps
+import de.griefed.serverpackcreator.gui.components.TabTitle
 import de.griefed.serverpackcreator.gui.utilities.DialogUtilities
 import de.griefed.serverpackcreator.gui.window.configs.ConfigEditor
 import de.griefed.serverpackcreator.gui.window.configs.TabbedConfigsTab
@@ -40,36 +41,11 @@ class ConfigEditorTitle(
     private val guiProps: GuiProps,
     private val tabbedConfigsTab: TabbedConfigsTab,
     private val configEditor: ConfigEditor
-) : JPanel(FlowLayout(FlowLayout.LEFT, 0, 0)) {
+) : TabTitle(guiProps) {
 
-    private val errorIconLabel = JLabel(guiProps.smallErrorIcon)
-    private val warningIconLabel = JLabel(guiProps.smallWarningIcon)
-    private val titleLabel = JLabel(Gui.createserverpack_gui_title_new.toString())
     val closeButton = JButton(guiProps.closeIcon)
-    var hasUnsavedChanges: Boolean = false
-        get() {
-            return warningIconLabel.isVisible
-        }
-        private set
-    var title: String
-        get() {
-            return titleLabel.text
-        }
-        set(value) {
-            titleLabel.text = value
-        }
 
     init {
-        isOpaque = false
-        titleLabel.border = BorderFactory.createEmptyBorder(0, 0, 0, 5)
-        warningIconLabel.border = BorderFactory.createEmptyBorder(0, 0, 0, 5)
-        errorIconLabel.border = BorderFactory.createEmptyBorder(0, 0, 0, 5)
-        warningIconLabel.toolTipText = Gui.configuration_title_warning.toString()
-        errorIconLabel.isVisible = false
-        warningIconLabel.isVisible = false
-        add(errorIconLabel)
-        add(warningIconLabel)
-        add(titleLabel)
         closeButton.addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent?) {
                 close()
@@ -107,42 +83,5 @@ class ConfigEditorTitle(
         } else {
             tabbedConfigsTab.addTab()
         }
-    }
-
-    /**
-     * Show the error icon, indicating the configuration has errors.
-     *
-     * @author Griefed
-     */
-    fun setAndShowErrorIcon(tooltip: String = Gui.configuration_title_error.toString()) {
-        errorIconLabel.isVisible = true
-        errorIconLabel.toolTipText = tooltip
-    }
-
-    /**
-     * Show the warning icon, indicating the configuration has unsaved changes.
-     *
-     * @author Griefed
-     */
-    fun showWarningIcon() {
-        warningIconLabel.isVisible = true
-    }
-
-    /**
-     * Hide the error icon, indicating the configuration is free from errors.
-     *
-     * @author Griefed
-     */
-    fun hideErrorIcon() {
-        errorIconLabel.isVisible = false
-    }
-
-    /**
-     * Hide the warning icon, indicating the configuration has no unsaved changes.
-     *
-     * @author Griefed
-     */
-    fun hideWarningIcon() {
-        warningIconLabel.isVisible = false
     }
 }
