@@ -30,6 +30,7 @@ import de.griefed.serverpackcreator.gui.window.control.ControlPanel
 import de.griefed.serverpackcreator.gui.window.control.components.LarsonScanner
 import de.griefed.serverpackcreator.gui.window.logs.TabbedLogsTab
 import de.griefed.serverpackcreator.gui.window.settings.SettingsEditorsTab
+import de.griefed.serverpackcreator.gui.window.settings.components.Editor
 import net.miginfocom.swing.MigLayout
 import java.io.File
 import javax.swing.JOptionPane
@@ -104,6 +105,19 @@ class MainPanel(
         }
         guiProps.storeGuiProperty("lastloaded", configs.joinToString(","))
         apiWrapper.apiProperties.saveProperties(apiWrapper.apiProperties.serverPackCreatorPropertiesFile)
+        if (settingsEditorsTab.allTabs.any { (it as Editor).hasUnsavedChanges() }) {
+            if (DialogUtilities.createShowGet(
+                    "You have unsaved settings. Would you like to save them before closing?",
+                    "Unsaved Settings!",
+                    panel,
+                    JOptionPane.WARNING_MESSAGE,
+                    JOptionPane.YES_NO_OPTION,
+                    guiProps.warningIcon
+                ) == 0
+            ) {
+                settingsEditorsTab.saveSetings()
+            }
+        }
         exitProcess(0)
     }
 }

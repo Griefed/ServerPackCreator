@@ -39,6 +39,7 @@ import javax.swing.event.DocumentEvent
 class SettingsEditorsTab(guiProps: GuiProps, apiProperties: ApiProperties, mainFrame: MainFrame) :
     TabPanel() {
 
+    private val settingsHandling = SettingsHandling(guiProps, this, apiProperties, mainFrame)
     private val componentResizer = ComponentResizer()
     private val checkTimer = SettingsCheckTimer(250, this, guiProps)
     private val documentChangeListener = object : DocumentChangeListener {
@@ -49,7 +50,8 @@ class SettingsEditorsTab(guiProps: GuiProps, apiProperties: ApiProperties, mainF
     private val actionListener = ActionListener { checkTimer.restart() }
     private val changeListener = ChangeListener { checkTimer.restart() }
 
-    val global = GlobalSettings(guiProps, apiProperties, componentResizer, mainFrame, documentChangeListener, actionListener)
+    val global =
+        GlobalSettings(guiProps, apiProperties, componentResizer, mainFrame, documentChangeListener, actionListener)
     val webservice = WebserviceSettings(guiProps, apiProperties, mainFrame, documentChangeListener, changeListener)
     val gui = GuiSettings(guiProps, actionListener, changeListener)
     val title = SettingsTitle(guiProps)
@@ -62,7 +64,7 @@ class SettingsEditorsTab(guiProps: GuiProps, apiProperties: ApiProperties, mainF
         tabs.add(webservice)
         tabs.setTabComponentAt(tabs.tabCount - 1, webservice.title)
         tabs.selectedIndex = 0
-        panel.add(SettingsHandling(guiProps, this, apiProperties, mainFrame).panel, BorderLayout.SOUTH)
+        panel.add(settingsHandling.panel, BorderLayout.SOUTH)
     }
 
     fun checkAll() {
@@ -78,5 +80,13 @@ class SettingsEditorsTab(guiProps: GuiProps, apiProperties: ApiProperties, mainF
         } else {
             title.hideWarningIcon()
         }
+    }
+
+    fun saveSetings() {
+        settingsHandling.save()
+    }
+
+    fun loadSettings() {
+        settingsHandling.load()
     }
 }
