@@ -233,7 +233,9 @@ class InclusionsEditor(
     }
 
     fun updateIndex() {
-        list.selectedIndex = 0
+        if (!list.valueIsAdjusting) {
+            list.selectedIndex = 0
+        }
     }
 
     /**
