@@ -127,6 +127,7 @@ class TabbedConfigsTab(
         for (tab in allTabs) {
             (tab as ConfigEditor).saveCurrentConfiguration()
         }
+        checkAll()
     }
 
     fun checkAll() {

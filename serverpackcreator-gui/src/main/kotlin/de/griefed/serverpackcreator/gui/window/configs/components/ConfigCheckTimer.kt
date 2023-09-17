@@ -90,8 +90,10 @@ class ConfigCheckTimer(delay: Int, configEditor: ConfigEditor, guiProps: GuiProp
             }
             if (errors.isEmpty()) {
                 configEditor.editorTitle.hideErrorIcon()
+                tabbedConfigsTab.title.hideErrorIcon()
             } else {
                 configEditor.editorTitle.setAndShowErrorIcon("<html>${errors.joinToString("<br>")}</html>")
+                tabbedConfigsTab.title.setAndShowErrorIcon("One or more configuration contain errors!")
             }
             tabbedConfigsTab.checkAll()
         }
