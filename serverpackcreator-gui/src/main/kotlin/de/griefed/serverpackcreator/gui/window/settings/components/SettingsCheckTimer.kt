@@ -52,7 +52,7 @@ class SettingsCheckTimer(
             if (errors.isEmpty()) {
                 settingsEditor.title.hideErrorIcon()
             } else {
-                settingsEditor.title.setAndShowErrorIcon("Your settings have errors. Please check!")
+                settingsEditor.title.setAndShowErrorIcon(Gui.settings_check_errors.toString())
             }
             settingsEditor.checkAll()
         }
