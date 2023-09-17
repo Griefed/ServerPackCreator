@@ -30,6 +30,7 @@ import de.griefed.serverpackcreator.gui.window.configs.components.ComponentResiz
 import de.griefed.serverpackcreator.gui.window.settings.components.*
 import java.awt.event.ActionListener
 import java.io.File
+import java.net.MalformedURLException
 import java.net.URL
 import javax.swing.DefaultComboBoxModel
 import javax.swing.JCheckBox
@@ -37,7 +38,7 @@ import javax.swing.JComboBox
 import javax.swing.JFileChooser
 
 class GlobalSettings(
-    guiProps: GuiProps,
+    private val guiProps: GuiProps,
     private val apiProperties: ApiProperties,
     componentResizer: ComponentResizer,
     mainFrame: MainFrame,
@@ -351,11 +352,61 @@ class GlobalSettings(
     }
 
     override fun validateSettings(): List<String> {
-        return listOf("")
+        val errors = mutableListOf<String>()
+        if (!homeSetting.file.absoluteFile.isDirectory || !homeSetting.file.absoluteFile.canWrite()) {
+            homeIcon.error("Home-directory either does not exist or is not writable.")
+            errors.add("Home-directory either does not exist or is not writable.")
+        } else {
+            homeIcon.info()
+        }
+
+        if (!javaSetting.file.absoluteFile.isFile || !javaSetting.file.absoluteFile.canRead() || !javaSetting.file.absoluteFile.canExecute()) {
+            javaIcon.error("Java executable/binary either does not exist, is not readable, or is not executable.")
+            errors.add("Java executable/binary either does not exist, is not readable, or is not executable.")
+        } else {
+            javaIcon.info()
+        }
+
+        if (!serverPacksSetting.file.absoluteFile.isDirectory || !serverPacksSetting.file.absoluteFile.canWrite()) {
+            serverPacksIcon.error("Server packs directory either does not exist or is not writable.")
+            errors.add("Server packs directory either does not exist or is not writable.")
+        } else {
+            serverPacksIcon.info()
+        }
+
+        if (zipSetting.text.matches(guiProps.whitespace)) {
+            zipIcon.error("Must not end with ','!")
+            errors.add("Must not end with ','!")
+        } else {
+            zipIcon.info()
+        }
+
+        if (inclusionsSetting.text.matches(guiProps.whitespace)) {
+            inclusionsIcon.error("Must not end with ','!")
+            errors.add("Must not end with ','!")
+        } else {
+            inclusionsIcon.info()
+        }
+
+        if (scriptSetting.text.matches(guiProps.whitespace)) {
+            scriptIcon.error("Must not end with ','!")
+            errors.add("Must not end with ','!")
+        } else {
+            scriptIcon.info()
+        }
+
+        try {
+            URL(fallbackURLSetting.text)
+            fallbackURLIcon.info()
+        } catch (ex: MalformedURLException) {
+            fallbackURLIcon.error("Invalid URL format!")
+            errors.add("Invalid URL format!")
+        }
+        return errors.toList()
     }
 
     override fun hasUnsavedChanges(): Boolean {
-        return homeSetting.file != apiProperties.homeDirectory.absoluteFile ||
+        val changes = homeSetting.file != apiProperties.homeDirectory.absoluteFile ||
         javaSetting.file != File(apiProperties.javaPath).absoluteFile ||
         serverPacksSetting.file != apiProperties.serverPacksDirectory.absoluteFile ||
         zipSetting.text != apiProperties.zipArchiveExclusions.joinToString(", ") ||
@@ -372,5 +423,11 @@ class GlobalSettings(
         cleanupSetting.isSelected != apiProperties.isServerPackCleanupEnabled ||
         snapshotsSetting.isSelected != apiProperties.isMinecraftPreReleasesAvailabilityEnabled ||
         autodetectionSetting.isSelected != apiProperties.isAutoExcludingModsEnabled
+        if (changes) {
+            title.showWarningIcon()
+        } else {
+            title.hideWarningIcon()
+        }
+        return changes
     }
 }

@@ -19,6 +19,9 @@
  */
 package de.griefed.serverpackcreator.gui.window.settings
 
+import com.cronutils.model.CronType
+import com.cronutils.model.definition.CronDefinitionBuilder
+import com.cronutils.parser.CronParser
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.components.*
@@ -35,6 +38,9 @@ class WebserviceSettings(
     documentChangeListener: DocumentChangeListener,
     changeListener: ChangeListener
 ) : Editor("Webservice", guiProps) {
+
+    private val cronDefinition = CronDefinitionBuilder.instanceDefinitionFor(CronType.SPRING)
+    private val cronParser = CronParser(cronDefinition)
 
     val artemisDataDirectoryIcon = StatusIcon(guiProps, "Data directory for Artemis Queue System")
     val artemisDataDirectoryLabel = ElementLabel("Artemis Data Directory")
@@ -199,17 +205,89 @@ class WebserviceSettings(
     }
 
     override fun validateSettings(): List<String> {
-        return listOf("")
+        val errors = mutableListOf<String>()
+        if (!artemisDataDirectorySetting.file.absoluteFile.isDirectory || !artemisDataDirectorySetting.file.absoluteFile.canWrite()) {
+            artemisDataDirectoryIcon.error("Artemis Data directory either does not exist or is not writable.")
+            errors.add("Artemis Data directory either does not exist or is not writable.")
+        } else {
+            artemisDataDirectoryIcon.info()
+        }
+
+        if (artemisQueueMaxDiskUsageSetting.value < 10 || artemisQueueMaxDiskUsageSetting.value > 90 ) {
+            artemisQueueMaxDiskUsageIcon.error("Artemis max disk usage must be a value from 10 to 90.")
+            errors.add("Artemis max disk usage must be a value from 10 to 90.")
+        } else {
+            artemisQueueMaxDiskUsageIcon.info()
+        }
+
+        if (!databaseFileSetting.file.absoluteFile.parentFile.isDirectory || !databaseFileSetting.file.absoluteFile.parentFile.canWrite()) {
+            databaseFileIcon.error("Database directory does not exist or is not writable.")
+            errors.add("Database directory does not exist or is not writable.")
+        } else {
+            databaseFileIcon.info()
+        }
+
+        try {
+            cronParser.parse(cleanupScheduleSetting.text).validate()
+            cleanupScheduleIcon.info()
+        } catch (ex: IllegalArgumentException) {
+            cleanupScheduleIcon.error("Invalid Cleanup Schedule QUARTZ CRON expression.")
+            errors.add("Invalid Cleanup Schedule QUARTZ CRON expression.")
+        }
+
+        if (!logDirectorySetting.file.absoluteFile.isDirectory || !logDirectorySetting.file.absoluteFile.canWrite()) {
+            logDirectoryIcon.error("Tomcat Log directory does not exist or is not writable.")
+            errors.add("Tomcat Log directory does not exist or is not writable.")
+        } else {
+            logDirectoryIcon.info()
+        }
+
+        if (!baseDirSetting.file.absoluteFile.isDirectory || !baseDirSetting.file.absoluteFile.canWrite()) {
+            baseDirIcon.error("Tomcat base-directory does not exist or is not writable.")
+            errors.add("Tomcat base-directory does not exist or is not writable.")
+        } else {
+            baseDirIcon.info()
+        }
+
+        try {
+            cronParser.parse(versionScheduleSetting.text).validate()
+            versionScheduleIcon.info()
+        } catch (ex: IllegalArgumentException) {
+            versionScheduleIcon.error("Invalid Version Update Schedule QUARTZ CRON expression.")
+            errors.add("Invalid Version Update Schedule QUARTZ CRON expression.")
+        }
+
+        try {
+            cronParser.parse(databaseCleanupScheduleSetting.text).validate()
+            databaseCleanupScheduleIcon.info()
+        } catch (ex: IllegalArgumentException) {
+            databaseCleanupScheduleIcon.error("Invalid Database Cleanup Schedule QUARTZ CRON expression.")
+            errors.add("Invalid Database Cleanup Schedule QUARTZ CRON expression.")
+        }
+
+        if (errors.isNotEmpty()) {
+            title.setAndShowErrorIcon("Your Webservice settings contain errors!")
+        } else {
+            title.hideErrorIcon()
+        }
+
+        return errors.toList()
     }
 
     override fun hasUnsavedChanges(): Boolean {
-        return artemisDataDirectorySetting.file != apiProperties.artemisDataDirectory.absoluteFile ||
-        artemisQueueMaxDiskUsageSetting.value != apiProperties.artemisQueueMaxDiskUsage ||
-        databaseFileSetting.file != apiProperties.serverPackCreatorDatabase.absoluteFile ||
-        cleanupScheduleSetting.text != apiProperties.webserviceCleanupSchedule ||
-        logDirectorySetting.file != apiProperties.tomcatLogsDirectory.absoluteFile ||
-        baseDirSetting.file != apiProperties.tomcatBaseDirectory.absoluteFile ||
-        versionScheduleSetting.text != apiProperties.webserviceVersionSchedule ||
-        databaseCleanupScheduleSetting.text != apiProperties.webserviceDatabaseCleanupSchedule
+        val changes = artemisDataDirectorySetting.file != apiProperties.artemisDataDirectory.absoluteFile ||
+                artemisQueueMaxDiskUsageSetting.value != apiProperties.artemisQueueMaxDiskUsage ||
+                databaseFileSetting.file != apiProperties.serverPackCreatorDatabase.absoluteFile ||
+                cleanupScheduleSetting.text != apiProperties.webserviceCleanupSchedule ||
+                logDirectorySetting.file != apiProperties.tomcatLogsDirectory.absoluteFile ||
+                baseDirSetting.file != apiProperties.tomcatBaseDirectory.absoluteFile ||
+                versionScheduleSetting.text != apiProperties.webserviceVersionSchedule ||
+                databaseCleanupScheduleSetting.text != apiProperties.webserviceDatabaseCleanupSchedule
+        if (changes) {
+            title.showWarningIcon()
+        } else {
+            title.hideWarningIcon()
+        }
+        return changes
     }
 }

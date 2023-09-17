@@ -17,13 +17,13 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.gui.window.settings.components
+package de.griefed.serverpackcreator.gui.window.settings
 
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.components.BalloonTipButton
 import de.griefed.serverpackcreator.gui.window.MainFrame
-import de.griefed.serverpackcreator.gui.window.settings.SettingsEditorsTab
+import de.griefed.serverpackcreator.gui.window.settings.components.PropertiesChooser
 import dyorgio.runtime.run.`as`.root.RootExecutor
 import net.miginfocom.swing.MigLayout
 import java.io.File
@@ -107,7 +107,7 @@ class SettingsHandling(
         settingsEditorsTab.gui.saveSettings()
         settingsEditorsTab.webservice.saveSettings()
         apiProperties.saveProperties(apiProperties.serverPackCreatorPropertiesFile)
-        if (!apiProperties.overrideProperties.canWrite()) {
+        if (!apiProperties.overrideProperties.parentFile.canWrite()) {
             if (rootWarning() == JOptionPane.OK_OPTION) {
                 val overridePath = apiProperties.overrideProperties.absolutePath
                 val overrides = apiProperties.overridesAsString()

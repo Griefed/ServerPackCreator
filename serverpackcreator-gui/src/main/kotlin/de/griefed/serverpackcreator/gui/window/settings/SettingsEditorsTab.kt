@@ -27,7 +27,6 @@ import de.griefed.serverpackcreator.gui.window.MainFrame
 import de.griefed.serverpackcreator.gui.window.configs.components.ComponentResizer
 import de.griefed.serverpackcreator.gui.window.settings.components.Editor
 import de.griefed.serverpackcreator.gui.window.settings.components.SettingsCheckTimer
-import de.griefed.serverpackcreator.gui.window.settings.components.SettingsHandling
 import de.griefed.serverpackcreator.gui.window.settings.components.SettingsTitle
 import java.awt.BorderLayout
 import java.awt.event.ActionListener

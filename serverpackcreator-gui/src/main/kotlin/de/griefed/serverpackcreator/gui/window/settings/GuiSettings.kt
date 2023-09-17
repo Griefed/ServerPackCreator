@@ -103,12 +103,30 @@ class GuiSettings(
     }
 
     override fun validateSettings(): List<String> {
-        return listOf("")
+        val errors = mutableListOf<String>()
+        if (fontSizeSetting.value < 8 || fontSizeSetting.value > 76) {
+            fontSizeIcon.error("Font size must be a value from 8 to 76.")
+            errors.add("Font size must be a value from 8 to 76.")
+        } else {
+            fontSizeIcon.info()
+        }
+        if (errors.isNotEmpty()) {
+            title.setAndShowErrorIcon("Your GUI settings contain errors!")
+        } else {
+            title.hideErrorIcon()
+        }
+        return errors.toList()
     }
 
     override fun hasUnsavedChanges(): Boolean {
-        return fontSizeSetting.value != guiProps.fontSize ||
-            startFocusSetting.isSelected != guiProps.startFocusEnabled ||
-            generationFocusSetting.isSelected != guiProps.generationFocusEnabled
+        val changes = fontSizeSetting.value != guiProps.fontSize ||
+                startFocusSetting.isSelected != guiProps.startFocusEnabled ||
+                generationFocusSetting.isSelected != guiProps.generationFocusEnabled
+        if (changes) {
+            title.showWarningIcon()
+        } else {
+            title.hideWarningIcon()
+        }
+        return changes
     }
 }
