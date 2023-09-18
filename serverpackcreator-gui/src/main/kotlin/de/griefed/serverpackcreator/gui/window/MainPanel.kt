@@ -64,10 +64,10 @@ class MainPanel(
     val controlPanel = ControlPanel(guiProps, tabbedConfigsTab, larsonScanner, apiWrapper, mainFrame)
 
     init {
-        tabs.addTab("Configs", tabbedConfigsTab.panel)
+        tabs.addTab(Gui.main_tabs_config.toString(), tabbedConfigsTab.panel)
         tabs.setTabComponentAt(tabs.tabCount - 1, tabbedConfigsTab.title)
-        tabs.addTab("Logs", tabbedLogsTab.panel)
-        tabs.addTab("Settings (WIP, not fully implemented)", settingsEditorsTab.panel)
+        tabs.addTab(Gui.main_tabs_logs.toString(), tabbedLogsTab.panel)
+        tabs.addTab(Gui.main_tabs_settings.toString(), settingsEditorsTab.panel)
         tabs.setTabComponentAt(tabs.tabCount - 1, settingsEditorsTab.title)
         panel.add(larsonScanner, "height 40!,growx, south")
         panel.add(controlPanel.panel, "height 160!,growx, south")
@@ -107,8 +107,8 @@ class MainPanel(
         apiWrapper.apiProperties.saveProperties(apiWrapper.apiProperties.serverPackCreatorPropertiesFile)
         if (settingsEditorsTab.allTabs.any { (it as Editor).hasUnsavedChanges() }) {
             if (DialogUtilities.createShowGet(
-                    "You have unsaved settings. Would you like to save them before closing?",
-                    "Unsaved Settings!",
+                    Gui.main_unsaved_message.toString(),
+                    Gui.main_unsaved_title.toString(),
                     panel,
                     JOptionPane.WARNING_MESSAGE,
                     JOptionPane.YES_NO_OPTION,

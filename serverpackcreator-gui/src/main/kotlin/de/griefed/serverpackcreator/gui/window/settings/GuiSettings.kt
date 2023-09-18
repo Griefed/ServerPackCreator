@@ -29,35 +29,35 @@ class GuiSettings(
     private val guiProps: GuiProps,
     actionListener: ActionListener,
     changeListener: ChangeListener
-) : Editor("Gui", guiProps) {
+) : Editor(Gui.settings_gui.toString(), guiProps) {
 
-    val fontSizeIcon = StatusIcon(guiProps,"Size of fonts in ServerPackCreators GUI.")
-    val fontSizeLabel = ElementLabel("Font Size")
+    val fontSizeIcon = StatusIcon(guiProps,Gui.settings_gui_font_tooltip.toString())
+    val fontSizeLabel = ElementLabel(Gui.settings_gui_font_label.toString())
     val fontSizeSetting = ActionSlider(8,76,guiProps.fontSize,changeListener)
-    val fontSizeRevert = BalloonTipButton(null,guiProps.revertIcon,"Revert changes", guiProps) {
+    val fontSizeRevert = BalloonTipButton(null,guiProps.revertIcon,Gui.settings_revert.toString(), guiProps) {
         fontSizeSetting.value = guiProps.fontSize
     }
-    val fontSizeReset = BalloonTipButton(null,guiProps.resetIcon,"Reset to default value",guiProps) {
+    val fontSizeReset = BalloonTipButton(null,guiProps.resetIcon,Gui.settings_reset.toString(),guiProps) {
         fontSizeSetting.value = 12
     }
 
-    val startFocusIcon = StatusIcon(guiProps,"Whether ServerPackCreator should be focused after starting.")
-    val startFocusLabel = ElementLabel("Focus On Start")
+    val startFocusIcon = StatusIcon(guiProps,Gui.settings_gui_focus_start_tooltip.toString())
+    val startFocusLabel = ElementLabel(Gui.settings_gui_focus_start_label.toString())
     val startFocusSetting = ActionCheckBox(actionListener)
-    val startFocusRevert = BalloonTipButton(null,guiProps.revertIcon,"Revert changes",guiProps) {
+    val startFocusRevert = BalloonTipButton(null,guiProps.revertIcon,Gui.settings_revert.toString(),guiProps) {
         startFocusSetting.isSelected = guiProps.startFocusEnabled
     }
-    val startFocusReset = BalloonTipButton(null,guiProps.resetIcon,"Reset to default value",guiProps) {
+    val startFocusReset = BalloonTipButton(null,guiProps.resetIcon,Gui.settings_reset.toString(),guiProps) {
         startFocusSetting.isSelected = false
     }
 
-    val generationFocusIcon = StatusIcon(guiProps,"Whether ServerPackCreator should be focused after a server pack has been generated.")
-    val generationFocusLabel = ElementLabel("Focus After Generation")
+    val generationFocusIcon = StatusIcon(guiProps,Gui.settings_gui_focus_generation_tooltip.toString())
+    val generationFocusLabel = ElementLabel(Gui.settings_gui_focus_generation_label.toString())
     val generationFocusSetting = ActionCheckBox(actionListener)
-    val generationFocusRevert = BalloonTipButton(null,guiProps.revertIcon,"Revert changes",guiProps) {
+    val generationFocusRevert = BalloonTipButton(null,guiProps.revertIcon,Gui.settings_revert.toString(),guiProps) {
         generationFocusSetting.isSelected = guiProps.generationFocusEnabled
     }
-    val generationFocusReset = BalloonTipButton(null,guiProps.resetIcon,"Reset to default value",guiProps) {
+    val generationFocusReset = BalloonTipButton(null,guiProps.resetIcon,Gui.settings_reset.toString(),guiProps) {
         generationFocusSetting.isSelected = false
     }
 
@@ -105,13 +105,13 @@ class GuiSettings(
     override fun validateSettings(): List<String> {
         val errors = mutableListOf<String>()
         if (fontSizeSetting.value < 8 || fontSizeSetting.value > 76) {
-            fontSizeIcon.error("Font size must be a value from 8 to 76.")
-            errors.add("Font size must be a value from 8 to 76.")
+            fontSizeIcon.error(Gui.settings_gui_font_error.toString())
+            errors.add(Gui.settings_gui_font_error.toString())
         } else {
             fontSizeIcon.info()
         }
         if (errors.isNotEmpty()) {
-            title.setAndShowErrorIcon("Your GUI settings contain errors!")
+            title.setAndShowErrorIcon(Gui.settings_gui_errors.toString())
         } else {
             title.hideErrorIcon()
         }

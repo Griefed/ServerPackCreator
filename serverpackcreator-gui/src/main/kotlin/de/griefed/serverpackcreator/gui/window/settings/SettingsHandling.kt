@@ -42,10 +42,10 @@ class SettingsHandling(
 ) {
     val panel = JPanel()
     private val load =
-        BalloonTipButton("Load Configuration", guiProps.loadIcon, "Load settings from disk", guiProps) { load() }
+        BalloonTipButton(Gui.settings_handle_load_label.toString(), guiProps.loadIcon, Gui.settings_handle_load_tooltip.toString(), guiProps) { load() }
     private val save =
-        BalloonTipButton("Save Configuration", guiProps.saveIcon, "Save your settings", guiProps) { save() }
-    private val lastActionLabel = JLabel("Not saved or loaded yet...")
+        BalloonTipButton(Gui.settings_handle_save_label.toString(), guiProps.saveIcon, Gui.settings_handle_save_tooltip.toString(), guiProps) { save() }
+    private val lastActionLabel = JLabel(Gui.settings_handle_idle.toString())
     private val rootExecutor = RootExecutor()
 
     var lastAction: String
@@ -75,8 +75,8 @@ class SettingsHandling(
     private fun showHomeDirDialog() {
         JOptionPane.showMessageDialog(
             mainFrame.frame,
-            "Home directory changed. Restart ServerPackCreator for this setting to take effect.",
-            "Home directory changed!",
+            Gui.settings_handle_home_changed_message.toString(),
+            Gui.settings_handle_home_changed_title.toString(),
             JOptionPane.WARNING_MESSAGE
         )
     }
@@ -84,8 +84,8 @@ class SettingsHandling(
     private fun showCancelDialog() {
         JOptionPane.showMessageDialog(
             mainFrame.frame,
-            "Home directory setting not saved.",
-            "Canceled",
+            Gui.settings_handle_home_canceled_message.toString(),
+            Gui.settings_handle_home_canceled_title.toString(),
             JOptionPane.WARNING_MESSAGE
         )
     }
@@ -93,8 +93,8 @@ class SettingsHandling(
     private fun rootWarning(): Int {
         return JOptionPane.showConfirmDialog(
             mainFrame.frame,
-            "Storing of the new home-directory setting requires root/admin-privileges. Continue?",
-            "Root/Admin privileges required",
+            Gui.settings_handle_home_admin_message.toString(),
+            Gui.settings_handle_home_admin_title.toString(),
             JOptionPane.OK_CANCEL_OPTION,
             JOptionPane.WARNING_MESSAGE
         )
@@ -124,17 +124,17 @@ class SettingsHandling(
         if (previousHome != settingsEditorsTab.global.homeSetting.file.absolutePath && saved) {
             showHomeDirDialog()
         }
-        lastAction = "Settings last saved ${currentTime()} ..."
+        lastAction = Gui.settings_handle_saved(currentTime())
     }
 
     fun load() {
-        val propertiesChooser = PropertiesChooser(apiProperties, "Properties Chooser")
+        val propertiesChooser = PropertiesChooser(apiProperties, Gui.settings_handle_chooser.toString())
         if (propertiesChooser.showOpenDialog(mainFrame.frame) == JFileChooser.APPROVE_OPTION) {
             apiProperties.loadProperties(propertiesChooser.selectedFile)
             settingsEditorsTab.global.loadSettings()
             settingsEditorsTab.gui.loadSettings()
             settingsEditorsTab.webservice.loadSettings()
-            lastAction = "Settings last loaded ${currentTime()} ..."
+            lastAction = Gui.settings_handle_loaded(currentTime())
         }
     }
 }
