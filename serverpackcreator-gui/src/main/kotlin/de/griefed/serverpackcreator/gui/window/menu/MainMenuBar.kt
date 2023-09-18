@@ -72,8 +72,7 @@ class MainMenuBar(
         )
         menuBar.add(
             ViewMenu(
-                apiWrapper,
-                guiProps
+                apiWrapper
             )
         )
         menuBar.add(

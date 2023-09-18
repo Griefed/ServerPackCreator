@@ -28,10 +28,10 @@ import javax.swing.JComboBox
  *
  * @author Griefed
  */
-class ActionComboBox<E>(actionListener: ActionListener) : JComboBox<E>() {
+class ActionComboBox<E>(actionListener: ActionListener?) : JComboBox<E>() {
     constructor(
         defaultComboBoxModel: DefaultComboBoxModel<E>,
-        actionListener: ActionListener
+        actionListener: ActionListener?
     ) : this(
         actionListener
     ) {

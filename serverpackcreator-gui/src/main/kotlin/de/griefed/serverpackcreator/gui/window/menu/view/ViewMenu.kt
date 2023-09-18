@@ -21,7 +21,6 @@ package de.griefed.serverpackcreator.gui.window.menu.view
 
 import Gui
 import de.griefed.serverpackcreator.api.ApiWrapper
-import de.griefed.serverpackcreator.gui.GuiProps
 import javax.swing.JMenu
 import javax.swing.JSeparator
 
@@ -30,11 +29,7 @@ import javax.swing.JSeparator
  *
  * @author Griefed
  */
-class ViewMenu(
-    apiWrapper: ApiWrapper,
-    guiProps: GuiProps
-) :
-    JMenu(Gui.menubar_gui_menu_view.toString()) {
+class ViewMenu(apiWrapper: ApiWrapper) : JMenu(Gui.menubar_gui_menu_view.toString()) {
     init {
         val fileUtilities = apiWrapper.utilities!!.fileUtilities
         val apiProperties = apiWrapper.apiProperties
@@ -51,7 +46,5 @@ class ViewMenu(
         add(ServerPackCreatorLogItem(fileUtilities, apiProperties))
         add(PluginsLogItem(fileUtilities, apiProperties))
         add(ModloaderInstallerLogItem(fileUtilities, apiProperties))
-        add(JSeparator())
-        add(SwitchThemeMenu(guiProps))
     }
 }

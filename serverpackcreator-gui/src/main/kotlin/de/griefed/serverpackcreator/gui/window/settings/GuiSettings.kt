@@ -19,10 +19,15 @@
  */
 package de.griefed.serverpackcreator.gui.window.settings
 
+import com.formdev.flatlaf.FlatLaf
+import com.formdev.flatlaf.intellijthemes.FlatAllIJThemes
+import com.formdev.flatlaf.intellijthemes.FlatAllIJThemes.FlatIJLookAndFeelInfo
+import com.formdev.flatlaf.intellijthemes.FlatDarkPurpleIJTheme
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.components.*
 import de.griefed.serverpackcreator.gui.window.settings.components.Editor
 import java.awt.event.ActionListener
+import javax.swing.DefaultComboBoxModel
 import javax.swing.event.ChangeListener
 
 class GuiSettings(
@@ -61,12 +66,33 @@ class GuiSettings(
         generationFocusSetting.isSelected = false
     }
 
+    val themeIcon = StatusIcon(guiProps,Gui.settings_gui_theme_tooltip.toString())
+    val themeLabel = ElementLabel(Gui.settings_gui_theme_label.toString())
+    val themeSetting = ActionComboBox(DefaultComboBoxModel(FlatAllIJThemes.INFOS.map { it.name }.toTypedArray()),null)
+    val themeRevert = BalloonTipButton(null,guiProps.revertIcon,Gui.settings_revert.toString(),guiProps) {
+        loadThemeFromProperties()
+    }
+    val themeReset = BalloonTipButton(null,guiProps.resetIcon,Gui.settings_reset.toString(),guiProps) {
+        for (theme in FlatAllIJThemes.INFOS) {
+            if (theme.className == FlatDarkPurpleIJTheme().javaClass.name) {
+                themeSetting.selectedItem = theme.name
+            }
+        }
+    }
+
     init {
         loadSettings()
         fontSizeSetting.paintTicks = true
         fontSizeSetting.paintLabels = true
         fontSizeSetting.majorTickSpacing = 4
         fontSizeSetting.minorTickSpacing = 2
+
+        val themeConfigClassName = guiProps.getGuiProperty("theme", FlatDarkPurpleIJTheme().javaClass.name)
+        for (theme in FlatAllIJThemes.INFOS) {
+            if (theme.className == themeConfigClassName) {
+                themeSetting.selectedItem = theme.name
+            }
+        }
 
         var y = 0
         panel.add(fontSizeIcon, "cell 0 $y")
@@ -88,18 +114,32 @@ class GuiSettings(
         panel.add(generationFocusSetting, "cell 2 $y, grow")
         panel.add(generationFocusRevert, "cell 3 $y")
         panel.add(generationFocusReset, "cell 4 $y")
+
+        y++
+        panel.add(themeIcon, "cell 0 $y")
+        panel.add(themeLabel, "cell 1 $y")
+        panel.add(themeSetting, "cell 2 $y, grow")
+        panel.add(themeRevert, "cell 3 $y")
+        panel.add(themeReset, "cell 4 $y")
     }
 
     override fun loadSettings() {
         fontSizeSetting.value = guiProps.fontSize
         startFocusSetting.isSelected = guiProps.startFocusEnabled
         generationFocusSetting.isSelected = guiProps.generationFocusEnabled
+        loadThemeFromProperties()
     }
 
     override fun saveSettings() {
         guiProps.fontSize = fontSizeSetting.value
         guiProps.startFocusEnabled = startFocusSetting.isSelected
         guiProps.generationFocusEnabled = generationFocusSetting.isSelected
+        for (theme in FlatAllIJThemes.INFOS) {
+            if (theme.name == themeSetting.selectedItem.toString()) {
+                val instance = Class.forName(theme.className).getDeclaredConstructor().newInstance() as FlatLaf
+                guiProps.currentTheme = instance
+            }
+        }
     }
 
     override fun validateSettings(): List<String> {
@@ -128,5 +168,14 @@ class GuiSettings(
             title.hideWarningIcon()
         }
         return changes
+    }
+
+    private fun loadThemeFromProperties() {
+        val current = guiProps.getGuiProperty("theme", FlatDarkPurpleIJTheme().javaClass.name)
+        for (theme in FlatAllIJThemes.INFOS) {
+            if (theme.className == current) {
+                themeSetting.selectedItem = theme.name
+            }
+        }
     }
 }
