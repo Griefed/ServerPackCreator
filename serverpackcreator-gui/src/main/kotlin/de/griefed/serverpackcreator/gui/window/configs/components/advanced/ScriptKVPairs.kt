@@ -315,6 +315,9 @@ class ScriptKVPairs(guiProps: GuiProps, configEditor: ConfigEditor) : JTable(
             editButton.border = focusBorder
         }
 
+        /**
+         * @author Griefed
+         */
         override fun getTableCellEditorComponent(
             table: JTable,
             value: Any?,
@@ -374,6 +377,9 @@ class ScriptKVPairs(guiProps: GuiProps, configEditor: ConfigEditor) : JTable(
             action.actionPerformed(event)
         }
 
+        /**
+         * @author Griefed
+         */
         override fun mouseClicked(e: MouseEvent) {}
 
         /**
@@ -399,7 +405,14 @@ class ScriptKVPairs(guiProps: GuiProps, configEditor: ConfigEditor) : JTable(
             isButtonColumnEditor = false
         }
 
+        /**
+         * @author Griefed
+         */
         override fun mouseEntered(e: MouseEvent) {}
+
+        /**
+         * @author Griefed
+         */
         override fun mouseExited(e: MouseEvent) {}
 
 

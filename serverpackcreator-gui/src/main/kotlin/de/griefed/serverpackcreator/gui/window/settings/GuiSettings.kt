@@ -21,7 +21,6 @@ package de.griefed.serverpackcreator.gui.window.settings
 
 import com.formdev.flatlaf.FlatLaf
 import com.formdev.flatlaf.intellijthemes.FlatAllIJThemes
-import com.formdev.flatlaf.intellijthemes.FlatAllIJThemes.FlatIJLookAndFeelInfo
 import com.formdev.flatlaf.intellijthemes.FlatDarkPurpleIJTheme
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.components.*
@@ -30,6 +29,9 @@ import java.awt.event.ActionListener
 import javax.swing.DefaultComboBoxModel
 import javax.swing.event.ChangeListener
 
+/**
+ * @author Griefed
+ */
 class GuiSettings(
     private val guiProps: GuiProps,
     actionListener: ActionListener,
@@ -123,6 +125,9 @@ class GuiSettings(
         panel.add(themeReset, "cell 4 $y")
     }
 
+    /**
+     * @author Griefed
+     */
     override fun loadSettings() {
         fontSizeSetting.value = guiProps.fontSize
         startFocusSetting.isSelected = guiProps.startFocusEnabled
@@ -130,6 +135,9 @@ class GuiSettings(
         loadThemeFromProperties()
     }
 
+    /**
+     * @author Griefed
+     */
     override fun saveSettings() {
         guiProps.fontSize = fontSizeSetting.value
         guiProps.startFocusEnabled = startFocusSetting.isSelected
@@ -142,6 +150,9 @@ class GuiSettings(
         }
     }
 
+    /**
+     * @author Griefed
+     */
     override fun validateSettings(): List<String> {
         val errors = mutableListOf<String>()
         if (fontSizeSetting.value < 8 || fontSizeSetting.value > 76) {
@@ -158,6 +169,9 @@ class GuiSettings(
         return errors.toList()
     }
 
+    /**
+     * @author Griefed
+     */
     override fun hasUnsavedChanges(): Boolean {
         val changes = fontSizeSetting.value != guiProps.fontSize ||
                 startFocusSetting.isSelected != guiProps.startFocusEnabled ||
@@ -170,6 +184,9 @@ class GuiSettings(
         return changes
     }
 
+    /**
+     * @author Griefed
+     */
     private fun loadThemeFromProperties() {
         val current = guiProps.getGuiProperty("theme", FlatDarkPurpleIJTheme().javaClass.name)
         for (theme in FlatAllIJThemes.INFOS) {

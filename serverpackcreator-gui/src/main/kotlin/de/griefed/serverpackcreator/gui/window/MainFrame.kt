@@ -78,6 +78,9 @@ class MainFrame(
         }
     }
 
+    /**
+     * @author Griefed
+     */
     fun toFront() {
         frame.toFront()
         frame.requestFocus()

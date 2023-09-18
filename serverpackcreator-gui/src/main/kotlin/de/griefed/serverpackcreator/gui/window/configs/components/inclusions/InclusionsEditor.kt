@@ -232,6 +232,9 @@ class InclusionsEditor(
         }
     }
 
+    /**
+     * @author Griefed
+     */
     fun updateIndex() {
         if (!list.valueIsAdjusting) {
             list.selectedIndex = 0

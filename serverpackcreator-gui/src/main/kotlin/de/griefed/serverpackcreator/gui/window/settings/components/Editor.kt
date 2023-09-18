@@ -24,6 +24,9 @@ import net.miginfocom.swing.MigLayout
 import javax.swing.JPanel
 import javax.swing.JScrollPane
 
+/**
+ * @author Griefed
+ */
 abstract class Editor(name: String, guiProps : GuiProps) : JScrollPane(), SettingsEditor {
     val title = SettingsTitle(guiProps)
     val panel = JPanel(

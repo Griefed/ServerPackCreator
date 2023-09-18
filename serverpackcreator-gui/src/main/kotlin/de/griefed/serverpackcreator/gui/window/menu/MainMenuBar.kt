@@ -45,7 +45,7 @@ class MainMenuBar(
     migrationManager: MigrationManager
 ) {
     val menuBar: JMenuBar = JMenuBar()
-    private val updateButton = BalloonTipButton(null, guiProps.updateAnimation, "Update available!", guiProps)
+    private val updateButton = BalloonTipButton(null, guiProps.updateAnimation, Gui.update_dialog_available.toString(), guiProps)
 
     init {
         updateButton.isBorderPainted = false

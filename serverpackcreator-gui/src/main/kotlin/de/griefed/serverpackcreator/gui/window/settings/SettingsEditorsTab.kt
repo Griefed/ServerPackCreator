@@ -34,7 +34,7 @@ import javax.swing.event.ChangeListener
 import javax.swing.event.DocumentEvent
 
 /**
- * TODO docs
+ * @author Griefed
  */
 class SettingsEditorsTab(guiProps: GuiProps, apiProperties: ApiProperties, mainFrame: MainFrame) :
     TabPanel() {
@@ -67,6 +67,9 @@ class SettingsEditorsTab(guiProps: GuiProps, apiProperties: ApiProperties, mainF
         panel.add(settingsHandling.panel, BorderLayout.SOUTH)
     }
 
+    /**
+     * @author Griefed
+     */
     fun checkAll() {
         if (allTabs.any {
                 if ((it as Editor).hasUnsavedChanges()) {
@@ -82,10 +85,16 @@ class SettingsEditorsTab(guiProps: GuiProps, apiProperties: ApiProperties, mainF
         }
     }
 
+    /**
+     * @author Griefed
+     */
     fun saveSetings() {
         settingsHandling.save()
     }
 
+    /**
+     * @author Griefed
+     */
     fun loadSettings() {
         settingsHandling.load()
     }

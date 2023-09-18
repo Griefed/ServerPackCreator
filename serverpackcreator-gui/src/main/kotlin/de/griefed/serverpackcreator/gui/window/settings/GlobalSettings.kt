@@ -33,10 +33,11 @@ import java.io.File
 import java.net.MalformedURLException
 import java.net.URL
 import javax.swing.DefaultComboBoxModel
-import javax.swing.JCheckBox
-import javax.swing.JComboBox
 import javax.swing.JFileChooser
 
+/**
+ * @author Griefed
+ */
 class GlobalSettings(
     private val guiProps: GuiProps,
     private val apiProperties: ApiProperties,
@@ -114,7 +115,12 @@ class GlobalSettings(
 
     val fallbackURLIcon = StatusIcon(guiProps, Gui.settings_global_fallbackurl_tooltip.toString())
     val fallbackURLLabel = ElementLabel(Gui.settings_global_fallbackurl_label.toString())
-    val fallbackURLSetting = ScrollTextField(guiProps, apiProperties.updateUrl.toString(), Gui.settings_global_fallbackurl_label.toString(), apiProperties, changeListener)
+    val fallbackURLSetting = ScrollTextField(
+        guiProps,
+        apiProperties.updateUrl.toString(),
+        Gui.settings_global_fallbackurl_label.toString(),
+        changeListener
+    )
     val fallbackURLRevert = BalloonTipButton(null, guiProps.revertIcon, Gui.settings_revert.toString(), guiProps) { fallbackURLSetting.text = apiProperties.updateUrl.toString() }
     val fallbackURLReset = BalloonTipButton(null,guiProps.resetIcon,Gui.settings_reset.toString(),guiProps) { fallbackURLSetting.text = apiProperties.fallbackUpdateURL }
 
@@ -311,6 +317,9 @@ class GlobalSettings(
         componentResizer.registerComponent(scriptSetting,"cell 2 $scriptY, grow, w 10:500:,h %s!")
     }
 
+    /**
+     * @author Griefed
+     */
     override fun loadSettings() {
         homeSetting.file = apiProperties.homeDirectory.absoluteFile
         javaSetting.file = File(apiProperties.javaPath).absoluteFile
@@ -331,6 +340,9 @@ class GlobalSettings(
         autodetectionSetting.isSelected = apiProperties.isAutoExcludingModsEnabled
     }
 
+    /**
+     * @author Griefed
+     */
     override fun saveSettings() {
         apiProperties.homeDirectory = homeSetting.file.absoluteFile
         apiProperties.javaPath = javaSetting.file.absolutePath
@@ -351,6 +363,9 @@ class GlobalSettings(
         apiProperties.isAutoExcludingModsEnabled = autodetectionSetting.isSelected
     }
 
+    /**
+     * @author Griefed
+     */
     override fun validateSettings(): List<String> {
         val errors = mutableListOf<String>()
         if (!homeSetting.file.absoluteFile.isDirectory || !homeSetting.file.absoluteFile.canWrite()) {
@@ -405,6 +420,9 @@ class GlobalSettings(
         return errors.toList()
     }
 
+    /**
+     * @author Griefed
+     */
     override fun hasUnsavedChanges(): Boolean {
         val changes = homeSetting.file != apiProperties.homeDirectory.absoluteFile ||
         javaSetting.file != File(apiProperties.javaPath).absoluteFile ||

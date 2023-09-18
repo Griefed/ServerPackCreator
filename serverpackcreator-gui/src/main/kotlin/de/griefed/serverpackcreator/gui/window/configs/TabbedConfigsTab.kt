@@ -123,6 +123,9 @@ class TabbedConfigsTab(
         return editor
     }
 
+    /**
+     * @author Griefed
+     */
     fun saveAll() {
         for (tab in allTabs) {
             (tab as ConfigEditor).saveCurrentConfiguration()
@@ -130,6 +133,9 @@ class TabbedConfigsTab(
         checkAll()
     }
 
+    /**
+     * @author Griefed
+     */
     fun checkAll() {
         if (allTabs.any { (it as ConfigEditor).hasUnsavedChanges() }) {
             title.showWarningIcon()

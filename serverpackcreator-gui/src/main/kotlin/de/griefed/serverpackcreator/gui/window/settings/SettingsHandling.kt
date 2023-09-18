@@ -34,6 +34,9 @@ import javax.swing.JLabel
 import javax.swing.JOptionPane
 import javax.swing.JPanel
 
+/**
+ * @author Griefed
+ */
 class SettingsHandling(
     guiProps: GuiProps,
     private val settingsEditorsTab: SettingsEditorsTab,
@@ -67,11 +70,17 @@ class SettingsHandling(
         panel.add(lastActionLabel, "cell 3 0, grow, height 30!")
     }
 
+    /**
+     * @author Griefed
+     */
     private fun currentTime(): String {
         val format = SimpleDateFormat("HH:mm")
         return format.format(Date())
     }
 
+    /**
+     * @author Griefed
+     */
     private fun showHomeDirDialog() {
         JOptionPane.showMessageDialog(
             mainFrame.frame,
@@ -81,6 +90,9 @@ class SettingsHandling(
         )
     }
 
+    /**
+     * @author Griefed
+     */
     private fun showCancelDialog() {
         JOptionPane.showMessageDialog(
             mainFrame.frame,
@@ -90,6 +102,9 @@ class SettingsHandling(
         )
     }
 
+    /**
+     * @author Griefed
+     */
     private fun rootWarning(): Int {
         return JOptionPane.showConfirmDialog(
             mainFrame.frame,
@@ -100,6 +115,9 @@ class SettingsHandling(
         )
     }
 
+    /**
+     * @author Griefed
+     */
     fun save() {
         val previousHome = apiProperties.homeDirectory.absolutePath
         var saved = true
@@ -127,6 +145,9 @@ class SettingsHandling(
         lastAction = Gui.settings_handle_saved(currentTime())
     }
 
+    /**
+     * @author Griefed
+     */
     fun load() {
         val propertiesChooser = PropertiesChooser(apiProperties, Gui.settings_handle_chooser.toString())
         if (propertiesChooser.showOpenDialog(mainFrame.frame) == JFileChooser.APPROVE_OPTION) {

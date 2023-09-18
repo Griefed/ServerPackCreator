@@ -80,6 +80,9 @@ actual class QuiltScanner(
         return getModsDelta(jarFiles, clientMods)
     }
 
+    /**
+     * @author Griefed
+     */
     override fun checkForClientModsAndDeps(
         filesInModsDir: Collection<File>,
         clientMods: TreeSet<String>,
@@ -138,6 +141,9 @@ actual class QuiltScanner(
         }
     }
 
+    /**
+     * @author Griefed
+     */
     override fun getModsDelta(filesInModsDir: Collection<File>, clientMods: TreeSet<String>): TreeSet<File> {
         val modsDelta = TreeSet<File>()
         // After removing dependencies from the list of potential clientside mods, we can remove any mod

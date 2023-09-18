@@ -84,6 +84,9 @@ class IconPreview(private val guiProps: GuiProps) : JLabel(guiProps.serverIcon) 
         return icon.getScaledInstance(width, height, Image.SCALE_SMOOTH)
     }
 
+    /**
+     * @author Griefed
+     */
     fun updateIcon(newIcon: File) {
         if (lastLoadedIcon != null && lastLoadedIcon!!.absolutePath == newIcon.absolutePath) {
             return

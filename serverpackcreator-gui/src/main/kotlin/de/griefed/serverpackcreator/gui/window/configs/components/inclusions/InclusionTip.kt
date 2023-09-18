@@ -73,6 +73,9 @@ class InclusionTip(
             return textPane.text
         }
 
+    /**
+     * @author Griefed
+     */
     override fun keyTyped(e: KeyEvent) {}
 
     /**
@@ -86,6 +89,9 @@ class InclusionTip(
         }
     }
 
+    /**
+     * @author Griefed
+     */
     override fun keyReleased(e: KeyEvent) {}
 
 

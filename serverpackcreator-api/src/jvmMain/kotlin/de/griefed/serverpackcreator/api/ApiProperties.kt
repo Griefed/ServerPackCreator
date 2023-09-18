@@ -1152,10 +1152,16 @@ actual class ApiProperties(
             internalProps.setProperty("de.griefed.serverpackcreator.spring.schedules.files.cleanup", value)
         }
 
+    /**
+     * @author Griefed
+     */
     fun defaultWebserviceDatabase(): File {
         return File(home, "serverpackcreator.db")
     }
 
+    /**
+     * @author Griefed
+     */
     fun defaultArtemisDataDirectory(): File {
         return File(workDirectory, "artemis")
     }
@@ -1251,10 +1257,16 @@ actual class ApiProperties(
             log.info("Set Tomcat base-directory to: $field")
         }
 
+    /**
+     * @author Griefed
+     */
     fun defaultTomcatBaseDirectory(): File {
         return homeDirectory.absoluteFile
     }
 
+    /**
+     * @author Griefed
+     */
     fun defaultServerPacksDirectory(): File {
         return File(homeDirectory, "server-packs").absoluteFile
     }
@@ -1315,6 +1327,9 @@ actual class ApiProperties(
             log.info("Set Tomcat logs-directory to: $field")
         }
 
+    /**
+     * @author Griefed
+     */
     fun defaultTomcatLogsDirectory(): File {
         return File(homeDirectory, "logs").absoluteFile
     }
@@ -2016,6 +2031,9 @@ actual class ApiProperties(
         }
     }
 
+    /**
+     * @author Griefed
+     */
     fun overridesAsString(): String {
         return overridesProps.entries.stream().map { it.key.toString() + ":" + it.value.toString() }
             .collect(Collectors.joining("\n"))
@@ -2277,6 +2295,9 @@ actual class ApiProperties(
         printSettings()
     }
 
+    /**
+     * @author Griefed
+     */
     @Suppress("MemberVisibilityCanBePrivate")
     fun printSettings() {
         log.info("============================== PROPERTIES ==============================")
@@ -2318,6 +2339,9 @@ actual class ApiProperties(
     }
 
     actual companion object {
+        /**
+         * @author Griefed
+         */
         @JvmStatic
         actual fun getSeparator(): String {
             return File.separator

@@ -31,6 +31,9 @@ import java.io.File
 import javax.swing.JFileChooser
 import javax.swing.event.ChangeListener
 
+/**
+ * @author Griefed
+ */
 class WebserviceSettings(
     guiProps: GuiProps,
     private val apiProperties: ApiProperties,
@@ -74,7 +77,12 @@ class WebserviceSettings(
 
     val cleanupScheduleIcon = StatusIcon(guiProps,Gui.settings_webservice_schedule_cleanup_tooltip.toString())
     val cleanupScheduleLabel = ElementLabel(Gui.settings_webservice_schedule_cleanup_label.toString())
-    val cleanupScheduleSetting = ScrollTextField(guiProps,apiProperties.webserviceCleanupSchedule, Gui.settings_webservice_schedule_cleanup_label.toString(), apiProperties, documentChangeListener)
+    val cleanupScheduleSetting = ScrollTextField(
+        guiProps,
+        apiProperties.webserviceCleanupSchedule,
+        Gui.settings_webservice_schedule_cleanup_label.toString(),
+        documentChangeListener
+    )
     val cleanupRevert = BalloonTipButton(null,guiProps.revertIcon,Gui.settings_revert.toString(),guiProps) { cleanupScheduleSetting.text = apiProperties.webserviceCleanupSchedule }
     val cleanupReset = BalloonTipButton(null,guiProps.resetIcon,Gui.settings_reset.toString(),guiProps) { cleanupScheduleSetting.text = apiProperties.fallbackCleanupSchedule }
 
@@ -104,13 +112,23 @@ class WebserviceSettings(
 
     val versionScheduleIcon = StatusIcon(guiProps,Gui.settings_webservice_schedule_versions_tooltip.toString())
     val versionScheduleLabel = ElementLabel(Gui.settings_webservice_schedule_versions_label.toString())
-    val versionScheduleSetting = ScrollTextField(guiProps,apiProperties.webserviceVersionSchedule, Gui.settings_webservice_schedule_versions_label.toString(), apiProperties, documentChangeListener)
+    val versionScheduleSetting = ScrollTextField(
+        guiProps,
+        apiProperties.webserviceVersionSchedule,
+        Gui.settings_webservice_schedule_versions_label.toString(),
+        documentChangeListener
+    )
     val versionRevert = BalloonTipButton(null,guiProps.revertIcon,Gui.settings_revert.toString(),guiProps) { versionScheduleSetting.text = apiProperties.webserviceVersionSchedule }
     val versionReset = BalloonTipButton(null,guiProps.resetIcon,Gui.settings_reset.toString(),guiProps) { versionScheduleSetting.text = apiProperties.fallbackVersionSchedule }
 
     val databaseCleanupScheduleIcon = StatusIcon(guiProps,Gui.settings_webservice_schedule_database_tooltip.toString())
     val databaseCleanupScheduleLabel = ElementLabel(Gui.settings_webservice_schedule_database_label.toString())
-    val databaseCleanupScheduleSetting = ScrollTextField(guiProps,apiProperties.webserviceDatabaseCleanupSchedule, Gui.settings_webservice_schedule_database_label.toString(), apiProperties, documentChangeListener)
+    val databaseCleanupScheduleSetting = ScrollTextField(
+        guiProps,
+        apiProperties.webserviceDatabaseCleanupSchedule,
+        Gui.settings_webservice_schedule_database_label.toString(),
+        documentChangeListener
+    )
     val databaseCleanupRevert = BalloonTipButton(null,guiProps.revertIcon,Gui.settings_revert.toString(),guiProps) { databaseCleanupScheduleSetting.text = apiProperties.webserviceDatabaseCleanupSchedule }
     val databaseCleanupReset = BalloonTipButton(null,guiProps.resetIcon,Gui.settings_reset.toString(),guiProps) { databaseCleanupScheduleSetting.text = apiProperties.fallbackDatabaseCleanupSchedule }
 
@@ -182,6 +200,9 @@ class WebserviceSettings(
         panel.add(databaseCleanupReset, "cell 4 $y")
     }
 
+    /**
+     * @author Griefed
+     */
     override fun loadSettings() {
         artemisDataDirectorySetting.file = apiProperties.artemisDataDirectory.absoluteFile
         artemisQueueMaxDiskUsageSetting.value = apiProperties.artemisQueueMaxDiskUsage
@@ -193,6 +214,9 @@ class WebserviceSettings(
         databaseCleanupScheduleSetting.text = apiProperties.webserviceDatabaseCleanupSchedule
     }
 
+    /**
+     * @author Griefed
+     */
     override fun saveSettings() {
         apiProperties.artemisDataDirectory = artemisDataDirectorySetting.file.absoluteFile
         apiProperties.artemisQueueMaxDiskUsage = artemisQueueMaxDiskUsageSetting.value
@@ -204,6 +228,9 @@ class WebserviceSettings(
         apiProperties.webserviceDatabaseCleanupSchedule = databaseCleanupScheduleSetting.text
     }
 
+    /**
+     * @author Griefed
+     */
     override fun validateSettings(): List<String> {
         val errors = mutableListOf<String>()
         if (!artemisDataDirectorySetting.file.absoluteFile.isDirectory || !artemisDataDirectorySetting.file.absoluteFile.canWrite()) {
@@ -274,6 +301,9 @@ class WebserviceSettings(
         return errors.toList()
     }
 
+    /**
+     * @author Griefed
+     */
     override fun hasUnsavedChanges(): Boolean {
         val changes = artemisDataDirectorySetting.file != apiProperties.artemisDataDirectory.absoluteFile ||
                 artemisQueueMaxDiskUsageSetting.value != apiProperties.artemisQueueMaxDiskUsage ||

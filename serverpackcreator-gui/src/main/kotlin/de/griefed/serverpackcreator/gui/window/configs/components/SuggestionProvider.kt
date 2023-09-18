@@ -96,6 +96,10 @@ class SuggestionProvider(
             }
         }
     }
+
+    /**
+     * @author Griefed
+     */
     private val documentListener = object : DocumentChangeListener {
         override fun update(e: DocumentEvent) {
             if (disableTextEvent) {

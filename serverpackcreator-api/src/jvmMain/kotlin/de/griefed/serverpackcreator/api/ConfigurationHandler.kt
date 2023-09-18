@@ -58,6 +58,9 @@ actual class ConfigurationHandler(
 ) : Configuration<File, Path>() {
     private val zipRegex = "\\.[Zz][Ii][Pp]".toRegex()
 
+    /**
+     * @author Griefed
+     */
     actual override fun checkConfiguration(
         configFile: File, packConfig: PackConfig, encounteredErrors: MutableList<String>, quietCheck: Boolean
     ): Boolean {
@@ -92,6 +95,9 @@ actual class ConfigurationHandler(
         return checkConfiguration(packConfig, encounteredErrors, quietCheck)
     }
 
+    /**
+     * @author Griefed
+     */
     actual override fun checkConfiguration(
         packConfig: PackConfig, encounteredErrors: MutableList<String>, quietCheck: Boolean
     ): Boolean {
@@ -222,6 +228,9 @@ actual class ConfigurationHandler(
         return configHasError
     }
 
+    /**
+     * @author Griefed
+     */
     actual override fun sanitizeLinks(packConfig: PackConfig) {
         log.info("Checking configuration for links...")
         if (packConfig.modpackDir.isNotEmpty() && utilities.fileUtilities.isLink(packConfig.modpackDir)) {
@@ -281,12 +290,18 @@ actual class ConfigurationHandler(
         }
     }
 
+    /**
+     * @author Griefed
+     */
     actual override fun checkIconAndProperties(iconOrPropertiesPath: String) = if (iconOrPropertiesPath.isEmpty()) {
         true
     } else {
         File(iconOrPropertiesPath).isFile
     }
 
+    /**
+     * @author Griefed
+     */
     actual override fun isDir(packConfig: PackConfig, encounteredErrors: MutableList<String>): Boolean {
         var configHasError = false
         if (checkInclusions(packConfig.inclusions, packConfig.modpackDir, encounteredErrors)) {
@@ -300,6 +315,9 @@ actual class ConfigurationHandler(
         return configHasError
     }
 
+    /**
+     * @author Griefed
+     */
     @Throws(IOException::class)
     actual override fun isZip(packConfig: PackConfig, encounteredErrors: MutableList<String>): Boolean {
         var configHasError = false
@@ -374,6 +392,9 @@ actual class ConfigurationHandler(
         return configHasError
     }
 
+    /**
+     * @author Griefed
+     */
     actual override fun checkModloaderVersion(
         modloader: String, modloaderVersion: String, minecraftVersion: String, encounteredErrors: MutableList<String>
     ) = when (modloader) {
@@ -450,6 +471,9 @@ actual class ConfigurationHandler(
         }
     }
 
+    /**
+     * @author Griefed
+     */
     actual override fun ensureScriptSettingsDefaults(packConfig: PackConfig) {
         val server = versionMeta.minecraft.getServer(packConfig.minecraftVersion)
         if (!server.isPresent || !server.get().url().isPresent) {
@@ -471,6 +495,9 @@ actual class ConfigurationHandler(
             versionMeta.legacyFabric.releaseInstaller()
     }
 
+    /**
+     * @author Griefed
+     */
     actual override fun checkInclusions(
         inclusions: MutableList<InclusionSpecification>,
         modpackDir: String,
@@ -560,6 +587,9 @@ actual class ConfigurationHandler(
         return configCorrect
     }
 
+    /**
+     * @author Griefed
+     */
     actual override fun checkZipArchive(pathToZip: String, encounteredErrors: MutableList<String>): Boolean {
         try {
             ZipFile(Paths.get(pathToZip).toFile()).use {
@@ -606,6 +636,9 @@ actual class ConfigurationHandler(
         return false
     }
 
+    /**
+     * @author Griefed
+     */
     actual override fun unzipDestination(destination: String): String {
         var dest = destination
         if (File(dest).isDirectory || File("${dest}_0").isDirectory) {
@@ -620,6 +653,9 @@ actual class ConfigurationHandler(
         return File(dest).path
     }
 
+    /**
+     * @author Griefed
+     */
     actual override fun suggestInclusions(modpackDir: String): ArrayList<InclusionSpecification> {
         // This log is meant to be read by the user, therefore we allow translation.
         log.info("Preparing a list of directories to include in server pack...")
@@ -647,6 +683,9 @@ actual class ConfigurationHandler(
         return dirsInModpack
     }
 
+    /**
+     * @author Griefed
+     */
     actual override fun checkManifests(
         destination: String, packConfig: PackConfig, encounteredErrors: MutableList<String>
     ): String? {
@@ -745,6 +784,9 @@ actual class ConfigurationHandler(
         return packName
     }
 
+    /**
+     * @author Griefed
+     */
     actual override fun checkServerPacksForIncrement(source: String, destination: String): String {
         // Check whether a server pack for the new destination already exists.
         // If it does, we need to change it to avoid overwriting any existing files.
@@ -767,6 +809,9 @@ actual class ConfigurationHandler(
         return serverPack + incrementation
     }
 
+    /**
+     * @author Griefed
+     */
     actual override fun printConfigurationModel(
         modpackDirectory: String,
         clientsideMods: List<String>,
@@ -822,6 +867,9 @@ actual class ConfigurationHandler(
         }
     }
 
+    /**
+     * @author Griefed
+     */
     @Throws(
         IllegalArgumentException::class,
         FileSystemAlreadyExistsException::class,
@@ -849,6 +897,9 @@ actual class ConfigurationHandler(
         return baseDirectories.toList()
     }
 
+    /**
+     * @author Griefed
+     */
     @Throws(IOException::class)
     actual override fun updateConfigModelFromCurseManifest(packConfig: PackConfig, manifest: File) {
         packConfig.modpackJson = utilities.jsonUtilities.getJson(manifest)
@@ -861,6 +912,9 @@ actual class ConfigurationHandler(
         packConfig.modloaderVersion = modloaderAndVersion[1]
     }
 
+    /**
+     * @author Griefed
+     */
     actual override fun updatePackName(packConfig: PackConfig, vararg childNodes: String) = try {
         val modpackDir = apiProperties.modpacksDirectory.toString()
         val packName = packConfig.modpackJson?.let {
@@ -873,6 +927,9 @@ actual class ConfigurationHandler(
         null
     }
 
+    /**
+     * @author Griefed
+     */
     @Throws(IOException::class)
     actual override fun updateConfigModelFromMinecraftInstance(packConfig: PackConfig, minecraftInstance: File) {
         packConfig.modpackJson = utilities.jsonUtilities.getJson(minecraftInstance)
@@ -893,6 +950,9 @@ actual class ConfigurationHandler(
         }
     }
 
+    /**
+     * @author Griefed
+     */
     @Throws(IOException::class)
     actual override fun updateConfigModelFromModrinthManifest(packConfig: PackConfig, manifest: File) {
         packConfig.modpackJson = utilities.jsonUtilities.getJson(manifest)
@@ -920,6 +980,9 @@ actual class ConfigurationHandler(
         }
     }
 
+    /**
+     * @author Griefed
+     */
     @Throws(IOException::class)
     actual override fun updateConfigModelFromATLauncherInstance(packConfig: PackConfig, manifest: File) {
         packConfig.modpackJson = utilities.jsonUtilities.getJson(manifest)
@@ -939,6 +1002,9 @@ actual class ConfigurationHandler(
         }
     }
 
+    /**
+     * @author Griefed
+     */
     @Throws(NullPointerException::class)
     private fun getAndSetIcon(json: JsonNode, packConfig: PackConfig, urlPath: Array<String>, namePath: Array<String>) {
         val iconUrl = URL(utilities.jsonUtilities.getNestedText(json, *urlPath))
@@ -949,6 +1015,9 @@ actual class ConfigurationHandler(
         }
     }
 
+    /**
+     * @author Griefed
+     */
     @Throws(IOException::class)
     actual override fun updateConfigModelFromConfigJson(packConfig: PackConfig, config: File) {
         packConfig.modpackJson = utilities.jsonUtilities.getJson(config)
@@ -959,6 +1028,9 @@ actual class ConfigurationHandler(
             loader.get("loaderVersion").asText().replace(packConfig.minecraftVersion + "-", "")
     }
 
+    /**
+     * @author Griefed
+     */
     @Throws(IOException::class)
     actual override fun updateConfigModelFromMMCPack(packConfig: PackConfig, mmcPack: File) {
         packConfig.modpackJson = utilities.jsonUtilities.getJson(mmcPack)
@@ -985,6 +1057,9 @@ actual class ConfigurationHandler(
         }
     }
 
+    /**
+     * @author Griefed
+     */
     @Throws(IOException::class)
     actual override fun updateDestinationFromInstanceCfg(instanceCfg: File): String {
         var name: String
@@ -996,6 +1071,9 @@ actual class ConfigurationHandler(
         return name
     }
 
+    /**
+     * @author Griefed
+     */
     actual override fun checkModpackDir(
         modpackDir: String,
         encounteredErrors: MutableList<String>,
@@ -1022,6 +1100,9 @@ actual class ConfigurationHandler(
         return configCorrect
     }
 
+    /**
+     * @author Griefed
+     */
     @Throws(
         IllegalArgumentException::class,
         FileSystemAlreadyExistsException::class,
@@ -1044,6 +1125,9 @@ actual class ConfigurationHandler(
         return filesAndDirectories
     }
 
+    /**
+     * @author Griefed
+     */
     @Throws(
         IllegalArgumentException::class,
         FileSystemAlreadyExistsException::class,
@@ -1063,6 +1147,9 @@ actual class ConfigurationHandler(
         return directories
     }
 
+    /**
+     * @author Griefed
+     */
     @Throws(
         IllegalArgumentException::class,
         FileSystemAlreadyExistsException::class,

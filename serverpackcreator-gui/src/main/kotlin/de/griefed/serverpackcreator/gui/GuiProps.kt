@@ -453,14 +453,23 @@ class GuiProps(private val apiProperties: ApiProperties) {
         larsonScanner.loadConfig(config)
     }
 
+    /**
+     * @author Griefed
+     */
     fun getGuiProperty(key: String, default: String? = null): String? {
         return apiProperties.retrieveCustomProperty("$guiPropertyPrefix$key") ?: default
     }
 
+    /**
+     * @author Griefed
+     */
     fun storeGuiProperty(key: String, value: String) {
         apiProperties.storeCustomProperty("$guiPropertyPrefix$key", value)
     }
 
+    /**
+     * @author Griefed
+     */
     fun initFont() {
         val value = getGuiProperty("font.size","12")!!.toInt()
         val currentFont = UIManager.get("defaultFont") as Font

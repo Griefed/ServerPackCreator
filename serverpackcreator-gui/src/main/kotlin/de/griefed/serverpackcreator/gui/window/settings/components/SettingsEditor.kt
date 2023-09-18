@@ -19,6 +19,9 @@
  */
 package de.griefed.serverpackcreator.gui.window.settings.components
 
+/**
+ * @author Griefed
+ */
 interface SettingsEditor {
     fun loadSettings()
     fun saveSettings()

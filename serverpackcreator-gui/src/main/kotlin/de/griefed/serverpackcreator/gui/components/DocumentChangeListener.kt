@@ -36,14 +36,23 @@ interface DocumentChangeListener : DocumentListener {
      */
     fun update(e: DocumentEvent)
 
+    /**
+     * @author Griefed
+     */
     override fun insertUpdate(e: DocumentEvent) {
         update(e)
     }
 
+    /**
+     * @author Griefed
+     */
     override fun removeUpdate(e: DocumentEvent) {
         update(e)
     }
 
+    /**
+     * @author Griefed
+     */
     override fun changedUpdate(e: DocumentEvent) {
         update(e)
     }
