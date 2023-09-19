@@ -1,3 +1,40 @@
+## [5.0.0-alpha.27](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-alpha.26...5.0.0-alpha.27) (2023-09-19)
+
+
+### 💎 Improvements
+
+* Ask to save settings if user has unsaved changes ([2ce4083](https://git.griefed.de/Griefed/ServerPackCreator/commit/2ce40834f8f54abfd3ec84f4a7acd890ad129294))
+* Check for unsaved settings ([9414da7](https://git.griefed.de/Griefed/ServerPackCreator/commit/9414da77c00368288844942c4763d728492c8150))
+* Move theme switch to GUI settings ([2c58a8b](https://git.griefed.de/Griefed/ServerPackCreator/commit/2c58a8b540c811848952d5fde16a5691e7909035))
+* Validate settings and inform about unsaved changes ([4a4bb7f](https://git.griefed.de/Griefed/ServerPackCreator/commit/4a4bb7f6bc90edd4bbbbe8340778c6c314344214))
+
+
+### 📦 Other
+
+* Add dev,alpha,beta header to license agreement ([215fed7](https://git.griefed.de/Griefed/ServerPackCreator/commit/215fed7341a2f6ef9b071d23ff4960d2312e6437))
+* Add some fluffi McFluffface blocks ([929f0f3](https://git.griefed.de/Griefed/ServerPackCreator/commit/929f0f3855d3875ac6fbb860ddf664d925fff1c7))
+* i18n for global settings ([54eec49](https://git.griefed.de/Griefed/ServerPackCreator/commit/54eec49a1b4ceea0377af6390883906300132641))
+* i18n-keys to allow translations ([21bd521](https://git.griefed.de/Griefed/ServerPackCreator/commit/21bd521dd7b3b094a166d5329301d930e91a922b))
+* Missed i18n for global settings tab name ([8dd84ca](https://git.griefed.de/Griefed/ServerPackCreator/commit/8dd84caee45affad81e9425cfd52ced02ca7c672))
+* Update license reports ([0e47539](https://git.griefed.de/Griefed/ServerPackCreator/commit/0e4753961726206518e9c849a93f4b24ea0a94c7))
+
+
+### 🦊 CI/CD
+
+* Update GUI libraries and add additional fonts ([3dbec0e](https://git.griefed.de/Griefed/ServerPackCreator/commit/3dbec0e425ccb3ef912c36186c9165450039861c))
+* Update Kotlin to 1.9.10 ([8485787](https://git.griefed.de/Griefed/ServerPackCreator/commit/8485787cd61696647c83179f7ae9d5cd4f074729))
+
+
+### 🚀 Features
+
+* Allow font changing in GUI ([7e903a5](https://git.griefed.de/Griefed/ServerPackCreator/commit/7e903a51fc56ee1a551063182bc0d6d7bb9054fe))
+
+
+### 🛠 Fixes
+
+* Rare occasion where inclusions-updates would trigger a NPE ([6bb52f1](https://git.griefed.de/Griefed/ServerPackCreator/commit/6bb52f121ef1f80fa80ce6355a8c6e9bb974acb3))
+* Update warning icon for configs correctly ([fe07e61](https://git.griefed.de/Griefed/ServerPackCreator/commit/fe07e61db1b6f3cc70bc9ebb95ef9e0779ca3b53))
+
 ## [5.0.0-alpha.26](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-alpha.25...5.0.0-alpha.26) (2023-09-16)
 
 
