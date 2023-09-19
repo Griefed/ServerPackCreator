@@ -143,6 +143,7 @@ class SettingsHandling(
             showHomeDirDialog()
         }
         lastAction = Gui.settings_handle_saved(currentTime())
+        settingsEditorsTab.checkAll()
     }
 
     /**
@@ -157,5 +158,6 @@ class SettingsHandling(
             settingsEditorsTab.webservice.loadSettings()
             lastAction = Gui.settings_handle_loaded(currentTime())
         }
+        settingsEditorsTab.checkAll()
     }
 }

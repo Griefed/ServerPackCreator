@@ -76,6 +76,7 @@ class MainFrame(
         if (guiProps.startFocusEnabled) {
             toFront()
         }
+        menu.displayMigrationMessages()
     }
 
     /**

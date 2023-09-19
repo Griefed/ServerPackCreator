@@ -19,15 +19,19 @@
  */
 package de.griefed.serverpackcreator.gui.window.settings
 
+import Gui
 import com.formdev.flatlaf.FlatLaf
 import com.formdev.flatlaf.intellijthemes.FlatAllIJThemes
 import com.formdev.flatlaf.intellijthemes.FlatDarkPurpleIJTheme
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.components.*
 import de.griefed.serverpackcreator.gui.window.settings.components.Editor
+import java.awt.GraphicsEnvironment
 import java.awt.event.ActionListener
 import javax.swing.DefaultComboBoxModel
 import javax.swing.event.ChangeListener
+import javax.swing.plaf.FontUIResource
+
 
 /**
  * @author Griefed
@@ -70,7 +74,7 @@ class GuiSettings(
 
     val themeIcon = StatusIcon(guiProps,Gui.settings_gui_theme_tooltip.toString())
     val themeLabel = ElementLabel(Gui.settings_gui_theme_label.toString())
-    val themeSetting = ActionComboBox(DefaultComboBoxModel(FlatAllIJThemes.INFOS.map { it.name }.toTypedArray()),null)
+    val themeSetting = ActionComboBox(DefaultComboBoxModel(FlatAllIJThemes.INFOS.map { it.name }.toTypedArray()),actionListener)
     val themeRevert = BalloonTipButton(null,guiProps.revertIcon,Gui.settings_revert.toString(),guiProps) {
         loadThemeFromProperties()
     }
@@ -78,6 +82,20 @@ class GuiSettings(
         for (theme in FlatAllIJThemes.INFOS) {
             if (theme.className == FlatDarkPurpleIJTheme().javaClass.name) {
                 themeSetting.selectedItem = theme.name
+            }
+        }
+    }
+
+    val fontIcon = StatusIcon(guiProps,Gui.settings_gui_font_family_tooltip.toString())
+    val fontLabel = ElementLabel(Gui.settings_gui_font_family_label.toString())
+    val fontSetting = ActionComboBox(DefaultComboBoxModel(GraphicsEnvironment.getLocalGraphicsEnvironment().availableFontFamilyNames),actionListener)
+    val fontRevert = BalloonTipButton(null,guiProps.revertIcon,Gui.settings_revert.toString(),guiProps) {
+        loadFontProperties()
+    }
+    val fontReset = BalloonTipButton(null,guiProps.resetIcon,Gui.settings_reset.toString(),guiProps) {
+        for (font in GraphicsEnvironment.getLocalGraphicsEnvironment().availableFontFamilyNames) {
+            if (font == "JetBrains Mono") {
+                fontSetting.selectedItem = font
             }
         }
     }
@@ -93,6 +111,12 @@ class GuiSettings(
         for (theme in FlatAllIJThemes.INFOS) {
             if (theme.className == themeConfigClassName) {
                 themeSetting.selectedItem = theme.name
+            }
+        }
+        val currentFont = guiProps.font
+        for (font in GraphicsEnvironment.getLocalGraphicsEnvironment().availableFontFamilyNames) {
+            if (font == currentFont.family) {
+                fontSetting.selectedItem = font
             }
         }
 
@@ -123,6 +147,13 @@ class GuiSettings(
         panel.add(themeSetting, "cell 2 $y, grow")
         panel.add(themeRevert, "cell 3 $y")
         panel.add(themeReset, "cell 4 $y")
+
+        y++
+        panel.add(fontIcon, "cell 0 $y")
+        panel.add(fontLabel, "cell 1 $y")
+        panel.add(fontSetting, "cell 2 $y, grow")
+        panel.add(fontRevert, "cell 3 $y")
+        panel.add(fontReset, "cell 4 $y")
     }
 
     /**
@@ -133,6 +164,7 @@ class GuiSettings(
         startFocusSetting.isSelected = guiProps.startFocusEnabled
         generationFocusSetting.isSelected = guiProps.generationFocusEnabled
         loadThemeFromProperties()
+        loadFontProperties()
     }
 
     /**
@@ -148,6 +180,7 @@ class GuiSettings(
                 guiProps.currentTheme = instance
             }
         }
+        guiProps.font = FontUIResource(fontSetting.selectedItem.toString(),font.size,font.style,)
     }
 
     /**
@@ -175,7 +208,9 @@ class GuiSettings(
     override fun hasUnsavedChanges(): Boolean {
         val changes = fontSizeSetting.value != guiProps.fontSize ||
                 startFocusSetting.isSelected != guiProps.startFocusEnabled ||
-                generationFocusSetting.isSelected != guiProps.generationFocusEnabled
+                generationFocusSetting.isSelected != guiProps.generationFocusEnabled ||
+                fontSizeSetting.value != guiProps.fontSize ||
+                fontSetting.selectedItem.toString() != guiProps.font.family
         if (changes) {
             title.showWarningIcon()
         } else {
@@ -192,6 +227,18 @@ class GuiSettings(
         for (theme in FlatAllIJThemes.INFOS) {
             if (theme.className == current) {
                 themeSetting.selectedItem = theme.name
+            }
+        }
+    }
+
+    /**
+     * @author Griefed
+     */
+    private fun loadFontProperties() {
+        val current = guiProps.font
+        for (font in GraphicsEnvironment.getLocalGraphicsEnvironment().availableFontFamilyNames) {
+            if (font == current.family) {
+                fontSetting.selectedItem = font
             }
         }
     }
