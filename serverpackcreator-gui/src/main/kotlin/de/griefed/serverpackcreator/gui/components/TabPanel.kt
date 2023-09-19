@@ -33,6 +33,7 @@ import javax.swing.JTabbedPane
  * @author Griefed
  */
 abstract class TabPanel(layout: LayoutManager = BorderLayout(), tabsConstraints: String? = null) {
+
     val panel = JPanel(layout, true)
     val tabs = JTabbedPane()
 

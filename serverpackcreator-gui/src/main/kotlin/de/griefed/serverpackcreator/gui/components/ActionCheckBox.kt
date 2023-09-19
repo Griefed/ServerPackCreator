@@ -28,6 +28,8 @@ import javax.swing.JCheckBox
  * @author Griefed
  */
 class ActionCheckBox(title: String, actionListener: ActionListener) : JCheckBox(title) {
+    constructor(actionListener: ActionListener) : this("",actionListener)
+
     init {
         this.addActionListener(actionListener)
     }

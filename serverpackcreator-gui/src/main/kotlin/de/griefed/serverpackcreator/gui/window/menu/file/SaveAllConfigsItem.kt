@@ -35,6 +35,9 @@ class SaveAllConfigsItem(private val tabbedConfigsTab: TabbedConfigsTab) :
         this.addActionListener { saveAll() }
     }
 
+    /**
+     * @author Griefed
+     */
     private fun saveAll() {
         tabbedConfigsTab.saveAll()
     }

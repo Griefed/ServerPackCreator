@@ -17,7 +17,7 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.gui.window.settings.components
+package de.griefed.serverpackcreator.gui.components
 
 import Gui
 import de.griefed.serverpackcreator.gui.GuiProps
@@ -26,17 +26,21 @@ import javax.swing.BorderFactory
 import javax.swing.JLabel
 import javax.swing.JPanel
 
-class EditorTitle(title: String, guiProps: GuiProps) : JPanel(FlowLayout(FlowLayout.LEFT, 0, 0)) {
+/**
+ * @author Griefed
+ */
+open class TabTitle(guiProps: GuiProps) : JPanel(FlowLayout(FlowLayout.LEFT, 0, 0)) {
 
     private val errorIconLabel = JLabel(guiProps.smallErrorIcon)
     private val warningIconLabel = JLabel(guiProps.smallWarningIcon)
-    private val titleLabel = JLabel(title)
+    private val titleLabel = JLabel(Gui.createserverpack_gui_title_new.toString())
 
     var hasUnsavedChanges: Boolean = false
         get() {
             return warningIconLabel.isVisible
         }
         private set
+
     var title: String
         get() {
             return titleLabel.text
@@ -44,6 +48,10 @@ class EditorTitle(title: String, guiProps: GuiProps) : JPanel(FlowLayout(FlowLay
         set(value) {
             titleLabel.text = value
         }
+
+    constructor(guiProps: GuiProps, name: String) : this(guiProps) {
+        title = name
+    }
 
     init {
         isOpaque = false
@@ -57,6 +65,7 @@ class EditorTitle(title: String, guiProps: GuiProps) : JPanel(FlowLayout(FlowLay
         add(warningIconLabel)
         add(titleLabel)
     }
+
 
     /**
      * Show the error icon, indicating the configuration has errors.

@@ -177,6 +177,9 @@ actual open class PackConfig actual constructor() : Pack<File, JsonNode, PackCon
         config.close()
     }
 
+    /**
+     * @author Griefed
+     */
     private fun migrateCopyDirsToInclusions(copyDirs: ArrayList<Any>): ArrayList<InclusionSpecification> {
         val inclusions = ArrayList<InclusionSpecification>()
         var entries: List<String>
@@ -212,6 +215,9 @@ actual open class PackConfig actual constructor() : Pack<File, JsonNode, PackCon
         return inclusions
     }
 
+    /**
+     * @author Griefed
+     */
     actual override fun save(destination: File): PackConfig {
         val conf = TomlFormat.instance().createConfig()
         conf.set<Any>(

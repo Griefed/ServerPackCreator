@@ -22,7 +22,10 @@ package de.griefed.serverpackcreator.gui
 import com.formdev.flatlaf.FlatLaf
 import com.formdev.flatlaf.extras.FlatInspector
 import com.formdev.flatlaf.extras.FlatUIDefaultsInspector
+import com.formdev.flatlaf.fonts.inter.FlatInterFont
 import com.formdev.flatlaf.fonts.jetbrains_mono.FlatJetBrainsMonoFont
+import com.formdev.flatlaf.fonts.roboto.FlatRobotoFont
+import com.formdev.flatlaf.fonts.roboto_mono.FlatRobotoMonoFont
 import com.formdev.flatlaf.intellijthemes.FlatDarkPurpleIJTheme
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.gui.splash.SplashScreen
@@ -58,7 +61,10 @@ class MainWindow(
                 FlatUIDefaultsInspector.install("ctrl shift alt Y")
             }
 
+            FlatInterFont.install()
             FlatJetBrainsMonoFont.install()
+            FlatRobotoFont.install()
+            FlatRobotoMonoFont.install()
             FlatLaf.setPreferredFontFamily(FlatJetBrainsMonoFont.FAMILY)
 
             val themeClassName = guiProps.getGuiProperty("theme", FlatDarkPurpleIJTheme().javaClass.name)
@@ -74,6 +80,7 @@ class MainWindow(
                 migrationManager
             )
             splashScreen.close()
+            guiProps.font = guiProps.font
         }
     }
 }

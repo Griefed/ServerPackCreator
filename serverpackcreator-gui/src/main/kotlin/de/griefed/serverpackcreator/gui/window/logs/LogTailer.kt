@@ -41,7 +41,6 @@ abstract class LogTailer : JScrollPane() {
 
     init {
         textArea.isEditable = false
-        textArea.font = Font("Noto Sans Display Regular", Font.PLAIN, 15)
         viewport.view = textArea
         horizontalScrollBarPolicy = HORIZONTAL_SCROLLBAR_ALWAYS
         verticalScrollBarPolicy = VERTICAL_SCROLLBAR_ALWAYS

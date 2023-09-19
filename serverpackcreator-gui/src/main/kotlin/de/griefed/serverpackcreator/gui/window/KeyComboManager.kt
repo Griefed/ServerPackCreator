@@ -65,6 +65,9 @@ class KeyComboManager(
         addStartGenerationCombo()
     }
 
+    /**
+     * @author Griefed
+     */
     private fun addCloseTabCombo() {
         Toolkit.getDefaultToolkit().addAWTEventListener({ e: AWTEvent ->
             val event = e as KeyEvent
@@ -78,6 +81,9 @@ class KeyComboManager(
         }, AWTEvent.KEY_EVENT_MASK)
     }
 
+    /**
+     * @author Griefed
+     */
     private fun addNewTabCombo() {
         Toolkit.getDefaultToolkit().addAWTEventListener({ e: AWTEvent ->
             val event = e as KeyEvent
@@ -91,6 +97,9 @@ class KeyComboManager(
         }, AWTEvent.KEY_EVENT_MASK)
     }
 
+    /**
+     * @author Griefed
+     */
     private fun addSaveCurrentTabCombo() {
         Toolkit.getDefaultToolkit().addAWTEventListener({ e: AWTEvent ->
             val event = e as KeyEvent
@@ -104,6 +113,9 @@ class KeyComboManager(
         }, AWTEvent.KEY_EVENT_MASK)
     }
 
+    /**
+     * @author Griefed
+     */
     private fun addSaveAllTabsCombo() {
         Toolkit.getDefaultToolkit().addAWTEventListener({ e: AWTEvent ->
             val event = e as KeyEvent
@@ -117,6 +129,9 @@ class KeyComboManager(
         }, AWTEvent.KEY_EVENT_MASK)
     }
 
+    /**
+     * @author Griefed
+     */
     private fun addLoadConfigsCombo() {
         Toolkit.getDefaultToolkit().addAWTEventListener({ e: AWTEvent ->
             val event = e as KeyEvent
@@ -130,6 +145,9 @@ class KeyComboManager(
         }, AWTEvent.KEY_EVENT_MASK)
     }
 
+    /**
+     * @author Griefed
+     */
     private fun addStartGenerationCombo() {
         Toolkit.getDefaultToolkit().addAWTEventListener({ e: AWTEvent ->
             val event = e as KeyEvent

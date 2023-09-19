@@ -425,6 +425,19 @@ class GuiProps(private val apiProperties: ApiProperties) {
             UIManager.put("defaultFont",FontUIResource(currentFont.fontName, currentFont.style, value))
             FlatLaf.updateUI()
         }
+    var font: FontUIResource = FontUIResource(getGuiProperty("font.family","JetBrains Mono"),Font.PLAIN,fontSize)
+        get() {
+            val prop = FontUIResource(getGuiProperty("font.family","JetBrains Mono"),Font.PLAIN,fontSize)
+            field = prop
+            return field
+        }
+        set(value) {
+            val font = FontUIResource(value.family,Font.PLAIN,fontSize)
+            field = font
+            UIManager.put("defaultFont",font)
+            storeGuiProperty("font.family",font.family)
+            FlatLaf.updateUI()
+        }
 
     /**
      * Update the [larsonScanner] and GUI configurations to match the current theme.
@@ -453,14 +466,23 @@ class GuiProps(private val apiProperties: ApiProperties) {
         larsonScanner.loadConfig(config)
     }
 
+    /**
+     * @author Griefed
+     */
     fun getGuiProperty(key: String, default: String? = null): String? {
         return apiProperties.retrieveCustomProperty("$guiPropertyPrefix$key") ?: default
     }
 
+    /**
+     * @author Griefed
+     */
     fun storeGuiProperty(key: String, value: String) {
         apiProperties.storeCustomProperty("$guiPropertyPrefix$key", value)
     }
 
+    /**
+     * @author Griefed
+     */
     fun initFont() {
         val value = getGuiProperty("font.size","12")!!.toInt()
         val currentFont = UIManager.get("defaultFont") as Font

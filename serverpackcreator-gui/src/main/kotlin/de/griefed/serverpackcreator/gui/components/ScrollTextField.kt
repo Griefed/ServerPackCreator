@@ -19,8 +19,6 @@
  */
 package de.griefed.serverpackcreator.gui.components
 
-import de.griefed.serverpackcreator.api.ApiProperties
-import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.window.configs.components.SuggestionProvider
 import java.awt.Toolkit
@@ -47,7 +45,6 @@ open class ScrollTextField(
     guiProps: GuiProps,
     text: String,
     val identifier: String? = null,
-    apiProperties: ApiProperties? = ApiWrapper.api().apiProperties,
     private val textField: JTextField = JTextField(text),
     horizontalScrollbarVisibility: Int = HORIZONTAL_SCROLLBAR_AS_NEEDED
 ) : JScrollPane(VERTICAL_SCROLLBAR_NEVER, horizontalScrollbarVisibility),
@@ -58,9 +55,8 @@ open class ScrollTextField(
         guiProps: GuiProps,
         text: String,
         identifier: String?,
-        apiProperties: ApiProperties?,
         documentChangeListener: DocumentChangeListener
-    ) : this(guiProps, text, identifier, apiProperties) {
+    ) : this(guiProps, text, identifier) {
         this.addDocumentListener(documentChangeListener)
     }
 
@@ -103,6 +99,9 @@ open class ScrollTextField(
         undoManager.addEdit(e.edit)
     }
 
+    /**
+     * @author Griefed
+     */
     override fun keyTyped(e: KeyEvent) {}
 
     /**
@@ -128,5 +127,8 @@ open class ScrollTextField(
         }
     }
 
+    /**
+     * @author Griefed
+     */
     override fun keyReleased(e: KeyEvent) {}
 }

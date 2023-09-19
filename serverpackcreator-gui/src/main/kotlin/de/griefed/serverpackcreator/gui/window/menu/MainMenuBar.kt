@@ -45,48 +45,29 @@ class MainMenuBar(
     migrationManager: MigrationManager
 ) {
     val menuBar: JMenuBar = JMenuBar()
-    private val updateButton = BalloonTipButton(null, guiProps.updateAnimation, "Update available!", guiProps)
+    private val updateButton = BalloonTipButton(null, guiProps.updateAnimation, Gui.update_dialog_available.toString(), guiProps)
+    private val file = FileMenu(mainFrame.mainPanel.tabbedConfigsTab,apiWrapper.apiProperties,mainFrame,apiWrapper.utilities!!,guiProps)
+    private val edit = EditMenu(apiWrapper.apiProperties,guiProps,mainFrame,apiWrapper.fileUtilities,mainFrame.mainPanel.tabbedConfigsTab)
+    private val view = ViewMenu(apiWrapper)
+    private val about = AboutMenu(apiWrapper.utilities!!.webUtilities,updateDialogs,apiWrapper,migrationManager,guiProps,mainFrame,updateButton)
 
     init {
         updateButton.isBorderPainted = false
         updateButton.isContentAreaFilled = false
         updateButton.isVisible = updateDialogs.update.isPresent
 
-        menuBar.add(
-            FileMenu(
-                mainFrame.mainPanel.tabbedConfigsTab,
-                apiWrapper.apiProperties,
-                mainFrame,
-                apiWrapper.utilities!!,
-                guiProps
-            )
-        )
-        menuBar.add(
-            EditMenu(
-                apiWrapper.apiProperties,
-                guiProps,
-                mainFrame,
-                apiWrapper.fileUtilities,
-                mainFrame.mainPanel.tabbedConfigsTab
-            )
-        )
-        menuBar.add(
-            ViewMenu(
-                apiWrapper,
-                guiProps
-            )
-        )
-        menuBar.add(
-            AboutMenu(
-                apiWrapper.utilities!!.webUtilities,
-                updateDialogs,
-                apiWrapper,
-                migrationManager,
-                guiProps,
-                mainFrame,
-                updateButton
-            )
-        )
+        menuBar.add(file)
+        menuBar.add(edit)
+        menuBar.add(view)
+        menuBar.add(about)
         menuBar.add(updateButton)
+    }
+
+
+    /**
+     * @author Griefed
+     */
+    fun displayMigrationMessages() {
+        about.displayMigrationMessages()
     }
 }

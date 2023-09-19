@@ -44,22 +44,37 @@ actual class InclusionSpecification actual constructor(
     actual var inclusionFilter: String?,
     actual var exclusionFilter: String?
 ) {
+    /**
+     * @author Griefed
+     */
     actual fun hasInclusionFilter(): Boolean {
         return inclusionFilter != null && inclusionFilter!!.isNotBlank()
     }
 
+    /**
+     * @author Griefed
+     */
     actual fun hasExclusionFilter(): Boolean {
         return exclusionFilter != null && exclusionFilter!!.isNotBlank()
     }
 
+    /**
+     * @author Griefed
+     */
     actual fun hasDestination(): Boolean {
         return !destination.isNullOrBlank()
     }
 
+    /**
+     * @author Griefed
+     */
     actual fun isGlobalFilter(): Boolean {
         return (source.isBlank() && hasInclusionFilter()) || (source.isBlank() && hasExclusionFilter())
     }
 
+    /**
+     * @author Griefed
+     */
     actual fun asHashMap(): HashMap<String,String> {
         val map = HashMap<String,String>()
         map["source"] = source

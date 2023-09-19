@@ -57,7 +57,6 @@ class MigrationInfoItem(
     init {
         migrationWindowTextPane.isEditable = false
         this.addActionListener { displayMigrationMessages() }
-        displayMigrationMessages()
     }
 
     /**
@@ -66,8 +65,7 @@ class MigrationInfoItem(
      * @author Griefed
      */
     @OptIn(DelicateCoroutinesApi::class)
-    private fun displayMigrationMessages() {
-
+    fun displayMigrationMessages() {
         if (!apiWrapper.apiProperties.devBuild && !apiWrapper.apiProperties.preRelease) {
             for (message in migrationManager.migrationMessages) {
                 addText(message.get())

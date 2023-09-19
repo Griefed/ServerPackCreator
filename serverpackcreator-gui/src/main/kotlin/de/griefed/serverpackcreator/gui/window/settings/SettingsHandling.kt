@@ -17,13 +17,13 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.gui.window.settings.components
+package de.griefed.serverpackcreator.gui.window.settings
 
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.components.BalloonTipButton
 import de.griefed.serverpackcreator.gui.window.MainFrame
-import de.griefed.serverpackcreator.gui.window.settings.SettingsEditorsTab
+import de.griefed.serverpackcreator.gui.window.settings.components.PropertiesChooser
 import dyorgio.runtime.run.`as`.root.RootExecutor
 import net.miginfocom.swing.MigLayout
 import java.io.File
@@ -34,6 +34,9 @@ import javax.swing.JLabel
 import javax.swing.JOptionPane
 import javax.swing.JPanel
 
+/**
+ * @author Griefed
+ */
 class SettingsHandling(
     guiProps: GuiProps,
     private val settingsEditorsTab: SettingsEditorsTab,
@@ -42,10 +45,10 @@ class SettingsHandling(
 ) {
     val panel = JPanel()
     private val load =
-        BalloonTipButton("Load Configuration", guiProps.loadIcon, "Load settings from disk", guiProps) { load() }
+        BalloonTipButton(Gui.settings_handle_load_label.toString(), guiProps.loadIcon, Gui.settings_handle_load_tooltip.toString(), guiProps) { load() }
     private val save =
-        BalloonTipButton("Save Configuration", guiProps.saveIcon, "Save your settings", guiProps) { save() }
-    private val lastActionLabel = JLabel("Not saved or loaded yet...")
+        BalloonTipButton(Gui.settings_handle_save_label.toString(), guiProps.saveIcon, Gui.settings_handle_save_tooltip.toString(), guiProps) { save() }
+    private val lastActionLabel = JLabel(Gui.settings_handle_idle.toString())
     private val rootExecutor = RootExecutor()
 
     var lastAction: String
@@ -67,39 +70,54 @@ class SettingsHandling(
         panel.add(lastActionLabel, "cell 3 0, grow, height 30!")
     }
 
+    /**
+     * @author Griefed
+     */
     private fun currentTime(): String {
         val format = SimpleDateFormat("HH:mm")
         return format.format(Date())
     }
 
+    /**
+     * @author Griefed
+     */
     private fun showHomeDirDialog() {
         JOptionPane.showMessageDialog(
             mainFrame.frame,
-            "Home directory changed. Restart ServerPackCreator for this setting to take effect.",
-            "Home directory changed!",
+            Gui.settings_handle_home_changed_message.toString(),
+            Gui.settings_handle_home_changed_title.toString(),
             JOptionPane.WARNING_MESSAGE
         )
     }
 
+    /**
+     * @author Griefed
+     */
     private fun showCancelDialog() {
         JOptionPane.showMessageDialog(
             mainFrame.frame,
-            "Home directory setting not saved.",
-            "Canceled",
+            Gui.settings_handle_home_canceled_message.toString(),
+            Gui.settings_handle_home_canceled_title.toString(),
             JOptionPane.WARNING_MESSAGE
         )
     }
 
+    /**
+     * @author Griefed
+     */
     private fun rootWarning(): Int {
         return JOptionPane.showConfirmDialog(
             mainFrame.frame,
-            "Storing of the new home-directory setting requires root/admin-privileges. Continue?",
-            "Root/Admin privileges required",
+            Gui.settings_handle_home_admin_message.toString(),
+            Gui.settings_handle_home_admin_title.toString(),
             JOptionPane.OK_CANCEL_OPTION,
             JOptionPane.WARNING_MESSAGE
         )
     }
 
+    /**
+     * @author Griefed
+     */
     fun save() {
         val previousHome = apiProperties.homeDirectory.absolutePath
         var saved = true
@@ -107,7 +125,7 @@ class SettingsHandling(
         settingsEditorsTab.gui.saveSettings()
         settingsEditorsTab.webservice.saveSettings()
         apiProperties.saveProperties(apiProperties.serverPackCreatorPropertiesFile)
-        if (!apiProperties.overrideProperties.canWrite()) {
+        if (!apiProperties.overrideProperties.parentFile.canWrite()) {
             if (rootWarning() == JOptionPane.OK_OPTION) {
                 val overridePath = apiProperties.overrideProperties.absolutePath
                 val overrides = apiProperties.overridesAsString()
@@ -124,17 +142,22 @@ class SettingsHandling(
         if (previousHome != settingsEditorsTab.global.homeSetting.file.absolutePath && saved) {
             showHomeDirDialog()
         }
-        lastAction = "Settings last saved ${currentTime()} ..."
+        lastAction = Gui.settings_handle_saved(currentTime())
+        settingsEditorsTab.checkAll()
     }
 
+    /**
+     * @author Griefed
+     */
     fun load() {
-        val propertiesChooser = PropertiesChooser(apiProperties, "Properties Chooser")
+        val propertiesChooser = PropertiesChooser(apiProperties, Gui.settings_handle_chooser.toString())
         if (propertiesChooser.showOpenDialog(mainFrame.frame) == JFileChooser.APPROVE_OPTION) {
             apiProperties.loadProperties(propertiesChooser.selectedFile)
             settingsEditorsTab.global.loadSettings()
             settingsEditorsTab.gui.loadSettings()
             settingsEditorsTab.webservice.loadSettings()
-            lastAction = "Settings last loaded ${currentTime()} ..."
+            lastAction = Gui.settings_handle_loaded(currentTime())
         }
+        settingsEditorsTab.checkAll()
     }
 }

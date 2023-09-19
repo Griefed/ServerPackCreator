@@ -76,8 +76,12 @@ class MainFrame(
         if (guiProps.startFocusEnabled) {
             toFront()
         }
+        menu.displayMigrationMessages()
     }
 
+    /**
+     * @author Griefed
+     */
     fun toFront() {
         frame.toFront()
         frame.requestFocus()

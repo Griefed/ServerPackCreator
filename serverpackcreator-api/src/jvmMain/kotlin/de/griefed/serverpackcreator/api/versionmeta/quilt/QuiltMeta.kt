@@ -54,40 +54,88 @@ actual class QuiltMeta(
         installerDirectory.createDirectories(create = true, directory = true)
     }
 
+    /**
+     * @author Griefed
+     */
     @Throws(IOException::class, ParserConfigurationException::class, SAXException::class)
     override fun update() {
         quiltLoader.update()
         quiltInstaller.update()
     }
 
+    /**
+     * @author Griefed
+     */
     actual override fun latestLoader() = quiltLoader.latest!!
 
+    /**
+     * @author Griefed
+     */
     actual override fun releaseLoader() = quiltLoader.release!!
 
+    /**
+     * @author Griefed
+     */
     actual override fun latestInstaller() = quiltInstaller.latestInstaller!!
 
+    /**
+     * @author Griefed
+     */
     actual override fun releaseInstaller() = quiltInstaller.releaseInstaller!!
 
+    /**
+     * @author Griefed
+     */
     actual override fun loaderVersionsListAscending() = quiltLoader.loaders
 
+    /**
+     * @author Griefed
+     */
     actual override fun loaderVersionsListDescending() = quiltLoader.loaders.reversed()
 
+    /**
+     * @author Griefed
+     */
     actual override fun loaderVersionsArrayAscending() = quiltLoader.loaders.toTypedArray()
 
+    /**
+     * @author Griefed
+     */
     actual override fun loaderVersionsArrayDescending() = quiltLoader.loaders.reversed().toTypedArray()
 
+    /**
+     * @author Griefed
+     */
     actual override fun installerVersionsListAscending() = quiltInstaller.installers
 
+    /**
+     * @author Griefed
+     */
     actual override fun installerVersionsListDescending() = quiltInstaller.installers.reversed()
 
+    /**
+     * @author Griefed
+     */
     actual override fun installerVersionsArrayAscending() = quiltInstaller.installers.toTypedArray()
 
+    /**
+     * @author Griefed
+     */
     actual override fun installerVersionsArrayDescending() = quiltInstaller.installers.reversed().toTypedArray()
 
+    /**
+     * @author Griefed
+     */
     actual override fun latestInstallerUrl() = quiltInstaller.latestInstallerUrl!!
 
+    /**
+     * @author Griefed
+     */
     actual override fun releaseInstallerUrl() = quiltInstaller.releaseInstallerUrl!!
 
+    /**
+     * @author Griefed
+     */
     actual override fun installerFor(version: String) =
         if (isInstallerUrlAvailable(version)) {
             val destination = File(installerDirectory, "$version.jar")
@@ -106,13 +154,25 @@ actual class QuiltMeta(
             Optional.empty()
         }
 
+    /**
+     * @author Griefed
+     */
     actual override fun isInstallerUrlAvailable(version: String) =
         Optional.ofNullable(quiltInstaller.installerUrlMeta[version]).isPresent
 
+    /**
+     * @author Griefed
+     */
     actual override fun getInstallerUrl(version: String) = Optional.ofNullable(quiltInstaller.installerUrlMeta[version])
 
+    /**
+     * @author Griefed
+     */
     actual override fun isVersionValid(version: String) = quiltLoader.loaders.contains(version)
 
+    /**
+     * @author Griefed
+     */
     actual override fun isMinecraftSupported(minecraftVersion: String) =
         fabricIntermediaries.isIntermediariesPresent(minecraftVersion)
 }

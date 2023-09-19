@@ -65,40 +65,88 @@ actual class FabricMeta(
     @Suppress("MemberVisibilityCanBePrivate")
     val loaderDetails = HashMap<String, FabricDetails>(100)
 
+    /**
+     * @author Griefed
+     */
     @Throws(ParserConfigurationException::class, IOException::class, SAXException::class)
     override fun update() {
         fabricLoader.update()
         fabricInstaller.update()
     }
 
+    /**
+     * @author Griefed
+     */
     actual override fun latestLoader() = fabricLoader.latestLoaderVersion()
 
+    /**
+     * @author Griefed
+     */
     actual override fun releaseLoader() = fabricLoader.releaseLoaderVersion()
 
+    /**
+     * @author Griefed
+     */
     actual override fun latestInstaller() = fabricInstaller.latestInstallerVersion()
 
+    /**
+     * @author Griefed
+     */
     actual override fun releaseInstaller() = fabricInstaller.releaseInstallerVersion()
 
+    /**
+     * @author Griefed
+     */
     actual override fun loaderVersionsListAscending() = fabricLoader.loaders
 
+    /**
+     * @author Griefed
+     */
     actual override fun loaderVersionsListDescending() = fabricLoader.loaders.reversed()
 
+    /**
+     * @author Griefed
+     */
     actual override fun loaderVersionsArrayAscending() = fabricLoader.loaders.toTypedArray()
 
+    /**
+     * @author Griefed
+     */
     actual override fun loaderVersionsArrayDescending() = fabricLoader.loaders.reversed().toTypedArray()
 
+    /**
+     * @author Griefed
+     */
     actual override fun installerVersionsListAscending() = fabricInstaller.installers
 
+    /**
+     * @author Griefed
+     */
     actual override fun installerVersionsListDescending() = fabricInstaller.installers.reversed()
 
+    /**
+     * @author Griefed
+     */
     actual override fun installerVersionsArrayAscending() = fabricInstaller.installers.toTypedArray()
 
+    /**
+     * @author Griefed
+     */
     actual override fun installerVersionsArrayDescending() = fabricInstaller.installers.reversed().toTypedArray()
 
+    /**
+     * @author Griefed
+     */
     actual override fun latestInstallerUrl() = fabricInstaller.latestInstallerUrl()
 
+    /**
+     * @author Griefed
+     */
     actual override fun releaseInstallerUrl() = fabricInstaller.releaseInstallerUrl()
 
+    /**
+     * @author Griefed
+     */
     actual override fun installerFor(version: String) =
         if (isInstallerUrlAvailable(version)) {
             val destination = File(installerDirectory, "$version.jar")
@@ -136,14 +184,26 @@ actual class FabricMeta(
         }
     }
 
+    /**
+     * @author Griefed
+     */
     actual override fun isInstallerUrlAvailable(version: String) =
         Optional.ofNullable(fabricInstaller.installerUrlMeta[version]).isPresent
 
+    /**
+     * @author Griefed
+     */
     actual override fun getInstallerUrl(version: String) =
         Optional.ofNullable(fabricInstaller.installerUrlMeta[version])
 
+    /**
+     * @author Griefed
+     */
     actual override fun isVersionValid(version: String) = fabricLoader.loaders.contains(version)
 
+    /**
+     * @author Griefed
+     */
     actual override fun isMinecraftSupported(minecraftVersion: String) =
         fabricIntermediaries.getIntermediary(minecraftVersion).isPresent
 

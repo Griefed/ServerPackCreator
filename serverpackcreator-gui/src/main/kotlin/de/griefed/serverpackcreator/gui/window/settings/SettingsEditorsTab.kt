@@ -21,22 +21,40 @@ package de.griefed.serverpackcreator.gui.window.settings
 
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.gui.GuiProps
+import de.griefed.serverpackcreator.gui.components.DocumentChangeListener
 import de.griefed.serverpackcreator.gui.components.TabPanel
 import de.griefed.serverpackcreator.gui.window.MainFrame
 import de.griefed.serverpackcreator.gui.window.configs.components.ComponentResizer
-import de.griefed.serverpackcreator.gui.window.settings.components.SettingsHandling
+import de.griefed.serverpackcreator.gui.window.settings.components.Editor
+import de.griefed.serverpackcreator.gui.window.settings.components.SettingsCheckTimer
+import de.griefed.serverpackcreator.gui.window.settings.components.SettingsTitle
 import java.awt.BorderLayout
+import java.awt.event.ActionListener
+import javax.swing.event.ChangeListener
+import javax.swing.event.DocumentEvent
 
 /**
- * TODO docs
+ * @author Griefed
  */
 class SettingsEditorsTab(guiProps: GuiProps, apiProperties: ApiProperties, mainFrame: MainFrame) :
     TabPanel() {
 
+    private val settingsHandling = SettingsHandling(guiProps, this, apiProperties, mainFrame)
     private val componentResizer = ComponentResizer()
-    val global = GlobalSettings(guiProps, apiProperties, componentResizer, mainFrame)
-    val webservice = WebserviceSettings(guiProps, apiProperties,mainFrame)
-    val gui = GuiSettings(guiProps)
+    private val checkTimer = SettingsCheckTimer(250, this, guiProps)
+    private val documentChangeListener = object : DocumentChangeListener {
+        override fun update(e: DocumentEvent) {
+            checkTimer.restart()
+        }
+    }
+    private val actionListener = ActionListener { checkTimer.restart() }
+    private val changeListener = ChangeListener { checkTimer.restart() }
+
+    val global =
+        GlobalSettings(guiProps, apiProperties, componentResizer, mainFrame, documentChangeListener, actionListener)
+    val webservice = WebserviceSettings(guiProps, apiProperties, mainFrame, documentChangeListener, changeListener)
+    val gui = GuiSettings(guiProps, actionListener, changeListener)
+    val title = SettingsTitle(guiProps)
 
     init {
         tabs.add(global)
@@ -46,6 +64,38 @@ class SettingsEditorsTab(guiProps: GuiProps, apiProperties: ApiProperties, mainF
         tabs.add(webservice)
         tabs.setTabComponentAt(tabs.tabCount - 1, webservice.title)
         tabs.selectedIndex = 0
-        panel.add(SettingsHandling(guiProps, this, apiProperties, mainFrame).panel, BorderLayout.SOUTH)
+        panel.add(settingsHandling.panel, BorderLayout.SOUTH)
+    }
+
+    /**
+     * @author Griefed
+     */
+    fun checkAll() {
+        if (allTabs.any {
+                if ((it as Editor).hasUnsavedChanges()) {
+                    println(it.title.title)
+                    true
+                } else {
+                    false
+                }
+            }) {
+            title.showWarningIcon()
+        } else {
+            title.hideWarningIcon()
+        }
+    }
+
+    /**
+     * @author Griefed
+     */
+    fun saveSetings() {
+        settingsHandling.save()
+    }
+
+    /**
+     * @author Griefed
+     */
+    fun loadSettings() {
+        settingsHandling.load()
     }
 }

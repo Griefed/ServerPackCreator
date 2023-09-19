@@ -19,7 +19,12 @@
  */
 package de.griefed.serverpackcreator.gui.window.settings.components
 
+/**
+ * @author Griefed
+ */
 interface SettingsEditor {
     fun loadSettings()
     fun saveSettings()
+    fun validateSettings(): List<String>
+    fun hasUnsavedChanges(): Boolean
 }

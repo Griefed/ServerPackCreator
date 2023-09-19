@@ -165,6 +165,9 @@ class ScrollTextArea(
         }
     }
 
+    /**
+     * @author Griefed
+     */
     override fun keyReleased(e: KeyEvent) {}
 
     /**

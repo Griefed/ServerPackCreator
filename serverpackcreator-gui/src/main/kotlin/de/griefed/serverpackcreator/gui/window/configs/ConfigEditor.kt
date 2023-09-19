@@ -107,7 +107,7 @@ class ConfigEditor(
     )
     private val fabricVersions = DefaultComboBoxModel(apiWrapper.versionMeta!!.fabric.loaderVersionsArrayDescending())
     private val quiltVersions = DefaultComboBoxModel(apiWrapper.versionMeta!!.quilt.loaderVersionsArrayDescending())
-    private val modloaderVersions = ActionComboBox { validateInputFields() }
+    private val modloaderVersions = ActionComboBox<String> { validateInputFields() }
     private val aikarsFlags = AikarsFlags(this, guiProps)
     private val scriptKVPairs = ScriptKVPairs(guiProps, this)
     private val pluginPanels = apiWrapper.apiPlugins!!.getConfigPanels(this).toMutableList()
@@ -124,13 +124,13 @@ class ConfigEditor(
         changeListener,
         guiProps
     )
-    private val serverPackSuffix = ScrollTextField(guiProps,"", "suffix", apiWrapper.apiProperties, changeListener)
+    private val serverPackSuffix = ScrollTextField(guiProps, "", "suffix", changeListener)
     private val propertiesFile = ScrollTextFileField(guiProps,apiWrapper.apiProperties.defaultServerProperties, changeListener)
     private val iconFile = ScrollTextFileField(guiProps,apiWrapper.apiProperties.defaultServerIcon, changeListener)
-    private val source = ScrollTextField(guiProps,"", "source", apiWrapper.apiProperties)
-    private val destination = ScrollTextField(guiProps,"", "destination", apiWrapper.apiProperties)
-    private val inclusionFilter = ScrollTextField(guiProps,"", "inclusion", apiWrapper.apiProperties)
-    private val exclusionFilter = ScrollTextField(guiProps,"", "exclusion", apiWrapper.apiProperties)
+    private val source = ScrollTextField(guiProps, "", "source")
+    private val destination = ScrollTextField(guiProps, "", "destination")
+    private val inclusionFilter = ScrollTextField(guiProps, "", "inclusion")
+    private val exclusionFilter = ScrollTextField(guiProps, "", "exclusion")
     private val inclusionsEditor = InclusionsEditor(
         chooserDimension,
         guiProps,
@@ -147,7 +147,7 @@ class ConfigEditor(
         changeListener,
         guiProps
     )
-    private val timer = ConfigCheckTimer(250, this, guiProps)
+    private val timer = ConfigCheckTimer(250, this, guiProps,tabbedConfigsTab)
     private val panel = JPanel(
         MigLayout(
             "left,wrap",
@@ -587,6 +587,9 @@ class ConfigEditor(
         return configFile!!
     }
 
+    /**
+     * @author Griefed
+     */
     private fun saveSuggestions() {
         val suffixSuggestions = serverPackSuffix.suggestionProvider!!.allSuggestions()
         suffixSuggestions.add(serverPackSuffix.text)

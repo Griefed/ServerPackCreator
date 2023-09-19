@@ -22,6 +22,7 @@ package de.griefed.serverpackcreator.gui.window.configs.components
 import Gui
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.window.configs.ConfigEditor
+import de.griefed.serverpackcreator.gui.window.configs.TabbedConfigsTab
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -36,7 +37,7 @@ import javax.swing.Timer
  * @author Griefed
  */
 @OptIn(DelicateCoroutinesApi::class)
-class ConfigCheckTimer(delay: Int, configEditor: ConfigEditor, guiProps: GuiProps) : Timer(delay,
+class ConfigCheckTimer(delay: Int, configEditor: ConfigEditor, guiProps: GuiProps, tabbedConfigsTab: TabbedConfigsTab) : Timer(delay,
     ActionListener {
         GlobalScope.launch(guiProps.configDispatcher) {
             val errors = mutableListOf<String>()
@@ -89,9 +90,12 @@ class ConfigCheckTimer(delay: Int, configEditor: ConfigEditor, guiProps: GuiProp
             }
             if (errors.isEmpty()) {
                 configEditor.editorTitle.hideErrorIcon()
+                tabbedConfigsTab.title.hideErrorIcon()
             } else {
                 configEditor.editorTitle.setAndShowErrorIcon("<html>${errors.joinToString("<br>")}</html>")
+                tabbedConfigsTab.title.setAndShowErrorIcon("One or more configuration contain errors!")
             }
+            tabbedConfigsTab.checkAll()
         }
     }) {
     init {

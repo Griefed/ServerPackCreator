@@ -14,14 +14,18 @@ dependencies {
     implementation(project(":serverpackcreator-updater"))
 
     //New GUI
-    api("com.formdev:flatlaf:3.0")
-    api("com.formdev:flatlaf-extras:3.0")
-    api("com.formdev:flatlaf-intellij-themes:3.0")
+    api("com.formdev:flatlaf:3.2.1")
+    api("com.formdev:flatlaf-extras:3.2.1")
+    api("com.formdev:flatlaf-intellij-themes:3.2.1")
     api("com.formdev:flatlaf-fonts-jetbrains-mono:2.242")
+    api("com.formdev:flatlaf-fonts-inter:3.19")
+    api("com.formdev:flatlaf-fonts-roboto:2.137")
+    api("com.formdev:flatlaf-fonts-roboto-mono:3.000")
     api("com.miglayout:miglayout-swing:11.0")
     api("com.formdev:svgSalamander:1.1.4")
     api("net.java.balloontip:balloontip:1.2.4.1")
     api("com.github.dyorgio.runtime:run-as-root:1.2.3")
+    api("com.cronutils:cron-utils:9.2.1")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.3")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.3")

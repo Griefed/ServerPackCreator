@@ -74,6 +74,9 @@ class ControlPanel(
         panel.add(statusPanel.panel, "cell 1 0 1 2,grow,push, h 160!")
     }
 
+    /**
+     * @author Griefed
+     */
     @OptIn(DelicateCoroutinesApi::class)
     fun generate() {
         GlobalScope.launch(guiProps.generationDispatcher) {

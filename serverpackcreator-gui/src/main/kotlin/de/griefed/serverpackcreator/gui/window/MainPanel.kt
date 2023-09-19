@@ -30,6 +30,7 @@ import de.griefed.serverpackcreator.gui.window.control.ControlPanel
 import de.griefed.serverpackcreator.gui.window.control.components.LarsonScanner
 import de.griefed.serverpackcreator.gui.window.logs.TabbedLogsTab
 import de.griefed.serverpackcreator.gui.window.settings.SettingsEditorsTab
+import de.griefed.serverpackcreator.gui.window.settings.components.Editor
 import net.miginfocom.swing.MigLayout
 import java.io.File
 import javax.swing.JOptionPane
@@ -63,9 +64,11 @@ class MainPanel(
     val controlPanel = ControlPanel(guiProps, tabbedConfigsTab, larsonScanner, apiWrapper, mainFrame)
 
     init {
-        tabs.addTab("Configs", tabbedConfigsTab.panel)
-        tabs.addTab("Logs", tabbedLogsTab.panel)
-        tabs.addTab("Settings (WIP, not fully implemented)", settingsEditorsTab.panel)
+        tabs.addTab(Gui.main_tabs_config.toString(), tabbedConfigsTab.panel)
+        tabs.setTabComponentAt(tabs.tabCount - 1, tabbedConfigsTab.title)
+        tabs.addTab(Gui.main_tabs_logs.toString(), tabbedLogsTab.panel)
+        tabs.addTab(Gui.main_tabs_settings.toString(), settingsEditorsTab.panel)
+        tabs.setTabComponentAt(tabs.tabCount - 1, settingsEditorsTab.title)
         panel.add(larsonScanner, "height 40!,growx, south")
         panel.add(controlPanel.panel, "height 160!,growx, south")
     }
@@ -102,6 +105,19 @@ class MainPanel(
         }
         guiProps.storeGuiProperty("lastloaded", configs.joinToString(","))
         apiWrapper.apiProperties.saveProperties(apiWrapper.apiProperties.serverPackCreatorPropertiesFile)
+        if (settingsEditorsTab.allTabs.any { (it as Editor).hasUnsavedChanges() }) {
+            if (DialogUtilities.createShowGet(
+                    Gui.main_unsaved_message.toString(),
+                    Gui.main_unsaved_title.toString(),
+                    panel,
+                    JOptionPane.WARNING_MESSAGE,
+                    JOptionPane.YES_NO_OPTION,
+                    guiProps.warningIcon
+                ) == 0
+            ) {
+                settingsEditorsTab.saveSetings()
+            }
+        }
         exitProcess(0)
     }
 }

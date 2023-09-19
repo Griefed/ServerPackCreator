@@ -45,21 +45,39 @@ class AboutMenu(
     mainFrame: MainFrame,
     updateButton: BalloonTipButton
 ) : JMenu(Gui.menubar_gui_menu_about.toString()) {
+    private val update = UpdateCheckItem(updateDialogs,updateButton)
+    private val migration = MigrationInfoItem(apiWrapper, migrationManager, guiProps, mainFrame)
+    private val help = WikiHelpItem(webUtilities)
+    private val how = WikiHowToItem(webUtilities)
+    private val page = GitHubPageItem(webUtilities)
+    private val issues = GitHubIssuesItem(webUtilities)
+    private val releases = GitHubReleasesItem(webUtilities)
+    private val discord = DiscordItem(webUtilities)
+    private val donate = DonationsItem(webUtilities)
+    private val thirdparty = ThirdPartyNoticesItem(mainFrame,guiProps)
+
     init {
-        add(UpdateCheckItem(updateDialogs,updateButton))
-        add(MigrationInfoItem(apiWrapper, migrationManager, guiProps, mainFrame))
+        add(update)
+        add(migration)
         add(JSeparator())
-        add(WikiHelpItem(webUtilities))
-        add(WikiHowToItem(webUtilities))
+        add(help)
+        add(how)
         add(JSeparator())
-        add(GitHubPageItem(webUtilities))
-        add(GitHubIssuesItem(webUtilities))
-        add(GitHubReleasesItem(webUtilities))
+        add(page)
+        add(issues)
+        add(releases)
         add(JSeparator())
-        add(DiscordItem(webUtilities))
+        add(discord)
         add(JSeparator())
-        add(DonationsItem(webUtilities))
+        add(donate)
         add(JSeparator())
-        add(ThirdPartyNoticesItem(mainFrame,guiProps))
+        add(thirdparty)
+    }
+
+    /**
+     * @author Griefed
+     */
+    fun displayMigrationMessages() {
+        migration.displayMigrationMessages()
     }
 }
