@@ -117,7 +117,21 @@ class TabbedConfigsTab(
         tabBarPopupMenu.add(newTabItem)
         tabBarPopupMenu.add(loadConfigItem)
         val mouseAdapter = object : MouseAdapter() {
+            override fun mouseClicked(e: MouseEvent) {
+                super.mouseClicked(e)
+                openPopup(e)
+            }
+
             override fun mousePressed(e: MouseEvent) {
+                super.mousePressed(e)
+                openPopup(e)
+            }
+
+            override fun mouseReleased(e: MouseEvent) {
+                super.mouseReleased(e)
+                openPopup(e)
+            }
+            fun openPopup(e: MouseEvent) {
                 if (e.button == MouseEvent.BUTTON3) {
                     if (tabs.ui.tabForCoordinate(tabs,e.x,e.y) == -1) {
                         tabBarPopupMenu.show(tabs,e.x,e.y)
