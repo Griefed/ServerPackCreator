@@ -24,10 +24,10 @@ import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.api.InclusionSpecification
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.components.BalloonTipButton
-import de.griefed.serverpackcreator.gui.window.configs.ConfigEditor
 import de.griefed.serverpackcreator.gui.components.DocumentChangeListener
 import de.griefed.serverpackcreator.gui.components.ElementLabel
 import de.griefed.serverpackcreator.gui.components.ScrollTextField
+import de.griefed.serverpackcreator.gui.window.configs.ConfigEditor
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -35,11 +35,14 @@ import net.miginfocom.swing.MigLayout
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.awt.BorderLayout
 import java.awt.Dimension
+import java.awt.event.MouseAdapter
+import java.awt.event.MouseEvent
 import java.io.File
 import java.util.regex.PatternSyntaxException
 import javax.swing.*
 import javax.swing.event.DocumentEvent
 import javax.swing.event.ListSelectionEvent
+
 
 /**
  * Editor for [InclusionSpecification] for a given server pack. This editor allows you to specify the
@@ -184,6 +187,31 @@ class InclusionsEditor(
         timer.stop()
         timer.delay = delay
         timer.isRepeats = false
+
+        list.addMouseListener(object : MouseAdapter() {
+            override fun mouseClicked(e: MouseEvent) {
+                super.mouseClicked(e)
+                clearselection(e)
+            }
+
+            override fun mousePressed(e: MouseEvent) {
+                super.mousePressed(e)
+                clearselection(e)
+            }
+
+            override fun mouseReleased(e: MouseEvent) {
+                super.mouseReleased(e)
+                clearselection(e)
+            }
+
+            fun clearselection(e: MouseEvent) {
+                val index = list.locationToIndex(e.point)
+                val bounds = list.getCellBounds(index, index)
+                if (bounds == null || !bounds.contains(e.point)) {
+                    list.clearSelection()
+                }
+            }
+        })
     }
 
     /**
