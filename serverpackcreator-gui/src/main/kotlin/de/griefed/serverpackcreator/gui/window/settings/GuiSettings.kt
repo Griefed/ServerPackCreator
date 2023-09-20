@@ -210,7 +210,8 @@ class GuiSettings(
                 startFocusSetting.isSelected != guiProps.startFocusEnabled ||
                 generationFocusSetting.isSelected != guiProps.generationFocusEnabled ||
                 fontSizeSetting.value != guiProps.fontSize ||
-                fontSetting.selectedItem.toString() != guiProps.font.family
+                fontSetting.selectedItem.toString() != guiProps.font.family ||
+                themeSetting.selectedItem != guiProps.currentTheme.name
         if (changes) {
             title.showWarningIcon()
         } else {
