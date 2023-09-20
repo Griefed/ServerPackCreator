@@ -39,7 +39,7 @@ import javax.swing.event.DocumentEvent
 class SettingsEditorsTab(guiProps: GuiProps, apiProperties: ApiProperties, mainFrame: MainFrame) :
     TabPanel() {
 
-    private val settingsHandling = SettingsHandling(guiProps, this, apiProperties, mainFrame)
+    val settingsHandling = SettingsHandling(guiProps, this, apiProperties, mainFrame)
     private val componentResizer = ComponentResizer()
     private val checkTimer = SettingsCheckTimer(250, this, guiProps)
     private val documentChangeListener = object : DocumentChangeListener {
@@ -65,37 +65,5 @@ class SettingsEditorsTab(guiProps: GuiProps, apiProperties: ApiProperties, mainF
         tabs.setTabComponentAt(tabs.tabCount - 1, webservice.title)
         tabs.selectedIndex = 0
         panel.add(settingsHandling.panel, BorderLayout.SOUTH)
-    }
-
-    /**
-     * @author Griefed
-     */
-    fun checkAll() {
-        if (allTabs.any {
-                if ((it as Editor).hasUnsavedChanges()) {
-                    println(it.title.title)
-                    true
-                } else {
-                    false
-                }
-            }) {
-            title.showWarningIcon()
-        } else {
-            title.hideWarningIcon()
-        }
-    }
-
-    /**
-     * @author Griefed
-     */
-    fun saveSetings() {
-        settingsHandling.save()
-    }
-
-    /**
-     * @author Griefed
-     */
-    fun loadSettings() {
-        settingsHandling.load()
     }
 }

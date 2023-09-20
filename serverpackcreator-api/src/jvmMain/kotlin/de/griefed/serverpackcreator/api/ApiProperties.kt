@@ -2292,6 +2292,7 @@ actual class ApiProperties(
         manifestsDirectory.createDirectories(create = true, directory = true)
         minecraftServerManifestsDirectory.createDirectories(create = true, directory = true)
         installerCacheDirectory.createDirectories(create = true, directory = true)
+        artemisDataDirectory.createDirectories(create = true,directory = true)
         printSettings()
     }
 

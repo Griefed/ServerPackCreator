@@ -37,11 +37,15 @@ import org.apache.commons.io.monitor.FileAlterationListener
 import org.apache.commons.io.monitor.FileAlterationMonitor
 import org.apache.commons.io.monitor.FileAlterationObserver
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
+import java.awt.event.MouseAdapter
+import java.awt.event.MouseEvent
 import java.io.File
 import java.util.concurrent.Executors
 import javax.swing.DefaultComboBoxModel
 import javax.swing.JFileChooser
+import javax.swing.JMenuItem
 import javax.swing.JOptionPane
+import javax.swing.JPopupMenu
 
 /**
  * Tabbed pane housing every server pack config tab.
@@ -78,10 +82,10 @@ class TabbedConfigsTab(
             GlobalScope.launch(guiProps.configDispatcher) {
                 if (tabs.tabCount != 0) {
                     for (tab in 0 until tabs.tabCount) {
-                        (tabs.getComponentAt(tab) as ConfigEditor).editorTitle.closeButton.isVisible = false
+                        (tabs.getComponentAt(tab) as ConfigEditor).title.closeButton.isVisible = false
                     }
                     if (activeTab != null) {
-                        (activeTab as ConfigEditor).editorTitle.closeButton.isVisible = true
+                        (activeTab as ConfigEditor).title.closeButton.isVisible = true
                     }
                 }
             }
@@ -103,7 +107,39 @@ class TabbedConfigsTab(
         }
 
         tabs.selectedIndex = 0
-        (activeTab!! as ConfigEditor).editorTitle.closeButton.isVisible = true
+        (activeTab!! as ConfigEditor).title.closeButton.isVisible = true
+
+        val tabBarPopupMenu = JPopupMenu()
+        val newTabItem = JMenuItem(Gui.createserverpack_gui_title_new.toString())
+        val loadConfigItem = JMenuItem(Gui.menubar_gui_menuitem_loadconfig.toString())
+        newTabItem.addActionListener { addTab() }
+        loadConfigItem.addActionListener { loadConfigFile() }
+        tabBarPopupMenu.add(newTabItem)
+        tabBarPopupMenu.add(loadConfigItem)
+        val mouseAdapter = object : MouseAdapter() {
+            override fun mouseClicked(e: MouseEvent) {
+                super.mouseClicked(e)
+                openPopup(e)
+            }
+
+            override fun mousePressed(e: MouseEvent) {
+                super.mousePressed(e)
+                openPopup(e)
+            }
+
+            override fun mouseReleased(e: MouseEvent) {
+                super.mouseReleased(e)
+                openPopup(e)
+            }
+            fun openPopup(e: MouseEvent) {
+                if (e.button == MouseEvent.BUTTON3) {
+                    if (tabs.ui.tabForCoordinate(tabs,e.x,e.y) == -1) {
+                        tabBarPopupMenu.show(tabs,e.x,e.y)
+                    }
+                }
+            }
+        }
+        tabs.addMouseListener(mouseAdapter)
     }
 
     /**
@@ -118,7 +154,7 @@ class TabbedConfigsTab(
             componentResizer
         )
         tabs.add(editor)
-        tabs.setTabComponentAt(tabs.tabCount - 1, editor.editorTitle)
+        tabs.setTabComponentAt(tabs.tabCount - 1, editor.title)
         tabs.selectedIndex = tabs.tabCount - 1
         return editor
     }
@@ -227,7 +263,7 @@ class TabbedConfigsTab(
                         val configTab = tab as ConfigEditor
                         val model = DefaultComboBoxModel(choose)
                         model.addAll(iconQuickSelections())
-                        configTab.iconQuickSelect.model = model
+                        configTab.iconQuickSelectModel = model
                     }
                 }
             }
@@ -276,7 +312,7 @@ class TabbedConfigsTab(
                         val configTab = tab as ConfigEditor
                         val model = DefaultComboBoxModel(choose)
                         model.addAll(propertiesQuickSelections())
-                        configTab.propertiesQuickSelect.model = model
+                        configTab.propertiesQuickSelectModel = model
                     }
                 }
             }

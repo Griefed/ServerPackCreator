@@ -23,6 +23,7 @@ import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.components.BalloonTipButton
 import de.griefed.serverpackcreator.gui.window.MainFrame
+import de.griefed.serverpackcreator.gui.window.settings.components.Editor
 import de.griefed.serverpackcreator.gui.window.settings.components.PropertiesChooser
 import dyorgio.runtime.run.`as`.root.RootExecutor
 import net.miginfocom.swing.MigLayout
@@ -120,10 +121,10 @@ class SettingsHandling(
      */
     fun save() {
         val previousHome = apiProperties.homeDirectory.absolutePath
-        var saved = true
-        settingsEditorsTab.global.saveSettings()
-        settingsEditorsTab.gui.saveSettings()
-        settingsEditorsTab.webservice.saveSettings()
+        var savedOverrides = true
+        for (tab in settingsEditorsTab.allTabs) {
+            (tab as Editor).saveSettings()
+        }
         apiProperties.saveProperties(apiProperties.serverPackCreatorPropertiesFile)
         if (!apiProperties.overrideProperties.parentFile.canWrite()) {
             if (rootWarning() == JOptionPane.OK_OPTION) {
@@ -134,16 +135,16 @@ class SettingsHandling(
                 }
             } else {
                 showCancelDialog()
-                saved = false
+                savedOverrides = false
             }
         } else {
             apiProperties.saveOverrides()
         }
-        if (previousHome != settingsEditorsTab.global.homeSetting.file.absolutePath && saved) {
+        if (previousHome != settingsEditorsTab.global.homeSetting.file.absolutePath && savedOverrides) {
             showHomeDirDialog()
         }
         lastAction = Gui.settings_handle_saved(currentTime())
-        settingsEditorsTab.checkAll()
+        checkAll()
     }
 
     /**
@@ -153,11 +154,25 @@ class SettingsHandling(
         val propertiesChooser = PropertiesChooser(apiProperties, Gui.settings_handle_chooser.toString())
         if (propertiesChooser.showOpenDialog(mainFrame.frame) == JFileChooser.APPROVE_OPTION) {
             apiProperties.loadProperties(propertiesChooser.selectedFile)
-            settingsEditorsTab.global.loadSettings()
-            settingsEditorsTab.gui.loadSettings()
-            settingsEditorsTab.webservice.loadSettings()
+            for (tab in settingsEditorsTab.allTabs) {
+                (tab as Editor).loadSettings()
+            }
             lastAction = Gui.settings_handle_loaded(currentTime())
         }
-        settingsEditorsTab.checkAll()
+        checkAll()
+    }
+
+    /**
+     * @author Griefed
+     */
+    fun checkAll() {
+        val changes = settingsEditorsTab.allTabs.any {
+            (it as Editor).hasUnsavedChanges()
+        }
+        if (changes) {
+            settingsEditorsTab.title.showWarningIcon()
+        } else {
+            settingsEditorsTab.title.hideWarningIcon()
+        }
     }
 }

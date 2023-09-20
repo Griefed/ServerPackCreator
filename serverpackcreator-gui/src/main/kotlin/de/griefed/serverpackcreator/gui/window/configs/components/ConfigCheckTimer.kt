@@ -44,7 +44,7 @@ class ConfigCheckTimer(delay: Int, configEditor: ConfigEditor, guiProps: GuiProp
             runBlocking {
                 launch {
                     errors.addAll(configEditor.validateModpackDir())
-                    configEditor.editorTitle.title = File(configEditor.getModpackDirectory()).name
+                    configEditor.title.title = File(configEditor.getModpackDirectory()).name
                 }
                 launch {
                     errors.addAll(configEditor.validateSuffix())
@@ -89,10 +89,10 @@ class ConfigCheckTimer(delay: Int, configEditor: ConfigEditor, guiProps: GuiProp
                 }
             }
             if (errors.isEmpty()) {
-                configEditor.editorTitle.hideErrorIcon()
+                configEditor.title.hideErrorIcon()
                 tabbedConfigsTab.title.hideErrorIcon()
             } else {
-                configEditor.editorTitle.setAndShowErrorIcon("<html>${errors.joinToString("<br>")}</html>")
+                configEditor.title.setAndShowErrorIcon("<html>${errors.joinToString("<br>")}</html>")
                 tabbedConfigsTab.title.setAndShowErrorIcon("One or more configuration contain errors!")
             }
             tabbedConfigsTab.checkAll()

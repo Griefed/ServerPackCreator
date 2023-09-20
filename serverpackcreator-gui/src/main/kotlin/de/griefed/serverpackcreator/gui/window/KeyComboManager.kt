@@ -74,7 +74,7 @@ class KeyComboManager(
             if (event.id == KeyEvent.KEY_RELEASED) {
                 when {
                     event.keyCode == KeyEvent.VK_W && event.isControlDown -> {
-                        configs.selectedEditor!!.editorTitle.close()
+                        configs.selectedEditor!!.title.close()
                     }
                 }
             }
