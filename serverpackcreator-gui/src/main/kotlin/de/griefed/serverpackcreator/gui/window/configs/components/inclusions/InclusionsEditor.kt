@@ -436,8 +436,8 @@ class InclusionsEditor(
      * @author Griefed
      */
     private fun revertInclusions() {
-        if (configEditor.lastSavedConfig != null) {
-            configEditor.setInclusions(configEditor.lastSavedConfig!!.inclusions)
+        if (configEditor.lastConfig != null) {
+            configEditor.setInclusions(configEditor.lastConfig!!.inclusions)
             configEditor.validateInputFields()
         }
     }

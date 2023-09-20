@@ -97,7 +97,7 @@ class MainPanel(
                     }
                 }
                 @Suppress("KotlinConstantConditions")
-                if (config.configFile != null && config.editorTitle.title != Gui.createserverpack_gui_title_new.toString()) {
+                if (config.configFile != null && config.title.title != Gui.createserverpack_gui_title_new.toString()) {
                     configs.add(config.configFile!!.absolutePath)
                 }
             }
