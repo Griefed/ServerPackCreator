@@ -54,7 +54,7 @@ class SettingsCheckTimer(
             } else {
                 settingsEditor.title.setAndShowErrorIcon(Gui.settings_check_errors.toString())
             }
-            settingsEditor.checkAll()
+            settingsEditor.settingsHandling.checkAll()
         }
     }) {
     init {

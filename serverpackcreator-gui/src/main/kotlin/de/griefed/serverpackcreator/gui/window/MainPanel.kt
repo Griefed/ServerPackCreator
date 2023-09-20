@@ -77,30 +77,29 @@ class MainPanel(
      * @author Griefed
      */
     fun closeAndExit() {
-        if (tabbedConfigsTab.tabs.tabCount == 0) {
-            exitProcess(0)
-        }
         val configs = mutableListOf<String>()
-        for (tab in tabbedConfigsTab.allTabs) {
-            val config = tab as ConfigEditor
-            val modpackName = File(config.getModpackDirectory()).name
-            if (!config.isNewTab() && config.hasUnsavedChanges()) {
-                tabbedConfigsTab.tabs.selectedComponent = tab
-                if (DialogUtilities.createShowGet(
-                        Gui.createserverpack_gui_close_unsaved_message(modpackName),
-                        Gui.createserverpack_gui_close_unsaved_title(modpackName),
-                        panel,
-                        JOptionPane.WARNING_MESSAGE,
-                        JOptionPane.YES_NO_OPTION,
-                        guiProps.warningIcon
-                    ) == 0
-                ) {
-                    config.saveCurrentConfiguration()
+        if (tabbedConfigsTab.tabs.tabCount != 0) {
+            for (tab in tabbedConfigsTab.allTabs) {
+                val config = tab as ConfigEditor
+                val modpackName = File(config.getModpackDirectory()).name
+                if (!config.isNewTab() && config.hasUnsavedChanges()) {
+                    tabbedConfigsTab.tabs.selectedComponent = tab
+                    if (DialogUtilities.createShowGet(
+                            Gui.createserverpack_gui_close_unsaved_message(modpackName),
+                            Gui.createserverpack_gui_close_unsaved_title(modpackName),
+                            panel,
+                            JOptionPane.WARNING_MESSAGE,
+                            JOptionPane.YES_NO_OPTION,
+                            guiProps.warningIcon
+                        ) == 0
+                    ) {
+                        config.saveCurrentConfiguration()
+                    }
                 }
-            }
-            @Suppress("KotlinConstantConditions")
-            if (config.configFile != null && config.editorTitle.title != Gui.createserverpack_gui_title_new.toString()) {
-                configs.add(config.configFile!!.absolutePath)
+                @Suppress("KotlinConstantConditions")
+                if (config.configFile != null && config.editorTitle.title != Gui.createserverpack_gui_title_new.toString()) {
+                    configs.add(config.configFile!!.absolutePath)
+                }
             }
         }
         guiProps.storeGuiProperty("lastloaded", configs.joinToString(","))
@@ -115,7 +114,7 @@ class MainPanel(
                     guiProps.warningIcon
                 ) == 0
             ) {
-                settingsEditorsTab.saveSetings()
+                settingsEditorsTab.settingsHandling.save()
             }
         }
         exitProcess(0)
