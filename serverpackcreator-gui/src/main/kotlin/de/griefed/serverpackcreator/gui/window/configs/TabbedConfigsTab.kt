@@ -37,11 +37,15 @@ import org.apache.commons.io.monitor.FileAlterationListener
 import org.apache.commons.io.monitor.FileAlterationMonitor
 import org.apache.commons.io.monitor.FileAlterationObserver
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
+import java.awt.event.MouseAdapter
+import java.awt.event.MouseEvent
 import java.io.File
 import java.util.concurrent.Executors
 import javax.swing.DefaultComboBoxModel
 import javax.swing.JFileChooser
+import javax.swing.JMenuItem
 import javax.swing.JOptionPane
+import javax.swing.JPopupMenu
 
 /**
  * Tabbed pane housing every server pack config tab.
@@ -104,6 +108,24 @@ class TabbedConfigsTab(
 
         tabs.selectedIndex = 0
         (activeTab!! as ConfigEditor).title.closeButton.isVisible = true
+
+        val tabBarPopupMenu = JPopupMenu()
+        val newTabItem = JMenuItem(Gui.createserverpack_gui_title_new.toString())
+        val loadConfigItem = JMenuItem(Gui.menubar_gui_menuitem_loadconfig.toString())
+        newTabItem.addActionListener { addTab() }
+        loadConfigItem.addActionListener { loadConfigFile() }
+        tabBarPopupMenu.add(newTabItem)
+        tabBarPopupMenu.add(loadConfigItem)
+        val mouseAdapter = object : MouseAdapter() {
+            override fun mousePressed(e: MouseEvent) {
+                if (e.button == MouseEvent.BUTTON3) {
+                    if (tabs.ui.tabForCoordinate(tabs,e.x,e.y) == -1) {
+                        tabBarPopupMenu.show(tabs,e.x,e.y)
+                    }
+                }
+            }
+        }
+        tabs.addMouseListener(mouseAdapter)
     }
 
     /**
