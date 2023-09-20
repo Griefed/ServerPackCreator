@@ -1,3 +1,24 @@
+## [5.0.0-alpha.28](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-alpha.27...5.0.0-alpha.28) (2023-09-20)
+
+
+### :scissors: Refactor
+
+* Move fun to appropriate place ([3a3cc3b](https://git.griefed.de/Griefed/ServerPackCreator/commit/3a3cc3b9fe1054eed4e7e6a34b8192ba58c170f9))
+* React on release and click ([f08ca16](https://git.griefed.de/Griefed/ServerPackCreator/commit/f08ca1679bf7d4c623b887cb9e9e86ba95c2c9d5))
+* Rearrange entries to improve readability somewhat ([7e862ed](https://git.griefed.de/Griefed/ServerPackCreator/commit/7e862edd777f75d1dd9bfd5eb160951d31125ac5))
+
+
+### 💎 Improvements
+
+* Clear selection when clicking empty section in inclusions-list ([758a097](https://git.griefed.de/Griefed/ServerPackCreator/commit/758a097b88a51a7790bca14b63c7ef409f380e3b))
+* Right-click popup-menu to add a new tab or load config(s) ([8c77943](https://git.griefed.de/Griefed/ServerPackCreator/commit/8c779432163ed37ed21923e3f622aa7388f8dbd7))
+
+
+### 🛠 Fixes
+
+* Check theme setting for changes ([55b84fa](https://git.griefed.de/Griefed/ServerPackCreator/commit/55b84fafdd9a3b881153e1516b4da184e0f94378))
+* Create artemis directory ([2e764cf](https://git.griefed.de/Griefed/ServerPackCreator/commit/2e764cf901c721502df99c11f6ce82d4fd0ccbec))
+
 ## [5.0.0-alpha.27](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-alpha.26...5.0.0-alpha.27) (2023-09-19)
 
 
