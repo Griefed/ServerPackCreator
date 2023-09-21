@@ -116,17 +116,6 @@ class TabbedConfigsTab(
         newAndLoadMenu.add(newTabItem)
         newAndLoadMenu.add(loadConfigItem)
 
-        val closeSaveAndSaveAsMenu = JPopupMenu()
-        val closeTabItem = JMenuItem(Gui.createserverpack_gui_close_title.toString())
-        val saveTabItem = JMenuItem(Gui.menubar_gui_menuitem_saveconfig.toString())
-        val saveTabAsItem = JMenuItem(Gui.menubar_gui_menuitem_saveas.toString())
-        closeTabItem.addActionListener { selectedEditor!!.title.close() }
-        saveTabItem.addActionListener { selectedEditor!!.saveCurrentConfiguration() }
-        saveTabAsItem.addActionListener { saveAs() }
-        closeSaveAndSaveAsMenu.add(closeTabItem)
-        closeSaveAndSaveAsMenu.add(saveTabItem)
-        closeSaveAndSaveAsMenu.add(saveTabAsItem)
-
         val mouseAdapter = object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent) {
                 super.mouseClicked(e)
@@ -146,8 +135,6 @@ class TabbedConfigsTab(
                 if (e.button == MouseEvent.BUTTON3) {
                     if (tabs.ui.tabForCoordinate(tabs,e.x,e.y) == -1) {
                         newAndLoadMenu.show(tabs,e.x,e.y)
-                    } else {
-                        closeSaveAndSaveAsMenu.show(tabs,e.x,e.y)
                     }
                 }
             }
@@ -186,17 +173,20 @@ class TabbedConfigsTab(
     /**
      * @author Griefed
      */
-    fun saveAs() {
+    fun saveAs(editor: ConfigEditor? = selectedEditor) {
+        if (editor == null) {
+            return
+        }
         val configChooser = ConfigChooser(apiWrapper.apiProperties, Gui.menubar_gui_menuitem_saveas_title.toString())
         configChooser.dialogType = JFileChooser.SAVE_DIALOG
         if (configChooser.showSaveDialog(mainFrame.frame) == JFileChooser.APPROVE_OPTION) {
             if (configChooser.selectedFile.path.endsWith(".conf")) {
-                selectedEditor!!.getCurrentConfiguration().save(
+                editor.getCurrentConfiguration().save(
                     configChooser.selectedFile.absoluteFile
                 )
                 log.debug("Saved configuration to: ${configChooser.selectedFile.absoluteFile}")
             } else {
-                selectedEditor!!.getCurrentConfiguration().save(
+                editor.getCurrentConfiguration().save(
                     File("${configChooser.selectedFile.absoluteFile}.conf")
                 )
                 log.debug("Saved configuration to: ${configChooser.selectedFile.absoluteFile}.conf")
