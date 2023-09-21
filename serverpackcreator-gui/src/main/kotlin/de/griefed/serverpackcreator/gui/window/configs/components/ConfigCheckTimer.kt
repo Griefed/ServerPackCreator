@@ -37,64 +37,73 @@ import javax.swing.Timer
  * @author Griefed
  */
 @OptIn(DelicateCoroutinesApi::class)
-class ConfigCheckTimer(delay: Int, configEditor: ConfigEditor, guiProps: GuiProps, tabbedConfigsTab: TabbedConfigsTab) : Timer(delay,
+class ConfigCheckTimer(delay: Int, guiProps: GuiProps, tabbedConfigsTab: TabbedConfigsTab) : Timer(delay,
     ActionListener {
         GlobalScope.launch(guiProps.configDispatcher) {
-            val errors = mutableListOf<String>()
-            runBlocking {
-                launch {
-                    errors.addAll(configEditor.validateModpackDir())
-                    configEditor.title.title = File(configEditor.getModpackDirectory()).name
-                }
-                launch {
-                    errors.addAll(configEditor.validateSuffix())
-                }
-                launch {
-                    errors.addAll(configEditor.validateExclusions())
-                }
-                launch {
-                    errors.addAll(configEditor.validateInclusions())
-                }
-                launch {
-                    try {
-                        errors.addAll(configEditor.validateServerIcon())
-                    } catch (_: OutOfMemoryError) {}
-                }
-                launch {
-                    errors.addAll(configEditor.validateServerProperties())
-                }
-                launch {
-                    if (!configEditor.checkServer()) {
-                        errors.add(
-                            Gui.createserverpack_gui_createserverpack_checkboxserver_unavailable_title(
-                                configEditor.getMinecraftVersion(),
-                                configEditor.getModloader(),
-                                configEditor.getModloaderVersion()
+            var errorsEncountered = false
+            tabbedConfigsTab.allTabs.parallelStream().forEach {
+                val errors = mutableListOf<String>()
+                val editor = it as ConfigEditor
+                runBlocking {
+                    launch {
+                        errors.addAll(editor.validateModpackDir())
+                        editor.title.title = File(editor.getModpackDirectory()).name
+                    }
+                    launch {
+                        errors.addAll(editor.validateSuffix())
+                    }
+                    launch {
+                        errors.addAll(editor.validateExclusions())
+                    }
+                    launch {
+                        errors.addAll(editor.validateInclusions())
+                    }
+                    launch {
+                        try {
+                            errors.addAll(editor.validateServerIcon())
+                        } catch (_: OutOfMemoryError) {}
+                    }
+                    launch {
+                        errors.addAll(editor.validateServerProperties())
+                    }
+                    launch {
+                        if (!editor.checkServer()) {
+                            errors.add(
+                                Gui.createserverpack_gui_createserverpack_checkboxserver_unavailable_title(
+                                    editor.getMinecraftVersion(),
+                                    editor.getModloader(),
+                                    editor.getModloaderVersion()
+                                )
                             )
-                        )
+                        }
+                    }
+                    launch {
+                        if (editor.getModloaderVersion() == Gui.createserverpack_gui_createserverpack_forge_none.toString()) {
+                            errors.add(
+                                Gui.configuration_log_error_minecraft_modloader(
+                                    editor.getMinecraftVersion(),
+                                    editor.getModloader()
+                                )
+                            )
+                        }
+                    }
+                    launch {
+                        editor.compareSettings()
                     }
                 }
-                launch {
-                    if (configEditor.getModloaderVersion() == Gui.createserverpack_gui_createserverpack_forge_none.toString()) {
-                        errors.add(
-                            Gui.configuration_log_error_minecraft_modloader(
-                                configEditor.getMinecraftVersion(),
-                                configEditor.getModloader()
-                            )
-                        )
-                    }
-                }
-                launch {
-                    configEditor.compareSettings()
+                if (errors.isEmpty()) {
+                    editor.title.hideErrorIcon()
+                } else {
+                    editor.title.setAndShowErrorIcon("<html>${errors.joinToString("<br>")}</html>")
+                    errorsEncountered = true
                 }
             }
-            if (errors.isEmpty()) {
-                configEditor.title.hideErrorIcon()
-                tabbedConfigsTab.title.hideErrorIcon()
+            if (errorsEncountered) {
+                tabbedConfigsTab.title.setAndShowErrorIcon(Gui.createserverpack_gui_tabs_errors.toString())
             } else {
-                configEditor.title.setAndShowErrorIcon("<html>${errors.joinToString("<br>")}</html>")
-                tabbedConfigsTab.title.setAndShowErrorIcon("One or more configuration contain errors!")
+                tabbedConfigsTab.title.hideErrorIcon()
             }
+            errorsEncountered = false
             tabbedConfigsTab.checkAll()
         }
     }) {

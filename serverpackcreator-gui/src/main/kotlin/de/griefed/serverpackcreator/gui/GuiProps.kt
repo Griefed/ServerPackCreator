@@ -32,6 +32,7 @@ import de.griefed.serverpackcreator.gui.window.control.components.LarsonScanner.
 import kotlinx.coroutines.asCoroutineDispatcher
 import net.java.balloontip.styles.BalloonTipStyle
 import net.java.balloontip.styles.EdgedBalloonStyle
+import java.awt.Dimension
 import java.awt.Font
 import java.awt.Frame
 import java.awt.Image
@@ -293,6 +294,7 @@ class GuiProps(private val apiProperties: ApiProperties) {
     val largeCheckmarkIcon = FlatSVGIcon("de/griefed/resources/gui/svg/checkmark.svg", largeSize, largeSize)
     val largeSettingsIcon = settingsIcon.getScaledInstance(largeSize, largeSize)
     val largeHelpIcon = helpIcon.getScaledInstance(largeSize, largeSize)
+    val defaultFileChooserDimension = Dimension(750, 450)
     val reticulatingSplines: ReticulatingSplines = ReticulatingSplines()
     val larsonScanner = LarsonScanner()
     val idleConfig: ScannerConfig

@@ -41,17 +41,27 @@ class FileMenu(
     utilities: Utilities,
     guiProps: GuiProps
 ) : JMenu(Gui.menubar_gui_menu_file.toString()) {
+
+    private val newConfig = NewConfigItem(tabbedConfigsTab)
+    private val loadConfig = LoadConfigItem(tabbedConfigsTab)
+    private val saveConfig = SaveConfigItem(tabbedConfigsTab)
+    private val saveConfigAs = SaveConfigAsItem(tabbedConfigsTab)
+    private val saveAll = SaveAllConfigsItem(tabbedConfigsTab)
+    private val mainLogUpload = MainLogToHasteBinItem(utilities.webUtilities, apiProperties, guiProps, mainFrame.frame)
+    private val configUpload = ConfigToHasteBinItem(tabbedConfigsTab, utilities.webUtilities, guiProps, mainFrame.frame)
+    private val exit = ExitItem(mainFrame)
+
     init {
-        add(NewConfigItem(tabbedConfigsTab))
-        add(LoadConfigItem(tabbedConfigsTab))
+        add(newConfig)
+        add(loadConfig)
         add(JSeparator())
-        add(SaveConfigItem(tabbedConfigsTab))
-        add(SaveConfigAsItem(apiProperties, mainFrame.frame, tabbedConfigsTab))
-        add(SaveAllConfigsItem(tabbedConfigsTab))
+        add(saveConfig)
+        add(saveConfigAs)
+        add(saveAll)
         add(JSeparator())
-        add(MainLogToHasteBinItem(utilities.webUtilities, apiProperties, guiProps, mainFrame.frame))
-        add(ConfigToHasteBinItem(tabbedConfigsTab, utilities.webUtilities, guiProps, mainFrame.frame))
+        add(mainLogUpload)
+        add(configUpload)
         add(JSeparator())
-        add(ExitItem(mainFrame))
+        add(exit)
     }
 }

@@ -44,8 +44,46 @@ class ConfigEditorTitle(
 ) : TabTitle(guiProps) {
 
     val closeButton = JButton(guiProps.closeIcon)
+    private val editorTitleMouseAdapter = object : MouseAdapter() {
+        val closeSaveAndSaveAsMenu = JPopupMenu()
+        val closeTabItem = JMenuItem(Gui.createserverpack_gui_close_title.toString())
+        val saveTabItem = JMenuItem(Gui.menubar_gui_menuitem_saveconfig.toString())
+        val saveTabAsItem = JMenuItem(Gui.menubar_gui_menuitem_saveas.toString())
+
+        init {
+            closeTabItem.addActionListener { close() }
+            saveTabItem.addActionListener { configEditor.saveCurrentConfiguration() }
+            saveTabAsItem.addActionListener { tabbedConfigsTab.saveAs(configEditor) }
+            closeSaveAndSaveAsMenu.add(closeTabItem)
+            closeSaveAndSaveAsMenu.add(saveTabItem)
+            closeSaveAndSaveAsMenu.add(saveTabAsItem)
+        }
+
+        override fun mouseClicked(e: MouseEvent) {
+            super.mouseClicked(e)
+            openPopup(e)
+        }
+
+        override fun mousePressed(e: MouseEvent) {
+            super.mousePressed(e)
+            openPopup(e)
+        }
+
+        override fun mouseReleased(e: MouseEvent) {
+            super.mouseReleased(e)
+            openPopup(e)
+        }
+        fun openPopup(e: MouseEvent) {
+            if (e.button == MouseEvent.BUTTON3) {
+                closeSaveAndSaveAsMenu.show(this@ConfigEditorTitle,e.x,e.y)
+            } else {
+                tabbedConfigsTab.tabs.selectedComponent = configEditor
+            }
+        }
+    }
 
     init {
+        addMouseListener(editorTitleMouseAdapter)
         closeButton.addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent?) {
                 close()
