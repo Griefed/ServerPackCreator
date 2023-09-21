@@ -30,21 +30,32 @@ import javax.swing.JSeparator
  * @author Griefed
  */
 class ViewMenu(apiWrapper: ApiWrapper) : JMenu(Gui.menubar_gui_menu_view.toString()) {
+
+    private val homeDir = HomeDirItem(apiWrapper.utilities!!.fileUtilities, apiWrapper.apiProperties)
+    private val serverPacksDir = ServerPacksDirItem(apiWrapper.utilities!!.fileUtilities, apiWrapper.apiProperties)
+    private val serverFilesDir = ServerFilesDirItem(apiWrapper.utilities!!.fileUtilities, apiWrapper.apiProperties)
+    private val propsDir = OpenPropertiesDirectory(apiWrapper.utilities!!.fileUtilities, apiWrapper.apiProperties)
+    private val iconsDir = OpenIconsDirectory(apiWrapper.utilities!!.fileUtilities, apiWrapper.apiProperties)
+    private val configsDir = ConfigsDirItem(apiWrapper.utilities!!.fileUtilities, apiWrapper.apiProperties)
+    private val pluginsDir = PluginsDirItem(apiWrapper.utilities!!.fileUtilities, apiWrapper.apiProperties)
+    private val pluginConfigsDir = PluginsConfigDirItem(apiWrapper.utilities!!.fileUtilities, apiWrapper.apiProperties)
+    private val spcLog = ServerPackCreatorLogItem(apiWrapper.utilities!!.fileUtilities, apiWrapper.apiProperties)
+    private val pluginsLog = PluginsLogItem(apiWrapper.utilities!!.fileUtilities, apiWrapper.apiProperties)
+    private val modloaderInstLog = ModloaderInstallerLogItem(apiWrapper.utilities!!.fileUtilities, apiWrapper.apiProperties)
+
     init {
-        val fileUtilities = apiWrapper.utilities!!.fileUtilities
-        val apiProperties = apiWrapper.apiProperties
-        add(HomeDirItem(fileUtilities, apiProperties))
-        add(ServerPacksDirItem(fileUtilities, apiProperties))
-        add(ServerFilesDirItem(fileUtilities, apiProperties))
-        add(OpenPropertiesDirectory(fileUtilities, apiProperties))
-        add(OpenIconsDirectory(fileUtilities, apiProperties))
-        add(ConfigsDirItem(fileUtilities, apiProperties))
+        add(homeDir)
+        add(serverPacksDir)
+        add(serverFilesDir)
+        add(propsDir)
+        add(iconsDir)
+        add(configsDir)
         add(JSeparator())
-        add(PluginsDirItem(fileUtilities, apiProperties))
-        add(PluginsConfigDirItem(fileUtilities, apiProperties))
+        add(pluginsDir)
+        add(pluginConfigsDir)
         add(JSeparator())
-        add(ServerPackCreatorLogItem(fileUtilities, apiProperties))
-        add(PluginsLogItem(fileUtilities, apiProperties))
-        add(ModloaderInstallerLogItem(fileUtilities, apiProperties))
+        add(spcLog)
+        add(pluginsLog)
+        add(modloaderInstLog)
     }
 }

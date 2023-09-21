@@ -45,6 +45,7 @@ class AboutMenu(
     mainFrame: MainFrame,
     updateButton: BalloonTipButton
 ) : JMenu(Gui.menubar_gui_menu_about.toString()) {
+
     private val update = UpdateCheckItem(updateDialogs,updateButton)
     private val migration = MigrationInfoItem(apiWrapper, migrationManager, guiProps, mainFrame)
     private val help = WikiHelpItem(webUtilities)

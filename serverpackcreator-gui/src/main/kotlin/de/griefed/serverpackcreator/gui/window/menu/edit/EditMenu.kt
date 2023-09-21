@@ -40,11 +40,17 @@ class EditMenu(
     fileUtilities: FileUtilities,
     tabbedConfigsTab: TabbedConfigsTab
 ) : JMenu(Gui.menubar_gui_menu_edit.toString()) {
+
+    private val openPack = OpenModpackItem(fileUtilities,tabbedConfigsTab)
+    private val editProps = EditPropertiesItem(fileUtilities,tabbedConfigsTab)
+    private val editIcon = EditIconItem(fileUtilities,tabbedConfigsTab)
+    private val updateDefaultMods = UpdateDefaultModslistItem(apiProperties,mainFrame.frame,guiProps)
+
     init {
-        add(OpenModpackItem(fileUtilities,tabbedConfigsTab))
-        add(EditPropertiesItem(fileUtilities,tabbedConfigsTab))
-        add(EditIconItem(fileUtilities,tabbedConfigsTab))
+        add(openPack)
+        add(editProps)
+        add(editIcon)
         add(JSeparator())
-        add(UpdateDefaultModslistItem(apiProperties,mainFrame.frame,guiProps))
+        add(updateDefaultMods)
     }
 }
