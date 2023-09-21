@@ -1,3 +1,17 @@
+## [5.0.0-alpha.29](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-alpha.28...5.0.0-alpha.29) (2023-09-21)
+
+
+### :scissors: Refactor
+
+* Improve readability ([582e90e](https://git.griefed.de/Griefed/ServerPackCreator/commit/582e90e9413b6252d8d762fff6e6b357e856c287))
+* Single check timer passed to all editors ([8907850](https://git.griefed.de/Griefed/ServerPackCreator/commit/8907850d719e39ea5766fa59f299c65386dcf943))
+
+
+### 🛠 Fixes
+
+* Move adapter to title and allow selection ([2790365](https://git.griefed.de/Griefed/ServerPackCreator/commit/27903654693806816b13fa53b7ce462c80f920ab))
+* Prevent NPE when closing tab, but no tab is selected ([cad1e6b](https://git.griefed.de/Griefed/ServerPackCreator/commit/cad1e6b1df3fe0b0f4427f2b5ec93c25e4462550))
+
 ## [5.0.0-alpha.28](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-alpha.27...5.0.0-alpha.28) (2023-09-20)
 
 
