@@ -126,7 +126,7 @@ publishing {
         artifact(tasks["javadocJar"])
         pom {
             name.set("ServerPackCreator")
-            description.set("ServerPackCreators API, to create server packs from Forge, Fabric, Quilt and LegacyFabric modpacks.")
+            description.set("ServerPackCreators API, to create server packs from Forge, Fabric, Quilt, LegacyFabric and NeoForge modpacks.")
             url.set("https://git.griefed.de/Griefed/ServerPackCreator")
 
             licenses {

@@ -24,7 +24,7 @@ release distribution.
 [![GitHub forks](https://img.shields.io/github/forks/Griefed/serverpackcreator?label=GitHub%20Forks&style=for-the-badge&logo=Github&labelColor=325358&color=c0ffee)](https://github.com/Griefed/ServerPackCreator)
 [![GitHub contributors](https://img.shields.io/github/contributors/Griefed/ServerPackCreator?color=c0ffee&label=Contributors&logo=GitHub&logoColor=white&style=for-the-badge&labelColor=325358)](https://github.com/Griefed/ServerPackCreator/graphs/contributors)
 
-**ServerPackCreator creates a server pack from any given Forge, Fabric, Quilt or LegacyFabric modpack.**
+**ServerPackCreator creates a server pack from any given Forge, Fabric, Quilt, LegacyFabric and NeoForge modpack.**
 
 **Whenever you are working on an update to your modpack, you simply run ServerPackCreator and BAM! You've got yourself a
 server pack for your new modpack version.**
@@ -41,7 +41,7 @@ into the world of programming. And here we are.
 
 ##### Required:
 
-* Using the JAR-file release requires Java 17.
+* Using the JAR-file release requires Java 21.
 * Working internet connection recommended.
 
 ##### Note:
@@ -141,6 +141,7 @@ ServerPackCreator also has a webservice which you can run with the `-web`-argume
     - **Fabric**
     - **LegacyFabric**
     - **Quilt**
+    - **NeoForge**
 6. Use Minecraft **snapshots** and **pre-releases**
     - Per default, only regular releases enabled
 7. Let ServerPackCreator **install the modloader-server** for your server pack, for immediate testing and debugging after generation!
