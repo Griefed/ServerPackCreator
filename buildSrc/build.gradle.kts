@@ -35,9 +35,6 @@ dependencies {
 tasks.compileKotlin<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     logger.lifecycle("Configuring $name with version ${project.getKotlinPluginVersion()} in project ${project.name}")
     kotlinOptions {
-        val list = freeCompilerArgs.toMutableList()
-        list.add("-Xjsr305=strict")
-        freeCompilerArgs = list.toList()
         allWarningsAsErrors = false
         jvmTarget = props.getProperty("jdkVersion")
         languageVersion = props.getProperty("kotlinMajor")
@@ -48,9 +45,6 @@ tasks.compileKotlin<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
 tasks.compileTestKotlin<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     logger.lifecycle("Configuring $name with version ${project.getKotlinPluginVersion()} in project ${project.name}")
     kotlinOptions {
-        val list = freeCompilerArgs.toMutableList()
-        list.add("-Xjsr305=strict")
-        freeCompilerArgs = list.toList()
         allWarningsAsErrors = false
         jvmTarget = props.getProperty("jdkVersion")
         languageVersion = props.getProperty("kotlinMajor")

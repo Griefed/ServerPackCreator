@@ -32,10 +32,6 @@ if (KOTLIN_VERSION != embeddedMajorAndMinorKotlinVersion) {
 tasks.compileKotlin<KotlinCompile> {
     logger.lifecycle("Configuring $name with version ${project.getKotlinPluginVersion()} in project ${project.name}")
     kotlinOptions {
-        @Suppress("SpellCheckingInspection")
-        val list = freeCompilerArgs.toMutableList()
-        list.add("-Xjsr305=strict")
-        freeCompilerArgs = list.toList()
         allWarningsAsErrors = false
         jvmTarget = JDK_VERSION
         languageVersion = KOTLIN_VERSION
@@ -46,10 +42,6 @@ tasks.compileKotlin<KotlinCompile> {
 tasks.compileTestKotlin<KotlinCompile> {
     logger.lifecycle("Configuring $name with version ${project.getKotlinPluginVersion()} in project ${project.name}")
     kotlinOptions {
-        @Suppress("SpellCheckingInspection")
-        val list = freeCompilerArgs.toMutableList()
-        list.add("-Xjsr305=strict")
-        freeCompilerArgs = list.toList()
         allWarningsAsErrors = false
         jvmTarget = JDK_VERSION
         languageVersion = KOTLIN_VERSION
