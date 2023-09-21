@@ -54,7 +54,8 @@ class ConfigEditor(
     tabbedConfigsTab: TabbedConfigsTab,
     private val apiWrapper: ApiWrapper,
     private val noVersions: DefaultComboBoxModel<String>,
-    componentResizer: ComponentResizer
+    componentResizer: ComponentResizer,
+    private val timer: ConfigCheckTimer
 ) : JScrollPane(), ServerPackConfigTab {
 
     private val log = cachedLoggerOf(this.javaClass)
@@ -68,7 +69,6 @@ class ConfigEditor(
     private val validationChangeListener = object : DocumentChangeListener { override fun update(e: DocumentEvent) { validateInputFields() }}
     private val validationActionListener = ActionListener { validateInputFields() }
     private val updateMinecraftActionListener = ActionListener { updateMinecraftValues() }
-    private val chooserDimension: Dimension = Dimension(750, 450)
     private val legacyFabricModel = DefaultComboBoxModel(apiWrapper.versionMeta!!.legacyFabric.loaderVersionsArrayDescending())
     private val fabricModel = DefaultComboBoxModel(apiWrapper.versionMeta!!.fabric.loaderVersionsArrayDescending())
     private val quiltModel = DefaultComboBoxModel(apiWrapper.versionMeta!!.quilt.loaderVersionsArrayDescending())
@@ -101,7 +101,7 @@ class ConfigEditor(
     private val inclusionsExclusionFilterSetting = ScrollTextField(guiProps, "", "exclusion")
     private val inclusionsIcon = InclusionsInfo(guiProps)
     private val inclusionsLabel = ElementLabel(Gui.createserverpack_gui_createserverpack_labelcopydirs.toString())
-    private val inclusionsSetting = InclusionsEditor(chooserDimension,guiProps,this,apiWrapper,inclusionsSourceSetting,inclusionsDestinationSetting,inclusionsInclusionFilterSetting,inclusionsExclusionFilterSetting)
+    private val inclusionsSetting = InclusionsEditor(guiProps.defaultFileChooserDimension,guiProps,this,apiWrapper,inclusionsSourceSetting,inclusionsDestinationSetting,inclusionsInclusionFilterSetting,inclusionsExclusionFilterSetting)
 
     private val suffixIcon = SuffixInfo(guiProps)
     private val suffixLabel = ElementLabel(Gui.createserverpack_gui_createserverpack_labelsuffix.toString())
@@ -151,8 +151,6 @@ class ConfigEditor(
     private val pluginPanels = apiWrapper.apiPlugins!!.getConfigPanels(this).toMutableList()
     private val pluginSettings = PluginsSettingsPanel(pluginPanels)
     private val pluginPanel = CollapsiblePanel(Gui.createserverpack_gui_plugins.toString(), pluginSettings)
-
-    private val timer = ConfigCheckTimer(250, this, guiProps,tabbedConfigsTab)
 
     var iconQuickSelectModel: ComboBoxModel<String>
         set(value) {
@@ -274,19 +272,17 @@ class ConfigEditor(
      */
     private fun selectModpackDirectory() {
         val chooser = if (File(getModpackDirectory()).isDirectory) {
-            ModpackChooser(File(getModpackDirectory()), chooserDimension)
+            ModpackChooser(File(getModpackDirectory()), guiProps.defaultFileChooserDimension)
         } else if (File(getModpackDirectory()).isFile) {
-            ModpackChooser(File(File(getModpackDirectory()).parent), chooserDimension)
+            ModpackChooser(File(File(getModpackDirectory()).parent), guiProps.defaultFileChooserDimension)
         } else {
-            ModpackChooser(chooserDimension)
+            ModpackChooser(guiProps.defaultFileChooserDimension)
         }
 
         if (chooser.showOpenDialog(parent) == JFileChooser.APPROVE_OPTION) {
             setModpackDirectory(chooser.selectedFile.path)
             updateGuiFromSelectedModpack()
-            log.debug(
-                "Selected modpack directory: " + chooser.selectedFile.path
-            )
+            log.debug("Selected modpack directory: " + chooser.selectedFile.path)
         }
     }
 
@@ -295,9 +291,9 @@ class ConfigEditor(
      */
     private fun selectServerProperties() {
         val serverPropertiesChooser = if (File(getServerPropertiesPath()).isFile) {
-            ServerPropertiesChooser(File(getServerPropertiesPath()), chooserDimension)
+            ServerPropertiesChooser(File(getServerPropertiesPath()), guiProps.defaultFileChooserDimension)
         } else {
-            ServerPropertiesChooser(chooserDimension)
+            ServerPropertiesChooser(guiProps.defaultFileChooserDimension)
         }
         if (serverPropertiesChooser.showOpenDialog(parent) == JFileChooser.APPROVE_OPTION) {
             setServerPropertiesPath(serverPropertiesChooser.selectedFile.absolutePath)
@@ -309,9 +305,9 @@ class ConfigEditor(
      */
     private fun selectServerIcon() {
         val serverIconChooser = if (File(getServerIconPath()).isFile) {
-            ServerIconChooser(File(getServerIconPath()), chooserDimension)
+            ServerIconChooser(File(getServerIconPath()), guiProps.defaultFileChooserDimension)
         } else {
-            ServerIconChooser(chooserDimension)
+            ServerIconChooser(guiProps.defaultFileChooserDimension)
         }
         if (serverIconChooser.showOpenDialog(parent) == JFileChooser.APPROVE_OPTION) {
             setServerIconPath(serverIconChooser.selectedFile.absolutePath)
@@ -323,9 +319,9 @@ class ConfigEditor(
      */
     private fun selectClientMods() {
         val clientModsChooser = if (File(getModpackDirectory(), "mods").isDirectory) {
-            ClientModsChooser(File(getModpackDirectory(), "mods"), chooserDimension)
+            ClientModsChooser(File(getModpackDirectory(), "mods"), guiProps.defaultFileChooserDimension)
         } else {
-            ClientModsChooser(chooserDimension)
+            ClientModsChooser(guiProps.defaultFileChooserDimension)
         }
 
         if (clientModsChooser.showOpenDialog(parent) == JFileChooser.APPROVE_OPTION) {

@@ -29,10 +29,10 @@ import de.griefed.serverpackcreator.gui.components.TabTitle
 import de.griefed.serverpackcreator.gui.utilities.DialogUtilities
 import de.griefed.serverpackcreator.gui.window.MainFrame
 import de.griefed.serverpackcreator.gui.window.configs.components.ComponentResizer
+import de.griefed.serverpackcreator.gui.window.configs.components.ConfigCheckTimer
 import de.griefed.serverpackcreator.gui.window.menu.file.ConfigChooser
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
+import kotlinx.coroutines.swing.Swing
 import org.apache.commons.io.monitor.FileAlterationListener
 import org.apache.commons.io.monitor.FileAlterationMonitor
 import org.apache.commons.io.monitor.FileAlterationObserver
@@ -60,10 +60,9 @@ class TabbedConfigsTab(
 ) : TabPanel() {
     private val log = cachedLoggerOf(this.javaClass)
     private val choose = arrayOf(Gui.createserverpack_gui_quickselect_choose.toString())
-    private val noVersions = DefaultComboBoxModel(
-        arrayOf(Gui.createserverpack_gui_createserverpack_forge_none.toString())
-    )
+    private val noVersions = DefaultComboBoxModel(arrayOf(Gui.createserverpack_gui_createserverpack_forge_none.toString()))
     private val componentResizer = ComponentResizer()
+    private val timer = ConfigCheckTimer(500, guiProps,this)
     val selectedEditor: ConfigEditor?
         get() {
             return if (activeTab != null) {
@@ -109,13 +108,25 @@ class TabbedConfigsTab(
         tabs.selectedIndex = 0
         (activeTab!! as ConfigEditor).title.closeButton.isVisible = true
 
-        val tabBarPopupMenu = JPopupMenu()
+        val newAndLoadMenu = JPopupMenu()
         val newTabItem = JMenuItem(Gui.createserverpack_gui_title_new.toString())
         val loadConfigItem = JMenuItem(Gui.menubar_gui_menuitem_loadconfig.toString())
         newTabItem.addActionListener { addTab() }
         loadConfigItem.addActionListener { loadConfigFile() }
-        tabBarPopupMenu.add(newTabItem)
-        tabBarPopupMenu.add(loadConfigItem)
+        newAndLoadMenu.add(newTabItem)
+        newAndLoadMenu.add(loadConfigItem)
+
+        val closeSaveAndSaveAsMenu = JPopupMenu()
+        val closeTabItem = JMenuItem(Gui.createserverpack_gui_close_title.toString())
+        val saveTabItem = JMenuItem(Gui.menubar_gui_menuitem_saveconfig.toString())
+        val saveTabAsItem = JMenuItem(Gui.menubar_gui_menuitem_saveas.toString())
+        closeTabItem.addActionListener { selectedEditor!!.title.close() }
+        saveTabItem.addActionListener { selectedEditor!!.saveCurrentConfiguration() }
+        saveTabAsItem.addActionListener { saveAs() }
+        closeSaveAndSaveAsMenu.add(closeTabItem)
+        closeSaveAndSaveAsMenu.add(saveTabItem)
+        closeSaveAndSaveAsMenu.add(saveTabAsItem)
+
         val mouseAdapter = object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent) {
                 super.mouseClicked(e)
@@ -134,7 +145,9 @@ class TabbedConfigsTab(
             fun openPopup(e: MouseEvent) {
                 if (e.button == MouseEvent.BUTTON3) {
                     if (tabs.ui.tabForCoordinate(tabs,e.x,e.y) == -1) {
-                        tabBarPopupMenu.show(tabs,e.x,e.y)
+                        newAndLoadMenu.show(tabs,e.x,e.y)
+                    } else {
+                        closeSaveAndSaveAsMenu.show(tabs,e.x,e.y)
                     }
                 }
             }
@@ -151,7 +164,8 @@ class TabbedConfigsTab(
             this,
             apiWrapper,
             noVersions,
-            componentResizer
+            componentResizer,
+            timer
         )
         tabs.add(editor)
         tabs.setTabComponentAt(tabs.tabCount - 1, editor.title)
@@ -167,6 +181,27 @@ class TabbedConfigsTab(
             (tab as ConfigEditor).saveCurrentConfiguration()
         }
         checkAll()
+    }
+
+    /**
+     * @author Griefed
+     */
+    fun saveAs() {
+        val configChooser = ConfigChooser(apiWrapper.apiProperties, Gui.menubar_gui_menuitem_saveas_title.toString())
+        configChooser.dialogType = JFileChooser.SAVE_DIALOG
+        if (configChooser.showSaveDialog(mainFrame.frame) == JFileChooser.APPROVE_OPTION) {
+            if (configChooser.selectedFile.path.endsWith(".conf")) {
+                selectedEditor!!.getCurrentConfiguration().save(
+                    configChooser.selectedFile.absoluteFile
+                )
+                log.debug("Saved configuration to: ${configChooser.selectedFile.absoluteFile}")
+            } else {
+                selectedEditor!!.getCurrentConfiguration().save(
+                    File("${configChooser.selectedFile.absoluteFile}.conf")
+                )
+                log.debug("Saved configuration to: ${configChooser.selectedFile.absoluteFile}.conf")
+            }
+        }
     }
 
     /**
@@ -208,24 +243,32 @@ class TabbedConfigsTab(
                     file.absoluteFile
                 }
             }
-            for (file in files) {
-                if (tabs.tabCount > 0 &&
-                    DialogUtilities.createShowGet(
-                        Gui.menubar_gui_config_load_message(file.absolutePath),
-                        Gui.menubar_gui_config_load_title.toString(),
-                        mainFrame.frame,
-                        JOptionPane.QUESTION_MESSAGE,
-                        JOptionPane.YES_NO_OPTION,
-                        guiProps.warningIcon,
-                        false,
-                        arrayOf(Gui.menubar_gui_config_load_current, Gui.menubar_gui_config_load_new)
-                    ) == 0
-                ) {
-                    loadConfig(file, selectedEditor!!)
-                } else {
-                    loadConfig(file)
+            GlobalScope.launch(Dispatchers.Swing) {
+                for (file in files) {
+                    if (tabs.tabCount > 0 &&
+                        DialogUtilities.createShowGet(
+                            Gui.menubar_gui_config_load_message(file.absolutePath),
+                            Gui.menubar_gui_config_load_title.toString(),
+                            mainFrame.frame,
+                            JOptionPane.QUESTION_MESSAGE,
+                            JOptionPane.YES_NO_OPTION,
+                            guiProps.warningIcon,
+                            false,
+                            arrayOf(Gui.menubar_gui_config_load_current, Gui.menubar_gui_config_load_new)
+                        ) == 0
+                    ) {
+                        run {
+                            loadConfig(file, selectedEditor!!)
+                        }
+                    } else {
+                        run {
+                            loadConfig(file)
+                        }
+                    }
+                    Thread.sleep(2000)
                 }
             }
+
         }
     }
 
