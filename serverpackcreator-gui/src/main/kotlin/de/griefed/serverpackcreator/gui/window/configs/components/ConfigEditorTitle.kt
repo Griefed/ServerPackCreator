@@ -25,7 +25,6 @@ import de.griefed.serverpackcreator.gui.components.TabTitle
 import de.griefed.serverpackcreator.gui.utilities.DialogUtilities
 import de.griefed.serverpackcreator.gui.window.configs.ConfigEditor
 import de.griefed.serverpackcreator.gui.window.configs.TabbedConfigsTab
-import java.awt.FlowLayout
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.*
@@ -36,7 +35,6 @@ import javax.swing.*
  *
  * @author Griefed
  */
-@Suppress("unused")
 class ConfigEditorTitle(
     private val guiProps: GuiProps,
     private val tabbedConfigsTab: TabbedConfigsTab,
