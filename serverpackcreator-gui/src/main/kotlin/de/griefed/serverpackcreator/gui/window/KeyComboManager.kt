@@ -24,6 +24,7 @@ import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.window.menu.MainMenuBar
 import de.griefed.serverpackcreator.updater.MigrationManager
 import de.griefed.serverpackcreator.updater.UpdateChecker
+import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.awt.AWTEvent
 import java.awt.Toolkit
 import java.awt.event.KeyEvent
@@ -53,6 +54,7 @@ class KeyComboManager(
     private val menu: MainMenuBar
 ) {
 
+    private val log = cachedLoggerOf(this.javaClass)
     private val configs = mainPanel.tabbedConfigsTab
     private val control = mainPanel.controlPanel
 
@@ -74,7 +76,11 @@ class KeyComboManager(
             if (event.id == KeyEvent.KEY_RELEASED) {
                 when {
                     event.keyCode == KeyEvent.VK_W && event.isControlDown -> {
-                        configs.selectedEditor!!.title.close()
+                        try {
+                            configs.selectedEditor!!.title.close()
+                        } catch (_: NullPointerException) {
+                            log.debug("No tab to close selected. Select tab first.")
+                        }
                     }
                 }
             }
