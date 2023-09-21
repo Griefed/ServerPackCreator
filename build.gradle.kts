@@ -1,6 +1,8 @@
 import de.griefed.common.gradle.LicenseAgreementRenderer
 import de.griefed.common.gradle.SubprojectLicenseFilter
 import org.gradle.plugins.ide.idea.model.IdeaLanguageLevel
+import java.io.FileInputStream
+import java.util.*
 
 plugins {
     idea
@@ -9,15 +11,20 @@ plugins {
     id("com.github.jk1.dependency-license-report")
 }
 
+val props = Properties()
+FileInputStream(file("gradle.properties")).use {
+    props.load(it)
+}
+
 idea {
     project {
-        languageLevel = IdeaLanguageLevel("17")
-        jdkName = "17"
+        languageLevel = IdeaLanguageLevel(props.getProperty("jdkVersion"))
+        jdkName = props.getProperty("jdkVersion")
         modules.forEach {
             it.isDownloadJavadoc = true
             it.isDownloadSources = true
-            it.languageLevel = IdeaLanguageLevel("17")
-            it.jdkName = "17"
+            it.languageLevel = IdeaLanguageLevel(props.getProperty("jdkVersion"))
+            it.jdkName = props.getProperty("jdkVersion")
         }
     }
 }
@@ -58,7 +65,7 @@ licenseReport {
         SubprojectLicenseFilter()
     )
 
-    renderers = arrayOf<com.github.jk1.license.render.ReportRenderer>(
+    renderers = arrayOf(
         com.github.jk1.license.render.InventoryHtmlReportRenderer("index.html", "Dependency Licences"),
         com.github.jk1.license.render.InventoryMarkdownReportRenderer("licences.md", "Dependency Licenses"),
         LicenseAgreementRenderer("LICENSE-AGREEMENT")
