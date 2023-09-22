@@ -1,3 +1,31 @@
+## [5.0.0-alpha.30](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-alpha.29...5.0.0-alpha.30) (2023-09-22)
+
+
+### :scissors: Refactor
+
+* Ensure correct context ([3fab5b3](https://git.griefed.de/Griefed/ServerPackCreator/commit/3fab5b38063466beeaf909e193079ec9a8814c3a))
+
+
+### 💎 Improvements
+
+* Prevent editing of inclusions when selection is empty and clear inclusions when selection is empty ([234919a](https://git.griefed.de/Griefed/ServerPackCreator/commit/234919a353349f50f85d5a17b3568570b9e26193))
+
+
+### 📦 Other
+
+* Add NeoForge info ([c86cedd](https://git.griefed.de/Griefed/ServerPackCreator/commit/c86cedd5843fe44825b46c39085edf19f72dc392))
+* New dependency versions ([4a8b1a3](https://git.griefed.de/Griefed/ServerPackCreator/commit/4a8b1a3983b6c82c0c02a2adba2042088095696d))
+* Remove unneeded import and supression ([11fd33d](https://git.griefed.de/Griefed/ServerPackCreator/commit/11fd33d1cbd4102fad3c5213ae98d955ed1d8d3f))
+* Show banner again ([0e40be4](https://git.griefed.de/Griefed/ServerPackCreator/commit/0e40be452e72debf6d131b40bb48c3ba4935ed11))
+
+
+### 🦊 CI/CD
+
+* Set JDK version from properties ([f1e27dc](https://git.griefed.de/Griefed/ServerPackCreator/commit/f1e27dc4a9f1a89ad8bcf7434d29e6bcd1b5ae2a))
+* Update foojay resolve to 0.5.0 ([1b7a27a](https://git.griefed.de/Griefed/ServerPackCreator/commit/1b7a27afb1f88138cf51c1df3bcc6135548c2eaf))
+* Update jupiter to 5.9.3 ([78afa7f](https://git.griefed.de/Griefed/ServerPackCreator/commit/78afa7fd1dbb1a8bc4246010272c4abcea6e678b))
+* Update to gradle 8.3 ([5cb172a](https://git.griefed.de/Griefed/ServerPackCreator/commit/5cb172ad9aa9bff6737cac07f9c3d83a19ebd369))
+
 ## [5.0.0-alpha.29](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-alpha.28...5.0.0-alpha.29) (2023-09-21)
 
 
