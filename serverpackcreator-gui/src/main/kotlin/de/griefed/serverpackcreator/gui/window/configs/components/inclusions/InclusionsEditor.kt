@@ -41,6 +41,8 @@ import java.io.File
 import java.util.regex.PatternSyntaxException
 import javax.swing.*
 import javax.swing.event.DocumentEvent
+import javax.swing.event.ListDataEvent
+import javax.swing.event.ListDataListener
 import javax.swing.event.ListSelectionEvent
 
 
@@ -191,27 +193,64 @@ class InclusionsEditor(
         list.addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent) {
                 super.mouseClicked(e)
-                clearselection(e)
+                clearSelection(e)
             }
 
             override fun mousePressed(e: MouseEvent) {
                 super.mousePressed(e)
-                clearselection(e)
+                clearSelection(e)
             }
 
             override fun mouseReleased(e: MouseEvent) {
                 super.mouseReleased(e)
-                clearselection(e)
+                clearSelection(e)
             }
 
-            fun clearselection(e: MouseEvent) {
+            fun clearSelection(e: MouseEvent) {
                 val index = list.locationToIndex(e.point)
                 val bounds = list.getCellBounds(index, index)
-                if (bounds == null || !bounds.contains(e.point)) {
-                    list.clearSelection()
+                if (bounds == null || !bounds.contains(e.point) || list.model.size <= 0) {
+                    emtpySelection()
+                } else {
+                    enableInputs()
                 }
             }
         })
+        list.model.addListDataListener(object : ListDataListener {
+            override fun intervalAdded(e: ListDataEvent?) {
+                checkSize()
+            }
+
+            override fun intervalRemoved(e: ListDataEvent?) {
+                checkSize()
+            }
+
+            override fun contentsChanged(e: ListDataEvent?) {
+                checkSize()
+            }
+
+            fun checkSize() {
+                if (list.model.size <= 0 || list.isSelectionEmpty) {
+                    emtpySelection()
+                }
+            }
+        })
+        if (list.model.size <= 0) {
+            emtpySelection()
+        }
+    }
+
+    private fun emtpySelection() {
+        list.clearSelection()
+        tip.text = Gui.createserverpack_gui_inclusions_editor_tip_default.toString()
+        source.isEditable = false
+        destination.isEditable = false
+        inclusionFilter.isEditable = false
+        exclusionFilter.isEditable = false
+        source.text = ""
+        destination.text = ""
+        inclusionFilter.text = ""
+        exclusionFilter.text = ""
     }
 
     /**
@@ -266,36 +305,48 @@ class InclusionsEditor(
     fun updateIndex() {
         if (!list.valueIsAdjusting) {
             list.selectedIndex = 0
+            enableInputs()
         }
+    }
+
+    private fun enableInputs() {
+        source.isEditable = true
+        destination.isEditable = true
+        inclusionFilter.isEditable = true
+        exclusionFilter.isEditable = true
     }
 
     /**
      * @author Griefed
      */
     fun sourceWasEdited() {
-        if (File(configEditor.getModpackDirectory(), source.text).exists() || File(source.text).exists()) {
-            list.selectedValue.source = source.text
-            timer.restart()
-            list.updateUI()
-            sourceInfo.info()
-        } else {
-            timer.stop()
-            sourceInfo.error(Gui.createserverpack_gui_inclusions_editor_source_error(source.text))
+        if (list.model.size > 0 && !list.isSelectionEmpty) {
+            if (File(configEditor.getModpackDirectory(), source.text).exists() || File(source.text).exists()) {
+                list.selectedValue.source = source.text
+                timer.restart()
+                list.updateUI()
+                sourceInfo.info()
+            } else {
+                timer.stop()
+                sourceInfo.error(Gui.createserverpack_gui_inclusions_editor_source_error(source.text))
+            }
+            configEditor.validateInputFields()
         }
-        configEditor.validateInputFields()
     }
 
     /**
      * @author Griefed
      */
     fun destinationWasEdited() {
-        if (apiWrapper.stringUtilities.checkForInvalidPathCharacters(destination.text)) {
-            list.selectedValue.destination = destination.text
-            destinationInfo.info()
-            list.updateUI()
-        } else {
-            timer.stop()
-            destinationInfo.error(Gui.createserverpack_gui_inclusions_editor_destination_error(destination.text))
+        if (list.model.size > 0 && !list.isSelectionEmpty) {
+            if (apiWrapper.stringUtilities.checkForInvalidPathCharacters(destination.text)) {
+                list.selectedValue.destination = destination.text
+                destinationInfo.info()
+                list.updateUI()
+            } else {
+                timer.stop()
+                destinationInfo.error(Gui.createserverpack_gui_inclusions_editor_destination_error(destination.text))
+            }
         }
     }
 
@@ -303,20 +354,22 @@ class InclusionsEditor(
      * @author Griefed
      */
     fun inclusionFilterWasEdited() {
-        try {
-            inclusionFilter.text.toRegex()
-            list.selectedValue.inclusionFilter = inclusionFilter.text
-            timer.restart()
-            inclusionInfo.info()
-            list.updateUI()
-        } catch (ex: PatternSyntaxException) {
-            timer.stop()
-            var exception = ex.message ?: ex.description
-            exception = exception
-                .replace("\t", "%20")
-                .replace("\n", "<br>")
-                .replace(" ", "&nbsp;")
-            inclusionInfo.error("<html>${Gui.createserverpack_gui_inclusions_editor_filter_error(exception)}</html>")
+        if (list.model.size > 0 && !list.isSelectionEmpty) {
+            try {
+                inclusionFilter.text.toRegex()
+                list.selectedValue.inclusionFilter = inclusionFilter.text
+                timer.restart()
+                inclusionInfo.info()
+                list.updateUI()
+            } catch (ex: PatternSyntaxException) {
+                timer.stop()
+                var exception = ex.message ?: ex.description
+                exception = exception
+                    .replace("\t", "%20")
+                    .replace("\n", "<br>")
+                    .replace(" ", "&nbsp;")
+                inclusionInfo.error("<html>${Gui.createserverpack_gui_inclusions_editor_filter_error(exception)}</html>")
+            }
         }
     }
 
@@ -324,20 +377,22 @@ class InclusionsEditor(
      * @author Griefed
      */
     fun exclusionFilterWasEdited() {
-        try {
-            exclusionFilter.text.toRegex()
-            list.selectedValue.exclusionFilter = exclusionFilter.text
-            timer.restart()
-            exclusionInfo.info()
-            list.updateUI()
-        } catch (ex: PatternSyntaxException) {
-            timer.stop()
-            var exception = ex.message ?: ex.description
-            exception = exception
-                .replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;")
-                .replace("\n", "<br>")
-                .replace(" ", "&nbsp;")
-            exclusionInfo.error("<html>${Gui.createserverpack_gui_inclusions_editor_filter_error(exception)}</html>")
+        if (list.model.size > 0 && !list.isSelectionEmpty) {
+            try {
+                exclusionFilter.text.toRegex()
+                list.selectedValue.exclusionFilter = exclusionFilter.text
+                timer.restart()
+                exclusionInfo.info()
+                list.updateUI()
+            } catch (ex: PatternSyntaxException) {
+                timer.stop()
+                var exception = ex.message ?: ex.description
+                exception = exception
+                    .replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;")
+                    .replace("\n", "<br>")
+                    .replace(" ", "&nbsp;")
+                exclusionInfo.error("<html>${Gui.createserverpack_gui_inclusions_editor_filter_error(exception)}</html>")
+            }
         }
     }
 
@@ -347,7 +402,10 @@ class InclusionsEditor(
     private fun selectionOccurred(event: ListSelectionEvent) {
         when {
             event.valueIsAdjusting -> return
-            list.selectedIndex == -1 -> return
+            list.selectedIndex == -1 || list.model.size <= 0 -> {
+                emtpySelection()
+                return
+            }
         }
         selectedInclusion = list.selectedValue
         source.text = selectedInclusion!!.source
@@ -412,13 +470,23 @@ class InclusionsEditor(
     private fun addEntry(entry: InclusionSpecification) {
         inclusionModel.addElement(entry)
         list.selectedIndex = list.lastVisibleIndex
+        if (list.model.size == 1) {
+            list.selectedIndex = 0
+        }
     }
 
     /**
      * @author Griefed
      */
     private fun removeEntry(index: Int): InclusionSpecification {
-        return inclusionModel.remove(index)
+        val removed = inclusionModel.remove(index)
+        if (list.model.size == 1) {
+            list.selectedIndex = 0
+        }
+        if (list.model.size <= 0) {
+            emtpySelection()
+        }
+        return removed
     }
 
     /**
