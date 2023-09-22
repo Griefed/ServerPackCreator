@@ -1,7 +1,7 @@
 
 # Dependency Licenses
 ## Dependency License Report
-_2023-09-19 20:46:41 MESZ_
+_2023-09-21 20:47:08 MESZ_
 ## Apache License, Version 2.0
 
 **1** **Group:** `com.cronutils` **Name:** `cron-utils` **Version:** `9.2.1` 

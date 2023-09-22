@@ -9,7 +9,6 @@ repositories {
 }
 
 kotlin {
-    @Suppress("UNUSED_VARIABLE")
     sourceSets {
         val commonMain by getting {
             dependencies {
@@ -31,7 +30,7 @@ kotlin {
             dependencies {
                 implementation("org.jetbrains.kotlin:kotlin-bom")
                 implementation("org.jetbrains.kotlin:kotlin-stdlib")
-                implementation(files("$buildDir/resources/"))
+                implementation(files("${layout.buildDirectory.asFile.get()}/resources/"))
                 api("de.comahe.i18n4k:i18n4k-core-jvm:0.5.0")
                 api("com.electronwill.night-config:toml:3.6.6")
                 api("com.fasterxml.jackson.core:jackson-databind:2.15.0")
@@ -86,8 +85,8 @@ tasks.jvmProcessResources {
 //Fix resources missing in multiplatform jvm inDev run https://youtrack.jetbrains.com/issue/KTIJ-16582/Consumer-Kotlin-JVM-library-cannot-access-a-Kotlin-Multiplatform-JVM-target-resources-in-multi-module-Gradle-project
 tasks.register<Copy>("fixMissingResources") {
     dependsOn(tasks.jvmProcessResources)
-    from("$buildDir/processedResources/jvm/main")
-    into("$buildDir/resources/")
+    from("${layout.buildDirectory.asFile.get()}/processedResources/jvm/main")
+    into("${layout.buildDirectory.asFile.get()}/resources/")
 }
 
 tasks.dokkaHtml {

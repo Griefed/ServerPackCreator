@@ -63,6 +63,13 @@ open class ScrollTextField(
     private val undoManager = UndoManager()
     val suggestionProvider: SuggestionProvider?
 
+    var isEditable: Boolean
+        get() {
+            return textField.isEditable
+        }
+        set(value) {
+            textField.isEditable = value
+        }
     var text: String
         get() {
             return textField.text
