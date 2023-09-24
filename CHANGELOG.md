@@ -1,3 +1,21 @@
+## [5.0.0-alpha.31](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-alpha.30...5.0.0-alpha.31) (2023-09-24)
+
+
+### :scissors: Refactor
+
+* Move directory filter to own class ([54ef7c4](https://git.griefed.de/Griefed/ServerPackCreator/commit/54ef7c48d118376832f70907d5606e8e1eb831a5))
+
+
+### 🛠 Fixes
+
+* Correctly set home-directory and logging properties in dev-environment ([aff8641](https://git.griefed.de/Griefed/ServerPackCreator/commit/aff864186c17ce72a29050b0ae71194be408b928))
+* Prevent unwritable Artemis data-directory setting ([e05cadd](https://git.griefed.de/Griefed/ServerPackCreator/commit/e05cadd47c9af1bb53ba45585524a01386b09b16))
+* Prevent unwritable database setting ([edf3edc](https://git.griefed.de/Griefed/ServerPackCreator/commit/edf3edc20800d10d50cf13dca69a34186064d670))
+* Prevent unwritable home-directory setting ([6ebb6ba](https://git.griefed.de/Griefed/ServerPackCreator/commit/6ebb6ba035654c548ea3418eec5b45467db6b958))
+* Prevent unwritable server pack directory setting ([f45faa6](https://git.griefed.de/Griefed/ServerPackCreator/commit/f45faa65b6b65eaf020c86e20985409bdd5977c0))
+* Prevent unwritable Tomcat base-directory setting ([1c2ec1a](https://git.griefed.de/Griefed/ServerPackCreator/commit/1c2ec1abed60c321405ab8ec38d92a75a8d7a93b))
+* Prevent unwritable Tomcat log-directory setting ([b5cd792](https://git.griefed.de/Griefed/ServerPackCreator/commit/b5cd7924733da25dbcbad912edc96e3dcf3bde0d))
+
 ## [5.0.0-alpha.30](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-alpha.29...5.0.0-alpha.30) (2023-09-22)
 
 
