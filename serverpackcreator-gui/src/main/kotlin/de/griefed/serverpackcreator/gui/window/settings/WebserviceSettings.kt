@@ -137,23 +137,13 @@ class WebserviceSettings(
 
     val versionScheduleIcon = StatusIcon(guiProps,Gui.settings_webservice_schedule_versions_tooltip.toString())
     val versionScheduleLabel = ElementLabel(Gui.settings_webservice_schedule_versions_label.toString())
-    val versionScheduleSetting = ScrollTextField(
-        guiProps,
-        apiProperties.webserviceVersionSchedule,
-        Gui.settings_webservice_schedule_versions_label.toString(),
-        documentChangeListener
-    )
+    val versionScheduleSetting = ScrollTextField(guiProps,apiProperties.webserviceVersionSchedule,Gui.settings_webservice_schedule_versions_label.toString(),documentChangeListener)
     val versionRevert = BalloonTipButton(null,guiProps.revertIcon,Gui.settings_revert.toString(),guiProps) { versionScheduleSetting.text = apiProperties.webserviceVersionSchedule }
     val versionReset = BalloonTipButton(null,guiProps.resetIcon,Gui.settings_reset.toString(),guiProps) { versionScheduleSetting.text = apiProperties.fallbackVersionSchedule }
 
     val databaseCleanupScheduleIcon = StatusIcon(guiProps,Gui.settings_webservice_schedule_database_tooltip.toString())
     val databaseCleanupScheduleLabel = ElementLabel(Gui.settings_webservice_schedule_database_label.toString())
-    val databaseCleanupScheduleSetting = ScrollTextField(
-        guiProps,
-        apiProperties.webserviceDatabaseCleanupSchedule,
-        Gui.settings_webservice_schedule_database_label.toString(),
-        documentChangeListener
-    )
+    val databaseCleanupScheduleSetting = ScrollTextField(guiProps,apiProperties.webserviceDatabaseCleanupSchedule,Gui.settings_webservice_schedule_database_label.toString(),documentChangeListener)
     val databaseCleanupRevert = BalloonTipButton(null,guiProps.revertIcon,Gui.settings_revert.toString(),guiProps) { databaseCleanupScheduleSetting.text = apiProperties.webserviceDatabaseCleanupSchedule }
     val databaseCleanupReset = BalloonTipButton(null,guiProps.resetIcon,Gui.settings_reset.toString(),guiProps) { databaseCleanupScheduleSetting.text = apiProperties.fallbackDatabaseCleanupSchedule }
 
