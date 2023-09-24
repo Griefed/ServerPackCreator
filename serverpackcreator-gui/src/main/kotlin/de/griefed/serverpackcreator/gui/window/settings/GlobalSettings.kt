@@ -63,7 +63,7 @@ class GlobalSettings(
             } else {
                 JOptionPane.showMessageDialog(
                     mainFrame.frame,
-                    Gui.settings_global_home_error(homeChooser.selectedFile.absolutePath)
+                    Gui.settings_directory_error(homeChooser.selectedFile.absolutePath)
                 )
             }
         }
@@ -89,7 +89,14 @@ class GlobalSettings(
     val serverPacksChoose = BalloonTipButton(null,guiProps.folderIcon,Gui.settings_select_directory.toString(),guiProps) {
         val serverPackDirChooser = ServerPackDirChooser(apiProperties,Gui.settings_global_serverpacks_chooser.toString())
         if (serverPackDirChooser.showSaveDialog(mainFrame.frame) == JFileChooser.APPROVE_OPTION) {
-            serverPacksSetting.file = serverPackDirChooser.selectedFile.absoluteFile
+            if (serverPackDirChooser.selectedFile.absoluteFile.testFileWrite()) {
+                serverPacksSetting.file = serverPackDirChooser.selectedFile.absoluteFile
+            } else {
+                JOptionPane.showMessageDialog(
+                    mainFrame.frame,
+                    Gui.settings_directory_error(serverPackDirChooser.selectedFile.absoluteFile)
+                )
+            }
         }
     }
 
