@@ -137,9 +137,7 @@ class MigrationManager(
      * @return `true` if the current version is older than the previously used version.
      * @author Griefed
      */
-    private fun isOlder(
-        old: String, checkAgainst: String
-    ): Boolean {
+    private fun isOlder(old: String, checkAgainst: String): Boolean {
         return older(
             semantics(old), semantics(checkAgainst)
         )
@@ -153,9 +151,7 @@ class MigrationManager(
      * @return Methods to execute to ensure proper migration between version updates.
      * @author Griefed
      */
-    private fun getMigrationMethods(
-        oldVersion: String, currentVersion: String
-    ): List<Method?> {
+    private fun getMigrationMethods(oldVersion: String, currentVersion: String): List<Method?> {
         val run: MutableList<Method?> = ArrayList(100)
         val methods = migrationMethods.javaClass.declaredMethods
         val methodMap = HashMap<String, Method>(100)
@@ -220,9 +216,7 @@ class MigrationManager(
      * @return `true` if the version numbers checked against represent an older version.
      * @author Griefed
      */
-    private fun older(
-        old: IntArray, checkAgainst: IntArray
-    ): Boolean {
+    private fun older(old: IntArray, checkAgainst: IntArray): Boolean {
         // Current MAJOR version smaller?
         if (checkAgainst[0] < old[0]) {
             return true
@@ -255,9 +249,7 @@ class MigrationManager(
      * @return `true` if the migration-method version is newer than the current version.
      * @author Griefed
      */
-    private fun isNewer(
-        old: String, checkAgainst: String
-    ): Boolean {
+    private fun isNewer(old: String, checkAgainst: String): Boolean {
         return newer(
             semantics(old), semantics(checkAgainst)
         )
@@ -272,9 +264,7 @@ class MigrationManager(
      * version.
      * @author Griefed
      */
-    private fun isOlderOrSame(
-        old: String, checkAgainst: String
-    ): Boolean {
+    private fun isOlderOrSame(old: String, checkAgainst: String): Boolean {
         return oldOrSame(
             semantics(old), semantics(checkAgainst)
         )
@@ -289,9 +279,7 @@ class MigrationManager(
      * @return `true` if the version numbers checked against represent a newer version.
      * @author Griefed
      */
-    private fun newer(
-        old: IntArray, checkAgainst: IntArray
-    ): Boolean {
+    private fun newer(old: IntArray, checkAgainst: IntArray): Boolean {
         // Method MAJOR bigger?
         if (checkAgainst[0] > old[0]) {
             return true
@@ -300,9 +288,10 @@ class MigrationManager(
         // Method MAJOR version equal and method MINOR bigger?
         return if (checkAgainst[0] == old[0] && checkAgainst[1] > old[1]) {
             true
-        } else checkAgainst[0] == old[0] && checkAgainst[1] == old[1] && checkAgainst[2] > old[2]
-
-        // Method MAJOR equal, method MINOR equal, method PATCH bigger?
+        } else {
+            // Method MAJOR equal, method MINOR equal, method PATCH bigger?
+            checkAgainst[0] == old[0] && checkAgainst[1] == old[1] && checkAgainst[2] > old[2]
+        }
     }
 
     /**
@@ -516,9 +505,22 @@ class MigrationManager(
             val changes: MutableList<String> = ArrayList<String>(10)
             //de.griefed.serverpackcreator.serverpack.script.template=default_template.ps1,default_template.sh
             val previousSetting = apiProperties.scriptTemplates.joinToString(",")
+            val currentFiles = apiProperties.serverFilesDirectory.walk().maxDepth(1).filter {
+                it.name.endsWith("sh",ignoreCase = true) ||
+                        it.name.endsWith("ps1",ignoreCase = true) ||
+                        it.name.endsWith("bat",ignoreCase = true)
+            }.filter { !it.name.contains("default_template",ignoreCase = true)}.toList()
+            val templates = TreeSet<File>()
+
             if (previousSetting == "default_template.ps1,default_template.sh") {
-                changes.add("Migrated default script-template setting to new specs.")
+                changes.add("Migrated default script-template(s) setting to new specs.")
                 apiProperties.scriptTemplates = TreeSet(apiProperties.defaultScriptTemplates())
+            } else if (currentFiles.isNotEmpty()) {
+                changes.add("Migrated custom script-template(s) setting to new specs.")
+                for (file in currentFiles) {
+                    templates.add(file.absoluteFile)
+                }
+                apiProperties.scriptTemplates = templates
             }
 
             if (changes.isNotEmpty()) {

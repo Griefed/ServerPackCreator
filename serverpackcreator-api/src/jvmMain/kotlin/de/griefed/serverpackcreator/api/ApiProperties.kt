@@ -799,8 +799,22 @@ actual class ApiProperties(
      */
     fun defaultScriptTemplates(): List<File> {
         val templates = mutableListOf<File>()
-        templates.add(File(serverFilesDirectory.absolutePath, defaultShellScriptTemplate.name).absoluteFile)
-        templates.add(File(serverFilesDirectory.absolutePath, defaultPowerShellScriptTemplate.name).absoluteFile)
+        // See whether we have custom files.
+        val currentFiles = serverFilesDirectory.walk().maxDepth(1).filter {
+            it.name.endsWith("sh",ignoreCase = true) ||
+            it.name.endsWith("ps1",ignoreCase = true) ||
+            it.name.endsWith("bat",ignoreCase = true)
+        }.filter {
+            !it.name.contains("default_template",ignoreCase = true)
+        }.toList()
+        if (currentFiles.isNotEmpty()) {
+            for (file in currentFiles) {
+                templates.add(file.absoluteFile)
+            }
+        } else {
+            templates.add(File(serverFilesDirectory.absolutePath, defaultShellScriptTemplate.name).absoluteFile)
+            templates.add(File(serverFilesDirectory.absolutePath, defaultPowerShellScriptTemplate.name).absoluteFile)
+        }
         return templates.toList()
     }
 
