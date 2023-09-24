@@ -93,12 +93,7 @@ class WebserviceSettings(
 
     val cleanupScheduleIcon = StatusIcon(guiProps,Gui.settings_webservice_schedule_cleanup_tooltip.toString())
     val cleanupScheduleLabel = ElementLabel(Gui.settings_webservice_schedule_cleanup_label.toString())
-    val cleanupScheduleSetting = ScrollTextField(
-        guiProps,
-        apiProperties.webserviceCleanupSchedule,
-        Gui.settings_webservice_schedule_cleanup_label.toString(),
-        documentChangeListener
-    )
+    val cleanupScheduleSetting = ScrollTextField(guiProps,apiProperties.webserviceCleanupSchedule,Gui.settings_webservice_schedule_cleanup_label.toString(),documentChangeListener)
     val cleanupRevert = BalloonTipButton(null,guiProps.revertIcon,Gui.settings_revert.toString(),guiProps) { cleanupScheduleSetting.text = apiProperties.webserviceCleanupSchedule }
     val cleanupReset = BalloonTipButton(null,guiProps.resetIcon,Gui.settings_reset.toString(),guiProps) { cleanupScheduleSetting.text = apiProperties.fallbackCleanupSchedule }
 
@@ -110,7 +105,14 @@ class WebserviceSettings(
     val logDirectoryChoose = BalloonTipButton(null,guiProps.folderIcon,Gui.settings_select_directory.toString(),guiProps) {
         val logDirectoryChooser = TomcatLogDirChooser(apiProperties,Gui.settings_webservice_tomcat_logs_chooser.toString())
         if (logDirectoryChooser.showSaveDialog(mainFrame.frame) == JFileChooser.APPROVE_OPTION) {
-            logDirectorySetting.file = logDirectoryChooser.selectedFile.absoluteFile
+            if (logDirectoryChooser.selectedFile.absoluteFile.testFileWrite()) {
+                logDirectorySetting.file = logDirectoryChooser.selectedFile.absoluteFile
+            } else {
+                JOptionPane.showMessageDialog(
+                    mainFrame.frame,
+                    Gui.settings_directory_error(logDirectoryChooser.selectedFile.absoluteFile)
+                )
+            }
         }
     }
 
