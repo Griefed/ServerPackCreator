@@ -810,25 +810,21 @@ actual class ApiProperties(
     @Suppress("SetterBackingFieldAssignment")
     var scriptTemplates: TreeSet<File> = TreeSet<File>()
         get() {
-            val entries = getFileListProperty(
+            /*val entries = getFileListProperty(
                 pServerPackScriptTemplates,
                 fallbackScriptTemplates,
                 serverFilesDirectory.absolutePath + File.separator
-            )
+            )*/
+            val entries = getListProperty(pServerPackScriptTemplates,defaultScriptTemplates().map { it.absolutePath }.joinToString(",")).map { File(it).absoluteFile }
             field.clear()
             field.addAll(entries)
             return field
         }
         set(value) {
-            val entries = value.map { it.name }
+            val entries = value.map { it.absolutePath }
             setListProperty(pServerPackScriptTemplates, entries, ",")
-            val files = getFileListProperty(
-                pServerPackScriptTemplates,
-                fallbackScriptTemplates,
-                serverFilesDirectory.absolutePath + File.separator
-            )
             field.clear()
-            field.addAll(files)
+            field.addAll(value.map { it.absoluteFile })
             log.info("Using script templates:")
             for (template in field) {
                 log.info("    " + template.path)
