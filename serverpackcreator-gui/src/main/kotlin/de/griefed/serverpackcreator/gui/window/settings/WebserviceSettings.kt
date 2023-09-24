@@ -124,7 +124,14 @@ class WebserviceSettings(
     val baseDirChoose = BalloonTipButton(null,guiProps.folderIcon,Gui.settings_select_directory.toString(),guiProps) {
         val baseDirChooser = TomcatBaseDirChooser(apiProperties,Gui.settings_webservice_tomcat_dir_chooser.toString())
         if (baseDirChooser.showSaveDialog(mainFrame.frame) == JFileChooser.APPROVE_OPTION) {
-            baseDirSetting.file = baseDirChooser.selectedFile.absoluteFile
+            if (baseDirChooser.selectedFile.absoluteFile.testFileWrite()) {
+                baseDirSetting.file = baseDirChooser.selectedFile.absoluteFile
+            } else {
+                JOptionPane.showMessageDialog(
+                    mainFrame.frame,
+                    Gui.settings_directory_error(baseDirChooser.selectedFile.absoluteFile)
+                )
+            }
         }
     }
 
