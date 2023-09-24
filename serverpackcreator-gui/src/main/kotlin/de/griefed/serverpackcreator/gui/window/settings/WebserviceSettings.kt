@@ -23,12 +23,14 @@ import com.cronutils.model.CronType
 import com.cronutils.model.definition.CronDefinitionBuilder
 import com.cronutils.parser.CronParser
 import de.griefed.serverpackcreator.api.ApiProperties
+import de.griefed.serverpackcreator.api.utilities.common.testFileWrite
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.components.*
 import de.griefed.serverpackcreator.gui.window.MainFrame
 import de.griefed.serverpackcreator.gui.window.settings.components.*
 import java.io.File
 import javax.swing.JFileChooser
+import javax.swing.JOptionPane
 import javax.swing.event.ChangeListener
 
 /**
@@ -53,7 +55,14 @@ class WebserviceSettings(
     val artemisDataDirectoryChoose = BalloonTipButton(null,guiProps.folderIcon,Gui.settings_select_directory.toString(),guiProps) {
         val artemisChooser = ArtemisDataDirChooser(apiProperties,Gui.settings_webservice_artemisdata_chooser.toString())
         if (artemisChooser.showSaveDialog(mainFrame.frame) == JFileChooser.APPROVE_OPTION) {
-            artemisDataDirectorySetting.file = artemisChooser.selectedFile.absoluteFile
+            if (artemisChooser.selectedFile.absoluteFile.testFileWrite()) {
+                artemisDataDirectorySetting.file = artemisChooser.selectedFile.absoluteFile
+            } else {
+                JOptionPane.showMessageDialog(
+                    mainFrame.frame,
+                    Gui.settings_directory_error(artemisChooser.selectedFile.absoluteFile)
+                )
+            }
         }
     }
 
