@@ -1191,6 +1191,9 @@ actual class ApiProperties(
             val prop = internalProps.getProperty(pHomeDirectory)
             field = if (internalProps.containsKey(pHomeDirectory) && File(prop).absoluteFile.isDirectory) {
                 File(prop).absoluteFile
+            } else if (jarInformation.jarPath.toFile().isDirectory) {
+                // Dev environment
+                File("").absoluteFile
             } else {
                 File(home, "ServerPackCreator").absoluteFile
             }

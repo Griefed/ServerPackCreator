@@ -37,5 +37,6 @@ class TomcatLogDirChooser(apiProperties: ApiProperties, title: String) : JFileCh
         isMultiSelectionEnabled = false
         dialogType = SAVE_DIALOG
         preferredSize = Dimension(750, 450)
+        fileFilter = WritableDirectoryFilter()
     }
 }

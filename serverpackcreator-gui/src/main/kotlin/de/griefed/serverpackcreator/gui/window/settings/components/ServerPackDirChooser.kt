@@ -37,5 +37,6 @@ class ServerPackDirChooser(apiProperties: ApiProperties, title: String) : JFileC
         isMultiSelectionEnabled = false
         dialogType = SAVE_DIALOG
         preferredSize = Dimension(750, 450)
+        fileFilter = WritableDirectoryFilter()
     }
 }

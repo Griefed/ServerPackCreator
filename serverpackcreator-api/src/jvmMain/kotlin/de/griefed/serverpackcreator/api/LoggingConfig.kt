@@ -71,6 +71,7 @@ class LoggingConfig : ConfigurationFactory() {
         val serverPackCreatorHomeDir = File(userHome, "ServerPackCreator").absoluteFile
         val homeDirFile = File(serverPackCreatorHomeDir,serverPackCreatorProperties).absoluteFile
         val relativeDirFile = File(serverPackCreatorProperties).absoluteFile
+        val overrideProperties = File(jarInformation.jarFolder.absoluteFile, "overrides.properties")
 
         // Load the properties file from the classpath, providing default values.
         try {
@@ -89,6 +90,8 @@ class LoggingConfig : ConfigurationFactory() {
         loadFile(homeDirFile, props)
         // If our properties-file in the directory from which the user is executing SPC exists, load it.
         loadFile(relativeDirFile, props)
+        // If an overrides-file exists, load it
+        loadFile(overrideProperties,props)
 
         val home = if (props.containsKey("de.griefed.serverpackcreator.home")) {
             File(props.getProperty("de.griefed.serverpackcreator.home"))
@@ -96,20 +99,16 @@ class LoggingConfig : ConfigurationFactory() {
             if (jarInformation.jarPath.toFile().isDirectory) {
                 // Dev environment
                 isDevVersion = true
-                File(File("tests").absolutePath)
+                File("").absoluteFile
             } else {
                 File(userHome, "ServerPackCreator")
             }
         }
         home.createDirectories(create = true, directory = true)
 
-        if (isDevVersion) {
-            logDirPath = File(home, "tests/logs").absolutePath
-            log4jXml = File(home, "tests/log4j2.xml")
-        } else {
-            logDirPath = File(home, "logs").absolutePath
-            log4jXml = File(home, "log4j2.xml")
-        }
+        logDirPath = File(home, "logs").absolutePath
+        log4jXml = File(home, "log4j2.xml")
+
         val oldLogs = "<Property name=\"log-path\">logs</Property>"
         val newLogs = "<Property name=\"log-path\">$logDirPath</Property>"
         if (!log4jXml.isFile) {

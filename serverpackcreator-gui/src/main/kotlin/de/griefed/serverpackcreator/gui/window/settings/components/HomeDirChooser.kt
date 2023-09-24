@@ -37,5 +37,6 @@ class HomeDirChooser(apiProperties: ApiProperties, title: String) : JFileChooser
         isMultiSelectionEnabled = false
         dialogType = SAVE_DIALOG
         preferredSize = Dimension(750, 450)
+        fileFilter = WritableDirectoryFilter()
     }
 }

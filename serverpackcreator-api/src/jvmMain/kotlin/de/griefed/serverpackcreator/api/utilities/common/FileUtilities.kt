@@ -507,3 +507,28 @@ actual fun File.createDirectories(create: Boolean, directory: Boolean) {
         }
     }
 }
+
+/**
+ * Test whether files can be written to this file denoting a directory.
+ * If this file is not a directory, an [IllegalArgumentException] will be thrown.
+ *
+ * @author Griefed
+ */
+@Throws(IllegalArgumentException::class)
+fun File.testFileWrite() : Boolean {
+    if (!this.isDirectory) {
+        throw(IllegalArgumentException("Destination must be a directory."))
+    }
+    return try {
+        val file = File(this,"poke")
+        file.writeText("writable")
+        if (file.exists()) {
+            file.deleteQuietly()
+            true
+        } else {
+            false
+        }
+    } catch (ex: Exception) {
+        false
+    }
+}

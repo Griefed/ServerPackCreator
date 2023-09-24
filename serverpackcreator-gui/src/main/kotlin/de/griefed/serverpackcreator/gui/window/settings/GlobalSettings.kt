@@ -23,6 +23,8 @@ import Gui
 import de.comahe.i18n4k.Locale
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.ExclusionFilter
+import de.griefed.serverpackcreator.api.utilities.common.deleteQuietly
+import de.griefed.serverpackcreator.api.utilities.common.testFileWrite
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.components.*
 import de.griefed.serverpackcreator.gui.window.MainFrame
@@ -34,6 +36,7 @@ import java.net.MalformedURLException
 import java.net.URL
 import javax.swing.DefaultComboBoxModel
 import javax.swing.JFileChooser
+import javax.swing.JOptionPane
 
 /**
  * @author Griefed
@@ -55,7 +58,14 @@ class GlobalSettings(
     val homeChoose = BalloonTipButton(null,guiProps.folderIcon,Gui.settings_select_directory.toString(),guiProps) {
         val homeChooser = HomeDirChooser(apiProperties,Gui.settings_global_home_chooser.toString())
         if (homeChooser.showSaveDialog(mainFrame.frame) == JFileChooser.APPROVE_OPTION) {
-            homeSetting.file = homeChooser.selectedFile.absoluteFile
+            if (homeChooser.selectedFile.absoluteFile.testFileWrite()) {
+                homeSetting.file = homeChooser.selectedFile.absoluteFile
+            } else {
+                JOptionPane.showMessageDialog(
+                    mainFrame.frame,
+                    Gui.settings_directory_error(homeChooser.selectedFile.absolutePath)
+                )
+            }
         }
     }
 
@@ -79,7 +89,14 @@ class GlobalSettings(
     val serverPacksChoose = BalloonTipButton(null,guiProps.folderIcon,Gui.settings_select_directory.toString(),guiProps) {
         val serverPackDirChooser = ServerPackDirChooser(apiProperties,Gui.settings_global_serverpacks_chooser.toString())
         if (serverPackDirChooser.showSaveDialog(mainFrame.frame) == JFileChooser.APPROVE_OPTION) {
-            serverPacksSetting.file = serverPackDirChooser.selectedFile.absoluteFile
+            if (serverPackDirChooser.selectedFile.absoluteFile.testFileWrite()) {
+                serverPacksSetting.file = serverPackDirChooser.selectedFile.absoluteFile
+            } else {
+                JOptionPane.showMessageDialog(
+                    mainFrame.frame,
+                    Gui.settings_directory_error(serverPackDirChooser.selectedFile.absoluteFile)
+                )
+            }
         }
     }
 
@@ -115,12 +132,7 @@ class GlobalSettings(
 
     val fallbackURLIcon = StatusIcon(guiProps, Gui.settings_global_fallbackurl_tooltip.toString())
     val fallbackURLLabel = ElementLabel(Gui.settings_global_fallbackurl_label.toString())
-    val fallbackURLSetting = ScrollTextField(
-        guiProps,
-        apiProperties.updateUrl.toString(),
-        Gui.settings_global_fallbackurl_label.toString(),
-        changeListener
-    )
+    val fallbackURLSetting = ScrollTextField(guiProps,apiProperties.updateUrl.toString(),Gui.settings_global_fallbackurl_label.toString(),changeListener)
     val fallbackURLRevert = BalloonTipButton(null, guiProps.revertIcon, Gui.settings_revert.toString(), guiProps) { fallbackURLSetting.text = apiProperties.updateUrl.toString() }
     val fallbackURLReset = BalloonTipButton(null,guiProps.resetIcon,Gui.settings_reset.toString(),guiProps) { fallbackURLSetting.text = apiProperties.fallbackUpdateURL }
 
