@@ -132,12 +132,7 @@ class GlobalSettings(
 
     val fallbackURLIcon = StatusIcon(guiProps, Gui.settings_global_fallbackurl_tooltip.toString())
     val fallbackURLLabel = ElementLabel(Gui.settings_global_fallbackurl_label.toString())
-    val fallbackURLSetting = ScrollTextField(
-        guiProps,
-        apiProperties.updateUrl.toString(),
-        Gui.settings_global_fallbackurl_label.toString(),
-        changeListener
-    )
+    val fallbackURLSetting = ScrollTextField(guiProps,apiProperties.updateUrl.toString(),Gui.settings_global_fallbackurl_label.toString(),changeListener)
     val fallbackURLRevert = BalloonTipButton(null, guiProps.revertIcon, Gui.settings_revert.toString(), guiProps) { fallbackURLSetting.text = apiProperties.updateUrl.toString() }
     val fallbackURLReset = BalloonTipButton(null,guiProps.resetIcon,Gui.settings_reset.toString(),guiProps) { fallbackURLSetting.text = apiProperties.fallbackUpdateURL }
 
