@@ -34,6 +34,7 @@ import java.awt.event.ActionListener
 import java.io.File
 import java.net.MalformedURLException
 import java.net.URL
+import java.util.*
 import javax.swing.DefaultComboBoxModel
 import javax.swing.JFileChooser
 import javax.swing.JOptionPane
@@ -359,10 +360,10 @@ class GlobalSettings(
         apiProperties.homeDirectory = homeSetting.file.absoluteFile
         apiProperties.javaPath = javaSetting.file.absolutePath
         apiProperties.serverPacksDirectory = serverPacksSetting.file.absoluteFile
-        apiProperties.zipArchiveExclusions.addAll(zipSetting.text.replace(", ",",").split(","))
-        apiProperties.directoriesToInclude.addAll(inclusionsSetting.text.replace(", ",",").split(","))
+        apiProperties.zipArchiveExclusions = TreeSet(zipSetting.text.replace(", ",",").split(","))
+        apiProperties.directoriesToInclude = TreeSet(inclusionsSetting.text.replace(", ",",").split(","))
         apiProperties.aikarsFlags = aikarsSetting.text
-        apiProperties.scriptTemplates.addAll(scriptSetting.text.replace(", ",",").split(",").map { File(it) })
+        apiProperties.scriptTemplates = TreeSet(scriptSetting.text.replace(", ",",").split(",").map { File(it).absoluteFile })
         apiProperties.updateUrl = URL(fallbackURLSetting.text)
         apiProperties.exclusionFilter = exclusionSetting.selectedItem as ExclusionFilter
         apiProperties.language = languageSetting.selectedItem as Locale
@@ -436,9 +437,9 @@ class GlobalSettings(
      * @author Griefed
      */
     override fun hasUnsavedChanges(): Boolean {
-        val changes = homeSetting.file != apiProperties.homeDirectory.absoluteFile ||
-        javaSetting.file != File(apiProperties.javaPath).absoluteFile ||
-        serverPacksSetting.file != apiProperties.serverPacksDirectory.absoluteFile ||
+        val changes = homeSetting.file.absolutePath != apiProperties.homeDirectory.absolutePath ||
+        javaSetting.file.absolutePath != File(apiProperties.javaPath).absolutePath ||
+        serverPacksSetting.file.absolutePath != apiProperties.serverPacksDirectory.absolutePath ||
         zipSetting.text != apiProperties.zipArchiveExclusions.joinToString(", ") ||
         inclusionsSetting.text != apiProperties.directoriesToInclude.joinToString(", ") ||
         aikarsSetting.text != apiProperties.aikarsFlags ||
