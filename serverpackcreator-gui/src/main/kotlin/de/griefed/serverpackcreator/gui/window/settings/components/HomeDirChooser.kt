@@ -21,6 +21,7 @@ package de.griefed.serverpackcreator.gui.window.settings.components
 
 import de.griefed.serverpackcreator.api.ApiProperties
 import java.awt.Dimension
+import java.io.File
 import javax.swing.JFileChooser
 
 /**
@@ -37,5 +38,15 @@ class HomeDirChooser(apiProperties: ApiProperties, title: String) : JFileChooser
         isMultiSelectionEnabled = false
         dialogType = SAVE_DIALOG
         preferredSize = Dimension(750, 450)
+        fileFilter = object : javax.swing.filechooser.FileFilter() {
+            override fun accept(file: File): Boolean {
+                val files = file.walk().filter { it.isDirectory }
+                return file.isDirectory && (file.canWrite() || files.any { it.canWrite() })
+            }
+
+            override fun getDescription(): String {
+                return Gui.settings_global_home_filter.toString()
+            }
+        }
     }
 }

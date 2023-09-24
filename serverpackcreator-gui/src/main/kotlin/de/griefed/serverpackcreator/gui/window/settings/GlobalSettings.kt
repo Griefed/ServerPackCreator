@@ -23,6 +23,8 @@ import Gui
 import de.comahe.i18n4k.Locale
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.ExclusionFilter
+import de.griefed.serverpackcreator.api.utilities.common.deleteQuietly
+import de.griefed.serverpackcreator.api.utilities.common.testFileWrite
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.components.*
 import de.griefed.serverpackcreator.gui.window.MainFrame
@@ -34,6 +36,7 @@ import java.net.MalformedURLException
 import java.net.URL
 import javax.swing.DefaultComboBoxModel
 import javax.swing.JFileChooser
+import javax.swing.JOptionPane
 
 /**
  * @author Griefed
@@ -55,7 +58,14 @@ class GlobalSettings(
     val homeChoose = BalloonTipButton(null,guiProps.folderIcon,Gui.settings_select_directory.toString(),guiProps) {
         val homeChooser = HomeDirChooser(apiProperties,Gui.settings_global_home_chooser.toString())
         if (homeChooser.showSaveDialog(mainFrame.frame) == JFileChooser.APPROVE_OPTION) {
-            homeSetting.file = homeChooser.selectedFile.absoluteFile
+            if (homeChooser.selectedFile.absoluteFile.testFileWrite()) {
+                homeSetting.file = homeChooser.selectedFile.absoluteFile
+            } else {
+                JOptionPane.showMessageDialog(
+                    mainFrame.frame,
+                    Gui.settings_global_home_error(homeChooser.selectedFile.absolutePath)
+                )
+            }
         }
     }
 
