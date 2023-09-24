@@ -37,5 +37,6 @@ class WebserviceDBDirChooser(apiProperties: ApiProperties, title: String) : JFil
         isMultiSelectionEnabled = false
         dialogType = SAVE_DIALOG
         preferredSize = Dimension(750, 450)
+        fileFilter = WritableDirectoryFilter()
     }
 }

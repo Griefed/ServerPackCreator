@@ -37,5 +37,6 @@ class ArtemisDataDirChooser(apiProperties: ApiProperties, title: String) : JFile
         isMultiSelectionEnabled = false
         dialogType = SAVE_DIALOG
         preferredSize = Dimension(750, 450)
+        fileFilter = WritableDirectoryFilter()
     }
 }
