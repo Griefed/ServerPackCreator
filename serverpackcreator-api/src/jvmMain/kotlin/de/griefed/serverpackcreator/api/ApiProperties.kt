@@ -799,8 +799,8 @@ actual class ApiProperties(
      */
     fun defaultScriptTemplates(): List<File> {
         val templates = mutableListOf<File>()
-        templates.add(File(serverFilesDirectory.absolutePath, defaultShellScriptTemplate.name))
-        templates.add(File(serverFilesDirectory.absolutePath, defaultPowerShellScriptTemplate.name))
+        templates.add(File(serverFilesDirectory.absolutePath, defaultShellScriptTemplate.name).absoluteFile)
+        templates.add(File(serverFilesDirectory.absolutePath, defaultPowerShellScriptTemplate.name).absoluteFile)
         return templates.toList()
     }
 
@@ -810,12 +810,8 @@ actual class ApiProperties(
     @Suppress("SetterBackingFieldAssignment")
     var scriptTemplates: TreeSet<File> = TreeSet<File>()
         get() {
-            /*val entries = getFileListProperty(
-                pServerPackScriptTemplates,
-                fallbackScriptTemplates,
-                serverFilesDirectory.absolutePath + File.separator
-            )*/
-            val entries = getListProperty(pServerPackScriptTemplates,defaultScriptTemplates().map { it.absolutePath }.joinToString(",")).map { File(it).absoluteFile }
+            val entries = getListProperty(pServerPackScriptTemplates,
+                defaultScriptTemplates().joinToString(",") { it.absolutePath }).map { File(it).absoluteFile }
             field.clear()
             field.addAll(entries)
             return field

@@ -511,5 +511,23 @@ class MigrationManager(
                 )
             }
         }
+
+        private fun FivePointZeroPointZero() {
+            val changes: MutableList<String> = ArrayList<String>(10)
+            //de.griefed.serverpackcreator.serverpack.script.template=default_template.ps1,default_template.sh
+            val previousSetting = apiProperties.scriptTemplates.joinToString(",")
+            if (previousSetting == "default_template.ps1,default_template.sh") {
+                changes.add("Migrated default script-template setting to new specs.")
+                apiProperties.scriptTemplates = TreeSet(apiProperties.defaultScriptTemplates())
+            }
+
+            if (changes.isNotEmpty()) {
+                migrationMessages.add(
+                    MigrationMessage(
+                        previous, current, changes
+                    )
+                )
+            }
+        }
     }
 }
