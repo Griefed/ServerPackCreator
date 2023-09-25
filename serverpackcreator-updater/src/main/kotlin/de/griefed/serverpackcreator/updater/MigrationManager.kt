@@ -470,7 +470,7 @@ class MigrationManager(
                     apiProperties.homeDirectory, "addons"
                 ).renameTo(apiProperties.pluginsDirectory)
             ) {
-                changes.add("Migrated addons-directory to plugins-directory.")
+                changes.add(Updates.migrationmanager_migration_fourpointzeropointzero_addons.toString())
                 val disabled = File(apiProperties.pluginsDirectory, "disabled.txt")
                 val contents = disabled.readText()
                 for (file in apiProperties.pluginsDirectory.filteredWalk(listOf(".jar"))) {
@@ -481,7 +481,7 @@ class MigrationManager(
                     }
                     if (!contents.contains(id)) {
                         disabled.appendText(id)
-                        changes.add("Disabled plugin $file to prevent crashes due to probable version incompatibility.")
+                        changes.add(Updates.migrationmanager_migration_fourpointzeropointzero_addons_disabled(id))
                     }
                 }
             }
@@ -489,7 +489,7 @@ class MigrationManager(
             if (apiProperties.language.language == "en_us") {
                 val old = apiProperties.language.language.split("_")
                 apiProperties.changeLocale(Locale("en_GB"))
-                changes.add("Migrated locale setting from $old to en_GB.")
+                changes.add(Updates.migrationmanager_migration_fourpointzeropointzero_locale(old))
             }
 
             if (changes.isNotEmpty()) {
@@ -503,7 +503,6 @@ class MigrationManager(
 
         private fun FivePointZeroPointZero() {
             val changes: MutableList<String> = ArrayList<String>(10)
-            //de.griefed.serverpackcreator.serverpack.script.template=default_template.ps1,default_template.sh
             val previousSetting = apiProperties.scriptTemplates.joinToString(",")
             val currentFiles = apiProperties.serverFilesDirectory.walk().maxDepth(1).filter {
                 it.name.endsWith("sh",ignoreCase = true) ||
@@ -513,10 +512,10 @@ class MigrationManager(
             val templates = TreeSet<File>()
 
             if (previousSetting == "default_template.ps1,default_template.sh") {
-                changes.add("Migrated default script-template(s) setting to new specs.")
+                changes.add(Updates.migrationmanager_migration_fivepointzeropointzero_scripts_default.toString())
                 apiProperties.scriptTemplates = TreeSet(apiProperties.defaultScriptTemplates())
             } else if (currentFiles.isNotEmpty()) {
-                changes.add("Migrated custom script-template(s) setting to new specs.")
+                changes.add(Updates.migrationmanager_migration_fivepointzeropointzero_scripts_custom.toString())
                 for (file in currentFiles) {
                     templates.add(file.absoluteFile)
                 }
