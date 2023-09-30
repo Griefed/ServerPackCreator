@@ -1,3 +1,30 @@
+## [5.0.0-alpha.32](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-alpha.31...5.0.0-alpha.32) (2023-09-30)
+
+
+### 📦 Other
+
+* Update license report ([32ce656](https://git.griefed.de/Griefed/ServerPackCreator/commit/32ce6565cc649005cfb7603d67d35d6bfd9e2677))
+* Use i18n for new migrations ([d5d7eb5](https://git.griefed.de/Griefed/ServerPackCreator/commit/d5d7eb5a882540ad6596849f8632ecb58862d071))
+
+
+### 🧪 Tests
+
+* Ensure custom templates are used ([b87dd67](https://git.griefed.de/Griefed/ServerPackCreator/commit/b87dd67bb2b4a849677d82702d0fb78ae0c1f2b7))
+
+
+### 🚀 Features
+
+* Tip of the day! ([3385a26](https://git.griefed.de/Griefed/ServerPackCreator/commit/3385a266dad4d2b3a89bd02b873057a4c4cb4dea))
+
+
+### 🛠 Fixes
+
+* Check configurations after saving ([39f9290](https://git.griefed.de/Griefed/ServerPackCreator/commit/39f929024cdd9e31fa581f3e8258850bd3a7e843))
+* Compare list- and file-settings more reliably ([3d695ae](https://git.griefed.de/Griefed/ServerPackCreator/commit/3d695ae3c83a48fde2ae1eb44b8e4387df5eb299))
+* Migrate to new script tempalte storage ([883206f](https://git.griefed.de/Griefed/ServerPackCreator/commit/883206f537a77d649f3911760dca0d6b14bbee98))
+* Store and retrieve script-template settings in a more reliable way ([e603165](https://git.griefed.de/Griefed/ServerPackCreator/commit/e6031655ba171113d32b2c9b0b95558909abf79a))
+* Try and fix missing migration for custom templates property ([d488660](https://git.griefed.de/Griefed/ServerPackCreator/commit/d4886606a78753d9849f0a2bee08efe52181d20a))
+
 ## [5.0.0-alpha.31](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-alpha.30...5.0.0-alpha.31) (2023-09-24)
 
 
