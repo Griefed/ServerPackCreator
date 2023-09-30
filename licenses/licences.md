@@ -1,7 +1,7 @@
 
 # Dependency Licenses
 ## Dependency License Report
-_2023-09-21 20:47:08 MESZ_
+_2023-10-01 00:11:18 MESZ_
 ## Apache License, Version 2.0
 
 **1** **Group:** `com.cronutils` **Name:** `cron-utils` **Version:** `9.2.1` 
@@ -183,34 +183,40 @@ _2023-09-21 20:47:08 MESZ_
 **33** **Group:** `com.miglayout` **Name:** `miglayout-swing` **Version:** `11.0` 
 > - **POM License**: BSD Zero Clause License - [https://opensource.org/licenses/0BSD](https://opensource.org/licenses/0BSD)
 
+## GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1
+
+**34** **Group:** `tokyo.northside` **Name:** `tipoftheday` **Version:** `0.4.2` 
+> - **POM Project URL**: [https://codeberg.org/miurahr/tipoftheday](https://codeberg.org/miurahr/tipoftheday)
+> - **POM License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 - [https://www.gnu.org/licenses/lgpl-2.1](https://www.gnu.org/licenses/lgpl-2.1)
+
 ## GNU Lesser General Public License v3.0
 
-**34** **Group:** `com.electronwill.night-config` **Name:** `toml` **Version:** `3.6.6` 
+**35** **Group:** `com.electronwill.night-config` **Name:** `toml` **Version:** `3.6.6` 
 > - **POM Project URL**: [https://github.com/TheElectronWill/Night-Config](https://github.com/TheElectronWill/Night-Config)
 > - **POM License**: GNU Lesser General Public License v3.0 - [https://www.gnu.org/licenses/lgpl-3.0.txt](https://www.gnu.org/licenses/lgpl-3.0.txt)
 
 ## MIT License
 
-**35** **Group:** `de.griefed` **Name:** `versionchecker` **Version:** `1.1.5` 
+**36** **Group:** `de.griefed` **Name:** `versionchecker` **Version:** `1.1.9` 
 > - **POM Project URL**: [https://git.griefed.de/Griefed/VersionChecker.git](https://git.griefed.de/Griefed/VersionChecker.git)
 > - **POM License**: MIT License - [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
 
 ## PUBLIC DOMAIN
 
-**36** **Group:** `com.github.gwenn` **Name:** `sqlite-dialect` **Version:** `0.1.2` 
+**37** **Group:** `com.github.gwenn` **Name:** `sqlite-dialect` **Version:** `0.1.2` 
 > - **POM Project URL**: [https://github.com/gwenn/sqlite-dialect](https://github.com/gwenn/sqlite-dialect)
 > - **POM License**: PUBLIC DOMAIN - [http://unlicense.org/](http://unlicense.org/)
 
 ## SIL OPEN FONT LICENSE Version 1.1
 
-**37** **Group:** `com.formdev` **Name:** `flatlaf-fonts-inter` **Version:** `3.19` 
+**38** **Group:** `com.formdev` **Name:** `flatlaf-fonts-inter` **Version:** `3.19` 
 > - **POM Project URL**: [https://github.com/JFormDesigner/FlatLaf](https://github.com/JFormDesigner/FlatLaf)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 > - **POM License**: SIL OPEN FONT LICENSE Version 1.1 - [https://choosealicense.com/licenses/ofl-1.1/](https://choosealicense.com/licenses/ofl-1.1/)
 > - **Embedded license files**: [flatlaf-fonts-inter-3.19.jar/META-INF/LICENSE](flatlaf-fonts-inter-3.19.jar/META-INF/LICENSE) 
     - [flatlaf-fonts-inter-3.19.jar/com/formdev/flatlaf/fonts/inter/LICENSE.txt](flatlaf-fonts-inter-3.19.jar/com/formdev/flatlaf/fonts/inter/LICENSE.txt)
 
-**38** **Group:** `com.formdev` **Name:** `flatlaf-fonts-jetbrains-mono` **Version:** `2.242` 
+**39** **Group:** `com.formdev` **Name:** `flatlaf-fonts-jetbrains-mono` **Version:** `2.242` 
 > - **POM Project URL**: [https://github.com/JFormDesigner/FlatLaf](https://github.com/JFormDesigner/FlatLaf)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 > - **POM License**: SIL OPEN FONT LICENSE Version 1.1 - [https://choosealicense.com/licenses/ofl-1.1/](https://choosealicense.com/licenses/ofl-1.1/)
@@ -218,29 +224,29 @@ _2023-09-21 20:47:08 MESZ_
 
 ## The 2-Clause BSD License
 
-**39** **Group:** `com.formdev` **Name:** `svgSalamander` **Version:** `1.1.4` 
+**40** **Group:** `com.formdev` **Name:** `svgSalamander` **Version:** `1.1.4` 
 > - **POM Project URL**: [https://github.com/JFormDesigner/svgSalamander](https://github.com/JFormDesigner/svgSalamander)
 > - **POM License**: BSD Zero Clause License - [https://opensource.org/licenses/0BSD](https://opensource.org/licenses/0BSD)
 > - **POM License**: The 2-Clause BSD License - [https://opensource.org/licenses/BSD-2-Clause](https://opensource.org/licenses/BSD-2-Clause)
 
 ## The 3-Clause BSD License
 
-**40** **Group:** `net.java.balloontip` **Name:** `balloontip` **Version:** `1.2.4.1` 
+**41** **Group:** `net.java.balloontip` **Name:** `balloontip` **Version:** `1.2.4.1` 
 > - **POM Project URL**: [http://balloontip.java.net/](http://balloontip.java.net/)
 > - **POM License**: The 3-Clause BSD License - [https://opensource.org/licenses/BSD-3-Clause](https://opensource.org/licenses/BSD-3-Clause)
 
 ## Unknown
 
-**41** **Group:** `de.comahe.i18n4k` **Name:** `i18n4k-core` **Version:** `0.5.0` 
+**42** **Group:** `de.comahe.i18n4k` **Name:** `i18n4k-core` **Version:** `0.5.0` 
 
-**42** **Group:** `de.jensklingenberg.ktorfit` **Name:** `ktorfit-lib` **Version:** `1.1.0` 
+**43** **Group:** `de.jensklingenberg.ktorfit` **Name:** `ktorfit-lib` **Version:** `1.1.0` 
 
-**43** **Group:** `io.github.microutils` **Name:** `kotlin-logging` **Version:** `3.0.5` 
+**44** **Group:** `io.github.microutils` **Name:** `kotlin-logging` **Version:** `3.0.5` 
 
-**44** **Group:** `org.jetbrains.kotlin` **Name:** `kotlin-bom` **Version:** `1.9.10` 
+**45** **Group:** `org.jetbrains.kotlin` **Name:** `kotlin-bom` **Version:** `1.9.10` 
 
-**45** **Group:** `org.jetbrains.kotlinx` **Name:** `kotlinx-coroutines-core` **Version:** `1.6.4` 
+**46** **Group:** `org.jetbrains.kotlinx` **Name:** `kotlinx-coroutines-core` **Version:** `1.6.4` 
 
-**46** **Group:** `org.jetbrains.kotlinx` **Name:** `kotlinx-datetime` **Version:** `0.4.0` 
+**47** **Group:** `org.jetbrains.kotlinx` **Name:** `kotlinx-datetime` **Version:** `0.4.0` 
 
 
