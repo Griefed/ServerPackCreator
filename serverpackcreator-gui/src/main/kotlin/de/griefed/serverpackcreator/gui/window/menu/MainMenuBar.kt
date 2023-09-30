@@ -63,11 +63,17 @@ class MainMenuBar(
         menuBar.add(updateButton)
     }
 
-
     /**
      * @author Griefed
      */
     fun displayMigrationMessages() {
         about.displayMigrationMessages()
+    }
+
+    /**
+     * @author Griefed
+     */
+    fun showTip() {
+        about.showTip()
     }
 }

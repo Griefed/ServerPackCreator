@@ -56,6 +56,7 @@ class AboutMenu(
     private val discord = DiscordItem(webUtilities)
     private val donate = DonationsItem(webUtilities)
     private val thirdparty = ThirdPartyNoticesItem(mainFrame,guiProps)
+    private val tipOfTheDayItem = TipOfTheDayItem(guiProps, mainFrame)
 
     init {
         add(update)
@@ -73,6 +74,8 @@ class AboutMenu(
         add(donate)
         add(JSeparator())
         add(thirdparty)
+        add(JSeparator())
+        add(tipOfTheDayItem)
     }
 
     /**
@@ -80,5 +83,12 @@ class AboutMenu(
      */
     fun displayMigrationMessages() {
         migration.displayMigrationMessages()
+    }
+
+    /**
+     * @author Griefed
+     */
+    fun showTip() {
+        tipOfTheDayItem.showTip()
     }
 }

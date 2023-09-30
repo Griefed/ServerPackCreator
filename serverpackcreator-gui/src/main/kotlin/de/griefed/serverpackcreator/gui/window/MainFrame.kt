@@ -23,6 +23,7 @@ import Gui
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.window.menu.MainMenuBar
+import de.griefed.serverpackcreator.gui.window.tips.TipOfTheDayManager
 import de.griefed.serverpackcreator.updater.MigrationManager
 import de.griefed.serverpackcreator.updater.UpdateChecker
 import java.awt.Dimension
@@ -30,6 +31,8 @@ import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
 import javax.swing.JFrame
 import javax.swing.WindowConstants
+import javax.swing.event.HyperlinkEvent
+import javax.swing.event.HyperlinkListener
 
 /**
  * Main Frame of ServerPackCreator, housing [MainPanel], [MainMenuBar].
@@ -77,6 +80,9 @@ class MainFrame(
             toFront()
         }
         menu.displayMigrationMessages()
+        if (guiProps.showTipOnStartup) {
+            menu.showTip()
+        }
     }
 
     /**
