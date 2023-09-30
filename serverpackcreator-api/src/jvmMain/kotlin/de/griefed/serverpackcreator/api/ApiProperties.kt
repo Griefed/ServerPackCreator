@@ -799,8 +799,22 @@ actual class ApiProperties(
      */
     fun defaultScriptTemplates(): List<File> {
         val templates = mutableListOf<File>()
-        templates.add(File(serverFilesDirectory.absolutePath, defaultShellScriptTemplate.name))
-        templates.add(File(serverFilesDirectory.absolutePath, defaultPowerShellScriptTemplate.name))
+        // See whether we have custom files.
+        val currentFiles = serverFilesDirectory.walk().maxDepth(1).filter {
+            it.name.endsWith("sh",ignoreCase = true) ||
+            it.name.endsWith("ps1",ignoreCase = true) ||
+            it.name.endsWith("bat",ignoreCase = true)
+        }.filter {
+            !it.name.contains("default_template",ignoreCase = true)
+        }.toList()
+        if (currentFiles.isNotEmpty()) {
+            for (file in currentFiles) {
+                templates.add(file.absoluteFile)
+            }
+        } else {
+            templates.add(File(serverFilesDirectory.absolutePath, defaultShellScriptTemplate.name).absoluteFile)
+            templates.add(File(serverFilesDirectory.absolutePath, defaultPowerShellScriptTemplate.name).absoluteFile)
+        }
         return templates.toList()
     }
 
@@ -810,25 +824,17 @@ actual class ApiProperties(
     @Suppress("SetterBackingFieldAssignment")
     var scriptTemplates: TreeSet<File> = TreeSet<File>()
         get() {
-            val entries = getFileListProperty(
-                pServerPackScriptTemplates,
-                fallbackScriptTemplates,
-                serverFilesDirectory.absolutePath + File.separator
-            )
+            val entries = getListProperty(pServerPackScriptTemplates,
+                defaultScriptTemplates().joinToString(",") { it.absolutePath }).map { File(it).absoluteFile }
             field.clear()
             field.addAll(entries)
             return field
         }
         set(value) {
-            val entries = value.map { it.name }
+            val entries = value.map { it.absolutePath }
             setListProperty(pServerPackScriptTemplates, entries, ",")
-            val files = getFileListProperty(
-                pServerPackScriptTemplates,
-                fallbackScriptTemplates,
-                serverFilesDirectory.absolutePath + File.separator
-            )
             field.clear()
-            field.addAll(files)
+            field.addAll(value.map { it.absoluteFile })
             log.info("Using script templates:")
             for (template in field) {
                 log.info("    " + template.path)

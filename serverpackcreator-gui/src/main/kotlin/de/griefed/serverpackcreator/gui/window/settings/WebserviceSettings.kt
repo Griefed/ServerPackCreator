@@ -320,12 +320,12 @@ class WebserviceSettings(
      * @author Griefed
      */
     override fun hasUnsavedChanges(): Boolean {
-        val changes = artemisDataDirectorySetting.file != apiProperties.artemisDataDirectory.absoluteFile ||
+        val changes = artemisDataDirectorySetting.file.absolutePath != apiProperties.artemisDataDirectory.absolutePath ||
                 artemisQueueMaxDiskUsageSetting.value != apiProperties.artemisQueueMaxDiskUsage ||
-                databaseFileSetting.file != apiProperties.serverPackCreatorDatabase.absoluteFile ||
+                databaseFileSetting.file.absolutePath != apiProperties.serverPackCreatorDatabase.absolutePath ||
                 cleanupScheduleSetting.text != apiProperties.webserviceCleanupSchedule ||
-                logDirectorySetting.file != apiProperties.tomcatLogsDirectory.absoluteFile ||
-                baseDirSetting.file != apiProperties.tomcatBaseDirectory.absoluteFile ||
+                logDirectorySetting.file.absolutePath != apiProperties.tomcatLogsDirectory.absolutePath ||
+                baseDirSetting.file.absolutePath != apiProperties.tomcatBaseDirectory.absolutePath ||
                 versionScheduleSetting.text != apiProperties.webserviceVersionSchedule ||
                 databaseCleanupScheduleSetting.text != apiProperties.webserviceDatabaseCleanupSchedule
         if (changes) {

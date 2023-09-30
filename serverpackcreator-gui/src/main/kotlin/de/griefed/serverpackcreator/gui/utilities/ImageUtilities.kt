@@ -21,6 +21,7 @@
 
 package de.griefed.serverpackcreator.gui.utilities
 
+import java.awt.Dimension
 import java.awt.Image
 import java.util.*
 import javax.imageio.ImageIO
@@ -80,4 +81,39 @@ class ImageUtilities {
  */
 fun ImageIcon.getScaledInstance(width: Int, height: Int, scaling: Int = Image.SCALE_SMOOTH): ImageIcon {
     return ImageIcon(this.image.getScaledInstance(width, height, scaling))
+}
+
+/**
+ * Scale the image, keeping the aspect ratio, to the given [size]. By default, the width of the image will be changed to
+ * the desired [size]. If you want to change the height of the image to the desired [size], then set [scaleBy] to [ScaleBy.HEIGHT].
+ *
+ * @author Griefed
+ */
+fun ImageIcon.getAspectRatioScaledInstsance(size: Int, scaleBy: ScaleBy = ScaleBy.WIDTH, scaling: Int = Image.SCALE_SMOOTH): ImageIcon {
+    val imgSize = Dimension(iconWidth, iconHeight)
+    val widthRatio: Double
+    val heightRatio: Double
+    var newHeight = iconHeight
+    var newWidth = iconWidth
+    when (scaleBy) {
+        ScaleBy.WIDTH -> {
+            newWidth = size
+            widthRatio = size.toDouble() / imgSize.width
+            newHeight = (iconHeight * widthRatio).toInt()
+        }
+        ScaleBy.HEIGHT -> {
+            newHeight = size
+            heightRatio = size.toDouble() / imgSize.height
+            newWidth = (iconHeight * heightRatio).toInt()
+        }
+    }
+    return getScaledInstance(newWidth,newHeight,scaling)
+}
+
+/**
+ * @author Griefed
+ */
+enum class ScaleBy {
+    WIDTH,
+    HEIGHT
 }

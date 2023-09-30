@@ -192,6 +192,7 @@ class TabbedConfigsTab(
                 log.debug("Saved configuration to: ${configChooser.selectedFile.absoluteFile}.conf")
             }
         }
+        checkAll()
     }
 
     /**

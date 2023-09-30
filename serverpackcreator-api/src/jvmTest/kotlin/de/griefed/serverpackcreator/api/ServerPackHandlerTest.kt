@@ -16,16 +16,16 @@ internal class ServerPackHandlerTest {
         ApiWrapper.api(File("src/jvmTest/resources/serverpackcreator.properties")).serverPackHandler!!
     private val versionMeta =
         ApiWrapper.api(File("src/jvmTest/resources/serverpackcreator.properties")).versionMeta!!
-    private val applicationProperties =
+    private val apiProperties =
         ApiWrapper.api(File("src/jvmTest/resources/serverpackcreator.properties")).apiProperties
 
     init {
         File("src/jvmTest/resources/custom_template.ps1").copyTo(
-            File("tests/server_files/custom_template.ps1"),
+            File(apiProperties.serverFilesDirectory,"custom_template.ps1"),
             overwrite = true
         )
         File("src/jvmTest/resources/custom_template.sh").copyTo(
-            File("tests/server_files/custom_template.sh"),
+            File(apiProperties.serverFilesDirectory,"custom_template.sh"),
             overwrite = true
         )
     }
@@ -34,10 +34,11 @@ internal class ServerPackHandlerTest {
     @Test
     fun forgeTest() {
         val packConfig = PackConfig()
-        val ps1 = File(applicationProperties.serverPacksDirectory, "forge_tests/start.ps1")
-        val shell = File(applicationProperties.serverPacksDirectory, "forge_tests/start.sh")
-        val vars = File(applicationProperties.serverPacksDirectory, "forge_tests/variables.txt")
-        val forgeZip = ZipFile(File(applicationProperties.serverPacksDirectory, "forge_tests_server_pack.zip"))
+        val ps1 = File(apiProperties.serverPacksDirectory, "forge_tests/start.ps1")
+        val shell = File(apiProperties.serverPacksDirectory, "forge_tests/start.sh")
+        val vars = File(apiProperties.serverPacksDirectory, "forge_tests/variables.txt")
+        val forgeZip = ZipFile(File(apiProperties.serverPacksDirectory, "forge_tests_server_pack.zip"))
+        apiProperties.scriptTemplates = TreeSet(apiProperties.defaultScriptTemplates())
         configurationHandler.checkConfiguration(
             File("src/jvmTest/resources/testresources/spcconfs/serverpackcreator.conf"),
             packConfig
@@ -64,7 +65,7 @@ internal class ServerPackHandlerTest {
                 "exclude_me/exclude_me_some_more/ICANSEEMYHOUSEFROMHEEEEEEEEEEEEERE"
             ).isFile
         )
-        Assertions.assertTrue(File(applicationProperties.serverPacksDirectory, "forge_tests_server_pack.zip").isFile)
+        Assertions.assertTrue(File(apiProperties.serverPacksDirectory, "forge_tests_server_pack.zip").isFile)
         Assertions.assertTrue(
             forgeZip.getInputStream(forgeZip.getFileHeader("start.sh")).readText().contains("JAVA=\"java\""),
             "Default Java setting not present!"
@@ -147,7 +148,7 @@ internal class ServerPackHandlerTest {
         try {
             File("src/jvmTest/resources/testresources/server_pack.zip").copyTo(
                 File(
-                    applicationProperties.serverPacksDirectory,
+                    apiProperties.serverPacksDirectory,
                     "forge_tests_server_pack.zip"
                 ), true
             )
@@ -218,7 +219,7 @@ internal class ServerPackHandlerTest {
         Assertions.assertTrue(serverPackHandler.run(packConfig))
         Assertions.assertTrue(
             File(
-                applicationProperties.serverPacksDirectory,
+                apiProperties.serverPacksDirectory,
                 "fabric_tests_server_pack.zip"
             ).isFile
         )
@@ -240,7 +241,7 @@ internal class ServerPackHandlerTest {
         Assertions.assertTrue(serverPackHandler.run(packConfig))
         Assertions.assertTrue(
             File(
-                applicationProperties.serverPacksDirectory,
+                apiProperties.serverPacksDirectory,
                 "quilt_tests_server_pack.zip"
             ).isFile
         )
@@ -262,7 +263,7 @@ internal class ServerPackHandlerTest {
         Assertions.assertTrue(serverPackHandler.run(packConfig))
         Assertions.assertTrue(
             File(
-                applicationProperties.serverPacksDirectory,
+                apiProperties.serverPacksDirectory,
                 "legacyfabric_tests_server_pack.zip"
             ).isFile
         )

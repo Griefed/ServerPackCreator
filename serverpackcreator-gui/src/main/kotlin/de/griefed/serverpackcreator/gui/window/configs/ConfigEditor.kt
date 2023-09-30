@@ -524,6 +524,7 @@ class ConfigEditor(
         configFile = config
         title.hideWarningIcon()
         saveSuggestions()
+        validateInputFields()
         return configFile!!
     }
 
