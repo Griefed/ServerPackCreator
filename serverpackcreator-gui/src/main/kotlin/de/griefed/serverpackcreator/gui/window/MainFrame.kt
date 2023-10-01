@@ -23,7 +23,6 @@ import Gui
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.window.menu.MainMenuBar
-import de.griefed.serverpackcreator.gui.window.tips.TipOfTheDayManager
 import de.griefed.serverpackcreator.updater.MigrationManager
 import de.griefed.serverpackcreator.updater.UpdateChecker
 import java.awt.Dimension
@@ -31,8 +30,6 @@ import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
 import javax.swing.JFrame
 import javax.swing.WindowConstants
-import javax.swing.event.HyperlinkEvent
-import javax.swing.event.HyperlinkListener
 
 /**
  * Main Frame of ServerPackCreator, housing [MainPanel], [MainMenuBar].
@@ -47,50 +44,63 @@ class MainFrame(
 ) {
     val frame: JFrame = JFrame(Gui.createserverpack_gui_createandshowgui.toString())
     val mainPanel = MainPanel(guiProps, apiWrapper, guiProps.larsonScanner,this)
+    private val updateDialogs : UpdateDialogs
+    private val menuBar: MainMenuBar
 
     init {
-        val closeAndExit = object : WindowAdapter() {
-            override fun windowClosing(event: WindowEvent) {
-                mainPanel.closeAndExit()
-            }
-        }
-        val updateDialogs = UpdateDialogs(
+        updateDialogs = UpdateDialogs(
             guiProps, apiWrapper.utilities!!.webUtilities,
             apiWrapper.apiProperties, updateChecker, frame
         )
-        val menu = MainMenuBar(
+        menuBar = MainMenuBar(
             guiProps, apiWrapper, updateDialogs,
             this, migrationManager
         )
-        frame.jMenuBar = menu.menuBar
+        frame.jMenuBar = menuBar.menuBar
         frame.defaultCloseOperation = WindowConstants.EXIT_ON_CLOSE
-        frame.addWindowListener(closeAndExit)
+        frame.addWindowListener(object : WindowAdapter() {
+            override fun windowClosing(event: WindowEvent) {
+                mainPanel.closeAndExit()
+            }
+        })
         frame.iconImage = guiProps.appIcon
         frame.contentPane = mainPanel.panel
         frame.isLocationByPlatform = true
-        frame.isAutoRequestFocus = true
         frame.preferredSize = Dimension(1100, 860)
         frame.pack()
         guiProps.initFont()
-        frame.isVisible = true
         guiProps.larsonScanner.loadConfig(guiProps.idleConfig)
         guiProps.larsonScanner.play()
-        KeyComboManager(guiProps,apiWrapper,updateChecker,updateDialogs,migrationManager,frame,mainPanel,menu)
-        if (guiProps.startFocusEnabled) {
-            toFront()
-        }
-        if (!apiWrapper.apiProperties.preRelease) {
-            menu.displayMigrationMessages()
-        }
-        if (guiProps.showTipOnStartup) {
-            menu.showTip()
-        }
+        KeyComboManager(guiProps,apiWrapper,updateChecker,updateDialogs,migrationManager,frame,mainPanel,menuBar)
+    }
+
+    /**
+     * @author Griefed
+     */
+    fun show() {
+        frame.isVisible = true
+    }
+
+    /**
+     * @author Griefed
+     */
+    fun displayMigrationMessages() {
+        menuBar.displayMigrationMessages()
+    }
+
+    /**
+     * @author Griefed
+     */
+    fun showTip() {
+        menuBar.showTip()
     }
 
     /**
      * @author Griefed
      */
     fun toFront() {
+        frame.isAutoRequestFocus = true
+        show()
         frame.toFront()
         frame.requestFocus()
     }

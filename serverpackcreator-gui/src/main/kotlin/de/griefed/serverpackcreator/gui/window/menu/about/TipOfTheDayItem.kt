@@ -21,7 +21,7 @@ package de.griefed.serverpackcreator.gui.window.menu.about
 
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.window.MainFrame
-import de.griefed.serverpackcreator.gui.window.tips.TipOfTheDayManager
+import de.griefed.serverpackcreator.gui.tips.TipOfTheDayManager
 import javax.swing.JMenuItem
 
 /**

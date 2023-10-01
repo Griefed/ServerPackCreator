@@ -17,7 +17,7 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.gui.window.tips
+package de.griefed.serverpackcreator.gui.tips
 
 import Gui
 import de.griefed.serverpackcreator.gui.GuiProps

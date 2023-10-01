@@ -73,7 +73,7 @@ class MainWindow(
             UIManager.setLookAndFeel(instance)
             FlatLaf.updateUI()
 
-            MainFrame(
+            val main = MainFrame(
                 guiProps,
                 apiWrapper,
                 updateChecker,
@@ -81,6 +81,17 @@ class MainWindow(
             )
             splashScreen.close()
             guiProps.font = guiProps.font
+            if (guiProps.startFocusEnabled) {
+                main.toFront()
+            } else {
+                main.show()
+            }
+            if (!apiWrapper.apiProperties.preRelease) {
+                main.displayMigrationMessages()
+            }
+            if (guiProps.showTipOnStartup) {
+                main.showTip()
+            }
         }
     }
 }
