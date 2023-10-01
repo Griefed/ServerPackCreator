@@ -79,7 +79,9 @@ class MainFrame(
         if (guiProps.startFocusEnabled) {
             toFront()
         }
-        menu.displayMigrationMessages()
+        if (!apiWrapper.apiProperties.devBuild && !apiWrapper.apiProperties.preRelease) {
+            menu.displayMigrationMessages()
+        }
         if (guiProps.showTipOnStartup) {
             menu.showTip()
         }
