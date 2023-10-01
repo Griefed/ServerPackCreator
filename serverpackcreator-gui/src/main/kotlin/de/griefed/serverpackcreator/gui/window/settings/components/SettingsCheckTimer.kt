@@ -19,6 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui.window.settings.components
 
+import Gui
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.window.settings.SettingsEditorsTab
 import kotlinx.coroutines.DelicateCoroutinesApi

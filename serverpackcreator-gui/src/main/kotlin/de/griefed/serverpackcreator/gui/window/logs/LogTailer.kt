@@ -25,7 +25,6 @@ import de.griefed.serverpackcreator.gui.window.logs.components.SmartScroller
 import de.griefed.serverpackcreator.gui.window.logs.components.ViewPortPosition
 import org.apache.commons.io.input.Tailer
 import org.apache.commons.io.input.TailerListenerAdapter
-import java.awt.Font
 import java.io.File
 import javax.swing.JScrollPane
 import javax.swing.JTextArea

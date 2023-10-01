@@ -23,7 +23,6 @@ import Gui
 import de.comahe.i18n4k.Locale
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.ExclusionFilter
-import de.griefed.serverpackcreator.api.utilities.common.deleteQuietly
 import de.griefed.serverpackcreator.api.utilities.common.testFileWrite
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.components.*

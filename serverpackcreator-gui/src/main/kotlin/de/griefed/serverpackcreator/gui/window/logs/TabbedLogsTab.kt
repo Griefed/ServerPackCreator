@@ -19,6 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui.window.logs
 
+import Gui
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.gui.components.TabPanel
 

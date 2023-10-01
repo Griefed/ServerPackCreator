@@ -37,7 +37,6 @@ import net.miginfocom.swing.MigLayout
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.awt.Dimension
 import java.awt.event.ActionListener
-import java.awt.event.MouseAdapter
 import java.io.File
 import java.io.IOException
 import java.util.*

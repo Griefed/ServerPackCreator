@@ -21,9 +21,9 @@ package de.griefed.serverpackcreator.gui.window.configs.components.advanced
 
 import Gui
 import de.griefed.serverpackcreator.gui.GuiProps
-import de.griefed.serverpackcreator.gui.window.configs.ConfigEditor
 import de.griefed.serverpackcreator.gui.components.CompoundIcon
 import de.griefed.serverpackcreator.gui.components.TextIcon
+import de.griefed.serverpackcreator.gui.window.configs.ConfigEditor
 import net.java.balloontip.BalloonTip
 import java.awt.event.MouseEvent
 import java.awt.event.MouseListener
