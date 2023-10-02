@@ -1,3 +1,19 @@
+## [4.3.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.3.0...4.3.1) (2023-09-16)
+
+
+### 📦 Other
+
+* Add Essential and MemoryUsageScreen to clientside mods. Thanks to @Devilswarchild and @BlakeIsMyWaifu for the reports! ([7515bd3](https://git.griefed.de/Griefed/ServerPackCreator/commit/7515bd31040932e93dc061c634e7e732b03cd515))
+* Remove debug console print ([c9ed3fd](https://git.griefed.de/Griefed/ServerPackCreator/commit/c9ed3fdc8e4c37c1d2a4b628754a491595392c56))
+
+
+### 🛠 Fixes
+
+* Fix the previous fix of only considering JARs in the mods-directory and nothing else ([ecfc8b7](https://git.griefed.de/Griefed/ServerPackCreator/commit/ecfc8b747cde9ac4b0bc797fe3ad9271fd52b93b))
+* Only consider JARs in file acquisition from mods-directory ([46e84d8](https://git.griefed.de/Griefed/ServerPackCreator/commit/46e84d8557d0b314399f6fa0b98c368a193f08da))
+* Prevent folder-inclusions from running the mods-scan if they happen to be inside the mods-directory ([38a9057](https://git.griefed.de/Griefed/ServerPackCreator/commit/38a90573f3d4452cef1f85f83cafeebd715deab0))
+* Run mods check if source is mods ([5de0742](https://git.griefed.de/Griefed/ServerPackCreator/commit/5de0742c130b49e64a37b6819b59584dcf05cd3c))
+
 ## [4.3.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.2.1...4.3.0) (2023-09-02)
 
 
