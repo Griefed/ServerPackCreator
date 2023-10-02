@@ -139,6 +139,7 @@ actual class ApiProperties(
                 "Batty's Coordinates PLUS Mod," +
                 "BetterAdvancements-," +
                 "BetterAnimationsCollection-," +
+                "BetterModsButton-," +
                 "BetterDarkMode-," +
                 "BetterF3-," +
                 "BetterFog-," +
@@ -157,6 +158,7 @@ actual class ApiProperties(
                 "Controller Support-," +
                 "Controlling-," +
                 "CraftPresence-," +
+                "Create_Questing-," +
                 "CullLessLeaves-Reforged-," +
                 "CustomCursorMod-," +
                 "CustomMainMenu-," +
@@ -307,6 +309,7 @@ actual class ApiProperties(
                 "eggtab-," +
                 "eguilib-," +
                 "eiramoticons-," +
+                "embeddium-," +
                 "enchantment-lore-," +
                 "entity-texture-features-," +
                 "entityculling-," +
@@ -322,6 +325,7 @@ actual class ApiProperties(
                 "freelook-," +
                 "galacticraft-rpc-," +
                 "gamestagesviewer-," +
+                "gpumemleakfix-," +
                 "grid-," +
                 "helium-," +
                 "hiddenrecipebook_," +
@@ -382,6 +386,7 @@ actual class ApiProperties(
                 "paperdoll-," +
                 "phosphor-," +
                 "preciseblockplacing-," +
+                "radon-," +
                 "realm-of-lost-souls-," +
                 "rebind_narrator-," +
                 "rebind-narrator-," +
@@ -405,6 +410,7 @@ actual class ApiProperties(
                 "soundreloader-," +
                 "spoticraft-," +
                 "tconplanner-," +
+                "textrues_embeddium_options-," +
                 "timestamps-," +
                 "tooltipscroller-," +
                 "torchoptimizer-," +
@@ -434,6 +440,7 @@ actual class ApiProperties(
                 "^Batty's Coordinates PLUS Mod.*$," +
                 "^BetterAdvancements-.*$," +
                 "^BetterAnimationsCollection-.*$," +
+                "^BetterModsButton-.*$," +
                 "^BetterDarkMode-.*$," +
                 "^BetterF3-.*$," +
                 "^BetterFog-.*$," +
@@ -452,7 +459,8 @@ actual class ApiProperties(
                 "^Controller Support-.*$," +
                 "^Controlling-.*$," +
                 "^CraftPresence-.*$," +
-                "^CullLessLeaves-Reforged-.*$" +
+                "^Create_Questing-.*$," +
+                "^CullLessLeaves-Reforged-.*$," +
                 "^CustomCursorMod-.*$," +
                 "^CustomMainMenu-.*$," +
                 "^DefaultOptions_.*$," +
@@ -603,6 +611,7 @@ actual class ApiProperties(
                 "^eggtab-.*$," +
                 "^eguilib-.*$," +
                 "^eiramoticons-.*$," +
+                "^embeddium-.*$," +
                 "^enchantment-lore-.*$," +
                 "^entity-texture-features-.*$," +
                 "^entityculling-.*$," +
@@ -618,6 +627,7 @@ actual class ApiProperties(
                 "^freelook-.*$," +
                 "^galacticraft-rpc-.*$," +
                 "^gamestagesviewer-.*$," +
+                "^gpumemleakfix-.*$," +
                 "^grid-.*$," +
                 "^helium-.*$," +
                 "^hiddenrecipebook_.*$," +
@@ -637,7 +647,7 @@ actual class ApiProperties(
                 "^keymap-.*$," +
                 "^keywizard-.*$," +
                 "^lazydfu-.*$," +
-                "^lib39-.*$" +
+                "^lib39-.*$," +
                 "^light-overlay-.*$," +
                 "^lightfallclient-.*$," +
                 "^lightspeed-.*$," +
@@ -678,6 +688,7 @@ actual class ApiProperties(
                 "^paperdoll-.*$," +
                 "^phosphor-.*$," +
                 "^preciseblockplacing-.*$," +
+                "^radon-.*$," +
                 "^realm-of-lost-souls-.*$," +
                 "^rebind_narrator-.*$," +
                 "^rebind-narrator-.*$," +
@@ -701,6 +712,7 @@ actual class ApiProperties(
                 "^soundreloader-.*$," +
                 "^spoticraft-.*$," +
                 "^tconplanner-.*$," +
+                "^textrues_embeddium_options-.*$," +
                 "^timestamps-.*$," +
                 "^tooltipscroller-.*$," +
                 "^torchoptimizer-.*$," +
