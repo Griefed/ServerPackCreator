@@ -1,3 +1,31 @@
+## [5.0.0-alpha.33](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-alpha.32...5.0.0-alpha.33) (2023-10-03)
+
+
+### :scissors: Refactor
+
+* Display migration at start if regular release or dev ([b94eccb](https://git.griefed.de/Griefed/ServerPackCreator/commit/b94eccb91718c6ac9fc98e8790be761d0469b434))
+* Improve readability ([71477f0](https://git.griefed.de/Griefed/ServerPackCreator/commit/71477f08b153564ec7963ab3f0659d3a1d990ff3))
+* Improve readability. Replace unnecessary classes with call to super ([042c3de](https://git.griefed.de/Griefed/ServerPackCreator/commit/042c3de3e383a05e069581414000fde3768c9f42))
+* Only display migration info at start if regular release ([2b74d8a](https://git.griefed.de/Griefed/ServerPackCreator/commit/2b74d8aeceec7006238df065373a2fb654d86b73))
+* Optmize imports ([5ecd771](https://git.griefed.de/Griefed/ServerPackCreator/commit/5ecd771107c24e85c47f2acbf265a37b01dcac83))
+* Reorganize classes and functions to better fit their purpose ([87f2714](https://git.griefed.de/Griefed/ServerPackCreator/commit/87f27142e748f46e9d9c034e48a8428049e642e6))
+* Slightly increase dialog width to better fit checkbox ([25f5aa0](https://git.griefed.de/Griefed/ServerPackCreator/commit/25f5aa048720963301e94ad35c2acbe5ca302f69))
+
+
+### 📦 Other
+
+* Add more clientside mods. Thanks to @ModernGamingWorld and [@nvb-uy](https://git.griefed.de/nvb-uy) ([66d1bc4](https://git.griefed.de/Griefed/ServerPackCreator/commit/66d1bc4c6490b949386389d726c8f61da0bfdc7c))
+
+
+### 🧪 Tests
+
+* Add clientside mods to test-props. Whoops... ([c8ed7a8](https://git.griefed.de/Griefed/ServerPackCreator/commit/c8ed7a838bd14fd2c062abfa9eeb66724dfc2fb9))
+
+
+### 🚀 Features
+
+* Small Step-By-Step guide when a user runs ServerPackCreator for the first time ([ff3da8e](https://git.griefed.de/Griefed/ServerPackCreator/commit/ff3da8e244c723964da05dc08dd0d766085a043a))
+
 ## [5.0.0-alpha.32](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-alpha.31...5.0.0-alpha.32) (2023-09-30)
 
 
