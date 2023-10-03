@@ -17,7 +17,7 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.gui.window.tips
+package de.griefed.serverpackcreator.gui.tips
 
 import Gui
 import de.griefed.serverpackcreator.gui.GuiProps
@@ -42,8 +42,8 @@ class CustomTipOfTheDayUI(tipOfTheDay: TipOfTheDay, private val guiProps: GuiPro
     DefaultTipOfTheDayUI(tipOfTheDay) {
 
     private val tipImage = JLabel()
-    private val preferredDimension = Dimension(600,350)
-    private val defaultSize = Dimension(500,350)
+    private val preferredDimension = Dimension(650,350)
+    private val defaultSize = Dimension(650,350)
 
     /**
      * @author Griefed

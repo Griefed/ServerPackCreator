@@ -21,7 +21,6 @@
 package de.griefed.serverpackcreator.gui.components
 
 import de.griefed.serverpackcreator.gui.GuiProps
-import net.java.balloontip.BalloonTip
 import java.awt.event.ActionListener
 import java.awt.event.MouseEvent
 import java.awt.event.MouseListener
@@ -31,7 +30,7 @@ import javax.swing.JLabel
 import javax.swing.Timer
 
 /**
- * Regular JButton but with a [BalloonTip] instead of the regular old Java-Style tooltip.
+ * Regular JButton but with a [ThemedBalloonTip] instead of the regular old Java-Style tooltip.
  *
  * @author Griefed
  */
@@ -46,15 +45,8 @@ open class BalloonTipButton(text: String?, icon: Icon, toolTip: String, guiProps
 
     init {
         multiClickThreshhold = 1000
-        val balloonTip = BalloonTip(
-            this,
-            toolTipLabel,
-            guiProps.balloonStyle,
-            false
-        )
-        balloonTip.isVisible = false
+        val balloonTip = ThemedBalloonTip(this,toolTipLabel,false,guiProps)
         val timer = Timer(1000) {
-            balloonTip.style = guiProps.balloonStyle
             balloonTip.isVisible = true
         }
         timer.stop()

@@ -33,7 +33,7 @@ import javax.swing.JScrollPane
  */
 open class ResizeIndicatorScrollPane(
     private val guiProps: GuiProps,
-    view: Component,
+    private val view: Component,
     verticalScrollbarVisibility: Int = VERTICAL_SCROLLBAR_ALWAYS,
     horizontalScrollbarVisibility: Int = HORIZONTAL_SCROLLBAR_NEVER
 ) : JScrollPane(view, verticalScrollbarVisibility, horizontalScrollbarVisibility) {
@@ -59,5 +59,12 @@ open class ResizeIndicatorScrollPane(
             guiProps.handleBar.iconHeight
         )
         guiProps.handleBar.paintIcon(this, g, handleBarPosition!!.x, handleBarPosition!!.y)
+    }
+
+    /**
+     * @author Griefed
+     */
+    fun highlight() {
+        view.requestFocusInWindow()
     }
 }

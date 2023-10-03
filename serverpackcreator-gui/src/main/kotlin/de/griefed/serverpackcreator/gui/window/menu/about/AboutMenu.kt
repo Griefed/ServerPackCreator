@@ -57,11 +57,13 @@ class AboutMenu(
     private val donate = DonationsItem(webUtilities)
     private val thirdparty = ThirdPartyNoticesItem(mainFrame,guiProps)
     private val tipOfTheDayItem = TipOfTheDayItem(guiProps, mainFrame)
+    private val stepByStepItem = StepByStepItem(mainFrame)
 
     init {
         add(update)
         add(migration)
         add(JSeparator())
+        add(stepByStepItem)
         add(help)
         add(how)
         add(JSeparator())

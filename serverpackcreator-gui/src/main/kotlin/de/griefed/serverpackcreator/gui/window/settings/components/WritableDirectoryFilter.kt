@@ -1,5 +1,6 @@
 package de.griefed.serverpackcreator.gui.window.settings.components
 
+import Gui
 import java.io.File
 
 class WritableDirectoryFilter  : javax.swing.filechooser.FileFilter() {

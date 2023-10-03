@@ -95,6 +95,13 @@ open class ScrollTextField(
     /**
      * @author Griefed
      */
+    fun highlight() {
+        textField.requestFocusInWindow()
+    }
+
+    /**
+     * @author Griefed
+     */
     fun addDocumentListener(listener: DocumentListener) {
         textField.document.addDocumentListener(listener)
     }

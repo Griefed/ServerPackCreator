@@ -17,19 +17,20 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.gui.window.configs.components.inclusions
+package de.griefed.serverpackcreator.gui.tips
 
-import Gui
-import de.griefed.serverpackcreator.gui.GuiProps
-import de.griefed.serverpackcreator.gui.components.StatusIcon
+import tokyo.northside.swing.tips.DefaultTip
+import javax.swing.ImageIcon
 
 /**
- * Status icon for source-specification to inform a user about the status of the specified source and display
- * any encountered errors in a hover-tooltip.
- *
  * @author Griefed
  */
-class SourceInfo(guiProps: GuiProps) : StatusIcon(
-    guiProps,
-    Gui.createserverpack_gui_inclusions_editor_source_info.toString()
-)
+class CustomTip(name: String, tip: Any, private val imageResource: String): DefaultTip(name,tip) {
+    fun getImage(): ImageIcon? {
+        return try {
+            ImageIcon(this.javaClass.getResource(imageResource))
+        } catch (_: Exception) {
+            null
+        }
+    }
+}

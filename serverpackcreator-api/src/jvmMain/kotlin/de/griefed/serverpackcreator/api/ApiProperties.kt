@@ -161,6 +161,7 @@ actual class ApiProperties(
             "Batty's Coordinates PLUS Mod",
             "BetterAdvancements-",
             "BetterAnimationsCollection-",
+            "BetterModsButton-",
             "BetterDarkMode-",
             "BetterF3-",
             "BetterFog-",
@@ -179,6 +180,7 @@ actual class ApiProperties(
             "Controller Support-",
             "Controlling-",
             "CraftPresence-",
+            "Create_Questing-",
             "CullLessLeaves-Reforged-",
             "CustomCursorMod-",
             "CustomMainMenu-",
@@ -329,6 +331,7 @@ actual class ApiProperties(
             "eggtab-",
             "eguilib-",
             "eiramoticons-",
+            "embeddium-",
             "enchantment-lore-",
             "entity-texture-features-",
             "entityculling-",
@@ -344,6 +347,7 @@ actual class ApiProperties(
             "freelook-",
             "galacticraft-rpc-",
             "gamestagesviewer-",
+            "gpumemleakfix-",
             "grid-",
             "helium-",
             "hiddenrecipebook_",
@@ -405,6 +409,7 @@ actual class ApiProperties(
             "physics-mod-",
             "phosphor-",
             "preciseblockplacing-",
+            "radon-",
             "realm-of-lost-souls-",
             "rebind_narrator-",
             "rebind-narrator-",
@@ -428,6 +433,7 @@ actual class ApiProperties(
             "soundreloader-",
             "spoticraft-",
             "tconplanner-",
+            "textrues_embeddium_options-",
             "timestamps-",
             "tooltipscroller-",
             "torchoptimizer-",
@@ -661,6 +667,19 @@ actual class ApiProperties(
         i18n4kConfig.defaultLocale = Locale("en_GB")
         loadProperties(propertiesFile)
     }
+
+    /**
+     * Only the first call to this property will return true if this is the first time ServerPackCreator is being run
+     * on a given host. Any subsequent call will return false. Handle with care!
+     *
+     * @author Griefed
+     */
+    val firstRun: Boolean
+        get() {
+            val first = getBoolProperty("de.griefed.serverpackcreator.firstrun",true)
+            setBoolProperty("de.griefed.serverpackcreator.firstrun",false)
+            return first
+        }
 
     /**
      * The default shell-template for the modded server start scripts. The file returned by this

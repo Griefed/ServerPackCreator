@@ -32,7 +32,7 @@ import javax.swing.plaf.FontUIResource
 class ElementLabel(text: String, private var size: Int = 0) : JLabel(text) {
     init {
         if (size == 0) {
-            size = font.size
+            size = 12
         }
         updateFont()
     }
@@ -44,6 +44,6 @@ class ElementLabel(text: String, private var size: Int = 0) : JLabel(text) {
 
     private fun updateFont() {
         val currentFont = UIManager.get("defaultFont") as Font
-        font = FontUIResource(currentFont.fontName, Font.BOLD, currentFont.size)
+        font = currentFont.deriveFont(Font.BOLD,size.toFloat())
     }
 }

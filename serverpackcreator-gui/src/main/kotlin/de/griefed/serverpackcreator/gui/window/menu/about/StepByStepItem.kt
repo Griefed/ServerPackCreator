@@ -17,19 +17,19 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.gui.window.configs.components
+package de.griefed.serverpackcreator.gui.window.menu.about
 
-import Gui
-import de.griefed.serverpackcreator.gui.GuiProps
-import de.griefed.serverpackcreator.gui.components.StatusIcon
+import de.griefed.serverpackcreator.gui.window.MainFrame
+import javax.swing.JMenuItem
 
 /**
- * Status icon for ZIP-creation to inform a user about the status of the creation and display
- * any encountered errors in a hover-tooltip.
+ * Menu item to start the Step-By-Step guide again, even when this is not the first time using ServerPackCreator.
  *
  * @author Griefed
  */
-class IncludeZipInfo(guiProps: GuiProps) : StatusIcon(
-    guiProps,
-    Gui.createserverpack_gui_createserverpack_checkboxzip_tip.toString()
-)
+class StepByStepItem(mainFrame: MainFrame): JMenuItem(Gui.firstrun_menu.toString()) {
+
+    init {
+        this.addActionListener { mainFrame.stepByStepGuide() }
+    }
+}

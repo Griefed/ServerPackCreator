@@ -119,4 +119,12 @@ class MainPanel(
         }
         exitProcess(0)
     }
+
+    /**
+     * @author Griefed
+     */
+    fun stepByStepGuide() {
+        tabs.selectedIndex = 0
+        tabbedConfigsTab.stepByStepGuide()
+    }
 }

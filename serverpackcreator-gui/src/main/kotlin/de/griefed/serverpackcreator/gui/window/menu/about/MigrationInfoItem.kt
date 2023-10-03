@@ -41,7 +41,7 @@ import javax.swing.JTextPane
  * @author Griefed
  */
 class MigrationInfoItem(
-    private val apiWrapper: ApiWrapper,
+    apiWrapper: ApiWrapper,
     private val migrationManager: MigrationManager,
     private val guiProps: GuiProps,
     private val mainFrame: MainFrame
@@ -56,22 +56,12 @@ class MigrationInfoItem(
 
     init {
         migrationWindowTextPane.isEditable = false
-        this.addActionListener { displayMigrationMessages() }
-    }
-
-    /**
-     * Display the available migration messages.
-     *
-     * @author Griefed
-     */
-    @OptIn(DelicateCoroutinesApi::class)
-    fun displayMigrationMessages() {
         if (!apiWrapper.apiProperties.devBuild && !apiWrapper.apiProperties.preRelease) {
             for (message in migrationManager.migrationMessages) {
                 addText(message.get())
                 addLineBreak()
             }
-        } else {
+        } else if (apiWrapper.apiProperties.devBuild || apiWrapper.apiProperties.preRelease) {
             addText("Migrations will not occur in a dev, alpha or beta version of ServerPackCreator.")
             addLineBreak(2)
             addText("This message serves as a test message for development.")
@@ -116,8 +106,18 @@ class MigrationInfoItem(
             addLineBreak(2)
             addText("esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?")
         }
+        this.addActionListener { displayMigrationMessages() }
+    }
 
-        if (migrationManager.migrationMessages.isNotEmpty() || (apiWrapper.apiProperties.devBuild || apiWrapper.apiProperties.preRelease)) {
+    /**
+     * Display the available migration messages.
+     *
+     * @author Griefed
+     */
+    @OptIn(DelicateCoroutinesApi::class)
+    fun displayMigrationMessages() {
+        migrationWindowTextPane.font = guiProps.font
+        if (migrationWindowTextPane.text.isNotBlank()) {
             GlobalScope.launch(Dispatchers.Swing) {
                 DialogUtilities.createDialog(
                     migrationScrollPane,

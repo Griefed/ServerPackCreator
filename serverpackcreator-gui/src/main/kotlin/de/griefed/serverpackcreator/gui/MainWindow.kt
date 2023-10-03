@@ -37,6 +37,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.swing.Swing
+import javax.swing.JOptionPane
 import javax.swing.UIManager
 
 /**
@@ -73,7 +74,7 @@ class MainWindow(
             UIManager.setLookAndFeel(instance)
             FlatLaf.updateUI()
 
-            MainFrame(
+            val main = MainFrame(
                 guiProps,
                 apiWrapper,
                 updateChecker,
@@ -81,6 +82,30 @@ class MainWindow(
             )
             splashScreen.close()
             guiProps.font = guiProps.font
+            if (guiProps.startFocusEnabled) {
+                main.toFront()
+            } else {
+                main.show()
+            }
+            if (apiWrapper.apiProperties.firstRun) {
+                if (JOptionPane.showConfirmDialog(
+                        main.frame,
+                        Gui.firstrun_message.toString(),
+                        Gui.firstrun_title.toString(),
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.QUESTION_MESSAGE
+                        ) == 0
+                ) {
+                    main.stepByStepGuide()
+                }
+            } else {
+                if (!apiWrapper.apiProperties.preRelease) {
+                    main.displayMigrationMessages()
+                }
+                if (guiProps.showTipOnStartup) {
+                    main.showTip()
+                }
+            }
         }
     }
 }

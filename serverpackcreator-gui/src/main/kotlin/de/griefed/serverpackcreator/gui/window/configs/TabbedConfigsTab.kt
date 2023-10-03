@@ -31,7 +31,10 @@ import de.griefed.serverpackcreator.gui.window.MainFrame
 import de.griefed.serverpackcreator.gui.window.configs.components.ComponentResizer
 import de.griefed.serverpackcreator.gui.window.configs.components.ConfigCheckTimer
 import de.griefed.serverpackcreator.gui.window.menu.file.ConfigChooser
-import kotlinx.coroutines.*
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.swing.Swing
 import org.apache.commons.io.monitor.FileAlterationListener
 import org.apache.commons.io.monitor.FileAlterationMonitor
@@ -41,11 +44,7 @@ import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.io.File
 import java.util.concurrent.Executors
-import javax.swing.DefaultComboBoxModel
-import javax.swing.JFileChooser
-import javax.swing.JMenuItem
-import javax.swing.JOptionPane
-import javax.swing.JPopupMenu
+import javax.swing.*
 
 /**
  * Tabbed pane housing every server pack config tab.
@@ -388,5 +387,12 @@ class TabbedConfigsTab(
      */
     fun propertiesQuickSelections(): List<String> {
         return getNames(apiWrapper.apiProperties.propertiesDirectory, guiProps.propertiesRegex)
+    }
+
+    /**
+     * @author Griefed
+     */
+    fun stepByStepGuide() {
+        selectedEditor?.stepByStepGuide() ?: addTab().stepByStepGuide()
     }
 }
