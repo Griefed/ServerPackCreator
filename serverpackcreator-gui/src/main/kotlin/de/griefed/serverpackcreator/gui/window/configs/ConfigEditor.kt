@@ -549,35 +549,7 @@ class ConfigEditor(
             "autocomplete.${advSetJavaArgsSetting.identifier}",
             javaArgsSuggestions.joinToString(",") { entry -> entry.trim { it <= ' ' } }.trim { it <= ' ' })
 
-        val sourceSuggestions = inclusionsSourceSetting.suggestionProvider!!.allSuggestions()
-        val destinationSuggestions = inclusionsDestinationSetting.suggestionProvider!!.allSuggestions()
-        val inclusionSuggestions = inclusionsInclusionFilterSetting.suggestionProvider!!.allSuggestions()
-        val exclusionSuggestions = inclusionsExclusionFilterSetting.suggestionProvider!!.allSuggestions()
-        for (spec in inclusionsSetting.getServerFiles()) {
-            sourceSuggestions.add(spec.source)
-            spec.destination?.let { destinationSuggestions.add(it) }
-            spec.inclusionFilter?.let { inclusionSuggestions.add(it) }
-            spec.exclusionFilter?.let { exclusionSuggestions.add(it) }
-        }
-        sourceSuggestions.removeIf { entry -> entry.isBlank() }
-        destinationSuggestions.removeIf { entry -> entry.isBlank() }
-        inclusionSuggestions.removeIf { entry -> entry.isBlank() }
-        exclusionSuggestions.removeIf { entry -> entry.isBlank() }
-        guiProps.storeGuiProperty(
-            "autocomplete.${inclusionsSourceSetting.identifier}",
-            sourceSuggestions.joinToString(",") { entry -> entry.trim { it <= ' ' } }.trim { it <= ' ' })
-
-        guiProps.storeGuiProperty(
-            "autocomplete.${inclusionsDestinationSetting.identifier}",
-            destinationSuggestions.joinToString(",") { entry -> entry.trim { it <= ' ' } }.trim { it <= ' ' })
-
-        guiProps.storeGuiProperty(
-            "autocomplete.${inclusionsInclusionFilterSetting.identifier}",
-            inclusionSuggestions.joinToString(",") { entry -> entry.trim { it <= ' ' } }.trim { it <= ' ' })
-
-        guiProps.storeGuiProperty(
-            "autocomplete.${inclusionsExclusionFilterSetting.identifier}",
-            exclusionSuggestions.joinToString(",") { entry -> entry.trim { it <= ' ' } }.trim { it <= ' ' })
+        inclusionsSetting.saveSuggestions()
     }
 
     /**
@@ -666,7 +638,6 @@ class ConfigEditor(
             return
         }
         val icon = iconQuickSelect.selectedItem
-        @Suppress("KotlinConstantConditions")
         if (icon != null && icon.toString() != Gui.createserverpack_gui_quickselect_choose.toString()) {
             setServerIconPath(File(apiWrapper.apiProperties.iconsDirectory, icon.toString()).absolutePath)
             iconQuickSelect.selectedIndex = 0
@@ -681,7 +652,6 @@ class ConfigEditor(
             return
         }
         val properties = propertiesQuickSelect.selectedItem
-        @Suppress("KotlinConstantConditions")
         if (properties != null && properties.toString() != Gui.createserverpack_gui_quickselect_choose.toString()) {
             val serverProps = File(apiWrapper.apiProperties.propertiesDirectory, properties.toString())
             setServerPropertiesPath(serverProps.absolutePath)

@@ -69,17 +69,6 @@ class InclusionsEditor(
     private val exclusionFilter: ScrollTextField
 ) : JSplitPane(HORIZONTAL_SPLIT) {
     private val log = cachedLoggerOf(this.javaClass)
-    private val inclusionModel = DefaultListModel<InclusionSpecification>()
-    private val list = JList(inclusionModel)
-    private val sourceInfo = SourceInfo(guiProps)
-    private val destinationInfo = DestinationInfo(guiProps)
-    private val inclusionInfo = InclusionInfo(guiProps)
-    private val exclusionInfo = ExclusionInfo(guiProps)
-    private val tip = InclusionTip(Gui.createserverpack_gui_inclusions_editor_tip_name.toString(), guiProps)
-    private var selectedInclusion: InclusionSpecification? = null
-    private val timer: Timer
-    private val toggleVisibility = JToggleButton(guiProps.toggleHelpIcon)
-    private val delay = 250
     private val expertPanel = JPanel(
         MigLayout(
             "left,wrap",
@@ -87,64 +76,114 @@ class InclusionsEditor(
             "30"
         )
     )
+    private val rightPanel = JPanel(
+        MigLayout(
+            "left,wrap",
+            "0[left,::64]5[left,::150]5[left,grow]5[left,::64]5[left,::64]0",
+            "30"
+        )
+    )
+    private val leftPanel = JPanel(BorderLayout())
+    private val inclusionModel = DefaultListModel<InclusionSpecification>()
+    private val list = JList(inclusionModel)
+    private val listScroller = JScrollPane(list)
+
+    private val sourceIcon = SourceInfo(guiProps)
+    private val sourceLabel = ElementLabel(Gui.createserverpack_gui_inclusions_editor_source.toString())
+
+    private val destinationIcon = DestinationInfo(guiProps)
+    private val destinationLabel = ElementLabel(Gui.createserverpack_gui_inclusions_editor_destination.toString())
+
+    private val inclusionIcon = InclusionInfo(guiProps)
+    private val inclusionLabel = ElementLabel(Gui.createserverpack_gui_inclusions_editor_inclusion.toString())
+
+    private val exclusionIcon = ExclusionInfo(guiProps)
+    private val exclusionLabel = ElementLabel(Gui.createserverpack_gui_inclusions_editor_exclusion.toString())
+
+    private val toggleVisibility = JToggleButton(guiProps.toggleHelpIcon)
+    private val fileAdd = BalloonTipButton(null,guiProps.addIcon,Gui.createserverpack_gui_inclusions_editor_add.toString(),guiProps) { addEntry("") }
+    private val fileRemove = BalloonTipButton(null,guiProps.deleteIcon,Gui.createserverpack_gui_inclusions_editor_delete.toString(),guiProps) { removeSelectedEntry() }
+    private val tip = InclusionTip(Gui.createserverpack_gui_inclusions_editor_tip_name.toString(), guiProps)
+    private val filesShowBrowser = BalloonTipButton(null, guiProps.folderIcon, Gui.createserverpack_gui_browser.toString(), guiProps) { selectInclusions() }
+    private val filesRevert = BalloonTipButton(null, guiProps.revertIcon, Gui.createserverpack_gui_buttoncopydirs_revert_tip.toString(), guiProps) { revertInclusions() }
+    private val filesReset = BalloonTipButton(null, guiProps.resetIcon, Gui.createserverpack_gui_buttoncopydirs_reset_tip.toString(), guiProps) { setInclusionsFromStringList(apiWrapper.apiProperties.directoriesToInclude.toMutableList()) }
+
+    private var selectedInclusion: InclusionSpecification? = null
+    private val delay = 250
+    private val timer: Timer = Timer(delay) { updateTip() }
+
+    private val sourceListener = object : DocumentChangeListener {
+        override fun update(e: DocumentEvent) {
+            sourceWasEdited()
+        }
+    }
+    private val destinationListener = object : DocumentChangeListener {
+        override fun update(e: DocumentEvent) {
+            destinationWasEdited()
+        }
+    }
+    private val inclusionListener = object : DocumentChangeListener {
+        override fun update(e: DocumentEvent) {
+            inclusionFilterWasEdited()
+        }
+    }
+    private val exclusionListener = object : DocumentChangeListener {
+        override fun update(e: DocumentEvent) {
+            exclusionFilterWasEdited()
+        }
+    }
+
+    private val listMouseAdapter = object : MouseAdapter() {
+        override fun mouseClicked(e: MouseEvent) {
+            super.mouseClicked(e)
+            clearSelection(e)
+        }
+
+        override fun mousePressed(e: MouseEvent) {
+            super.mousePressed(e)
+            clearSelection(e)
+        }
+
+        override fun mouseReleased(e: MouseEvent) {
+            super.mouseReleased(e)
+            clearSelection(e)
+        }
+
+        fun clearSelection(e: MouseEvent) {
+            val index = list.locationToIndex(e.point)
+            val bounds = list.getCellBounds(index, index)
+            if (bounds == null || !bounds.contains(e.point) || list.model.size <= 0) {
+                emtpySelection()
+            } else {
+                enableInputs()
+            }
+        }
+    }
+
+    private val listModelDataAdapter = object : ListDataListener {
+        override fun intervalAdded(e: ListDataEvent?) {
+            checkSize()
+        }
+
+        override fun intervalRemoved(e: ListDataEvent?) {
+            checkSize()
+        }
+
+        override fun contentsChanged(e: ListDataEvent?) {
+            checkSize()
+        }
+
+        fun checkSize() {
+            if (list.model.size <= 0 || list.isSelectionEmpty) {
+                emtpySelection()
+            }
+        }
+    }
 
     init {
-        val listScroller = JScrollPane(list)
-        val sourceLabel = ElementLabel(Gui.createserverpack_gui_inclusions_editor_source.toString())
-        val destinationLabel = ElementLabel(Gui.createserverpack_gui_inclusions_editor_destination.toString())
-        val inclusionLabel = ElementLabel(Gui.createserverpack_gui_inclusions_editor_inclusion.toString())
-        val exclusionLabel = ElementLabel(Gui.createserverpack_gui_inclusions_editor_exclusion.toString())
-        val leftPanel = JPanel(BorderLayout())
-        val fileAdd = BalloonTipButton(
-            null,
-            guiProps.addIcon,
-            Gui.createserverpack_gui_inclusions_editor_add.toString(),
-            guiProps
-        ) { addEntry("") }
-        val fileRemove =
-            BalloonTipButton(
-                null,
-                guiProps.deleteIcon,
-                Gui.createserverpack_gui_inclusions_editor_delete.toString(),
-                guiProps
-            ) { removeSelectedEntry() }
-        val filesShowBrowser = BalloonTipButton(
-            null, guiProps.folderIcon, Gui.createserverpack_gui_browser.toString(), guiProps
-        ) { selectInclusions() }
-        val filesRevert = BalloonTipButton(
-            null, guiProps.revertIcon, Gui.createserverpack_gui_buttoncopydirs_revert_tip.toString(), guiProps
-        ) { revertInclusions() }
-        val filesReset = BalloonTipButton(
-            null, guiProps.resetIcon, Gui.createserverpack_gui_buttoncopydirs_reset_tip.toString(), guiProps
-        ) { setInclusionsFromStringList(apiWrapper.apiProperties.directoriesToInclude.toMutableList()) }
-        val rightPanel = JPanel(
-            MigLayout(
-                "left,wrap",
-                "0[left,::64]5[left,::150]5[left,grow]5[left,::64]5[left,::64]0",
-                "30"
-            )
-        )
-        val sourceListener = object : DocumentChangeListener {
-            override fun update(e: DocumentEvent) {
-                sourceWasEdited()
-            }
-        }
-        val destinationListener = object : DocumentChangeListener {
-            override fun update(e: DocumentEvent) {
-                destinationWasEdited()
-            }
-        }
-        val inclusionListener = object : DocumentChangeListener {
-            override fun update(e: DocumentEvent) {
-                inclusionFilterWasEdited()
-            }
-        }
-        val exclusionListener = object : DocumentChangeListener {
-            override fun update(e: DocumentEvent) {
-                exclusionFilterWasEdited()
-            }
-        }
-
+        timer.stop()
+        timer.delay = delay
+        timer.isRepeats = false
         dividerLocation = 150
         setLeftComponent(leftPanel)
         setRightComponent(rightPanel)
@@ -158,17 +197,17 @@ class InclusionsEditor(
         expertPanel.isVisible = false
         toggleVisibility.addActionListener { toggleVisibility() }
 
-        expertPanel.add(destinationInfo, "cell 0 0")
+        expertPanel.add(destinationIcon, "cell 0 0")
         expertPanel.add(destinationLabel, "cell 1 0")
         expertPanel.add(destination, "cell 2 0, grow,w 50:50:")
-        expertPanel.add(inclusionInfo, "cell 0 1")
+        expertPanel.add(inclusionIcon, "cell 0 1")
         expertPanel.add(inclusionLabel, "cell 1 1")
         expertPanel.add(inclusionFilter, "cell 2 1, grow,w 50:50:")
-        expertPanel.add(exclusionInfo, "cell 0 2")
+        expertPanel.add(exclusionIcon, "cell 0 2")
         expertPanel.add(exclusionLabel, "cell 1 2")
         expertPanel.add(exclusionFilter, "cell 2 2, grow,w 50:50:")
 
-        rightPanel.add(sourceInfo, "cell 0 0")
+        rightPanel.add(sourceIcon, "cell 0 0")
         rightPanel.add(toggleVisibility, "cell 0 1")
         rightPanel.add(fileAdd, "cell 0 2")
         rightPanel.add(fileRemove, "cell 0 3")
@@ -183,58 +222,9 @@ class InclusionsEditor(
         destination.addDocumentListener(destinationListener)
         inclusionFilter.addDocumentListener(inclusionListener)
         exclusionFilter.addDocumentListener(exclusionListener)
-        timer = Timer(delay) {
-            updateTip()
-        }
-        timer.stop()
-        timer.delay = delay
-        timer.isRepeats = false
 
-        list.addMouseListener(object : MouseAdapter() {
-            override fun mouseClicked(e: MouseEvent) {
-                super.mouseClicked(e)
-                clearSelection(e)
-            }
-
-            override fun mousePressed(e: MouseEvent) {
-                super.mousePressed(e)
-                clearSelection(e)
-            }
-
-            override fun mouseReleased(e: MouseEvent) {
-                super.mouseReleased(e)
-                clearSelection(e)
-            }
-
-            fun clearSelection(e: MouseEvent) {
-                val index = list.locationToIndex(e.point)
-                val bounds = list.getCellBounds(index, index)
-                if (bounds == null || !bounds.contains(e.point) || list.model.size <= 0) {
-                    emtpySelection()
-                } else {
-                    enableInputs()
-                }
-            }
-        })
-        list.model.addListDataListener(object : ListDataListener {
-            override fun intervalAdded(e: ListDataEvent?) {
-                checkSize()
-            }
-
-            override fun intervalRemoved(e: ListDataEvent?) {
-                checkSize()
-            }
-
-            override fun contentsChanged(e: ListDataEvent?) {
-                checkSize()
-            }
-
-            fun checkSize() {
-                if (list.model.size <= 0 || list.isSelectionEmpty) {
-                    emtpySelection()
-                }
-            }
-        })
+        list.addMouseListener(listMouseAdapter)
+        list.model.addListDataListener(listModelDataAdapter)
         if (list.model.size <= 0) {
             emtpySelection()
         }
@@ -325,10 +315,10 @@ class InclusionsEditor(
                 list.selectedValue.source = source.text
                 timer.restart()
                 list.updateUI()
-                sourceInfo.info()
+                sourceIcon.info()
             } else {
                 timer.stop()
-                sourceInfo.error(Gui.createserverpack_gui_inclusions_editor_source_error(source.text))
+                sourceIcon.error(Gui.createserverpack_gui_inclusions_editor_source_error(source.text))
             }
             configEditor.validateInputFields()
         }
@@ -341,11 +331,11 @@ class InclusionsEditor(
         if (list.model.size > 0 && !list.isSelectionEmpty) {
             if (apiWrapper.stringUtilities.checkForInvalidPathCharacters(destination.text)) {
                 list.selectedValue.destination = destination.text
-                destinationInfo.info()
+                destinationIcon.info()
                 list.updateUI()
             } else {
                 timer.stop()
-                destinationInfo.error(Gui.createserverpack_gui_inclusions_editor_destination_error(destination.text))
+                destinationIcon.error(Gui.createserverpack_gui_inclusions_editor_destination_error(destination.text))
             }
         }
     }
@@ -359,7 +349,7 @@ class InclusionsEditor(
                 inclusionFilter.text.toRegex()
                 list.selectedValue.inclusionFilter = inclusionFilter.text
                 timer.restart()
-                inclusionInfo.info()
+                inclusionIcon.info()
                 list.updateUI()
             } catch (ex: PatternSyntaxException) {
                 timer.stop()
@@ -368,7 +358,7 @@ class InclusionsEditor(
                     .replace("\t", "%20")
                     .replace("\n", "<br>")
                     .replace(" ", "&nbsp;")
-                inclusionInfo.error("<html>${Gui.createserverpack_gui_inclusions_editor_filter_error(exception)}</html>")
+                inclusionIcon.error("<html>${Gui.createserverpack_gui_inclusions_editor_filter_error(exception)}</html>")
             }
         }
     }
@@ -382,7 +372,7 @@ class InclusionsEditor(
                 exclusionFilter.text.toRegex()
                 list.selectedValue.exclusionFilter = exclusionFilter.text
                 timer.restart()
-                exclusionInfo.info()
+                exclusionIcon.info()
                 list.updateUI()
             } catch (ex: PatternSyntaxException) {
                 timer.stop()
@@ -391,7 +381,7 @@ class InclusionsEditor(
                     .replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;")
                     .replace("\n", "<br>")
                     .replace(" ", "&nbsp;")
-                exclusionInfo.error("<html>${Gui.createserverpack_gui_inclusions_editor_filter_error(exception)}</html>")
+                exclusionIcon.error("<html>${Gui.createserverpack_gui_inclusions_editor_filter_error(exception)}</html>")
             }
         }
     }
@@ -536,5 +526,40 @@ class InclusionsEditor(
             configEditor.setInclusions(configEditor.lastConfig!!.inclusions)
             configEditor.validateInputFields()
         }
+    }
+
+    /**
+     * @author Griefed
+     */
+    fun saveSuggestions() {
+        val sourceSuggestions = source.suggestionProvider!!.allSuggestions()
+        val destinationSuggestions = destination.suggestionProvider!!.allSuggestions()
+        val inclusionSuggestions = inclusionFilter.suggestionProvider!!.allSuggestions()
+        val exclusionSuggestions = exclusionFilter.suggestionProvider!!.allSuggestions()
+        for (spec in getServerFiles()) {
+            sourceSuggestions.add(spec.source)
+            spec.destination?.let { destinationSuggestions.add(it) }
+            spec.inclusionFilter?.let { inclusionSuggestions.add(it) }
+            spec.exclusionFilter?.let { exclusionSuggestions.add(it) }
+        }
+        sourceSuggestions.removeIf { entry -> entry.isBlank() }
+        destinationSuggestions.removeIf { entry -> entry.isBlank() }
+        inclusionSuggestions.removeIf { entry -> entry.isBlank() }
+        exclusionSuggestions.removeIf { entry -> entry.isBlank() }
+        guiProps.storeGuiProperty(
+            "autocomplete.${source.identifier}",
+            sourceSuggestions.joinToString(",") { entry -> entry.trim { it <= ' ' } }.trim { it <= ' ' })
+
+        guiProps.storeGuiProperty(
+            "autocomplete.${destination.identifier}",
+            destinationSuggestions.joinToString(",") { entry -> entry.trim { it <= ' ' } }.trim { it <= ' ' })
+
+        guiProps.storeGuiProperty(
+            "autocomplete.${inclusionFilter.identifier}",
+            inclusionSuggestions.joinToString(",") { entry -> entry.trim { it <= ' ' } }.trim { it <= ' ' })
+
+        guiProps.storeGuiProperty(
+            "autocomplete.${exclusionFilter.identifier}",
+            exclusionSuggestions.joinToString(",") { entry -> entry.trim { it <= ' ' } }.trim { it <= ' ' })
     }
 }
