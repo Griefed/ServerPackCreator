@@ -35,7 +35,7 @@ import javax.swing.JLabel
  *
  * @author Griefed
  */
-class AikarsFlags(configEditor: ConfigEditor, guiProps: GuiProps) : JButton() {
+class AikarsFlagsButton(configEditor: ConfigEditor, guiProps: GuiProps) : JButton() {
     init {
         this.addActionListener { configEditor.setAikarsFlagsAsJavaArguments() }
         toolTipText = null

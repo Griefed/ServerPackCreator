@@ -23,10 +23,7 @@ import Gui
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.api.InclusionSpecification
 import de.griefed.serverpackcreator.gui.GuiProps
-import de.griefed.serverpackcreator.gui.components.BalloonTipButton
-import de.griefed.serverpackcreator.gui.components.DocumentChangeListener
-import de.griefed.serverpackcreator.gui.components.ElementLabel
-import de.griefed.serverpackcreator.gui.components.ScrollTextField
+import de.griefed.serverpackcreator.gui.components.*
 import de.griefed.serverpackcreator.gui.window.configs.ConfigEditor
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
@@ -88,16 +85,16 @@ class InclusionsEditor(
     private val list = JList(inclusionModel)
     private val listScroller = JScrollPane(list)
 
-    private val sourceIcon = SourceInfo(guiProps)
+    private val sourceIcon = StatusIcon(guiProps,Gui.createserverpack_gui_inclusions_editor_source_info.toString())
     private val sourceLabel = ElementLabel(Gui.createserverpack_gui_inclusions_editor_source.toString())
 
-    private val destinationIcon = DestinationInfo(guiProps)
+    private val destinationIcon = StatusIcon(guiProps,Gui.createserverpack_gui_inclusions_editor_destination_info.toString())
     private val destinationLabel = ElementLabel(Gui.createserverpack_gui_inclusions_editor_destination.toString())
 
-    private val inclusionIcon = InclusionInfo(guiProps)
+    private val inclusionIcon = StatusIcon(guiProps,Gui.createserverpack_gui_inclusions_editor_inclusion_info.toString())
     private val inclusionLabel = ElementLabel(Gui.createserverpack_gui_inclusions_editor_inclusion.toString())
 
-    private val exclusionIcon = ExclusionInfo(guiProps)
+    private val exclusionIcon = StatusIcon(guiProps,Gui.createserverpack_gui_inclusions_editor_exclusion_info.toString())
     private val exclusionLabel = ElementLabel(Gui.createserverpack_gui_inclusions_editor_exclusion.toString())
 
     private val toggleVisibility = JToggleButton(guiProps.toggleHelpIcon)

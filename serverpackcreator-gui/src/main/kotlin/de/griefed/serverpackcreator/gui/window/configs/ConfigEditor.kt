@@ -73,13 +73,13 @@ class ConfigEditor(
     private val fabricModel = DefaultComboBoxModel(apiWrapper.versionMeta!!.fabric.loaderVersionsArrayDescending())
     private val quiltModel = DefaultComboBoxModel(apiWrapper.versionMeta!!.quilt.loaderVersionsArrayDescending())
 
-    private val modpackIcon = ModpackInfo(guiProps)
+    private val modpackIcon = StatusIcon(guiProps,Gui.createserverpack_gui_createserverpack_labelmodpackdir_tip.toString())
     private val modpackLabel = ElementLabel(Gui.createserverpack_gui_createserverpack_labelmodpackdir.toString())
     private val modpackSetting = ScrollTextFileField(guiProps,File(""), validationChangeListener)
     private val modpackChooser = BalloonTipButton(null, guiProps.folderIcon, Gui.createserverpack_gui_browser.toString(),guiProps) { selectModpackDirectory() }
     private val modpackCheck = BalloonTipButton(null,guiProps.inspectIcon,Gui.createserverpack_gui_buttonmodpackdir_scan_tip.toString(),guiProps) { updateGuiFromSelectedModpack() }
 
-    private val propertiesIcon = PropertiesInfo(guiProps)
+    private val propertiesIcon = StatusIcon(guiProps,Gui.createserverpack_gui_createserverpack_labelpropertiespath_tip.toString())
     private val propertiesLabel = ElementLabel(Gui.createserverpack_gui_createserverpack_labelpropertiespath.toString())
     private val propertiesSetting = ScrollTextFileField(guiProps,apiWrapper.apiProperties.defaultServerProperties, validationChangeListener)
     private val propertiesQuickSelectLabel = ElementLabel(Gui.createserverpack_gui_quickselect.toString())
@@ -87,7 +87,7 @@ class ConfigEditor(
     private val propertiesChooser = BalloonTipButton(null, guiProps.folderIcon, Gui.createserverpack_gui_browser.toString(),guiProps) { selectServerProperties() }
     private val propertiesOpen = BalloonTipButton(null, guiProps.openIcon, Gui.createserverpack_gui_createserverpack_button_open_properties.toString(),guiProps) { openServerProperties() }
 
-    private val iconIcon = IconInfo(guiProps)
+    private val iconIcon = StatusIcon(guiProps,Gui.createserverpack_gui_createserverpack_labeliconpath_tip.toString())
     private val iconLabel = ElementLabel(Gui.createserverpack_gui_createserverpack_labeliconpath.toString())
     private val iconSetting = ScrollTextFileField(guiProps,apiWrapper.apiProperties.defaultServerIcon, validationChangeListener)
     private val iconQuickSelectLabel = ElementLabel(Gui.createserverpack_gui_quickselect.toString())
@@ -99,53 +99,46 @@ class ConfigEditor(
     private val inclusionsDestinationSetting = ScrollTextField(guiProps, "", "destination")
     private val inclusionsInclusionFilterSetting = ScrollTextField(guiProps, "", "inclusion")
     private val inclusionsExclusionFilterSetting = ScrollTextField(guiProps, "", "exclusion")
-    private val inclusionsIcon = InclusionsInfo(guiProps)
+    private val inclusionsIcon = StatusIcon(guiProps,Gui.createserverpack_gui_createserverpack_labelcopydirs_tip.toString())
     private val inclusionsLabel = ElementLabel(Gui.createserverpack_gui_createserverpack_labelcopydirs.toString())
     private val inclusionsSetting = InclusionsEditor(guiProps.defaultFileChooserDimension,guiProps,this,apiWrapper,inclusionsSourceSetting,inclusionsDestinationSetting,inclusionsInclusionFilterSetting,inclusionsExclusionFilterSetting)
 
-    private val suffixIcon = SuffixInfo(guiProps)
+    private val suffixIcon = StatusIcon(guiProps,Gui.createserverpack_gui_createserverpack_labelsuffix_tip.toString())
     private val suffixLabel = ElementLabel(Gui.createserverpack_gui_createserverpack_labelsuffix.toString())
     private val suffixSetting = ScrollTextField(guiProps, "", "suffix", validationChangeListener)
 
-    private val mcVersionIcon = MinecraftVersionInfo(guiProps)
+    private val mcVersionIcon = StatusIcon(guiProps,Gui.createserverpack_gui_createserverpack_labelminecraft_tip.toString())
     private val mcVersionLabel = ElementLabel(Gui.createserverpack_gui_createserverpack_labelminecraft.toString())
     private val mcVersionSetting = ActionComboBox(DefaultComboBoxModel(apiWrapper.versionMeta!!.minecraft.settingsDependantVersionsArrayDescending()),updateMinecraftActionListener)
 
-    private val javaVersionIcon = JavaVersionInfo(guiProps)
+    private val javaVersionIcon = StatusIcon(guiProps,Gui.createserverpack_gui_createserverpack_minecraft_java_tooltip.toString())
     private val javaVersionLabel = ElementLabel(Gui.createserverpack_gui_createserverpack_minecraft_java.toString(), 16)
     private val javaVersionInfo = ElementLabel("8", 16)
 
-    private val modloaderIcon = ModloaderInfo(guiProps)
+    private val modloaderIcon = StatusIcon(guiProps,Gui.createserverpack_gui_createserverpack_labelmodloader_tip.toString())
     private val modloaderLabel = ElementLabel(Gui.createserverpack_gui_createserverpack_labelmodloader.toString())
     private val modloaderSetting = ActionComboBox(DefaultComboBoxModel(apiWrapper.apiProperties.supportedModloaders),updateMinecraftActionListener)
 
-    private val includeIconIcon = IncludeIconInfo(guiProps)
+    private val includeIconIcon = StatusIcon(guiProps,Gui.createserverpack_gui_createserverpack_checkboxicon_tip.toString())
     private val includeIconSetting = ActionCheckBox(Gui.createserverpack_gui_createserverpack_checkboxicon.toString(),validationActionListener)
 
-    private val zipIcon = IncludeZipInfo(guiProps)
+    private val zipIcon = StatusIcon(guiProps,Gui.createserverpack_gui_createserverpack_checkboxzip_tip.toString())
     private val zipSetting = ActionCheckBox(Gui.createserverpack_gui_createserverpack_checkboxzip.toString(),validationActionListener)
 
-    private val modloaderVersionIcon = ModloaderVersionInfo(guiProps)
+    private val modloaderVersionIcon = StatusIcon(guiProps,Gui.createserverpack_gui_createserverpack_labelmodloaderversion_tip.toString())
     private val modloaderVersionLabel = ElementLabel(Gui.createserverpack_gui_createserverpack_labelmodloaderversion.toString())
     private val modloaderVersionSetting = ActionComboBox<String> { validateInputFields() }
 
-    private val includePropertiesIcon = IncludePropertiesInfo(guiProps)
+    private val includePropertiesIcon = StatusIcon(guiProps,Gui.createserverpack_gui_createserverpack_checkboxproperties_tip.toString())
     private val includePropertiesSetting = ActionCheckBox(Gui.createserverpack_gui_createserverpack_checkboxproperties.toString(),validationActionListener)
 
-    private val prepareServerIcon = PrepareServerInfo(guiProps)
+    private val prepareServerIcon = StatusIcon(guiProps,Gui.createserverpack_gui_createserverpack_checkboxserver_tip.toString())
     private val prepareServerSetting = ActionCheckBox(Gui.createserverpack_gui_createserverpack_checkboxserver.toString(),validationActionListener)
 
-    private val advSetExclusionsIcon = ExclusionsInfo(guiProps)
     private val advSetExclusionsSetting = ScrollTextArea(apiWrapper.apiProperties.clientSideMods().joinToString(","),Gui.createserverpack_gui_createserverpack_labelclientmods.toString(),validationChangeListener,guiProps)
-    private val advSetClientModsRevert = BalloonTipButton(null, guiProps.revertIcon, Gui.createserverpack_gui_buttonclientmods_revert_tip.toString(),guiProps) { revertExclusions() }
-    private val advSetClientModsChooser = BalloonTipButton(null, guiProps.folderIcon, Gui.createserverpack_gui_browser.toString(),guiProps) { selectClientMods() }
-    private val advSetClientModsReset = BalloonTipButton(null, guiProps.resetIcon, Gui.createserverpack_gui_buttonclientmods_reset_tip.toString(),guiProps) { resetClientMods() }
     private val advSetJavaArgsSetting = ScrollTextArea("-Xmx4G -Xms4G",Gui.createserverpack_gui_createserverpack_javaargs.toString(),validationChangeListener,guiProps)
-    private val advSetAikarsFlagsSetter = AikarsFlags(this, guiProps)
     private val advSetScriptKVPairsSetting = ScriptKVPairs(guiProps, this)
-    private val advSetScriptKVPairsRevert = BalloonTipButton(null, guiProps.revertIcon, Gui.createserverpack_gui_revert.toString(),guiProps) { revertScriptKVPairs() }
-    private val advSetScriptKVPairsReset = BalloonTipButton(null, guiProps.resetIcon, Gui.createserverpack_gui_reset.toString(),guiProps) { resetScriptKVPairs() }
-    private val advSetPanel = AdvancedSettingsPanel(advSetExclusionsIcon,JavaArgsInfo(guiProps),ScriptSettingsInfo(guiProps),advSetExclusionsSetting,advSetClientModsRevert,advSetClientModsChooser,advSetClientModsReset,advSetJavaArgsSetting,advSetAikarsFlagsSetter,advSetScriptKVPairsSetting,advSetScriptKVPairsRevert,advSetScriptKVPairsReset)
+    private val advSetPanel = AdvancedSettingsPanel(this, advSetExclusionsSetting, advSetJavaArgsSetting, advSetScriptKVPairsSetting, guiProps, apiWrapper.apiProperties)
     private val advSetCollapsible = CollapsiblePanel(Gui.createserverpack_gui_advanced.toString(), advSetPanel)
 
     private val pluginPanels = apiWrapper.apiPlugins!!.getConfigPanels(this).toMutableList()
@@ -311,28 +304,6 @@ class ConfigEditor(
         }
         if (serverIconChooser.showOpenDialog(parent) == JFileChooser.APPROVE_OPTION) {
             setServerIconPath(serverIconChooser.selectedFile.absolutePath)
-        }
-    }
-
-    /**
-     * @author Griefed
-     */
-    private fun selectClientMods() {
-        val clientModsChooser = if (File(getModpackDirectory(), "mods").isDirectory) {
-            ClientModsChooser(File(getModpackDirectory(), "mods"), guiProps.defaultFileChooserDimension)
-        } else {
-            ClientModsChooser(guiProps.defaultFileChooserDimension)
-        }
-
-        if (clientModsChooser.showOpenDialog(parent) == JFileChooser.APPROVE_OPTION) {
-            val clientMods: Array<File> = clientModsChooser.selectedFiles
-            val clientModsFilenames: TreeSet<String> = TreeSet()
-            clientModsFilenames.addAll(getClientSideModsList())
-            for (mod in clientMods) {
-                clientModsFilenames.add(mod.name)
-            }
-            setClientSideMods(clientModsFilenames.toMutableList())
-            log.debug("Selected mods: $clientModsFilenames")
         }
     }
 
@@ -599,35 +570,6 @@ class ConfigEditor(
      */
     override fun getServerIconPath(): String {
         return iconSetting.text
-    }
-
-    /**
-     * @author Griefed
-     */
-    private fun resetClientMods() {
-        val current = getClientSideModsList()
-        val default = apiWrapper.apiProperties.clientSideMods()
-        if (!default.any { mod -> !default.contains(mod) }) {
-            when (JOptionPane.showConfirmDialog(
-                this,
-                Gui.createserverpack_gui_buttonclientmods_reset_merge_message.toString(),
-                Gui.createserverpack_gui_buttonclientmods_reset_merge_title.toString(),
-                JOptionPane.YES_NO_OPTION,
-                JOptionPane.WARNING_MESSAGE,
-                guiProps.warningIcon
-            )) {
-                0 -> {
-                    val set = TreeSet<String>()
-                    set.addAll(current)
-                    set.addAll(default)
-                    setClientSideMods(set.toMutableList())
-                }
-
-                1 -> setClientSideMods(default)
-            }
-        } else {
-            setClientSideMods(default)
-        }
     }
 
     /**
@@ -1013,17 +955,7 @@ class ConfigEditor(
      * @author Griefed
      */
     fun validateExclusions(): List<String> {
-        val errors: MutableList<String> = ArrayList(10)
-        if (!getClientSideMods().matches(guiProps.whitespace)) {
-            advSetExclusionsIcon.info()
-        } else {
-            errors.add(Gui.configuration_log_error_formatting.toString())
-            advSetExclusionsIcon.error("<html>${errors.joinToString("<br>")}</html>")
-        }
-        for (error in errors) {
-            log.error(error)
-        }
-        return errors
+        return advSetPanel.validateExclusions()
     }
 
     /**
@@ -1196,35 +1128,6 @@ class ConfigEditor(
                     log.error("Couldn't update GUI from modpack manifests.", ex)
                 }
             }
-        }
-    }
-
-    /**
-     * @author Griefed
-     */
-    private fun revertScriptKVPairs() {
-        if (lastConfig != null) {
-            setScriptVariables(lastConfig!!.scriptSettings)
-        }
-    }
-
-    /**
-     * @author Griefed
-     */
-    private fun resetScriptKVPairs() {
-        setScriptVariables(guiProps.defaultScriptKVSetting)
-    }
-
-    /**
-     * Reverts the list of clientside-only mods to the value of the last loaded configuration, if one
-     * is available.
-     *
-     * @author Griefed
-     */
-    private fun revertExclusions() {
-        if (lastConfig != null) {
-            setClientSideMods(lastConfig!!.clientMods)
-            validateInputFields()
         }
     }
 
@@ -1460,7 +1363,6 @@ class ConfigEditor(
      * @author Griefed
      */
     fun isNewTab(): Boolean {
-        @Suppress("KotlinConstantConditions")
         return title.title == Gui.createserverpack_gui_title_new.toString()
     }
 }
