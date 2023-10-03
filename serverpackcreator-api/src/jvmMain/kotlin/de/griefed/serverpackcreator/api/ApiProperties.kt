@@ -669,6 +669,19 @@ actual class ApiProperties(
     }
 
     /**
+     * Only the first call to this property will return true if this is the first time ServerPackCreator is being run
+     * on a given host. Any subsequent call will return false. Handle with care!
+     *
+     * @author Griefed
+     */
+    val firstRun: Boolean
+        get() {
+            val first = getBoolProperty("de.griefed.serverpackcreator.firstrun",true)
+            setBoolProperty("de.griefed.serverpackcreator.firstrun",false)
+            return first
+        }
+
+    /**
      * The default shell-template for the modded server start scripts. The file returned by this
      * method does not represent the script-template in the `server_files`-directory. If you
      * wish access the configured script templates inside the `server_files`-directory, use

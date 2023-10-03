@@ -17,33 +17,19 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.gui.components
+package de.griefed.serverpackcreator.gui.window.menu.about
 
-import java.awt.Font
-import javax.swing.JLabel
-import javax.swing.UIManager
-import javax.swing.plaf.FontUIResource
+import de.griefed.serverpackcreator.gui.window.MainFrame
+import javax.swing.JMenuItem
 
 /**
- * Label to display in front of various components in ServerPackCreator.
+ * Menu item to start the Step-By-Step guide again, even when this is not the first time using ServerPackCreator.
  *
  * @author Griefed
  */
-class ElementLabel(text: String, private var size: Int = 0) : JLabel(text) {
+class StepByStepItem(mainFrame: MainFrame): JMenuItem(Gui.firstrun_menu.toString()) {
+
     init {
-        if (size == 0) {
-            size = 12
-        }
-        updateFont()
-    }
-
-    override fun updateUI() {
-        super.updateUI()
-        updateFont()
-    }
-
-    private fun updateFont() {
-        val currentFont = UIManager.get("defaultFont") as Font
-        font = currentFont.deriveFont(Font.BOLD,size.toFloat())
+        this.addActionListener { mainFrame.stepByStepGuide() }
     }
 }

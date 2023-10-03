@@ -31,8 +31,10 @@ import de.griefed.serverpackcreator.gui.window.configs.components.*
 import de.griefed.serverpackcreator.gui.window.configs.components.advanced.*
 import de.griefed.serverpackcreator.gui.window.configs.components.inclusions.InclusionsEditor
 import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.swing.Swing
 import net.miginfocom.swing.MigLayout
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.awt.Dimension
@@ -144,6 +146,27 @@ class ConfigEditor(
     private val pluginPanels = apiWrapper.apiPlugins!!.getConfigPanels(this).toMutableList()
     private val pluginSettings = PluginsSettingsPanel(pluginPanels)
     private val pluginPanel = CollapsiblePanel(Gui.createserverpack_gui_plugins.toString(), pluginSettings)
+
+    private val modloaderVersionGuide = ThemedBalloonTip(modloaderVersionSetting,ElementLabel(Gui.firstrun_modloader_version.toString()),true,guiProps)
+    private val modloaderGuide = ThemedBalloonTip(modloaderSetting,ElementLabel(Gui.firstrun_modloader.toString()),true,guiProps) {
+        modloaderVersionGuide.isVisible = true
+        modloaderVersionSetting.requestFocusInWindow()
+    }
+    private val mcVersionRequiredJavaGuide = ThemedBalloonTip(javaVersionLabel,ElementLabel(Gui.firstrun_java.toString()),true,guiProps) {
+        modloaderGuide.isVisible = true
+        modloaderSetting.requestFocusInWindow()
+    }
+    private val mcVersionGuide = ThemedBalloonTip(mcVersionSetting,ElementLabel(Gui.firstrun_minecraftversion.toString()),true,guiProps) {
+        mcVersionRequiredJavaGuide.isVisible = true
+    }
+    private val inclusionsGuide = ThemedBalloonTip(inclusionsSourceSetting,ElementLabel(Gui.firstrun_inclusions.toString()),true,guiProps) {
+        mcVersionGuide.isVisible = true
+        mcVersionSetting.requestFocusInWindow()
+    }
+    private val modpackGuide = ThemedBalloonTip(modpackSetting,ElementLabel(Gui.firstrun_modpack.toString()),true,guiProps) {
+        inclusionsGuide.isVisible = true
+        inclusionsSourceSetting.highlight()
+    }
 
     var iconQuickSelectModel: ComboBoxModel<String>
         set(value) {
@@ -1364,5 +1387,26 @@ class ConfigEditor(
      */
     fun isNewTab(): Boolean {
         return title.title == Gui.createserverpack_gui_title_new.toString()
+    }
+
+    /**
+     * Run the user through a step-by-step guide to show them the ropes of configuration a server pack config from
+     * which to generate a server pack.
+     *
+     * @author Griefed
+     */
+    @OptIn(DelicateCoroutinesApi::class)
+    fun stepByStepGuide() {
+        GlobalScope.launch(guiProps.configDispatcher) {
+            Thread.sleep(500)
+            modpackGuide.isVisible = false
+            inclusionsGuide.isVisible = false
+            mcVersionGuide.isVisible = false
+            mcVersionRequiredJavaGuide.isVisible = false
+            modloaderGuide.isVisible = false
+            modloaderVersionGuide.isVisible = false
+            modpackSetting.highlight()
+            modpackGuide.isVisible = true
+        }
     }
 }

@@ -388,4 +388,11 @@ class TabbedConfigsTab(
     fun propertiesQuickSelections(): List<String> {
         return getNames(apiWrapper.apiProperties.propertiesDirectory, guiProps.propertiesRegex)
     }
+
+    /**
+     * @author Griefed
+     */
+    fun stepByStepGuide() {
+        selectedEditor?.stepByStepGuide() ?: addTab().stepByStepGuide()
+    }
 }

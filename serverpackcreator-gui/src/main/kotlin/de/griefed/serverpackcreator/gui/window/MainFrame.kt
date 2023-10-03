@@ -104,4 +104,11 @@ class MainFrame(
         frame.toFront()
         frame.requestFocus()
     }
+
+    /**
+     * @author Griefed
+     */
+    fun stepByStepGuide() {
+        mainPanel.stepByStepGuide()
+    }
 }
