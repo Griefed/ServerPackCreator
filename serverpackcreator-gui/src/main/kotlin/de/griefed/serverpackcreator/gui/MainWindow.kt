@@ -87,7 +87,7 @@ class MainWindow(
             } else {
                 main.show()
             }
-            if (apiWrapper.apiProperties.firstRun) {
+            if (apiWrapper.apiProperties.firstRun && migrationManager.migrationMessages.isEmpty()) {
                 if (JOptionPane.showConfirmDialog(
                         main.frame,
                         Gui.firstrun_message.toString(),
@@ -99,10 +99,9 @@ class MainWindow(
                     main.stepByStepGuide()
                 }
             } else {
-                if (!apiWrapper.apiProperties.preRelease) {
+                if (!apiWrapper.apiProperties.preRelease || migrationManager.migrationMessages.isNotEmpty()) {
                     main.displayMigrationMessages()
-                }
-                if (guiProps.showTipOnStartup) {
+                } else if (guiProps.showTipOnStartup) {
                     main.showTip()
                 }
             }
