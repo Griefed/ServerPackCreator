@@ -99,10 +99,14 @@ class MainFrame(
      * @author Griefed
      */
     fun toFront() {
+        frame.extendedState = JFrame.ICONIFIED
         frame.isAutoRequestFocus = true
         show()
         frame.toFront()
         frame.requestFocus()
+        frame.requestFocusInWindow()
+        frame.extendedState = JFrame.NORMAL
+        frame.repaint()
     }
 
     /**
