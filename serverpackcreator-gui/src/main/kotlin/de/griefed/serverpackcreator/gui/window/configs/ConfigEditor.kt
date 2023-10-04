@@ -147,7 +147,14 @@ class ConfigEditor(
     private val pluginSettings = PluginsSettingsPanel(pluginPanels)
     private val pluginPanel = CollapsiblePanel(Gui.createserverpack_gui_plugins.toString(), pluginSettings)
 
-    private val modloaderVersionGuide = ThemedBalloonTip(modloaderVersionSetting,ElementLabel(Gui.firstrun_modloader_version.toString()),true,guiProps)
+    private val modloaderVersionGuide = ThemedBalloonTip(modloaderVersionSetting,ElementLabel(Gui.firstrun_modloader_version.toString()),true,guiProps) {
+        JOptionPane.showMessageDialog(
+            panel,
+            Gui.firstrun_finish_message.toString(),
+            Gui.firstrun_finish_title.toString(),
+            JOptionPane.INFORMATION_MESSAGE
+        )
+    }
     private val modloaderGuide = ThemedBalloonTip(modloaderSetting,ElementLabel(Gui.firstrun_modloader.toString()),true,guiProps) {
         modloaderVersionGuide.isVisible = true
         modloaderVersionSetting.requestFocusInWindow()
