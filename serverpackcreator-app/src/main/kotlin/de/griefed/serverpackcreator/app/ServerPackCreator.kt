@@ -179,7 +179,9 @@ class ServerPackCreator(private val args: Array<String>) {
                 "de/griefed/resources/${apiWrapper.apiProperties.defaultConfig.name}",
                 apiWrapper.apiProperties.defaultConfig, this.javaClass
             )
-        } else false
+        } else {
+            false
+        }
     }
 
     /**
@@ -434,7 +436,7 @@ class ServerPackCreator(private val args: Array<String>) {
                     ) {
                         if (check(file, apiWrapper.apiProperties.serverPackCreatorPropertiesFile)) {
                             createFile(apiWrapper.apiProperties.serverPackCreatorPropertiesFile)
-                            apiWrapper.apiProperties.loadProperties()
+                            apiWrapper.apiProperties.loadProperties(false)
                             log.info("Restored serverpackcreator.properties and loaded defaults.")
                         } else if (check(file, apiWrapper.apiProperties.defaultServerProperties)) {
                             apiWrapper.checkServerFilesFile(apiWrapper.apiProperties.defaultServerProperties)
