@@ -154,7 +154,7 @@ class SettingsHandling(
     fun load() {
         val propertiesChooser = PropertiesChooser(apiProperties, Gui.settings_handle_chooser.toString())
         if (propertiesChooser.showOpenDialog(mainFrame.frame) == JFileChooser.APPROVE_OPTION) {
-            apiProperties.loadProperties(propertiesChooser.selectedFile)
+            apiProperties.loadProperties(propertiesChooser.selectedFile, false)
             for (tab in settingsEditorsTab.allTabs) {
                 (tab as Editor).loadSettings()
             }
