@@ -665,7 +665,7 @@ actual class ApiProperties(
     init {
         i18n4k = i18n4kConfig
         i18n4kConfig.defaultLocale = Locale("en_GB")
-        loadProperties(propertiesFile)
+        loadProperties(propertiesFile,false)
     }
 
     /**
@@ -675,11 +675,11 @@ actual class ApiProperties(
      * @author Griefed
      */
     val firstRun: Boolean
-        get() {
-            val first = getBoolProperty("de.griefed.serverpackcreator.firstrun",true)
-            setBoolProperty("de.griefed.serverpackcreator.firstrun",false)
-            return first
-        }
+
+    init {
+        firstRun = getBoolProperty("de.griefed.serverpackcreator.firstrun",true)
+        setBoolProperty("de.griefed.serverpackcreator.firstrun",false)
+    }
 
     /**
      * The default shell-template for the modded server start scripts. The file returned by this
@@ -1774,13 +1774,22 @@ actual class ApiProperties(
     }
 
     /**
+     * Load properties using the default file path.
+     *
+     * @author Griefed
+     */
+    fun loadProperties(saveProps: Boolean = true) {
+        loadProperties(File(serverPackCreatorProperties), saveProps)
+    }
+
+    /**
      * Reload from a specific properties-file.
      *
      * @param propertiesFile The properties-file with which to loadProperties the settings and
      * configuration.
      * @author Griefed
      */
-    fun loadProperties(propertiesFile: File = File(serverPackCreatorProperties)) {
+    fun loadProperties(propertiesFile: File = File(serverPackCreatorProperties), saveProps: Boolean = true) {
         val props = Properties()
         val jarFolderFile = File(jarInformation.jarFolder.absoluteFile, serverPackCreatorProperties).absoluteFile
         val serverPackCreatorHomeDir = File(home, "ServerPackCreator").absoluteFile
@@ -1815,8 +1824,10 @@ actual class ApiProperties(
         } else {
             setFallbackModsList()
         }
-        //Store properties in the configured SPC home-directory
-        saveProperties(File(homeDirectory, serverPackCreatorProperties).absoluteFile)
+        if (saveProps) {
+            //Store properties in the configured SPC home-directory
+            saveProperties(File(homeDirectory, serverPackCreatorProperties).absoluteFile)
+        }
     }
 
     /**
@@ -2365,6 +2376,10 @@ actual class ApiProperties(
             log.info("    " + template.path)
         }
         log.info("============================== PROPERTIES ==============================")
+    }
+
+    init {
+        saveProperties(File(homeDirectory, serverPackCreatorProperties).absoluteFile)
     }
 
     actual companion object {
