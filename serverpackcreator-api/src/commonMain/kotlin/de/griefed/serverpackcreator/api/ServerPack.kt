@@ -21,6 +21,7 @@ package de.griefed.serverpackcreator.api
 
 import de.griefed.serverpackcreator.api.utilities.common.escapePath
 import mu.KotlinLogging
+import java.io.File
 
 /**
  * Base-class for the [de.griefed.serverpackcreator.api.ServerPackHandler] to ensure we have the most important methods
@@ -364,7 +365,7 @@ abstract class ServerPack<F, TS, TF> {
      * @author Griefed
      */
     fun getModsToInclude(packConfig: Pack<*, *, *>) = getModsToInclude(
-        "${packConfig.modpackDir}${ApiProperties.getSeparator()}mods",
+        "${packConfig.modpackDir}${File.separator}mods",
         packConfig.clientMods,
         packConfig.minecraftVersion,
         packConfig.modloader
