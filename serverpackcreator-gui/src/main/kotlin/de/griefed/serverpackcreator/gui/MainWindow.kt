@@ -88,15 +88,17 @@ class MainWindow(
                 main.show()
             }
             if (apiWrapper.apiProperties.firstRun && migrationManager.migrationMessages.isEmpty()) {
-                if (JOptionPane.showConfirmDialog(
-                        main.frame,
-                        Gui.firstrun_message.toString(),
-                        Gui.firstrun_title.toString(),
-                        JOptionPane.YES_NO_OPTION,
-                        JOptionPane.QUESTION_MESSAGE
+                GlobalScope.launch(Dispatchers.Swing) {
+                    if (JOptionPane.showConfirmDialog(
+                            main.frame,
+                            Gui.firstrun_message.toString(),
+                            Gui.firstrun_title.toString(),
+                            JOptionPane.YES_NO_OPTION,
+                            JOptionPane.QUESTION_MESSAGE
                         ) == 0
-                ) {
-                    main.stepByStepGuide()
+                    ) {
+                        main.stepByStepGuide()
+                    }
                 }
             } else {
                 if (!apiWrapper.apiProperties.preRelease || migrationManager.migrationMessages.isNotEmpty()) {
