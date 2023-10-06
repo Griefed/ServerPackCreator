@@ -215,7 +215,18 @@ class TabbedConfigsTab(
      */
     @Suppress("MemberVisibilityCanBePrivate")
     fun loadConfig(configFile: File, tab: ConfigEditor = addTab()) {
-        tab.loadConfiguration(PackConfig(apiWrapper.utilities!!, configFile), configFile)
+        if (configFile.isFile) {
+            tab.loadConfiguration(PackConfig(apiWrapper.utilities!!, configFile), configFile)
+        } else {
+            GlobalScope.launch(Dispatchers.Swing) {
+                JOptionPane.showMessageDialog(
+                    panel,
+                    Gui.createserverpack_gui_tabs_notfound_message(configFile.absoluteFile),
+                    Gui.createserverpack_gui_tabs_notfound_title.toString(),
+                    JOptionPane.ERROR_MESSAGE
+                )
+            }
+        }
     }
 
     /**
