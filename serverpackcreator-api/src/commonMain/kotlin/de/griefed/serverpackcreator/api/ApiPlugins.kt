@@ -98,8 +98,8 @@ expect class ApiPlugins {
      */
     fun runConfigCheckExtensions(
         packConfig: PackConfig,
-        encounteredErrors: MutableList<String>
-    ): Boolean
+        configCheck: ConfigCheck = ConfigCheck()
+    ): ConfigCheck
 
     /**
      * Get the configuration-file for a plugin, if it exists. This is wrapped in an [Optional],

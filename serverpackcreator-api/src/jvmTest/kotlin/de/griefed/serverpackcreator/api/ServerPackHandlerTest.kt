@@ -147,10 +147,8 @@ internal class ServerPackHandlerTest {
         Assertions.assertFalse(File(forgeDir, "exclude_me/exclude_me_some_more/dont_include_me_either.ogg").isFile)
         try {
             File("src/jvmTest/resources/testresources/server_pack.zip").copyTo(
-                File(
-                    apiProperties.serverPacksDirectory,
-                    "forge_tests_server_pack.zip"
-                ), true
+                File(apiProperties.serverPacksDirectory,"forge_tests_server_pack.zip"),
+                true
             )
         } catch (ignored: Exception) {
         }
@@ -217,12 +215,7 @@ internal class ServerPackHandlerTest {
         )
         val fabricDir = serverPackHandler.getServerPackDestination(packConfig)
         Assertions.assertTrue(serverPackHandler.run(packConfig))
-        Assertions.assertTrue(
-            File(
-                apiProperties.serverPacksDirectory,
-                "fabric_tests_server_pack.zip"
-            ).isFile
-        )
+        Assertions.assertTrue(File(apiProperties.serverPacksDirectory,"fabric_tests_server_pack.zip").isFile)
         Assertions.assertTrue(File(fabricDir, "fabric-server-launch.jar").isFile)
         Assertions.assertTrue(File(fabricDir, "fabric-server-launcher.jar").isFile)
         Assertions.assertTrue(File(fabricDir, "start.ps1").isFile)
@@ -239,12 +232,7 @@ internal class ServerPackHandlerTest {
         )
         val quiltDir = serverPackHandler.getServerPackDestination(packConfig)
         Assertions.assertTrue(serverPackHandler.run(packConfig))
-        Assertions.assertTrue(
-            File(
-                apiProperties.serverPacksDirectory,
-                "quilt_tests_server_pack.zip"
-            ).isFile
-        )
+        Assertions.assertTrue(File(apiProperties.serverPacksDirectory,"quilt_tests_server_pack.zip").isFile)
         Assertions.assertTrue(File(quiltDir, "server.jar").isFile)
         Assertions.assertTrue(File(quiltDir, "quilt-server-launch.jar").isFile)
         Assertions.assertTrue(File(quiltDir, "start.ps1").isFile)
@@ -261,12 +249,7 @@ internal class ServerPackHandlerTest {
         )
         val legacyFabricDir = serverPackHandler.getServerPackDestination(packConfig)
         Assertions.assertTrue(serverPackHandler.run(packConfig))
-        Assertions.assertTrue(
-            File(
-                apiProperties.serverPacksDirectory,
-                "legacyfabric_tests_server_pack.zip"
-            ).isFile
-        )
+        Assertions.assertTrue(File(apiProperties.serverPacksDirectory,"legacyfabric_tests_server_pack.zip").isFile)
         Assertions.assertTrue(File(legacyFabricDir, "server.jar").isFile)
         Assertions.assertTrue(File(legacyFabricDir, "fabric-server-launch.jar").isFile)
         Assertions.assertTrue(File(legacyFabricDir, "start.ps1").isFile)

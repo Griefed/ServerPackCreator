@@ -22,6 +22,7 @@ package de.griefed.serverpackcreator.gui.window.configs
 import Gui
 import com.electronwill.nightconfig.core.CommentedConfig
 import de.griefed.serverpackcreator.api.ApiWrapper
+import de.griefed.serverpackcreator.api.ConfigCheck
 import de.griefed.serverpackcreator.api.InclusionSpecification
 import de.griefed.serverpackcreator.api.PackConfig
 import de.griefed.serverpackcreator.api.plugins.swinggui.ServerPackConfigTab
@@ -948,16 +949,16 @@ class ConfigEditor(
      * @author Griefed
      */
     fun validateModpackDir(): List<String> {
-        val errors: MutableList<String> = ArrayList(20)
-        if (apiWrapper.configurationHandler!!.checkModpackDir(getModpackDirectory(), errors, false)) {
+        val check = ConfigCheck()
+        if (apiWrapper.configurationHandler!!.checkModpackDir(getModpackDirectory(), check, false).modpackChecksPassed) {
             modpackIcon.info()
         } else {
-            modpackIcon.error("<html>${errors.joinToString("<br>")}</html>")
+            modpackIcon.error("<html>${check.modpackErrors.joinToString("<br>")}</html>")
         }
-        for (error in errors) {
+        for (error in check.modpackErrors) {
             log.error(error)
         }
-        return errors
+        return check.modpackErrors
     }
 
     /**
@@ -994,22 +995,22 @@ class ConfigEditor(
      * @author Griefed
      */
     fun validateInclusions(): List<String> {
-        val errors: MutableList<String> = ArrayList(10)
+        val check = ConfigCheck()
         apiWrapper.configurationHandler!!.checkInclusions(
             getInclusions(),
             getModpackDirectory(),
-            errors,
+            check,
             false
         )
-        if (errors.isNotEmpty()) {
-            inclusionsIcon.error("<html>${errors.joinToString("<br>")}</html>")
+        if (check.encounteredErrors.isNotEmpty()) {
+            inclusionsIcon.error("<html>${check.encounteredErrors.joinToString("<br>")}</html>")
         } else {
             inclusionsIcon.info()
         }
-        for (error in errors) {
+        for (error in check.encounteredErrors) {
             log.error(error)
         }
-        return errors
+        return check.encounteredErrors
     }
 
     /**

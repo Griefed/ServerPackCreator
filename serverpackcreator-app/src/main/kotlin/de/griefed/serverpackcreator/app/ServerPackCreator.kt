@@ -349,9 +349,9 @@ class ServerPackCreator(private val args: Array<String>) {
             exitProcess(1)
         } else {
             val packConfig = PackConfig()
-            if (apiWrapper.configurationHandler!!.checkConfiguration(
+            if (!apiWrapper.configurationHandler!!.checkConfiguration(
                     apiWrapper.apiProperties.defaultConfig, packConfig
-                )
+                ).allChecksPassed
             ) {
                 exitProcess(1)
             }

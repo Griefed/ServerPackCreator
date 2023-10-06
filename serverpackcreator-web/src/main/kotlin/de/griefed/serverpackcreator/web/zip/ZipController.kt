@@ -21,6 +21,7 @@ package de.griefed.serverpackcreator.web.zip
 
 import com.google.common.net.HttpHeaders
 import de.griefed.serverpackcreator.api.ApiProperties
+import de.griefed.serverpackcreator.api.ConfigCheck
 import de.griefed.serverpackcreator.api.ConfigurationHandler
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import de.griefed.serverpackcreator.api.utilities.common.deleteQuietly
@@ -61,18 +62,15 @@ class ZipController @Autowired constructor(
     @PostMapping("/upload")
     @Throws(IOException::class)
     fun handleFileUpload(@RequestParam("file") file: MultipartFile): ResponseEntity<String> {
-        val encounteredErrors: List<String> = ArrayList(5)
+        val check = ConfigCheck()
         val pathToZip = zipService.saveUploadedFile(file)
-        if (configurationHandler.checkZipArchive(
-                pathToZip.toAbsolutePath().toString(), encounteredErrors.toMutableList()
-            )
-        ) {
+        if (configurationHandler.checkZipArchive(pathToZip.toAbsolutePath().toString(), check).allChecksPassed) {
             File(pathToZip.toString()).deleteQuietly()
             return ResponseEntity.badRequest()
                 .header(HttpHeaders.CONTENT_TYPE, "application/json")
                 .body(
                     notificationResponse.zipResponse(
-                        encounteredErrors,
+                        check.encounteredErrors,
                         10000,
                         "error",
                         "negative",

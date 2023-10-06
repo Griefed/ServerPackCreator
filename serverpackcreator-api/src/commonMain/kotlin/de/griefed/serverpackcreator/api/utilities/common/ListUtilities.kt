@@ -246,3 +246,7 @@ inline fun <A, B> List<A>.parallelMap(
 fun <T> MutableList<T>.addMultiple(vararg entries: T) {
     entries.forEach { add(it) }
 }
+
+fun <T> concatenate(vararg lists: List<T>): List<T> {
+    return listOf(*lists).flatten()
+}

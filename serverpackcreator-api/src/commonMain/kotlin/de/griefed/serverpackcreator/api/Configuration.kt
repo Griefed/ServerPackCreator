@@ -52,12 +52,7 @@ abstract class Configuration<F, P> {
      * @param packConfig Instance of a configuration of a modpack. Can be used to further
      * display or use any information within, as it may be changed or
      * otherwise altered by this method.
-     * @param encounteredErrors  A list of errors encountered during configuration checks which gets
-     * printed to the console and log after all checks have run. Gives the
-     * user more detail on what went wrong at which part of their
-     * configuration. Can be used to display the errors, if any were
-     * encountered, in a UI or be printed into the console or whatever have
-     * you.
+     * @param configCheck Contains all encountered errors during the check of the passed configuration.
      * @param quietCheck         Whether the configuration should be printed to the console and logs.
      * Pass false to quietly check the configuration.
      * @return `false` if the configuration has passed all tests.
@@ -66,17 +61,14 @@ abstract class Configuration<F, P> {
     abstract fun checkConfiguration(
         configFile: F,
         packConfig: PackConfig = PackConfig(),
-        encounteredErrors: MutableList<String> = mutableListOf(),
+        configCheck: ConfigCheck = ConfigCheck(),
         quietCheck: Boolean = false
-    ): Boolean
+    ): ConfigCheck
 
     /**
      * Check the passed [packConfig]. If any check returns `true` then the server
      * pack will not be created. In order to find out which check failed, the user has to check their
      * serverpackcreator.log in the logs-directory.
-     *
-     * The passed string-list [encounteredErrors] can be used to display the errors, if any were encountered, in a UI
-     * or be printed into the console or whatever have you.
      *
      * The passed [packConfig] can be used to further display or use any information within, as it may be changed or otherwise
      * altered by this method.
@@ -84,12 +76,7 @@ abstract class Configuration<F, P> {
      * @param packConfig Instance of a configuration of a modpack. Can be used to further
      * display or use any information within, as it may be changed or
      * otherwise altered by this method.
-     * @param encounteredErrors  A list of errors encountered during configuration checks which gets
-     * printed to the console and log after all checks have run. Gives the
-     * user more detail on what went wrong at which part of their
-     * configuration. Can be used to display the errors, if any were
-     * encountered, in a UI or be printed into the console or whatever have
-     * you.
+     * @param configCheck Contains all encountered errors during the check of the passed configuration.
      * @param quietCheck         Whether the configuration should be printed to the console and logs.
      * Pass false to quietly check the configuration.
      * @return `false` if all checks are passed.
@@ -97,9 +84,9 @@ abstract class Configuration<F, P> {
      */
     abstract fun checkConfiguration(
         packConfig: PackConfig,
-        encounteredErrors: MutableList<String> = mutableListOf(),
+        configCheck: ConfigCheck = ConfigCheck(),
         quietCheck: Boolean = false
-    ): Boolean
+    ): ConfigCheck
 
     /**
      * Sanitize any and all links in a given instance of [PackConfig] modpack-directory,
@@ -132,11 +119,11 @@ abstract class Configuration<F, P> {
      *
      * @param packConfig An instance of [PackConfig] which contains the
      * configuration of the modpack.
-     * @param encounteredErrors  A list to which all encountered errors are saved to.
+     * @param configCheck Contains all encountered errors during the check of the passed configuration.
      * @return `true` if an error is found during configuration check.
      * @author Griefed
      */
-    abstract fun isDir(packConfig: PackConfig, encounteredErrors: MutableList<String> = mutableListOf()): Boolean
+    abstract fun isDir(packConfig: PackConfig, configCheck: ConfigCheck = ConfigCheck()): ConfigCheck
 
     /**
      * Checks the specified ZIP-archive for validity. In order for a modpack ZIP-archive to be
@@ -150,7 +137,7 @@ abstract class Configuration<F, P> {
      * @return `false` when no errors were encountered.
      * @author Griefed
      */
-    abstract fun isZip(packConfig: PackConfig, encounteredErrors: MutableList<String> = mutableListOf()): Boolean
+    abstract fun isZip(packConfig: PackConfig, configCheck: ConfigCheck = ConfigCheck()): ConfigCheck
 
     /**
      * Checks whether either Forge or Fabric were specified as the modloader.
@@ -159,18 +146,7 @@ abstract class Configuration<F, P> {
      * @return `true` if the specified modloader is either Forge or Fabric. False if neither.
      * @author Griefed
      */
-    fun checkModloader(modloader: String) =
-        if (modloader.lowercase().matches(forge)
-            || modloader.lowercase().matches(neoForge)
-            || modloader.lowercase().matches(fabric)
-            || modloader.lowercase().matches(quilt)
-            || modloader.lowercase().matches(legacyFabric)
-        ) {
-            true
-        } else {
-            log.error("Invalid modloader specified. Modloader must be either Forge, Fabric or Quilt.")
-            false
-        }
+    abstract fun checkModloader(modloader: String, configCheck: ConfigCheck = ConfigCheck()): ConfigCheck
 
     /**
      * Check the given Minecraft and modloader versions for the specified modloader.
@@ -185,11 +161,8 @@ abstract class Configuration<F, P> {
      * @author Griefed
      */
     abstract fun checkModloaderVersion(
-        modloader: String,
-        modloaderVersion: String,
-        minecraftVersion: String,
-        encounteredErrors: MutableList<String> = mutableListOf()
-    ): Boolean
+        modloader: String, modloaderVersion: String, minecraftVersion: String, configCheck: ConfigCheck = ConfigCheck()
+    ): ConfigCheck
 
     /**
      * Convenience method which passes the important fields from an instance of
@@ -275,21 +248,18 @@ abstract class Configuration<F, P> {
     abstract fun checkInclusions(
         inclusions: MutableList<InclusionSpecification>,
         modpackDir: String,
-        encounteredErrors: MutableList<String> = ArrayList(5),
+        configCheck: ConfigCheck = ConfigCheck(),
         printLog: Boolean = true
-    ): Boolean
+    ): ConfigCheck
 
     /**
      * Check a given ZIP-archives contents. If the ZIP-archive only contains one directory, or if it
      * contains neither the mods nor the config directories, consider it invalid.
      *
      * @param pathToZip         Path to the ZIP-file to check.
-     * @param encounteredErrors List of encountered errors for further processing, like printing to
-     * logs or display in GUI or whatever you want, really.
-     * @return `false` if the ZIP-archive is considered valid.
      * @author Griefed
      */
-    abstract fun checkZipArchive(pathToZip: String, encounteredErrors: MutableList<String> = mutableListOf()): Boolean
+    abstract fun checkZipArchive(pathToZip: String, configCheck: ConfigCheck = ConfigCheck()): ConfigCheck
 
     /**
      * Update the destination to which the ZIP-archive will the extracted to, based on whether a
@@ -329,7 +299,7 @@ abstract class Configuration<F, P> {
     abstract fun checkManifests(
         destination: String,
         packConfig: PackConfig,
-        encounteredErrors: MutableList<String> = mutableListOf()
+        configCheck: ConfigCheck = ConfigCheck()
     ): String?
 
     /**
@@ -536,9 +506,9 @@ abstract class Configuration<F, P> {
      */
     abstract fun checkModpackDir(
         modpackDir: String,
-        encounteredErrors: MutableList<String> = mutableListOf(),
+        configCheck: ConfigCheck = ConfigCheck(),
         printLog: Boolean = true
-    ): Boolean
+    ): ConfigCheck
 
     /**
      * Acquire a list of all files and directories in a ZIP-file.
