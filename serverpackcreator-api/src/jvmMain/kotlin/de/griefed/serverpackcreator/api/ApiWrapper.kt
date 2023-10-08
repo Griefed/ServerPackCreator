@@ -469,7 +469,7 @@ actual class ApiWrapper private constructor(
             utilities!!.jarUtilities.copyFolderFromJar(
                 this.javaClass,
                 "de/griefed/resources/manifests",
-                apiProperties.manifestsDirectory.toString(),
+                apiProperties.manifestsDirectory.absolutePath,
                 manifestPrefix,
                 xmlJsonRegex,
                 apiProperties.tempDirectory
