@@ -56,7 +56,7 @@ class MainFrame(
         )
         menuBar = MainMenuBar(
             guiProps, apiWrapper, updateDialogs,
-            this, migrationManager
+            this, migrationManager, themeManager
         )
         frame.jMenuBar = menuBar.menuBar
         frame.defaultCloseOperation = WindowConstants.EXIT_ON_CLOSE
