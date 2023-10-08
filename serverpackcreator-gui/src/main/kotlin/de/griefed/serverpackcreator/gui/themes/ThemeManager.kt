@@ -46,13 +46,13 @@ import javax.swing.UIManager
 class ThemeManager(private val apiWrapper: ApiWrapper, private val guiProps: GuiProps) {
 
     private val log = cachedLoggerOf(this.javaClass)
-    private val themeDir = File(apiWrapper.apiProperties.homeDirectory, "themes").absoluteFile
     private val themeRegex = ".*\\.(properties|txt)".toRegex()
     private val lastModifiedMap: HashMap<File, Long> = HashMap()
+    val themesDir = File(apiWrapper.apiProperties.homeDirectory, "themes").absoluteFile
     val themes = mutableListOf<ThemeInfo>()
 
     init {
-        themeDir.createDirectories(create = true, directory = true)
+        themesDir.createDirectories(create = true, directory = true)
         provideExamples()
         reloadThemes()
     }
@@ -77,7 +77,7 @@ class ThemeManager(private val apiWrapper: ApiWrapper, private val guiProps: Gui
             apiWrapper.utilities!!.jarUtilities.copyFolderFromJar(
                 this.javaClass,
                 "de/griefed/resources/gui/themes",
-                themeDir.absolutePath,
+                themesDir.absolutePath,
                 themesPrefix,
                 themeRegex,
                 apiWrapper.apiProperties.tempDirectory
@@ -179,12 +179,12 @@ class ThemeManager(private val apiWrapper: ApiWrapper, private val guiProps: Gui
      */
     private fun loadThemesFromDirectory() {
         // get current working directory
-        val themeFiles = themeDir.listFiles { _: File?, name: String ->
+        val themeFiles = themesDir.listFiles { _: File?, name: String ->
             name.endsWith(".theme.json")
                     || name.endsWith(".properties")
         } ?: return
         lastModifiedMap.clear()
-        lastModifiedMap[themeDir] = themeDir.lastModified()
+        lastModifiedMap[themesDir] = themesDir.lastModified()
         for (f in themeFiles) {
             val fname = f.getName()
             val name: String = if (fname.endsWith(".properties")) {
