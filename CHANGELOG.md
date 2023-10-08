@@ -1,3 +1,31 @@
+## [5.0.0-alpha.35](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-alpha.34...5.0.0-alpha.35) (2023-10-08)
+
+
+### :scissors: Refactor
+
+* Make themesDir public ([82bf233](https://git.griefed.de/Griefed/ServerPackCreator/commit/82bf23318bddf57674a06ed0eaee19f84a4e233e))
+
+
+### 💎 Improvements
+
+* Add themes directory item to view menu ([f027a6e](https://git.griefed.de/Griefed/ServerPackCreator/commit/f027a6e4d368534a5e35b19910dbadadcea54ed2))
+* Remove how-item and rearrange entries ([52e2416](https://git.griefed.de/Griefed/ServerPackCreator/commit/52e24160522f721fe95f565be9353f9662d4b152))
+
+
+### 📔 Docs
+
+* headers, fluff ([5676e8d](https://git.griefed.de/Griefed/ServerPackCreator/commit/5676e8dc8abfbbd0860e669e520736dfb273e012))
+
+
+### 📦 Other
+
+* Info about pre-release installers ([e77b2e4](https://git.griefed.de/Griefed/ServerPackCreator/commit/e77b2e4bb674b710c93aa61dfb5aa72b53ff6650))
+* Update HELP.md ([6a944b3](https://git.griefed.de/Griefed/ServerPackCreator/commit/6a944b313d30dc1db9b95c2011e70bb5fb353190))
+* Update license Report ([1ccbbe9](https://git.griefed.de/Griefed/ServerPackCreator/commit/1ccbbe952743186b64b990df821b6eb6e8447707))
+* Update plugin images ([f799208](https://git.griefed.de/Griefed/ServerPackCreator/commit/f79920880ea9f344052bd4c02da776b4f32018ca))
+* Update README ([5155343](https://git.griefed.de/Griefed/ServerPackCreator/commit/51553438466d140792734643bbb4eac8c2de396a))
+* Update README ([461034f](https://git.griefed.de/Griefed/ServerPackCreator/commit/461034f917ec346381e50990bf67ca3bc2fea744))
+
 ## [5.0.0-alpha.34](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-alpha.33...5.0.0-alpha.34) (2023-10-08)
 
 
