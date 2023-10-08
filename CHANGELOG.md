@@ -1,3 +1,43 @@
+## [5.0.0-alpha.34](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-alpha.33...5.0.0-alpha.34) (2023-10-08)
+
+
+### :scissors: Refactor
+
+* Allow loading props without saving ([c244c6b](https://git.griefed.de/Griefed/ServerPackCreator/commit/c244c6b8e75a7008db4a1e1d9d02485a9334b27e))
+* Call File.separator directly ([a0a48e6](https://git.griefed.de/Griefed/ServerPackCreator/commit/a0a48e6e70776ae11536b93f2e1e93d8783668d2))
+* Don't save upon initial load in app ([4f08e9f](https://git.griefed.de/Griefed/ServerPackCreator/commit/4f08e9fad9ed46dafbdcaf1b410d98e1ba9a9456))
+* Don't save upon loading as closing in GUI saves already ([6beff8e](https://git.griefed.de/Griefed/ServerPackCreator/commit/6beff8e85d91a77e36241b277a198398d123f58c))
+* Remove unnecessary supression ([5c31247](https://git.griefed.de/Griefed/ServerPackCreator/commit/5c3124711fa6df8ff9b798c94520a160be2e9a04))
+* Rename timers for easier distinction ([5ca1053](https://git.griefed.de/Griefed/ServerPackCreator/commit/5ca1053815f247f868756a201c0fe6a3585b866f))
+* use absolutePath instead of toString ([73520ca](https://git.griefed.de/Griefed/ServerPackCreator/commit/73520caf1d7ea671342f20f4aedb56f953ae43db))
+* Use version-props to determine inspector availability ([6fe5c1f](https://git.griefed.de/Griefed/ServerPackCreator/commit/6fe5c1f952a0a7ee5b31b8d1e284070eb94b3c11))
+
+
+### 💎 Improvements
+
+* Check if migrations are available when considering guide. Display either migrations or tip. ([3550379](https://git.griefed.de/Griefed/ServerPackCreator/commit/3550379d94195eb1ea852d92ef83824e89ac63a6))
+* Display finish dialog at end of guide ([167a31c](https://git.griefed.de/Griefed/ServerPackCreator/commit/167a31c5f568f5cb49e50c48a6ea2d519d97569f))
+
+
+### 🧨 Breaking changes!
+
+* Granular config check results allowing for detailed inspections ([7c42dbf](https://git.griefed.de/Griefed/ServerPackCreator/commit/7c42dbfa5c4e6d9b8346e5313143db326e792e8b))
+
+
+### 🚀 Features
+
+* Custom themes with examples ([31d0f96](https://git.griefed.de/Griefed/ServerPackCreator/commit/31d0f9633b17c7d5e8db17c23d2c358d6f4ca1b2))
+* Version server pack configurations to allow migrations later down the line ([4aacad0](https://git.griefed.de/Griefed/ServerPackCreator/commit/4aacad0b5b15fd4f3750a62850b36064afce6e6c))
+
+
+### 🛠 Fixes
+
+* Add plugin tabs ([01bcf27](https://git.griefed.de/Griefed/ServerPackCreator/commit/01bcf274f27c52d2c83f79fa5ba683b4252b4497))
+* Bring window to front if focus on start is enabled ([32bcf53](https://git.griefed.de/Griefed/ServerPackCreator/commit/32bcf53eb73422e37d4568e4ea9169c4a3d7f8e8))
+* Continue gui loading after guide-dialog ([d2d9be7](https://git.griefed.de/Griefed/ServerPackCreator/commit/d2d9be713c9b1e9a775cae54b05d3a9f99841cb6))
+* Prevent crash if previous config does not exist ([b46ebb2](https://git.griefed.de/Griefed/ServerPackCreator/commit/b46ebb2c8e5a9678e81aa7567a816f9f9892701c))
+* Prevent infinite validation cycle. Improve checking ([e7d2846](https://git.griefed.de/Griefed/ServerPackCreator/commit/e7d2846f63dbaf31478603615cc3c7ffac6f3b63))
+
 ## [5.0.0-alpha.33](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-alpha.32...5.0.0-alpha.33) (2023-10-03)
 
 
