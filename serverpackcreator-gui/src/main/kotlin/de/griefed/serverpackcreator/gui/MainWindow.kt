@@ -57,7 +57,7 @@ class MainWindow(
 
     init {
         GlobalScope.launch(Dispatchers.Swing) {
-            if (apiWrapper.apiProperties.apiVersion.matches("^(.*alpha.*|.*beta.*|.*dev.*)$".toRegex())) {
+            if (apiWrapper.apiProperties.preRelease || apiWrapper.apiProperties.devBuild) {
                 FlatInspector.install("ctrl shift alt X")
                 FlatUIDefaultsInspector.install("ctrl shift alt Y")
             }
