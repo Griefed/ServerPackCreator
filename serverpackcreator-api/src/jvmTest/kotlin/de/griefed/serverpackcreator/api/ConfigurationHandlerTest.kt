@@ -9,13 +9,13 @@ import java.nio.file.Paths
 import java.util.*
 
 internal class ConfigurationHandlerTest {
-    private val applicationProperties =
+    private val apiProperties =
         ApiWrapper.api(File("src/jvmTest/resources/serverpackcreator.properties")).apiProperties
     private val configurationHandler =
         ApiWrapper.api(File("src/jvmTest/resources/serverpackcreator.properties")).configurationHandler!!
     private val versionMeta =
         ApiWrapper.api(File("src/jvmTest/resources/serverpackcreator.properties")).versionMeta!!
-    private val projectDir = applicationProperties.homeDirectory.parentFile.parentFile
+    private val projectDir = apiProperties.homeDirectory.parentFile.parentFile
 
     @Test
     fun checkConfigFileTest() {
@@ -359,7 +359,7 @@ internal class ConfigurationHandlerTest {
             packConfig.scriptSettings["SPC_MINECRAFT_SERVER_URL_SPC"]
         )
         Assertions.assertEquals(
-            applicationProperties.apiVersion,
+            apiProperties.apiVersion,
             packConfig.scriptSettings["SPC_SERVERPACKCREATOR_VERSION_SPC"]
         )
         Assertions.assertEquals(
@@ -643,7 +643,7 @@ internal class ConfigurationHandlerTest {
                 includeZipCreation = true,
                 scriptSettings = HashMap<String, String>(10),
                 pluginsConfigs = HashMap<String, ArrayList<CommentedConfig>>(10)
-            ).save(File("tests/serverpackcreatorfabric.conf"))
+            ).save(File("tests/serverpackcreatorfabric.conf"), apiProperties)
         )
         Assertions.assertTrue(File("tests/serverpackcreatorfabric.conf").exists())
     }
@@ -711,7 +711,7 @@ internal class ConfigurationHandlerTest {
                 includeZipCreation = true,
                 scriptSettings = HashMap<String, String>(10),
                 pluginsConfigs = HashMap<String, ArrayList<CommentedConfig>>(10)
-            ).save(File("tests/serverpackcreatorforge.conf"))
+            ).save(File("tests/serverpackcreatorforge.conf"), apiProperties)
         )
         Assertions.assertTrue(File("tests/serverpackcreatorforge.conf").exists())
     }
@@ -763,7 +763,7 @@ internal class ConfigurationHandlerTest {
         packConfig.modloader = "Forge"
         packConfig.modloaderVersion = "36.1.2"
         packConfig.javaArgs = "tf3g4jz89agz843fag8z49a3zg8ap3jg8zap9vagv3z8j"
-        Assertions.assertNotNull(packConfig.save(File("tests/somefile.conf")))
+        Assertions.assertNotNull(packConfig.save(File("tests/somefile.conf"), apiProperties))
         Assertions.assertTrue(File("tests/somefile.conf").exists())
     }
 

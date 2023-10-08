@@ -660,6 +660,12 @@ actual class ApiProperties(
             return apiVersion.matches(alphaBetaRegex)
         }
 
+    val configVersion: String = if (preRelease || devBuild) {
+        "TEST"
+    } else {
+        "4"
+    }
+
     init {
         i18n4k = i18n4kConfig
         i18n4kConfig.defaultLocale = Locale("en_GB")

@@ -805,12 +805,12 @@ class ConfigurationEditor(
         if (utilities.booleanUtilities.readBoolean()) {
             cliLog(Cli.cli_config_save_name.toString())
             val customFileName = File(utilities.stringUtilities.pathSecureText(getNextLine(scanner)))
-            packConfig.save(customFileName)
+            packConfig.save(customFileName, apiProperties)
             cliLog(Cli.cli_config_save_saved(customFileName))
             cliLog(Cli.cli_config_save_info.toString())
             cliLog(Cli.cli_config_save_load(customFileName))
         } else {
-            packConfig.save(apiProperties.defaultConfig)
+            packConfig.save(apiProperties.defaultConfig, apiProperties)
             cliLog(Cli.cli_config_save_saved_default.toString())
         }
     }
