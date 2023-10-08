@@ -40,6 +40,7 @@ import javax.swing.UIManager
 
 /**
  * Theme manager of ServerPackCreator, providing a list of available themes to change them from other places.
+ * Heavily inspired by https://github.com/JFormDesigner/FlatLaf/blob/main/flatlaf-demo/src/main/java/com/formdev/flatlaf/demo/intellijthemes/IJThemesManager.java
  *
  * @author Griefed
  */
@@ -67,6 +68,9 @@ class ThemeManager(private val apiWrapper: ApiWrapper, private val guiProps: Gui
         loadIJThemes()
     }
 
+    /**
+     * @author Griefed
+     */
     private fun provideExamples() {
         try {
             var themesPrefix = "BOOT-INF/classes"
@@ -88,6 +92,8 @@ class ThemeManager(private val apiWrapper: ApiWrapper, private val guiProps: Gui
     }
 
     /**
+     * Heavily inspired by https://github.com/JFormDesigner/FlatLaf/blob/main/flatlaf-demo/src/main/java/com/formdev/flatlaf/demo/intellijthemes/IJThemesManager.java
+     *
      * @author Griefed
      */
     private fun loadFlatLafThemes() {
@@ -175,6 +181,8 @@ class ThemeManager(private val apiWrapper: ApiWrapper, private val guiProps: Gui
     }
 
     /**
+     * Heavily inspired by https://github.com/JFormDesigner/FlatLaf/blob/main/flatlaf-demo/src/main/java/com/formdev/flatlaf/demo/intellijthemes/IJThemesManager.java
+     *
      * @author Griefed
      */
     private fun loadThemesFromDirectory() {
@@ -199,6 +207,7 @@ class ThemeManager(private val apiWrapper: ApiWrapper, private val guiProps: Gui
 
     /**
      * Set the theme without animations.
+     * Heavily inspired by https://github.com/JFormDesigner/FlatLaf/blob/main/flatlaf-demo/src/main/java/com/formdev/flatlaf/demo/intellijthemes/IJThemesManager.java
      *
      * @author Griefed
      */
@@ -236,6 +245,8 @@ class ThemeManager(private val apiWrapper: ApiWrapper, private val guiProps: Gui
 
     /**
      * Set the theme
+     *
+     * @author Griefed
      */
     fun setTheme(themeInfo: ThemeInfo) {
         FlatAnimatedLafChange.showSnapshot()
