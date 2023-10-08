@@ -122,5 +122,6 @@ class ConfigEditorTitle(
         } else {
             tabbedConfigsTab.addTab()
         }
+        tabbedConfigsTab.checkAll()
     }
 }

@@ -150,8 +150,7 @@ class TabbedConfigsTab(
             this,
             apiWrapper,
             noVersions,
-            componentResizer,
-            timer
+            componentResizer
         )
         tabs.add(editor)
         tabs.setTabComponentAt(tabs.tabCount - 1, editor.title)
@@ -180,14 +179,10 @@ class TabbedConfigsTab(
         configChooser.dialogType = JFileChooser.SAVE_DIALOG
         if (configChooser.showSaveDialog(mainFrame.frame) == JFileChooser.APPROVE_OPTION) {
             if (configChooser.selectedFile.path.endsWith(".conf")) {
-                editor.getCurrentConfiguration().save(
-                    configChooser.selectedFile.absoluteFile
-                )
+                editor.getCurrentConfiguration().save(configChooser.selectedFile.absoluteFile, apiWrapper.apiProperties)
                 log.debug("Saved configuration to: ${configChooser.selectedFile.absoluteFile}")
             } else {
-                editor.getCurrentConfiguration().save(
-                    File("${configChooser.selectedFile.absoluteFile}.conf")
-                )
+                editor.getCurrentConfiguration().save(File("${configChooser.selectedFile.absoluteFile}.conf"), apiWrapper.apiProperties)
                 log.debug("Saved configuration to: ${configChooser.selectedFile.absoluteFile}.conf")
             }
         }
@@ -203,6 +198,7 @@ class TabbedConfigsTab(
         } else {
             title.hideWarningIcon()
         }
+        timer.restart()
     }
 
     /**

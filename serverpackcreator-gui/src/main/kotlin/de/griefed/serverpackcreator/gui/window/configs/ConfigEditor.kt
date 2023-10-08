@@ -32,10 +32,8 @@ import de.griefed.serverpackcreator.gui.window.configs.components.*
 import de.griefed.serverpackcreator.gui.window.configs.components.advanced.*
 import de.griefed.serverpackcreator.gui.window.configs.components.inclusions.InclusionsEditor
 import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.swing.Swing
 import net.miginfocom.swing.MigLayout
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.awt.Dimension
@@ -54,11 +52,10 @@ import javax.swing.event.DocumentEvent
  */
 class ConfigEditor(
     private val guiProps: GuiProps,
-    tabbedConfigsTab: TabbedConfigsTab,
+    private val tabbedConfigsTab: TabbedConfigsTab,
     private val apiWrapper: ApiWrapper,
     private val noVersions: DefaultComboBoxModel<String>,
-    componentResizer: ComponentResizer,
-    private val timer: ConfigCheckTimer
+    componentResizer: ComponentResizer
 ) : JScrollPane(), ServerPackConfigTab {
 
     private val log = cachedLoggerOf(this.javaClass)
@@ -521,7 +518,7 @@ class ConfigEditor(
         } else {
             File(apiWrapper.apiProperties.configsDirectory, modpackName)
         }
-        lastConfig = getCurrentConfiguration().save(config)
+        lastConfig = getCurrentConfiguration().save(config, apiWrapper.apiProperties)
         configFile = config
         title.hideWarningIcon()
         saveSuggestions()
@@ -714,7 +711,7 @@ class ConfigEditor(
      * @author Griefed
      */
     override fun validateInputFields() {
-        timer.restart()
+        tabbedConfigsTab.checkAll()
     }
 
     /**
