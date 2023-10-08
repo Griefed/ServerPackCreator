@@ -59,7 +59,7 @@ expect open class PackConfig {
     var isServerPropertiesInclusionDesired: Boolean
 
     fun getPluginConfigs(pluginId: String): ArrayList<CommentedConfig>
-    fun save(destination: File): PackConfig
+    fun save(destination: File, apiProperties: ApiProperties): PackConfig
 
     /**
      * Construct a new configuration model with custom values.

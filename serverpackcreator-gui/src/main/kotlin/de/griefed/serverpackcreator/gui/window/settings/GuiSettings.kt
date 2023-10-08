@@ -25,6 +25,7 @@ import com.formdev.flatlaf.intellijthemes.FlatAllIJThemes
 import com.formdev.flatlaf.intellijthemes.FlatDarkPurpleIJTheme
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.components.*
+import de.griefed.serverpackcreator.gui.themes.ThemeManager
 import de.griefed.serverpackcreator.gui.window.settings.components.Editor
 import java.awt.GraphicsEnvironment
 import java.awt.event.ActionListener
@@ -39,7 +40,8 @@ import javax.swing.plaf.FontUIResource
 class GuiSettings(
     private val guiProps: GuiProps,
     actionListener: ActionListener,
-    changeListener: ChangeListener
+    changeListener: ChangeListener,
+    private val themeManager: ThemeManager
 ) : Editor(Gui.settings_gui.toString(), guiProps) {
 
     val fontSizeIcon = StatusIcon(guiProps,Gui.settings_gui_font_tooltip.toString())
@@ -74,7 +76,7 @@ class GuiSettings(
 
     val themeIcon = StatusIcon(guiProps,Gui.settings_gui_theme_tooltip.toString())
     val themeLabel = ElementLabel(Gui.settings_gui_theme_label.toString())
-    val themeSetting = ActionComboBox(DefaultComboBoxModel(FlatAllIJThemes.INFOS.map { it.name }.toTypedArray()),actionListener)
+    val themeSetting = ActionComboBox(DefaultComboBoxModel(themeManager.themes.map { it.name }.toTypedArray()),actionListener)
     val themeRevert = BalloonTipButton(null,guiProps.revertIcon,Gui.settings_revert.toString(),guiProps) {
         loadThemeFromProperties()
     }
@@ -107,9 +109,8 @@ class GuiSettings(
         fontSizeSetting.majorTickSpacing = 4
         fontSizeSetting.minorTickSpacing = 2
 
-        val themeConfigClassName = guiProps.getGuiProperty("theme", FlatDarkPurpleIJTheme().javaClass.name)
-        for (theme in FlatAllIJThemes.INFOS) {
-            if (theme.className == themeConfigClassName) {
+        for (theme in themeManager.themes) {
+            if (theme.name == guiProps.theme) {
                 themeSetting.selectedItem = theme.name
             }
         }
@@ -174,12 +175,8 @@ class GuiSettings(
         guiProps.fontSize = fontSizeSetting.value
         guiProps.startFocusEnabled = startFocusSetting.isSelected
         guiProps.generationFocusEnabled = generationFocusSetting.isSelected
-        for (theme in FlatAllIJThemes.INFOS) {
-            if (theme.name == themeSetting.selectedItem.toString()) {
-                val instance = Class.forName(theme.className).getDeclaredConstructor().newInstance() as FlatLaf
-                guiProps.currentTheme = instance
-            }
-        }
+        themeManager.setTheme(themeManager.getThemeInfo(themeSetting.selectedItem.toString())!!)
+        guiProps.theme = themeSetting.selectedItem.toString()
         guiProps.font = FontUIResource(fontSetting.selectedItem.toString(),font.size,font.style,)
     }
 
@@ -211,7 +208,7 @@ class GuiSettings(
                 generationFocusSetting.isSelected != guiProps.generationFocusEnabled ||
                 fontSizeSetting.value != guiProps.fontSize ||
                 fontSetting.selectedItem.toString() != guiProps.font.family ||
-                themeSetting.selectedItem != guiProps.currentTheme.name
+                themeSetting.selectedItem != guiProps.theme
         if (changes) {
             title.showWarningIcon()
         } else {

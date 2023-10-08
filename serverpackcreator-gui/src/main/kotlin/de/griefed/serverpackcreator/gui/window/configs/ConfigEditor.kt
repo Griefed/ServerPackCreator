@@ -22,6 +22,7 @@ package de.griefed.serverpackcreator.gui.window.configs
 import Gui
 import com.electronwill.nightconfig.core.CommentedConfig
 import de.griefed.serverpackcreator.api.ApiWrapper
+import de.griefed.serverpackcreator.api.ConfigCheck
 import de.griefed.serverpackcreator.api.InclusionSpecification
 import de.griefed.serverpackcreator.api.PackConfig
 import de.griefed.serverpackcreator.api.plugins.swinggui.ServerPackConfigTab
@@ -31,10 +32,8 @@ import de.griefed.serverpackcreator.gui.window.configs.components.*
 import de.griefed.serverpackcreator.gui.window.configs.components.advanced.*
 import de.griefed.serverpackcreator.gui.window.configs.components.inclusions.InclusionsEditor
 import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.swing.Swing
 import net.miginfocom.swing.MigLayout
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.awt.Dimension
@@ -53,11 +52,10 @@ import javax.swing.event.DocumentEvent
  */
 class ConfigEditor(
     private val guiProps: GuiProps,
-    tabbedConfigsTab: TabbedConfigsTab,
+    private val tabbedConfigsTab: TabbedConfigsTab,
     private val apiWrapper: ApiWrapper,
     private val noVersions: DefaultComboBoxModel<String>,
-    componentResizer: ComponentResizer,
-    private val timer: ConfigCheckTimer
+    componentResizer: ComponentResizer
 ) : JScrollPane(), ServerPackConfigTab {
 
     private val log = cachedLoggerOf(this.javaClass)
@@ -147,7 +145,14 @@ class ConfigEditor(
     private val pluginSettings = PluginsSettingsPanel(pluginPanels)
     private val pluginPanel = CollapsiblePanel(Gui.createserverpack_gui_plugins.toString(), pluginSettings)
 
-    private val modloaderVersionGuide = ThemedBalloonTip(modloaderVersionSetting,ElementLabel(Gui.firstrun_modloader_version.toString()),true,guiProps)
+    private val modloaderVersionGuide = ThemedBalloonTip(modloaderVersionSetting,ElementLabel(Gui.firstrun_modloader_version.toString()),true,guiProps) {
+        JOptionPane.showMessageDialog(
+            panel,
+            Gui.firstrun_finish_message.toString(),
+            Gui.firstrun_finish_title.toString(),
+            JOptionPane.INFORMATION_MESSAGE
+        )
+    }
     private val modloaderGuide = ThemedBalloonTip(modloaderSetting,ElementLabel(Gui.firstrun_modloader.toString()),true,guiProps) {
         modloaderVersionGuide.isVisible = true
         modloaderVersionSetting.requestFocusInWindow()
@@ -513,7 +518,7 @@ class ConfigEditor(
         } else {
             File(apiWrapper.apiProperties.configsDirectory, modpackName)
         }
-        lastConfig = getCurrentConfiguration().save(config)
+        lastConfig = getCurrentConfiguration().save(config, apiWrapper.apiProperties)
         configFile = config
         title.hideWarningIcon()
         saveSuggestions()
@@ -706,7 +711,7 @@ class ConfigEditor(
      * @author Griefed
      */
     override fun validateInputFields() {
-        timer.restart()
+        tabbedConfigsTab.checkAll()
     }
 
     /**
@@ -941,16 +946,16 @@ class ConfigEditor(
      * @author Griefed
      */
     fun validateModpackDir(): List<String> {
-        val errors: MutableList<String> = ArrayList(20)
-        if (apiWrapper.configurationHandler!!.checkModpackDir(getModpackDirectory(), errors, false)) {
+        val check = ConfigCheck()
+        if (apiWrapper.configurationHandler!!.checkModpackDir(getModpackDirectory(), check, false).modpackChecksPassed) {
             modpackIcon.info()
         } else {
-            modpackIcon.error("<html>${errors.joinToString("<br>")}</html>")
+            modpackIcon.error("<html>${check.modpackErrors.joinToString("<br>")}</html>")
         }
-        for (error in errors) {
+        for (error in check.modpackErrors) {
             log.error(error)
         }
-        return errors
+        return check.modpackErrors
     }
 
     /**
@@ -987,22 +992,22 @@ class ConfigEditor(
      * @author Griefed
      */
     fun validateInclusions(): List<String> {
-        val errors: MutableList<String> = ArrayList(10)
+        val check = ConfigCheck()
         apiWrapper.configurationHandler!!.checkInclusions(
             getInclusions(),
             getModpackDirectory(),
-            errors,
+            check,
             false
         )
-        if (errors.isNotEmpty()) {
-            inclusionsIcon.error("<html>${errors.joinToString("<br>")}</html>")
+        if (check.encounteredErrors.isNotEmpty()) {
+            inclusionsIcon.error("<html>${check.encounteredErrors.joinToString("<br>")}</html>")
         } else {
             inclusionsIcon.info()
         }
-        for (error in errors) {
+        for (error in check.encounteredErrors) {
             log.error(error)
         }
-        return errors
+        return check.encounteredErrors
     }
 
     /**

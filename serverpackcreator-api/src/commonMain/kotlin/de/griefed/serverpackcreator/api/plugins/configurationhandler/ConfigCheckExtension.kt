@@ -20,6 +20,7 @@
 package de.griefed.serverpackcreator.api.plugins.configurationhandler
 
 import de.griefed.serverpackcreator.api.ApiProperties
+import de.griefed.serverpackcreator.api.ConfigCheck
 import de.griefed.serverpackcreator.api.PackConfig
 import de.griefed.serverpackcreator.api.plugins.ExtensionException
 import de.griefed.serverpackcreator.api.plugins.ExtensionInformation
@@ -36,6 +37,7 @@ import de.griefed.serverpackcreator.api.versionmeta.VersionMeta
  */
 @Suppress("unused")
 interface ConfigCheckExtension : ExtensionInformation {
+
     /**
      * @param versionMeta           Instance of [VersionMeta] so you can work with available
      * Minecraft, Forge, Fabric, LegacyFabric and Quilt versions.
@@ -61,7 +63,7 @@ interface ConfigCheckExtension : ExtensionInformation {
         apiProperties: ApiProperties,
         utilities: Utilities,
         packConfig: PackConfig,
-        encounteredErrors: MutableList<String>,
+        configCheck: ConfigCheck = ConfigCheck(),
         pluginConfig: Optional<CommentedConfig>,
         packSpecificConfigs: ArrayList<CommentedConfig>
     ): Boolean

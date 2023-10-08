@@ -20,6 +20,7 @@
 package de.griefed.serverpackcreator.web.task
 
 import de.griefed.serverpackcreator.api.ApiProperties
+import de.griefed.serverpackcreator.api.ConfigCheck
 import de.griefed.serverpackcreator.api.ConfigurationHandler
 import de.griefed.serverpackcreator.api.ServerPackHandler
 import de.griefed.serverpackcreator.api.utilities.SimpleStopWatch
@@ -87,7 +88,7 @@ class TaskHandler @Autowired constructor(
         if (task is GenerateZip) {
             log.info("Instance of GenerateZip: ${task.uniqueId()}")
             val parameters: List<String> = task.zipGenerationProperties.split("&")
-            val encounteredErrors: MutableList<String> = ArrayList(100)
+            val check = ConfigCheck()
             val serverPackModel = ServerPackModel()
             serverPackModel.status = "Generating"
             serverPackModel.downloads = 0
@@ -101,7 +102,7 @@ class TaskHandler @Autowired constructor(
             serverPackModel.isServerInstallationDesired = false
             try {
                 simpleStopWatch.start()
-                if (!configurationHandler.checkConfiguration(serverPackModel, encounteredErrors, false)) {
+                if (configurationHandler.checkConfiguration(serverPackModel, check, false).allChecksPassed) {
                     serverPackModel.fileName = File(serverPackModel.modpackDir).name
                     serverPackService.insert(serverPackModel)
                     serverPackHandler.run(serverPackModel)
@@ -113,9 +114,9 @@ class TaskHandler @Autowired constructor(
                     serverPackService.updateServerPackByID(serverPackModel.id, serverPackModel)
                 } else {
                     log.error("Configuration check for ZIP-archive ${parameters[0]} failed.")
-                    if (encounteredErrors.isNotEmpty()) {
+                    if (check.encounteredErrors.isNotEmpty()) {
                         log.error("Encountered errors: ")
-                        for (error in encounteredErrors) {
+                        for (error in check.encounteredErrors) {
                             log.error(error)
                         }
                     }
@@ -123,9 +124,9 @@ class TaskHandler @Autowired constructor(
             } catch (ex: Exception) {
                 log.error("An error occurred generating the server pack for ZIP-archive: ${parameters[0]}", ex)
                 serverPackService.deleteServerPack(serverPackModel.id)
-                if (encounteredErrors.isNotEmpty()) {
+                if (check.encounteredErrors.isNotEmpty()) {
                     log.error("Encountered errors: ")
-                    for (error in encounteredErrors) {
+                    for (error in check.encounteredErrors) {
                         log.error(error)
                     }
                 }

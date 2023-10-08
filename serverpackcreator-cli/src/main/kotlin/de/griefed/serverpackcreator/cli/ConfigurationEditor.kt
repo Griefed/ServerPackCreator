@@ -21,10 +21,7 @@ package de.griefed.serverpackcreator.cli
 
 import Cli
 import com.electronwill.nightconfig.core.file.NoFormatFoundException
-import de.griefed.serverpackcreator.api.ApiProperties
-import de.griefed.serverpackcreator.api.ConfigurationHandler
-import de.griefed.serverpackcreator.api.InclusionSpecification
-import de.griefed.serverpackcreator.api.PackConfig
+import de.griefed.serverpackcreator.api.*
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import de.griefed.serverpackcreator.api.versionmeta.VersionMeta
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
@@ -151,12 +148,12 @@ class ConfigurationEditor(
      * @author Griefed
      */
     private fun checkConfig(packConfig: PackConfig) {
-        val errors: MutableList<String> = ArrayList(10)
-        configurationHandler.checkConfiguration(packConfig, errors, false)
-        if (errors.isNotEmpty()) {
+        val check = ConfigCheck()
+        configurationHandler.checkConfiguration(packConfig, check, false)
+        if (check.encounteredErrors.isNotEmpty()) {
             cliLog(Cli.cli_config_check_error.toString())
-            for (i in errors.indices) {
-                cliLog("  ($i): ${errors[i]}")
+            for (i in check.encounteredErrors.indices) {
+                cliLog("  ($i): ${check.encounteredErrors[i]}")
             }
         } else {
             cliLog(Cli.cli_config_check_success.toString())
@@ -307,7 +304,7 @@ class ConfigurationEditor(
             do {
                 cliLog(Cli.cli_modpackdir_input.toString(), false)
                 modpackDir = getNextLine(scanner)
-            } while (!configurationHandler.checkModpackDir(modpackDir))
+            } while (!configurationHandler.checkModpackDir(modpackDir).modpackChecksPassed)
             cliLog(Cli.cli_answer_input(modpackDir))
             cliLog(Cli.cli_modpackdir_satisfied.toString())
             cliLog(Cli.cli_answer.toString(), false)
@@ -680,7 +677,7 @@ class ConfigurationEditor(
         do {
             cliLog(Cli.cli_modloader_modloader.toString(), false)
             modLoader = getNextLine(scanner)
-        } while (!configurationHandler.checkModloader(modLoader))
+        } while (!configurationHandler.checkModloader(modLoader).modloaderChecksPassed)
         modLoader = configurationHandler.getModLoaderCase(modLoader)
         cliLog(Cli.cli_answer_input(modLoader))
         cliLog()
@@ -707,7 +704,7 @@ class ConfigurationEditor(
             modLoaderVersion = getNextLine(scanner)
         } while (!configurationHandler.checkModloaderVersion(
                 modLoader, modLoaderVersion, minecraftVersion
-            )
+            ).modloaderChecksPassed
         )
         cliLog("You entered: $modLoaderVersion")
         cliLog()
@@ -808,12 +805,12 @@ class ConfigurationEditor(
         if (utilities.booleanUtilities.readBoolean()) {
             cliLog(Cli.cli_config_save_name.toString())
             val customFileName = File(utilities.stringUtilities.pathSecureText(getNextLine(scanner)))
-            packConfig.save(customFileName)
+            packConfig.save(customFileName, apiProperties)
             cliLog(Cli.cli_config_save_saved(customFileName))
             cliLog(Cli.cli_config_save_info.toString())
             cliLog(Cli.cli_config_save_load(customFileName))
         } else {
-            packConfig.save(apiProperties.defaultConfig)
+            packConfig.save(apiProperties.defaultConfig, apiProperties)
             cliLog(Cli.cli_config_save_saved_default.toString())
         }
     }

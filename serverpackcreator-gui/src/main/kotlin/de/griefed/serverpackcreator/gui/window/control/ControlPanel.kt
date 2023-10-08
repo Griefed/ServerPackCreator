@@ -21,6 +21,7 @@ package de.griefed.serverpackcreator.gui.window.control
 
 import Gui
 import de.griefed.serverpackcreator.api.ApiWrapper
+import de.griefed.serverpackcreator.api.ConfigCheck
 import de.griefed.serverpackcreator.api.PackConfig
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.window.MainFrame
@@ -142,7 +143,7 @@ class ControlPanel(
     private fun runGenerationTasks() {
         val activeTab = tabbedConfigsTab.selectedEditor!!
         val packConfig: PackConfig = activeTab.getCurrentConfiguration()
-        val encounteredErrors: MutableList<String> = ArrayList(100)
+        val check = ConfigCheck()
 
         log.info("Checking entered configuration.")
         statusPanel.updateStatus(Gui.createserverpack_log_info_buttoncreateserverpack_start.toString())
@@ -150,7 +151,7 @@ class ControlPanel(
             packConfig.isServerInstallationDesired = false
         }
 
-        if (!apiWrapper.configurationHandler!!.checkConfiguration(packConfig, encounteredErrors, true)) {
+        if (apiWrapper.configurationHandler!!.checkConfiguration(packConfig, check, true).allChecksPassed) {
             if (activeTab.getModpackDirectory().endsWith(".zip",ignoreCase = true)) {
                 JOptionPane.showMessageDialog(
                     panel.parent,
@@ -163,7 +164,7 @@ class ControlPanel(
             statusPanel.updateStatus(Gui.createserverpack_log_info_buttoncreateserverpack_checked.toString())
             generateServerPack(packConfig)
         } else {
-            generationFailed(encounteredErrors)
+            generationFailed(check.encounteredErrors)
         }
     }
 

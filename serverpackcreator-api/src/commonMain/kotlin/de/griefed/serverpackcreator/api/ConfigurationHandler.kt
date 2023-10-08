@@ -32,31 +32,23 @@ import de.griefed.serverpackcreator.api.utilities.File
  * @author Griefed
  */
 expect class ConfigurationHandler {
-    fun checkConfiguration(
-        configFile: File, packConfig: PackConfig, encounteredErrors: MutableList<String>, quietCheck: Boolean
-    ): Boolean
+    fun checkConfiguration(configFile: File, packConfig: PackConfig, configCheck: ConfigCheck = ConfigCheck(), quietCheck: Boolean = false): ConfigCheck
+    fun checkConfiguration(packConfig: PackConfig, configCheck: ConfigCheck = ConfigCheck(), quietCheck: Boolean = false): ConfigCheck
+    fun isDir(packConfig: PackConfig, configCheck: ConfigCheck = ConfigCheck()): ConfigCheck
+    fun isZip(packConfig: PackConfig, configCheck: ConfigCheck = ConfigCheck()): ConfigCheck
+    fun checkModloaderVersion(modloader: String, modloaderVersion: String, minecraftVersion: String, configCheck: ConfigCheck = ConfigCheck()): ConfigCheck
+    fun checkInclusions(inclusions: MutableList<InclusionSpecification>,modpackDir: String, configCheck: ConfigCheck = ConfigCheck(),printLog: Boolean = true): ConfigCheck
+    fun checkZipArchive(pathToZip: String, configCheck: ConfigCheck = ConfigCheck()): ConfigCheck
+    fun checkManifests(destination: String, packConfig: PackConfig, configCheck: ConfigCheck = ConfigCheck()): String?
+    fun checkModpackDir(modpackDir: String, configCheck: ConfigCheck = ConfigCheck(), printLog: Boolean): ConfigCheck
+    fun checkModloader(modloader: String,configCheck: ConfigCheck): ConfigCheck
 
-    fun checkConfiguration(packConfig: PackConfig, encounteredErrors: MutableList<String>, quietCheck: Boolean): Boolean
-    fun sanitizeLinks(packConfig: PackConfig)
     fun checkIconAndProperties(iconOrPropertiesPath: String): Boolean
-    fun isDir(packConfig: PackConfig, encounteredErrors: MutableList<String>): Boolean
-    fun isZip(packConfig: PackConfig, encounteredErrors: MutableList<String>): Boolean
-    fun checkModloaderVersion(
-        modloader: String, modloaderVersion: String, minecraftVersion: String, encounteredErrors: MutableList<String>
-    ): Boolean
 
     fun ensureScriptSettingsDefaults(packConfig: PackConfig)
-    fun checkInclusions(
-        inclusions: MutableList<InclusionSpecification>,
-        modpackDir: String,
-        encounteredErrors: MutableList<String> = ArrayList(5),
-        printLog: Boolean = true
-    ): Boolean
-
-    fun checkZipArchive(pathToZip: String, encounteredErrors: MutableList<String>): Boolean
+    fun sanitizeLinks(packConfig: PackConfig)
     fun unzipDestination(destination: String): String
     fun suggestInclusions(modpackDir: String): ArrayList<InclusionSpecification>
-    fun checkManifests(destination: String, packConfig: PackConfig, encounteredErrors: MutableList<String> = mutableListOf()): String?
     fun checkServerPacksForIncrement(source: String, destination: String): String
     fun printConfigurationModel(
         modpackDirectory: String,
@@ -85,7 +77,6 @@ expect class ConfigurationHandler {
     fun updateConfigModelFromConfigJson(packConfig: PackConfig, config: File)
     fun updateConfigModelFromMMCPack(packConfig: PackConfig, mmcPack: File)
     fun updateDestinationFromInstanceCfg(instanceCfg: File): String
-    fun checkModpackDir(modpackDir: String, encounteredErrors: MutableList<String>, printLog: Boolean): Boolean
     fun getAllFilesAndDirectoriesInModpackZip(zipFile: File): List<String>
     fun getDirectoriesInModpackZip(zipFile: File): List<String>
     fun getFilesInModpackZip(zipFile: File): List<String>

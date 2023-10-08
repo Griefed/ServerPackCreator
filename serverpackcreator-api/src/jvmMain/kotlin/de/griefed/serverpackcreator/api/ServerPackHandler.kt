@@ -651,7 +651,7 @@ actual class ServerPackHandler actual constructor(
                         "server",
                         minecraftVersion,
                         "--download-server",
-                        "--install-dir=\"$destination\""
+                        "--install-dir=."
                     )
                 } else {
                     log.error(
@@ -690,14 +690,14 @@ actual class ServerPackHandler actual constructor(
                 }
             }
 
-            else -> log.error("Invalid modloader specified. Modloader must be either Forge, Fabric or Quilt. Specified: $modLoader")
+            else -> log.error("Invalid modloader specified. Modloader must be either Forge, NeoForge, Fabric, LegacyFabric or Quilt. Specified: $modLoader")
         }
         try {
             log.info("Starting server installation for Minecraft $minecraftVersion, $modLoader $modLoaderVersion.")
             val processBuilder =
                 ProcessBuilder(commandArguments).directory(File(destination).absoluteFile).redirectErrorStream(true)
             log.debug("ProcessBuilder command: {}", processBuilder.command())
-            log.debug("Executing in: {}", File(destination))
+            log.debug("Executing in: {}", File(destination).absolutePath)
             process = processBuilder.start()
             process.inputStream.use { input ->
                 input.bufferedReader().use { buff ->

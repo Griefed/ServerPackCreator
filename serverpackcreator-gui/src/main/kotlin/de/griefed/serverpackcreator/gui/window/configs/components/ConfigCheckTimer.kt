@@ -104,7 +104,6 @@ class ConfigCheckTimer(delay: Int, guiProps: GuiProps, tabbedConfigsTab: TabbedC
                 tabbedConfigsTab.title.hideErrorIcon()
             }
             errorsEncountered = false
-            tabbedConfigsTab.checkAll()
         }
     }) {
     init {

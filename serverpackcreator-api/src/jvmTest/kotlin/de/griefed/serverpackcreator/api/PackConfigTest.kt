@@ -117,11 +117,9 @@ class PackConfigTest internal constructor() {
             Assertions.assertEquals((config.get("list") as ArrayList<String>).size, 4)
             Assertions.assertEquals(config.get("list") as ArrayList<String>, list)
         }
-        val afterFile = File(
-            ApiWrapper.api(File("src/jvmTest/resources/serverpackcreator.properties")).apiProperties.homeDirectory,
-            "after.conf"
-        )
-        packConfig.save(afterFile)
+        val apiProperties = ApiWrapper.api(File("src/jvmTest/resources/serverpackcreator.properties")).apiProperties
+        val afterFile = File(apiProperties.homeDirectory,"after.conf")
+        packConfig.save(afterFile, apiProperties)
         val after = PackConfig(
             ApiWrapper.api(File("src/jvmTest/resources/serverpackcreator.properties")).utilities!!, afterFile
         )

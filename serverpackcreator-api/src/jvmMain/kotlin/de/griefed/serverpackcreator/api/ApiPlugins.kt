@@ -500,9 +500,8 @@ actual class ApiPlugins(
      */
     actual fun runConfigCheckExtensions(
         packConfig: PackConfig,
-        encounteredErrors: MutableList<String>
-    ): Boolean {
-        var hasError = false
+        configCheck: ConfigCheck
+    ): ConfigCheck {
         for (plugin in getPlugins()) {
             log.info("Executing ConfigCheckExtensions extensions.")
             pluginsLog.info("Executing ConfigCheckExtensions extensions.")
@@ -512,28 +511,28 @@ actual class ApiPlugins(
                 try {
                     val pluginConfig = getPluginConfig(plugin.pluginId)
                     val extensionConfigs = getExtensionConfigs(plugin, packConfig)
-                    if (extension.runCheck(
-                            versionMeta,
-                            apiProperties,
-                            utilities,
-                            packConfig,
-                            encounteredErrors,
-                            pluginConfig,
-                            extensionConfigs
-                        )
-                    ) {
-                        hasError = true
-                    }
+                    extension.runCheck(
+                        versionMeta,
+                        apiProperties,
+                        utilities,
+                        packConfig,
+                        configCheck,
+                        pluginConfig,
+                        extensionConfigs
+                    )
                 } catch (ex: ExtensionException) {
                     pluginsLog.error(extensionError, ex)
+                    configCheck.pluginsErrors.add(extensionError)
                 } catch (ex: Error) {
                     pluginsLog.error(extensionError, ex)
+                    configCheck.pluginsErrors.add(extensionError)
                 } catch (ex: Exception) {
                     pluginsLog.error(extensionError, ex)
+                    configCheck.pluginsErrors.add(extensionError)
                 }
             }
         }
-        return hasError
+        return configCheck
     }
 
     /**

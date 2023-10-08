@@ -43,6 +43,7 @@ import javax.swing.SwingUtilities
 import javax.swing.UIManager
 import javax.swing.plaf.FontUIResource
 
+private const val guiPropertyKeyPrefix = "gui."
 private const val tabbedPaneFocusColorProp = "TabbedPane.focusColor"
 private const val panelBackgroundProp = "Panel.background"
 private const val tabbedPaneUnderlineColorProp = "TabbedPane.underlineColor"
@@ -57,6 +58,7 @@ private const val tipsViewedProp = "tips.viewed"
 private const val tipsShowOnStartupProp = "tips.show"
 private const val falseAsStr = "false"
 private const val trueAsStr = "true"
+private const val themeKey = "theme.name"
 
 /**
  * Properties used at various places across the whole of the ServerPackCreator GUI, such as icons.
@@ -390,26 +392,12 @@ class GuiProps(private val apiProperties: ApiProperties) {
     val configDispatcher = Executors.newFixedThreadPool(5).asCoroutineDispatcher()
     val fileBrowserDispatcher = Executors.newFixedThreadPool(5).asCoroutineDispatcher()
     val generationDispatcher = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
-    private val guiPropertyPrefix = "gui."
-    var currentTheme: FlatLaf = FlatDarkPurpleIJTheme()
+    var theme: String
         get() {
-            val themeClassName = getGuiProperty(themeProp, FlatDarkPurpleIJTheme().javaClass.name)
-            val themeClass = Class.forName(themeClassName)
-            val theme: FlatLaf = themeClass.getDeclaredConstructor().newInstance() as FlatLaf
-            field = theme
-            return field
+            return getGuiProperty(themeKey, FlatDarkPurpleIJTheme().name)!!
         }
         set(value) {
-            field = value
-            FlatAnimatedLafChange.showSnapshot()
-            UIManager.setLookAndFeel(field)
-            updateThemeRelatedComponents()
-            FlatLaf.updateUI()
-            for (frame in Frame.getFrames()) {
-                SwingUtilities.updateComponentTreeUI(frame)
-            }
-            FlatAnimatedLafChange.hideSnapshotWithAnimation()
-            storeGuiProperty(themeProp, field.javaClass.name)
+            storeGuiProperty(themeKey,value)
         }
     var startFocusEnabled: Boolean = getGuiProperty(focusStartProp, falseAsStr).toBoolean()
         get() {
@@ -489,7 +477,7 @@ class GuiProps(private val apiProperties: ApiProperties) {
      *
      * @author Griefed
      */
-    private fun updateThemeRelatedComponents() {
+    fun updateThemeRelatedComponents() {
         val panelBackgroundColour = UIManager.getColor(panelBackgroundProp)
         val tabbedPaneFocusColor = UIManager.getColor(tabbedPaneFocusColorProp)
         busyConfig.eyeBackgroundColour = panelBackgroundColour
@@ -515,14 +503,14 @@ class GuiProps(private val apiProperties: ApiProperties) {
      * @author Griefed
      */
     fun getGuiProperty(key: String, default: String? = null): String? {
-        return apiProperties.retrieveCustomProperty("$guiPropertyPrefix$key") ?: default
+        return apiProperties.retrieveCustomProperty("$guiPropertyKeyPrefix$key") ?: default
     }
 
     /**
      * @author Griefed
      */
     fun storeGuiProperty(key: String, value: String) {
-        apiProperties.storeCustomProperty("$guiPropertyPrefix$key", value)
+        apiProperties.storeCustomProperty("$guiPropertyKeyPrefix$key", value)
     }
 
     /**

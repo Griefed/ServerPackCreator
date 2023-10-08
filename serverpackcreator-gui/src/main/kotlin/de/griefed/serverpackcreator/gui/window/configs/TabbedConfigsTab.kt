@@ -150,8 +150,7 @@ class TabbedConfigsTab(
             this,
             apiWrapper,
             noVersions,
-            componentResizer,
-            timer
+            componentResizer
         )
         tabs.add(editor)
         tabs.setTabComponentAt(tabs.tabCount - 1, editor.title)
@@ -180,14 +179,10 @@ class TabbedConfigsTab(
         configChooser.dialogType = JFileChooser.SAVE_DIALOG
         if (configChooser.showSaveDialog(mainFrame.frame) == JFileChooser.APPROVE_OPTION) {
             if (configChooser.selectedFile.path.endsWith(".conf")) {
-                editor.getCurrentConfiguration().save(
-                    configChooser.selectedFile.absoluteFile
-                )
+                editor.getCurrentConfiguration().save(configChooser.selectedFile.absoluteFile, apiWrapper.apiProperties)
                 log.debug("Saved configuration to: ${configChooser.selectedFile.absoluteFile}")
             } else {
-                editor.getCurrentConfiguration().save(
-                    File("${configChooser.selectedFile.absoluteFile}.conf")
-                )
+                editor.getCurrentConfiguration().save(File("${configChooser.selectedFile.absoluteFile}.conf"), apiWrapper.apiProperties)
                 log.debug("Saved configuration to: ${configChooser.selectedFile.absoluteFile}.conf")
             }
         }
@@ -203,6 +198,7 @@ class TabbedConfigsTab(
         } else {
             title.hideWarningIcon()
         }
+        timer.restart()
     }
 
     /**
@@ -215,7 +211,18 @@ class TabbedConfigsTab(
      */
     @Suppress("MemberVisibilityCanBePrivate")
     fun loadConfig(configFile: File, tab: ConfigEditor = addTab()) {
-        tab.loadConfiguration(PackConfig(apiWrapper.utilities!!, configFile), configFile)
+        if (configFile.isFile) {
+            tab.loadConfiguration(PackConfig(apiWrapper.utilities!!, configFile), configFile)
+        } else {
+            GlobalScope.launch(Dispatchers.Swing) {
+                JOptionPane.showMessageDialog(
+                    panel,
+                    Gui.createserverpack_gui_tabs_notfound_message(configFile.absoluteFile),
+                    Gui.createserverpack_gui_tabs_notfound_title.toString(),
+                    JOptionPane.ERROR_MESSAGE
+                )
+            }
+        }
     }
 
     /**

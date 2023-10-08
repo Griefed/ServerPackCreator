@@ -29,8 +29,6 @@ import java.io.BufferedReader
 import java.io.File
 import java.io.IOException
 import java.io.InputStreamReader
-import java.io.OutputStream
-import java.lang.StringBuilder
 import java.net.URL
 import java.util.*
 import java.util.stream.Collectors
@@ -662,10 +660,16 @@ actual class ApiProperties(
             return apiVersion.matches(alphaBetaRegex)
         }
 
+    val configVersion: String = if (preRelease || devBuild) {
+        "TEST"
+    } else {
+        "4"
+    }
+
     init {
         i18n4k = i18n4kConfig
         i18n4kConfig.defaultLocale = Locale("en_GB")
-        loadProperties(propertiesFile)
+        loadProperties(propertiesFile, false)
     }
 
     /**
@@ -675,11 +679,11 @@ actual class ApiProperties(
      * @author Griefed
      */
     val firstRun: Boolean
-        get() {
-            val first = getBoolProperty("de.griefed.serverpackcreator.firstrun",true)
-            setBoolProperty("de.griefed.serverpackcreator.firstrun",false)
-            return first
-        }
+
+    init {
+        firstRun = getBoolProperty("de.griefed.serverpackcreator.firstrun", true)
+        setBoolProperty("de.griefed.serverpackcreator.firstrun", false)
+    }
 
     /**
      * The default shell-template for the modded server start scripts. The file returned by this
@@ -817,24 +821,51 @@ actual class ApiProperties(
      * @author Griefed
      */
     fun defaultScriptTemplates(): List<File> {
-        val templates = mutableListOf<File>()
         // See whether we have custom files.
         val currentFiles = serverFilesDirectory.walk().maxDepth(1).filter {
-            it.name.endsWith("sh",ignoreCase = true) ||
-            it.name.endsWith("ps1",ignoreCase = true) ||
-            it.name.endsWith("bat",ignoreCase = true)
-        }.filter {
-            !it.name.contains("default_template",ignoreCase = true)
+            it.name.endsWith("sh", ignoreCase = true) ||
+                    it.name.endsWith("ps1", ignoreCase = true) ||
+                    it.name.endsWith("bat", ignoreCase = true)
         }.toList()
-        if (currentFiles.isNotEmpty()) {
-            for (file in currentFiles) {
-                templates.add(file.absoluteFile)
-            }
-        } else {
-            templates.add(File(serverFilesDirectory.absolutePath, defaultShellScriptTemplate.name).absoluteFile)
-            templates.add(File(serverFilesDirectory.absolutePath, defaultPowerShellScriptTemplate.name).absoluteFile)
+        val customTemplates = currentFiles.filter {
+            !it.name.contains("default_template", ignoreCase = true)
         }
-        return templates.toList()
+
+        val newTemplates = mutableListOf<File>()
+        var shellPresent = false
+        var powershellPresent = false
+        var batchPresent = false
+        for (customTemplate in customTemplates) {
+            when {
+                customTemplate.name.endsWith("sh", ignoreCase = true) && !shellPresent -> {
+                    newTemplates.add(customTemplate.absoluteFile)
+                    shellPresent = true
+                }
+
+                customTemplate.name.endsWith("ps1", ignoreCase = true) && !powershellPresent -> {
+                    newTemplates.add(customTemplate.absoluteFile)
+                    powershellPresent = true
+                }
+
+                customTemplate.name.endsWith("bat", ignoreCase = true) && !batchPresent -> {
+                    newTemplates.add(customTemplate.absoluteFile)
+                    batchPresent = true
+                }
+
+                else -> {
+                    newTemplates.add(customTemplate.absoluteFile)
+                }
+            }
+        }
+
+        if (!shellPresent) {
+            newTemplates.add(File(serverFilesDirectory.absolutePath, defaultShellScriptTemplate.name).absoluteFile)
+        }
+        if (!powershellPresent) {
+            newTemplates.add(File(serverFilesDirectory.absolutePath, defaultPowerShellScriptTemplate.name).absoluteFile)
+        }
+
+        return newTemplates.toList()
     }
 
     /**
@@ -843,8 +874,16 @@ actual class ApiProperties(
     @Suppress("SetterBackingFieldAssignment")
     var scriptTemplates: TreeSet<File> = TreeSet<File>()
         get() {
-            val entries = getListProperty(pServerPackScriptTemplates,
-                defaultScriptTemplates().joinToString(",") { it.absolutePath }).map { File(it).absoluteFile }
+            val entries = if (internalProps.getProperty(pServerPackScriptTemplates) != null
+                && internalProps.getProperty(pServerPackScriptTemplates) == "default_template.ps1,default_template.sh"
+            ) {
+                defaultScriptTemplates()
+            } else {
+                getListProperty(
+                    pServerPackScriptTemplates,
+                    defaultScriptTemplates().joinToString(",") { it.absolutePath }
+                ).map { File(it).absoluteFile }
+            }
             field.clear()
             field.addAll(entries)
             return field
@@ -1774,13 +1813,22 @@ actual class ApiProperties(
     }
 
     /**
+     * Load properties using the default file path.
+     *
+     * @author Griefed
+     */
+    fun loadProperties(saveProps: Boolean = true) {
+        loadProperties(File(serverPackCreatorProperties), saveProps)
+    }
+
+    /**
      * Reload from a specific properties-file.
      *
      * @param propertiesFile The properties-file with which to loadProperties the settings and
      * configuration.
      * @author Griefed
      */
-    fun loadProperties(propertiesFile: File = File(serverPackCreatorProperties)) {
+    fun loadProperties(propertiesFile: File = File(serverPackCreatorProperties), saveProps: Boolean = true) {
         val props = Properties()
         val jarFolderFile = File(jarInformation.jarFolder.absoluteFile, serverPackCreatorProperties).absoluteFile
         val serverPackCreatorHomeDir = File(home, "ServerPackCreator").absoluteFile
@@ -1815,8 +1863,10 @@ actual class ApiProperties(
         } else {
             setFallbackModsList()
         }
-        //Store properties in the configured SPC home-directory
-        saveProperties(File(homeDirectory, serverPackCreatorProperties).absoluteFile)
+        if (saveProps) {
+            //Store properties in the configured SPC home-directory
+            saveProperties(File(homeDirectory, serverPackCreatorProperties).absoluteFile)
+        }
     }
 
     /**
@@ -2320,7 +2370,7 @@ actual class ApiProperties(
         manifestsDirectory.createDirectories(create = true, directory = true)
         minecraftServerManifestsDirectory.createDirectories(create = true, directory = true)
         installerCacheDirectory.createDirectories(create = true, directory = true)
-        artemisDataDirectory.createDirectories(create = true,directory = true)
+        artemisDataDirectory.createDirectories(create = true, directory = true)
         printSettings()
     }
 
@@ -2365,6 +2415,10 @@ actual class ApiProperties(
             log.info("    " + template.path)
         }
         log.info("============================== PROPERTIES ==============================")
+    }
+
+    init {
+        saveProperties(File(homeDirectory, serverPackCreatorProperties).absoluteFile)
     }
 
     actual companion object {

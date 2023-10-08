@@ -23,6 +23,7 @@ import Gui
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.components.TabPanel
+import de.griefed.serverpackcreator.gui.themes.ThemeManager
 import de.griefed.serverpackcreator.gui.utilities.DialogUtilities
 import de.griefed.serverpackcreator.gui.window.configs.ConfigEditor
 import de.griefed.serverpackcreator.gui.window.configs.TabbedConfigsTab
@@ -45,7 +46,8 @@ class MainPanel(
     private val guiProps: GuiProps,
     private val apiWrapper: ApiWrapper,
     larsonScanner: LarsonScanner,
-    mainFrame: MainFrame
+    mainFrame: MainFrame,
+    themeManager: ThemeManager
 ) : TabPanel(
     MigLayout(
         "",
@@ -60,7 +62,7 @@ class MainPanel(
     val tabbedLogsTab = TabbedLogsTab(apiWrapper.apiProperties)
 
     @Suppress("MemberVisibilityCanBePrivate")
-    val settingsEditorsTab = SettingsEditorsTab(guiProps, apiWrapper.apiProperties, mainFrame)
+    val settingsEditorsTab = SettingsEditorsTab(guiProps, apiWrapper.apiProperties, mainFrame,themeManager)
     val controlPanel = ControlPanel(guiProps, tabbedConfigsTab, larsonScanner, apiWrapper, mainFrame)
 
     init {
@@ -69,6 +71,7 @@ class MainPanel(
         tabs.addTab(Gui.main_tabs_logs.toString(), tabbedLogsTab.panel)
         tabs.addTab(Gui.main_tabs_settings.toString(), settingsEditorsTab.panel)
         tabs.setTabComponentAt(tabs.tabCount - 1, settingsEditorsTab.title)
+        apiWrapper.apiPlugins!!.addTabExtensionTabs(tabs)
         panel.add(larsonScanner, "height 40!,growx, south")
         panel.add(controlPanel.panel, "height 160!,growx, south")
     }
@@ -96,7 +99,6 @@ class MainPanel(
                         config.saveCurrentConfiguration()
                     }
                 }
-                @Suppress("KotlinConstantConditions")
                 if (config.configFile != null && config.title.title != Gui.createserverpack_gui_title_new.toString()) {
                     configs.add(config.configFile!!.absolutePath)
                 }

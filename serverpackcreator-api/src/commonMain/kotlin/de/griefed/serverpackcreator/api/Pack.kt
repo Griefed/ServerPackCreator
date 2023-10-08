@@ -65,6 +65,7 @@ abstract class Pack<F, J, out P> {
     var isServerPropertiesInclusionDesired = true
     var isZipCreationDesired = true
     var modpackJson: J? = null
+    var configVersion: String? = null
 
     open var projectName: String? = null
     open var fileName: String? = null
@@ -77,7 +78,7 @@ abstract class Pack<F, J, out P> {
      * @return The configuration for further operations.
      * @author Griefed
      */
-    abstract fun save(destination: F): P
+    abstract fun save(destination: F, apiProperties: ApiProperties): P
 
     fun setPluginsConfigs(pluginConfigs: HashMap<String, ArrayList<CommentedConfig>>) {
         this.pluginsConfigs.clear()
