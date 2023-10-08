@@ -107,7 +107,7 @@ class InclusionsEditor(
 
     private var selectedInclusion: InclusionSpecification? = null
     private val delay = 250
-    private val timer: Timer = Timer(delay) { updateTip() }
+    private val tipUpdateTimer: Timer = Timer(delay) { updateTip() }
 
     private val sourceListener = object : DocumentChangeListener {
         override fun update(e: DocumentEvent) {
@@ -178,9 +178,9 @@ class InclusionsEditor(
     }
 
     init {
-        timer.stop()
-        timer.delay = delay
-        timer.isRepeats = false
+        tipUpdateTimer.stop()
+        tipUpdateTimer.delay = delay
+        tipUpdateTimer.isRepeats = false
         dividerLocation = 150
         setLeftComponent(leftPanel)
         setRightComponent(rightPanel)
@@ -310,11 +310,11 @@ class InclusionsEditor(
         if (list.model.size > 0 && !list.isSelectionEmpty) {
             if (File(configEditor.getModpackDirectory(), source.text).exists() || File(source.text).exists()) {
                 list.selectedValue.source = source.text
-                timer.restart()
+                tipUpdateTimer.restart()
                 list.updateUI()
                 sourceIcon.info()
             } else {
-                timer.stop()
+                tipUpdateTimer.stop()
                 sourceIcon.error(Gui.createserverpack_gui_inclusions_editor_source_error(source.text))
             }
             configEditor.validateInputFields()
@@ -331,7 +331,7 @@ class InclusionsEditor(
                 destinationIcon.info()
                 list.updateUI()
             } else {
-                timer.stop()
+                tipUpdateTimer.stop()
                 destinationIcon.error(Gui.createserverpack_gui_inclusions_editor_destination_error(destination.text))
             }
         }
@@ -345,11 +345,11 @@ class InclusionsEditor(
             try {
                 inclusionFilter.text.toRegex()
                 list.selectedValue.inclusionFilter = inclusionFilter.text
-                timer.restart()
+                tipUpdateTimer.restart()
                 inclusionIcon.info()
                 list.updateUI()
             } catch (ex: PatternSyntaxException) {
-                timer.stop()
+                tipUpdateTimer.stop()
                 var exception = ex.message ?: ex.description
                 exception = exception
                     .replace("\t", "%20")
@@ -368,11 +368,11 @@ class InclusionsEditor(
             try {
                 exclusionFilter.text.toRegex()
                 list.selectedValue.exclusionFilter = exclusionFilter.text
-                timer.restart()
+                tipUpdateTimer.restart()
                 exclusionIcon.info()
                 list.updateUI()
             } catch (ex: PatternSyntaxException) {
-                timer.stop()
+                tipUpdateTimer.stop()
                 var exception = ex.message ?: ex.description
                 exception = exception
                     .replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;")
@@ -399,7 +399,7 @@ class InclusionsEditor(
         destination.text = selectedInclusion!!.destination ?: ""
         inclusionFilter.text = selectedInclusion!!.inclusionFilter ?: ""
         exclusionFilter.text = selectedInclusion!!.exclusionFilter ?: ""
-        timer.restart()
+        tipUpdateTimer.restart()
     }
 
     /**

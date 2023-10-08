@@ -46,11 +46,11 @@ open class BalloonTipButton(text: String?, icon: Icon, toolTip: String, guiProps
     init {
         multiClickThreshhold = 1000
         val balloonTip = ThemedBalloonTip(this,toolTipLabel,false,guiProps)
-        val timer = Timer(1000) {
+        val tooltipTimer = Timer(1000) {
             balloonTip.isVisible = true
         }
-        timer.stop()
-        timer.isRepeats = false
+        tooltipTimer.stop()
+        tooltipTimer.isRepeats = false
         this.addMouseListener(object : MouseListener {
             override fun mouseClicked(e: MouseEvent?) {}
 
@@ -59,11 +59,11 @@ open class BalloonTipButton(text: String?, icon: Icon, toolTip: String, guiProps
             override fun mouseReleased(e: MouseEvent?) {}
 
             override fun mouseEntered(e: MouseEvent?) {
-                timer.restart()
+                tooltipTimer.restart()
             }
 
             override fun mouseExited(e: MouseEvent?) {
-                timer.stop()
+                tooltipTimer.stop()
                 balloonTip.isVisible = false
             }
         })
