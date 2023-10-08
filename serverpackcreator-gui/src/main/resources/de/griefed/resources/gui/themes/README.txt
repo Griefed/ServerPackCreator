@@ -26,7 +26,7 @@ ServerPackCreator. If you've added or changed a theme whilst running ServerPackC
 the changes to take effect.
 
 Request for theme creations will be ignored. Please be aware that I implemented this feature so YOU can create themes.
-Not in order for ME to create themes for YOU. :D
+Not in order for ME to create themes FOR you. :D
 
 Happy theming!
 
