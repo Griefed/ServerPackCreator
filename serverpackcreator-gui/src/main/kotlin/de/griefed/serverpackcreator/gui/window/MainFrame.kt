@@ -22,6 +22,7 @@ package de.griefed.serverpackcreator.gui.window
 import Gui
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.gui.GuiProps
+import de.griefed.serverpackcreator.gui.themes.ThemeManager
 import de.griefed.serverpackcreator.gui.window.menu.MainMenuBar
 import de.griefed.serverpackcreator.updater.MigrationManager
 import de.griefed.serverpackcreator.updater.UpdateChecker
@@ -40,10 +41,11 @@ class MainFrame(
     guiProps: GuiProps,
     apiWrapper: ApiWrapper,
     updateChecker: UpdateChecker,
-    migrationManager: MigrationManager
+    migrationManager: MigrationManager,
+    themeManager: ThemeManager
 ) {
     val frame: JFrame = JFrame(Gui.createserverpack_gui_createandshowgui.toString())
-    val mainPanel = MainPanel(guiProps, apiWrapper, guiProps.larsonScanner,this)
+    val mainPanel = MainPanel(guiProps, apiWrapper, guiProps.larsonScanner,this, themeManager)
     private val updateDialogs : UpdateDialogs
     private val menuBar: MainMenuBar
 

@@ -26,10 +26,10 @@ import com.formdev.flatlaf.fonts.inter.FlatInterFont
 import com.formdev.flatlaf.fonts.jetbrains_mono.FlatJetBrainsMonoFont
 import com.formdev.flatlaf.fonts.roboto.FlatRobotoFont
 import com.formdev.flatlaf.fonts.roboto_mono.FlatRobotoMonoFont
-import com.formdev.flatlaf.intellijthemes.FlatDarkPurpleIJTheme
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.gui.splash.SplashScreen
 import de.griefed.serverpackcreator.gui.window.MainFrame
+import de.griefed.serverpackcreator.gui.themes.ThemeManager
 import de.griefed.serverpackcreator.updater.MigrationManager
 import de.griefed.serverpackcreator.updater.UpdateChecker
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -38,7 +38,6 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.swing.Swing
 import javax.swing.JOptionPane
-import javax.swing.UIManager
 
 /**
  * Main window of ServerPackCreator housing everything needed to configure a server pack, generate it, view logs, manage
@@ -54,6 +53,7 @@ class MainWindow(
     private val migrationManager: MigrationManager
 ) {
     private val guiProps = GuiProps(apiWrapper.apiProperties)
+    private val themeManager = ThemeManager(apiWrapper, guiProps)
 
     init {
         GlobalScope.launch(Dispatchers.Swing) {
@@ -68,17 +68,14 @@ class MainWindow(
             FlatRobotoMonoFont.install()
             FlatLaf.setPreferredFontFamily(FlatJetBrainsMonoFont.FAMILY)
 
-            val themeClassName = guiProps.getGuiProperty("theme", FlatDarkPurpleIJTheme().javaClass.name)
-            val themeClass = Class.forName(themeClassName)
-            val instance = themeClass.getDeclaredConstructor().newInstance() as FlatLaf
-            UIManager.setLookAndFeel(instance)
-            FlatLaf.updateUI()
+            themeManager.updateLookAndFeel(guiProps.theme)
 
             val main = MainFrame(
                 guiProps,
                 apiWrapper,
                 updateChecker,
-                migrationManager
+                migrationManager,
+                themeManager
             )
             splashScreen.close()
             guiProps.font = guiProps.font

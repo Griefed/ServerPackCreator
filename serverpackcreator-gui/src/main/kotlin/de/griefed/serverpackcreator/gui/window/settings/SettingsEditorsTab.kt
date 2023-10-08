@@ -23,6 +23,7 @@ import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.components.DocumentChangeListener
 import de.griefed.serverpackcreator.gui.components.TabPanel
+import de.griefed.serverpackcreator.gui.themes.ThemeManager
 import de.griefed.serverpackcreator.gui.window.MainFrame
 import de.griefed.serverpackcreator.gui.window.configs.components.ComponentResizer
 import de.griefed.serverpackcreator.gui.window.settings.components.SettingsCheckTimer
@@ -35,7 +36,7 @@ import javax.swing.event.DocumentEvent
 /**
  * @author Griefed
  */
-class SettingsEditorsTab(guiProps: GuiProps, apiProperties: ApiProperties, mainFrame: MainFrame) :
+class SettingsEditorsTab(guiProps: GuiProps, apiProperties: ApiProperties, mainFrame: MainFrame, themeManager: ThemeManager) :
     TabPanel() {
 
     val settingsHandling = SettingsHandling(guiProps, this, apiProperties, mainFrame)
@@ -52,7 +53,7 @@ class SettingsEditorsTab(guiProps: GuiProps, apiProperties: ApiProperties, mainF
     val global =
         GlobalSettings(guiProps, apiProperties, componentResizer, mainFrame, documentChangeListener, actionListener)
     val webservice = WebserviceSettings(guiProps, apiProperties, mainFrame, documentChangeListener, changeListener)
-    val gui = GuiSettings(guiProps, actionListener, changeListener)
+    val gui = GuiSettings(guiProps, actionListener, changeListener, themeManager)
     val title = SettingsTitle(guiProps)
 
     init {
