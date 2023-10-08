@@ -49,7 +49,6 @@ class AboutMenu(
     private val update = UpdateCheckItem(updateDialogs,updateButton)
     private val migration = MigrationInfoItem(apiWrapper, migrationManager, guiProps, mainFrame)
     private val help = WikiHelpItem(webUtilities)
-    private val how = WikiHowToItem(webUtilities)
     private val page = GitHubPageItem(webUtilities)
     private val issues = GitHubIssuesItem(webUtilities)
     private val releases = GitHubReleasesItem(webUtilities)
@@ -65,7 +64,7 @@ class AboutMenu(
         add(JSeparator())
         add(stepByStepItem)
         add(help)
-        add(how)
+        add(tipOfTheDayItem)
         add(JSeparator())
         add(page)
         add(issues)
@@ -74,10 +73,7 @@ class AboutMenu(
         add(discord)
         add(JSeparator())
         add(donate)
-        add(JSeparator())
         add(thirdparty)
-        add(JSeparator())
-        add(tipOfTheDayItem)
     }
 
     /**

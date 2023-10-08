@@ -21,6 +21,7 @@ package de.griefed.serverpackcreator.gui.window.menu.view
 
 import Gui
 import de.griefed.serverpackcreator.api.ApiWrapper
+import de.griefed.serverpackcreator.gui.themes.ThemeManager
 import javax.swing.JMenu
 import javax.swing.JSeparator
 
@@ -29,7 +30,7 @@ import javax.swing.JSeparator
  *
  * @author Griefed
  */
-class ViewMenu(apiWrapper: ApiWrapper) : JMenu(Gui.menubar_gui_menu_view.toString()) {
+class ViewMenu(apiWrapper: ApiWrapper, themeManager: ThemeManager) : JMenu(Gui.menubar_gui_menu_view.toString()) {
 
     private val homeDir = HomeDirItem(apiWrapper.utilities!!.fileUtilities, apiWrapper.apiProperties)
     private val serverPacksDir = ServerPacksDirItem(apiWrapper.utilities!!.fileUtilities, apiWrapper.apiProperties)
@@ -42,6 +43,7 @@ class ViewMenu(apiWrapper: ApiWrapper) : JMenu(Gui.menubar_gui_menu_view.toStrin
     private val spcLog = ServerPackCreatorLogItem(apiWrapper.utilities!!.fileUtilities, apiWrapper.apiProperties)
     private val pluginsLog = PluginsLogItem(apiWrapper.utilities!!.fileUtilities, apiWrapper.apiProperties)
     private val modloaderInstLog = ModloaderInstallerLogItem(apiWrapper.utilities!!.fileUtilities, apiWrapper.apiProperties)
+    private val themesDir = ThemesDirItem(apiWrapper.utilities!!.fileUtilities, themeManager)
 
     init {
         add(homeDir)
@@ -50,9 +52,9 @@ class ViewMenu(apiWrapper: ApiWrapper) : JMenu(Gui.menubar_gui_menu_view.toStrin
         add(propsDir)
         add(iconsDir)
         add(configsDir)
-        add(JSeparator())
         add(pluginsDir)
         add(pluginConfigsDir)
+        add(themesDir)
         add(JSeparator())
         add(spcLog)
         add(pluginsLog)

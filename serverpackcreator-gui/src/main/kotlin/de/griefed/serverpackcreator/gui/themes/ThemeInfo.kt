@@ -22,6 +22,9 @@ package de.griefed.serverpackcreator.gui.themes
 import java.io.File
 
 /**
+ * Theme info allowing us to retrieve various values required to change the theme in ServerPackCreator.
+ * Heavily inspired by https://github.com/JFormDesigner/FlatLaf/blob/main/flatlaf-demo/src/main/java/com/formdev/flatlaf/demo/intellijthemes/IJThemesManager.java
+ *
  * @author Griefed
  */
 class ThemeInfo(

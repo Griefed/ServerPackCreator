@@ -16,13 +16,8 @@ release distribution.
 
 ---
 
-[![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/Griefed/ServerPackCreator?include_prereleases&label=Latest%20Release&logo=Github&style=for-the-badge&color=c0ffee&labelColor=325358)](https://github.com/Griefed/ServerPackCreator/releases/latest)
+[![Latest Release)](https://img.shields.io/github/v/release/Griefed/ServerPackCreator?display_name=release&style=for-the-badge&labelColor=325358&color=c0ffee)](https://github.com/Griefed/ServerPackCreator/releases/latest)
 [![GitHub](https://img.shields.io/github/license/Griefed/ServerPackCreator?logo=GitHub&style=for-the-badge&color=c0ffee&labelColor=325358)](https://github.com/Griefed/ServerPackCreator/blob/main/LICENSE)
-[![GitHub all releases](https://img.shields.io/github/downloads/Griefed/ServerPackCreator/total?color=c0ffee&logo=GitHub&logoColor=white&labelColor=325358&style=for-the-badge)](https://github.com/Griefed/ServerPackCreator/releases)
-[![Docker Pulls](https://img.shields.io/docker/pulls/griefed/serverpackcreator?style=for-the-badge&logo=Docker&labelColor=325358&color=c0ffee&logoColor=white)](https://hub.docker.com/r/griefed/serverpackcreator)
-[![GitHub Repo stars](https://img.shields.io/github/stars/Griefed/serverpackcreator?label=GitHub%20Stars&style=for-the-badge&logo=Github&labelColor=325358&color=c0ffee)](https://github.com/Griefed/ServerPackCreator)
-[![GitHub forks](https://img.shields.io/github/forks/Griefed/serverpackcreator?label=GitHub%20Forks&style=for-the-badge&logo=Github&labelColor=325358&color=c0ffee)](https://github.com/Griefed/ServerPackCreator)
-[![GitHub contributors](https://img.shields.io/github/contributors/Griefed/ServerPackCreator?color=c0ffee&label=Contributors&logo=GitHub&logoColor=white&style=for-the-badge&labelColor=325358)](https://github.com/Griefed/ServerPackCreator/graphs/contributors)
 
 **ServerPackCreator creates a server pack from any given Forge, Fabric, Quilt, LegacyFabric and NeoForge modpack.**
 
@@ -38,15 +33,6 @@ test something, or just release a new server pack for the new modpack version.
 
 The thought "*There must be a way to automate this, or at least make it less tedious...*" was the spark which sent me off
 into the world of programming. And here we are.
-
-##### Required:
-
-* Using the JAR-file release requires Java 21.
-* Working internet connection recommended.
-
-##### Note:
-
-* For more detailed help and information, take a look at the [Wiki](https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-Help) and [HELP.md](HELP.md).
 
 ##### Disclaimer:
 
@@ -65,18 +51,11 @@ There are two kinds of pre-releases: Alphas and Betas
 * Alphas: Missing features, incomplete features, almost guaranteed to have bugs / errors
 * Betas: Feature complete, probably contains bugs / errors
 
-# Milestones
-
-ServerPackCreator is divided into major milestones. For a glimpse of upcoming features and the progress being made, check out
-my [issue tracker](https://issues.griefed.dev/agiles/138-2/current). You can select the milestone you are interested in in
-the top left, where it says "No milestone" (default selection).
-No, you may not report issues through that particular issue tracker. Reporting is done purely through GitHub. 😊
-
 # Screenshots
 
-| CLI                 | GUI                           | WEB                                    |
-|---------------------|-------------------------------|----------------------------------------|
-| ![cli](img/cli.png) | ![gui dark](img/gui_dark.png) | ![web](img/web_configuration_dark.png) |
+| CLI                 | GUI                           | 
+|---------------------|-------------------------------|
+| ![cli](img/cli.png) | ![gui dark](img/gui_dark.png) |
 
 # Advantages/Disadvantages of CLI, GUI:
 
@@ -105,22 +84,9 @@ Note: All three ways are supported by the **.jar**-file. Which one is started de
 | Edit the configuration in the GUI. No manual file-editing required.                                                    |                                   |
 | Edit start script placeholders and values                                                                              |                                   |
 
-## Webservice:
-
-ServerPackCreator also has a webservice which you can run with the `-web`-argument. However, this webservice is still barebones and prone to massive improvements in a later milestone, so usage of said webservice-mode is not advised at this moment.
-
 ---
 
-# 1. Issues and help
-
-- Report a bug / ask for a feature / ask for an improvement / request a documentation improvement:
-  - [Click Me!](https://github.com/Griefed/ServerPackCreator/issues/new/choose)
-- There's a Wiki available which goes into further detail for many of ServerPackCreators available aspects:
-  - [Wiki](https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-Help)
-- The same as the Wiki, but as a file should you prefer it. 😊
-  - [HELP.md](HELP.md)
-
-# 2. Small feature overview
+# 1. Small feature overview
 
 1. **Exclude clientside-only mods**
     - **Automatically** by letting ServerPackCreator scan the mods of your modpack for their sideness
@@ -157,85 +123,30 @@ ServerPackCreator also has a webservice which you can run with the `-web`-argume
     - ServerPackCreator allows you to use plugins to add new features in various places.
     - An example plugins is available with every release, and the source code for it can be found in this repository, at [Example Plugin](serverpackcreator-plugin-example)
 
+# 2. Issues and help
+
+- Report a bug / ask for a feature / ask for an improvement / request a documentation improvement:
+    - https://github.com/Griefed/ServerPackCreator/issues/new/choose
+- There's a Wiki available which goes into further detail for many of ServerPackCreators available aspects:
+    - https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-Help
+- The same as the Wiki, but as a file should you prefer it. 😊
+    - [HELP.md](HELP.md)
+
 # 3. How To
 
-This How-To guide was inspired by the wonderful [Kreezxil](https://github.com/kreezxil). Guide originally from [his website](https://kreezcraft.com/server-pack-creator/), with permission to add it to this README.
+The first time you start ServerPackCreator, you will be asked whether you want to see a small step-by-step guide.
+Said guide will show you the most important parts in configuring your server pack.
 
-ServerPackCreator does what Kreezxil's articles do to create your server pack. It takes away the building part, not the debugging part. However, it gives a nice installer script which stops players from asking how to install a pack made with it.
-The scripts run on both Windows, and Linux, and probably also Mac.
-
-![howto](img/howto.png)
-
-I’ve placed numbers on the screenshot, and here’s what those sections do:
-
-1. Click the folder-button to browse to select the folder where the client pack/modpack lives.
-2. **Optional!** Specify a suffix for your server pack. It should honestly match the client pack version you’re distributing.
-3. Click this folder to navigate to the mods folder of your client pack. Here, you will CTRL select only those mods that run on a client exclusively. If the mod runs on a server, do not select it. Do not select everything, if you do that you’re failing right out the gate. Check the mod’s page to know for sure if it’s client only. If you are completely unsure which mod in your modpack should be selected, skip this step and keep the default list you see in the screenshot.
-4. After clicking this folder, you will choose those folders that must be included in your server pack for it to function properly. These should honestly at minimum be the **`mods`** and **`config`** directories. Without these, your server pack would not be compatible with your modpack.
-5. **Optional!** Click the folder-button to browse to an image file which should become the server icon of your server pack.
-    1. A preview of the server-icon is displayed on the right
-    2. If the server-icon setting is empty, the default icon will be displayed
-6. **Optional!** Click the folder-button to browse to a server.properties-file you want your players to use with your server pack. With this, you can provide default settings like difficulty, or the world-type.
-7. Select the Minecraft version of your modpack.
-8. Select the mod loader you are using.
-9. Choose the exact version of the modloader you are using.
-10. In this section are options that you can toggle. I recommend to toggle them all on. It will pre-install the modloader server so you can immediately start and test/debug, include the server-icon.png (either you specified one, or a default will be used), include the server.properties (either you specified one, or a default will be used) and finally, create a ZIP-archive of your server pack.
-11. **Optional!** JVM arguments, also called Java flags, to start your server with. Have you heard of the so-called Aikars Flags? You can use them via the `Use Aikars Flags`-button, or set your own. Useful if your server pack needs a lot of RAM and you want your server pack users to not have to work with these values themselves.
-12. **Optional!** This table lets you edit the Java path used in the start scripts. This does nothing for the scripts in the ZIP-archive, so don't worry. If your modpack and server pack need a different Java version to run, you can set the path the that Java versions binary/executable here.
-13. **Optional!** Even more optional that #5, #6, #11 and #12, under this menu is an option to save and load a custom configuration. Useful for if you have more than one mod pack for which you make server packs. Note: Regardless of what you do, a default configuration exists.
-
-And finally hit the play button ("Generate") to build the server pack. Once it is done, the app will ask if you want to go there. You should do that, and activate one of the start-up scripts that matches your system.
-
-For more, go follow the rest of the relevant articles at [Kreezcraft-How to make a Forge server from a Forge pack](https://kreezcraft.com/modpack-tutorials/how-to-make-a-forge-server-from-a-forge-pack/) and [Kreezcraft-How to make a Fabric server from a Fabric pack](https://kreezcraft.com/modpack-tutorials/how-to-make-a-fabric-server-from-a-fabric-pack/).
-
-## 3.1 Bonus
-
-### 3.1.1 Automatic Minecraft version, modloader and modloader version detection
-
-Upon selecting the modpack directory, ServerPackCreator will scan said directory and try to determine the required Minecraft version, modloader and version of the
-modloader. ServerPackCreator will inform you about the versions and modloader it discovered. In case you want to re-scan the modpack-directory, hit the button
-with the magnifying glass-icon!
-
-### 3.1.2 Using default settings, reverting to configuration value
-
-Sometimes you want to go back a couple of steps.
-The list of clientside-only mods and directory and files to include in your server pack each provide you with two convenience-buttons.
-
-The top one, with the arrow pointing backwards, will revert the adjacent field back to the value of the last loaded configuration.
-
-The bottom one, with the cog and two red arrows, will reset the adjacent field back to the globally set, ServerPackCreator wide, configuration, regardless of what
-your configuration specified. Defaults! Factory setting! Ya know. Back to the..future or something.
-
-### 3.1.3 Open your server.properties
-
-The left button next to the custom properties field opens the server.properties file in your computers default text-editor.
-If no custom properties-file has been configured, the default one will be opened. If you've configured a custom properties-file, the custom one will be opened.
-
-**Bear in mind:** The default one is, just as the factory settings for clientside-mods and files/directories to include, used globally by ServerPackCreator.
-Edit with caution!
-
-### 3.1.2 Minecraft 1.12.2 Java 8, Minecraft 1.18.2 Java 17 and all that fuzz
-
-Do you have Minecraft modpacks which require different Java versions? Say, a Minecraft 1.12.2 pack, requiring Java 8, and a Minecraft 1.18.2 pack, requiring Java 17?
-Check out how ServerPackCreator can automatically update the Java path in the created start scripts to your required Java versions, depending on which Minecraft version and
-therefor Java version is desired! [Read Me!](https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-Help#automatically-updating-script-java-placeholder-314x-and-up)
-
-When configured correctly, everytime you change the Minecraft version the `SPC_JAVA_SPC`-placeholder value in the script settings table will be adjusted according to the Java
-version required by the selected Minecraft versions server.
-Very convenient if you switch back and forth between modpacks which need different Java versions. This change only affects the scripts for local testing and debugging.
-Scripts in ZIP-archives are **not** affected. They will always point to `java`, unless you've [provided your own start script templates](https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-Help#changing-the-default-templates). That's a story for another day though.
-
-## 3.2 Further help
-
-More help is available at the official [ServerPackCreator Help Wiki Section](https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-Help).
-
-It goes into detail on the many configurable aspects of ServerPackCreator.
-
-Give it a read before asking something, it *does* contain lots of useful information. 🙂
+Should you at any point want to revisit said guide, simply hit *About -> Step-By-Step Guide* in the menu at the top. 
 
 # 4. Java
 
-ServerPackCreator requires Java 17.
+##### Required:
+
+* Using the JAR-file release requires Java 17.
+* Working internet connection recommended.
+
+The installers ship their own Java installations.
 
 **ATTENTION:** I **can** not and **will** not guarantee that ServerPackCreator will work flawlessly with any other Java
 version other than version 17. Things may break at **random**, at **any** place, if a **different** Java version is used.
@@ -388,7 +299,7 @@ There are a couple of arguments which may or may not be helpful for you, dependi
 | `-update` | Check whether a newer version of ServerPackCreator is available.                                                                                                                                                        |
 | `-cgen`   | Run ServerPackCreators configuration generation.                                                                                                                                                                        |
 | `-cli`    | Run ServerPackCreator in commandline-mode. If **no** graphical environment is supported, this is the default ServerPackCreator will enter, even when starting ServerPackCreator with no extra arguments at all.         |
-| `-web`    | Run ServerPackCreator as a webservice.                                                                                                                                                                                  |
+| `-web`    | Run ServerPackCreator as a webservice. The webservice will be reworked in version 6.                                                                                                                                    |
 | `-gui`    | Run ServerPackCreator with our GUI. If a graphical environment is supported, this is the default ServerPackCreator will enter, even when starting ServerPackCreator with no extra arguments at all.                     |
 | `--setup` | Set up and prepare the environment for subsequent runs of ServerPackCreator. This will create/copy all files needed for ServerPackCreator to function properly from inside its JAR-file and setup everything else, too. |
 
@@ -494,7 +405,7 @@ A short excerpt:
 >     2. Follow conventional commit messages. See **Commits**-section for more details. Example:
 >         - feat: Allow upload of modpack-export zip-archive to web-frontend
 >         - refactor: Use apache commons-io for copying, instead of Files
-> 4. Open an issue on the main repository, using the **Pull Request** template:
+> 4. Open an issue on the main repository:
 >     1. Issue title: Your Username - Branch type (e.g. feat) - Short description of your changes. Example:
 >         - Griefed - feat - Allow upload of modpack-export zip-archive to web-frontend
 >     2. Issue description: Fill in the sections the template provide.
@@ -505,7 +416,7 @@ A short excerpt:
 > 8. Done!
 >
 > This is the only way to ensure that any changes made to ServerPackCreator always arrive on my GitLab instance first, then on GitHub.
-> Since I want to stay independent of GitHub and their architecture, I have to make use of my own GitLab installation. Hence this procedure. So, if one day, GitHub vanishes, we still can provide people with ServerPackCreator from my GitLab instance.
+> Since I want to stay independent of GitHub and their architecture, I have to make use of my own GitLab installation. Hence, this procedure. So, if one day, GitHub vanishes, we still can provide people with ServerPackCreator from my GitLab instance.
 
 # 8. Awesomesauce!
 
@@ -513,9 +424,9 @@ A short excerpt:
 **Additionally, ej-Technologies has provided an open-source license for JProfiler for ServerPackCreator, which allows me to resolve performance bottlenecks, pin down memory leaks and understand threading issues.
 Huge shoutout and thank you!**
 
-| [JetBrains](https://www.jetbrains.com/)                                                             | [IntelliJ IDEA](https://www.jetbrains.com/idea/)                                                                      | [WebStorm](https://www.jetbrains.com/webstorm/)                                                                 | [JProfiler](https://www.ej-technologies.com/products/jprofiler/overview.html)                                                                                                                                                                                                                                                              |
-|-----------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [![JetBrains](https://i.griefed.de/images/2021/05/11/jetbrains.th.png)](https://www.jetbrains.com/) | [![IntelliJ IDEA](https://i.griefed.de/images/2021/05/11/icon-intellij-idea.th.png)](https://www.jetbrains.com/idea/) | [![WebStorm](https://i.griefed.de/images/2021/05/11/icon-webstorm.th.png)](https://www.jetbrains.com/webstorm/) | [![ej-Technologies](https://www.ej-technologies.com/assets/logo-18cdc16334888781eb17378d82e5b1bb.png)](https://www.ej-technologies.com/products/jprofiler/overview.html) <br> [![JProfiler](https://www.ej-technologies.com/images/product_banners/jprofiler_large.png)](https://www.ej-technologies.com/products/jprofiler/overview.html) |
+| [JetBrains](https://www.jetbrains.com/)                     | [IntelliJ IDEA](https://www.jetbrains.com/idea/)                                | [WebStorm](https://www.jetbrains.com/webstorm/)                           | [YouTrack](https://www.jetbrains.com/youtrack/)                           | [JProfiler](https://www.ej-technologies.com/products/jprofiler/overview.html)                                                                                                                                                                                                                                                              |
+|-------------------------------------------------------------|---------------------------------------------------------------------------------|---------------------------------------------------------------------------|---------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [![JetBrains](img/jb_beam.png)](https://www.jetbrains.com/) | [![IntelliJ IDEA](img/IntelliJ_IDEA_icon.png)](https://www.jetbrains.com/idea/) | [![WebStorm](img/WebStorm_icon.png)](https://www.jetbrains.com/webstorm/) | [![YouTrack](img/YouTrack_icon.png)](https://www.jetbrains.com/youtrack/) | [![ej-Technologies](https://www.ej-technologies.com/assets/logo-18cdc16334888781eb17378d82e5b1bb.png)](https://www.ej-technologies.com/products/jprofiler/overview.html) <br> [![JProfiler](https://www.ej-technologies.com/images/product_banners/jprofiler_large.png)](https://www.ej-technologies.com/products/jprofiler/overview.html) |
 
 ---
 

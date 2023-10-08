@@ -23,6 +23,7 @@ import Gui
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.components.BalloonTipButton
+import de.griefed.serverpackcreator.gui.themes.ThemeManager
 import de.griefed.serverpackcreator.gui.window.MainFrame
 import de.griefed.serverpackcreator.gui.window.UpdateDialogs
 import de.griefed.serverpackcreator.gui.window.menu.about.AboutMenu
@@ -43,13 +44,14 @@ class MainMenuBar(
     apiWrapper: ApiWrapper,
     updateDialogs: UpdateDialogs,
     mainFrame: MainFrame,
-    migrationManager: MigrationManager
+    migrationManager: MigrationManager,
+    themeManager: ThemeManager
 ) {
     val menuBar: JMenuBar = JMenuBar()
     private val updateButton = BalloonTipButton(null, guiProps.updateAnimation, Gui.update_dialog_available.toString(), guiProps)
     private val file = FileMenu(mainFrame.mainPanel.tabbedConfigsTab,apiWrapper.apiProperties,mainFrame,apiWrapper.utilities!!,guiProps)
     private val edit = EditMenu(apiWrapper.apiProperties,guiProps,mainFrame,apiWrapper.fileUtilities,mainFrame.mainPanel.tabbedConfigsTab)
-    private val view = ViewMenu(apiWrapper)
+    private val view = ViewMenu(apiWrapper, themeManager)
     private val about = AboutMenu(apiWrapper.utilities!!.webUtilities,updateDialogs,apiWrapper,migrationManager,guiProps,mainFrame,updateButton)
 
     init {

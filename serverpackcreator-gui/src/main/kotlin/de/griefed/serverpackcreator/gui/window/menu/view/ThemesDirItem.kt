@@ -17,30 +17,23 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.gui.window.menu.about
+package de.griefed.serverpackcreator.gui.window.menu.view
 
 import Gui
-import de.griefed.serverpackcreator.api.utilities.common.WebUtilities
-import java.net.URI
+import de.griefed.serverpackcreator.api.utilities.common.FileUtilities
+import de.griefed.serverpackcreator.gui.themes.ThemeManager
 import javax.swing.JMenuItem
 
 /**
- * Menu item for opening the How-To section in Griefed's official Wiki in the users browser.
+ * Menu item to open the themes directory in the users file-explorer.
  *
  * @author Griefed
  */
-class WikiHowToItem(private val webUtilities: WebUtilities) :
-    JMenuItem(Gui.menubar_gui_menuitem_wiki_howto.toString()) {
-    private val howto = URI.create("https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-HowTo")
-
+class ThemesDirItem(
+    fileUtilities: FileUtilities,
+    themeManager: ThemeManager
+) : JMenuItem(Gui.menubar_gui_menuitem_themesdir.toString()) {
     init {
-        this.addActionListener { openHowTo() }
-    }
-
-    /**
-     * @author Griefed
-     */
-    private fun openHowTo() {
-        webUtilities.openLinkInBrowser(howto)
+        this.addActionListener { fileUtilities.openFolder(themeManager.themesDir) }
     }
 }

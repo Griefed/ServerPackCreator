@@ -40,19 +40,20 @@ import javax.swing.UIManager
 
 /**
  * Theme manager of ServerPackCreator, providing a list of available themes to change them from other places.
+ * Heavily inspired by https://github.com/JFormDesigner/FlatLaf/blob/main/flatlaf-demo/src/main/java/com/formdev/flatlaf/demo/intellijthemes/IJThemesManager.java
  *
  * @author Griefed
  */
 class ThemeManager(private val apiWrapper: ApiWrapper, private val guiProps: GuiProps) {
 
     private val log = cachedLoggerOf(this.javaClass)
-    private val themeDir = File(apiWrapper.apiProperties.homeDirectory, "themes").absoluteFile
     private val themeRegex = ".*\\.(properties|txt)".toRegex()
     private val lastModifiedMap: HashMap<File, Long> = HashMap()
+    val themesDir = File(apiWrapper.apiProperties.homeDirectory, "themes").absoluteFile
     val themes = mutableListOf<ThemeInfo>()
 
     init {
-        themeDir.createDirectories(create = true, directory = true)
+        themesDir.createDirectories(create = true, directory = true)
         provideExamples()
         reloadThemes()
     }
@@ -67,6 +68,9 @@ class ThemeManager(private val apiWrapper: ApiWrapper, private val guiProps: Gui
         loadIJThemes()
     }
 
+    /**
+     * @author Griefed
+     */
     private fun provideExamples() {
         try {
             var themesPrefix = "BOOT-INF/classes"
@@ -77,7 +81,7 @@ class ThemeManager(private val apiWrapper: ApiWrapper, private val guiProps: Gui
             apiWrapper.utilities!!.jarUtilities.copyFolderFromJar(
                 this.javaClass,
                 "de/griefed/resources/gui/themes",
-                themeDir.absolutePath,
+                themesDir.absolutePath,
                 themesPrefix,
                 themeRegex,
                 apiWrapper.apiProperties.tempDirectory
@@ -88,6 +92,8 @@ class ThemeManager(private val apiWrapper: ApiWrapper, private val guiProps: Gui
     }
 
     /**
+     * Heavily inspired by https://github.com/JFormDesigner/FlatLaf/blob/main/flatlaf-demo/src/main/java/com/formdev/flatlaf/demo/intellijthemes/IJThemesManager.java
+     *
      * @author Griefed
      */
     private fun loadFlatLafThemes() {
@@ -175,16 +181,18 @@ class ThemeManager(private val apiWrapper: ApiWrapper, private val guiProps: Gui
     }
 
     /**
+     * Heavily inspired by https://github.com/JFormDesigner/FlatLaf/blob/main/flatlaf-demo/src/main/java/com/formdev/flatlaf/demo/intellijthemes/IJThemesManager.java
+     *
      * @author Griefed
      */
     private fun loadThemesFromDirectory() {
         // get current working directory
-        val themeFiles = themeDir.listFiles { _: File?, name: String ->
+        val themeFiles = themesDir.listFiles { _: File?, name: String ->
             name.endsWith(".theme.json")
                     || name.endsWith(".properties")
         } ?: return
         lastModifiedMap.clear()
-        lastModifiedMap[themeDir] = themeDir.lastModified()
+        lastModifiedMap[themesDir] = themesDir.lastModified()
         for (f in themeFiles) {
             val fname = f.getName()
             val name: String = if (fname.endsWith(".properties")) {
@@ -199,6 +207,7 @@ class ThemeManager(private val apiWrapper: ApiWrapper, private val guiProps: Gui
 
     /**
      * Set the theme without animations.
+     * Heavily inspired by https://github.com/JFormDesigner/FlatLaf/blob/main/flatlaf-demo/src/main/java/com/formdev/flatlaf/demo/intellijthemes/IJThemesManager.java
      *
      * @author Griefed
      */
@@ -236,6 +245,8 @@ class ThemeManager(private val apiWrapper: ApiWrapper, private val guiProps: Gui
 
     /**
      * Set the theme
+     *
+     * @author Griefed
      */
     fun setTheme(themeInfo: ThemeInfo) {
         FlatAnimatedLafChange.showSnapshot()
