@@ -20,20 +20,20 @@
 package de.griefed.serverpackcreator.gui.window.menu.view
 
 import Gui
-import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.utilities.common.FileUtilities
+import de.griefed.serverpackcreator.gui.themes.ThemeManager
 import javax.swing.JMenuItem
 
 /**
- * Menu item to open the server packs directory in the users file-explorer.
+ * Menu item to open the themes directory in the users file-explorer.
  *
  * @author Griefed
  */
-class ServerPacksDirItem(
+class ThemesDirItem(
     fileUtilities: FileUtilities,
-    apiProperties: ApiProperties
-) : JMenuItem(Gui.menubar_gui_menuitem_serverpacksdir.toString()) {
+    themeManager: ThemeManager
+) : JMenuItem(Gui.menubar_gui_menuitem_themesdir.toString()) {
     init {
-        this.addActionListener { fileUtilities.openFolder(apiProperties.serverPacksDirectory) }
+        this.addActionListener { fileUtilities.openFolder(themeManager.themesDir) }
     }
 }
