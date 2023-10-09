@@ -29,7 +29,8 @@ import de.griefed.serverpackcreator.api.plugins.swinggui.ServerPackConfigTab
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.components.*
 import de.griefed.serverpackcreator.gui.window.configs.components.*
-import de.griefed.serverpackcreator.gui.window.configs.components.advanced.*
+import de.griefed.serverpackcreator.gui.window.configs.components.advanced.AdvancedSettingsPanel
+import de.griefed.serverpackcreator.gui.window.configs.components.advanced.ScriptKVPairs
 import de.griefed.serverpackcreator.gui.window.configs.components.inclusions.InclusionsEditor
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
@@ -40,7 +41,6 @@ import java.awt.Dimension
 import java.awt.event.ActionListener
 import java.io.File
 import java.io.IOException
-import java.util.*
 import javax.swing.*
 import javax.swing.event.DocumentEvent
 

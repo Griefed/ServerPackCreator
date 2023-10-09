@@ -20,7 +20,6 @@
 package de.griefed.serverpackcreator.gui
 
 import com.formdev.flatlaf.FlatLaf
-import com.formdev.flatlaf.extras.FlatAnimatedLafChange
 import com.formdev.flatlaf.extras.FlatSVGIcon
 import com.formdev.flatlaf.intellijthemes.FlatDarkPurpleIJTheme
 import de.griefed.serverpackcreator.api.ApiProperties
@@ -34,12 +33,10 @@ import net.java.balloontip.styles.BalloonTipStyle
 import net.java.balloontip.styles.EdgedBalloonStyle
 import java.awt.Dimension
 import java.awt.Font
-import java.awt.Frame
 import java.awt.Image
 import java.util.*
 import java.util.concurrent.Executors
 import javax.swing.ImageIcon
-import javax.swing.SwingUtilities
 import javax.swing.UIManager
 import javax.swing.plaf.FontUIResource
 

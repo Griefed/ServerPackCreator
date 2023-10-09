@@ -20,7 +20,6 @@
 package de.griefed.serverpackcreator.gui.window.settings
 
 import Gui
-import com.formdev.flatlaf.FlatLaf
 import com.formdev.flatlaf.intellijthemes.FlatAllIJThemes
 import com.formdev.flatlaf.intellijthemes.FlatDarkPurpleIJTheme
 import de.griefed.serverpackcreator.gui.GuiProps

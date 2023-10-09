@@ -31,7 +31,9 @@ import net.miginfocom.swing.MigLayout
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
 import java.util.*
-import javax.swing.*
+import javax.swing.JFileChooser
+import javax.swing.JOptionPane
+import javax.swing.JPanel
 
 /**
  * Advanced settings panel allowing a user to configure various aspects of a server pack config, such as

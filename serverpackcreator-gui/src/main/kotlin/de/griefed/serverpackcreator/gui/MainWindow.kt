@@ -19,6 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui
 
+import Gui
 import com.formdev.flatlaf.FlatLaf
 import com.formdev.flatlaf.extras.FlatInspector
 import com.formdev.flatlaf.extras.FlatUIDefaultsInspector
@@ -28,8 +29,8 @@ import com.formdev.flatlaf.fonts.roboto.FlatRobotoFont
 import com.formdev.flatlaf.fonts.roboto_mono.FlatRobotoMonoFont
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.gui.splash.SplashScreen
-import de.griefed.serverpackcreator.gui.window.MainFrame
 import de.griefed.serverpackcreator.gui.themes.ThemeManager
+import de.griefed.serverpackcreator.gui.window.MainFrame
 import de.griefed.serverpackcreator.updater.MigrationManager
 import de.griefed.serverpackcreator.updater.UpdateChecker
 import kotlinx.coroutines.DelicateCoroutinesApi

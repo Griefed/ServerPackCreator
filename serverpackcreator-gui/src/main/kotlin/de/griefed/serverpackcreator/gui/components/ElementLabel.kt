@@ -22,7 +22,6 @@ package de.griefed.serverpackcreator.gui.components
 import java.awt.Font
 import javax.swing.JLabel
 import javax.swing.UIManager
-import javax.swing.plaf.FontUIResource
 
 /**
  * Label to display in front of various components in ServerPackCreator.

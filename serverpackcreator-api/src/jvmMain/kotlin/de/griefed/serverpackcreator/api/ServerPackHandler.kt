@@ -37,6 +37,7 @@ import java.nio.file.Paths
 import java.util.*
 import java.util.regex.PatternSyntaxException
 import javax.imageio.ImageIO
+import kotlin.io.path.absolute
 
 /**
  * Everything revolving around creating a server pack. The intended workflow is to create a [PackConfig] and run
@@ -273,8 +274,8 @@ actual class ServerPackHandler actual constructor(
         val acquired: List<ServerPackFile>
         val processed: List<ServerPackFile>
         val serverPackFile: ServerPackFile
-        val inclusionSourceFile = File(inclusion.source)
-        val inclusionDestinationFile = File(destination, inclusionSourceFile.name)
+        val inclusionSourceFile = File(inclusion.source).absoluteFile
+        val inclusionDestinationFile = File(destination, inclusionSourceFile.name).absoluteFile
         when {
             inclusion.isGlobalFilter() -> {
                 if (inclusion.hasExclusionFilter()) {
@@ -314,24 +315,30 @@ actual class ServerPackHandler actual constructor(
                 serverPackFiles.addAll(processed)
             }
 
+            File(clientDir).absoluteFile.isDirectory -> {
+                acquired = getDirectoryFiles(clientDir, serverDir)
+                processed = runFilters(acquired, inclusion, modpackDir)
+                serverPackFiles.addAll(processed)
+            }
+
+            File(clientDir).absoluteFile.isFile -> {
+                serverPackFile = ServerPackFile(File(clientDir), File(serverDir))
+                serverPackFiles.add(serverPackFile)
+            }
+
             inclusionSourceFile.isFile -> {
                 serverPackFile = ServerPackFile(inclusionSourceFile, inclusionDestinationFile)
                 serverPackFiles.add(serverPackFile)
             }
 
             inclusionSourceFile.isDirectory -> {
-                acquired = getDirectoryFiles(inclusion.source, inclusionDestinationFile.absolutePath)
+                acquired = getDirectoryFiles(inclusionSourceFile.absolutePath, serverDir)
                 processed = runFilters(acquired, inclusion, modpackDir)
                 serverPackFiles.addAll(processed)
             }
 
-            File(clientDir).isFile -> {
-                serverPackFile = ServerPackFile(File(clientDir), File(serverDir))
-                serverPackFiles.add(serverPackFile)
-            }
-
             else -> {
-                acquired = getDirectoryFiles(clientDir, inclusionDestinationFile.absolutePath)
+                acquired = getDirectoryFiles(clientDir, serverDir)
                 processed = runFilters(acquired, inclusion, modpackDir)
                 serverPackFiles.addAll(processed)
             }
@@ -860,7 +867,7 @@ actual class ServerPackHandler actual constructor(
     override fun getDirectoryFiles(source: String, destination: String): List<ServerPackFile> {
         val serverPackFiles: MutableList<ServerPackFile> = ArrayList(100)
         try {
-            Files.walk(Paths.get(source)).use {
+            Files.walk(Paths.get(source).absolute()).use {
                 for (path in it) {
                     try {
                         val pathFile = path.toFile().absolutePath
@@ -878,7 +885,7 @@ actual class ServerPackHandler actual constructor(
                 }
             }
         } catch (ex: IOException) {
-            log.error("An error occurred gathering files to copy to the server pack.", ex)
+            log.error("An error occurred gathering files to copy to the server pack for directory $source.", ex)
         }
 
         return serverPackFiles
