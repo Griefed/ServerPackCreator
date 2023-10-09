@@ -444,8 +444,8 @@ actual class ConfigurationHandler(
                 if (inclusion.isGlobalFilter()) {
                     continue
                 }
-                val modpackSource = File(modpackDir, inclusion.source)
-                if (!File(inclusion.source).exists() && !modpackSource.exists()) {
+                val modpackSource = File(modpackDir, inclusion.source).absoluteFile
+                if (!File(inclusion.source).absoluteFile.exists() && !modpackSource.exists()) {
                     if (printLog) {
                         log.error("Source ${inclusion.source} does not exist. Please specify existing files.")
                     }

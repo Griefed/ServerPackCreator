@@ -2418,6 +2418,7 @@ actual class ApiProperties(
     }
 
     init {
+        System.setProperty("user.dir",homeDirectory.absolutePath)
         saveProperties(File(homeDirectory, serverPackCreatorProperties).absoluteFile)
     }
 
