@@ -87,7 +87,7 @@ actual class JarUtilities {
                 if (file.exists()) {
                     true
                 } else {
-                    throw RuntimeException("$file was not created!")
+                    throw JarAccessException("$file was not created!")
                 }
             } catch (ex: IOException) {
                 log.error("Error creating file: $fileToCopy", ex)
@@ -149,7 +149,7 @@ actual class JarUtilities {
                 if (destinationFile.absoluteFile.exists()) {
                     true
                 } else {
-                    throw RuntimeException("$destinationFile was not created!")
+                    throw JarAccessException("$destinationFile was not created!")
                 }
             } catch (ex: IOException) {
                 log.error("Error creating file: $destinationFile", ex)

@@ -12,7 +12,7 @@ variables:
   GRADLE_USER_HOME: "$CI_PROJECT_DIR/.gradle"
 
 services:
-  - name: docker.griefed.dev/griefed/gitlab-ci-cd:2.2.10
+  - name: docker.griefed.dev/griefed/gitlab-ci-cd:2.2.9
     alias: docker
 
 workflow:
@@ -56,6 +56,9 @@ Build Test:
       - serverpackcreator-web-frontend/dist
       - serverpackcreator-plugin-example/build
     expire_in: 1 week
+    reports:
+      junit:
+        - serverpackcreator-api/build/test-results/jvmTest/TEST-*.xml
   cache:
     - key:
         files:
@@ -91,7 +94,7 @@ Build Test:
 
 Generate Release:
   stage: Release
-  image: docker.griefed.dev/griefed/gitlab-ci-cd:2.2.10
+  image: docker.griefed.dev/griefed/gitlab-ci-cd:2.2.9
   needs:
     - job: Build Test
       artifacts: false
@@ -124,6 +127,7 @@ Build Release:
     - chmod +x gradlew
   script:
     - echo "**** Building ServerPackCreator ****"
+    - "./gradlew generateLicenseReport -Pversion=${CI_COMMIT_TAG} --info --full-stacktrace"
     - "./gradlew build -Pversion=${CI_COMMIT_TAG} --info --full-stacktrace -x :serverpackcreator-api:jvmTest -x :serverpackcreator-web:test"
     - echo "**** Listing build directory ****"
     - LC_COLLATE=C ls -ahl --group-directories-first --color=auto */build

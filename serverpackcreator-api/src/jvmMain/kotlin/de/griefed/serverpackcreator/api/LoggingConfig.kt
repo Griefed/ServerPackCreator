@@ -19,6 +19,7 @@
  */
 package de.griefed.serverpackcreator.api
 
+import de.griefed.serverpackcreator.api.utilities.common.JarInformation
 import de.griefed.serverpackcreator.api.utilities.common.JarUtilities
 import de.griefed.serverpackcreator.api.utilities.common.createDirectories
 import de.griefed.serverpackcreator.api.utilities.common.readText
@@ -57,86 +58,104 @@ class LoggingConfig : ConfigurationFactory() {
      * @author Griefed
      */
     init {
-        val sysInfo: HashMap<String, String> = JarUtilities().jarInformation(LoggingConfig::class.java)
-        var dev = false
-        val path: String
-        val properties = Properties()
+        System.setProperty("log4j2.formatMsgNoLookups", "true")
+        val serverPackCreatorProperties = "serverpackcreator.properties"
+        val jarInformation = JarInformation(this.javaClass, JarUtilities())
+        var isDevVersion = false
+        val logDirPath: String
+        val props = Properties()
         val userHome = System.getProperty("user.home")
+        var log4j: String
 
-        this.javaClass.getResourceAsStream("/serverpackcreator.properties").use {
-            properties.load(it)
+        val jarFolderFile = File(jarInformation.jarFolder.absoluteFile, serverPackCreatorProperties).absoluteFile
+        val serverPackCreatorHomeDir = File(userHome, "ServerPackCreator").absoluteFile
+        val homeDirFile = File(serverPackCreatorHomeDir,serverPackCreatorProperties).absoluteFile
+        val relativeDirFile = File(serverPackCreatorProperties).absoluteFile
+        val overrideProperties = File(jarInformation.jarFolder.absoluteFile, "overrides.properties")
+
+        // Load the properties file from the classpath, providing default values.
+        try {
+            this.javaClass.getResourceAsStream("/$serverPackCreatorProperties").use {
+                props.load(it)
+            }
+            println("Loaded properties from classpath.")
+        } catch (ex: Exception) {
+            println("Couldn't read properties from classpath.")
+            ex.printStackTrace()
         }
 
-        if (File(userHome, "ServerPackCreator${File.separator}serverpackcreator.properties").isFile
-            && File(sysInfo["jarPath"]!!).isFile
-        ) {
-            File(
-                System.getProperty("user.home"),
-                "ServerPackCreator${File.separator}serverpackcreator.properties"
-            ).inputStream().use {
-                properties.load(it)
-            }
-        } else if (File(sysInfo["jarPath"], "serverpackcreator.properties").isFile
-            && File(sysInfo["jarPath"]!!).isFile
-        ) {
-            File(sysInfo["jarPath"], "serverpackcreator.properties").inputStream().use {
-                properties.load(it)
-            }
-        } else if (File("serverpackcreator.properties").isFile) {
-            File("serverpackcreator.properties").inputStream().use {
-                properties.load(it)
-            }
-        }
+        // If our properties-file exists in SPCs home directory, load it.
+        loadFile(jarFolderFile, props)
+        // If our properties-file exists in the users home dir ServerPackCreator-dir, load it.
+        loadFile(homeDirFile, props)
+        // If our properties-file in the directory from which the user is executing SPC exists, load it.
+        loadFile(relativeDirFile, props)
+        // If an overrides-file exists, load it
+        loadFile(overrideProperties,props)
 
-        val home = if (properties.containsKey("de.griefed.serverpackcreator.home")) {
-            File(properties.getProperty("de.griefed.serverpackcreator.home"))
+        val home = if (props.containsKey("de.griefed.serverpackcreator.home")) {
+            File(props.getProperty("de.griefed.serverpackcreator.home"))
         } else {
-            if (File(sysInfo["jarPath"] as String).isDirectory) {
+            if (jarInformation.jarPath.toFile().isDirectory) {
                 // Dev environment
-                dev = true
-                File(File("tests").absolutePath)
+                isDevVersion = true
+                File("").absoluteFile
             } else {
-                File(System.getProperty("user.home"), "ServerPackCreator")
+                File(userHome, "ServerPackCreator")
             }
         }
         home.createDirectories(create = true, directory = true)
 
-        if (dev) {
-            path = File(home, "tests/logs").absolutePath
-            log4jXml = File(home, "tests/log4j2.xml")
-        } else {
-            path = File(home, "logs").absolutePath
-            log4jXml = File(home, "log4j2.xml")
-        }
+        logDirPath = File(home, "logs").absolutePath
+        log4jXml = File(home, "log4j2.xml")
+
         val oldLogs = "<Property name=\"log-path\">logs</Property>"
-        val newLogs = "<Property name=\"log-path\">$path</Property>"
+        val newLogs = "<Property name=\"log-path\">$logDirPath</Property>"
         if (!log4jXml.isFile) {
             try {
                 this.javaClass.getResourceAsStream("/log4j2.xml").use {
-                    var log4j = it?.readText()
-                    if (log4j != null) {
-                        log4j = log4j.replace(oldLogs, newLogs)
+                    log4j = it?.readText().toString()
+                    log4j = log4j.replace(oldLogs, newLogs)
+                    if (isDevVersion) {
+                        log4j = log4j.replace(
+                            "<Property name=\"log-level-spc\">INFO</Property>",
+                            "<Property name=\"log-level-spc\">DEBUG</Property>"
+                        )
                     }
-                    if (dev) {
-                        if (log4j != null) {
-                            log4j = log4j.replace(
-                                "<Property name=\"log-level-spc\">INFO</Property>",
-                                "<Property name=\"log-level-spc\">DEBUG</Property>"
-                            )
-                        }
-                    }
-                    if (log4j != null) {
-                        log4jXml.writeText(log4j)
-                    }
+                    log4jXml.writeText(log4j)
                 }
             } catch (ex: IOException) {
-                println("Error reading/writing log4j2.xml. $ex")
+                println("Error reading/writing log4j2.xml.")
+                ex.printStackTrace()
             }
         }
-        System.setProperty("log4j2.formatMsgNoLookups", "true")
     }
 
+    /**
+     * @author Griefed
+     */
     override fun getSupportedTypes() = suffixes
+
+    /**
+     * Load the [propertiesFile] into the provided [props]
+     *
+     * @author Griefed
+     */
+    private fun loadFile(propertiesFile: File, props: Properties) {
+        if (!propertiesFile.isFile) {
+            println("Properties-file does not exist: ${propertiesFile.absolutePath}.")
+            return
+        }
+        try {
+            propertiesFile.inputStream().use {
+                props.load(it)
+            }
+            println("Loaded properties from $propertiesFile.")
+        } catch (ex: Exception) {
+            println("Couldn't read properties from ${propertiesFile.absolutePath}.")
+            ex.printStackTrace()
+        }
+    }
 
 
     /**
@@ -156,60 +175,48 @@ class LoggingConfig : ConfigurationFactory() {
      * @author Griefed
      */
     override fun getConfiguration(loggerContext: LoggerContext, source: ConfigurationSource): Configuration {
+        val config = File(File("").absolutePath, "log4j2.xml")
+        val configSource: ConfigurationSource
         if (log4jXml.isFile) {
             try {
-                val custom: CustomXmlConfiguration
-                log4jXml.inputStream().use {
-                    custom = CustomXmlConfiguration(
-                        loggerContext,
-                        ConfigurationSource(
-                            it,
-                            log4jXml
-                        )
-                    )
-                }
-                return custom
+                return getXmlConfig(log4jXml, loggerContext)
             } catch (ex: IOException) {
-                println("Couldn't parse log4j2.xml. $ex")
+                println("Couldn't parse $log4jXml.")
+                ex.printStackTrace()
             }
-        } else if (File(File("").absolutePath, "log4j2.xml").isFile) {
+        } else if (config.isFile) {
             try {
-                val config = File(File("").absolutePath, "log4j2.xml")
-                val custom: CustomXmlConfiguration
-                config.inputStream().use {
-                    custom = CustomXmlConfiguration(
-                        loggerContext,
-                        ConfigurationSource(
-                            it,
-                            config
-                        )
-                    )
-                }
-                return custom
-
+                return getXmlConfig(config, loggerContext)
             } catch (ex: IOException) {
-                println("Couldn't parse log4j2.xml. $ex")
+                println("Couldn't parse $config.")
+                ex.printStackTrace()
             }
         }
         try {
-            return CustomXmlConfiguration(
-                loggerContext,
-                ConfigurationSource(this.javaClass.getResourceAsStream("/log4j2.xml")!!)
-            )
+            configSource = ConfigurationSource(this.javaClass.getResourceAsStream("/log4j2.xml")!!)
+            return CustomXmlConfiguration(loggerContext, configSource)
         } catch (ex: IOException) {
-            println("Couldn't parse log4j2.xml. $ex")
+            println("Couldn't parse resource log4j2.xml.")
+            ex.printStackTrace()
         }
         return CustomXmlConfiguration(loggerContext, source)
     }
 
     /**
-     * Custom XmlConfiguration to pass our custom log4j2.xml config to log4j.
-     *
      * @author Griefed
      */
-    @Suppress("RedundantOverride")
-    inner class CustomXmlConfiguration
+    private fun getXmlConfig(sourceFile: File, loggerContext: LoggerContext): CustomXmlConfiguration {
+        val configSource: ConfigurationSource
+        val stream = sourceFile.inputStream()
+        configSource = ConfigurationSource(stream, sourceFile)
+        val custom = CustomXmlConfiguration(loggerContext, configSource)
+        stream.close()
+        return custom
+    }
+
     /**
+     * Custom XmlConfiguration to pass our custom log4j2.xml config to log4j.
+     *
      * Set up the XML configuration with the passed context and config source. For the config source
      * being used, [LoggingConfig.getConfiguration] where
      * multiple attempts at creating a new CustomXmlConfiguration using our own log4j2.xml are made
@@ -220,8 +227,10 @@ class LoggingConfig : ConfigurationFactory() {
      * [LoggingConfig.getConfiguration].
      * @author Griefed
      */
-        (loggerContext: LoggerContext?, configSource: ConfigurationSource?) :
+    @Suppress("RedundantOverride")
+    inner class CustomXmlConfiguration(loggerContext: LoggerContext?, configSource: ConfigurationSource?) :
         XmlConfiguration(loggerContext, configSource) {
+
         /**
          * For now, all this does is call the [XmlConfiguration.doConfigure]-method to set up the
          * configuration with the passed source from the constructor. Custom values and settings can be

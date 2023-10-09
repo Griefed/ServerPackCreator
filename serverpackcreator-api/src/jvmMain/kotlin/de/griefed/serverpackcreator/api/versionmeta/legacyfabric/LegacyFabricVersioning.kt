@@ -53,8 +53,9 @@ internal abstract class LegacyFabricVersioning(
         allVersions.clear()
         for (node in utilities.jsonUtilities.getJson(manifest)) {
             val version: String = node.get("version").asText()
+            val stable = node.get("stable").asBoolean()
             allVersions.add(version)
-            if (node.get("stable").asBoolean()) {
+            if (stable) {
                 releases.add(version)
             } else {
                 snapshots.add(version)

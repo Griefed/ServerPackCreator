@@ -76,9 +76,7 @@ class WebService @Autowired constructor(private val api: ApiWrapper) {
      * @author Griefed
      */
     @Synchronized
-    fun getSpringBootApplicationContext(
-        args: Array<String>
-    ): ConfigurableApplicationContext {
+    fun getSpringBootApplicationContext(args: Array<String>): ConfigurableApplicationContext {
         if (springBootApplicationContext == null) {
             springBootApplicationContext = runApplication<WebService>(*args)
         }

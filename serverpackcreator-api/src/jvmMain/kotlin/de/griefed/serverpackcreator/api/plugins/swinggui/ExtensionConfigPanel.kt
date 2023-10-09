@@ -26,7 +26,6 @@ import de.griefed.serverpackcreator.api.versionmeta.VersionMeta
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import java.util.*
-import javax.swing.BorderFactory
 import javax.swing.JPanel
 
 /**
@@ -67,10 +66,6 @@ actual abstract class ExtensionConfigPanel protected actual constructor(
 
     @Suppress("MemberVisibilityCanBePrivate")
     actual val serverPackExtensionConfig: ArrayList<CommentedConfig> = ArrayList<CommentedConfig>(100)
-
-    init {
-        border = BorderFactory.createTitledBorder(extensionName)
-    }
 
     /**
      * Retrieve this extensions server pack specific configuration. When no configuration with configs

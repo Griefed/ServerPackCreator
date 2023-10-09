@@ -1,9 +1,4 @@
-import org.gradle.api.tasks.Copy
-import org.gradle.kotlin.dsl.register
-import org.gradle.kotlin.dsl.repositories
-import org.gradle.kotlin.dsl.version
 import org.siouan.frontendgradleplugin.infrastructure.gradle.RunNpm
-import java.io.File
 
 plugins {
     id("org.siouan.frontend-jdk11")
@@ -20,8 +15,6 @@ frontend {
     nodeInstallDirectory.set(project.layout.projectDirectory.dir("node"))
 
     yarnEnabled.set(false)
-    //yarnVersion = "1.22.11"
-    //yarnInstallDirectory = file("${projectDir}/frontend/yarn")
 
     cleanScript.set("run clean")
     assembleScript.set("run build")

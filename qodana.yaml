@@ -1,11 +1,10 @@
 version: "1.0"
-linter: jetbrains/qodana-jvm-community:2022.2
+projectJDK: 17
 profile:
   name: qodana.recommended
+include:
+  - name: CheckDependencyLicenses
 exclude:
-  - name: FieldMayBeStatic
-  - name: KotlinAnnotator
-  - name: KotlinRedundantDiagnosticSuppress
   - name: SystemOutErr
   - name: All
     paths:
@@ -15,8 +14,7 @@ exclude:
       - .jpb
       - .runConfigurations
       - build
-      - buildSrc/.gradle
-      - buildSrc/build
+      - buildSrc
       - gradle
       - img
       - licenses

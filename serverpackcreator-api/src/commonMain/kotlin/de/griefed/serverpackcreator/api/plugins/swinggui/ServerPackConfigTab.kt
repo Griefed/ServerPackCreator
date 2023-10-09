@@ -19,7 +19,9 @@
  */
 package de.griefed.serverpackcreator.api.plugins.swinggui
 
+import de.griefed.serverpackcreator.api.InclusionSpecification
 import de.griefed.serverpackcreator.api.PackConfig
+import de.griefed.serverpackcreator.api.utilities.File
 
 /**
  * Force every server pack configuration tab to provide a certain set of methods. Said set of methods give plugins
@@ -33,7 +35,7 @@ import de.griefed.serverpackcreator.api.PackConfig
 @Suppress("unused")
 interface ServerPackConfigTab {
     fun setClientSideMods(entries: MutableList<String>)
-    fun setCopyDirectories(entries: MutableList<String>)
+    fun setInclusions(entries: MutableList<InclusionSpecification>)
     fun setIconInclusionTicked(ticked: Boolean)
     fun setJavaArguments(javaArguments: String)
     fun setMinecraftVersion(version: String)
@@ -50,9 +52,9 @@ interface ServerPackConfigTab {
 
     fun getClientSideMods(): String
     fun getClientSideModsList(): MutableList<String>
-    fun getCopyDirectories(): String
-    fun getCopyDirectoriesList(): MutableList<String>
+    fun getInclusions(): List<InclusionSpecification>
     fun getCurrentConfiguration(): PackConfig
+    fun saveCurrentConfiguration(): File
     fun getJavaArguments(): String
     fun getMinecraftVersion(): String
     fun getModloader(): String

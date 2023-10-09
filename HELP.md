@@ -1,22 +1,40 @@
-# Fugly Artifacts
-
-Depending on which JDK you are using, ServerPackCreator may display some really ugly artifacts and
-anti-aliasing issues in the GUI. So far, I've nailed this issue down to occuring when
-using [AdoptiumJDKs](https://adoptium.net/).
-
-Tests have shown, that using the
-official [Oracle JDKs](https://www.oracle.com/java/technologies/downloads/archive/), this problem
-does not occur.
-
-## Using Adoptium JDK
-
-![fugly_artifacts](https://i.griefed.de/images/2022/07/01/fugly_artifacts.png)
-
-## Using Oracle JDK
-
-![a_ok](https://i.griefed.de/images/2022/07/01/a_ok.png)
-
 # Tips, tricks and help
+
+## Custom Themes
+
+As of 5.0.0 you can create your own themes for ServerPackCreator. To get an idea on what a custom theme looks like,
+take a look at the different `properties`-files inside the `themes`-directory when using ServerPackCreators GUI.
+
+To see the examples in action, browse to *Settings -> GUI* and select any of the following from the themes-dropdown:
+
+- BisectHosting
+- Chorb
+- Elocin
+- Kreezxil
+- ModernGamingWorld
+
+They're people, or in the case of BisectHosting a company, which have had a noticeable impact on ServerPackCreator in a
+good way. So as a little "Thank You", I've decided to add custom themes in their name.
+
+The FormDev theme editor was used in the creation of these themes. You can get it here:
+https://www.formdev.com/flatlaf/theme-editor/#download
+
+Run the downloaded JAR-file and point it towards the themes-directory. That will allow you to take a proper look at the
+custom themes, along with a preview of your changes.
+
+FormDevs documentation for customization is pretty nice. I suggest you take a thorough look at it over at:
+https://www.formdev.com/flatlaf/customizing/
+
+Experiment with the existing themes, create your own and have fun!
+
+Every .properties-file in the themes-folder will automatically be added to the list of available themes inside
+ServerPackCreator. If you've added or changed a theme whilst running ServerPackCreator, you will need to restart it for
+the changes to take effect.
+
+Request for theme creations will be ignored. Please be aware that I implemented this feature so YOU can create themes.
+Not in order for ME to create themes FOR you. :D
+
+Happy theming!
 
 ## Start Script Templates (3.8.x and up)
 
@@ -60,8 +78,8 @@ then immediately closing* again, consult the **Running Powershell scripts**-sect
 > link above, you can run any Powershell script you like, and as such, introduce any and all security
 > risk into your system. So, beware when running scripts from unknown sources. If you run the
 > exectuion-policy command from a non-administrator terminal, you may be prompted with a question as
-> to how exactly you would like to adjust
-> it.<br> ![question](https://i.griefed.de/images/2022/10/02/ps_execution_policy.png) <br>When this happens, please select `[Y]`, as any other option is potentially more dangerous.
+> to how exactly you would like to adjust it. When this happens, please select `[Y]`, as any other option is potentially
+> more dangerous.
 > {.is-warning}
 
 ### Default values
@@ -162,7 +180,7 @@ your folders and config should look/contain like the following:
 
 - **ServerPackCreator
   Properties:** `de.griefed.serverpackcreator.serverpack.script.template=default_template.ps1,default_template.sh,my-awesome-batch-script-template.bat`
-- **server_files- folder should contain:**
+- **server_files-folder should contain:**
     - default_template.ps1
     - default_template.sh
     - my-awesome-batch-script-template.bat
@@ -288,7 +306,7 @@ There are five possible settings which affect the way these filters happen:
 ## FancyMenu
 
 Starting from version **2.12.1** FancyMenu can be run on servers, too.
-If you use **2.12.1** or newer and you want to include it in your server pack, you need to:
+If you use **2.12.1** or newer, and you want to include it in your server pack, you need to:
 
 1. Remove the `fancymenu_`-entry from your list of clientside-only mods-list.
 2. To be on the safe side, add an entry to your file/directories to include in your server pack for
@@ -313,7 +331,7 @@ with the title being similar to
 
 > [Improvement request]: Add mod-x, mod-y and mod-z to the fallback-list
 
-In the **Whats the feature you would like to be improved?**-section, something along the lines of
+In the **What's the feature you would like to be improved?**-section, something along the lines of
 
 > I would like the following mods to be added to the fallback-modslist
 > - mod-x (Link to CurseForge project)
@@ -349,182 +367,6 @@ change `de.griefed.serverpackcreator.configuration.aikar` to your liking.
 **Note:** This is not a pack-by-pack configuration, but global. Meaning: Changing this setting and
 using the appropriate button in the GUI will result in the same setting for all server pack
 configurations.
-
-## Excluding files/folders
-
-ServerPackCreator allows you to exclude files, directories and / or file-types based on simple
-expressions. The way it does that is by checking every file about to be copied to the server pack
-for whether it contains any of the expressions prefixed with a `!`.
-
-So when you have an entry `!fancymenu`, files and directories like
-
-- `fancymenu_forge_2.11.1_MC_1.16.2-1.16.5.jar`
-- `config/fancymenu`
-
-will be excluded, because they contain the word `fancymenu`.
-
-> **CAUTION!**
-> Be very careful with lenient exclusions, as they can end up excluding more than you want.
-<br>
-> A simple, too leniently set, exclusion can render your server pack useless, beacuse it ended up
-> excluding more than it should.
-**PROCEED. WITH. CAUTION.**
-> {.is-warning}
-
-### Excluding in a directory you want to include
-
-Usually you want the `config`-directory to be copied to the server pack, because it contains the
-configuration for all the mods in your pack. However, this directory can contain files and folder
-you may not want to *be* in the server pack, because it contains music-files, or pictures or
-something else.
-
-You can exclude files and folders from, say, the `config`-folder when generating a server pack
-easily.
-
-In the `Enter the list of directories or files in your modpack to include in the server pack:`
-prefix any file or folder you want to exclude with `!`.
-
-Examples:
-
-- `!config/fancymenu`
-- `!config/CustomMainMenu`
-- `!config/clienttweaks-client.toml`
-
-This will result in the whole `fancymenu`-directory *inside* the `config`-directory being excluded,
-as well as the `CustomMainMenu`-directory and the `clienttweaks-client.toml`-file.
-
-### Excluding all files of a specific type
-
-You can exclude all files of a specific type by simply adding an entry along the lines
-of `!.file_ending`. This will result in ServerPackCreator not copying **any** file which has this
-file-ending.
-
-Example(s):
-
-- `!.ogg`
-- `!.mp3`
-- `!.png`
-- `!.jpg`
-
-## Include a world in your server pack
-
-If you've got a world which you've prepared for your friends and you to play on, and you want to
-make a server pack which contains said world so you can just boot up the server and get playing.
-Well, good news, you can include that world in your server pack!
-
-In `copyDirs`|**"Enter the list of directories or files on your modpack to include in the server
-pack"** add an entry which references the world you want to include, like so:
-
-- `saves/World-1` or
-- `saves/my_awesome_world`
-
-This will result in the specified world being copied to `World-1` or `my_awesome_world` in the base
-directory of the server pack.
-
-All you need to do now is to ensure that your `server.properties` is correctly set to use that world
-like so:
-
-`level-name=World-1` or
-`level-name=my_awesome_world`
-
-If you've already prepared a `server.properties`-file for your server, then make sure to
-set `serverProperties`|**"Path to custom properties"** to the location of said properties-file so it
-is automatically included in your server pack.
-
-## Including and excluding based on regex-filters (3.15.x and up)
-
-You can include and exclude files based on regex-filters. You can do this either in your
-modpack-directory, or any other directory on your computer.
-
-The most important part of this is the `==`.
-
-You can
-- **start** with `==`, which will result in regex-matches being checked in your **modpack-directory**
-- use a **relative** path, for example `kubejs/data==`, which will result in regex-matches
-being checked in the `kubejs/data`-directory in your **modpack-directory**
-- use an **absolute** path, for example `C:\some\path==` or `/home/user/path==`, which will result in
-regex-matches being performed in directories **outside** of your modpack-directory
-
-This way you can easily include and exclude multiple files at once. No need to tediously tell 
-ServerPackCreator each and every single file you want to exclude if you notice a pattern in them, or
-if they happen to be in the same directory, or similar situations!
-
-Keep in mind:
-
-Relative paths are carried over to your server pack!
-
-### Inclusion examples:
-
-- `==.*fancymenu.*` would result in anything having **fancymenu** in its name being included.
-    - `mods/fancymenu-...jar` to `mods/fancymenu-...jar` in your server pack
-    - `config/fancymenu.config` to `config/fancymenu.config` in your server pack
-    - etc.
-- `kubejs==.*.js` would result in every **js**-file from the **kubejs**-directory being included.
-    - `kubejs/data` to `kubejs/data` in your server pack
-    - `kubejs/config` to `kubejs/config` in your server pack
-    - etc.
-- `C:\Minecraft\Maps==server.*` would result in every file/directory starting with **server** from
-a directory **outside** of your modpack-directory being included in your server pack.
-    - `server_spawn_world` and every file in it to `server_spawn_world` in your server pack
-    - etc.
-- `/home/griefed/maps==world.*` would result in every file/directory starting with **world** from
-a directory **outside** of your modpack-directory being included in your server pack.
-    - `world_27.10.2020` and every file in it to `world_27.10.2020` in your server pack
-    - etc.
-
-### Exclusion examples:
-
-- `!==.*fancymenu.*` would result in anything having **fancymenu** in its name being excluded.
-    - `mods/fancymenu-...jar`
-    - `config/fancymenu.config`
-    - etc.
-- `!kubejs==.*.png` would result in every **png**-file from the **kubejs**-directory being excluded.
-    - `kubejs/assets/packmenu/textures/gui/bh_me_logo.png`
-    - `kubejs/assets/drippy/BH_ME_Artboard_32.png` 
-    - etc.
-- `!C:\Minecraft\Maps==.*serverconfig.*` would result in any file/folder containing **serverconfig**
-being excluded. Useful for including worlds, but having them start with fresh server configs!
-- `!/home/griefed/maps==.*config.*` would result in any file/folder containing **config**
-being excluded. Useful for including worlds, but having them start with fresh configs!
-
-## Adding modpack-external files and folders to your server pack
-
-You can add files/folder to your server pack which reside *outside* of the modpack from which you
-want to generate a server pack. In order to include such a file or folder, you must explicitly
-declare a `source:destination`-combination.
-
-### File(s):
-
-- `C:/Minecraft/ServerPackCreator/serverpackcreator.conf;my-spc.conf`
-  This will copy the serverpackcreator.conf-file to the base-dir of the server pack as `my-spc.conf`
-- `options.txt;misc/mc-options.txt`
-  This will copy the options.txt-file in the base-dir of the modpack to the misc-dir of the server
-  pack as `mc-options.txt`.
-- '/home/griefed/Downloads/awesome.txt'
-  This will copy the `awesome.txt`-file to the base-dir of the server pack as `awesome.txt`
-
-**If any parent directory of the destination does not exist, they are created.**
-
-### Folder(s) Examples:
-
-- `C:/Minecraft/Game/Instances/Survive Create Prosper 4 custom (1)/packmenu;packmenu/files`
-  This will copy the `packmenu`-directory and all its contents to the `packmenu/files`-directory in
-  the server pack.
-- `screenshots;my-beautiful-screenshots`
-  This will copy the `screenshots`-directory and all its contents to the `my-beautiful-screenshots`
-  -directory in the server pack.
-- `/home/griefed/Downloads/some-worlds`
-  This will copy the `some-worlds`-directory to the base-dir of the server pack as `some-worlds`.
-
-## Lazy-mode
-
-If you do not care, at all, to use the safety and convenience features ServerPackCreator provides,
-and you simply want to create a server pack as fast as possible, simply set `copyDirs`|**Enter the
-list of directories or files in your modpack to include in your server pack:** to `lazy_mode` and
-ONLY `lazy_mode`.
-
-This will result in the whole modpack being copied to the server pack. No exceptions. Mods will not
-be scanned, no files will be excluded. EVERYTHING will be copied!
 
 ## Excluding files from ZIP-archives
 
@@ -564,13 +406,13 @@ to `true`
 Then, when using the GUI, you will be able to select any weekly release, snapshot, pre-release and
 more, just like that.
 
-# Modes
+## Modes
 
 ServerPackCreator has three main modes in which it can operate or in which you can use it.
 
 - CLI (Commandline Interface)
 - GUI (Graphical User Interface)
-- Webservice (Provide a webservice through which to generate server packs)
+- Webservice (Provide a webservice through which to generate server packs) **Will be reworked in version 6**
 
 There are a couple more ways to use/run ServerPackCreator which may or may not be helpful for you,
 depending on how you plan on using it:
@@ -587,7 +429,7 @@ depending on how you plan on using it:
 
 Each of these modes has its advantages and disadvantages.
 
-## CLI:
+### CLI:
 
 | Advantages                                                                                                                                  | Disadvantages                                                                                                         |
 |:--------------------------------------------------------------------------------------------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------|
@@ -596,7 +438,7 @@ Each of these modes has its advantages and disadvantages.
 |                                                                                                                                             | Debugging in case of a broken/erroring configuration file can be time consuming. Careful reading of logs is required. |
 |                                                                                                                                             | Manual editing of the configuration-file in case you want to change it.                                               |
 
-## GUI:
+### GUI:
 
 | Advantages                                                                                                             | Disadvantages                     |
 |:-----------------------------------------------------------------------------------------------------------------------|:----------------------------------|
@@ -606,7 +448,7 @@ Each of these modes has its advantages and disadvantages.
 | Loading and saving different configurations for quick generation of multiple server packs in short succession.         |                                   |
 | Edit the configuration in the GUI. No manual file-editing required.                                                    |                                   |
 
-## Webservice:
+### Webservice:
 
 | Advantages                                                                                                                                           | Disadvantages                                             |
 |:-----------------------------------------------------------------------------------------------------------------------------------------------------|:----------------------------------------------------------|
@@ -614,7 +456,7 @@ Each of these modes has its advantages and disadvantages.
 | Voting system to let users indicate whether a generated server pack works.                                                                           | Requires somewhat modern browser versions.                |
 | Open REST API. Interaction with the webservice does not *require* a browser. You can request a server pack generation and/or download from the CLI.  | Not all browers may be supported.                         |
 
-# Plugins
+## Plugins
 
 ServerPackCreator gives you the ability to use plugins, which can enhance your experience in a
 limited amount of ways.
@@ -631,7 +473,7 @@ Any given plugin has the chance to do various things:
 For a list of plugins, check out
 the [ServerPackCreator Addons Overview](https://griefed.github.io/ServerPackCreator-Addons-Overview/#/)
 
-## Installing a plugin
+### Installing a plugin
 
 If you have a plugin you would like to enhance your ServerPackCreator-experience with, simply
 download it and put it into the `plugins`-directory which resides in the base-directory of
@@ -652,7 +494,7 @@ ServerPackCreator
     └── temp
 ```
 
-## Disabling a plugin
+### Disabling a plugin
 
 In order to deactivate any installed plugins, edit the `disabled.txt`-file in the `plugins`-directory.
 If these don't exist, create them.
@@ -690,9 +532,9 @@ example-plugin
 **Important:** If ServerPackCreator was running during the disabling of an plugins, you need to
 restart it in order for the plugins to become disabled.
 
-# Configuration
+## Configuration
 
-## serverpackcreator.conf
+### serverpackcreator.conf
 
 The serverpackcreator.conf file allows you to customize a couple of different things:
 
@@ -714,7 +556,7 @@ The serverpackcreator.conf file allows you to customize a couple of different th
 | serverIconPath            | Path to a custom server-icon.png-file to include in the server pack.                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | serverPropertiesPath      | Path to a custom server.properties-file to include in the server pack.                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 
-## serverpackcreator.properties
+### serverpackcreator.properties
 
 ```properties
 # Supported languages: [en_us, uk_ua, de_de]
@@ -820,7 +662,7 @@ comment.
 | spring.servlet.multipart.max-request-size | Maximum request size for file uploads.                                                                 |
 | spring.config.import                      | Additional properties-file to import properties from.                                                  |
 
-# Localization
+## Localization
 
 If you wish to run ServerPackCreator with your locale (if it is already supported), you can either:
 
@@ -837,7 +679,7 @@ If you want to contribute translations to ServerPackCreator, check out the [i18n
 translations to see how they are set up. Then, make your changes, test them, and open a pull request on GitHub according
 to the [Contribution-Guidelines](CONTRIBUTING.md).
 
-## Adding a translation
+### Adding a translation
 
 Say you want to translate ServerPackCreator to german. You would need to add the file `Gui_en_GB.properties`
 

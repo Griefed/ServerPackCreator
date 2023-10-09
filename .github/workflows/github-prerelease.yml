@@ -17,7 +17,7 @@ jobs:
     steps:
       # GET THE LATEST CODE
       - name: Checkout latest code
-        uses: actions/checkout@v3.5.2
+        uses: actions/checkout@v3.5.0
         with:
           fetch-depth: 0
 
@@ -35,7 +35,7 @@ jobs:
     steps:
       # GET THE LATEST CODE
       - name: Checkout latest code
-        uses: actions/checkout@v3.5.2
+        uses: actions/checkout@v3.5.0
         with:
           fetch-depth: 0
 
@@ -50,7 +50,7 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - uses: gradle/gradle-build-action@v2.4.2
+      - uses: gradle/gradle-build-action@v2.4.0
         with:
           gradle-version: wrapper
 
@@ -58,7 +58,9 @@ jobs:
         env:
           GITHUB_ACTOR: ${{ secrets.GITHUB_ACTOR }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./gradlew -Pversion="${{ needs.preparations.outputs.version }}" build --info --full-stacktrace -x :serverpackcreator-api:jvmTest -x :serverpackcreator-web:test
+        run: |
+          ./gradlew -Pversion="${{ needs.preparations.outputs.version }}" generateLicenseReport --info --full-stacktrace
+          ./gradlew -Pversion="${{ needs.preparations.outputs.version }}" build --info --full-stacktrace -x :serverpackcreator-api:jvmTest -x :serverpackcreator-web:test
 
       # UPLOAD ARTIFACTS
       - uses: actions/upload-artifact@v3.1.2
@@ -97,7 +99,7 @@ jobs:
     steps:
       # GET THE LATEST CODE
       - name: Checkout latest code
-        uses: actions/checkout@v3.5.2
+        uses: actions/checkout@v3.5.0
         with:
           fetch-depth: 0
 
@@ -112,7 +114,7 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - uses: gradle/gradle-build-action@v2.4.2
+      - uses: gradle/gradle-build-action@v2.4.0
         with:
           gradle-version: wrapper
 
@@ -120,7 +122,9 @@ jobs:
         env:
           GITHUB_ACTOR: ${{ secrets.GITHUB_ACTOR }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./gradlew :serverpackcreator-app:jpackage -Pversion="${{ needs.preparations.outputs.version }}" --info --full-stacktrace -x :serverpackcreator-api:jvmTest -x :serverpackcreator-web:test
+        run: |
+          ./gradlew -Pversion="${{ needs.preparations.outputs.version }}" generateLicenseReport --info --full-stacktrace
+          ./gradlew :serverpackcreator-app:jpackage -Pversion="${{ needs.preparations.outputs.version }}" --info --full-stacktrace -x :serverpackcreator-api:jvmTest -x :serverpackcreator-web:test
 
       - name: List After Build
         run: ls serverpackcreator-app/build/dist/
@@ -152,7 +156,7 @@ jobs:
     steps:
       # GET THE LATEST CODE
       - name: Checkout latest code
-        uses: actions/checkout@v3.5.2
+        uses: actions/checkout@v3.5.0
         with:
           fetch-depth: 0
 
@@ -167,7 +171,7 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - uses: gradle/gradle-build-action@v2.4.2
+      - uses: gradle/gradle-build-action@v2.4.0
         with:
           gradle-version: wrapper
 
@@ -178,7 +182,9 @@ jobs:
         env:
           GITHUB_ACTOR: ${{ secrets.GITHUB_ACTOR }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./gradlew :serverpackcreator-app:jpackage -Pversion="${{ needs.preparations.outputs.version }}" --info --full-stacktrace -x :serverpackcreator-api:jvmTest -x :serverpackcreator-web:test
+        run: |
+          ./gradlew -Pversion="${{ needs.preparations.outputs.version }}" generateLicenseReport --info --full-stacktrace
+          ./gradlew :serverpackcreator-app:jpackage -Pversion="${{ needs.preparations.outputs.version }}" --info --full-stacktrace -x :serverpackcreator-api:jvmTest -x :serverpackcreator-web:test
 
       - name: List After Build
         run: ls serverpackcreator-app/build/dist/
@@ -210,7 +216,7 @@ jobs:
     steps:
       # GET THE LATEST CODE
       - name: Checkout latest code
-        uses: actions/checkout@v3.5.2
+        uses: actions/checkout@v3.5.0
         with:
           fetch-depth: 0
 
@@ -227,7 +233,7 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - uses: gradle/gradle-build-action@v2.4.2
+      - uses: gradle/gradle-build-action@v2.4.0
         with:
           gradle-version: wrapper
 
@@ -238,7 +244,9 @@ jobs:
         env:
           GITHUB_ACTOR: ${{ secrets.GITHUB_ACTOR }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./gradlew -Pversion="${{ needs.preparations.outputs.version }}" :serverpackcreator-app:build :serverpackcreator-app:copyDependencies :serverpackcreator-app:copyJar :serverpackcreator-app:cleanTmpPackager --info --full-stacktrace
+        run: |
+          ./gradlew -Pversion="${{ needs.preparations.outputs.version }}" generateLicenseReport --info --full-stacktrace
+          ./gradlew -Pversion="${{ needs.preparations.outputs.version }}" :serverpackcreator-app:build :serverpackcreator-app:copyDependencies :serverpackcreator-app:copyJar :serverpackcreator-app:cleanTmpPackager --info --full-stacktrace
 
       - name: Build Image
         run: |
@@ -304,7 +312,7 @@ jobs:
     steps:
       # GET THE LATEST CODE
       - name: Checkout latest code
-        uses: actions/checkout@v3.5.2
+        uses: actions/checkout@v3.5.0
         with:
           fetch-depth: 0
 
@@ -319,7 +327,7 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - uses: gradle/gradle-build-action@v2.4.2
+      - uses: gradle/gradle-build-action@v2.4.0
         with:
           gradle-version: wrapper
 
@@ -327,7 +335,9 @@ jobs:
         env:
           GITHUB_ACTOR: ${{ secrets.GITHUB_ACTOR }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./gradlew :serverpackcreator-app:jpackage -Pversion="${{ needs.preparations.outputs.version }}" --info --full-stacktrace -x :serverpackcreator-api:jvmTest -x :serverpackcreator-web:test
+        run: |
+          ./gradlew -Pversion="${{ needs.preparations.outputs.version }}" generateLicenseReport --info --full-stacktrace
+          ./gradlew :serverpackcreator-app:jpackage -Pversion="${{ needs.preparations.outputs.version }}" --info --full-stacktrace -x :serverpackcreator-api:jvmTest -x :serverpackcreator-web:test
 
       - name: List After Build
         run: ls serverpackcreator-app/build/dist/
@@ -359,7 +369,7 @@ jobs:
     steps:
       # GET THE LATEST CODE
       - name: Checkout latest code
-        uses: actions/checkout@v3.5.2
+        uses: actions/checkout@v3.5.0
         with:
           fetch-depth: 0
 
@@ -376,7 +386,7 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - uses: gradle/gradle-build-action@v2.4.2
+      - uses: gradle/gradle-build-action@v2.4.0
         with:
           gradle-version: wrapper
 
@@ -384,7 +394,9 @@ jobs:
         env:
           GITHUB_ACTOR: ${{ secrets.GITHUB_ACTOR }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./gradlew -Pversion="${{ needs.preparations.outputs.version }}" :serverpackcreator-app:build :serverpackcreator-app:copyDependencies :serverpackcreator-app:copyJar :serverpackcreator-app:cleanTmpPackager --info --full-stacktrace
+        run: |
+          ./gradlew -Pversion="${{ needs.preparations.outputs.version }}" generateLicenseReport --info --full-stacktrace
+          ./gradlew -Pversion="${{ needs.preparations.outputs.version }}" :serverpackcreator-app:build :serverpackcreator-app:copyDependencies :serverpackcreator-app:copyJar :serverpackcreator-app:cleanTmpPackager --info --full-stacktrace
 
       - name: Build Image
         run: |
@@ -470,7 +482,7 @@ jobs:
     steps:
       # GET THE LATEST CODE
       - name: Checkout latest code
-        uses: actions/checkout@v3.5.2
+        uses: actions/checkout@v3.5.0
         with:
           fetch-depth: 0
 

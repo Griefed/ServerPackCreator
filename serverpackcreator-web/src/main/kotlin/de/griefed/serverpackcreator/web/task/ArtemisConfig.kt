@@ -60,7 +60,7 @@ class ArtemisConfig @Autowired constructor(private val apiProperties: ApiPropert
      * @author Griefed
      */
     override fun customize(configuration: org.apache.activemq.artemis.core.config.Configuration) {
-        configuration.maxDiskUsage = apiProperties.queueMaxDiskUsage
+        configuration.maxDiskUsage = apiProperties.artemisQueueMaxDiskUsage
         val addressSettings = AddressSettings()
         addressSettings.defaultConsumerWindowSize = 0
         configuration.addAddressesSetting("tasks.background", addressSettings)

@@ -63,7 +63,7 @@ import java.util.*
  * @author Griefed
  */
 @Suppress("unused")
-class MigrationManager constructor(
+class MigrationManager(
     private val apiProperties: ApiProperties, private val tomlParser: TomlParser
 ) {
     private val log = cachedLoggerOf(this.javaClass)
@@ -137,9 +137,7 @@ class MigrationManager constructor(
      * @return `true` if the current version is older than the previously used version.
      * @author Griefed
      */
-    private fun isOlder(
-        old: String, checkAgainst: String
-    ): Boolean {
+    private fun isOlder(old: String, checkAgainst: String): Boolean {
         return older(
             semantics(old), semantics(checkAgainst)
         )
@@ -153,9 +151,7 @@ class MigrationManager constructor(
      * @return Methods to execute to ensure proper migration between version updates.
      * @author Griefed
      */
-    private fun getMigrationMethods(
-        oldVersion: String, currentVersion: String
-    ): List<Method?> {
+    private fun getMigrationMethods(oldVersion: String, currentVersion: String): List<Method?> {
         val run: MutableList<Method?> = ArrayList(100)
         val methods = migrationMethods.javaClass.declaredMethods
         val methodMap = HashMap<String, Method>(100)
@@ -220,9 +216,7 @@ class MigrationManager constructor(
      * @return `true` if the version numbers checked against represent an older version.
      * @author Griefed
      */
-    private fun older(
-        old: Array<Int>, checkAgainst: Array<Int>
-    ): Boolean {
+    private fun older(old: IntArray, checkAgainst: IntArray): Boolean {
         // Current MAJOR version smaller?
         if (checkAgainst[0] < old[0]) {
             return true
@@ -243,8 +237,8 @@ class MigrationManager constructor(
      * @return Array containing the major, minor and patch numbers.
      * @author Griefed
      */
-    private fun semantics(version: String): Array<Int> {
-        return version.split(Regex("\\.")).map { it.toInt() }.toTypedArray()
+    private fun semantics(version: String): IntArray {
+        return version.split(Regex("\\.")).map { it.toInt() }.toIntArray()
     }
 
     /**
@@ -255,9 +249,7 @@ class MigrationManager constructor(
      * @return `true` if the migration-method version is newer than the current version.
      * @author Griefed
      */
-    private fun isNewer(
-        old: String, checkAgainst: String
-    ): Boolean {
+    private fun isNewer(old: String, checkAgainst: String): Boolean {
         return newer(
             semantics(old), semantics(checkAgainst)
         )
@@ -272,9 +264,7 @@ class MigrationManager constructor(
      * version.
      * @author Griefed
      */
-    private fun isOlderOrSame(
-        old: String, checkAgainst: String
-    ): Boolean {
+    private fun isOlderOrSame(old: String, checkAgainst: String): Boolean {
         return oldOrSame(
             semantics(old), semantics(checkAgainst)
         )
@@ -289,9 +279,7 @@ class MigrationManager constructor(
      * @return `true` if the version numbers checked against represent a newer version.
      * @author Griefed
      */
-    private fun newer(
-        old: Array<Int>, checkAgainst: Array<Int>
-    ): Boolean {
+    private fun newer(old: IntArray, checkAgainst: IntArray): Boolean {
         // Method MAJOR bigger?
         if (checkAgainst[0] > old[0]) {
             return true
@@ -300,9 +288,10 @@ class MigrationManager constructor(
         // Method MAJOR version equal and method MINOR bigger?
         return if (checkAgainst[0] == old[0] && checkAgainst[1] > old[1]) {
             true
-        } else checkAgainst[0] == old[0] && checkAgainst[1] == old[1] && checkAgainst[2] > old[2]
-
-        // Method MAJOR equal, method MINOR equal, method PATCH bigger?
+        } else {
+            // Method MAJOR equal, method MINOR equal, method PATCH bigger?
+            checkAgainst[0] == old[0] && checkAgainst[1] == old[1] && checkAgainst[2] > old[2]
+        }
     }
 
     /**
@@ -315,9 +304,7 @@ class MigrationManager constructor(
      * same.
      * @author Griefed
      */
-    private fun oldOrSame(
-        old: Array<Int>, checkAgainst: Array<Int>
-    ): Boolean {
+    private fun oldOrSame(old: IntArray, checkAgainst: IntArray): Boolean {
         return checkAgainst[0] <= old[0] && checkAgainst[1] <= old[1] && checkAgainst[2] <= old[2]
     }
 
@@ -330,12 +317,8 @@ class MigrationManager constructor(
      * version.
      * @author Griefed
      */
-    private fun isNewerOrSame(
-        current: String, checkAgainst: String
-    ): Boolean {
-        return newOrSame(
-            semantics(current), semantics(checkAgainst)
-        )
+    private fun isNewerOrSame(current: String, checkAgainst: String): Boolean {
+        return newOrSame(semantics(current), semantics(checkAgainst))
     }
 
     /**
@@ -348,9 +331,7 @@ class MigrationManager constructor(
      * same.
      * @author Griefed
      */
-    private fun newOrSame(
-        current: Array<Int>, checkAgainst: Array<Int>
-    ): Boolean {
+    private fun newOrSame(current: IntArray, checkAgainst: IntArray): Boolean {
         return checkAgainst[0] >= current[0] && checkAgainst[1] >= current[1] && checkAgainst[2] >= current[2]
     }
 
@@ -489,7 +470,7 @@ class MigrationManager constructor(
                     apiProperties.homeDirectory, "addons"
                 ).renameTo(apiProperties.pluginsDirectory)
             ) {
-                changes.add("Migrated addons-directory to plugins-directory.")
+                changes.add(Updates.migrationmanager_migration_fourpointzeropointzero_addons.toString())
                 val disabled = File(apiProperties.pluginsDirectory, "disabled.txt")
                 val contents = disabled.readText()
                 for (file in apiProperties.pluginsDirectory.filteredWalk(listOf(".jar"))) {
@@ -500,7 +481,7 @@ class MigrationManager constructor(
                     }
                     if (!contents.contains(id)) {
                         disabled.appendText(id)
-                        changes.add("Disabled plugin $file to prevent crashes due to probable version incompatibility.")
+                        changes.add(Updates.migrationmanager_migration_fourpointzeropointzero_addons_disabled(id))
                     }
                 }
             }
@@ -508,7 +489,37 @@ class MigrationManager constructor(
             if (apiProperties.language.language == "en_us") {
                 val old = apiProperties.language.language.split("_")
                 apiProperties.changeLocale(Locale("en_GB"))
-                changes.add("Migrated locale setting from $old to en_GB.")
+                changes.add(Updates.migrationmanager_migration_fourpointzeropointzero_locale(old))
+            }
+
+            if (changes.isNotEmpty()) {
+                migrationMessages.add(
+                    MigrationMessage(
+                        previous, current, changes
+                    )
+                )
+            }
+        }
+
+        private fun FivePointZeroPointZero() {
+            val changes: MutableList<String> = ArrayList<String>(10)
+            val previousSetting = apiProperties.scriptTemplates.joinToString(",")
+            val currentFiles = apiProperties.serverFilesDirectory.walk().maxDepth(1).filter {
+                it.name.endsWith("sh",ignoreCase = true) ||
+                        it.name.endsWith("ps1",ignoreCase = true) ||
+                        it.name.endsWith("bat",ignoreCase = true)
+            }.filter { !it.name.contains("default_template",ignoreCase = true)}.toList()
+            val templates = TreeSet<File>()
+
+            if (previousSetting == "default_template.ps1,default_template.sh") {
+                changes.add(Updates.migrationmanager_migration_fivepointzeropointzero_scripts_default.toString())
+                apiProperties.scriptTemplates = TreeSet(apiProperties.defaultScriptTemplates())
+            } else if (currentFiles.isNotEmpty()) {
+                changes.add(Updates.migrationmanager_migration_fivepointzeropointzero_scripts_custom.toString())
+                for (file in currentFiles) {
+                    templates.add(file.absoluteFile)
+                }
+                apiProperties.scriptTemplates = templates
             }
 
             if (changes.isNotEmpty()) {

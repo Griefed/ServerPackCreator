@@ -43,7 +43,7 @@ import de.griefed.serverpackcreator.api.utilities.File
 expect open class PackConfig {
 
     val clientMods: ArrayList<String>
-    val copyDirs: ArrayList<String>
+    val inclusions: ArrayList<InclusionSpecification>
     val scriptSettings: HashMap<String, String>
     val pluginsConfigs: HashMap<String, ArrayList<CommentedConfig>>
     var modpackDir: String
@@ -59,7 +59,7 @@ expect open class PackConfig {
     var isServerPropertiesInclusionDesired: Boolean
 
     fun getPluginConfigs(pluginId: String): ArrayList<CommentedConfig>
-    fun save(destination: File): PackConfig
+    fun save(destination: File, apiProperties: ApiProperties): PackConfig
 
     /**
      * Construct a new configuration model with custom values.
@@ -84,7 +84,7 @@ expect open class PackConfig {
      */
     constructor(
         clientMods: List<String>,
-        copyDirs: List<String>,
+        copyDirs: List<InclusionSpecification>,
         modpackDir: String,
         minecraftVersion: String,
         modLoader: String,

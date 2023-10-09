@@ -18,7 +18,7 @@ LABEL description="Create a server pack from a Minecraft Forge, Fabric or Quilt 
 RUN \
   echo "**** Bring system up to date ****" && \
   apt-get update && apt-get upgrade -y && \
-  apt-get install -y \
+  apt-get install --no-install-recommends -y \
     libatomic1 && \
   echo "**** Creating our folder(s) ****" && \
   mkdir -p \

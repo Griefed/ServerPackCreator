@@ -17,11 +17,13 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-@file:Suppress("DuplicatedCode")
+@file:Suppress("DuplicatedCode", "unused")
 
 package de.griefed.serverpackcreator.api.utilities.common
 
+import kotlinx.coroutines.*
 import mu.KotlinLogging
+import kotlin.coroutines.CoroutineContext
 
 /**
  * Utility-class revolving around Lists.
@@ -46,9 +48,11 @@ class ListUtilities {
             return "[]"
         }
         val stringBuilder = StringBuilder()
-        stringBuilder.append("[\"").append(listToEncapsulate[0].replace("\\", "/")).append("\"")
+        var encapsulated = listToEncapsulate[0].replace("\\", "/")
+        stringBuilder.append("[\"").append(encapsulated).append("\"")
         for (i in 1 until listToEncapsulate.size) {
-            stringBuilder.append(",\"").append(listToEncapsulate[i].replace("\\", "/")).append("\"")
+            encapsulated = listToEncapsulate[i].replace("\\", "/")
+            stringBuilder.append(",\"").append(encapsulated).append("\"")
         }
         stringBuilder.append("]")
         return stringBuilder.toString()
@@ -219,4 +223,30 @@ fun <T> MutableCollection<T>.removeIf(filter: Affirm<in T>): Boolean {
         }
     }
     return removed
+}
+
+/**
+ * Compute all elements in the list in parallel and continue when every element was computed.
+ *
+ * @author Griefed
+ */
+@OptIn(DelicateCoroutinesApi::class)
+inline fun <A, B> List<A>.parallelMap(
+    context: CoroutineContext = newSingleThreadContext("parallelMap"),
+    crossinline function: suspend (A) -> B
+): List<B> = runBlocking(context) {
+    map { async { function(it) } }.awaitAll()
+}
+
+/**
+ * Add multiple elements to a list in one go.
+ *
+ * @author Griefed
+ */
+fun <T> MutableList<T>.addMultiple(vararg entries: T) {
+    entries.forEach { add(it) }
+}
+
+fun <T> concatenate(vararg lists: List<T>): List<T> {
+    return listOf(*lists).flatten()
 }

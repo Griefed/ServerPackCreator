@@ -11,7 +11,7 @@ repositories {
 }
 
 tasks.withType<DokkaTask>().configureEach {
-    outputDirectory.set(buildDir.resolve("dokka"))
+    outputDirectory.set(layout.buildDirectory.asFile.get().resolve("dokka"))
     dokkaSourceSets {
         configureEach {
             documentedVisibilities.set(
@@ -33,7 +33,7 @@ tasks.withType<DokkaTask>().configureEach {
     }
 }
 
-val dokkaHtml by tasks.getting(org.jetbrains.dokka.gradle.DokkaTask::class)
+val dokkaHtml by tasks.getting(DokkaTask::class)
 
 tasks.register<Jar>("dokkaJavadocJar") {
     dependsOn(tasks.dokkaHtml)

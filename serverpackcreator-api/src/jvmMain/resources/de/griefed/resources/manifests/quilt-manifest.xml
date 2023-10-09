@@ -3,8 +3,8 @@
   <groupId>org.quiltmc</groupId>
   <artifactId>quilt-loader</artifactId>
   <versioning>
-    <latest>0.18.4-pre.3</latest>
-    <release>0.18.4-pre.3</release>
+    <latest>0.20.0-beta.3</latest>
+    <release>0.20.0-beta.3</release>
     <versions>
       <version>0.16.0-beta.1</version>
       <version>0.16.0-beta.2</version>
@@ -144,7 +144,47 @@
       <version>0.18.4-pre.1</version>
       <version>0.18.4-pre.2</version>
       <version>0.18.4-pre.3</version>
+      <version>0.18.4</version>
+      <version>0.18.5</version>
+      <version>0.19.0-beta.1</version>
+      <version>0.18.6-beta.1</version>
+      <version>0.19.0-beta.2</version>
+      <version>0.18.6</version>
+      <version>0.19.0-beta.3</version>
+      <version>0.18.7</version>
+      <version>0.19.0-beta.4</version>
+      <version>0.19.0-beta.5</version>
+      <version>0.19.0-beta.6</version>
+      <version>0.18.8</version>
+      <version>0.19.0-beta.7</version>
+      <version>0.19.0-beta.8</version>
+      <version>0.19.0-beta.9</version>
+      <version>0.19.0-beta.10</version>
+      <version>0.19.0-beta.11</version>
+      <version>0.18.9</version>
+      <version>0.18.10</version>
+      <version>0.19.0-beta.12</version>
+      <version>0.19.0-beta.13</version>
+      <version>0.19.0-beta.16</version>
+      <version>0.19.0-beta.17</version>
+      <version>0.19.0-beta.18</version>
+      <version>0.19.0-beta.19</version>
+      <version>0.19.0</version>
+      <version>0.19.1-beta.1</version>
+      <version>0.19.1-beta.2</version>
+      <version>0.19.1-beta.3</version>
+      <version>0.19.1</version>
+      <version>0.19.2-beta.1</version>
+      <version>0.19.2-beta.2</version>
+      <version>0.19.2-beta.4</version>
+      <version>0.19.2-beta.5</version>
+      <version>0.19.2-beta.6</version>
+      <version>0.19.2-beta.7</version>
+      <version>0.19.2</version>
+      <version>0.20.0-beta.1</version>
+      <version>0.20.0-beta.2</version>
+      <version>0.20.0-beta.3</version>
     </versions>
-    <lastUpdated>20230305225815</lastUpdated>
+    <lastUpdated>20230708221419</lastUpdated>
   </versioning>
 </metadata>

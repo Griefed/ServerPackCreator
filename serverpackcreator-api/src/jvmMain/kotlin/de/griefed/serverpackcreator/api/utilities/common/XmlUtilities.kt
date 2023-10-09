@@ -37,7 +37,7 @@ import javax.xml.parsers.ParserConfigurationException
  * @author Griefed
  */
 @Suppress("unused")
-actual class XmlUtilities constructor(private val documentBuilderFactory: DocumentBuilderFactory = DocumentBuilderFactory.newInstance()) {
+actual class XmlUtilities(private val documentBuilderFactory: DocumentBuilderFactory = DocumentBuilderFactory.newInstance()) {
 
     /**
      * Reads the file into a [Document] and [Document.normalize] it.

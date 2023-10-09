@@ -518,7 +518,9 @@ class ReticulatingSplines {
     fun spline(wordCount: Int): String {
         val stringBuilder = StringBuilder()
         for (i in 0 until wordCount) {
-            stringBuilder.append(splines[(splines.indices).random()])
+            val index = splines.indices.random()
+            val spline = splines[index]
+            stringBuilder.append(spline)
         }
         return stringBuilder.toString()
     }

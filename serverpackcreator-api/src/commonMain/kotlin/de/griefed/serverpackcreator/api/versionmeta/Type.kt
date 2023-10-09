@@ -46,6 +46,11 @@ enum class Type {
     FORGE,
 
     /**
+     * Indicates this operation concerns NeoForge.
+     */
+    NEO_FORGE,
+
+    /**
      * Indicates this operation concerns Fabric.
      */
     FABRIC,

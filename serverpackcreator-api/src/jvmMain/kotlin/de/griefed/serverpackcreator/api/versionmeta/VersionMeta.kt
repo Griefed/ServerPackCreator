@@ -29,6 +29,7 @@ import de.griefed.serverpackcreator.api.versionmeta.fabric.FabricMeta
 import de.griefed.serverpackcreator.api.versionmeta.forge.ForgeMeta
 import de.griefed.serverpackcreator.api.versionmeta.legacyfabric.LegacyFabricMeta
 import de.griefed.serverpackcreator.api.versionmeta.minecraft.MinecraftMeta
+import de.griefed.serverpackcreator.api.versionmeta.neoforge.NeoForgeMeta
 import de.griefed.serverpackcreator.api.versionmeta.quilt.QuiltMeta
 import kotlinx.coroutines.*
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
@@ -61,9 +62,10 @@ import javax.xml.parsers.ParserConfigurationException
  *
  * @author Griefed
  */
-actual class VersionMeta constructor(
+actual class VersionMeta(
     private val minecraftManifest: File,
     private val forgeManifest: File,
+    private val neoForgeManifest: File,
     private val fabricManifest: File,
     private val fabricInstallerManifest: File,
     private val fabricIntermediariesManifest: File,
@@ -98,6 +100,10 @@ actual class VersionMeta constructor(
     @Suppress("MemberVisibilityCanBePrivate")
     actual val forgeUrlManifest =
         URL("https://files.minecraftforge.net/net/minecraftforge/forge/maven-metadata.json")
+
+    @Suppress("MemberVisibilityCanBePrivate")
+    actual val neoForgeUrlManifest =
+        URL("https://maven.neoforged.net/releases/net/neoforged/forge/maven-metadata.xml")
 
     @Suppress("MemberVisibilityCanBePrivate")
     actual val fabricUrlManifest =
@@ -138,6 +144,12 @@ actual class VersionMeta constructor(
     actual val forge: ForgeMeta
 
     /**
+     * The NeoForgeMeta-instance for working with NeoForge versions and information about them.
+     */
+    @Suppress("MemberVisibilityCanBePrivate")
+    actual val neoForge: NeoForgeMeta
+
+    /**
      * The QuiltMeta-instance for working with Quilt versions and information about them.
      */
     @Suppress("MemberVisibilityCanBePrivate")
@@ -156,6 +168,11 @@ actual class VersionMeta constructor(
         checkManifests()
         forge = ForgeMeta(
             forgeManifest,
+            utilities,
+            apiProperties.installerCacheDirectory
+        )
+        neoForge = NeoForgeMeta(
+            neoForgeManifest,
             utilities,
             apiProperties.installerCacheDirectory
         )
@@ -185,6 +202,7 @@ actual class VersionMeta constructor(
             apiProperties.installerCacheDirectory
         )
         forge.initialize(minecraft)
+        neoForge.initialize(minecraft)
         quilt = QuiltMeta(
             quiltManifest,
             quiltInstallerManifest,
@@ -197,6 +215,7 @@ actual class VersionMeta constructor(
         fabric.update()
         legacyFabric.update()
         forge.update()
+        neoForge.update()
         quilt.update()
     }
 
@@ -215,6 +234,9 @@ actual class VersionMeta constructor(
             }
             launch {
                 checkManifest(forgeManifest, forgeUrlManifest, Type.FORGE)
+            }
+            launch {
+                checkManifest(neoForgeManifest, neoForgeUrlManifest, Type.NEO_FORGE)
             }
             launch {
                 checkManifest(fabricIntermediariesManifest, fabricUrlIntermediariesManifest, Type.FABRIC_INTERMEDIARIES)
@@ -297,7 +319,7 @@ actual class VersionMeta constructor(
                                 countNewFile = utilities.jsonUtilities.getJson(newContent).size()
                             }
 
-                            Type.FABRIC, Type.FABRIC_INSTALLER, Type.QUILT, Type.QUILT_INSTALLER -> {
+                            Type.FABRIC, Type.FABRIC_INSTALLER, Type.QUILT, Type.QUILT_INSTALLER, Type.NEO_FORGE -> {
                                 countOldFile = utilities.xmlUtilities.getXml(oldContent)
                                     .getElementsByTagName("version").length
                                 countNewFile = utilities.xmlUtilities.getXml(newContent)
@@ -425,6 +447,7 @@ actual class VersionMeta constructor(
         fabric.update()
         legacyFabric.update()
         forge.update()
+        neoForge.update()
         quilt.update()
         return this
     }

@@ -107,7 +107,7 @@ class ZipService @Autowired constructor(
         }
 
         // Check the modloader version
-        if (configurationHandler.checkModloader(parameters[3])) {
+        if (configurationHandler.checkModloader(parameters[3]).modloaderChecksPassed) {
 
             // Check Forge
             if (configurationHandler.getModLoaderCase(parameters[3]) == "Forge") {

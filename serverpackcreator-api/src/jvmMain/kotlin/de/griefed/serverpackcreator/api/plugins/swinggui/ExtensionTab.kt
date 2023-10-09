@@ -67,11 +67,11 @@ actual abstract class ExtensionTab protected constructor(
     protected fun saveConfiguration() {
         SwingUtilities.invokeLater {
             if (pluginConfig.isPresent && configFile.isPresent) {
-                TomlFormat.instance().createWriter()
-                    .write(
-                        pluginConfig.get(), configFile.get(), WritingMode.REPLACE,
-                        Charsets.UTF_8
-                    )
+                val tomlWriter = TomlFormat.instance().createWriter()
+                tomlWriter.write(
+                    pluginConfig.get(), configFile.get(), WritingMode.REPLACE,
+                    Charsets.UTF_8
+                )
                 log.info("Configuration saved.")
             } else {
                 log.info("No configuration or configuration file available.")

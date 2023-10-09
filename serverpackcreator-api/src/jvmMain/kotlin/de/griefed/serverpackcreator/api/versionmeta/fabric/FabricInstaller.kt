@@ -44,6 +44,11 @@ internal class FabricInstaller(
     @Suppress("MemberVisibilityCanBePrivate")
     val installerUrlTemplate =
         "https://maven.fabricmc.net/net/fabricmc/fabric-installer/%s/fabric-installer-%s.jar"
+    @Suppress("MemberVisibilityCanBePrivate")
+    val improvedLauncherUrlTemplate = "https://meta.fabricmc.net/v2/versions/loader/%s/%s/%s/server/jar"
+    private val latest = "latest"
+    private val release = "release"
+    private val version = "version"
 
     /**
      * Available installer versions for Fabric.
@@ -82,36 +87,35 @@ internal class FabricInstaller(
     @Throws(ParserConfigurationException::class, IOException::class, SAXException::class)
     fun update() {
         val document: Document = utilities.xmlUtilities.getXml(installerManifest)
-        latestInstaller = document
-            .getElementsByTagName("latest")
-            .item(0)
-            .childNodes
-            .item(0)
-            .nodeValue
-        releaseInstaller = document
-            .getElementsByTagName("release")
-            .item(0)
-            .childNodes
-            .item(0)
-            .nodeValue
+        val latestElements = document.getElementsByTagName(latest)
+        val latestNode = latestElements.item(0)
+        val latestNodeChildren = latestNode.childNodes
+        val latestItem = latestNodeChildren.item(0)
+        latestInstaller = latestItem.nodeValue
+
+        val releaseElements = document.getElementsByTagName(release)
+        val releaseNode = releaseElements.item(0)
+        val releaseNodeChildren = releaseNode.childNodes
+        val releaseItem = releaseNodeChildren.item(0)
+        releaseInstaller = releaseItem.nodeValue
         try {
-            latestInstallerUrl = URL(installerUrlTemplate.format(latestInstaller, latestInstaller))
+            val url = installerUrlTemplate.format(latestInstaller, latestInstaller)
+            latestInstallerUrl = URL(url)
         } catch (ignored: MalformedURLException) {
         }
         try {
-            releaseInstallerUrl = URL(installerUrlTemplate.format(releaseInstaller, releaseInstaller))
+            val url = installerUrlTemplate.format(releaseInstaller, releaseInstaller)
+            releaseInstallerUrl = URL(url)
         } catch (ignored: MalformedURLException) {
         }
         installers.clear()
-        for (i in 0 until document.getElementsByTagName("version").length) {
-            installers.add(
-                document
-                    .getElementsByTagName("version")
-                    .item(i)
-                    .childNodes
-                    .item(0)
-                    .nodeValue
-            )
+
+        val elements = document.getElementsByTagName(version)
+        for (i in 0 until elements.length) {
+            val versionNode = elements.item(i)
+            val versionChildren = versionNode.childNodes
+            val versionItem = versionChildren.item(0)
+            installers.add(versionItem.nodeValue)
         }
         installerUrlMeta.clear()
         for (version in installers) {
@@ -179,7 +183,7 @@ internal class FabricInstaller(
         minecraftVersion: String,
         fabricVersion: String
     ) = URL(
-        "https://meta.fabricmc.net/v2/versions/loader/%s/%s/%s/server/jar".format(
+        improvedLauncherUrlTemplate.format(
             minecraftVersion,
             fabricVersion,
             releaseInstaller

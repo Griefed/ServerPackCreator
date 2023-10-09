@@ -98,7 +98,7 @@ tasks.jar {
                 "Plugin-Id" to pluginId,
                 "Plugin-Name" to pluginName,
                 "Plugin-Provider" to pluginAuthor,
-                "Plugin-Version" to "0.0.1",
+                "Plugin-Version" to project.version,
                 "Plugin-Description" to pluginDescription
             )
         )

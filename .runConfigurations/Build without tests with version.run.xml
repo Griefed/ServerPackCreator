@@ -4,7 +4,7 @@
       <option name="executionName" />
       <option name="externalProjectPath" value="$PROJECT_DIR$" />
       <option name="externalSystemIdString" value="GRADLE" />
-      <option name="scriptParameters" value="-Pversion=4.0.0 --info --full-stacktrace -x test" />
+      <option name="scriptParameters" value="-Pversion=4.0.0 --info --full-stacktrace -x :serverpackcreator-api:jvmTest -x :serverpackcreator-web:test" />
       <option name="taskDescriptions">
         <list />
       </option>
@@ -19,6 +19,7 @@
     <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
     <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
     <DebugAllEnabled>false</DebugAllEnabled>
+    <ForceTestExec>false</ForceTestExec>
     <method v="2" />
   </configuration>
 </component>

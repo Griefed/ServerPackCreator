@@ -36,7 +36,7 @@ import javax.net.ssl.HttpsURLConnection
  * @author Griefed
  */
 @Suppress("unused")
-actual class WebUtilities constructor(private val apiProperties: ApiProperties) {
+actual class WebUtilities(private val apiProperties: ApiProperties) {
     private val log = cachedLoggerOf(this.javaClass)
 
     /**
@@ -147,26 +147,25 @@ actual class WebUtilities constructor(private val apiProperties: ApiProperties) 
     }
 
     /**
-     * Create a HasteBin post from a given text file. The text file provided is read into a string and
-     * then passed onto [Haste zneix](https://haste.zneix.eu) which creates a HasteBin post
-     * out of the passed String and returns the URL to the newly created post.
+     * Create a HasteBin post from a given string. The text provided passed onto [Haste zneix](https://haste.zneix.eu)
+     * which creates a HasteBin post out of the passed String and returns the URL to the newly created post.
      *
      * Created with the help of [kaimu-ken's hastebin.java (MIT License)](https://github.com/kaimu-kun/hastebin.java)
      * and edited to use HasteBin fork [zneix/haste-server](https://github.com/zneix/haste-server). My fork of kaimu-kun's
      * hastebin.java is available at [Griefed/hastebin.java](https://github.com/Griefed/hastebin.java).
      *
-     * @param textFile The file which will be read into a String of which then to create a HasteBin
+     * @param text The file which will be read into a String of which then to create a HasteBin
      * post of.
      * @return String. Returns a String containing the URL to the newly created HasteBin post.
      * @author [kaimu-kun/hastebin.java](https://github.com/kaimu-kun)
      * @author Griefed
      */
-    actual fun createHasteBinFromFile(textFile: File): String {
+    actual fun createHasteBinFromString(text: String): String {
         val requestURL: String = apiProperties.hasteBinServerUrl
         var response: String? = null
         val url = URL(requestURL)
         var conn: HttpsURLConnection? = null
-        val postData: ByteArray = textFile.readText().toByteArray()
+        val postData: ByteArray = text.toByteArray()
         val postDataLength = postData.size
 
         try {
@@ -212,6 +211,25 @@ actual class WebUtilities constructor(private val apiProperties: ApiProperties) 
         } else {
             "Error encountered when acquiring response from URL."
         }
+    }
+
+    /**
+     * Create a HasteBin post from a given text file. The text file provided is read into a string and
+     * then passed onto [Haste zneix](https://haste.zneix.eu) which creates a HasteBin post
+     * out of the passed String and returns the URL to the newly created post.
+     *
+     * Created with the help of [kaimu-ken's hastebin.java (MIT License)](https://github.com/kaimu-kun/hastebin.java)
+     * and edited to use HasteBin fork [zneix/haste-server](https://github.com/zneix/haste-server). My fork of kaimu-kun's
+     * hastebin.java is available at [Griefed/hastebin.java](https://github.com/Griefed/hastebin.java).
+     *
+     * @param textFile The file which will be read into a String of which then to create a HasteBin
+     * post of.
+     * @return String. Returns a String containing the URL to the newly created HasteBin post.
+     * @author [kaimu-kun/hastebin.java](https://github.com/kaimu-kun)
+     * @author Griefed
+     */
+    actual fun createHasteBinFromFile(textFile: File): String {
+        return createHasteBinFromString(textFile.readText())
     }
 
     /**
