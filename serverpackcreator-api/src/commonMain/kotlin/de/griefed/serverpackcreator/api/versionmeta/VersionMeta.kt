@@ -23,9 +23,9 @@ package de.griefed.serverpackcreator.api.versionmeta
 import de.griefed.serverpackcreator.api.utilities.URL
 import de.griefed.serverpackcreator.api.versionmeta.fabric.FabricMeta
 import de.griefed.serverpackcreator.api.versionmeta.forge.ForgeMeta
-import de.griefed.serverpackcreator.api.versionmeta.neoforge.NeoForgeMeta
 import de.griefed.serverpackcreator.api.versionmeta.legacyfabric.LegacyFabricMeta
 import de.griefed.serverpackcreator.api.versionmeta.minecraft.MinecraftMeta
+import de.griefed.serverpackcreator.api.versionmeta.neoforge.NeoForgeMeta
 import de.griefed.serverpackcreator.api.versionmeta.quilt.QuiltMeta
 
 /**

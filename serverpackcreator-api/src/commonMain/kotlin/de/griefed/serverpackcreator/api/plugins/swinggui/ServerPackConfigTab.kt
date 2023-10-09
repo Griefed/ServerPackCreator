@@ -19,9 +19,9 @@
  */
 package de.griefed.serverpackcreator.api.plugins.swinggui
 
+import de.griefed.serverpackcreator.api.InclusionSpecification
 import de.griefed.serverpackcreator.api.PackConfig
 import de.griefed.serverpackcreator.api.utilities.File
-import de.griefed.serverpackcreator.api.InclusionSpecification
 
 /**
  * Force every server pack configuration tab to provide a certain set of methods. Said set of methods give plugins
