@@ -1,3 +1,15 @@
+## [5.0.0-alpha.36](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-alpha.35...5.0.0-alpha.36) (2023-10-09)
+
+
+### :scissors: Refactor
+
+* Optimize imports ([94295bc](https://git.griefed.de/Griefed/ServerPackCreator/commit/94295bc409748d5a529d4547692cd7da754591c7))
+
+
+### 🛠 Fixes
+
+* Hopefully fix weird read-access error ([e150b5d](https://git.griefed.de/Griefed/ServerPackCreator/commit/e150b5db2f6db802510cb193ece2b5531a766d58))
+
 ## [5.0.0-alpha.35](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-alpha.34...5.0.0-alpha.35) (2023-10-08)
 
 
