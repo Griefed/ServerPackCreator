@@ -190,11 +190,6 @@ class TabbedConfigsTab(
      * @author Griefed
      */
     fun checkAll() {
-        if (allTabs.any { (it as ConfigEditor).hasUnsavedChanges() }) {
-            title.showWarningIcon()
-        } else {
-            title.hideWarningIcon()
-        }
         timer.restart()
     }
 

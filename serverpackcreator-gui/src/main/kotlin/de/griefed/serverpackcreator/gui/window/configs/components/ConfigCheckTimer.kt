@@ -38,9 +38,9 @@ class ConfigCheckTimer(delay: Int, guiProps: GuiProps, tabbedConfigsTab: TabbedC
     ActionListener {
         GlobalScope.launch(guiProps.configDispatcher, CoroutineStart.UNDISPATCHED) {
             var errorsEncountered = false
-            tabbedConfigsTab.allTabs.parallelStream().forEach {
+            tabbedConfigsTab.allTabs.parallelStream().forEach { component ->
                 val errors = mutableListOf<String>()
-                val editor = it as ConfigEditor
+                val editor = component as ConfigEditor
                 runBlocking {
                     launch {
                         errors.addAll(editor.validateModpackDir())
@@ -94,6 +94,11 @@ class ConfigCheckTimer(delay: Int, guiProps: GuiProps, tabbedConfigsTab: TabbedC
                     editor.title.setAndShowErrorIcon("<html>${errors.joinToString("<br>")}</html>")
                     errorsEncountered = true
                 }
+            }
+            if (tabbedConfigsTab.allTabs.any { component -> (component as ConfigEditor).hasUnsavedChanges() }) {
+                tabbedConfigsTab.title.showWarningIcon()
+            } else {
+                tabbedConfigsTab.title.hideWarningIcon()
             }
             if (errorsEncountered) {
                 tabbedConfigsTab.title.setAndShowErrorIcon(Gui.createserverpack_gui_tabs_errors.toString())
