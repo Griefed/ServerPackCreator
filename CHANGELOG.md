@@ -1,3 +1,16 @@
+## [5.0.0-beta.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-beta.1...5.0.0-beta.2) (2023-10-10)
+
+
+### ⏩ Performance
+
+* Use dispatchers more appropriately ([3e56879](https://git.griefed.de/Griefed/ServerPackCreator/commit/3e56879daca92e3dae9b66e64501fa6183ad10d4))
+
+
+### 🛠 Fixes
+
+* Remove invalid entries from inclusions after modpack check ([2e606a0](https://git.griefed.de/Griefed/ServerPackCreator/commit/2e606a0f26105ffa28979fd15a7d0289bb2a4b52))
+* Run checks in correct order to reliably display icons ([247a739](https://git.griefed.de/Griefed/ServerPackCreator/commit/247a7394c3b8fb450bdeb3a8f1bb357c71458cd8))
+
 ## [5.0.0-beta.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.3.1...5.0.0-beta.1) (2023-10-09)
 
 
