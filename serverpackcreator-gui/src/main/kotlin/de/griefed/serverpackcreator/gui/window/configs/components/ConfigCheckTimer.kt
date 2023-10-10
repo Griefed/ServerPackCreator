@@ -23,10 +23,7 @@ import Gui
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.window.configs.ConfigEditor
 import de.griefed.serverpackcreator.gui.window.configs.TabbedConfigsTab
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.*
 import java.awt.event.ActionListener
 import java.io.File
 import javax.swing.Timer
@@ -39,11 +36,11 @@ import javax.swing.Timer
 @OptIn(DelicateCoroutinesApi::class)
 class ConfigCheckTimer(delay: Int, guiProps: GuiProps, tabbedConfigsTab: TabbedConfigsTab) : Timer(delay,
     ActionListener {
-        GlobalScope.launch(guiProps.configDispatcher) {
+        GlobalScope.launch(guiProps.configDispatcher, CoroutineStart.UNDISPATCHED) {
             var errorsEncountered = false
-            tabbedConfigsTab.allTabs.parallelStream().forEach {
+            tabbedConfigsTab.allTabs.parallelStream().forEach { component ->
                 val errors = mutableListOf<String>()
-                val editor = it as ConfigEditor
+                val editor = component as ConfigEditor
                 runBlocking {
                     launch {
                         errors.addAll(editor.validateModpackDir())
@@ -97,6 +94,11 @@ class ConfigCheckTimer(delay: Int, guiProps: GuiProps, tabbedConfigsTab: TabbedC
                     editor.title.setAndShowErrorIcon("<html>${errors.joinToString("<br>")}</html>")
                     errorsEncountered = true
                 }
+            }
+            if (tabbedConfigsTab.allTabs.any { component -> (component as ConfigEditor).hasUnsavedChanges() }) {
+                tabbedConfigsTab.title.showWarningIcon()
+            } else {
+                tabbedConfigsTab.title.hideWarningIcon()
             }
             if (errorsEncountered) {
                 tabbedConfigsTab.title.setAndShowErrorIcon(Gui.createserverpack_gui_tabs_errors.toString())

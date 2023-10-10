@@ -24,10 +24,8 @@ import de.griefed.serverpackcreator.api.utilities.common.regexReplace
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.window.configs.components.ResizeIndicatorScrollPane
 import de.griefed.serverpackcreator.gui.window.configs.components.SuggestionProvider
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
+import kotlinx.coroutines.swing.Swing
 import java.awt.Toolkit
 import java.awt.event.KeyEvent
 import java.awt.event.KeyListener
@@ -175,7 +173,7 @@ class ScrollTextArea(
      */
     @OptIn(DelicateCoroutinesApi::class)
     private fun requestFocus(component: JComponent) {
-        GlobalScope.launch {
+        GlobalScope.launch(Dispatchers.Swing, CoroutineStart.UNDISPATCHED) {
             delay(250)
             component.requestFocus()
             component.grabFocus()
@@ -198,7 +196,7 @@ class ScrollTextArea(
             ) == JOptionPane.OK_OPTION
         ) {
             textArea.isEnabled = false
-            GlobalScope.launch {
+            GlobalScope.launch(Dispatchers.Swing, CoroutineStart.UNDISPATCHED) {
                 var i = 0
                 while (i < text.length) {
                     val end = i + searchFor.text.length
@@ -234,7 +232,7 @@ class ScrollTextArea(
             ) == JOptionPane.OK_OPTION
         ) {
             textArea.isEnabled = false
-            GlobalScope.launch {
+            GlobalScope.launch(Dispatchers.Swing, CoroutineStart.UNDISPATCHED) {
                 val regex = searchFor.text.toRegex()
                 var i = 0
                 while (i < text.length) {
@@ -291,7 +289,7 @@ class ScrollTextArea(
             ) == JOptionPane.OK_OPTION
         ) {
             textArea.isEnabled = false
-            GlobalScope.launch {
+            GlobalScope.launch(Dispatchers.Swing) {
                 text = text.regexReplace(searchFor.text.toRegex(), replaceWith.text)
                 textArea.isEnabled = true
             }

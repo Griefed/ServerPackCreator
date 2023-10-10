@@ -21,9 +21,8 @@ package de.griefed.serverpackcreator.gui.window.configs.components
 
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.utilities.getScaledInstance
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
+import kotlinx.coroutines.swing.Swing
 import net.java.balloontip.BalloonTip
 import java.awt.Image
 import java.awt.event.MouseEvent
@@ -102,10 +101,10 @@ class IconPreview(private val guiProps: GuiProps) : JLabel(guiProps.serverIcon) 
      */
     @OptIn(DelicateCoroutinesApi::class)
     fun updateIcon(newIcon: ImageIcon, reset: Boolean = false) {
-        GlobalScope.launch {
+        GlobalScope.launch(guiProps.miscDispatcher, CoroutineStart.UNDISPATCHED) {
             icon = scaled(newIcon, 32, 32)
         }
-        GlobalScope.launch {
+        GlobalScope.launch(guiProps.miscDispatcher, CoroutineStart.UNDISPATCHED) {
             bigPreview.icon = scaled(newIcon)
         }
         if (reset) {

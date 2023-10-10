@@ -32,9 +32,8 @@ import de.griefed.serverpackcreator.gui.window.configs.components.*
 import de.griefed.serverpackcreator.gui.window.configs.components.advanced.AdvancedSettingsPanel
 import de.griefed.serverpackcreator.gui.window.configs.components.advanced.ScriptKVPairs
 import de.griefed.serverpackcreator.gui.window.configs.components.inclusions.InclusionsEditor
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
+import kotlinx.coroutines.swing.Swing
 import net.miginfocom.swing.MigLayout
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.awt.Dimension
@@ -348,6 +347,7 @@ class ConfigEditor(
      */
     override fun setInclusions(entries: MutableList<InclusionSpecification>) {
         inclusionsSetting.setServerFiles(entries)
+
     }
 
     /**
@@ -771,7 +771,7 @@ class ConfigEditor(
      */
     @OptIn(DelicateCoroutinesApi::class)
     fun loadConfiguration(packConfig: PackConfig, confFile: File) {
-        GlobalScope.launch(guiProps.configDispatcher) {
+        GlobalScope.launch(guiProps.configDispatcher, CoroutineStart.UNDISPATCHED) {
             try {
                 setModpackDirectory(packConfig.modpackDir)
                 if (packConfig.clientMods.isEmpty()) {
@@ -1098,7 +1098,7 @@ class ConfigEditor(
      */
     @OptIn(DelicateCoroutinesApi::class)
     fun updateGuiFromSelectedModpack() {
-        GlobalScope.launch(guiProps.configDispatcher) {
+        GlobalScope.launch(Dispatchers.Swing, CoroutineStart.UNDISPATCHED) {
             val modpack = File(getModpackDirectory()).absoluteFile
             if (modpack.isDirectory) {
                 try {
@@ -1116,6 +1116,7 @@ class ConfigEditor(
                             }
                         }
                     }
+                    inclusions.removeIf { !File(modpack,it.source).exists() && !File(it.source).exists() }
                     if (packConfig.minecraftVersion.isNotBlank()) {
                         setMinecraftVersion(packConfig.minecraftVersion)
                         updateMessage.append(Gui.createserverpack_gui_modpack_scan_minecraft(packConfig.minecraftVersion))
@@ -1138,7 +1139,7 @@ class ConfigEditor(
                     }
                     if (inclusions.isNotEmpty()) {
                         setInclusions(ArrayList(inclusions))
-
+                        delay(100)
                         updateMessage.append(
                             Gui.createserverpack_gui_modpack_scan_directories(
                                 inclusions.joinToString(", ") { inclusion -> inclusion.source }
@@ -1402,7 +1403,7 @@ class ConfigEditor(
      */
     @OptIn(DelicateCoroutinesApi::class)
     fun stepByStepGuide() {
-        GlobalScope.launch(guiProps.configDispatcher) {
+        GlobalScope.launch(Dispatchers.Swing) {
             Thread.sleep(500)
             modpackGuide.isVisible = false
             inclusionsGuide.isVisible = false

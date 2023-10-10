@@ -22,10 +22,7 @@ package de.griefed.serverpackcreator.gui.window.settings.components
 import Gui
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.window.settings.SettingsEditorsTab
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.*
 import java.awt.event.ActionListener
 import javax.swing.Timer
 
@@ -41,7 +38,7 @@ class SettingsCheckTimer(
     guiProps: GuiProps
 ) : Timer(delay,
     ActionListener {
-        GlobalScope.launch(guiProps.configDispatcher) {
+        GlobalScope.launch(guiProps.configDispatcher, CoroutineStart.UNDISPATCHED) {
             val errors = mutableListOf<String>()
             runBlocking {
                 launch {

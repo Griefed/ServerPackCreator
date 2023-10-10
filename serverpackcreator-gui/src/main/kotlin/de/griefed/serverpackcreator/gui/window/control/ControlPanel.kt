@@ -29,6 +29,7 @@ import de.griefed.serverpackcreator.gui.window.configs.TabbedConfigsTab
 import de.griefed.serverpackcreator.gui.window.control.components.GenerationButton
 import de.griefed.serverpackcreator.gui.window.control.components.LarsonScanner
 import de.griefed.serverpackcreator.gui.window.control.components.ServerPacksButton
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -80,7 +81,7 @@ class ControlPanel(
      */
     @OptIn(DelicateCoroutinesApi::class)
     fun generate() {
-        GlobalScope.launch(guiProps.generationDispatcher) {
+        GlobalScope.launch(guiProps.generationDispatcher, CoroutineStart.UNDISPATCHED) {
             launchGeneration()
             readyForGeneration()
         }

@@ -21,10 +21,8 @@ package de.griefed.serverpackcreator.gui.window.configs.components.inclusions
 
 import Gui
 import de.griefed.serverpackcreator.gui.GuiProps
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
+import kotlinx.coroutines.swing.Swing
 import java.awt.event.KeyEvent
 import java.awt.event.KeyListener
 import javax.swing.*
@@ -100,7 +98,7 @@ class InclusionTip(
      */
     @OptIn(DelicateCoroutinesApi::class)
     private fun requestFocus(component: JComponent) {
-        GlobalScope.launch {
+        GlobalScope.launch(Dispatchers.Swing, CoroutineStart.UNDISPATCHED) {
             delay(250)
             component.requestFocus()
             component.grabFocus()
@@ -122,7 +120,7 @@ class InclusionTip(
                 guiProps.inspectMediumIcon
             ) == JOptionPane.OK_OPTION
         ) {
-            GlobalScope.launch {
+            GlobalScope.launch(Dispatchers.Swing, CoroutineStart.UNDISPATCHED) {
                 var i = 0
                 while (i < textPane.text.length) {
                     val end = i + searchFor.text.length
@@ -158,7 +156,7 @@ class InclusionTip(
             ) == JOptionPane.OK_OPTION
         ) {
             textPane.isEnabled = false
-            GlobalScope.launch {
+            GlobalScope.launch(Dispatchers.Swing, CoroutineStart.UNDISPATCHED) {
                 val regex = searchFor.text.toRegex()
                 var i = 0
                 while (i < textPane.text.length) {
