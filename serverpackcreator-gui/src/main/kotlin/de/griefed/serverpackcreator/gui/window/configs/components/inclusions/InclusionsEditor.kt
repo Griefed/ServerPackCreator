@@ -25,9 +25,8 @@ import de.griefed.serverpackcreator.api.InclusionSpecification
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.components.*
 import de.griefed.serverpackcreator.gui.window.configs.ConfigEditor
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
+import kotlinx.coroutines.swing.Swing
 import net.miginfocom.swing.MigLayout
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.awt.BorderLayout
@@ -159,6 +158,7 @@ class InclusionsEditor(
 
     private val listModelDataAdapter = object : ListDataListener {
         override fun intervalAdded(e: ListDataEvent?) {
+
             checkSize()
         }
 
@@ -228,6 +228,9 @@ class InclusionsEditor(
     }
 
     private fun emtpySelection() {
+        if (list.model.size > 0 || list.valueIsAdjusting) {
+            return
+        }
         list.clearSelection()
         tip.text = Gui.createserverpack_gui_inclusions_editor_tip_default.toString()
         source.isEditable = false
@@ -246,6 +249,7 @@ class InclusionsEditor(
     @OptIn(DelicateCoroutinesApi::class)
     private fun updateTip() {
         GlobalScope.launch(guiProps.miscDispatcher) {
+            tip.isEnabled = false
             try {
                 if (source.text.isBlank()) {
                     tip.text = ""
@@ -276,13 +280,13 @@ class InclusionsEditor(
                     ) + "\n"
                 }
                 tip.text = tipContent
-                //tip.grabFocus()
                 try {
                     tip.updateUI()
                 } catch (_: NullPointerException) {}
             } catch (ex: Exception) {
                 log.error("Couldn't acquire files to include. ", ex)
             }
+            tip.isEnabled = true
         }
     }
 
@@ -433,6 +437,7 @@ class InclusionsEditor(
         inclusionModel.clear()
         inclusionModel.addAll(entries)
         list.updateUI()
+        listScroller.updateUI()
         configEditor.validateInputFields()
     }
 

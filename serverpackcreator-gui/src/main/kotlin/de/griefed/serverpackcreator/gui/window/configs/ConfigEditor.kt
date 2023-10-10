@@ -347,6 +347,7 @@ class ConfigEditor(
      */
     override fun setInclusions(entries: MutableList<InclusionSpecification>) {
         inclusionsSetting.setServerFiles(entries)
+
     }
 
     /**
@@ -1115,6 +1116,7 @@ class ConfigEditor(
                             }
                         }
                     }
+                    inclusions.removeIf { !File(modpack,it.source).exists() && !File(it.source).exists() }
                     if (packConfig.minecraftVersion.isNotBlank()) {
                         setMinecraftVersion(packConfig.minecraftVersion)
                         updateMessage.append(Gui.createserverpack_gui_modpack_scan_minecraft(packConfig.minecraftVersion))
@@ -1137,7 +1139,7 @@ class ConfigEditor(
                     }
                     if (inclusions.isNotEmpty()) {
                         setInclusions(ArrayList(inclusions))
-
+                        delay(100)
                         updateMessage.append(
                             Gui.createserverpack_gui_modpack_scan_directories(
                                 inclusions.joinToString(", ") { inclusion -> inclusion.source }
