@@ -245,7 +245,7 @@ class InclusionsEditor(
      */
     @OptIn(DelicateCoroutinesApi::class)
     private fun updateTip() {
-        GlobalScope.launch(guiProps.fileBrowserDispatcher) {
+        GlobalScope.launch(guiProps.miscDispatcher) {
             try {
                 if (source.text.isBlank()) {
                     tip.text = ""

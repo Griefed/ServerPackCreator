@@ -31,10 +31,7 @@ import de.griefed.serverpackcreator.gui.window.MainFrame
 import de.griefed.serverpackcreator.gui.window.configs.components.ComponentResizer
 import de.griefed.serverpackcreator.gui.window.configs.components.ConfigCheckTimer
 import de.griefed.serverpackcreator.gui.window.menu.file.ConfigChooser
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
 import org.apache.commons.io.monitor.FileAlterationListener
 import org.apache.commons.io.monitor.FileAlterationMonitor
@@ -77,7 +74,7 @@ class TabbedConfigsTab(
         iconsDirectoryWatcher()
         propertiesDirectoryWatcher()
         tabs.addChangeListener {
-            GlobalScope.launch(guiProps.configDispatcher) {
+            GlobalScope.launch(guiProps.configDispatcher, CoroutineStart.UNDISPATCHED) {
                 if (tabs.tabCount != 0) {
                     for (tab in 0 until tabs.tabCount) {
                         (tabs.getComponentAt(tab) as ConfigEditor).title.closeButton.isVisible = false
@@ -214,7 +211,7 @@ class TabbedConfigsTab(
         if (configFile.isFile) {
             tab.loadConfiguration(PackConfig(apiWrapper.utilities!!, configFile), configFile)
         } else {
-            GlobalScope.launch(Dispatchers.Swing) {
+            GlobalScope.launch(Dispatchers.Swing, CoroutineStart.UNDISPATCHED) {
                 JOptionPane.showMessageDialog(
                     panel,
                     Gui.createserverpack_gui_tabs_notfound_message(configFile.absoluteFile),

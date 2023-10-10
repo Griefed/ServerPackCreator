@@ -21,10 +21,7 @@ package de.griefed.serverpackcreator.gui.tips
 
 import Gui
 import de.griefed.serverpackcreator.gui.GuiProps
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
 import tokyo.northside.swing.TipOfTheDay
 import tokyo.northside.swing.TipOfTheDay.ShowOnStartupChoice
@@ -72,7 +69,7 @@ class TipOfTheDayManager(private val mainFrame: JFrame, private val guiProps: Gu
      */
     @OptIn(DelicateCoroutinesApi::class)
     fun showTipOfTheDay() {
-        GlobalScope.launch(Dispatchers.Swing) {
+        GlobalScope.launch(Dispatchers.Swing, CoroutineStart.UNDISPATCHED) {
             var random = (0..<tipOfTheDayModel.tipCount).random()
             if (guiProps.viewedTips.size == tipOfTheDayModel.tipCount) {
                 random = 0

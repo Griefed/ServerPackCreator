@@ -387,7 +387,7 @@ class GuiProps(private val apiProperties: ApiProperties) {
     val propertiesRegex = ".*\\.([Pp][Rr][Oo][Pp][Ee][Rr][Tt][Ii][Ee][Ss])".toRegex()
     val defaultScriptKVSetting = hashMapOf("SPC_JAVA_SPC" to "java")
     val configDispatcher = Executors.newFixedThreadPool(5).asCoroutineDispatcher()
-    val fileBrowserDispatcher = Executors.newFixedThreadPool(5).asCoroutineDispatcher()
+    val miscDispatcher = Executors.newFixedThreadPool(5).asCoroutineDispatcher()
     val generationDispatcher = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
     var theme: String
         get() {
