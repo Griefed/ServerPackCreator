@@ -27,6 +27,7 @@ package de.griefed.serverpackcreator.gui.window.control.components
 import java.awt.*
 import javax.swing.JComponent
 import javax.swing.JPanel
+import javax.swing.Timer
 import kotlin.math.floor
 import kotlin.math.roundToInt
 
@@ -53,7 +54,7 @@ import kotlin.math.roundToInt
  */
 @Suppress("unused")
 class LarsonScanner : JPanel {
-    private val thread: Thread
+    //private val thread: Thread
     private val eye: Eye
 
     /**
@@ -77,13 +78,14 @@ class LarsonScanner : JPanel {
      * @author Griefed
      */
     constructor() : super() {
-        isDoubleBuffered = true
+        isDoubleBuffered = false
         layout = BorderLayout()
         background = DEFAULT_BACKGROUND_COLOUR
         eye = Eye()
         add(eye, BorderLayout.CENTER)
-        thread = Thread(eye, "animation")
-        thread.start()
+        eye.run()
+        /*thread = Thread(eye, "animation")
+        thread.start()*/
     }
 
     /**
@@ -99,8 +101,9 @@ class LarsonScanner : JPanel {
         background = DEFAULT_BACKGROUND_COLOUR
         eye = Eye(updateInterval)
         add(eye, BorderLayout.CENTER)
-        thread = Thread(eye, "LarsonScanner Eye")
-        thread.start()
+        eye.run()
+        /*thread = Thread(eye, "animation")
+        thread.start()*/
     }
 
     /**
@@ -118,8 +121,9 @@ class LarsonScanner : JPanel {
         background = backgroundColor
         eye = Eye(interval, backgroundColor)
         add(eye, BorderLayout.CENTER)
-        thread = Thread(eye, "LarsonScanner Eye")
-        thread.start()
+        eye.run()
+        /*thread = Thread(eye, "animation")
+        thread.start()*/
     }
 
     /**
@@ -138,8 +142,9 @@ class LarsonScanner : JPanel {
         background = backgroundColor
         eye = Eye(interval, backgroundColor, eyeColor)
         add(eye, BorderLayout.CENTER)
-        thread = Thread(eye, "LarsonScanner Eye")
-        thread.start()
+        eye.run()
+        /*thread = Thread(eye, "animation")
+        thread.start()*/
     }
 
     /**
@@ -1190,7 +1195,7 @@ class LarsonScanner : JPanel {
      *
      * @author Griefed
      */
-    private inner class Eye : JComponent, Runnable {
+    private inner class Eye : JComponent /*, Runnable */ {
         private val renderingHints = RenderingHints(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_SPEED)
         val fractions = floatArrayOf(0.4f, 1.0f)
 
@@ -1292,6 +1297,8 @@ class LarsonScanner : JPanel {
             setRenderingQualityLow()
         }
 
+        private lateinit var timer: Timer
+
         /**
          * Animate the eye! This method gets called after the thread is created in the constructor of
          * the parent [LarsonScanner] and started from there.
@@ -1303,8 +1310,17 @@ class LarsonScanner : JPanel {
          *
          * @author Griefed
          */
-        override fun run() {
-            while (true) {
+        /*override*/ fun run() {
+            timer = Timer(40) {
+                if (this.isRunning) {
+                    eye.updatePosition()
+                    eye.repaint()
+                }
+            }
+            timer.isRepeats = true
+            timer.isCoalesce = true
+            timer.start()
+            /*while (true) {
                 try {
                     //Thread.sleep(eye.interval.toLong())
                     if (this.isRunning) {
@@ -1313,7 +1329,7 @@ class LarsonScanner : JPanel {
                     }
                 } catch (ignored: InterruptedException) {
                 }
-            }
+            }*/
         }
 
         /**
@@ -1361,8 +1377,8 @@ class LarsonScanner : JPanel {
          * @param g the `Graphics` object to protect
          * @author Griefed
          */
-        override fun paintComponent(g: Graphics) {
-            super.paintComponent(g)
+        override fun paint(g: Graphics) {
+            super.paint(g)
             updateValues()
             val g2d = g as Graphics2D
             val fillHeight = height.roundToInt() + 10
