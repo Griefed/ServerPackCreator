@@ -29,10 +29,7 @@ import de.griefed.serverpackcreator.gui.window.configs.TabbedConfigsTab
 import de.griefed.serverpackcreator.gui.window.control.components.GenerationButton
 import de.griefed.serverpackcreator.gui.window.control.components.LarsonScanner
 import de.griefed.serverpackcreator.gui.window.control.components.ServerPacksButton
-import kotlinx.coroutines.CoroutineStart
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import net.miginfocom.swing.MigLayout
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.awt.Desktop
@@ -79,9 +76,9 @@ class ControlPanel(
     /**
      * @author Griefed
      */
-    @OptIn(DelicateCoroutinesApi::class)
+    @OptIn(DelicateCoroutinesApi::class, ExperimentalCoroutinesApi::class)
     fun generate() {
-        GlobalScope.launch(guiProps.generationDispatcher, CoroutineStart.UNDISPATCHED) {
+        GlobalScope.launch(guiProps.generationDispatcher, CoroutineStart.ATOMIC) {
             launchGeneration()
             readyForGeneration()
         }

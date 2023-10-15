@@ -769,9 +769,9 @@ class ConfigEditor(
      *
      * @author Griefed
      */
-    @OptIn(DelicateCoroutinesApi::class)
+    @OptIn(DelicateCoroutinesApi::class, ExperimentalCoroutinesApi::class)
     fun loadConfiguration(packConfig: PackConfig, confFile: File) {
-        GlobalScope.launch(guiProps.configDispatcher, CoroutineStart.UNDISPATCHED) {
+        GlobalScope.launch(guiProps.configDispatcher, CoroutineStart.ATOMIC) {
             try {
                 setModpackDirectory(packConfig.modpackDir)
                 if (packConfig.clientMods.isEmpty()) {

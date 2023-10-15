@@ -33,11 +33,9 @@ import de.griefed.serverpackcreator.gui.themes.ThemeManager
 import de.griefed.serverpackcreator.gui.window.MainFrame
 import de.griefed.serverpackcreator.updater.MigrationManager
 import de.griefed.serverpackcreator.updater.UpdateChecker
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
+import java.awt.EventQueue
 import javax.swing.JOptionPane
 
 /**
@@ -57,7 +55,8 @@ class MainWindow(
     private val themeManager = ThemeManager(apiWrapper, guiProps)
 
     init {
-        GlobalScope.launch(Dispatchers.Swing) {
+        EventQueue.invokeLater {
+
             if (apiWrapper.apiProperties.preRelease || apiWrapper.apiProperties.devBuild) {
                 FlatInspector.install("ctrl shift alt X")
                 FlatUIDefaultsInspector.install("ctrl shift alt Y")
@@ -86,7 +85,7 @@ class MainWindow(
                 main.show()
             }
             if (apiWrapper.apiProperties.firstRun && migrationManager.migrationMessages.isEmpty()) {
-                GlobalScope.launch(Dispatchers.Swing) {
+                GlobalScope.launch(Dispatchers.Swing, CoroutineStart.UNDISPATCHED) {
                     if (JOptionPane.showConfirmDialog(
                             main.frame,
                             Gui.firstrun_message.toString(),
