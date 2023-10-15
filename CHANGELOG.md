@@ -1,3 +1,22 @@
+## [5.0.0-beta.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-beta.2...5.0.0-beta.3) (2023-10-15)
+
+
+### ⏩ Performance
+
+* Improve LarsonScanner performance ([5ed7c0d](https://git.griefed.de/Griefed/ServerPackCreator/commit/5ed7c0d9f31654297dd9ca30fc7d673c9228fb6a))
+
+
+### 💎 Improvements
+
+* Additional hints at required Java versions ([c1813d0](https://git.griefed.de/Griefed/ServerPackCreator/commit/c1813d092197c90aeb60d4c19485f3cf6be3d925))
+* Hints at Java version, PowerShell tips ([62dab97](https://git.griefed.de/Griefed/ServerPackCreator/commit/62dab976b778362eef4e7a31ffaf48f5cf31bc13))
+* Include macOS hints for Java ([1b2c361](https://git.griefed.de/Griefed/ServerPackCreator/commit/1b2c36108247e1fca47829f79884d69d82179185))
+
+
+### 🛠 Fixes
+
+* Only open suggestion popup if focused ([aa8cd6e](https://git.griefed.de/Griefed/ServerPackCreator/commit/aa8cd6eba979b3c9b7be0326b78b8c4434b8749a))
+
 ## [5.0.0-beta.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-beta.1...5.0.0-beta.2) (2023-10-10)
 
 
