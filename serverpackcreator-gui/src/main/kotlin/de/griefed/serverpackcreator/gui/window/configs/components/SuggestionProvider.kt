@@ -21,6 +21,11 @@ package de.griefed.serverpackcreator.gui.window.configs.components
 
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.components.DocumentChangeListener
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.swing.Swing
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.awt.Point
 import java.awt.event.KeyAdapter
@@ -100,12 +105,16 @@ class SuggestionProvider(
     /**
      * @author Griefed
      */
+    @OptIn(DelicateCoroutinesApi::class)
     private val documentListener = object : DocumentChangeListener {
         override fun update(e: DocumentEvent) {
             if (disableTextEvent) {
                 return
             }
-            SwingUtilities.invokeLater {
+            if (!sourceComponent.isFocusOwner) {
+                return
+            }
+            GlobalScope.launch(Dispatchers.Swing) {
                 val suggestions = getSuggestions(sourceComponent)
                 if (suggestions.isNotEmpty()) {
                     showPopup(suggestions)
@@ -213,11 +222,12 @@ class SuggestionProvider(
      */
     private fun truncatedSuggestions(text: String): List<String> {
         val entries = allSuggestions()
-        val truncated = entries.filter { entry -> entry.startsWith(text,ignoreCase = true) }
+        val truncated = entries.filter { entry -> entry.startsWith(text, ignoreCase = true) }
         return if (truncated.size == 1 && truncated[0] == text) {
             listOf()
         } else {
-            truncated.stream().limit(guiProps.getGuiProperty("autocomplete.limit")?.toLong()?: 10).collect(Collectors.toList())
+            truncated.stream().limit(guiProps.getGuiProperty("autocomplete.limit")?.toLong() ?: 10)
+                .collect(Collectors.toList())
         }
     }
 
