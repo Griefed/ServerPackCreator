@@ -8,11 +8,19 @@
 
 # Depending on the Minecraft version you will require a different Java version to run the server.
 #   1.16.5 and older requires Java 8 (Java 11 will run better and work with 99% of mods, give it a try)
-#     You may acquire a Java 8 JRE here: https://adoptium.net/temurin/releases/?variant=openjdk8&version=8&package=jre&arch=x64&os=linux
-#     You may acquire a java 11 JRE here: https://adoptium.net/temurin/releases/?variant=openjdk11&version=11&package=jre&arch=x64&os=linux
+#     Linux:
+#       You may acquire a Java 8 JRE here: https://adoptium.net/temurin/releases/?variant=openjdk8&version=8&package=jre&arch=x64&os=linux
+#       You may acquire a java 11 JRE here: https://adoptium.net/temurin/releases/?variant=openjdk11&version=11&package=jre&arch=x64&os=linux
+#     macOS:
+#       You may acquire a Java 8 JRE here: https://adoptium.net/temurin/releases/?variant=openjdk8&version=8&package=jre&arch=x64&os=mac
+#       You may acquire a java 11 JRE here: https://adoptium.net/temurin/releases/?variant=openjdk11&version=11&package=jre&arch=x64&os=mac
 #   1.18.2 and newer requires Java 17 (Java 18 will run better and work with 99% of mods, give it a try)
-#     You may acquire a Java 17 JRE here: https://adoptium.net/temurin/releases/?variant=openjdk17&version=17&package=jre&arch=x64&os=linux
-#     You may acquire a Java 18 JRE here: https://adoptium.net/temurin/releases/?variant=openjdk18&version=18&package=jre&arch=x64&os=linux
+#     Linux:
+#       You may acquire a Java 17 JRE here: https://adoptium.net/temurin/releases/?variant=openjdk17&version=17&package=jre&arch=x64&os=linux
+#       You may acquire a Java 18 JRE here: https://adoptium.net/temurin/releases/?variant=openjdk18&version=18&package=jre&arch=x64&os=linux
+#     macOS:
+#       You may acquire a Java 17 JRE here: https://adoptium.net/temurin/releases/?variant=openjdk17&version=17&package=jre&arch=x64&os=mac
+#       You may acquire a Java 18 JRE here: https://adoptium.net/temurin/releases/?variant=openjdk18&version=18&package=jre&arch=x64&os=mac
 
 if [[ "$(id -u)" == "0" ]]; then
   echo "Warning! Running with administrator-privileges is not recommended."
