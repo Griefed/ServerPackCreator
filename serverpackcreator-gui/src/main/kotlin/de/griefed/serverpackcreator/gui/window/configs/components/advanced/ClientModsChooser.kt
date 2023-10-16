@@ -20,9 +20,9 @@
 package de.griefed.serverpackcreator.gui.window.configs.components.advanced
 
 import Gui
+import de.griefed.serverpackcreator.gui.components.BaseFileChooser
 import java.awt.Dimension
 import java.io.File
-import javax.swing.JFileChooser
 import javax.swing.filechooser.FileNameExtensionFilter
 
 /**
@@ -30,10 +30,12 @@ import javax.swing.filechooser.FileNameExtensionFilter
  *
  * @author Griefed
  */
-class ClientModsChooser(current: File?, dimension: Dimension) : JFileChooser(current) {
+class ClientModsChooser(current: File?, dimension: Dimension) : BaseFileChooser() {
     constructor(dimension: Dimension) : this(null, dimension)
 
     init {
+        currentDirectory = current
+        isFileHidingEnabled = false
         dialogTitle = Gui.createserverpack_gui_buttonclientmods_title.toString()
         fileSelectionMode = FILES_ONLY
         fileFilter = FileNameExtensionFilter(

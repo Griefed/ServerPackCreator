@@ -20,15 +20,14 @@
 package de.griefed.serverpackcreator.gui.window.settings.components
 
 import de.griefed.serverpackcreator.api.ApiProperties
-import java.awt.Dimension
-import javax.swing.JFileChooser
+import de.griefed.serverpackcreator.gui.components.BaseFileChooser
 
 /**
  * Customized filechooser for picking ServerPackCreator script templates.
  *
  * @author Griefed
  */
-class ScriptTemplatesChooser(apiProperties: ApiProperties, title: String) : JFileChooser() {
+class ScriptTemplatesChooser(apiProperties: ApiProperties, title: String) : BaseFileChooser() {
     init {
         currentDirectory = apiProperties.serverFilesDirectory
         dialogTitle = title
@@ -36,6 +35,5 @@ class ScriptTemplatesChooser(apiProperties: ApiProperties, title: String) : JFil
         isAcceptAllFileFilterUsed = true
         isMultiSelectionEnabled = true
         dialogType = SAVE_DIALOG
-        preferredSize = Dimension(750, 450)
     }
 }

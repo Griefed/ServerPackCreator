@@ -20,16 +20,15 @@
 package de.griefed.serverpackcreator.gui.window.settings.components
 
 import de.griefed.serverpackcreator.api.ApiProperties
-import java.awt.Dimension
+import de.griefed.serverpackcreator.gui.components.BaseFileChooser
 import java.io.File
-import javax.swing.JFileChooser
 
 /**
  * Customized filechooser for picking the Java executable with which server installations will be performed.
  *
  * @author Griefed
  */
-class JavaChooser(apiProperties: ApiProperties, title: String) : JFileChooser() {
+class JavaChooser(apiProperties: ApiProperties, title: String) : BaseFileChooser() {
     init {
         currentDirectory = File(apiProperties.javaPath).absoluteFile.parentFile
         dialogTitle = title
@@ -37,6 +36,5 @@ class JavaChooser(apiProperties: ApiProperties, title: String) : JFileChooser() 
         isAcceptAllFileFilterUsed = true
         isMultiSelectionEnabled = false
         dialogType = SAVE_DIALOG
-        preferredSize = Dimension(750, 450)
     }
 }

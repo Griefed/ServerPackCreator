@@ -20,9 +20,9 @@
 package de.griefed.serverpackcreator.gui.window.configs.components.inclusions
 
 import Gui
+import de.griefed.serverpackcreator.gui.components.BaseFileChooser
 import java.awt.Dimension
 import java.io.File
-import javax.swing.JFileChooser
 
 /**
  * File-chooser allowing a user to select files to add to the inclusions. Every file selected ends up as a separate
@@ -30,10 +30,11 @@ import javax.swing.JFileChooser
  *
  * @author Griefed
  */
-class InclusionSourceChooser(current: File?, dimension: Dimension) : JFileChooser(current) {
+class InclusionSourceChooser(current: File?, dimension: Dimension) : BaseFileChooser() {
     constructor(dimension: Dimension) : this(null, dimension)
 
     init {
+        currentDirectory = current
         dialogTitle = Gui.createserverpack_gui_buttoncopydirs_title.toString()
         fileSelectionMode = FILES_AND_DIRECTORIES
         isAcceptAllFileFilterUsed = true

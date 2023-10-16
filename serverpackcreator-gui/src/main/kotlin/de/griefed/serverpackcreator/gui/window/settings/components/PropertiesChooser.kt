@@ -20,8 +20,7 @@
 package de.griefed.serverpackcreator.gui.window.settings.components
 
 import de.griefed.serverpackcreator.api.ApiProperties
-import java.awt.Dimension
-import javax.swing.JFileChooser
+import de.griefed.serverpackcreator.gui.components.BaseFileChooser
 import javax.swing.filechooser.FileNameExtensionFilter
 
 /**
@@ -29,7 +28,7 @@ import javax.swing.filechooser.FileNameExtensionFilter
  *
  * @author Griefed
  */
-class PropertiesChooser(apiProperties: ApiProperties, title: String) : JFileChooser() {
+class PropertiesChooser(apiProperties: ApiProperties, title: String) : BaseFileChooser() {
     init {
         currentDirectory = apiProperties.serverPackCreatorPropertiesFile.parentFile
         dialogTitle = title
@@ -38,6 +37,5 @@ class PropertiesChooser(apiProperties: ApiProperties, title: String) : JFileChoo
         addChoosableFileFilter(FileNameExtensionFilter("Properties","properties"))
         isMultiSelectionEnabled = false
         dialogType = OPEN_DIALOG
-        preferredSize = Dimension(750, 450)
     }
 }
