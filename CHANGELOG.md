@@ -1,3 +1,20 @@
+## [5.0.0-beta.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-beta.3...5.0.0-beta.4) (2023-10-16)
+
+
+### 📦 Other
+
+* Remove no longer needed config ([927fc71](https://git.griefed.de/Griefed/ServerPackCreator/commit/927fc7124b4c9547523bd0ab943f5a72197b51df))
+
+
+### 🦊 CI/CD
+
+* Remove Qodana workflow ([365d105](https://git.griefed.de/Griefed/ServerPackCreator/commit/365d105acf17775a0dde1daeb76613fa7b92a784))
+
+
+### 🛠 Fixes
+
+* Show hidden files in browsers ([7f08d30](https://git.griefed.de/Griefed/ServerPackCreator/commit/7f08d3001304a6fee1c455b537185eb908f57ca1))
+
 ## [5.0.0-beta.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-beta.2...5.0.0-beta.3) (2023-10-15)
 
 
