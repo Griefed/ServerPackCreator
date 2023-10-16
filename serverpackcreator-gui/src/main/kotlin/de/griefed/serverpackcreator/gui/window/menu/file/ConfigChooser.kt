@@ -21,8 +21,7 @@ package de.griefed.serverpackcreator.gui.window.menu.file
 
 import Gui
 import de.griefed.serverpackcreator.api.ApiProperties
-import java.awt.Dimension
-import javax.swing.JFileChooser
+import de.griefed.serverpackcreator.gui.components.BaseFileChooser
 import javax.swing.filechooser.FileNameExtensionFilter
 
 /**
@@ -30,7 +29,7 @@ import javax.swing.filechooser.FileNameExtensionFilter
  *
  * @author Griefed
  */
-class ConfigChooser(apiProperties: ApiProperties, title: String) : JFileChooser() {
+class ConfigChooser(apiProperties: ApiProperties, title: String) : BaseFileChooser() {
     init {
         currentDirectory = apiProperties.configsDirectory
         dialogTitle = title
@@ -38,6 +37,5 @@ class ConfigChooser(apiProperties: ApiProperties, title: String) : JFileChooser(
         fileFilter = FileNameExtensionFilter(Gui.createserverpack_gui_buttonloadconfig_filter.toString(), "conf")
         isAcceptAllFileFilterUsed = false
         isMultiSelectionEnabled = true
-        preferredSize = Dimension(750, 450)
     }
 }

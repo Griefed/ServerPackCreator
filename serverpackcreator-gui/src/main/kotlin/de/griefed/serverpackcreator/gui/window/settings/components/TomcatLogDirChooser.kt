@@ -20,15 +20,14 @@
 package de.griefed.serverpackcreator.gui.window.settings.components
 
 import de.griefed.serverpackcreator.api.ApiProperties
-import java.awt.Dimension
-import javax.swing.JFileChooser
+import de.griefed.serverpackcreator.gui.components.BaseFileChooser
 
 /**
  * Customized filechooser for picking ServerPackCreator Tomcat log-directory.
  *
  * @author Griefed
  */
-class TomcatLogDirChooser(apiProperties: ApiProperties, title: String) : JFileChooser() {
+class TomcatLogDirChooser(apiProperties: ApiProperties, title: String) : BaseFileChooser() {
     init {
         currentDirectory = apiProperties.tomcatLogsDirectory
         dialogTitle = title
@@ -36,7 +35,6 @@ class TomcatLogDirChooser(apiProperties: ApiProperties, title: String) : JFileCh
         isAcceptAllFileFilterUsed = false
         isMultiSelectionEnabled = false
         dialogType = SAVE_DIALOG
-        preferredSize = Dimension(750, 450)
         fileFilter = WritableDirectoryFilter()
     }
 }

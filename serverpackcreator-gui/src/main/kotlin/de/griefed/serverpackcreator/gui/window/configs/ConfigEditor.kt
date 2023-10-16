@@ -1352,6 +1352,7 @@ class ConfigEditor(
         } else {
             javaChooser.currentDirectory = apiWrapper.apiProperties.homeDirectory
         }
+        javaChooser.isFileHidingEnabled = false
         javaChooser.dialogTitle = Gui.createserverpack_gui_buttonjavapath_tile.toString()
         javaChooser.fileSelectionMode = JFileChooser.FILES_ONLY
         javaChooser.isAcceptAllFileFilterUsed = true
