@@ -86,6 +86,7 @@ class IconPreview(private val guiProps: GuiProps) : JLabel(guiProps.serverIcon) 
     /**
      * @author Griefed
      */
+    @OptIn(DelicateCoroutinesApi::class)
     fun updateIcon(newIcon: File) {
         if (lastLoadedIcon != null && lastLoadedIcon!!.absolutePath == newIcon.absolutePath) {
             return
@@ -93,7 +94,9 @@ class IconPreview(private val guiProps: GuiProps) : JLabel(guiProps.serverIcon) 
         icon = guiProps.loadingAnimation32
         bigPreview.icon = guiProps.loadingAnimation128
         lastLoadedIcon = newIcon.absoluteFile
-        updateIcon(ImageIcon(ImageIO.read(newIcon)))
+        GlobalScope.launch(guiProps.miscDispatcher, CoroutineStart.ATOMIC) {
+            updateIcon(ImageIcon(ImageIO.read(newIcon)))
+        }
     }
 
     /**
@@ -101,11 +104,13 @@ class IconPreview(private val guiProps: GuiProps) : JLabel(guiProps.serverIcon) 
      */
     @OptIn(DelicateCoroutinesApi::class)
     fun updateIcon(newIcon: ImageIcon, reset: Boolean = false) {
-        GlobalScope.launch(guiProps.miscDispatcher, CoroutineStart.UNDISPATCHED) {
-            icon = scaled(newIcon, 32, 32)
-        }
-        GlobalScope.launch(guiProps.miscDispatcher, CoroutineStart.UNDISPATCHED) {
-            bigPreview.icon = scaled(newIcon)
+        GlobalScope.launch(guiProps.miscDispatcher, CoroutineStart.ATOMIC) {
+            run {
+                icon = scaled(newIcon, 32, 32)
+            }
+            run {
+                bigPreview.icon = scaled(newIcon)
+            }
         }
         if (reset) {
             lastLoadedIcon = null
