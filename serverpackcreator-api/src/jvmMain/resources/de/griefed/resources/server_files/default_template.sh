@@ -106,6 +106,7 @@ setup_forge() {
     else
       echo "Renaming forge-${MINECRAFT_VERSION}-${MODLOADER_VERSION}.jar to forge.jar"
       mv forge-"${MINECRAFT_VERSION}"-"${MODLOADER_VERSION}".jar forge.jar
+      mv forge-"${MINECRAFT_VERSION}"-"${MODLOADER_VERSION}".jar forge.jar
     fi
 
     if [[ -s "${FORGE_JAR_LOCATION}" ]]; then
