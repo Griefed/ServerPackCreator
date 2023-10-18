@@ -1,3 +1,15 @@
+## [5.0.0-beta.5](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-beta.4...5.0.0-beta.5) (2023-10-18)
+
+
+### ⏩ Performance
+
+* Load images off thread to keep GUI working ([3fad135](https://git.griefed.de/Griefed/ServerPackCreator/commit/3fad135f276c7fcd83b70fd07cedd2c4e5db6ad4))
+
+
+### 🛠 Fixes
+
+* Prevent selected source being cleared ([c35fc24](https://git.griefed.de/Griefed/ServerPackCreator/commit/c35fc2479d4a356cbc6ffbfac6448992129c3afd))
+
 ## [5.0.0-beta.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-beta.3...5.0.0-beta.4) (2023-10-16)
 
 
