@@ -252,7 +252,11 @@ class InclusionsEditor(
             tip.isEnabled = false
             try {
                 if (source.text.isBlank()) {
-                    tip.text = ""
+                    tip.text = Gui.createserverpack_gui_inclusions_editor_tip_blank.toString()
+                    return@launch
+                }
+                if (!File(configEditor.getModpackDirectory(), source.text).exists() && !File(source.text).exists()) {
+                    tip.text = Gui.createserverpack_gui_inclusions_editor_tip_invalid.toString()
                     return@launch
                 }
                 if (selectedInclusion!!.isGlobalFilter()) {
@@ -310,18 +314,22 @@ class InclusionsEditor(
     /**
      * @author Griefed
      */
+    @OptIn(DelicateCoroutinesApi::class)
     fun sourceWasEdited() {
-        if (list.model.size > 0 && !list.isSelectionEmpty) {
-            if (File(configEditor.getModpackDirectory(), source.text).exists() || File(source.text).exists()) {
-                list.selectedValue.source = source.text
-                tipUpdateTimer.restart()
-                list.updateUI()
-                sourceIcon.info()
-            } else {
-                tipUpdateTimer.stop()
-                sourceIcon.error(Gui.createserverpack_gui_inclusions_editor_source_error(source.text))
+        GlobalScope.launch(Dispatchers.Swing) {
+            delay(200)
+            if (list.model.size > 0 && !list.isSelectionEmpty && !list.valueIsAdjusting) {
+                if (File(configEditor.getModpackDirectory(), source.text).exists() || File(source.text).exists()) {
+                    list.selectedValue.source = source.text
+                    tipUpdateTimer.restart()
+                    list.updateUI()
+                    sourceIcon.info()
+                } else {
+                    tipUpdateTimer.stop()
+                    sourceIcon.error(Gui.createserverpack_gui_inclusions_editor_source_error(source.text))
+                }
+                configEditor.validateInputFields()
             }
-            configEditor.validateInputFields()
         }
     }
 
@@ -392,6 +400,7 @@ class InclusionsEditor(
      */
     private fun selectionOccurred(event: ListSelectionEvent) {
         when {
+            list.valueIsAdjusting -> return
             event.valueIsAdjusting -> return
             list.selectedIndex == -1 || list.model.size <= 0 -> {
                 emtpySelection()
