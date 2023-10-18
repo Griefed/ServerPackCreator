@@ -1,3 +1,20 @@
+## [4.3.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.3.1...4.3.2) (2023-10-18)
+
+
+### 📦 Other
+
+* Add more clientside mods. Thanks to @ModernGamingWorld and [@nvb-uy](https://git.griefed.de/nvb-uy) ([17153fd](https://git.griefed.de/Griefed/ServerPackCreator/commit/17153fd4a147b56ab1f935f6348627b16f4646c8))
+
+
+### 🦊 CI/CD
+
+* Remove Qodana workflow ([d097f16](https://git.griefed.de/Griefed/ServerPackCreator/commit/d097f164be54f32e004715e4db44b70bd7f77769))
+
+
+### 🛠 Fixes
+
+* Move forge JAR with old universal-name ([203cb90](https://git.griefed.de/Griefed/ServerPackCreator/commit/203cb90836a30ab98facaa52b7347ddeeb903477))
+
 ## [4.3.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.3.0...4.3.1) (2023-09-16)
 
 
