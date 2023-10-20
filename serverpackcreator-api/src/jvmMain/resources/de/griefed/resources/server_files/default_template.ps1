@@ -210,6 +210,7 @@ Function global:SetupForge
         {
             "Renaming forge-${MinecraftVersion}-${ModLoaderVersion}.jar to forge.jar"
             Move-Item "forge-${MinecraftVersion}-${ModLoaderVersion}.jar" 'forge.jar'
+            Move-Item "forge-${MINECRAFT_VERSION}-${MODLOADER_VERSION}-universal.jar" 'forge.jar'
         }
 
         if ((Test-Path -Path "${ForgeJarLocation}" -PathType Leaf))

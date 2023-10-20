@@ -26,7 +26,6 @@ import de.griefed.serverpackcreator.gui.components.BalloonTipButton
 import de.griefed.serverpackcreator.gui.window.MainFrame
 import de.griefed.serverpackcreator.gui.window.settings.components.Editor
 import de.griefed.serverpackcreator.gui.window.settings.components.PropertiesChooser
-import dyorgio.runtime.run.`as`.root.RootExecutor
 import net.miginfocom.swing.MigLayout
 import java.io.File
 import java.text.SimpleDateFormat
@@ -51,7 +50,6 @@ class SettingsHandling(
     private val save =
         BalloonTipButton(Gui.settings_handle_save_label.toString(), guiProps.saveIcon, Gui.settings_handle_save_tooltip.toString(), guiProps) { save() }
     private val lastActionLabel = JLabel(Gui.settings_handle_idle.toString())
-    private val rootExecutor = RootExecutor()
 
     var lastAction: String
         set(value) {
@@ -121,29 +119,11 @@ class SettingsHandling(
      * @author Griefed
      */
     fun save() {
-        val previousHome = apiProperties.homeDirectory.absolutePath
-        var savedOverrides = true
         for (tab in settingsEditorsTab.allTabs) {
             (tab as Editor).saveSettings()
         }
         apiProperties.saveProperties(apiProperties.serverPackCreatorPropertiesFile)
-        if (!apiProperties.overrideProperties.parentFile.canWrite()) {
-            if (rootWarning() == JOptionPane.OK_OPTION) {
-                val overridePath = apiProperties.overrideProperties.absolutePath
-                val overrides = apiProperties.overridesAsString()
-                rootExecutor.run {
-                    File(overridePath).writeText(overrides)
-                }
-            } else {
-                showCancelDialog()
-                savedOverrides = false
-            }
-        } else {
-            apiProperties.saveOverrides()
-        }
-        if (previousHome != settingsEditorsTab.global.homeSetting.file.absolutePath && savedOverrides) {
-            showHomeDirDialog()
-        }
+        apiProperties.saveOverrides()
         lastAction = Gui.settings_handle_saved(currentTime())
         checkAll()
     }

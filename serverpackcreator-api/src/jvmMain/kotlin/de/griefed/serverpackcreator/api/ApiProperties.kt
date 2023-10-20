@@ -31,6 +31,7 @@ import java.io.IOException
 import java.io.InputStreamReader
 import java.net.URL
 import java.util.*
+import java.util.prefs.Preferences
 import java.util.stream.Collectors
 
 /**
@@ -57,7 +58,7 @@ actual class ApiProperties(
 ) {
     private val log = cachedLoggerOf(javaClass)
     private val internalProps = Properties()
-    private val overridesProps = Properties()
+    private val userPreferences = Preferences.userRoot().node("ServerPackCreator")
     private val serverPackCreatorProperties = "serverpackcreator.properties"
     private val jarInformation: JarInformation = JarInformation(javaClass, jarUtilities)
     private val jarFolderProperties: File =
@@ -132,7 +133,6 @@ actual class ApiProperties(
         "spring.artemis.embedded.data-directory"
     private val pSpringDatasourceUrl =
         "spring.datasource.url"
-    val overrideProperties: File = File(jarInformation.jarFolder.absoluteFile, "overrides.properties")
 
     val home: File = if (System.getProperty("user.home").isNotEmpty()) {
         File(System.getProperty("user.home"))
@@ -1268,7 +1268,7 @@ actual class ApiProperties(
         }
         set(value) {
             internalProps.setProperty(pHomeDirectory, value.absolutePath)
-            overridesProps.setProperty(pHomeDirectory, value.absolutePath)
+            userPreferences.put(pHomeDirectory, value.absolutePath)
             field = value.absoluteFile
             log.info("Home directory set to: $field")
             log.warn("Restart ServerPackCreator for this change to take full effect.")
@@ -1853,8 +1853,11 @@ actual class ApiProperties(
         loadFile(relativeDirFile, props)
         // Load the specified properties-file.
         loadFile(propertiesFile, props)
+
         // Load all values from the overrides-properties
-        loadFile(overrideProperties, props)
+        for (key in userPreferences.keys()) {
+            props[key] = userPreferences[key,null]
+        }
 
         internalProps.putAll(props)
 
@@ -2097,24 +2100,7 @@ actual class ApiProperties(
      * @author Griefed
      */
     fun saveOverrides() {
-        try {
-            overrideProperties.outputStream().use {
-                overridesProps.store(
-                    it,
-                    "Property A from this file will always override property A from any other loaded property. Handle with care!"
-                )
-            }
-        } catch (ex: IOException) {
-            log.error("Couldn't write properties-file.", ex)
-        }
-    }
-
-    /**
-     * @author Griefed
-     */
-    fun overridesAsString(): String {
-        return overridesProps.entries.stream().map { it.key.toString() + ":" + it.value.toString() }
-            .collect(Collectors.joining("\n"))
+        userPreferences.sync()
     }
 
     /**
