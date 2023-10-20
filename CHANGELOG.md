@@ -1,3 +1,11 @@
+## [5.0.0-beta.6](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-beta.5...5.0.0-beta.6) (2023-10-20)
+
+
+### 🛠 Fixes
+
+* Move forge JAR with old universal-name ([b15e0db](https://git.griefed.de/Griefed/ServerPackCreator/commit/b15e0db85a331918005d8a24d0c410a280a25330))
+* Save overrides in preferences rather than properties ([68bcbee](https://git.griefed.de/Griefed/ServerPackCreator/commit/68bcbeecf1e9c26afcd52e9d8d151d19f44db8aa))
+
 ## [5.0.0-beta.5](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-beta.4...5.0.0-beta.5) (2023-10-18)
 
 
