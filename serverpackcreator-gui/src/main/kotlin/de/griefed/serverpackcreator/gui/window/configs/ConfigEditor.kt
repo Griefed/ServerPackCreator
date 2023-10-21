@@ -1189,7 +1189,7 @@ class ConfigEditor(
             data.replace(
                 "SPC_JAVA_SPC", path
             )
-            advSetScriptKVPairsSetting.loadData(data)
+            setScriptVariables(data)
             log.info("Automatically adjusted script variable SPC_JAVA_SPC to $path")
         }
     }
