@@ -165,8 +165,10 @@ class TextIcon(
     ) {
         val g2 = g.create() as Graphics2D
         val toolkit = Toolkit.getDefaultToolkit()
-        val map = toolkit.getDesktopProperty("awt.font.desktophints") as Map<*, *>
-        g2.addRenderingHints(map)
+        if (toolkit.getDesktopProperty("awt.font.desktophints") != null) {
+            val map = toolkit.getDesktopProperty("awt.font.desktophints") as Map<*, *>
+            g2.addRenderingHints(map)
+        }
         g2.font = font!!
         g2.color = foreground
         val fm = g2.fontMetrics
