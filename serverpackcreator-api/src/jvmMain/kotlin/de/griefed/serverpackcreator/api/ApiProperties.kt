@@ -1814,11 +1814,12 @@ actual class ApiProperties(
 
     /**
      * Load properties using the default file path.
+     * Only call this method on an already initialized ApiProperties-object.
      *
      * @author Griefed
      */
     fun loadProperties(saveProps: Boolean = true) {
-        loadProperties(File(serverPackCreatorProperties), saveProps)
+        loadProperties(serverPackCreatorPropertiesFile, saveProps)
     }
 
     /**
@@ -1868,7 +1869,7 @@ actual class ApiProperties(
         }
         if (saveProps) {
             //Store properties in the configured SPC home-directory
-            saveProperties(File(homeDirectory, serverPackCreatorProperties).absoluteFile)
+            saveProperties(serverPackCreatorPropertiesFile)
         }
     }
 
