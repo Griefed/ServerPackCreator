@@ -1,3 +1,23 @@
+## [5.0.0-beta.7](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-beta.6...5.0.0-beta.7) (2023-10-21)
+
+
+### :scissors: Refactor
+
+* Call editor method instead of directly calling object ([bd4925a](https://git.griefed.de/Griefed/ServerPackCreator/commit/bd4925a7df175dd41a62724501ed478658c8c925))
+* Load props from SPC home when invoking loadProperties without file ([8d62fbf](https://git.griefed.de/Griefed/ServerPackCreator/commit/8d62fbf84b2842d54b91c08d7a0fcc45a16af960))
+* Set en_gb as default locale ([7ca7d79](https://git.griefed.de/Griefed/ServerPackCreator/commit/7ca7d798108b08c90ebe996db25b99abd36d919e))
+
+
+### 🧪 Tests
+
+* Clear userPrefs during testing ([dd9808f](https://git.griefed.de/Griefed/ServerPackCreator/commit/dd9808f62573a19a30f78428737e989d0facffff))
+
+
+### 🛠 Fixes
+
+* Load default value into table during initialization ([b0b5a03](https://git.griefed.de/Griefed/ServerPackCreator/commit/b0b5a032cf4240de439930f52d8e5cfeef59855e))
+* Prevent NPE if rendering hints aren't available ([7cfef75](https://git.griefed.de/Griefed/ServerPackCreator/commit/7cfef75856e63566ef2a2d122682226a87d61098))
+
 ## [5.0.0-beta.6](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-beta.5...5.0.0-beta.6) (2023-10-20)
 
 
