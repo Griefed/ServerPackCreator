@@ -32,6 +32,7 @@ import javax.swing.*
 import javax.swing.border.Border
 import javax.swing.table.*
 import javax.swing.text.JTextComponent
+import kotlin.collections.HashMap
 
 /**
  * Hey, Griefed here. This class is based on another masterpiece by the wonderful Rob Camick. It
@@ -92,7 +93,7 @@ class ScriptKVPairs(guiProps: GuiProps, configEditor: ConfigEditor) : JTable(
         }
         this.rowSorter = sorter
         scrollPanel = ResizeIndicatorScrollPane(guiProps, this)
-        clearData()
+        loadData(HashMap())
         model.addTableModelListener { configEditor.validateInputFields() }
     }
 

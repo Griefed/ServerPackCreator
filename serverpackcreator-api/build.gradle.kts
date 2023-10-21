@@ -1,3 +1,5 @@
+import java.util.prefs.Preferences
+
 plugins {
     id("serverpackcreator.kotlin-multiplatform-conventions")
     id("serverpackcreator.dokka-conventions")
@@ -105,6 +107,8 @@ tasks.register<Copy>("updateManifests") {
 
 tasks.jvmTest {
     dependsOn(tasks.getByName("fixMissingResources"))
+    Preferences.userRoot().node("ServerPackCreator").clear()
+    Preferences.userRoot().node("ServerPackCreator").sync()
 }
 
 tasks.build {
