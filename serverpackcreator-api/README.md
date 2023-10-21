@@ -56,7 +56,7 @@ val api = ApiWrapper.api()
 //File path to a serverpackcreator.properties file with custom configurations
 val propertiesFile = File("/path/to/a/custom/properties.file") 
 
-val language = "en_us"
+val language = "en_gb"
 
 //false if you don't want the API to run the much needed file and folder setups
 val runSetup = true

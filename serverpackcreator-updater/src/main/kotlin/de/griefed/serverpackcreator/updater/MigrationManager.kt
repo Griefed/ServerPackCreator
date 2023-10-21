@@ -486,7 +486,7 @@ class MigrationManager(
                 }
             }
 
-            if (apiProperties.language.language == "en_us") {
+            if (apiProperties.language.language.lowercase() == "en_us") {
                 val old = apiProperties.language.language.split("_")
                 apiProperties.changeLocale(Locale("en_GB"))
                 changes.add(Updates.migrationmanager_migration_fourpointzeropointzero_locale(old))

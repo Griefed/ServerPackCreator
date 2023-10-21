@@ -490,7 +490,7 @@ class ServerPackCreator(private val args: Array<String>) {
      */
     private fun changeLocale() {
         println("What locale would you like to use?")
-        println("(Locale format is en_us, de_de, uk_ua etc.)")
+        println("(Locale format is en_gb, de_de, uk_ua etc.)")
         println("Note: Changing the locale only affects the GUI. CLI always uses en_US.")
         val scanner = Scanner(System.`in`)
         val regex = "^[a-zA-Z]+_[a-zA-Z]+$".toRegex()
@@ -509,9 +509,9 @@ class ServerPackCreator(private val args: Array<String>) {
                     apiWrapper.apiProperties.i18n4kConfig.locale = Locale(userLocale)
                 } catch (e: RuntimeException) {
                     println(
-                        "Incorrect format. ServerPackCreator currently only supports locales in the format of en_us (Language, Country)."
+                        "Incorrect format. ServerPackCreator currently only supports locales in the format of en_GB (Language, Country)."
                     )
-                    userLocale = "en_us"
+                    userLocale = "en_GB"
                 }
             }
         } while (!userLocale.matches(regex))
