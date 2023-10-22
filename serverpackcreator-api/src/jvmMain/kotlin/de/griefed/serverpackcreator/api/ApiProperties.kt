@@ -1154,7 +1154,9 @@ actual class ApiProperties(
             field = if (checkJavaPath(prop)) {
                 prop
             } else {
-                acquireProperty(pJavaForServerInstall, acquireJavaPath())
+                val acquired = acquireJavaPath()
+                internalProps.setProperty(pJavaForServerInstall, acquired)
+                acquired
             }
             return field
         }
