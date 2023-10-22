@@ -11,44 +11,12 @@ profile:
 #Enable inspections
 #include:
 #  - name: <SomeEnabledInspectionId>
-include:
-  - name: CheckDependencyLicenses
 
 #Disable inspections
 #exclude:
 #  - name: <SomeDisabledInspectionId>
 #    paths:
 #      - <path/where/not/run/inspection>
-exclude:
-  - name: All
-    paths:
-      - .github
-      - .gradle
-      - .idea
-      - .jpb
-      - .runConfigurations
-      - build
-      - buildSrc
-      - gradle
-      - img
-      - licenses
-      - manifests
-      - qodana
-      - root
-      - serverpackcreator-api/build
-      - serverpackcreator-api/tests
-      - serverpackcreator-app/build
-      - serverpackcreator-app/tests
-      - serverpackcreator-cli/build
-      - serverpackcreator-cli/tests
-      - serverpackcreator-gui/build
-      - serverpackcreator-gui/tests
-      - serverpackcreator-updater/build
-      - serverpackcreator-updater/tests
-      - serverpackcreator-web-frontend
-      - serverpackcreator-web/build
-      - serverpackcreator-web/tests
-
 
 projectJDK: azul-17 #(Applied in CI/CD pipeline)
 
