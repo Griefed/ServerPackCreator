@@ -138,7 +138,7 @@ class GlobalSettings(
 
     val exclusionIcon = StatusIcon(guiProps, Gui.settings_global_exclusions_tooltip.toString())
     val exclusionLabel = ElementLabel(Gui.settings_global_exclusions_label.toString())
-    val exclusionSetting = ActionComboBox<ExclusionFilter>(DefaultComboBoxModel(ExclusionFilter.values()), actionListener)
+    val exclusionSetting = ActionComboBox<ExclusionFilter>(DefaultComboBoxModel(ExclusionFilter.entries.toTypedArray()), actionListener)
     val exclusionRevert = BalloonTipButton(null, guiProps.revertIcon, Gui.settings_revert.toString(), guiProps) { exclusionSetting.selectedItem = apiProperties.exclusionFilter }
     val exclusionReset = BalloonTipButton(null,guiProps.resetIcon,Gui.settings_reset.toString(),guiProps) { exclusionSetting.selectedItem = apiProperties.fallbackExclusionFilter }
 
