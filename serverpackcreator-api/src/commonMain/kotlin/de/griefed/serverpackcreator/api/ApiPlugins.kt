@@ -88,9 +88,7 @@ expect class ApiPlugins {
      *
      * @param packConfig The configuration model containing the server pack and plugin
      * configurations to check.
-     * @param encounteredErrors  A list of encountered errors to add to in case anything goes wrong.
-     * This list is displayed to the user after am unsuccessful server pack
-     * generation to help them figure out what went wrong.
+     * @param configCheck Collection of encountered errors, if any, for convenient result-checks.
      * @return `true` if any custom check detected an error with the configuration.
      * **Only** return `false` when not a **single** check
      * errored.

@@ -133,7 +133,7 @@ abstract class Configuration<F, P> {
      *
      * @param packConfig Instance of [PackConfig] with a server pack
      * configuration.
-     * @param encounteredErrors  A list of errors encountered during configuration checks.
+     * @param configCheck Collection of encountered errors, if any, for convenient result-checks.
      * @return `false` when no errors were encountered.
      * @author Griefed
      */
@@ -290,8 +290,7 @@ abstract class Configuration<F, P> {
      *
      * @param destination        The destination in which the manifests are.
      * @param packConfig The ConfigurationModel to update.
-     * @param encounteredErrors  A list of errors encountered during configuration checks, to be added
-     * to in case an error is encountered during manifest checks.
+     * @param configCheck Collection of encountered errors, if any, for convenient result-checks.
      * @return The name of the modpack currently being checked. `null` if the name could not be
      * acquired.
      * @author Griefed
@@ -500,7 +499,7 @@ abstract class Configuration<F, P> {
      * Check the passed directory for existence and whether it is a directory, rather than a file.
      *
      * @param modpackDir The modpack directory.
-     * @param encounteredErrors List to which all encountered errors are added to.
+     * @param configCheck Collection of encountered errors, if any, for convenient result-checks.
      * @return `true` if the directory exists.
      * @author Griefed
      */

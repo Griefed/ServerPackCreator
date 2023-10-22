@@ -55,8 +55,7 @@ class ConfigurationCheck : ConfigCheckExtension {
      * @param utilities           Instance of [Utilities] commonly used across
      * ServerPackCreator.
      * @param packConfig  The configuration to check.
-     * @param encounteredErrors   A list of encountered errors during any and all checks. The list is
-     * displayed to the user if it contains any entries.
+     * @param configCheck Collection of encountered errors, if any, for convenient result-checks.
      * @param pluginConfig         Configuration for this addon, conveniently provided by
      * ServerPackCreator.
      * @param packSpecificConfigs Modpack and server pack specific configurations for this addon,
