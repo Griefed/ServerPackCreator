@@ -61,9 +61,9 @@ open class TabTitle(guiProps: GuiProps) : JPanel(FlowLayout(FlowLayout.LEFT, 0, 
         warningIconLabel.toolTipText = Gui.configuration_title_warning.toString()
         errorIconLabel.isVisible = false
         warningIconLabel.isVisible = false
-        add(errorIconLabel)
-        add(warningIconLabel)
-        add(titleLabel)
+        this.add(errorIconLabel)
+        this.add(warningIconLabel)
+        this.add(titleLabel)
     }
 
 
