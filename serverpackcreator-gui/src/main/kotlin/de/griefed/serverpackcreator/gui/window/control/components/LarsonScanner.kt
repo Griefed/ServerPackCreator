@@ -54,7 +54,6 @@ import kotlin.math.roundToInt
  */
 @Suppress("unused")
 class LarsonScanner : JPanel {
-    //private val thread: Thread
     private val eye: Eye
 
     /**
@@ -84,8 +83,6 @@ class LarsonScanner : JPanel {
         eye = Eye()
         add(eye, BorderLayout.CENTER)
         eye.run()
-        /*thread = Thread(eye, "animation")
-        thread.start()*/
     }
 
     /**
@@ -102,8 +99,6 @@ class LarsonScanner : JPanel {
         eye = Eye(updateInterval)
         add(eye, BorderLayout.CENTER)
         eye.run()
-        /*thread = Thread(eye, "animation")
-        thread.start()*/
     }
 
     /**
@@ -122,8 +117,6 @@ class LarsonScanner : JPanel {
         eye = Eye(interval, backgroundColor)
         add(eye, BorderLayout.CENTER)
         eye.run()
-        /*thread = Thread(eye, "animation")
-        thread.start()*/
     }
 
     /**
@@ -143,8 +136,6 @@ class LarsonScanner : JPanel {
         eye = Eye(interval, backgroundColor, eyeColor)
         add(eye, BorderLayout.CENTER)
         eye.run()
-        /*thread = Thread(eye, "animation")
-        thread.start()*/
     }
 
     /**
@@ -1310,7 +1301,7 @@ class LarsonScanner : JPanel {
          *
          * @author Griefed
          */
-        /*override*/ fun run() {
+        fun run() {
             timer = Timer(40) {
                 if (this.isRunning) {
                     eye.updatePosition()
@@ -1320,16 +1311,6 @@ class LarsonScanner : JPanel {
             timer.isRepeats = true
             timer.isCoalesce = true
             timer.start()
-            /*while (true) {
-                try {
-                    //Thread.sleep(eye.interval.toLong())
-                    if (this.isRunning) {
-                        eye.updatePosition()
-                        eye.repaint()
-                    }
-                } catch (ignored: InterruptedException) {
-                }
-            }*/
         }
 
         /**
@@ -1641,7 +1622,7 @@ class LarsonScanner : JPanel {
          *  * **Calculate the width of a gap:**
          *
          *  * Divide the width of one element by 100
-         *  * multiply with the currently set gap-percentage. (Default `25.0f`
+         *  * multiply with the currently set gap-percentage. (Default `25.0f`)
          *
          *  * **Calculate the half of the total gap width, across all elements:**
          *

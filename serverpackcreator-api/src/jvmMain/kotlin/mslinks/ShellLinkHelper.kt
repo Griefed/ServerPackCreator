@@ -33,6 +33,7 @@ class ShellLinkHelper(var link: ShellLink) {
         ForceTypeFile
     }
 
+    @Suppress("RegExpSingleCharAlternation")
     private val backForwardSlashRegex = "^(\\\\|/)".toRegex()
     private val backSlash = "\\"
     private val backSlashChar = '\\'

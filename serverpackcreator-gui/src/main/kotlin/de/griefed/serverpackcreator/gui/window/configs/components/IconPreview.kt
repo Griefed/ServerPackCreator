@@ -22,7 +22,6 @@ package de.griefed.serverpackcreator.gui.window.configs.components
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.utilities.getScaledInstance
 import kotlinx.coroutines.*
-import kotlinx.coroutines.swing.Swing
 import net.java.balloontip.BalloonTip
 import java.awt.Image
 import java.awt.event.MouseEvent
@@ -86,7 +85,7 @@ class IconPreview(private val guiProps: GuiProps) : JLabel(guiProps.serverIcon) 
     /**
      * @author Griefed
      */
-    @OptIn(DelicateCoroutinesApi::class)
+    @OptIn(DelicateCoroutinesApi::class, ExperimentalCoroutinesApi::class)
     fun updateIcon(newIcon: File) {
         if (lastLoadedIcon != null && lastLoadedIcon!!.absolutePath == newIcon.absolutePath) {
             return
@@ -102,7 +101,7 @@ class IconPreview(private val guiProps: GuiProps) : JLabel(guiProps.serverIcon) 
     /**
      * @author Griefed
      */
-    @OptIn(DelicateCoroutinesApi::class)
+    @OptIn(DelicateCoroutinesApi::class, ExperimentalCoroutinesApi::class)
     fun updateIcon(newIcon: ImageIcon, reset: Boolean = false) {
         GlobalScope.launch(guiProps.miscDispatcher, CoroutineStart.ATOMIC) {
             run {

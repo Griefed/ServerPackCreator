@@ -48,12 +48,12 @@ class WebserviceSettings(
     private val cronDefinition = CronDefinitionBuilder.instanceDefinitionFor(CronType.SPRING)
     private val cronParser = CronParser(cronDefinition)
 
-    val artemisDataDirectoryIcon = StatusIcon(guiProps, Gui.settings_webservice_artemisdata_tooltip.toString())
-    val artemisDataDirectoryLabel = ElementLabel(Gui.settings_webservice_artemisdata_label.toString())
-    val artemisDataDirectorySetting = ScrollTextFileField(guiProps,apiProperties.artemisDataDirectory.absoluteFile, documentChangeListener)
-    val artemisDataDirectoryRevert = BalloonTipButton(null,guiProps.revertIcon,Gui.settings_revert.toString(),guiProps) { artemisDataDirectorySetting.file = apiProperties.artemisDataDirectory.absoluteFile }
-    val artemisDataDirectoryReset = BalloonTipButton(null,guiProps.resetIcon,Gui.settings_reset.toString(),guiProps) { artemisDataDirectorySetting.file = apiProperties.defaultArtemisDataDirectory().absoluteFile }
-    val artemisDataDirectoryChoose = BalloonTipButton(null,guiProps.folderIcon,Gui.settings_select_directory.toString(),guiProps) {
+    private val artemisDataDirectoryIcon = StatusIcon(guiProps, Gui.settings_webservice_artemisdata_tooltip.toString())
+    private val artemisDataDirectoryLabel = ElementLabel(Gui.settings_webservice_artemisdata_label.toString())
+    private val artemisDataDirectorySetting = ScrollTextFileField(guiProps,apiProperties.artemisDataDirectory.absoluteFile, documentChangeListener)
+    private val artemisDataDirectoryRevert = BalloonTipButton(null,guiProps.revertIcon,Gui.settings_revert.toString(),guiProps) { artemisDataDirectorySetting.file = apiProperties.artemisDataDirectory.absoluteFile }
+    private val artemisDataDirectoryReset = BalloonTipButton(null,guiProps.resetIcon,Gui.settings_reset.toString(),guiProps) { artemisDataDirectorySetting.file = apiProperties.defaultArtemisDataDirectory().absoluteFile }
+    private val artemisDataDirectoryChoose = BalloonTipButton(null,guiProps.folderIcon,Gui.settings_select_directory.toString(),guiProps) {
         val artemisChooser = ArtemisDataDirChooser(apiProperties,Gui.settings_webservice_artemisdata_chooser.toString())
         if (artemisChooser.showSaveDialog(mainFrame.frame) == JFileChooser.APPROVE_OPTION) {
             if (artemisChooser.selectedFile.absoluteFile.testFileWrite()) {
@@ -67,18 +67,18 @@ class WebserviceSettings(
         }
     }
 
-    val artemisQueueMaxDiskUsageIcon = StatusIcon(guiProps,Gui.settings_webservice_artemisusage_tooltip.toString())
-    val artemisQueueMaxDiskUsageLabel = ElementLabel(Gui.settings_webservice_artemisusage_label.toString())
-    val artemisQueueMaxDiskUsageSetting = ActionSlider(10,90,apiProperties.artemisQueueMaxDiskUsage, changeListener)
-    val artemisQueueMaxDiskUsageRevert = BalloonTipButton(null,guiProps.revertIcon,Gui.settings_revert.toString(),guiProps) { artemisQueueMaxDiskUsageSetting.value = apiProperties.artemisQueueMaxDiskUsage }
-    val artemisQueueMaxDiskUsageReset = BalloonTipButton(null,guiProps.resetIcon,Gui.settings_reset.toString(), guiProps) { artemisQueueMaxDiskUsageSetting.value = apiProperties.fallbackArtemisQueueMaxDiskUsage }
+    private val artemisQueueMaxDiskUsageIcon = StatusIcon(guiProps,Gui.settings_webservice_artemisusage_tooltip.toString())
+    private val artemisQueueMaxDiskUsageLabel = ElementLabel(Gui.settings_webservice_artemisusage_label.toString())
+    private val artemisQueueMaxDiskUsageSetting = ActionSlider(10,90,apiProperties.artemisQueueMaxDiskUsage, changeListener)
+    private val artemisQueueMaxDiskUsageRevert = BalloonTipButton(null,guiProps.revertIcon,Gui.settings_revert.toString(),guiProps) { artemisQueueMaxDiskUsageSetting.value = apiProperties.artemisQueueMaxDiskUsage }
+    private val artemisQueueMaxDiskUsageReset = BalloonTipButton(null,guiProps.resetIcon,Gui.settings_reset.toString(), guiProps) { artemisQueueMaxDiskUsageSetting.value = apiProperties.fallbackArtemisQueueMaxDiskUsage }
 
-    val databaseFileIcon = StatusIcon(guiProps,Gui.settings_webservice_database_tooltip.toString())
-    val databaseFileLabel = ElementLabel(Gui.settings_webservice_database_label.toString())
-    val databaseFileSetting = ScrollTextFileField(guiProps,apiProperties.serverPackCreatorDatabase.absoluteFile, documentChangeListener)
-    val databaseFileRevert = BalloonTipButton(null,guiProps.revertIcon,Gui.settings_revert.toString(),guiProps) { databaseFileSetting.file = apiProperties.serverPackCreatorDatabase.absoluteFile }
-    val databaseFileReset = BalloonTipButton(null,guiProps.resetIcon,Gui.settings_reset.toString(),guiProps) { databaseFileSetting.file = apiProperties.defaultWebserviceDatabase().absoluteFile }
-    val databaseFileChoose = BalloonTipButton(null,guiProps.folderIcon,Gui.settings_select_directory.toString(),guiProps) {
+    private val databaseFileIcon = StatusIcon(guiProps,Gui.settings_webservice_database_tooltip.toString())
+    private val databaseFileLabel = ElementLabel(Gui.settings_webservice_database_label.toString())
+    private val databaseFileSetting = ScrollTextFileField(guiProps,apiProperties.serverPackCreatorDatabase.absoluteFile, documentChangeListener)
+    private val databaseFileRevert = BalloonTipButton(null,guiProps.revertIcon,Gui.settings_revert.toString(),guiProps) { databaseFileSetting.file = apiProperties.serverPackCreatorDatabase.absoluteFile }
+    private val databaseFileReset = BalloonTipButton(null,guiProps.resetIcon,Gui.settings_reset.toString(),guiProps) { databaseFileSetting.file = apiProperties.defaultWebserviceDatabase().absoluteFile }
+    private val databaseFileChoose = BalloonTipButton(null,guiProps.folderIcon,Gui.settings_select_directory.toString(),guiProps) {
         val webserviceChooser = WebserviceDBDirChooser(apiProperties,Gui.settings_webservice_database_chooser.toString())
         if (webserviceChooser.showSaveDialog(mainFrame.frame) == JFileChooser.APPROVE_OPTION) {
             if (webserviceChooser.selectedFile.absoluteFile.testFileWrite()) {
@@ -92,18 +92,18 @@ class WebserviceSettings(
         }
     }
 
-    val cleanupScheduleIcon = StatusIcon(guiProps,Gui.settings_webservice_schedule_cleanup_tooltip.toString())
-    val cleanupScheduleLabel = ElementLabel(Gui.settings_webservice_schedule_cleanup_label.toString())
-    val cleanupScheduleSetting = ScrollTextField(guiProps,apiProperties.webserviceCleanupSchedule,Gui.settings_webservice_schedule_cleanup_label.toString(),documentChangeListener)
-    val cleanupRevert = BalloonTipButton(null,guiProps.revertIcon,Gui.settings_revert.toString(),guiProps) { cleanupScheduleSetting.text = apiProperties.webserviceCleanupSchedule }
-    val cleanupReset = BalloonTipButton(null,guiProps.resetIcon,Gui.settings_reset.toString(),guiProps) { cleanupScheduleSetting.text = apiProperties.fallbackCleanupSchedule }
+    private val cleanupScheduleIcon = StatusIcon(guiProps,Gui.settings_webservice_schedule_cleanup_tooltip.toString())
+    private val cleanupScheduleLabel = ElementLabel(Gui.settings_webservice_schedule_cleanup_label.toString())
+    private val cleanupScheduleSetting = ScrollTextField(guiProps,apiProperties.webserviceCleanupSchedule,Gui.settings_webservice_schedule_cleanup_label.toString(),documentChangeListener)
+    private val cleanupRevert = BalloonTipButton(null,guiProps.revertIcon,Gui.settings_revert.toString(),guiProps) { cleanupScheduleSetting.text = apiProperties.webserviceCleanupSchedule }
+    private val cleanupReset = BalloonTipButton(null,guiProps.resetIcon,Gui.settings_reset.toString(),guiProps) { cleanupScheduleSetting.text = apiProperties.fallbackCleanupSchedule }
 
-    val logDirectoryIcon = StatusIcon(guiProps,Gui.settings_webservice_tomcat_logs_tooltip.toString())
-    val logDirectoryLabel = ElementLabel(Gui.settings_webservice_tomcat_logs_label.toString())
-    val logDirectorySetting = ScrollTextFileField(guiProps,apiProperties.tomcatLogsDirectory.absoluteFile, documentChangeListener)
-    val logDirectoryRevert = BalloonTipButton(null,guiProps.revertIcon,Gui.settings_revert.toString(),guiProps) { logDirectorySetting.file = apiProperties.tomcatLogsDirectory.absoluteFile }
-    val logDirectoryReset = BalloonTipButton(null,guiProps.resetIcon,Gui.settings_reset.toString(),guiProps) { logDirectorySetting.file = apiProperties.defaultTomcatLogsDirectory().absoluteFile }
-    val logDirectoryChoose = BalloonTipButton(null,guiProps.folderIcon,Gui.settings_select_directory.toString(),guiProps) {
+    private val logDirectoryIcon = StatusIcon(guiProps,Gui.settings_webservice_tomcat_logs_tooltip.toString())
+    private val logDirectoryLabel = ElementLabel(Gui.settings_webservice_tomcat_logs_label.toString())
+    private val logDirectorySetting = ScrollTextFileField(guiProps,apiProperties.tomcatLogsDirectory.absoluteFile, documentChangeListener)
+    private val logDirectoryRevert = BalloonTipButton(null,guiProps.revertIcon,Gui.settings_revert.toString(),guiProps) { logDirectorySetting.file = apiProperties.tomcatLogsDirectory.absoluteFile }
+    private val logDirectoryReset = BalloonTipButton(null,guiProps.resetIcon,Gui.settings_reset.toString(),guiProps) { logDirectorySetting.file = apiProperties.defaultTomcatLogsDirectory().absoluteFile }
+    private val logDirectoryChoose = BalloonTipButton(null,guiProps.folderIcon,Gui.settings_select_directory.toString(),guiProps) {
         val logDirectoryChooser = TomcatLogDirChooser(apiProperties,Gui.settings_webservice_tomcat_logs_chooser.toString())
         if (logDirectoryChooser.showSaveDialog(mainFrame.frame) == JFileChooser.APPROVE_OPTION) {
             if (logDirectoryChooser.selectedFile.absoluteFile.testFileWrite()) {
@@ -117,12 +117,12 @@ class WebserviceSettings(
         }
     }
 
-    val baseDirIcon = StatusIcon(guiProps,Gui.settings_webservice_tomcat_dir_tooltip.toString())
-    val baseDirLabel = ElementLabel(Gui.settings_webservice_tomcat_dir_label.toString())
-    val baseDirSetting = ScrollTextFileField(guiProps,apiProperties.tomcatBaseDirectory.absoluteFile, documentChangeListener)
-    val baseDirRevert = BalloonTipButton(null,guiProps.revertIcon,Gui.settings_revert.toString(),guiProps) { baseDirSetting.file = apiProperties.tomcatBaseDirectory.absoluteFile }
-    val baseDirReset = BalloonTipButton(null,guiProps.resetIcon,Gui.settings_reset.toString(),guiProps) { baseDirSetting.file = apiProperties.defaultTomcatBaseDirectory().absoluteFile }
-    val baseDirChoose = BalloonTipButton(null,guiProps.folderIcon,Gui.settings_select_directory.toString(),guiProps) {
+    private val baseDirIcon = StatusIcon(guiProps,Gui.settings_webservice_tomcat_dir_tooltip.toString())
+    private val baseDirLabel = ElementLabel(Gui.settings_webservice_tomcat_dir_label.toString())
+    private val baseDirSetting = ScrollTextFileField(guiProps,apiProperties.tomcatBaseDirectory.absoluteFile, documentChangeListener)
+    private val baseDirRevert = BalloonTipButton(null,guiProps.revertIcon,Gui.settings_revert.toString(),guiProps) { baseDirSetting.file = apiProperties.tomcatBaseDirectory.absoluteFile }
+    private val baseDirReset = BalloonTipButton(null,guiProps.resetIcon,Gui.settings_reset.toString(),guiProps) { baseDirSetting.file = apiProperties.defaultTomcatBaseDirectory().absoluteFile }
+    private val baseDirChoose = BalloonTipButton(null,guiProps.folderIcon,Gui.settings_select_directory.toString(),guiProps) {
         val baseDirChooser = TomcatBaseDirChooser(apiProperties,Gui.settings_webservice_tomcat_dir_chooser.toString())
         if (baseDirChooser.showSaveDialog(mainFrame.frame) == JFileChooser.APPROVE_OPTION) {
             if (baseDirChooser.selectedFile.absoluteFile.testFileWrite()) {
@@ -136,17 +136,17 @@ class WebserviceSettings(
         }
     }
 
-    val versionScheduleIcon = StatusIcon(guiProps,Gui.settings_webservice_schedule_versions_tooltip.toString())
-    val versionScheduleLabel = ElementLabel(Gui.settings_webservice_schedule_versions_label.toString())
-    val versionScheduleSetting = ScrollTextField(guiProps,apiProperties.webserviceVersionSchedule,Gui.settings_webservice_schedule_versions_label.toString(),documentChangeListener)
-    val versionRevert = BalloonTipButton(null,guiProps.revertIcon,Gui.settings_revert.toString(),guiProps) { versionScheduleSetting.text = apiProperties.webserviceVersionSchedule }
-    val versionReset = BalloonTipButton(null,guiProps.resetIcon,Gui.settings_reset.toString(),guiProps) { versionScheduleSetting.text = apiProperties.fallbackVersionSchedule }
+    private val versionScheduleIcon = StatusIcon(guiProps,Gui.settings_webservice_schedule_versions_tooltip.toString())
+    private val versionScheduleLabel = ElementLabel(Gui.settings_webservice_schedule_versions_label.toString())
+    private val versionScheduleSetting = ScrollTextField(guiProps,apiProperties.webserviceVersionSchedule,Gui.settings_webservice_schedule_versions_label.toString(),documentChangeListener)
+    private val versionRevert = BalloonTipButton(null,guiProps.revertIcon,Gui.settings_revert.toString(),guiProps) { versionScheduleSetting.text = apiProperties.webserviceVersionSchedule }
+    private val versionReset = BalloonTipButton(null,guiProps.resetIcon,Gui.settings_reset.toString(),guiProps) { versionScheduleSetting.text = apiProperties.fallbackVersionSchedule }
 
-    val databaseCleanupScheduleIcon = StatusIcon(guiProps,Gui.settings_webservice_schedule_database_tooltip.toString())
-    val databaseCleanupScheduleLabel = ElementLabel(Gui.settings_webservice_schedule_database_label.toString())
-    val databaseCleanupScheduleSetting = ScrollTextField(guiProps,apiProperties.webserviceDatabaseCleanupSchedule,Gui.settings_webservice_schedule_database_label.toString(),documentChangeListener)
-    val databaseCleanupRevert = BalloonTipButton(null,guiProps.revertIcon,Gui.settings_revert.toString(),guiProps) { databaseCleanupScheduleSetting.text = apiProperties.webserviceDatabaseCleanupSchedule }
-    val databaseCleanupReset = BalloonTipButton(null,guiProps.resetIcon,Gui.settings_reset.toString(),guiProps) { databaseCleanupScheduleSetting.text = apiProperties.fallbackDatabaseCleanupSchedule }
+    private val databaseCleanupScheduleIcon = StatusIcon(guiProps,Gui.settings_webservice_schedule_database_tooltip.toString())
+    private val databaseCleanupScheduleLabel = ElementLabel(Gui.settings_webservice_schedule_database_label.toString())
+    private val databaseCleanupScheduleSetting = ScrollTextField(guiProps,apiProperties.webserviceDatabaseCleanupSchedule,Gui.settings_webservice_schedule_database_label.toString(),documentChangeListener)
+    private val databaseCleanupRevert = BalloonTipButton(null,guiProps.revertIcon,Gui.settings_revert.toString(),guiProps) { databaseCleanupScheduleSetting.text = apiProperties.webserviceDatabaseCleanupSchedule }
+    private val databaseCleanupReset = BalloonTipButton(null,guiProps.resetIcon,Gui.settings_reset.toString(),guiProps) { databaseCleanupScheduleSetting.text = apiProperties.fallbackDatabaseCleanupSchedule }
 
     init {
         loadSettings()

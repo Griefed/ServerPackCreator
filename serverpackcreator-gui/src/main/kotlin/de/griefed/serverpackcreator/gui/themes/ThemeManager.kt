@@ -100,11 +100,7 @@ class ThemeManager(private val apiWrapper: ApiWrapper, private val guiProps: Gui
         themes.add(
             ThemeInfo(
                 "FlatLaf Light",
-                null,
                 false,
-                null,
-                null,
-                null,
                 null,
                 null,
                 FlatLightLaf::class.java.getName()
@@ -114,11 +110,7 @@ class ThemeManager(private val apiWrapper: ApiWrapper, private val guiProps: Gui
         themes.add(
             ThemeInfo(
                 "FlatLaf Dark",
-                null,
                 true,
-                null,
-                null,
-                null,
                 null,
                 null,
                 FlatDarkLaf::class.java.getName()
@@ -127,18 +119,13 @@ class ThemeManager(private val apiWrapper: ApiWrapper, private val guiProps: Gui
 
         themes.add(
             ThemeInfo(
-                "FlatLaf IntelliJ", null, false, null, null, null, null, null,
-                FlatIntelliJLaf::class.java.getName()
+                "FlatLaf IntelliJ", false, null, null, FlatIntelliJLaf::class.java.getName()
             )
         )
         themes.add(
             ThemeInfo(
                 "FlatLaf Darcula",
-                null,
                 true,
-                null,
-                null,
-                null,
                 null,
                 null,
                 FlatDarculaLaf::class.java.getName()
@@ -147,14 +134,12 @@ class ThemeManager(private val apiWrapper: ApiWrapper, private val guiProps: Gui
 
         themes.add(
             ThemeInfo(
-                "FlatLaf macOS Light", null, false, null, null, null, null, null,
-                FlatMacLightLaf::class.java.getName()
+                "FlatLaf macOS Light", false, null, null, FlatMacLightLaf::class.java.getName()
             )
         )
         themes.add(
             ThemeInfo(
-                "FlatLaf macOS Dark", null, true, null, null, null, null, null,
-                FlatMacDarkLaf::class.java.getName()
+                "FlatLaf macOS Dark", true, null, null, FlatMacDarkLaf::class.java.getName()
             )
         )
     }
@@ -167,11 +152,7 @@ class ThemeManager(private val apiWrapper: ApiWrapper, private val guiProps: Gui
             themes.add(
                 ThemeInfo(
                     theme.name,
-                    null,
                     theme.isDark,
-                    null,
-                    null,
-                    null,
                     null,
                     null,
                     theme.className
@@ -200,7 +181,7 @@ class ThemeManager(private val apiWrapper: ApiWrapper, private val guiProps: Gui
             } else {
                 StringUtils.removeTrailing(fname, ".theme.json")
             }
-            themes.add(ThemeInfo(name, null, false, null, null, null, null, f, null))
+            themes.add(ThemeInfo(name, false, null, f, null))
             lastModifiedMap[f] = f.lastModified()
         }
     }

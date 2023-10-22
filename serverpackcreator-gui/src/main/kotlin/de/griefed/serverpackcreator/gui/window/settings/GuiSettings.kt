@@ -43,43 +43,43 @@ class GuiSettings(
     private val themeManager: ThemeManager
 ) : Editor(Gui.settings_gui.toString(), guiProps) {
 
-    val fontSizeIcon = StatusIcon(guiProps,Gui.settings_gui_font_tooltip.toString())
-    val fontSizeLabel = ElementLabel(Gui.settings_gui_font_label.toString())
-    val fontSizeSetting = ActionSlider(8,76,guiProps.fontSize,changeListener)
-    val fontSizeRevert = BalloonTipButton(null,guiProps.revertIcon,Gui.settings_revert.toString(), guiProps) {
+    private val fontSizeIcon = StatusIcon(guiProps,Gui.settings_gui_font_tooltip.toString())
+    private val fontSizeLabel = ElementLabel(Gui.settings_gui_font_label.toString())
+    private val fontSizeSetting = ActionSlider(8,76,guiProps.fontSize,changeListener)
+    private val fontSizeRevert = BalloonTipButton(null,guiProps.revertIcon,Gui.settings_revert.toString(), guiProps) {
         fontSizeSetting.value = guiProps.fontSize
     }
-    val fontSizeReset = BalloonTipButton(null,guiProps.resetIcon,Gui.settings_reset.toString(),guiProps) {
+    private val fontSizeReset = BalloonTipButton(null,guiProps.resetIcon,Gui.settings_reset.toString(),guiProps) {
         fontSizeSetting.value = 12
     }
 
-    val startFocusIcon = StatusIcon(guiProps,Gui.settings_gui_focus_start_tooltip.toString())
-    val startFocusLabel = ElementLabel(Gui.settings_gui_focus_start_label.toString())
-    val startFocusSetting = ActionCheckBox(actionListener)
-    val startFocusRevert = BalloonTipButton(null,guiProps.revertIcon,Gui.settings_revert.toString(),guiProps) {
+    private val startFocusIcon = StatusIcon(guiProps,Gui.settings_gui_focus_start_tooltip.toString())
+    private val startFocusLabel = ElementLabel(Gui.settings_gui_focus_start_label.toString())
+    private val startFocusSetting = ActionCheckBox(actionListener)
+    private val startFocusRevert = BalloonTipButton(null,guiProps.revertIcon,Gui.settings_revert.toString(),guiProps) {
         startFocusSetting.isSelected = guiProps.startFocusEnabled
     }
-    val startFocusReset = BalloonTipButton(null,guiProps.resetIcon,Gui.settings_reset.toString(),guiProps) {
+    private val startFocusReset = BalloonTipButton(null,guiProps.resetIcon,Gui.settings_reset.toString(),guiProps) {
         startFocusSetting.isSelected = false
     }
 
-    val generationFocusIcon = StatusIcon(guiProps,Gui.settings_gui_focus_generation_tooltip.toString())
-    val generationFocusLabel = ElementLabel(Gui.settings_gui_focus_generation_label.toString())
-    val generationFocusSetting = ActionCheckBox(actionListener)
-    val generationFocusRevert = BalloonTipButton(null,guiProps.revertIcon,Gui.settings_revert.toString(),guiProps) {
+    private val generationFocusIcon = StatusIcon(guiProps,Gui.settings_gui_focus_generation_tooltip.toString())
+    private val generationFocusLabel = ElementLabel(Gui.settings_gui_focus_generation_label.toString())
+    private val generationFocusSetting = ActionCheckBox(actionListener)
+    private val generationFocusRevert = BalloonTipButton(null,guiProps.revertIcon,Gui.settings_revert.toString(),guiProps) {
         generationFocusSetting.isSelected = guiProps.generationFocusEnabled
     }
-    val generationFocusReset = BalloonTipButton(null,guiProps.resetIcon,Gui.settings_reset.toString(),guiProps) {
+    private val generationFocusReset = BalloonTipButton(null,guiProps.resetIcon,Gui.settings_reset.toString(),guiProps) {
         generationFocusSetting.isSelected = false
     }
 
-    val themeIcon = StatusIcon(guiProps,Gui.settings_gui_theme_tooltip.toString())
-    val themeLabel = ElementLabel(Gui.settings_gui_theme_label.toString())
-    val themeSetting = ActionComboBox(DefaultComboBoxModel(themeManager.themes.map { it.name }.toTypedArray()),actionListener)
-    val themeRevert = BalloonTipButton(null,guiProps.revertIcon,Gui.settings_revert.toString(),guiProps) {
+    private val themeIcon = StatusIcon(guiProps,Gui.settings_gui_theme_tooltip.toString())
+    private val themeLabel = ElementLabel(Gui.settings_gui_theme_label.toString())
+    private val themeSetting = ActionComboBox(DefaultComboBoxModel(themeManager.themes.map { it.name }.toTypedArray()),actionListener)
+    private val themeRevert = BalloonTipButton(null,guiProps.revertIcon,Gui.settings_revert.toString(),guiProps) {
         loadThemeFromProperties()
     }
-    val themeReset = BalloonTipButton(null,guiProps.resetIcon,Gui.settings_reset.toString(),guiProps) {
+    private val themeReset = BalloonTipButton(null,guiProps.resetIcon,Gui.settings_reset.toString(),guiProps) {
         for (theme in FlatAllIJThemes.INFOS) {
             if (theme.className == FlatDarkPurpleIJTheme().javaClass.name) {
                 themeSetting.selectedItem = theme.name
@@ -87,13 +87,13 @@ class GuiSettings(
         }
     }
 
-    val fontIcon = StatusIcon(guiProps,Gui.settings_gui_font_family_tooltip.toString())
-    val fontLabel = ElementLabel(Gui.settings_gui_font_family_label.toString())
-    val fontSetting = ActionComboBox(DefaultComboBoxModel(GraphicsEnvironment.getLocalGraphicsEnvironment().availableFontFamilyNames),actionListener)
-    val fontRevert = BalloonTipButton(null,guiProps.revertIcon,Gui.settings_revert.toString(),guiProps) {
+    private val fontIcon = StatusIcon(guiProps,Gui.settings_gui_font_family_tooltip.toString())
+    private val fontLabel = ElementLabel(Gui.settings_gui_font_family_label.toString())
+    private val fontSetting = ActionComboBox(DefaultComboBoxModel(GraphicsEnvironment.getLocalGraphicsEnvironment().availableFontFamilyNames),actionListener)
+    private val fontRevert = BalloonTipButton(null,guiProps.revertIcon,Gui.settings_revert.toString(),guiProps) {
         loadFontProperties()
     }
-    val fontReset = BalloonTipButton(null,guiProps.resetIcon,Gui.settings_reset.toString(),guiProps) {
+    private val fontReset = BalloonTipButton(null,guiProps.resetIcon,Gui.settings_reset.toString(),guiProps) {
         for (font in GraphicsEnvironment.getLocalGraphicsEnvironment().availableFontFamilyNames) {
             if (font == "JetBrains Mono") {
                 fontSetting.selectedItem = font
@@ -176,7 +176,7 @@ class GuiSettings(
         guiProps.generationFocusEnabled = generationFocusSetting.isSelected
         themeManager.setTheme(themeManager.getThemeInfo(themeSetting.selectedItem.toString())!!)
         guiProps.theme = themeSetting.selectedItem.toString()
-        guiProps.font = FontUIResource(fontSetting.selectedItem.toString(),font.size,font.style,)
+        guiProps.font = FontUIResource(fontSetting.selectedItem.toString(),font.size,font.style)
     }
 
     /**

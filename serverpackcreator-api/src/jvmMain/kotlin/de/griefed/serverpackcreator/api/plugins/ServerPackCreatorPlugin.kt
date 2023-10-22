@@ -49,7 +49,7 @@ import java.net.URL
  */
 @Suppress("unused")
 abstract class ServerPackCreatorPlugin(val context: PluginContext) : Plugin(), BaseInformation {
-    private val log = cachedLoggerOf(this.javaClass)
+    private val pluginLog = cachedLoggerOf(this.javaClass)
     final override val name: String
     final override val description: String
     final override val author: String

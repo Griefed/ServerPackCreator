@@ -67,7 +67,7 @@ expect interface TabExtension : ExtensionInformation {
     /**
      * Get the title of this tab to display in the ServerPackCreator GUI.
      *
-     * @return The title of this plugins tabbed pane.
+     * @return The title of this plugin's tabbed pane.
      * @author Griefed
      */
     val title: String
@@ -75,7 +75,7 @@ expect interface TabExtension : ExtensionInformation {
     /**
      * Get the tooltip for this tab to display in the ServerPackCreator GUI.
      *
-     * @return The tooltip of this plugins tabbed pane.
+     * @return The tooltip of this plugin's tabbed pane.
      * @author Griefed
      */
     val tooltip: String

@@ -25,7 +25,7 @@ import java.net.URI
 import javax.swing.JMenuItem
 
 /**
- * Menu item in the about menu which opens the Discord-invitation to Griefed's Discord server in the users browser.
+ * Menu item in the about menu which opens the Discord-invitation to Griefed's Discord server in the users' browser.
  *
  * @author Griefed
  */

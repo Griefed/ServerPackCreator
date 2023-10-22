@@ -50,7 +50,7 @@ abstract class ServerPack<F, TS, TF> {
      * which the server pack will be created has all its spaces replaces with underscores, so
      * `Survive Create Prosper 4 - 5.0.1` would become `Survive_Create_Prosper_4_-_5.0.1 `
      * Even though it is the year 2022, spaces in paths can and do still cause trouble. Such as for
-     * Powershell scripts. Powershell throws a complete fit if the path contains spaces....soooooo, we
+     * Powershell scripts. Powershell throws a complete fit if the path contains spaces....so, we
      * remove them. Better safe than sorry.
      *
      * @param packConfig Model containing the modpack directory of the modpack from which the

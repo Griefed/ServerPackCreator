@@ -186,9 +186,9 @@ actual class JsonUtilities(
      *
      * @param jsonNode   The JsonNode from which to get the string iterator.
      * @param childNodes The nested nodes from which to get the iterator, in order.
-     * @return A string iterator for the field names in the last requested child node in the passed
+     * @return A string iterator for the field names in the last requested child node in the provided
      * JsonNode.
-     * @throws NullPointerException if any of the specified child nodes can not be found in the passed
+     * @throws NullPointerException if any of the specified child nodes can not be found in the provided
      * JsonNode.
      * @author Griefed
      */

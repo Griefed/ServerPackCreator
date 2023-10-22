@@ -154,7 +154,7 @@ abstract class Configuration<F, P> {
      * @param modloader        The passed modloader which determines whether the check for Forge or
      * Fabric is called.
      * @param modloaderVersion The version of the modloader which is checked against the corresponding
-     * modloaders manifest.
+     * modloader's manifest.
      * @param minecraftVersion The version of Minecraft used for checking the Forge version.
      * @return `true` if the specified modloader version was found in the corresponding
      * manifest.

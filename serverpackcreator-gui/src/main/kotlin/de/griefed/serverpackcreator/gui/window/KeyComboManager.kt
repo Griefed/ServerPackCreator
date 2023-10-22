@@ -19,16 +19,10 @@
  */
 package de.griefed.serverpackcreator.gui.window
 
-import de.griefed.serverpackcreator.api.ApiWrapper
-import de.griefed.serverpackcreator.gui.GuiProps
-import de.griefed.serverpackcreator.gui.window.menu.MainMenuBar
-import de.griefed.serverpackcreator.updater.MigrationManager
-import de.griefed.serverpackcreator.updater.UpdateChecker
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.awt.AWTEvent
 import java.awt.Toolkit
 import java.awt.event.KeyEvent
-import javax.swing.JFrame
 
 /**
  * Common key-combinations usable across ServerPackCreator, like loading and saving configs, generating
@@ -44,14 +38,7 @@ import javax.swing.JFrame
  * @author Griefed
  */
 class KeyComboManager(
-    private val guiProps: GuiProps,
-    private val apiWrapper: ApiWrapper,
-    private val updateChecker: UpdateChecker,
-    private val updateDialogs: UpdateDialogs,
-    private val migrationManager: MigrationManager,
-    private val frame: JFrame,
-    private val mainPanel: MainPanel,
-    private val menu: MainMenuBar
+    mainPanel: MainPanel
 ) {
 
     private val log = cachedLoggerOf(this.javaClass)

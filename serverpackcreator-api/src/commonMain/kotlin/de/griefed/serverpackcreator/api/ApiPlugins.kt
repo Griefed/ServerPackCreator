@@ -38,8 +38,8 @@ import de.griefed.serverpackcreator.api.utilities.Optional
 expect class ApiPlugins {
 
     /**
-     * Get the global plugin configuration for an plugin of the passed ID. The configuration is wrapped
-     * in an [Optional], because an plugin may not provide a global configuration. If you intend
+     * Get the global plugin configuration for a plugin of the passed ID. The configuration is wrapped
+     * in an [Optional], because a plugin may not provide a global configuration. If you intend
      * on using a global configuration for your plugin, make sure to check whether it is present before
      * trying to use it!
      *

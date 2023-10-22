@@ -25,7 +25,7 @@ import java.net.URI
 import javax.swing.JMenuItem
 
 /**
- * Menu item which opens the donations section for Griefed on GitHub in the users browser.
+ * Menu item which opens the donations section for Griefed on GitHub in the users' browser.
  *
  * @author Griefed
  */

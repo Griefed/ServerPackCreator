@@ -35,7 +35,6 @@ import java.util.stream.Collectors
 import javax.swing.DefaultListModel
 import javax.swing.JList
 import javax.swing.JPopupMenu
-import javax.swing.SwingUtilities
 import javax.swing.event.DocumentEvent
 import javax.swing.text.BadLocationException
 import javax.swing.text.JTextComponent
