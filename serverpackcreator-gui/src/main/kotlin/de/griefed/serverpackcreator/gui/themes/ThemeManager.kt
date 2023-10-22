@@ -49,7 +49,7 @@ class ThemeManager(private val apiWrapper: ApiWrapper, private val guiProps: Gui
     private val log = cachedLoggerOf(this.javaClass)
     private val themeRegex = ".*\\.(properties|txt)".toRegex()
     private val lastModifiedMap: HashMap<File, Long> = HashMap()
-    val themesDir = File(apiWrapper.apiProperties.homeDirectory, "themes").absoluteFile
+    val themesDir: File = File(apiWrapper.apiProperties.homeDirectory, "themes").absoluteFile
     val themes = mutableListOf<ThemeInfo>()
 
     init {
