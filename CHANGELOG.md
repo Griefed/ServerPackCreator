@@ -1,3 +1,10 @@
+## [5.0.0-beta.9](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-beta.8...5.0.0-beta.9) (2023-10-22)
+
+
+### 🛠 Fixes
+
+* Repaint/validate GUI upon resize to account for tiling window managers ([b898433](https://git.griefed.de/Griefed/ServerPackCreator/commit/b89843352665e62550d4714799718d35a898d789))
+
 ## [5.0.0-beta.8](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-beta.7...5.0.0-beta.8) (2023-10-22)
 
 
