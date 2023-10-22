@@ -3,7 +3,7 @@ import java.util.prefs.Preferences
 plugins {
     id("serverpackcreator.kotlin-multiplatform-conventions")
     id("serverpackcreator.dokka-conventions")
-    id("de.comahe.i18n4k") version "0.5.0"
+    id("de.comahe.i18n4k") version "0.6.2"
 }
 
 repositories {
@@ -15,9 +15,9 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 api("io.github.microutils:kotlin-logging:3.0.5")
-                api("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
-                api("de.jensklingenberg.ktorfit:ktorfit-lib:1.1.0")
-                api("de.comahe.i18n4k:i18n4k-core:0.5.0")
+                api("org.jetbrains.kotlinx:kotlinx-datetime:0.4.1")
+                api("de.jensklingenberg.ktorfit:ktorfit-lib:1.9.0")
+                api("de.comahe.i18n4k:i18n4k-core:0.6.2")
             }
         }
         val commonTest by getting {
@@ -33,22 +33,22 @@ kotlin {
                 implementation("org.jetbrains.kotlin:kotlin-bom")
                 implementation("org.jetbrains.kotlin:kotlin-stdlib")
                 implementation(files("${layout.buildDirectory.asFile.get()}/resources/"))
-                api("de.comahe.i18n4k:i18n4k-core-jvm:0.5.0")
-                api("com.electronwill.night-config:toml:3.6.6")
-                api("com.fasterxml.jackson.core:jackson-databind:2.15.0")
+                api("de.comahe.i18n4k:i18n4k-core-jvm:0.6.2")
+                api("com.electronwill.night-config:toml:3.6.7")
+                api("com.fasterxml.jackson.core:jackson-databind:2.15.3")
                 api("net.lingala.zip4j:zip4j:2.11.5")
-                api("org.apache.logging.log4j:log4j-api-kotlin:1.2.0")
-                api("org.apache.logging.log4j:log4j-core:2.20.0")
-                api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
-                api("org.pf4j:pf4j:3.9.0")
+                api("org.apache.logging.log4j:log4j-api-kotlin:1.3.0")
+                api("org.apache.logging.log4j:log4j-core:2.21.0")
+                api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
+                api("org.pf4j:pf4j:3.10.0")
             }
         }
         val jvmTest by getting {
             dependencies {
                 implementation(kotlin("test"))
-                implementation("org.jetbrains.kotlin:kotlin-test:1.8.21")
-                implementation("org.junit.jupiter:junit-jupiter-api:5.9.3")
-                implementation("org.junit.jupiter:junit-jupiter-engine:5.9.3")
+                implementation("org.jetbrains.kotlin:kotlin-test:1.9.10")
+                implementation("org.junit.jupiter:junit-jupiter-api:5.10.0")
+                implementation("org.junit.jupiter:junit-jupiter-engine:5.10.0")
             }
         }
 // Uncomment if you wish to start developing the JS component
