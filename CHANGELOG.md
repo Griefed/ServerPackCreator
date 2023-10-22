@@ -1,3 +1,34 @@
+## [5.0.0-beta.8](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-beta.7...5.0.0-beta.8) (2023-10-22)
+
+
+### :scissors: Refactor
+
+*  Explicit type declaration ([83832ce](https://git.griefed.de/Griefed/ServerPackCreator/commit/83832ce6ad4882da38ede3fdd9f2c969c0f0371b))
+
+
+### 📔 Docs
+
+* Correct param documentation ([5efbd8c](https://git.griefed.de/Griefed/ServerPackCreator/commit/5efbd8c70a272f10cfeeec19ad1787a8583e14a4))
+* Replace and correct params ([b0ddae0](https://git.griefed.de/Griefed/ServerPackCreator/commit/b0ddae0a1de98272dd109aa06410575392ca697d))
+* Update license report ([6f0853d](https://git.griefed.de/Griefed/ServerPackCreator/commit/6f0853dfff876dfe5205ce43a792302fee72b948))
+* Various spelling mistakes and documentation fixes ([361e311](https://git.griefed.de/Griefed/ServerPackCreator/commit/361e3116530d446f58ae56fd74fc62b6b86f70ea))
+
+
+### 🦊 CI/CD
+
+* Update dependencies ([cddaa61](https://git.griefed.de/Griefed/ServerPackCreator/commit/cddaa6140d935a62e75535df97b55b136d2c53ec))
+* Base config ([466afb7](https://git.griefed.de/Griefed/ServerPackCreator/commit/466afb74962c2d576848eea5fbfae25326a449d6))
+* Re-introduce Qodana for local runs ([7081cb4](https://git.griefed.de/Griefed/ServerPackCreator/commit/7081cb4b92b0f42004f6d0f9500e7570391b5151))
+* Update actions, change JDK to temurin ([781b755](https://git.griefed.de/Griefed/ServerPackCreator/commit/781b7556e96c08c3379412c3be16602c8105a383))
+
+
+### 🛠 Fixes
+
+* Call `this` to prevent constructor leaking ([d11e71c](https://git.griefed.de/Griefed/ServerPackCreator/commit/d11e71ce9c7b576d85099148bf2ef674fe48f4b0))
+* Call entries and create typed array ([67074ee](https://git.griefed.de/Griefed/ServerPackCreator/commit/67074ee7aea24db95c081cc408854b573e917b5c))
+* Correctly acquire Java if prop is invalid ([1002f3f](https://git.griefed.de/Griefed/ServerPackCreator/commit/1002f3f8bcf98ef48ccc7cf2c7de39ec145a6f99))
+* Use new tailer acquisition as per deprecation notice ([f881a24](https://git.griefed.de/Griefed/ServerPackCreator/commit/f881a2409ae00e182e19a95cbfe99a4148f9a726))
+
 ## [5.0.0-beta.7](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-beta.6...5.0.0-beta.7) (2023-10-21)
 
 
