@@ -35,7 +35,7 @@ import javax.swing.JMenuBar
 
 /**
  * Main menubar displaying and allowing for various actions, such as config loading and saving, theme changing, opening
- * various directories, etc. etc..
+ * various directories, etc. etc...
  *
  * @author Griefed
  */

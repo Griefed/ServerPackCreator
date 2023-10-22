@@ -25,7 +25,7 @@ import java.net.URI
 import javax.swing.JMenuItem
 
 /**
- * Menu item which opens the GitHub page for ServerPackCreator issues in the users browser.
+ * Menu item which opens the GitHub page for ServerPackCreator issues in the users' browser.
  *
  * @author Griefed
  */

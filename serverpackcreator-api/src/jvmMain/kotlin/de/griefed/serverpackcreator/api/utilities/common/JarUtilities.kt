@@ -234,7 +234,7 @@ actual class JarUtilities {
      * @param dirToCopy       The source-directory in the JAR-file you wish to copy.
      * @param destination     The destination where the source-file should be copied to.
      * @param fileEnding      The file-ending to filter for.
-     * @throws NullPointerException When the specified ressource can not be found.
+     * @throws NullPointerException When the specified resource can not be found.
      * @author Griefed
      */
     @Throws(NullPointerException::class)

@@ -53,7 +53,7 @@ class ImageUtilities {
          */
         @Throws(NullPointerException::class)
         fun imageIconFromResourceStream(clazz: Class<*>, name: String): ImageIcon {
-            return ImageIcon(clazz.getResourceAsStream(name).readAllBytes())
+            return ImageIcon(clazz.getResourceAsStream(name)!!.readAllBytes())
         }
 
         /**

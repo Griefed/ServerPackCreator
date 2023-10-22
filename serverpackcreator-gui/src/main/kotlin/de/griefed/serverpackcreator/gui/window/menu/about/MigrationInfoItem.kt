@@ -42,7 +42,7 @@ import javax.swing.JTextPane
  */
 class MigrationInfoItem(
     apiWrapper: ApiWrapper,
-    private val migrationManager: MigrationManager,
+    migrationManager: MigrationManager,
     private val guiProps: GuiProps,
     private val mainFrame: MainFrame
 ) : JMenuItem(Gui.menubar_gui_migration.toString()) {

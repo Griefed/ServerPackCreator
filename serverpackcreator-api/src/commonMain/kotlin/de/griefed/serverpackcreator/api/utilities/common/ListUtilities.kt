@@ -230,12 +230,12 @@ fun <T> MutableCollection<T>.removeIf(filter: Affirm<in T>): Boolean {
  *
  * @author Griefed
  */
-@OptIn(DelicateCoroutinesApi::class)
+@OptIn(DelicateCoroutinesApi::class, ExperimentalCoroutinesApi::class)
 inline fun <A, B> List<A>.parallelMap(
     context: CoroutineContext = newSingleThreadContext("parallelMap"),
     crossinline function: suspend (A) -> B
 ): List<B> = runBlocking(context) {
-    map { async { function(it) } }.awaitAll()
+    map { return@map this.async<B> { function(it) } }.awaitAll()
 }
 
 /**

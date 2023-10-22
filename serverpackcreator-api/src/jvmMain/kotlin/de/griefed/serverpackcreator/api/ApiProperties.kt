@@ -32,7 +32,6 @@ import java.io.InputStreamReader
 import java.net.URL
 import java.util.*
 import java.util.prefs.Preferences
-import java.util.stream.Collectors
 
 /**
  * Base settings of ServerPackCreator, such as working directories, default list of clientside-only
@@ -1154,7 +1153,9 @@ actual class ApiProperties(
             field = if (checkJavaPath(prop)) {
                 prop
             } else {
-                acquireProperty(pJavaForServerInstall, acquireJavaPath())
+                val acquired = acquireJavaPath()
+                internalProps.setProperty(pJavaForServerInstall, acquired)
+                acquired
             }
             return field
         }
@@ -1243,7 +1244,7 @@ actual class ApiProperties(
     /**
      * ServerPackCreators home directory, in which all important files and folders are stored in.
      *
-     * Changes made to this variable are stored in a overrides.properties inside the installation directory of the
+     * Changes made to this variable are stored in an overrides.properties inside the installation directory of the
      * ServerPackCreator application.
      *
      * Every operation is based on this home-directory, with the exception being the

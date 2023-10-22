@@ -177,7 +177,7 @@ class ConfigurationPanel(
     }
 
     /**
-     * Pass the extension configuration to the configuration panel so it can then, in turn, load the
+     * Pass the extension configuration to the configuration panel, so it can then, in turn, load the
      * available configurations and make them editable, if so desired.
      *
      * @param serverPackExtensionConfig The list of extension configurations to pass to the

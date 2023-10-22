@@ -25,7 +25,7 @@ import java.net.URI
 import javax.swing.JMenuItem
 
 /**
- * Menu item for opening the help-section of Griefed's official Wiki in the users browser.
+ * Menu item for opening the help-section of Griefed's official Wiki in the users' browser.
  *
  * @author Griefed
  */

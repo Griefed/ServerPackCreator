@@ -1,6 +1,6 @@
 plugins {
     id("serverpackcreator.kotlin-conventions")
-    id("de.comahe.i18n4k") version "0.5.0"
+    id("de.comahe.i18n4k") version "0.6.2"
 }
 
 repositories {
@@ -9,8 +9,8 @@ repositories {
 
 dependencies {
     implementation(project(":serverpackcreator-api"))
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.3")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.3")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.0")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.0")
 }
 
 // Explicit dependency to remove Gradle 8 warning

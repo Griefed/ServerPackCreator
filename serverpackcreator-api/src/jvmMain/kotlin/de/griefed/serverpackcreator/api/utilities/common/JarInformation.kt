@@ -56,7 +56,7 @@ class JarInformation(clazz: Class<*>, jarUtilities: JarUtilities = JarUtilities(
     val jarFile: File
 
     /**
-     * The path to the JAR-file or .exe of ServerPachCreator
+     * The path to the JAR-file or .exe of ServerPackCreator
      */
     val jarPath: Path
 

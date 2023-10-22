@@ -67,7 +67,7 @@ class GitHubChecker : VersionChecker {
      * Constructs a GitHub checker with the given `user/repository` combination to allow for version checks as
      * well as version and URL acquisition.
      * @author Griefed
-     * @param user GitHub user and owner of the repository.
+     * @param user GitHub-user and owner of the repository.
      * @param repository GitHub repository owned by the aforementioned user.
      * @throws MalformedURLException Thrown if the resulting URL is malformed or otherwise invalid.
      */
@@ -235,7 +235,7 @@ class GitHubChecker : VersionChecker {
     }
 
     /**
-     * Acquires the latest version for this instances repository.
+     * Acquires the latest version for this instance's repository.
      * @author Griefed
      * @throws IOException Thrown if the repository can not be reached or any other unexpected error occurs.
      */

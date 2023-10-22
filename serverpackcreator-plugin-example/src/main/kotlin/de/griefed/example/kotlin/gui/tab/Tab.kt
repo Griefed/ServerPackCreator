@@ -77,7 +77,7 @@ class Tab : TabExtension {
     /**
      * Get the title of this tab to display in the ServerPackCreator GUI.
      *
-     * @return The title of this addons tabbed pane.
+     * @return The title of this addon's tabbed pane.
      * @author Griefed
      */
     override val title: String
@@ -86,7 +86,7 @@ class Tab : TabExtension {
     /**
      * Get the tooltip for this tab to display in the ServerPackCreator GUI.
      *
-     * @return The tooltip of this addons tabbed pane.
+     * @return The tooltip of this addon's tabbed pane.
      * @author Griefed
      */
     override val tooltip: String
@@ -129,7 +129,7 @@ class Tab : TabExtension {
         get() = "0.0.1-SNAPSHOT"
 
     /**
-     * Get the if of this extension. Used by ServerPackCreator to determine which configuration, if
+     * Get the ID of this extension. Used by ServerPackCreator to determine which configuration, if
      * any, to provide to any given extension being run.
      *
      * @return The ID of this extension.

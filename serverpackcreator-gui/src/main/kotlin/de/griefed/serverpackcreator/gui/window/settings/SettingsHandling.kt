@@ -27,12 +27,10 @@ import de.griefed.serverpackcreator.gui.window.MainFrame
 import de.griefed.serverpackcreator.gui.window.settings.components.Editor
 import de.griefed.serverpackcreator.gui.window.settings.components.PropertiesChooser
 import net.miginfocom.swing.MigLayout
-import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 import javax.swing.JFileChooser
 import javax.swing.JLabel
-import javax.swing.JOptionPane
 import javax.swing.JPanel
 
 /**
@@ -51,7 +49,7 @@ class SettingsHandling(
         BalloonTipButton(Gui.settings_handle_save_label.toString(), guiProps.saveIcon, Gui.settings_handle_save_tooltip.toString(), guiProps) { save() }
     private val lastActionLabel = JLabel(Gui.settings_handle_idle.toString())
 
-    var lastAction: String
+    private var lastAction: String
         set(value) {
             lastActionLabel.text = value
         }
@@ -76,43 +74,6 @@ class SettingsHandling(
     private fun currentTime(): String {
         val format = SimpleDateFormat("HH:mm")
         return format.format(Date())
-    }
-
-    /**
-     * @author Griefed
-     */
-    private fun showHomeDirDialog() {
-        JOptionPane.showMessageDialog(
-            mainFrame.frame,
-            Gui.settings_handle_home_changed_message.toString(),
-            Gui.settings_handle_home_changed_title.toString(),
-            JOptionPane.WARNING_MESSAGE
-        )
-    }
-
-    /**
-     * @author Griefed
-     */
-    private fun showCancelDialog() {
-        JOptionPane.showMessageDialog(
-            mainFrame.frame,
-            Gui.settings_handle_home_canceled_message.toString(),
-            Gui.settings_handle_home_canceled_title.toString(),
-            JOptionPane.WARNING_MESSAGE
-        )
-    }
-
-    /**
-     * @author Griefed
-     */
-    private fun rootWarning(): Int {
-        return JOptionPane.showConfirmDialog(
-            mainFrame.frame,
-            Gui.settings_handle_home_admin_message.toString(),
-            Gui.settings_handle_home_admin_title.toString(),
-            JOptionPane.OK_CANCEL_OPTION,
-            JOptionPane.WARNING_MESSAGE
-        )
     }
 
     /**

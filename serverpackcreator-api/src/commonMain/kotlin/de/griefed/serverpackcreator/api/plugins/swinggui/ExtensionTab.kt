@@ -21,7 +21,7 @@
 package de.griefed.serverpackcreator.api.plugins.swinggui
 
 /**
- * An extension tab is a Java Swing component which adds an additional, plugin specific, tab to ServerPackCreators GUI. Said tab
+ * An extension tab is a Java Swing component which adds another, plugin specific, tab to ServerPackCreators GUI. Said tab
  * should provide the user with the ability to configure plugin-global settings, to be applied to every server pack
  * generation run.
  *

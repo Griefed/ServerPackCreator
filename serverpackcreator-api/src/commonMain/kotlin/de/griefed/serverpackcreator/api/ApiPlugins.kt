@@ -38,8 +38,8 @@ import de.griefed.serverpackcreator.api.utilities.Optional
 expect class ApiPlugins {
 
     /**
-     * Get the global plugin configuration for an plugin of the passed ID. The configuration is wrapped
-     * in an [Optional], because an plugin may not provide a global configuration. If you intend
+     * Get the global plugin configuration for a plugin of the passed ID. The configuration is wrapped
+     * in an [Optional], because a plugin may not provide a global configuration. If you intend
      * on using a global configuration for your plugin, make sure to check whether it is present before
      * trying to use it!
      *
@@ -88,9 +88,7 @@ expect class ApiPlugins {
      *
      * @param packConfig The configuration model containing the server pack and plugin
      * configurations to check.
-     * @param encounteredErrors  A list of encountered errors to add to in case anything goes wrong.
-     * This list is displayed to the user after am unsuccessful server pack
-     * generation to help them figure out what went wrong.
+     * @param configCheck Collection of encountered errors, if any, for convenient result-checks.
      * @return `true` if any custom check detected an error with the configuration.
      * **Only** return `false` when not a **single** check
      * errored.

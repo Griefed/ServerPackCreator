@@ -73,7 +73,7 @@ class MainFrame(
         guiProps.initFont()
         guiProps.larsonScanner.loadConfig(guiProps.idleConfig)
         guiProps.larsonScanner.play()
-        KeyComboManager(guiProps,apiWrapper,updateChecker,updateDialogs,migrationManager,frame,mainPanel,menuBar)
+        KeyComboManager(mainPanel)
     }
 
     /**

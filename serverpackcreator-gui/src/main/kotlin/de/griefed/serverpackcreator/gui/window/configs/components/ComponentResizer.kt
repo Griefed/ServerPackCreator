@@ -246,7 +246,6 @@ class ComponentResizer(
     override fun mousePressed(e: MouseEvent) {
         //	The mouseMoved event continually updates this variable
         if (direction == 0) {
-            //getSource(e).rootPane.grabFocus()
             return
         }
 

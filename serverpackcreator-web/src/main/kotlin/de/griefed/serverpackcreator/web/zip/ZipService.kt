@@ -61,7 +61,7 @@ class ZipService @Autowired constructor(
     fun saveUploadedFile(uploadedFile: MultipartFile): Path {
         var zipPath: Path = File(apiProperties.modpacksDirectory, uploadedFile.originalFilename!!).toPath()
 
-        // Does a archive with the same name already exist?
+        // Does an archive with the same name already exist?
         if (zipPath.toFile().isFile) {
             var incrementation = 0
             val substring = zipPath.toString().substring(0, zipPath.toString().length - 4)

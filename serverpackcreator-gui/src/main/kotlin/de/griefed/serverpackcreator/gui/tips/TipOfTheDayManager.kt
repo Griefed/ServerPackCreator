@@ -25,9 +25,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
 import tokyo.northside.swing.TipOfTheDay
 import tokyo.northside.swing.TipOfTheDay.ShowOnStartupChoice
-import tokyo.northside.swing.tips.DefaultTip
 import tokyo.northside.swing.tips.DefaultTipOfTheDayModel
-import tokyo.northside.swing.tips.Tip
 import java.util.*
 import javax.swing.JFrame
 import kotlin.reflect.full.memberProperties
@@ -55,13 +53,6 @@ class TipOfTheDayManager(private val mainFrame: JFrame, private val guiProps: Gu
                 ?: "Could not retrieve tip for ${memberProp.name}."
             tipOfTheDayModel.add(CustomTip(name, value,"/de/griefed/resources/gui/tip$number.png"))
         }
-    }
-
-    /**
-     * @author Griefed
-     */
-    private fun createTip(name: String, tip: Any): Tip {
-        return DefaultTip.of(name, tip)
     }
 
     /**

@@ -31,7 +31,7 @@ enum class Type {
     RELEASE,
 
     /**
-     * Indicates that an object is a pre-release, so either a snapshot (duh..), alpha, beta etc.
+     * Indicates that an object is a pre-release, so either a snapshot (duh...), alpha, beta etc.
      */
     SNAPSHOT,
 

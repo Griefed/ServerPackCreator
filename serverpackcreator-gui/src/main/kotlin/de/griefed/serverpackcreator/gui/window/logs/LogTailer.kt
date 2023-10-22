@@ -26,6 +26,7 @@ import de.griefed.serverpackcreator.gui.window.logs.components.ViewPortPosition
 import org.apache.commons.io.input.Tailer
 import org.apache.commons.io.input.TailerListenerAdapter
 import java.io.File
+import java.time.Duration
 import javax.swing.JScrollPane
 import javax.swing.JTextArea
 
@@ -65,9 +66,11 @@ abstract class LogTailer : JScrollPane() {
                 }
             }
         }
-        val tailer = Tailer(logFile, listener)
-        val thread = Thread(tailer)
-        thread.isDaemon = true
-        thread.start()
+        val builder = Tailer.builder()
+        builder.setFile(logFile)
+        builder.setTailerListener(listener)
+        builder.setDelayDuration(Duration.ofMillis(250L))
+        builder.setStartThread(true)
+        builder.get()
     }
 }
