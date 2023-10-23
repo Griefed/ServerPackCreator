@@ -75,23 +75,23 @@ class ConfigEditor(
     private val modpackIcon = StatusIcon(guiProps,Gui.createserverpack_gui_createserverpack_labelmodpackdir_tip.toString())
     private val modpackLabel = ElementLabel(Gui.createserverpack_gui_createserverpack_labelmodpackdir.toString())
     private val modpackSetting = ScrollTextFileField(guiProps,File(""), validationChangeListener)
-    private val modpackChooser = BalloonTipButton(null, guiProps.folderIcon, Gui.createserverpack_gui_browser.toString(),guiProps) { selectModpackDirectory() }
-    private val modpackCheck = BalloonTipButton(null,guiProps.inspectIcon,Gui.createserverpack_gui_buttonmodpackdir_scan_tip.toString(),guiProps) { updateGuiFromSelectedModpack() }
+    private val modpackChooser = BalloonTipButton(null, guiProps.folderIcon, Gui.createserverpack_gui_browser.toString(), guiProps) { selectModpackDirectory() }
+    private val modpackCheck = BalloonTipButton(null, guiProps.inspectIcon,Gui.createserverpack_gui_buttonmodpackdir_scan_tip.toString(), guiProps) { updateGuiFromSelectedModpack() }
 
     private val propertiesIcon = StatusIcon(guiProps,Gui.createserverpack_gui_createserverpack_labelpropertiespath_tip.toString())
     private val propertiesLabel = ElementLabel(Gui.createserverpack_gui_createserverpack_labelpropertiespath.toString())
     private val propertiesSetting = ScrollTextFileField(guiProps,apiWrapper.apiProperties.defaultServerProperties, validationChangeListener)
     private val propertiesQuickSelectLabel = ElementLabel(Gui.createserverpack_gui_quickselect.toString())
     private val propertiesQuickSelect = QuickSelect(tabbedConfigsTab.propertiesQuickSelections()) { setProperties() }
-    private val propertiesChooser = BalloonTipButton(null, guiProps.folderIcon, Gui.createserverpack_gui_browser.toString(),guiProps) { selectServerProperties() }
-    private val propertiesOpen = BalloonTipButton(null, guiProps.openIcon, Gui.createserverpack_gui_createserverpack_button_open_properties.toString(),guiProps) { openServerProperties() }
+    private val propertiesChooser = BalloonTipButton(null, guiProps.folderIcon, Gui.createserverpack_gui_browser.toString(), guiProps) { selectServerProperties() }
+    private val propertiesOpen = BalloonTipButton(null, guiProps.openIcon, Gui.createserverpack_gui_createserverpack_button_open_properties.toString(), guiProps) { openServerProperties() }
 
     private val iconIcon = StatusIcon(guiProps,Gui.createserverpack_gui_createserverpack_labeliconpath_tip.toString())
     private val iconLabel = ElementLabel(Gui.createserverpack_gui_createserverpack_labeliconpath.toString())
     private val iconSetting = ScrollTextFileField(guiProps,apiWrapper.apiProperties.defaultServerIcon, validationChangeListener)
     private val iconQuickSelectLabel = ElementLabel(Gui.createserverpack_gui_quickselect.toString())
     private val iconQuickSelect = QuickSelect(tabbedConfigsTab.iconQuickSelections()) { setIcon() }
-    private val iconChooser = BalloonTipButton(null, guiProps.folderIcon, Gui.createserverpack_gui_browser.toString(),guiProps) { selectServerIcon() }
+    private val iconChooser = BalloonTipButton(null, guiProps.folderIcon, Gui.createserverpack_gui_browser.toString(), guiProps) { selectServerIcon() }
     private val iconPreview = IconPreview(guiProps)
 
     private val inclusionsSourceSetting = ScrollTextField(guiProps, "", "source")
@@ -100,7 +100,7 @@ class ConfigEditor(
     private val inclusionsExclusionFilterSetting = ScrollTextField(guiProps, "", "exclusion")
     private val inclusionsIcon = StatusIcon(guiProps,Gui.createserverpack_gui_createserverpack_labelcopydirs_tip.toString())
     private val inclusionsLabel = ElementLabel(Gui.createserverpack_gui_createserverpack_labelcopydirs.toString())
-    private val inclusionsSetting = InclusionsEditor(guiProps.defaultFileChooserDimension,guiProps,this,apiWrapper,inclusionsSourceSetting,inclusionsDestinationSetting,inclusionsInclusionFilterSetting,inclusionsExclusionFilterSetting)
+    private val inclusionsSetting = InclusionsEditor(guiProps.defaultFileChooserDimension, guiProps,this,apiWrapper,inclusionsSourceSetting,inclusionsDestinationSetting,inclusionsInclusionFilterSetting,inclusionsExclusionFilterSetting)
 
     private val suffixIcon = StatusIcon(guiProps,Gui.createserverpack_gui_createserverpack_labelsuffix_tip.toString())
     private val suffixLabel = ElementLabel(Gui.createserverpack_gui_createserverpack_labelsuffix.toString())
@@ -134,8 +134,8 @@ class ConfigEditor(
     private val prepareServerIcon = StatusIcon(guiProps,Gui.createserverpack_gui_createserverpack_checkboxserver_tip.toString())
     private val prepareServerSetting = ActionCheckBox(Gui.createserverpack_gui_createserverpack_checkboxserver.toString(),validationActionListener)
 
-    private val advSetExclusionsSetting = ScrollTextArea(apiWrapper.apiProperties.clientSideMods().joinToString(","),Gui.createserverpack_gui_createserverpack_labelclientmods.toString(),validationChangeListener,guiProps)
-    private val advSetJavaArgsSetting = ScrollTextArea("-Xmx4G -Xms4G",Gui.createserverpack_gui_createserverpack_javaargs.toString(),validationChangeListener,guiProps)
+    private val advSetExclusionsSetting = ScrollTextArea(apiWrapper.apiProperties.clientSideMods().joinToString(","),Gui.createserverpack_gui_createserverpack_labelclientmods.toString(),validationChangeListener, guiProps)
+    private val advSetJavaArgsSetting = ScrollTextArea("-Xmx4G -Xms4G",Gui.createserverpack_gui_createserverpack_javaargs.toString(),validationChangeListener, guiProps)
     private val advSetScriptKVPairsSetting = ScriptKVPairs(guiProps, this)
     private val advSetPanel = AdvancedSettingsPanel(this, advSetExclusionsSetting, advSetJavaArgsSetting, advSetScriptKVPairsSetting, guiProps, apiWrapper.apiProperties)
     private val advSetCollapsible = CollapsiblePanel(Gui.createserverpack_gui_advanced.toString(), advSetPanel)
@@ -144,7 +144,7 @@ class ConfigEditor(
     private val pluginSettings = PluginsSettingsPanel(pluginPanels)
     private val pluginPanel = CollapsiblePanel(Gui.createserverpack_gui_plugins.toString(), pluginSettings)
 
-    private val modloaderVersionGuide = ThemedBalloonTip(modloaderVersionSetting,ElementLabel(Gui.firstrun_modloader_version.toString()),true,guiProps) {
+    private val modloaderVersionGuide = ThemedBalloonTip(modloaderVersionSetting,ElementLabel(Gui.firstrun_modloader_version.toString()),true, guiProps) {
         JOptionPane.showMessageDialog(
             panel,
             Gui.firstrun_finish_message.toString(),
@@ -152,22 +152,22 @@ class ConfigEditor(
             JOptionPane.INFORMATION_MESSAGE
         )
     }
-    private val modloaderGuide = ThemedBalloonTip(modloaderSetting,ElementLabel(Gui.firstrun_modloader.toString()),true,guiProps) {
+    private val modloaderGuide = ThemedBalloonTip(modloaderSetting,ElementLabel(Gui.firstrun_modloader.toString()),true, guiProps) {
         modloaderVersionGuide.isVisible = true
         modloaderVersionSetting.requestFocusInWindow()
     }
-    private val mcVersionRequiredJavaGuide = ThemedBalloonTip(javaVersionLabel,ElementLabel(Gui.firstrun_java.toString()),true,guiProps) {
+    private val mcVersionRequiredJavaGuide = ThemedBalloonTip(javaVersionLabel,ElementLabel(Gui.firstrun_java.toString()),true, guiProps) {
         modloaderGuide.isVisible = true
         modloaderSetting.requestFocusInWindow()
     }
-    private val mcVersionGuide = ThemedBalloonTip(mcVersionSetting,ElementLabel(Gui.firstrun_minecraftversion.toString()),true,guiProps) {
+    private val mcVersionGuide = ThemedBalloonTip(mcVersionSetting,ElementLabel(Gui.firstrun_minecraftversion.toString()),true, guiProps) {
         mcVersionRequiredJavaGuide.isVisible = true
     }
-    private val inclusionsGuide = ThemedBalloonTip(inclusionsSourceSetting,ElementLabel(Gui.firstrun_inclusions.toString()),true,guiProps) {
+    private val inclusionsGuide = ThemedBalloonTip(inclusionsSourceSetting,ElementLabel(Gui.firstrun_inclusions.toString()),true, guiProps) {
         mcVersionGuide.isVisible = true
         mcVersionSetting.requestFocusInWindow()
     }
-    private val modpackGuide = ThemedBalloonTip(modpackSetting,ElementLabel(Gui.firstrun_modpack.toString()),true,guiProps) {
+    private val modpackGuide = ThemedBalloonTip(modpackSetting,ElementLabel(Gui.firstrun_modpack.toString()),true, guiProps) {
         inclusionsGuide.isVisible = true
         inclusionsSourceSetting.highlight()
     }

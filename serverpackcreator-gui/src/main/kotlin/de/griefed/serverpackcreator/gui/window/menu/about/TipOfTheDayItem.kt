@@ -32,7 +32,7 @@ import javax.swing.JMenuItem
  */
 class TipOfTheDayItem(guiProps: GuiProps, mainFrame: MainFrame): JMenuItem(Gui.menubar_gui_menuitem_tipoftheday.toString()) {
 
-    private val tipManager = TipOfTheDayManager(mainFrame.frame,guiProps)
+    private val tipManager = TipOfTheDayManager(mainFrame.frame, guiProps)
 
     init {
         this.addActionListener { showTip() }

@@ -45,7 +45,7 @@ open class BalloonTipButton(text: String?, icon: Icon, toolTip: String, guiProps
 
     init {
         multiClickThreshhold = 1000
-        val balloonTip = ThemedBalloonTip(this,toolTipLabel,false,guiProps)
+        val balloonTip = ThemedBalloonTip(this,toolTipLabel,false, guiProps)
         val tooltipTimer = Timer(1000) {
             balloonTip.isVisible = true
         }

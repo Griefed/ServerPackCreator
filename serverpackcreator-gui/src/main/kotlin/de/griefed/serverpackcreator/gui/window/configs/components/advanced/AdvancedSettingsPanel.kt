@@ -59,9 +59,9 @@ class AdvancedSettingsPanel(
     private val log = cachedLoggerOf(this.javaClass)
     private val clientModsIcon = StatusIcon(guiProps,Gui.createserverpack_gui_createserverpack_labelclientmods_tip.toString())
     private val clientModsLabel = ElementLabel(Gui.createserverpack_gui_createserverpack_labelclientmods.toString())
-    private val clientModsRevert = BalloonTipButton(null, guiProps.revertIcon, Gui.createserverpack_gui_buttonclientmods_revert_tip.toString(),guiProps) { revertExclusions() }
-    private val clientModsChooser = BalloonTipButton(null, guiProps.folderIcon, Gui.createserverpack_gui_browser.toString(),guiProps) { selectClientMods() }
-    private val clientModsReset = BalloonTipButton(null, guiProps.resetIcon, Gui.createserverpack_gui_buttonclientmods_reset_tip.toString(),guiProps) { resetClientMods() }
+    private val clientModsRevert = BalloonTipButton(null, guiProps.revertIcon, Gui.createserverpack_gui_buttonclientmods_revert_tip.toString(), guiProps) { revertExclusions() }
+    private val clientModsChooser = BalloonTipButton(null, guiProps.folderIcon, Gui.createserverpack_gui_browser.toString(), guiProps) { selectClientMods() }
+    private val clientModsReset = BalloonTipButton(null, guiProps.resetIcon, Gui.createserverpack_gui_buttonclientmods_reset_tip.toString(), guiProps) { resetClientMods() }
 
     private val javaArgsIcon = StatusIcon(guiProps,Gui.createserverpack_gui_createserverpack_javaargs_tip.toString())
     private val javaArgsLabel = ElementLabel(Gui.createserverpack_gui_createserverpack_javaargs.toString())
@@ -69,8 +69,8 @@ class AdvancedSettingsPanel(
 
     private val advScriptSettingsIcon = StatusIcon(guiProps,Gui.createserverpack_gui_createserverpack_scriptsettings_label_tooltip.toString())
     private val advScriptSettingsLabel = ElementLabel(Gui.createserverpack_gui_createserverpack_scriptsettings_label.toString())
-    private val advScriptSettingsRevert = BalloonTipButton(null, guiProps.revertIcon, Gui.createserverpack_gui_revert.toString(),guiProps) { revertScriptKVPairs() }
-    private val advScriptSettingsReset = BalloonTipButton(null, guiProps.resetIcon, Gui.createserverpack_gui_reset.toString(),guiProps) { resetScriptKVPairs() }
+    private val advScriptSettingsRevert = BalloonTipButton(null, guiProps.revertIcon, Gui.createserverpack_gui_revert.toString(), guiProps) { revertScriptKVPairs() }
+    private val advScriptSettingsReset = BalloonTipButton(null, guiProps.resetIcon, Gui.createserverpack_gui_reset.toString(), guiProps) { resetScriptKVPairs() }
 
     init {
         // Mod Exclusions
