@@ -1,3 +1,16 @@
+## [5.0.0-beta.10](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-beta.9...5.0.0-beta.10) (2023-10-23)
+
+
+### :scissors: Refactor
+
+* Formatting ([ba4bde1](https://git.griefed.de/Griefed/ServerPackCreator/commit/ba4bde1e6d5f7853aa65ec09ee569fb8939df5ae))
+
+
+### 💎 Improvements
+
+* Allow selection of source for selection ([f192f18](https://git.griefed.de/Griefed/ServerPackCreator/commit/f192f181d31b6b13eff2783740846bac61c169cf))
+* Enable/Disable manual editing. Settings load and save info, as well as restart notice ([0db4464](https://git.griefed.de/Griefed/ServerPackCreator/commit/0db4464be0e0f51919919f7e1d4f4118b8d4d95e))
+
 ## [5.0.0-beta.9](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-beta.8...5.0.0-beta.9) (2023-10-22)
 
 
