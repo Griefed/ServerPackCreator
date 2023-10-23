@@ -20,6 +20,7 @@
 package de.griefed.serverpackcreator.gui.window.control
 
 import de.griefed.serverpackcreator.gui.GuiProps
+import de.griefed.serverpackcreator.gui.window.control.components.StatusLabel
 import net.miginfocom.swing.MigLayout
 import javax.swing.JLabel
 import javax.swing.JPanel

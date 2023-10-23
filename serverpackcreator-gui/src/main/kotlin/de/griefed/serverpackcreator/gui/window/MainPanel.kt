@@ -61,9 +61,9 @@ class MainPanel(
     @Suppress("MemberVisibilityCanBePrivate")
     val tabbedLogsTab = TabbedLogsTab(apiWrapper.apiProperties)
 
-    @Suppress("MemberVisibilityCanBePrivate")
-    val settingsEditorsTab = SettingsEditorsTab(guiProps, apiWrapper.apiProperties, mainFrame,themeManager)
     val controlPanel = ControlPanel(guiProps, tabbedConfigsTab, larsonScanner, apiWrapper, mainFrame)
+    @Suppress("MemberVisibilityCanBePrivate")
+    val settingsEditorsTab = SettingsEditorsTab(guiProps, apiWrapper.apiProperties, mainFrame, themeManager, controlPanel)
 
     init {
         tabs.addTab(Gui.main_tabs_config.toString(), tabbedConfigsTab.panel)

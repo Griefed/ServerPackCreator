@@ -44,7 +44,7 @@ class EditMenu(
     private val openPack = OpenModpackItem(fileUtilities,tabbedConfigsTab)
     private val editProps = EditPropertiesItem(fileUtilities,tabbedConfigsTab)
     private val editIcon = EditIconItem(fileUtilities,tabbedConfigsTab)
-    private val updateDefaultMods = UpdateDefaultModslistItem(apiProperties,mainFrame.frame,guiProps)
+    private val updateDefaultMods = UpdateDefaultModslistItem(apiProperties,mainFrame.frame, guiProps)
 
     init {
         add(openPack)

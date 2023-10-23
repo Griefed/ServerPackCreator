@@ -48,7 +48,7 @@ class ScrollTextFileField(
         }
 
     init {
-        textField.isEditable = false
+        textField.isEditable = guiProps.allowManualEditing
         file = File(text).absoluteFile
     }
 }

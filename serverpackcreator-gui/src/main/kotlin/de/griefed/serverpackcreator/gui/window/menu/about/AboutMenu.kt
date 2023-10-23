@@ -54,7 +54,7 @@ class AboutMenu(
     private val releases = GitHubReleasesItem(webUtilities)
     private val discord = DiscordItem(webUtilities)
     private val donate = DonationsItem(webUtilities)
-    private val thirdparty = ThirdPartyNoticesItem(mainFrame,guiProps)
+    private val thirdparty = ThirdPartyNoticesItem(mainFrame, guiProps)
     private val tipOfTheDayItem = TipOfTheDayItem(guiProps, mainFrame)
     private val stepByStepItem = StepByStepItem(mainFrame)
 

@@ -17,7 +17,7 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.gui.window.control
+package de.griefed.serverpackcreator.gui.window.control.components
 
 import java.awt.Color
 import java.awt.Graphics

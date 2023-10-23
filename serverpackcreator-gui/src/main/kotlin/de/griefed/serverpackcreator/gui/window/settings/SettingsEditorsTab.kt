@@ -26,6 +26,8 @@ import de.griefed.serverpackcreator.gui.components.TabPanel
 import de.griefed.serverpackcreator.gui.themes.ThemeManager
 import de.griefed.serverpackcreator.gui.window.MainFrame
 import de.griefed.serverpackcreator.gui.window.configs.components.ComponentResizer
+import de.griefed.serverpackcreator.gui.window.control.ControlPanel
+import de.griefed.serverpackcreator.gui.window.control.StatusPanel
 import de.griefed.serverpackcreator.gui.window.settings.components.SettingsCheckTimer
 import de.griefed.serverpackcreator.gui.window.settings.components.SettingsTitle
 import java.awt.BorderLayout
@@ -36,10 +38,16 @@ import javax.swing.event.DocumentEvent
 /**
  * @author Griefed
  */
-class SettingsEditorsTab(guiProps: GuiProps, apiProperties: ApiProperties, mainFrame: MainFrame, themeManager: ThemeManager) :
+class SettingsEditorsTab(
+    guiProps: GuiProps,
+    apiProperties: ApiProperties,
+    mainFrame: MainFrame,
+    themeManager: ThemeManager,
+    controlPanel: ControlPanel
+) :
     TabPanel() {
 
-    val settingsHandling = SettingsHandling(guiProps, this, apiProperties, mainFrame)
+    val settingsHandling = SettingsHandling(guiProps, this, apiProperties, mainFrame, controlPanel)
     private val componentResizer = ComponentResizer()
     private val checkTimer = SettingsCheckTimer(250, this, guiProps)
     private val documentChangeListener = object : DocumentChangeListener {
@@ -50,10 +58,9 @@ class SettingsEditorsTab(guiProps: GuiProps, apiProperties: ApiProperties, mainF
     private val actionListener = ActionListener { checkTimer.restart() }
     private val changeListener = ChangeListener { checkTimer.restart() }
 
-    val global =
-        GlobalSettings(guiProps, apiProperties, componentResizer, mainFrame, documentChangeListener, actionListener)
-    val webservice = WebserviceSettings(guiProps, apiProperties, mainFrame, documentChangeListener, changeListener)
-    val gui = GuiSettings(guiProps, actionListener, changeListener, themeManager)
+    val global = GlobalSettings(guiProps, apiProperties, componentResizer, mainFrame, documentChangeListener, actionListener, controlPanel)
+    val webservice = WebserviceSettings(guiProps, apiProperties, mainFrame, documentChangeListener, changeListener, controlPanel)
+    val gui = GuiSettings(guiProps, actionListener, changeListener, themeManager, controlPanel)
     val title = SettingsTitle(guiProps)
 
     init {

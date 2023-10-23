@@ -24,6 +24,7 @@ import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.components.BalloonTipButton
 import de.griefed.serverpackcreator.gui.window.MainFrame
+import de.griefed.serverpackcreator.gui.window.control.ControlPanel
 import de.griefed.serverpackcreator.gui.window.settings.components.Editor
 import de.griefed.serverpackcreator.gui.window.settings.components.PropertiesChooser
 import net.miginfocom.swing.MigLayout
@@ -40,7 +41,8 @@ class SettingsHandling(
     guiProps: GuiProps,
     private val settingsEditorsTab: SettingsEditorsTab,
     private val apiProperties: ApiProperties,
-    private val mainFrame: MainFrame
+    private val mainFrame: MainFrame,
+    private val controlPanel: ControlPanel
 ) {
     val panel = JPanel()
     private val load =
@@ -87,6 +89,7 @@ class SettingsHandling(
         apiProperties.saveOverrides()
         lastAction = Gui.settings_handle_saved(currentTime())
         checkAll()
+        controlPanel.updateStatus(Gui.settings_info_saved(apiProperties.serverPackCreatorPropertiesFile.absolutePath))
     }
 
     /**
@@ -100,6 +103,7 @@ class SettingsHandling(
                 (tab as Editor).loadSettings()
             }
             lastAction = Gui.settings_handle_loaded(currentTime())
+            controlPanel.updateStatus(Gui.settings_info_loaded(propertiesChooser.selectedFile.absolutePath))
         }
         checkAll()
     }
