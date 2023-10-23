@@ -86,6 +86,7 @@ class InclusionsEditor(
 
     private val sourceIcon = StatusIcon(guiProps,Gui.createserverpack_gui_inclusions_editor_source_info.toString())
     private val sourceLabel = ElementLabel(Gui.createserverpack_gui_inclusions_editor_source.toString())
+    private val sourceAdd = BalloonTipButton(null, guiProps.folderIcon, "Select source-file", guiProps) { selectSource() }
 
     private val destinationIcon = StatusIcon(guiProps,Gui.createserverpack_gui_inclusions_editor_destination_info.toString())
     private val destinationLabel = ElementLabel(Gui.createserverpack_gui_inclusions_editor_destination.toString())
@@ -210,6 +211,7 @@ class InclusionsEditor(
         rightPanel.add(fileRemove, "cell 0 3")
         rightPanel.add(sourceLabel, "cell 1 0")
         rightPanel.add(source, "cell 2 0, grow, w 50:50:")
+        rightPanel.add(sourceAdd, "cell 2 0")
         rightPanel.add(expertPanel, "cell 1 1 2 3, grow, w 50:50:, hidemode 3")
         rightPanel.add(tip, "cell 1 1 2 3, grow, w 50:50:, h 150:200:, hidemode 3")
         rightPanel.add(filesShowBrowser, "cell 3 0")
@@ -445,6 +447,11 @@ class InclusionsEditor(
     fun setServerFiles(entries: List<InclusionSpecification>) {
         inclusionModel.clear()
         inclusionModel.addAll(entries)
+        validate()
+    }
+
+    override fun validate() {
+        super.validate()
         list.updateUI()
         listScroller.updateUI()
         configEditor.validateInputFields()
@@ -474,6 +481,7 @@ class InclusionsEditor(
         if (list.model.size == 1) {
             list.selectedIndex = 0
         }
+        validate()
     }
 
     /**
@@ -487,6 +495,7 @@ class InclusionsEditor(
         if (list.model.size <= 0) {
             emtpySelection()
         }
+        validate()
         return removed
     }
 
@@ -517,15 +526,39 @@ class InclusionsEditor(
             val serverFiles: MutableList<InclusionSpecification> = mutableListOf()
             serverFiles.addAll(getServerFiles())
             for (entry in selection) {
-                if (entry.path.startsWith(configEditor.getModpackDirectory())) {
-                    val cleaned = entry.path.replace(configEditor.getModpackDirectory() + File.separator, "")
-                    serverFiles.add(InclusionSpecification(cleaned))
-                } else {
-                    serverFiles.add(InclusionSpecification(entry.absolutePath))
-                }
+                serverFiles.add(createInclusionSpec(entry))
             }
             setServerFiles(serverFiles.toMutableList())
             log.debug("Selected directories: $serverFiles")
+        }
+        validate()
+    }
+
+    private fun selectSource() {
+        if (selectedInclusion == null) {
+            return
+        }
+        val inclusionSourceChooser = if (File(configEditor.getModpackDirectory()).isDirectory) {
+            InclusionSourceChooser(File(configEditor.getModpackDirectory()), chooserDimension)
+        } else {
+            InclusionSourceChooser(chooserDimension)
+        }
+        inclusionSourceChooser.isMultiSelectionEnabled = false
+        if (inclusionSourceChooser.showOpenDialog(parent) == JFileChooser.APPROVE_OPTION) {
+            source.text = createInclusionSpec(inclusionSourceChooser.selectedFile).source
+        }
+        validate()
+    }
+
+    /**
+     * @author Griefed
+     */
+    private fun createInclusionSpec(sourceFile: File): InclusionSpecification {
+        return if (sourceFile.path.startsWith(configEditor.getModpackDirectory())) {
+            val cleaned = sourceFile.path.replace(configEditor.getModpackDirectory() + File.separator, "")
+            InclusionSpecification(cleaned)
+        } else {
+            InclusionSpecification(sourceFile.absolutePath)
         }
     }
 
@@ -537,6 +570,7 @@ class InclusionsEditor(
             configEditor.setInclusions(configEditor.lastConfig!!.inclusions)
             configEditor.validateInputFields()
         }
+        validate()
     }
 
     /**
