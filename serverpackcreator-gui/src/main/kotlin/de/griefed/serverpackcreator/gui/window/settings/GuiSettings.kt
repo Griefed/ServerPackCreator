@@ -25,6 +25,8 @@ import com.formdev.flatlaf.intellijthemes.FlatDarkPurpleIJTheme
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.components.*
 import de.griefed.serverpackcreator.gui.themes.ThemeManager
+import de.griefed.serverpackcreator.gui.window.control.ControlPanel
+import de.griefed.serverpackcreator.gui.window.control.StatusPanel
 import de.griefed.serverpackcreator.gui.window.settings.components.Editor
 import java.awt.GraphicsEnvironment
 import java.awt.event.ActionListener
@@ -40,46 +42,47 @@ class GuiSettings(
     private val guiProps: GuiProps,
     actionListener: ActionListener,
     changeListener: ChangeListener,
-    private val themeManager: ThemeManager
+    private val themeManager: ThemeManager,
+    private val controlPanel: ControlPanel
 ) : Editor(Gui.settings_gui.toString(), guiProps) {
 
     private val fontSizeIcon = StatusIcon(guiProps,Gui.settings_gui_font_tooltip.toString())
     private val fontSizeLabel = ElementLabel(Gui.settings_gui_font_label.toString())
-    private val fontSizeSetting = ActionSlider(8,76,guiProps.fontSize,changeListener)
-    private val fontSizeRevert = BalloonTipButton(null,guiProps.revertIcon,Gui.settings_revert.toString(), guiProps) {
+    private val fontSizeSetting = ActionSlider(8,76, guiProps.fontSize,changeListener)
+    private val fontSizeRevert = BalloonTipButton(null, guiProps.revertIcon,Gui.settings_revert.toString(), guiProps) {
         fontSizeSetting.value = guiProps.fontSize
     }
-    private val fontSizeReset = BalloonTipButton(null,guiProps.resetIcon,Gui.settings_reset.toString(),guiProps) {
+    private val fontSizeReset = BalloonTipButton(null, guiProps.resetIcon,Gui.settings_reset.toString(), guiProps) {
         fontSizeSetting.value = 12
     }
 
     private val startFocusIcon = StatusIcon(guiProps,Gui.settings_gui_focus_start_tooltip.toString())
     private val startFocusLabel = ElementLabel(Gui.settings_gui_focus_start_label.toString())
     private val startFocusSetting = ActionCheckBox(actionListener)
-    private val startFocusRevert = BalloonTipButton(null,guiProps.revertIcon,Gui.settings_revert.toString(),guiProps) {
+    private val startFocusRevert = BalloonTipButton(null, guiProps.revertIcon,Gui.settings_revert.toString(), guiProps) {
         startFocusSetting.isSelected = guiProps.startFocusEnabled
     }
-    private val startFocusReset = BalloonTipButton(null,guiProps.resetIcon,Gui.settings_reset.toString(),guiProps) {
+    private val startFocusReset = BalloonTipButton(null, guiProps.resetIcon,Gui.settings_reset.toString(), guiProps) {
         startFocusSetting.isSelected = false
     }
 
     private val generationFocusIcon = StatusIcon(guiProps,Gui.settings_gui_focus_generation_tooltip.toString())
     private val generationFocusLabel = ElementLabel(Gui.settings_gui_focus_generation_label.toString())
     private val generationFocusSetting = ActionCheckBox(actionListener)
-    private val generationFocusRevert = BalloonTipButton(null,guiProps.revertIcon,Gui.settings_revert.toString(),guiProps) {
+    private val generationFocusRevert = BalloonTipButton(null, guiProps.revertIcon,Gui.settings_revert.toString(), guiProps) {
         generationFocusSetting.isSelected = guiProps.generationFocusEnabled
     }
-    private val generationFocusReset = BalloonTipButton(null,guiProps.resetIcon,Gui.settings_reset.toString(),guiProps) {
+    private val generationFocusReset = BalloonTipButton(null, guiProps.resetIcon,Gui.settings_reset.toString(), guiProps) {
         generationFocusSetting.isSelected = false
     }
 
     private val themeIcon = StatusIcon(guiProps,Gui.settings_gui_theme_tooltip.toString())
     private val themeLabel = ElementLabel(Gui.settings_gui_theme_label.toString())
     private val themeSetting = ActionComboBox(DefaultComboBoxModel(themeManager.themes.map { it.name }.toTypedArray()),actionListener)
-    private val themeRevert = BalloonTipButton(null,guiProps.revertIcon,Gui.settings_revert.toString(),guiProps) {
+    private val themeRevert = BalloonTipButton(null, guiProps.revertIcon,Gui.settings_revert.toString(), guiProps) {
         loadThemeFromProperties()
     }
-    private val themeReset = BalloonTipButton(null,guiProps.resetIcon,Gui.settings_reset.toString(),guiProps) {
+    private val themeReset = BalloonTipButton(null, guiProps.resetIcon,Gui.settings_reset.toString(), guiProps) {
         for (theme in FlatAllIJThemes.INFOS) {
             if (theme.className == FlatDarkPurpleIJTheme().javaClass.name) {
                 themeSetting.selectedItem = theme.name
@@ -90,15 +93,25 @@ class GuiSettings(
     private val fontIcon = StatusIcon(guiProps,Gui.settings_gui_font_family_tooltip.toString())
     private val fontLabel = ElementLabel(Gui.settings_gui_font_family_label.toString())
     private val fontSetting = ActionComboBox(DefaultComboBoxModel(GraphicsEnvironment.getLocalGraphicsEnvironment().availableFontFamilyNames),actionListener)
-    private val fontRevert = BalloonTipButton(null,guiProps.revertIcon,Gui.settings_revert.toString(),guiProps) {
+    private val fontRevert = BalloonTipButton(null, guiProps.revertIcon,Gui.settings_revert.toString(), guiProps) {
         loadFontProperties()
     }
-    private val fontReset = BalloonTipButton(null,guiProps.resetIcon,Gui.settings_reset.toString(),guiProps) {
+    private val fontReset = BalloonTipButton(null, guiProps.resetIcon,Gui.settings_reset.toString(), guiProps) {
         for (font in GraphicsEnvironment.getLocalGraphicsEnvironment().availableFontFamilyNames) {
             if (font == "JetBrains Mono") {
                 fontSetting.selectedItem = font
             }
         }
+    }
+
+    private val manualEditIcon = StatusIcon(guiProps, "Allows manual editing of textfields for files.")
+    private val manualEditLabel = ElementLabel("Allow Manual Editing")
+    private val manualEditSetting = ActionCheckBox(actionListener)
+    private val manualEditRevert = BalloonTipButton(null, guiProps.revertIcon, Gui.settings_revert.toString(), guiProps) {
+        manualEditSetting.isSelected = guiProps.allowManualEditing
+    }
+    private val manualEditReset = BalloonTipButton(null, guiProps.resetIcon, Gui.settings_reset.toString(), guiProps) {
+        manualEditSetting.isSelected = false
     }
 
     init {
@@ -154,6 +167,13 @@ class GuiSettings(
         panel.add(fontSetting, "cell 2 $y, grow")
         panel.add(fontRevert, "cell 3 $y")
         panel.add(fontReset, "cell 4 $y")
+
+        y++
+        panel.add(manualEditIcon, "cell 0 $y")
+        panel.add(manualEditLabel, "cell 1 $y")
+        panel.add(manualEditSetting, "cell 2 $y, grow")
+        panel.add(manualEditRevert, "cell 3 $y")
+        panel.add(manualEditReset, "cell 4 $y")
     }
 
     /**
@@ -165,6 +185,7 @@ class GuiSettings(
         generationFocusSetting.isSelected = guiProps.generationFocusEnabled
         loadThemeFromProperties()
         loadFontProperties()
+        manualEditSetting.isSelected = guiProps.allowManualEditing
     }
 
     /**
@@ -177,6 +198,10 @@ class GuiSettings(
         themeManager.setTheme(themeManager.getThemeInfo(themeSetting.selectedItem.toString())!!)
         guiProps.theme = themeSetting.selectedItem.toString()
         guiProps.font = FontUIResource(fontSetting.selectedItem.toString(),font.size,font.style)
+        if (guiProps.allowManualEditing != manualEditSetting.isSelected) {
+            controlPanel.updateStatus(Gui.settings_gui_restart_manualedit(manualEditSetting.isSelected.toString()))
+        }
+        guiProps.allowManualEditing = manualEditSetting.isSelected
     }
 
     /**
@@ -207,7 +232,8 @@ class GuiSettings(
                 generationFocusSetting.isSelected != guiProps.generationFocusEnabled ||
                 fontSizeSetting.value != guiProps.fontSize ||
                 fontSetting.selectedItem.toString() != guiProps.font.family ||
-                themeSetting.selectedItem != guiProps.theme
+                themeSetting.selectedItem != guiProps.theme ||
+                manualEditSetting.isSelected != guiProps.allowManualEditing
         if (changes) {
             title.showWarningIcon()
         } else {

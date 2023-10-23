@@ -218,4 +218,14 @@ class ControlPanel(
             )
         }
     }
+
+    /**
+     * Update the labels in the status panel.
+     *
+     * @param text The text to update the status with.
+     * @author Griefed
+     */
+    fun updateStatus(text: String) {
+        statusPanel.updateStatus(text)
+    }
 }

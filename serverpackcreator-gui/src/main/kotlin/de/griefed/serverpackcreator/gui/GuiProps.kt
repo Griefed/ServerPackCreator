@@ -55,6 +55,7 @@ private const val tipsShowOnStartupProp = "tips.show"
 private const val falseAsStr = "false"
 private const val trueAsStr = "true"
 private const val themeKey = "theme.name"
+private const val allowManualEditingProp = "fields.file.editing"
 
 /**
  * Properties used at various places across the whole of the ServerPackCreator GUI, such as icons.
@@ -466,6 +467,16 @@ class GuiProps(private val apiProperties: ApiProperties) {
         set(value) {
             field = value
             storeGuiProperty(tipsShowOnStartupProp,field.toString())
+        }
+    var allowManualEditing: Boolean = false
+        get() {
+            val prop = getGuiProperty(allowManualEditingProp,"false")
+            field = prop.toBoolean()
+            return field
+        }
+        set(value) {
+            field = value
+            storeGuiProperty(allowManualEditingProp,field.toString())
         }
 
     /**

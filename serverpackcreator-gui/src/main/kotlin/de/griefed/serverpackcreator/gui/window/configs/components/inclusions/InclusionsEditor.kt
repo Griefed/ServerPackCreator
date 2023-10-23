@@ -86,7 +86,7 @@ class InclusionsEditor(
 
     private val sourceIcon = StatusIcon(guiProps,Gui.createserverpack_gui_inclusions_editor_source_info.toString())
     private val sourceLabel = ElementLabel(Gui.createserverpack_gui_inclusions_editor_source.toString())
-    private val sourceAdd = BalloonTipButton(null, guiProps.folderIcon, "Select source-file", guiProps) { selectSource() }
+    private val sourceAdd = BalloonTipButton(null, guiProps.folderIcon, Gui.settings_gui_manualedit_select.toString(), guiProps) { selectSource() }
 
     private val destinationIcon = StatusIcon(guiProps,Gui.createserverpack_gui_inclusions_editor_destination_info.toString())
     private val destinationLabel = ElementLabel(Gui.createserverpack_gui_inclusions_editor_destination.toString())
@@ -98,8 +98,8 @@ class InclusionsEditor(
     private val exclusionLabel = ElementLabel(Gui.createserverpack_gui_inclusions_editor_exclusion.toString())
 
     private val toggleVisibility = JToggleButton(guiProps.toggleHelpIcon)
-    private val fileAdd = BalloonTipButton(null,guiProps.addIcon,Gui.createserverpack_gui_inclusions_editor_add.toString(),guiProps) { addEntry("") }
-    private val fileRemove = BalloonTipButton(null,guiProps.deleteIcon,Gui.createserverpack_gui_inclusions_editor_delete.toString(),guiProps) { removeSelectedEntry() }
+    private val fileAdd = BalloonTipButton(null, guiProps.addIcon,Gui.createserverpack_gui_inclusions_editor_add.toString(), guiProps) { addEntry("") }
+    private val fileRemove = BalloonTipButton(null, guiProps.deleteIcon,Gui.createserverpack_gui_inclusions_editor_delete.toString(), guiProps) { removeSelectedEntry() }
     private val tip = InclusionTip(Gui.createserverpack_gui_inclusions_editor_tip_name.toString(), guiProps)
     private val filesShowBrowser = BalloonTipButton(null, guiProps.folderIcon, Gui.createserverpack_gui_browser.toString(), guiProps) { selectInclusions() }
     private val filesRevert = BalloonTipButton(null, guiProps.revertIcon, Gui.createserverpack_gui_buttoncopydirs_revert_tip.toString(), guiProps) { revertInclusions() }
@@ -179,6 +179,7 @@ class InclusionsEditor(
     }
 
     init {
+        source.isEditable = guiProps.allowManualEditing
         tipUpdateTimer.stop()
         tipUpdateTimer.delay = delay
         tipUpdateTimer.isRepeats = false
@@ -235,7 +236,7 @@ class InclusionsEditor(
         }
         list.clearSelection()
         tip.text = Gui.createserverpack_gui_inclusions_editor_tip_default.toString()
-        source.isEditable = false
+        source.isEditable = guiProps.allowManualEditing
         destination.isEditable = false
         inclusionFilter.isEditable = false
         exclusionFilter.isEditable = false
@@ -307,7 +308,7 @@ class InclusionsEditor(
     }
 
     private fun enableInputs() {
-        source.isEditable = true
+        source.isEditable = guiProps.allowManualEditing
         destination.isEditable = true
         inclusionFilter.isEditable = true
         exclusionFilter.isEditable = true
