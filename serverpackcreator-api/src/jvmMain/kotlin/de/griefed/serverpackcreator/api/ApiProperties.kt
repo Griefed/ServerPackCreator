@@ -238,6 +238,7 @@ actual class ApiProperties(
                 "Reforgium-," +
                 "ResourceLoader-," +
                 "ResourcePackOrganizer," +
+                "Ryoamiclights-," +
                 "ShoulderSurfing-," +
                 "ShulkerTooltip-," +
                 "SimpleDiscordRichPresence-," +
@@ -402,6 +403,7 @@ actual class ApiProperties(
                 "signtools-," +
                 "simple-rpc-," +
                 "simpleautorun-," +
+                "servercountryflags-," +
                 "smartcursor-," +
                 "smoothboot-," +
                 "smoothfocus-," +
@@ -539,6 +541,7 @@ actual class ApiProperties(
                 "^Reforgium-.*$," +
                 "^ResourceLoader-.*$," +
                 "^ResourcePackOrganizer.*$," +
+                "^Ryoamiclights-.*$," +
                 "^ShoulderSurfing-.*$," +
                 "^ShulkerTooltip-.*$," +
                 "^SimpleDiscordRichPresence-.*$," +
@@ -699,6 +702,7 @@ actual class ApiProperties(
                 "^rubidium-.*$," +
                 "^rubidium_extras-.*$," +
                 "^screenshot-to-clipboard-.*$," +
+                "^servercountryflags-.*$," +
                 "^shutupexperimentalsettings-.*$," +
                 "^shutupmodelloader-.*$," +
                 "^signtools-.*$," +
