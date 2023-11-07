@@ -246,7 +246,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           ./gradlew -Pversion="${{ needs.preparations.outputs.version }}" generateLicenseReport --info --full-stacktrace
-          ./gradlew -Pversion="${{ needs.preparations.outputs.version }}" :serverpackcreator-app:build :serverpackcreator-app:copyDependencies :serverpackcreator-app:copyJar :serverpackcreator-app:cleanTmpPackager --info --full-stacktrace
+          ./gradlew -Pversion="${{ needs.preparations.outputs.version }}" :serverpackcreator-app:build :serverpackcreator-app:copyDependencies :serverpackcreator-app:copyJar --info --full-stacktrace
 
       - name: Build Image
         run: |
@@ -396,7 +396,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           ./gradlew -Pversion="${{ needs.preparations.outputs.version }}" generateLicenseReport --info --full-stacktrace
-          ./gradlew -Pversion="${{ needs.preparations.outputs.version }}" :serverpackcreator-app:build :serverpackcreator-app:copyDependencies :serverpackcreator-app:copyJar :serverpackcreator-app:cleanTmpPackager --info --full-stacktrace
+          ./gradlew -Pversion="${{ needs.preparations.outputs.version }}" :serverpackcreator-app:build :serverpackcreator-app:copyDependencies :serverpackcreator-app:copyJar --info --full-stacktrace
 
       - name: Build Image
         run: |
@@ -414,7 +414,7 @@ jobs:
             --main-jar serverpackcreator-app-${{ needs.preparations.outputs.version }}-plain.jar \
             --name ServerPackCreator \
             --resource-dir serverpackcreator-app/jpackagerResources \
-            --runtime-image ${{ steps.java.outputs.path }} \
+            --runtime-image "${{ steps.java.outputs.path }}" \
             --temp serverpackcreator-app/build/tmp/jpackager \
             --type "app-image" \
             --vendor "griefed.de" \
