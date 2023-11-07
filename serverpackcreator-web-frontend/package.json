@@ -1,7 +1,7 @@
 {
   "name": "serverpackcreator",
   "version": "1.0.0",
-  "description": "Create server packs from Minecraft Forge or Fabric modpacks.",
+  "description": "Create server packs from Minecraft Forge, NeoForge, Fabric, Quilt or LegacyFabric modpacks.",
   "productName": "ServerPackCreator",
   "cordovaId": "org.cordova.quasar.app",
   "capacitorId": "",

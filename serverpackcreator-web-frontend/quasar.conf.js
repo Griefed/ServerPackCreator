@@ -145,7 +145,7 @@ module.exports = function (ctx) {
       manifest: {
         name: 'ServerPackCreator',
         short_name: 'SPC',
-        description: 'Create server packs from Minecraft Forge or Fabric modpacks.',
+        description: 'Create server packs from Minecraft Forge, NeoForge, Fabric, Quilt or LegacyFabric modpacks.',
         display: 'standalone',
         orientation: 'landscape',
         background_color: '#ffffff',
