@@ -1,3 +1,26 @@
+## [5.0.0-beta.13](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-beta.12...5.0.0-beta.13) (2023-11-07)
+
+
+### 👀 Reverts
+
+* Revert Exec and Icon to previous ([1ee1f2e](https://git.griefed.de/Griefed/ServerPackCreator/commit/1ee1f2eabbb8ff519779d907bd7d7cf458612590))
+
+
+### 🦊 CI/CD
+
+* Move back to Zulu. Always generate release, even when some assets fail. ([31d947b](https://git.griefed.de/Griefed/ServerPackCreator/commit/31d947b8bf60f48c245e79854850cb8a836974b7))
+
+
+### 🧪 Tests
+
+* Run workflow test on every push ([767a8c0](https://git.griefed.de/Griefed/ServerPackCreator/commit/767a8c08a761a594330d408ae287a5116211c3e1))
+
+
+### 🛠 Fixes
+
+* Add another missing key. List supported loaders. ([adfcb7b](https://git.griefed.de/Griefed/ServerPackCreator/commit/adfcb7b8a3f9adfac294d90e05019ce30950401c))
+* Add non-localized key ([faacae1](https://git.griefed.de/Griefed/ServerPackCreator/commit/faacae1ec448ac6cae4e1720a7133bc5deaa54cb))
+
 ## [5.0.0-beta.12](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-beta.11...5.0.0-beta.12) (2023-11-07)
 
 
