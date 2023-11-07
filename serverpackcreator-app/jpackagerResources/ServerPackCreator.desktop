@@ -1,6 +1,7 @@
 [Desktop Entry]
 Name=ServerPackCreator
 Comment=Create server packs from Minecraft Forge, Fabric, Quilt or LegacyFabric modpacks.
+GenericName=Create server packs from Minecraft Forge, Fabric, Quilt or LegacyFabric modpacks.
 GenericName[en_US]=Create server packs from Minecraft Forge, Fabric, Quilt or LegacyFabric modpacks.
 GenericName[en_GB]=Create server packs from Minecraft Forge, Fabric, Quilt or LegacyFabric modpacks.
 Exec=/opt/serverpackcreator/bin/ServerPackCreator
