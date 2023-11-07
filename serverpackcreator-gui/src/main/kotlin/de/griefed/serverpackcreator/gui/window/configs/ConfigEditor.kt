@@ -135,9 +135,10 @@ class ConfigEditor(
     private val prepareServerSetting = ActionCheckBox(Gui.createserverpack_gui_createserverpack_checkboxserver.toString(),validationActionListener)
 
     private val advSetExclusionsSetting = ScrollTextArea(apiWrapper.apiProperties.clientSideMods().joinToString(","),Gui.createserverpack_gui_createserverpack_labelclientmods.toString(),validationChangeListener, guiProps)
+    private val advSetWhitelistSetting = ScrollTextArea(apiWrapper.apiProperties.whitelistedMods().joinToString(","),Gui.createserverpack_gui_createserverpack_labelwhitelistmods.toString(),validationChangeListener, guiProps)
     private val advSetJavaArgsSetting = ScrollTextArea("-Xmx4G -Xms4G",Gui.createserverpack_gui_createserverpack_javaargs.toString(),validationChangeListener, guiProps)
     private val advSetScriptKVPairsSetting = ScriptKVPairs(guiProps, this)
-    private val advSetPanel = AdvancedSettingsPanel(this, advSetExclusionsSetting, advSetJavaArgsSetting, advSetScriptKVPairsSetting, guiProps, apiWrapper.apiProperties)
+    private val advSetPanel = AdvancedSettingsPanel(this, advSetExclusionsSetting, advSetWhitelistSetting, advSetJavaArgsSetting, advSetScriptKVPairsSetting, guiProps, apiWrapper.apiProperties)
     private val advSetCollapsible = CollapsiblePanel(Gui.createserverpack_gui_advanced.toString(), advSetPanel)
 
     private val pluginPanels = apiWrapper.apiPlugins!!.getConfigPanels(this).toMutableList()
@@ -202,89 +203,100 @@ class ConfigEditor(
         updateMinecraftValues()
 
         // "cell column row width height"
+        var column = 0
         // Modpack directory
-        panel.add(modpackIcon, "cell 0 0,grow")
-        panel.add(modpackLabel, "cell 1 0,grow")
-        panel.add(modpackSetting, "cell 2 0,grow")
-        panel.add(modpackChooser, "cell 3 0, h 30!,w 30!")
-        panel.add(modpackCheck, "cell 4 0")
+        panel.add(modpackIcon, "cell 0 $column,grow")
+        panel.add(modpackLabel, "cell 1 $column,grow")
+        panel.add(modpackSetting, "cell 2 $column,grow")
+        panel.add(modpackChooser, "cell 3 $column, h 30!,w 30!")
+        panel.add(modpackCheck, "cell 4 $column")
 
         // Server Properties
-        panel.add(propertiesIcon, "cell 0 1,grow")
-        panel.add(propertiesLabel)
-        panel.add(propertiesSetting, "cell 2 1, split 3,grow, w 50:50:")
-        panel.add(propertiesQuickSelectLabel, "cell 2 1")
-        panel.add(propertiesQuickSelect, "cell 2 1,w 200!")
-        panel.add(propertiesChooser, "cell 3 1")
-        panel.add(propertiesOpen, "cell 4 1")
+        column++ //1
+        panel.add(propertiesIcon, "cell 0 $column,grow")
+        panel.add(propertiesLabel, "cell 1 $column,grow")
+        panel.add(propertiesSetting, "cell 2 $column, split 3,grow, w 50:50:")
+        panel.add(propertiesQuickSelectLabel, "cell 2 $column")
+        panel.add(propertiesQuickSelect, "cell 2 $column,w 200!")
+        panel.add(propertiesChooser, "cell 3 $column")
+        panel.add(propertiesOpen, "cell 4 $column")
 
         // Server Icon
-        panel.add(iconIcon, "cell 0 2,grow")
-        panel.add(iconLabel, "cell 1 2,grow")
-        panel.add(iconSetting, "cell 2 2, split 2,grow, w 50:50:")
-        panel.add(iconQuickSelectLabel, "cell 2 2")
-        panel.add(iconQuickSelect, "cell 2 2,w 200!")
-        panel.add(iconChooser, "cell 3 2")
-        panel.add(iconPreview, "cell 4 2")
+        column++ //2
+        panel.add(iconIcon, "cell 0 $column,grow")
+        panel.add(iconLabel, "cell 1 $column,grow")
+        panel.add(iconSetting, "cell 2 $column, split 2,grow, w 50:50:")
+        panel.add(iconQuickSelectLabel, "cell 2 $column")
+        panel.add(iconQuickSelect, "cell 2 $column,w 200!")
+        panel.add(iconChooser, "cell 3 $column")
+        panel.add(iconPreview, "cell 4 $column")
 
         // Server Files
-        panel.add(inclusionsIcon, "cell 0 3 1 3")
-        panel.add(inclusionsLabel, "cell 1 3 1 3,grow")
-        panel.add(inclusionsSetting, "cell 2 3 3 3, grow, w 10:500:, h 150:225:300")
+        column++ //3
+        panel.add(inclusionsIcon, "cell 0 $column 1 3")
+        panel.add(inclusionsLabel, "cell 1 $column 1 3,grow")
+        panel.add(inclusionsSetting, "cell 2 $column 3 3, grow, w 10:500:, h 150:225:300")
 
         // Server Pack Suffix
-        panel.add(suffixIcon, "cell 0 6,grow")
-        panel.add(suffixLabel, "cell 1 6,grow")
-        panel.add(suffixSetting, "cell 2 6 3 1,grow")
+        column += 3 //6
+        panel.add(suffixIcon, "cell 0 $column,grow")
+        panel.add(suffixLabel, "cell 1 $column,grow")
+        panel.add(suffixSetting, "cell 2 $column 3 1,grow")
 
         // Minecraft Version
-        panel.add(mcVersionIcon, "cell 0 7,grow")
-        panel.add(mcVersionLabel, "cell 1 7,grow")
-        panel.add(mcVersionSetting, "cell 2 7,w 200!")
+        column++ //7
+        panel.add(mcVersionIcon, "cell 0 $column,grow")
+        panel.add(mcVersionLabel, "cell 1 $column,grow")
+        panel.add(mcVersionSetting, "cell 2 $column,w 200!")
 
         // Java Version Of Minecraft Version
-        panel.add(javaVersionIcon, "cell 2 7, w 40!, gapleft 40")
-        panel.add(javaVersionLabel, "cell 2 7")
-        panel.add(javaVersionInfo, "cell 2 7, w 40!")
+        panel.add(javaVersionIcon, "cell 2 $column, w 40!, gapleft 40")
+        panel.add(javaVersionLabel, "cell 2 $column")
+        panel.add(javaVersionInfo, "cell 2 $column, w 40!")
 
         // Modloader
-        panel.add(modloaderIcon, "cell 0 8,grow")
-        panel.add(modloaderLabel, "cell 1 8,grow")
-        panel.add(modloaderSetting, "cell 2 8,w 200!")
+        column++ //8
+        panel.add(modloaderIcon, "cell 0 $column,grow")
+        panel.add(modloaderLabel, "cell 1 $column,grow")
+        panel.add(modloaderSetting, "cell 2 $column,w 200!")
 
         // Include Server Icon
-        panel.add(includeIconIcon, "cell 2 8, w 40!, gapleft 40,grow")
-        panel.add(includeIconSetting, "cell 2 8, w 200!")
+        panel.add(includeIconIcon, "cell 2 $column, w 40!, gapleft 40,grow")
+        panel.add(includeIconSetting, "cell 2 $column, w 200!")
 
         // Create ZIP Archive
-        panel.add(zipIcon, "cell 2 8, w 40!,grow")
-        panel.add(zipSetting, "cell 2 8, w 200!")
+        panel.add(zipIcon, "cell 2 $column, w 40!,grow")
+        panel.add(zipSetting, "cell 2 $column, w 200!")
 
         // Modloader Version
-        panel.add(modloaderVersionIcon, "cell 0 9,grow")
-        panel.add(modloaderVersionLabel, "cell 1 9,grow")
-        panel.add(modloaderVersionSetting, "cell 2 9,w 200!")
+        column++ //9
+        panel.add(modloaderVersionIcon, "cell 0 $column,grow")
+        panel.add(modloaderVersionLabel, "cell 1 $column,grow")
+        panel.add(modloaderVersionSetting, "cell 2 $column,w 200!")
 
         // Include Server Properties
-        panel.add(includePropertiesIcon, "cell 2 9, w 40!, gapleft 40,grow")
-        panel.add(includePropertiesSetting, "cell 2 9, w 200!")
+        panel.add(includePropertiesIcon, "cell 2 $column, w 40!, gapleft 40,grow")
+        panel.add(includePropertiesSetting, "cell 2 $column, w 200!")
 
         // Install Local Server
-        panel.add(prepareServerIcon, "cell 2 9, w 40!,grow")
-        panel.add(prepareServerSetting, "cell 2 9, w 200!")
+        panel.add(prepareServerIcon, "cell 2 $column, w 40!,grow")
+        panel.add(prepareServerSetting, "cell 2 $column, w 200!")
 
         // Advanced Settings
-        panel.add(advSetCollapsible, "cell 0 10 5,grow")
+        column++ //10
+        panel.add(advSetCollapsible, "cell 0 $column 5,grow")
 
         // Plugins
+        column++ //11
         if (pluginPanels.isNotEmpty()) {
-            panel.add(pluginPanel, "cell 0 11 5,grow")
+            panel.add(pluginPanel, "cell 0 $column 5,grow")
         }
         validateInputFields()
         lastConfig = getCurrentConfiguration()
         componentResizer.registerComponent(advSetExclusionsSetting, "cell 2 0 1 3,grow,w 10:500:,h %s!")
-        componentResizer.registerComponent(advSetJavaArgsSetting, "cell 2 3 1 3,grow,w 10:500:,h %s!")
-        componentResizer.registerComponent(advSetScriptKVPairsSetting.scrollPanel, "cell 2 6 1 3,grow,w 10:500:,h %s!")
+        componentResizer.registerComponent(advSetWhitelistSetting, "cell 2 3 1 3,grow,w 10:500:,h %s!")
+        componentResizer.registerComponent(advSetJavaArgsSetting, "cell 2 6 1 3,grow,w 10:500:,h %s!")
+        componentResizer.registerComponent(advSetScriptKVPairsSetting.scrollPanel, "cell 2 9 1 3,grow,w 10:500:,h %s!")
     }
 
     /**
@@ -339,6 +351,14 @@ class ConfigEditor(
      */
     override fun setClientSideMods(entries: MutableList<String>) {
         advSetExclusionsSetting.text = apiWrapper.utilities!!.stringUtilities.buildString(entries)
+        validateInputFields()
+    }
+
+    /**
+     * @author Griefed
+     */
+    override fun setWhitelist(entries: MutableList<String>) {
+        advSetWhitelistSetting.text = apiWrapper.utilities!!.stringUtilities.buildString(entries)
         validateInputFields()
     }
 
@@ -468,9 +488,27 @@ class ConfigEditor(
     /**
      * @author Griefed
      */
+    override fun getWhitelist(): String {
+        return advSetWhitelistSetting.text.replace(", ", ",")
+    }
+
+    /**
+     * @author Griefed
+     */
     override fun getClientSideModsList(): MutableList<String> {
         return apiWrapper.utilities!!.listUtilities.cleanList(
             getClientSideMods().split(",")
+                .dropLastWhile { it.isEmpty() }
+                .toMutableList()
+        )
+    }
+
+    /**
+     * @author Griefed
+     */
+    override fun getWhitelistList(): MutableList<String> {
+        return apiWrapper.utilities!!.listUtilities.cleanList(
+            getWhitelist().split(",")
                 .dropLastWhile { it.isEmpty() }
                 .toMutableList()
         )
@@ -489,6 +527,7 @@ class ConfigEditor(
     override fun getCurrentConfiguration(): PackConfig {
         return PackConfig(
             getClientSideModsList(),
+            getWhitelistList(),
             getInclusions(),
             getModpackDirectory(),
             getMinecraftVersion(),
@@ -740,6 +779,7 @@ class ConfigEditor(
 
         when {
             currentConfig.clientMods != lastConfig!!.clientMods
+                    || currentConfig.modsWhitelist != lastConfig!!.modsWhitelist
                     || currentConfig.inclusions != lastConfig!!.inclusions
                     || currentConfig.javaArgs != lastConfig!!.javaArgs
                     || currentConfig.minecraftVersion != lastConfig!!.minecraftVersion
@@ -775,8 +815,14 @@ class ConfigEditor(
             try {
                 setModpackDirectory(packConfig.modpackDir)
                 if (packConfig.clientMods.isEmpty()) {
-                    setClientSideMods(apiWrapper.apiProperties.clientSideMods())
-                    log.debug("Set clientMods with fallback list.")
+                    setClientSideMods(apiWrapper.apiProperties.clientSideMods().toMutableList())
+                    log.debug("Set clientMods to fallback list.")
+                } else {
+                    setClientSideMods(packConfig.clientMods)
+                }
+                if (packConfig.modsWhitelist.isEmpty()) {
+                    setWhitelist(apiWrapper.apiProperties.whitelistedMods().toMutableList())
+                    log.debug("Set whitelist to fallback list.")
                 } else {
                     setClientSideMods(packConfig.clientMods)
                 }
@@ -984,6 +1030,15 @@ class ConfigEditor(
      */
     fun validateExclusions(): List<String> {
         return advSetPanel.validateExclusions()
+    }
+
+    /**
+     * Validate the input field for client mods.
+     *
+     * @author Griefed
+     */
+    fun validateWhitelist(): List<String> {
+        return advSetPanel.validateWhitelist()
     }
 
     /**

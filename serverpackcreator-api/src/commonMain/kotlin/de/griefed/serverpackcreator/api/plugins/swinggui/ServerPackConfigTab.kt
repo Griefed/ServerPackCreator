@@ -35,6 +35,7 @@ import de.griefed.serverpackcreator.api.utilities.File
 @Suppress("unused")
 interface ServerPackConfigTab {
     fun setClientSideMods(entries: MutableList<String>)
+    fun setWhitelist(entries: MutableList<String>)
     fun setInclusions(entries: MutableList<InclusionSpecification>)
     fun setIconInclusionTicked(ticked: Boolean)
     fun setJavaArguments(javaArguments: String)
@@ -52,6 +53,8 @@ interface ServerPackConfigTab {
 
     fun getClientSideMods(): String
     fun getClientSideModsList(): MutableList<String>
+    fun getWhitelist(): String
+    fun getWhitelistList(): MutableList<String>
     fun getInclusions(): List<InclusionSpecification>
     fun getCurrentConfiguration(): PackConfig
     fun saveCurrentConfiguration(): File

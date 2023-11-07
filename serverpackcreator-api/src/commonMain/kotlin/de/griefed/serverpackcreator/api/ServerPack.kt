@@ -101,6 +101,7 @@ abstract class ServerPack<F, TS, TF> {
         packConfig.modpackDir,
         packConfig.inclusions,
         packConfig.clientMods,
+        packConfig.modsWhitelist,
         packConfig.minecraftVersion,
         getServerPackDestination(packConfig),
         packConfig.modloader
@@ -211,6 +212,7 @@ abstract class ServerPack<F, TS, TF> {
         modpackDir: String,
         inclusions: ArrayList<InclusionSpecification>,
         clientMods: List<String>,
+        whitelist: List<String>,
         minecraftVersion: String,
         destination: String,
         modloader: String
@@ -314,6 +316,7 @@ abstract class ServerPack<F, TS, TF> {
      * @param modsDir                 The mods-directory of the modpack of which to generate a list of
      * all its contents.
      * @param userSpecifiedClientMods A list of all clientside-only mods.
+     * @param userSpecifiedWhitelist  A list of mods to include regardless if a match was found in [userSpecifiedClientMods].
      * @param minecraftVersion        The Minecraft version the modpack uses. When the modloader is
      * Forge, this determines whether Annotations or Tomls are
      * scanned.
@@ -322,7 +325,11 @@ abstract class ServerPack<F, TS, TF> {
      * @author Griefed
      */
     abstract fun getModsToInclude(
-        modsDir: String, userSpecifiedClientMods: List<String>, minecraftVersion: String, modloader: String
+        modsDir: String,
+        userSpecifiedClientMods: List<String>,
+        userSpecifiedModsWhitelist: List<String>,
+        minecraftVersion: String,
+        modloader: String
     ): List<F>
 
     /**
@@ -367,6 +374,7 @@ abstract class ServerPack<F, TS, TF> {
     fun getModsToInclude(packConfig: Pack<*, *, *>) = getModsToInclude(
         "${packConfig.modpackDir}${File.separator}mods",
         packConfig.clientMods,
+        packConfig.modsWhitelist,
         packConfig.minecraftVersion,
         packConfig.modloader
     )
@@ -457,7 +465,7 @@ abstract class ServerPack<F, TS, TF> {
      * modpack.
      * @author Griefed
      */
-    abstract fun excludeUserSpecifiedMod(userSpecifiedExclusions: List<String>, modsInModpack: TF)
+    abstract fun excludeUserSpecifiedMod(userSpecifiedExclusions: List<String>, userSpecifiedModsWhitelist: List<String>, modsInModpack: TF)
 
     /**
      * Walk through the specified directory and add a [ServerPackFile] for every file/folder
@@ -484,7 +492,7 @@ abstract class ServerPack<F, TS, TF> {
      *
      * @author Griefed
      */
-    abstract fun exclude(userSpecifiedExclusion: String, modsInModpack: TF)
+    abstract fun exclude(userSpecifiedExclusion: String, userSpecifiedModsWhitelist: List<String>, modsInModpack: TF)
 
     /**
      * Cleans up the server_pack directory by deleting left-over files from modloader installations

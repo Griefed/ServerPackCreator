@@ -70,6 +70,11 @@ private const val clientModsComment =
     "\n No need to include version specifics. Must be the filenames of the mods, not their project names on CurseForge/Modrinth!" +
     "\n Example: [AmbientSounds-,ClientTweaks-,PackMenu-,BetterAdvancement-,jeiintegration-]"
 
+private const val whitelistComment =
+    "\n List of mods to include if present, regardless whether a match was found through the list of clientside-only mods." +
+    "\n No need to include version specifics. Must be the filenames of the mods, not their project names on CurseForge/Modrinth!" +
+    "\n Example: [Ping-Wheel-]"
+
 private const val includeServerPropertiesComment =
     "\n Include a server.properties in your server pack. Must be true or false." +
     "\n If no server.properties is provided but setting set to true, a default one will be provided. Default value is true."
@@ -117,6 +122,8 @@ private const val javaArgsKey = "javaArgs"
 private const val inclusionsKey = "inclusions"
 
 private const val clientModsKey = "clientMods"
+
+private const val whitelistKey = "whitelist"
 
 private const val includeServerPropertiesKey = "includeServerProperties"
 
@@ -187,6 +194,7 @@ actual open class PackConfig actual constructor() : Pack<File, JsonNode, PackCon
      * Construct a new configuration model with custom values.
      *
      * @param clientMods                List of clientside mods to exclude from the server pack.
+     * @param whitelist                 List of mods to include if present, regardless whether a match was found through [clientMods]
      * @param copyDirs                  List of directories and/or files to include in the server pack.
      * @param modpackDir                The path to the modpack.
      * @param minecraftVersion          The Minecraft version the modpack uses.
@@ -206,6 +214,7 @@ actual open class PackConfig actual constructor() : Pack<File, JsonNode, PackCon
      */
     actual constructor(
         clientMods: List<String>,
+        whitelist: List<String>,
         copyDirs: List<InclusionSpecification>,
         modpackDir: String,
         minecraftVersion: String,
@@ -284,7 +293,8 @@ actual open class PackConfig actual constructor() : Pack<File, JsonNode, PackCon
         }
         setInclusions(inclusionSpecs)
 
-        setClientMods(config.getOrElse(clientModsKey, listOf("")) as ArrayList<String>)
+        setClientMods(config.getOrElse(clientModsKey, listOf("")).toMutableList())
+        setModsWhitelist(config.getOrElse(whitelistKey, listOf("")).toMutableList())
         modpackDir = config.getOrElse(modpackDirKey, "")
         minecraftVersion = config.getOrElse(minecraftVersionKey, "")
         modloader = config.getOrElse(modLoaderKey, "")
@@ -400,6 +410,9 @@ actual open class PackConfig actual constructor() : Pack<File, JsonNode, PackCon
 
         conf.setComment(clientModsKey, clientModsComment)
         conf.set<Any>(clientModsKey, clientMods)
+
+        conf.setComment(whitelistKey, whitelistComment)
+        conf.set<Any>(whitelistKey, modsWhitelist)
 
         conf.setComment(includeServerPropertiesKey, includeServerPropertiesComment)
         conf.set<Any>(includeServerPropertiesKey, isServerPropertiesInclusionDesired)

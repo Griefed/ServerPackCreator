@@ -33,9 +33,10 @@ abstract class Pack<F, J, out P> {
     protected val fabric = "^fabric$".toRegex()
     protected val quilt = "^quilt$".toRegex()
     protected val legacyFabric = "^legacyfabric$".toRegex()
-    protected val whitespace = "\\s+".toRegex()
+    protected val whitespace = "^\\s+$".toRegex()
 
     val clientMods: ArrayList<String> = ArrayList(1000)
+    val modsWhitelist: ArrayList<String> = ArrayList(1000)
     val inclusions: ArrayList<InclusionSpecification> = ArrayList(100)
     val scriptSettings = HashMap<String, String>(100)
     val pluginsConfigs = HashMap<String, ArrayList<CommentedConfig>>(20)
@@ -92,10 +93,16 @@ abstract class Pack<F, J, out P> {
         return pluginsConfigs[pluginId]!!
     }
 
-    fun setClientMods(newClientMods: ArrayList<String>) {
+    fun setClientMods(newClientMods: MutableList<String>) {
         clientMods.clear()
-        newClientMods.removeIf { entry: String -> entry.matches(whitespace) || entry.isEmpty() }
+        newClientMods.removeIf { entry: String -> entry.isBlank() || entry.matches(whitespace) }
         clientMods.addAll(newClientMods)
+    }
+
+    fun setModsWhitelist(newModsWhitelist: MutableList<String>) {
+        modsWhitelist.clear()
+        newModsWhitelist.removeIf { entry: String -> entry.isBlank() || entry.matches(whitespace) }
+        modsWhitelist.addAll(newModsWhitelist)
     }
 
     fun setInclusions(newCopyDirs: ArrayList<InclusionSpecification>) {
@@ -111,6 +118,7 @@ abstract class Pack<F, J, out P> {
     override fun toString(): String {
         return "Pack(" +
                 " clientMods=$clientMods," +
+                " whiteList=$modsWhitelist," +
                 " copyDirs=$inclusions," +
                 " scriptSettings=$scriptSettings," +
                 " pluginsConfigs=$pluginsConfigs," +

@@ -199,6 +199,7 @@ actual class ServerPackHandler actual constructor(
         modpackDir: String,
         inclusions: ArrayList<InclusionSpecification>,
         clientMods: List<String>,
+        whitelist: List<String>,
         minecraftVersion: String,
         destination: String,
         modloader: String
@@ -233,6 +234,7 @@ actual class ServerPackHandler actual constructor(
                 destination,
                 exclusions,
                 clientMods,
+                whitelist,
                 minecraftVersion,
                 modloader
             )
@@ -265,6 +267,7 @@ actual class ServerPackHandler actual constructor(
         destination: String,
         exclusions: MutableList<Regex>,
         clientMods: List<String>,
+        whitelist: List<String>,
         minecraftVersion: String,
         modloader: String
     ): List<ServerPackFile> {
@@ -308,7 +311,7 @@ actual class ServerPackHandler actual constructor(
                 } catch (ignored: IOException) {
                 }
                 acquired = mutableListOf()
-                for (mod in getModsToInclude(clientDir, clientMods, minecraftVersion, modloader)) {
+                for (mod in getModsToInclude(clientDir, clientMods, whitelist, minecraftVersion, modloader)) {
                     acquired.add(ServerPackFile(mod, File(serverDir, mod.name)))
                 }
                 processed = runFilters(acquired, inclusion, modpackDir)
@@ -817,6 +820,7 @@ actual class ServerPackHandler actual constructor(
     override fun getModsToInclude(
         modsDir: String,
         userSpecifiedClientMods: List<String>,
+        userSpecifiedModsWhitelist: List<String>,
         minecraftVersion: String,
         modloader: String
     ): List<File> {
@@ -857,7 +861,7 @@ actual class ServerPackHandler actual constructor(
         }
 
         // Exclude user-specified mods from copying.
-        excludeUserSpecifiedMod(userSpecifiedClientMods, modsInModpack)
+        excludeUserSpecifiedMod(userSpecifiedClientMods, userSpecifiedModsWhitelist, modsInModpack)
         return ArrayList(modsInModpack)
     }
 
@@ -975,11 +979,11 @@ actual class ServerPackHandler actual constructor(
     /**
      * @author Griefed
      */
-    override fun excludeUserSpecifiedMod(userSpecifiedExclusions: List<String>, modsInModpack: TreeSet<File>) {
+    override fun excludeUserSpecifiedMod(userSpecifiedExclusions: List<String>, userSpecifiedModsWhitelist: List<String>, modsInModpack: TreeSet<File>) {
         if (userSpecifiedExclusions.isNotEmpty()) {
             log.info("Performing ${apiProperties.exclusionFilter}-type checks for user-specified clientside-only mod exclusion.")
             for (userSpecifiedExclusion in userSpecifiedExclusions) {
-                exclude(userSpecifiedExclusion, modsInModpack)
+                exclude(userSpecifiedExclusion, userSpecifiedModsWhitelist, modsInModpack)
             }
         } else {
             log.warn("User specified no clientside-only mods.")
@@ -1022,22 +1026,23 @@ actual class ServerPackHandler actual constructor(
     /**
      * @author Griefed
      */
-    override fun exclude(userSpecifiedExclusion: String, modsInModpack: TreeSet<File>) {
-        modsInModpack.removeIf {
+    override fun exclude(userSpecifiedExclusion: String, userSpecifiedModsWhitelist: List<String>, modsInModpack: TreeSet<File>) {
+        modsInModpack.removeIf { modToCheck ->
             val excluded: Boolean
-            val check = it.name
+            val modName = modToCheck.name
             excluded = when (apiProperties.exclusionFilter) {
-                ExclusionFilter.END -> check.endsWith(userSpecifiedExclusion)
-                ExclusionFilter.CONTAIN -> check.contains(userSpecifiedExclusion)
-                ExclusionFilter.REGEX -> check.matches(userSpecifiedExclusion.toRegex())
-                ExclusionFilter.EITHER -> (check.startsWith(userSpecifiedExclusion) || check.endsWith(
-                    userSpecifiedExclusion
-                ) || check.contains(userSpecifiedExclusion) || check.matches(userSpecifiedExclusion.toRegex()))
-
-                ExclusionFilter.START -> check.startsWith(userSpecifiedExclusion)
+                ExclusionFilter.START -> modName.startsWith(userSpecifiedExclusion) && !userSpecifiedModsWhitelist.any { whitelistedMod -> modName.startsWith(whitelistedMod) }
+                ExclusionFilter.END -> modName.endsWith(userSpecifiedExclusion) && !userSpecifiedModsWhitelist.any { whitelistedMod -> modName.endsWith(whitelistedMod) }
+                ExclusionFilter.CONTAIN -> modName.contains(userSpecifiedExclusion) && !userSpecifiedModsWhitelist.any { whitelistedMod -> modName.contains(whitelistedMod) }
+                ExclusionFilter.REGEX -> modName.matches(userSpecifiedExclusion.toRegex()) && !userSpecifiedModsWhitelist.any { whitelistedMod -> modName.matches(whitelistedMod.toRegex()) }
+                ExclusionFilter.EITHER -> (
+                            (modName.startsWith(userSpecifiedExclusion) && !userSpecifiedModsWhitelist.any { whitelistedMod -> modName.startsWith(whitelistedMod) }) ||
+                            (modName.endsWith(userSpecifiedExclusion) && !userSpecifiedModsWhitelist.any { whitelistedMod -> modName.endsWith(whitelistedMod) }) ||
+                            (modName.contains(userSpecifiedExclusion) && !userSpecifiedModsWhitelist.any { whitelistedMod -> modName.contains(whitelistedMod) }) ||
+                            (modName.matches(userSpecifiedExclusion.toRegex()) && !userSpecifiedModsWhitelist.any { whitelistedMod -> modName.matches(whitelistedMod.toRegex()) }))
             }
             if (excluded) {
-                log.debug("Removed ${it.name} as per user-specified check: $userSpecifiedExclusion")
+                log.debug("Removed ${modToCheck.name} as per user-specified check: $userSpecifiedExclusion")
             }
             excluded
         }
