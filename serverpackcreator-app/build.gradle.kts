@@ -61,7 +61,7 @@ tasks.jpackage {
     val ver: String = project.version.toString()
     dependsOn("build", "copyDependencies", "copyJar", "cleanTmpPackager")
     aboutUrl = "https://www.griefed.de/#/serverpackcreator"
-    appDescription = "Create server packs from Minecraft Forge, Fabric, Quilt, LegacyFabric and NeoForge modpacks."
+    appDescription = "Create server packs from Minecraft Forge, NeoForge, Fabric, Quilt or LegacyFabric modpacks."
     appName = "ServerPackCreator"
     appVersion = if (ver == "dev") {
         val current = LocalDate.now().toString().split("-")

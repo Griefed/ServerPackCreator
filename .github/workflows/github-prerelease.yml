@@ -254,7 +254,7 @@ jobs:
           jpackage `
             --app-version $Version[0] `
             --copyright "Copyright (C) 2023 Griefed" `
-            --description "Create server packs from Minecraft Forge, Fabric, Quilt or LegacyFabric modpacks." `
+            --description "Create server packs from Minecraft Forge, NeoForge, Fabric, Quilt or LegacyFabric modpacks." `
             --dest "serverpackcreator-app\build\dist" `
             --icon "serverpackcreator-app\jpackagerResources\app.ico" `
             --input "serverpackcreator-app\build\jars" `
@@ -404,7 +404,7 @@ jobs:
           jpackage \
             --app-version "${VERSION[0]}" \
             --copyright "Copyright (C) 2023 Griefed" \
-            --description "Create server packs from Minecraft Forge, Fabric, Quilt or LegacyFabric modpacks." \
+            --description "Create server packs from Minecraft Forge, NeoForge, Fabric, Quilt or LegacyFabric modpacks." \
             --dest serverpackcreator-app/build/dist \
             --icon serverpackcreator-app/jpackagerResources/app.png \
             --input serverpackcreator-app/build/jars \
