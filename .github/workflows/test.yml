@@ -2,8 +2,6 @@ name: Test
 
 on:
   push:
-    tags-ignore:
-      - '**'
   pull_request:
   workflow_dispatch:
 
@@ -186,7 +184,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           ./gradlew -Pversion=${{ steps.branch-name.outputs.current_branch }} generateLicenseReport --info --full-stacktrace
-          ./gradlew :serverpackcreator-app:build :serverpackcreator-app:copyDependencies :serverpackcreator-app:copyJar :serverpackcreator-app:cleanTmpPackager --info --full-stacktrace
+          ./gradlew :serverpackcreator-app:build :serverpackcreator-app:copyDependencies :serverpackcreator-app:copyJar --info --full-stacktrace
 
       - name: Build Image
         run: |
@@ -311,7 +309,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           ./gradlew -Pversion=${{ steps.branch-name.outputs.current_branch }} generateLicenseReport --info --full-stacktrace
-          ./gradlew :serverpackcreator-app:build :serverpackcreator-app:copyDependencies :serverpackcreator-app:copyJar :serverpackcreator-app:cleanTmpPackager --info --full-stacktrace
+          ./gradlew :serverpackcreator-app:build :serverpackcreator-app:copyDependencies :serverpackcreator-app:copyJar --info --full-stacktrace
 
       - name: Build Image
         run: |
@@ -328,7 +326,7 @@ jobs:
             --main-jar serverpackcreator-app-dev-plain.jar \
             --name ServerPackCreator \
             --resource-dir serverpackcreator-app/jpackagerResources \
-            --runtime-image ${{ steps.java.outputs.path }} \
+            --runtime-image "${{ steps.java.outputs.path }}" \
             --temp serverpackcreator-app/build/tmp/jpackager \
             --type "app-image" \
             --vendor "griefed.de" \
