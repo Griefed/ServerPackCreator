@@ -607,6 +607,9 @@ internal class ConfigurationHandlerTest {
             "TipTheScales",
             "WorldNameRandomizer"
         )
+        val whitelist = arrayListOf(
+            "Ping-Wheel-"
+        )
         val inclusions = ArrayList<InclusionSpecification>()
         inclusions.add(InclusionSpecification("config"))
         inclusions.add(InclusionSpecification("mods"))
@@ -628,6 +631,7 @@ internal class ConfigurationHandlerTest {
         Assertions.assertNotNull(
             PackConfig(
                 clientMods,
+                whitelist,
                 inclusions,
                 "src/jvmTest/resources/fabric_tests",
                 javaPath,
@@ -676,6 +680,9 @@ internal class ConfigurationHandlerTest {
             "TipTheScales",
             "WorldNameRandomizer"
         )
+        val whitelist = arrayListOf(
+            "Ping-Wheel-"
+        )
         val inclusions = ArrayList<InclusionSpecification>()
         inclusions.add(InclusionSpecification("config"))
         inclusions.add(InclusionSpecification("mods"))
@@ -696,6 +703,7 @@ internal class ConfigurationHandlerTest {
         Assertions.assertNotNull(
             PackConfig(
                 clientMods,
+                whitelist,
                 inclusions,
                 "src/jvmTest/resources/forge_tests",
                 javaPath,

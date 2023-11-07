@@ -32,6 +32,7 @@ import java.io.InputStreamReader
 import java.net.URL
 import java.util.*
 import java.util.prefs.Preferences
+import kotlin.collections.ArrayList
 
 /**
  * Base settings of ServerPackCreator, such as working directories, default list of clientside-only
@@ -72,6 +73,8 @@ actual class ApiProperties(
         "de.griefed.serverpackcreator.configuration.fallbackmodslist"
     private val pConfigurationFallbackModsListRegex =
         "de.griefed.serverpackcreator.configuration.fallbackmodslist.regex"
+    private val pConfigurationFallbackModsWhiteList =
+        "de.griefed.serverpackcreator.configuration.modswhitelist"
     private val pConfigurationHasteBinServerUrl =
         "de.griefed.serverpackcreator.configuration.hastebinserver"
     private val pConfigurationAikarsFlags =
@@ -138,6 +141,13 @@ actual class ApiProperties(
     } else {
         jarInformation.jarFolder.absoluteFile
     }
+
+    @Suppress("SpellCheckingInspection")
+    private var fallbackModsWhitelist = TreeSet(
+        listOf(
+            "Ping-Wheel-"
+        )
+    )
 
     @Suppress("SpellCheckingInspection")
     private var fallbackMods = TreeSet(
@@ -564,6 +574,13 @@ actual class ApiProperties(
         private set
 
     /**
+     * String-list of mods to include if present, regardless whether a match was found through [clientsideMods].
+     */
+    @Suppress("MemberVisibilityCanBePrivate")
+    var modsWhitelist = fallbackModsWhitelist
+        private set
+
+    /**
      * Regex-list of clientside-only mods to exclude from server packs.
      */
     @Suppress("MemberVisibilityCanBePrivate")
@@ -576,6 +593,20 @@ actual class ApiProperties(
             return field
         }
         private set
+
+    /**
+     * Regex-list of mods to include if present, regardless whether a match was found throug [clientsideModsRegex].
+     */
+    var modsWhitelistRegex: TreeSet<String> = TreeSet()
+        get() {
+            field.clear()
+            for (mod in modsWhitelist) {
+                field.add("^$mod.*$")
+            }
+            return field
+        }
+        private set
+
 
     /**
      * Modloaders supported by ServerPackCreator.
@@ -1869,6 +1900,7 @@ actual class ApiProperties(
             log.info("Fallback lists updated.")
         } else {
             setFallbackModsList()
+            setFallbackWhitelist()
         }
         if (saveProps) {
             //Store properties in the configured SPC home-directory
@@ -1893,10 +1925,24 @@ actual class ApiProperties(
             pConfigurationFallbackModsList,
             clientsideMods.joinToString(",")
         )
+    }
 
+    /**
+     * Set up our fallback list of clientside-only mods.
+     *
+     * @author Griefed
+     */
+    private fun setFallbackWhitelist() {
+        // Regular list
+        modsWhitelist.addAll(
+            getListProperty(
+                pConfigurationFallbackModsWhiteList,
+                fallbackModsWhitelist.joinToString(",")
+            )
+        )
         internalProps.setProperty(
-            pConfigurationFallbackModsListRegex,
-            clientsideModsRegex.joinToString(",")
+            pConfigurationFallbackModsWhiteList,
+            fallbackModsWhitelist.joinToString(",")
         )
     }
 
@@ -2219,9 +2265,24 @@ actual class ApiProperties(
      */
     fun clientSideMods() =
         if (exclusionFilter == ExclusionFilter.REGEX) {
-            clientsideModsRegex.toList() as ArrayList<String>
+            clientsideModsRegex.toList()
         } else {
-            clientsideMods.toList() as ArrayList<String>
+            clientsideMods.toList()
+        }
+
+    /**
+     * Acquire the default fallback list of whitelisted mods. If
+     * `de.griefed.serverpackcreator.serverpack.autodiscovery.filter` is set to
+     * [ExclusionFilter.REGEX], a regex fallback list is returned.
+     *
+     * @return The fallback list of whitelisted mods.
+     * @author Griefed
+     */
+    fun whitelistedMods() =
+        if (exclusionFilter == ExclusionFilter.REGEX) {
+            modsWhitelistRegex.toList()
+        } else {
+            modsWhitelist.toList()
         }
 
     /**
@@ -2257,6 +2318,19 @@ actual class ApiProperties(
                 clientsideMods.clear()
                 clientsideMods.addAll(internalProps.getProperty(pConfigurationFallbackModsList).split(","))
                 log.info("The fallback-list for clientside only mods has been updated to: $clientsideMods")
+                updated = true
+            }
+            if (properties!!.getProperty(pConfigurationFallbackModsWhiteList) != null &&
+                internalProps.getProperty(pConfigurationFallbackModsWhiteList)
+                != properties!!.getProperty(pConfigurationFallbackModsWhiteList)
+            ) {
+                internalProps.setProperty(
+                    pConfigurationFallbackModsWhiteList,
+                    properties!!.getProperty(pConfigurationFallbackModsWhiteList)
+                )
+                modsWhitelist.clear()
+                modsWhitelist.addAll(internalProps.getProperty(pConfigurationFallbackModsWhiteList).split(","))
+                log.info("The fallback-list for whitelisted mods has been updated to: $modsWhitelist")
                 updated = true
             }
         }

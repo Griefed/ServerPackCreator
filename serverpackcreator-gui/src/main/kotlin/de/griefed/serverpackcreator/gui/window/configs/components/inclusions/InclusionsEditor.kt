@@ -276,6 +276,7 @@ class InclusionsEditor(
                     apiWrapper.serverPackHandler!!.getServerPackDestination(configEditor.getCurrentConfiguration()),
                     mutableListOf(),
                     configEditor.getClientSideModsList(),
+                    configEditor.getWhitelistList(),
                     configEditor.getMinecraftVersion(),
                     configEditor.getModloader()
                 )

@@ -46,6 +46,7 @@ import javax.swing.JPanel
 class AdvancedSettingsPanel(
     private val configEditor: ConfigEditor,
     exclusions: ScrollTextArea,
+    whitelisted: ScrollTextArea,
     javaArgs: ScrollTextArea,
     scriptKVPairs: ScriptKVPairs,
     private val guiProps: GuiProps,
@@ -63,6 +64,12 @@ class AdvancedSettingsPanel(
     private val clientModsChooser = BalloonTipButton(null, guiProps.folderIcon, Gui.createserverpack_gui_browser.toString(), guiProps) { selectClientMods() }
     private val clientModsReset = BalloonTipButton(null, guiProps.resetIcon, Gui.createserverpack_gui_buttonclientmods_reset_tip.toString(), guiProps) { resetClientMods() }
 
+    private val whitelistModsIcon = StatusIcon(guiProps,Gui.createserverpack_gui_createserverpack_labelwhitelistmods_tip.toString())
+    private val whitelistModsLabel = ElementLabel(Gui.createserverpack_gui_createserverpack_labelwhitelistmods.toString())
+    private val whitelistModsRevert = BalloonTipButton(null, guiProps.revertIcon, Gui.createserverpack_gui_buttonwhitelistmods_revert_tip.toString(), guiProps) { revertWhitelist() }
+    private val whitelistModsChooser = BalloonTipButton(null, guiProps.folderIcon, Gui.createserverpack_gui_browser.toString(), guiProps) { selectWhitelist() }
+    private val whitelistModsReset = BalloonTipButton(null, guiProps.resetIcon, Gui.createserverpack_gui_buttonwhitelistmods_reset_tip.toString(), guiProps) { resetWhitelist() }
+
     private val javaArgsIcon = StatusIcon(guiProps,Gui.createserverpack_gui_createserverpack_javaargs_tip.toString())
     private val javaArgsLabel = ElementLabel(Gui.createserverpack_gui_createserverpack_javaargs.toString())
     private val javaArgsAikarsFlagsButton = AikarsFlagsButton(configEditor, guiProps)
@@ -73,26 +80,38 @@ class AdvancedSettingsPanel(
     private val advScriptSettingsReset = BalloonTipButton(null, guiProps.resetIcon, Gui.createserverpack_gui_reset.toString(), guiProps) { resetScriptKVPairs() }
 
     init {
+        var column = 0
         // Mod Exclusions
-        add(clientModsIcon, "cell 0 0 1 3")
-        add(clientModsLabel, "cell 1 0 1 3")
-        add(exclusions, "cell 2 0 1 3,grow,w 10:500:,h 150!")
-        add(clientModsRevert, "cell 3 0 2 1, h 30!, aligny center, alignx center,growx")
-        add(clientModsChooser, "cell 3 1 2 1, h 30!, aligny center, alignx center,growx")
-        add(clientModsReset, "cell 3 2 2 1, h 30!, aligny top, alignx center,growx")
+        add(clientModsIcon, "cell 0 $column 1 3")
+        add(clientModsLabel, "cell 1 $column 1 3")
+        add(exclusions, "cell 2 $column 1 3,grow,w 10:500:,h 150!")
+        add(clientModsRevert, "cell 3 $column 2 1, h 30!, aligny center, alignx center,growx")
+        add(clientModsChooser, "cell 3 ${column + 1} 2 1, h 30!, aligny center, alignx center,growx")
+        add(clientModsReset, "cell 3 ${column + 2} 2 1, h 30!, aligny top, alignx center,growx")
+
+        // Mod Whitelist
+        column += 3
+        add(whitelistModsIcon, "cell 0 $column 1 3")
+        add(whitelistModsLabel, "cell 1 $column 1 3")
+        add(whitelisted, "cell 2 $column 1 3,grow,w 10:500:,h 150!")
+        add(whitelistModsRevert, "cell 3 $column 2 1, h 30!, aligny center, alignx center,growx")
+        add(whitelistModsChooser, "cell 3 ${column + 1} 2 1, h 30!, aligny center, alignx center,growx")
+        add(whitelistModsReset, "cell 3 ${column + 2} 2 1, h 30!, aligny top, alignx center,growx")
 
         // Java Arguments
-        add(javaArgsIcon, "cell 0 3 1 3")
-        add(javaArgsLabel, "cell 1 3 1 3")
-        add(javaArgs, "cell 2 3 1 3,grow,w 10:500:,h 100!")
-        add(javaArgsAikarsFlagsButton, "cell 3 3 2 3,growy")
+        column += 3
+        add(javaArgsIcon, "cell 0 $column 1 3")
+        add(javaArgsLabel, "cell 1 $column 1 3")
+        add(javaArgs, "cell 2 $column 1 3,grow,w 10:500:,h 100!")
+        add(javaArgsAikarsFlagsButton, "cell 3 $column 2 3,growy")
 
         // Script Key-Value Pairs
-        add(advScriptSettingsIcon, "cell 0 6 1 3")
-        add(advScriptSettingsLabel, "cell 1 6 1 3")
-        add(scriptKVPairs.scrollPanel, "cell 2 6 1 3,grow,w 10:500:,h 200!")
-        add(advScriptSettingsRevert, "cell 3 6 2 1, h 30!, aligny center, alignx center,growx")
-        add(advScriptSettingsReset, "cell 3 7 2 1, h 30!, aligny top, alignx center,growx")
+        column += 3
+        add(advScriptSettingsIcon, "cell 0 $column 1 3")
+        add(advScriptSettingsLabel, "cell 1 $column 1 3")
+        add(scriptKVPairs.scrollPanel, "cell 2 $column 1 3,grow,w 10:500:,h 200!")
+        add(advScriptSettingsRevert, "cell 3 $column 2 1, h 30!, aligny center, alignx center,growx")
+        add(advScriptSettingsReset, "cell 3 ${column + 1} 2 1, h 30!, aligny top, alignx center,growx")
         isVisible = false
     }
 
@@ -110,6 +129,20 @@ class AdvancedSettingsPanel(
     }
 
     /**
+     * Reverts the list of whitelisted mods to the value of the last loaded configuration, if one
+     * is available.
+     *
+     * @author Griefed
+     */
+    private fun revertWhitelist() {
+        if (configEditor.lastConfig != null) {
+            configEditor.setWhitelist(configEditor.lastConfig!!.modsWhitelist)
+            configEditor.validateInputFields()
+        }
+    }
+
+    /**
+     * Let the user choose the mods to exclude by browsing the filesystem and selecting the mod-files.
      * @author Griefed
      */
     private fun selectClientMods() {
@@ -132,6 +165,30 @@ class AdvancedSettingsPanel(
     }
 
     /**
+     * Let the user choose the mods to whitelist by browsing the filesystem and selecting the mod-files.
+     * @author Griefed
+     */
+    private fun selectWhitelist() {
+        val whitelistChooser = if (File(configEditor.getModpackDirectory(), "mods").isDirectory) {
+            WhitelistChooser(File(configEditor.getModpackDirectory(), "mods"), guiProps.defaultFileChooserDimension)
+        } else {
+            WhitelistChooser(guiProps.defaultFileChooserDimension)
+        }
+
+        if (whitelistChooser.showOpenDialog(parent) == JFileChooser.APPROVE_OPTION) {
+            val whitelist: Array<File> = whitelistChooser.selectedFiles
+            val whitelistFilenames: TreeSet<String> = TreeSet()
+            whitelistFilenames.addAll(configEditor.getWhitelistList())
+            for (mod in whitelist) {
+                whitelistFilenames.add(mod.name)
+            }
+            configEditor.setWhitelist(whitelistFilenames.toMutableList())
+            log.debug("Selected mods: $whitelistFilenames")
+        }
+    }
+
+    /**
+     * Reset the clientside-mods list to the default value from the ServerPackCreator configuration.
      * @author Griefed
      */
     private fun resetClientMods() {
@@ -153,10 +210,40 @@ class AdvancedSettingsPanel(
                     configEditor.setClientSideMods(set.toMutableList())
                 }
 
-                1 -> configEditor.setClientSideMods(default)
+                1 -> configEditor.setClientSideMods(default.toMutableList())
             }
         } else {
-            configEditor.setClientSideMods(default)
+            configEditor.setClientSideMods(default.toMutableList())
+        }
+    }
+
+    /**
+     * Reset the whitelist to the default value from the ServerPackCreator configuration.
+     * @author Griefed
+     */
+    private fun resetWhitelist() {
+        val current = configEditor.getWhitelistList()
+        val default = apiProperties.whitelistedMods()
+        if (!default.any { mod -> !default.contains(mod) }) {
+            when (JOptionPane.showConfirmDialog(
+                this,
+                Gui.createserverpack_gui_buttonwhitelistmods_reset_merge_message.toString(),
+                Gui.createserverpack_gui_buttonwhitelistmods_reset_merge_title.toString(),
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.WARNING_MESSAGE,
+                guiProps.warningIcon
+            )) {
+                0 -> {
+                    val set = TreeSet<String>()
+                    set.addAll(current)
+                    set.addAll(default)
+                    configEditor.setWhitelist(set.toMutableList())
+                }
+
+                1 -> configEditor.setWhitelist(default.toMutableList())
+            }
+        } else {
+            configEditor.setWhitelist(default.toMutableList())
         }
     }
 
@@ -188,6 +275,25 @@ class AdvancedSettingsPanel(
         } else {
             errors.add(Gui.configuration_log_error_formatting.toString())
             clientModsIcon.error("<html>${errors.joinToString("<br>")}</html>")
+        }
+        for (error in errors) {
+            log.error(error)
+        }
+        return errors
+    }
+
+    /**
+     * Validate the input field for whitelisted mods.
+     *
+     * @author Griefed
+     */
+    fun validateWhitelist(): List<String> {
+        val errors: MutableList<String> = ArrayList(10)
+        if (!configEditor.getWhitelist().matches(guiProps.whitespace)) {
+            whitelistModsIcon.info()
+        } else {
+            errors.add(Gui.configuration_log_error_formatting.toString())
+            whitelistModsIcon.error("<html>${errors.joinToString("<br>")}</html>")
         }
         for (error in errors) {
             log.error(error)

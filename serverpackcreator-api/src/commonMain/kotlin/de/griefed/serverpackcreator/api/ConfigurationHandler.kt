@@ -32,18 +32,18 @@ import de.griefed.serverpackcreator.api.utilities.File
  * @author Griefed
  */
 expect class ConfigurationHandler {
-    fun checkConfiguration(configFile: File, packConfig: PackConfig, configCheck: ConfigCheck = ConfigCheck(), quietCheck: Boolean = false): ConfigCheck
-    fun checkConfiguration(packConfig: PackConfig, configCheck: ConfigCheck = ConfigCheck(), quietCheck: Boolean = false): ConfigCheck
+    fun checkConfiguration(configFile: File, packConfig: PackConfig = PackConfig(), configCheck: ConfigCheck = ConfigCheck(), quietCheck: Boolean = false): ConfigCheck
+    fun checkConfiguration(packConfig: PackConfig = PackConfig(), configCheck: ConfigCheck = ConfigCheck(), quietCheck: Boolean = false): ConfigCheck
     fun isDir(packConfig: PackConfig, configCheck: ConfigCheck = ConfigCheck()): ConfigCheck
     fun isZip(packConfig: PackConfig, configCheck: ConfigCheck = ConfigCheck()): ConfigCheck
     fun checkModloaderVersion(modloader: String, modloaderVersion: String, minecraftVersion: String, configCheck: ConfigCheck = ConfigCheck()): ConfigCheck
-    fun checkInclusions(inclusions: MutableList<InclusionSpecification>,modpackDir: String, configCheck: ConfigCheck = ConfigCheck(),printLog: Boolean = true): ConfigCheck
+    fun checkInclusions(inclusions: MutableList<InclusionSpecification>, modpackDir: String, configCheck: ConfigCheck = ConfigCheck(), printLog: Boolean = true): ConfigCheck
     fun checkZipArchive(pathToZip: String, configCheck: ConfigCheck = ConfigCheck()): ConfigCheck
     fun checkManifests(destination: String, packConfig: PackConfig, configCheck: ConfigCheck = ConfigCheck()): String?
-    fun checkModpackDir(modpackDir: String, configCheck: ConfigCheck = ConfigCheck(), printLog: Boolean): ConfigCheck
-    fun checkModloader(modloader: String,configCheck: ConfigCheck): ConfigCheck
+    fun checkModpackDir(modpackDir: String, configCheck: ConfigCheck = ConfigCheck(), printLog: Boolean = true): ConfigCheck
+    fun checkModloader(modloader: String,configCheck: ConfigCheck = ConfigCheck()): ConfigCheck
 
-    fun checkIconAndProperties(iconOrPropertiesPath: String): Boolean
+    fun checkIconAndProperties(iconOrPropertiesPath: String = ""): Boolean
 
     fun ensureScriptSettingsDefaults(packConfig: PackConfig)
     fun sanitizeLinks(packConfig: PackConfig)

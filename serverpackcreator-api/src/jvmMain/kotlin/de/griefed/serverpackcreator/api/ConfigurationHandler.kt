@@ -63,6 +63,7 @@ actual class ConfigurationHandler(
             val fileConf = PackConfig(utilities, configFile)
             packConfig.setClientMods(fileConf.clientMods)
             packConfig.setInclusions(fileConf.inclusions)
+            packConfig.setModsWhitelist(fileConf.modsWhitelist)
             packConfig.modpackDir = fileConf.modpackDir
             packConfig.minecraftVersion = fileConf.minecraftVersion
             packConfig.modloader = fileConf.modloader
@@ -94,8 +95,13 @@ actual class ConfigurationHandler(
         log.info("Checking configuration...")
         if (packConfig.clientMods.isEmpty()) {
             log.warn("No clientside-only mods specified. Using fallback list.")
-            packConfig.setClientMods(apiProperties.clientSideMods())
+            packConfig.setClientMods(apiProperties.clientSideMods().toMutableList())
         }
+        if (packConfig.modsWhitelist.isEmpty()) {
+            log.warn("No whitelist mods specified. Using fallback list.")
+            packConfig.setModsWhitelist(apiProperties.whitelistedMods().toMutableList())
+        }
+
         if (!checkIconAndProperties(packConfig.serverIconPath)) {
             configCheck.serverIconErrors.add(Api.configuration_log_error_servericon(packConfig.serverIconPath))
             log.error("The specified server-icon does not exist: ${packConfig.serverIconPath}")

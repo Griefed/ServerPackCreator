@@ -60,9 +60,9 @@ abstract class Configuration<F, P> {
      */
     abstract fun checkConfiguration(
         configFile: F,
-        packConfig: PackConfig = PackConfig(),
-        configCheck: ConfigCheck = ConfigCheck(),
-        quietCheck: Boolean = false
+        packConfig: PackConfig,
+        configCheck: ConfigCheck,
+        quietCheck: Boolean
     ): ConfigCheck
 
     /**
@@ -84,8 +84,8 @@ abstract class Configuration<F, P> {
      */
     abstract fun checkConfiguration(
         packConfig: PackConfig,
-        configCheck: ConfigCheck = ConfigCheck(),
-        quietCheck: Boolean = false
+        configCheck: ConfigCheck,
+        quietCheck: Boolean
     ): ConfigCheck
 
     /**
@@ -109,7 +109,7 @@ abstract class Configuration<F, P> {
      * specified, but the file was not found.
      * @author Griefed
      */
-    abstract fun checkIconAndProperties(iconOrPropertiesPath: String = ""): Boolean
+    abstract fun checkIconAndProperties(iconOrPropertiesPath: String): Boolean
 
     /**
      * If the in the configuration specified modpack dir is an existing directory, checks are made for
@@ -123,7 +123,7 @@ abstract class Configuration<F, P> {
      * @return `true` if an error is found during configuration check.
      * @author Griefed
      */
-    abstract fun isDir(packConfig: PackConfig, configCheck: ConfigCheck = ConfigCheck()): ConfigCheck
+    abstract fun isDir(packConfig: PackConfig, configCheck: ConfigCheck): ConfigCheck
 
     /**
      * Checks the specified ZIP-archive for validity. In order for a modpack ZIP-archive to be
@@ -137,7 +137,7 @@ abstract class Configuration<F, P> {
      * @return `false` when no errors were encountered.
      * @author Griefed
      */
-    abstract fun isZip(packConfig: PackConfig, configCheck: ConfigCheck = ConfigCheck()): ConfigCheck
+    abstract fun isZip(packConfig: PackConfig, configCheck: ConfigCheck): ConfigCheck
 
     /**
      * Checks whether either Forge or Fabric were specified as the modloader.
@@ -146,7 +146,7 @@ abstract class Configuration<F, P> {
      * @return `true` if the specified modloader is either Forge or Fabric. False if neither.
      * @author Griefed
      */
-    abstract fun checkModloader(modloader: String, configCheck: ConfigCheck = ConfigCheck()): ConfigCheck
+    abstract fun checkModloader(modloader: String, configCheck: ConfigCheck): ConfigCheck
 
     /**
      * Check the given Minecraft and modloader versions for the specified modloader.
@@ -161,7 +161,7 @@ abstract class Configuration<F, P> {
      * @author Griefed
      */
     abstract fun checkModloaderVersion(
-        modloader: String, modloaderVersion: String, minecraftVersion: String, configCheck: ConfigCheck = ConfigCheck()
+        modloader: String, modloaderVersion: String, minecraftVersion: String, configCheck: ConfigCheck
     ): ConfigCheck
 
     /**
@@ -248,8 +248,8 @@ abstract class Configuration<F, P> {
     abstract fun checkInclusions(
         inclusions: MutableList<InclusionSpecification>,
         modpackDir: String,
-        configCheck: ConfigCheck = ConfigCheck(),
-        printLog: Boolean = true
+        configCheck: ConfigCheck,
+        printLog: Boolean
     ): ConfigCheck
 
     /**
@@ -259,7 +259,7 @@ abstract class Configuration<F, P> {
      * @param pathToZip         Path to the ZIP-file to check.
      * @author Griefed
      */
-    abstract fun checkZipArchive(pathToZip: String, configCheck: ConfigCheck = ConfigCheck()): ConfigCheck
+    abstract fun checkZipArchive(pathToZip: String, configCheck: ConfigCheck): ConfigCheck
 
     /**
      * Update the destination to which the ZIP-archive will the extracted to, based on whether a
@@ -298,7 +298,7 @@ abstract class Configuration<F, P> {
     abstract fun checkManifests(
         destination: String,
         packConfig: PackConfig,
-        configCheck: ConfigCheck = ConfigCheck()
+        configCheck: ConfigCheck
     ): String?
 
     /**
@@ -505,8 +505,8 @@ abstract class Configuration<F, P> {
      */
     abstract fun checkModpackDir(
         modpackDir: String,
-        configCheck: ConfigCheck = ConfigCheck(),
-        printLog: Boolean = true
+        configCheck: ConfigCheck,
+        printLog: Boolean
     ): ConfigCheck
 
     /**

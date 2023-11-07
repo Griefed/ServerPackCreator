@@ -53,6 +53,9 @@ class ConfigCheckTimer(delay: Int, guiProps: GuiProps, tabbedConfigsTab: TabbedC
                         errors.addAll(editor.validateExclusions())
                     }
                     launch {
+                        errors.addAll(editor.validateWhitelist())
+                    }
+                    launch {
                         errors.addAll(editor.validateInclusions())
                     }
                     launch {
