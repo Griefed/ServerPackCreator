@@ -1,3 +1,10 @@
+## [5.0.0-beta.12](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-beta.11...5.0.0-beta.12) (2023-11-07)
+
+
+### 🛠 Fixes
+
+* Hopefully fix AppImage build crashing ([90fc41a](https://git.griefed.de/Griefed/ServerPackCreator/commit/90fc41afd8af0b4aa73f278df262ea0242fe4c50))
+
 ## [5.0.0-beta.11](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-beta.10...5.0.0-beta.11) (2023-11-07)
 
 
