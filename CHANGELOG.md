@@ -1,3 +1,32 @@
+## [5.0.0-beta.11](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-beta.10...5.0.0-beta.11) (2023-11-07)
+
+
+### ⏩ Performance
+
+* Reduce paint actions to save on CPU ([010368a](https://git.griefed.de/Griefed/ServerPackCreator/commit/010368a26ae989b63c9cda0e890a694f7ec1918d))
+
+
+### 💎 Improvements
+
+* Add note regarding running the bash script ([2b75716](https://git.griefed.de/Griefed/ServerPackCreator/commit/2b75716cbbaa9be1799d94fd53da2355f551a078))
+
+
+### 📦 Other
+
+* Add more clientside mods. Thanks to [@nvb-uy](https://git.griefed.de/nvb-uy) ([639387c](https://git.griefed.de/Griefed/ServerPackCreator/commit/639387cc38241b88c63893750da59f59a8419d6d))
+* Remove comment ([d961e8d](https://git.griefed.de/Griefed/ServerPackCreator/commit/d961e8d7bdf29124e60c7bc9ebcaaf3294b11bf7))
+* Remove test from jpackager run config ([9d2f239](https://git.griefed.de/Griefed/ServerPackCreator/commit/9d2f239391c818f688fb4c1a651339c8645b8e47))
+
+
+### 🦊 CI/CD
+
+* Add desktop definitions to improve menu and desktop entries ([6de391a](https://git.griefed.de/Griefed/ServerPackCreator/commit/6de391a3c482d7eed5075224fc4531dee02951ad))
+
+
+### 🚀 Features
+
+* Whitelist to prevent false positives via clientside-mods list ([8b9eb7a](https://git.griefed.de/Griefed/ServerPackCreator/commit/8b9eb7ae6dfc71d73949814e556da948d96a6e6a))
+
 ## [5.0.0-beta.10](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-beta.9...5.0.0-beta.10) (2023-10-23)
 
 
