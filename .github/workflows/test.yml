@@ -31,6 +31,11 @@ jobs:
         with:
           gradle-version: wrapper
 
+      - name: Where are you, you little...
+        run: |
+          echo $JAVA_HOME
+          echo ${{ steps.java.outputs.path }}
+          
       - name: Build with Gradle
         run: |
           ./gradlew -Pversion=${{ steps.branch-name.outputs.current_branch }} generateLicenseReport --info --full-stacktrace
@@ -77,6 +82,11 @@ jobs:
         with:
           gradle-version: wrapper
 
+      - name: Where are you, you little...
+        run: |
+          echo $JAVA_HOME
+          echo ${{ steps.java.outputs.path }}
+
       - name: Build installer
         env:
           GITHUB_ACTOR: ${{ secrets.GITHUB_ACTOR }}
@@ -122,6 +132,11 @@ jobs:
       - uses: gradle/gradle-build-action@v2.9.0
         with:
           gradle-version: wrapper
+
+      - name: Where are you, you little...
+        run: |
+          echo $JAVA_HOME
+          echo ${{ steps.java.outputs.path }}
 
       - name: Prepare wix-toolset
         if: matrix.os == 'windows-latest'
@@ -173,6 +188,11 @@ jobs:
       - uses: gradle/gradle-build-action@v2.9.0
         with:
           gradle-version: wrapper
+
+      - name: Where are you, you little...
+        run: |
+          echo $JAVA_HOME
+          echo ${{ steps.java.outputs.path }}
 
       - name: Prepare wix-toolset
         if: matrix.os == 'windows-latest'
@@ -256,6 +276,11 @@ jobs:
         with:
           gradle-version: wrapper
 
+      - name: Where are you, you little...
+        run: |
+          echo $JAVA_HOME
+          echo ${{ steps.java.outputs.path }}
+
       - name: Build installer
         env:
           GITHUB_ACTOR: ${{ secrets.GITHUB_ACTOR }}
@@ -302,6 +327,11 @@ jobs:
       - uses: gradle/gradle-build-action@v2.9.0
         with:
           gradle-version: wrapper
+
+      - name: Where are you, you little...
+        run: |
+          echo $JAVA_HOME
+          echo ${{ steps.java.outputs.path }}
 
       - name: Prepare
         env:

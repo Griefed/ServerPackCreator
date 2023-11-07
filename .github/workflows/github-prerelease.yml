@@ -54,6 +54,11 @@ jobs:
         with:
           gradle-version: wrapper
 
+      - name: Where are you, you little...
+        run: |
+          echo $JAVA_HOME
+          echo ${{ steps.java.outputs.path }}
+
       - name: Build release
         env:
           GITHUB_ACTOR: ${{ secrets.GITHUB_ACTOR }}
@@ -118,6 +123,11 @@ jobs:
         with:
           gradle-version: wrapper
 
+      - name: Where are you, you little...
+        run: |
+          echo $JAVA_HOME
+          echo ${{ steps.java.outputs.path }}
+
       - name: Build installer
         env:
           GITHUB_ACTOR: ${{ secrets.GITHUB_ACTOR }}
@@ -174,6 +184,11 @@ jobs:
       - uses: gradle/gradle-build-action@v2.9.0
         with:
           gradle-version: wrapper
+
+      - name: Where are you, you little...
+        run: |
+          echo $JAVA_HOME
+          echo ${{ steps.java.outputs.path }}
 
       - name: Prepare wix-toolset
         run: echo "${env:path};${env:wix}bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8
@@ -236,6 +251,11 @@ jobs:
       - uses: gradle/gradle-build-action@v2.9.0
         with:
           gradle-version: wrapper
+
+      - name: Where are you, you little...
+        run: |
+          echo $JAVA_HOME
+          echo ${{ steps.java.outputs.path }}
 
       - name: Prepare wix-toolset
         run: echo "${env:path};${env:wix}bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8
@@ -331,6 +351,11 @@ jobs:
         with:
           gradle-version: wrapper
 
+      - name: Where are you, you little...
+        run: |
+          echo $JAVA_HOME
+          echo ${{ steps.java.outputs.path }}
+
       - name: Build installer
         env:
           GITHUB_ACTOR: ${{ secrets.GITHUB_ACTOR }}
@@ -397,6 +422,11 @@ jobs:
         run: |
           ./gradlew -Pversion="${{ needs.preparations.outputs.version }}" generateLicenseReport --info --full-stacktrace
           ./gradlew -Pversion="${{ needs.preparations.outputs.version }}" :serverpackcreator-app:build :serverpackcreator-app:copyDependencies :serverpackcreator-app:copyJar --info --full-stacktrace
+
+      - name: Where are you, you little...
+        run: |
+          echo $JAVA_HOME
+          echo ${{ steps.java.outputs.path }}
 
       - name: Build Image
         run: |
