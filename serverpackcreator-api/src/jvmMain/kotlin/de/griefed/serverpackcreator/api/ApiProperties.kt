@@ -111,6 +111,10 @@ actual class ApiProperties(
         "de.griefed.serverpackcreator.serverpack.zip.exclude.enabled"
     private val pServerPackScriptTemplates =
         "de.griefed.serverpackcreator.serverpack.script.template"
+    private val pPostInstallCleanupFiles =
+        "de.griefed.serverpackcreator.install.post.files"
+    private val pPreInstallCleanupFiles =
+        "de.griefed.serverpackcreator.install.pre.files"
     private val pAllowUseMinecraftSnapshots =
         "de.griefed.serverpackcreator.minecraft.snapshots"
     private val pServerPackAutoDiscoveryFilterMethod =
@@ -517,6 +521,38 @@ actual class ApiProperties(
         )
     )
 
+    val fallbackPostInstallCleanupFiles = TreeSet(
+        listOf(
+            "fabric-installer.jar",
+            "forge-installer.jar",
+            "quilt-installer.jar",
+            "installer.log",
+            "forge-installer.jar.log",
+            "legacyfabric-installer.jar",
+            "run.bat",
+            "run.sh",
+            "user_jvm_args.txt"
+        )
+    )
+
+    val fallbackPreInstallCleanupFiles = TreeSet(
+        listOf(
+            "libraries",
+            "server.jar",
+            "forge-installer.jar",
+            "quilt-installer.jar",
+            "installer.log",
+            "forge-installer.jar.log",
+            "legacyfabric-installer.jar",
+            "run.bat",
+            "run.sh",
+            "user_jvm_args.txt",
+            "quilt-server-launch.jar",
+            "minecraft_server.1.16.5.jar",
+            "forge.jar"
+        )
+    )
+
     @Suppress("MemberVisibilityCanBePrivate")
     val fallbackAikarsFlags = "-Xms4G" +
             " -Xmx4G" +
@@ -771,6 +807,38 @@ actual class ApiProperties(
             field.clear()
             field.addAll(use)
             log.info("Directories which must always be excluded set to: $field")
+        }
+
+    /**
+     * List of files to delete after a server pack server installation.
+     */
+    var postInstallCleanupFiles = fallbackPostInstallCleanupFiles
+        get() {
+            val entries = getListProperty(pPostInstallCleanupFiles, fallbackPostInstallCleanupFiles.joinToString(","))
+            field.addAll(entries)
+            return field
+        }
+        set(value) {
+            setListProperty(pPostInstallCleanupFiles, value.toList(), ",")
+            field.clear()
+            field.addAll(value)
+            log.info("Files to cleanup after server installation set to: $value")
+        }
+
+    /**
+     * List of files to delete before a server pack server installation.
+     */
+    var preInstallCleanupFiles = fallbackPreInstallCleanupFiles
+        get() {
+            val entries = getListProperty(pPreInstallCleanupFiles, fallbackPreInstallCleanupFiles.joinToString(","))
+            field.addAll(entries)
+            return field
+        }
+        set(value) {
+            setListProperty(pPreInstallCleanupFiles, value.toList(), ",")
+            field.clear()
+            field.addAll(value)
+            log.info("Files to cleanup before server installation set to: $value")
         }
 
     /**

@@ -292,7 +292,7 @@ class InclusionsEditor(
                     tip.updateUI()
                 } catch (_: NullPointerException) {}
             } catch (ex: Exception) {
-                log.error("Couldn't acquire files to include. ", ex)
+                log.error("Couldn't acquire files to include for $source. ", ex)
             }
             tip.isEnabled = true
         }

@@ -554,21 +554,14 @@ actual class ServerPackHandler actual constructor(
      * @author Griefed
      */
     override fun preInstallationCleanup(destination: String) {
-        utilities.fileUtilities.deleteMultiple(
-            File(destination, "libraries"),
-            File(destination, "server.jar"),
-            File(destination, "forge-installer.jar"),
-            File(destination, "quilt-installer.jar"),
-            File(destination, "installer.log"),
-            File(destination, "forge-installer.jar.log"),
-            File(destination, "legacyfabric-installer.jar"),
-            File(destination, "run.bat"),
-            File(destination, "run.sh"),
-            File(destination, "user_jvm_args.txt"),
-            File(destination, "quilt-server-launch.jar"),
-            File(destination, "minecraft_server.1.16.5.jar"),
-            File(destination, "forge.jar")
-        )
+        log.info("Pre server installation cleanup.")
+        var fileToDelete: File
+        for (file in apiProperties.preInstallCleanupFiles) {
+            fileToDelete = File(destination,file)
+            if (fileToDelete.deleteQuietly()) {
+                log.info("Deleted $fileToDelete")
+            }
+        }
     }
 
     /**
@@ -944,15 +937,13 @@ actual class ServerPackHandler actual constructor(
      */
     override fun postInstallCleanup(destination: String) {
         log.info("Cleanup after modloader server installation.")
-        File(destination, "fabric-installer.jar").deleteQuietly()
-        File(destination, "forge-installer.jar").deleteQuietly()
-        File(destination, "quilt-installer.jar").deleteQuietly()
-        File(destination, "installer.log").deleteQuietly()
-        File(destination, "forge-installer.jar.log").deleteQuietly()
-        File(destination, "legacyfabric-installer.jar").deleteQuietly()
-        File(destination, "run.bat").deleteQuietly()
-        File(destination, "run.sh").deleteQuietly()
-        File(destination, "user_jvm_args.txt").deleteQuietly()
+        var fileToDelete: File
+        for (file in apiProperties.postInstallCleanupFiles) {
+            fileToDelete = File(destination, file)
+            if (fileToDelete.deleteQuietly()) {
+                log.info("  Deleted $fileToDelete")
+            }
+        }
     }
 
     /**
