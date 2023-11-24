@@ -59,20 +59,6 @@ Build Test:
     reports:
       junit:
         - serverpackcreator-api/build/test-results/jvmTest/TEST-*.xml
-  cache:
-    - key:
-        files:
-          - serverpackcreator-api/build.gradle.kts
-          - gradle/gradle-wrapper.properties
-      paths:
-        - .gradle
-    - key:
-        files:
-          - serverpackcreator-web-frontend/package.json
-      paths:
-        - serverpackcreator-web-frontend/.quasar
-        - serverpackcreator-web-frontend/node_modules
-        - serverpackcreator-web-frontend/node
 
 # TODO reactivate with milestone 6
 #Docker Test:
@@ -139,22 +125,6 @@ Build Release:
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-(alpha|beta)\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
-  cache:
-    - key:
-        files:
-          - build.gradle
-          - gradle/gradle-wrapper.properties
-      paths:
-        - .gradle
-      policy: pull
-    - key:
-        files:
-          - frontend/package.json
-      paths:
-        - frontend/.quasar
-        - frontend/node_modules
-        - frontend/node
-      policy: pull
 
 Sign Java Publication:
   stage: Build Release
@@ -177,14 +147,6 @@ Sign Java Publication:
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-beta\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
-  cache:
-    - key:
-        files:
-          - serverpackcreator-api/build.gradle.kts
-          - gradle/gradle-wrapper.properties
-      paths:
-        - .gradle
-      policy: pull
 
 Publish GitHub:
   stage: Build Release
@@ -199,14 +161,6 @@ Publish GitHub:
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-beta\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
-  cache:
-    - key:
-        files:
-          - serverpackcreator-api/build.gradle.kts
-          - gradle/gradle-wrapper.properties
-      paths:
-        - .gradle
-      policy: pull
 
 Publish GitLab:
   stage: Build Release
@@ -221,14 +175,6 @@ Publish GitLab:
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-beta\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
-  cache:
-    - key:
-        files:
-          - serverpackcreator-api/build.gradle.kts
-          - gradle/gradle-wrapper.properties
-      paths:
-        - .gradle
-      policy: pull
 
 Publish GitGriefed:
   stage: Build Release
@@ -243,14 +189,6 @@ Publish GitGriefed:
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-beta\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
-  cache:
-    - key:
-        files:
-          - serverpackcreator-api/build.gradle.kts
-          - gradle/gradle-wrapper.properties
-      paths:
-        - .gradle
-      policy: pull
 
 Publish OSSRH:
   stage: Build Release
@@ -265,14 +203,6 @@ Publish OSSRH:
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-beta\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
-  cache:
-    - key:
-        files:
-          - serverpackcreator-api/build.gradle.kts
-          - gradle/gradle-wrapper.properties
-      paths:
-        - .gradle
-      policy: pull
 
 # TODO reactivate with milestone 6
 #Build Docker Release:
