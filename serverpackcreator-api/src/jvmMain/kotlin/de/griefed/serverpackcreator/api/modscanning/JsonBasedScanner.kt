@@ -70,11 +70,11 @@ abstract class JsonBasedScanner {
      * @param clientMods      A set of modIds of clientside-only mods.
      * @author Griefed
      */
-    fun cleanupClientMods(modDependencies: ArrayList<Pair<String, String>>, clientMods: TreeSet<String>) {
+    fun cleanupClientMods(modDependencies: ArrayList<Pair<String, Pair<String, String>>>, clientMods: TreeSet<String>) {
         for (dependency in modDependencies) {
             clientMods.removeIf { clientMod: String ->
-                if (clientMod == dependency.first) {
-                    log.info("$clientMod is a dependency for ${dependency.second}, therefor it was not automatically removed.")
+                if (clientMod == dependency.first && !clientMods.contains(dependency.second.second)) {
+                    log.info("$clientMod is a dependency for ${dependency.second.first} (${dependency.second.second}), therefor it was not automatically removed.")
                     return@removeIf true
                 } else {
                     return@removeIf false
@@ -95,7 +95,7 @@ abstract class JsonBasedScanner {
     abstract fun checkForClientModsAndDeps(
         filesInModsDir: Collection<File>,
         clientMods: TreeSet<String>,
-        modDependencies: ArrayList<Pair<String, String>>
+        modDependencies: ArrayList<Pair<String, Pair<String, String>>>
     )
 
     /**

@@ -63,7 +63,7 @@ actual class AnnotationScanner(
      */
     override fun scan(jarFiles: Collection<File>): TreeSet<File> {
         log.info("Scanning Minecraft 1.12.x and older mods for sideness...")
-        val modDependencies = ArrayList<Pair<String, String>>()
+        val modDependencies = ArrayList<Pair<String, Pair<String, String>>>()
         val clientMods = TreeSet<String>()
 
         /*
@@ -89,7 +89,7 @@ actual class AnnotationScanner(
     override fun checkForClientModsAndDeps(
         filesInModsDir: Collection<File>,
         clientMods: TreeSet<String>,
-        modDependencies: ArrayList<Pair<String, String>>
+        modDependencies: ArrayList<Pair<String, Pair<String, String>>>
     ) {
         for (mod in filesInModsDir) {
             if (!mod.name.endsWith(jar)) {
@@ -131,7 +131,7 @@ actual class AnnotationScanner(
                             }
 
                             // Get dependency modIds
-                            checkDependencies(child, modDependencies, mod.name)
+                            checkDependencies(child, modDependencies, mod.name, modId!!)
                         }
                     } catch (ignored: NullPointerException) {
                     }
@@ -238,7 +238,7 @@ actual class AnnotationScanner(
      * @param modFileName     The filename of the mod being checked.
      * @author Griefed
      */
-    private fun checkDependencies(child: JsonNode, modDependencies: ArrayList<Pair<String, String>>, modFileName: String) {
+    private fun checkDependencies(child: JsonNode, modDependencies: ArrayList<Pair<String, Pair<String, String>>>, modFileName: String, modId: String) {
         try {
             if (!utilities.jsonUtilities.nestedTextIsEmpty(child, values, dependencies, value)) {
 
@@ -253,7 +253,7 @@ actual class AnnotationScanner(
                         )
                     for (dependency in dependencies) {
                         if (dependency.matches(dependencyCheck)) {
-                            addDependency(getDependency(dependency), child, modDependencies, modFileName)
+                            addDependency(getDependency(dependency), child, modDependencies, modFileName, modId)
                         }
                     }
 
@@ -268,7 +268,7 @@ actual class AnnotationScanner(
                         val dependencies: String = utilities.jsonUtilities
                             .getNestedText(child, values, dependencies, value)
                         val dependency = getDependency(dependencies)
-                        addDependency(dependency, child, modDependencies, modFileName)
+                        addDependency(dependency, child, modDependencies, modFileName, modId)
                     }
                 }
             }
@@ -427,18 +427,19 @@ actual class AnnotationScanner(
     private fun addDependency(
         dependency: String,
         child: JsonNode,
-        modDependencies: ArrayList<Pair<String, String>>,
-        modFileName: String
+        modDependencies: ArrayList<Pair<String, Pair<String, String>>>,
+        modFileName: String,
+        modId: String
     ) {
-        val pair: Pair<String, String>
+        val pair: Pair<String, Pair<String, String>>
         if (!dependency.equals("forge", ignoreCase = true) && dependency != "*") {
-            pair = Pair(dependency, modFileName)
+            pair = Pair(dependency, Pair(modFileName, modId))
             if (modDependencies.add(pair)) {
                 try {
                     val addedFor = utilities.jsonUtilities.getNestedText(child, values, modid, value)
-                    log.debug("Added dependency ${pair.first} for $addedFor (${pair.second}).")
+                    log.debug("Added dependency ${pair.first} for $addedFor (${pair.second.first}).")
                 } catch (ex: NullPointerException) {
-                    log.debug("Added dependency ${pair.first} (${pair.second}).")
+                    log.debug("Added dependency ${pair.first} (${pair.second.first}).")
                 }
             }
         }
