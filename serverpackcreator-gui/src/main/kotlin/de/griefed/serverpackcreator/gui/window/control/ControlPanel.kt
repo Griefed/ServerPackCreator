@@ -171,7 +171,7 @@ class ControlPanel(
      */
     private fun generateServerPack(packConfig: PackConfig) {
         log.info("Starting ServerPackCreator run.")
-        statusPanel.updateStatus(Gui.createserverpack_log_info_buttoncreateserverpack_generating.toString())
+        statusPanel.updateStatus(Gui.createserverpack_log_info_buttoncreateserverpack_generating(File(packConfig.modpackDir).name))
         try {
             apiWrapper.serverPackHandler!!.run(packConfig)
             statusPanel.updateStatus(Gui.createserverpack_log_info_buttoncreateserverpack_ready.toString())
