@@ -252,8 +252,6 @@ class InclusionsEditor(
     @OptIn(DelicateCoroutinesApi::class)
     private fun updateTip() {
         GlobalScope.launch(guiProps.miscDispatcher) {
-            //TODO prevent selection during scanning
-            //TODO check why sometimes gui errors during resize....
             tip.isEnabled = false
             list.isEnabled = false
             tip.text = Gui.createserverpack_gui_inclusions_editor_tip_updating.toString()
