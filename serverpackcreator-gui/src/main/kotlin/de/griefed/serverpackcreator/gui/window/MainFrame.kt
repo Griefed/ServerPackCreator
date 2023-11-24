@@ -53,17 +53,8 @@ class MainFrame(
     val mainPanel = MainPanel(guiProps, apiWrapper, guiProps.larsonScanner, this, themeManager)
     private val updateDialogs: UpdateDialogs
     private val menuBar: MainMenuBar
-    private val resizeTimer = Timer(250) {
-        for (frame in Frame.getFrames()) {
-            SwingUtilities.updateComponentTreeUI(frame)
-        }
-        frame.revalidate()
-        frame.repaint()
-    }
 
     init {
-        resizeTimer.stop()
-        resizeTimer.isRepeats = false
         updateDialogs = UpdateDialogs(
             guiProps, apiWrapper.utilities!!.webUtilities,
             apiWrapper.apiProperties, updateChecker, frame
@@ -84,18 +75,6 @@ class MainFrame(
         frame.isLocationByPlatform = true
         frame.preferredSize = Dimension(1100, 860)
         frame.pack()
-        frame.addComponentListener(object : ComponentListener {
-            override fun componentResized(e: ComponentEvent?) {
-                resizeTimer.restart()
-            }
-
-            override fun componentMoved(e: ComponentEvent?) {}
-
-            override fun componentShown(e: ComponentEvent?) {}
-
-            override fun componentHidden(e: ComponentEvent?) {}
-
-        })
         guiProps.initFont()
         guiProps.larsonScanner.loadConfig(guiProps.idleConfig)
         guiProps.larsonScanner.play()
