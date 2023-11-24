@@ -27,7 +27,8 @@ workflow:
 
 Build Test:
   stage: Tests
-  image: docker.griefed.dev/griefed/baseimage-ubuntu-jdk17-kotlin:1.0.4
+  #image: docker.griefed.dev/griefed/baseimage-ubuntu-jdk17-kotlin:1.0.4
+  image: openjdk:17-jdk
   before_script:
     - echo "**** Running in $CI_JOB_ID ****"
     - echo "**** Java location ****"
@@ -95,7 +96,8 @@ Generate Release:
 
 Build Release:
   stage: Build Release
-  image: docker.griefed.dev/griefed/baseimage-ubuntu-jdk17-kotlin:1.0.4
+  #image: docker.griefed.dev/griefed/baseimage-ubuntu-jdk17-kotlin:1.0.4
+  image: openjdk:17-jdk
   needs:
     - job: Build Test
       artifacts: false
@@ -128,7 +130,8 @@ Build Release:
 
 Sign Java Publication:
   stage: Build Release
-  image: docker.griefed.dev/griefed/baseimage-ubuntu-jdk17-kotlin:1.0.4
+  #image: docker.griefed.dev/griefed/baseimage-ubuntu-jdk17-kotlin:1.0.4
+  image: openjdk:17-jdk
   needs:
     - job: Build Release
       artifacts: false
@@ -150,7 +153,8 @@ Sign Java Publication:
 
 Publish GitHub:
   stage: Build Release
-  image: docker.griefed.dev/griefed/baseimage-ubuntu-jdk17-kotlin:1.0.4
+  #image: docker.griefed.dev/griefed/baseimage-ubuntu-jdk17-kotlin:1.0.4
+  image: openjdk:17-jdk
   needs:
     - job: Sign Java Publication
       optional: false
@@ -164,7 +168,8 @@ Publish GitHub:
 
 Publish GitLab:
   stage: Build Release
-  image: docker.griefed.dev/griefed/baseimage-ubuntu-jdk17-kotlin:1.0.4
+  #image: docker.griefed.dev/griefed/baseimage-ubuntu-jdk17-kotlin:1.0.4
+  image: openjdk:17-jdk
   needs:
     - job: Sign Java Publication
       optional: false
@@ -178,7 +183,8 @@ Publish GitLab:
 
 Publish GitGriefed:
   stage: Build Release
-  image: docker.griefed.dev/griefed/baseimage-ubuntu-jdk17-kotlin:1.0.4
+  #image: docker.griefed.dev/griefed/baseimage-ubuntu-jdk17-kotlin:1.0.4
+  image: openjdk:17-jdk
   needs:
     - job: Sign Java Publication
       optional: false
@@ -192,7 +198,8 @@ Publish GitGriefed:
 
 Publish OSSRH:
   stage: Build Release
-  image: docker.griefed.dev/griefed/baseimage-ubuntu-jdk17-kotlin:1.0.4
+  #image: docker.griefed.dev/griefed/baseimage-ubuntu-jdk17-kotlin:1.0.4
+  image: openjdk:17-jdk
   needs:
     - job: Sign Java Publication
       optional: false
@@ -252,7 +259,8 @@ Publish OSSRH:
 
 pages:
   stage: Documentation
-  image: docker.griefed.dev/griefed/baseimage-ubuntu-jdk17-kotlin:1.0.4
+  #image: docker.griefed.dev/griefed/baseimage-ubuntu-jdk17-kotlin:1.0.4
+  image: openjdk:17-jdk
   allow_failure: true
   before_script:
     - which java
