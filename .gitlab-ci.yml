@@ -32,7 +32,7 @@ Build Test:
   before_script:
     - echo "**** Running in $CI_JOB_ID ****"
     - echo "**** Java location ****"
-    - which java
+    #- which java
     - echo "**** Java version ****"
     - java -version
     - echo "**** Allowing execution of gradlew ****"
@@ -108,7 +108,7 @@ Build Release:
   before_script:
     - echo "**** Running in $CI_JOB_ID ****"
     - echo "**** Java location ****"
-    - which java
+    #- which java
     - echo "**** Java version ****"
     - java -version
     - echo "**** Allowing execution of gradlew ****"
@@ -139,7 +139,7 @@ Sign Java Publication:
   before_script:
     - echo "**** Running in $CI_JOB_ID ****"
     - echo "**** Java location ****"
-    - which java
+    #- which java
     - echo "**** Java version ****"
     - java -version
     - echo "**** Allowing execution of gradlew ****"
@@ -263,7 +263,7 @@ pages:
   image: openjdk:17-jdk
   allow_failure: true
   before_script:
-    - which java
+    #- which java
     - chmod +x gradlew
   script:
     - "./gradlew :serverpackcreator-api:dokkaHtml -Pversion='' --full-stacktrace --info -x test"
