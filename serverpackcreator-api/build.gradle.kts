@@ -3,7 +3,7 @@ import java.util.prefs.Preferences
 plugins {
     id("serverpackcreator.kotlin-multiplatform-conventions")
     id("serverpackcreator.dokka-conventions")
-    id("de.comahe.i18n4k") version "0.6.2"
+    id("de.comahe.i18n4k") version "0.7.0"
 }
 
 repositories {
