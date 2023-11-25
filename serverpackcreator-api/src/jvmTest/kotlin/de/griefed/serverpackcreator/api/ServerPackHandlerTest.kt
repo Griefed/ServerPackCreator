@@ -277,8 +277,6 @@ internal class ServerPackHandlerTest {
         Assertions.assertTrue(File(modsDir, "Ping-Wheel-1.6.1-forge-1.20.1.jar").isFile)
         Assertions.assertTrue(File(quiltDir, "scripts").isDirectory)
         Assertions.assertTrue(File(quiltDir, "seeds").isDirectory)
-        Assertions.assertTrue(File(quiltDir, "server.jar").isFile)
-        Assertions.assertTrue(File(quiltDir, "quilt-server-launch.jar").isFile)
         Assertions.assertTrue(File(quiltDir, "start.ps1").isFile)
         Assertions.assertTrue(File(quiltDir, "start.sh").isFile)
     }

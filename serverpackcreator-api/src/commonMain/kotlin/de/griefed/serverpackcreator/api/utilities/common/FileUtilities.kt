@@ -164,7 +164,7 @@ expect class FileUtilities {
  *
  * @author Griefed
  */
-expect fun File.deleteQuietly(): Any
+expect fun File.deleteQuietly(): Boolean
 
 /**
  * Acquire the size of this file or directory in bytes. If this file-object denotes a directory, then the size of all

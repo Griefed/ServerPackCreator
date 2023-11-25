@@ -193,12 +193,26 @@ class GlobalSettings(
     private val autodetectionRevert = BalloonTipButton(null, guiProps.revertIcon, Gui.settings_revert.toString(), guiProps) { autodetectionSetting.isSelected = apiProperties.isAutoExcludingModsEnabled }
     private val autodetectionReset = BalloonTipButton(null, guiProps.resetIcon,Gui.settings_reset.toString(), guiProps) { autodetectionSetting.isSelected = apiProperties.fallbackAutoExcludingModsEnabled }
 
+    private val preInstallFilesIcon = StatusIcon(guiProps, Gui.settings_global_install_files_pre_tooltip.toString())
+    private val preInstallFilesLabel = ElementLabel(Gui.settings_global_install_files_pre_label.toString())
+    private val preInstallFilesSetting = ScrollTextArea(apiProperties.preInstallCleanupFiles.joinToString(", "),Gui.settings_global_install_files_pre_label.toString(), changeListener, guiProps)
+    private val preInstallFilesRevert = BalloonTipButton(null, guiProps.revertIcon, Gui.settings_revert.toString(), guiProps) { preInstallFilesSetting.text = apiProperties.preInstallCleanupFiles.joinToString(", ") }
+    private val preInstallFilesReset = BalloonTipButton(null, guiProps.resetIcon,Gui.settings_reset.toString(), guiProps) { preInstallFilesSetting.text = apiProperties.fallbackPreInstallCleanupFiles.joinToString(",") }
+
+    private val postInstallFilesIcon = StatusIcon(guiProps, Gui.settings_global_install_files_post_tooltip.toString())
+    private val postInstallFilesLabel = ElementLabel(Gui.settings_global_install_files_post_label.toString())
+    private val postInstallFilesSetting = ScrollTextArea(apiProperties.postInstallCleanupFiles.joinToString(", "),Gui.settings_global_install_files_post_label.toString(), changeListener, guiProps)
+    private val postInstallFilesRevert = BalloonTipButton(null, guiProps.revertIcon, Gui.settings_revert.toString(), guiProps) { postInstallFilesSetting.text = apiProperties.postInstallCleanupFiles.joinToString(", ") }
+    private val postInstallFilesReset = BalloonTipButton(null, guiProps.resetIcon,Gui.settings_reset.toString(), guiProps) { postInstallFilesSetting.text = apiProperties.fallbackPostInstallCleanupFiles.joinToString(",") }
+
     init {
         loadSettings()
         val zipY: Int
         val inclusionsY: Int
         val aikarsY: Int
         val scriptY: Int
+        val preInstallY: Int
+        val postInstallY: Int
         var y = 0
         panel.add(homeIcon, "cell 0 $y")
         panel.add(homeLabel, "cell 1 $y")
@@ -255,6 +269,22 @@ class GlobalSettings(
         panel.add(scriptRevert, "cell 3 $y")
         panel.add(scriptReset, "cell 4 $y")
         panel.add(scriptChoose, "cell 5 $y")
+
+        y++
+        preInstallY = y
+        panel.add(preInstallFilesIcon, "cell 0 $y")
+        panel.add(preInstallFilesLabel, "cell 1 $y")
+        panel.add(preInstallFilesSetting, "cell 2 $y, grow, w 10:500:,h 150!")
+        panel.add(preInstallFilesRevert, "cell 3 $y")
+        panel.add(preInstallFilesReset, "cell 4 $y")
+
+        y++
+        postInstallY = y
+        panel.add(postInstallFilesIcon, "cell 0 $y")
+        panel.add(postInstallFilesLabel, "cell 1 $y")
+        panel.add(postInstallFilesSetting, "cell 2 $y, grow, w 10:500:,h 150!")
+        panel.add(postInstallFilesRevert, "cell 3 $y")
+        panel.add(postInstallFilesReset, "cell 4 $y")
 
         y++
         panel.add(fallbackURLIcon, "cell 0 $y")
@@ -330,6 +360,8 @@ class GlobalSettings(
         componentResizer.registerComponent(inclusionsSetting,"cell 2 $inclusionsY, grow, w 10:500:,h %s!")
         componentResizer.registerComponent(aikarsSetting,"cell 2 $aikarsY, grow, w 10:500:,h %s!")
         componentResizer.registerComponent(scriptSetting,"cell 2 $scriptY, grow, w 10:500:,h %s!")
+        componentResizer.registerComponent(preInstallFilesSetting,"cell 2 $preInstallY, grow, w 10:500:,h %s!")
+        componentResizer.registerComponent(postInstallFilesSetting,"cell 2 $postInstallY, grow, w 10:500:,h %s!")
     }
 
     /**
@@ -353,6 +385,8 @@ class GlobalSettings(
         cleanupSetting.isSelected = apiProperties.isServerPackCleanupEnabled
         snapshotsSetting.isSelected = apiProperties.isMinecraftPreReleasesAvailabilityEnabled
         autodetectionSetting.isSelected = apiProperties.isAutoExcludingModsEnabled
+        preInstallFilesSetting.text = apiProperties.preInstallCleanupFiles.joinToString(", ")
+        postInstallFilesSetting.text = apiProperties.postInstallCleanupFiles.joinToString(", ")
     }
 
     /**
@@ -376,6 +410,8 @@ class GlobalSettings(
         apiProperties.isServerPackCleanupEnabled = cleanupSetting.isSelected
         apiProperties.isMinecraftPreReleasesAvailabilityEnabled = snapshotsSetting.isSelected
         apiProperties.isAutoExcludingModsEnabled = autodetectionSetting.isSelected
+        apiProperties.preInstallCleanupFiles = TreeSet(preInstallFilesSetting.text.replace(", ",",").split(","))
+        apiProperties.postInstallCleanupFiles = TreeSet(postInstallFilesSetting.text.replace(", ",",").split(","))
     }
 
     /**
@@ -425,6 +461,20 @@ class GlobalSettings(
             scriptIcon.info()
         }
 
+        if (preInstallFilesSetting.text.matches(guiProps.whitespace)) {
+            preInstallFilesIcon.error(Gui.settings_check_whitespace.toString())
+            errors.add(Gui.settings_check_whitespace.toString())
+        } else {
+            preInstallFilesIcon.info()
+        }
+
+        if (postInstallFilesSetting.text.matches(guiProps.whitespace)) {
+            postInstallFilesIcon.error(Gui.settings_check_whitespace.toString())
+            errors.add(Gui.settings_check_whitespace.toString())
+        } else {
+            postInstallFilesIcon.info()
+        }
+
         try {
             URL(fallbackURLSetting.text)
             fallbackURLIcon.info()
@@ -455,7 +505,9 @@ class GlobalSettings(
         zipExclusionsSetting.isSelected != apiProperties.isZipFileExclusionEnabled ||
         cleanupSetting.isSelected != apiProperties.isServerPackCleanupEnabled ||
         snapshotsSetting.isSelected != apiProperties.isMinecraftPreReleasesAvailabilityEnabled ||
-        autodetectionSetting.isSelected != apiProperties.isAutoExcludingModsEnabled
+        autodetectionSetting.isSelected != apiProperties.isAutoExcludingModsEnabled ||
+        preInstallFilesSetting.text != apiProperties.preInstallCleanupFiles.joinToString(", ") ||
+        postInstallFilesSetting.text != apiProperties.postInstallCleanupFiles.joinToString(", ")
         if (changes) {
             title.showWarningIcon()
         } else {

@@ -253,48 +253,71 @@ class InclusionsEditor(
     private fun updateTip() {
         GlobalScope.launch(guiProps.miscDispatcher) {
             tip.isEnabled = false
+            list.isEnabled = false
+            tip.text = Gui.createserverpack_gui_inclusions_editor_tip_updating.toString()
+            tip.updateUI()
+            val inclusionSelection = selectedInclusion!!
+            var tipContent = ""
             try {
-                if (source.text.isBlank()) {
-                    tip.text = Gui.createserverpack_gui_inclusions_editor_tip_blank.toString()
-                    return@launch
-                }
-                if (!File(configEditor.getModpackDirectory(), source.text).exists() && !File(source.text).exists()) {
-                    tip.text = Gui.createserverpack_gui_inclusions_editor_tip_invalid.toString()
-                    return@launch
-                }
-                if (selectedInclusion!!.isGlobalFilter()) {
-                    tip.text = if (selectedInclusion!!.hasInclusionFilter()) {
+                if (inclusionSelection.source.isBlank()) {
+                    tipContent = Gui.createserverpack_gui_inclusions_editor_tip_blank.toString()
+                } else if (!File(configEditor.getModpackDirectory(), inclusionSelection.source).exists() && !File(inclusionSelection.source).exists()) {
+                    tipContent = Gui.createserverpack_gui_inclusions_editor_tip_invalid.toString()
+                } else if (inclusionSelection.isGlobalFilter()) {
+                    tipContent = if (inclusionSelection.hasInclusionFilter()) {
                         Gui.createserverpack_gui_inclusions_editor_tip_global_inclusions.toString()
                     } else {
-                        Gui.createserverpack_gui_inclusions_editor_tip_global_exclusions(selectedInclusion!!.exclusionFilter!!)
+                        Gui.createserverpack_gui_inclusions_editor_tip_global_exclusions(inclusionSelection.exclusionFilter!!)
                     }
-                    return@launch
-                }
-                val acquired = apiWrapper.serverPackHandler!!.getServerFiles(
-                    selectedInclusion!!,
-                    configEditor.getModpackDirectory(),
-                    apiWrapper.serverPackHandler!!.getServerPackDestination(configEditor.getCurrentConfiguration()),
-                    mutableListOf(),
-                    configEditor.getClientSideModsList(),
-                    configEditor.getWhitelistList(),
-                    configEditor.getMinecraftVersion(),
-                    configEditor.getModloader()
-                )
-                var tipContent = Gui.createserverpack_gui_inclusions_editor_tip_prefix.toString()
-                for (file in acquired) {
-                    tipContent += file.sourceFile.absolutePath.replace(
-                        configEditor.getModpackDirectory() + File.separator,
+                } else {
+                    tipContent = Gui.createserverpack_gui_inclusions_editor_tip_prefix.toString()
+                    val prefix = if (!inclusionSelection.destination.isNullOrBlank()) {
+                        inclusionSelection.destination + File.separator
+                    } else {
                         ""
-                    ) + "\n"
+                    }
+                    if (File(configEditor.getModpackDirectory(), inclusionSelection.source).isFile) {
+                        tipContent += File(configEditor.getModpackDirectory(), inclusionSelection.source).absolutePath.replace(
+                            configEditor.getModpackDirectory() + File.separator,
+                            ""
+                        ) + "\n"
+                    } else if (File(inclusionSelection.source).isFile) {
+                        tipContent += File(inclusionSelection.source).absolutePath + "\n"
+                    } else {
+                        val acquired = apiWrapper.serverPackHandler!!.getServerFiles(
+                            inclusionSelection,
+                            configEditor.getModpackDirectory(),
+                            apiWrapper.serverPackHandler!!.getServerPackDestination(configEditor.getCurrentConfiguration()),
+                            mutableListOf(),
+                            configEditor.getClientSideModsList(),
+                            configEditor.getWhitelistList(),
+                            configEditor.getMinecraftVersion(),
+                            configEditor.getModloader()
+                        )
+                        for (file in acquired) {
+                            tipContent += file.sourceFile.absolutePath.replace(
+                                configEditor.getModpackDirectory() + File.separator,
+                                prefix
+                            ) + "\n"
+                        }
+
+                    }
                 }
-                tip.text = tipContent
-                try {
-                    tip.updateUI()
-                } catch (_: NullPointerException) {}
+            } catch (_: ArrayIndexOutOfBoundsException) {
             } catch (ex: Exception) {
-                log.error("Couldn't acquire files to include. ", ex)
+                log.error("Couldn't acquire files to include for ${inclusionSelection.source}. ", ex)
             }
-            tip.isEnabled = true
+            if (inclusionSelection == selectedInclusion) {
+                try {
+                    tip.text = tipContent
+                    tip.updateUI()
+                } catch (_: NullPointerException) {
+                }
+                tip.isEnabled = true
+                list.isEnabled = true
+            } else {
+                updateTip()
+            }
         }
     }
 
