@@ -10,6 +10,8 @@ variables:
   SEMANTIC_RELEASE_PACKAGE: "$CI_PROJECT_NAME"
   GRADLE_OPTS: "-Dorg.gradle.daemon=false"
   GRADLE_USER_HOME: "$CI_PROJECT_DIR/.gradle"
+  CACHE_FALLBACK_KEY: "cache-fallback-$CI_PROJECT_ID"
+  CACHE_KEY: "cache-$CI_COMMIT_REF_SLUG"
 
 services:
   - name: docker.griefed.dev/griefed/gitlab-ci-cd:2.2.9
@@ -27,12 +29,9 @@ workflow:
 
 Build Test:
   stage: Tests
-  #image: docker.griefed.dev/griefed/baseimage-ubuntu-jdk17-kotlin:1.0.4
-  image: eclipse-temurin:17-jdk
+  image: docker.griefed.dev/eclipse-temurin:17-jdk
   before_script:
     - echo "**** Running in $CI_JOB_ID ****"
-    - echo "**** Java location ****"
-    #- which java
     - echo "**** Java version ****"
     - java -version
     - echo "**** Allowing execution of gradlew ****"
@@ -43,6 +42,12 @@ Build Test:
   retry: 1
   rules:
     - if: '$CI_SERVER_HOST == "git.griefed.de"'
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      variables:
+        POLICY: pull-push
+    - if: $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
+      variables:
+        POLICY: pull
   artifacts:
     when: always
     name: "$CI_COMMIT_BRANCH-$CI_COMMIT_SHORT_SHA-$CI_JOB_NAME"
@@ -60,6 +65,24 @@ Build Test:
     reports:
       junit:
         - serverpackcreator-api/build/test-results/jvmTest/TEST-*.xml
+  cache:
+    - key: $CACHE_KEY
+      policy: $POLICY
+      paths:
+        - buildSrc/.gradle
+        - buildSrc/build
+        - .gradle
+        - serverpackcreator-api/build
+        - serverpackcreator-gui/build
+        - serverpackcreator-cli/build
+        - serverpackcreator-web/build
+        - serverpackcreator-app/build
+        - serverpackcreator-updater/build
+        - serverpackcreator-plugin-example/build
+        - serverpackcreator-web-frontend/.quasar
+        - serverpackcreator-web-frontend/node_modules
+        - serverpackcreator-web-frontend/node
+        - serverpackcreator-web-frontend/dist
 
 # TODO reactivate with milestone 6
 #Docker Test:
@@ -96,8 +119,7 @@ Generate Release:
 
 Build Release:
   stage: Build Release
-  #image: docker.griefed.dev/griefed/baseimage-ubuntu-jdk17-kotlin:1.0.4
-  image: eclipse-temurin:17-jdk
+  image: docker.griefed.dev/eclipse-temurin:17-jdk
   needs:
     - job: Build Test
       artifacts: false
@@ -107,8 +129,6 @@ Build Release:
       artifacts: false
   before_script:
     - echo "**** Running in $CI_JOB_ID ****"
-    - echo "**** Java location ****"
-    #- which java
     - echo "**** Java version ****"
     - java -version
     - echo "**** Allowing execution of gradlew ****"
@@ -127,19 +147,34 @@ Build Release:
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-(alpha|beta)\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
+  cache:
+    - key: $CACHE_KEY
+      policy: pull
+      paths:
+        - buildSrc/.gradle
+        - buildSrc/build
+        - .gradle
+        - serverpackcreator-api/build
+        - serverpackcreator-gui/build
+        - serverpackcreator-cli/build
+        - serverpackcreator-web/build
+        - serverpackcreator-app/build
+        - serverpackcreator-updater/build
+        - serverpackcreator-plugin-example/build
+        - serverpackcreator-web-frontend/.quasar
+        - serverpackcreator-web-frontend/node_modules
+        - serverpackcreator-web-frontend/node
+        - serverpackcreator-web-frontend/dist
 
 Sign Java Publication:
   stage: Build Release
-  #image: docker.griefed.dev/griefed/baseimage-ubuntu-jdk17-kotlin:1.0.4
-  image: eclipse-temurin:17-jdk
+  image: docker.griefed.dev/eclipse-temurin:17-jdk
   needs:
     - job: Build Release
       artifacts: false
       optional: false
   before_script:
     - echo "**** Running in $CI_JOB_ID ****"
-    - echo "**** Java location ****"
-    #- which java
     - echo "**** Java version ****"
     - java -version
     - echo "**** Allowing execution of gradlew ****"
@@ -150,11 +185,28 @@ Sign Java Publication:
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-beta\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
+  cache:
+    - key: $CACHE_KEY
+      policy: pull
+      paths:
+        - buildSrc/.gradle
+        - buildSrc/build
+        - .gradle
+        - serverpackcreator-api/build
+        - serverpackcreator-gui/build
+        - serverpackcreator-cli/build
+        - serverpackcreator-web/build
+        - serverpackcreator-app/build
+        - serverpackcreator-updater/build
+        - serverpackcreator-plugin-example/build
+        - serverpackcreator-web-frontend/.quasar
+        - serverpackcreator-web-frontend/node_modules
+        - serverpackcreator-web-frontend/node
+        - serverpackcreator-web-frontend/dist
 
 Publish GitHub:
   stage: Build Release
-  #image: docker.griefed.dev/griefed/baseimage-ubuntu-jdk17-kotlin:1.0.4
-  image: eclipse-temurin:17-jdk
+  image: docker.griefed.dev/eclipse-temurin:17-jdk
   needs:
     - job: Sign Java Publication
       optional: false
@@ -165,11 +217,28 @@ Publish GitHub:
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-beta\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
+  cache:
+    - key: $CACHE_KEY
+      policy: pull
+      paths:
+        - buildSrc/.gradle
+        - buildSrc/build
+        - .gradle
+        - serverpackcreator-api/build
+        - serverpackcreator-gui/build
+        - serverpackcreator-cli/build
+        - serverpackcreator-web/build
+        - serverpackcreator-app/build
+        - serverpackcreator-updater/build
+        - serverpackcreator-plugin-example/build
+        - serverpackcreator-web-frontend/.quasar
+        - serverpackcreator-web-frontend/node_modules
+        - serverpackcreator-web-frontend/node
+        - serverpackcreator-web-frontend/dist
 
 Publish GitLab:
   stage: Build Release
-  #image: docker.griefed.dev/griefed/baseimage-ubuntu-jdk17-kotlin:1.0.4
-  image: eclipse-temurin:17-jdk
+  image: docker.griefed.dev/eclipse-temurin:17-jdk
   needs:
     - job: Sign Java Publication
       optional: false
@@ -180,11 +249,28 @@ Publish GitLab:
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-beta\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
+  cache:
+    - key: $CACHE_KEY
+      policy: pull
+      paths:
+        - buildSrc/.gradle
+        - buildSrc/build
+        - .gradle
+        - serverpackcreator-api/build
+        - serverpackcreator-gui/build
+        - serverpackcreator-cli/build
+        - serverpackcreator-web/build
+        - serverpackcreator-app/build
+        - serverpackcreator-updater/build
+        - serverpackcreator-plugin-example/build
+        - serverpackcreator-web-frontend/.quasar
+        - serverpackcreator-web-frontend/node_modules
+        - serverpackcreator-web-frontend/node
+        - serverpackcreator-web-frontend/dist
 
 Publish GitGriefed:
   stage: Build Release
-  #image: docker.griefed.dev/griefed/baseimage-ubuntu-jdk17-kotlin:1.0.4
-  image: eclipse-temurin:17-jdk
+  image: docker.griefed.dev/eclipse-temurin:17-jdk
   needs:
     - job: Sign Java Publication
       optional: false
@@ -195,11 +281,28 @@ Publish GitGriefed:
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-beta\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
+  cache:
+    - key: $CACHE_KEY
+      policy: pull
+      paths:
+        - buildSrc/.gradle
+        - buildSrc/build
+        - .gradle
+        - serverpackcreator-api/build
+        - serverpackcreator-gui/build
+        - serverpackcreator-cli/build
+        - serverpackcreator-web/build
+        - serverpackcreator-app/build
+        - serverpackcreator-updater/build
+        - serverpackcreator-plugin-example/build
+        - serverpackcreator-web-frontend/.quasar
+        - serverpackcreator-web-frontend/node_modules
+        - serverpackcreator-web-frontend/node
+        - serverpackcreator-web-frontend/dist
 
 Publish OSSRH:
   stage: Build Release
-  #image: docker.griefed.dev/griefed/baseimage-ubuntu-jdk17-kotlin:1.0.4
-  image: eclipse-temurin:17-jdk
+  image: docker.griefed.dev/eclipse-temurin:17-jdk
   needs:
     - job: Sign Java Publication
       optional: false
@@ -210,6 +313,24 @@ Publish OSSRH:
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+-beta\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
+  cache:
+    - key: $CACHE_KEY
+      policy: pull
+      paths:
+        - buildSrc/.gradle
+        - buildSrc/build
+        - .gradle
+        - serverpackcreator-api/build
+        - serverpackcreator-gui/build
+        - serverpackcreator-cli/build
+        - serverpackcreator-web/build
+        - serverpackcreator-app/build
+        - serverpackcreator-updater/build
+        - serverpackcreator-plugin-example/build
+        - serverpackcreator-web-frontend/.quasar
+        - serverpackcreator-web-frontend/node_modules
+        - serverpackcreator-web-frontend/node
+        - serverpackcreator-web-frontend/dist
 
 # TODO reactivate with milestone 6
 #Build Docker Release:
@@ -259,11 +380,9 @@ Publish OSSRH:
 
 pages:
   stage: Documentation
-  #image: docker.griefed.dev/griefed/baseimage-ubuntu-jdk17-kotlin:1.0.4
-  image: eclipse-temurin:17-jdk
+  image: docker.griefed.dev/eclipse-temurin:17-jdk
   allow_failure: true
   before_script:
-    #- which java
     - chmod +x gradlew
   script:
     - "./gradlew :serverpackcreator-api:dokkaHtml -Pversion='' --full-stacktrace --info -x test"
@@ -275,6 +394,24 @@ pages:
     expire_in: 1 week
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/ && $CI_SERVER_HOST == "git.griefed.de"'
+  cache:
+    - key: $CACHE_KEY
+      policy: pull
+      paths:
+        - buildSrc/.gradle
+        - buildSrc/build
+        - .gradle
+        - serverpackcreator-api/build
+        - serverpackcreator-gui/build
+        - serverpackcreator-cli/build
+        - serverpackcreator-web/build
+        - serverpackcreator-app/build
+        - serverpackcreator-updater/build
+        - serverpackcreator-plugin-example/build
+        - serverpackcreator-web-frontend/.quasar
+        - serverpackcreator-web-frontend/node_modules
+        - serverpackcreator-web-frontend/node
+        - serverpackcreator-web-frontend/dist
 
 release_job:
   stage: Release
