@@ -635,6 +635,7 @@ actual class ApiProperties(
     /**
      * Regex-list of mods to include if present, regardless whether a match was found throug [clientsideModsRegex].
      */
+    @Suppress("MemberVisibilityCanBePrivate")
     var modsWhitelistRegex: TreeSet<String> = TreeSet()
         get() {
             field.clear()
