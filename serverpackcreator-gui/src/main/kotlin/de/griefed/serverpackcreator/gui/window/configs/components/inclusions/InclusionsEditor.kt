@@ -284,10 +284,10 @@ class InclusionsEditor(
                     } else if (File(inclusionSelection.source).isFile) {
                         tipContent += File(inclusionSelection.source).absolutePath + "\n"
                     } else {
-                        val acquired = apiWrapper.serverPackHandler!!.getServerFiles(
+                        val acquired = apiWrapper.serverPackHandler.getServerFiles(
                             inclusionSelection,
                             configEditor.getModpackDirectory(),
-                            apiWrapper.serverPackHandler!!.getServerPackDestination(configEditor.getCurrentConfiguration()),
+                            apiWrapper.serverPackHandler.getServerPackDestination(configEditor.getCurrentConfiguration()),
                             mutableListOf(),
                             configEditor.getClientSideModsList(),
                             configEditor.getWhitelistList(),

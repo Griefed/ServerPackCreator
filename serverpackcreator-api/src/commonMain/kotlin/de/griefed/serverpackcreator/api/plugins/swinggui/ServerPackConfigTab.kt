@@ -46,7 +46,6 @@ interface ServerPackConfigTab {
     fun setPropertiesInclusionTicked(ticked: Boolean)
     fun setScriptVariables(variables: HashMap<String, String>)
     fun setServerIconPath(path: String)
-    fun setServerInstallationTicked(ticked: Boolean)
     fun setServerPackSuffix(suffix: String)
     fun setServerPropertiesPath(path: String)
     fun setZipArchiveCreationTicked(ticked: Boolean)
@@ -69,7 +68,6 @@ interface ServerPackConfigTab {
     fun getServerPropertiesPath(): String
 
     fun isMinecraftServerAvailable(): Boolean
-    fun isServerInstallationTicked(): Boolean
     fun isServerIconInclusionTicked(): Boolean
     fun isServerPropertiesInclusionTicked(): Boolean
     fun isZipArchiveCreationTicked(): Boolean

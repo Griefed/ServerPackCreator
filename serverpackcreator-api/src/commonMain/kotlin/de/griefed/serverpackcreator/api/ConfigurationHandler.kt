@@ -54,7 +54,6 @@ expect class ConfigurationHandler {
         modpackDirectory: String,
         clientsideMods: List<String>,
         inclusions: List<InclusionSpecification>,
-        installServer: Boolean,
         minecraftVer: String,
         modloader: String,
         modloaderVersion: String,

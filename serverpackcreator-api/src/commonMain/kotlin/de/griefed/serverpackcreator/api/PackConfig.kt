@@ -55,7 +55,6 @@ expect open class PackConfig {
     var serverIconPath: String
     var serverPropertiesPath: String
     var modloader: String
-    var isServerInstallationDesired: Boolean
     var isServerIconInclusionDesired: Boolean
     var isServerPropertiesInclusionDesired: Boolean
 
@@ -76,7 +75,6 @@ expect open class PackConfig {
      * @param serverPackSuffix          Suffix to create the server pack with.
      * @param serverIconPath            Path to the icon to use in the server pack.
      * @param serverPropertiesPath      Path to the server.properties to create the server pack with.
-     * @param includeServerInstallation Whether to install the modloader server in the server pack.
      * @param includeServerIcon         Whether to include the server-icon.png in the server pack.
      * @param includeServerProperties   Whether to include the server.properties in the server pack.
      * @param includeZipCreation        Whether to create a ZIP-archive of the server pack.
@@ -96,7 +94,6 @@ expect open class PackConfig {
         serverPackSuffix: String,
         serverIconPath: String,
         serverPropertiesPath: String,
-        includeServerInstallation: Boolean,
         includeServerIcon: Boolean,
         includeServerProperties: Boolean,
         includeZipCreation: Boolean,

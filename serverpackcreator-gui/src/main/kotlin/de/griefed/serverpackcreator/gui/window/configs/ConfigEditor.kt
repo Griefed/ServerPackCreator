@@ -68,9 +68,9 @@ class ConfigEditor(
     private val validationChangeListener = object : DocumentChangeListener { override fun update(e: DocumentEvent) { validateInputFields() }}
     private val validationActionListener = ActionListener { validateInputFields() }
     private val updateMinecraftActionListener = ActionListener { updateMinecraftValues() }
-    private val legacyFabricModel = DefaultComboBoxModel(apiWrapper.versionMeta!!.legacyFabric.loaderVersionsArrayDescending())
-    private val fabricModel = DefaultComboBoxModel(apiWrapper.versionMeta!!.fabric.loaderVersionsArrayDescending())
-    private val quiltModel = DefaultComboBoxModel(apiWrapper.versionMeta!!.quilt.loaderVersionsArrayDescending())
+    private val legacyFabricModel = DefaultComboBoxModel(apiWrapper.versionMeta.legacyFabric.loaderVersionsArrayDescending())
+    private val fabricModel = DefaultComboBoxModel(apiWrapper.versionMeta.fabric.loaderVersionsArrayDescending())
+    private val quiltModel = DefaultComboBoxModel(apiWrapper.versionMeta.quilt.loaderVersionsArrayDescending())
 
     private val modpackIcon = StatusIcon(guiProps,Gui.createserverpack_gui_createserverpack_labelmodpackdir_tip.toString())
     private val modpackLabel = ElementLabel(Gui.createserverpack_gui_createserverpack_labelmodpackdir.toString())
@@ -108,7 +108,7 @@ class ConfigEditor(
 
     private val mcVersionIcon = StatusIcon(guiProps,Gui.createserverpack_gui_createserverpack_labelminecraft_tip.toString())
     private val mcVersionLabel = ElementLabel(Gui.createserverpack_gui_createserverpack_labelminecraft.toString())
-    private val mcVersionSetting = ActionComboBox(DefaultComboBoxModel(apiWrapper.versionMeta!!.minecraft.settingsDependantVersionsArrayDescending()),updateMinecraftActionListener)
+    private val mcVersionSetting = ActionComboBox(DefaultComboBoxModel(apiWrapper.versionMeta.minecraft.settingsDependantVersionsArrayDescending()),updateMinecraftActionListener)
 
     private val javaVersionIcon = StatusIcon(guiProps,Gui.createserverpack_gui_createserverpack_minecraft_java_tooltip.toString())
     private val javaVersionLabel = ElementLabel(Gui.createserverpack_gui_createserverpack_minecraft_java.toString(), 16)
@@ -131,9 +131,6 @@ class ConfigEditor(
     private val includePropertiesIcon = StatusIcon(guiProps,Gui.createserverpack_gui_createserverpack_checkboxproperties_tip.toString())
     private val includePropertiesSetting = ActionCheckBox(Gui.createserverpack_gui_createserverpack_checkboxproperties.toString(),validationActionListener)
 
-    private val prepareServerIcon = StatusIcon(guiProps,Gui.createserverpack_gui_createserverpack_checkboxserver_tip.toString())
-    private val prepareServerSetting = ActionCheckBox(Gui.createserverpack_gui_createserverpack_checkboxserver.toString(),validationActionListener)
-
     private val advSetExclusionsSetting = ScrollTextArea(apiWrapper.apiProperties.clientSideMods().joinToString(","),Gui.createserverpack_gui_createserverpack_labelclientmods.toString(),validationChangeListener, guiProps)
     private val advSetWhitelistSetting = ScrollTextArea(apiWrapper.apiProperties.whitelistedMods().joinToString(","),Gui.createserverpack_gui_createserverpack_labelwhitelistmods.toString(),validationChangeListener, guiProps)
     private val advSetJavaArgsSetting = ScrollTextArea("-Xmx4G -Xms4G",Gui.createserverpack_gui_createserverpack_javaargs.toString(),validationChangeListener, guiProps)
@@ -141,7 +138,7 @@ class ConfigEditor(
     private val advSetPanel = AdvancedSettingsPanel(this, advSetExclusionsSetting, advSetWhitelistSetting, advSetJavaArgsSetting, advSetScriptKVPairsSetting, guiProps, apiWrapper.apiProperties)
     private val advSetCollapsible = CollapsiblePanel(Gui.createserverpack_gui_advanced.toString(), advSetPanel)
 
-    private val pluginPanels = apiWrapper.apiPlugins!!.getConfigPanels(this).toMutableList()
+    private val pluginPanels = apiWrapper.apiPlugins.getConfigPanels(this).toMutableList()
     private val pluginSettings = PluginsSettingsPanel(pluginPanels)
     private val pluginPanel = CollapsiblePanel(Gui.createserverpack_gui_plugins.toString(), pluginSettings)
 
@@ -278,10 +275,6 @@ class ConfigEditor(
         panel.add(includePropertiesIcon, "cell 2 $column, w 40!, gapleft 40,grow")
         panel.add(includePropertiesSetting, "cell 2 $column, w 200!")
 
-        // Install Local Server
-        panel.add(prepareServerIcon, "cell 2 $column, w 40!,grow")
-        panel.add(prepareServerSetting, "cell 2 $column, w 200!")
-
         // Advanced Settings
         column++ //10
         panel.add(advSetCollapsible, "cell 0 $column 5,grow")
@@ -350,7 +343,7 @@ class ConfigEditor(
      * @author Griefed
      */
     override fun setClientSideMods(entries: MutableList<String>) {
-        advSetExclusionsSetting.text = apiWrapper.utilities!!.stringUtilities.buildString(entries)
+        advSetExclusionsSetting.text = apiWrapper.utilities.stringUtilities.buildString(entries)
         validateInputFields()
     }
 
@@ -358,7 +351,7 @@ class ConfigEditor(
      * @author Griefed
      */
     override fun setWhitelist(entries: MutableList<String>) {
-        advSetWhitelistSetting.text = apiWrapper.utilities!!.stringUtilities.buildString(entries)
+        advSetWhitelistSetting.text = apiWrapper.utilities.stringUtilities.buildString(entries)
         validateInputFields()
     }
 
@@ -453,15 +446,8 @@ class ConfigEditor(
     /**
      * @author Griefed
      */
-    override fun setServerInstallationTicked(ticked: Boolean) {
-        prepareServerSetting.isSelected = ticked
-    }
-
-    /**
-     * @author Griefed
-     */
     override fun setServerPackSuffix(suffix: String) {
-        suffixSetting.text = apiWrapper.utilities!!.stringUtilities.pathSecureText(suffix)
+        suffixSetting.text = apiWrapper.utilities.stringUtilities.pathSecureText(suffix)
     }
 
     /**
@@ -496,7 +482,7 @@ class ConfigEditor(
      * @author Griefed
      */
     override fun getClientSideModsList(): MutableList<String> {
-        return apiWrapper.utilities!!.listUtilities.cleanList(
+        return apiWrapper.utilities.listUtilities.cleanList(
             getClientSideMods().split(",")
                 .dropLastWhile { it.isEmpty() }
                 .toMutableList()
@@ -507,7 +493,7 @@ class ConfigEditor(
      * @author Griefed
      */
     override fun getWhitelistList(): MutableList<String> {
-        return apiWrapper.utilities!!.listUtilities.cleanList(
+        return apiWrapper.utilities.listUtilities.cleanList(
             getWhitelist().split(",")
                 .dropLastWhile { it.isEmpty() }
                 .toMutableList()
@@ -537,7 +523,6 @@ class ConfigEditor(
             getServerPackSuffix(),
             getServerIconPath(),
             getServerPropertiesPath(),
-            isServerInstallationTicked(),
             isServerIconInclusionTicked(),
             isServerPropertiesInclusionTicked(),
             isZipArchiveCreationTicked(),
@@ -551,7 +536,7 @@ class ConfigEditor(
      */
     override fun saveCurrentConfiguration(): File {
         val modpackName =
-            apiWrapper.utilities!!.stringUtilities.pathSecureText(File(getModpackDirectory()).name + ".conf")
+            apiWrapper.utilities.stringUtilities.pathSecureText(File(getModpackDirectory()).name + ".conf")
         val config = if (configFile != null) {
             configFile!!
         } else {
@@ -672,7 +657,7 @@ class ConfigEditor(
      * @author Griefed
      */
     override fun getServerPackSuffix(): String {
-        return apiWrapper.utilities!!.stringUtilities.pathSecureText(suffixSetting.text)
+        return apiWrapper.utilities.stringUtilities.pathSecureText(suffixSetting.text)
     }
 
     /**
@@ -686,14 +671,7 @@ class ConfigEditor(
      * @author Griefed
      */
     override fun isMinecraftServerAvailable(): Boolean {
-        return apiWrapper.versionMeta!!.minecraft.isServerAvailable(mcVersionSetting.selectedItem!!.toString())
-    }
-
-    /**
-     * @author Griefed
-     */
-    override fun isServerInstallationTicked(): Boolean {
-        return prepareServerSetting.isSelected
+        return apiWrapper.versionMeta.minecraft.isServerAvailable(mcVersionSetting.selectedItem!!.toString())
     }
 
     /**
@@ -757,10 +735,10 @@ class ConfigEditor(
      * @author Griefed
      */
     override fun acquireRequiredJavaVersion(): String {
-        return if (apiWrapper.versionMeta!!.minecraft.getServer(getMinecraftVersion()).isPresent
-            && apiWrapper.versionMeta!!.minecraft.getServer(getMinecraftVersion()).get().javaVersion().isPresent
+        return if (apiWrapper.versionMeta.minecraft.getServer(getMinecraftVersion()).isPresent
+            && apiWrapper.versionMeta.minecraft.getServer(getMinecraftVersion()).get().javaVersion().isPresent
         ) {
-            apiWrapper.versionMeta!!.minecraft.getServer(getMinecraftVersion()).get().javaVersion().get().toString()
+            apiWrapper.versionMeta.minecraft.getServer(getMinecraftVersion()).get().javaVersion().get().toString()
         } else {
             "?"
         }
@@ -792,7 +770,6 @@ class ConfigEditor(
                     || currentConfig.serverPackSuffix != lastConfig!!.serverPackSuffix
                     || currentConfig.isServerIconInclusionDesired != lastConfig!!.isServerIconInclusionDesired
                     || currentConfig.isServerPropertiesInclusionDesired != lastConfig!!.isServerPropertiesInclusionDesired
-                    || currentConfig.isServerInstallationDesired != lastConfig!!.isServerInstallationDesired
                     || currentConfig.isZipCreationDesired != lastConfig!!.isZipCreationDesired -> {
                 title.showWarningIcon()
             }
@@ -839,12 +816,11 @@ class ConfigEditor(
                 setServerIconPath(packConfig.serverIconPath)
                 setServerPropertiesPath(packConfig.serverPropertiesPath)
                 if (packConfig.minecraftVersion.isEmpty()) {
-                    packConfig.minecraftVersion = apiWrapper.versionMeta!!.minecraft.latestRelease().version
+                    packConfig.minecraftVersion = apiWrapper.versionMeta.minecraft.latestRelease().version
                 }
                 setMinecraftVersion(packConfig.minecraftVersion)
                 setModloader(packConfig.modloader)
                 setModloaderVersion(packConfig.modloaderVersion)
-                setServerInstallationTicked(packConfig.isServerInstallationDesired)
                 setIconInclusionTicked(packConfig.isServerIconInclusionDesired)
                 setPropertiesInclusionTicked(packConfig.isServerPropertiesInclusionDesired)
                 setZipArchiveCreationTicked(packConfig.isZipCreationDesired)
@@ -907,7 +883,7 @@ class ConfigEditor(
      * @author Griefed
      */
     private fun updateFabricModel(minecraftVersion: String = mcVersionSetting.selectedItem!!.toString()) {
-        if (apiWrapper.versionMeta!!.fabric.isMinecraftSupported(minecraftVersion)) {
+        if (apiWrapper.versionMeta.fabric.isMinecraftSupported(minecraftVersion)) {
             setModloaderVersions(fabricModel)
         } else {
             setModloaderVersions(
@@ -922,10 +898,10 @@ class ConfigEditor(
      * @author Griefed
      */
     private fun updateForgeModel(minecraftVersion: String = mcVersionSetting.selectedItem!!.toString()) {
-        if (apiWrapper.versionMeta!!.forge.supportedForgeVersionsDescendingArray(minecraftVersion).isPresent) {
+        if (apiWrapper.versionMeta.forge.supportedForgeVersionsDescendingArray(minecraftVersion).isPresent) {
             setModloaderVersions(
                 DefaultComboBoxModel(
-                    apiWrapper.versionMeta!!.forge.supportedForgeVersionsDescendingArray(minecraftVersion).get()
+                    apiWrapper.versionMeta.forge.supportedForgeVersionsDescendingArray(minecraftVersion).get()
                 )
             )
         } else {
@@ -941,10 +917,10 @@ class ConfigEditor(
      * @author Griefed
      */
     private fun updateNeoForgeModel(minecraftVersion: String = mcVersionSetting.selectedItem!!.toString()) {
-        if (apiWrapper.versionMeta!!.neoForge.supportedNeoForgeVersionsDescendingArray(minecraftVersion).isPresent) {
+        if (apiWrapper.versionMeta.neoForge.supportedNeoForgeVersionsDescendingArray(minecraftVersion).isPresent) {
             setModloaderVersions(
                 DefaultComboBoxModel(
-                    apiWrapper.versionMeta!!.neoForge.supportedNeoForgeVersionsDescendingArray(minecraftVersion).get()
+                    apiWrapper.versionMeta.neoForge.supportedNeoForgeVersionsDescendingArray(minecraftVersion).get()
                 )
             )
         } else {
@@ -960,7 +936,7 @@ class ConfigEditor(
      * @author Griefed
      */
     private fun updateQuiltModel(minecraftVersion: String = mcVersionSetting.selectedItem!!.toString()) {
-        if (apiWrapper.versionMeta!!.fabric.isMinecraftSupported(minecraftVersion)) {
+        if (apiWrapper.versionMeta.fabric.isMinecraftSupported(minecraftVersion)) {
             setModloaderVersions(quiltModel)
         } else {
             setModloaderVersions(
@@ -975,7 +951,7 @@ class ConfigEditor(
      * @author Griefed
      */
     private fun updateLegacyFabricModel(minecraftVersion: String = mcVersionSetting.selectedItem!!.toString()) {
-        if (apiWrapper.versionMeta!!.legacyFabric.isMinecraftSupported(minecraftVersion)) {
+        if (apiWrapper.versionMeta.legacyFabric.isMinecraftSupported(minecraftVersion)) {
             setModloaderVersions(legacyFabricModel)
         } else {
             setModloaderVersions(
@@ -993,7 +969,7 @@ class ConfigEditor(
      */
     fun validateModpackDir(): List<String> {
         val check = ConfigCheck()
-        if (apiWrapper.configurationHandler!!.checkModpackDir(getModpackDirectory(), check, false).modpackChecksPassed) {
+        if (apiWrapper.configurationHandler.checkModpackDir(getModpackDirectory(), check, false).modpackChecksPassed) {
             modpackIcon.info()
         } else {
             modpackIcon.error("<html>${check.modpackErrors.joinToString("<br>")}</html>")
@@ -1011,7 +987,7 @@ class ConfigEditor(
      */
     fun validateSuffix(): List<String> {
         val errors: MutableList<String> = ArrayList(10)
-        if (apiWrapper.utilities!!.stringUtilities.checkForIllegalCharacters(suffixSetting.text)) {
+        if (apiWrapper.utilities.stringUtilities.checkForIllegalCharacters(suffixSetting.text)) {
             suffixIcon.info()
         } else {
             errors.add(Gui.configuration_log_error_serverpack_suffix.toString())
@@ -1048,7 +1024,7 @@ class ConfigEditor(
      */
     fun validateInclusions(): List<String> {
         val check = ConfigCheck()
-        apiWrapper.configurationHandler!!.checkInclusions(
+        apiWrapper.configurationHandler.checkInclusions(
             getInclusions(),
             getModpackDirectory(),
             check,
@@ -1073,7 +1049,7 @@ class ConfigEditor(
     fun validateServerIcon(): List<String> {
         val errors: MutableList<String> = ArrayList(10)
         if (getServerIconPath().isNotEmpty()) {
-            if (apiWrapper.configurationHandler!!.checkIconAndProperties(getServerIconPath())) {
+            if (apiWrapper.configurationHandler.checkIconAndProperties(getServerIconPath())) {
                 iconIcon.info()
                 includeIconIcon.info()
                 setIconPreview(File(getServerIconPath()), errors)
@@ -1100,7 +1076,7 @@ class ConfigEditor(
      */
     fun validateServerProperties(): List<String> {
         val errors: MutableList<String> = ArrayList(10)
-        if (apiWrapper.configurationHandler!!.checkIconAndProperties(getServerPropertiesPath())) {
+        if (apiWrapper.configurationHandler.checkIconAndProperties(getServerPropertiesPath())) {
             propertiesIcon.info()
             includePropertiesIcon.info()
         } else {
@@ -1159,7 +1135,7 @@ class ConfigEditor(
                 try {
                     val updateMessage = StringBuilder()
                     val packConfig = PackConfig()
-                    apiWrapper.configurationHandler!!.checkManifests(modpack.absolutePath, packConfig)
+                    apiWrapper.configurationHandler.checkManifests(modpack.absolutePath, packConfig)
                     val inclusions = getInclusions()
                     val files = modpack.listFiles()
                     if (files != null && files.isNotEmpty()) {
@@ -1259,9 +1235,8 @@ class ConfigEditor(
     @Suppress("MemberVisibilityCanBePrivate")
     fun checkMinecraftServer() {
         val mcVersion = mcVersionSetting.selectedItem?.toString()
-        val server = apiWrapper.versionMeta!!.minecraft.getServer(mcVersion!!)
+        val server = apiWrapper.versionMeta.minecraft.getServer(mcVersion!!)
         if (!server.isPresent) {
-            prepareServerIcon.warning(Gui.configuration_log_warn_server.toString())
             JOptionPane.showMessageDialog(
                 this,
                 Gui.createserverpack_gui_createserverpack_minecraft_server_unavailable(mcVersion) + "   ",
@@ -1270,7 +1245,6 @@ class ConfigEditor(
                 guiProps.warningIcon
             )
         } else if (server.isPresent && !server.get().url().isPresent) {
-            prepareServerIcon.warning(Gui.configuration_log_warn_server.toString())
             JOptionPane.showMessageDialog(
                 this,
                 Gui.createserverpack_gui_createserverpack_minecraft_server_url_unavailable(mcVersion) + "   ",
@@ -1278,8 +1252,6 @@ class ConfigEditor(
                 JOptionPane.WARNING_MESSAGE,
                 guiProps.warningIcon
             )
-        } else {
-            prepareServerIcon.info()
         }
     }
 
@@ -1317,37 +1289,30 @@ class ConfigEditor(
      */
     fun checkServer(): Boolean {
         var okay = true
-        if (isServerInstallationTicked()) {
-            val mcVersion = mcVersionSetting.selectedItem!!.toString()
-            val modloader = modloaderSetting.selectedItem!!.toString()
-            val modloaderVersion = modloaderVersionSetting.selectedItem!!.toString()
-            if (!checkJava()) {
-                setServerInstallationTicked(false)
-                okay = false
-            }
-            if (!apiWrapper.serverPackHandler!!.serverDownloadable(mcVersion, modloader, modloaderVersion)) {
-                val message = Gui.createserverpack_gui_createserverpack_checkboxserver_unavailable_message(
-                    modloader,
-                    mcVersion,
-                    modloader,
-                    modloaderVersion,
-                    modloader
-                ) + "    "
-                val title = Gui.createserverpack_gui_createserverpack_checkboxserver_unavailable_title(
-                    mcVersion,
-                    modloader,
-                    modloaderVersion
-                )
-                JOptionPane.showMessageDialog(
-                    this.panel.parent.parent,
-                    message,
-                    title,
-                    JOptionPane.WARNING_MESSAGE,
-                    guiProps.largeWarningIcon
-                )
-                setServerInstallationTicked(false)
-                okay = false
-            }
+        val mcVersion = mcVersionSetting.selectedItem!!.toString()
+        val modloader = modloaderSetting.selectedItem!!.toString()
+        val modloaderVersion = modloaderVersionSetting.selectedItem!!.toString()
+        if (!apiWrapper.serverPackHandler.serverDownloadable(mcVersion, modloader, modloaderVersion)) {
+            val message = Gui.createserverpack_gui_createserverpack_checkboxserver_unavailable_message(
+                modloader,
+                mcVersion,
+                modloader,
+                modloaderVersion,
+                modloader
+            ) + "    "
+            val title = Gui.createserverpack_gui_createserverpack_checkboxserver_unavailable_title(
+                mcVersion,
+                modloader,
+                modloaderVersion
+            )
+            JOptionPane.showMessageDialog(
+                this.panel.parent.parent,
+                message,
+                title,
+                JOptionPane.WARNING_MESSAGE,
+                guiProps.largeWarningIcon
+            )
+            okay = false
         }
         return okay
     }
@@ -1427,9 +1392,9 @@ class ConfigEditor(
      */
     private fun openServerProperties() {
         if (File(getServerPropertiesPath()).isFile) {
-            apiWrapper.utilities!!.fileUtilities.openFile(getServerPropertiesPath())
+            apiWrapper.utilities.fileUtilities.openFile(getServerPropertiesPath())
         } else {
-            apiWrapper.utilities!!.fileUtilities.openFile(apiWrapper.apiProperties.defaultServerProperties)
+            apiWrapper.utilities.fileUtilities.openFile(apiWrapper.apiProperties.defaultServerProperties)
         }
     }
 

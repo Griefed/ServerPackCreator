@@ -66,21 +66,20 @@ class ServerPackCreator(private val args: Array<String>) {
     private val appInfo = JarInformation(ServerPackCreator::class.java, apiWrapper.jarUtilities)
 
     @Suppress("MemberVisibilityCanBePrivate")
-    val updateChecker = UpdateChecker(apiWrapper.apiProperties)
+    @get:Synchronized
+    val updateChecker: UpdateChecker by lazy {
+        UpdateChecker(apiWrapper.apiProperties)
+    }
 
     @get:Synchronized
-    var configurationEditor: ConfigurationEditor? = null
-        get() {
-            if (field == null) {
-                field = ConfigurationEditor(
-                    apiWrapper.configurationHandler!!,
-                    apiWrapper.apiProperties,
-                    apiWrapper.utilities!!,
-                    apiWrapper.versionMeta!!
-                )
-            }
-            return field!!
-        }
+    val configurationEditor: ConfigurationEditor by lazy {
+        ConfigurationEditor(
+            apiWrapper.configurationHandler,
+            apiWrapper.apiProperties,
+            apiWrapper.utilities,
+            apiWrapper.versionMeta
+        )
+    }
 
     fun run(mode: Mode = Mode.GUI) {
         log.info("App information:")
@@ -108,7 +107,7 @@ class ServerPackCreator(private val args: Array<String>) {
             Mode.WEB -> {
                 System.setProperty("java.awt.headless", "true")
                 apiWrapper.stageOne()
-                migrationManager!!.migrate()
+                migrationManager.migrate()
                 apiWrapper.stageTwo()
                 apiWrapper.stageThree()
                 stageFour()
@@ -118,7 +117,7 @@ class ServerPackCreator(private val args: Array<String>) {
             Mode.CGEN -> {
                 System.setProperty("java.awt.headless", "true")
                 apiWrapper.stageOne()
-                migrationManager!!.migrate()
+                migrationManager.migrate()
                 apiWrapper.stageTwo()
                 createDefaultConfig()
                 runConfigurationEditor()
@@ -128,7 +127,7 @@ class ServerPackCreator(private val args: Array<String>) {
             Mode.CLI -> {
                 System.setProperty("java.awt.headless", "true")
                 apiWrapper.stageOne()
-                migrationManager!!.migrate()
+                migrationManager.migrate()
                 apiWrapper.stageTwo()
                 apiWrapper.stageThree()
                 runHeadless()
@@ -137,7 +136,7 @@ class ServerPackCreator(private val args: Array<String>) {
             Mode.GUI -> {
                 splashScreen!!
                 apiWrapper.stageOne()
-                migrationManager!!.migrate()
+                migrationManager.migrate()
                 splashScreen!!.update(20)
                 apiWrapper.stageTwo()
                 splashScreen!!.update(40)
@@ -149,7 +148,7 @@ class ServerPackCreator(private val args: Array<String>) {
                     apiWrapper,
                     updateChecker,
                     splashScreen!!,
-                    migrationManager!!
+                    migrationManager
                 )
             }
 
@@ -175,7 +174,7 @@ class ServerPackCreator(private val args: Array<String>) {
      */
     private fun createDefaultConfig(): Boolean {
         return if (!apiWrapper.apiProperties.defaultConfig.exists()) {
-            apiWrapper.utilities!!.jarUtilities.copyFileFromJar(
+            apiWrapper.utilities.jarUtilities.copyFileFromJar(
                 "de/griefed/resources/${apiWrapper.apiProperties.defaultConfig.name}",
                 apiWrapper.apiProperties.defaultConfig, this.javaClass
             )
@@ -323,7 +322,7 @@ class ServerPackCreator(private val args: Array<String>) {
      */
     @Throws(IOException::class, ParserConfigurationException::class, SAXException::class)
     private fun runConfigurationEditor() {
-        configurationEditor!!.continuedRunOptions()
+        configurationEditor.continuedRunOptions()
     }
 
     /**
@@ -349,13 +348,13 @@ class ServerPackCreator(private val args: Array<String>) {
             exitProcess(1)
         } else {
             val packConfig = PackConfig()
-            if (!apiWrapper.configurationHandler!!.checkConfiguration(
+            if (!apiWrapper.configurationHandler.checkConfiguration(
                     apiWrapper.apiProperties.defaultConfig, packConfig
                 ).allChecksPassed
             ) {
                 exitProcess(1)
             }
-            if (!apiWrapper.serverPackHandler!!.run(packConfig)) {
+            if (!apiWrapper.serverPackHandler.run(packConfig)) {
                 exitProcess(1)
             }
         }
@@ -376,16 +375,12 @@ class ServerPackCreator(private val args: Array<String>) {
         }
 
     @get:Synchronized
-    var migrationManager: MigrationManager? = null
-        get() {
-            if (field == null) {
-                field = MigrationManager(
-                    apiWrapper.apiProperties,
-                    apiWrapper.tomlParser
-                )
-            }
-            return field
-        }
+    val migrationManager: MigrationManager by lazy {
+        MigrationManager(
+            apiWrapper.apiProperties,
+            apiWrapper.tomlParser
+        )
+    }
 
     /**
      * Initialize our FileWatcher to ensure that vital files get restored, should they be deleted
@@ -465,7 +460,7 @@ class ServerPackCreator(private val args: Array<String>) {
                 }
 
                 private fun createFile(toCreate: File) {
-                    apiWrapper.utilities!!.jarUtilities.copyFileFromJar(
+                    apiWrapper.utilities.jarUtilities.copyFileFromJar(
                         toCreate.name, ServerPackCreator::class.java,
                         toCreate.parent
                     )

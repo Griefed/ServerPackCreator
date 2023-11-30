@@ -56,7 +56,7 @@ class MainFrame(
 
     init {
         updateDialogs = UpdateDialogs(
-            guiProps, apiWrapper.utilities!!.webUtilities,
+            guiProps, apiWrapper.utilities.webUtilities,
             apiWrapper.apiProperties, updateChecker, frame
         )
         menuBar = MainMenuBar(

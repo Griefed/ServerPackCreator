@@ -32,18 +32,18 @@ import javax.swing.JSeparator
  */
 class ViewMenu(apiWrapper: ApiWrapper, themeManager: ThemeManager) : JMenu(Gui.menubar_gui_menu_view.toString()) {
 
-    private val homeDir = HomeDirItem(apiWrapper.utilities!!.fileUtilities, apiWrapper.apiProperties)
-    private val serverPacksDir = ServerPacksDirItem(apiWrapper.utilities!!.fileUtilities, apiWrapper.apiProperties)
-    private val serverFilesDir = ServerFilesDirItem(apiWrapper.utilities!!.fileUtilities, apiWrapper.apiProperties)
-    private val propsDir = OpenPropertiesDirectory(apiWrapper.utilities!!.fileUtilities, apiWrapper.apiProperties)
-    private val iconsDir = OpenIconsDirectory(apiWrapper.utilities!!.fileUtilities, apiWrapper.apiProperties)
-    private val configsDir = ConfigsDirItem(apiWrapper.utilities!!.fileUtilities, apiWrapper.apiProperties)
-    private val pluginsDir = PluginsDirItem(apiWrapper.utilities!!.fileUtilities, apiWrapper.apiProperties)
-    private val pluginConfigsDir = PluginsConfigDirItem(apiWrapper.utilities!!.fileUtilities, apiWrapper.apiProperties)
-    private val spcLog = ServerPackCreatorLogItem(apiWrapper.utilities!!.fileUtilities, apiWrapper.apiProperties)
-    private val pluginsLog = PluginsLogItem(apiWrapper.utilities!!.fileUtilities, apiWrapper.apiProperties)
-    private val modloaderInstLog = ModloaderInstallerLogItem(apiWrapper.utilities!!.fileUtilities, apiWrapper.apiProperties)
-    private val themesDir = ThemesDirItem(apiWrapper.utilities!!.fileUtilities, themeManager)
+    private val homeDir = HomeDirItem(apiWrapper.utilities.fileUtilities, apiWrapper.apiProperties)
+    private val serverPacksDir = ServerPacksDirItem(apiWrapper.utilities.fileUtilities, apiWrapper.apiProperties)
+    private val serverFilesDir = ServerFilesDirItem(apiWrapper.utilities.fileUtilities, apiWrapper.apiProperties)
+    private val propsDir = OpenPropertiesDirectory(apiWrapper.utilities.fileUtilities, apiWrapper.apiProperties)
+    private val iconsDir = OpenIconsDirectory(apiWrapper.utilities.fileUtilities, apiWrapper.apiProperties)
+    private val configsDir = ConfigsDirItem(apiWrapper.utilities.fileUtilities, apiWrapper.apiProperties)
+    private val pluginsDir = PluginsDirItem(apiWrapper.utilities.fileUtilities, apiWrapper.apiProperties)
+    private val pluginConfigsDir = PluginsConfigDirItem(apiWrapper.utilities.fileUtilities, apiWrapper.apiProperties)
+    private val spcLog = ServerPackCreatorLogItem(apiWrapper.utilities.fileUtilities, apiWrapper.apiProperties)
+    private val pluginsLog = PluginsLogItem(apiWrapper.utilities.fileUtilities, apiWrapper.apiProperties)
+    private val modloaderInstLog = ModloaderInstallerLogItem(apiWrapper.utilities.fileUtilities, apiWrapper.apiProperties)
+    private val themesDir = ThemesDirItem(apiWrapper.utilities.fileUtilities, themeManager)
 
     init {
         add(homeDir)

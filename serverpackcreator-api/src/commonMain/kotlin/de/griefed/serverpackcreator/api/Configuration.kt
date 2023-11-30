@@ -176,7 +176,6 @@ abstract class Configuration<F, P> {
         packConfig.modpackDir,
         packConfig.clientMods,
         packConfig.inclusions,
-        packConfig.isServerInstallationDesired,
         packConfig.minecraftVersion,
         packConfig.modloader,
         packConfig.modloaderVersion,
@@ -328,7 +327,6 @@ abstract class Configuration<F, P> {
      * @param clientsideMods       List of clientside-only mods to exclude from the server pack...
      * @param inclusions      List of directories in the modpack which are to be included in the
      * server pack.
-     * @param installServer        Whether to install the modloader server in the server pack.
      * @param minecraftVer         The Minecraft version the modpack uses.
      * @param modloader            The modloader the modpack uses.
      * @param modloaderVersion     The version of the modloader the modpack uses.
@@ -351,7 +349,6 @@ abstract class Configuration<F, P> {
         modpackDirectory: String,
         clientsideMods: List<String>,
         inclusions: List<InclusionSpecification>,
-        installServer: Boolean,
         minecraftVer: String,
         modloader: String,
         modloaderVersion: String,

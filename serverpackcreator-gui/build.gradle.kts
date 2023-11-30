@@ -1,6 +1,6 @@
 plugins {
     id("serverpackcreator.kotlin-conventions")
-    id("de.comahe.i18n4k") version "0.6.2"
+    id("de.comahe.i18n4k") version "0.7.0"
 }
 
 repositories {

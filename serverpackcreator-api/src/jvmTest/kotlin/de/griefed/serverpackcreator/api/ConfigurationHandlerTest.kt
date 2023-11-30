@@ -12,9 +12,9 @@ internal class ConfigurationHandlerTest {
     private val apiProperties =
         ApiWrapper.api(File("src/jvmTest/resources/serverpackcreator.properties")).apiProperties
     private val configurationHandler =
-        ApiWrapper.api(File("src/jvmTest/resources/serverpackcreator.properties")).configurationHandler!!
+        ApiWrapper.api(File("src/jvmTest/resources/serverpackcreator.properties")).configurationHandler
     private val versionMeta =
-        ApiWrapper.api(File("src/jvmTest/resources/serverpackcreator.properties")).versionMeta!!
+        ApiWrapper.api(File("src/jvmTest/resources/serverpackcreator.properties")).versionMeta
     private val projectDir = apiProperties.homeDirectory.parentFile.parentFile
 
     @Test
@@ -293,7 +293,6 @@ internal class ConfigurationHandlerTest {
         packConfig.modpackDir = "src/jvmTest/resources/forge_tests"
         packConfig.setClientMods(clientMods)
         packConfig.setInclusions(inclusions)
-        packConfig.isServerInstallationDesired = true
         packConfig.isServerIconInclusionDesired = true
         packConfig.isServerPropertiesInclusionDesired = true
         packConfig.isZipCreationDesired = true
@@ -641,7 +640,6 @@ internal class ConfigurationHandlerTest {
                 javaArgs,
                 "",
                 "",
-                includeServerInstallation = true,
                 includeServerIcon = true,
                 includeServerProperties = true,
                 includeZipCreation = true,
@@ -713,7 +711,6 @@ internal class ConfigurationHandlerTest {
                 javaArgs,
                 "",
                 "",
-                includeServerInstallation = true,
                 includeServerIcon = true,
                 includeServerProperties = true,
                 includeZipCreation = true,
@@ -763,7 +760,6 @@ internal class ConfigurationHandlerTest {
         inclusions.add(InclusionSpecification("seeds"))
         inclusions.add(InclusionSpecification("defaultconfigs"))
         packConfig.setInclusions(inclusions)
-        packConfig.isServerInstallationDesired = true
         packConfig.isServerIconInclusionDesired = true
         packConfig.isServerPropertiesInclusionDesired = true
         packConfig.isZipCreationDesired = true
@@ -839,7 +835,6 @@ internal class ConfigurationHandlerTest {
         inclusions.add(InclusionSpecification("seeds"))
         inclusions.add(InclusionSpecification("defaultconfigs"))
         packConfig.setInclusions(inclusions)
-        packConfig.isServerInstallationDesired = true
         packConfig.isServerIconInclusionDesired = true
         packConfig.isServerPropertiesInclusionDesired = true
         packConfig.isZipCreationDesired = true

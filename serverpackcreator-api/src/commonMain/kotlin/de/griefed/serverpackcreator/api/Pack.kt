@@ -61,7 +61,6 @@ abstract class Pack<F, J, out P> {
                 field = "LegacyFabric"
             }
         }
-    var isServerInstallationDesired = true
     var isServerIconInclusionDesired = true
     var isServerPropertiesInclusionDesired = true
     var isZipCreationDesired = true
@@ -130,7 +129,6 @@ abstract class Pack<F, J, out P> {
                 " serverIconPath='$serverIconPath'," +
                 " serverPropertiesPath='$serverPropertiesPath'," +
                 " modloader='$modloader'," +
-                " isServerInstallationDesired=$isServerInstallationDesired," +
                 " isServerIconInclusionDesired=$isServerIconInclusionDesired," +
                 " isServerPropertiesInclusionDesired=$isServerPropertiesInclusionDesired," +
                 " isZipCreationDesired=$isZipCreationDesired)"
