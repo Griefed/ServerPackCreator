@@ -56,12 +56,12 @@ import javax.swing.*
  *                      Optional.
  */
 class TetrisTab(
-    versionMeta: VersionMeta?,
-    apiProperties: ApiProperties?,
-    utilities: Utilities?,
+    versionMeta: VersionMeta,
+    apiProperties: ApiProperties,
+    utilities: Utilities,
     addonConfig: Optional<CommentedConfig>,
     configFile: Optional<File>
-) : ExtensionTab(versionMeta!!, apiProperties!!, utilities!!, addonConfig, configFile) {
+) : ExtensionTab(versionMeta, apiProperties, utilities, addonConfig, configFile) {
     private var ami: JTextField = JTextField()
     private var here: JTextField = JTextField()
 

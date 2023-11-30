@@ -78,7 +78,7 @@ class ThemeManager(private val apiWrapper: ApiWrapper, private val guiProps: Gui
                 themesPrefix = ""
                 //source = "de/griefed/resources/manifests"
             }
-            apiWrapper.utilities!!.jarUtilities.copyFolderFromJar(
+            apiWrapper.utilities.jarUtilities.copyFolderFromJar(
                 this.javaClass,
                 "de/griefed/resources/gui/themes",
                 themesDir.absolutePath,

@@ -71,7 +71,7 @@ class MainPanel(
         tabs.addTab(Gui.main_tabs_logs.toString(), tabbedLogsTab.panel)
         tabs.addTab(Gui.main_tabs_settings.toString(), settingsEditorsTab.panel)
         tabs.setTabComponentAt(tabs.tabCount - 1, settingsEditorsTab.title)
-        apiWrapper.apiPlugins!!.addTabExtensionTabs(tabs)
+        apiWrapper.apiPlugins.addTabExtensionTabs(tabs)
         panel.add(larsonScanner, "height 40!,growx, south")
         panel.add(controlPanel.panel, "height 160!,growx, south")
     }
