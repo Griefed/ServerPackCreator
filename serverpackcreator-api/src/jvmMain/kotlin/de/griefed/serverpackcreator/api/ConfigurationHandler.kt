@@ -72,7 +72,6 @@ actual class ConfigurationHandler(
             packConfig.serverPackSuffix = fileConf.serverPackSuffix
             packConfig.serverIconPath = fileConf.serverIconPath
             packConfig.serverPropertiesPath = fileConf.serverPropertiesPath
-            packConfig.isServerInstallationDesired = fileConf.isServerInstallationDesired
             packConfig.isServerIconInclusionDesired = fileConf.isServerIconInclusionDesired
             packConfig.isServerPropertiesInclusionDesired = fileConf.isServerPropertiesInclusionDesired
             packConfig.isZipCreationDesired = fileConf.isZipCreationDesired
@@ -683,7 +682,6 @@ actual class ConfigurationHandler(
         modpackDirectory: String,
         clientsideMods: List<String>,
         inclusions: List<InclusionSpecification>,
-        installServer: Boolean,
         minecraftVer: String,
         modloader: String,
         modloaderVersion: String,
@@ -716,7 +714,6 @@ actual class ConfigurationHandler(
             log.info("    %s".format(inclusions[i].exclusionFilter))
         }
         // This log is meant to be read by the user, therefore we allow translation.
-        log.info("Include server installation:       $installServer")
         log.info("Minecraft version:                 $minecraftVer")
         log.info("Modloader:                         $modloader")
         log.info("Modloader Version:                 $modloaderVersion")

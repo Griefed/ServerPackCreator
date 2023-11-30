@@ -145,9 +145,6 @@ class ControlPanel(
 
         log.info("Checking entered configuration.")
         statusPanel.updateStatus(Gui.createserverpack_log_info_buttoncreateserverpack_start.toString())
-        if (!activeTab.checkServer()) {
-            packConfig.isServerInstallationDesired = false
-        }
 
         if (apiWrapper.configurationHandler!!.checkConfiguration(packConfig, check, true).allChecksPassed) {
             if (activeTab.getModpackDirectory().endsWith(".zip",ignoreCase = true)) {

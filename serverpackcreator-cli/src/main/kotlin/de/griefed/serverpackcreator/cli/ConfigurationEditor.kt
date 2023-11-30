@@ -121,20 +121,19 @@ class ConfigurationEditor(
                 3 -> getDirsAndFilesToCopy(scanner, packConfig.modpackDir, packConfig.inclusions)
                 4 -> packConfig.serverIconPath = getServerIcon(scanner)
                 5 -> packConfig.serverPropertiesPath = getServerProperties(scanner)
-                6 -> packConfig.isServerInstallationDesired = installModloaderServer()
-                7 -> packConfig.minecraftVersion = getMinecraftVersion(scanner)
-                8 -> packConfig.modloader = getModloader(scanner)
-                9 -> packConfig.modloaderVersion =
+                6 -> packConfig.minecraftVersion = getMinecraftVersion(scanner)
+                7 -> packConfig.modloader = getModloader(scanner)
+                8 -> packConfig.modloaderVersion =
                     getModloaderVersion(scanner, packConfig.minecraftVersion, packConfig.modloader)
 
-                10 -> packConfig.isServerIconInclusionDesired = includeServerIcon()
-                11 -> packConfig.isServerPropertiesInclusionDesired = includeServerProperties()
-                12 -> packConfig.isZipCreationDesired = includeZipCreation()
-                13 -> packConfig.javaArgs = getJavaArgs(scanner)
-                14 -> packConfig.serverPackSuffix = getServerPackSuffix(scanner)
-                15 -> saveConfiguration(scanner, packConfig)
-                16 -> configurationHandler.printConfigurationModel(packConfig)
-                17 -> checkConfig(packConfig)
+                9 -> packConfig.isServerIconInclusionDesired = includeServerIcon()
+                10 -> packConfig.isServerPropertiesInclusionDesired = includeServerProperties()
+                11 -> packConfig.isZipCreationDesired = includeZipCreation()
+                12 -> packConfig.javaArgs = getJavaArgs(scanner)
+                13 -> packConfig.serverPackSuffix = getServerPackSuffix(scanner)
+                14 -> saveConfiguration(scanner, packConfig)
+                15 -> configurationHandler.printConfigurationModel(packConfig)
+                16 -> checkConfig(packConfig)
                 0 -> cliLog(Cli.cli_exiting.toString())
             }
         } while (selection != 0)
@@ -232,9 +231,6 @@ class ConfigurationEditor(
 
             // -----------------------------------------------PATH TO THE CUSTOM SERVER.PROPERTIES--------
             packConfig.serverPropertiesPath = getServerProperties(scanner)
-
-            // ----------------------------------WHETHER TO INCLUDE MODLOADER SERVER INSTALLATION---------
-            packConfig.isServerInstallationDesired = installModloaderServer()
 
             // ----------------------------------------------------MINECRAFT VERSION MODPACK USES---------
             packConfig.minecraftVersion = getMinecraftVersion(scanner)

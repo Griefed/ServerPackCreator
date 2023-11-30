@@ -87,11 +87,6 @@ private const val includeZipCreationComment =
     "\n Create a CurseForge compatible ZIP-archive of the server pack. Must be true or false." +
     "\n Default value is true."
 
-private const val includeServerInstallationComment =
-    "\n Whether to install the modloader server in the local server pack for immediate testing. Must be true or false." +
-    "\n Note that the installed server will not be included in the ZIP-archive, if you let ServerPackCreator create one." +
-    "\n Default value is true."
-
 private const val pluginsComment =
     "\n Configurations for any and all plugins installed and used by this configuration. A plugin is identified by its ID."
 
@@ -130,8 +125,6 @@ private const val includeServerPropertiesKey = "includeServerProperties"
 private const val includeServerIconKey = "includeServerIcon"
 
 private const val includeZipCreationKey = "includeZipCreation"
-
-private const val includeServerInstallationKey = "includeServerInstallation"
 
 private const val pluginsKey = "plugins"
 
@@ -204,7 +197,6 @@ actual open class PackConfig actual constructor() : Pack<File, JsonNode, PackCon
      * @param serverPackSuffix          Suffix to create the server pack with.
      * @param serverIconPath            Path to the icon to use in the server pack.
      * @param serverPropertiesPath      Path to the server.properties to create the server pack with.
-     * @param includeServerInstallation Whether to install the modloader server in the server pack.
      * @param includeServerIcon         Whether to include the server-icon.png in the server pack.
      * @param includeServerProperties   Whether to include the server.properties in the server pack.
      * @param includeZipCreation        Whether to create a ZIP-archive of the server pack.
@@ -224,7 +216,6 @@ actual open class PackConfig actual constructor() : Pack<File, JsonNode, PackCon
         serverPackSuffix: String,
         serverIconPath: String,
         serverPropertiesPath: String,
-        includeServerInstallation: Boolean,
         includeServerIcon: Boolean,
         includeServerProperties: Boolean,
         includeZipCreation: Boolean,
@@ -241,7 +232,6 @@ actual open class PackConfig actual constructor() : Pack<File, JsonNode, PackCon
         this.serverPackSuffix = serverPackSuffix
         this.serverIconPath = serverIconPath
         this.serverPropertiesPath = serverPropertiesPath
-        isServerInstallationDesired = includeServerInstallation
         isServerIconInclusionDesired = includeServerIcon
         isServerPropertiesInclusionDesired = includeServerProperties
         isZipCreationDesired = includeZipCreation
@@ -304,7 +294,6 @@ actual open class PackConfig actual constructor() : Pack<File, JsonNode, PackCon
             .pathSecureText(config.getOrElse(serverPackSuffixKey, ""))
         serverIconPath = config.getOrElse(serverIconPathKey, "")
         serverPropertiesPath = config.getOrElse(serverPropertiesPathKey, "")
-        isServerInstallationDesired = config.getOrElse(includeServerInstallationKey, false)
         isServerIconInclusionDesired = config.getOrElse(includeServerIconKey, false)
         isServerPropertiesInclusionDesired = config.getOrElse(includeServerPropertiesKey, false)
         isZipCreationDesired = config.getOrElse(includeZipCreationKey, false)
@@ -422,9 +411,6 @@ actual open class PackConfig actual constructor() : Pack<File, JsonNode, PackCon
 
         conf.setComment(includeZipCreationKey, includeZipCreationComment)
         conf.set<Any>(includeZipCreationKey, isZipCreationDesired)
-
-        conf.setComment(includeServerInstallationKey, includeServerInstallationComment)
-        conf.set<Any>(includeServerInstallationKey, isServerInstallationDesired)
 
         val inclusionsList = mutableListOf<CommentedConfig>()
         var inclusionConfig: Config

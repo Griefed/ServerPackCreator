@@ -131,9 +131,6 @@ class ConfigEditor(
     private val includePropertiesIcon = StatusIcon(guiProps,Gui.createserverpack_gui_createserverpack_checkboxproperties_tip.toString())
     private val includePropertiesSetting = ActionCheckBox(Gui.createserverpack_gui_createserverpack_checkboxproperties.toString(),validationActionListener)
 
-    private val prepareServerIcon = StatusIcon(guiProps,Gui.createserverpack_gui_createserverpack_checkboxserver_tip.toString())
-    private val prepareServerSetting = ActionCheckBox(Gui.createserverpack_gui_createserverpack_checkboxserver.toString(),validationActionListener)
-
     private val advSetExclusionsSetting = ScrollTextArea(apiWrapper.apiProperties.clientSideMods().joinToString(","),Gui.createserverpack_gui_createserverpack_labelclientmods.toString(),validationChangeListener, guiProps)
     private val advSetWhitelistSetting = ScrollTextArea(apiWrapper.apiProperties.whitelistedMods().joinToString(","),Gui.createserverpack_gui_createserverpack_labelwhitelistmods.toString(),validationChangeListener, guiProps)
     private val advSetJavaArgsSetting = ScrollTextArea("-Xmx4G -Xms4G",Gui.createserverpack_gui_createserverpack_javaargs.toString(),validationChangeListener, guiProps)
@@ -277,10 +274,6 @@ class ConfigEditor(
         // Include Server Properties
         panel.add(includePropertiesIcon, "cell 2 $column, w 40!, gapleft 40,grow")
         panel.add(includePropertiesSetting, "cell 2 $column, w 200!")
-
-        // Install Local Server
-        panel.add(prepareServerIcon, "cell 2 $column, w 40!,grow")
-        panel.add(prepareServerSetting, "cell 2 $column, w 200!")
 
         // Advanced Settings
         column++ //10
@@ -453,13 +446,6 @@ class ConfigEditor(
     /**
      * @author Griefed
      */
-    override fun setServerInstallationTicked(ticked: Boolean) {
-        prepareServerSetting.isSelected = ticked
-    }
-
-    /**
-     * @author Griefed
-     */
     override fun setServerPackSuffix(suffix: String) {
         suffixSetting.text = apiWrapper.utilities!!.stringUtilities.pathSecureText(suffix)
     }
@@ -537,7 +523,6 @@ class ConfigEditor(
             getServerPackSuffix(),
             getServerIconPath(),
             getServerPropertiesPath(),
-            isServerInstallationTicked(),
             isServerIconInclusionTicked(),
             isServerPropertiesInclusionTicked(),
             isZipArchiveCreationTicked(),
@@ -692,13 +677,6 @@ class ConfigEditor(
     /**
      * @author Griefed
      */
-    override fun isServerInstallationTicked(): Boolean {
-        return prepareServerSetting.isSelected
-    }
-
-    /**
-     * @author Griefed
-     */
     override fun isServerIconInclusionTicked(): Boolean {
         return includeIconSetting.isSelected
     }
@@ -792,7 +770,6 @@ class ConfigEditor(
                     || currentConfig.serverPackSuffix != lastConfig!!.serverPackSuffix
                     || currentConfig.isServerIconInclusionDesired != lastConfig!!.isServerIconInclusionDesired
                     || currentConfig.isServerPropertiesInclusionDesired != lastConfig!!.isServerPropertiesInclusionDesired
-                    || currentConfig.isServerInstallationDesired != lastConfig!!.isServerInstallationDesired
                     || currentConfig.isZipCreationDesired != lastConfig!!.isZipCreationDesired -> {
                 title.showWarningIcon()
             }
@@ -844,7 +821,6 @@ class ConfigEditor(
                 setMinecraftVersion(packConfig.minecraftVersion)
                 setModloader(packConfig.modloader)
                 setModloaderVersion(packConfig.modloaderVersion)
-                setServerInstallationTicked(packConfig.isServerInstallationDesired)
                 setIconInclusionTicked(packConfig.isServerIconInclusionDesired)
                 setPropertiesInclusionTicked(packConfig.isServerPropertiesInclusionDesired)
                 setZipArchiveCreationTicked(packConfig.isZipCreationDesired)
@@ -1261,7 +1237,6 @@ class ConfigEditor(
         val mcVersion = mcVersionSetting.selectedItem?.toString()
         val server = apiWrapper.versionMeta!!.minecraft.getServer(mcVersion!!)
         if (!server.isPresent) {
-            prepareServerIcon.warning(Gui.configuration_log_warn_server.toString())
             JOptionPane.showMessageDialog(
                 this,
                 Gui.createserverpack_gui_createserverpack_minecraft_server_unavailable(mcVersion) + "   ",
@@ -1270,7 +1245,6 @@ class ConfigEditor(
                 guiProps.warningIcon
             )
         } else if (server.isPresent && !server.get().url().isPresent) {
-            prepareServerIcon.warning(Gui.configuration_log_warn_server.toString())
             JOptionPane.showMessageDialog(
                 this,
                 Gui.createserverpack_gui_createserverpack_minecraft_server_url_unavailable(mcVersion) + "   ",
@@ -1278,8 +1252,6 @@ class ConfigEditor(
                 JOptionPane.WARNING_MESSAGE,
                 guiProps.warningIcon
             )
-        } else {
-            prepareServerIcon.info()
         }
     }
 
@@ -1317,37 +1289,30 @@ class ConfigEditor(
      */
     fun checkServer(): Boolean {
         var okay = true
-        if (isServerInstallationTicked()) {
-            val mcVersion = mcVersionSetting.selectedItem!!.toString()
-            val modloader = modloaderSetting.selectedItem!!.toString()
-            val modloaderVersion = modloaderVersionSetting.selectedItem!!.toString()
-            if (!checkJava()) {
-                setServerInstallationTicked(false)
-                okay = false
-            }
-            if (!apiWrapper.serverPackHandler!!.serverDownloadable(mcVersion, modloader, modloaderVersion)) {
-                val message = Gui.createserverpack_gui_createserverpack_checkboxserver_unavailable_message(
-                    modloader,
-                    mcVersion,
-                    modloader,
-                    modloaderVersion,
-                    modloader
-                ) + "    "
-                val title = Gui.createserverpack_gui_createserverpack_checkboxserver_unavailable_title(
-                    mcVersion,
-                    modloader,
-                    modloaderVersion
-                )
-                JOptionPane.showMessageDialog(
-                    this.panel.parent.parent,
-                    message,
-                    title,
-                    JOptionPane.WARNING_MESSAGE,
-                    guiProps.largeWarningIcon
-                )
-                setServerInstallationTicked(false)
-                okay = false
-            }
+        val mcVersion = mcVersionSetting.selectedItem!!.toString()
+        val modloader = modloaderSetting.selectedItem!!.toString()
+        val modloaderVersion = modloaderVersionSetting.selectedItem!!.toString()
+        if (!apiWrapper.serverPackHandler!!.serverDownloadable(mcVersion, modloader, modloaderVersion)) {
+            val message = Gui.createserverpack_gui_createserverpack_checkboxserver_unavailable_message(
+                modloader,
+                mcVersion,
+                modloader,
+                modloaderVersion,
+                modloader
+            ) + "    "
+            val title = Gui.createserverpack_gui_createserverpack_checkboxserver_unavailable_title(
+                mcVersion,
+                modloader,
+                modloaderVersion
+            )
+            JOptionPane.showMessageDialog(
+                this.panel.parent.parent,
+                message,
+                title,
+                JOptionPane.WARNING_MESSAGE,
+                guiProps.largeWarningIcon
+            )
+            okay = false
         }
         return okay
     }
