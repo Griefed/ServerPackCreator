@@ -1,3 +1,27 @@
+## [5.0.0-beta.15](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-beta.14...5.0.0-beta.15) (2023-11-30)
+
+
+### :scissors: Refactor
+
+* Lazy init, double locking ApiWrapper ([86e392e](https://git.griefed.de/Griefed/ServerPackCreator/commit/86e392e549f00657110c85b3c0cc88c742ae38b0))
+* Remove unnecessary non-null assertions ([1e9abe3](https://git.griefed.de/Griefed/ServerPackCreator/commit/1e9abe3627a43fd29227fe6b021be25d7032d1b4))
+
+
+### 📦 Other
+
+* Allow translations ([1168c11](https://git.griefed.de/Griefed/ServerPackCreator/commit/1168c1199b46fc87fd25ea6aff116158a6ca66f0))
+
+
+### 🦊 CI/CD
+
+* Update comahe i18n4k to 0.7.0 ([cb262fd](https://git.griefed.de/Griefed/ServerPackCreator/commit/cb262fd9db9a87f8128709ede2fee96dbc638529))
+* Update Gradle wrapper to 8.4 ([5dc198d](https://git.griefed.de/Griefed/ServerPackCreator/commit/5dc198d4c8ba415656c145cd99488b183100020f))
+
+
+### 🧨 Breaking changes!
+
+* Remove server installation feature ([5ddbc8e](https://git.griefed.de/Griefed/ServerPackCreator/commit/5ddbc8e6301ea7a73a4dc060a6009c5b979798c4))
+
 ## [5.0.0-beta.14](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-beta.13...5.0.0-beta.14) (2023-11-25)
 
 
