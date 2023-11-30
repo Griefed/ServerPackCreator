@@ -12,9 +12,9 @@ internal class ConfigurationHandlerTest {
     private val apiProperties =
         ApiWrapper.api(File("src/jvmTest/resources/serverpackcreator.properties")).apiProperties
     private val configurationHandler =
-        ApiWrapper.api(File("src/jvmTest/resources/serverpackcreator.properties")).configurationHandler!!
+        ApiWrapper.api(File("src/jvmTest/resources/serverpackcreator.properties")).configurationHandler
     private val versionMeta =
-        ApiWrapper.api(File("src/jvmTest/resources/serverpackcreator.properties")).versionMeta!!
+        ApiWrapper.api(File("src/jvmTest/resources/serverpackcreator.properties")).versionMeta
     private val projectDir = apiProperties.homeDirectory.parentFile.parentFile
 
     @Test

@@ -55,7 +55,10 @@ actual class ApiWrapper private constructor(
      * @return applicationProperties used across this ServerPackCreator-instance.
      * @author Griefed
      */
-    actual val apiProperties: ApiProperties
+    @get:Synchronized
+    actual val apiProperties: ApiProperties by lazy {
+        ApiProperties(fileUtilities, systemUtilities, listUtilities, jarUtilities, properties)
+    }
 
     /**
      * This instances common file utilities used across ServerPackCreator.
@@ -63,6 +66,7 @@ actual class ApiWrapper private constructor(
      * @return Common file utilities used across ServerPackCreator.
      * @author Griefed
      */
+    @get:Synchronized
     actual val fileUtilities: FileUtilities = FileUtilities()
 
     /**
@@ -71,6 +75,7 @@ actual class ApiWrapper private constructor(
      * @return Common JAR-utilities used across ServerPackCreator.
      * @author Griefed
      */
+    @get:Synchronized
     actual val jarUtilities: JarUtilities = JarUtilities()
 
     /**
@@ -79,6 +84,7 @@ actual class ApiWrapper private constructor(
      * @return Common system utilities used across ServerPackCreator.
      * @author Griefed
      */
+    @get:Synchronized
     actual val systemUtilities: SystemUtilities = SystemUtilities()
 
     /**
@@ -94,6 +100,7 @@ actual class ApiWrapper private constructor(
      * @return Json-ObjectMapper to parse and read JSON.
      * @author Griefed
      */
+    @get:Synchronized
     val objectMapper: ObjectMapper = ObjectMapper().disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
         .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
         .enable(JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS.mappedFeature())
@@ -104,6 +111,7 @@ actual class ApiWrapper private constructor(
      * @return Common JSON utilities used across ServerPackCreator.
      * @author Griefed
      */
+    @get:Synchronized
     actual val jsonUtilities: JsonUtilities = JsonUtilities(objectMapper)
 
     /**
@@ -113,14 +121,9 @@ actual class ApiWrapper private constructor(
      * @author Griefed
      */
     @get:Synchronized
-    actual var webUtilities: WebUtilities? = null
-        get() {
-            if (field == null) {
-                field = WebUtilities(apiProperties)
-            }
-            return field
-        }
-        private set
+    actual val webUtilities: WebUtilities by lazy {
+        WebUtilities(apiProperties)
+    }
 
     /**
      * This instances DocumentBuilder for working with XML-data.
@@ -128,6 +131,7 @@ actual class ApiWrapper private constructor(
      * @return DocumentBuilder for working with XML.
      * @author Griefed
      */
+    @get:Synchronized
     val documentBuilderFactory: DocumentBuilderFactory = DocumentBuilderFactory.newInstance()
 
     /**
@@ -136,6 +140,7 @@ actual class ApiWrapper private constructor(
      * @return Common XML utilities used across ServerPackCreator.
      * @author Griefed
      */
+    @get:Synchronized
     actual val xmlUtilities: XmlUtilities = XmlUtilities(documentBuilderFactory)
 
     /**
@@ -145,24 +150,19 @@ actual class ApiWrapper private constructor(
      * @author Griefed
      */
     @get:Synchronized
-    actual var utilities: Utilities? = null
-        get() {
-            if (field == null) {
-                field = Utilities(
-                    booleanUtilities,
-                    fileUtilities,
-                    jarUtilities,
-                    listUtilities,
-                    stringUtilities,
-                    systemUtilities,
-                    webUtilities!!,
-                    jsonUtilities,
-                    xmlUtilities
-                )
-            }
-            return field
-        }
-        private set
+    actual val utilities: Utilities by lazy {
+        Utilities(
+            booleanUtilities,
+            fileUtilities,
+            jarUtilities,
+            listUtilities,
+            stringUtilities,
+            systemUtilities,
+            webUtilities,
+            jsonUtilities,
+            xmlUtilities
+        )
+    }
 
     /**
      * This instances version meta used for checking version-correctness of Minecraft and supported
@@ -174,33 +174,26 @@ actual class ApiWrapper private constructor(
      * @throws SAXException                 When xml-manifests couldn't be read.
      * @author Griefed
      */
-    @get:Throws(
-        IOException::class, ParserConfigurationException::class, SAXException::class
-    )
+    @get:Throws(IOException::class, ParserConfigurationException::class, SAXException::class)
     @get:Synchronized
-    actual var versionMeta: VersionMeta? = null
-        get() {
-            if (field == null) {
-                field = VersionMeta(
-                    apiProperties.minecraftVersionManifest,
-                    apiProperties.forgeVersionManifest,
-                    apiProperties.neoForgeVersionManifest,
-                    apiProperties.fabricVersionManifest,
-                    apiProperties.fabricInstallerManifest,
-                    apiProperties.fabricIntermediariesManifest,
-                    apiProperties.quiltVersionManifest,
-                    apiProperties.quiltInstallerManifest,
-                    apiProperties.legacyFabricGameManifest,
-                    apiProperties.legacyFabricLoaderManifest,
-                    apiProperties.legacyFabricInstallerManifest,
-                    objectMapper,
-                    utilities!!,
-                    apiProperties
-                )
-            }
-            return field
-        }
-        private set
+    actual val versionMeta: VersionMeta by lazy {
+        VersionMeta(
+            apiProperties.minecraftVersionManifest,
+            apiProperties.forgeVersionManifest,
+            apiProperties.neoForgeVersionManifest,
+            apiProperties.fabricVersionManifest,
+            apiProperties.fabricInstallerManifest,
+            apiProperties.fabricIntermediariesManifest,
+            apiProperties.quiltVersionManifest,
+            apiProperties.quiltInstallerManifest,
+            apiProperties.legacyFabricGameManifest,
+            apiProperties.legacyFabricLoaderManifest,
+            apiProperties.legacyFabricInstallerManifest,
+            objectMapper,
+            utilities,
+            apiProperties
+        )
+    }
 
     /**
      * This instances ConfigurationHandler for checking a given [PackConfig] for
@@ -215,20 +208,11 @@ actual class ApiWrapper private constructor(
      * an error occurred during the parsing of a manifest.
      * @author Griefed
      */
-    @get:Throws(
-        IOException::class, ParserConfigurationException::class, SAXException::class
-    )
+    @get:Throws(IOException::class, ParserConfigurationException::class, SAXException::class)
     @get:Synchronized
-    actual var configurationHandler: ConfigurationHandler? = null
-        get() {
-            if (field == null) {
-                field = ConfigurationHandler(
-                    versionMeta!!, apiProperties, utilities!!, apiPlugins!!
-                )
-            }
-            return field
-        }
-        private set
+    actual val configurationHandler: ConfigurationHandler by lazy {
+        ConfigurationHandler(versionMeta, apiProperties, utilities, apiPlugins)
+    }
 
     /**
      * This instances plugin manager for ServerPackCreator-plugins, if any are installed. This gives you
@@ -244,20 +228,11 @@ actual class ApiWrapper private constructor(
      * the parsing of a manifest.
      * @author Griefed
      */
-    @get:Throws(
-        IOException::class, ParserConfigurationException::class, SAXException::class
-    )
+    @get:Throws(IOException::class, ParserConfigurationException::class, SAXException::class)
     @get:Synchronized
-    actual var apiPlugins: ApiPlugins? = null
-        get() {
-            if (field == null) {
-                field = ApiPlugins(
-                    tomlParser, apiProperties, versionMeta!!, utilities!!
-                )
-            }
-            return field
-        }
-        private set
+    actual val apiPlugins: ApiPlugins by lazy {
+        ApiPlugins(tomlParser, apiProperties, versionMeta, utilities)
+    }
 
     /**
      * This instances ServerPackHandler used to turn a [PackConfig] into a server pack.
@@ -270,20 +245,11 @@ actual class ApiWrapper private constructor(
      * @throws SAXException                 When the [VersionMeta] had to be instantiated, but
      * an error occurred during the parsing of a manifest.
      */
-    @get:Throws(
-        IOException::class, ParserConfigurationException::class, SAXException::class
-    )
+    @get:Throws(IOException::class, ParserConfigurationException::class, SAXException::class)
     @get:Synchronized
-    actual var serverPackHandler: ServerPackHandler? = null
-        get() {
-            if (field == null) {
-                field = ServerPackHandler(
-                    apiProperties, versionMeta!!, utilities!!, apiPlugins!!, modScanner!!
-                )
-            }
-            return field
-        }
-        private set
+    actual val serverPackHandler: ServerPackHandler by lazy {
+        ServerPackHandler(apiProperties, versionMeta, utilities, apiPlugins, modScanner)
+    }
 
     /**
      * This instances modscanner to determine the sideness of a given Forge, Fabric, LegacyFabric or
@@ -294,16 +260,9 @@ actual class ApiWrapper private constructor(
      * @author Griefed
      */
     @get:Synchronized
-    actual var modScanner: ModScanner? = null
-        get() {
-            if (field == null) {
-                field = ModScanner(
-                    annotationScanner!!, fabricScanner!!, quiltScanner!!, tomlScanner
-                )
-            }
-            return field
-        }
-        private set
+    actual val modScanner: ModScanner by lazy {
+        ModScanner(annotationScanner, fabricScanner, quiltScanner, tomlScanner)
+    }
 
     /**
      * This instances annotation scanner used to determine the sideness of Forge mods for Minecraft
@@ -314,16 +273,9 @@ actual class ApiWrapper private constructor(
      * @author Griefed
      */
     @get:Synchronized
-    actual var annotationScanner: AnnotationScanner? = null
-        get() {
-            if (field == null) {
-                field = AnnotationScanner(
-                    objectMapper, utilities!!
-                )
-            }
-            return field
-        }
-        private set
+    actual val annotationScanner: AnnotationScanner by lazy {
+        AnnotationScanner(objectMapper, utilities)
+    }
 
     /**
      * This instances scanner to determine the sideness of Fabric mods.
@@ -332,16 +284,9 @@ actual class ApiWrapper private constructor(
      * @author Griefed
      */
     @get:Synchronized
-    actual var fabricScanner: FabricScanner? = null
-        get() {
-            if (field == null) {
-                field = FabricScanner(
-                    objectMapper, utilities!!
-                )
-            }
-            return field
-        }
-        private set
+    actual val fabricScanner: FabricScanner by lazy {
+        FabricScanner(objectMapper, utilities)
+    }
 
     /**
      * This instances scanner to determine the sideness of Quilt mods.
@@ -350,16 +295,9 @@ actual class ApiWrapper private constructor(
      * @author Griefed
      */
     @get:Synchronized
-    actual var quiltScanner: QuiltScanner? = null
-        get() {
-            if (field == null) {
-                field = QuiltScanner(
-                    objectMapper, utilities!!
-                )
-            }
-            return field
-        }
-        private set
+    actual val quiltScanner: QuiltScanner by lazy {
+        QuiltScanner(objectMapper, utilities)
+    }
 
     /**
      * This instances toml parser to read and parse various `.toml`-files during mod-scanning,
@@ -368,6 +306,7 @@ actual class ApiWrapper private constructor(
      * @return Toml parser to read and parse `.toml`-files.
      * @author Griefed
      */
+    @get:Synchronized
     actual val tomlParser: TomlParser = TomlParser()
 
     /**
@@ -377,12 +316,10 @@ actual class ApiWrapper private constructor(
      * @return Scanner to determine the sideness of Forge mods for Minecraft 1.13.x and newer.
      * @author Griefed
      */
+    @get:Synchronized
     actual val tomlScanner: TomlScanner = TomlScanner(tomlParser)
 
     init {
-        apiProperties = ApiProperties(
-            fileUtilities, systemUtilities, listUtilities, jarUtilities, properties
-        )
         apiProperties.changeLocale(language)
         if (runSetup) {
             setup()
@@ -410,7 +347,11 @@ actual class ApiWrapper private constructor(
             runSetup: Boolean = true
         ): ApiWrapper {
             if (api == null) {
-                api = ApiWrapper(properties, language, runSetup)
+                synchronized(this) {
+                    if (api == null) {
+                        api = ApiWrapper(properties, language, runSetup)
+                    }
+                }
             }
             return api!!
         }
@@ -420,9 +361,7 @@ actual class ApiWrapper private constructor(
      * @author Griefed
      */
     @Synchronized
-    @Throws(
-        IOException::class, ParserConfigurationException::class, SAXException::class
-    )
+    @Throws(IOException::class, ParserConfigurationException::class, SAXException::class)
     override fun setup(force: Boolean): ApiWrapper {
         if (force) {
             setupWasRun = false
@@ -440,21 +379,21 @@ actual class ApiWrapper private constructor(
      * @author Griefed
      */
     override fun stageOne() {
-        utilities!!.jarUtilities.copyFileFromJar(
+        utilities.jarUtilities.copyFileFromJar(
             "README.md", true, this.javaClass, apiProperties.homeDirectory.absoluteFile.toString()
         )
-        utilities!!.jarUtilities.copyFileFromJar(
+        utilities.jarUtilities.copyFileFromJar(
             "HELP.md", true, this.javaClass, apiProperties.homeDirectory.absoluteFile.toString()
         )
-        utilities!!.jarUtilities.copyFileFromJar(
+        utilities.jarUtilities.copyFileFromJar(
             "CHANGELOG.md", true, this.javaClass, apiProperties.homeDirectory.absoluteFile.toString()
         )
-        utilities!!.jarUtilities.copyFileFromJar(
+        utilities.jarUtilities.copyFileFromJar(
             "LICENSE", true, this.javaClass, apiProperties.homeDirectory.absoluteFile.toString()
         )
 
         System.setProperty("file.encoding", StandardCharsets.UTF_8.name())
-        if (!utilities!!.fileUtilities.isReadWritePermissionSet(apiProperties.getJarFolder())) {
+        if (!utilities.fileUtilities.isReadWritePermissionSet(apiProperties.getJarFolder())) {
             log.error(
                 "One or more file or directory has no read- or write-permission." + " This may lead to corrupted server packs!" + " Check the permissions of the ServerPackCreator base directory!"
             )
@@ -466,7 +405,7 @@ actual class ApiWrapper private constructor(
                 manifestPrefix = ""
                 //source = "de/griefed/resources/manifests"
             }
-            utilities!!.jarUtilities.copyFolderFromJar(
+            utilities.jarUtilities.copyFolderFromJar(
                 this.javaClass,
                 "de/griefed/resources/manifests",
                 apiProperties.manifestsDirectory.absolutePath,
@@ -553,19 +492,17 @@ actual class ApiWrapper private constructor(
     /**
      * @author Griefed
      */
-    override fun checkServerFilesFile(fileToCheckFor: File) = utilities!!.jarUtilities.copyFileFromJar(
-        "de/griefed/resources/server_files/${fileToCheckFor.name}", File(
-            apiProperties.serverFilesDirectory, fileToCheckFor.name
-        ), this.javaClass
+    override fun checkServerFilesFile(fileToCheckFor: File) = utilities.jarUtilities.copyFileFromJar(
+        "de/griefed/resources/server_files/${fileToCheckFor.name}",
+        File(apiProperties.serverFilesDirectory, fileToCheckFor.name),
+        this.javaClass
     )
 
     /**
      * @author Griefed
      */
     override fun overwriteServerFilesFile(fileToOverwrite: File) {
-        File(
-            apiProperties.serverFilesDirectory, fileToOverwrite.name
-        ).deleteQuietly()
+        File(apiProperties.serverFilesDirectory, fileToOverwrite.name).deleteQuietly()
         checkServerFilesFile(fileToOverwrite)
     }
 }
