@@ -474,7 +474,7 @@ Used libraries / dependencies licenses:
 
 -------------------------------------------------------
 
-(1 of 42)
+(1 of 40)
 Group:   com.cronutils
 Name:    cron-utils
 Version: 9.2.1
@@ -497,7 +497,7 @@ URL: https://www.apache.org/licenses/LICENSE-2.0
 
 #######################################
 
-(2 of 42)
+(2 of 40)
 Group:   com.electronwill.night-config
 Name:    toml
 Version: 3.6.7
@@ -684,7 +684,7 @@ Library.
 
 #######################################
 
-(3 of 42)
+(3 of 40)
 Group:   com.fasterxml.jackson.core
 Name:    jackson-databind
 Version: 2.15.3
@@ -927,7 +927,7 @@ from the source code management (SCM) system project uses.
 
 #######################################
 
-(4 of 42)
+(4 of 40)
 Group:   com.fasterxml.jackson.module
 Name:    jackson-module-kotlin
 Version: 2.13.5
@@ -975,7 +975,7 @@ from the source code management (SCM) system project uses.
 
 #######################################
 
-(5 of 42)
+(5 of 40)
 Group:   com.fasterxml.jackson.module
 Name:    jackson-module-kotlin
 Version: 2.14.2
@@ -1023,7 +1023,7 @@ from the source code management (SCM) system project uses.
 
 #######################################
 
-(6 of 42)
+(6 of 40)
 Group:   com.formdev
 Name:    flatlaf
 Version: 3.2.5
@@ -1241,7 +1241,7 @@ Embedded license:
 
 #######################################
 
-(7 of 42)
+(7 of 40)
 Group:   com.formdev
 Name:    flatlaf-extras
 Version: 3.2.5
@@ -1459,7 +1459,7 @@ Embedded license:
 
 #######################################
 
-(8 of 42)
+(8 of 40)
 Group:   com.formdev
 Name:    flatlaf-fonts-inter
 Version: 3.19
@@ -1777,7 +1777,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
 
 #######################################
 
-(9 of 42)
+(9 of 40)
 Group:   com.formdev
 Name:    flatlaf-fonts-jetbrains-mono
 Version: 2.242
@@ -1999,7 +1999,7 @@ Embedded license:
 
 #######################################
 
-(10 of 42)
+(10 of 40)
 Group:   com.formdev
 Name:    flatlaf-fonts-roboto
 Version: 2.137
@@ -2421,7 +2421,7 @@ Embedded license:
 
 #######################################
 
-(11 of 42)
+(11 of 40)
 Group:   com.formdev
 Name:    flatlaf-fonts-roboto-mono
 Version: 3.000
@@ -2843,7 +2843,7 @@ Embedded license:
 
 #######################################
 
-(12 of 42)
+(12 of 40)
 Group:   com.formdev
 Name:    flatlaf-intellij-themes
 Version: 3.2.5
@@ -3061,7 +3061,7 @@ Embedded license:
 
 #######################################
 
-(13 of 42)
+(13 of 40)
 Group:   com.formdev
 Name:    svgSalamander
 Version: 1.1.4
@@ -3089,7 +3089,7 @@ URL: https://opensource.org/licenses/BSD-2-Clause
 
 #######################################
 
-(14 of 42)
+(14 of 40)
 Group:   com.github.gwenn
 Name:    sqlite-dialect
 Version: 0.1.4
@@ -3109,7 +3109,7 @@ URL: http://unlicense.org/
 
 #######################################
 
-(15 of 42)
+(15 of 40)
 Group:   com.miglayout
 Name:    miglayout-swing
 Version: 11.2
@@ -3129,7 +3129,7 @@ URL: https://opensource.org/licenses/0BSD
 
 #######################################
 
-(16 of 42)
+(16 of 40)
 Group:   commons-io
 Name:    commons-io
 Version: 2.14.0
@@ -3357,7 +3357,7 @@ The Apache Software Foundation (https://www.apache.org/).
 
 #######################################
 
-(17 of 42)
+(17 of 40)
 Group:   de.comahe.i18n4k
 Name:    i18n4k-core
 Version: 0.6.2
@@ -3366,7 +3366,7 @@ No license information found
 
 #######################################
 
-(18 of 42)
+(18 of 40)
 Group:   de.comahe.i18n4k
 Name:    i18n4k-core-jvm
 Version: 0.6.2
@@ -3386,7 +3386,7 @@ URL: https://www.apache.org/licenses/LICENSE-2.0
 
 #######################################
 
-(19 of 42)
+(19 of 40)
 Group:   de.jensklingenberg.ktorfit
 Name:    ktorfit-lib
 Version: 1.9.0
@@ -3395,7 +3395,7 @@ No license information found
 
 #######################################
 
-(20 of 42)
+(20 of 40)
 Group:   io.github.microutils
 Name:    kotlin-logging
 Version: 3.0.5
@@ -3404,7 +3404,7 @@ No license information found
 
 #######################################
 
-(21 of 42)
+(21 of 40)
 Group:   net.java.balloontip
 Name:    balloontip
 Version: 1.2.4.1
@@ -3424,7 +3424,7 @@ URL: https://opensource.org/licenses/BSD-3-Clause
 
 #######################################
 
-(22 of 42)
+(22 of 40)
 Group:   net.lingala.zip4j
 Name:    zip4j
 Version: 2.11.5
@@ -3447,7 +3447,7 @@ URL: https://www.apache.org/licenses/LICENSE-2.0
 
 #######################################
 
-(23 of 42)
+(23 of 40)
 Group:   org.apache.activemq
 Name:    artemis-jms-server
 Version: 2.28.0
@@ -3673,7 +3673,7 @@ The Apache Software Foundation (http://www.apache.org/).
 
 #######################################
 
-(24 of 42)
+(24 of 40)
 Group:   org.apache.logging.log4j
 Name:    log4j-api-kotlin
 Version: 1.3.0
@@ -3900,7 +3900,7 @@ The Apache Software Foundation (http://www.apache.org/).
 
 #######################################
 
-(25 of 42)
+(25 of 40)
 Group:   org.apache.logging.log4j
 Name:    log4j-core
 Version: 2.21.0
@@ -4128,36 +4128,16 @@ Copyright 2005-2006 Tim Fennell
 
 #######################################
 
-(26 of 42)
+(26 of 40)
 Group:   org.jetbrains.kotlin
 Name:    kotlin-bom
-Version: 1.9.10
+Version: 1.9.21
 No license information found
 
 
 #######################################
 
-(27 of 42)
-Group:   org.jetbrains.kotlin
-Name:    kotlin-reflect
-Version: 1.8.20
-POM Project URL: https://kotlinlang.org/
-
-
-POM License: Apache License, Version 2.0
- - https://www.apache.org/licenses/LICENSE-2.0
-
-
-POM license(s): 
-
-
-License: Apache License, Version 2.0
-URL: https://www.apache.org/licenses/LICENSE-2.0
-
-
-#######################################
-
-(28 of 42)
+(27 of 40)
 Group:   org.jetbrains.kotlin
 Name:    kotlin-reflect
 Version: 1.9.10
@@ -4177,10 +4157,30 @@ URL: https://www.apache.org/licenses/LICENSE-2.0
 
 #######################################
 
-(29 of 42)
+(28 of 40)
+Group:   org.jetbrains.kotlin
+Name:    kotlin-reflect
+Version: 1.9.21
+POM Project URL: https://kotlinlang.org/
+
+
+POM License: Apache License, Version 2.0
+ - https://www.apache.org/licenses/LICENSE-2.0
+
+
+POM license(s): 
+
+
+License: Apache License, Version 2.0
+URL: https://www.apache.org/licenses/LICENSE-2.0
+
+
+#######################################
+
+(29 of 40)
 Group:   org.jetbrains.kotlin
 Name:    kotlin-stdlib
-Version: 1.9.10
+Version: 1.9.21
 POM Project URL: https://kotlinlang.org/
 
 
@@ -4197,47 +4197,7 @@ URL: https://www.apache.org/licenses/LICENSE-2.0
 
 #######################################
 
-(30 of 42)
-Group:   org.jetbrains.kotlin
-Name:    kotlin-stdlib-common
-Version: 1.9.10
-POM Project URL: https://kotlinlang.org/
-
-
-POM License: Apache License, Version 2.0
- - https://www.apache.org/licenses/LICENSE-2.0
-
-
-POM license(s): 
-
-
-License: Apache License, Version 2.0
-URL: https://www.apache.org/licenses/LICENSE-2.0
-
-
-#######################################
-
-(31 of 42)
-Group:   org.jetbrains.kotlin
-Name:    kotlin-stdlib-jdk8
-Version: 1.9.10
-POM Project URL: https://kotlinlang.org/
-
-
-POM License: Apache License, Version 2.0
- - https://www.apache.org/licenses/LICENSE-2.0
-
-
-POM license(s): 
-
-
-License: Apache License, Version 2.0
-URL: https://www.apache.org/licenses/LICENSE-2.0
-
-
-#######################################
-
-(32 of 42)
+(30 of 40)
 Group:   org.jetbrains.kotlinx
 Name:    kotlinx-coroutines-core
 Version: 1.7.3
@@ -4246,7 +4206,7 @@ No license information found
 
 #######################################
 
-(33 of 42)
+(31 of 40)
 Group:   org.jetbrains.kotlinx
 Name:    kotlinx-coroutines-swing
 Version: 1.7.3
@@ -4266,7 +4226,7 @@ URL: https://www.apache.org/licenses/LICENSE-2.0
 
 #######################################
 
-(34 of 42)
+(32 of 40)
 Group:   org.jetbrains.kotlinx
 Name:    kotlinx-datetime
 Version: 0.4.1
@@ -4275,7 +4235,7 @@ No license information found
 
 #######################################
 
-(35 of 42)
+(33 of 40)
 Group:   org.pf4j
 Name:    pf4j
 Version: 3.10.0
@@ -4292,7 +4252,7 @@ URL: https://www.apache.org/licenses/LICENSE-2.0
 
 #######################################
 
-(36 of 42)
+(34 of 40)
 Group:   org.springframework.boot
 Name:    spring-boot-devtools
 Version: 2.7.10
@@ -4517,7 +4477,7 @@ the License.
 
 #######################################
 
-(37 of 42)
+(35 of 40)
 Group:   org.springframework.boot
 Name:    spring-boot-starter-artemis
 Version: 2.7.10
@@ -4742,7 +4702,7 @@ the License.
 
 #######################################
 
-(38 of 42)
+(36 of 40)
 Group:   org.springframework.boot
 Name:    spring-boot-starter-data-jpa
 Version: 2.7.10
@@ -4967,7 +4927,7 @@ the License.
 
 #######################################
 
-(39 of 42)
+(37 of 40)
 Group:   org.springframework.boot
 Name:    spring-boot-starter-log4j2
 Version: 2.7.10
@@ -5192,7 +5152,7 @@ the License.
 
 #######################################
 
-(40 of 42)
+(38 of 40)
 Group:   org.springframework.boot
 Name:    spring-boot-starter-web
 Version: 2.7.10
@@ -5417,7 +5377,7 @@ the License.
 
 #######################################
 
-(41 of 42)
+(39 of 40)
 Group:   org.xerial
 Name:    sqlite-jdbc
 Version: 3.43.2.1
@@ -5665,7 +5625,7 @@ SUCH DAMAGE.
 
 #######################################
 
-(42 of 42)
+(40 of 40)
 Group:   tokyo.northside
 Name:    tipoftheday
 Version: 0.4.2
