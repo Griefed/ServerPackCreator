@@ -29,7 +29,7 @@ import java.io.BufferedReader
 import java.io.File
 import java.io.IOException
 import java.io.InputStreamReader
-import java.net.URL
+import java.net.URI
 import java.util.*
 import java.util.prefs.Preferences
 
@@ -1005,9 +1005,9 @@ actual class ApiProperties(
      * The URL from which a .properties-file is read during updating of the fallback clientside-mods list.
      * The default can be found in [fallbackUpdateURL].
      */
-    var updateUrl = URL(fallbackUpdateURL)
+    var updateUrl = URI(fallbackUpdateURL).toURL()
         get() {
-            field = URL(acquireProperty(pConfigurationFallbackUpdateURL, fallbackUpdateURL))
+            field = URI(acquireProperty(pConfigurationFallbackUpdateURL, fallbackUpdateURL)).toURL()
             return field
         }
         set(value) {
@@ -2366,9 +2366,9 @@ actual class ApiProperties(
     fun updateFallback(): Boolean {
         var properties: Properties? = null
         try {
-            URL(
+            URI(
                 acquireProperty(pConfigurationFallbackUpdateURL, fallbackUpdateURL)
-            ).openStream().use {
+            ).toURL().openStream().use {
                 properties = Properties()
                 properties!!.load(it)
             }

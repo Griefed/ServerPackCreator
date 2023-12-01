@@ -21,6 +21,7 @@ package de.griefed.serverpackcreator.api.utilities.common
 
 import net.lingala.zip4j.ZipFile
 import java.io.File
+import java.net.URI
 import java.net.URL
 import java.nio.file.Paths
 
@@ -60,7 +61,7 @@ fun <T : Any> Class<T>.source(
         }
 
         try {
-            val uri = URL(path).toURI()
+            val uri = URI(path)
             source = Paths.get(uri).toFile()
         } catch (e: Exception) {
             throw JarAccessException("Invalid Jar File URL String")
@@ -68,7 +69,7 @@ fun <T : Any> Class<T>.source(
 
     } else if (url.startsWith(JAR)) {
         try {
-            val uri = URL(url).toURI()
+            val uri = URI(url)
             val file = Paths.get(uri).toFile()
             source = file.parentFile
         } catch (e: Exception) {

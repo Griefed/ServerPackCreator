@@ -24,6 +24,7 @@ import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import de.griefed.serverpackcreator.api.versionmeta.Type
 import java.io.File
+import java.net.URI
 import java.net.URL
 import java.util.*
 
@@ -68,7 +69,7 @@ class MinecraftServer internal constructor(
             val dwn = serverJson?.get(downloads)
             val srv = dwn?.get(server)
             val url = srv?.get(url)?.asText()
-            Optional.ofNullable(URL(url))
+            Optional.ofNullable(URI(url).toURL())
         } catch (e: Exception) {
             Optional.empty()
         }

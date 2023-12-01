@@ -29,6 +29,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import org.apache.logging.log4j.LogManager
 import java.io.IOException
 import java.net.MalformedURLException
+import java.net.URI
 import java.net.URL
 import java.time.LocalDate
 import java.util.*
@@ -59,8 +60,8 @@ class GitHubChecker : VersionChecker {
      * @throws MalformedURLException Thrown if the resulting URL is malformed or otherwise invalid.
      */
     constructor(gitHubUserRepository: String) {
-        gitHubApi = URL("https://api.github.com/repos/$gitHubUserRepository/releases")
-        gitHubApiLatest = URL("https://api.github.com/repos/$gitHubUserRepository/releases/latest")
+        gitHubApi = URI("https://api.github.com/repos/$gitHubUserRepository/releases").toURL()
+        gitHubApiLatest = URI("https://api.github.com/repos/$gitHubUserRepository/releases/latest").toURL()
     }
 
     /**
@@ -72,8 +73,8 @@ class GitHubChecker : VersionChecker {
      * @throws MalformedURLException Thrown if the resulting URL is malformed or otherwise invalid.
      */
     constructor(user: String, repository: String) {
-        gitHubApi = URL("https://api.github.com/repos/$user/$repository/releases")
-        gitHubApiLatest = URL("https://api.github.com/repos/$user/$repository/releases/latest")
+        gitHubApi = URI("https://api.github.com/repos/$user/$repository/releases").toURL()
+        gitHubApiLatest = URI("https://api.github.com/repos/$user/$repository/releases/latest").toURL()
     }
 
     /**
@@ -120,20 +121,20 @@ class GitHubChecker : VersionChecker {
                             assets.add(
                                 ReleaseAsset(
                                     asset["name"].asText(),
-                                    URL(asset["browser_download_url"].asText())
+                                    URI(asset["browser_download_url"].asText()).toURL()
                                 )
                             )
                         }
                         sources.add(
                             Source(
                                 ArchiveType.TAR_GZ,
-                                URL(release["tarball_url"].asText())
+                                URI(release["tarball_url"].asText()).toURL()
                             )
                         )
                         sources.add(
                             Source(
                                 ArchiveType.ZIP,
-                                URL(release["zipball_url"].asText())
+                                URI(release["zipball_url"].asText()).toURL()
                             )
                         )
                         break
@@ -143,7 +144,7 @@ class GitHubChecker : VersionChecker {
                     Update(
                         newVersion!!,
                         description,
-                        URL(getDownloadUrl(newVersion)),
+                        URI(getDownloadUrl(newVersion)).toURL(),
                         releaseDate!!,
                         assets,
                         sources
