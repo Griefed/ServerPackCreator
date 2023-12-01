@@ -25,6 +25,7 @@ import org.xml.sax.SAXException
 import java.io.File
 import java.io.IOException
 import java.net.MalformedURLException
+import java.net.URI
 import java.net.URL
 import java.util.*
 import javax.xml.parsers.ParserConfigurationException
@@ -100,12 +101,12 @@ internal class FabricInstaller(
         releaseInstaller = releaseItem.nodeValue
         try {
             val url = installerUrlTemplate.format(latestInstaller, latestInstaller)
-            latestInstallerUrl = URL(url)
+            latestInstallerUrl = URI(url).toURL()
         } catch (ignored: MalformedURLException) {
         }
         try {
             val url = installerUrlTemplate.format(releaseInstaller, releaseInstaller)
-            releaseInstallerUrl = URL(url)
+            releaseInstallerUrl = URI(url).toURL()
         } catch (ignored: MalformedURLException) {
         }
         installers.clear()
@@ -136,7 +137,7 @@ internal class FabricInstaller(
      */
     @Throws(MalformedURLException::class)
     private fun installerUrl(fabricInstallerVersion: String) =
-        URL(installerUrlTemplate.format(fabricInstallerVersion, fabricInstallerVersion))
+        URI(installerUrlTemplate.format(fabricInstallerVersion, fabricInstallerVersion)).toURL()
 
     /**
      * Get the latest Fabric installer version.
@@ -182,11 +183,11 @@ internal class FabricInstaller(
     fun improvedLauncherUrl(
         minecraftVersion: String,
         fabricVersion: String
-    ) = URL(
+    ) = URI(
         improvedLauncherUrlTemplate.format(
             minecraftVersion,
             fabricVersion,
             releaseInstaller
         )
-    )
+    ).toURL()
 }

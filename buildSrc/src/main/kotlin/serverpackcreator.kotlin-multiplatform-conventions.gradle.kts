@@ -15,6 +15,9 @@ repositories {
 kotlin {
     jvm {
         compilations.all {
+            val list = kotlinOptions.freeCompilerArgs.toMutableList()
+            list.add("-Xexpect-actual-classes")
+            kotlinOptions.freeCompilerArgs = list.toList()
             kotlinOptions.allWarningsAsErrors = false
             kotlinOptions.apiVersion = KOTLIN_VERSION
             kotlinOptions.jvmTarget = JDK_VERSION

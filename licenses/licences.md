@@ -1,7 +1,7 @@
 
 # Dependency Licenses
 ## Dependency License Report
-_2023-10-22 16:56:11 CEST_
+_2023-12-01 19:50:45 MEZ_
 ## Apache License, Version 2.0
 
 **1** **Group:** `com.cronutils` **Name:** `cron-utils` **Version:** `9.2.1` 
@@ -103,64 +103,56 @@ _2023-10-22 16:56:11 CEST_
 > - **Embedded license files**: [log4j-core-2.21.0.jar/META-INF/LICENSE](log4j-core-2.21.0.jar/META-INF/LICENSE) 
     - [log4j-core-2.21.0.jar/META-INF/NOTICE](log4j-core-2.21.0.jar/META-INF/NOTICE)
 
-**18** **Group:** `org.jetbrains.kotlin` **Name:** `kotlin-reflect` **Version:** `1.8.20` 
+**18** **Group:** `org.jetbrains.kotlin` **Name:** `kotlin-reflect` **Version:** `1.9.10` 
 > - **POM Project URL**: [https://kotlinlang.org/](https://kotlinlang.org/)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
-**19** **Group:** `org.jetbrains.kotlin` **Name:** `kotlin-reflect` **Version:** `1.9.10` 
+**19** **Group:** `org.jetbrains.kotlin` **Name:** `kotlin-reflect` **Version:** `1.9.21` 
 > - **POM Project URL**: [https://kotlinlang.org/](https://kotlinlang.org/)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
-**20** **Group:** `org.jetbrains.kotlin` **Name:** `kotlin-stdlib` **Version:** `1.9.10` 
+**20** **Group:** `org.jetbrains.kotlin` **Name:** `kotlin-stdlib` **Version:** `1.9.21` 
 > - **POM Project URL**: [https://kotlinlang.org/](https://kotlinlang.org/)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
-**21** **Group:** `org.jetbrains.kotlin` **Name:** `kotlin-stdlib-common` **Version:** `1.9.10` 
-> - **POM Project URL**: [https://kotlinlang.org/](https://kotlinlang.org/)
-> - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
-
-**22** **Group:** `org.jetbrains.kotlin` **Name:** `kotlin-stdlib-jdk8` **Version:** `1.9.10` 
-> - **POM Project URL**: [https://kotlinlang.org/](https://kotlinlang.org/)
-> - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
-
-**23** **Group:** `org.jetbrains.kotlinx` **Name:** `kotlinx-coroutines-swing` **Version:** `1.7.3` 
+**21** **Group:** `org.jetbrains.kotlinx` **Name:** `kotlinx-coroutines-swing` **Version:** `1.7.3` 
 > - **POM Project URL**: [https://github.com/Kotlin/kotlinx.coroutines](https://github.com/Kotlin/kotlinx.coroutines)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
-**24** **Group:** `org.pf4j` **Name:** `pf4j` **Version:** `3.10.0` 
+**22** **Group:** `org.pf4j` **Name:** `pf4j` **Version:** `3.10.0` 
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
-**25** **Group:** `org.springframework.boot` **Name:** `spring-boot-devtools` **Version:** `2.7.10` 
+**23** **Group:** `org.springframework.boot` **Name:** `spring-boot-devtools` **Version:** `2.7.10` 
 > - **POM Project URL**: [https://spring.io/projects/spring-boot](https://spring.io/projects/spring-boot)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 > - **Embedded license files**: [spring-boot-devtools-2.7.10.jar/META-INF/LICENSE.txt](spring-boot-devtools-2.7.10.jar/META-INF/LICENSE.txt) 
     - [spring-boot-devtools-2.7.10.jar/META-INF/NOTICE.txt](spring-boot-devtools-2.7.10.jar/META-INF/NOTICE.txt)
 
-**26** **Group:** `org.springframework.boot` **Name:** `spring-boot-starter-artemis` **Version:** `2.7.10` 
+**24** **Group:** `org.springframework.boot` **Name:** `spring-boot-starter-artemis` **Version:** `2.7.10` 
 > - **POM Project URL**: [https://spring.io/projects/spring-boot](https://spring.io/projects/spring-boot)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 > - **Embedded license files**: [spring-boot-starter-artemis-2.7.10.jar/META-INF/LICENSE.txt](spring-boot-starter-artemis-2.7.10.jar/META-INF/LICENSE.txt) 
     - [spring-boot-starter-artemis-2.7.10.jar/META-INF/NOTICE.txt](spring-boot-starter-artemis-2.7.10.jar/META-INF/NOTICE.txt)
 
-**27** **Group:** `org.springframework.boot` **Name:** `spring-boot-starter-data-jpa` **Version:** `2.7.10` 
+**25** **Group:** `org.springframework.boot` **Name:** `spring-boot-starter-data-jpa` **Version:** `2.7.10` 
 > - **POM Project URL**: [https://spring.io/projects/spring-boot](https://spring.io/projects/spring-boot)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 > - **Embedded license files**: [spring-boot-starter-data-jpa-2.7.10.jar/META-INF/LICENSE.txt](spring-boot-starter-data-jpa-2.7.10.jar/META-INF/LICENSE.txt) 
     - [spring-boot-starter-data-jpa-2.7.10.jar/META-INF/NOTICE.txt](spring-boot-starter-data-jpa-2.7.10.jar/META-INF/NOTICE.txt)
 
-**28** **Group:** `org.springframework.boot` **Name:** `spring-boot-starter-log4j2` **Version:** `2.7.10` 
+**26** **Group:** `org.springframework.boot` **Name:** `spring-boot-starter-log4j2` **Version:** `2.7.10` 
 > - **POM Project URL**: [https://spring.io/projects/spring-boot](https://spring.io/projects/spring-boot)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 > - **Embedded license files**: [spring-boot-starter-log4j2-2.7.10.jar/META-INF/LICENSE.txt](spring-boot-starter-log4j2-2.7.10.jar/META-INF/LICENSE.txt) 
     - [spring-boot-starter-log4j2-2.7.10.jar/META-INF/NOTICE.txt](spring-boot-starter-log4j2-2.7.10.jar/META-INF/NOTICE.txt)
 
-**29** **Group:** `org.springframework.boot` **Name:** `spring-boot-starter-web` **Version:** `2.7.10` 
+**27** **Group:** `org.springframework.boot` **Name:** `spring-boot-starter-web` **Version:** `2.7.10` 
 > - **POM Project URL**: [https://spring.io/projects/spring-boot](https://spring.io/projects/spring-boot)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 > - **Embedded license files**: [spring-boot-starter-web-2.7.10.jar/META-INF/LICENSE.txt](spring-boot-starter-web-2.7.10.jar/META-INF/LICENSE.txt) 
     - [spring-boot-starter-web-2.7.10.jar/META-INF/NOTICE.txt](spring-boot-starter-web-2.7.10.jar/META-INF/NOTICE.txt)
 
-**30** **Group:** `org.xerial` **Name:** `sqlite-jdbc` **Version:** `3.43.2.1` 
+**28** **Group:** `org.xerial` **Name:** `sqlite-jdbc` **Version:** `3.43.2.1` 
 > - **Manifest License**: Apache License, Version 2.0 (Not Packaged)
 > - **POM Project URL**: [https://github.com/xerial/sqlite-jdbc](https://github.com/xerial/sqlite-jdbc)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
@@ -169,43 +161,43 @@ _2023-10-22 16:56:11 CEST_
 
 ## BSD Zero Clause License
 
-**31** **Group:** `com.formdev` **Name:** `svgSalamander` **Version:** `1.1.4` 
+**29** **Group:** `com.formdev` **Name:** `svgSalamander` **Version:** `1.1.4` 
 > - **POM Project URL**: [https://github.com/JFormDesigner/svgSalamander](https://github.com/JFormDesigner/svgSalamander)
 > - **POM License**: BSD Zero Clause License - [https://opensource.org/licenses/0BSD](https://opensource.org/licenses/0BSD)
 > - **POM License**: The 2-Clause BSD License - [https://opensource.org/licenses/BSD-2-Clause](https://opensource.org/licenses/BSD-2-Clause)
 
-**32** **Group:** `com.miglayout` **Name:** `miglayout-swing` **Version:** `11.2` 
+**30** **Group:** `com.miglayout` **Name:** `miglayout-swing` **Version:** `11.2` 
 > - **POM Project URL**: [http://www.miglayout.com/](http://www.miglayout.com/)
 > - **POM License**: BSD Zero Clause License - [https://opensource.org/licenses/0BSD](https://opensource.org/licenses/0BSD)
 
 ## GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1
 
-**33** **Group:** `tokyo.northside` **Name:** `tipoftheday` **Version:** `0.4.2` 
+**31** **Group:** `tokyo.northside` **Name:** `tipoftheday` **Version:** `0.4.2` 
 > - **POM Project URL**: [https://codeberg.org/miurahr/tipoftheday](https://codeberg.org/miurahr/tipoftheday)
 > - **POM License**: GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1 - [https://www.gnu.org/licenses/lgpl-2.1](https://www.gnu.org/licenses/lgpl-2.1)
 
 ## GNU Lesser General Public License v3.0
 
-**34** **Group:** `com.electronwill.night-config` **Name:** `toml` **Version:** `3.6.7` 
+**32** **Group:** `com.electronwill.night-config` **Name:** `toml` **Version:** `3.6.7` 
 > - **POM Project URL**: [https://github.com/TheElectronWill/Night-Config](https://github.com/TheElectronWill/Night-Config)
 > - **POM License**: GNU Lesser General Public License v3.0 - [https://www.gnu.org/licenses/lgpl-3.0.txt](https://www.gnu.org/licenses/lgpl-3.0.txt)
 
 ## PUBLIC DOMAIN
 
-**35** **Group:** `com.github.gwenn` **Name:** `sqlite-dialect` **Version:** `0.1.4` 
+**33** **Group:** `com.github.gwenn` **Name:** `sqlite-dialect` **Version:** `0.1.4` 
 > - **POM Project URL**: [https://github.com/gwenn/sqlite-dialect](https://github.com/gwenn/sqlite-dialect)
 > - **POM License**: PUBLIC DOMAIN - [http://unlicense.org/](http://unlicense.org/)
 
 ## SIL OPEN FONT LICENSE Version 1.1
 
-**36** **Group:** `com.formdev` **Name:** `flatlaf-fonts-inter` **Version:** `3.19` 
+**34** **Group:** `com.formdev` **Name:** `flatlaf-fonts-inter` **Version:** `3.19` 
 > - **POM Project URL**: [https://github.com/JFormDesigner/FlatLaf](https://github.com/JFormDesigner/FlatLaf)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 > - **POM License**: SIL OPEN FONT LICENSE Version 1.1 - [https://choosealicense.com/licenses/ofl-1.1/](https://choosealicense.com/licenses/ofl-1.1/)
 > - **Embedded license files**: [flatlaf-fonts-inter-3.19.jar/META-INF/LICENSE](flatlaf-fonts-inter-3.19.jar/META-INF/LICENSE) 
     - [flatlaf-fonts-inter-3.19.jar/com/formdev/flatlaf/fonts/inter/LICENSE.txt](flatlaf-fonts-inter-3.19.jar/com/formdev/flatlaf/fonts/inter/LICENSE.txt)
 
-**37** **Group:** `com.formdev` **Name:** `flatlaf-fonts-jetbrains-mono` **Version:** `2.242` 
+**35** **Group:** `com.formdev` **Name:** `flatlaf-fonts-jetbrains-mono` **Version:** `2.242` 
 > - **POM Project URL**: [https://github.com/JFormDesigner/FlatLaf](https://github.com/JFormDesigner/FlatLaf)
 > - **POM License**: Apache License, Version 2.0 - [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 > - **POM License**: SIL OPEN FONT LICENSE Version 1.1 - [https://choosealicense.com/licenses/ofl-1.1/](https://choosealicense.com/licenses/ofl-1.1/)
@@ -213,29 +205,29 @@ _2023-10-22 16:56:11 CEST_
 
 ## The 2-Clause BSD License
 
-**38** **Group:** `com.formdev` **Name:** `svgSalamander` **Version:** `1.1.4` 
+**36** **Group:** `com.formdev` **Name:** `svgSalamander` **Version:** `1.1.4` 
 > - **POM Project URL**: [https://github.com/JFormDesigner/svgSalamander](https://github.com/JFormDesigner/svgSalamander)
 > - **POM License**: BSD Zero Clause License - [https://opensource.org/licenses/0BSD](https://opensource.org/licenses/0BSD)
 > - **POM License**: The 2-Clause BSD License - [https://opensource.org/licenses/BSD-2-Clause](https://opensource.org/licenses/BSD-2-Clause)
 
 ## The 3-Clause BSD License
 
-**39** **Group:** `net.java.balloontip` **Name:** `balloontip` **Version:** `1.2.4.1` 
+**37** **Group:** `net.java.balloontip` **Name:** `balloontip` **Version:** `1.2.4.1` 
 > - **POM Project URL**: [http://balloontip.java.net/](http://balloontip.java.net/)
 > - **POM License**: The 3-Clause BSD License - [https://opensource.org/licenses/BSD-3-Clause](https://opensource.org/licenses/BSD-3-Clause)
 
 ## Unknown
 
-**40** **Group:** `de.comahe.i18n4k` **Name:** `i18n4k-core` **Version:** `0.6.2` 
+**38** **Group:** `de.comahe.i18n4k` **Name:** `i18n4k-core` **Version:** `0.6.2` 
 
-**41** **Group:** `de.jensklingenberg.ktorfit` **Name:** `ktorfit-lib` **Version:** `1.9.0` 
+**39** **Group:** `de.jensklingenberg.ktorfit` **Name:** `ktorfit-lib` **Version:** `1.9.0` 
 
-**42** **Group:** `io.github.microutils` **Name:** `kotlin-logging` **Version:** `3.0.5` 
+**40** **Group:** `io.github.microutils` **Name:** `kotlin-logging` **Version:** `3.0.5` 
 
-**43** **Group:** `org.jetbrains.kotlin` **Name:** `kotlin-bom` **Version:** `1.9.10` 
+**41** **Group:** `org.jetbrains.kotlin` **Name:** `kotlin-bom` **Version:** `1.9.21` 
 
-**44** **Group:** `org.jetbrains.kotlinx` **Name:** `kotlinx-coroutines-core` **Version:** `1.7.3` 
+**42** **Group:** `org.jetbrains.kotlinx` **Name:** `kotlinx-coroutines-core` **Version:** `1.7.3` 
 
-**45** **Group:** `org.jetbrains.kotlinx` **Name:** `kotlinx-datetime` **Version:** `0.4.1` 
+**43** **Group:** `org.jetbrains.kotlinx` **Name:** `kotlinx-datetime` **Version:** `0.4.1` 
 
 

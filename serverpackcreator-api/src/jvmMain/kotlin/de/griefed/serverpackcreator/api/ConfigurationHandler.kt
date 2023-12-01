@@ -28,7 +28,7 @@ import de.griefed.serverpackcreator.api.utilities.common.isNotValidZipFile
 import de.griefed.serverpackcreator.api.versionmeta.VersionMeta
 import net.lingala.zip4j.ZipFile
 import java.io.IOException
-import java.net.URL
+import java.net.URI
 import java.nio.file.*
 import java.util.*
 import java.util.regex.PatternSyntaxException
@@ -850,7 +850,7 @@ actual class ConfigurationHandler(
 
     @Throws(NullPointerException::class)
     private fun getAndSetIcon(json: JsonNode, packConfig: PackConfig, urlPath: Array<String>, namePath: Array<String>) {
-        val iconUrl = URL(utilities.jsonUtilities.getNestedText(json, *urlPath))
+        val iconUrl = URI(utilities.jsonUtilities.getNestedText(json, *urlPath)).toURL()
         val iconName = utilities.jsonUtilities.getNestedText(json, *namePath) + ".png"
         val iconFile = File(apiProperties.iconsDirectory.absolutePath, iconName)
         if (utilities.webUtilities.downloadFile(iconFile, iconUrl)) {

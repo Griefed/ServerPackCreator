@@ -27,14 +27,9 @@ import de.griefed.serverpackcreator.gui.window.menu.MainMenuBar
 import de.griefed.serverpackcreator.updater.MigrationManager
 import de.griefed.serverpackcreator.updater.UpdateChecker
 import java.awt.Dimension
-import java.awt.Frame
-import java.awt.event.ComponentEvent
-import java.awt.event.ComponentListener
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
 import javax.swing.JFrame
-import javax.swing.SwingUtilities
-import javax.swing.Timer
 import javax.swing.WindowConstants
 
 /**

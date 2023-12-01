@@ -37,6 +37,7 @@ import org.w3c.dom.Document
 import org.xml.sax.SAXException
 import java.io.File
 import java.io.IOException
+import java.net.URI
 import java.net.URL
 import javax.xml.parsers.ParserConfigurationException
 
@@ -83,47 +84,47 @@ actual class VersionMeta(
 
     @Suppress("MemberVisibilityCanBePrivate")
     actual val legacyFabricUrlGame =
-        URL("$legacyFabricUrlBase/v2/versions/game")
+        URI("$legacyFabricUrlBase/v2/versions/game").toURL()
 
     @Suppress("MemberVisibilityCanBePrivate")
     actual val legacyFabricUrlLoader =
-        URL("$legacyFabricUrlBase/v2/versions/loader")
+        URI("$legacyFabricUrlBase/v2/versions/loader").toURL()
 
     @Suppress("MemberVisibilityCanBePrivate")
     actual val legacyfabricUrlManifest =
-        URL("https://maven.legacyfabric.net/net/legacyfabric/fabric-installer/maven-metadata.xml")
+        URI("https://maven.legacyfabric.net/net/legacyfabric/fabric-installer/maven-metadata.xml").toURL()
 
     @Suppress("MemberVisibilityCanBePrivate")
     actual val minecraftUrlManifest =
-        URL("https://launchermeta.mojang.com/mc/game/version_manifest.json")
+        URI("https://launchermeta.mojang.com/mc/game/version_manifest.json").toURL()
 
     @Suppress("MemberVisibilityCanBePrivate")
     actual val forgeUrlManifest =
-        URL("https://files.minecraftforge.net/net/minecraftforge/forge/maven-metadata.json")
+        URI("https://files.minecraftforge.net/net/minecraftforge/forge/maven-metadata.json").toURL()
 
     @Suppress("MemberVisibilityCanBePrivate")
     actual val neoForgeUrlManifest =
-        URL("https://maven.neoforged.net/releases/net/neoforged/forge/maven-metadata.xml")
+        URI("https://maven.neoforged.net/releases/net/neoforged/forge/maven-metadata.xml").toURL()
 
     @Suppress("MemberVisibilityCanBePrivate")
     actual val fabricUrlManifest =
-        URL("https://maven.fabricmc.net/net/fabricmc/fabric-loader/maven-metadata.xml")
+        URI("https://maven.fabricmc.net/net/fabricmc/fabric-loader/maven-metadata.xml").toURL()
 
     @Suppress("MemberVisibilityCanBePrivate")
     actual val fabricUrlIntermediariesManifest =
-        URL("https://meta.fabricmc.net/v2/versions/intermediary")
+        URI("https://meta.fabricmc.net/v2/versions/intermediary").toURL()
 
     @Suppress("MemberVisibilityCanBePrivate")
     actual val fabricUrlInstallerManifest =
-        URL("https://maven.fabricmc.net/net/fabricmc/fabric-installer/maven-metadata.xml")
+        URI("https://maven.fabricmc.net/net/fabricmc/fabric-installer/maven-metadata.xml").toURL()
 
     @Suppress("MemberVisibilityCanBePrivate")
     actual val quiltUrlManifest =
-        URL("https://maven.quiltmc.org/repository/release/org/quiltmc/quilt-loader/maven-metadata.xml")
+        URI("https://maven.quiltmc.org/repository/release/org/quiltmc/quilt-loader/maven-metadata.xml").toURL()
 
     @Suppress("MemberVisibilityCanBePrivate")
     actual val quiltUrlInstallerManifest =
-        URL("https://maven.quiltmc.org/repository/release/org/quiltmc/quilt-installer/maven-metadata.xml")
+        URI("https://maven.quiltmc.org/repository/release/org/quiltmc/quilt-installer/maven-metadata.xml").toURL()
 
     /**
      * The MinecraftMeta instance for working with Minecraft versions and information about them.

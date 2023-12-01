@@ -26,7 +26,6 @@ import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.components.*
 import de.griefed.serverpackcreator.gui.themes.ThemeManager
 import de.griefed.serverpackcreator.gui.window.control.ControlPanel
-import de.griefed.serverpackcreator.gui.window.control.StatusPanel
 import de.griefed.serverpackcreator.gui.window.settings.components.Editor
 import java.awt.GraphicsEnvironment
 import java.awt.event.ActionListener

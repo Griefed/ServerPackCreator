@@ -143,7 +143,7 @@ Should you at any point want to revisit said guide, simply hit *About -> Step-By
 
 ##### Required:
 
-* Using the JAR-file release requires Java 17.
+* Using the JAR-file release requires Java 21.
 * Working internet connection recommended.
 
 The installers ship their own Java installations.

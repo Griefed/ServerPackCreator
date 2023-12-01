@@ -21,7 +21,7 @@ package de.griefed.serverpackcreator.api.versionmeta.fabric
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import java.io.IOException
-import java.net.URL
+import java.net.URI
 import java.util.*
 
 /**
@@ -49,7 +49,7 @@ internal class FabricLoaderDetails(private val objectMapper: ObjectMapper) {
     ) = try {
         Optional.of(
             objectMapper.readValue(
-                URL("$urlPrefix$minecraftVersion/$modloaderVersion$json"),
+                URI("$urlPrefix$minecraftVersion/$modloaderVersion$json").toURL(),
                 FabricDetails::class.java
             )
         )

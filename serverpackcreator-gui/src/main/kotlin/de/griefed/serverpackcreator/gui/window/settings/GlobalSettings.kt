@@ -29,12 +29,11 @@ import de.griefed.serverpackcreator.gui.components.*
 import de.griefed.serverpackcreator.gui.window.MainFrame
 import de.griefed.serverpackcreator.gui.window.configs.components.ComponentResizer
 import de.griefed.serverpackcreator.gui.window.control.ControlPanel
-import de.griefed.serverpackcreator.gui.window.control.StatusPanel
 import de.griefed.serverpackcreator.gui.window.settings.components.*
 import java.awt.event.ActionListener
 import java.io.File
 import java.net.MalformedURLException
-import java.net.URL
+import java.net.URI
 import java.util.*
 import javax.swing.DefaultComboBoxModel
 import javax.swing.JFileChooser
@@ -400,7 +399,7 @@ class GlobalSettings(
         apiProperties.directoriesToInclude = TreeSet(inclusionsSetting.text.replace(", ",",").split(","))
         apiProperties.aikarsFlags = aikarsSetting.text
         apiProperties.scriptTemplates = TreeSet(scriptSetting.text.replace(", ",",").split(",").map { File(it).absoluteFile })
-        apiProperties.updateUrl = URL(fallbackURLSetting.text)
+        apiProperties.updateUrl = URI(fallbackURLSetting.text).toURL()
         apiProperties.exclusionFilter = exclusionSetting.selectedItem as ExclusionFilter
         apiProperties.language = languageSetting.selectedItem as Locale
         apiProperties.isServerPacksOverwriteEnabled = overwriteSetting.isSelected
@@ -476,7 +475,7 @@ class GlobalSettings(
         }
 
         try {
-            URL(fallbackURLSetting.text)
+            URI(fallbackURLSetting.text).toURL()
             fallbackURLIcon.info()
         } catch (ex: MalformedURLException) {
             fallbackURLIcon.error(Gui.settings_check_fallbackurl.toString())

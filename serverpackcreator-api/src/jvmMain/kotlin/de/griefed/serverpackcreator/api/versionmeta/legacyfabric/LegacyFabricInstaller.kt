@@ -25,7 +25,7 @@ import org.xml.sax.SAXException
 import java.io.File
 import java.io.IOException
 import java.net.MalformedURLException
-import java.net.URL
+import java.net.URI
 import java.util.*
 import javax.xml.parsers.ParserConfigurationException
 
@@ -92,7 +92,7 @@ class LegacyFabricInstaller(
      * @author Griefed
      */
     @Throws(MalformedURLException::class)
-    fun latestURL() = URL(installerUrlTemplate.format(latest, latest))
+    fun latestURL() = URI(installerUrlTemplate.format(latest, latest)).toURL()
 
     /**
      * The URL to the release installer for Legacy Fabric.
@@ -102,7 +102,7 @@ class LegacyFabricInstaller(
      * @author Griefed
      */
     @Throws(MalformedURLException::class)
-    fun releaseURL() = URL(installerUrlTemplate.format(release, latest))
+    fun releaseURL() = URI(installerUrlTemplate.format(release, latest)).toURL()
 
     /**
      * Get the URL for a specific installer version, wrapped in an Optional.
@@ -116,7 +116,7 @@ class LegacyFabricInstaller(
     fun specificURL(version: String) =
         if (allVersions.contains(version)) {
             val url = installerUrlTemplate.format(version, version)
-            Optional.of(URL(url))
+            Optional.of(URI(url).toURL())
         } else {
             Optional.empty()
         }

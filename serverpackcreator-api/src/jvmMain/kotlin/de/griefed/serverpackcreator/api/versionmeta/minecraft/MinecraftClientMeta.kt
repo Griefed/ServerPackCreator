@@ -27,7 +27,7 @@ import de.griefed.serverpackcreator.api.versionmeta.forge.ForgeMeta
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
 import java.io.IOException
-import java.net.URL
+import java.net.URI
 
 /**
  * Minecraft client meta containing information about available Minecraft releases.
@@ -82,14 +82,14 @@ internal class MinecraftClientMeta(
             val url = version.get(url).asText()
             if (type == releaseType) {
                 try {
-                    client = MinecraftClient(id, Type.RELEASE, URL(url), forgeMeta, utilities, apiProperties)
+                    client = MinecraftClient(id, Type.RELEASE, URI(url).toURL(), forgeMeta, utilities, apiProperties)
                     releases.add(client)
                 } catch (ex: IOException) {
                     log.debug("No server available for MinecraftClient version $id", ex)
                 }
             } else if (type == snapshotType) {
                 try {
-                    client = MinecraftClient(id, Type.SNAPSHOT, URL(url), forgeMeta, utilities, apiProperties)
+                    client = MinecraftClient(id, Type.SNAPSHOT, URI(url).toURL(), forgeMeta, utilities, apiProperties)
                     snapshots.add(client)
                 } catch (ex: IOException) {
                     log.debug("No server available for MinecraftClient version $id", ex)

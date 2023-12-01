@@ -20,6 +20,7 @@
 package de.griefed.serverpackcreator.api.versionmeta.forge
 
 import de.griefed.serverpackcreator.api.versionmeta.minecraft.MinecraftMeta
+import java.net.URI
 import java.net.URL
 import java.util.*
 
@@ -41,7 +42,7 @@ class ForgeInstance(
     private val minecraftMeta: MinecraftMeta
 ) {
     val installerUrl: URL =
-        URL("https://files.minecraftforge.net/maven/net/minecraftforge/forge/$minecraftVersion-$forgeVersion/forge-$minecraftVersion-$forgeVersion-installer.jar")
+        URI("https://files.minecraftforge.net/maven/net/minecraftforge/forge/$minecraftVersion-$forgeVersion/forge-$minecraftVersion-$forgeVersion-installer.jar").toURL()
 
     /**
      * Get this Forge instances corresponding Minecraft client instance, wrapped in an

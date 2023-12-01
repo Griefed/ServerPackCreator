@@ -25,6 +25,7 @@ import org.xml.sax.SAXException
 import java.io.File
 import java.io.IOException
 import java.net.MalformedURLException
+import java.net.URI
 import java.net.URL
 import javax.xml.parsers.ParserConfigurationException
 
@@ -78,12 +79,12 @@ internal class QuiltInstaller(
         releaseInstaller = releaseItem.nodeValue
         val latestUrl = installerUrlTemplate.format(latestInstaller, latestInstaller)
         try {
-            latestInstallerUrl = URL(latestUrl)
+            latestInstallerUrl = URI(latestUrl).toURL()
         } catch (ignored: MalformedURLException) {
         }
         val releaseUrl = installerUrlTemplate.format(releaseInstaller, releaseInstaller)
         try {
-            releaseInstallerUrl = URL(releaseUrl)
+            releaseInstallerUrl = URI(releaseUrl).toURL()
         } catch (ignored: MalformedURLException) {
         }
         installers.clear()
@@ -113,5 +114,5 @@ internal class QuiltInstaller(
      */
     @Throws(MalformedURLException::class)
     private fun installerUrl(quiltInstallerVersion: String) =
-        URL(installerUrlTemplate.format(quiltInstallerVersion, quiltInstallerVersion))
+        URI(installerUrlTemplate.format(quiltInstallerVersion, quiltInstallerVersion)).toURL()
 }

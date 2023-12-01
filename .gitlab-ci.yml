@@ -29,7 +29,7 @@ workflow:
 
 Build Test:
   stage: Tests
-  image: docker.griefed.dev/eclipse-temurin:17-jdk
+  image: docker.griefed.dev/eclipse-temurin:21-jdk
   before_script:
     - echo "**** Running in $CI_JOB_ID ****"
     - echo "**** Java version ****"
@@ -119,7 +119,7 @@ Generate Release:
 
 Build Release:
   stage: Build Release
-  image: docker.griefed.dev/eclipse-temurin:17-jdk
+  image: docker.griefed.dev/eclipse-temurin:21-jdk
   needs:
     - job: Build Test
       artifacts: false
@@ -168,7 +168,7 @@ Build Release:
 
 Sign Java Publication:
   stage: Build Release
-  image: docker.griefed.dev/eclipse-temurin:17-jdk
+  image: docker.griefed.dev/eclipse-temurin:21-jdk
   needs:
     - job: Build Release
       artifacts: false
@@ -206,7 +206,7 @@ Sign Java Publication:
 
 Publish GitHub:
   stage: Build Release
-  image: docker.griefed.dev/eclipse-temurin:17-jdk
+  image: docker.griefed.dev/eclipse-temurin:21-jdk
   needs:
     - job: Sign Java Publication
       optional: false
@@ -238,7 +238,7 @@ Publish GitHub:
 
 Publish GitLab:
   stage: Build Release
-  image: docker.griefed.dev/eclipse-temurin:17-jdk
+  image: docker.griefed.dev/eclipse-temurin:21-jdk
   needs:
     - job: Sign Java Publication
       optional: false
@@ -270,7 +270,7 @@ Publish GitLab:
 
 Publish GitGriefed:
   stage: Build Release
-  image: docker.griefed.dev/eclipse-temurin:17-jdk
+  image: docker.griefed.dev/eclipse-temurin:21-jdk
   needs:
     - job: Sign Java Publication
       optional: false
@@ -302,7 +302,7 @@ Publish GitGriefed:
 
 Publish OSSRH:
   stage: Build Release
-  image: docker.griefed.dev/eclipse-temurin:17-jdk
+  image: docker.griefed.dev/eclipse-temurin:21-jdk
   needs:
     - job: Sign Java Publication
       optional: false
@@ -380,7 +380,7 @@ Publish OSSRH:
 
 pages:
   stage: Documentation
-  image: docker.griefed.dev/eclipse-temurin:17-jdk
+  image: docker.griefed.dev/eclipse-temurin:21-jdk
   allow_failure: true
   before_script:
     - chmod +x gradlew
