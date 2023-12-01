@@ -31,7 +31,6 @@ import de.griefed.serverpackcreator.gui.components.TabPanel
 class TabbedLogsTab(apiProperties: ApiProperties) : TabPanel() {
     init {
         tabs.addTab(Gui.createserverpack_gui_tabbedpane_serverpackcreatorlog_title.toString(), ServerPackCreatorLog(apiProperties))
-        tabs.addTab(Gui.createserverpack_gui_tabbedpane_modloaderinstallerlog_title.toString(), ModloaderInstallerLog(apiProperties))
         tabs.addTab(Gui.createserverpack_gui_tabbedpane_pluginshandlerlog_title.toString(), PluginsLog(apiProperties))
     }
 }
