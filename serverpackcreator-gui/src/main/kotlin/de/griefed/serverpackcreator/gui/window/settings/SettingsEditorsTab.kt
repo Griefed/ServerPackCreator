@@ -27,7 +27,6 @@ import de.griefed.serverpackcreator.gui.themes.ThemeManager
 import de.griefed.serverpackcreator.gui.window.MainFrame
 import de.griefed.serverpackcreator.gui.window.configs.components.ComponentResizer
 import de.griefed.serverpackcreator.gui.window.control.ControlPanel
-import de.griefed.serverpackcreator.gui.window.control.StatusPanel
 import de.griefed.serverpackcreator.gui.window.settings.components.SettingsCheckTimer
 import de.griefed.serverpackcreator.gui.window.settings.components.SettingsTitle
 import java.awt.BorderLayout

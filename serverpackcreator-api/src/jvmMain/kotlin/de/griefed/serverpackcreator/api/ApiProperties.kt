@@ -32,7 +32,6 @@ import java.io.InputStreamReader
 import java.net.URL
 import java.util.*
 import java.util.prefs.Preferences
-import kotlin.collections.ArrayList
 
 /**
  * Base settings of ServerPackCreator, such as working directories, default list of clientside-only

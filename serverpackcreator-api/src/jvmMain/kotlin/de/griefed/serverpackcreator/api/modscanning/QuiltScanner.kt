@@ -25,7 +25,6 @@ import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
 import java.util.*
-import kotlin.collections.ArrayList
 
 /**
  * `quilt.mod.json`-based scanning of Fabric-Minecraft mods.
