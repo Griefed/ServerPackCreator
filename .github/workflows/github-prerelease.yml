@@ -40,11 +40,11 @@ jobs:
           fetch-depth: 0
 
       # BUILD PROJECT AND PUBLISH
-      - name: Set up JDK 17
+      - name: Set up JDK 21
         uses: actions/setup-java@v3.13.0
         with:
           distribution: 'zulu'
-          java-version: '17'
+          java-version: '21'
           check-latest: true
 
       - name: Grant execute permission for gradlew
@@ -104,11 +104,11 @@ jobs:
           fetch-depth: 0
 
       # BUILD PROJECT AND PUBLISH
-      - name: Set up JDK 17
+      - name: Set up JDK 21
         uses: actions/setup-java@v3.13.0
         with:
           distribution: 'zulu'
-          java-version: '17'
+          java-version: '21'
           check-latest: true
 
       - name: Grant execute permission for gradlew
@@ -161,11 +161,11 @@ jobs:
           fetch-depth: 0
 
       # BUILD PROJECT AND PUBLISH
-      - name: Set up JDK 17
+      - name: Set up JDK 21
         uses: actions/setup-java@v3.13.0
         with:
           distribution: 'zulu'
-          java-version: '17'
+          java-version: '21'
           check-latest: true
 
       - name: Grant execute permission for gradlew
@@ -221,12 +221,12 @@ jobs:
           fetch-depth: 0
 
       # BUILD PROJECT AND PUBLISH
-      - name: Set up JDK 17
+      - name: Set up JDK 21
         id: java
         uses: actions/setup-java@v3.13.0
         with:
           distribution: 'zulu'
-          java-version: '17'
+          java-version: '21'
           check-latest: true
           cache: 'gradle'
 
@@ -317,11 +317,11 @@ jobs:
           fetch-depth: 0
 
       # BUILD PROJECT AND PUBLISH
-      - name: Set up JDK 17
+      - name: Set up JDK 21
         uses: actions/setup-java@v3.13.0
         with:
           distribution: 'zulu'
-          java-version: '17'
+          java-version: '21'
           check-latest: true
 
       - name: Grant execute permission for gradlew
@@ -374,12 +374,12 @@ jobs:
           fetch-depth: 0
 
       # BUILD PROJECT AND PUBLISH
-      - name: Set up JDK 17
+      - name: Set up JDK 21
         id: java
         uses: actions/setup-java@v3.13.0
         with:
           distribution: 'zulu'
-          java-version: '17'
+          java-version: '21'
           check-latest: true
           cache: 'gradle'
 
