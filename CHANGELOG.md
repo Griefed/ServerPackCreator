@@ -1,3 +1,27 @@
+## [5.0.0-beta.16](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-beta.15...5.0.0-beta.16) (2023-12-01)
+
+
+### :scissors: Refactor
+
+* Migrate to URI().toURL() ([3542897](https://git.griefed.de/Griefed/ServerPackCreator/commit/35428970340e82078134f348d7f3f687bd88d997))
+* Optimize imports ([80c33b8](https://git.griefed.de/Griefed/ServerPackCreator/commit/80c33b836cc5b17b3d09412a2d7f57501309a15e))
+
+
+### 📔 Docs
+
+* Update license report ([e280bbe](https://git.griefed.de/Griefed/ServerPackCreator/commit/e280bbe6ef1fb18be31b5fe16fd6219131bb01ed))
+
+
+### 🦊 CI/CD
+
+* Move to Java 21 ([1267841](https://git.griefed.de/Griefed/ServerPackCreator/commit/1267841b0a4a1863099729136e13e96a2befedbf))
+* Mute actual/expect warnings. See https://youtrack.jetbrains.com/issue/KT-61573 ([ae06f30](https://git.griefed.de/Griefed/ServerPackCreator/commit/ae06f3049ccf027478b6b27bf3df6ea5ec9381fa))
+
+
+### 🛠 Fixes
+
+* Remove modloader installer tab ([32ce3e7](https://git.griefed.de/Griefed/ServerPackCreator/commit/32ce3e72930c8005ae906080cead0d4831e9a20c))
+
 ## [5.0.0-beta.15](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-beta.14...5.0.0-beta.15) (2023-11-30)
 
 
