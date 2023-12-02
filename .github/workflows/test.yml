@@ -7,7 +7,11 @@ on:
 
 jobs:
   jar:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # and run on both Linux and Windows
+        os: [ ubuntu-latest, windows-latest, macos-latest ]
+    runs-on: ${{ matrix.os }}
     steps:
 
       - uses: actions/checkout@v4.1.1
@@ -25,6 +29,7 @@ jobs:
           cache: 'gradle'
 
       - name: Grant execute permission for gradlew
+        if: ${{ runner.os != 'Windows' }}
         run: chmod +x gradlew
 
       - uses: gradle/gradle-build-action@v2.9.0
