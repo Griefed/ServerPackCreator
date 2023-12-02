@@ -100,7 +100,7 @@ tasks.jvmJar {
 
 tasks.register<Copy>("updateManifests") {
     dependsOn(tasks.test)
-    from(projectDir.resolve("tests/manifests"))
+    from(rootDir.resolve("serverpackcreator-app/tests/manifests"))
     into(projectDir.resolve("src/jvmMain/resources/de/griefed/resources/manifests"))
 }
 
