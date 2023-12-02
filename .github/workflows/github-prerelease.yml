@@ -554,7 +554,7 @@ jobs:
 
   news:
     runs-on: ubuntu-latest
-    needs: [prerelease]
+    needs: [preparations, prerelease]
 
     steps:
       - name: Get current date
