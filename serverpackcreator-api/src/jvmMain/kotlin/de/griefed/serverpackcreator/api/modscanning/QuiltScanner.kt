@@ -60,7 +60,7 @@ actual class QuiltScanner(
      */
     override fun scan(jarFiles: Collection<File>): TreeSet<File> {
         logger.info("Scanning Quilt mods for sideness...")
-        val modDependencies = TreeSet<String>()
+        val modDependencies = ArrayList<Pair<String, Pair<String, String>>>()
         val clientMods = TreeSet<String>()
 
         /*
@@ -86,7 +86,7 @@ actual class QuiltScanner(
     override fun checkForClientModsAndDeps(
         filesInModsDir: Collection<File>,
         clientMods: TreeSet<String>,
-        modDependencies: TreeSet<String>
+        modDependencies: ArrayList<Pair<String, Pair<String, String>>>
     ) {
         for (mod in filesInModsDir) {
             if (!mod.name.endsWith(jar)) {
@@ -114,7 +114,7 @@ actual class QuiltScanner(
                         if (dependency.isContainerNode) {
                             try {
                                 val dependencyId = utilities.jsonUtilities.getNestedText(dependency, id)
-                                if (!dependencyId.matches(dependencyExclusions) && modDependencies.add(dependencyId)) {
+                                if (!dependencyId.matches(dependencyExclusions) && modDependencies.add(Pair(dependencyId, Pair(mod.name, modId)))) {
                                     logger.debug("Added dependency $dependencyId for $modId (${mod.name}).")
                                 }
                             } catch (ex: NullPointerException) {
@@ -123,7 +123,7 @@ actual class QuiltScanner(
                         } else {
                             try {
                                 val dependencyText = dependency.asText()
-                                if (!dependencyText.matches(dependencyExclusions) && modDependencies.add(dependencyText)) {
+                                if (!dependencyText.matches(dependencyExclusions) && modDependencies.add(Pair(dependencyText, Pair(mod.name, modId)))) {
                                     logger.debug("Added dependency ${dependency.asText()} for $modId (${mod.name}).")
                                 }
                             } catch (ex: NullPointerException) {

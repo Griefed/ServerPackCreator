@@ -29,7 +29,7 @@ import java.io.BufferedReader
 import java.io.File
 import java.io.IOException
 import java.io.InputStreamReader
-import java.net.URL
+import java.net.URI
 import java.util.*
 import java.util.prefs.Preferences
 
@@ -72,6 +72,8 @@ actual class ApiProperties(
         "de.griefed.serverpackcreator.configuration.fallbackmodslist"
     private val pConfigurationFallbackModsListRegex =
         "de.griefed.serverpackcreator.configuration.fallbackmodslist.regex"
+    private val pConfigurationFallbackModsWhiteList =
+        "de.griefed.serverpackcreator.configuration.modswhitelist"
     private val pConfigurationHasteBinServerUrl =
         "de.griefed.serverpackcreator.configuration.hastebinserver"
     private val pConfigurationAikarsFlags =
@@ -108,6 +110,10 @@ actual class ApiProperties(
         "de.griefed.serverpackcreator.serverpack.zip.exclude.enabled"
     private val pServerPackScriptTemplates =
         "de.griefed.serverpackcreator.serverpack.script.template"
+    private val pPostInstallCleanupFiles =
+        "de.griefed.serverpackcreator.install.post.files"
+    private val pPreInstallCleanupFiles =
+        "de.griefed.serverpackcreator.install.pre.files"
     private val pAllowUseMinecraftSnapshots =
         "de.griefed.serverpackcreator.minecraft.snapshots"
     private val pServerPackAutoDiscoveryFilterMethod =
@@ -138,6 +144,13 @@ actual class ApiProperties(
     } else {
         jarInformation.jarFolder.absoluteFile
     }
+
+    @Suppress("SpellCheckingInspection")
+    private var fallbackModsWhitelist = TreeSet(
+        listOf(
+            "Ping-Wheel-"
+        )
+    )
 
     @Suppress("SpellCheckingInspection")
     private var fallbackMods = TreeSet(
@@ -257,6 +270,7 @@ actual class ApiProperties(
             "Reforgium-",
             "ResourceLoader-",
             "ResourcePackOrganizer",
+            "Ryoamiclights-",
             "ShoulderSurfing-",
             "ShulkerTooltip-",
             "SimpleDiscordRichPresence-",
@@ -297,6 +311,7 @@ actual class ApiProperties(
             "bhmenu-",
             "blur-",
             "borderless-mining-",
+            "cat_jam-",
             "catalogue-",
             "charmonium-",
             "chat_heads-",
@@ -414,9 +429,11 @@ actual class ApiProperties(
             "rebrand-",
             "reforgium-",
             "replanter-",
+            "rrls-",
             "rubidium-",
             "rubidium_extras-",
             "screenshot-to-clipboard-",
+            "servercountryflags-",
             "shutupexperimentalsettings-",
             "shutupmodelloader-",
             "signtools-",
@@ -505,6 +522,38 @@ actual class ApiProperties(
         )
     )
 
+    val fallbackPostInstallCleanupFiles = TreeSet(
+        listOf(
+            "fabric-installer.jar",
+            "forge-installer.jar",
+            "quilt-installer.jar",
+            "installer.log",
+            "forge-installer.jar.log",
+            "legacyfabric-installer.jar",
+            "run.bat",
+            "run.sh",
+            "user_jvm_args.txt"
+        )
+    )
+
+    val fallbackPreInstallCleanupFiles = TreeSet(
+        listOf(
+            "libraries",
+            "server.jar",
+            "forge-installer.jar",
+            "quilt-installer.jar",
+            "installer.log",
+            "forge-installer.jar.log",
+            "legacyfabric-installer.jar",
+            "run.bat",
+            "run.sh",
+            "user_jvm_args.txt",
+            "quilt-server-launch.jar",
+            "minecraft_server.1.16.5.jar",
+            "forge.jar"
+        )
+    )
+
     @Suppress("MemberVisibilityCanBePrivate")
     val fallbackAikarsFlags = "-Xms4G" +
             " -Xmx4G" +
@@ -562,6 +611,13 @@ actual class ApiProperties(
         private set
 
     /**
+     * String-list of mods to include if present, regardless whether a match was found through [clientsideMods].
+     */
+    @Suppress("MemberVisibilityCanBePrivate")
+    var modsWhitelist = fallbackModsWhitelist
+        private set
+
+    /**
      * Regex-list of clientside-only mods to exclude from server packs.
      */
     @Suppress("MemberVisibilityCanBePrivate")
@@ -574,6 +630,21 @@ actual class ApiProperties(
             return field
         }
         private set
+
+    /**
+     * Regex-list of mods to include if present, regardless whether a match was found throug [clientsideModsRegex].
+     */
+    @Suppress("MemberVisibilityCanBePrivate")
+    var modsWhitelistRegex: TreeSet<String> = TreeSet()
+        get() {
+            field.clear()
+            for (mod in modsWhitelist) {
+                field.add("^$mod.*$")
+            }
+            return field
+        }
+        private set
+
 
     /**
      * Modloaders supported by ServerPackCreator.
@@ -741,6 +812,38 @@ actual class ApiProperties(
         }
 
     /**
+     * List of files to delete after a server pack server installation.
+     */
+    var postInstallCleanupFiles = fallbackPostInstallCleanupFiles
+        get() {
+            val entries = getListProperty(pPostInstallCleanupFiles, fallbackPostInstallCleanupFiles.joinToString(","))
+            field.addAll(entries)
+            return field
+        }
+        set(value) {
+            setListProperty(pPostInstallCleanupFiles, value.toList(), ",")
+            field.clear()
+            field.addAll(value)
+            log.info("Files to cleanup after server installation set to: $value")
+        }
+
+    /**
+     * List of files to delete before a server pack server installation.
+     */
+    var preInstallCleanupFiles = fallbackPreInstallCleanupFiles
+        get() {
+            val entries = getListProperty(pPreInstallCleanupFiles, fallbackPreInstallCleanupFiles.joinToString(","))
+            field.addAll(entries)
+            return field
+        }
+        set(value) {
+            setListProperty(pPreInstallCleanupFiles, value.toList(), ",")
+            field.clear()
+            field.addAll(value)
+            log.info("Files to cleanup before server installation set to: $value")
+        }
+
+    /**
      * List of files to be excluded from ZIP-archives. Current filters are:
      *
      *  * `MINECRAFT_VERSION` - Will be replaced with the Minecraft version of the server pack
@@ -902,9 +1005,9 @@ actual class ApiProperties(
      * The URL from which a .properties-file is read during updating of the fallback clientside-mods list.
      * The default can be found in [fallbackUpdateURL].
      */
-    var updateUrl = URL(fallbackUpdateURL)
+    var updateUrl = URI(fallbackUpdateURL).toURL()
         get() {
-            field = URL(acquireProperty(pConfigurationFallbackUpdateURL, fallbackUpdateURL))
+            field = URI(acquireProperty(pConfigurationFallbackUpdateURL, fallbackUpdateURL)).toURL()
             return field
         }
         set(value) {
@@ -1867,6 +1970,7 @@ actual class ApiProperties(
             log.info("Fallback lists updated.")
         } else {
             setFallbackModsList()
+            setFallbackWhitelist()
         }
         if (saveProps) {
             //Store properties in the configured SPC home-directory
@@ -1891,10 +1995,24 @@ actual class ApiProperties(
             pConfigurationFallbackModsList,
             clientsideMods.joinToString(",")
         )
+    }
 
+    /**
+     * Set up our fallback list of clientside-only mods.
+     *
+     * @author Griefed
+     */
+    private fun setFallbackWhitelist() {
+        // Regular list
+        modsWhitelist.addAll(
+            getListProperty(
+                pConfigurationFallbackModsWhiteList,
+                fallbackModsWhitelist.joinToString(",")
+            )
+        )
         internalProps.setProperty(
-            pConfigurationFallbackModsListRegex,
-            clientsideModsRegex.joinToString(",")
+            pConfigurationFallbackModsWhiteList,
+            fallbackModsWhitelist.joinToString(",")
         )
     }
 
@@ -2217,9 +2335,24 @@ actual class ApiProperties(
      */
     fun clientSideMods() =
         if (exclusionFilter == ExclusionFilter.REGEX) {
-            clientsideModsRegex.toList() as ArrayList<String>
+            clientsideModsRegex.toList()
         } else {
-            clientsideMods.toList() as ArrayList<String>
+            clientsideMods.toList()
+        }
+
+    /**
+     * Acquire the default fallback list of whitelisted mods. If
+     * `de.griefed.serverpackcreator.serverpack.autodiscovery.filter` is set to
+     * [ExclusionFilter.REGEX], a regex fallback list is returned.
+     *
+     * @return The fallback list of whitelisted mods.
+     * @author Griefed
+     */
+    fun whitelistedMods() =
+        if (exclusionFilter == ExclusionFilter.REGEX) {
+            modsWhitelistRegex.toList()
+        } else {
+            modsWhitelist.toList()
         }
 
     /**
@@ -2233,9 +2366,9 @@ actual class ApiProperties(
     fun updateFallback(): Boolean {
         var properties: Properties? = null
         try {
-            URL(
+            URI(
                 acquireProperty(pConfigurationFallbackUpdateURL, fallbackUpdateURL)
-            ).openStream().use {
+            ).toURL().openStream().use {
                 properties = Properties()
                 properties!!.load(it)
             }
@@ -2255,6 +2388,19 @@ actual class ApiProperties(
                 clientsideMods.clear()
                 clientsideMods.addAll(internalProps.getProperty(pConfigurationFallbackModsList).split(","))
                 log.info("The fallback-list for clientside only mods has been updated to: $clientsideMods")
+                updated = true
+            }
+            if (properties!!.getProperty(pConfigurationFallbackModsWhiteList) != null &&
+                internalProps.getProperty(pConfigurationFallbackModsWhiteList)
+                != properties!!.getProperty(pConfigurationFallbackModsWhiteList)
+            ) {
+                internalProps.setProperty(
+                    pConfigurationFallbackModsWhiteList,
+                    properties!!.getProperty(pConfigurationFallbackModsWhiteList)
+                )
+                modsWhitelist.clear()
+                modsWhitelist.addAll(internalProps.getProperty(pConfigurationFallbackModsWhiteList).split(","))
+                log.info("The fallback-list for whitelisted mods has been updated to: $modsWhitelist")
                 updated = true
             }
         }

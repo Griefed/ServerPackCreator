@@ -59,7 +59,7 @@ actual class FabricScanner(
      */
     override fun scan(jarFiles: Collection<File>): TreeSet<File> {
         log.info("Scanning Fabric mods for sideness...")
-        val modDependencies = TreeSet<String>()
+        val modDependencies = ArrayList<Pair<String, Pair<String, String>>>()
         val clientMods = TreeSet<String>()
 
         /*
@@ -85,7 +85,7 @@ actual class FabricScanner(
     override fun checkForClientModsAndDeps(
         filesInModsDir: Collection<File>,
         clientMods: TreeSet<String>,
-        modDependencies: TreeSet<String>
+        modDependencies: ArrayList<Pair<String, Pair<String, String>>>
     ) {
         for (mod in filesInModsDir) {
             if (!mod.name.endsWith(jar)) {
@@ -115,7 +115,7 @@ actual class FabricScanner(
                         if (!dependency.matches(dependencyExclusions)) {
                             try {
                                 log.debug("Added dependency $dependency for $modId (${mod.name}).")
-                                modDependencies.add(dependency)
+                                modDependencies.add(Pair(dependency, Pair(mod.name, modId)))
                             } catch (ex: NullPointerException) {
                                 log.debug("No dependencies for $modId (${mod.name}).")
                             }

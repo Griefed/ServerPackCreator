@@ -11,11 +11,11 @@ import java.util.*
 
 internal class ServerPackHandlerTest {
     private val configurationHandler =
-        ApiWrapper.api(File("src/jvmTest/resources/serverpackcreator.properties")).configurationHandler!!
+        ApiWrapper.api(File("src/jvmTest/resources/serverpackcreator.properties")).configurationHandler
     private val serverPackHandler =
-        ApiWrapper.api(File("src/jvmTest/resources/serverpackcreator.properties")).serverPackHandler!!
+        ApiWrapper.api(File("src/jvmTest/resources/serverpackcreator.properties")).serverPackHandler
     private val versionMeta =
-        ApiWrapper.api(File("src/jvmTest/resources/serverpackcreator.properties")).versionMeta!!
+        ApiWrapper.api(File("src/jvmTest/resources/serverpackcreator.properties")).versionMeta
     private val apiProperties =
         ApiWrapper.api(File("src/jvmTest/resources/serverpackcreator.properties")).apiProperties
 
@@ -28,6 +28,30 @@ internal class ServerPackHandlerTest {
             File(apiProperties.serverFilesDirectory,"custom_template.sh"),
             overwrite = true
         )
+    }
+
+    @Suppress("SpellCheckingInspection")
+    @Test
+    fun neoForgeTest() {
+        val packConfig = PackConfig()
+        configurationHandler.checkConfiguration(
+            File("src/jvmTest/resources/testresources/spcconfs/serverpackcreator_neoforge.conf"),
+            packConfig
+        )
+        val neoForgeDir = serverPackHandler.getServerPackDestination(packConfig)
+        Assertions.assertTrue(serverPackHandler.run(packConfig))
+        Assertions.assertTrue(File(apiProperties.serverPacksDirectory,"neoforge_tests_server_pack.zip").isFile)
+        Assertions.assertTrue(File(neoForgeDir, "config").isDirectory)
+        Assertions.assertTrue(File(neoForgeDir, "defaultconfigs").isDirectory)
+        Assertions.assertTrue(File(neoForgeDir, "mods").isDirectory)
+        val modsDir = File(neoForgeDir, "mods")
+        Assertions.assertTrue(modsDir.isDirectory)
+        Assertions.assertFalse(File(modsDir, "Ping-1.19-1.9.1.jar").isFile)
+        Assertions.assertTrue(File(modsDir, "Ping-Wheel-1.6.1-forge-1.20.1.jar").isFile)
+        Assertions.assertTrue(File(neoForgeDir, "scripts").isDirectory)
+        Assertions.assertTrue(File(neoForgeDir, "seeds").isDirectory)
+        Assertions.assertTrue(File(neoForgeDir, "start.ps1").isFile)
+        Assertions.assertTrue(File(neoForgeDir, "start.sh").isFile)
     }
 
     @Suppress("SpellCheckingInspection")
@@ -46,14 +70,14 @@ internal class ServerPackHandlerTest {
         val forgeDir = serverPackHandler.getServerPackDestination(packConfig)
         val props = File(forgeDir, "server.properties")
         Assertions.assertTrue(serverPackHandler.run(packConfig))
-        Assertions.assertTrue(File(forgeDir, "libraries").isDirectory)
         Assertions.assertTrue(File(forgeDir, "config").isDirectory)
         Assertions.assertTrue(File(forgeDir, "defaultconfigs").isDirectory)
-        Assertions.assertTrue(File(forgeDir, "mods").isDirectory)
+        val modsDir = File(forgeDir, "mods")
+        Assertions.assertTrue(modsDir.isDirectory)
+        Assertions.assertFalse(File(modsDir, "Ping-1.19-1.9.1.jar").isFile)
+        Assertions.assertTrue(File(modsDir, "Ping-Wheel-1.6.1-forge-1.20.1.jar").isFile)
         Assertions.assertTrue(File(forgeDir, "scripts").isDirectory)
         Assertions.assertTrue(File(forgeDir, "seeds").isDirectory)
-        Assertions.assertTrue(File(forgeDir, "minecraft_server.1.16.5.jar").isFile)
-        Assertions.assertTrue(File(forgeDir, "forge.jar").isFile)
         Assertions.assertTrue(File(forgeDir, "server.properties").isFile)
         Assertions.assertTrue(File(forgeDir, "server-icon.png").isFile)
         Assertions.assertTrue(File(forgeDir, "start.ps1").isFile)
@@ -216,8 +240,14 @@ internal class ServerPackHandlerTest {
         val fabricDir = serverPackHandler.getServerPackDestination(packConfig)
         Assertions.assertTrue(serverPackHandler.run(packConfig))
         Assertions.assertTrue(File(apiProperties.serverPacksDirectory,"fabric_tests_server_pack.zip").isFile)
-        Assertions.assertTrue(File(fabricDir, "fabric-server-launch.jar").isFile)
-        Assertions.assertTrue(File(fabricDir, "fabric-server-launcher.jar").isFile)
+        Assertions.assertTrue(File(fabricDir, "config").isDirectory)
+        Assertions.assertTrue(File(fabricDir, "defaultconfigs").isDirectory)
+        val modsDir = File(fabricDir, "mods")
+        Assertions.assertTrue(modsDir.isDirectory)
+        Assertions.assertFalse(File(modsDir, "Ping-1.19-1.9.1.jar").isFile)
+        Assertions.assertTrue(File(modsDir, "Ping-Wheel-1.6.1-forge-1.20.1.jar").isFile)
+        Assertions.assertTrue(File(fabricDir, "scripts").isDirectory)
+        Assertions.assertTrue(File(fabricDir, "seeds").isDirectory)
         Assertions.assertTrue(File(fabricDir, "start.ps1").isFile)
         Assertions.assertTrue(File(fabricDir, "start.sh").isFile)
     }
@@ -233,8 +263,14 @@ internal class ServerPackHandlerTest {
         val quiltDir = serverPackHandler.getServerPackDestination(packConfig)
         Assertions.assertTrue(serverPackHandler.run(packConfig))
         Assertions.assertTrue(File(apiProperties.serverPacksDirectory,"quilt_tests_server_pack.zip").isFile)
-        Assertions.assertTrue(File(quiltDir, "server.jar").isFile)
-        Assertions.assertTrue(File(quiltDir, "quilt-server-launch.jar").isFile)
+        Assertions.assertTrue(File(quiltDir, "config").isDirectory)
+        Assertions.assertTrue(File(quiltDir, "defaultconfigs").isDirectory)
+        val modsDir = File(quiltDir, "mods")
+        Assertions.assertTrue(modsDir.isDirectory)
+        Assertions.assertFalse(File(modsDir, "Ping-1.19-1.9.1.jar").isFile)
+        Assertions.assertTrue(File(modsDir, "Ping-Wheel-1.6.1-forge-1.20.1.jar").isFile)
+        Assertions.assertTrue(File(quiltDir, "scripts").isDirectory)
+        Assertions.assertTrue(File(quiltDir, "seeds").isDirectory)
         Assertions.assertTrue(File(quiltDir, "start.ps1").isFile)
         Assertions.assertTrue(File(quiltDir, "start.sh").isFile)
     }
@@ -250,8 +286,14 @@ internal class ServerPackHandlerTest {
         val legacyFabricDir = serverPackHandler.getServerPackDestination(packConfig)
         Assertions.assertTrue(serverPackHandler.run(packConfig))
         Assertions.assertTrue(File(apiProperties.serverPacksDirectory,"legacyfabric_tests_server_pack.zip").isFile)
-        Assertions.assertTrue(File(legacyFabricDir, "server.jar").isFile)
-        Assertions.assertTrue(File(legacyFabricDir, "fabric-server-launch.jar").isFile)
+        Assertions.assertTrue(File(legacyFabricDir, "config").isDirectory)
+        Assertions.assertTrue(File(legacyFabricDir, "defaultconfigs").isDirectory)
+        val modsDir = File(legacyFabricDir, "mods")
+        Assertions.assertTrue(modsDir.isDirectory)
+        Assertions.assertFalse(File(modsDir, "Ping-1.19-1.9.1.jar").isFile)
+        Assertions.assertTrue(File(modsDir, "Ping-Wheel-1.6.1-forge-1.20.1.jar").isFile)
+        Assertions.assertTrue(File(legacyFabricDir, "scripts").isDirectory)
+        Assertions.assertTrue(File(legacyFabricDir, "seeds").isDirectory)
         Assertions.assertTrue(File(legacyFabricDir, "start.ps1").isFile)
         Assertions.assertTrue(File(legacyFabricDir, "start.sh").isFile)
     }

@@ -28,7 +28,7 @@ import de.griefed.serverpackcreator.api.utilities.common.isNotValidZipFile
 import de.griefed.serverpackcreator.api.versionmeta.VersionMeta
 import net.lingala.zip4j.ZipFile
 import java.io.IOException
-import java.net.URL
+import java.net.URI
 import java.nio.file.*
 import java.util.*
 import java.util.regex.PatternSyntaxException
@@ -63,6 +63,7 @@ actual class ConfigurationHandler(
             val fileConf = PackConfig(utilities, configFile)
             packConfig.setClientMods(fileConf.clientMods)
             packConfig.setInclusions(fileConf.inclusions)
+            packConfig.setModsWhitelist(fileConf.modsWhitelist)
             packConfig.modpackDir = fileConf.modpackDir
             packConfig.minecraftVersion = fileConf.minecraftVersion
             packConfig.modloader = fileConf.modloader
@@ -71,7 +72,6 @@ actual class ConfigurationHandler(
             packConfig.serverPackSuffix = fileConf.serverPackSuffix
             packConfig.serverIconPath = fileConf.serverIconPath
             packConfig.serverPropertiesPath = fileConf.serverPropertiesPath
-            packConfig.isServerInstallationDesired = fileConf.isServerInstallationDesired
             packConfig.isServerIconInclusionDesired = fileConf.isServerIconInclusionDesired
             packConfig.isServerPropertiesInclusionDesired = fileConf.isServerPropertiesInclusionDesired
             packConfig.isZipCreationDesired = fileConf.isZipCreationDesired
@@ -94,8 +94,13 @@ actual class ConfigurationHandler(
         log.info("Checking configuration...")
         if (packConfig.clientMods.isEmpty()) {
             log.warn("No clientside-only mods specified. Using fallback list.")
-            packConfig.setClientMods(apiProperties.clientSideMods())
+            packConfig.setClientMods(apiProperties.clientSideMods().toMutableList())
         }
+        if (packConfig.modsWhitelist.isEmpty()) {
+            log.warn("No whitelist mods specified. Using fallback list.")
+            packConfig.setModsWhitelist(apiProperties.whitelistedMods().toMutableList())
+        }
+
         if (!checkIconAndProperties(packConfig.serverIconPath)) {
             configCheck.serverIconErrors.add(Api.configuration_log_error_servericon(packConfig.serverIconPath))
             log.error("The specified server-icon does not exist: ${packConfig.serverIconPath}")
@@ -677,7 +682,6 @@ actual class ConfigurationHandler(
         modpackDirectory: String,
         clientsideMods: List<String>,
         inclusions: List<InclusionSpecification>,
-        installServer: Boolean,
         minecraftVer: String,
         modloader: String,
         modloaderVersion: String,
@@ -710,7 +714,6 @@ actual class ConfigurationHandler(
             log.info("    %s".format(inclusions[i].exclusionFilter))
         }
         // This log is meant to be read by the user, therefore we allow translation.
-        log.info("Include server installation:       $installServer")
         log.info("Minecraft version:                 $minecraftVer")
         log.info("Modloader:                         $modloader")
         log.info("Modloader Version:                 $modloaderVersion")
@@ -847,7 +850,7 @@ actual class ConfigurationHandler(
 
     @Throws(NullPointerException::class)
     private fun getAndSetIcon(json: JsonNode, packConfig: PackConfig, urlPath: Array<String>, namePath: Array<String>) {
-        val iconUrl = URL(utilities.jsonUtilities.getNestedText(json, *urlPath))
+        val iconUrl = URI(utilities.jsonUtilities.getNestedText(json, *urlPath)).toURL()
         val iconName = utilities.jsonUtilities.getNestedText(json, *namePath) + ".png"
         val iconFile = File(apiProperties.iconsDirectory.absolutePath, iconName)
         if (utilities.webUtilities.downloadFile(iconFile, iconUrl)) {

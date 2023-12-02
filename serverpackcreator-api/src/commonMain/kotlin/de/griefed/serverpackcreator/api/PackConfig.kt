@@ -43,6 +43,7 @@ import de.griefed.serverpackcreator.api.utilities.File
 expect open class PackConfig {
 
     val clientMods: ArrayList<String>
+    val modsWhitelist: ArrayList<String>
     val inclusions: ArrayList<InclusionSpecification>
     val scriptSettings: HashMap<String, String>
     val pluginsConfigs: HashMap<String, ArrayList<CommentedConfig>>
@@ -54,7 +55,6 @@ expect open class PackConfig {
     var serverIconPath: String
     var serverPropertiesPath: String
     var modloader: String
-    var isServerInstallationDesired: Boolean
     var isServerIconInclusionDesired: Boolean
     var isServerPropertiesInclusionDesired: Boolean
 
@@ -65,6 +65,7 @@ expect open class PackConfig {
      * Construct a new configuration model with custom values.
      *
      * @param clientMods                List of clientside mods to exclude from the server pack.
+     * @param whitelist                 List of mods to include if present, regardless whether a match was found through [clientMods]
      * @param copyDirs                  List of directories and/or files to include in the server pack.
      * @param modpackDir                The path to the modpack.
      * @param minecraftVersion          The Minecraft version the modpack uses.
@@ -74,7 +75,6 @@ expect open class PackConfig {
      * @param serverPackSuffix          Suffix to create the server pack with.
      * @param serverIconPath            Path to the icon to use in the server pack.
      * @param serverPropertiesPath      Path to the server.properties to create the server pack with.
-     * @param includeServerInstallation Whether to install the modloader server in the server pack.
      * @param includeServerIcon         Whether to include the server-icon.png in the server pack.
      * @param includeServerProperties   Whether to include the server.properties in the server pack.
      * @param includeZipCreation        Whether to create a ZIP-archive of the server pack.
@@ -84,6 +84,7 @@ expect open class PackConfig {
      */
     constructor(
         clientMods: List<String>,
+        whitelist: List<String>,
         copyDirs: List<InclusionSpecification>,
         modpackDir: String,
         minecraftVersion: String,
@@ -93,7 +94,6 @@ expect open class PackConfig {
         serverPackSuffix: String,
         serverIconPath: String,
         serverPropertiesPath: String,
-        includeServerInstallation: Boolean,
         includeServerIcon: Boolean,
         includeServerProperties: Boolean,
         includeZipCreation: Boolean,

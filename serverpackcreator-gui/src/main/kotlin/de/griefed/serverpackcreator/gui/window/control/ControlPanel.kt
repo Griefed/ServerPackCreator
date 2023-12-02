@@ -58,7 +58,7 @@ class ControlPanel(
 
     private val runGeneration = GenerationButton(guiProps) { generate() }
     private val serverPacks = ServerPacksButton(guiProps) {
-        apiWrapper.utilities!!.fileUtilities.openFolder(apiWrapper.apiProperties.serverPacksDirectory)
+        apiWrapper.utilities.fileUtilities.openFolder(apiWrapper.apiProperties.serverPacksDirectory)
     }
     val panel = JPanel()
 
@@ -145,11 +145,8 @@ class ControlPanel(
 
         log.info("Checking entered configuration.")
         statusPanel.updateStatus(Gui.createserverpack_log_info_buttoncreateserverpack_start.toString())
-        if (!activeTab.checkServer()) {
-            packConfig.isServerInstallationDesired = false
-        }
 
-        if (apiWrapper.configurationHandler!!.checkConfiguration(packConfig, check, true).allChecksPassed) {
+        if (apiWrapper.configurationHandler.checkConfiguration(packConfig, check, true).allChecksPassed) {
             if (activeTab.getModpackDirectory().endsWith(".zip",ignoreCase = true)) {
                 JOptionPane.showMessageDialog(
                     panel.parent,
@@ -171,9 +168,9 @@ class ControlPanel(
      */
     private fun generateServerPack(packConfig: PackConfig) {
         log.info("Starting ServerPackCreator run.")
-        statusPanel.updateStatus(Gui.createserverpack_log_info_buttoncreateserverpack_generating.toString())
+        statusPanel.updateStatus(Gui.createserverpack_log_info_buttoncreateserverpack_generating(File(packConfig.modpackDir).name))
         try {
-            apiWrapper.serverPackHandler!!.run(packConfig)
+            apiWrapper.serverPackHandler.run(packConfig)
             statusPanel.updateStatus(Gui.createserverpack_log_info_buttoncreateserverpack_ready.toString())
             if (guiProps.generationFocusEnabled) {
                 mainFrame.toFront()
@@ -188,7 +185,7 @@ class ControlPanel(
                 ) == 0
             ) {
                 try {
-                    Desktop.getDesktop().open(File(apiWrapper.serverPackHandler!!.getServerPackDestination(packConfig)))
+                    Desktop.getDesktop().open(File(apiWrapper.serverPackHandler.getServerPackDestination(packConfig)))
 
                 } catch (ex: IOException) {
                     log.error("Error opening file explorer for server pack.", ex)

@@ -24,7 +24,7 @@ import com.electronwill.nightconfig.toml.TomlFormat
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import org.apache.logging.log4j.kotlin.logger
 import org.pf4j.*
-import java.net.URL
+import java.net.URI
 
 /**
  * A ServerPackCreator plugin provides additional functionality to ServerPackCreator via any of
@@ -61,7 +61,7 @@ abstract class ServerPackCreatorPlugin(val context: PluginContext) : Plugin(), B
 
     init {
         val classPath = this.javaClass.getResource(this.javaClass.simpleName + ".class")!!.toString()
-        val url = URL(classPath.substring(0, classPath.lastIndexOf("!") + 1) + "/plugin.toml")
+        val url = URI(classPath.substring(0, classPath.lastIndexOf("!") + 1) + "/plugin.toml").toURL()
         val pluginToml: CommentedConfig
         url.openStream().use {
             pluginToml = TomlFormat.instance().createParser().parse(it)

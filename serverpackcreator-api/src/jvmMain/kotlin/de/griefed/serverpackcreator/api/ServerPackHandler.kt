@@ -26,7 +26,6 @@ import de.griefed.serverpackcreator.api.versionmeta.VersionMeta
 import net.lingala.zip4j.ZipFile
 import net.lingala.zip4j.model.ExcludeFileFilter
 import net.lingala.zip4j.model.ZipParameters
-import org.apache.logging.log4j.kotlin.logger
 import java.awt.Image
 import java.awt.image.BufferedImage
 import java.io.File
@@ -49,16 +48,15 @@ import kotlin.io.path.absolute
  * to do things manually.
  *
  * The methods in question are:
- *  * [cleanupEnvironment] and [cleanupEnvironment]
+ *  * [cleanupEnvironment]
  *  * [ApiPlugins.runPreZipExtensions]
- *  * [copyFiles] and [copyFiles]
- *  * [getImprovedFabricLauncher] and [getImprovedFabricLauncher] if Fabric is the chosen Modloader
- *  * [copyIcon] and [copyIcon]
- *  * [copyProperties] and [copyProperties]
+ *  * [copyFiles]
+ *  * [getImprovedFabricLauncher] if Fabric is the chosen Modloader
+ *  * [copyIcon]
+ *  * [copyProperties]
  *  * [ApiPlugins.runPreZipExtensions]
- *  * [zipBuilder] and [zipBuilder]
- *  * [createStartScripts] and [createStartScripts]
- *  * [installServer] and [installServer]
+ *  * [zipBuilder]
+ *  * [createStartScripts]
  *  * [ApiPlugins.runPostGenExtensions]
  *
  * If you want to execute extensions, see
@@ -84,7 +82,6 @@ actual class ServerPackHandler actual constructor(
     private val apiPlugins: ApiPlugins,
     private val modScanner: ModScanner
 ) : ServerPack<File, TreeSet<String>, TreeSet<File>>() {
-    private val installerLog = logger("InstallerLogger")
 
     /**
      * @author Griefed
@@ -164,13 +161,6 @@ actual class ServerPackHandler actual constructor(
             */
             createStartScripts(packConfig, true)
 
-            // If true, Install the modloader software for the specified Minecraft version, modloader, modloader version
-            if (packConfig.isServerInstallationDesired) {
-                installServer(packConfig)
-            } else {
-                log.info("Not installing modded server.")
-            }
-
             // Inform user about location of newly generated server pack.
             log.info("Server pack available at: $destination")
             log.info("Server pack archive available at: ${destination}_server_pack.zip")
@@ -199,6 +189,7 @@ actual class ServerPackHandler actual constructor(
         modpackDir: String,
         inclusions: ArrayList<InclusionSpecification>,
         clientMods: List<String>,
+        whitelist: List<String>,
         minecraftVersion: String,
         destination: String,
         modloader: String
@@ -233,6 +224,7 @@ actual class ServerPackHandler actual constructor(
                 destination,
                 exclusions,
                 clientMods,
+                whitelist,
                 minecraftVersion,
                 modloader
             )
@@ -265,6 +257,7 @@ actual class ServerPackHandler actual constructor(
         destination: String,
         exclusions: MutableList<Regex>,
         clientMods: List<String>,
+        whitelist: List<String>,
         minecraftVersion: String,
         modloader: String
     ): List<ServerPackFile> {
@@ -308,7 +301,7 @@ actual class ServerPackHandler actual constructor(
                 } catch (ignored: IOException) {
                 }
                 acquired = mutableListOf()
-                for (mod in getModsToInclude(clientDir, clientMods, minecraftVersion, modloader)) {
+                for (mod in getModsToInclude(clientDir, clientMods, whitelist, minecraftVersion, modloader)) {
                     acquired.add(ServerPackFile(mod, File(serverDir, mod.name)))
                 }
                 processed = runFilters(acquired, inclusion, modpackDir)
@@ -505,7 +498,6 @@ actual class ServerPackHandler actual constructor(
      */
     override fun zipBuilder(
         minecraftVersion: String,
-        includeServerInstallation: Boolean,
         destination: String,
         modloader: String,
         modloaderVersion: String
@@ -539,11 +531,6 @@ actual class ServerPackHandler actual constructor(
         } catch (ex: IOException) {
             log.error("There was an error during zip creation.", ex)
         }
-        if (includeServerInstallation) {
-            log.warn("!!!-------NOTE: The minecraft_server.jar will not be included in the zip-archive.-------!!!")
-            log.warn("!!!-Mojang strictly prohibits the distribution of their software through third parties.-!!!")
-            log.warn("!!!---Tell your users to execute the download scripts to get the Minecraft server jar.--!!!")
-        }
         log.info("Finished creation of zip archive.")
     }
 
@@ -551,198 +538,13 @@ actual class ServerPackHandler actual constructor(
      * @author Griefed
      */
     override fun preInstallationCleanup(destination: String) {
-        utilities.fileUtilities.deleteMultiple(
-            File(destination, "libraries"),
-            File(destination, "server.jar"),
-            File(destination, "forge-installer.jar"),
-            File(destination, "quilt-installer.jar"),
-            File(destination, "installer.log"),
-            File(destination, "forge-installer.jar.log"),
-            File(destination, "legacyfabric-installer.jar"),
-            File(destination, "run.bat"),
-            File(destination, "run.sh"),
-            File(destination, "user_jvm_args.txt"),
-            File(destination, "quilt-server-launch.jar"),
-            File(destination, "minecraft_server.1.16.5.jar"),
-            File(destination, "forge.jar")
-        )
-    }
-
-    /**
-     * @author Griefed
-     */
-    override fun installServer(
-        modLoader: String, minecraftVersion: String, modLoaderVersion: String, destination: String
-    ) {
-        if (!serverDownloadable(minecraftVersion, modLoader, modLoaderVersion)) {
-            log.error("The servers for $minecraftVersion, $modLoader $modLoaderVersion are currently unreachable. Skipping server installation.")
-            return
-        }
-        preInstallationCleanup(destination)
-        val commandArguments: MutableList<String> = ArrayList(10)
-        commandArguments.addMultiple(apiProperties.javaPath, "-jar")
-        var process: Process? = null
-        when (modLoader) {
-            "Fabric" -> {
-                log.info { "Installing Fabric server." }
-                installerLog.info("Starting Fabric installation.")
-                if (versionMeta.fabric.installerFor(versionMeta.fabric.releaseInstaller()).isPresent) {
-                    log.info("Fabric installer successfully downloaded.")
-                    val installer =
-                        versionMeta.fabric.installerFor(versionMeta.fabric.releaseInstaller()).get().absolutePath
-                    commandArguments.addMultiple(
-                        installer,
-                        "server",
-                        "-mcversion",
-                        minecraftVersion,
-                        "-loader",
-                        modLoaderVersion,
-                        "-downloadMinecraft"
-                    )
-                } else {
-                    log.error(
-                        "Something went wrong during the installation of Fabric. Maybe the Fabric servers are down or unreachable? Skipping..."
-                    )
-                    return
-                }
+        log.info("Pre server installation cleanup.")
+        var fileToDelete: File
+        for (file in apiProperties.preInstallCleanupFiles) {
+            fileToDelete = File(destination,file)
+            if (fileToDelete.deleteQuietly()) {
+                log.info("Deleted $fileToDelete")
             }
-
-            "Forge" -> {
-                log.info { "Installing Forge server." }
-                installerLog.info("Starting Forge installation.")
-                if (versionMeta.forge.installerFor(modLoaderVersion, minecraftVersion).isPresent) {
-                    log.info("Forge installer successfully downloaded.")
-                    val installer =
-                        versionMeta.forge.installerFor(modLoaderVersion, minecraftVersion).get().absolutePath
-                    commandArguments.addMultiple(
-                        installer,
-                        "--installServer"
-                    )
-                } else {
-                    log.error(
-                        "Something went wrong during the installation of Forge. Maybe the Forge servers are down or unreachable? Skipping..."
-                    )
-                    return
-                }
-            }
-
-            "NeoForge" -> {
-                log.info { "Installing Forge server." }
-                installerLog.info("Starting Forge installation.")
-                if (versionMeta.neoForge.installerFor(modLoaderVersion, minecraftVersion).isPresent) {
-                    log.info("NeoForge installer successfully downloaded.")
-                    val installer =
-                        versionMeta.neoForge.installerFor(modLoaderVersion, minecraftVersion).get().absolutePath
-                    commandArguments.addMultiple(
-                        installer,
-                        "--installServer"
-                    )
-                } else {
-                    log.error(
-                        "Something went wrong during the installation of NeoForge. Maybe the NeoForge servers are down or unreachable? Skipping..."
-                    )
-                    return
-                }
-            }
-
-            "Quilt" -> {
-                log.info { "Installing Quilt server." }
-                installerLog.info("Starting Quilt installation.")
-                if (versionMeta.quilt.installerFor(versionMeta.quilt.releaseInstaller()).isPresent) {
-                    log.info("Quilt installer successfully downloaded.")
-                    val installer =
-                        versionMeta.quilt.installerFor(versionMeta.quilt.releaseInstaller()).get().absolutePath
-                    commandArguments.addMultiple(
-                        installer,
-                        "install",
-                        "server",
-                        minecraftVersion,
-                        "--download-server",
-                        "--install-dir=."
-                    )
-                } else {
-                    log.error(
-                        "Something went wrong during the installation of Quilt. Maybe the Quilt servers are down or unreachable? Skipping..."
-                    )
-                    return
-                }
-            }
-
-            "LegacyFabric" -> {
-                log.info { "Installing LegacyFabric server." }
-                installerLog.info("Starting Legacy Fabric installation.")
-                try {
-                    if (versionMeta.legacyFabric.installerFor(versionMeta.legacyFabric.releaseInstaller()).isPresent) {
-                        log.info("LegacyFabric installer successfully downloaded.")
-                        val installer =
-                            versionMeta.legacyFabric.installerFor(versionMeta.legacyFabric.releaseInstaller())
-                                .get().absolutePath
-                        commandArguments.addMultiple(
-                            installer,
-                            "server",
-                            "-mcversion",
-                            minecraftVersion,
-                            "-loader",
-                            modLoaderVersion,
-                            "-downloadMinecraft"
-                        )
-                    } else {
-                        log.error(
-                            "Something went wrong during the installation of LegacyFabric. Maybe the LegacyFabric servers are down or unreachable? Skipping..."
-                        )
-                        return
-                    }
-                } catch (ex: MalformedURLException) {
-                    log.error("Couldn't acquire LegacyFabric installer URL.", ex)
-                }
-            }
-
-            else -> log.error("Invalid modloader specified. Modloader must be either Forge, NeoForge, Fabric, LegacyFabric or Quilt. Specified: $modLoader")
-        }
-        try {
-            log.info("Starting server installation for Minecraft $minecraftVersion, $modLoader $modLoaderVersion.")
-            val processBuilder =
-                ProcessBuilder(commandArguments).directory(File(destination).absoluteFile).redirectErrorStream(true)
-            log.debug("ProcessBuilder command: {}", processBuilder.command())
-            log.debug("Executing in: {}", File(destination).absolutePath)
-            process = processBuilder.start()
-            process.inputStream.use { input ->
-                input.bufferedReader().use { buff ->
-                    while (true) {
-                        val line: String = buff.readLine() ?: break
-                        installerLog.info(line)
-                    }
-                }
-            }
-            installerLog.info("Server for Minecraft $minecraftVersion, $modLoader $modLoaderVersion installed.")
-            log.info("Server for Minecraft $minecraftVersion, $modLoader $modLoaderVersion installed.")
-            log.info("For details regarding the installation of this modloader server, see logs/modloader_installer.log.")
-        } catch (ex: IOException) {
-            log.error(
-                "Something went wrong during the installation of Forge. Maybe the Forge servers are down or unreachable? Skipping...",
-                ex
-            )
-        } finally {
-            try {
-                process!!.destroy()
-            } catch (ignored: Exception) {
-            }
-        }
-        if (modLoader.equals("Forge", ignoreCase = true)) {
-            try {
-                val file = File(destination, "forge-$minecraftVersion-$modLoaderVersion.jar")
-                if (file.exists()) {
-                    file.copyTo(File(destination, "forge.jar"), true)
-                    file.deleteQuietly()
-                }
-            } catch (ex: IOException) {
-                log.error("Could not rename forge-$minecraftVersion-$modLoaderVersion.jar to forge.jar", ex)
-            }
-        }
-        if (apiProperties.isServerPackCleanupEnabled) {
-            postInstallCleanup(destination)
-        } else {
-            log.info("Server pack cleanup disabled.")
         }
     }
 
@@ -817,6 +619,7 @@ actual class ServerPackHandler actual constructor(
     override fun getModsToInclude(
         modsDir: String,
         userSpecifiedClientMods: List<String>,
+        userSpecifiedModsWhitelist: List<String>,
         minecraftVersion: String,
         modloader: String
     ): List<File> {
@@ -857,7 +660,7 @@ actual class ServerPackHandler actual constructor(
         }
 
         // Exclude user-specified mods from copying.
-        excludeUserSpecifiedMod(userSpecifiedClientMods, modsInModpack)
+        excludeUserSpecifiedMod(userSpecifiedClientMods, userSpecifiedModsWhitelist, modsInModpack)
         return ArrayList(modsInModpack)
     }
 
@@ -940,15 +743,13 @@ actual class ServerPackHandler actual constructor(
      */
     override fun postInstallCleanup(destination: String) {
         log.info("Cleanup after modloader server installation.")
-        File(destination, "fabric-installer.jar").deleteQuietly()
-        File(destination, "forge-installer.jar").deleteQuietly()
-        File(destination, "quilt-installer.jar").deleteQuietly()
-        File(destination, "installer.log").deleteQuietly()
-        File(destination, "forge-installer.jar.log").deleteQuietly()
-        File(destination, "legacyfabric-installer.jar").deleteQuietly()
-        File(destination, "run.bat").deleteQuietly()
-        File(destination, "run.sh").deleteQuietly()
-        File(destination, "user_jvm_args.txt").deleteQuietly()
+        var fileToDelete: File
+        for (file in apiProperties.postInstallCleanupFiles) {
+            fileToDelete = File(destination, file)
+            if (fileToDelete.deleteQuietly()) {
+                log.info("  Deleted $fileToDelete")
+            }
+        }
     }
 
     /**
@@ -975,11 +776,11 @@ actual class ServerPackHandler actual constructor(
     /**
      * @author Griefed
      */
-    override fun excludeUserSpecifiedMod(userSpecifiedExclusions: List<String>, modsInModpack: TreeSet<File>) {
+    override fun excludeUserSpecifiedMod(userSpecifiedExclusions: List<String>, userSpecifiedModsWhitelist: List<String>, modsInModpack: TreeSet<File>) {
         if (userSpecifiedExclusions.isNotEmpty()) {
             log.info("Performing ${apiProperties.exclusionFilter}-type checks for user-specified clientside-only mod exclusion.")
             for (userSpecifiedExclusion in userSpecifiedExclusions) {
-                exclude(userSpecifiedExclusion, modsInModpack)
+                exclude(userSpecifiedExclusion, userSpecifiedModsWhitelist, modsInModpack)
             }
         } else {
             log.warn("User specified no clientside-only mods.")
@@ -1022,22 +823,23 @@ actual class ServerPackHandler actual constructor(
     /**
      * @author Griefed
      */
-    override fun exclude(userSpecifiedExclusion: String, modsInModpack: TreeSet<File>) {
-        modsInModpack.removeIf {
+    override fun exclude(userSpecifiedExclusion: String, userSpecifiedModsWhitelist: List<String>, modsInModpack: TreeSet<File>) {
+        modsInModpack.removeIf { modToCheck ->
             val excluded: Boolean
-            val check = it.name
+            val modName = modToCheck.name
             excluded = when (apiProperties.exclusionFilter) {
-                ExclusionFilter.END -> check.endsWith(userSpecifiedExclusion)
-                ExclusionFilter.CONTAIN -> check.contains(userSpecifiedExclusion)
-                ExclusionFilter.REGEX -> check.matches(userSpecifiedExclusion.toRegex())
-                ExclusionFilter.EITHER -> (check.startsWith(userSpecifiedExclusion) || check.endsWith(
-                    userSpecifiedExclusion
-                ) || check.contains(userSpecifiedExclusion) || check.matches(userSpecifiedExclusion.toRegex()))
-
-                ExclusionFilter.START -> check.startsWith(userSpecifiedExclusion)
+                ExclusionFilter.START -> modName.startsWith(userSpecifiedExclusion) && !userSpecifiedModsWhitelist.any { whitelistedMod -> modName.startsWith(whitelistedMod) }
+                ExclusionFilter.END -> modName.endsWith(userSpecifiedExclusion) && !userSpecifiedModsWhitelist.any { whitelistedMod -> modName.endsWith(whitelistedMod) }
+                ExclusionFilter.CONTAIN -> modName.contains(userSpecifiedExclusion) && !userSpecifiedModsWhitelist.any { whitelistedMod -> modName.contains(whitelistedMod) }
+                ExclusionFilter.REGEX -> modName.matches(userSpecifiedExclusion.toRegex()) && !userSpecifiedModsWhitelist.any { whitelistedMod -> modName.matches(whitelistedMod.toRegex()) }
+                ExclusionFilter.EITHER -> (
+                            (modName.startsWith(userSpecifiedExclusion) && !userSpecifiedModsWhitelist.any { whitelistedMod -> modName.startsWith(whitelistedMod) }) ||
+                            (modName.endsWith(userSpecifiedExclusion) && !userSpecifiedModsWhitelist.any { whitelistedMod -> modName.endsWith(whitelistedMod) }) ||
+                            (modName.contains(userSpecifiedExclusion) && !userSpecifiedModsWhitelist.any { whitelistedMod -> modName.contains(whitelistedMod) }) ||
+                            (modName.matches(userSpecifiedExclusion.toRegex()) && !userSpecifiedModsWhitelist.any { whitelistedMod -> modName.matches(whitelistedMod.toRegex()) }))
             }
             if (excluded) {
-                log.debug("Removed ${it.name} as per user-specified check: $userSpecifiedExclusion")
+                log.debug("Removed ${modToCheck.name} as per user-specified check: $userSpecifiedExclusion")
             }
             excluded
         }

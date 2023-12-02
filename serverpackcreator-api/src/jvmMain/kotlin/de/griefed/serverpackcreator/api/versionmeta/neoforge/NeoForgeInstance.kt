@@ -20,6 +20,7 @@
 package de.griefed.serverpackcreator.api.versionmeta.neoforge
 
 import de.griefed.serverpackcreator.api.versionmeta.minecraft.MinecraftMeta
+import java.net.URI
 import java.net.URL
 import java.util.*
 
@@ -41,7 +42,7 @@ class NeoForgeInstance(
     private val minecraftMeta: MinecraftMeta
 ) {
     val installerUrl: URL =
-        URL("https://maven.neoforged.net/releases/net/neoforged/forge/$minecraftVersion-$neoForgeVersion/forge-$minecraftVersion-$neoForgeVersion-installer.jar")
+        URI("https://maven.neoforged.net/releases/net/neoforged/forge/$minecraftVersion-$neoForgeVersion/forge-$minecraftVersion-$neoForgeVersion-installer.jar").toURL()
 
     /**
      * Get this Forge instances corresponding Minecraft client instance, wrapped in an

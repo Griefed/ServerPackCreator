@@ -36,7 +36,12 @@ import de.griefed.serverpackcreator.updater.UpdateChecker
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
 import java.awt.EventQueue
+import java.awt.Frame
+import java.awt.event.ComponentEvent
+import java.awt.event.ComponentListener
 import javax.swing.JOptionPane
+import javax.swing.SwingUtilities
+import javax.swing.Timer
 
 /**
  * Main window of ServerPackCreator housing everything needed to configure a server pack, generate it, view logs, manage
@@ -104,6 +109,31 @@ class MainWindow(
                     main.showTip()
                 }
             }
+
+            val resizeTimer = Timer(250) {
+                for (frame in Frame.getFrames()) {
+                    SwingUtilities.updateComponentTreeUI(frame)
+                }
+                main.frame.revalidate()
+                main.frame.repaint()
+            }
+            resizeTimer.stop()
+            resizeTimer.isRepeats = false
+            resizeTimer.initialDelay = 250
+            resizeTimer.delay = 250
+            resizeTimer.isCoalesce = true
+            main.frame.addComponentListener(object : ComponentListener {
+                override fun componentResized(e: ComponentEvent?) {
+                    resizeTimer.restart()
+                }
+
+                override fun componentMoved(e: ComponentEvent?) {}
+
+                override fun componentShown(e: ComponentEvent?) {}
+
+                override fun componentHidden(e: ComponentEvent?) {}
+
+            })
         }
     }
 }

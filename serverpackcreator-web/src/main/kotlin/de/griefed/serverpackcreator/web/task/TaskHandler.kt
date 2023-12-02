@@ -99,7 +99,6 @@ class TaskHandler @Autowired constructor(
             serverPackModel.modloader = parameters[3]
             serverPackModel.modloaderVersion = parameters[4]
             serverPackModel.setClientMods(parameters[1].split(",").dropLastWhile { it.isEmpty() } as ArrayList<String>)
-            serverPackModel.isServerInstallationDesired = false
             try {
                 simpleStopWatch.start()
                 if (configurationHandler.checkConfiguration(serverPackModel, check, false).allChecksPassed) {

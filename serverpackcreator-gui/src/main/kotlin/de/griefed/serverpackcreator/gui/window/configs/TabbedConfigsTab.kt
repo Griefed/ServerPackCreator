@@ -204,7 +204,7 @@ class TabbedConfigsTab(
     @Suppress("MemberVisibilityCanBePrivate")
     fun loadConfig(configFile: File, tab: ConfigEditor = addTab()) {
         if (configFile.isFile) {
-            tab.loadConfiguration(PackConfig(apiWrapper.utilities!!, configFile), configFile)
+            tab.loadConfiguration(PackConfig(apiWrapper.utilities, configFile), configFile)
         } else {
             GlobalScope.launch(Dispatchers.Swing, CoroutineStart.UNDISPATCHED) {
                 JOptionPane.showMessageDialog(

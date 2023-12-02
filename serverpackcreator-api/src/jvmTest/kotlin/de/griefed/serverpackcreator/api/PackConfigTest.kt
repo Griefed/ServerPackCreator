@@ -35,7 +35,7 @@ class PackConfigTest internal constructor() {
     @Throws(FileNotFoundException::class, ParserConfigurationException::class)
     fun scriptSettingsTest() {
         val packConfig = PackConfig(
-            ApiWrapper.api(File("src/jvmTest/resources/serverpackcreator.properties")).utilities!!,
+            ApiWrapper.api(File("src/jvmTest/resources/serverpackcreator.properties")).utilities,
             File("src/jvmTest/resources/testresources/spcconfs/scriptSettings.conf")
         )
         Assertions.assertEquals(
@@ -58,7 +58,6 @@ class PackConfigTest internal constructor() {
         Assertions.assertEquals(packConfig.modloaderVersion, "14.23.5.2860")
         Assertions.assertEquals(packConfig.minecraftVersion, "1.12.2")
         Assertions.assertEquals(packConfig.modloader, "Forge")
-        Assertions.assertFalse(packConfig.isServerInstallationDesired)
         Assertions.assertTrue(packConfig.isServerPropertiesInclusionDesired)
         Assertions.assertTrue(packConfig.isServerIconInclusionDesired)
         Assertions.assertTrue(packConfig.isZipCreationDesired)
@@ -121,7 +120,7 @@ class PackConfigTest internal constructor() {
         val afterFile = File(apiProperties.homeDirectory,"after.conf")
         packConfig.save(afterFile, apiProperties)
         val after = PackConfig(
-            ApiWrapper.api(File("src/jvmTest/resources/serverpackcreator.properties")).utilities!!, afterFile
+            ApiWrapper.api(File("src/jvmTest/resources/serverpackcreator.properties")).utilities, afterFile
         )
         Assertions.assertEquals(after.serverIconPath, packConfig.serverIconPath)
         Assertions.assertEquals(after.serverPackSuffix, packConfig.serverPackSuffix)
@@ -134,7 +133,6 @@ class PackConfigTest internal constructor() {
         Assertions.assertEquals(after.modloaderVersion, packConfig.modloaderVersion)
         Assertions.assertEquals(after.minecraftVersion, packConfig.minecraftVersion)
         Assertions.assertEquals(after.modloader, packConfig.modloader)
-        Assertions.assertFalse(after.isServerInstallationDesired)
         Assertions.assertTrue(after.isServerPropertiesInclusionDesired)
         Assertions.assertTrue(after.isServerIconInclusionDesired)
         Assertions.assertTrue(after.isZipCreationDesired)

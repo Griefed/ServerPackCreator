@@ -29,7 +29,6 @@ import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.components.*
 import de.griefed.serverpackcreator.gui.window.MainFrame
 import de.griefed.serverpackcreator.gui.window.control.ControlPanel
-import de.griefed.serverpackcreator.gui.window.control.StatusPanel
 import de.griefed.serverpackcreator.gui.window.settings.components.*
 import java.io.File
 import javax.swing.JFileChooser

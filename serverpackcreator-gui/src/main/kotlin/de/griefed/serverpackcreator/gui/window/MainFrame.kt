@@ -27,14 +27,9 @@ import de.griefed.serverpackcreator.gui.window.menu.MainMenuBar
 import de.griefed.serverpackcreator.updater.MigrationManager
 import de.griefed.serverpackcreator.updater.UpdateChecker
 import java.awt.Dimension
-import java.awt.Frame
-import java.awt.event.ComponentEvent
-import java.awt.event.ComponentListener
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
 import javax.swing.JFrame
-import javax.swing.SwingUtilities
-import javax.swing.Timer
 import javax.swing.WindowConstants
 
 /**
@@ -53,19 +48,10 @@ class MainFrame(
     val mainPanel = MainPanel(guiProps, apiWrapper, guiProps.larsonScanner, this, themeManager)
     private val updateDialogs: UpdateDialogs
     private val menuBar: MainMenuBar
-    private val resizeTimer = Timer(250) {
-        for (frame in Frame.getFrames()) {
-            SwingUtilities.updateComponentTreeUI(frame)
-        }
-        frame.revalidate()
-        frame.repaint()
-    }
 
     init {
-        resizeTimer.stop()
-        resizeTimer.isRepeats = false
         updateDialogs = UpdateDialogs(
-            guiProps, apiWrapper.utilities!!.webUtilities,
+            guiProps, apiWrapper.utilities.webUtilities,
             apiWrapper.apiProperties, updateChecker, frame
         )
         menuBar = MainMenuBar(
@@ -84,18 +70,6 @@ class MainFrame(
         frame.isLocationByPlatform = true
         frame.preferredSize = Dimension(1100, 860)
         frame.pack()
-        frame.addComponentListener(object : ComponentListener {
-            override fun componentResized(e: ComponentEvent?) {
-                resizeTimer.restart()
-            }
-
-            override fun componentMoved(e: ComponentEvent?) {}
-
-            override fun componentShown(e: ComponentEvent?) {}
-
-            override fun componentHidden(e: ComponentEvent?) {}
-
-        })
         guiProps.initFont()
         guiProps.larsonScanner.loadConfig(guiProps.idleConfig)
         guiProps.larsonScanner.play()

@@ -29,6 +29,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import org.apache.logging.log4j.LogManager
 import java.io.IOException
 import java.net.MalformedURLException
+import java.net.URI
 import java.net.URL
 import java.time.LocalDate
 import java.util.*
@@ -59,7 +60,7 @@ class GitLabChecker : VersionChecker {
      * @throws MalformedURLException Thrown if the resulting URL is malformed or otherwise invalid.
      */
     constructor(repositoryUrl: String) {
-        gitLabApi = URL(repositoryUrl)
+        gitLabApi = URI(repositoryUrl).toURL()
     }
 
     /**
@@ -116,7 +117,7 @@ class GitLabChecker : VersionChecker {
                             assets.add(
                                 ReleaseAsset(
                                     asset["name"].asText(),
-                                    URL(asset["direct_asset_url"].asText())
+                                    URI(asset["direct_asset_url"].asText()).toURL()
                                 )
                             )
                         }
@@ -131,7 +132,7 @@ class GitLabChecker : VersionChecker {
                             sources.add(
                                 Source(
                                     type,
-                                    URL(source["url"].asText())
+                                    URI(source["url"].asText()).toURL()
                                 )
                             )
                         }
@@ -142,7 +143,7 @@ class GitLabChecker : VersionChecker {
                     Update(
                         newVersion!!,
                         description,
-                        URL(getDownloadUrl(newVersion)),
+                        URI(getDownloadUrl(newVersion)).toURL(),
                         releaseDate!!,
                         assets,
                         sources

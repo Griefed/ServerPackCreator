@@ -163,7 +163,7 @@ actual class WebUtilities(private val apiProperties: ApiProperties) {
     actual fun createHasteBinFromString(text: String): String {
         val requestURL: String = apiProperties.hasteBinServerUrl
         var response: String? = null
-        val url = URL(requestURL)
+        val url = URI(requestURL).toURL()
         var conn: HttpsURLConnection? = null
         val postData: ByteArray = text.toByteArray()
         val postDataLength = postData.size

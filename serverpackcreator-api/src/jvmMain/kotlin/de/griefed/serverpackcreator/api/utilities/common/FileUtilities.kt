@@ -403,18 +403,21 @@ actual class FileUtilities {
  * * No exceptions are thrown if an error occurs
  * * No information is carried outside should an exception occur, meaning you have no information about why the deletion, if it failed
  *
+ * @return `true` if, and only if, the file or directory was deleted.
  * @author Griefed
  */
-actual fun File.deleteQuietly() =
+actual fun File.deleteQuietly(): Boolean =
     if (this.isFile) {
         try {
             this.delete()
         } catch (ignored: Exception) {
+            false
         }
     } else {
         try {
             this.deleteRecursively()
         } catch (ignored: Exception) {
+            false
         }
     }
 

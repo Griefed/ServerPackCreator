@@ -53,17 +53,17 @@ class BeanConfiguration @Autowired constructor() {
 
     @Bean
     fun utilities(): Utilities {
-        return apiWrapper().utilities!!
+        return apiWrapper().utilities
     }
 
     @Bean
     fun annotationScanner(): AnnotationScanner {
-        return apiWrapper().annotationScanner!!
+        return apiWrapper().annotationScanner
     }
 
     @Bean
     fun applicationPlugins(): ApiPlugins {
-        return apiWrapper().apiPlugins!!
+        return apiWrapper().apiPlugins
     }
 
     @Bean
@@ -73,12 +73,12 @@ class BeanConfiguration @Autowired constructor() {
 
     @Bean
     fun configurationHandler(): ConfigurationHandler {
-        return apiWrapper().configurationHandler!!
+        return apiWrapper().configurationHandler
     }
 
     @Bean
     fun fabricScanner(): FabricScanner {
-        return apiWrapper().fabricScanner!!
+        return apiWrapper().fabricScanner
     }
 
     @Bean
@@ -103,17 +103,17 @@ class BeanConfiguration @Autowired constructor() {
 
     @Bean
     fun modScanner(): ModScanner {
-        return apiWrapper().modScanner!!
+        return apiWrapper().modScanner
     }
 
     @Bean
     fun quiltScanner(): QuiltScanner {
-        return apiWrapper().quiltScanner!!
+        return apiWrapper().quiltScanner
     }
 
     @Bean
     fun serverPackHandler(): ServerPackHandler {
-        return apiWrapper().serverPackHandler!!
+        return apiWrapper().serverPackHandler
     }
 
     @Bean
@@ -133,12 +133,12 @@ class BeanConfiguration @Autowired constructor() {
 
     @Bean
     fun versionMeta(): VersionMeta {
-        return apiWrapper().versionMeta!!
+        return apiWrapper().versionMeta
     }
 
     @Bean
     fun webUtilities(): WebUtilities {
-        return apiWrapper().webUtilities!!
+        return apiWrapper().webUtilities
     }
 
     @Bean

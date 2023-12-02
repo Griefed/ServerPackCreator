@@ -17,18 +17,32 @@
  *
  * The full license can be found at https:github.com/Griefed/ServerPackCreator/blob/main/LICENSE
  */
-package de.griefed.serverpackcreator.gui.window.logs
+package de.griefed.serverpackcreator.gui.window.configs.components.advanced
 
-import de.griefed.serverpackcreator.api.ApiProperties
+import Gui
+import de.griefed.serverpackcreator.gui.components.BaseFileChooser
+import java.awt.Dimension
 import java.io.File
+import javax.swing.filechooser.FileNameExtensionFilter
 
 /**
- * Log viewer for the modloader installer log.
+ * File-chooser to select mod-JARs to add to the clientside-mods list of a server pack config.
  *
  * @author Griefed
  */
-class ModloaderInstallerLog(apiProperties: ApiProperties) : LogTailer() {
+class WhitelistChooser(current: File?, dimension: Dimension) : BaseFileChooser() {
+    constructor(dimension: Dimension) : this(null, dimension)
+
     init {
-        createTailer(File(apiProperties.logsDirectory, "modloader_installer.log"))
+        currentDirectory = current
+        isFileHidingEnabled = false
+        dialogTitle = Gui.createserverpack_gui_buttonwhitelistmods_title.toString()
+        fileSelectionMode = FILES_ONLY
+        fileFilter = FileNameExtensionFilter(
+            Gui.createserverpack_gui_buttonwhitelistmods_filter.toString(), "jar"
+        )
+        isAcceptAllFileFilterUsed = false
+        isMultiSelectionEnabled = true
+        preferredSize = dimension
     }
 }

@@ -1302,12 +1302,14 @@ class LarsonScanner : JPanel {
          * @author Griefed
          */
         fun run() {
-            timer = Timer(40) {
+            val delay = 60
+            timer = Timer(delay) {
                 if (this.isRunning) {
                     eye.updatePosition()
                     eye.repaint()
                 }
             }
+            timer.delay = delay
             timer.isRepeats = true
             timer.isCoalesce = true
             timer.start()

@@ -11,7 +11,7 @@ import javax.xml.parsers.ParserConfigurationException
 
 class VersionMetaTest {
     private val versionMeta: VersionMeta =
-        ApiWrapper.api(File("src/jvmTest/resources/serverpackcreator.properties")).versionMeta!!
+        ApiWrapper.api(File("src/jvmTest/resources/serverpackcreator.properties")).versionMeta
 
     @Test
     @Throws(IOException::class, ParserConfigurationException::class, SAXException::class)

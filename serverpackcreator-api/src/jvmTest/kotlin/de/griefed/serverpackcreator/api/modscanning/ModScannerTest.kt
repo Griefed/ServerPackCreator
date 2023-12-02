@@ -9,7 +9,7 @@ import java.io.File
 
 class ModScannerTest internal constructor() {
     private var modScanner: ModScanner =
-        ApiWrapper.api(File("src/jvmTest/resources/serverpackcreator.properties")).modScanner!!
+        ApiWrapper.api(File("src/jvmTest/resources/serverpackcreator.properties")).modScanner
 
     @Suppress("SpellCheckingInspection")
     @Test

@@ -26,7 +26,6 @@ import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.components.*
 import de.griefed.serverpackcreator.gui.themes.ThemeManager
 import de.griefed.serverpackcreator.gui.window.control.ControlPanel
-import de.griefed.serverpackcreator.gui.window.control.StatusPanel
 import de.griefed.serverpackcreator.gui.window.settings.components.Editor
 import java.awt.GraphicsEnvironment
 import java.awt.event.ActionListener
@@ -104,8 +103,8 @@ class GuiSettings(
         }
     }
 
-    private val manualEditIcon = StatusIcon(guiProps, "Allows manual editing of textfields for files.")
-    private val manualEditLabel = ElementLabel("Allow Manual Editing")
+    private val manualEditIcon = StatusIcon(guiProps, Gui.settings_gui_manualedit_tooltip.toString())
+    private val manualEditLabel = ElementLabel(Gui.settings_gui_manualedit_label.toString())
     private val manualEditSetting = ActionCheckBox(actionListener)
     private val manualEditRevert = BalloonTipButton(null, guiProps.revertIcon, Gui.settings_revert.toString(), guiProps) {
         manualEditSetting.isSelected = guiProps.allowManualEditing

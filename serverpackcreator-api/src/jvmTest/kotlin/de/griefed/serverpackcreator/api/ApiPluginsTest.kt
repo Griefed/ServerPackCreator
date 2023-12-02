@@ -15,7 +15,7 @@ import javax.xml.parsers.ParserConfigurationException
 
 class ApiPluginsTest {
     private val apiPlugins: ApiPlugins =
-        ApiWrapper.api(File("src/jvmTest/resources/serverpackcreator.properties")).apiPlugins!!
+        ApiWrapper.api(File("src/jvmTest/resources/serverpackcreator.properties")).apiPlugins
 
     @Test
     @Throws(IOException::class, ParserConfigurationException::class, SAXException::class)

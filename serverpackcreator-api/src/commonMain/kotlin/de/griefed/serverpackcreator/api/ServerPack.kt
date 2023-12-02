@@ -101,6 +101,7 @@ abstract class ServerPack<F, TS, TF> {
         packConfig.modpackDir,
         packConfig.inclusions,
         packConfig.clientMods,
+        packConfig.modsWhitelist,
         packConfig.minecraftVersion,
         getServerPackDestination(packConfig),
         packConfig.modloader
@@ -167,26 +168,9 @@ abstract class ServerPack<F, TS, TF> {
      */
     fun zipBuilder(packConfig: Pack<*, *, *>) = zipBuilder(
         packConfig.minecraftVersion,
-        packConfig.isServerInstallationDesired,
         getServerPackDestination(packConfig),
         packConfig.modloader,
         packConfig.modloaderVersion
-    )
-
-    /**
-     * Installs the modloader server for the specified modloader, modloader version and Minecraft
-     * version.
-     *
-     * @param packConfig Contains the used modloader, Minecraft version, modloader version,
-     * path to the java executable/binary and modpack directory in order to
-     * acquire the destination at which to install the server.
-     * @author Griefed
-     */
-    fun installServer(packConfig: Pack<*, *, *>) = installServer(
-        packConfig.modloader,
-        packConfig.minecraftVersion,
-        packConfig.modloaderVersion,
-        getServerPackDestination(packConfig)
     )
 
     /**
@@ -211,6 +195,7 @@ abstract class ServerPack<F, TS, TF> {
         modpackDir: String,
         inclusions: ArrayList<InclusionSpecification>,
         clientMods: List<String>,
+        whitelist: List<String>,
         minecraftVersion: String,
         destination: String,
         modloader: String
@@ -274,8 +259,6 @@ abstract class ServerPack<F, TS, TF> {
      *
      * @param minecraftVersion          Determines the name of the Minecraft server JAR to exclude
      * from the ZIP-archive if the modloader is Forge.
-     * @param includeServerInstallation Determines whether the Minecraft server JAR info should be
-     * printed.
      * @param destination               The destination where the ZIP-archive should be created in.
      * @param modloader                 The modloader the modpack and server pack use.
      * @param modloaderVersion          The modloader version the modpack and server pack use.
@@ -283,27 +266,9 @@ abstract class ServerPack<F, TS, TF> {
      */
     abstract fun zipBuilder(
         minecraftVersion: String,
-        includeServerInstallation: Boolean,
         destination: String,
         modloader: String,
         modloaderVersion: String
-    )
-
-    /**
-     * Installs the modloader server for the specified modloader, modloader version and Minecraft
-     * version.
-     *
-     * @param modLoader        The modloader for which to install the server software. Either Forge or
-     * Fabric.
-     * @param minecraftVersion The Minecraft version for which to install the modloader and Minecraft
-     * server.
-     * @param modLoaderVersion The modloader version for which to install the modloader and Minecraft
-     * server.
-     * @param destination      The destination where the modloader server should be installed into.
-     * @author Griefed
-     */
-    abstract fun installServer(
-        modLoader: String, minecraftVersion: String, modLoaderVersion: String, destination: String
     )
 
     /**
@@ -314,6 +279,7 @@ abstract class ServerPack<F, TS, TF> {
      * @param modsDir                 The mods-directory of the modpack of which to generate a list of
      * all its contents.
      * @param userSpecifiedClientMods A list of all clientside-only mods.
+     * @param userSpecifiedWhitelist  A list of mods to include regardless if a match was found in [userSpecifiedClientMods].
      * @param minecraftVersion        The Minecraft version the modpack uses. When the modloader is
      * Forge, this determines whether Annotations or Tomls are
      * scanned.
@@ -322,7 +288,11 @@ abstract class ServerPack<F, TS, TF> {
      * @author Griefed
      */
     abstract fun getModsToInclude(
-        modsDir: String, userSpecifiedClientMods: List<String>, minecraftVersion: String, modloader: String
+        modsDir: String,
+        userSpecifiedClientMods: List<String>,
+        userSpecifiedModsWhitelist: List<String>,
+        minecraftVersion: String,
+        modloader: String
     ): List<F>
 
     /**
@@ -367,6 +337,7 @@ abstract class ServerPack<F, TS, TF> {
     fun getModsToInclude(packConfig: Pack<*, *, *>) = getModsToInclude(
         "${packConfig.modpackDir}${File.separator}mods",
         packConfig.clientMods,
+        packConfig.modsWhitelist,
         packConfig.minecraftVersion,
         packConfig.modloader
     )
@@ -457,7 +428,7 @@ abstract class ServerPack<F, TS, TF> {
      * modpack.
      * @author Griefed
      */
-    abstract fun excludeUserSpecifiedMod(userSpecifiedExclusions: List<String>, modsInModpack: TF)
+    abstract fun excludeUserSpecifiedMod(userSpecifiedExclusions: List<String>, userSpecifiedModsWhitelist: List<String>, modsInModpack: TF)
 
     /**
      * Walk through the specified directory and add a [ServerPackFile] for every file/folder
@@ -484,7 +455,7 @@ abstract class ServerPack<F, TS, TF> {
      *
      * @author Griefed
      */
-    abstract fun exclude(userSpecifiedExclusion: String, modsInModpack: TF)
+    abstract fun exclude(userSpecifiedExclusion: String, userSpecifiedModsWhitelist: List<String>, modsInModpack: TF)
 
     /**
      * Cleans up the server_pack directory by deleting left-over files from modloader installations
