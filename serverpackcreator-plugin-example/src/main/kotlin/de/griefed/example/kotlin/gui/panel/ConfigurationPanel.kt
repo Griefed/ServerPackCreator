@@ -66,14 +66,14 @@ import javax.swing.JTextField
  * @author Griefed
  */
 class ConfigurationPanel(
-    versionMeta: VersionMeta?,
-    apiProperties: ApiProperties?,
-    utilities: Utilities?,
-    serverPackConfigTab: ServerPackConfigTab?,
+    versionMeta: VersionMeta,
+    apiProperties: ApiProperties,
+    utilities: Utilities,
+    serverPackConfigTab: ServerPackConfigTab,
     addonConfig: Optional<CommentedConfig>?,
     extensionName: String, pluginID: String
 ) : ExtensionConfigPanel(
-    versionMeta!!, apiProperties!!, utilities!!, serverPackConfigTab!!, addonConfig!!,
+    versionMeta, apiProperties, utilities, serverPackConfigTab, addonConfig!!,
     extensionName, pluginID
 ) {
     private val panelName: String
@@ -177,7 +177,7 @@ class ConfigurationPanel(
     }
 
     /**
-     * Pass the extension configuration to the configuration panel so it can then, in turn, load the
+     * Pass the extension configuration to the configuration panel, so it can then, in turn, load the
      * available configurations and make them editable, if so desired.
      *
      * @param serverPackExtensionConfig The list of extension configurations to pass to the

@@ -34,9 +34,15 @@ import java.util.jar.JarFile
  * @param tomlParser To parse .toml-files.
  * @Griefed
  */
-actual class TomlScanner constructor(private val tomlParser: TomlParser) :
+actual class TomlScanner(private val tomlParser: TomlParser) :
     Scanner<TreeSet<File>, Collection<File>> {
     private val log = cachedLoggerOf(this.javaClass)
+    private val mods = "mods"
+    private val modId = "modId"
+    private val modsToml = "META-INF/mods.toml"
+    private val dependencies = "dependencies"
+    private val side = "side"
+    private val both = "BOTH"
 
     /**
      * Scan the `mods.toml`-files in mod JAR-files of a given directory for their sideness.
@@ -100,44 +106,49 @@ actual class TomlScanner constructor(private val tomlParser: TomlParser) :
     private fun getModIdsRequiredOnServer(config: CommentedConfig): TreeSet<String> {
         val configs = ArrayList<Map<String, Any>>(100)
         val ids = TreeSet<String>()
-        if (config.valueMap()["mods"] == null) {
+        if (config.valueMap()[mods] == null) {
             throw ScanningException("No mods specified.")
         } else {
-            @Suppress("UNCHECKED_CAST")
-            for (commentedConfig in config.valueMap()["mods"] as ArrayList<CommentedConfig>) {
-                configs.add(commentedConfig.valueMap())
+            val commentedConfigs = config.valueMap()[mods] as ArrayList<*>
+            for (entry in commentedConfigs) {
+                val commentedConfig = entry as CommentedConfig
+                val extracted = commentedConfig.valueMap()
+                configs.add(extracted)
             }
         }
         val dependencies: Map<String, ArrayList<CommentedConfig>> = getMapOfDependencyLists(config)
         var containedForgeOrMinecraft = false
         for (mod in configs) {
-            val modId = mod["modId"].toString()
-            if (dependencies.containsKey(modId)) {
-                for (dependency in dependencies[modId]!!) {
+            val id = mod[modId].toString()
+            if (dependencies.containsKey(id)) {
+                val modIdDependencies = dependencies[id]!!
+                for (dependency in modIdDependencies) {
                     try {
-                        if (getModId(dependency).matches(forgeMinecraft)) {
+                        val dependencyModId = getModId(dependency)
+                        if (dependencyModId.matches(forgeMinecraft)) {
                             containedForgeOrMinecraft = true
                             try {
-                                if (getSide(dependency).matches(bothServer)) {
-                                    ids.add(modId)
+                                val side = getSide(dependency)
+                                if (side.matches(bothServer)) {
+                                    ids.add(id)
                                 }
                             } catch (ex: NullPointerException) {
                                 // no side specified....assuming both|server
-                                ids.add(modId)
+                                ids.add(id)
                             }
                         }
                     } catch (e: NullPointerException) {
                         // no modId specified in dependency...assuming forge|minecraft and both|server
                         containedForgeOrMinecraft = true
-                        ids.add(modId)
+                        ids.add(id)
                     }
                 }
             } else {
                 // contains no self referencing dependency...
-                ids.add(modId)
+                ids.add(id)
             }
             if (!containedForgeOrMinecraft) {
-                ids.add(modId)
+                ids.add(id)
             }
         }
         return ids
@@ -163,10 +174,11 @@ actual class TomlScanner constructor(private val tomlParser: TomlParser) :
             var confidentOnClientSide = true
             for (modId in idsInMod) {
                 if (dependencies.containsKey(modId)) {
-                    for (dependency in dependencies[modId]!!) {
-                        if (getModId(dependency).matches(forgeMinecraft)
-                            && getSide(dependency).matches(bothServer)
-                        ) {
+                    val modIdDependencies = dependencies[modId]!!
+                    for (dependency in modIdDependencies) {
+                        val dependencyModId = getModId(dependency)
+                        val side = getSide(dependency)
+                        if (dependencyModId.matches(forgeMinecraft) && side.matches(bothServer)) {
                             confidentOnClientSide = false
                         }
                     }
@@ -178,28 +190,29 @@ actual class TomlScanner constructor(private val tomlParser: TomlParser) :
             if (confidentOnClientSide) {
                 return ids
             }
-        } catch (ignored: NullPointerException) {}
+        } catch (ignored: NullPointerException) {
+        }
         for ((key, value) in dependencies) {
             for (commentedConfig in value) {
                 try {
-
+                    val modId = getModId(commentedConfig)
                     // dependency forge|minecraft?
-                    if (!getModId(commentedConfig).matches(forgeMinecraft)) {
+                    if (!modId.matches(forgeMinecraft)) {
                         try {
-
                             // dependency required on the server?
-                            if (getSide(commentedConfig).matches(bothServer)) {
-                                ids.add(getModId(commentedConfig))
+                            val side = getSide(commentedConfig)
+                            if (side.matches(bothServer)) {
+                                ids.add(modId)
                             }
                         } catch (ex: NullPointerException) {
                             // dependency specifies no side
-                            ids.add(getModId(commentedConfig))
+                            ids.add(modId)
                         }
                     }
                 } catch (e: NullPointerException) {
-
                     // dependency specifies no modId, so use parent.
-                    if (!key.lowercase(Locale.getDefault()).matches(forgeMinecraft)) {
+                    val lowerKey = key.lowercase()
+                    if (!lowerKey.matches(forgeMinecraft)) {
                         ids.add(key)
                     }
                 }
@@ -218,12 +231,14 @@ actual class TomlScanner constructor(private val tomlParser: TomlParser) :
     @Throws(ScanningException::class)
     private fun getModIdsInJar(config: CommentedConfig): TreeSet<String> {
         val ids = TreeSet<String>()
-        if (config.valueMap()["mods"] == null) {
+        if (config.valueMap()[mods] == null) {
             throw ScanningException("No mods specified.")
         } else {
-            @Suppress("UNCHECKED_CAST")
-            for (commentedConfig in config.valueMap()["mods"] as ArrayList<CommentedConfig>) {
-                ids.add(getModId(commentedConfig))
+            val commentedConfigs = config.valueMap()[mods] as ArrayList<*>
+            for (entry in commentedConfigs) {
+                val commentedConfig = entry as CommentedConfig
+                val modId = getModId(commentedConfig)
+                ids.add(modId)
             }
         }
         return ids
@@ -239,7 +254,8 @@ actual class TomlScanner constructor(private val tomlParser: TomlParser) :
     @Throws(IOException::class)
     private fun getConfig(file: File): CommentedConfig {
         val jarFile = JarFile(file)
-        val tomlStream: InputStream = jarFile.getInputStream(jarFile.getJarEntry("META-INF/mods.toml"))
+        val jarEntry = jarFile.getJarEntry(modsToml)
+        val tomlStream: InputStream = jarFile.getInputStream(jarEntry)
         val config: CommentedConfig = tomlParser.parse(tomlStream)
         jarFile.close()
         tomlStream.close()
@@ -256,23 +272,27 @@ actual class TomlScanner constructor(private val tomlParser: TomlParser) :
      */
     @Throws(ScanningException::class)
     private fun getMapOfDependencyLists(config: CommentedConfig): Map<String, ArrayList<CommentedConfig>> {
-        if (config.valueMap()["dependencies"] == null) {
+        if (config.valueMap()[dependencies] == null) {
             throw ScanningException("No dependencies specified.")
         }
-        val dependencies: MutableMap<String, ArrayList<CommentedConfig>> =
-            HashMap<String, ArrayList<CommentedConfig>>(100)
-        @Suppress("UNCHECKED_CAST")
-        if (config.valueMap()["dependencies"] is ArrayList<*>) {
-            val mods = config.valueMap()["mods"] as ArrayList<CommentedConfig>
-            val id = getModId(mods[0])
-            val entry = config.valueMap()["dependencies"] as ArrayList<CommentedConfig>
-            dependencies[id] = entry
+        val modDependencies = HashMap<String, ArrayList<CommentedConfig>>(100)
+        val configValueMap = config.valueMap()
+        if (configValueMap[dependencies] is ArrayList<*>) {
+            val mods = configValueMap[mods] as ArrayList<*>
+            val modConfig = mods[0] as CommentedConfig
+            val id = getModId(modConfig)
+
+            @Suppress("UNCHECKED_CAST")
+            val entry = configValueMap[dependencies] as ArrayList<CommentedConfig>
+            modDependencies[id] = entry
         } else {
-            for ((key, value) in (config.valueMap()["dependencies"] as CommentedConfig).valueMap().entries) {
-                dependencies[key.lowercase()] = value as ArrayList<CommentedConfig>
+            val configs = configValueMap[dependencies] as CommentedConfig
+            for ((key, value) in configs.valueMap().entries) {
+                @Suppress("UNCHECKED_CAST")
+                modDependencies[key.lowercase()] = value as ArrayList<CommentedConfig>
             }
         }
-        return dependencies
+        return modDependencies
     }
 
     /**
@@ -281,7 +301,7 @@ actual class TomlScanner constructor(private val tomlParser: TomlParser) :
      * @param config Mod- or dependency-config which contains the modId.
      * @return `modId` from the passed config, in lower-case letters.
      */
-    private fun getModId(config: CommentedConfig) = config.valueMap()["modId"].toString().lowercase(Locale.getDefault())
+    private fun getModId(config: CommentedConfig) = config.valueMap()[modId].toString().lowercase()
 
     /**
      * Acquire the side of the config of the passed dependency.
@@ -290,10 +310,10 @@ actual class TomlScanner constructor(private val tomlParser: TomlParser) :
      * @return `side` from the passed config, in upper-case letters.
      */
     private fun getSide(config: CommentedConfig): String {
-        return if (config.valueMap()["side"] != null) {
-            config.valueMap()["side"].toString().uppercase(Locale.getDefault())
+        return if (config.valueMap()[side] != null) {
+            config.valueMap()[side].toString().uppercase()
         } else {
-            "BOTH"
+            both
         }
     }
 }

@@ -27,6 +27,7 @@ package de.griefed.example.kotlin.configcheck
 import com.electronwill.nightconfig.core.CommentedConfig
 import com.electronwill.nightconfig.toml.TomlWriter
 import de.griefed.serverpackcreator.api.ApiProperties
+import de.griefed.serverpackcreator.api.ConfigCheck
 import de.griefed.serverpackcreator.api.PackConfig
 import de.griefed.serverpackcreator.api.plugins.configurationhandler.ConfigCheckExtension
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
@@ -54,8 +55,7 @@ class ConfigurationCheck : ConfigCheckExtension {
      * @param utilities           Instance of [Utilities] commonly used across
      * ServerPackCreator.
      * @param packConfig  The configuration to check.
-     * @param encounteredErrors   A list of encountered errors during any and all checks. The list is
-     * displayed to the user if it contains any entries.
+     * @param configCheck Collection of encountered errors, if any, for convenient result-checks.
      * @param pluginConfig         Configuration for this addon, conveniently provided by
      * ServerPackCreator.
      * @param packSpecificConfigs Modpack and server pack specific configurations for this addon,
@@ -71,7 +71,7 @@ class ConfigurationCheck : ConfigCheckExtension {
         apiProperties: ApiProperties,
         utilities: Utilities,
         packConfig: PackConfig,
-        encounteredErrors: MutableList<String>,
+        configCheck: ConfigCheck,
         pluginConfig: Optional<CommentedConfig>,
         packSpecificConfigs: ArrayList<CommentedConfig>
     ): Boolean {
@@ -95,16 +95,14 @@ class ConfigurationCheck : ConfigCheckExtension {
             LOG_ADDONS.info(stringWriter)
             if (packSpecificConfigs[i].get<Any>("text").toString().isNotEmpty()) {
                 bool = true
-                encounteredErrors.add(
-                    "Extension ${packSpecificConfigs[i].get<Any>("extension")} encountered an error."
-                )
+                configCheck.pluginsErrors.add("Extension ${packSpecificConfigs[i].get<Any>("extension")} encountered an error.")
             }
         }
         return bool
     }
 
     /**
-     * Get the if of this extension. Used by ServerPackCreator to determine which configuration, if
+     * Get the ID of this extension. Used by ServerPackCreator to determine which configuration, if
      * any, to provide to any given extension being run.
      *
      * @return The ID of this extension.

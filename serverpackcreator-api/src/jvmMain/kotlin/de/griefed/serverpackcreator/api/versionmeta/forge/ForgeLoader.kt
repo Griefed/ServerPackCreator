@@ -94,9 +94,10 @@ internal class ForgeLoader(
              * 1.7.10_pre4 AND 1.7.10-pre4.
              */
             val mcVersion: String
-            if (minecraftMeta.getClient(field.replace("_", "-")).isPresent) {
-                mcVersion = field.replace("_", "-")
-                minecraftVersions.add(field.replace("_", "-"))
+            val client = field.replace("_", "-")
+            if (minecraftMeta.getClient(client).isPresent) {
+                mcVersion = client
+                minecraftVersions.add(client)
             } else {
                 mcVersion = field
                 minecraftVersions.add(field)
@@ -108,35 +109,24 @@ internal class ForgeLoader(
                  * substring of length of Minecraft version plus 1, so entries like "1.18.2-40.0.17" get their
                  * Minecraft version portion removed and result in "40.0.17". The +1 removes the "-", too. :)
                  */
-                forgeVersions.add(forge.asText().substring(mcVersion.length + 1))
-                forgeVersionsForMCVer.add(forge.asText().substring(mcVersion.length + 1))
+                val forgeVersion = forge.asText().substring(mcVersion.length + 1)
+                forgeVersions.add(forgeVersion)
+                forgeVersionsForMCVer.add(forgeVersion)
                 try {
                     val forgeInstance = ForgeInstance(
                         mcVersion,
-                        forge.asText().substring(mcVersion.length + 1),
+                        forgeVersion,
                         minecraftMeta
                     )
                     instanceMeta[mcVersion + forge.asText().substring(mcVersion.length)] = forgeInstance
-                    forgeToMinecraftMeta[forge.asText().substring(mcVersion.length + 1)] = mcVersion
+                    forgeToMinecraftMeta[forgeVersion] = mcVersion
                 } catch (ex: MalformedURLException) {
 
                     // Well, in THEORY this should never be thrown, so we don't need to bother
                     // with a thorough error message
-                    log.debug(
-                        "Could not create Forge instance for Minecraft "
-                                + mcVersion
-                                + " and Forge "
-                                + forge.asText().substring(mcVersion.length + 1),
-                        ex
-                    )
+                    log.debug("Could not create Forge instance for Minecraft $mcVersion and Forge $forgeVersion.", ex)
                 } catch (ex: NoSuchElementException) {
-                    log.debug(
-                        "Could not create Forge instance for Minecraft "
-                                + mcVersion
-                                + " and Forge "
-                                + forge.asText().substring(mcVersion.length + 1),
-                        ex
-                    )
+                    log.debug("Could not create Forge instance for Minecraft $mcVersion and Forge $forgeVersion.", ex)
                 }
             }
             versionMeta[mcVersion] = forgeVersionsForMCVer

@@ -44,7 +44,6 @@ import java.nio.charset.StandardCharsets
 import java.util.*
 import javax.swing.JTabbedPane
 
-
 /**
  * Manager for ServerPackCreator plugins. In itself it doesn't do much. It gathers lists of all
  * available extensions for [TabExtension],[PreGenExtension],[PreZipExtension] and
@@ -69,6 +68,8 @@ actual class ApiPlugins(
     private val pluginsLog = logger("PluginsLogger")
     private val pluginConfigs: HashMap<String, CommentedConfig> = HashMap<String, CommentedConfig>(100)
     private val pluginConfigFiles = HashMap<String, File>(100)
+    private val toml = ".toml"
+    private val configToml = "config$toml"
 
     init {
         loadPlugins()
@@ -98,7 +99,7 @@ actual class ApiPlugins(
      */
     private fun extractPluginConfigs(tomlParser: TomlParser) {
         for (plugin in getPlugins()) {
-            val pluginConfig: String = plugin.pluginId + ".toml"
+            val pluginConfig: String = plugin.pluginId + toml
             val pluginConfigFile = File(
                 apiProperties.pluginsConfigsDirectory,
                 pluginConfig
@@ -107,7 +108,7 @@ actual class ApiPlugins(
                 try {
                     ZipFile(plugin.pluginPath.toFile()).use {
                         it.extractFile(
-                            "config.toml",
+                            configToml,
                             apiProperties.pluginsConfigsDirectory.toString(),
                             pluginConfig
                         )
@@ -130,27 +131,29 @@ actual class ApiPlugins(
      */
     private fun availableExtensions() {
         for (plugin in getPlugins()) {
-            if (getAllExtensionsOfPlugin(plugin, PreGenExtension::class.java).isEmpty()
-                && getAllExtensionsOfPlugin(plugin, PreZipExtension::class.java).isEmpty()
-                && getAllExtensionsOfPlugin(plugin, PostGenExtension::class.java).isEmpty()
-                && getAllExtensionsOfPlugin(plugin, TabExtension::class.java).isEmpty()
-                && getAllExtensionsOfPlugin(plugin, ConfigPanelExtension::class.java).isEmpty()
-                && getAllExtensionsOfPlugin(plugin, ConfigCheckExtension::class.java).isEmpty()
+            val preGen = getAllExtensionsOfPlugin(plugin, PreGenExtension::class.java)
+            val preZip = getAllExtensionsOfPlugin(plugin, PreZipExtension::class.java)
+            val postGen = getAllExtensionsOfPlugin(plugin, PostGenExtension::class.java)
+            val tab = getAllExtensionsOfPlugin(plugin, TabExtension::class.java)
+            val panel = getAllExtensionsOfPlugin(plugin, ConfigPanelExtension::class.java)
+            val check = getAllExtensionsOfPlugin(plugin, ConfigCheckExtension::class.java)
+            if (preGen.isEmpty()
+                && preZip.isEmpty()
+                && postGen.isEmpty()
+                && tab.isEmpty()
+                && panel.isEmpty()
+                && check.isEmpty()
             ) {
                 log.info("No extensions installed.")
                 continue
             }
             log.info("Extension(s) for plugin ${plugin.pluginId}:")
-            val preGens = getAllExtensionsOfPlugin(plugin, PreGenExtension::class.java)
-            val preZips = getAllExtensionsOfPlugin(plugin, PreZipExtension::class.java)
-            val postGens = getAllExtensionsOfPlugin(plugin, PostGenExtension::class.java)
-            val tabs = getAllExtensionsOfPlugin(plugin, ConfigPanelExtension::class.java)
-            val configPanels = getAllExtensionsOfPlugin(plugin, ConfigCheckExtension::class.java)
-            extensionsInfo(preGens)
-            extensionsInfo(preZips)
-            extensionsInfo(postGens)
-            extensionsInfo(tabs)
-            extensionsInfo(configPanels)
+            extensionsInfo(preGen)
+            extensionsInfo(preZip)
+            extensionsInfo(postGen)
+            extensionsInfo(tab)
+            extensionsInfo(panel)
+            extensionsInfo(check)
         }
     }
 
@@ -159,9 +162,7 @@ actual class ApiPlugins(
      * @author Griefed
      */
     private fun extensionsInfo(extensions: List<ExtensionInformation>) {
-        if (extensions.isEmpty()) {
-            log.info("No ${extensions.javaClass.canonicalName} available.")
-        } else {
+        if (extensions.isNotEmpty()) {
             for (extension in extensions) {
                 log.info("  Name:       ${extension.name}(${extension.extensionId})")
                 log.info("    Description: ${extension.description}")
@@ -201,6 +202,9 @@ actual class ApiPlugins(
     fun <T> getAllExtensionsOfPlugin(plugin: PluginWrapper, type: Class<T>): List<T> =
         plugin.pluginManager.getExtensions(type)
 
+    /**
+     * @author Griefed
+     */
     override fun createExtensionFactory(): ExtensionFactory =
         SingletonExtensionFactory(
             this,
@@ -212,6 +216,9 @@ actual class ApiPlugins(
             TabExtension::class.java.name
         )
 
+    /**
+     * @author Griefed
+     */
     override fun createPluginFactory(): PluginFactory {
         return CustomPluginFactory()
     }
@@ -250,9 +257,12 @@ actual class ApiPlugins(
         extensionId: String
     ): ArrayList<CommentedConfig> {
         val extConf: ArrayList<CommentedConfig> = ArrayList<CommentedConfig>(10)
-        if (packConfig.getPluginConfigs(plugin.pluginId).isNotEmpty()) {
-            for (config in getExtensionConfigs(plugin, packConfig)) {
-                if (config.get<Any>("extension") == extensionId) {
+        val pluginConfigs = packConfig.getPluginConfigs(plugin.pluginId)
+        if (pluginConfigs.isNotEmpty()) {
+            val extensionConfigs = getExtensionConfigs(plugin, packConfig)
+            for (config in extensionConfigs) {
+                val id = config.get<Any>("extension")
+                if (id == extensionId) {
                     extConf.add(config)
                 }
             }
@@ -274,8 +284,9 @@ actual class ApiPlugins(
         packConfig: PackConfig
     ): ArrayList<CommentedConfig> {
         val configs: ArrayList<CommentedConfig> = ArrayList<CommentedConfig>(10)
-        if (packConfig.getPluginConfigs(plugin.pluginId).isNotEmpty()) {
-            configs.addAll(packConfig.getPluginConfigs(plugin.pluginId))
+        val pluginConfigs = packConfig.getPluginConfigs(plugin.pluginId)
+        if (pluginConfigs.isNotEmpty()) {
+            configs.addAll(pluginConfigs)
         }
         return configs
     }
@@ -294,31 +305,26 @@ actual class ApiPlugins(
             log.info("Executing PreGenExtension extensions.")
             pluginsLog.info("Executing PreGenExtension extensions.")
             for (extension in getAllExtensionsOfPlugin(plugin, PreGenExtension::class.java)) {
+                val extensionError = "Extension ${extension.name} in plugin ${plugin.pluginId} encountered an error."
                 pluginsLog.info("Executing PreGenExtension ${extension.name}")
-                @Suppress("DuplicatedCode")
                 try {
+                    val pluginConfig = getPluginConfig(plugin.pluginId)
+                    val extensionConfigs = getExtensionSpecificConfigs(plugin, packConfig, extension.extensionId)
                     extension.run(
                         versionMeta,
                         utilities,
                         apiProperties,
                         packConfig,
                         destination,
-                        getPluginConfig(plugin.pluginId),
-                        getExtensionSpecificConfigs(
-                            plugin, packConfig,
-                            extension.extensionId
-                        )
+                        pluginConfig,
+                        extensionConfigs
                     )
                 } catch (ex: ExtensionException) {
-                    pluginsLog.error(
-                        "Extension ${extension.name} in plugin ${plugin.pluginId} encountered an error.",
-                        ex
-                    )
+                    pluginsLog.error(extensionError, ex)
                 } catch (ex: Error) {
-                    pluginsLog.error(
-                        "Extension ${extension.name} in plugin ${plugin.pluginId} encountered an error.",
-                        ex
-                    )
+                    pluginsLog.error(extensionError, ex)
+                } catch (ex: Exception) {
+                    pluginsLog.error(extensionError, ex)
                 }
             }
         }
@@ -338,8 +344,10 @@ actual class ApiPlugins(
             log.info("Executing PreZipExtension extensions.")
             pluginsLog.info("Executing PreZipExtension extensions.")
             for (extension in getAllExtensionsOfPlugin(plugin, PreZipExtension::class.java)) {
+                val extensionError = "Extension ${extension.name} in plugin ${plugin.pluginId} encountered an error."
                 pluginsLog.info("Executing PreZipExtension ${extension.name}")
-                @Suppress("DuplicatedCode")
+                val pluginConfig = getPluginConfig(plugin.pluginId)
+                val extensionConfigs = getExtensionSpecificConfigs(plugin, packConfig, extension.extensionId)
                 try {
                     extension.run(
                         versionMeta,
@@ -347,22 +355,15 @@ actual class ApiPlugins(
                         apiProperties,
                         packConfig,
                         destination,
-                        getPluginConfig(plugin.pluginId),
-                        getExtensionSpecificConfigs(
-                            plugin, packConfig,
-                            extension.extensionId
-                        )
+                        pluginConfig,
+                        extensionConfigs
                     )
                 } catch (ex: ExtensionException) {
-                    pluginsLog.error(
-                        "Extension ${extension.name} in plugin ${plugin.pluginId} encountered an error.",
-                        ex
-                    )
+                    pluginsLog.error(extensionError, ex)
                 } catch (ex: Error) {
-                    pluginsLog.error(
-                        "Extension ${extension.name} in plugin ${plugin.pluginId} encountered an error.",
-                        ex
-                    )
+                    pluginsLog.error(extensionError, ex)
+                } catch (ex: Exception) {
+                    pluginsLog.error(extensionError, ex)
                 }
             }
         }
@@ -382,8 +383,10 @@ actual class ApiPlugins(
             log.info("Executing PostGenExtension extensions.")
             pluginsLog.info("Executing PostGenExtension extensions.")
             for (extension in getAllExtensionsOfPlugin(plugin, PostGenExtension::class.java)) {
+                val extensionError = "Extension ${extension.name} in plugin ${plugin.pluginId} encountered an error."
                 pluginsLog.info("Executing PostGenExtension ${extension.name}")
-                @Suppress("DuplicatedCode")
+                val pluginConfig = getPluginConfig(plugin.pluginId)
+                val extensionConfigs = getExtensionSpecificConfigs(plugin, packConfig, extension.extensionId)
                 try {
                     extension.run(
                         versionMeta,
@@ -391,22 +394,15 @@ actual class ApiPlugins(
                         apiProperties,
                         packConfig,
                         destination,
-                        getPluginConfig(plugin.pluginId),
-                        getExtensionSpecificConfigs(
-                            plugin, packConfig,
-                            extension.extensionId
-                        )
+                        pluginConfig,
+                        extensionConfigs
                     )
                 } catch (ex: ExtensionException) {
-                    pluginsLog.error(
-                        "Extension ${extension.name} in plugin ${plugin.pluginId} encountered an error.",
-                        ex
-                    )
+                    pluginsLog.error(extensionError, ex)
                 } catch (ex: Error) {
-                    pluginsLog.error(
-                        "Extension ${extension.name} in plugin ${plugin.pluginId} encountered an error.",
-                        ex
-                    )
+                    pluginsLog.error(extensionError, ex)
+                } catch (ex: Exception) {
+                    pluginsLog.error(extensionError, ex)
                 }
             }
         }
@@ -425,30 +421,19 @@ actual class ApiPlugins(
             log.info("Executing TabExtensions extensions.")
             pluginsLog.info("Executing TabExtensions extensions.")
             for (extension in getAllExtensionsOfPlugin(plugin, TabExtension::class.java)) {
+                val extensionError = "Extension ${extension.name} in plugin ${plugin.pluginId} encountered an error."
                 pluginsLog.info("Executing TabExtension ${extension.name}")
+                val pluginConfig = getPluginConfig(plugin.pluginId)
+                val pluginConfigFile = getPluginConfigFile(plugin.pluginId)
+                val tab = extension.getTab(versionMeta, apiProperties, utilities, pluginConfig, pluginConfigFile)
                 try {
-                    tabbedPane.addTab(
-                        extension.title,
-                        extension.icon,
-                        extension.getTab(
-                            versionMeta,
-                            apiProperties,
-                            utilities,
-                            getPluginConfig(plugin.pluginId),
-                            getPluginConfigFile(plugin.pluginId)
-                        ),
-                        extension.tooltip
-                    )
+                    tabbedPane.addTab(extension.title, extension.icon, tab, extension.tooltip)
                 } catch (ex: ExtensionException) {
-                    pluginsLog.error(
-                        "Extension ${extension.name} in plugin ${plugin.pluginId} encountered an error.",
-                        ex
-                    )
+                    pluginsLog.error(extensionError, ex)
                 } catch (ex: Error) {
-                    pluginsLog.error(
-                        "Extension ${extension.name} in plugin ${plugin.pluginId} encountered an error.",
-                        ex
-                    )
+                    pluginsLog.error(extensionError, ex)
+                } catch (ex: Exception) {
+                    pluginsLog.error(extensionError, ex)
                 }
             }
         }
@@ -470,32 +455,29 @@ actual class ApiPlugins(
     fun getConfigPanels(serverPackConfigTab: ServerPackConfigTab): List<ExtensionConfigPanel> {
         val panels: MutableList<ExtensionConfigPanel> = ArrayList<ExtensionConfigPanel>(10)
         for (plugin in getPlugins()) {
-            log.info("Executing ConfigPanelExtension extensions.")
-            pluginsLog.info("Executing ConfigPanelExtension extensions.")
+            log.info("Getting ConfigPanelExtension from ${plugin.pluginId}.")
+            pluginsLog.info("Getting ConfigPanelExtension from ${plugin.pluginId}.")
             for (extension in getAllExtensionsOfPlugin(plugin, ConfigPanelExtension::class.java)) {
+                val extensionError = "Extension ${extension.name} in plugin ${plugin.pluginId} encountered an error."
                 pluginsLog.info("Executing ConfigPanelExtension ${extension.name}")
                 try {
-                    panels.add(
-                        extension.getPanel(
-                            versionMeta,
-                            apiProperties,
-                            utilities,
-                            serverPackConfigTab,
-                            getPluginConfig(plugin.pluginId),
-                            extension.name,
-                            plugin.pluginId
-                        )
+                    val pluginConfig = getPluginConfig(plugin.pluginId)
+                    val panel = extension.getPanel(
+                        versionMeta,
+                        apiProperties,
+                        utilities,
+                        serverPackConfigTab,
+                        pluginConfig,
+                        extension.name,
+                        plugin.pluginId
                     )
+                    panels.add(panel)
                 } catch (ex: ExtensionException) {
-                    pluginsLog.error(
-                        "Extension ${extension.name} in plugin ${plugin.pluginId} encountered an error.",
-                        ex
-                    )
+                    pluginsLog.error(extensionError, ex)
                 } catch (ex: Error) {
-                    pluginsLog.error(
-                        "Extension ${extension.name} in plugin ${plugin.pluginId} encountered an error.",
-                        ex
-                    )
+                    pluginsLog.error(extensionError, ex)
+                } catch (ex: Exception) {
+                    pluginsLog.error(extensionError, ex)
                 }
             }
         }
@@ -508,9 +490,7 @@ actual class ApiPlugins(
      *
      * @param packConfig The configuration model containing the server pack and plugin
      * configurations to check.
-     * @param encounteredErrors  A list of encountered errors to add to in case anything goes wrong.
-     * This list is displayed to the user after am unsuccessful server pack
-     * generation to help them figure out what went wrong.
+     * @param configCheck Collection of encountered errors, if any, for convenient result-checks.
      * @return `true` if any custom check detected an error with the configuration.
      * **Only** return `false` when not a **single** check
      * errored.
@@ -518,42 +498,39 @@ actual class ApiPlugins(
      */
     actual fun runConfigCheckExtensions(
         packConfig: PackConfig,
-        encounteredErrors: MutableList<String>
-    ): Boolean {
-        var hasError = false
+        configCheck: ConfigCheck
+    ): ConfigCheck {
         for (plugin in getPlugins()) {
             log.info("Executing ConfigCheckExtensions extensions.")
             pluginsLog.info("Executing ConfigCheckExtensions extensions.")
             for (extension in getAllExtensionsOfPlugin(plugin, ConfigCheckExtension::class.java)) {
+                val extensionError = "Extension ${extension.name} in plugin ${plugin.pluginId} encountered an error."
                 pluginsLog.info("Executing ConfigCheckExtension ${extension.name}")
                 try {
-                    if (extension
-                            .runCheck(
-                                versionMeta,
-                                apiProperties,
-                                utilities,
-                                packConfig,
-                                encounteredErrors,
-                                getPluginConfig(plugin.pluginId),
-                                getExtensionConfigs(plugin, packConfig)
-                            )
-                    ) {
-                        hasError = true
-                    }
+                    val pluginConfig = getPluginConfig(plugin.pluginId)
+                    val extensionConfigs = getExtensionConfigs(plugin, packConfig)
+                    extension.runCheck(
+                        versionMeta,
+                        apiProperties,
+                        utilities,
+                        packConfig,
+                        configCheck,
+                        pluginConfig,
+                        extensionConfigs
+                    )
                 } catch (ex: ExtensionException) {
-                    pluginsLog.error(
-                        "Extension ${extension.name} in plugin ${plugin.pluginId} encountered an error.",
-                        ex
-                    )
+                    pluginsLog.error(extensionError, ex)
+                    configCheck.pluginsErrors.add(extensionError)
                 } catch (ex: Error) {
-                    pluginsLog.error(
-                        "Extension ${extension.name} in plugin ${plugin.pluginId} encountered an error.",
-                        ex
-                    )
+                    pluginsLog.error(extensionError, ex)
+                    configCheck.pluginsErrors.add(extensionError)
+                } catch (ex: Exception) {
+                    pluginsLog.error(extensionError, ex)
+                    configCheck.pluginsErrors.add(extensionError)
                 }
             }
         }
-        return hasError
+        return configCheck
     }
 
     /**

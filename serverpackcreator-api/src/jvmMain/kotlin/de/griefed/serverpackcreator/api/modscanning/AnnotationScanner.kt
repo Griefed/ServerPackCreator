@@ -36,11 +36,20 @@ import java.util.*
  *
  * @author Griefed
  */
-actual class AnnotationScanner constructor(
+actual class AnnotationScanner(
     private val objectMapper: ObjectMapper,
     private val utilities: Utilities
 ) : JsonBasedScanner(), Scanner<TreeSet<File>, Collection<File>> {
     private val log = cachedLoggerOf(this.javaClass)
+    private val additionalDependencyRegex = "(@.*|\\[.*)".toRegex()
+    private val caches = "META-INF/fml_cache_annotation.json"
+    private val annotations = "annotations"
+    private val jar = "jar"
+    private val values = "values"
+    private val modid = "modid"
+    private val value = "value"
+    private val clientSideOnly = "clientSideOnly"
+    private val dependencies = "dependencies"
 
     /**
      * Scan the `fml-cache-annotation.json`-files in mod JAR-files of a given directory for their sideness.
@@ -54,7 +63,7 @@ actual class AnnotationScanner constructor(
      */
     override fun scan(jarFiles: Collection<File>): TreeSet<File> {
         log.info("Scanning Minecraft 1.12.x and older mods for sideness...")
-        val modDependencies = TreeSet<String>()
+        val modDependencies = ArrayList<Pair<String, Pair<String, String>>>()
         val clientMods = TreeSet<String>()
 
         /*
@@ -74,64 +83,68 @@ actual class AnnotationScanner constructor(
         return getModsDelta(jarFiles, clientMods)
     }
 
+    /**
+     * @author Griefed
+     */
     override fun checkForClientModsAndDeps(
         filesInModsDir: Collection<File>,
         clientMods: TreeSet<String>,
-        modDependencies: TreeSet<String>
+        modDependencies: ArrayList<Pair<String, Pair<String, String>>>
     ) {
         for (mod in filesInModsDir) {
-            if (mod.name.endsWith("jar")) {
-                var modId: String? = null
-                val additionalMods = TreeSet<String>()
-                try {
-                    val modJson: JsonNode = getJarJson(mod, "META-INF/fml_cache_annotation.json", objectMapper)
+            if (!mod.name.endsWith(jar)) {
+                continue
+            }
+            var modId: String? = null
+            val additionalMods = TreeSet<String>()
+            try {
+                val modJson: JsonNode = getJarJson(mod, caches, objectMapper)
 
-                    // base of json
-                    for (node in modJson) {
-                        try {
-                            // iterate though annotations
-                            for (child in node.get("annotations")) {
+                // base of json
+                for (node in modJson) {
+                    try {
+                        // iterate though annotations
+                        val cacheAnnotations = node.get(annotations)
+                        for (child in cacheAnnotations) {
 
-                                // Get the mod ID and check for clientside only, if we have not yet received a
-                                // modID
-                                if (modId == null) {
-                                    try {
-                                        modId = getModId(child)
-                                        // Get the modId
+                            // Get the mod ID and check for clientside only, if we have not yet received a
+                            // modID
+                            if (modId == null) {
+                                try {
+                                    modId = getModId(child)
+                                    // Get the modId
 
-                                        // Add mod to list of clientmods if clientSideOnly is true
-                                        checkForClientSide(child, modId, clientMods)
-                                    } catch (ignored: NullPointerException) {
-                                    } catch (ignored: JsonException) {
-                                    }
-
-                                    // We already received a modId, perform additional checks to prevent false
-                                    // positives
-                                } else {
-                                    try {
-                                        // Get the additional modID
-                                        checkAdditionalId(child, modId, clientMods, additionalMods)
-                                    } catch (ignored: NullPointerException) {
-                                    }
+                                    // Add mod to list of clientmods if clientSideOnly is true
+                                    checkForClientSide(child, modId, clientMods)
+                                } catch (ignored: NullPointerException) {
+                                } catch (ignored: JsonException) {
                                 }
 
-                                // Get dependency modIds
-                                checkDependencies(child, modDependencies, mod.name)
+                                // We already received a modId, perform additional checks to prevent false
+                                // positives
+                            } else {
+                                try {
+                                    // Get the additional modID
+                                    checkAdditionalId(child, modId, clientMods, additionalMods)
+                                } catch (ignored: NullPointerException) {
+                                }
                             }
-                        } catch (ignored: NullPointerException) {
+
+                            // Get dependency modIds
+                            checkDependencies(child, modDependencies, mod.name, modId!!)
                         }
-                    }
-                    if (!additionalMods.isEmpty()) {
-                        checkAdditionalMods(modId!!, additionalMods, modJson, clientMods)
-                    }
-                } catch (ex: Exception) {
-                    if (ex.toString().startsWith("java.lang.NullPointerException")) {
-                        log.warn("Couldn't scan $mod as it contains no fml_cache_annotation.json.")
-                    } else {
-                        log.error("Couldn't scan $mod", ex)
+                    } catch (ignored: NullPointerException) {
                     }
                 }
+                if (!additionalMods.isEmpty()) {
+                    checkAdditionalMods(modId!!, additionalMods, modJson, clientMods)
+                }
+            } catch (ex: NullPointerException) {
+                log.warn("Couldn't scan $mod as it contains no fml_cache_annotation.json.")
+            } catch (ex: Exception) {
+                log.error("Couldn't scan $mod", ex)
             }
+
         }
     }
 
@@ -145,8 +158,8 @@ actual class AnnotationScanner constructor(
      */
     @Throws(NullPointerException::class)
     private fun getModId(jsonNode: JsonNode) =
-        if (!utilities.jsonUtilities.nestedTextIsEmpty(jsonNode, "values", "modid", "value")) {
-            utilities.jsonUtilities.getNestedText(jsonNode, "values", "modid", "value")
+        if (!utilities.jsonUtilities.nestedTextIsEmpty(jsonNode, values, modid, value)) {
+            utilities.jsonUtilities.getNestedText(jsonNode, values, modid, value)
         } else {
             throw NullPointerException("No modId present.")
         }
@@ -164,7 +177,7 @@ actual class AnnotationScanner constructor(
      */
     @Throws(NullPointerException::class, JsonException::class)
     private fun checkForClientSide(jsonNode: JsonNode, modId: String, clientMods: TreeSet<String>) {
-        if (utilities.jsonUtilities.getNestedBoolean(jsonNode, "values", "clientSideOnly", "value")) {
+        if (utilities.jsonUtilities.getNestedBoolean(jsonNode, values, clientSideOnly, value)) {
             clientMods.add(modId)
             log.debug("Added clientMod: $modId")
         }
@@ -189,25 +202,14 @@ actual class AnnotationScanner constructor(
         clientMods: TreeSet<String>,
         additionalMods: TreeSet<String>
     ) {
-        if (!utilities.jsonUtilities.nestedTextIsEmpty(child, "values", "modid", "value")) {
+        if (!utilities.jsonUtilities.nestedTextIsEmpty(child, values, modid, value)) {
 
             // ModIDs are the same, so check for clientside-only
-            if (utilities.jsonUtilities.nestedTextEqualsIgnoreCase(
-                    child,
-                    modId,
-                    "values",
-                    "modid",
-                    "value"
-                )
+            if (utilities.jsonUtilities.nestedTextEqualsIgnoreCase(child, modId, values, modid, value)
             ) {
                 try {
                     // Add mod to list of clientmods if clientSideOnly is true
-                    if (utilities.jsonUtilities.getNestedBoolean(
-                            child,
-                            "values",
-                            "clientSideOnly",
-                            "value"
-                        )
+                    if (utilities.jsonUtilities.getNestedBoolean(child, values, clientSideOnly, value)
                     ) {
                         clientMods.add(modId)
                         log.debug("Added clientMod: $modId")
@@ -221,7 +223,7 @@ actual class AnnotationScanner constructor(
 
                 // Add additional modId to list, so we can check those later
                 additionalMods.add(
-                    utilities.jsonUtilities.getNestedText(child, "values", "modid", "value")
+                    utilities.jsonUtilities.getNestedText(child, values, modid, value)
                 )
             }
         }
@@ -233,24 +235,25 @@ actual class AnnotationScanner constructor(
      *
      * @param child           JSON node containing information about our dependencies.
      * @param modDependencies Set containing our dependency ids.
+     * @param modFileName     The filename of the mod being checked.
      * @author Griefed
      */
-    private fun checkDependencies(child: JsonNode, modDependencies: TreeSet<String>, modFileName: String) {
+    private fun checkDependencies(child: JsonNode, modDependencies: ArrayList<Pair<String, Pair<String, String>>>, modFileName: String, modId: String) {
         try {
-            if (!utilities.jsonUtilities.nestedTextIsEmpty(child, "values", "dependencies", "value")) {
+            if (!utilities.jsonUtilities.nestedTextIsEmpty(child, values, dependencies, value)) {
 
                 // There are multiple dependencies for this mod
                 if (utilities.jsonUtilities
-                        .nestedTextContains(child, ";", "values", "dependencies", "value")
+                        .nestedTextContains(child, ";", values, dependencies, value)
                 ) {
                     val dependencies: Array<String> = utilities.jsonUtilities
                         .getNestedTexts(
-                            child, ";", "values", "dependencies",
-                            "value"
+                            child, ";", values, dependencies,
+                            value
                         )
                     for (dependency in dependencies) {
                         if (dependency.matches(dependencyCheck)) {
-                            addDependency(getDependency(dependency), child, modDependencies, modFileName)
+                            addDependency(getDependency(dependency), child, modDependencies, modFileName, modId)
                         }
                     }
 
@@ -259,13 +262,13 @@ actual class AnnotationScanner constructor(
                     if (utilities.jsonUtilities.nestedTextMatches(
                             child,
                             dependencyCheck,
-                            "values", "dependencies", "value"
+                            values, dependencies, value
                         )
                     ) {
                         val dependencies: String = utilities.jsonUtilities
-                            .getNestedText(child, "values", "dependencies", "value")
+                            .getNestedText(child, values, dependencies, value)
                         val dependency = getDependency(dependencies)
-                        addDependency(dependency, child, modDependencies, modFileName)
+                        addDependency(dependency, child, modDependencies, modFileName, modId)
                     }
                 }
             }
@@ -298,7 +301,7 @@ actual class AnnotationScanner constructor(
             for (node in modJson) {
                 try {
                     // iterate though annotations again but this time for the modID of the second mod
-                    for (child in node.get("annotations")) {
+                    for (child in node.get(annotations)) {
                         var additionalModDependsOnFirst = false
 
                         // check if second mod depends on first
@@ -311,17 +314,17 @@ actual class AnnotationScanner constructor(
                                     .nestedTextEqualsIgnoreCase(
                                         child,
                                         additionalModId,
-                                        "values", "modid", "value"
+                                        values, modid, value
                                     )
                                 &&
                                 !utilities.jsonUtilities
                                     .nestedTextIsEmpty(
                                         child,
-                                        "values", "dependencies", "value"
+                                        values, dependencies, value
                                     )
                             ) {
                                 if (utilities.jsonUtilities
-                                        .nestedTextContains(child, ";", "values", "dependencies", "value")
+                                        .nestedTextContains(child, ";", values, dependencies, value)
                                 ) {
                                     if (additionalDependenciesDepend(child, modId)) {
                                         additionalModDependsOnFirst = true
@@ -346,11 +349,9 @@ actual class AnnotationScanner constructor(
                             * list of clientside-only mods
                             */
                             if (!isAdditionalModClientSide(node, additionalModId)) {
-                                if (clientMods.removeIf { n: String? -> n == modId }) {
+                                if (clientMods.removeIf { n: String -> n == modId }) {
                                     log.info(
-                                        "Removing "
-                                                + modId
-                                                + " from list of clientside-only mods. It contains multiple mods at once, and one of them is NOT clientside-only."
+                                        "Removing $modId from list of clientside-only mods. It contains multiple mods at once, and one of them is NOT clientside-only."
                                     )
                                 }
                             }
@@ -373,26 +374,20 @@ actual class AnnotationScanner constructor(
      */
     @Throws(IOException::class)
     private fun addToDelta(file: File, clientMods: TreeSet<String>): Boolean {
-        val modJson: JsonNode = getJarJson(file, "META-INF/fml_cache_annotation.json", objectMapper)
+        val modJson: JsonNode = getJarJson(file, caches, objectMapper)
         var addToDelta = false
         for (node in modJson) {
             try {
                 // iterate though annotations
-                for (child in node.get("annotations")) {
+                val cacheAnnotations = node.get(annotations)
+                for (child in cacheAnnotations) {
 
                     // Get the modId
                     try {
                         val modIdToCheck = getModId(child)
 
                         // Add mod to list of clientmods if clientSideOnly is true
-                        if (utilities.jsonUtilities
-                                .getNestedBoolean(
-                                    child,
-                                    "values",
-                                    "clientSideOnly",
-                                    "value"
-                                )
-                        ) {
+                        if (utilities.jsonUtilities.getNestedBoolean(child, values, clientSideOnly, value)) {
                             if (clientMods.contains(modIdToCheck)) {
                                 addToDelta = true
                             }
@@ -414,11 +409,11 @@ actual class AnnotationScanner constructor(
      * @return The pure id of the dependency.
      * @author Griefed
      */
-    private fun getDependency(dependency: String) =
-        dependency
-            .substring(dependency.lastIndexOf(":") + 1)
-            .replace(dependencyReplace, "")
-
+    private fun getDependency(dependency: String): String {
+        val dependencyIndex = dependency.lastIndexOf(":") + 1
+        val dependencySubstring = dependency.substring(dependencyIndex)
+        return dependencySubstring.replace(dependencyReplace, "")
+    }
 
     /**
      * Add a dependency to our set of dependencies.
@@ -426,29 +421,25 @@ actual class AnnotationScanner constructor(
      * @param dependency      The dependency to add
      * @param child           The JSON node containing information about dependencies and ids.
      * @param modDependencies The set of dependencies to add the new dependency to.
+     * @param modFileName     The filename of the mod being checked.
      * @author Griefed
      */
     private fun addDependency(
         dependency: String,
         child: JsonNode,
-        modDependencies: TreeSet<String>,
-        modFileName: String
+        modDependencies: ArrayList<Pair<String, Pair<String, String>>>,
+        modFileName: String,
+        modId: String
     ) {
+        val pair: Pair<String, Pair<String, String>>
         if (!dependency.equals("forge", ignoreCase = true) && dependency != "*") {
-            if (modDependencies.add(dependency)) {
+            pair = Pair(dependency, Pair(modFileName, modId))
+            if (modDependencies.add(pair)) {
                 try {
-                    log.debug(
-                        "Added dependency $dependency for ${
-                            utilities.jsonUtilities.getNestedText(
-                                child,
-                                "values",
-                                "modid",
-                                "value"
-                            )
-                        } ($modFileName)."
-                    )
+                    val addedFor = utilities.jsonUtilities.getNestedText(child, values, modid, value)
+                    log.debug("Added dependency ${pair.first} for $addedFor (${pair.second.first}).")
                 } catch (ex: NullPointerException) {
-                    log.debug("Added dependency $dependency ($modFileName).")
+                    log.debug("Added dependency ${pair.first} (${pair.second.first}).")
                 }
             }
         }
@@ -466,15 +457,16 @@ actual class AnnotationScanner constructor(
     private fun additionalDependenciesDepend(child: JsonNode, modId: String): Boolean {
         var depends = false
         val dependencies: Array<String> = utilities.jsonUtilities
-            .getNestedTexts(child, ";", "values", "dependencies", "value")
+            .getNestedTexts(child, ";", values, dependencies, value)
         for (dependency in dependencies) {
-            if (dependency.matches(dependencyCheck)) {
-                val checked = dependency
-                    .substring(dependency.lastIndexOf(":") + 1)
-                    .replace("(@.*|\\[.*)".toRegex(), "")
-                if (checked == modId) {
-                    depends = true
-                }
+            if (!dependency.matches(dependencyCheck)) {
+                continue
+            }
+            val dependencyIndex = dependency.lastIndexOf(":") + 1
+            val dependencySubstring = dependency.substring(dependencyIndex)
+            val checked = dependencySubstring.replace(additionalDependencyRegex, "")
+            if (checked == modId) {
+                depends = true
             }
         }
         return depends
@@ -491,19 +483,11 @@ actual class AnnotationScanner constructor(
      */
     private fun additionalDependencyDepends(child: JsonNode, modId: String): Boolean {
         var depends = false
-        if (utilities.jsonUtilities
-                .nestedTextMatches(
-                    child, dependencyCheck, "values", "dependencies",
-                    "value"
-                )
-        ) {
-            val dependencies: String = utilities.jsonUtilities
-                .getNestedText(child, "values", "dependencies", "value")
-            val dependency = dependencies
-                .substring(
-                    dependencies.lastIndexOf(":") + 1
-                )
-                .replace("(@.*|\\[.*)".toRegex(), "")
+        if (utilities.jsonUtilities.nestedTextMatches(child, dependencyCheck, values, dependencies, value)) {
+            val dependencies: String = utilities.jsonUtilities.getNestedText(child, values, dependencies, value)
+            val dependencyIndex = dependencies.lastIndexOf(":") + 1
+            val dependencySubstring = dependencies.substring(dependencyIndex)
+            val dependency = dependencySubstring.replace(additionalDependencyRegex, "")
             if (dependency == modId) {
                 depends = true
             }
@@ -523,15 +507,16 @@ actual class AnnotationScanner constructor(
         var clientSide = false
         try {
             // iterate though annotations
-            for (children in node.get("annotations")) {
+            for (children in node.get(annotations)) {
                 try {
-                    if (utilities.jsonUtilities
-                            .nestedTextEqualsIgnoreCase(
-                                children, additionalModId, "values", "modid",
-                                "value"
-                            )
-                        && utilities.jsonUtilities
-                            .getNestedBoolean(children, "values", "clientSideOnly", "value")
+                    if (utilities.jsonUtilities.nestedTextEqualsIgnoreCase(
+                            children,
+                            additionalModId,
+                            values,
+                            modid,
+                            value
+                        )
+                        && utilities.jsonUtilities.getNestedBoolean(children, values, clientSideOnly, value)
                     ) {
                         clientSide = true
                     }
@@ -544,6 +529,9 @@ actual class AnnotationScanner constructor(
         return clientSide
     }
 
+    /**
+     * @author Griefed
+     */
     override fun getModsDelta(filesInModsDir: Collection<File>, clientMods: TreeSet<String>): TreeSet<File> {
         val modsDelta = TreeSet<File>()
         for (mod in filesInModsDir) {

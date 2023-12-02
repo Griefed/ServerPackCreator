@@ -20,7 +20,7 @@
 package de.griefed.serverpackcreator.api.plugins
 
 /**
- * Thrown when any of the available extensions throw an error.
+ * Thrown when any of the available extensions throw an error. *
  *
  * @author Griefed
  */

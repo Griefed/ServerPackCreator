@@ -164,7 +164,7 @@ expect class FileUtilities {
  *
  * @author Griefed
  */
-expect fun File.deleteQuietly(): Any
+expect fun File.deleteQuietly(): Boolean
 
 /**
  * Acquire the size of this file or directory in bytes. If this file-object denotes a directory, then the size of all
@@ -176,7 +176,7 @@ expect fun File.deleteQuietly(): Any
 expect fun File.size(): Double
 
 /**
- * Walk this directory and return all file-objects which match any of the regular expressions in the passed list.
+ * Walk this directory and return all file-objects which match any of the regular expressions in the provided list.
  *
  * @param filters List of regular expressions to use for filtering.
  * @param direction The direction in which to walk the directory. Default is [FileWalkDirection.TOP_DOWN].

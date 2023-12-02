@@ -3,7 +3,7 @@ import java.util.*
 
 plugins {
     id("serverpackcreator.kotlin-conventions")
-    id("de.comahe.i18n4k") version "0.5.0"
+    id("de.comahe.i18n4k") version "0.7.0"
     kotlin("kapt")
 }
 
@@ -30,8 +30,8 @@ val pluginDescription = "An example plugin for ServerPackCreator, written in Kot
 val pluginAuthor = "Griefed"
 
 dependencies {
-    annotationProcessor("org.pf4j:pf4j:3.9.0")
-    kapt("org.pf4j:pf4j:3.9.0")
+    annotationProcessor("org.pf4j:pf4j:3.10.0")
+    kapt("org.pf4j:pf4j:3.10.0")
     /*
      * CAUTION: When copying the code of the example plugin, make sure to change the dependency on
      * the API to implementation("de.griefed:serverpackcreator:serverpackcreator-api:$VERSION")
@@ -40,8 +40,8 @@ dependencies {
 
 
     // Testing
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.3")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.3")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.0")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.0")
 }
 
 tasks.processResources {
@@ -98,7 +98,7 @@ tasks.jar {
                 "Plugin-Id" to pluginId,
                 "Plugin-Name" to pluginName,
                 "Plugin-Provider" to pluginAuthor,
-                "Plugin-Version" to "0.0.1",
+                "Plugin-Version" to project.version,
                 "Plugin-Description" to pluginDescription
             )
         )

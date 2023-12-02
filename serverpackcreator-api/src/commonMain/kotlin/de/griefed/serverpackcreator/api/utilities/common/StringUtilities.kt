@@ -87,9 +87,11 @@ class StringUtilities {
     fun pathSecureText(text: String): String {
         var secured = text
         while (secured.endsWith(".") || secured.endsWith(" ")) {
-            secured = secured.replace(secured.substring(secured.length - 1), "")
+            val toReplace = secured.substring(secured.length - 1)
+            secured = secured.replace(toReplace, "")
         }
-        return secured.replace("/", "")
+        return secured
+            .replace("/", "")
             .replace("<", "")
             .replace(">", "")
             .replace(":", "")
@@ -153,9 +155,11 @@ class StringUtilities {
     fun pathSecureTextAlternative(text: String): String {
         var secured = text
         while (secured.endsWith(".") || secured.endsWith(" ")) {
-            secured = secured.replace(secured.substring(secured.length - 1), "")
+            val toReplace = secured.substring(secured.length - 1)
+            secured = secured.replace(toReplace, "")
         }
-        return secured.replace("<", "")
+        return secured
+            .replace("<", "")
             .replace(">", "")
             .replace(":", "")
             .replace("\"", "")
@@ -228,6 +232,51 @@ class StringUtilities {
                 && !text.contains("`")
                 && !text.contains("´")
                 && !text.contains("="))
+
+    /**
+     * Check the passed string whether it contains characters invalid in a path-declaration:
+     *  * **&#60;**
+     *  * **&#62;**
+     *  * **&#58;**
+     *  * **&#34;**
+     *  * **&#124;**
+     *  * **&#63;**
+     *  * **&#42;**
+     *  * **&#35;**
+     *  * **&#37;**
+     *  * **&#38;**
+     *  * **&#123;**
+     *  * **&#125;**
+     *  * **&#36;**
+     *  * **&#33;**
+     *  * **&#64;**
+     *  * **&#180;**
+     *  * **&#96;**
+     *  * **&#61;**
+     *
+     * @param text The text you want to check.
+     * @return `true` if none of these characters were found.
+     * @author Griefed
+     */
+    fun checkForInvalidPathCharacters(text: String) =
+        (!text.contains("<")
+                || !text.contains(">")
+                || !text.contains(":")
+                || !text.contains("\"")
+                || !text.contains("|")
+                || !text.contains("?")
+                || !text.contains("*")
+                || !text.contains("#")
+                || !text.contains("%")
+                || !text.contains("&")
+                || !text.contains("{")
+                || !text.contains("}")
+                || !text.contains("$")
+                || !text.contains("!")
+                || !text.contains("@")
+                || !text.contains("`")
+                || !text.contains("´")
+                || !text.contains("="))
 }
 
 /**
@@ -268,6 +317,27 @@ fun String.escapePath(): String {
         }
     }
     return escapedPath
+}
+
+/**
+ * Replace all matches for the given [regex] with [replaceWith] and return the resulting string.
+ *
+ * @author Griefed
+ */
+fun String.regexReplace(regex: Regex, replaceWith: String): String {
+    var i = 0
+    var replaced = this
+    while (i < length) {
+        for (n in length downTo i) {
+            if (substring(i, n).matches(regex)) {
+                replaced = replaceRange(i, n, replaceWith)
+                i = n
+                break
+            }
+        }
+        i++
+    }
+    return replaced
 }
 
 /**

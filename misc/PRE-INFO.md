@@ -6,6 +6,10 @@
 Do not release or publish a server pack generated using a pre-release of ServerPackCreator to your users.
 If you do, and it turns out that your server pack doesn't work because of a bug in ServerPackCreator, that's on you for using a pre-release.
 
+When using pre-release installers, make sure to uninstall the previous pre-release first. Otherwise, the installers
+own version checks may trigger an error out of my control. After uninstalling, install the newly downloaded one and
+you're good to go.
+
 #### Alphas
 
 Alphas are feature-incomplete and very likely to have bugs.

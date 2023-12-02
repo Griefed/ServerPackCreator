@@ -200,11 +200,7 @@ class ApiPropertiesTest internal constructor() {
             File(apiProperties.serverFilesDirectory, "server-icon.png"),
             apiProperties.defaultServerIcon
         )
-        /*Assertions.assertNotNull(apiProperties.serverPackCreatorDatabase)
-        Assertions.assertEquals(
-            File(apiProperties.homeDirectory, "serverpackcreator.db"),
-            apiProperties.serverPackCreatorDatabase
-        )*/
+        Assertions.assertNotNull(apiProperties.serverPackCreatorDatabase)
         Assertions.assertNotNull(apiProperties.pluginsDirectory)
         Assertions.assertEquals(
             File(apiProperties.homeDirectory, "plugins"),
@@ -217,9 +213,8 @@ class ApiPropertiesTest internal constructor() {
         )
         Assertions.assertNotNull(apiProperties.serverPacksDirectory)
         Assertions.assertNotNull(apiProperties.directoriesToExclude)
-        Assertions.assertFalse(apiProperties.isSavingOfLastLoadedConfEnabled)
         Assertions.assertFalse(apiProperties.isCheckingForPreReleasesEnabled)
-        Assertions.assertEquals(90, apiProperties.queueMaxDiskUsage)
+        Assertions.assertEquals(90, apiProperties.artemisQueueMaxDiskUsage)
         Assertions.assertEquals("dev", apiProperties.apiVersion)
     }
 }

@@ -149,7 +149,8 @@ actual class ForgeMeta actual constructor(
         if (!isForgeVersionValid(forgeVersion)) {
             Optional.empty()
         } else if (minecraftVersion(forgeVersion).isPresent) {
-            getForgeInstance(minecraftVersion(forgeVersion).get(), forgeVersion)
+            val mcVersion = minecraftVersion(forgeVersion).get()
+            getForgeInstance(mcVersion, forgeVersion)
         } else {
             Optional.empty()
         }
@@ -164,10 +165,12 @@ actual class ForgeMeta actual constructor(
      */
     fun getForgeInstances(minecraftVersion: String): Optional<List<ForgeInstance>> {
         val list: MutableList<ForgeInstance> = ArrayList(100)
-        return if (Optional.ofNullable(forgeLoader!!.versionMeta[minecraftVersion]).isPresent) {
-            for (version in forgeLoader!!.versionMeta[minecraftVersion]!!) {
-                if (forgeLoader!!.instanceMeta["$minecraftVersion-$version"] != null) {
-                    list.add(forgeLoader!!.instanceMeta["$minecraftVersion-$version"] as ForgeInstance)
+        val instance = forgeLoader!!.versionMeta[minecraftVersion]
+        return if (Optional.ofNullable(instance).isPresent) {
+            for (version in instance!!) {
+                val specificInstance = forgeLoader!!.instanceMeta["$minecraftVersion-$version"]
+                if (specificInstance != null) {
+                    list.add(specificInstance)
                 }
             }
             Optional.of(list)
@@ -187,10 +190,9 @@ actual class ForgeMeta actual constructor(
         if (!isMinecraftVersionSupported(minecraftVersion)) {
             Optional.empty()
         } else if (supportedForgeVersionsAscending(minecraftVersion).isPresent) {
-            Optional.of(
-                supportedForgeVersionsAscending(minecraftVersion)
-                    .get()[supportedForgeVersionsAscending(minecraftVersion).get().size - 1]
-            )
+            val latestMCVersion = supportedForgeVersionsAscending(minecraftVersion).get().size - 1
+            val supported = supportedForgeVersionsAscending(minecraftVersion).get()
+            Optional.of(supported[latestMCVersion])
         } else {
             Optional.empty()
         }
@@ -206,7 +208,8 @@ actual class ForgeMeta actual constructor(
         if (!isMinecraftVersionSupported(minecraftVersion)) {
             Optional.empty()
         } else if (supportedForgeVersionsAscending(minecraftVersion).isPresent) {
-            Optional.ofNullable(supportedForgeVersionsAscending(minecraftVersion).get()[0])
+            val supported = supportedForgeVersionsAscending(minecraftVersion).get()
+            Optional.ofNullable(supported[0])
         } else {
             Optional.empty()
         }
@@ -264,7 +267,8 @@ actual class ForgeMeta actual constructor(
         if (!isMinecraftVersionSupported(minecraftVersion)) {
             Optional.empty()
         } else {
-            Optional.ofNullable(supportedForgeVersionsAscending(minecraftVersion).get().reversed())
+            val supported = supportedForgeVersionsAscending(minecraftVersion).get()
+            Optional.ofNullable(supported.reversed())
         }
 
 
@@ -280,9 +284,12 @@ actual class ForgeMeta actual constructor(
     actual fun supportedForgeVersionsAscendingArray(minecraftVersion: String) =
         if (!isMinecraftVersionSupported(minecraftVersion)) {
             Optional.empty()
-        } else Optional.of(
-            supportedForgeVersionsAscending(minecraftVersion).get().toTypedArray()
-        )
+        } else {
+            val supported = supportedForgeVersionsAscending(minecraftVersion).get()
+            Optional.of(
+                supported.toTypedArray()
+            )
+        }
 
     /**
      * Get an array of available Forge version for a given Minecraft version, in descending order,
@@ -296,9 +303,10 @@ actual class ForgeMeta actual constructor(
     actual fun supportedForgeVersionsDescendingArray(minecraftVersion: String) =
         if (!isMinecraftVersionSupported(minecraftVersion)) {
             Optional.empty()
-        } else Optional.of(
-            supportedForgeVersionsDescending(minecraftVersion).get().toTypedArray()
-        )
+        } else {
+            val supported = supportedForgeVersionsDescending(minecraftVersion).get()
+            Optional.of(supported.toTypedArray())
+        }
 
     /**
      * Get the Minecraft version for a given Forge version, wrapped in an [Optional].
@@ -351,7 +359,8 @@ actual class ForgeMeta actual constructor(
      */
     actual fun installerUrl(forgeVersion: String) =
         if (isForgeVersionValid(forgeVersion) && getForgeInstance(forgeVersion).isPresent) {
-            Optional.of(getForgeInstance(forgeVersion).get().installerUrl)
+            val instance = getForgeInstance(forgeVersion).get()
+            Optional.of(instance.installerUrl)
         } else {
             Optional.empty()
         }
@@ -366,11 +375,9 @@ actual class ForgeMeta actual constructor(
         if (isForgeInstanceAvailable(minecraftVersion, forgeVersion)) {
             val destination = File(installerDirectory, "$forgeVersion-$minecraftVersion.jar")
             if (!destination.isFile) {
-                if (utilities.webUtilities.downloadFile(
-                        destination,
-                        installerUrl(forgeVersion).get()
-                    )
-                ) {
+                val url = installerUrl(forgeVersion).get()
+                val downloaded = utilities.webUtilities.downloadFile(destination, url)
+                if (downloaded) {
                     Optional.of(destination)
                 } else {
                     Optional.empty()

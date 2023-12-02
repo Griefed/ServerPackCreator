@@ -317,7 +317,7 @@ internal class SquareBoard(
     }
 
     /**
-     * Clears the board, i.e. removes all the colored squares. As side-effects, the number of removed
+     * Clears the board, i.e. removes all the colored squares. As side effects, the number of removed
      * lines will be reset to zero, and the component will be repainted immediately.
      */
     fun clear() {
@@ -965,7 +965,7 @@ internal class Game @JvmOverloads constructor(width: Int = 10, height: Int = 20)
 
     /**
      * Handles a game start event. Both the main and preview square boards will be reset, and all
-     * other game parameters will be reset. Finally the game thread will be launched.
+     * other game parameters will be reset. Finally, the game thread will be launched.
      */
     private fun handleStart() {
 
@@ -1256,7 +1256,7 @@ internal class Game @JvmOverloads constructor(width: Int = 10, height: Int = 20)
 
         /**
          * Adjusts the game speed according to the current level. The sleeping time is calculated with a
-         * function making larger steps initially an smaller as the level increases. A level above ten
+         * function making larger steps initially a smaller as the level increases. A level above ten
          * (10) doesn't have any further effect.
          */
         fun adjustSpeed() {
@@ -1801,7 +1801,7 @@ internal class Figure(type: Int) {
             return
         }
 
-        // Find lowest position
+        // Find the lowest position
         while (canMoveTo(xPos, y + 1, orientation)) {
             y++
         }

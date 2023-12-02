@@ -20,6 +20,7 @@
 package de.griefed.serverpackcreator.api.plugins.configurationhandler
 
 import de.griefed.serverpackcreator.api.ApiProperties
+import de.griefed.serverpackcreator.api.ConfigCheck
 import de.griefed.serverpackcreator.api.PackConfig
 import de.griefed.serverpackcreator.api.plugins.ExtensionException
 import de.griefed.serverpackcreator.api.plugins.ExtensionInformation
@@ -36,6 +37,7 @@ import de.griefed.serverpackcreator.api.versionmeta.VersionMeta
  */
 @Suppress("unused")
 interface ConfigCheckExtension : ExtensionInformation {
+
     /**
      * @param versionMeta           Instance of [VersionMeta] so you can work with available
      * Minecraft, Forge, Fabric, LegacyFabric and Quilt versions.
@@ -45,8 +47,7 @@ interface ConfigCheckExtension : ExtensionInformation {
      * @param utilities             Instance of [Utilities] commonly used across
      * ServerPackCreator.
      * @param packConfig    The configuration to check.
-     * @param encounteredErrors     A list of encountered errors during any and all checks. The list
-     * is displayed to the user if it contains any entries.
+     * @param configCheck Contains all encountered errors during the check of the passed configuration.
      * @param pluginConfig           Configuration for this plugin, conveniently provided by
      * ServerPackCreator.
      * @param packSpecificConfigs   Modpack and server pack specific configurations for this plugin,
@@ -61,7 +62,7 @@ interface ConfigCheckExtension : ExtensionInformation {
         apiProperties: ApiProperties,
         utilities: Utilities,
         packConfig: PackConfig,
-        encounteredErrors: MutableList<String>,
+        configCheck: ConfigCheck = ConfigCheck(),
         pluginConfig: Optional<CommentedConfig>,
         packSpecificConfigs: ArrayList<CommentedConfig>
     ): Boolean

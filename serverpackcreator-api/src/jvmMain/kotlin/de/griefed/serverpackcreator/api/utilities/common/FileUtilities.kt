@@ -30,6 +30,7 @@ import java.awt.GraphicsEnvironment
 import java.io.File
 import java.io.IOException
 import java.nio.file.Files
+import java.nio.file.InvalidPathException
 import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.io.path.isSymbolicLink
@@ -44,6 +45,7 @@ import kotlin.streams.asStream
 actual class FileUtilities {
     private val log = cachedLoggerOf(this.javaClass)
     private val windowsDrivers = "^[A-Za-z]:.*".toRegex()
+    private val lnk = "lnk"
 
     /**
      * Move a file from source to destination, and replace the destination file if it exists.
@@ -105,18 +107,30 @@ actual class FileUtilities {
      * @author Griefed
      */
     actual fun checkFileType(file: File): FileType {
-        if (file.name.endsWith("lnk")) {
-            return FileType.LINK
+        @Suppress("RegExpRedundantEscape")
+        return when {
+            file.name.endsWith(lnk) -> {
+                FileType.LINK
+            }
+
+            file.name.matches("::\\{[0-9a-zA-Z-]+\\}".toRegex()) -> {
+                FileType.FILE
+            }
+
+            file.isDirectory -> {
+                FileType.DIRECTORY
+            }
+
+            file.toPath().isSymbolicLink() -> {
+                FileType.SYMLINK
+            }
+
+            file.isFile -> {
+                FileType.FILE
+            }
+
+            else -> FileType.INVALID
         }
-        if (file.isDirectory) {
-            return FileType.DIRECTORY
-        }
-        if (file.toPath().isSymbolicLink()) {
-            return FileType.SYMLINK
-        }
-        return if (file.isFile) {
-            FileType.FILE
-        } else FileType.INVALID
     }
 
     /**
@@ -136,9 +150,16 @@ actual class FileUtilities {
      * @author Griefed
      */
     actual fun isLink(file: File) =
-        if (file.name.endsWith("lnk")) {
+        if (file.name.endsWith(lnk)) {
             true
-        } else !file.toString().matches(windowsDrivers) && file.toPath().isSymbolicLink()
+        } else {
+            try {
+                !file.toString().matches(windowsDrivers)
+                        && file.toPath().isSymbolicLink()
+            } catch (ex: InvalidPathException) {
+                false
+            }
+        }
 
     /**
      * Resolve a given link/symlink to its source.
@@ -164,23 +185,34 @@ actual class FileUtilities {
      * @author Griefed
      */
     @Throws(IOException::class, InvalidFileTypeException::class)
-    actual fun resolveLink(link: File) =
+    actual fun resolveLink(link: File): String =
         when (val type = checkFileType(link)) {
             FileType.LINK, FileType.SYMLINK -> {
                 try {
-                    resolveLink(link, type)
+                    resolveLink(link, type).toString()
                 } catch (ex: InvalidFileTypeException) {
-                    log.error("Somehow an invalid FileType was specified. Please report this on GitHub!", ex)
+                    log.error(
+                        "Somehow an invalid FileType was specified: $link, type $type. Please report this on GitHub!",
+                        ex
+                    )
+                    link.absolutePath
                 } catch (ex: InvalidLinkException) {
-                    log.error("Somehow an invalid FileType was specified. Please report this on GitHub!", ex)
+                    log.error(
+                        "Somehow an invalid FileType was specified: $link, type $type. Please report this on GitHub!",
+                        ex
+                    )
+                    link.absolutePath
                 } catch (ex: ShellLinkException) {
-                    log.error("Somehow an invalid FileType was specified. Please report this on GitHub!", ex)
+                    log.error(
+                        "Somehow an invalid FileType was specified: $link, type $type. Please report this on GitHub!",
+                        ex
+                    )
+                    link.absolutePath
                 }
-                link.toString()
             }
 
             FileType.FILE, FileType.DIRECTORY -> link.toString()
-            FileType.INVALID -> throw InvalidFileTypeException("FileType must be either LINK or SYMLINK")
+            FileType.INVALID -> throw InvalidFileTypeException("FileType must be either LINK or SYMLINK, type: $type")
         }
 
     /**
@@ -206,9 +238,9 @@ actual class FileUtilities {
         file: File,
         fileType: FileType
     ) = when (fileType) {
-        FileType.SYMLINK -> file.path
-        FileType.LINK -> ShellLink(file).resolveTarget()
-        else -> throw InvalidFileTypeException("FileType must be either LINK or SYMLINK")
+        FileType.SYMLINK -> file.toPath().toRealPath().toString()
+        FileType.LINK -> ShellLink(file.absoluteFile).resolveTarget()
+        else -> throw InvalidFileTypeException("FileType must be either LINK or SYMLINK. Specified $fileType.")
     }
 
     /**
@@ -352,6 +384,17 @@ actual class FileUtilities {
             }
         }
     }
+
+    /**
+     * Delete multiple files quietly.
+     *
+     * @author Griefed
+     */
+    fun deleteMultiple(vararg files: File) {
+        for (file in files) {
+            file.deleteQuietly()
+        }
+    }
 }
 
 /**
@@ -360,18 +403,21 @@ actual class FileUtilities {
  * * No exceptions are thrown if an error occurs
  * * No information is carried outside should an exception occur, meaning you have no information about why the deletion, if it failed
  *
+ * @return `true` if, and only if, the file or directory was deleted.
  * @author Griefed
  */
-actual fun File.deleteQuietly() =
+actual fun File.deleteQuietly(): Boolean =
     if (this.isFile) {
         try {
             this.delete()
         } catch (ignored: Exception) {
+            false
         }
     } else {
         try {
             this.deleteRecursively()
         } catch (ignored: Exception) {
+            false
         }
     }
 
@@ -396,7 +442,7 @@ actual fun File.size(): Double {
 }
 
 /**
- * Walk this directory and return all file-objects which match any of the regular expressions in the passed list.
+ * Walk this directory and return all file-objects which match any of the regular expressions in the provided list.
  *
  * @param filters List of regular expressions to use for filtering.
  * @param direction The direction in which to walk the directory. Default is [FileWalkDirection.TOP_DOWN].
@@ -463,5 +509,30 @@ actual fun File.createDirectories(create: Boolean, directory: Boolean) {
         } else {
             this.createNewFile()
         }
+    }
+}
+
+/**
+ * Test whether files can be written to this file denoting a directory.
+ * If this file is not a directory, an [IllegalArgumentException] will be thrown.
+ *
+ * @author Griefed
+ */
+@Throws(IllegalArgumentException::class)
+fun File.testFileWrite() : Boolean {
+    if (!this.isDirectory) {
+        throw(IllegalArgumentException("Destination must be a directory."))
+    }
+    return try {
+        val file = File(this,"poke")
+        file.writeText("writable")
+        if (file.exists()) {
+            file.deleteQuietly()
+            true
+        } else {
+            false
+        }
+    } catch (ex: Exception) {
+        false
     }
 }

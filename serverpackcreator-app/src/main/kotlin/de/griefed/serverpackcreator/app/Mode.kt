@@ -25,7 +25,7 @@ package de.griefed.serverpackcreator.app
  *
  * @author Griefed
  */
-enum class Mode constructor(private val argument: String) {
+enum class Mode(private val argument: String) {
     /**
      * **Priority 0**
      *
@@ -108,7 +108,7 @@ enum class Mode constructor(private val argument: String) {
     LANG("-lang");
 
     /**
-     * Textual representation of this mode.
+     * Textual representation of this mode or argument.
      *
      * @return Textual representation of this mode.
      * @author Griefed

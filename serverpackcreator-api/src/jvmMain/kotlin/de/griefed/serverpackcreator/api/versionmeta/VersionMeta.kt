@@ -29,6 +29,7 @@ import de.griefed.serverpackcreator.api.versionmeta.fabric.FabricMeta
 import de.griefed.serverpackcreator.api.versionmeta.forge.ForgeMeta
 import de.griefed.serverpackcreator.api.versionmeta.legacyfabric.LegacyFabricMeta
 import de.griefed.serverpackcreator.api.versionmeta.minecraft.MinecraftMeta
+import de.griefed.serverpackcreator.api.versionmeta.neoforge.NeoForgeMeta
 import de.griefed.serverpackcreator.api.versionmeta.quilt.QuiltMeta
 import kotlinx.coroutines.*
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
@@ -36,6 +37,7 @@ import org.w3c.dom.Document
 import org.xml.sax.SAXException
 import java.io.File
 import java.io.IOException
+import java.net.URI
 import java.net.URL
 import javax.xml.parsers.ParserConfigurationException
 
@@ -61,9 +63,10 @@ import javax.xml.parsers.ParserConfigurationException
  *
  * @author Griefed
  */
-actual class VersionMeta constructor(
+actual class VersionMeta(
     private val minecraftManifest: File,
     private val forgeManifest: File,
+    private val neoForgeManifest: File,
     private val fabricManifest: File,
     private val fabricInstallerManifest: File,
     private val fabricIntermediariesManifest: File,
@@ -81,43 +84,47 @@ actual class VersionMeta constructor(
 
     @Suppress("MemberVisibilityCanBePrivate")
     actual val legacyFabricUrlGame =
-        URL("$legacyFabricUrlBase/v2/versions/game")
+        URI("$legacyFabricUrlBase/v2/versions/game").toURL()
 
     @Suppress("MemberVisibilityCanBePrivate")
     actual val legacyFabricUrlLoader =
-        URL("$legacyFabricUrlBase/v2/versions/loader")
+        URI("$legacyFabricUrlBase/v2/versions/loader").toURL()
 
     @Suppress("MemberVisibilityCanBePrivate")
     actual val legacyfabricUrlManifest =
-        URL("https://maven.legacyfabric.net/net/legacyfabric/fabric-installer/maven-metadata.xml")
+        URI("https://maven.legacyfabric.net/net/legacyfabric/fabric-installer/maven-metadata.xml").toURL()
 
     @Suppress("MemberVisibilityCanBePrivate")
     actual val minecraftUrlManifest =
-        URL("https://launchermeta.mojang.com/mc/game/version_manifest.json")
+        URI("https://launchermeta.mojang.com/mc/game/version_manifest.json").toURL()
 
     @Suppress("MemberVisibilityCanBePrivate")
     actual val forgeUrlManifest =
-        URL("https://files.minecraftforge.net/net/minecraftforge/forge/maven-metadata.json")
+        URI("https://files.minecraftforge.net/net/minecraftforge/forge/maven-metadata.json").toURL()
+
+    @Suppress("MemberVisibilityCanBePrivate")
+    actual val neoForgeUrlManifest =
+        URI("https://maven.neoforged.net/releases/net/neoforged/forge/maven-metadata.xml").toURL()
 
     @Suppress("MemberVisibilityCanBePrivate")
     actual val fabricUrlManifest =
-        URL("https://maven.fabricmc.net/net/fabricmc/fabric-loader/maven-metadata.xml")
+        URI("https://maven.fabricmc.net/net/fabricmc/fabric-loader/maven-metadata.xml").toURL()
 
     @Suppress("MemberVisibilityCanBePrivate")
     actual val fabricUrlIntermediariesManifest =
-        URL("https://meta.fabricmc.net/v2/versions/intermediary")
+        URI("https://meta.fabricmc.net/v2/versions/intermediary").toURL()
 
     @Suppress("MemberVisibilityCanBePrivate")
     actual val fabricUrlInstallerManifest =
-        URL("https://maven.fabricmc.net/net/fabricmc/fabric-installer/maven-metadata.xml")
+        URI("https://maven.fabricmc.net/net/fabricmc/fabric-installer/maven-metadata.xml").toURL()
 
     @Suppress("MemberVisibilityCanBePrivate")
     actual val quiltUrlManifest =
-        URL("https://maven.quiltmc.org/repository/release/org/quiltmc/quilt-loader/maven-metadata.xml")
+        URI("https://maven.quiltmc.org/repository/release/org/quiltmc/quilt-loader/maven-metadata.xml").toURL()
 
     @Suppress("MemberVisibilityCanBePrivate")
     actual val quiltUrlInstallerManifest =
-        URL("https://maven.quiltmc.org/repository/release/org/quiltmc/quilt-installer/maven-metadata.xml")
+        URI("https://maven.quiltmc.org/repository/release/org/quiltmc/quilt-installer/maven-metadata.xml").toURL()
 
     /**
      * The MinecraftMeta instance for working with Minecraft versions and information about them.
@@ -138,6 +145,12 @@ actual class VersionMeta constructor(
     actual val forge: ForgeMeta
 
     /**
+     * The NeoForgeMeta-instance for working with NeoForge versions and information about them.
+     */
+    @Suppress("MemberVisibilityCanBePrivate")
+    actual val neoForge: NeoForgeMeta
+
+    /**
      * The QuiltMeta-instance for working with Quilt versions and information about them.
      */
     @Suppress("MemberVisibilityCanBePrivate")
@@ -156,6 +169,11 @@ actual class VersionMeta constructor(
         checkManifests()
         forge = ForgeMeta(
             forgeManifest,
+            utilities,
+            apiProperties.installerCacheDirectory
+        )
+        neoForge = NeoForgeMeta(
+            neoForgeManifest,
             utilities,
             apiProperties.installerCacheDirectory
         )
@@ -185,6 +203,7 @@ actual class VersionMeta constructor(
             apiProperties.installerCacheDirectory
         )
         forge.initialize(minecraft)
+        neoForge.initialize(minecraft)
         quilt = QuiltMeta(
             quiltManifest,
             quiltInstallerManifest,
@@ -197,6 +216,7 @@ actual class VersionMeta constructor(
         fabric.update()
         legacyFabric.update()
         forge.update()
+        neoForge.update()
         quilt.update()
     }
 
@@ -215,6 +235,9 @@ actual class VersionMeta constructor(
             }
             launch {
                 checkManifest(forgeManifest, forgeUrlManifest, Type.FORGE)
+            }
+            launch {
+                checkManifest(neoForgeManifest, neoForgeUrlManifest, Type.NEO_FORGE)
             }
             launch {
                 checkManifest(fabricIntermediariesManifest, fabricUrlIntermediariesManifest, Type.FABRIC_INTERMEDIARIES)
@@ -297,7 +320,7 @@ actual class VersionMeta constructor(
                                 countNewFile = utilities.jsonUtilities.getJson(newContent).size()
                             }
 
-                            Type.FABRIC, Type.FABRIC_INSTALLER, Type.QUILT, Type.QUILT_INSTALLER -> {
+                            Type.FABRIC, Type.FABRIC_INSTALLER, Type.QUILT, Type.QUILT_INSTALLER, Type.NEO_FORGE -> {
                                 countOldFile = utilities.xmlUtilities.getXml(oldContent)
                                     .getElementsByTagName("version").length
                                 countNewFile = utilities.xmlUtilities.getXml(newContent)
@@ -425,6 +448,7 @@ actual class VersionMeta constructor(
         fabric.update()
         legacyFabric.update()
         forge.update()
+        neoForge.update()
         quilt.update()
         return this
     }

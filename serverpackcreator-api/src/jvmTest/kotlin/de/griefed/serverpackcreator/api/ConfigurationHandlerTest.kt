@@ -1,7 +1,6 @@
 package de.griefed.serverpackcreator.api
 
 import com.electronwill.nightconfig.core.CommentedConfig
-import net.lingala.zip4j.ZipFile
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import java.io.File
@@ -10,159 +9,250 @@ import java.nio.file.Paths
 import java.util.*
 
 internal class ConfigurationHandlerTest {
-    private val applicationProperties =
+    private val apiProperties =
         ApiWrapper.api(File("src/jvmTest/resources/serverpackcreator.properties")).apiProperties
     private val configurationHandler =
-        ApiWrapper.api(File("src/jvmTest/resources/serverpackcreator.properties")).configurationHandler!!
+        ApiWrapper.api(File("src/jvmTest/resources/serverpackcreator.properties")).configurationHandler
     private val versionMeta =
-        ApiWrapper.api(File("src/jvmTest/resources/serverpackcreator.properties")).versionMeta!!
-    private val projectDir = applicationProperties.homeDirectory.parentFile.parentFile
+        ApiWrapper.api(File("src/jvmTest/resources/serverpackcreator.properties")).versionMeta
+    private val projectDir = apiProperties.homeDirectory.parentFile.parentFile
 
     @Test
     fun checkConfigFileTest() {
-        Assertions.assertFalse(configurationHandler.checkConfiguration(File("src/jvmTest/resources/testresources/spcconfs/serverpackcreator.conf")))
+        val check = configurationHandler.checkConfiguration(File("src/jvmTest/resources/testresources/spcconfs/serverpackcreator.conf"))
+        Assertions.assertTrue(check.allChecksPassed)
+        Assertions.assertTrue(check.modloaderChecksPassed)
+        Assertions.assertTrue(check.modpackChecksPassed)
+        Assertions.assertTrue(check.inclusionsChecksPassed)
+        Assertions.assertTrue(check.minecraftVersionChecksPassed)
+        Assertions.assertTrue(check.configChecksPassed)
+        Assertions.assertTrue(check.otherChecksPassed)
+        Assertions.assertTrue(check.serverIconChecksPassed)
+        Assertions.assertTrue(check.serverPropertiesChecksPassed)
+        Assertions.assertTrue(check.modloaderVersionChecksPassed)
     }
 
     @Test
     fun isDirTestCopyDirs() {
-        @Suppress("SpellCheckingInspection")
-        Assertions.assertTrue(configurationHandler.checkConfiguration(File("src/jvmTest/resources/testresources/spcconfs/serverpackcreator_copydirs.conf")))
+        val check = configurationHandler.checkConfiguration(File("src/jvmTest/resources/testresources/spcconfs/serverpackcreator_copydirs.conf"))
+        Assertions.assertTrue(check.modpackChecksPassed)
+        Assertions.assertTrue(check.configChecksPassed)
+        Assertions.assertTrue(check.otherChecksPassed)
+        Assertions.assertTrue(check.serverIconChecksPassed)
+        Assertions.assertTrue(check.serverPropertiesChecksPassed)
+        Assertions.assertFalse(check.minecraftVersionChecksPassed)
+        Assertions.assertFalse(check.modloaderVersionChecksPassed)
+        Assertions.assertFalse(check.modloaderChecksPassed)
+        Assertions.assertFalse(check.inclusionsChecksPassed)
     }
 
     @Test
-    fun isDirTestJavaPath() {
-        @Suppress("SpellCheckingInspection")
-        Assertions.assertFalse(configurationHandler.checkConfiguration(File("src/jvmTest/resources/testresources/spcconfs/serverpackcreator_javapath.conf")))
-    }
-
-    @Test
-    fun isDirTestMinecraftVersion() {
-        @Suppress("SpellCheckingInspection")
-        Assertions.assertTrue(configurationHandler.checkConfiguration(File("src/jvmTest/resources/testresources/spcconfs/serverpackcreator_minecraftversion.conf")))
+    fun isDirTestMinecraftVersionFalse() {
+        val check = configurationHandler.checkConfiguration(File("src/jvmTest/resources/testresources/spcconfs/serverpackcreator_minecraftversion.conf"))
+        Assertions.assertTrue(check.modloaderChecksPassed)
+        Assertions.assertTrue(check.modpackChecksPassed)
+        Assertions.assertTrue(check.inclusionsChecksPassed)
+        Assertions.assertTrue(check.configChecksPassed)
+        Assertions.assertTrue(check.otherChecksPassed)
+        Assertions.assertTrue(check.serverIconChecksPassed)
+        Assertions.assertTrue(check.serverPropertiesChecksPassed)
+        Assertions.assertFalse(check.modloaderVersionChecksPassed)
+        Assertions.assertFalse(check.minecraftVersionChecksPassed)
     }
 
     @Test
     fun isModLoaderLegacyFabric() {
-        Assertions.assertFalse(configurationHandler.checkConfiguration(File("src/jvmTest/resources/testresources/spcconfs/serverpackcreator_legacyfabric.conf")))
+        val check = configurationHandler.checkConfiguration(File("src/jvmTest/resources/testresources/spcconfs/serverpackcreator_legacyfabric.conf"))
+        Assertions.assertTrue(check.modloaderChecksPassed)
+        Assertions.assertTrue(check.modpackChecksPassed)
+        Assertions.assertTrue(check.inclusionsChecksPassed)
+        Assertions.assertTrue(check.minecraftVersionChecksPassed)
+        Assertions.assertTrue(check.configChecksPassed)
+        Assertions.assertTrue(check.otherChecksPassed)
+        Assertions.assertTrue(check.serverIconChecksPassed)
+        Assertions.assertTrue(check.serverPropertiesChecksPassed)
+        Assertions.assertTrue(check.modloaderVersionChecksPassed)
     }
 
     @Test
     fun isModLoaderQuilt() {
-        Assertions.assertFalse(configurationHandler.checkConfiguration(File("src/jvmTest/resources/testresources/spcconfs/serverpackcreator_quilt.conf")))
+        val check = configurationHandler.checkConfiguration(File("src/jvmTest/resources/testresources/spcconfs/serverpackcreator_quilt.conf"))
+        Assertions.assertTrue(check.modloaderChecksPassed)
+        Assertions.assertTrue(check.modpackChecksPassed)
+        Assertions.assertTrue(check.inclusionsChecksPassed)
+        Assertions.assertTrue(check.minecraftVersionChecksPassed)
+        Assertions.assertTrue(check.configChecksPassed)
+        Assertions.assertTrue(check.otherChecksPassed)
+        Assertions.assertTrue(check.serverIconChecksPassed)
+        Assertions.assertTrue(check.serverPropertiesChecksPassed)
+        Assertions.assertTrue(check.modloaderVersionChecksPassed)
     }
 
     @Test
     fun isDirTestModLoaderFalse() {
-        @Suppress("SpellCheckingInspection")
-        Assertions.assertTrue(configurationHandler.checkConfiguration(File("src/jvmTest/resources/testresources/spcconfs/serverpackcreator_modloaderfalse.conf")))
+        val check = configurationHandler.checkConfiguration(File("src/jvmTest/resources/testresources/spcconfs/serverpackcreator_modloaderfalse.conf"))
+        Assertions.assertTrue(check.modpackChecksPassed)
+        Assertions.assertTrue(check.inclusionsChecksPassed)
+        Assertions.assertTrue(check.minecraftVersionChecksPassed)
+        Assertions.assertTrue(check.configChecksPassed)
+        Assertions.assertTrue(check.otherChecksPassed)
+        Assertions.assertTrue(check.serverIconChecksPassed)
+        Assertions.assertTrue(check.serverPropertiesChecksPassed)
+        Assertions.assertFalse(check.modloaderChecksPassed)
+        Assertions.assertFalse(check.modloaderVersionChecksPassed)
     }
 
     @Test
     fun isDirTestModLoaderVersion() {
-        @Suppress("SpellCheckingInspection")
-        Assertions.assertTrue(configurationHandler.checkConfiguration(File("src/jvmTest/resources/testresources/spcconfs/serverpackcreator_modloaderversion.conf")))
+        val check = configurationHandler.checkConfiguration(File("src/jvmTest/resources/testresources/spcconfs/serverpackcreator_modloaderversion.conf"))
+        Assertions.assertTrue(check.modloaderChecksPassed)
+        Assertions.assertTrue(check.modpackChecksPassed)
+        Assertions.assertTrue(check.inclusionsChecksPassed)
+        Assertions.assertTrue(check.minecraftVersionChecksPassed)
+        Assertions.assertTrue(check.configChecksPassed)
+        Assertions.assertTrue(check.otherChecksPassed)
+        Assertions.assertTrue(check.serverIconChecksPassed)
+        Assertions.assertTrue(check.serverPropertiesChecksPassed)
+        Assertions.assertFalse(check.modloaderVersionChecksPassed)
     }
 
     @Test
     fun checkModpackDirTest() {
         val modpackDirCorrect = "src/jvmTest/resources/forge_tests"
-        Assertions.assertTrue(configurationHandler.checkModpackDir(modpackDirCorrect, ArrayList(100)))
+        val check = configurationHandler.checkModpackDir(modpackDirCorrect)
+        Assertions.assertTrue(check.modpackChecksPassed)
     }
 
     @Test
     fun checkModpackDirTestFalse() {
-        Assertions.assertFalse(configurationHandler.checkModpackDir("modpackDir", ArrayList(100)))
+        val check = configurationHandler.checkModpackDir("modpackDir")
+        Assertions.assertFalse(check.modpackChecksPassed)
     }
 
     @Test
-    fun checkCopyDirsTest() {
+    fun checkInclusionsTest() {
         val modpackDir = "src/jvmTest/resources/forge_tests"
-        val copyDirs = arrayListOf("config", "mods", "scripts", "seeds", "defaultconfigs")
-        Assertions.assertTrue(configurationHandler.checkCopyDirs(copyDirs, modpackDir, ArrayList(100)))
-    }
-
-    @Suppress("SpellCheckingInspection")
-    @Test
-    fun checkCopyDirsTestFalse() {
-        val modpackDir = "src/jvmTest/resources/forge_tests"
-        val copyDirsInvalid = arrayListOf("configs", "modss", "scriptss", "seedss", "defaultconfigss")
-        Assertions.assertFalse(configurationHandler.checkCopyDirs(copyDirsInvalid, modpackDir, ArrayList(100)))
-    }
-
-    @Test
-    fun checkCopyDirsTestFiles() {
-        val modpackDir = "src/jvmTest/resources/forge_tests"
-        val copyDirsAndFiles = arrayListOf(
-            "config",
-            "mods",
-            "scripts",
-            "seeds",
-            "defaultconfigs",
-            "test.txt;test.txt",
-            "test2.txt;test2.txt"
-        )
-        Assertions.assertTrue(configurationHandler.checkCopyDirs(copyDirsAndFiles, modpackDir, ArrayList(100)))
+        val inclusions = mutableListOf<InclusionSpecification>()
+        inclusions.add(InclusionSpecification("config"))
+        inclusions.add(InclusionSpecification("mods"))
+        inclusions.add(InclusionSpecification("scripts"))
+        inclusions.add(InclusionSpecification("seeds"))
+        inclusions.add(InclusionSpecification("defaultconfigs"))
+        val check = configurationHandler.checkInclusions(inclusions, modpackDir)
+        Assertions.assertTrue(check.modpackChecksPassed)
+        Assertions.assertTrue(check.inclusionsChecksPassed)
     }
 
     @Suppress("SpellCheckingInspection")
     @Test
-    fun checkCopyDirsTestFilesFalse() {
+    fun checkInclusionsTestFalse() {
         val modpackDir = "src/jvmTest/resources/forge_tests"
-        val copyDirsAndFilesFalse = arrayListOf(
-            "configs",
-            "modss",
-            "scriptss",
-            "seedss",
-            "defaultconfigss",
-            "READMEee.md;README.md",
-            "LICENSEee;LICENSE",
-            "LICENSEee;test/LICENSE",
-            "LICENSEee;test/license.md"
-        )
-        Assertions.assertFalse(configurationHandler.checkCopyDirs(copyDirsAndFilesFalse, modpackDir, ArrayList(100)))
+        val inclusions = mutableListOf<InclusionSpecification>()
+        inclusions.add(InclusionSpecification("config"))
+        inclusions.add(InclusionSpecification("modss"))
+        inclusions.add(InclusionSpecification("scriptss"))
+        inclusions.add(InclusionSpecification("seedss"))
+        inclusions.add(InclusionSpecification("defaultconfigss"))
+        val check = configurationHandler.checkInclusions(inclusions, modpackDir)
+        Assertions.assertTrue(check.modpackChecksPassed)
+        Assertions.assertFalse(check.inclusionsChecksPassed)
+    }
+
+    @Test
+    fun checkInclusionsTestFiles() {
+        val modpackDir = "src/jvmTest/resources/forge_tests"
+        val inclusions = mutableListOf<InclusionSpecification>()
+        inclusions.add(InclusionSpecification("config"))
+        inclusions.add(InclusionSpecification("mods"))
+        inclusions.add(InclusionSpecification("scripts"))
+        inclusions.add(InclusionSpecification("seeds"))
+        inclusions.add(InclusionSpecification("defaultconfigs"))
+        inclusions.add(InclusionSpecification("test.txt","test.txt"))
+        inclusions.add(InclusionSpecification("test2.txt","test2.txt"))
+        val check = configurationHandler.checkInclusions(inclusions, modpackDir)
+        Assertions.assertTrue(check.modpackChecksPassed)
+        Assertions.assertTrue(check.inclusionsChecksPassed)
+    }
+
+    @Suppress("SpellCheckingInspection")
+    @Test
+    fun checkInclusionsTestFilesFalse() {
+        val modpackDir = "src/jvmTest/resources/forge_tests"
+        val inclusions = mutableListOf<InclusionSpecification>()
+        inclusions.add(InclusionSpecification("config"))
+        inclusions.add(InclusionSpecification("mods"))
+        inclusions.add(InclusionSpecification("scripts"))
+        inclusions.add(InclusionSpecification("seeds"))
+        inclusions.add(InclusionSpecification("defaultconfigs"))
+        inclusions.add(InclusionSpecification("READMEee.md","README.md"))
+        inclusions.add(InclusionSpecification("LICENSEee","LICENSE"))
+        inclusions.add(InclusionSpecification("LICENSEee","test/LICENSE"))
+        inclusions.add(InclusionSpecification("LICENSEee","test/license.md"))
+        val check = configurationHandler.checkInclusions(inclusions, modpackDir)
+        Assertions.assertTrue(check.modpackChecksPassed)
+        Assertions.assertFalse(check.inclusionsChecksPassed)
     }
 
     @Test
     fun checkModloaderTestForge() {
-        Assertions.assertTrue(configurationHandler.checkModloader("Forge"))
-        Assertions.assertTrue(configurationHandler.checkModloader("fOrGe"))
-        Assertions.assertTrue(configurationHandler.checkModloader("Fabric"))
-        Assertions.assertTrue(configurationHandler.checkModloader("fAbRiC"))
-        Assertions.assertTrue(configurationHandler.checkModloader("Quilt"))
-        Assertions.assertTrue(configurationHandler.checkModloader("qUiLt"))
-        Assertions.assertTrue(configurationHandler.checkModloader("lEgAcYfAbRiC"))
-        Assertions.assertTrue(configurationHandler.checkModloader("LegacyFabric"))
-        Assertions.assertFalse(configurationHandler.checkModloader("modloader"))
+        var check = configurationHandler.checkModloader("Forge")
+        Assertions.assertTrue(check.modloaderChecksPassed)
+        check = configurationHandler.checkModloader("fOrGe")
+        Assertions.assertTrue(check.modloaderChecksPassed)
+        check = configurationHandler.checkModloader("Fabric")
+        Assertions.assertTrue(check.modloaderChecksPassed)
+        check = configurationHandler.checkModloader("fAbRiC")
+        Assertions.assertTrue(check.modloaderChecksPassed)
+        check = configurationHandler.checkModloader("Quilt")
+        Assertions.assertTrue(check.modloaderChecksPassed)
+        check = configurationHandler.checkModloader("qUiLt")
+        Assertions.assertTrue(check.modloaderChecksPassed)
+        check = configurationHandler.checkModloader("lEgAcYfAbRiC")
+        Assertions.assertTrue(check.modloaderChecksPassed)
+        check = configurationHandler.checkModloader("LegacyFabric")
+        Assertions.assertTrue(check.modloaderChecksPassed)
+        check = configurationHandler.checkModloader("modloader")
+        Assertions.assertFalse(check.modloaderChecksPassed)
     }
 
     @Test
     fun checkModloaderVersionTestForge() {
-        Assertions.assertTrue(configurationHandler.checkModloaderVersion("Forge", "36.1.2", "1.16.5"))
-        Assertions.assertFalse(configurationHandler.checkModloaderVersion("Forge", "90.0.0", "1.16.5"))
+        var check = configurationHandler.checkModloaderVersion("Forge", "36.1.2", "1.16.5")
+        Assertions.assertTrue(check.modloaderChecksPassed)
+        Assertions.assertTrue(check.modloaderVersionChecksPassed)
+        check = configurationHandler.checkModloaderVersion("Forge", "90.0.0", "1.16.5")
+        Assertions.assertTrue(check.modloaderChecksPassed)
+        Assertions.assertFalse(check.modloaderVersionChecksPassed)
     }
 
     @Test
     fun checkModloaderVersionTestFabric() {
-        Assertions.assertTrue(configurationHandler.checkModloaderVersion("Fabric", "0.11.3", "1.16.5"))
-        Assertions.assertFalse(
-            configurationHandler.checkModloaderVersion("Fabric", "0.90.3", "1.16.5")
-        )
+        var check = configurationHandler.checkModloaderVersion("Fabric", "0.11.3", "1.16.5")
+        Assertions.assertTrue(check.modloaderChecksPassed)
+        Assertions.assertTrue(check.modloaderVersionChecksPassed)
+        check = configurationHandler.checkModloaderVersion("Fabric", "0.90.3", "1.16.5")
+        Assertions.assertTrue(check.modloaderChecksPassed)
+        Assertions.assertFalse(check.modloaderVersionChecksPassed)
     }
 
     @Test
     fun checkModloaderVersionTestQuilt() {
-        Assertions.assertTrue(configurationHandler.checkModloaderVersion("Quilt", "0.16.1", "1.16.5"))
-        Assertions.assertFalse(configurationHandler.checkModloaderVersion("Quilt", "0.90.3", "1.16.5"))
+        var check = configurationHandler.checkModloaderVersion("Quilt", "0.16.1", "1.16.5")
+        Assertions.assertTrue(check.modloaderChecksPassed)
+        Assertions.assertTrue(check.modloaderVersionChecksPassed)
+        check = configurationHandler.checkModloaderVersion("Quilt", "0.90.3", "1.16.5")
+        Assertions.assertTrue(check.modloaderChecksPassed)
+        Assertions.assertFalse(check.modloaderVersionChecksPassed)
     }
 
     @Test
     fun isLegacyFabricVersionCorrectTest() {
-        Assertions.assertTrue(
-            configurationHandler.checkModloaderVersion("LegacyFabric", "0.13.3", "1.12.2")
-        )
-        Assertions.assertFalse(
-            configurationHandler.checkModloaderVersion("LegacyFabric", "0.999.3", "1.12.2")
-        )
+        var check = configurationHandler.checkModloaderVersion("LegacyFabric", "0.13.3", "1.12.2")
+        Assertions.assertTrue(check.modloaderChecksPassed)
+        Assertions.assertTrue(check.modloaderVersionChecksPassed)
+        check = configurationHandler.checkModloaderVersion("LegacyFabric", "0.999.3", "1.12.2")
+        Assertions.assertTrue(check.modloaderChecksPassed)
+        Assertions.assertFalse(check.modloaderVersionChecksPassed)
     }
 
     @Suppress("SpellCheckingInspection")
@@ -193,20 +283,33 @@ internal class ConfigurationHandlerTest {
             "TipTheScales",
             "WorldNameRandomizer"
         )
-
-        val copyDirs = arrayListOf("config", "mods", "scripts", "seeds", "defaultconfigs")
+        val inclusions = ArrayList<InclusionSpecification>()
+        inclusions.add(InclusionSpecification("config"))
+        inclusions.add(InclusionSpecification("mods"))
+        inclusions.add(InclusionSpecification("scripts"))
+        inclusions.add(InclusionSpecification("seeds"))
+        inclusions.add(InclusionSpecification("defaultconfigs"))
         val packConfig = PackConfig()
         packConfig.modpackDir = "src/jvmTest/resources/forge_tests"
         packConfig.setClientMods(clientMods)
-        packConfig.setCopyDirs(copyDirs)
-        packConfig.isServerInstallationDesired = true
+        packConfig.setInclusions(inclusions)
         packConfig.isServerIconInclusionDesired = true
         packConfig.isServerPropertiesInclusionDesired = true
         packConfig.isZipCreationDesired = true
         packConfig.modloader = "Forge"
         packConfig.modloaderVersion = "36.1.2"
         packConfig.minecraftVersion = "1.16.5"
-        Assertions.assertFalse(configurationHandler.checkConfiguration(packConfig))
+        val check = configurationHandler.checkConfiguration(packConfig)
+        Assertions.assertTrue(check.allChecksPassed)
+        Assertions.assertTrue(check.modloaderChecksPassed)
+        Assertions.assertTrue(check.modpackChecksPassed)
+        Assertions.assertTrue(check.inclusionsChecksPassed)
+        Assertions.assertTrue(check.minecraftVersionChecksPassed)
+        Assertions.assertTrue(check.configChecksPassed)
+        Assertions.assertTrue(check.otherChecksPassed)
+        Assertions.assertTrue(check.serverIconChecksPassed)
+        Assertions.assertTrue(check.serverPropertiesChecksPassed)
+        Assertions.assertTrue(check.modloaderVersionChecksPassed)
         Assertions.assertTrue(
             packConfig.scriptSettings.containsKey("SPC_MINECRAFT_SERVER_URL_SPC")
         )
@@ -255,7 +358,7 @@ internal class ConfigurationHandlerTest {
             packConfig.scriptSettings["SPC_MINECRAFT_SERVER_URL_SPC"]
         )
         Assertions.assertEquals(
-            applicationProperties.apiVersion,
+            apiProperties.apiVersion,
             packConfig.scriptSettings["SPC_SERVERPACKCREATOR_VERSION_SPC"]
         )
         Assertions.assertEquals(
@@ -276,39 +379,83 @@ internal class ConfigurationHandlerTest {
     fun zipArchiveTest() {
         var packConfig = PackConfig()
         packConfig.modpackDir = "src/jvmTest/resources/testresources/Survive_Create_Prosper_4_valid.zip"
-        Assertions.assertFalse(configurationHandler.checkConfiguration(packConfig))
+        var check = configurationHandler.checkConfiguration(packConfig)
+        Assertions.assertTrue(check.allChecksPassed)
+        Assertions.assertTrue(check.modloaderChecksPassed)
+        Assertions.assertTrue(check.modpackChecksPassed)
+        Assertions.assertTrue(check.inclusionsChecksPassed)
+        Assertions.assertTrue(check.minecraftVersionChecksPassed)
+        Assertions.assertTrue(check.configChecksPassed)
+        Assertions.assertTrue(check.otherChecksPassed)
+        Assertions.assertTrue(check.serverIconChecksPassed)
+        Assertions.assertTrue(check.serverPropertiesChecksPassed)
+        Assertions.assertTrue(check.modloaderVersionChecksPassed)
         packConfig = PackConfig()
         packConfig.modpackDir = "src/jvmTest/resources/testresources/Survive_Create_Prosper_4_invalid.zip"
-        Assertions.assertTrue(configurationHandler.checkConfiguration(packConfig))
+        check = configurationHandler.checkConfiguration(packConfig)
+        Assertions.assertTrue(check.configChecksPassed)
+        Assertions.assertFalse(check.modpackChecksPassed)
+        Assertions.assertTrue(check.inclusionsChecksPassed)
+        Assertions.assertFalse(check.minecraftVersionChecksPassed)
+        Assertions.assertFalse(check.modloaderChecksPassed)
+        Assertions.assertFalse(check.modloaderVersionChecksPassed)
+        Assertions.assertTrue(check.serverIconChecksPassed)
+        Assertions.assertTrue(check.serverPropertiesChecksPassed)
+        Assertions.assertTrue(check.otherChecksPassed)
+        Assertions.assertFalse(check.allChecksPassed)
     }
 
     @Test
     fun checkConfigurationFileTest() {
-        Assertions.assertFalse(configurationHandler.checkConfiguration(File("src/jvmTest/resources/testresources/spcconfs/serverpackcreator.conf")))
+        val check = configurationHandler.checkConfiguration(File("src/jvmTest/resources/testresources/spcconfs/serverpackcreator.conf"))
+        Assertions.assertTrue(check.allChecksPassed)
+        Assertions.assertTrue(check.modloaderChecksPassed)
+        Assertions.assertTrue(check.modpackChecksPassed)
+        Assertions.assertTrue(check.inclusionsChecksPassed)
+        Assertions.assertTrue(check.minecraftVersionChecksPassed)
+        Assertions.assertTrue(check.configChecksPassed)
+        Assertions.assertTrue(check.otherChecksPassed)
+        Assertions.assertTrue(check.serverIconChecksPassed)
+        Assertions.assertTrue(check.serverPropertiesChecksPassed)
+        Assertions.assertTrue(check.modloaderVersionChecksPassed)
     }
 
     @Test
     fun checkConfigurationFileAndModelTest() {
         var packConfig = PackConfig()
-        Assertions.assertFalse(
-            configurationHandler.checkConfiguration(
-                File("src/jvmTest/resources/testresources/spcconfs/serverpackcreator.conf"),
-                packConfig
-            )
+        var check = configurationHandler.checkConfiguration(
+            File("src/jvmTest/resources/testresources/spcconfs/serverpackcreator.conf"),
+            packConfig
         )
+        Assertions.assertTrue(check.allChecksPassed)
+        Assertions.assertTrue(check.modloaderChecksPassed)
+        Assertions.assertTrue(check.modpackChecksPassed)
+        Assertions.assertTrue(check.inclusionsChecksPassed)
+        Assertions.assertTrue(check.minecraftVersionChecksPassed)
+        Assertions.assertTrue(check.configChecksPassed)
+        Assertions.assertTrue(check.otherChecksPassed)
+        Assertions.assertTrue(check.serverIconChecksPassed)
+        Assertions.assertTrue(check.serverPropertiesChecksPassed)
+        Assertions.assertTrue(check.modloaderVersionChecksPassed)
         Assertions.assertEquals("src/jvmTest/resources/forge_tests", packConfig.modpackDir)
         Assertions.assertEquals("1.16.5", packConfig.minecraftVersion)
         Assertions.assertEquals("Forge", packConfig.modloader)
         Assertions.assertEquals("36.1.2", packConfig.modloaderVersion)
         packConfig = PackConfig()
-        Assertions.assertFalse(
-            configurationHandler.checkConfiguration(
-                File("src/jvmTest/resources/testresources/spcconfs/serverpackcreator.conf"),
-                packConfig,
-                ArrayList(5),
-                false
-            )
+        check = configurationHandler.checkConfiguration(
+            File("src/jvmTest/resources/testresources/spcconfs/serverpackcreator.conf"),
+            packConfig
         )
+        Assertions.assertTrue(check.allChecksPassed)
+        Assertions.assertTrue(check.modloaderChecksPassed)
+        Assertions.assertTrue(check.modpackChecksPassed)
+        Assertions.assertTrue(check.inclusionsChecksPassed)
+        Assertions.assertTrue(check.minecraftVersionChecksPassed)
+        Assertions.assertTrue(check.configChecksPassed)
+        Assertions.assertTrue(check.otherChecksPassed)
+        Assertions.assertTrue(check.serverIconChecksPassed)
+        Assertions.assertTrue(check.serverPropertiesChecksPassed)
+        Assertions.assertTrue(check.modloaderVersionChecksPassed)
         Assertions.assertEquals("src/jvmTest/resources/forge_tests", packConfig.modpackDir)
         Assertions.assertEquals("1.16.5", packConfig.minecraftVersion)
         Assertions.assertEquals("Forge", packConfig.modloader)
@@ -344,10 +491,15 @@ internal class ConfigurationHandlerTest {
             "TipTheScales",
             "WorldNameRandomizer"
         )
-        val copyDirs = arrayListOf("config", "mods", "scripts", "seeds", "defaultconfigs")
+        val inclusions = ArrayList<InclusionSpecification>()
+        inclusions.add(InclusionSpecification("config"))
+        inclusions.add(InclusionSpecification("mods"))
+        inclusions.add(InclusionSpecification("scripts"))
+        inclusions.add(InclusionSpecification("seeds"))
+        inclusions.add(InclusionSpecification("defaultconfigs"))
         packConfig.modpackDir = "src/jvmTest/resources/forge_tests"
         packConfig.setClientMods(clientMods)
-        packConfig.setCopyDirs(copyDirs)
+        packConfig.setInclusions(inclusions)
         packConfig.isServerIconInclusionDesired = true
         packConfig.isServerIconInclusionDesired = true
         packConfig.isServerPropertiesInclusionDesired = true
@@ -355,9 +507,17 @@ internal class ConfigurationHandlerTest {
         packConfig.modloader = "Forge"
         packConfig.modloaderVersion = "36.1.2"
         packConfig.minecraftVersion = "1.16.5"
-        Assertions.assertFalse(
-            configurationHandler.checkConfiguration(packConfig, ArrayList(5), true)
-        )
+        var check = configurationHandler.checkConfiguration(packConfig)
+        Assertions.assertTrue(check.allChecksPassed)
+        Assertions.assertTrue(check.modloaderChecksPassed)
+        Assertions.assertTrue(check.modpackChecksPassed)
+        Assertions.assertTrue(check.inclusionsChecksPassed)
+        Assertions.assertTrue(check.minecraftVersionChecksPassed)
+        Assertions.assertTrue(check.configChecksPassed)
+        Assertions.assertTrue(check.otherChecksPassed)
+        Assertions.assertTrue(check.serverIconChecksPassed)
+        Assertions.assertTrue(check.serverPropertiesChecksPassed)
+        Assertions.assertTrue(check.modloaderVersionChecksPassed)
         Assertions.assertEquals(
             "src/jvmTest/resources/forge_tests", packConfig.modpackDir
         )
@@ -366,16 +526,32 @@ internal class ConfigurationHandlerTest {
         Assertions.assertEquals("36.1.2", packConfig.modloaderVersion)
         packConfig.modloader = "Fabric"
         packConfig.modloaderVersion = "0.14.6"
-        Assertions.assertFalse(
-            configurationHandler.checkConfiguration(packConfig, ArrayList(5), true)
-        )
+        check = configurationHandler.checkConfiguration(packConfig)
+        Assertions.assertTrue(check.allChecksPassed)
+        Assertions.assertTrue(check.modloaderChecksPassed)
+        Assertions.assertTrue(check.modpackChecksPassed)
+        Assertions.assertTrue(check.inclusionsChecksPassed)
+        Assertions.assertTrue(check.minecraftVersionChecksPassed)
+        Assertions.assertTrue(check.configChecksPassed)
+        Assertions.assertTrue(check.otherChecksPassed)
+        Assertions.assertTrue(check.serverIconChecksPassed)
+        Assertions.assertTrue(check.serverPropertiesChecksPassed)
+        Assertions.assertTrue(check.modloaderVersionChecksPassed)
         Assertions.assertEquals("Fabric", packConfig.modloader)
         Assertions.assertEquals("0.14.6", packConfig.modloaderVersion)
         packConfig.modloader = "Quilt"
         packConfig.modloaderVersion = "0.16.1"
-        Assertions.assertFalse(
-            configurationHandler.checkConfiguration(packConfig, ArrayList(5), true)
-        )
+        check = configurationHandler.checkConfiguration(packConfig)
+        Assertions.assertTrue(check.allChecksPassed)
+        Assertions.assertTrue(check.modloaderChecksPassed)
+        Assertions.assertTrue(check.modpackChecksPassed)
+        Assertions.assertTrue(check.inclusionsChecksPassed)
+        Assertions.assertTrue(check.minecraftVersionChecksPassed)
+        Assertions.assertTrue(check.configChecksPassed)
+        Assertions.assertTrue(check.otherChecksPassed)
+        Assertions.assertTrue(check.serverIconChecksPassed)
+        Assertions.assertTrue(check.serverPropertiesChecksPassed)
+        Assertions.assertTrue(check.modloaderVersionChecksPassed)
         Assertions.assertEquals("Quilt", packConfig.modloader)
         Assertions.assertEquals("0.16.1", packConfig.modloaderVersion)
     }
@@ -396,18 +572,10 @@ internal class ConfigurationHandlerTest {
 
     @Test
     fun checkZipArchiveTest() {
-        Assertions.assertFalse(
-            configurationHandler.checkZipArchive(
-                Paths.get("src/jvmTest/resources/testresources/Survive_Create_Prosper_4_valid.zip").toAbsolutePath().toString(),
-                ArrayList(5)
-            )
-        )
-        Assertions.assertTrue(
-            configurationHandler.checkZipArchive(
-                Paths.get("src/jvmTest/resources/testresources/Survive_Create_Prosper_4_invalid.zip").toAbsolutePath().toString(),
-                ArrayList(5)
-            )
-        )
+        var check = configurationHandler.checkZipArchive(Paths.get("src/jvmTest/resources/testresources/Survive_Create_Prosper_4_valid.zip").toAbsolutePath().toString())
+        Assertions.assertTrue(check.modpackChecksPassed)
+        check = configurationHandler.checkZipArchive(Paths.get("src/jvmTest/resources/testresources/Survive_Create_Prosper_4_invalid.zip").toAbsolutePath().toString())
+        Assertions.assertFalse(check.modpackChecksPassed)
     }
 
     @Suppress("SpellCheckingInspection")
@@ -438,8 +606,15 @@ internal class ConfigurationHandlerTest {
             "TipTheScales",
             "WorldNameRandomizer"
         )
-
-        val copyDirs = arrayListOf("config", "mods", "scripts", "seeds", "defaultconfigs")
+        val whitelist = arrayListOf(
+            "Ping-Wheel-"
+        )
+        val inclusions = ArrayList<InclusionSpecification>()
+        inclusions.add(InclusionSpecification("config"))
+        inclusions.add(InclusionSpecification("mods"))
+        inclusions.add(InclusionSpecification("scripts"))
+        inclusions.add(InclusionSpecification("seeds"))
+        inclusions.add(InclusionSpecification("defaultconfigs"))
         val javaPath: String
         var autoJavaPath = System.getProperty("java.home").replace("\\", "/") + "/bin/java"
         if (autoJavaPath.startsWith("C:")) {
@@ -455,7 +630,8 @@ internal class ConfigurationHandlerTest {
         Assertions.assertNotNull(
             PackConfig(
                 clientMods,
-                copyDirs,
+                whitelist,
+                inclusions,
                 "src/jvmTest/resources/fabric_tests",
                 javaPath,
                 "1.16.5",
@@ -464,13 +640,12 @@ internal class ConfigurationHandlerTest {
                 javaArgs,
                 "",
                 "",
-                includeServerInstallation = true,
                 includeServerIcon = true,
                 includeServerProperties = true,
                 includeZipCreation = true,
                 scriptSettings = HashMap<String, String>(10),
                 pluginsConfigs = HashMap<String, ArrayList<CommentedConfig>>(10)
-            ).save(File("tests/serverpackcreatorfabric.conf"))
+            ).save(File("tests/serverpackcreatorfabric.conf"), apiProperties)
         )
         Assertions.assertTrue(File("tests/serverpackcreatorfabric.conf").exists())
     }
@@ -503,8 +678,15 @@ internal class ConfigurationHandlerTest {
             "TipTheScales",
             "WorldNameRandomizer"
         )
-
-        val copyDirs = arrayListOf("config", "mods", "scripts", "seeds", "defaultconfigs")
+        val whitelist = arrayListOf(
+            "Ping-Wheel-"
+        )
+        val inclusions = ArrayList<InclusionSpecification>()
+        inclusions.add(InclusionSpecification("config"))
+        inclusions.add(InclusionSpecification("mods"))
+        inclusions.add(InclusionSpecification("scripts"))
+        inclusions.add(InclusionSpecification("seeds"))
+        inclusions.add(InclusionSpecification("defaultconfigs"))
         val javaPath: String
         var autoJavaPath = System.getProperty("java.home").replace("\\", "/") + "/bin/java"
         if (autoJavaPath.startsWith("C:")) {
@@ -519,7 +701,8 @@ internal class ConfigurationHandlerTest {
         Assertions.assertNotNull(
             PackConfig(
                 clientMods,
-                copyDirs,
+                whitelist,
+                inclusions,
                 "src/jvmTest/resources/forge_tests",
                 javaPath,
                 "1.16.5",
@@ -528,13 +711,12 @@ internal class ConfigurationHandlerTest {
                 javaArgs,
                 "",
                 "",
-                includeServerInstallation = true,
                 includeServerIcon = true,
                 includeServerProperties = true,
                 includeZipCreation = true,
                 scriptSettings = HashMap<String, String>(10),
                 pluginsConfigs = HashMap<String, ArrayList<CommentedConfig>>(10)
-            ).save(File("tests/serverpackcreatorforge.conf"))
+            ).save(File("tests/serverpackcreatorforge.conf"), apiProperties)
         )
         Assertions.assertTrue(File("tests/serverpackcreatorforge.conf").exists())
     }
@@ -571,8 +753,13 @@ internal class ConfigurationHandlerTest {
                 "WorldNameRandomizer"
             )
         )
-        packConfig.setCopyDirs(arrayListOf("config", "mods", "scripts", "seeds", "defaultconfigs"))
-        packConfig.isServerInstallationDesired = true
+        val inclusions = ArrayList<InclusionSpecification>()
+        inclusions.add(InclusionSpecification("config"))
+        inclusions.add(InclusionSpecification("mods"))
+        inclusions.add(InclusionSpecification("scripts"))
+        inclusions.add(InclusionSpecification("seeds"))
+        inclusions.add(InclusionSpecification("defaultconfigs"))
+        packConfig.setInclusions(inclusions)
         packConfig.isServerIconInclusionDesired = true
         packConfig.isServerPropertiesInclusionDesired = true
         packConfig.isZipCreationDesired = true
@@ -580,7 +767,7 @@ internal class ConfigurationHandlerTest {
         packConfig.modloader = "Forge"
         packConfig.modloaderVersion = "36.1.2"
         packConfig.javaArgs = "tf3g4jz89agz843fag8z49a3zg8ap3jg8zap9vagv3z8j"
-        Assertions.assertNotNull(packConfig.save(File("tests/somefile.conf")))
+        Assertions.assertNotNull(packConfig.save(File("tests/somefile.conf"), apiProperties))
         Assertions.assertTrue(File("tests/somefile.conf").exists())
     }
 
@@ -641,8 +828,13 @@ internal class ConfigurationHandlerTest {
                 "WorldNameRandomizer"
             )
         )
-        packConfig.setCopyDirs(arrayListOf("config", "mods", "scripts", "seeds", "defaultconfigs"))
-        packConfig.isServerInstallationDesired = true
+        val inclusions = ArrayList<InclusionSpecification>()
+        inclusions.add(InclusionSpecification("config"))
+        inclusions.add(InclusionSpecification("mods"))
+        inclusions.add(InclusionSpecification("scripts"))
+        inclusions.add(InclusionSpecification("seeds"))
+        inclusions.add(InclusionSpecification("defaultconfigs"))
+        packConfig.setInclusions(inclusions)
         packConfig.isServerIconInclusionDesired = true
         packConfig.isServerPropertiesInclusionDesired = true
         packConfig.isZipCreationDesired = true
@@ -788,14 +980,14 @@ internal class ConfigurationHandlerTest {
     }
 
     @Test
-    fun suggestCopyDirsTest() {
-        val dirs: List<String> = configurationHandler.suggestCopyDirs("src/jvmTest/resources/fabric_tests")
-        Assertions.assertTrue(dirs.contains("config"))
-        Assertions.assertTrue(dirs.contains("defaultconfigs"))
-        Assertions.assertTrue(dirs.contains("mods"))
-        Assertions.assertTrue(dirs.contains("scripts"))
-        Assertions.assertTrue(dirs.contains("seeds"))
-        Assertions.assertFalse(dirs.contains("server_pack"))
+    fun suggestInclusionsTest() {
+        val dirs: List<InclusionSpecification> = configurationHandler.suggestInclusions("src/jvmTest/resources/fabric_tests")
+        dirs.any { inclusion -> inclusion.source == "config" }
+        dirs.any { inclusion -> inclusion.source == "defaultconfigs" }
+        dirs.any { inclusion -> inclusion.source == "mods" }
+        dirs.any { inclusion -> inclusion.source == "scripts" }
+        dirs.any { inclusion -> inclusion.source == "seeds" }
+        dirs.any { inclusion -> inclusion.source != "server_pack" }
     }
 
     @Test

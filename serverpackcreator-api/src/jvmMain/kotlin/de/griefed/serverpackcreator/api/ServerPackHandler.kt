@@ -26,7 +26,6 @@ import de.griefed.serverpackcreator.api.versionmeta.VersionMeta
 import net.lingala.zip4j.ZipFile
 import net.lingala.zip4j.model.ExcludeFileFilter
 import net.lingala.zip4j.model.ZipParameters
-import org.apache.logging.log4j.kotlin.logger
 import java.awt.Image
 import java.awt.image.BufferedImage
 import java.io.File
@@ -35,7 +34,9 @@ import java.net.MalformedURLException
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.util.*
+import java.util.regex.PatternSyntaxException
 import javax.imageio.ImageIO
+import kotlin.io.path.absolute
 
 /**
  * Everything revolving around creating a server pack. The intended workflow is to create a [PackConfig] and run
@@ -47,16 +48,15 @@ import javax.imageio.ImageIO
  * to do things manually.
  *
  * The methods in question are:
- *  * [cleanupEnvironment] and [cleanupEnvironment]
+ *  * [cleanupEnvironment]
  *  * [ApiPlugins.runPreZipExtensions]
- *  * [copyFiles] and [copyFiles]
- *  * [provideImprovedFabricServerLauncher] and [provideImprovedFabricServerLauncher] if Fabric is the chosen Modloader
- *  * [copyIcon] and [copyIcon]
- *  * [copyProperties] and [copyProperties]
+ *  * [copyFiles]
+ *  * [getImprovedFabricLauncher] if Fabric is the chosen Modloader
+ *  * [copyIcon]
+ *  * [copyProperties]
  *  * [ApiPlugins.runPreZipExtensions]
- *  * [zipBuilder] and [zipBuilder]
- *  * [createStartScripts] and [createStartScripts]
- *  * [installServer] and [installServer]
+ *  * [zipBuilder]
+ *  * [createStartScripts]
  *  * [ApiPlugins.runPostGenExtensions]
  *
  * If you want to execute extensions, see
@@ -82,16 +82,22 @@ actual class ServerPackHandler actual constructor(
     private val apiPlugins: ApiPlugins,
     private val modScanner: ModScanner
 ) : ServerPack<File, TreeSet<String>, TreeSet<File>>() {
-    private val installerLog = logger("InstallerLogger")
 
+    /**
+     * @author Griefed
+     */
     override fun getServerPackDestination(packConfig: Pack<*, *, *>): String {
         var serverPackToBe = File(packConfig.modpackDir).name + packConfig.serverPackSuffix
         serverPackToBe = utilities.stringUtilities.pathSecureText(serverPackToBe.replace(" ", "_"))
         return File(apiProperties.serverPacksDirectory, serverPackToBe).path
     }
 
+    /**
+     * @author Griefed
+     */
     override fun run(packConfig: PackConfig): Boolean {
-        val destination = getServerPackDestination(packConfig)/*
+        val destination = getServerPackDestination(packConfig)
+        /*
         * Check whether the server pack for the specified modpack already exists and whether overwrite is disabled.
         * If the server pack exists and overwrite is disabled, no new server pack will be generated.
         */
@@ -155,13 +161,6 @@ actual class ServerPackHandler actual constructor(
             */
             createStartScripts(packConfig, true)
 
-            // If true, Install the modloader software for the specified Minecraft version, modloader, modloader version
-            if (packConfig.isServerInstallationDesired) {
-                installServer(packConfig)
-            } else {
-                log.info("Not installing modded server.")
-            }
-
             // Inform user about location of newly generated server pack.
             log.info("Server pack available at: $destination")
             log.info("Server pack archive available at: ${destination}_server_pack.zip")
@@ -172,6 +171,9 @@ actual class ServerPackHandler actual constructor(
         return true
     }
 
+    /**
+     * @author Griefed
+     */
     override fun cleanupEnvironment(deleteZip: Boolean, destination: String) {
         log.info("Found old server pack at $destination. Cleaning up...")
         File(destination).deleteQuietly()
@@ -180,20 +182,28 @@ actual class ServerPackHandler actual constructor(
         }
     }
 
+    /**
+     * @author Griefed
+     */
     override fun copyFiles(
         modpackDir: String,
-        directoriesToCopy: ArrayList<String>,
+        inclusions: ArrayList<InclusionSpecification>,
         clientMods: List<String>,
+        whitelist: List<String>,
         minecraftVersion: String,
         destination: String,
         modloader: String
     ) {
+        val exclusions = mutableListOf<Regex>()
+        var acquired: List<ServerPackFile>
+        val serverPackFiles: MutableList<ServerPackFile> = ArrayList(100000)
         try {
             File(destination).createDirectories()
         } catch (ex: IOException) {
             log.error("Failed to create directory $destination")
         }
-        if (directoriesToCopy.size == 1 && directoriesToCopy[0] == "lazy_mode") {
+
+        if (inclusions.size == 1 && inclusions[0].source == "lazy_mode") {
             log.warn("!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!WARNING!!!")
             log.warn("Lazy mode specified. This will copy the WHOLE modpack to the server pack. No exceptions.")
             log.warn("You will not receive any support for a server pack generated this way.")
@@ -204,101 +214,188 @@ actual class ServerPackHandler actual constructor(
             } catch (ex: IOException) {
                 log.error("An error occurred copying the modpack to the server pack in lazy mode.", ex)
             }
-        } else {
-            val exclusions = TreeSet<String>()
-            val serverPackFiles: MutableList<ServerPackFile> = ArrayList(100000)
-            directoriesToCopy.removeIf {
-                if (it.startsWith("!")) {
-                    exclusions.add(it.substring(1))
-                    return@removeIf true
-                } else {
-                    return@removeIf false
-                }
-            }
-            for (directory in directoriesToCopy) {
-                val clientDir = modpackDir + File.separator + directory
-                val serverDir = destination + File.separator + directory
-                log.info("Gathering $directory file(s) and folder(s).")
-                if (directory.contains(";")) {
+            return
+        }
 
-                    /*
-                     * If a semicolon is found, it means a user specified a source/path/to_file.foo;destination/path/to_file.bar-combination
-                     * for a file they specifically want to include in their server pack.
-                     */
-                    serverPackFiles.addAll(
-                        getExplicitFiles(
-                            directory.split(";").dropLastWhile { it.isEmpty() }.toTypedArray(),
-                            modpackDir,
-                            destination
-                        )
-                    )
-                } else if (directory.startsWith("saves/")) {
+        for (inclusion in inclusions) {
+            acquired = getServerFiles(
+                inclusion,
+                modpackDir,
+                destination,
+                exclusions,
+                clientMods,
+                whitelist,
+                minecraftVersion,
+                modloader
+            )
+            serverPackFiles.addAll(acquired)
+        }
 
-                    /*
-                    * Check whether the entry starts with saves, and if it does, change the destination path to NOT include
-                    * saves in it, so when a world is specified inside the saves-directory, it is copied to the base-directory
-                    * of the server pack, instead of a saves-directory inside the modpack.
-                    */
-                    serverPackFiles.addAll(getSaveFiles(clientDir, directory, destination))
-                } else if (directory == "mods") {
-
-                    /*
-                    * If the entry starts with mods, we need to run our checks for clientside-only mods as well as exclude any
-                    * user-specified clientside-only mods from the list of mods in the mods-directory.
-                    */
-                    try {
-                        File(serverDir).createDirectories()
-                    } catch (ignored: IOException) {
-                    }
-                    for (mod in getModsToInclude(clientDir, clientMods, minecraftVersion, modloader)) {
-                        serverPackFiles.add(
-                            ServerPackFile(
-                                mod, File(serverDir, mod.name)
-                            )
-                        )
-                    }
-
-                    /*
-                    * The user wants to add files to the server pack based on a regex-filter.
-                    * Every match will be added.
-                    */
-                } else if (directory.contains("==")) {
-                    serverPackFiles.addAll(getRegexMatches(modpackDir, destination, directory))
-                } else if (File(directory).isFile) {
-                    serverPackFiles.add(
-                        ServerPackFile(
-                            File(directory), File(destination, File(directory).name)
-                        )
-                    )
-                } else if (File(directory).isDirectory) {
-                    serverPackFiles.addAll(getDirectoryFiles(directory, destination + File.separator + File(directory).name))
-                } else {
-                    serverPackFiles.addAll(getDirectoryFiles(clientDir, destination + File.separator + File(clientDir).name))
-                }
-            }
-            log.info("Ensuring files and/or directories are properly excluded.")
-            serverPackFiles.removeIf { serverPackFile: ServerPackFile ->
-                excludeFileOrDirectory(
-                    modpackDir, serverPackFile.sourceFile, exclusions
+        log.info("Ensuring files and/or directories are properly excluded.")
+        serverPackFiles.removeIf { it: ServerPackFile ->
+            excludeFileOrDirectory(modpackDir, it.sourceFile, exclusions)
+        }
+        log.info("Copying files to the server pack. This may take a while...")
+        for (file in serverPackFiles) {
+            try {
+                file.copy()
+            } catch (ex: IOException) {
+                log.error(
+                    "An error occurred trying to copy " + file.sourceFile + " to " + file.destinationFile + ".",
+                    ex
                 )
-            }
-            log.info("Copying files to the server pack. This may take a while...")
-            for (serverPackFile in serverPackFiles) {
-                try {
-                    serverPackFile.copy()
-                } catch (ex: IOException) {
-                    log.error(
-                        "An error occurred trying to copy " + serverPackFile.sourceFile + " to " + serverPackFile.destinationFile + ".",
-                        ex
-                    )
-                }
             }
         }
     }
 
-    override fun provideImprovedFabricServerLauncher(
-        minecraftVersion: String, fabricVersion: String, destination: String
-    ) {
+    /**
+     * @author Griefed
+     */
+    fun getServerFiles(
+        inclusion: InclusionSpecification,
+        modpackDir: String,
+        destination: String,
+        exclusions: MutableList<Regex>,
+        clientMods: List<String>,
+        whitelist: List<String>,
+        minecraftVersion: String,
+        modloader: String
+    ): List<ServerPackFile> {
+        val serverPackFiles = mutableListOf<ServerPackFile>()
+        val clientDir = modpackDir + File.separator + inclusion.source
+        val serverDir = destination + File.separator + inclusion.source
+        val acquired: List<ServerPackFile>
+        val processed: List<ServerPackFile>
+        val serverPackFile: ServerPackFile
+        val inclusionSourceFile = File(inclusion.source).absoluteFile
+        val inclusionDestinationFile = File(destination, inclusionSourceFile.name).absoluteFile
+        when {
+            inclusion.isGlobalFilter() -> {
+                if (inclusion.hasExclusionFilter()) {
+                    try {
+                        exclusions.add(inclusion.exclusionFilter!!.toRegex())
+                    } catch (ex: PatternSyntaxException) {
+                        log.error("Invalid exclusion-regex specified: ${inclusion.exclusionFilter}.",ex)
+                    }
+                }
+            }
+
+            inclusion.hasDestination() -> {
+                if (inclusionSourceFile.isDirectory) {
+                    acquired = getExplicitFiles(inclusion.source, inclusion.destination!!, modpackDir, destination)
+                    processed = runFilters(acquired, inclusion, modpackDir)
+                    serverPackFiles.addAll(processed)
+                } else if (File(clientDir).isDirectory) {
+                    acquired = getExplicitFiles(clientDir, inclusion.destination!!, modpackDir, destination)
+                    processed = runFilters(acquired, inclusion, modpackDir)
+                    serverPackFiles.addAll(processed)
+                } else {
+                    serverPackFile = ServerPackFile(inclusionSourceFile, File(destination,inclusion.destination ?: inclusionSourceFile.name))
+                    serverPackFiles.add(serverPackFile)
+                }
+            }
+
+            inclusion.source == "mods" -> {
+                try {
+                    File(serverDir).createDirectories()
+                } catch (ignored: IOException) {
+                }
+                acquired = mutableListOf()
+                for (mod in getModsToInclude(clientDir, clientMods, whitelist, minecraftVersion, modloader)) {
+                    acquired.add(ServerPackFile(mod, File(serverDir, mod.name)))
+                }
+                processed = runFilters(acquired, inclusion, modpackDir)
+                serverPackFiles.addAll(processed)
+            }
+
+            File(clientDir).absoluteFile.isDirectory -> {
+                acquired = getDirectoryFiles(clientDir, serverDir)
+                processed = runFilters(acquired, inclusion, modpackDir)
+                serverPackFiles.addAll(processed)
+            }
+
+            File(clientDir).absoluteFile.isFile -> {
+                serverPackFile = ServerPackFile(File(clientDir), File(serverDir))
+                serverPackFiles.add(serverPackFile)
+            }
+
+            inclusionSourceFile.isFile -> {
+                serverPackFile = ServerPackFile(inclusionSourceFile, inclusionDestinationFile)
+                serverPackFiles.add(serverPackFile)
+            }
+
+            inclusionSourceFile.isDirectory -> {
+                acquired = getDirectoryFiles(inclusionSourceFile.absolutePath, serverDir)
+                processed = runFilters(acquired, inclusion, modpackDir)
+                serverPackFiles.addAll(processed)
+            }
+
+            else -> {
+                acquired = getDirectoryFiles(clientDir, serverDir)
+                processed = runFilters(acquired, inclusion, modpackDir)
+                serverPackFiles.addAll(processed)
+            }
+        }
+        return serverPackFiles
+    }
+
+    /**
+     * @author Griefed
+     */
+    private fun runFilters(
+        acquired: List<ServerPackFile>,
+        inclusionSpec: InclusionSpecification,
+        modpackDir: String
+    ): List<ServerPackFile> {
+        val processed = mutableListOf<ServerPackFile>()
+        val inclusionFilter = if (inclusionSpec.inclusionFilter.isNullOrBlank()) {
+            null
+        } else {
+            try {
+                inclusionSpec.inclusionFilter!!.toRegex()
+            } catch (ex: PatternSyntaxException) {
+                log.error("Invalid inclusion-regex specified: ${inclusionSpec.inclusionFilter}.",ex)
+                null
+            }
+        }
+        val exclusionFilter = if (inclusionSpec.exclusionFilter.isNullOrBlank()) {
+            null
+        } else {
+            try {
+                inclusionSpec.exclusionFilter!!.toRegex()
+            } catch (ex: PatternSyntaxException) {
+                log.error("Invalid exclusion-regex specified: ${inclusionSpec.exclusionFilter}.",ex)
+                null
+            }
+        }
+        if (inclusionFilter != null) {
+            for (file in acquired) {
+                if (file.sourceFile.absolutePath.replace(modpackDir + File.separator, "").matches(inclusionFilter)) {
+                    processed.add(file)
+                    log.debug("{} matched Inclusion-Filter {}.", file, inclusionFilter)
+                }
+            }
+        } else {
+            processed.addAll(acquired)
+        }
+        if (exclusionFilter != null) {
+            processed.removeIf { file ->
+                val source = file.sourceFile.absolutePath.replace(modpackDir + File.separator, "")
+                return@removeIf if (source.matches(exclusionFilter)) {
+                    log.debug("{} matched Inclusion-Filter {}.", file.sourceFile, exclusionFilter)
+                    true
+                } else {
+                    false
+                }
+            }
+        }
+        return processed
+    }
+
+    /**
+     * @author Griefed
+     */
+    override fun getImprovedFabricLauncher(minecraftVersion: String, fabricVersion: String, destination: String) {
         val fileDestination = File(destination, "fabric-server-launcher.jar")
         if (versionMeta.fabric.launcherFor(minecraftVersion, fabricVersion).isPresent) {
             versionMeta.fabric.launcherFor(minecraftVersion, fabricVersion).get().copyTo(fileDestination)
@@ -317,6 +414,9 @@ actual class ServerPackHandler actual constructor(
         }
     }
 
+    /**
+     * @author Griefed
+     */
     override fun copyIcon(destination: String, pathToServerIcon: String) {
         log.info("Copying server-icon.png...")
         val customIcon = File(destination, apiProperties.defaultServerIcon.name)
@@ -352,6 +452,9 @@ actual class ServerPackHandler actual constructor(
         }
     }
 
+    /**
+     * @author Griefed
+     */
     override fun copyProperties(destination: String, pathToServerProperties: String) {
         log.info("Copying server.properties...")
         val customProperties = File(destination, apiProperties.defaultServerProperties.name)
@@ -365,6 +468,9 @@ actual class ServerPackHandler actual constructor(
         }
     }
 
+    /**
+     * @author Griefed
+     */
     override fun createStartScripts(scriptSettings: HashMap<String, String>, destination: String, isLocal: Boolean) {
         for (template in apiProperties.scriptTemplates) {
             try {
@@ -387,9 +493,11 @@ actual class ServerPackHandler actual constructor(
         }
     }
 
+    /**
+     * @author Griefed
+     */
     override fun zipBuilder(
         minecraftVersion: String,
-        includeServerInstallation: Boolean,
         destination: String,
         modloader: String,
         modloaderVersion: String
@@ -423,211 +531,64 @@ actual class ServerPackHandler actual constructor(
         } catch (ex: IOException) {
             log.error("There was an error during zip creation.", ex)
         }
-        if (includeServerInstallation) {
-            log.warn("!!!-------NOTE: The minecraft_server.jar will not be included in the zip-archive.-------!!!")
-            log.warn("!!!-Mojang strictly prohibits the distribution of their software through third parties.-!!!")
-            log.warn("!!!---Tell your users to execute the download scripts to get the Minecraft server jar.--!!!")
-        }
         log.info("Finished creation of zip archive.")
     }
 
+    /**
+     * @author Griefed
+     */
     override fun preInstallationCleanup(destination: String) {
-        File(destination, "libraries").deleteQuietly()
-        File(destination, "server.jar").deleteQuietly()
-        File(destination, "forge-installer.jar").deleteQuietly()
-        File(destination, "quilt-installer.jar").deleteQuietly()
-        File(destination, "installer.log").deleteQuietly()
-        File(destination, "forge-installer.jar.log").deleteQuietly()
-        File(destination, "legacyfabric-installer.jar").deleteQuietly()
-        File(destination, "run.bat").deleteQuietly()
-        File(destination, "run.sh").deleteQuietly()
-        File(destination, "user_jvm_args.txt").deleteQuietly()
-        File(destination, "quilt-server-launch.jar").deleteQuietly()
-        File(destination, "minecraft_server.1.16.5.jar").deleteQuietly()
-        File(destination, "forge.jar").deleteQuietly()
-    }
-
-    override fun installServer(
-        modLoader: String, minecraftVersion: String, modLoaderVersion: String, destination: String
-    ) {
-        if (!serverDownloadable(minecraftVersion, modLoader, modLoaderVersion)) {
-            log.error("The servers for $minecraftVersion, $modLoader $modLoaderVersion are currently unreachable. Skipping server installation.")
-            return
-        }
-        preInstallationCleanup(destination)
-        val commandArguments: MutableList<String> = ArrayList(10)
-        commandArguments.add(apiProperties.javaPath)
-        commandArguments.add("-jar")
-        var process: Process? = null
-        when (modLoader) {
-            "Fabric" -> {
-                log.info { "Installing Fabric server." }
-                installerLog.info("Starting Fabric installation.")
-                if (versionMeta.fabric.installerFor(versionMeta.fabric.releaseInstaller()).isPresent) {
-                    log.info("Fabric installer successfully downloaded.")
-                    commandArguments.add(
-                        versionMeta.fabric.installerFor(versionMeta.fabric.releaseInstaller()).get().absolutePath
-                    )
-                    commandArguments.add("server")
-                    commandArguments.add("-mcversion")
-                    commandArguments.add(minecraftVersion)
-                    commandArguments.add("-loader")
-                    commandArguments.add(modLoaderVersion)
-                    commandArguments.add("-downloadMinecraft")
-                } else {
-                    log.error(
-                        "Something went wrong during the installation of Fabric. Maybe the Fabric servers are down or unreachable? Skipping..."
-                    )
-                    return
-                }
+        log.info("Pre server installation cleanup.")
+        var fileToDelete: File
+        for (file in apiProperties.preInstallCleanupFiles) {
+            fileToDelete = File(destination,file)
+            if (fileToDelete.deleteQuietly()) {
+                log.info("Deleted $fileToDelete")
             }
-
-            "Forge" -> {
-                log.info { "Installing Forge server." }
-                installerLog.info("Starting Forge installation.")
-                if (versionMeta.forge.installerFor(modLoaderVersion, minecraftVersion).isPresent) {
-                    log.info("Forge installer successfully downloaded.")
-                    commandArguments.add(
-                        versionMeta.forge.installerFor(modLoaderVersion, minecraftVersion).get().absolutePath
-                    )
-                    commandArguments.add("--installServer")
-                } else {
-                    log.error(
-                        "Something went wrong during the installation of Forge. Maybe the Forge servers are down or unreachable? Skipping..."
-                    )
-                    return
-                }
-            }
-
-            "Quilt" -> {
-                log.info { "Installing Quilt server." }
-                installerLog.info("Starting Quilt installation.")
-                if (versionMeta.quilt.installerFor(versionMeta.quilt.releaseInstaller()).isPresent) {
-                    log.info("Quilt installer successfully downloaded.")
-                    commandArguments.add(
-                        versionMeta.quilt.installerFor(versionMeta.quilt.releaseInstaller()).get().absolutePath
-                    )
-                    commandArguments.add("install")
-                    commandArguments.add("server")
-                    commandArguments.add(minecraftVersion)
-                    commandArguments.add("--download-server")
-                    commandArguments.add("--install-dir=.")
-                } else {
-                    log.error(
-                        "Something went wrong during the installation of Quilt. Maybe the Quilt servers are down or unreachable? Skipping..."
-                    )
-                    return
-                }
-            }
-
-            "LegacyFabric" -> {
-                log.info { "Installing LegacyFabric server." }
-                installerLog.info("Starting Legacy Fabric installation.")
-                try {
-                    if (versionMeta.legacyFabric.installerFor(versionMeta.legacyFabric.releaseInstaller()).isPresent) {
-                        log.info("LegacyFabric installer successfully downloaded.")
-                        commandArguments.add(
-                            versionMeta.legacyFabric.installerFor(versionMeta.legacyFabric.releaseInstaller())
-                                .get().absolutePath
-                        )
-                        commandArguments.add("server")
-                        commandArguments.add("-mcversion")
-                        commandArguments.add(minecraftVersion)
-                        commandArguments.add("-loader")
-                        commandArguments.add(modLoaderVersion)
-                        commandArguments.add("-downloadMinecraft")
-                    } else {
-                        log.error(
-                            "Something went wrong during the installation of LegacyFabric. Maybe the LegacyFabric servers are down or unreachable? Skipping..."
-                        )
-                        return
-                    }
-                } catch (ex: MalformedURLException) {
-                    log.error("Couldn't acquire LegacyFabric installer URL.", ex)
-                }
-            }
-
-            else -> log.error("Invalid modloader specified. Modloader must be either Forge, Fabric or Quilt. Specified: $modLoader")
-        }
-        try {
-            log.info("Starting server installation for Minecraft $minecraftVersion, $modLoader $modLoaderVersion.")
-            val processBuilder =
-                ProcessBuilder(commandArguments).directory(File(destination).absoluteFile).redirectErrorStream(true)
-            log.debug("ProcessBuilder command: ${processBuilder.command()}")
-            log.debug("Executing in: ${File(destination)}")
-            process = processBuilder.start()
-            process.inputStream.use { input ->
-                input.bufferedReader().use { buff ->
-                    while (true) {
-                        val line: String = buff.readLine() ?: break
-                        installerLog.info(line)
-                    }
-                }
-            }
-            installerLog.info("Server for Minecraft $minecraftVersion, $modLoader $modLoaderVersion installed.")
-            log.info("Server for Minecraft $minecraftVersion, $modLoader $modLoaderVersion installed.")
-            log.info("For details regarding the installation of this modloader server, see logs/modloader_installer.log.")
-        } catch (ex: IOException) {
-            log.error(
-                "Something went wrong during the installation of Forge. Maybe the Forge servers are down or unreachable? Skipping...",
-                ex
-            )
-        } finally {
-            try {
-                process!!.destroy()
-            } catch (ignored: Exception) {
-            }
-        }
-        if (modLoader.equals("Forge", ignoreCase = true)) {
-            try {
-                val file = File(destination, "forge-$minecraftVersion-$modLoaderVersion.jar")
-                if (file.exists()) {
-                    file.copyTo(File(destination, "forge.jar"), true)
-                    file.deleteQuietly()
-                }
-            } catch (ex: IOException) {
-                log.error("Could not rename forge-$minecraftVersion-$modLoaderVersion.jar to forge.jar", ex)
-            }
-        }
-        if (apiProperties.isServerPackCleanupEnabled) {
-            postInstallCleanup(destination)
-        } else {
-            log.info("Server pack cleanup disabled.")
         }
     }
 
+    /**
+     * @author Griefed
+     */
     override fun getExplicitFiles(
-        combination: Array<String>, modpackDir: String, destination: String
+        source: String,
+        destination: String,
+        modpackDir: String,
+        serverPackDestination: String
     ): MutableList<ServerPackFile> {
         val serverPackFiles: MutableList<ServerPackFile> = ArrayList(100)
-        if (File(modpackDir, combination[0]).isFile) {
+        if (File(modpackDir, source).isFile) {
             serverPackFiles.add(
                 ServerPackFile(
-                    File(modpackDir, combination[0]), File(destination, combination[1])
+                    File(modpackDir, source), File(serverPackDestination, destination)
                 )
             )
-        } else if (File(modpackDir, combination[0]).isDirectory) {
+        } else if (File(modpackDir, source).isDirectory) {
             serverPackFiles.addAll(
                 getDirectoryFiles(
-                    modpackDir + File.separator + combination[0], destination + File.separator + combination[1]
+                    modpackDir + File.separator + source, serverPackDestination + File.separator + destination
                 )
             )
-        } else if (File(combination[0]).isFile) {
+        } else if (File(source).isFile) {
             serverPackFiles.add(
                 ServerPackFile(
-                    File(combination[0]), File(destination, combination[1])
+                    File(source), File(serverPackDestination, destination)
                 )
             )
-        } else if (File(combination[0]).isDirectory) {
+        } else if (File(source).isDirectory) {
             serverPackFiles.addAll(
                 getDirectoryFiles(
-                    combination[0], destination + File.separator + combination[1]
+                    source, serverPackDestination + File.separator + destination
                 )
             )
         }
         return serverPackFiles
     }
 
+    /**
+     * @author Griefed
+     */
     override fun getSaveFiles(clientDir: String, directory: String, destination: String): List<ServerPackFile> {
         val serverPackFiles: MutableList<ServerPackFile> = ArrayList(2000)
         try {
@@ -652,8 +613,15 @@ actual class ServerPackHandler actual constructor(
         return serverPackFiles
     }
 
+    /**
+     * @author Griefed
+     */
     override fun getModsToInclude(
-        modsDir: String, userSpecifiedClientMods: List<String>, minecraftVersion: String, modloader: String
+        modsDir: String,
+        userSpecifiedClientMods: List<String>,
+        userSpecifiedModsWhitelist: List<String>,
+        minecraftVersion: String,
+        modloader: String
     ): List<File> {
         log.info("Preparing a list of mods to include in server pack...")
         val filesInModsDir: Collection<File> = File(modsDir).filteredWalk(modFileEndings, FilterType.ENDS_WITH, FileWalkDirection.TOP_DOWN, recursive = false)
@@ -692,46 +660,22 @@ actual class ServerPackHandler actual constructor(
         }
 
         // Exclude user-specified mods from copying.
-        excludeUserSpecifiedMod(userSpecifiedClientMods, modsInModpack)
+        excludeUserSpecifiedMod(userSpecifiedClientMods, userSpecifiedModsWhitelist, modsInModpack)
         return ArrayList(modsInModpack)
     }
 
-    override fun getRegexMatches(modpackDir: String, destination: String, entry: String): List<ServerPackFile> {
-        val serverPackFiles: MutableList<ServerPackFile> = ArrayList(100)
-        if (entry.startsWith("==") && entry.length > 2) {
-            regexWalk(
-                File(modpackDir), destination, entry.substring(2).toRegex(), serverPackFiles
-            )
-        } else if (entry.contains("==") && entry.split("==").dropLastWhile { it.isEmpty() }.toTypedArray().size == 2) {
-            val regexInclusion = entry.split("==").dropLastWhile { it.isEmpty() }.toTypedArray()
-            if (File(modpackDir, regexInclusion[0]).isDirectory) {
-                regexWalk(
-                    File(
-                        modpackDir, regexInclusion[0]
-                    ), destination, regexInclusion[1].toRegex(), serverPackFiles
-                )
-            } else if (File(regexInclusion[0]).isDirectory) {
-                regexWalk(
-                    File(regexInclusion[0]), destination, regexInclusion[1].toRegex(), serverPackFiles
-                )
-            }
-        }
-        return serverPackFiles
-    }
-
-    override fun getDirectoryFiles(
-        source: String, destination: String
-    ): List<ServerPackFile> {
+    /**
+     * @author Griefed
+     */
+    override fun getDirectoryFiles(source: String, destination: String): List<ServerPackFile> {
         val serverPackFiles: MutableList<ServerPackFile> = ArrayList(100)
         try {
-            Files.walk(Paths.get(source)).use {
+            Files.walk(Paths.get(source).absolute()).use {
                 for (path in it) {
                     try {
                         val pathFile = path.toFile().absolutePath
                         val sourceFile = File(source).absolutePath
-                        val destFile = File(
-                            destination,pathFile.replace(sourceFile,"")
-                        )
+                        val destFile = File(destination, pathFile.replace(sourceFile, ""))
                         serverPackFiles.add(
                             ServerPackFile(
                                 path.toFile(),
@@ -744,81 +688,37 @@ actual class ServerPackHandler actual constructor(
                 }
             }
         } catch (ex: IOException) {
-            log.error("An error occurred gathering files to copy to the server pack.", ex)
+            log.error("An error occurred gathering files to copy to the server pack for directory $source.", ex)
         }
+
         return serverPackFiles
     }
 
-    override fun excludeFileOrDirectory(
-        modpackDir: String, fileToCheckFor: File, exclusions: TreeSet<String>
-    ): Boolean {
-        exclusions.addAll(apiProperties.directoriesToExclude)
-        for (exclusion in exclusions) {
-
-            // Exclude based on regex matches. Scary stuff.
-            if (exclusion.contains("==")) {
-
-                // Tell a user to use !==.* and watch the world burn, hehehe. No, don't do that.
-                if (exclusion.startsWith("==") && fileToCheckFor.absolutePath.matches(
-                        exclusion.substring(2).toRegex()
-                    )
-                ) {
-                    log.debug("Excluding file/directory: ${fileToCheckFor.absolutePath}")
-                    return true
-                } else if (exclusion.split("==").dropLastWhile { it.isEmpty() }.toTypedArray().size == 2) {
-                    val regexclusion = exclusion.split("==").dropLastWhile { it.isEmpty() }.toTypedArray()
-                    var toMatch: String
-                    if (File(modpackDir, regexclusion[0]).isDirectory) {
-                        toMatch = fileToCheckFor.absolutePath.replace(
-                            File(modpackDir, regexclusion[0]).absolutePath, ""
-                        )
-                        if (toMatch.startsWith(File.separator)) {
-                            toMatch = toMatch.substring(1)
-                        }
-                        if (toMatch.matches(regexclusion[1].toRegex())) {
-                            log.debug("Excluding file/directory: ${fileToCheckFor.absolutePath}")
-                            return true
-                        }
-                    } else if (File(regexclusion[0]).isDirectory) {
-                        toMatch = fileToCheckFor.absolutePath.replace(File(regexclusion[0]).absolutePath, "")
-                        if (toMatch.startsWith(File.separator)) {
-                            toMatch = toMatch.substring(1)
-                        }
-                        if (toMatch.matches(regexclusion[1].toRegex())) {
-                            log.debug("Excluding file/directory: ${fileToCheckFor.absolutePath}")
-                            return true
-                        }
-                    }
-                    if (fileToCheckFor.absolutePath.startsWith(File(regexclusion[0]).absolutePath) && fileToCheckFor.absolutePath.replace(
-                            File(regexclusion[0]).absolutePath, ""
-                        ).matches(regexclusion[1].toRegex())
-                    ) {
-                        log.debug("Excluding file/directory: ${fileToCheckFor.absolutePath}")
-                        return true
-                    }
-                }
-
-                // Exclude files with a specific file-ending.
-            } else if (exclusion.matches(ending) && fileToCheckFor.absolutePath.endsWith(exclusion)) {
-                log.debug("Excluding file/directory: ${fileToCheckFor.absolutePath}")
-                return true
-                // Exclude specific file/directory inside modpack from server pack
-            } else if (fileToCheckFor.absolutePath.startsWith(File(modpackDir, exclusion).absolutePath)) {
-                log.debug("Excluding file/directory: ${fileToCheckFor.absolutePath}")
-                return true
+    /**
+     * @author Griefed
+     */
+    override fun excludeFileOrDirectory(modpackDir: String, fileToCheckFor: File, exclusions: List<Regex>): Boolean {
+        val cleaned = fileToCheckFor.absolutePath.replace(File(modpackDir).absolutePath + File.separator, "")
+        return exclusions.any { regex ->
+            if (cleaned.matches(regex)) {
+                log.info("Excluding '$cleaned' as per global exclusion filter '$regex'.")
+                return@any true
+            } else {
+                return@any false
             }
         }
-        return false
     }
 
+    /**
+     * @author Griefed
+     */
     override fun serverDownloadable(mcVersion: String, modloader: String, modloaderVersion: String) = when (modloader) {
         "Fabric" -> utilities.webUtilities.isReachable(versionMeta.fabric.releaseInstallerUrl())
 
-        "Forge" -> (versionMeta.forge.getForgeInstance(
-            mcVersion, modloaderVersion
-        ).isPresent && utilities.webUtilities.isReachable(
-            versionMeta.forge.getForgeInstance(mcVersion, modloaderVersion).get().installerUrl
-        ))
+        "Forge" -> {
+            val instance = versionMeta.forge.getForgeInstance(mcVersion, modloaderVersion)
+            instance.isPresent && utilities.webUtilities.isReachable(instance.get().installerUrl)
+        }
 
         "Quilt" -> utilities.webUtilities.isReachable(versionMeta.quilt.releaseInstallerUrl())
 
@@ -830,22 +730,31 @@ actual class ServerPackHandler actual constructor(
             }
         }
 
+        "NeoForge" -> {
+            val instance = versionMeta.neoForge.getNeoForgeInstance(mcVersion,modloaderVersion)
+            instance.isPresent && utilities.webUtilities.isReachable(instance.get().installerUrl)
+        }
+
         else -> false
     }
 
+    /**
+     * @author Griefed
+     */
     override fun postInstallCleanup(destination: String) {
         log.info("Cleanup after modloader server installation.")
-        File(destination, "fabric-installer.jar").deleteQuietly()
-        File(destination, "forge-installer.jar").deleteQuietly()
-        File(destination, "quilt-installer.jar").deleteQuietly()
-        File(destination, "installer.log").deleteQuietly()
-        File(destination, "forge-installer.jar.log").deleteQuietly()
-        File(destination, "legacyfabric-installer.jar").deleteQuietly()
-        File(destination, "run.bat").deleteQuietly()
-        File(destination, "run.sh").deleteQuietly()
-        File(destination, "user_jvm_args.txt").deleteQuietly()
+        var fileToDelete: File
+        for (file in apiProperties.postInstallCleanupFiles) {
+            fileToDelete = File(destination, file)
+            if (fileToDelete.deleteQuietly()) {
+                log.info("  Deleted $fileToDelete")
+            }
+        }
     }
 
+    /**
+     * @author Griefed
+     */
     override fun excludeMods(autodiscoveredClientMods: List<File>, modsInModpack: TreeSet<File>) {
         if (autodiscoveredClientMods.isNotEmpty()) {
             log.info("Automatically detected mods: ${autodiscoveredClientMods.size}")
@@ -864,17 +773,23 @@ actual class ServerPackHandler actual constructor(
         }
     }
 
-    override fun excludeUserSpecifiedMod(userSpecifiedExclusions: List<String>, modsInModpack: TreeSet<File>) {
+    /**
+     * @author Griefed
+     */
+    override fun excludeUserSpecifiedMod(userSpecifiedExclusions: List<String>, userSpecifiedModsWhitelist: List<String>, modsInModpack: TreeSet<File>) {
         if (userSpecifiedExclusions.isNotEmpty()) {
             log.info("Performing ${apiProperties.exclusionFilter}-type checks for user-specified clientside-only mod exclusion.")
             for (userSpecifiedExclusion in userSpecifiedExclusions) {
-                exclude(userSpecifiedExclusion, modsInModpack)
+                exclude(userSpecifiedExclusion, userSpecifiedModsWhitelist, modsInModpack)
             }
         } else {
             log.warn("User specified no clientside-only mods.")
         }
     }
 
+    /**
+     * @author Griefed
+     */
     override fun regexWalk(
         source: File, destination: String, regex: Regex, serverPackFiles: MutableList<ServerPackFile>
     ) {
@@ -895,8 +810,8 @@ actual class ServerPackHandler actual constructor(
                             )
                         )
                         log.debug("Including through regex-match:")
-                        log.debug("    SOURCE: $path")
-                        log.debug("    DESTINATION: $add")
+                        log.debug("    SOURCE: {}", path)
+                        log.debug("    DESTINATION: {}", add)
                     }
                 }
             }
@@ -905,22 +820,26 @@ actual class ServerPackHandler actual constructor(
         }
     }
 
-    override fun exclude(userSpecifiedExclusion: String, modsInModpack: TreeSet<File>) {
-        modsInModpack.removeIf {
+    /**
+     * @author Griefed
+     */
+    override fun exclude(userSpecifiedExclusion: String, userSpecifiedModsWhitelist: List<String>, modsInModpack: TreeSet<File>) {
+        modsInModpack.removeIf { modToCheck ->
             val excluded: Boolean
-            val check = it.name
+            val modName = modToCheck.name
             excluded = when (apiProperties.exclusionFilter) {
-                ExclusionFilter.END -> check.endsWith(userSpecifiedExclusion)
-                ExclusionFilter.CONTAIN -> check.contains(userSpecifiedExclusion)
-                ExclusionFilter.REGEX -> check.matches(userSpecifiedExclusion.toRegex())
-                ExclusionFilter.EITHER -> (check.startsWith(userSpecifiedExclusion) || check.endsWith(
-                    userSpecifiedExclusion
-                ) || check.contains(userSpecifiedExclusion) || check.matches(userSpecifiedExclusion.toRegex()))
-
-                ExclusionFilter.START -> check.startsWith(userSpecifiedExclusion)
+                ExclusionFilter.START -> modName.startsWith(userSpecifiedExclusion) && !userSpecifiedModsWhitelist.any { whitelistedMod -> modName.startsWith(whitelistedMod) }
+                ExclusionFilter.END -> modName.endsWith(userSpecifiedExclusion) && !userSpecifiedModsWhitelist.any { whitelistedMod -> modName.endsWith(whitelistedMod) }
+                ExclusionFilter.CONTAIN -> modName.contains(userSpecifiedExclusion) && !userSpecifiedModsWhitelist.any { whitelistedMod -> modName.contains(whitelistedMod) }
+                ExclusionFilter.REGEX -> modName.matches(userSpecifiedExclusion.toRegex()) && !userSpecifiedModsWhitelist.any { whitelistedMod -> modName.matches(whitelistedMod.toRegex()) }
+                ExclusionFilter.EITHER -> (
+                            (modName.startsWith(userSpecifiedExclusion) && !userSpecifiedModsWhitelist.any { whitelistedMod -> modName.startsWith(whitelistedMod) }) ||
+                            (modName.endsWith(userSpecifiedExclusion) && !userSpecifiedModsWhitelist.any { whitelistedMod -> modName.endsWith(whitelistedMod) }) ||
+                            (modName.contains(userSpecifiedExclusion) && !userSpecifiedModsWhitelist.any { whitelistedMod -> modName.contains(whitelistedMod) }) ||
+                            (modName.matches(userSpecifiedExclusion.toRegex()) && !userSpecifiedModsWhitelist.any { whitelistedMod -> modName.matches(whitelistedMod.toRegex()) }))
             }
             if (excluded) {
-                log.debug("Removed ${it.name} as per user-specified check: $userSpecifiedExclusion")
+                log.debug("Removed ${modToCheck.name} as per user-specified check: $userSpecifiedExclusion")
             }
             excluded
         }

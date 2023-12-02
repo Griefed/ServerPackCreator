@@ -29,13 +29,15 @@ import de.griefed.serverpackcreator.api.utilities.CommentedConfig
 @Suppress("MemberVisibilityCanBePrivate")
 abstract class Pack<F, J, out P> {
     protected val forge = "^forge$".toRegex()
+    protected val neoForge = "^neoforge$".toRegex()
     protected val fabric = "^fabric$".toRegex()
     protected val quilt = "^quilt$".toRegex()
     protected val legacyFabric = "^legacyfabric$".toRegex()
-    protected val whitespace = "\\s+".toRegex()
+    protected val whitespace = "^\\s+$".toRegex()
 
     val clientMods: ArrayList<String> = ArrayList(1000)
-    val copyDirs: ArrayList<String> = ArrayList(100)
+    val modsWhitelist: ArrayList<String> = ArrayList(1000)
+    val inclusions: ArrayList<InclusionSpecification> = ArrayList(100)
     val scriptSettings = HashMap<String, String>(100)
     val pluginsConfigs = HashMap<String, ArrayList<CommentedConfig>>(20)
     var modpackDir = ""
@@ -49,6 +51,8 @@ abstract class Pack<F, J, out P> {
         set(newModLoader) {
             if (newModLoader.lowercase().matches(forge)) {
                 field = "Forge"
+            } else if (newModLoader.lowercase().matches(neoForge)) {
+                field = "NeoForge"
             } else if (newModLoader.lowercase().matches(fabric)) {
                 field = "Fabric"
             } else if (newModLoader.lowercase().matches(quilt)) {
@@ -57,11 +61,11 @@ abstract class Pack<F, J, out P> {
                 field = "LegacyFabric"
             }
         }
-    var isServerInstallationDesired = true
     var isServerIconInclusionDesired = true
     var isServerPropertiesInclusionDesired = true
     var isZipCreationDesired = true
     var modpackJson: J? = null
+    var configVersion: String? = null
 
     open var projectName: String? = null
     open var fileName: String? = null
@@ -74,7 +78,7 @@ abstract class Pack<F, J, out P> {
      * @return The configuration for further operations.
      * @author Griefed
      */
-    abstract fun save(destination: F): P
+    abstract fun save(destination: F, apiProperties: ApiProperties): P
 
     fun setPluginsConfigs(pluginConfigs: HashMap<String, ArrayList<CommentedConfig>>) {
         this.pluginsConfigs.clear()
@@ -88,21 +92,21 @@ abstract class Pack<F, J, out P> {
         return pluginsConfigs[pluginId]!!
     }
 
-    fun setClientMods(newClientMods: ArrayList<String>) {
+    fun setClientMods(newClientMods: MutableList<String>) {
         clientMods.clear()
-        newClientMods.removeIf { entry: String -> entry.matches(whitespace) || entry.isEmpty() }
+        newClientMods.removeIf { entry: String -> entry.isBlank() || entry.matches(whitespace) }
         clientMods.addAll(newClientMods)
     }
 
-    fun setCopyDirs(newCopyDirs: ArrayList<String>) {
-        copyDirs.clear()
-        newCopyDirs.removeIf { entry: String ->
-            entry.equals(
-                "server_pack",
-                ignoreCase = true
-            ) || entry.matches(whitespace) || entry.isEmpty()
-        }
-        copyDirs.addAll(newCopyDirs)
+    fun setModsWhitelist(newModsWhitelist: MutableList<String>) {
+        modsWhitelist.clear()
+        newModsWhitelist.removeIf { entry: String -> entry.isBlank() || entry.matches(whitespace) }
+        modsWhitelist.addAll(newModsWhitelist)
+    }
+
+    fun setInclusions(newCopyDirs: ArrayList<InclusionSpecification>) {
+        inclusions.clear()
+        inclusions.addAll(newCopyDirs)
     }
 
     fun setScriptSettings(settings: HashMap<String, String>) {
@@ -111,26 +115,22 @@ abstract class Pack<F, J, out P> {
     }
 
     override fun toString(): String {
-        return "ConfigurationModel(" +
-                "clientMods=$clientMods, " +
-                "copyDirs=$copyDirs, " +
-                "scriptSettings=$scriptSettings, " +
-                "pluginsConfigs=$pluginsConfigs, " +
-                "modloader='$modloader', " +
-                "modpackDir='$modpackDir', " +
-                "minecraftVersion='$minecraftVersion', " +
-                "modloaderVersion='$modloaderVersion', " +
-                "javaArgs='$javaArgs', " +
-                "serverPackSuffix='$serverPackSuffix', " +
-                "serverIconPath='$serverIconPath', " +
-                "serverPropertiesPath='$serverPropertiesPath', " +
-                "isServerInstallationDesired=$isServerInstallationDesired, " +
-                "isServerIconInclusionDesired=$isServerIconInclusionDesired, " +
-                "isServerPropertiesInclusionDesired=$isServerPropertiesInclusionDesired, " +
-                "isZipCreationDesired=$isZipCreationDesired, " +
-                "modpackJson=$modpackJson, " +
-                "projectName=$projectName, " +
-                "fileName=$fileName, " +
-                "fileDiskName=$fileDiskName)"
+        return "Pack(" +
+                " clientMods=$clientMods," +
+                " whiteList=$modsWhitelist," +
+                " copyDirs=$inclusions," +
+                " scriptSettings=$scriptSettings," +
+                " pluginsConfigs=$pluginsConfigs," +
+                " modpackDir='$modpackDir'," +
+                " minecraftVersion='$minecraftVersion'," +
+                " modloaderVersion='$modloaderVersion'," +
+                " javaArgs='$javaArgs'," +
+                " serverPackSuffix='$serverPackSuffix'," +
+                " serverIconPath='$serverIconPath'," +
+                " serverPropertiesPath='$serverPropertiesPath'," +
+                " modloader='$modloader'," +
+                " isServerIconInclusionDesired=$isServerIconInclusionDesired," +
+                " isServerPropertiesInclusionDesired=$isServerPropertiesInclusionDesired," +
+                " isZipCreationDesired=$isZipCreationDesired)"
     }
 }

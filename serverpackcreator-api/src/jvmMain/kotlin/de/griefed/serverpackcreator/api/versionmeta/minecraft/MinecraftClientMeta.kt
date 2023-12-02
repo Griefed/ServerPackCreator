@@ -27,7 +27,7 @@ import de.griefed.serverpackcreator.api.versionmeta.forge.ForgeMeta
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
 import java.io.IOException
-import java.net.URL
+import java.net.URI
 
 /**
  * Minecraft client meta containing information about available Minecraft releases.
@@ -54,6 +54,13 @@ internal class MinecraftClientMeta(
         private set
     var latestSnapshot: MinecraftClient? = null
         private set
+    private val versions = "versions"
+    private val latestType = "latest"
+    private val releaseType = "release"
+    private val snapshotType = "snapshot"
+    private val type = "type"
+    private val id = "id"
+    private val url = "url"
 
     /**
      * Update the meta information.
@@ -67,43 +74,25 @@ internal class MinecraftClientMeta(
         snapshots.clear()
         meta.clear()
         val minecraftManifest: JsonNode = utilities.jsonUtilities.getJson(minecraftManifest)
-        for (version in minecraftManifest.get("versions")) {
+        val versions = minecraftManifest.get(versions)
+        for (version in versions) {
             var client: MinecraftClient? = null
-            if (version.get("type").asText().lowercase() == "release") {
+            val type = version.get(type).asText().lowercase()
+            val id = version.get(id).asText()
+            val url = version.get(url).asText()
+            if (type == releaseType) {
                 try {
-                    client = MinecraftClient(
-                        version.get("id").asText(),
-                        Type.RELEASE,
-                        URL(version.get("url").asText()),
-                        forgeMeta,
-                        utilities,
-                        apiProperties
-                    )
+                    client = MinecraftClient(id, Type.RELEASE, URI(url).toURL(), forgeMeta, utilities, apiProperties)
                     releases.add(client)
                 } catch (ex: IOException) {
-                    log.debug(
-                        "No server available for MinecraftClient version "
-                                + version.get("id").asText(),
-                        ex
-                    )
+                    log.debug("No server available for MinecraftClient version $id", ex)
                 }
-            } else if (version.get("type").asText().lowercase() == "snapshot") {
+            } else if (type == snapshotType) {
                 try {
-                    client = MinecraftClient(
-                        version.get("id").asText(),
-                        Type.SNAPSHOT,
-                        URL(version.get("url").asText()),
-                        forgeMeta,
-                        utilities,
-                        apiProperties
-                    )
+                    client = MinecraftClient(id, Type.SNAPSHOT, URI(url).toURL(), forgeMeta, utilities, apiProperties)
                     snapshots.add(client)
                 } catch (ex: IOException) {
-                    log.debug(
-                        "No server available for MinecraftClient version "
-                                + version.get("id").asText(),
-                        ex
-                    )
+                    log.debug("No server available for MinecraftClient version $id", ex)
                 }
             }
             if (client != null) {
@@ -111,20 +100,26 @@ internal class MinecraftClientMeta(
                 allVersions.add(client)
             }
         }
+        val releaseVersion = minecraftManifest.get(latestType).get(releaseType).asText()
+        val releaseUrl = meta[minecraftManifest.get(latestType).get(releaseType).asText()]!!.url
+        val releaseServer = meta[minecraftManifest.get(latestType).get(releaseType).asText()]!!.minecraftServer
         latestRelease = MinecraftClient(
-            minecraftManifest.get("latest").get("release").asText(),
+            releaseVersion,
             Type.RELEASE,
-            meta[minecraftManifest.get("latest").get("release").asText()]!!.url,
-            meta[minecraftManifest.get("latest").get("release").asText()]!!.minecraftServer,
+            releaseUrl,
+            releaseServer,
             forgeMeta,
             utilities,
             apiProperties
         )
+        val snapshotVersion = minecraftManifest.get(latestType).get(snapshotType).asText()
+        val snapshotUrl = meta[minecraftManifest.get(latestType).get(snapshotType).asText()]!!.url
+        val snapshotServer = meta[minecraftManifest.get(latestType).get(snapshotType).asText()]!!.minecraftServer
         latestSnapshot = MinecraftClient(
-            minecraftManifest.get("latest").get("snapshot").asText(),
+            snapshotVersion,
             Type.SNAPSHOT,
-            meta[minecraftManifest.get("latest").get("snapshot").asText()]!!.url,
-            meta[minecraftManifest.get("latest").get("snapshot").asText()]!!.minecraftServer,
+            snapshotUrl,
+            snapshotServer,
             forgeMeta,
             utilities,
             apiProperties

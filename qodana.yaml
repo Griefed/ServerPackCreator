@@ -1,38 +1,31 @@
+#-------------------------------------------------------------------------------#
+#               Qodana analysis is configured by qodana.yaml file               #
+#             https://www.jetbrains.com/help/qodana/qodana-yaml.html            #
+#-------------------------------------------------------------------------------#
 version: "1.0"
-linter: jetbrains/qodana-jvm-community:2022.2
+
+#Specify inspection profile for code analysis
 profile:
-  name: qodana.recommended
-exclude:
-  - name: FieldMayBeStatic
-  - name: KotlinAnnotator
-  - name: KotlinRedundantDiagnosticSuppress
-  - name: SystemOutErr
-  - name: All
-    paths:
-      - .github
-      - .gradle
-      - .idea
-      - .jpb
-      - .runConfigurations
-      - build
-      - buildSrc/.gradle
-      - buildSrc/build
-      - gradle
-      - img
-      - licenses
-      - manifests
-      - qodana
-      - root
-      - serverpackcreator-api/build
-      - serverpackcreator-api/tests
-      - serverpackcreator-app/build
-      - serverpackcreator-app/tests
-      - serverpackcreator-cli/build
-      - serverpackcreator-cli/tests
-      - serverpackcreator-gui/build
-      - serverpackcreator-gui/tests
-      - serverpackcreator-updater/build
-      - serverpackcreator-updater/tests
-      - serverpackcreator-web-frontend
-      - serverpackcreator-web/build
-      - serverpackcreator-web/tests
+  name: qodana.starter
+
+#Enable inspections
+#include:
+#  - name: <SomeEnabledInspectionId>
+
+#Disable inspections
+#exclude:
+#  - name: <SomeDisabledInspectionId>
+#    paths:
+#      - <path/where/not/run/inspection>
+
+projectJDK: azul-17 #(Applied in CI/CD pipeline)
+
+#Execute shell command before Qodana execution (Applied in CI/CD pipeline)
+#bootstrap: sh ./prepare-qodana.sh
+
+#Install IDE plugins before Qodana execution (Applied in CI/CD pipeline)
+#plugins:
+#  - id: <plugin.id> #(plugin id can be found at https://plugins.jetbrains.com)
+
+#Specify Qodana linter for analysis (Applied in CI/CD pipeline)
+linter: jetbrains/qodana-jvm:latest

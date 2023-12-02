@@ -10,17 +10,6 @@ import javax.xml.parsers.ParserConfigurationException
 class PackConfigTest internal constructor() {
 
     @Test
-    fun getSetCopyDirsTest() {
-        val testList = arrayListOf("config", "mods", "scripts", "seeds", "defaultconfigs", "server_pack")
-        val getList = arrayListOf("config", "mods", "scripts", "seeds", "defaultconfigs")
-        val packConfig = PackConfig()
-        packConfig.setCopyDirs(testList)
-        Assertions.assertNotNull(packConfig.copyDirs)
-        Assertions.assertFalse(packConfig.copyDirs.contains("server_pack"))
-        Assertions.assertEquals(getList, packConfig.copyDirs)
-    }
-
-    @Test
     fun getSetModLoaderTest() {
         var modloader = "FoRgE"
         val packConfig = PackConfig()
@@ -46,7 +35,7 @@ class PackConfigTest internal constructor() {
     @Throws(FileNotFoundException::class, ParserConfigurationException::class)
     fun scriptSettingsTest() {
         val packConfig = PackConfig(
-            ApiWrapper.api(File("src/jvmTest/resources/serverpackcreator.properties")).utilities!!,
+            ApiWrapper.api(File("src/jvmTest/resources/serverpackcreator.properties")).utilities,
             File("src/jvmTest/resources/testresources/spcconfs/scriptSettings.conf")
         )
         Assertions.assertEquals(
@@ -69,7 +58,6 @@ class PackConfigTest internal constructor() {
         Assertions.assertEquals(packConfig.modloaderVersion, "14.23.5.2860")
         Assertions.assertEquals(packConfig.minecraftVersion, "1.12.2")
         Assertions.assertEquals(packConfig.modloader, "Forge")
-        Assertions.assertFalse(packConfig.isServerInstallationDesired)
         Assertions.assertTrue(packConfig.isServerPropertiesInclusionDesired)
         Assertions.assertTrue(packConfig.isServerIconInclusionDesired)
         Assertions.assertTrue(packConfig.isZipCreationDesired)
@@ -128,13 +116,11 @@ class PackConfigTest internal constructor() {
             Assertions.assertEquals((config.get("list") as ArrayList<String>).size, 4)
             Assertions.assertEquals(config.get("list") as ArrayList<String>, list)
         }
-        val afterFile = File(
-            ApiWrapper.api(File("src/jvmTest/resources/serverpackcreator.properties")).apiProperties.homeDirectory,
-            "after.conf"
-        )
-        packConfig.save(afterFile)
+        val apiProperties = ApiWrapper.api(File("src/jvmTest/resources/serverpackcreator.properties")).apiProperties
+        val afterFile = File(apiProperties.homeDirectory,"after.conf")
+        packConfig.save(afterFile, apiProperties)
         val after = PackConfig(
-            ApiWrapper.api(File("src/jvmTest/resources/serverpackcreator.properties")).utilities!!, afterFile
+            ApiWrapper.api(File("src/jvmTest/resources/serverpackcreator.properties")).utilities, afterFile
         )
         Assertions.assertEquals(after.serverIconPath, packConfig.serverIconPath)
         Assertions.assertEquals(after.serverPackSuffix, packConfig.serverPackSuffix)
@@ -147,7 +133,6 @@ class PackConfigTest internal constructor() {
         Assertions.assertEquals(after.modloaderVersion, packConfig.modloaderVersion)
         Assertions.assertEquals(after.minecraftVersion, packConfig.minecraftVersion)
         Assertions.assertEquals(after.modloader, packConfig.modloader)
-        Assertions.assertFalse(after.isServerInstallationDesired)
         Assertions.assertTrue(after.isServerPropertiesInclusionDesired)
         Assertions.assertTrue(after.isServerIconInclusionDesired)
         Assertions.assertTrue(after.isZipCreationDesired)

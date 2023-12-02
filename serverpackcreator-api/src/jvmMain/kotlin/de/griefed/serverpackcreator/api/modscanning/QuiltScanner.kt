@@ -34,11 +34,19 @@ import java.util.*
  *
  * @author Griefed
  */
-actual class QuiltScanner constructor(
+actual class QuiltScanner(
     private val objectMapper: ObjectMapper,
     private val utilities: Utilities
 ) : JsonBasedScanner(), Scanner<TreeSet<File>, Collection<File>> {
     private val logger = cachedLoggerOf(this.javaClass)
+    private val quiltModJson = "quilt.mod.json"
+    private val quiltLoader = "quilt_loader"
+    private val id = "id"
+    private val client = "client"
+    private val minecraft = "minecraft"
+    private val environment = "environment"
+    private val depends = "depends"
+    private val jar = "jar"
 
     /**
      * Scan the `quilt.mod.json`-files in mod JAR-files of a given directory for their sideness.
@@ -52,7 +60,7 @@ actual class QuiltScanner constructor(
      */
     override fun scan(jarFiles: Collection<File>): TreeSet<File> {
         logger.info("Scanning Quilt mods for sideness...")
-        val modDependencies = TreeSet<String>()
+        val modDependencies = ArrayList<Pair<String, Pair<String, String>>>()
         val clientMods = TreeSet<String>()
 
         /*
@@ -72,86 +80,70 @@ actual class QuiltScanner constructor(
         return getModsDelta(jarFiles, clientMods)
     }
 
+    /**
+     * @author Griefed
+     */
     override fun checkForClientModsAndDeps(
         filesInModsDir: Collection<File>,
         clientMods: TreeSet<String>,
-        modDependencies: TreeSet<String>
+        modDependencies: ArrayList<Pair<String, Pair<String, String>>>
     ) {
         for (mod in filesInModsDir) {
-            if (mod.name.endsWith("jar")) {
-                var modId: String
+            if (!mod.name.endsWith(jar)) {
+                continue
+            }
+
+            var modId: String
+            try {
+                val modJson: JsonNode = getJarJson(mod, quiltModJson, objectMapper)
+                modId = utilities.jsonUtilities.getNestedText(modJson, quiltLoader, id)
+
+                // Get this mods' id/name
                 try {
-                    val modJson: JsonNode = getJarJson(mod, "quilt.mod.json", objectMapper)
-                    modId = utilities.jsonUtilities.getNestedText(modJson, "quilt_loader", "id")
-
-                    // Get this mods' id/name
-                    try {
-                        if (utilities.jsonUtilities
-                                .nestedTextEqualsIgnoreCase(
-                                    modJson, "client", "minecraft",
-                                    "environment"
-                                )
-                        ) {
-                            clientMods.add(modId)
-                            logger.debug("Added clientMod: $modId")
-                        }
-                    } catch (ignored: NullPointerException) {
+                    if (utilities.jsonUtilities.nestedTextEqualsIgnoreCase(modJson, client, minecraft, environment)) {
+                        clientMods.add(modId)
+                        logger.debug("Added clientMod: $modId")
                     }
+                } catch (ignored: NullPointerException) {
+                }
 
-                    // Get this mods dependencies
-                    try {
-                        for (dependency in utilities.jsonUtilities
-                            .getNestedElement(
-                                modJson, "quilt_loader",
-                                "depends"
-                            )) {
-                            if (dependency.isContainerNode) {
-                                if (!utilities.jsonUtilities.getNestedText(dependency, "id")
-                                        .matches(dependencyExclusions)
-                                    && modDependencies.add(
-                                        utilities.jsonUtilities.getNestedText(dependency, "id")
-                                    )
-                                ) {
-                                    try {
-                                        logger.debug(
-                                            "Added dependency ${
-                                                utilities.jsonUtilities.getNestedText(
-                                                    dependency,
-                                                    " id "
-                                                )
-                                            } for $modId (${mod.name})."
-                                        )
-                                        modDependencies.add(utilities.jsonUtilities.getNestedText(dependency, "id"))
-                                    } catch (ex: NullPointerException) {
-                                        logger.debug("No dependencies for $modId (${mod.name}).")
-                                    }
+                // Get this mods dependencies
+                try {
+                    val dependencies = utilities.jsonUtilities.getNestedElement(modJson, quiltLoader, depends)
+                    for (dependency in dependencies) {
+                        if (dependency.isContainerNode) {
+                            try {
+                                val dependencyId = utilities.jsonUtilities.getNestedText(dependency, id)
+                                if (!dependencyId.matches(dependencyExclusions) && modDependencies.add(Pair(dependencyId, Pair(mod.name, modId)))) {
+                                    logger.debug("Added dependency $dependencyId for $modId (${mod.name}).")
                                 }
-                            } else {
-                                if (!dependency.asText().matches(dependencyExclusions)
-                                    && modDependencies.add(dependency.asText())
-                                ) {
-                                    try {
-                                        logger.debug("Added dependency ${dependency.asText()} for $modId (${mod.name}).")
-                                        modDependencies.add(dependency.asText())
-                                    } catch (ex: NullPointerException) {
-                                        logger.debug("No dependencies for $modId (${mod.name}).")
-                                    }
+                            } catch (ex: NullPointerException) {
+                                logger.debug("No dependencies for $modId (${mod.name}).")
+                            }
+                        } else {
+                            try {
+                                val dependencyText = dependency.asText()
+                                if (!dependencyText.matches(dependencyExclusions) && modDependencies.add(Pair(dependencyText, Pair(mod.name, modId)))) {
+                                    logger.debug("Added dependency ${dependency.asText()} for $modId (${mod.name}).")
                                 }
+                            } catch (ex: NullPointerException) {
+                                logger.debug("No dependencies for $modId (${mod.name}).")
                             }
                         }
-                    } catch (ignored: NullPointerException) {
                     }
-                } catch (ex: Exception) {
-                    if (ex.toString().startsWith("java.lang.NullPointerException")) {
-                        logger.warn("Couldn't scan $mod as it contains no quilt.mod.json.")
-                    } else {
-                        logger.error("Couldn't scan $mod", ex)
-                    }
+                } catch (ignored: NullPointerException) {
                 }
+            } catch (ex: NullPointerException) {
+                logger.warn("Couldn't scan $mod as it contains no quilt.mod.json.")
+            } catch (ex: Exception) {
+                logger.error("Couldn't scan $mod", ex)
             }
         }
     }
 
+    /**
+     * @author Griefed
+     */
     override fun getModsDelta(filesInModsDir: Collection<File>, clientMods: TreeSet<String>): TreeSet<File> {
         val modsDelta = TreeSet<File>()
         // After removing dependencies from the list of potential clientside mods, we can remove any mod
@@ -160,21 +152,19 @@ actual class QuiltScanner constructor(
             var modIdToCheck: String
             var addToDelta = false
             try {
-                val modJson: JsonNode = getJarJson(mod, "quilt.mod.json", objectMapper)
+                val modJson: JsonNode = getJarJson(mod, quiltModJson, objectMapper)
 
                 // Get the modId
-                modIdToCheck = utilities.jsonUtilities.getNestedText(modJson, "quilt_loader", "id")
+                modIdToCheck = utilities.jsonUtilities.getNestedText(modJson, quiltLoader, id)
                 try {
                     if (utilities.jsonUtilities.nestedTextEqualsIgnoreCase(
                             modJson,
-                            "client",
-                            "minecraft",
-                            "environment"
-                        )
+                            client,
+                            minecraft,
+                            environment
+                        ) && clientMods.contains(modIdToCheck)
                     ) {
-                        if (clientMods.contains(modIdToCheck)) {
-                            addToDelta = true
-                        }
+                        addToDelta = true
                     }
                 } catch (ignored: NullPointerException) {
                 }

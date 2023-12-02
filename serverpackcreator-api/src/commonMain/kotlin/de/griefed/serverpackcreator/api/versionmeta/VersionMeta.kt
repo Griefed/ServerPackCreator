@@ -25,6 +25,7 @@ import de.griefed.serverpackcreator.api.versionmeta.fabric.FabricMeta
 import de.griefed.serverpackcreator.api.versionmeta.forge.ForgeMeta
 import de.griefed.serverpackcreator.api.versionmeta.legacyfabric.LegacyFabricMeta
 import de.griefed.serverpackcreator.api.versionmeta.minecraft.MinecraftMeta
+import de.griefed.serverpackcreator.api.versionmeta.neoforge.NeoForgeMeta
 import de.griefed.serverpackcreator.api.versionmeta.quilt.QuiltMeta
 
 /**
@@ -47,6 +48,9 @@ expect class VersionMeta {
 
     @Suppress("MemberVisibilityCanBePrivate")
     val forgeUrlManifest: URL
+
+    @Suppress("MemberVisibilityCanBePrivate")
+    val neoForgeUrlManifest: URL
 
     @Suppress("MemberVisibilityCanBePrivate")
     val fabricUrlManifest: URL
@@ -82,6 +86,12 @@ expect class VersionMeta {
     val forge: ForgeMeta
 
     /**
+     * The NeoForgeMeta-instance for working with NeoForge versions and information about them.
+     */
+    @Suppress("MemberVisibilityCanBePrivate")
+    val neoForge: NeoForgeMeta
+
+    /**
      * The QuiltMeta-instance for working with Quilt versions and information about them.
      */
     @Suppress("MemberVisibilityCanBePrivate")
@@ -92,5 +102,4 @@ expect class VersionMeta {
      */
     @Suppress("MemberVisibilityCanBePrivate")
     val legacyFabric: LegacyFabricMeta
-
 }

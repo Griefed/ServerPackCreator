@@ -24,7 +24,7 @@ import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import de.griefed.serverpackcreator.api.versionmeta.Type
 import java.io.File
-import java.io.IOException
+import java.net.URI
 import java.net.URL
 import java.util.*
 
@@ -49,6 +49,11 @@ class MinecraftServer internal constructor(
 ) {
     private val manifestFile: File = File(apiProperties.minecraftServerManifestsDirectory, "$minecraftVersion.json")
     private var serverJson: JsonNode? = null
+    private val downloads = "downloads"
+    private val server = "server"
+    private val url = "url"
+    private val javaVersion = "javaVersion"
+    private val majorVersion = "majorVersion"
 
     /**
      * Get the [URL] to the download of this Minecraft-servers JAR-file.
@@ -61,7 +66,10 @@ class MinecraftServer internal constructor(
             if (serverJson == null) {
                 setServerJson()
             }
-            Optional.ofNullable(URL(serverJson?.get("downloads")?.get("server")?.get("url")?.asText()))
+            val dwn = serverJson?.get(downloads)
+            val srv = dwn?.get(server)
+            val url = srv?.get(url)?.asText()
+            Optional.ofNullable(URI(url).toURL())
         } catch (e: Exception) {
             Optional.empty()
         }
@@ -76,11 +84,7 @@ class MinecraftServer internal constructor(
         if (!manifestFile.exists()) {
             utilities.webUtilities.downloadFile(manifestFile, serverUrl)
         }
-        serverJson = try {
-            utilities.jsonUtilities.getJson(manifestFile)
-        } catch (e: IOException) {
-            throw RuntimeException(e)
-        }
+        serverJson = utilities.jsonUtilities.getJson(manifestFile)
     }
 
     /**
@@ -94,7 +98,9 @@ class MinecraftServer internal constructor(
             if (serverJson == null) {
                 setServerJson()
             }
-            Optional.ofNullable(serverJson?.get("javaVersion")?.get("majorVersion")?.asInt()?.toByte())
+            val jv = serverJson?.get(javaVersion)
+            val major = jv?.get(majorVersion)?.asInt()?.toByte()
+            Optional.ofNullable(major)
         } catch (e: Exception) {
             Optional.empty()
         }

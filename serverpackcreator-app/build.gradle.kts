@@ -1,4 +1,6 @@
 import java.time.LocalDate
+import java.util.*
+
 plugins {
     id("serverpackcreator.application-conventions")
 }
@@ -20,9 +22,8 @@ dependencies {
     api(project(":serverpackcreator-gui"))
     api(project(":serverpackcreator-web"))
     api(project(":serverpackcreator-updater"))
-    api("de.griefed:versionchecker:1.1.5")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.3")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.3")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.0")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.0")
 }
 
 springBoot {
@@ -40,15 +41,15 @@ tasks.clean {
 }
 
 task("copyDependencies", Copy::class) {
-    from(configurations.runtimeClasspath).into("$buildDir/jars")
+    from(configurations.runtimeClasspath).into("${layout.buildDirectory.asFile.get()}/jars")
 }
 
 task("copyJar", Copy::class) {
-    from(tasks.jar).into("$buildDir/jars")
+    from(tasks.jar).into("${layout.buildDirectory.asFile.get()}/jars")
 }
 
 tasks.register<Delete>("cleanTmpPackager") {
-    delete("$buildDir/tmp/jpackager")
+    delete("${layout.buildDirectory.asFile.get()}/tmp/jpackager")
 }
 
 // https://docs.oracle.com/en/java/javase/14/docs/specs/man/jpackage.html
@@ -60,7 +61,7 @@ tasks.jpackage {
     val ver: String = project.version.toString()
     dependsOn("build", "copyDependencies", "copyJar", "cleanTmpPackager")
     aboutUrl = "https://www.griefed.de/#/serverpackcreator"
-    appDescription = "Create server packs from Minecraft Forge, Fabric, Quilt or LegacyFabric modpacks."
+    appDescription = "Create server packs from Minecraft Forge, NeoForge, Fabric, Quilt or LegacyFabric modpacks."
     appName = "ServerPackCreator"
     appVersion = if (ver == "dev") {
         val current = LocalDate.now().toString().split("-")
@@ -70,31 +71,33 @@ tasks.jpackage {
     } else {
         ver
     }
-    copyright = "Copyright (C) 2022 Griefed"
-    destination = "$buildDir/dist"
+    copyright = "Copyright (C) ${Calendar.getInstance().get(Calendar.YEAR)} Griefed"
+    destination = "${layout.buildDirectory.asFile.get()}/dist"
     icon = File(packagerResources, "app.png").path
-    input = "$buildDir/jars"
+    input = "${layout.buildDirectory.asFile.get()}/jars"
     javaOptions = listOf("-Dfile.encoding=UTF-8", "-Dlog4j2.formatMsgNoLookups=true")
-    licenseFile = parent.path + "/LICENSE"
+    licenseFile = parent.path + "/licenses/LICENSE-AGREEMENT"
     mainJar = tasks.jar.get().archiveFileName.get()
     mainClass = "de.griefed.serverpackcreator.app.ServerPackCreatorKt"
     resourceDir = packagerResources.path
     runtimeImage = System.getProperty("java.home")
-    temp = "$buildDir/tmp/jpackager"
+    temp = "${layout.buildDirectory.asFile.get()}/tmp/jpackager"
     vendor = "griefed.de"
     verbose = true
     mac {
         icon = File(packagerResources, "app.icns").path
         type = org.panteleyev.jpackage.ImageType.PKG
         macAppCategory = "utilities"
+        macPackageIdentifier = "ServerPackCreator"
         macPackageName = "ServerPackCreator"
     }
     windows {
         icon = File(packagerResources, "app.ico").path
         type = org.panteleyev.jpackage.ImageType.MSI
-        winConsole = true
+        winConsole = false
         winMenu = true
         winMenuGroup = "ServerPackCreator"
+        winPerUserInstall = false
         winShortcut = true
         winShortcutPrompt = true
     }

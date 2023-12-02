@@ -15,7 +15,7 @@ import javax.xml.parsers.ParserConfigurationException
 
 class ApiPluginsTest {
     private val apiPlugins: ApiPlugins =
-        ApiWrapper.api(File("src/jvmTest/resources/serverpackcreator.properties")).apiPlugins!!
+        ApiWrapper.api(File("src/jvmTest/resources/serverpackcreator.properties")).apiPlugins
 
     @Test
     @Throws(IOException::class, ParserConfigurationException::class, SAXException::class)
@@ -28,7 +28,9 @@ class ApiPluginsTest {
         apiPlugins.loadPlugins()
         apiPlugins.startPlugins()
         for (plugin in apiPlugins.plugins) {
-            Assertions.assertTrue(apiPlugins.getAllExtensionsOfPlugin(plugin, PostGenExtension::class.java).isNotEmpty())
+            Assertions.assertTrue(
+                apiPlugins.getAllExtensionsOfPlugin(plugin, PostGenExtension::class.java).isNotEmpty()
+            )
             Assertions.assertTrue(apiPlugins.getAllExtensionsOfPlugin(plugin, TabExtension::class.java).isNotEmpty())
             Assertions.assertTrue(apiPlugins.getAllExtensionsOfPlugin(plugin, PreGenExtension::class.java).isNotEmpty())
             Assertions.assertTrue(apiPlugins.getAllExtensionsOfPlugin(plugin, PreZipExtension::class.java).isNotEmpty())

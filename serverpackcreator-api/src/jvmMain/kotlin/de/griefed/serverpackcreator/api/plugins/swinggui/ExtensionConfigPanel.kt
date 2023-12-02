@@ -26,7 +26,6 @@ import de.griefed.serverpackcreator.api.versionmeta.VersionMeta
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import java.util.*
-import javax.swing.BorderFactory
 import javax.swing.JPanel
 
 /**
@@ -68,10 +67,6 @@ actual abstract class ExtensionConfigPanel protected actual constructor(
     @Suppress("MemberVisibilityCanBePrivate")
     actual val serverPackExtensionConfig: ArrayList<CommentedConfig> = ArrayList<CommentedConfig>(100)
 
-    init {
-        border = BorderFactory.createTitledBorder(extensionName)
-    }
-
     /**
      * Retrieve this extensions server pack specific configuration. When no configuration with configs
      * for this extension has been loaded yet, the returned list is empty. Fill it with life!
@@ -83,7 +78,7 @@ actual abstract class ExtensionConfigPanel protected actual constructor(
     actual abstract fun serverPackExtensionConfig(): ArrayList<CommentedConfig>
 
     /**
-     * Pass the extension configuration to the configuration panel so it can then, in turn, load the
+     * Pass the extension configuration to the configuration panel, so it can then, in turn, load the
      * available configurations and make them editable, if so desired.
      *
      * @param serverPackExtensionConfig The list of extension configurations to pass to the

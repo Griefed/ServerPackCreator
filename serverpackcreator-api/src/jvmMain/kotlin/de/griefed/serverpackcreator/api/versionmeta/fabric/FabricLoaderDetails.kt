@@ -21,7 +21,7 @@ package de.griefed.serverpackcreator.api.versionmeta.fabric
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import java.io.IOException
-import java.net.URL
+import java.net.URI
 import java.util.*
 
 /**
@@ -31,7 +31,9 @@ import java.util.*
  *
  * @author Griefed
  */
-internal class FabricLoaderDetails constructor(private val objectMapper: ObjectMapper) {
+internal class FabricLoaderDetails(private val objectMapper: ObjectMapper) {
+    private val urlPrefix = "https://meta.fabricmc.net/v2/versions/loader/"
+    private val json = "/server/json"
 
     /**
      * Get the details for a given Minecraft and Fabric version combination.
@@ -47,13 +49,7 @@ internal class FabricLoaderDetails constructor(private val objectMapper: ObjectM
     ) = try {
         Optional.of(
             objectMapper.readValue(
-                URL(
-                    "https://meta.fabricmc.net/v2/versions/loader/"
-                            + minecraftVersion
-                            + "/"
-                            + modloaderVersion
-                            + "/server/json"
-                ),
+                URI("$urlPrefix$minecraftVersion/$modloaderVersion$json").toURL(),
                 FabricDetails::class.java
             )
         )

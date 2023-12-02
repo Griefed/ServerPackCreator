@@ -46,7 +46,7 @@ open class CommandlineParser(args: Array<String>) {
     var propertiesFile: File = File("serverpackcreator.properties")
 
     init {
-        val argsList: List<String> = listOf(*args)
+        val argsList = args.toList()
 
         /*
         * Check whether a language locale was specified by the user.
@@ -116,10 +116,11 @@ open class CommandlineParser(args: Array<String>) {
             * Check whether the user wants to set up and prepare the environment for subsequent runs.
             */
             if (argsList.contains(Mode.SETUP.argument())) {
-                if (argsList.size > 1
-                    && File(argsList[argsList.indexOf(Mode.SETUP.argument()) + 1]).isFile
-                ) {
-                    propertiesFile = File(argsList[argsList.indexOf(Mode.SETUP.argument()) + 1])
+                val setupPos = argsList.indexOf(Mode.SETUP.argument()) + 1
+                val setupArg = argsList[setupPos]
+                val setupFile = File(setupArg)
+                if (argsList.size > 1 && setupFile.isFile) {
+                    propertiesFile = setupFile
                 }
                 mode = Mode.SETUP
                 return@run

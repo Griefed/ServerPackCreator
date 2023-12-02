@@ -21,6 +21,7 @@ package de.griefed.serverpackcreator.api
 
 import de.griefed.serverpackcreator.api.utilities.common.escapePath
 import mu.KotlinLogging
+import java.io.File
 
 /**
  * Base-class for the [de.griefed.serverpackcreator.api.ServerPackHandler] to ensure we have the most important methods
@@ -49,7 +50,7 @@ abstract class ServerPack<F, TS, TF> {
      * which the server pack will be created has all its spaces replaces with underscores, so
      * `Survive Create Prosper 4 - 5.0.1` would become `Survive_Create_Prosper_4_-_5.0.1 `
      * Even though it is the year 2022, spaces in paths can and do still cause trouble. Such as for
-     * Powershell scripts. Powershell throws a complete fit if the path contains spaces....soooooo, we
+     * Powershell scripts. Powershell throws a complete fit if the path contains spaces....so, we
      * remove them. Better safe than sorry.
      *
      * @param packConfig Model containing the modpack directory of the modpack from which the
@@ -98,8 +99,9 @@ abstract class ServerPack<F, TS, TF> {
      */
     fun copyFiles(packConfig: Pack<*, *, *>) = copyFiles(
         packConfig.modpackDir,
-        packConfig.copyDirs,
+        packConfig.inclusions,
         packConfig.clientMods,
+        packConfig.modsWhitelist,
         packConfig.minecraftVersion,
         getServerPackDestination(packConfig),
         packConfig.modloader
@@ -113,7 +115,7 @@ abstract class ServerPack<F, TS, TF> {
      * which to acquire the improved Fabric Server Launcher.
      * @author Griefed
      */
-    fun provideImprovedFabricServerLauncher(packConfig: Pack<*, *, *>) = provideImprovedFabricServerLauncher(
+    fun provideImprovedFabricServerLauncher(packConfig: Pack<*, *, *>) = getImprovedFabricLauncher(
         packConfig.minecraftVersion, packConfig.modloaderVersion, getServerPackDestination(packConfig)
     )
 
@@ -166,26 +168,9 @@ abstract class ServerPack<F, TS, TF> {
      */
     fun zipBuilder(packConfig: Pack<*, *, *>) = zipBuilder(
         packConfig.minecraftVersion,
-        packConfig.isServerInstallationDesired,
         getServerPackDestination(packConfig),
         packConfig.modloader,
         packConfig.modloaderVersion
-    )
-
-    /**
-     * Installs the modloader server for the specified modloader, modloader version and Minecraft
-     * version.
-     *
-     * @param packConfig Contains the used modloader, Minecraft version, modloader version,
-     * path to the java executable/binary and modpack directory in order to
-     * acquire the destination at which to install the server.
-     * @author Griefed
-     */
-    fun installServer(packConfig: Pack<*, *, *>) = installServer(
-        packConfig.modloader,
-        packConfig.minecraftVersion,
-        packConfig.modloaderVersion,
-        getServerPackDestination(packConfig)
     )
 
     /**
@@ -199,7 +184,7 @@ abstract class ServerPack<F, TS, TF> {
      *
      * @param modpackDir        Files and directories are copied into the server_pack directory inside
      * the modpack directory.
-     * @param directoriesToCopy All directories and files therein to copy to the server pack.
+     * @param inclusions All directories and files therein to copy to the server pack.
      * @param clientMods        List of clientside-only mods to exclude from the server pack.
      * @param minecraftVersion  The Minecraft version the modpack uses.
      * @param destination       The destination where the files should be copied to.
@@ -208,8 +193,9 @@ abstract class ServerPack<F, TS, TF> {
      */
     abstract fun copyFiles(
         modpackDir: String,
-        directoriesToCopy: ArrayList<String>,
+        inclusions: ArrayList<InclusionSpecification>,
         clientMods: List<String>,
+        whitelist: List<String>,
         minecraftVersion: String,
         destination: String,
         modloader: String
@@ -226,7 +212,7 @@ abstract class ServerPack<F, TS, TF> {
      * @param destination      The destination of the server pack.
      * @author Griefed
      */
-    abstract fun provideImprovedFabricServerLauncher(
+    abstract fun getImprovedFabricLauncher(
         minecraftVersion: String, fabricVersion: String, destination: String
     )
 
@@ -273,8 +259,6 @@ abstract class ServerPack<F, TS, TF> {
      *
      * @param minecraftVersion          Determines the name of the Minecraft server JAR to exclude
      * from the ZIP-archive if the modloader is Forge.
-     * @param includeServerInstallation Determines whether the Minecraft server JAR info should be
-     * printed.
      * @param destination               The destination where the ZIP-archive should be created in.
      * @param modloader                 The modloader the modpack and server pack use.
      * @param modloaderVersion          The modloader version the modpack and server pack use.
@@ -282,27 +266,9 @@ abstract class ServerPack<F, TS, TF> {
      */
     abstract fun zipBuilder(
         minecraftVersion: String,
-        includeServerInstallation: Boolean,
         destination: String,
         modloader: String,
         modloaderVersion: String
-    )
-
-    /**
-     * Installs the modloader server for the specified modloader, modloader version and Minecraft
-     * version.
-     *
-     * @param modLoader        The modloader for which to install the server software. Either Forge or
-     * Fabric.
-     * @param minecraftVersion The Minecraft version for which to install the modloader and Minecraft
-     * server.
-     * @param modLoaderVersion The modloader version for which to install the modloader and Minecraft
-     * server.
-     * @param destination      The destination where the modloader server should be installed into.
-     * @author Griefed
-     */
-    abstract fun installServer(
-        modLoader: String, minecraftVersion: String, modLoaderVersion: String, destination: String
     )
 
     /**
@@ -313,6 +279,7 @@ abstract class ServerPack<F, TS, TF> {
      * @param modsDir                 The mods-directory of the modpack of which to generate a list of
      * all its contents.
      * @param userSpecifiedClientMods A list of all clientside-only mods.
+     * @param userSpecifiedWhitelist  A list of mods to include regardless if a match was found in [userSpecifiedClientMods].
      * @param minecraftVersion        The Minecraft version the modpack uses. When the modloader is
      * Forge, this determines whether Annotations or Tomls are
      * scanned.
@@ -321,7 +288,11 @@ abstract class ServerPack<F, TS, TF> {
      * @author Griefed
      */
     abstract fun getModsToInclude(
-        modsDir: String, userSpecifiedClientMods: List<String>, minecraftVersion: String, modloader: String
+        modsDir: String,
+        userSpecifiedClientMods: List<String>,
+        userSpecifiedModsWhitelist: List<String>,
+        minecraftVersion: String,
+        modloader: String
     ): List<F>
 
     /**
@@ -364,8 +335,9 @@ abstract class ServerPack<F, TS, TF> {
      * @author Griefed
      */
     fun getModsToInclude(packConfig: Pack<*, *, *>) = getModsToInclude(
-        "${packConfig.modpackDir}${ApiProperties.getSeparator()}mods",
+        "${packConfig.modpackDir}${File.separator}mods",
         packConfig.clientMods,
+        packConfig.modsWhitelist,
         packConfig.minecraftVersion,
         packConfig.modloader
     )
@@ -375,15 +347,15 @@ abstract class ServerPack<F, TS, TF> {
      * file, a singular [ServerPackFile] is returned. If the source is a directory, then all
      * files in said directory are returned.
      *
-     * @param combination Array containing a source-file/directory;destination-file/directory
-     * combination.
+     * @param source source-file/directory
+     * @param destination destination-file/directory
      * @param modpackDir  The modpack-directory.
-     * @param destination The destination, normally the server pack-directory.
+     * @param serverPackDestination The destination, normally the server pack-directory.
      * @return List of [ServerPackFile].
      * @author Griefed
      */
     abstract fun getExplicitFiles(
-        combination: Array<String>, modpackDir: String, destination: String
+        source: String, destination: String, modpackDir: String, serverPackDestination: String
     ): MutableList<ServerPackFile>
 
     /**
@@ -398,21 +370,6 @@ abstract class ServerPack<F, TS, TF> {
      */
     abstract fun getSaveFiles(
         clientDir: String, directory: String, destination: String
-    ): List<ServerPackFile>
-
-    /**
-     * Acquire all files and directories for the given regex in a list of [ServerPackFile] for a
-     * given regex-entry from the configuration models copyDirs.
-     *
-     * @param modpackDir  The path to the modpack directory in which to check for existence of the
-     * passed list of directories.
-     * @param destination The destination where the files should be copied to.
-     * @param entry       The regex, or file/directory and regex, combination.
-     * @return List of [ServerPackFile] which will be included in the server pack.
-     * @author Griefed
-     */
-    abstract fun getRegexMatches(
-        modpackDir: String, destination: String, entry: String
     ): List<ServerPackFile>
 
     /**
@@ -441,7 +398,7 @@ abstract class ServerPack<F, TS, TF> {
      * pack.
      * @author Griefed
      */
-    abstract fun excludeFileOrDirectory(modpackDir: String, fileToCheckFor: F, exclusions: TS): Boolean
+    abstract fun excludeFileOrDirectory(modpackDir: String, fileToCheckFor: F, exclusions: List<Regex>): Boolean
 
     /**
      * Cleans up the server_pack directory by deleting left-over files from modloader installations
@@ -471,7 +428,7 @@ abstract class ServerPack<F, TS, TF> {
      * modpack.
      * @author Griefed
      */
-    abstract fun excludeUserSpecifiedMod(userSpecifiedExclusions: List<String>, modsInModpack: TF)
+    abstract fun excludeUserSpecifiedMod(userSpecifiedExclusions: List<String>, userSpecifiedModsWhitelist: List<String>, modsInModpack: TF)
 
     /**
      * Walk through the specified directory and add a [ServerPackFile] for every file/folder
@@ -498,22 +455,7 @@ abstract class ServerPack<F, TS, TF> {
      *
      * @author Griefed
      */
-    abstract fun exclude(userSpecifiedExclusion: String, modsInModpack: TF)
-
-    /**
-     * Gather a list of all files from an explicit source;destination-combination. If the source is a
-     * file, a singular [ServerPackFile] is returned. If the source is a directory, then all
-     * files in said directory are returned.
-     *
-     * @param combination        Array containing a source-file/directory;destination-file/directory
-     * combination.
-     * @param packConfig ConfigurationModel containing the modpack directory so the
-     * destination of the server pack can be acquired.
-     * @return List of [ServerPackFile].
-     * @author Griefed
-     */
-    fun getExplicitFiles(combination: Array<String>, packConfig: Pack<*, *, *>) =
-        getExplicitFiles(combination, packConfig.modpackDir, getServerPackDestination(packConfig))
+    abstract fun exclude(userSpecifiedExclusion: String, userSpecifiedModsWhitelist: List<String>, modsInModpack: TF)
 
     /**
      * Cleans up the server_pack directory by deleting left-over files from modloader installations

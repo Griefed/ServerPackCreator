@@ -48,7 +48,7 @@ class ArtemisConfig @Autowired constructor(private val apiProperties: ApiPropert
      * `de.griefed.serverpackcreator.spring.artemis.queue.max_disk_usage`.<br></br> Set the address
      * to `tasks.background`.<br></br> Set the queue configuration to `tasks.background`.<br></br>
      * Set the name to `tasks.background`.<br></br> Set the last value key to `unique_id`.<br></br>
-     * Set the routing type to [RoutingType.ANYCAST].<br></br> Add our queue configuration..<br></br> All
+     * Set the routing type to [RoutingType.ANYCAST].<br></br> Add our queue configuration...<br></br> All
      * of this ensures that any message added will be deduplicated and worked on one by one. No
      * messages should, at any time, be processed in parallel. Whilst working on them in parallel
      * would increase the speed at which multiple serer packs are generated, we want to make sure
@@ -60,7 +60,7 @@ class ArtemisConfig @Autowired constructor(private val apiProperties: ApiPropert
      * @author Griefed
      */
     override fun customize(configuration: org.apache.activemq.artemis.core.config.Configuration) {
-        configuration.maxDiskUsage = apiProperties.queueMaxDiskUsage
+        configuration.maxDiskUsage = apiProperties.artemisQueueMaxDiskUsage
         val addressSettings = AddressSettings()
         addressSettings.defaultConsumerWindowSize = 0
         configuration.addAddressesSetting("tasks.background", addressSettings)

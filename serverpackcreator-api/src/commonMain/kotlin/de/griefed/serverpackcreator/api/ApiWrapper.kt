@@ -40,14 +40,14 @@ expect class ApiWrapper {
     val tomlParser: TomlParser
     val tomlScanner: TomlScanner
 
-    var webUtilities: WebUtilities?
-    var utilities: Utilities?
-    var versionMeta: VersionMeta?
-    var configurationHandler: ConfigurationHandler?
-    var apiPlugins: ApiPlugins?
-    var serverPackHandler: ServerPackHandler?
-    var modScanner: ModScanner?
-    var annotationScanner: AnnotationScanner?
-    var fabricScanner: FabricScanner?
-    var quiltScanner: QuiltScanner?
+    val webUtilities: WebUtilities
+    val utilities: Utilities
+    val versionMeta: VersionMeta
+    val configurationHandler: ConfigurationHandler
+    val apiPlugins: ApiPlugins
+    val serverPackHandler: ServerPackHandler
+    val modScanner: ModScanner
+    val annotationScanner: AnnotationScanner
+    val fabricScanner: FabricScanner
+    val quiltScanner: QuiltScanner
 }

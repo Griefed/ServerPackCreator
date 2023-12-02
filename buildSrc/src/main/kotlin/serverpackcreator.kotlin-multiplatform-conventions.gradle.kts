@@ -15,11 +15,11 @@ repositories {
 kotlin {
     jvm {
         compilations.all {
+            val list = kotlinOptions.freeCompilerArgs.toMutableList()
+            list.add("-Xexpect-actual-classes")
+            kotlinOptions.freeCompilerArgs = list.toList()
             kotlinOptions.allWarningsAsErrors = false
             kotlinOptions.apiVersion = KOTLIN_VERSION
-            val compilerArgs = kotlinOptions.freeCompilerArgs.toMutableList()
-            compilerArgs.add("-Xjsr305=strict")
-            kotlinOptions.freeCompilerArgs = compilerArgs.toList()
             kotlinOptions.jvmTarget = JDK_VERSION
             kotlinOptions.languageVersion = KOTLIN_VERSION
             jvmToolchain {

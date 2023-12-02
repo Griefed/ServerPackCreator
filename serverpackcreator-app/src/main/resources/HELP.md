@@ -1,40 +1,40 @@
-# Java versions
-
-ServerPackCreator is develop with Java 8, ServerPackCreator is guaranteed to work with that version.
-
-Users have reported the following Java versions to also work with ServerPackCreator:
-
-1. Java 19 Pre-Release (reported by [Griefed](https://github.com/Griefed))
-1. Java 18 (reported by [Kreezxil](https://github.com/Kreezxil))
-1. Java 17 (reported by [Kreezxil](https://github.com/Kreezxil))
-1. Java 16 (reported by [Griefed](https://github.com/Griefed))
-1. Java 11 (reported by [Kreezxil](https://github.com/Kreezxil))
-
-**ATTENTION:** I **can** not and **will** not guarantee that ServerPackCreator will work flawlessly
-with any other Java version other than version 8. Things may break at **random**, at **any** place,
-if a **different** Java version is used. You are welcome to try and use any other version, but do **
-not** report issues back to me if you do encounter problems when running ServerPackCreator with a
-more recent Java version.
-
-# Fugly Artifacts
-
-Depending on which JDK you are using, ServerPackCreator may display some really ugly artifacts and
-anti-aliasing issues in the GUI. So far, I've nailed this issue down to occuring when
-using [AdoptiumJDKs](https://adoptium.net/).
-
-Tests have shown, that using the
-official [Oracle JDKs](https://www.oracle.com/java/technologies/downloads/archive/), this problem
-does not occur.
-
-## Using Adoptium JDK Java 8 331
-
-![fugly_artifacts](https://i.griefed.de/images/2022/07/01/fugly_artifacts.png)
-
-## Using Oracle JDK Java 8 331
-
-![a_ok](https://i.griefed.de/images/2022/07/01/a_ok.png)
-
 # Tips, tricks and help
+
+## Custom Themes
+
+As of 5.0.0 you can create your own themes for ServerPackCreator. To get an idea on what a custom theme looks like,
+take a look at the different `properties`-files inside the `themes`-directory when using ServerPackCreators GUI.
+
+To see the examples in action, browse to *Settings -> GUI* and select any of the following from the themes-dropdown:
+
+- BisectHosting
+- Chorb
+- Elocin
+- Kreezxil
+- ModernGamingWorld
+
+They're people, or in the case of BisectHosting a company, which have had a noticeable impact on ServerPackCreator in a
+good way. So as a little "Thank You", I've decided to add custom themes in their name.
+
+The FormDev theme editor was used in the creation of these themes. You can get it here:
+https://www.formdev.com/flatlaf/theme-editor/#download
+
+Run the downloaded JAR-file and point it towards the themes-directory. That will allow you to take a proper look at the
+custom themes, along with a preview of your changes.
+
+FormDevs documentation for customization is pretty nice. I suggest you take a thorough look at it over at:
+https://www.formdev.com/flatlaf/customizing/
+
+Experiment with the existing themes, create your own and have fun!
+
+Every .properties-file in the themes-folder will automatically be added to the list of available themes inside
+ServerPackCreator. If you've added or changed a theme whilst running ServerPackCreator, you will need to restart it for
+the changes to take effect.
+
+Request for theme creations will be ignored. Please be aware that I implemented this feature so YOU can create themes.
+Not in order for ME to create themes FOR you. :D
+
+Happy theming!
 
 ## Start Script Templates (3.8.x and up)
 
@@ -78,9 +78,8 @@ then immediately closing* again, consult the **Running Powershell scripts**-sect
 > link above, you can run any Powershell script you like, and as such, introduce any and all security
 > risk into your system. So, beware when running scripts from unknown sources. If you run the
 > exectuion-policy command from a non-administrator terminal, you may be prompted with a question as
-> to how exactly you would like to adjust
-> it. ![question](https://i.griefed.de/images/2022/10/02/ps_execution_policy.png).<br>When this
-> happens, please select `[Y]`, as any other option is potentially more dangerous.
+> to how exactly you would like to adjust it. When this happens, please select `[Y]`, as any other option is potentially
+> more dangerous.
 > {.is-warning}
 
 ### Default values
@@ -101,7 +100,7 @@ ServerPackCreator always supplies a couple of default key-value-pairs during scr
 
 ### Placeholders and values (3.14.x and up)
 
-As of 3.14.x you can add and edit placeholders to your liking.
+As of 3.14.x you can add and edit placeholders.
 Make sure to map your desired value to the appropriate placeholder key.
 The GUI provides a table where you can configure these, or any other values, to your liking.
 
@@ -121,6 +120,14 @@ BAM! Template engine with customizable content!
 > shell-script, for example, uses the variable name `JAVA` for Java-based operations. With the
 > previously mentioned placeholder `JAVA`, that variable would be removed from the scripts,
 > potentially rendering them useless. Nobody wants that, right? :D
+> {.is-warning}
+
+
+> **Default placeholder limitations**
+> Of all available default placeholders mentioned above, only one of them can be overriden via a given configuration.
+> Said placeholder is `SPC_JAVA_SPC`. This one allows you to set a different Java executable/binary path for your local scripts,
+> to make testing your server pack easier. The files in the ZIP-archive will always have the `SPC_JAVA_SPC=java` key-value-pair,
+> to ensure any given user of your server pack has the value most likely to work on their system.
 > {.is-warning}
 
 ### Changing the default templates
@@ -151,8 +158,8 @@ instead, your custom-templates will be used.
 
 1. The file-endings of the templates determine the file ending of the start script (`template.bat`
    becomes `start.bat`, `template.sh` becomes `start.sh` and so on)
-1. Put your template(s) into the `server_files`-directory
-1. Edit the `serverpackcreator.properties`-file and change
+2. Put your template(s) into the `server_files`-directory
+3. Edit the `serverpackcreator.properties`-file and change
    the `de.griefed.serverpackcreator.serverpack.script.template`-property accordingly
 
 **Example:**
@@ -173,7 +180,7 @@ your folders and config should look/contain like the following:
 
 - **ServerPackCreator
   Properties:** `de.griefed.serverpackcreator.serverpack.script.template=default_template.ps1,default_template.sh,my-awesome-batch-script-template.bat`
-- **server_files- folder should contain:**
+- **server_files-folder should contain:**
     - default_template.ps1
     - default_template.sh
     - my-awesome-batch-script-template.bat
@@ -299,13 +306,12 @@ There are five possible settings which affect the way these filters happen:
 ## FancyMenu
 
 Starting from version **2.12.1** FancyMenu can be run on servers, too.
-If you use **2.12.1** or newer and you want to include it in your server pack, you need to:
+If you use **2.12.1** or newer, and you want to include it in your server pack, you need to:
 
 1. Remove the `fancymenu_`-entry from your list of clientside-only mods-list.
 2. To be on the safe side, add an entry to your file/directories to include in your server pack for
    your version of FancyMenu:
-    -
-    Example: `mods/fancymenu_forge_2.12.1_MC_1.19-1.19.1.jar;mods/fancymenu_forge_2.12.1_MC_1.19-1.19.1.jar`
+    - Example: `mods/fancymenu_forge_2.12.1_MC_1.19-1.19.1.jar;mods/fancymenu_forge_2.12.1_MC_1.19-1.19.1.jar`
 
 ## Automatic detection of clientside-only mods
 
@@ -325,7 +331,7 @@ with the title being similar to
 
 > [Improvement request]: Add mod-x, mod-y and mod-z to the fallback-list
 
-In the **Whats the feature you would like to be improved?**-section, something along the lines of
+In the **What's the feature you would like to be improved?**-section, something along the lines of
 
 > I would like the following mods to be added to the fallback-modslist
 > - mod-x (Link to CurseForge project)
@@ -362,182 +368,6 @@ change `de.griefed.serverpackcreator.configuration.aikar` to your liking.
 using the appropriate button in the GUI will result in the same setting for all server pack
 configurations.
 
-## Excluding files/folders
-
-ServerPackCreator allows you to exclude files, directories and / or file-types based on simple
-expressions. The way it does that is by checking every file about to be copied to the server pack
-for whether it contains any of the expressions prefixed with a `!`.
-
-So when you have an entry `!fancymenu`, files and directories like
-
-- `fancymenu_forge_2.11.1_MC_1.16.2-1.16.5.jar`
-- `config/fancymenu`
-
-will be excluded, because they contain the word `fancymenu`.
-
-> **CAUTION!**
-> Be very careful with lenient exclusions, as they can end up excluding more than you want.
-<br>
-> A simple, too leniently set, exclusion can render your server pack useless, beacuse it ended up
-> excluding more than it should.
-**PROCEED. WITH. CAUTION.**
-> {.is-warning}
-
-### Excluding in a directory you want to include
-
-Usually you want the `config`-directory to be copied to the server pack, because it contains the
-configuration for all the mods in your pack. However, this directory can contain files and folder
-you may not want to *be* in the server pack, because it contains music-files, or pictures or
-something else.
-
-You can exclude files and folders from, say, the `config`-folder when generating a server pack
-easily.
-
-In the `Enter the list of directories or files in your modpack to include in the server pack:`
-prefix any file or folder you want to exclude with `!`.
-
-Examples:
-
-- `!config/fancymenu`
-- `!config/CustomMainMenu`
-- `!config/clienttweaks-client.toml`
-
-This will result in the whole `fancymenu`-directory *inside* the `config`-directory being excluded,
-as well as the `CustomMainMenu`-directory and the `clienttweaks-client.toml`-file.
-
-### Excluding all files of a specific type
-
-You can exclude all files of a specific type by simply adding an entry along the lines
-of `!.file_ending`. This will result in ServerPackCreator not copying **any** file which has this
-file-ending.
-
-Example(s):
-
-- `!.ogg`
-- `!.mp3`
-- `!.png`
-- `!.jpg`
-
-## Include a world in your server pack
-
-If you've got a world which you've prepared for your friends and you to play on, and you want to
-make a server pack which contains said world so you can just boot up the server and get playing.
-Well, good news, you can include that world in your server pack!
-
-In `copyDirs`|**"Enter the list of directories or files on your modpack to include in the server
-pack"** add an entry which references the world you want to include, like so:
-
-- `saves/World-1` or
-- `saves/my_awesome_world`
-
-This will result in the specified world being copied to `World-1` or `my_awesome_world` in the base
-directory of the server pack.
-
-All you need to do now is to ensure that your `server.properties` is correctly set to use that world
-like so:
-
-`level-name=World-1` or
-`level-name=my_awesome_world`
-
-If you've already prepared a `server.properties`-file for your server, then make sure to
-set `serverProperties`|**"Path to custom properties"** to the location of said properties-file so it
-is automatically included in your server pack.
-
-## Including and excluding based on regex-filters (3.15.x and up)
-
-You can include and exclude files based on regex-filters. You can do this either in your
-modpack-directory, or any other directory on your computer.
-
-The most important part of this is the `==`.
-
-You can
-- **start** with `==`, which will result in regex-matches being checked in your **modpack-directory**
-- use a **relative** path, for example `kubejs/data==`, which will result in regex-matches
-being checked in the `kubejs/data`-directory in your **modpack-directory**
-- use an **absolute** path, for example `C:\some\path==` or `/home/user/path==`, which will result in
-regex-matches being performed in directories **outside** of your modpack-directory
-
-This way you can easily include and exclude multiple files at once. No need to tediously tell 
-ServerPackCreator each and every single file you want to exclude if you notice a pattern in them, or
-if they happen to be in the same directory, or similar situations!
-
-Keep in mind:
-
-Relative paths are carried over to your server pack!
-
-### Inclusion examples:
-
-- `==.*fancymenu.*` would result in anything having **fancymenu** in its name being included.
-    - `mods/fancymenu-...jar` to `mods/fancymenu-...jar` in your server pack
-    - `config/fancymenu.config` to `config/fancymenu.config` in your server pack
-    - etc.
-- `kubejs==.*.js` would result in every **js**-file from the **kubejs**-directory being included.
-    - `kubejs/data` to `kubejs/data` in your server pack
-    - `kubejs/config` to `kubejs/config` in your server pack
-    - etc.
-- `C:\Minecraft\Maps==server.*` would result in every file/directory starting with **server** from
-a directory **outside** of your modpack-directory being included in your server pack.
-    - `server_spawn_world` and every file in it to `server_spawn_world` in your server pack
-    - etc.
-- `/home/griefed/maps==world.*` would result in every file/directory starting with **world** from
-a directory **outside** of your modpack-directory being included in your server pack.
-    - `world_27.10.2020` and every file in it to `world_27.10.2020` in your server pack
-    - etc.
-
-### Exclusion examples:
-
-- `!==.*fancymenu.*` would result in anything having **fancymenu** in its name being excluded.
-    - `mods/fancymenu-...jar`
-    - `config/fancymenu.config`
-    - etc.
-- `!kubejs==.*.png` would result in every **png**-file from the **kubejs**-directory being excluded.
-    - `kubejs/assets/packmenu/textures/gui/bh_me_logo.png`
-    - `kubejs/assets/drippy/BH_ME_Artboard_32.png` 
-    - etc.
-- `!C:\Minecraft\Maps==.*serverconfig.*` would result in any file/folder containing **serverconfig**
-being excluded. Useful for including worlds, but having them start with fresh server configs!
-- `!/home/griefed/maps==.*config.*` would result in any file/folder containing **config**
-being excluded. Useful for including worlds, but having them start with fresh configs!
-
-## Adding modpack-external files and folders to your server pack
-
-You can add files/folder to your server pack which reside *outside* of the modpack from which you
-want to generate a server pack. In order to include such a file or folder, you must explicitly
-declare a `source:destination`-combination.
-
-### File(s):
-
-- `C:/Minecraft/ServerPackCreator/serverpackcreator.conf;my-spc.conf`
-  This will copy the serverpackcreator.conf-file to the base-dir of the server pack as `my-spc.conf`
-- `options.txt;misc/mc-options.txt`
-  This will copy the options.txt-file in the base-dir of the modpack to the misc-dir of the server
-  pack as `mc-options.txt`.
-- '/home/griefed/Downloads/awesome.txt'
-  This will copy the `awesome.txt`-file to the base-dir of the server pack as `awesome.txt`
-
-**If any parent directory of the destination does not exist, they are created.**
-
-### Folder(s) Examples:
-
-- `C:/Minecraft/Game/Instances/Survive Create Prosper 4 custom (1)/packmenu;packmenu/files`
-  This will copy the `packmenu`-directory and all its contents to the `packmenu/files`-directory in
-  the server pack.
-- `screenshots;my-beautiful-screenshots`
-  This will copy the `screenshots`-directory and all its contents to the `my-beautiful-screenshots`
-  -directory in the server pack.
-- `/home/griefed/Downloads/some-worlds`
-  This will copy the `some-worlds`-directory to the base-dir of the server pack as `some-worlds`.
-
-## Lazy-mode
-
-If you do not care, at all, to use the safety and convenience features ServerPackCreator provides,
-and you simply want to create a server pack as fast as possible, simply set `copyDirs`|**Enter the
-list of directories or files in your modpack to include in your server pack:** to `lazy_mode` and
-ONLY `lazy_mode`.
-
-This will result in the whole modpack being copied to the server pack. No exceptions. Mods will not
-be scanned, no files will be excluded. EVERYTHING will be copied!
-
 ## Excluding files from ZIP-archives
 
 You can globally configure files which should be excluded from ZIP-archives.
@@ -566,7 +396,7 @@ server jar should it be present in the `libraries`-folder.
 To deactivate the exclusion alltogether,
 set `de.griefed.serverpackcreator.serverpack.zip.exclude.enabled` to `false`
 
-## Minecraft snapshots and pre-releases (3.12.x and up)
+## Minecraft's snapshots and pre-releases (3.12.x and up)
 
 If your modloader supports Minecraft snapshots or pre-releases, you can use those, too.
 
@@ -576,13 +406,13 @@ to `true`
 Then, when using the GUI, you will be able to select any weekly release, snapshot, pre-release and
 more, just like that.
 
-# Modes
+## Modes
 
 ServerPackCreator has three main modes in which it can operate or in which you can use it.
 
 - CLI (Commandline Interface)
 - GUI (Graphical User Interface)
-- Webservice (Provide a webservice through which to generate server packs)
+- Webservice (Provide a webservice through which to generate server packs) **Will be reworked in version 6**
 
 There are a couple more ways to use/run ServerPackCreator which may or may not be helpful for you,
 depending on how you plan on using it:
@@ -599,7 +429,7 @@ depending on how you plan on using it:
 
 Each of these modes has its advantages and disadvantages.
 
-## CLI:
+### CLI:
 
 | Advantages                                                                                                                                  | Disadvantages                                                                                                         |
 |:--------------------------------------------------------------------------------------------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------|
@@ -608,7 +438,7 @@ Each of these modes has its advantages and disadvantages.
 |                                                                                                                                             | Debugging in case of a broken/erroring configuration file can be time consuming. Careful reading of logs is required. |
 |                                                                                                                                             | Manual editing of the configuration-file in case you want to change it.                                               |
 
-## GUI:
+### GUI:
 
 | Advantages                                                                                                             | Disadvantages                     |
 |:-----------------------------------------------------------------------------------------------------------------------|:----------------------------------|
@@ -618,7 +448,7 @@ Each of these modes has its advantages and disadvantages.
 | Loading and saving different configurations for quick generation of multiple server packs in short succession.         |                                   |
 | Edit the configuration in the GUI. No manual file-editing required.                                                    |                                   |
 
-## Webservice:
+### Webservice:
 
 | Advantages                                                                                                                                           | Disadvantages                                             |
 |:-----------------------------------------------------------------------------------------------------------------------------------------------------|:----------------------------------------------------------|
@@ -626,24 +456,24 @@ Each of these modes has its advantages and disadvantages.
 | Voting system to let users indicate whether a generated server pack works.                                                                           | Requires somewhat modern browser versions.                |
 | Open REST API. Interaction with the webservice does not *require* a browser. You can request a server pack generation and/or download from the CLI.  | Not all browers may be supported.                         |
 
-# Plugins
+## Plugins
 
 ServerPackCreator gives you the ability to use plugins, which can enhance your experience in a
 limited amount of ways.
 
-Any given plugin has the chance to do things
+Any given plugin has the chance to do various things:
 
 - Before a server pack is generated
 - After a server pack was generated, but BEFORE the ZIP-archive is created
 - After a server pack and its ZIP-archive were generated
 - Adding extra tabs to the GUI, in which more additional features can then be added
+- Adding custom configuration checks
+- Adding custom elements to the server pack configuration tab
 
 For a list of plugins, check out
-the [ServerPackCreator Plugins Overview](https://griefed.github.io/ServerPackCreator-Addons-Overview/#/)
+the [ServerPackCreator Addons Overview](https://griefed.github.io/ServerPackCreator-Addons-Overview/#/)
 
-The first three entries are examples I made to demonstrate some basic capabilities of such plugins.
-
-## Installing a plugin
+### Installing a plugin
 
 If you have a plugin you would like to enhance your ServerPackCreator-experience with, simply
 download it and put it into the `plugins`-directory which resides in the base-directory of
@@ -651,42 +481,22 @@ ServerPackCreator.
 
 ```
 ServerPackCreator
-    ├── lang
-    ├── logs
-    │   └── archive
-    ├── plugins <--------- 
-    ├── server-packs
-    │   ├── Survive Create Prosper 4 custom (1)
-    │   └── World of Dragons II
-    ├── server_files
-    └── work
-        ├── modpacks
-        └── temp
-```
-
-Example with `ExamplePlugin-3.0.5.jar` from
-the [Example Plugin Repository](https://github.com/Griefed/ServerPackCreatorExampleAddon/releases/tag/3.0.5)
-on GitHub.
-
-```
-ServerPackCreator
 ├── lang
 ├── logs
-├── plugins
-│   ├── ExamplePlugin-3.0.5.jar <------
-│   └── disabled.txt
+│   └── archive
+├── plugins <--------- 
 ├── server-packs
+│   ├── Survive Create Prosper 4 custom (1)
+│   └── World of Dragons II
 ├── server_files
 └── work
-    └── ...
+    ├── modpacks
+    └── temp
 ```
 
-**Important:** If ServerPackCreator was running during the installation of an plugin, you need to
-restart it in order for the plugin to become available.
+### Disabling a plugin
 
-## Disabling a plugin
-
-In order to deactivate any installed plugin, edit the `disabled.txt`-file in the `plugins`-directory.
+In order to deactivate any installed plugins, edit the `disabled.txt`-file in the `plugins`-directory.
 If these don't exist, create them.
 
 ```
@@ -694,22 +504,22 @@ ServerPackCreator
 ├── lang
 ├── logs
 ├── plugins
-│   ├── ExamplePlugin-3.0.5.jar
-│   └── disabled.txt <------
+│   ├── ExamplePlugin-3.0.5.jar
+│   └── disabled.txt <------
 ├── server-packs
 ├── server_files
 └── work
     └── ...
 ```
 
-Then, find the plugin ID of the installed plugin. This can be mentioned in the plugins repository, but
-can also be found in the plugins manifest.
+Then, find the plugin ID of the installed plugins. This can be mentioned in the pluginss repository, but
+can also be found in the pluginss manifest.
 
-Example for my example plugin: `ExamplePlugin-3.0.5.jar\META-INF\MANIFEST.MF`.
-Look for the entry `Plugin-Id:`, in this case: `Plugin-Id: example-plugin`
+`SomePlugin-3.0.5.jar\META-INF\MANIFEST.MF`.
+Look for the entry `Plugin-Id:`, for example: `Plugin-Id: example-plugin`
 
 Then, in your `disabled.txt`, add a new line containing `example-plugin`, or rather, whatever ID of
-any plugin you want to deactivate:
+any plugins you want to deactivate:
 
 ```
 ########################################
@@ -719,12 +529,12 @@ any plugin you want to deactivate:
 example-plugin
 ```
 
-**Important:** If ServerPackCreator was running during the disabling of an plugin, you need to
-restart it in order for the plugin to become disabled.
+**Important:** If ServerPackCreator was running during the disabling of an plugins, you need to
+restart it in order for the plugins to become disabled.
 
-# Configuration
+## Configuration
 
-## serverpackcreator.conf
+### serverpackcreator.conf
 
 The serverpackcreator.conf file allows you to customize a couple of different things:
 
@@ -746,49 +556,62 @@ The serverpackcreator.conf file allows you to customize a couple of different th
 | serverIconPath            | Path to a custom server-icon.png-file to include in the server pack.                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | serverPropertiesPath      | Path to a custom server.properties-file to include in the server pack.                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 
-## serverpackcreator.properties
+### serverpackcreator.properties
 
 ```properties
+# Supported languages: [en_us, uk_ua, de_de]
 de.griefed.serverpackcreator.versioncheck.prerelease=false
 de.griefed.serverpackcreator.language=en_us
-de.griefed.serverpackcreator.configuration.fallbackmodslist=Armor Status HUD-,[1.12.2]bspkrscore-,[1.12.2]DamageIndicatorsMod-,3dskinlayers-,Absolutely-Not-A-Zoom-Mod-,AdvancedChat-,AdvancedCompas-,AdvancementPlaques-,Ambience,AmbientEnvironment-,AmbientSounds_,antighost-,anviltooltipmod-,appleskin-,armorchroma-,armorpointspp-,ArmorSoundTweak-,AromaBackup-,authme-,autobackup-,autoreconnect-,auto-reconnect-,axolotl-item-fix-,backtools-,Backups-,bannerunlimited-,Batty's Coordinates PLUS Mod,beenfo-1.19-,BetterAdvancements-,BetterAnimationsCollection-,betterbiomeblend-,BetterDarkMode-,BetterF3-,BetterFoliage-,BetterPingDisplay-,BetterPlacement-,better-recipe-book-,BetterTaskbar-,BetterThirdPerson,BetterTitleScreen-,bhmenu-,BH-Menu-,blur-,Blur-,borderless-mining-,BorderlessWindow-,catalogue-,charmonium-,chat_heads-,cherishedworlds-,ChunkAnimator-,cirback-1.0-,classicbar-,clickadv-,clienttweaks-,ClientTweaks_,combat_music-,configured-,controllable-,Controller Support-,Controlling-,CraftPresence-,CTM-,cullleaves-,cullparticles-,custom-crosshair-mod-,CustomCursorMod-,customdiscordrpc-,CustomMainMenu-,darkness-,dashloader-,defaultoptions-,DefaultOptions_,DefaultSettings-,DeleteWorldsToTrash-,desiredservers-,DetailArmorBar-,Ding-,discordrpc-,DistantHorizons-,drippyloadingscreen-,drippyloadingscreen_,DripSounds-,Durability101-,DurabilityNotifier-,dynamic-fps-,dynamiclights-,dynamic-music-,DynamicSurroundings-,DynamicSurroundingsHuds-,dynmus-,effective-,EffectsLeft-,eggtab-,eguilib-,eiramoticons-,EiraMoticons_,EnchantmentDescriptions-,enchantment-lore-,EnhancedVisuals_,entityculling-,entity-texture-features-,EquipmentCompare-,exhaustedstamina-,extremesoundmuffler-,FabricCustomCursorMod-,fabricemotes-,Fallingleaves-,fancymenu_,fancymenu_video_extension,FancySpawnEggs,FancyVideo-API-,findme-,FirstPersonMod,flickerfix-,fm_audio_extension_,FogTweaker-,ForgeCustomCursorMod-,forgemod_VoxelMap-,FPS-Monitor-,FpsReducer-,FpsReducer2-,freelook-,ftb-backups-,ftbbackups2-,FullscreenWindowed-,galacticraft-rpc-,GameMenuModOption-,gamestagesviewer-,grid-,HealthOverlay-,hiddenrecipebook_,HorseStatsMod-,infinitemusic-,InventoryEssentials_,InventoryHud_[1.17.1].forge-,inventoryprofiles,InventorySpam-,InventoryTweaks-,invtweaks-,ItemBorders-,ItemPhysicLite_,ItemStitchingFix-,itemzoom,itlt-,JBRA-Client-,jeed-,jehc-,jeiintegration_,justenoughbeacons-,JustEnoughCalculation-,justenoughdrags-,JustEnoughEffects-,just-enough-harvestcraft-,JustEnoughProfessions-,JustEnoughResources-,justzoom_,keymap-,keywizard-,konkrete_,konkrete_forge_,lazydfu-,LegendaryTooltips,LegendaryTooltips-,lightfallclient-,LightOverlay-,light-overlay-,LLOverlayReloaded-,loadmyresources_,lock_minecart_view-,lootbeams-,LOTRDRP-,lwl-,magnesium_extras-,maptooltip-,massunbind,mcbindtype-,mcwifipnp-,medievalmusic-,mightyarchitect-,mindful-eating-,minetogether-,MoBends,mobplusplus-,modcredits-,modernworldcreation_,modmenu-,modnametooltip-,modnametooltip_,moreoverlays-,MouseTweaks-,mousewheelie-,movement-vision-,multihotbar-,musicdr-,music-duration-reducer-,MyServerIsCompatible-,Neat-,Neat ,neiRecipeHandlers-,NekosEnchantedBooks-,ngrok-lan-expose-mod-,NoAutoJump-,NoFog-,nopotionshift_,notenoughanimations-,Notes-,NotifMod-,oculus-,OldJavaWarning-,openbackup-,OptiFine,OptiForge,OptiForge-,ornaments-,overloadedarmorbar-,PackMenu-,PackModeMenu-,panorama-,paperdoll-,phosphor-,PickUpNotifier-,Ping-,preciseblockplacing-,PresenceFootsteps-,realm-of-lost-souls-,ReAuth-,rebrand-,replanter-,ResourceLoader-,ResourcePackOrganizer,RPG-HUD-,rubidium-,rubidium_extras-,screenshot-to-clipboard-,ShoulderSurfing-,ShulkerTooltip-,shutupexperimentalsettings-,shutupmodelloader-,signtools-,simpleautorun-,simplebackup-,SimpleBackups-,SimpleDiscordRichPresence-,simple-rpc-,SimpleWorldTimer-,smartcursor-,smoothboot-,smoothfocus-,sounddeviceoptions-,SoundFilters-,soundreloader-,SpawnerFix-,spoticraft-,tconplanner-,textile_backup-,timestamps-,Tips-,TipTheScales-,Toast Control-,ToastControl-,Toast-Control-,tooltipscroller-,torchoptimizer-,torohealth-,totaldarkness,toughnessbar-,TRansliterationLib-,TravelersTitles-,VoidFog-,WindowedFullscreen-,wisla-,WorldNameRandomizer-,xlifeheartcolors-,yisthereautojump-
-de.griefed.serverpackcreator.configuration.fallbackmodslist.regex=^Armor Status HUD-.*$,^[1.12.2]bspkrscore-.*$,^[1.12.2]DamageIndicatorsMod-.*$,^3dskinlayers-.*$,^Absolutely-Not-A-Zoom-Mod-.*$,^AdvancedChat-.*$,^AdvancedCompas-.*$,^AdvancementPlaques-.*$,^Ambience.*$,^AmbientEnvironment-.*$,^AmbientSounds_.*$,^antighost-.*$,^anviltooltipmod-.*$,^appleskin-.*$,^armorchroma-.*$,^armorpointspp-.*$,^ArmorSoundTweak-.*$,^AromaBackup-.*$,^authme-.*$,^autobackup-.*$,^autoreconnect-.*$,^auto-reconnect-.*$,^axolotl-item-fix-.*$,^backtools-.*$,^Backups-.*$,^bannerunlimited-.*$,^Batty's Coordinates PLUS Mod.*$,^beenfo-1.19-.*$,^BetterAdvancements-.*$,^BetterAnimationsCollection-.*$,^betterbiomeblend-.*$,^BetterDarkMode-.*$,^BetterF3-.*$,^BetterFoliage-.*$,^BetterPingDisplay-.*$,^BetterPlacement-.*$,^better-recipe-book-.*$,^BetterTaskbar-.*$,^BetterThirdPerson.*$,^BetterTitleScreen-.*$,^bhmenu-.*$,^BH-Menu-.*$,^blur-.*$,^borderless-mining-.*$,^BorderlessWindow-.*$,^catalogue-.*$,^charmonium-.*$,^chat_heads-.*$,^cherishedworlds-.*$,^ChunkAnimator-.*$,^cirback-1.0-.*$,^classicbar-.*$,^clickadv-.*$,^clienttweaks-.*$,^ClientTweaks_.*$,^combat_music-.*$,^configured-.*$,^controllable-.*$,^Controller Support-.*$,^Controlling-.*$,^CraftPresence-.*$,^CTM-.*$,^cullleaves-.*$,^cullparticles-.*$,^custom-crosshair-mod-.*$,^CustomCursorMod-.*$,^customdiscordrpc-.*$,^CustomMainMenu-.*$,^darkness-.*$,^dashloader-.*$,^defaultoptions-.*$,^DefaultOptions_.*$,^DefaultSettings-.*$,^DeleteWorldsToTrash-.*$,^desiredservers-.*$,^DetailArmorBar-.*$,^Ding-.*$,^discordrpc-.*$,^DistantHorizons-.*$,^drippyloadingscreen-.*$,^drippyloadingscreen_.*$,^DripSounds-.*$,^Durability101-.*$,^DurabilityNotifier-.*$,^dynamic-fps-.*$,^dynamiclights-.*$,^dynamic-music-.*$,^DynamicSurroundings-.*$,^DynamicSurroundingsHuds-.*$,^dynmus-.*$,^effective-.*$,^EffectsLeft-.*$,^eggtab-.*$,^eguilib-.*$,^eiramoticons-.*$,^EiraMoticons_.*$,^EnchantmentDescriptions-.*$,^enchantment-lore-.*$,^EnhancedVisuals_.*$,^entityculling-.*$,^entity-texture-features-.*$,^EquipmentCompare-.*$,^exhaustedstamina-.*$,^extremesoundmuffler-.*$,^FabricCustomCursorMod-.*$,^fabricemotes-.*$,^Fallingleaves-.*$,^fancymenu_.*$,^fancymenu_video_extension.*$,^FancySpawnEggs.*$,^FancyVideo-API-.*$,^findme-.*$,^FirstPersonMod.*$,^flickerfix-.*$,^fm_audio_extension_.*$,^FogTweaker-.*$,^ForgeCustomCursorMod-.*$,^forgemod_VoxelMap-.*$,^FPS-Monitor-.*$,^FpsReducer-.*$,^FpsReducer2-.*$,^freelook-.*$,^ftb-backups-.*$,^ftbbackups2-.*$,^FullscreenWindowed-.*$,^galacticraft-rpc-.*$,^GameMenuModOption-.*$,^gamestagesviewer-.*$,^grid-.*$,^HealthOverlay-.*$,^hiddenrecipebook_.*$,^HorseStatsMod-.*$,^infinitemusic-.*$,^InventoryEssentials_.*$,^InventoryHud_[1.17.1].forge-.*$,^inventoryprofiles.*$,^InventorySpam-.*$,^InventoryTweaks-.*$,^invtweaks-.*$,^ItemBorders-.*$,^ItemPhysicLite_.*$,^ItemStitchingFix-.*$,^itemzoom.*$,^itlt-.*$,^JBRA-Client-.*$,^jeed-.*$,^jehc-.*$,^jeiintegration_.*$,^justenoughbeacons-.*$,^JustEnoughCalculation-.*$,^justenoughdrags-.*$,^JustEnoughEffects-.*$,^just-enough-harvestcraft-.*$,^JustEnoughProfessions-.*$,^JustEnoughResources-.*$,^justzoom_.*$,^keymap-.*$,^keywizard-.*$,^konkrete_.*$,^konkrete_forge_.*$,^lazydfu-.*$,^LegendaryTooltips.*$,^LegendaryTooltips-.*$,^lightfallclient-.*$,^LightOverlay-.*$,^light-overlay-.*$,^LLOverlayReloaded-.*$,^loadmyresources_.*$,^lock_minecart_view-.*$,^lootbeams-.*$,^LOTRDRP-.*$,^lwl-.*$,^magnesium_extras-.*$,^maptooltip-.*$,^massunbind.*$,^mcbindtype-.*$,^mcwifipnp-.*$,^medievalmusic-.*$,^mightyarchitect-.*$,^mindful-eating-.*$,^minetogether-.*$,^MoBends.*$,^mobplusplus-.*$,^modcredits-.*$,^modernworldcreation_.*$,^modmenu-.*$,^modnametooltip-.*$,^modnametooltip_.*$,^moreoverlays-.*$,^MouseTweaks-.*$,^mousewheelie-.*$,^movement-vision-.*$,^multihotbar-.*$,^musicdr-.*$,^music-duration-reducer-.*$,^MyServerIsCompatible-.*$,^Neat-.*$,^Neat .*$,^neiRecipeHandlers-.*$,^NekosEnchantedBooks-.*$,^ngrok-lan-expose-mod-.*$,^NoAutoJump-.*$,^NoFog-.*$,^nopotionshift_.*$,^notenoughanimations-.*$,^Notes-.*$,^NotifMod-.*$,^oculus-.*$,^OldJavaWarning-.*$,^openbackup-.*$,^OptiFine.*$,^OptiForge.*$,^OptiForge-.*$,^ornaments-.*$,^overloadedarmorbar-.*$,^PackMenu-.*$,^PackModeMenu-.*$,^panorama-.*$,^paperdoll-.*$,^phosphor-.*$,^PickUpNotifier-.*$,^Ping-.*$,^preciseblockplacing-.*$,^PresenceFootsteps-.*$,^realm-of-lost-souls-.*$,^ReAuth-.*$,^rebrand-.*$,^replanter-.*$,^ResourceLoader-.*$,^ResourcePackOrganizer.*$,^RPG-HUD-.*$,^rubidium-.*$,^rubidium_extras-.*$,^screenshot-to-clipboard-.*$,^ShoulderSurfing-.*$,^ShulkerTooltip-.*$,^shutupexperimentalsettings-.*$,^shutupmodelloader-.*$,^signtools-.*$,^simpleautorun-.*$,^simplebackup-.*$,^SimpleBackups-.*$,^SimpleDiscordRichPresence-.*$,^simple-rpc-.*$,^SimpleWorldTimer-.*$,^smartcursor-.*$,^smoothboot-.*$,^smoothfocus-.*$,^sounddeviceoptions-.*$,^SoundFilters-.*$,^soundreloader-.*$,^SpawnerFix-.*$,^spoticraft-.*$,^tconplanner-.*$,^textile_backup-.*$,^timestamps-.*$,^Tips-.*$,^TipTheScales-.*$,^Toast Control-.*$,^ToastControl-.*$,^Toast-Control-.*$,^tooltipscroller-.*$,^torchoptimizer-.*$,^torohealth-.*$,^totaldarkness.*$,^toughnessbar-.*$,^TRansliterationLib-.*$,^TravelersTitles-.*$,^VoidFog-.*$,^WindowedFullscreen-.*$,^wisla-.*$,^WorldNameRandomizer-.*$,^xlifeheartcolors-.*$,^yisthereautojump-.*$
+de.griefed.serverpackcreator.configuration.fallbackmodslist=3dskinlayers-,Absolutely-Not-A-Zoom-Mod-,AdvancedChat-,AdvancedChatCore-,AdvancedChatHUD-,AdvancedCompas-,Ambience,AmbientEnvironment-,AmbientSounds_,AreYouBlind-,Armor Status HUD-,ArmorSoundTweak-,BH-Menu-,Batty's Coordinates PLUS Mod,BetterAdvancements-,BetterAnimationsCollection-,BetterDarkMode-,BetterF3-,BetterFoliage-,BetterPingDisplay-,BetterPlacement-,BetterTaskbar-,BetterThirdPerson,BetterTitleScreen-,Blur-,BorderlessWindow-,CTM-,ChunkAnimator-,ClientTweaks_,Controller Support-,Controlling-,CraftPresence-,CustomCursorMod-,CustomMainMenu-,DefaultOptions_,DefaultSettings-,DeleteWorldsToTrash-,DetailArmorBar-,Ding-,DistantHorizons-,DripSounds-,Durability101-,DurabilityNotifier-,DynamicSurroundings-,DynamicSurroundingsHuds-,EffectsLeft-,EiraMoticons_,EnchantmentDescriptions-,EnhancedVisuals_,EquipmentCompare-,FPS-Monitor-,FabricCustomCursorMod-,Fallingleaves-,FancySpawnEggs,FancyVideo-API-,FirstPersonMod,FogTweaker-,ForgeCustomCursorMod-,FpsReducer-,FpsReducer2-,FullscreenWindowed-,GameMenuModOption-,HealthOverlay-,HorseStatsMod-,InventoryEssentials_,InventoryHud_[1.17.1].forge-,InventorySpam-,InventoryTweaks-,ItemBorders-,ItemPhysicLite_,ItemStitchingFix-,JBRA-Client-,JustEnoughCalculation-,JustEnoughEffects-,JustEnoughProfessions-,JustEnoughResources-,LLOverlayReloaded-,LOTRDRP-,LegendaryTooltips,LegendaryTooltips-,LightOverlay-,MoBends,MouseTweaks-,MyServerIsCompatible-,Neat ,Neat-,NekosEnchantedBooks-,NoAutoJump-,NoFog-,Notes-,NotifMod-,OldJavaWarning-,OptiFine,OptiFine_,OptiForge,OptiForge-,PackMenu-,PackModeMenu-,PickUpNotifier-,Ping-,PresenceFootsteps-,RPG-HUD-,ReAuth-,ResourceLoader-,ResourcePackOrganizer,ShoulderSurfing-,ShulkerTooltip-,SimpleDiscordRichPresence-,SimpleWorldTimer-,SoundFilters-,SpawnerFix-,TRansliterationLib-,TipTheScales-,Tips-,Toast Control-,Toast-Control-,ToastControl-,TravelersTitles-,VoidFog-,WindowedFullscreen-,WorldNameRandomizer-,[1.12.2]DamageIndicatorsMod-,[1.12.2]bspkrscore-,antighost-,anviltooltipmod-,appleskin-,armorchroma-,armorpointspp-,auditory-,authme-,auto-reconnect-,autojoin-,autoreconnect-,axolotl-item-fix-,backtools-,bannerunlimited-,beenfo-1.19-,better-recipe-book-,betterbiomeblend-,bhmenu-,blur-,borderless-mining-,catalogue-,charmonium-,chat_heads-,cherishedworlds-,cirback-1.0-,classicbar-,clickadv-,clienttweaks-,combat_music-,configured-,controllable-,cullleaves-,cullparticles-,custom-crosshair-mod-,customdiscordrpc-,darkness-,dashloader-,defaultoptions-,desiredservers-,discordrpc-,drippyloadingscreen-,drippyloadingscreen_,dynamic-fps-,dynamic-music-,dynamiclights-,dynmus-,effective-,eggtab-,eguilib-,eiramoticons-,enchantment-lore-,entity-texture-features-,entityculling-,exhaustedstamina-,extremesoundmuffler-,fabricemotes-,fancymenu_,fancymenu_video_extension,findme-,flickerfix-,fm_audio_extension_,forgemod_VoxelMap-,freelook-,galacticraft-rpc-,gamestagesviewer-,grid-,helium-,hiddenrecipebook_,infinitemusic-,inventoryprofiles,invtweaks-,itemzoom,itlt-,jeed-,jehc-,jeiintegration_,just-enough-harvestcraft-,justenoughbeacons-,justenoughdrags-,justzoom_,keymap-,keywizard-,konkrete_,konkrete_forge_,lazydfu-,light-overlay-,lightfallclient-,loadmyresources_,lock_minecart_view-,lootbeams-,lwl-,magnesium_extras-,maptooltip-,massunbind,mcbindtype-,mcwifipnp-,medievalmusic-,mightyarchitect-,mindful-eating-,minetogether-,mobplusplus-,modcredits-,modernworldcreation_,modmenu-,modnametooltip-,modnametooltip_,moreoverlays-,mousewheelie-,movement-vision-,multihotbar-,music-duration-reducer-,musicdr-,neiRecipeHandlers-,ngrok-lan-expose-mod-,nopotionshift_,notenoughanimations-,oculus-,ornaments-,overloadedarmorbar-,panorama-,paperdoll-,phosphor-,preciseblockplacing-,realm-of-lost-souls-,rebrand-,replanter-,rubidium-,rubidium_extras-,screenshot-to-clipboard-,shutupexperimentalsettings-,shutupmodelloader-,signtools-,simple-rpc-,simpleautorun-,smartcursor-,smoothboot-,smoothfocus-,sounddeviceoptions-,soundreloader-,spoticraft-,tconplanner-,timestamps-,tooltipscroller-,torchoptimizer-,torohealth-,totaldarkness,toughnessbar-,wisla-,xlifeheartcolors-,yisthereautojump-
+de.griefed.serverpackcreator.configuration.fallbackmodslist.regex=^3dskinlayers-.*$,^Absolutely-Not-A-Zoom-Mod-.*$,^AdvancedChat-.*$,^AdvancedChatCore-.*$,^AdvancedChatHUD-.*$,^AdvancedCompas-.*$,^Ambience.*$,^AmbientEnvironment-.*$,^AmbientSounds_.*$,^AreYouBlind-.*$,^Armor Status HUD-.*$,^ArmorSoundTweak-.*$,^BH-Menu-.*$,^Batty's Coordinates PLUS Mod.*$,^BetterAdvancements-.*$,^BetterAnimationsCollection-.*$,^BetterDarkMode-.*$,^BetterF3-.*$,^BetterFoliage-.*$,^BetterPingDisplay-.*$,^BetterPlacement-.*$,^BetterTaskbar-.*$,^BetterThirdPerson.*$,^BetterTitleScreen-.*$,^Blur-.*$,^BorderlessWindow-.*$,^CTM-.*$,^ChunkAnimator-.*$,^ClientTweaks_.*$,^Controller Support-.*$,^Controlling-.*$,^CraftPresence-.*$,^CustomCursorMod-.*$,^CustomMainMenu-.*$,^DefaultOptions_.*$,^DefaultSettings-.*$,^DeleteWorldsToTrash-.*$,^DetailArmorBar-.*$,^Ding-.*$,^DistantHorizons-.*$,^DripSounds-.*$,^Durability101-.*$,^DurabilityNotifier-.*$,^DynamicSurroundings-.*$,^DynamicSurroundingsHuds-.*$,^EffectsLeft-.*$,^EiraMoticons_.*$,^EnchantmentDescriptions-.*$,^EnhancedVisuals_.*$,^EquipmentCompare-.*$,^FPS-Monitor-.*$,^FabricCustomCursorMod-.*$,^Fallingleaves-.*$,^FancySpawnEggs.*$,^FancyVideo-API-.*$,^FirstPersonMod.*$,^FogTweaker-.*$,^ForgeCustomCursorMod-.*$,^FpsReducer-.*$,^FpsReducer2-.*$,^FullscreenWindowed-.*$,^GameMenuModOption-.*$,^HealthOverlay-.*$,^HorseStatsMod-.*$,^InventoryEssentials_.*$,^InventoryHud_[1.17.1].forge-.*$,^InventorySpam-.*$,^InventoryTweaks-.*$,^ItemBorders-.*$,^ItemPhysicLite_.*$,^ItemStitchingFix-.*$,^JBRA-Client-.*$,^JustEnoughCalculation-.*$,^JustEnoughEffects-.*$,^JustEnoughProfessions-.*$,^JustEnoughResources-.*$,^LLOverlayReloaded-.*$,^LOTRDRP-.*$,^LegendaryTooltips-.*$,^LegendaryTooltips.*$,^LightOverlay-.*$,^MoBends.*$,^MouseTweaks-.*$,^MyServerIsCompatible-.*$,^Neat .*$,^Neat-.*$,^NekosEnchantedBooks-.*$,^NoAutoJump-.*$,^NoFog-.*$,^Notes-.*$,^NotifMod-.*$,^OldJavaWarning-.*$,^OptiFine.*$,^OptiFine_.*$,^OptiForge-.*$,^OptiForge.*$,^PackMenu-.*$,^PackModeMenu-.*$,^PickUpNotifier-.*$,^Ping-.*$,^PresenceFootsteps-.*$,^RPG-HUD-.*$,^ReAuth-.*$,^ResourceLoader-.*$,^ResourcePackOrganizer.*$,^ShoulderSurfing-.*$,^ShulkerTooltip-.*$,^SimpleDiscordRichPresence-.*$,^SimpleWorldTimer-.*$,^SoundFilters-.*$,^SpawnerFix-.*$,^TRansliterationLib-.*$,^TipTheScales-.*$,^Tips-.*$,^Toast Control-.*$,^Toast-Control-.*$,^ToastControl-.*$,^TravelersTitles-.*$,^VoidFog-.*$,^WindowedFullscreen-.*$,^WorldNameRandomizer-.*$,^[1.12.2]DamageIndicatorsMod-.*$,^[1.12.2]bspkrscore-.*$,^antighost-.*$,^anviltooltipmod-.*$,^appleskin-.*$,^armorchroma-.*$,^armorpointspp-.*$,^auditory-.*$,^authme-.*$,^auto-reconnect-.*$,^autojoin-.*$,^autoreconnect-.*$,^axolotl-item-fix-.*$,^backtools-.*$,^bannerunlimited-.*$,^beenfo-1.19-.*$,^better-recipe-book-.*$,^betterbiomeblend-.*$,^bhmenu-.*$,^blur-.*$,^borderless-mining-.*$,^catalogue-.*$,^charmonium-.*$,^chat_heads-.*$,^cherishedworlds-.*$,^cirback-1.0-.*$,^classicbar-.*$,^clickadv-.*$,^clienttweaks-.*$,^combat_music-.*$,^configured-.*$,^controllable-.*$,^cullleaves-.*$,^cullparticles-.*$,^custom-crosshair-mod-.*$,^customdiscordrpc-.*$,^darkness-.*$,^dashloader-.*$,^defaultoptions-.*$,^desiredservers-.*$,^discordrpc-.*$,^drippyloadingscreen-.*$,^drippyloadingscreen_.*$,^dynamic-fps-.*$,^dynamic-music-.*$,^dynamiclights-.*$,^dynmus-.*$,^effective-.*$,^eggtab-.*$,^eguilib-.*$,^eiramoticons-.*$,^enchantment-lore-.*$,^entity-texture-features-.*$,^entityculling-.*$,^exhaustedstamina-.*$,^extremesoundmuffler-.*$,^fabricemotes-.*$,^fancymenu_.*$,^fancymenu_video_extension.*$,^findme-.*$,^flickerfix-.*$,^fm_audio_extension_.*$,^forgemod_VoxelMap-.*$,^freelook-.*$,^galacticraft-rpc-.*$,^gamestagesviewer-.*$,^grid-.*$,^helium-.*$,^hiddenrecipebook_.*$,^infinitemusic-.*$,^inventoryprofiles.*$,^invtweaks-.*$,^itemzoom.*$,^itlt-.*$,^jeed-.*$,^jehc-.*$,^jeiintegration_.*$,^just-enough-harvestcraft-.*$,^justenoughbeacons-.*$,^justenoughdrags-.*$,^justzoom_.*$,^keymap-.*$,^keywizard-.*$,^konkrete_.*$,^konkrete_forge_.*$,^lazydfu-.*$,^light-overlay-.*$,^lightfallclient-.*$,^loadmyresources_.*$,^lock_minecart_view-.*$,^lootbeams-.*$,^lwl-.*$,^magnesium_extras-.*$,^maptooltip-.*$,^massunbind.*$,^mcbindtype-.*$,^mcwifipnp-.*$,^medievalmusic-.*$,^mightyarchitect-.*$,^mindful-eating-.*$,^minetogether-.*$,^mobplusplus-.*$,^modcredits-.*$,^modernworldcreation_.*$,^modmenu-.*$,^modnametooltip-.*$,^modnametooltip_.*$,^moreoverlays-.*$,^mousewheelie-.*$,^movement-vision-.*$,^multihotbar-.*$,^music-duration-reducer-.*$,^musicdr-.*$,^neiRecipeHandlers-.*$,^ngrok-lan-expose-mod-.*$,^nopotionshift_.*$,^notenoughanimations-.*$,^oculus-.*$,^ornaments-.*$,^overloadedarmorbar-.*$,^panorama-.*$,^paperdoll-.*$,^phosphor-.*$,^preciseblockplacing-.*$,^realm-of-lost-souls-.*$,^rebrand-.*$,^replanter-.*$,^rubidium-.*$,^rubidium_extras-.*$,^screenshot-to-clipboard-.*$,^shutupexperimentalsettings-.*$,^shutupmodelloader-.*$,^signtools-.*$,^simple-rpc-.*$,^simpleautorun-.*$,^smartcursor-.*$,^smoothboot-.*$,^smoothfocus-.*$,^sounddeviceoptions-.*$,^soundreloader-.*$,^spoticraft-.*$,^tconplanner-.*$,^timestamps-.*$,^tooltipscroller-.*$,^torchoptimizer-.*$,^torohealth-.*$,^totaldarkness.*$,^toughnessbar-.*$,^wisla-.*$,^xlifeheartcolors-.*$,^yisthereautojump-.*$
 de.griefed.serverpackcreator.configuration.hastebinserver=https://haste.zneix.eu/documents
+de.griefed.serverpackcreator.configuration.aikar=-Xms4G -Xmx4G -XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200 -XX:+UnlockExperimentalVMOptions -XX:+DisableExplicitGC -XX:+AlwaysPreTouch -XX:G1NewSizePercent=30 -XX:G1MaxNewSizePercent=40 -XX:G1HeapRegionSize=8M -XX:G1ReservePercent=20 -XX:G1HeapWastePercent=5 -XX:G1MixedGCCountTarget=4 -XX:InitiatingHeapOccupancyPercent=15 -XX:G1MixedGCLiveThresholdPercent=90 -XX:G1RSetUpdatingPauseTimePercent=5 -XX:SurvivorRatio=32 -XX:+PerfDisableSharedMem -XX:MaxTenuringThreshold=1 -Dusing.aikars.flags=https://mcflags.emc.gs -Daikars.new.flags=true
 de.griefed.serverpackcreator.serverpack.autodiscovery.enabled=true
 de.griefed.serverpackcreator.gui.darkmode=true
-de.griefed.serverpackcreator.configuration.directories.serverpacks=server-packs
+de.griefed.serverpackcreator.configuration.directories.serverpacks=
 de.griefed.serverpackcreator.serverpack.cleanup.enabled=true
 de.griefed.serverpackcreator.serverpack.overwrite.enabled=true
-de.griefed.serverpackcreator.configuration.directories.shouldexclude=overrides,packmenu,resourcepacks,server_pack,fancymenu
+de.griefed.serverpackcreator.configuration.directories.shouldexclude=animation,asm,cache,changelogs,craftpresence,crash-reports,downloads,icons,libraries,local,logs,overrides,packmenu,profileImage,profileImage,resourcepacks,screenshots,server_pack,shaderpacks,simple-rpc,tv-cache
 de.griefed.serverpackcreator.spring.schedules.database.cleanup=0 0 0 * * *
 de.griefed.serverpackcreator.spring.schedules.files.cleanup=0 0 0 * * *
 de.griefed.serverpackcreator.spring.schedules.versions.refresh=0 0 0 * * *
 de.griefed.serverpackcreator.spring.artemis.queue.max_disk_usage=90
 de.griefed.serverpackcreator.configuration.saveloadedconfig=false
-de.griefed.serverpackcreator.configuration.directories.mustinclude=mods,config,defaultconfigs,scripts,saves,seeds,libraries
+de.griefed.serverpackcreator.configuration.directories.mustinclude=addonpacks,blueprints,config,configs,customnpcs,defaultconfigs,global_data_packs,global_packs,kubejs,maps,mods,openloader,scripts,shrines-saves,structures,structurize,worldshape,Zoestria
+de.griefed.serverpackcreator.serverpack.zip.exclude=minecraft_server.MINECRAFT_VERSION.jar,server.jar,libraries/net/minecraft/server/MINECRAFT_VERSION/server-MINECRAFT_VERSION.jar
+de.griefed.serverpackcreator.serverpack.zip.exclude.enabled=true
+de.griefed.serverpackcreator.serverpack.script.template=default_template.ps1,default_template.sh
+de.griefed.serverpackcreator.minecraft.snapshots=false
 de.griefed.serverpackcreator.serverpack.autodiscovery.filter=START
+de.griefed.serverpackcreator.java=
+de.griefed.serverpackcreator.script.java.autoupdate=true
 ```
 
-| Property                                                             | Description                                                                                                                                                                  |
-|----------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| de.griefed.serverpackcreator.versioncheck.prerelease                 | `true` or `false`. Whether to check for available pre-releases, too, when checking for updates.                                                                              |
-| de.griefed.serverpackcreator.language                                | The language in which ServerPackCreator should run.                                                                                                                          |
-| de.griefed.serverpackcreator.configuration.fallbackmodslist          | Comma separated fallback-list of clientside-only mods. Do not edit this manually.                                                                                            |
-| de.griefed.serverpackcreator.configuration.fallbackmodslist.regex    | Comma separated fallback-list of clientside-only mods in regex format. Do not edit this manually.                                                                            |
-| de.griefed.serverpackcreator.configuration.hastebinserver            | Address of a HasteBin server to use for config and logs uploading.                                                                                                           |
-| de.griefed.serverpackcreator.serverpack.autodiscovery.enabled        | `true` or `false`. Whether to try and determine sideness of mods in a modpack automatically and exclude them if they are clientside-only. Set this to `false` to disable it. |
-| de.griefed.serverpackcreator.gui.darkmode                            | GUI-only. `true` or `false`. Whether to use dark-mode in the GUI.                                                                                                            |
-| de.griefed.serverpackcreator.configuration.directories.serverpacks   | The directory in which server packs will be generated and stored in.                                                                                                         |
-| de.griefed.serverpackcreator.serverpack.cleanup.enabled              | `true` or `false`. Whether to cleanup files after generating a server pack.                                                                                                  |
-| de.griefed.serverpackcreator.serverpack.overwrite.enabled            | `true` or `false`. Whether an already existing server pack should be overwritten.                                                                                            |
-| de.griefed.serverpackcreator.configuration.directories.shouldexclude | List of directories which should not be in a server pack.                                                                                                                    |
-| de.griefed.serverpackcreator.spring.schedules.database.cleanup       | Web-only. Cron-schedule at which checks are run and server packs cleaned up.                                                                                                 |
-| de.griefed.serverpackcreator.spring.schedules.files.cleanup          | Web-only. Cron-schedule at which checks are run and files from server pack generations are cleaned up.                                                                       |
-| de.griefed.serverpackcreator.spring.schedules.versions.refresh       | Web-only. Cron-schedule at which the available Minecraft, Forge and Fabric versions are refreshed.                                                                           |
-| de.griefed.serverpackcreator.spring.artemis.queue.max_disk_usage     | Web-only. Maximum disk usage in percent at which no new tasks are accepted, preventing the generation of new server packs.                                                   |
-| de.griefed.serverpackcreator.configuration.saveloadedconfig          | GUI-only. `true` or `false`. Whether to overwrite the last manually loaded configuration file, too.                                                                          |
-| de.griefed.serverpackcreator.configuration.directories.mustinclude   | List of directories which must be included in a server pack.                                                                                                                 |
-| de.griefed.serverpackcreator.serverpack.autodiscovery.filter         | Filter method by which to exclude user-specified clientside-only mods. `START`, `END`, `REGEX`, `CONTAIN`, `EITHER`                                                          |
+| Property                                                             | Description                                                                                                                                                                            |
+|----------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| de.griefed.serverpackcreator.versioncheck.prerelease                 | `true` or `false`. Whether to check for available pre-releases, too, when checking for updates.                                                                                        |
+| de.griefed.serverpackcreator.language                                | The language in which ServerPackCreator should run.                                                                                                                                    |
+| de.griefed.serverpackcreator.configuration.fallbackmodslist          | Comma separated fallback-list of clientside-only mods. Do not edit this manually.                                                                                                      |
+| de.griefed.serverpackcreator.configuration.fallbackmodslist.regex    | Comma separated fallback-list of clientside-only mods in regex format. Do not edit this manually.                                                                                      |
+| de.griefed.serverpackcreator.configuration.hastebinserver            | Address of a HasteBin server to use for config and logs uploading.                                                                                                                     |
+| de.griefed.serverpackcreator.configuration.aikar                     | Aikars commonly used Minecraft server JVM flags to potentially increase the performance of your Minecraft server.                                                                      |
+| de.griefed.serverpackcreator.serverpack.autodiscovery.enabled        | `true` or `false`. Whether to try and determine sideness of mods in a modpack automatically and exclude them if they are clientside-only. Set this to `false` to disable it.           |
+| de.griefed.serverpackcreator.gui.darkmode                            | GUI-only. `true` or `false`. Whether to use dark-mode in the GUI.                                                                                                                      |
+| de.griefed.serverpackcreator.configuration.directories.serverpacks   | The directory in which server packs will be generated and stored in.                                                                                                                   |
+| de.griefed.serverpackcreator.serverpack.cleanup.enabled              | `true` or `false`. Whether to cleanup files after generating a server pack.                                                                                                            |
+| de.griefed.serverpackcreator.serverpack.overwrite.enabled            | `true` or `false`. Whether an already existing server pack should be overwritten.                                                                                                      |
+| de.griefed.serverpackcreator.configuration.directories.shouldexclude | List of directories which should not be in a server pack.                                                                                                                              |
+| de.griefed.serverpackcreator.spring.schedules.database.cleanup       | Web-only. Cron-schedule at which checks are run and server packs cleaned up.                                                                                                           |
+| de.griefed.serverpackcreator.spring.schedules.files.cleanup          | Web-only. Cron-schedule at which checks are run and files from server pack generations are cleaned up.                                                                                 |
+| de.griefed.serverpackcreator.spring.schedules.versions.refresh       | Web-only. Cron-schedule at which the available Minecraft, Forge and Fabric versions are refreshed.                                                                                     |
+| de.griefed.serverpackcreator.spring.artemis.queue.max_disk_usage     | Web-only. Maximum disk usage in percent at which no new tasks are accepted, preventing the generation of new server packs.                                                             |
+| de.griefed.serverpackcreator.configuration.saveloadedconfig          | GUI-only. `true` or `false`. Whether to overwrite the last manually loaded configuration file, too.                                                                                    |
+| de.griefed.serverpackcreator.configuration.directories.mustinclude   | List of directories which must be included in a server pack.                                                                                                                           |
+| de.griefed.serverpackcreator.serverpack.zip.exclude                  | Files to exclude from the server pack ZIP-archive. You may use `MINECRAFT_VERSION` as a placeholder for the Minecraft version of your modpack/server pack if a files name contains it. | 
+| de.griefed.serverpackcreator.serverpack.zip.exclude.enabled          | `true` or `false`. Whether exclusion of files from a server packs ZIP-archive is enabled.                                                                                              | 
+| de.griefed.serverpackcreator.serverpack.script.template              | Start-script template to use for server start script creation.                                                                                                                         | 
+| de.griefed.serverpackcreator.minecraft.snapshots                     | Whether Minecraft snapshot versions should be available to the user in the GUI.                                                                                                        | 
+| de.griefed.serverpackcreator.serverpack.autodiscovery.filter         | Filter method by which to exclude user-specified clientside-only mods. `START`, `END`, `REGEX`, `CONTAIN`, `EITHER`                                                                    |
 
 `application.properties`
 
@@ -821,7 +644,7 @@ spring.datasource.tomcat.max-idle=15
 spring.datasource.tomcat.min-idle=8
 spring.servlet.multipart.max-file-size=500MB
 spring.servlet.multipart.max-request-size=500MB
-spring.config.import=optional:file:./serverpackcreator.properties
+spring.config.import=classpath:application.properties,classpath:serverpackcreator.properties,optional:file:./serverpackcreator.properties
 ```
 
 If a property above has no description in the table below, it is not to be touched. Changing any of
@@ -830,39 +653,35 @@ Changes to properties not described below are not supported. If you changed a pr
 meant to fiddle around with, do not report an issue. Such issues will be closed without further
 comment.
 
-| Property | Description                                                                                            |
-| -------- |--------------------------------------------------------------------------------------------------------|
-| server.port | The port at which ServerPackCreator as a webservice will be available at.                              |
-| spring.datasource.url | Path to and name of the SQLite database which the webservice will use.                                 |
-| spring.artemis.embedded.data-directory | The path to and name of the directory in which Artemis will store queues and task related information. |
-| spring.servlet.multipart.max-file-size | Maximum filesize for uploads.                                                                          |
+| Property                                  | Description                                                                                            |
+|-------------------------------------------|--------------------------------------------------------------------------------------------------------|
+| server.port                               | The port at which ServerPackCreator as a webservice will be available at.                              |
+| spring.datasource.url                     | Path to and name of the SQLite database which the webservice will use.                                 |
+| spring.artemis.embedded.data-directory    | The path to and name of the directory in which Artemis will store queues and task related information. |
+| spring.servlet.multipart.max-file-size    | Maximum filesize for uploads.                                                                          |
 | spring.servlet.multipart.max-request-size | Maximum request size for file uploads.                                                                 |
-| spring.config.import | Additional properties-file to import properties from.                                                  |
+| spring.config.import                      | Additional properties-file to import properties from.                                                  |
 
-# Localization
+## Localization
 
 If you wish to run ServerPackCreator with your locale (if it is already supported), you can either:
 
 1. Run `java -jar ServerPackCreator-X.X.X.jar -lang your_locale` for
-   example `java -jar ServerPackCreator-X.X.X.jar -lang en_us`. This will create the
+   example `java -jar ServerPackCreator-X.X.X.jar -lang en_GB`. This will create the
    lang.properties-file with your specified locale.
-2. Running `java -jar ServerPackCreator-x.x.x.jar` without `-lang en_us` or any other language will
+2. Running `java -jar ServerPackCreator-x.x.x.jar` without `-lang en_GB` or any other language will
    set the locale to en_us by default and create the lang.properties-file.
 3. Modify the `serverpackcreator.properties`-file in the same directory as
    ServerPackCreator-X-X-X.jar and set your locale like this `lang=your_locale` for
-   example `lang=en_us`
+   example `lang=en_GB`
 
-If you want to customize the translation of ServerPackCreator, you can edit the files in the `lang`
--directory. As of me writing this it should, by default, contain `lang_de_de.properties`
-, `lang_en_us.properties` and `lang_uk_ua.properties`.
+If you want to contribute translations to ServerPackCreator, check out the [i18n](serverpackcreator-api/src/commonMain/kotlin/de/griefed/serverpackcreator/api/i18n)-directory containing already available
+translations to see how they are set up. Then, make your changes, test them, and open a pull request on GitHub according
+to the [Contribution-Guidelines](CONTRIBUTING.md).
 
-The most up-to-date translation will always be the english one, as I make ServerPackCreator with
-english in mind.
+### Adding a translation
 
-## Adding a translation
-
-Say you want to translate ServerPackCreator to german. You would need both
-the `lang_de_de.properties`-file and the `lang_en_us.properties`-file.
+Say you want to translate ServerPackCreator to german. You would need to add the file `Gui_en_GB.properties`
 
 In the english properties, you will see entries like
 
@@ -874,7 +693,7 @@ menubar.gui.menu.about=About
 menubar.gui.menu.help=Help
 ```
 
-So, in order to translate them to german, in your `lang_de_de.properties`-file, you would add
+So, in order to translate them to german, in your `Gui_en_GB.properties`-file, you would add
 
 ```properties
 menubar.gui.menu.file=Datei
@@ -885,10 +704,10 @@ menubar.gui.menu.help=Hilfe
 ```
 
 Then, either in your `serverpackcreator.properties`
-set `de.griefed.serverpackcreator.language=de_de` or launch ServerPackCreator with the
-argument `-lang=de_de`.
+set `de.griefed.serverpackcreator.language=de_DE` or launch ServerPackCreator with the
+argument `-lang=de_DE`.
 
 Voila! The menubar will now have german translations!
 
-Keep in mind when using languages other than `en_us`: Any key not found in your currently set
+Keep in mind when using languages other than `en_GB`: Any key not found in your currently set
 language will fall back to the english default.

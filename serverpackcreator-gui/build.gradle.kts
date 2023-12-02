@@ -1,6 +1,6 @@
 plugins {
     id("serverpackcreator.kotlin-conventions")
-    id("de.comahe.i18n4k") version "0.5.0"
+    id("de.comahe.i18n4k") version "0.7.0"
 }
 
 repositories {
@@ -9,12 +9,27 @@ repositories {
 
 dependencies {
     api(project(":serverpackcreator-api"))
-    api("io.github.vincenzopalazzo:material-ui-swing:1.1.4")
-    api("de.griefed:larsonscanner:1.0.4")
-    api("commons-io:commons-io:2.11.0")
+    api("commons-io:commons-io:2.14.0")
+    api("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.7.3")
+    api("org.jetbrains.kotlin:kotlin-reflect:1.9.10")
     implementation(project(":serverpackcreator-updater"))
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.3")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.3")
+
+    //New GUI
+    api("com.formdev:flatlaf:3.2.5")
+    api("com.formdev:flatlaf-extras:3.2.5")
+    api("com.formdev:flatlaf-intellij-themes:3.2.5")
+    api("com.formdev:flatlaf-fonts-jetbrains-mono:2.242")
+    api("com.formdev:flatlaf-fonts-inter:3.19")
+    api("com.formdev:flatlaf-fonts-roboto:2.137")
+    api("com.formdev:flatlaf-fonts-roboto-mono:3.000")
+    api("com.miglayout:miglayout-swing:11.2")
+    api("com.formdev:svgSalamander:1.1.4")
+    api("net.java.balloontip:balloontip:1.2.4.1")
+    api("com.cronutils:cron-utils:9.2.1")
+    api("tokyo.northside:tipoftheday:0.4.2")
+
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.0")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.0")
 }
 
 // Explicit dependency to remove Gradle 8 warning

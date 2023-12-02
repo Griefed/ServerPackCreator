@@ -21,12 +21,16 @@ package de.griefed.serverpackcreator.api.utilities.common
 
 import net.lingala.zip4j.ZipFile
 import java.io.File
+import java.net.URI
 import java.net.URL
 import java.nio.file.Paths
 
 private val jar = "^jar:(file:.*[.]jar)!/.*".toRegex()
 private val jarJar = "^(file:.*[.]jar)!.*[.]jar".toRegex()
 private val nested = ".*[.]jar!.*[.]jar".toRegex()
+private val tmpDir = System.getProperty("java.io.tmpdir")
+private const val JAR_FILE = "jar:file:"
+private const val JAR = "file:"
 
 /**
  * Acquire the JAR-file which contains this class. If JAR-file is a nested JAR-file, meaning the class is inside
@@ -40,16 +44,16 @@ private val nested = ".*[.]jar!.*[.]jar".toRegex()
  * temp-directory will be used.
  * @author Griefed
  */
-@Throws(RuntimeException::class)
+@Throws(JarAccessException::class)
 fun <T : Any> Class<T>.source(
     rootOnly: Boolean = false,
-    tempDir: File = File(System.getProperty("java.io.tmpdir"))
+    tempDir: File = File(tmpDir)
 ): File {
-    val classResource: URL = this.getResource(this.simpleName + ".class")
-        ?: throw RuntimeException("Class resource is null")
+    val clazz = this.simpleName + ".class"
+    val classResource: URL = this.getResource(clazz) ?: throw JarAccessException("Class resource is null")
     val url = classResource.toString()
     var source: File? = null
-    if (url.startsWith("jar:file:")) {
+    if (url.startsWith(JAR_FILE)) {
 
         var path = url.replace(jar, "$1")
         if (rootOnly && path.matches(jarJar)) {
@@ -57,16 +61,19 @@ fun <T : Any> Class<T>.source(
         }
 
         try {
-            source = Paths.get(URL(path).toURI()).toFile()
+            val uri = URI(path)
+            source = Paths.get(uri).toFile()
         } catch (e: Exception) {
-            throw RuntimeException("Invalid Jar File URL String")
+            throw JarAccessException("Invalid Jar File URL String")
         }
 
-    } else if (url.startsWith("file:")) {
+    } else if (url.startsWith(JAR)) {
         try {
-            source = Paths.get(URL(url).toURI()).toFile().parentFile
+            val uri = URI(url)
+            val file = Paths.get(uri).toFile()
+            source = file.parentFile
         } catch (e: Exception) {
-            throw RuntimeException("Invalid Jar File URL String")
+            throw JarAccessException("Invalid Jar File URL String")
         }
     }
 
@@ -74,7 +81,7 @@ fun <T : Any> Class<T>.source(
         return if (source.path.matches(nested)) {
             val inner = source.path.toString().substring(source.path.toString().lastIndexOf("!"))
             val nestedJar = File(inner.substring(2))
-            if (!tempDir.isDirectory) throw RuntimeException("Invalid temp-directory $tempDir.")
+            if (!tempDir.isDirectory) throw JarAccessException("Invalid temp-directory $tempDir.")
             ZipFile(source.path.toString().replace(inner, "")).use {
                 it.extractFile(
                     nestedJar.toString(),
@@ -88,5 +95,5 @@ fun <T : Any> Class<T>.source(
         }
     }
 
-    throw RuntimeException("Invalid Jar File URL String")
+    throw JarAccessException("Invalid Jar File URL String.")
 }

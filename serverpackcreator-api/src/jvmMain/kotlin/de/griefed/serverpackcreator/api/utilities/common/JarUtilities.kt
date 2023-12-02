@@ -87,7 +87,7 @@ actual class JarUtilities {
                 if (file.exists()) {
                     true
                 } else {
-                    throw RuntimeException("$file was not created!")
+                    throw JarAccessException("$file was not created!")
                 }
             } catch (ex: IOException) {
                 log.error("Error creating file: $fileToCopy", ex)
@@ -149,7 +149,7 @@ actual class JarUtilities {
                 if (destinationFile.absoluteFile.exists()) {
                     true
                 } else {
-                    throw RuntimeException("$destinationFile was not created!")
+                    throw JarAccessException("$destinationFile was not created!")
                 }
             } catch (ex: IOException) {
                 log.error("Error creating file: $destinationFile", ex)
@@ -234,7 +234,7 @@ actual class JarUtilities {
      * @param dirToCopy       The source-directory in the JAR-file you wish to copy.
      * @param destination     The destination where the source-file should be copied to.
      * @param fileEnding      The file-ending to filter for.
-     * @throws NullPointerException When the specified ressource can not be found.
+     * @throws NullPointerException When the specified resource can not be found.
      * @author Griefed
      */
     @Throws(NullPointerException::class)
