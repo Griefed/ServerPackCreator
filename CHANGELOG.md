@@ -1,3 +1,27 @@
+## [5.0.0-beta.17](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-beta.16...5.0.0-beta.17) (2023-12-02)
+
+
+### 📔 Docs
+
+* Point towards changelog for tag ([3b9a3e0](https://git.griefed.de/Griefed/ServerPackCreator/commit/3b9a3e0685d30c7e7bcc01f56e55c0342f573dca))
+
+
+### 📦 Other
+
+* Add more clientside mods. Thanks to @ModernGamingWorld and [@nvb-uy](https://git.griefed.de/nvb-uy) ([1a75123](https://git.griefed.de/Griefed/ServerPackCreator/commit/1a75123826646fb28bdd46d7d7738acdad9bf93a))
+
+
+### 🦊 CI/CD
+
+* Name jar artifacts depending on os ([aa644e9](https://git.griefed.de/Griefed/ServerPackCreator/commit/aa644e9f1fb43edb1cbd92dc658d94e4b6a5447e))
+* Remove Qodana workflow ([d097f16](https://git.griefed.de/Griefed/ServerPackCreator/commit/d097f164be54f32e004715e4db44b70bd7f77769))
+* Run test workflow on mac, windows, linux, because we can ([299077c](https://git.griefed.de/Griefed/ServerPackCreator/commit/299077ccb0879cf557bc1fc61a1ad6b58fdf21c5))
+
+
+### 🛠 Fixes
+
+* Move forge JAR with old universal-name ([203cb90](https://git.griefed.de/Griefed/ServerPackCreator/commit/203cb90836a30ab98facaa52b7347ddeeb903477))
+
 ## [5.0.0-beta.16](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0-beta.15...5.0.0-beta.16) (2023-12-01)
 
 
