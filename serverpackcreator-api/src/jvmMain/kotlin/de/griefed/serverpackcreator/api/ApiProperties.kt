@@ -905,7 +905,7 @@ actual class ApiProperties(
                 }
                 position = key.replace(pScriptVariablesJavaPaths, "").toIntOrNull()
                 newKey = pScriptVariablesJavaPaths + position
-                if (position != null && 8 < position!! && position!! < 256) {
+                if (position != null && 8 <= position!! && position!! < 256) {
                     internalProps.setProperty(newKey, value)
                     paths[newKey] = value
                 }

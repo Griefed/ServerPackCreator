@@ -38,6 +38,7 @@ import java.util.*
 import javax.swing.DefaultComboBoxModel
 import javax.swing.JFileChooser
 import javax.swing.JOptionPane
+import javax.swing.event.TableModelListener
 
 /**
  * @author Griefed
@@ -49,6 +50,7 @@ class GlobalSettings(
     mainFrame: MainFrame,
     changeListener: DocumentChangeListener,
     actionListener: ActionListener,
+    tableModelListener: TableModelListener,
     controlPanel: ControlPanel
 ) : Editor(Gui.settings_global.toString(), guiProps) {
 
@@ -204,6 +206,11 @@ class GlobalSettings(
     private val postInstallFilesRevert = BalloonTipButton(null, guiProps.revertIcon, Gui.settings_revert.toString(), guiProps) { postInstallFilesSetting.text = apiProperties.postInstallCleanupFiles.joinToString(", ") }
     private val postInstallFilesReset = BalloonTipButton(null, guiProps.resetIcon,Gui.settings_reset.toString(), guiProps) { postInstallFilesSetting.text = apiProperties.fallbackPostInstallCleanupFiles.joinToString(",") }
 
+    private val javaPathsIcon = StatusIcon(guiProps, Gui.settings_global_javapaths_tooltip.toString())
+    private val javaPathsLabel = ElementLabel(Gui.settings_global_javapaths_label.toString())
+    private val javaPathsSetting = JavaPaths(guiProps, apiProperties, tableModelListener)
+    private val javaPathsRevert = BalloonTipButton(null, guiProps.revertIcon, Gui.settings_revert.toString(), guiProps) { javaPathsSetting.loadData(apiProperties.javaPaths) }
+
     init {
         loadSettings()
         val zipY: Int
@@ -212,6 +219,7 @@ class GlobalSettings(
         val scriptY: Int
         val preInstallY: Int
         val postInstallY: Int
+        val javaPathsY: Int
         var y = 0
         panel.add(homeIcon, "cell 0 $y")
         panel.add(homeLabel, "cell 1 $y")
@@ -284,6 +292,13 @@ class GlobalSettings(
         panel.add(postInstallFilesSetting, "cell 2 $y, grow, w 10:500:,h 150!")
         panel.add(postInstallFilesRevert, "cell 3 $y")
         panel.add(postInstallFilesReset, "cell 4 $y")
+
+        y++
+        javaPathsY = y
+        panel.add(javaPathsIcon, "cell 0 $y")
+        panel.add(javaPathsLabel, "cell 1 $y")
+        panel.add(javaPathsSetting.scrollPanel, "cell 2 $y, grow, w 10:500:,h 150!")
+        panel.add(javaPathsRevert, "cell 3 $y")
 
         y++
         panel.add(fallbackURLIcon, "cell 0 $y")
@@ -361,6 +376,7 @@ class GlobalSettings(
         componentResizer.registerComponent(scriptSetting,"cell 2 $scriptY, grow, w 10:500:,h %s!")
         componentResizer.registerComponent(preInstallFilesSetting,"cell 2 $preInstallY, grow, w 10:500:,h %s!")
         componentResizer.registerComponent(postInstallFilesSetting,"cell 2 $postInstallY, grow, w 10:500:,h %s!")
+        componentResizer.registerComponent(javaPathsSetting.scrollPanel,"cell 2 $javaPathsY, grow, w 10:500:,h %s!")
     }
 
     /**
@@ -386,6 +402,7 @@ class GlobalSettings(
         autodetectionSetting.isSelected = apiProperties.isAutoExcludingModsEnabled
         preInstallFilesSetting.text = apiProperties.preInstallCleanupFiles.joinToString(", ")
         postInstallFilesSetting.text = apiProperties.postInstallCleanupFiles.joinToString(", ")
+        javaPathsSetting.loadData(apiProperties.javaPaths)
     }
 
     /**
@@ -411,6 +428,9 @@ class GlobalSettings(
         apiProperties.isAutoExcludingModsEnabled = autodetectionSetting.isSelected
         apiProperties.preInstallCleanupFiles = TreeSet(preInstallFilesSetting.text.replace(", ",",").split(","))
         apiProperties.postInstallCleanupFiles = TreeSet(postInstallFilesSetting.text.replace(", ",",").split(","))
+        val javaPaths = javaPathsSetting.getData()
+        javaPaths.remove("placeholder")
+        apiProperties.javaPaths = javaPaths
     }
 
     /**
@@ -488,6 +508,8 @@ class GlobalSettings(
      * @author Griefed
      */
     override fun hasUnsavedChanges(): Boolean {
+        val javaPaths = javaPathsSetting.getData()
+        javaPaths.remove("placeholder")
         val changes = homeSetting.file.absolutePath != apiProperties.homeDirectory.absolutePath ||
         javaSetting.file.absolutePath != File(apiProperties.javaPath).absolutePath ||
         serverPacksSetting.file.absolutePath != apiProperties.serverPacksDirectory.absolutePath ||
@@ -506,7 +528,8 @@ class GlobalSettings(
         snapshotsSetting.isSelected != apiProperties.isMinecraftPreReleasesAvailabilityEnabled ||
         autodetectionSetting.isSelected != apiProperties.isAutoExcludingModsEnabled ||
         preInstallFilesSetting.text != apiProperties.preInstallCleanupFiles.joinToString(", ") ||
-        postInstallFilesSetting.text != apiProperties.postInstallCleanupFiles.joinToString(", ")
+        postInstallFilesSetting.text != apiProperties.postInstallCleanupFiles.joinToString(", ") ||
+        javaPaths != apiProperties.javaPaths
         if (changes) {
             title.showWarningIcon()
         } else {
