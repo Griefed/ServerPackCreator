@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html>
+<html class="no-js">
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
     <title>PackConfig</title>
     <link href="../../../images/logo-icon.svg" rel="icon" type="image/svg">
     <script>var pathToRoot = "../../../";</script>
+    <script>document.documentElement.classList.replace("no-js","js");</script>
     <script>const storage = localStorage.getItem("dokka-dark-mode")
     if (storage == null) {
         const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
@@ -18,12 +19,13 @@
         }
     }
     </script>
+<script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async="async"></script>
 <script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async="async"></script>
 <link href="../../../styles/style.css" rel="Stylesheet">
-<link href="../../../styles/jetbrains-mono.css" rel="Stylesheet">
 <link href="../../../styles/main.css" rel="Stylesheet">
 <link href="../../../styles/prism.css" rel="Stylesheet">
 <link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../styles/font-jb-sans-auto.css" rel="Stylesheet">
 <script type="text/javascript" src="../../../scripts/clipboard.js" async="async"></script>
 <script type="text/javascript" src="../../../scripts/navigation-loader.js" async="async"></script>
 <script type="text/javascript" src="../../../scripts/platform-content-handler.js" async="async"></script>
@@ -32,55 +34,523 @@
 <script type="text/javascript" src="../../../scripts/symbol-parameters-wrapper_deferred.js" defer="defer"></script>
 </head>
 <body>
-<div class="navigation-wrapper" id="navigation-wrapper">
-    <div id="leftToggler"><span class="icon-toggler"></span></div>
-    <div class="library-name">
-            <a href="../../../index.html">
-                    <span>serverpackcreator-api</span>
-            </a>
-    </div>
-    <div>
-    </div>
-    <div class="pull-right d-flex">
+    <div class="root">
+<nav class="navigation" id="navigation-wrapper">
+    <div class="navigation--inner">
+        <div class="navigation-title">
+            <button class="menu-toggle" id="menu-toggle" type="button">toggle menu</button>
+            <div class="library-name">
+                    <a class="library-name--link" href="../../../index.html">
+                            serverpackcreator-api
+                    </a>
+            </div>
+            <div class="library-version">
+            </div>
+        </div>
         <div class="filter-section" id="filter-section">
                 <button class="platform-tag platform-selector common-like" data-active="" data-filter=":serverpackcreator-api:dokkaHtml/commonMain">common</button>
                 <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button>
         </div>
-        <button id="theme-toggle-button"><span id="theme-toggle"></span></button>
-        <div id="searchBar"></div>
     </div>
-</div>
-<div id="container">
-    <div id="leftColumn">
-        <div id="sideMenu"></div>
+    <div class="navigation-controls">
+        <button class="navigation-controls--btn navigation-controls--theme" id="theme-toggle-button" type="button">switch theme</button>
+        <div class="navigation-controls--btn navigation-controls--search" id="searchBar" role="button">search in API</div>
     </div>
-    <div id="main">
+</nav>
+        <div id="container">
+            <div class="sidebar" id="leftColumn">
+                <div class="sidebar--inner" id="sideMenu"></div>
+            </div>
+            <div id="main">
 <div class="main-content" data-page-type="classlike" id="content" pageIds="serverpackcreator-api::de.griefed.serverpackcreator.api/PackConfig///PointingToDeclaration//1537383562">
   <div class="breadcrumbs"><a href="../../../index.html">serverpackcreator-api</a><span class="delimiter">/</span><a href="../index.html">de.griefed.serverpackcreator.api</a><span class="delimiter">/</span><span class="current">PackConfig</span></div>
   <div class="cover ">
     <h1 class="cover"><span>Pack</span><wbr></wbr><span><span>Config</span></span></h1>
     <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
       <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/commonMain">common</button><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword">open </span><span class="token keyword">class </span><a href="index.html">PackConfig</a></div><p class="paragraph">A PackConfig contains the settings required to create a server pack. A configuration model usually consists of:</p><ul><li><p class="paragraph">Modpack directory</p></li><li><p class="paragraph">Minecraft version</p></li><li><p class="paragraph">Modloader</p></li><li><p class="paragraph">Modloader version</p></li><li><p class="paragraph">Java args for the start scripts</p></li><li><p class="paragraph">Files and directories to copy to the server pack</p></li><li><p class="paragraph">Whether to pre-install the modloader server</p></li><li><p class="paragraph">Whether to include a server-icon</p></li><li><p class="paragraph">Whether to include a server.properties</p></li><li><p class="paragraph">Whether to create a ZIP-archive</p></li></ul><span class="kdoc-tag"><h4 class="">Author</h4><p class="paragraph">Griefed</p></span></div><div class="content sourceset-dependent-content" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">actual </span><span class="token keyword">open </span><span class="token keyword">class </span><a href="index.html">PackConfig</a> : <span data-unresolved-link="de.griefed.serverpackcreator.api/Pack///PointingToDeclaration/">Pack</span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/io/File.html">File</a><span class="token punctuation">, </span><span class="token keyword"></span><span data-unresolved-link="com.fasterxml.jackson.databind/JsonNode///PointingToDeclaration/">JsonNode</span><span class="token punctuation">, </span><span class="token keyword"></span><a href="index.html">PackConfig</a><span class="token operator">&gt; </span></div><p class="paragraph">A PackConfig contains the settings required to create a server pack. A configuration model usually consists of:</p><ul><li><p class="paragraph">Modpack directory</p></li><li><p class="paragraph">Minecraft version</p></li><li><p class="paragraph">Modloader</p></li><li><p class="paragraph">Modloader version</p></li><li><p class="paragraph">Java args for the start scripts</p></li><li><p class="paragraph">Files and directories to copy to the server pack</p></li><li><p class="paragraph">Whether to pre-install the modloader server</p></li><li><p class="paragraph">Whether to include a server-icon</p></li><li><p class="paragraph">Whether to include a server.properties</p></li><li><p class="paragraph">Whether to create a ZIP-archive</p></li></ul><span class="kdoc-tag"><h4 class="">Author</h4><p class="paragraph">Griefed</p></span></div>    </div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword">open </span><span class="token keyword">class </span><a href="index.html">PackConfig</a></div><p class="paragraph">A PackConfig contains the settings required to create a server pack. A configuration model usually consists of:</p><ul><li><p class="paragraph">Modpack directory</p></li><li><p class="paragraph">Minecraft version</p></li><li><p class="paragraph">Modloader</p></li><li><p class="paragraph">Modloader version</p></li><li><p class="paragraph">Java args for the start scripts</p></li><li><p class="paragraph">Files and directories to copy to the server pack</p></li><li><p class="paragraph">Whether to pre-install the modloader server</p></li><li><p class="paragraph">Whether to include a server-icon</p></li><li><p class="paragraph">Whether to include a server.properties</p></li><li><p class="paragraph">Whether to create a ZIP-archive</p></li></ul><span class="kdoc-tag"><h4 class="">Author</h4><p class="paragraph">Griefed</p></span></div><div class="content sourceset-dependent-content" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">actual </span><span class="token keyword">open </span><span class="token keyword">class </span><a href="index.html">PackConfig</a> : <a href="../-pack/index.html">Pack</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/io/File.html">File</a><span class="token punctuation">, </span><span class="token keyword"></span><span data-unresolved-link="com.fasterxml.jackson.databind/JsonNode///PointingToDeclaration/">JsonNode</span><span class="token punctuation">, </span><span class="token keyword"></span><a href="index.html">PackConfig</a><span class="token operator">&gt; </span></div><p class="paragraph">A PackConfig contains the settings required to create a server pack. A configuration model usually consists of:</p><ul><li><p class="paragraph">Modpack directory</p></li><li><p class="paragraph">Minecraft version</p></li><li><p class="paragraph">Modloader</p></li><li><p class="paragraph">Modloader version</p></li><li><p class="paragraph">Java args for the start scripts</p></li><li><p class="paragraph">Files and directories to copy to the server pack</p></li><li><p class="paragraph">Whether to pre-install the modloader server</p></li><li><p class="paragraph">Whether to include a server-icon</p></li><li><p class="paragraph">Whether to include a server.properties</p></li><li><p class="paragraph">Whether to create a ZIP-archive</p></li></ul><span class="kdoc-tag"><h4 class="">Author</h4><p class="paragraph">Griefed</p></span></div>    </div>
   </div>
   <div class="tabbedcontent">
-    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,FUNCTION,PROPERTY">Members</button></div>
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
     <div class="tabs-section-body">
       <div data-togglable="CONSTRUCTOR">
         <h2 class="">Constructors</h2>
-        <div class="table"><a data-name="-392249570%2FConstructors%2F1537383562" anchor-label="PackConfig" id="-392249570%2FConstructors%2F1537383562" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain :serverpackcreator-api:dokkaHtml/commonMain"></a>
-          <div class="table-row" data-togglable="CONSTRUCTOR" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain :serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain :serverpackcreator-api:dokkaHtml/commonMain">
+        <div class="table"><a data-name="-1972633593%2FConstructors%2F1537383562" anchor-label="PackConfig" id="-1972633593%2FConstructors%2F1537383562" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain,:serverpackcreator-api:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-togglable="CONSTRUCTOR" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain,:serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain,:serverpackcreator-api:dokkaHtml/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="-pack-config.html"><span>Pack</span><wbr></wbr><span><span>Config</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-392249570%2FConstructors%2F1537383562"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1972633593%2FConstructors%2F1537383562"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
                   <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
                     <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/commonMain">common</button><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">clientMods<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">copyDirs<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">modpackDir<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">minecraftVersion<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">modLoader<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">modLoaderVersion<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">javaArgs<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">serverPackSuffix<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">serverIconPath<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">serverPropertiesPath<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">includeServerInstallation<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token punctuation">, </span></span><span class="parameter ">includeServerIcon<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token punctuation">, </span></span><span class="parameter ">includeServerProperties<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token punctuation">, </span></span><span class="parameter ">includeZipCreation<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token punctuation">, </span></span><span class="parameter ">scriptSettings<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-hash-map/index.html">HashMap</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">pluginsConfigs<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-hash-map/index.html">HashMap</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-array-list/index.html">ArrayList</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../de.griefed.serverpackcreator.api.utilities/-commented-config/index.html">CommentedConfig</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Construct a new configuration model with custom values.</p></div><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="token punctuation">)</span></div></div><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">utilities<span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api.utilities.common/-utilities/index.html">Utilities</a><span class="token punctuation">, </span></span><span class="parameter ">configFile<span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/io/File.html">File</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Create a new configuration model from a config file.</p></div><div class="symbol monospace"><span class="token keyword">actual </span><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="token punctuation">)</span></div></div>                  </div>
+<div class="content sourceset-dependent-content" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">clientMods<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">whitelist<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">copyDirs<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../-inclusion-specification/index.html">InclusionSpecification</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">modpackDir<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">minecraftVersion<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">modLoader<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">modLoaderVersion<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">javaArgs<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">serverPackSuffix<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">serverIconPath<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">serverPropertiesPath<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">includeServerIcon<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token punctuation">, </span></span><span class="parameter ">includeServerProperties<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token punctuation">, </span></span><span class="parameter ">includeZipCreation<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token punctuation">, </span></span><span class="parameter ">scriptSettings<span class="token operator">: </span><span data-unresolved-link="/&amp;lt;Error class: unknown class&amp;gt;///PointingToDeclaration/">&lt;Error class: unknown class&gt;</span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">pluginsConfigs<span class="token operator">: </span><span data-unresolved-link="/&amp;lt;Error class: unknown class&amp;gt;///PointingToDeclaration/">&lt;Error class: unknown class&gt;</span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span><span class="token keyword"></span><span data-unresolved-link="/&amp;lt;Error class: unknown class&amp;gt;///PointingToDeclaration/">&lt;Error class: unknown class&gt;</span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../de.griefed.serverpackcreator.api.utilities/-commented-config/index.html">CommentedConfig</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Construct a new configuration model with custom values.</p></div><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="token punctuation">)</span></div></div><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">utilities<span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api.utilities.common/-utilities/index.html">Utilities</a><span class="token punctuation">, </span></span><span class="parameter ">configFile<span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/io/File.html">File</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Create a new configuration model from a config file.</p></div><div class="symbol monospace"><span class="token keyword">actual </span><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="token punctuation">)</span></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="PROPERTY">
+        <h2 class="">Properties</h2>
+        <div class="table"><a data-name="1676857614%2FProperties%2F1537383562" anchor-label="clientMods" id="1676857614%2FProperties%2F1537383562" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain,:serverpackcreator-api:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain,:serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain,:serverpackcreator-api:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../-pack/client-mods.html"><span>client</span><wbr></wbr><span><span>Mods</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1676857614%2FProperties%2F1537383562"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/commonMain">common</button><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword"></span><span class="token keyword">val </span><a href="client-mods.html">clientMods</a><span class="token operator">: </span><span data-unresolved-link="/&amp;lt;Error class: unknown class&amp;gt;///PointingToDeclaration/">&lt;Error class: unknown class&gt;</span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></div></div><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="../-pack/client-mods.html">clientMods</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-array-list/index.html">ArrayList</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1045011443%2FProperties%2F655084441" anchor-label="configVersion" id="-1045011443%2FProperties%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../-pack/config-version.html"><span>config</span><wbr></wbr><span><span>Version</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1045011443%2FProperties%2F655084441"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">var </span><a href="../-pack/config-version.html">configVersion</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2053115214%2FProperties%2F655084441" anchor-label="fabric" id="-2053115214%2FProperties%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../-pack/fabric.html"><span><span>fabric</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2053115214%2FProperties%2F655084441"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword"></span><span class="token keyword">val </span><a href="../-pack/fabric.html">fabric</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.text/-regex/index.html">Regex</a></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2024354477%2FProperties%2F655084441" anchor-label="fileDiskName" id="-2024354477%2FProperties%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../-pack/file-disk-name.html"><span>file</span><wbr></wbr><span>Disk</span><wbr></wbr><span><span>Name</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2024354477%2FProperties%2F655084441"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword"></span><span class="token keyword">var </span><a href="../-pack/file-disk-name.html">fileDiskName</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1546655504%2FProperties%2F655084441" anchor-label="fileName" id="-1546655504%2FProperties%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../-pack/file-name.html"><span>file</span><wbr></wbr><span><span>Name</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1546655504%2FProperties%2F655084441"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword"></span><span class="token keyword">var </span><a href="../-pack/file-name.html">fileName</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="366955260%2FProperties%2F655084441" anchor-label="forge" id="366955260%2FProperties%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../-pack/forge.html"><span><span>forge</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="366955260%2FProperties%2F655084441"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword"></span><span class="token keyword">val </span><a href="../-pack/forge.html">forge</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.text/-regex/index.html">Regex</a></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1875924910%2FProperties%2F1537383562" anchor-label="inclusions" id="1875924910%2FProperties%2F1537383562" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain,:serverpackcreator-api:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain,:serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain,:serverpackcreator-api:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../-pack/inclusions.html"><span><span>inclusions</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1875924910%2FProperties%2F1537383562"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/commonMain">common</button><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword"></span><span class="token keyword">val </span><a href="inclusions.html">inclusions</a><span class="token operator">: </span><span data-unresolved-link="/&amp;lt;Error class: unknown class&amp;gt;///PointingToDeclaration/">&lt;Error class: unknown class&gt;</span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../-inclusion-specification/index.html">InclusionSpecification</a><span class="token operator">&gt;</span></div></div><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="../-pack/inclusions.html">inclusions</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-array-list/index.html">ArrayList</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../-inclusion-specification/index.html">InclusionSpecification</a><span class="token operator">&gt;</span></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1666361166%2FProperties%2F1537383562" anchor-label="isServerIconInclusionDesired" id="1666361166%2FProperties%2F1537383562" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain,:serverpackcreator-api:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain,:serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain,:serverpackcreator-api:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../-pack/is-server-icon-inclusion-desired.html"><span>is</span><wbr></wbr><span>Server</span><wbr></wbr><span>Icon</span><wbr></wbr><span>Inclusion</span><wbr></wbr><span><span>Desired</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1666361166%2FProperties%2F1537383562"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/commonMain">common</button><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword"></span><span class="token keyword">var </span><a href="is-server-icon-inclusion-desired.html">isServerIconInclusionDesired</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div></div><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">var </span><a href="../-pack/is-server-icon-inclusion-desired.html">isServerIconInclusionDesired</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="329921998%2FProperties%2F1537383562" anchor-label="isServerPropertiesInclusionDesired" id="329921998%2FProperties%2F1537383562" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain,:serverpackcreator-api:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain,:serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain,:serverpackcreator-api:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../-pack/is-server-properties-inclusion-desired.html"><span>is</span><wbr></wbr><span>Server</span><wbr></wbr><span>Properties</span><wbr></wbr><span>Inclusion</span><wbr></wbr><span><span>Desired</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="329921998%2FProperties%2F1537383562"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/commonMain">common</button><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword"></span><span class="token keyword">var </span><a href="is-server-properties-inclusion-desired.html">isServerPropertiesInclusionDesired</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div></div><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">var </span><a href="../-pack/is-server-properties-inclusion-desired.html">isServerPropertiesInclusionDesired</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="907788947%2FProperties%2F655084441" anchor-label="isZipCreationDesired" id="907788947%2FProperties%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../-pack/is-zip-creation-desired.html"><span>is</span><wbr></wbr><span>Zip</span><wbr></wbr><span>Creation</span><wbr></wbr><span><span>Desired</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="907788947%2FProperties%2F655084441"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">var </span><a href="../-pack/is-zip-creation-desired.html">isZipCreationDesired</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="142099502%2FProperties%2F1537383562" anchor-label="javaArgs" id="142099502%2FProperties%2F1537383562" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain,:serverpackcreator-api:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain,:serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain,:serverpackcreator-api:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../-pack/java-args.html"><span>java</span><wbr></wbr><span><span>Args</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="142099502%2FProperties%2F1537383562"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/commonMain">common</button><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword"></span><span class="token keyword">var </span><a href="java-args.html">javaArgs</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></div></div><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">var </span><a href="../-pack/java-args.html">javaArgs</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1859102167%2FProperties%2F655084441" anchor-label="legacyFabric" id="-1859102167%2FProperties%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../-pack/legacy-fabric.html"><span>legacy</span><wbr></wbr><span><span>Fabric</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1859102167%2FProperties%2F655084441"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword"></span><span class="token keyword">val </span><a href="../-pack/legacy-fabric.html">legacyFabric</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.text/-regex/index.html">Regex</a></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1923806126%2FProperties%2F1537383562" anchor-label="minecraftVersion" id="1923806126%2FProperties%2F1537383562" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain,:serverpackcreator-api:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain,:serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain,:serverpackcreator-api:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../-pack/minecraft-version.html"><span>minecraft</span><wbr></wbr><span><span>Version</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1923806126%2FProperties%2F1537383562"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/commonMain">common</button><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword"></span><span class="token keyword">var </span><a href="minecraft-version.html">minecraftVersion</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></div></div><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">var </span><a href="../-pack/minecraft-version.html">minecraftVersion</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1694109266%2FProperties%2F1537383562" anchor-label="modloader" id="-1694109266%2FProperties%2F1537383562" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain,:serverpackcreator-api:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain,:serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain,:serverpackcreator-api:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../-pack/modloader.html"><span><span>modloader</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1694109266%2FProperties%2F1537383562"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/commonMain">common</button><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword"></span><span class="token keyword">var </span><a href="modloader.html">modloader</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></div></div><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">var </span><a href="../-pack/modloader.html">modloader</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1270985042%2FProperties%2F1537383562" anchor-label="modloaderVersion" id="-1270985042%2FProperties%2F1537383562" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain,:serverpackcreator-api:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain,:serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain,:serverpackcreator-api:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../-pack/modloader-version.html"><span>modloader</span><wbr></wbr><span><span>Version</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1270985042%2FProperties%2F1537383562"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/commonMain">common</button><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword"></span><span class="token keyword">var </span><a href="modloader-version.html">modloaderVersion</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></div></div><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">var </span><a href="../-pack/modloader-version.html">modloaderVersion</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1497398706%2FProperties%2F1537383562" anchor-label="modpackDir" id="-1497398706%2FProperties%2F1537383562" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain,:serverpackcreator-api:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain,:serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain,:serverpackcreator-api:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../-pack/modpack-dir.html"><span>modpack</span><wbr></wbr><span><span>Dir</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1497398706%2FProperties%2F1537383562"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/commonMain">common</button><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword"></span><span class="token keyword">var </span><a href="modpack-dir.html">modpackDir</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></div></div><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">var </span><a href="../-pack/modpack-dir.html">modpackDir</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="779653568%2FProperties%2F655084441" anchor-label="modpackJson" id="779653568%2FProperties%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../-pack/modpack-json.html"><span>modpack</span><wbr></wbr><span><span>Json</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="779653568%2FProperties%2F655084441"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">var </span><a href="../-pack/modpack-json.html">modpackJson</a><span class="token operator">: </span><span data-unresolved-link="com.fasterxml.jackson.databind/JsonNode///PointingToDeclaration/">JsonNode</span><span class="token operator">?</span></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1645656980%2FProperties%2F1537383562" anchor-label="modsWhitelist" id="-1645656980%2FProperties%2F1537383562" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain,:serverpackcreator-api:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain,:serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain,:serverpackcreator-api:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../-pack/mods-whitelist.html"><span>mods</span><wbr></wbr><span><span>Whitelist</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1645656980%2FProperties%2F1537383562"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/commonMain">common</button><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword"></span><span class="token keyword">val </span><a href="mods-whitelist.html">modsWhitelist</a><span class="token operator">: </span><span data-unresolved-link="/&amp;lt;Error class: unknown class&amp;gt;///PointingToDeclaration/">&lt;Error class: unknown class&gt;</span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></div></div><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="../-pack/mods-whitelist.html">modsWhitelist</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-array-list/index.html">ArrayList</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1796872344%2FProperties%2F655084441" anchor-label="neoForge" id="-1796872344%2FProperties%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../-pack/neo-forge.html"><span>neo</span><wbr></wbr><span><span>Forge</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1796872344%2FProperties%2F655084441"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword"></span><span class="token keyword">val </span><a href="../-pack/neo-forge.html">neoForge</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.text/-regex/index.html">Regex</a></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-562275218%2FProperties%2F1537383562" anchor-label="pluginsConfigs" id="-562275218%2FProperties%2F1537383562" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain,:serverpackcreator-api:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain,:serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain,:serverpackcreator-api:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../-pack/plugins-configs.html"><span>plugins</span><wbr></wbr><span><span>Configs</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-562275218%2FProperties%2F1537383562"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/commonMain">common</button><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword"></span><span class="token keyword">val </span><a href="plugins-configs.html">pluginsConfigs</a><span class="token operator">: </span><span data-unresolved-link="/&amp;lt;Error class: unknown class&amp;gt;///PointingToDeclaration/">&lt;Error class: unknown class&gt;</span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span><span class="token keyword"></span><span data-unresolved-link="/&amp;lt;Error class: unknown class&amp;gt;///PointingToDeclaration/">&lt;Error class: unknown class&gt;</span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../de.griefed.serverpackcreator.api.utilities/-commented-config/index.html">CommentedConfig</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div></div><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="../-pack/plugins-configs.html">pluginsConfigs</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-hash-map/index.html">HashMap</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-array-list/index.html">ArrayList</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../de.griefed.serverpackcreator.api.utilities/-commented-config/index.html">CommentedConfig</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-953579713%2FProperties%2F655084441" anchor-label="projectName" id="-953579713%2FProperties%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../-pack/project-name.html"><span>project</span><wbr></wbr><span><span>Name</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-953579713%2FProperties%2F655084441"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword"></span><span class="token keyword">var </span><a href="../-pack/project-name.html">projectName</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-668862954%2FProperties%2F655084441" anchor-label="quilt" id="-668862954%2FProperties%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../-pack/quilt.html"><span><span>quilt</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-668862954%2FProperties%2F655084441"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword"></span><span class="token keyword">val </span><a href="../-pack/quilt.html">quilt</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.text/-regex/index.html">Regex</a></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1837003698%2FProperties%2F1537383562" anchor-label="scriptSettings" id="-1837003698%2FProperties%2F1537383562" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain,:serverpackcreator-api:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain,:serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain,:serverpackcreator-api:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../-pack/script-settings.html"><span>script</span><wbr></wbr><span><span>Settings</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1837003698%2FProperties%2F1537383562"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/commonMain">common</button><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword"></span><span class="token keyword">val </span><a href="script-settings.html">scriptSettings</a><span class="token operator">: </span><span data-unresolved-link="/&amp;lt;Error class: unknown class&amp;gt;///PointingToDeclaration/">&lt;Error class: unknown class&gt;</span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></div></div><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="../-pack/script-settings.html">scriptSettings</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-hash-map/index.html">HashMap</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1782048366%2FProperties%2F1537383562" anchor-label="serverIconPath" id="1782048366%2FProperties%2F1537383562" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain,:serverpackcreator-api:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain,:serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain,:serverpackcreator-api:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../-pack/server-icon-path.html"><span>server</span><wbr></wbr><span>Icon</span><wbr></wbr><span><span>Path</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1782048366%2FProperties%2F1537383562"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/commonMain">common</button><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword"></span><span class="token keyword">var </span><a href="server-icon-path.html">serverIconPath</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></div></div><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">var </span><a href="../-pack/server-icon-path.html">serverIconPath</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1301660178%2FProperties%2F1537383562" anchor-label="serverPackSuffix" id="-1301660178%2FProperties%2F1537383562" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain,:serverpackcreator-api:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain,:serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain,:serverpackcreator-api:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../-pack/server-pack-suffix.html"><span>server</span><wbr></wbr><span>Pack</span><wbr></wbr><span><span>Suffix</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1301660178%2FProperties%2F1537383562"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/commonMain">common</button><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword"></span><span class="token keyword">var </span><a href="server-pack-suffix.html">serverPackSuffix</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></div></div><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">var </span><a href="../-pack/server-pack-suffix.html">serverPackSuffix</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1545474222%2FProperties%2F1537383562" anchor-label="serverPropertiesPath" id="1545474222%2FProperties%2F1537383562" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain,:serverpackcreator-api:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain,:serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain,:serverpackcreator-api:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../-pack/server-properties-path.html"><span>server</span><wbr></wbr><span>Properties</span><wbr></wbr><span><span>Path</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1545474222%2FProperties%2F1537383562"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/commonMain">common</button><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword"></span><span class="token keyword">var </span><a href="server-properties-path.html">serverPropertiesPath</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></div></div><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">var </span><a href="../-pack/server-properties-path.html">serverPropertiesPath</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1439314214%2FProperties%2F655084441" anchor-label="whitespace" id="-1439314214%2FProperties%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../-pack/whitespace.html"><span><span>whitespace</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1439314214%2FProperties%2F655084441"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword"></span><span class="token keyword">val </span><a href="../-pack/whitespace.html">whitespace</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.text/-regex/index.html">Regex</a></div></div>                  </div>
                 </div>
               </div>
             </div>
@@ -89,11 +559,11 @@
       </div>
       <div data-togglable="FUNCTION">
         <h2 class="">Functions</h2>
-        <div class="table"><a data-name="-279941252%2FFunctions%2F1537383562" anchor-label="getPluginConfigs" id="-279941252%2FFunctions%2F1537383562" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain :serverpackcreator-api:dokkaHtml/commonMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain :serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain :serverpackcreator-api:dokkaHtml/commonMain">
+        <div class="table"><a data-name="-279941252%2FFunctions%2F1537383562" anchor-label="getPluginConfigs" id="-279941252%2FFunctions%2F1537383562" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain,:serverpackcreator-api:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain,:serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain,:serverpackcreator-api:dokkaHtml/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><span data-unresolved-link="de.griefed.serverpackcreator.api/Pack/getPluginConfigs/#kotlin.String/PointingToDeclaration/"><span>get</span><wbr></wbr><span>Plugin</span><wbr></wbr><span><span>Configs</span></span></span></div>
+                  <div><a href="../-pack/get-plugin-configs.html"><span>get</span><wbr></wbr><span>Plugin</span><wbr></wbr><span><span>Configs</span></span></a></div>
 <span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-279941252%2FFunctions%2F1537383562"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
@@ -101,56 +571,73 @@
                 <div class="title">
                   <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
                     <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/commonMain">common</button><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="get-plugin-configs.html"><span class="token function">getPluginConfigs</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">pluginId<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-array-list/index.html">ArrayList</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../de.griefed.serverpackcreator.api.utilities/-commented-config/index.html">CommentedConfig</a><span class="token operator">&gt;</span></div></div><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="index.html#-643601355%2FFunctions%2F655084441"><span class="token function">getPluginConfigs</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">pluginId<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-array-list/index.html">ArrayList</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../de.griefed.serverpackcreator.api.utilities/-commented-config/index.html">CommentedConfig</a><span class="token operator">&gt;</span></div></div>                  </div>
+<div class="content sourceset-dependent-content" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="get-plugin-configs.html"><span class="token function">getPluginConfigs</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">pluginId<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="/&amp;lt;Error class: unknown class&amp;gt;///PointingToDeclaration/">&lt;Error class: unknown class&gt;</span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../de.griefed.serverpackcreator.api.utilities/-commented-config/index.html">CommentedConfig</a><span class="token operator">&gt;</span></div></div><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="../-pack/get-plugin-configs.html"><span class="token function">getPluginConfigs</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">pluginId<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-array-list/index.html">ArrayList</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../de.griefed.serverpackcreator.api.utilities/-commented-config/index.html">CommentedConfig</a><span class="token operator">&gt;</span></div></div>                  </div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-509287465%2FFunctions%2F232887997" anchor-label="save" id="-509287465%2FFunctions%2F232887997" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain"></a>
+<a data-name="1712323626%2FFunctions%2F232887997" anchor-label="save" id="1712323626%2FFunctions%2F232887997" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain"></a>
           <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="save.html"><span><span>save</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-509287465%2FFunctions%2F232887997"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1712323626%2FFunctions%2F232887997"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="save.html"><span class="token function">save</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">destination<span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api.utilities/-file/index.html">File</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="index.html">PackConfig</a></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="save.html"><span class="token function">save</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">destination<span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api.utilities/-file/index.html">File</a><span class="token punctuation">, </span></span><span class="parameter ">apiProperties<span class="token operator">: </span><a href="../-api-properties/index.html">ApiProperties</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="index.html">PackConfig</a></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-1593113598%2FFunctions%2F655084441" anchor-label="setClientMods" id="-1593113598%2FFunctions%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
+<a data-name="-1982769343%2FFunctions%2F655084441" anchor-label="setClientMods" id="-1982769343%2FFunctions%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
           <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="index.html#-1593113598%2FFunctions%2F655084441"><span>set</span><wbr></wbr><span>Client</span><wbr></wbr><span><span>Mods</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1593113598%2FFunctions%2F655084441"></span>
+                  <div><a href="../-pack/set-client-mods.html"><span>set</span><wbr></wbr><span>Client</span><wbr></wbr><span><span>Mods</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1982769343%2FFunctions%2F655084441"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
                   <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
                     <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="index.html#-1593113598%2FFunctions%2F655084441"><span class="token function">setClientMods</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">newClientMods<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-array-list/index.html">ArrayList</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span></div></div>                  </div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="../-pack/set-client-mods.html"><span class="token function">setClientMods</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">newClientMods<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span></div></div>                  </div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="1601416995%2FFunctions%2F655084441" anchor-label="setCopyDirs" id="1601416995%2FFunctions%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
+<a data-name="-1255078817%2FFunctions%2F655084441" anchor-label="setInclusions" id="-1255078817%2FFunctions%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
           <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="index.html#1601416995%2FFunctions%2F655084441"><span>set</span><wbr></wbr><span>Copy</span><wbr></wbr><span><span>Dirs</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1601416995%2FFunctions%2F655084441"></span>
+                  <div><a href="index.html#-1255078817%2FFunctions%2F655084441"><span>set</span><wbr></wbr><span><span>Inclusions</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1255078817%2FFunctions%2F655084441"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
                   <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
                     <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="index.html#1601416995%2FFunctions%2F655084441"><span class="token function">setCopyDirs</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">newCopyDirs<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-array-list/index.html">ArrayList</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span></div></div>                  </div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="index.html#-1255078817%2FFunctions%2F655084441"><span class="token function">setInclusions</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">newCopyDirs<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-array-list/index.html">ArrayList</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../-inclusion-specification/index.html">InclusionSpecification</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1336755395%2FFunctions%2F655084441" anchor-label="setModsWhitelist" id="1336755395%2FFunctions%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../-pack/set-mods-whitelist.html"><span>set</span><wbr></wbr><span>Mods</span><wbr></wbr><span><span>Whitelist</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1336755395%2FFunctions%2F655084441"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="../-pack/set-mods-whitelist.html"><span class="token function">setModsWhitelist</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">newModsWhitelist<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span></div></div>                  </div>
                 </div>
               </div>
             </div>
@@ -193,7 +680,7 @@
           <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="index.html#1223181387%2FFunctions%2F655084441"><span>to</span><wbr></wbr><span><span>String</span></span></a></div>
+                  <div><a href="../-pack/to-string.html"><span>to</span><wbr></wbr><span><span>String</span></span></a></div>
 <span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1223181387%2FFunctions%2F655084441"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
@@ -201,436 +688,7 @@
                 <div class="title">
                   <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
                     <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="index.html#1223181387%2FFunctions%2F655084441"><span class="token function">toString</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div data-togglable="PROPERTY">
-        <h2 class="">Properties</h2>
-        <div class="table"><a data-name="1676857614%2FProperties%2F1537383562" anchor-label="clientMods" id="1676857614%2FProperties%2F1537383562" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain :serverpackcreator-api:dokkaHtml/commonMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain :serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain :serverpackcreator-api:dokkaHtml/commonMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><span data-unresolved-link="de.griefed.serverpackcreator.api/Pack/clientMods/#/PointingToDeclaration/"><span>client</span><wbr></wbr><span><span>Mods</span></span></span></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1676857614%2FProperties%2F1537383562"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/commonMain">common</button><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword"></span><span class="token keyword">val </span><a href="client-mods.html">clientMods</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-array-list/index.html">ArrayList</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></div></div><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="index.html#813933083%2FProperties%2F655084441">clientMods</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-array-list/index.html">ArrayList</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="1583053742%2FProperties%2F1537383562" anchor-label="copyDirs" id="1583053742%2FProperties%2F1537383562" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain :serverpackcreator-api:dokkaHtml/commonMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain :serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain :serverpackcreator-api:dokkaHtml/commonMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><span data-unresolved-link="de.griefed.serverpackcreator.api/Pack/copyDirs/#/PointingToDeclaration/"><span>copy</span><wbr></wbr><span><span>Dirs</span></span></span></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1583053742%2FProperties%2F1537383562"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/commonMain">common</button><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword"></span><span class="token keyword">val </span><a href="copy-dirs.html">copyDirs</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-array-list/index.html">ArrayList</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></div></div><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="index.html#-563352836%2FProperties%2F655084441">copyDirs</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-array-list/index.html">ArrayList</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="-2053115214%2FProperties%2F655084441" anchor-label="fabric" id="-2053115214%2FProperties%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="index.html#-2053115214%2FProperties%2F655084441"><span><span>fabric</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2053115214%2FProperties%2F655084441"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword"></span><span class="token keyword">val </span><a href="index.html#-2053115214%2FProperties%2F655084441">fabric</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.text/-regex/index.html">Regex</a></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="-2024354477%2FProperties%2F655084441" anchor-label="fileDiskName" id="-2024354477%2FProperties%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="index.html#-2024354477%2FProperties%2F655084441"><span>file</span><wbr></wbr><span>Disk</span><wbr></wbr><span><span>Name</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2024354477%2FProperties%2F655084441"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword"></span><span class="token keyword">var </span><a href="index.html#-2024354477%2FProperties%2F655084441">fileDiskName</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="-1546655504%2FProperties%2F655084441" anchor-label="fileName" id="-1546655504%2FProperties%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="index.html#-1546655504%2FProperties%2F655084441"><span>file</span><wbr></wbr><span><span>Name</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1546655504%2FProperties%2F655084441"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword"></span><span class="token keyword">var </span><a href="index.html#-1546655504%2FProperties%2F655084441">fileName</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="366955260%2FProperties%2F655084441" anchor-label="forge" id="366955260%2FProperties%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="index.html#366955260%2FProperties%2F655084441"><span><span>forge</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="366955260%2FProperties%2F655084441"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword"></span><span class="token keyword">val </span><a href="index.html#366955260%2FProperties%2F655084441">forge</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.text/-regex/index.html">Regex</a></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="1666361166%2FProperties%2F1537383562" anchor-label="isServerIconInclusionDesired" id="1666361166%2FProperties%2F1537383562" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain :serverpackcreator-api:dokkaHtml/commonMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain :serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain :serverpackcreator-api:dokkaHtml/commonMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><span data-unresolved-link="de.griefed.serverpackcreator.api/Pack/isServerIconInclusionDesired/#/PointingToDeclaration/"><span>is</span><wbr></wbr><span>Server</span><wbr></wbr><span>Icon</span><wbr></wbr><span>Inclusion</span><wbr></wbr><span><span>Desired</span></span></span></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1666361166%2FProperties%2F1537383562"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/commonMain">common</button><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword"></span><span class="token keyword">var </span><a href="is-server-icon-inclusion-desired.html">isServerIconInclusionDesired</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div></div><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">var </span><a href="index.html#-1869704301%2FProperties%2F655084441">isServerIconInclusionDesired</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="-1008204942%2FProperties%2F1537383562" anchor-label="isServerInstallationDesired" id="-1008204942%2FProperties%2F1537383562" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain :serverpackcreator-api:dokkaHtml/commonMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain :serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain :serverpackcreator-api:dokkaHtml/commonMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><span data-unresolved-link="de.griefed.serverpackcreator.api/Pack/isServerInstallationDesired/#/PointingToDeclaration/"><span>is</span><wbr></wbr><span>Server</span><wbr></wbr><span>Installation</span><wbr></wbr><span><span>Desired</span></span></span></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1008204942%2FProperties%2F1537383562"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/commonMain">common</button><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword"></span><span class="token keyword">var </span><a href="is-server-installation-desired.html">isServerInstallationDesired</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div></div><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">var </span><a href="index.html#1996095152%2FProperties%2F655084441">isServerInstallationDesired</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="329921998%2FProperties%2F1537383562" anchor-label="isServerPropertiesInclusionDesired" id="329921998%2FProperties%2F1537383562" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain :serverpackcreator-api:dokkaHtml/commonMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain :serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain :serverpackcreator-api:dokkaHtml/commonMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><span data-unresolved-link="de.griefed.serverpackcreator.api/Pack/isServerPropertiesInclusionDesired/#/PointingToDeclaration/"><span>is</span><wbr></wbr><span>Server</span><wbr></wbr><span>Properties</span><wbr></wbr><span>Inclusion</span><wbr></wbr><span><span>Desired</span></span></span></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="329921998%2FProperties%2F1537383562"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/commonMain">common</button><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword"></span><span class="token keyword">var </span><a href="is-server-properties-inclusion-desired.html">isServerPropertiesInclusionDesired</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div></div><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">var </span><a href="index.html#-658762151%2FProperties%2F655084441">isServerPropertiesInclusionDesired</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="907788947%2FProperties%2F655084441" anchor-label="isZipCreationDesired" id="907788947%2FProperties%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="index.html#907788947%2FProperties%2F655084441"><span>is</span><wbr></wbr><span>Zip</span><wbr></wbr><span>Creation</span><wbr></wbr><span><span>Desired</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="907788947%2FProperties%2F655084441"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">var </span><a href="index.html#907788947%2FProperties%2F655084441">isZipCreationDesired</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="142099502%2FProperties%2F1537383562" anchor-label="javaArgs" id="142099502%2FProperties%2F1537383562" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain :serverpackcreator-api:dokkaHtml/commonMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain :serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain :serverpackcreator-api:dokkaHtml/commonMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><span data-unresolved-link="de.griefed.serverpackcreator.api/Pack/javaArgs/#/PointingToDeclaration/"><span>java</span><wbr></wbr><span><span>Args</span></span></span></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="142099502%2FProperties%2F1537383562"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/commonMain">common</button><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword"></span><span class="token keyword">var </span><a href="java-args.html">javaArgs</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></div></div><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">var </span><a href="index.html#-824113160%2FProperties%2F655084441">javaArgs</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="-1859102167%2FProperties%2F655084441" anchor-label="legacyFabric" id="-1859102167%2FProperties%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="index.html#-1859102167%2FProperties%2F655084441"><span>legacy</span><wbr></wbr><span><span>Fabric</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1859102167%2FProperties%2F655084441"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword"></span><span class="token keyword">val </span><a href="index.html#-1859102167%2FProperties%2F655084441">legacyFabric</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.text/-regex/index.html">Regex</a></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="1923806126%2FProperties%2F1537383562" anchor-label="minecraftVersion" id="1923806126%2FProperties%2F1537383562" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain :serverpackcreator-api:dokkaHtml/commonMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain :serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain :serverpackcreator-api:dokkaHtml/commonMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><span data-unresolved-link="de.griefed.serverpackcreator.api/Pack/minecraftVersion/#/PointingToDeclaration/"><span>minecraft</span><wbr></wbr><span><span>Version</span></span></span></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1923806126%2FProperties%2F1537383562"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/commonMain">common</button><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword"></span><span class="token keyword">var </span><a href="minecraft-version.html">minecraftVersion</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></div></div><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">var </span><a href="index.html#-1635271892%2FProperties%2F655084441">minecraftVersion</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="-1694109266%2FProperties%2F1537383562" anchor-label="modloader" id="-1694109266%2FProperties%2F1537383562" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain :serverpackcreator-api:dokkaHtml/commonMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain :serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain :serverpackcreator-api:dokkaHtml/commonMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><span data-unresolved-link="de.griefed.serverpackcreator.api/Pack/modloader/#/PointingToDeclaration/"><span><span>modloader</span></span></span></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1694109266%2FProperties%2F1537383562"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/commonMain">common</button><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword"></span><span class="token keyword">var </span><a href="modloader.html">modloader</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></div></div><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">var </span><a href="index.html#-1067440754%2FProperties%2F655084441">modloader</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="-1270985042%2FProperties%2F1537383562" anchor-label="modloaderVersion" id="-1270985042%2FProperties%2F1537383562" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain :serverpackcreator-api:dokkaHtml/commonMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain :serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain :serverpackcreator-api:dokkaHtml/commonMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><span data-unresolved-link="de.griefed.serverpackcreator.api/Pack/modloaderVersion/#/PointingToDeclaration/"><span>modloader</span><wbr></wbr><span><span>Version</span></span></span></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1270985042%2FProperties%2F1537383562"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/commonMain">common</button><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword"></span><span class="token keyword">var </span><a href="modloader-version.html">modloaderVersion</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></div></div><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">var </span><a href="index.html#-1478873324%2FProperties%2F655084441">modloaderVersion</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="-1497398706%2FProperties%2F1537383562" anchor-label="modpackDir" id="-1497398706%2FProperties%2F1537383562" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain :serverpackcreator-api:dokkaHtml/commonMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain :serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain :serverpackcreator-api:dokkaHtml/commonMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><span data-unresolved-link="de.griefed.serverpackcreator.api/Pack/modpackDir/#/PointingToDeclaration/"><span>modpack</span><wbr></wbr><span><span>Dir</span></span></span></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1497398706%2FProperties%2F1537383562"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/commonMain">common</button><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword"></span><span class="token keyword">var </span><a href="modpack-dir.html">modpackDir</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></div></div><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">var </span><a href="index.html#-1226213243%2FProperties%2F655084441">modpackDir</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="779653568%2FProperties%2F655084441" anchor-label="modpackJson" id="779653568%2FProperties%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="index.html#779653568%2FProperties%2F655084441"><span>modpack</span><wbr></wbr><span><span>Json</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="779653568%2FProperties%2F655084441"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">var </span><a href="index.html#779653568%2FProperties%2F655084441">modpackJson</a><span class="token operator">: </span><span data-unresolved-link="com.fasterxml.jackson.databind/JsonNode///PointingToDeclaration/">JsonNode</span><span class="token operator">?</span></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="-562275218%2FProperties%2F1537383562" anchor-label="pluginsConfigs" id="-562275218%2FProperties%2F1537383562" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain :serverpackcreator-api:dokkaHtml/commonMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain :serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain :serverpackcreator-api:dokkaHtml/commonMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><span data-unresolved-link="de.griefed.serverpackcreator.api/Pack/pluginsConfigs/#/PointingToDeclaration/"><span>plugins</span><wbr></wbr><span><span>Configs</span></span></span></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-562275218%2FProperties%2F1537383562"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/commonMain">common</button><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword"></span><span class="token keyword">val </span><a href="plugins-configs.html">pluginsConfigs</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-hash-map/index.html">HashMap</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-array-list/index.html">ArrayList</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../de.griefed.serverpackcreator.api.utilities/-commented-config/index.html">CommentedConfig</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div></div><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="index.html#-1004852954%2FProperties%2F655084441">pluginsConfigs</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-hash-map/index.html">HashMap</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-array-list/index.html">ArrayList</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../de.griefed.serverpackcreator.api.utilities/-commented-config/index.html">CommentedConfig</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="-953579713%2FProperties%2F655084441" anchor-label="projectName" id="-953579713%2FProperties%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="index.html#-953579713%2FProperties%2F655084441"><span>project</span><wbr></wbr><span><span>Name</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-953579713%2FProperties%2F655084441"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword"></span><span class="token keyword">var </span><a href="index.html#-953579713%2FProperties%2F655084441">projectName</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="-668862954%2FProperties%2F655084441" anchor-label="quilt" id="-668862954%2FProperties%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="index.html#-668862954%2FProperties%2F655084441"><span><span>quilt</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-668862954%2FProperties%2F655084441"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword"></span><span class="token keyword">val </span><a href="index.html#-668862954%2FProperties%2F655084441">quilt</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.text/-regex/index.html">Regex</a></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="-1837003698%2FProperties%2F1537383562" anchor-label="scriptSettings" id="-1837003698%2FProperties%2F1537383562" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain :serverpackcreator-api:dokkaHtml/commonMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain :serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain :serverpackcreator-api:dokkaHtml/commonMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><span data-unresolved-link="de.griefed.serverpackcreator.api/Pack/scriptSettings/#/PointingToDeclaration/"><span>script</span><wbr></wbr><span><span>Settings</span></span></span></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1837003698%2FProperties%2F1537383562"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/commonMain">common</button><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword"></span><span class="token keyword">val </span><a href="script-settings.html">scriptSettings</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-hash-map/index.html">HashMap</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></div></div><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="index.html#-1753802903%2FProperties%2F655084441">scriptSettings</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-hash-map/index.html">HashMap</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="1782048366%2FProperties%2F1537383562" anchor-label="serverIconPath" id="1782048366%2FProperties%2F1537383562" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain :serverpackcreator-api:dokkaHtml/commonMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain :serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain :serverpackcreator-api:dokkaHtml/commonMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><span data-unresolved-link="de.griefed.serverpackcreator.api/Pack/serverIconPath/#/PointingToDeclaration/"><span>server</span><wbr></wbr><span>Icon</span><wbr></wbr><span><span>Path</span></span></span></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1782048366%2FProperties%2F1537383562"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/commonMain">common</button><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword"></span><span class="token keyword">var </span><a href="server-icon-path.html">serverIconPath</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></div></div><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">var </span><a href="index.html#-2051459018%2FProperties%2F655084441">serverIconPath</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="-1301660178%2FProperties%2F1537383562" anchor-label="serverPackSuffix" id="-1301660178%2FProperties%2F1537383562" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain :serverpackcreator-api:dokkaHtml/commonMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain :serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain :serverpackcreator-api:dokkaHtml/commonMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><span data-unresolved-link="de.griefed.serverpackcreator.api/Pack/serverPackSuffix/#/PointingToDeclaration/"><span>server</span><wbr></wbr><span>Pack</span><wbr></wbr><span><span>Suffix</span></span></span></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1301660178%2FProperties%2F1537383562"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/commonMain">common</button><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword"></span><span class="token keyword">var </span><a href="server-pack-suffix.html">serverPackSuffix</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></div></div><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">var </span><a href="index.html#1929129322%2FProperties%2F655084441">serverPackSuffix</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="1545474222%2FProperties%2F1537383562" anchor-label="serverPropertiesPath" id="1545474222%2FProperties%2F1537383562" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain :serverpackcreator-api:dokkaHtml/commonMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain :serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain :serverpackcreator-api:dokkaHtml/commonMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><span data-unresolved-link="de.griefed.serverpackcreator.api/Pack/serverPropertiesPath/#/PointingToDeclaration/"><span>server</span><wbr></wbr><span>Properties</span><wbr></wbr><span><span>Path</span></span></span></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1545474222%2FProperties%2F1537383562"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/commonMain">common</button><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword"></span><span class="token keyword">var </span><a href="server-properties-path.html">serverPropertiesPath</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></div></div><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">var </span><a href="index.html#85279868%2FProperties%2F655084441">serverPropertiesPath</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="-1439314214%2FProperties%2F655084441" anchor-label="whitespace" id="-1439314214%2FProperties%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="index.html#-1439314214%2FProperties%2F655084441"><span><span>whitespace</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1439314214%2FProperties%2F655084441"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword"></span><span class="token keyword">val </span><a href="index.html#-1439314214%2FProperties%2F655084441">whitespace</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.text/-regex/index.html">Regex</a></div></div>                  </div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="../-pack/to-string.html"><span class="token function">toString</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></div></div>                  </div>
                 </div>
               </div>
             </div>
@@ -645,7 +703,8 @@
                 class="pull-right"><span>Generated by </span><a
                 href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span>
       </div>
+            </div>
+        </div>
     </div>
-</div>
 </body>
 </html>

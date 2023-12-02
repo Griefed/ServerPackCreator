@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html>
+<html class="no-js">
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
     <title>Configuration</title>
     <link href="../../../images/logo-icon.svg" rel="icon" type="image/svg">
     <script>var pathToRoot = "../../../";</script>
+    <script>document.documentElement.classList.replace("no-js","js");</script>
     <script>const storage = localStorage.getItem("dokka-dark-mode")
     if (storage == null) {
         const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
@@ -18,12 +19,13 @@
         }
     }
     </script>
+<script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async="async"></script>
 <script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async="async"></script>
 <link href="../../../styles/style.css" rel="Stylesheet">
-<link href="../../../styles/jetbrains-mono.css" rel="Stylesheet">
 <link href="../../../styles/main.css" rel="Stylesheet">
 <link href="../../../styles/prism.css" rel="Stylesheet">
 <link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../styles/font-jb-sans-auto.css" rel="Stylesheet">
 <script type="text/javascript" src="../../../scripts/clipboard.js" async="async"></script>
 <script type="text/javascript" src="../../../scripts/navigation-loader.js" async="async"></script>
 <script type="text/javascript" src="../../../scripts/platform-content-handler.js" async="async"></script>
@@ -32,28 +34,33 @@
 <script type="text/javascript" src="../../../scripts/symbol-parameters-wrapper_deferred.js" defer="defer"></script>
 </head>
 <body>
-<div class="navigation-wrapper" id="navigation-wrapper">
-    <div id="leftToggler"><span class="icon-toggler"></span></div>
-    <div class="library-name">
-            <a href="../../../index.html">
-                    <span>serverpackcreator-api</span>
-            </a>
-    </div>
-    <div>
-    </div>
-    <div class="pull-right d-flex">
+    <div class="root">
+<nav class="navigation" id="navigation-wrapper">
+    <div class="navigation--inner">
+        <div class="navigation-title">
+            <button class="menu-toggle" id="menu-toggle" type="button">toggle menu</button>
+            <div class="library-name">
+                    <a class="library-name--link" href="../../../index.html">
+                            serverpackcreator-api
+                    </a>
+            </div>
+            <div class="library-version">
+            </div>
+        </div>
         <div class="filter-section" id="filter-section">
                 <button class="platform-tag platform-selector common-like" data-active="" data-filter=":serverpackcreator-api:dokkaHtml/commonMain">common</button>
         </div>
-        <button id="theme-toggle-button"><span id="theme-toggle"></span></button>
-        <div id="searchBar"></div>
     </div>
-</div>
-<div id="container">
-    <div id="leftColumn">
-        <div id="sideMenu"></div>
+    <div class="navigation-controls">
+        <button class="navigation-controls--btn navigation-controls--theme" id="theme-toggle-button" type="button">switch theme</button>
+        <div class="navigation-controls--btn navigation-controls--search" id="searchBar" role="button">search in API</div>
     </div>
-    <div id="main">
+</nav>
+        <div id="container">
+            <div class="sidebar" id="leftColumn">
+                <div class="sidebar--inner" id="sideMenu"></div>
+            </div>
+            <div id="main">
 <div class="main-content" data-page-type="classlike" id="content" pageIds="serverpackcreator-api::de.griefed.serverpackcreator.api/Configuration///PointingToDeclaration//232887997">
   <div class="breadcrumbs"><a href="../../../index.html">serverpackcreator-api</a><span class="delimiter">/</span><a href="../index.html">de.griefed.serverpackcreator.api</a><span class="delimiter">/</span><span class="current">Configuration</span></div>
   <div class="cover ">
@@ -61,7 +68,7 @@
     <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">class </span><a href="index.html">Configuration</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="index.html">F</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="index.html">P</a><span class="token operator">&gt;</span></div><p class="paragraph">Base for the <a href="../-configuration-handler/index.html">de.griefed.serverpackcreator.api.ConfigurationHandler</a> to ensure we have the basics for config-checks and config-handling.</p><span class="kdoc-tag"><h4 class="">Author</h4><p class="paragraph">Griefed</p></span><h4 class="">Inheritors</h4><div class="table"><div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="../-configuration-handler/index.html">ConfigurationHandler</a></div></span></div><div></div></div></div></div></div></div>
   </div>
   <div class="tabbedcontent">
-    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,FUNCTION,PROPERTY">Members</button></div>
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
     <div class="tabs-section-body">
       <div data-togglable="CONSTRUCTOR">
         <h2 class="">Constructors</h2>
@@ -82,34 +89,158 @@
           </div>
         </div>
       </div>
-      <div data-togglable="FUNCTION">
-        <h2 class="">Functions</h2>
-        <div class="table"><a data-name="1775562187%2FFunctions%2F232887997" anchor-label="checkConfiguration" id="1775562187%2FFunctions%2F232887997" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain"></a>
+      <div data-togglable="PROPERTY">
+        <h2 class="">Properties</h2>
+        <div class="table"><a data-name="892125103%2FProperties%2F232887997" anchor-label="fabric" id="892125103%2FProperties%2F232887997" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain"></a>
           <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="check-configuration.html"><span>check</span><wbr></wbr><span><span>Configuration</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1775562187%2FFunctions%2F232887997"></span>
+                  <div><a href="fabric.html"><span><span>fabric</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="892125103%2FProperties%2F232887997"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="check-configuration.html"><span class="token function">checkConfiguration</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">packConfig<span class="token operator">: </span><a href="../-pack-config/index.html">PackConfig</a><span class="token punctuation">, </span></span><span class="parameter ">encounteredErrors<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token operator"> = </span>mutableListOf()<span class="token punctuation">, </span></span><span class="parameter ">quietCheck<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Check the passed <a href="check-configuration.html">packConfig</a>. If any check returns <code class="lang-kotlin">true</code> then the server pack will not be created. In order to find out which check failed, the user has to check their serverpackcreator.log in the logs-directory.</p></div><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="check-configuration.html"><span class="token function">checkConfiguration</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">configFile<span class="token operator">: </span><a href="index.html">F</a><span class="token punctuation">, </span></span><span class="parameter ">packConfig<span class="token operator">: </span><a href="../-pack-config/index.html">PackConfig</a><span class="token operator"> = </span>PackConfig()<span class="token punctuation">, </span></span><span class="parameter ">encounteredErrors<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token operator"> = </span>mutableListOf()<span class="token punctuation">, </span></span><span class="parameter ">quietCheck<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Check the passed configuration-file. If any check returns <code class="lang-kotlin">true</code> then the server pack will not be created. In order to find out which check failed, the user has to check their serverpackcreator.log in the logs-directory.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword"></span><span class="token keyword">val </span><a href="fabric.html">fabric</a><span class="token operator">: </span><span data-unresolved-link="/&amp;lt;Error class: unknown class&amp;gt;///PointingToDeclaration/">&lt;Error class: unknown class&gt;</span></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-588577995%2FFunctions%2F232887997" anchor-label="checkCopyDirs" id="-588577995%2FFunctions%2F232887997" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain"></a>
+<a data-name="-784962977%2FProperties%2F232887997" anchor-label="forge" id="-784962977%2FProperties%2F232887997" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain"></a>
           <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="check-copy-dirs.html"><span>check</span><wbr></wbr><span>Copy</span><wbr></wbr><span><span>Dirs</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-588577995%2FFunctions%2F232887997"></span>
+                  <div><a href="forge.html"><span><span>forge</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-784962977%2FProperties%2F232887997"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="check-copy-dirs.html"><span class="token function">checkCopyDirs</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">directoriesToCopy<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">modpackDir<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">encounteredErrors<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token operator"> = </span>ArrayList(5)<span class="token punctuation">, </span></span><span class="parameter ">printLog<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Checks whether the passed list of directories which are supposed to be in the modpack directory is empty, or whether all directories in the list exist in the modpack directory. If the user specified a <code class="lang-kotlin">source/file;destination/file</code>-combination, it is checked whether the specified source-file exists on the host.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword"></span><span class="token keyword">val </span><a href="forge.html">forge</a><span class="token operator">: </span><span data-unresolved-link="/&amp;lt;Error class: unknown class&amp;gt;///PointingToDeclaration/">&lt;Error class: unknown class&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="645707110%2FProperties%2F232887997" anchor-label="legacyFabric" id="645707110%2FProperties%2F232887997" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="legacy-fabric.html"><span>legacy</span><wbr></wbr><span><span>Fabric</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="645707110%2FProperties%2F232887997"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword"></span><span class="token keyword">val </span><a href="legacy-fabric.html">legacyFabric</a><span class="token operator">: </span><span data-unresolved-link="/&amp;lt;Error class: unknown class&amp;gt;///PointingToDeclaration/">&lt;Error class: unknown class&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-962663582%2FProperties%2F232887997" anchor-label="log" id="-962663582%2FProperties%2F232887997" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="log.html"><span><span>log</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-962663582%2FProperties%2F232887997"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword"></span><span class="token keyword">val </span><a href="log.html">log</a><span class="token operator">: </span><span data-unresolved-link="/&amp;lt;Error class: unknown class&amp;gt;///PointingToDeclaration/">&lt;Error class: unknown class&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1804375771%2FProperties%2F232887997" anchor-label="neoForge" id="-1804375771%2FProperties%2F232887997" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="neo-forge.html"><span>neo</span><wbr></wbr><span><span>Forge</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1804375771%2FProperties%2F232887997"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword"></span><span class="token keyword">val </span><a href="neo-forge.html">neoForge</a><span class="token operator">: </span><span data-unresolved-link="/&amp;lt;Error class: unknown class&amp;gt;///PointingToDeclaration/">&lt;Error class: unknown class&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1004371933%2FProperties%2F232887997" anchor-label="previous" id="1004371933%2FProperties%2F232887997" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="previous.html"><span><span>previous</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1004371933%2FProperties%2F232887997"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword"></span><span class="token keyword">val </span><a href="previous.html">previous</a><span class="token operator">: </span><span data-unresolved-link="/&amp;lt;Error class: unknown class&amp;gt;///PointingToDeclaration/">&lt;Error class: unknown class&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1820781191%2FProperties%2F232887997" anchor-label="quilt" id="-1820781191%2FProperties%2F232887997" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="quilt.html"><span><span>quilt</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1820781191%2FProperties%2F232887997"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword"></span><span class="token keyword">val </span><a href="quilt.html">quilt</a><span class="token operator">: </span><span data-unresolved-link="/&amp;lt;Error class: unknown class&amp;gt;///PointingToDeclaration/">&lt;Error class: unknown class&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-60172969%2FProperties%2F232887997" anchor-label="whitespace" id="-60172969%2FProperties%2F232887997" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="whitespace.html"><span><span>whitespace</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-60172969%2FProperties%2F232887997"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword"></span><span class="token keyword">val </span><a href="whitespace.html">whitespace</a><span class="token operator">: </span><span data-unresolved-link="/&amp;lt;Error class: unknown class&amp;gt;///PointingToDeclaration/">&lt;Error class: unknown class&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="2017136237%2FProperties%2F232887997" anchor-label="zipCheck" id="2017136237%2FProperties%2F232887997" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="zip-check.html"><span>zip</span><wbr></wbr><span><span>Check</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2017136237%2FProperties%2F232887997"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword"></span><span class="token keyword">val </span><a href="zip-check.html">zipCheck</a><span class="token operator">: </span><span data-unresolved-link="/&amp;lt;Error class: unknown class&amp;gt;///PointingToDeclaration/">&lt;Error class: unknown class&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="FUNCTION">
+        <h2 class="">Functions</h2>
+        <div class="table"><a data-name="517456205%2FFunctions%2F232887997" anchor-label="checkConfiguration" id="517456205%2FFunctions%2F232887997" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="check-configuration.html"><span>check</span><wbr></wbr><span><span>Configuration</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="517456205%2FFunctions%2F232887997"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="check-configuration.html"><span class="token function">checkConfiguration</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">packConfig<span class="token operator">: </span><a href="../-pack-config/index.html">PackConfig</a><span class="token punctuation">, </span></span><span class="parameter ">configCheck<span class="token operator">: </span><a href="../-config-check/index.html">ConfigCheck</a><span class="token punctuation">, </span></span><span class="parameter ">quietCheck<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-config-check/index.html">ConfigCheck</a></div><div class="brief "><p class="paragraph">Check the passed <a href="check-configuration.html">packConfig</a>. If any check returns <code class="lang-kotlin">true</code> then the server pack will not be created. In order to find out which check failed, the user has to check their serverpackcreator.log in the logs-directory.</p></div><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="check-configuration.html"><span class="token function">checkConfiguration</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">configFile<span class="token operator">: </span><a href="index.html">F</a><span class="token punctuation">, </span></span><span class="parameter ">packConfig<span class="token operator">: </span><a href="../-pack-config/index.html">PackConfig</a><span class="token punctuation">, </span></span><span class="parameter ">configCheck<span class="token operator">: </span><a href="../-config-check/index.html">ConfigCheck</a><span class="token punctuation">, </span></span><span class="parameter ">quietCheck<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-config-check/index.html">ConfigCheck</a></div><div class="brief "><p class="paragraph">Check the passed configuration-file. If any check returns <code class="lang-kotlin">true</code> then the server pack will not be created. In order to find out which check failed, the user has to check their serverpackcreator.log in the logs-directory.</p></div></div></div>
                 </div>
               </div>
             </div>
@@ -124,82 +255,82 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="check-icon-and-properties.html"><span class="token function">checkIconAndProperties</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">iconOrPropertiesPath<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span><span class="token string">&quot;&quot;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Checks the passed String whether it is an existing file. If the passed String is empty, then ServerPackCreator will treat it as the user being fine with the default files and return the corresponding boolean.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="check-icon-and-properties.html"><span class="token function">checkIconAndProperties</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">iconOrPropertiesPath<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Checks the passed String whether it is an existing file. If the passed String is empty, then ServerPackCreator will treat it as the user being fine with the default files and return the corresponding boolean.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-2035453204%2FFunctions%2F232887997" anchor-label="checkManifests" id="-2035453204%2FFunctions%2F232887997" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain"></a>
+<a data-name="-1785014216%2FFunctions%2F232887997" anchor-label="checkInclusions" id="-1785014216%2FFunctions%2F232887997" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="check-inclusions.html"><span>check</span><wbr></wbr><span><span>Inclusions</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1785014216%2FFunctions%2F232887997"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="check-inclusions.html"><span class="token function">checkInclusions</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">inclusions<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../-inclusion-specification/index.html">InclusionSpecification</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">modpackDir<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">configCheck<span class="token operator">: </span><a href="../-config-check/index.html">ConfigCheck</a><span class="token punctuation">, </span></span><span class="parameter ">printLog<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-config-check/index.html">ConfigCheck</a></div><div class="brief "><p class="paragraph">Checks whether the passed list of directories which are supposed to be in the modpack directory is empty, or whether all directories in the list exist in the modpack directory. If the user specified a <code class="lang-kotlin">source/file;destination/file</code>-combination, it is checked whether the specified source-file exists on the host.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1056847267%2FFunctions%2F232887997" anchor-label="checkManifests" id="1056847267%2FFunctions%2F232887997" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain"></a>
           <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="check-manifests.html"><span>check</span><wbr></wbr><span><span>Manifests</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2035453204%2FFunctions%2F232887997"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1056847267%2FFunctions%2F232887997"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="check-manifests.html"><span class="token function">checkManifests</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">destination<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">packConfig<span class="token operator">: </span><a href="../-pack-config/index.html">PackConfig</a><span class="token punctuation">, </span></span><span class="parameter ">encounteredErrors<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token operator"> = </span>mutableListOf()</span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span></div><div class="brief "><p class="paragraph">Check whether various manifests from various launchers exist and use them to update our ConfigurationModel and pack name.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="check-manifests.html"><span class="token function">checkManifests</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">destination<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">packConfig<span class="token operator">: </span><a href="../-pack-config/index.html">PackConfig</a><span class="token punctuation">, </span></span><span class="parameter ">configCheck<span class="token operator">: </span><a href="../-config-check/index.html">ConfigCheck</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span></div><div class="brief "><p class="paragraph">Check whether various manifests from various launchers exist and use them to update our ConfigurationModel and pack name.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="64236413%2FFunctions%2F232887997" anchor-label="checkModloader" id="64236413%2FFunctions%2F232887997" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain"></a>
+<a data-name="-123694165%2FFunctions%2F232887997" anchor-label="checkModloader" id="-123694165%2FFunctions%2F232887997" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain"></a>
           <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="check-modloader.html"><span>check</span><wbr></wbr><span><span>Modloader</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="64236413%2FFunctions%2F232887997"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-123694165%2FFunctions%2F232887997"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="check-modloader.html"><span class="token function">checkModloader</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">modloader<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Checks whether either Forge or Fabric were specified as the modloader.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="check-modloader.html"><span class="token function">checkModloader</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">modloader<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">configCheck<span class="token operator">: </span><a href="../-config-check/index.html">ConfigCheck</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-config-check/index.html">ConfigCheck</a></div><div class="brief "><p class="paragraph">Checks whether either Forge or Fabric were specified as the modloader.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="1410090170%2FFunctions%2F232887997" anchor-label="checkModloaderVersion" id="1410090170%2FFunctions%2F232887997" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain"></a>
+<a data-name="-1464405483%2FFunctions%2F232887997" anchor-label="checkModloaderVersion" id="-1464405483%2FFunctions%2F232887997" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain"></a>
           <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="check-modloader-version.html"><span>check</span><wbr></wbr><span>Modloader</span><wbr></wbr><span><span>Version</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1410090170%2FFunctions%2F232887997"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1464405483%2FFunctions%2F232887997"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="check-modloader-version.html"><span class="token function">checkModloaderVersion</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">modloader<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">modloaderVersion<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">minecraftVersion<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">encounteredErrors<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token operator"> = </span>mutableListOf()</span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Check the given Minecraft and modloader versions for the specified modloader.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="check-modloader-version.html"><span class="token function">checkModloaderVersion</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">modloader<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">modloaderVersion<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">minecraftVersion<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">configCheck<span class="token operator">: </span><a href="../-config-check/index.html">ConfigCheck</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-config-check/index.html">ConfigCheck</a></div><div class="brief "><p class="paragraph">Check the given Minecraft and modloader versions for the specified modloader.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="1506522693%2FFunctions%2F232887997" anchor-label="checkModpackDir" id="1506522693%2FFunctions%2F232887997" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain"></a>
+<a data-name="-1214570828%2FFunctions%2F232887997" anchor-label="checkModpackDir" id="-1214570828%2FFunctions%2F232887997" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain"></a>
           <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="check-modpack-dir.html"><span>check</span><wbr></wbr><span>Modpack</span><wbr></wbr><span><span>Dir</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1506522693%2FFunctions%2F232887997"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1214570828%2FFunctions%2F232887997"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="check-modpack-dir.html"><span class="token function">checkModpackDir</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">modpackDir<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">encounteredErrors<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token operator"> = </span>mutableListOf()<span class="token punctuation">, </span></span><span class="parameter ">printLog<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Check the passed directory for existence and whether it is a directory, rather than a file.</p></div></div></div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="-1786628521%2FFunctions%2F232887997" anchor-label="checkRegex" id="-1786628521%2FFunctions%2F232887997" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="check-regex.html"><span>check</span><wbr></wbr><span><span>Regex</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1786628521%2FFunctions%2F232887997"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="check-regex.html"><span class="token function">checkRegex</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">modpackDir<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">entry<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">exclusion<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token punctuation">, </span></span><span class="parameter ">encounteredErrors<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token operator"> = </span>ArrayList(1)</span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Check the given entry for valid regex. In order for an entry to be valid, it must</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="check-modpack-dir.html"><span class="token function">checkModpackDir</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">modpackDir<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">configCheck<span class="token operator">: </span><a href="../-config-check/index.html">ConfigCheck</a><span class="token punctuation">, </span></span><span class="parameter ">printLog<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-config-check/index.html">ConfigCheck</a></div><div class="brief "><p class="paragraph">Check the passed directory for existence and whether it is a directory, rather than a file.</p></div></div></div>
                 </div>
               </div>
             </div>
@@ -219,32 +350,17 @@
               </div>
             </div>
           </div>
-<a data-name="550600142%2FFunctions%2F232887997" anchor-label="checkZipArchive" id="550600142%2FFunctions%2F232887997" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain"></a>
+<a data-name="-660846975%2FFunctions%2F232887997" anchor-label="checkZipArchive" id="-660846975%2FFunctions%2F232887997" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain"></a>
           <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="check-zip-archive.html"><span>check</span><wbr></wbr><span>Zip</span><wbr></wbr><span><span>Archive</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="550600142%2FFunctions%2F232887997"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-660846975%2FFunctions%2F232887997"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="check-zip-archive.html"><span class="token function">checkZipArchive</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">pathToZip<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">encounteredErrors<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token operator"> = </span>mutableListOf()</span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Check a given ZIP-archives contents. If the ZIP-archive only contains one directory, or if it contains neither the mods nor the config directories, consider it invalid.</p></div></div></div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="-1905099901%2FFunctions%2F232887997" anchor-label="countRegexMatches" id="-1905099901%2FFunctions%2F232887997" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="count-regex-matches.html"><span>count</span><wbr></wbr><span>Regex</span><wbr></wbr><span><span>Matches</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1905099901%2FFunctions%2F232887997"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="count-regex-matches.html"><span class="token function">countRegexMatches</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">source<span class="token operator">: </span><a href="index.html">F</a><span class="token punctuation">, </span></span><span class="parameter ">regex<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.text/-regex/index.html">Regex</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Walk through each file in the specified source-directory and perform regex-matches using the specified regex. The number of matches found is printed to the logs.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="check-zip-archive.html"><span class="token function">checkZipArchive</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">pathToZip<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">configCheck<span class="token operator">: </span><a href="../-config-check/index.html">ConfigCheck</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-config-check/index.html">ConfigCheck</a></div><div class="brief "><p class="paragraph">Check a given ZIP-archives contents. If the ZIP-archive only contains one directory, or if it contains neither the mods nor the config directories, consider it invalid.</p></div></div></div>
                 </div>
               </div>
             </div>
@@ -260,21 +376,6 @@
               <div>
                 <div class="title">
                   <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="ensure-script-settings-defaults.html"><span class="token function">ensureScriptSettingsDefaults</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">packConfig<span class="token operator">: </span><a href="../-pack-config/index.html">PackConfig</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Update the script settings and ensure the default keys, with values gathered from the passed <a href="../-pack-config/index.html">PackConfig</a>, are present:</p></div></div></div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="-297996135%2FFunctions%2F232887997" anchor-label="exclusionRegexCheck" id="-297996135%2FFunctions%2F232887997" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="exclusion-regex-check.html"><span>exclusion</span><wbr></wbr><span>Regex</span><wbr></wbr><span><span>Check</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-297996135%2FFunctions%2F232887997"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="exclusion-regex-check.html"><span class="token function">exclusionRegexCheck</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">modpackDir<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">entry<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">encounteredErrors<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token operator"> = </span>mutableListOf()</span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Exclusion regex checks when the entry is prefixed with an <code class="lang-kotlin">!</code>.</p></div></div></div>
                 </div>
               </div>
             </div>
@@ -354,62 +455,47 @@
               </div>
             </div>
           </div>
-<a data-name="-2078785817%2FFunctions%2F232887997" anchor-label="inclusionRegexCheck" id="-2078785817%2FFunctions%2F232887997" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="inclusion-regex-check.html"><span>inclusion</span><wbr></wbr><span>Regex</span><wbr></wbr><span><span>Check</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2078785817%2FFunctions%2F232887997"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="inclusion-regex-check.html"><span class="token function">inclusionRegexCheck</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">modpackDir<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">entry<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">encounteredErrors<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token operator"> = </span>mutableListOf()</span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Inclusion regex checks.</p></div></div></div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="-1378501668%2FFunctions%2F232887997" anchor-label="isDir" id="-1378501668%2FFunctions%2F232887997" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain"></a>
+<a data-name="-30339405%2FFunctions%2F232887997" anchor-label="isDir" id="-30339405%2FFunctions%2F232887997" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain"></a>
           <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="is-dir.html"><span>is</span><wbr></wbr><span><span>Dir</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1378501668%2FFunctions%2F232887997"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-30339405%2FFunctions%2F232887997"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="is-dir.html"><span class="token function">isDir</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">packConfig<span class="token operator">: </span><a href="../-pack-config/index.html">PackConfig</a><span class="token punctuation">, </span></span><span class="parameter ">encounteredErrors<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token operator"> = </span>mutableListOf()</span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">If the in the configuration specified modpack dir is an existing directory, checks are made for valid configuration of: directories to copy to server pack, if includeServerInstallation is <code class="lang-kotlin">true</code> path to Java executable/binary, Minecraft version, modloader and modloader version.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="is-dir.html"><span class="token function">isDir</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">packConfig<span class="token operator">: </span><a href="../-pack-config/index.html">PackConfig</a><span class="token punctuation">, </span></span><span class="parameter ">configCheck<span class="token operator">: </span><a href="../-config-check/index.html">ConfigCheck</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-config-check/index.html">ConfigCheck</a></div><div class="brief "><p class="paragraph">If the in the configuration specified modpack dir is an existing directory, checks are made for valid configuration of: directories to copy to server pack, if includeServerInstallation is <code class="lang-kotlin">true</code> path to Java executable/binary, Minecraft version, modloader and modloader version.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-774626960%2FFunctions%2F232887997" anchor-label="isZip" id="-774626960%2FFunctions%2F232887997" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain"></a>
+<a data-name="-1396332897%2FFunctions%2F232887997" anchor-label="isZip" id="-1396332897%2FFunctions%2F232887997" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain"></a>
           <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="is-zip.html"><span>is</span><wbr></wbr><span><span>Zip</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-774626960%2FFunctions%2F232887997"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1396332897%2FFunctions%2F232887997"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="is-zip.html"><span class="token function">isZip</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">packConfig<span class="token operator">: </span><a href="../-pack-config/index.html">PackConfig</a><span class="token punctuation">, </span></span><span class="parameter ">encounteredErrors<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token operator"> = </span>mutableListOf()</span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Checks the specified ZIP-archive for validity. In order for a modpack ZIP-archive to be considered valid, it needs to contain the <code class="lang-kotlin">mods</code> and <code class="lang-kotlin">config</code> folders at minimum. If any of <code class="lang-kotlin">manifest.json</code>, <code class="lang-kotlin">minecraftinstance.json</code> or <code class="lang-kotlin">config.json</code> are available, gather as much information from them as possible.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="is-zip.html"><span class="token function">isZip</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">packConfig<span class="token operator">: </span><a href="../-pack-config/index.html">PackConfig</a><span class="token punctuation">, </span></span><span class="parameter ">configCheck<span class="token operator">: </span><a href="../-config-check/index.html">ConfigCheck</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-config-check/index.html">ConfigCheck</a></div><div class="brief "><p class="paragraph">Checks the specified ZIP-archive for validity. In order for a modpack ZIP-archive to be considered valid, it needs to contain the <code class="lang-kotlin">mods</code> and <code class="lang-kotlin">config</code> folders at minimum. If any of <code class="lang-kotlin">manifest.json</code>, <code class="lang-kotlin">minecraftinstance.json</code> or <code class="lang-kotlin">config.json</code> are available, gather as much information from them as possible.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="1257314774%2FFunctions%2F232887997" anchor-label="printConfigurationModel" id="1257314774%2FFunctions%2F232887997" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain"></a>
+<a data-name="-1701213256%2FFunctions%2F232887997" anchor-label="printConfigurationModel" id="-1701213256%2FFunctions%2F232887997" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain"></a>
           <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="print-configuration-model.html"><span>print</span><wbr></wbr><span>Configuration</span><wbr></wbr><span><span>Model</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1257314774%2FFunctions%2F232887997"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1701213256%2FFunctions%2F232887997"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="print-configuration-model.html"><span class="token function">printConfigurationModel</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">packConfig<span class="token operator">: </span><a href="../-pack/index.html">Pack</a><span class="token operator">&lt;</span><span class="token operator">*</span><span class="token punctuation">, </span><span class="token operator">*</span><span class="token punctuation">, </span><span class="token operator">*</span><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Convenience method which passes the important fields from an instance of <a href="../-pack-config/index.html">PackConfig</a> to .printConfigurationModel</p></div><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="print-configuration-model.html"><span class="token function">printConfigurationModel</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">modpackDirectory<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">clientsideMods<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">copyDirectories<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">installServer<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token punctuation">, </span></span><span class="parameter ">minecraftVer<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">modloader<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">modloaderVersion<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">includeIcon<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token punctuation">, </span></span><span class="parameter ">includeProperties<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token punctuation">, </span></span><span class="parameter ">includeZip<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token punctuation">, </span></span><span class="parameter ">javaArgs<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">serverPackSuffix<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">serverIconPath<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">serverPropertiesPath<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">scriptSettings<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-hash-map/index.html">HashMap</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Prints all passed fields to the console and serverpackcreator.log. Used to show the user the configuration before ServerPackCreator starts the generation of the server pack or, if checks failed, to show the user their last configuration, so they can more easily identify problems with said configuration.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="print-configuration-model.html"><span class="token function">printConfigurationModel</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">packConfig<span class="token operator">: </span><a href="../-pack/index.html">Pack</a><span class="token operator">&lt;</span><span class="token operator">*</span><span class="token punctuation">, </span><span class="token operator">*</span><span class="token punctuation">, </span><span class="token operator">*</span><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Convenience method which passes the important fields from an instance of <a href="../-pack-config/index.html">PackConfig</a> to .printConfigurationModel</p></div><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="print-configuration-model.html"><span class="token function">printConfigurationModel</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">modpackDirectory<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">clientsideMods<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">inclusions<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../-inclusion-specification/index.html">InclusionSpecification</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">minecraftVer<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">modloader<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">modloaderVersion<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">includeIcon<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token punctuation">, </span></span><span class="parameter ">includeProperties<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token punctuation">, </span></span><span class="parameter ">includeZip<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token punctuation">, </span></span><span class="parameter ">javaArgs<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">serverPackSuffix<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">serverIconPath<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">serverPropertiesPath<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">scriptSettings<span class="token operator">: </span><span data-unresolved-link="/&amp;lt;Error class: unknown class&amp;gt;///PointingToDeclaration/">&lt;Error class: unknown class&gt;</span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Prints all passed fields to the console and serverpackcreator.log. Used to show the user the configuration before ServerPackCreator starts the generation of the server pack or, if checks failed, to show the user their last configuration, so they can more easily identify problems with said configuration.</p></div></div></div>
                 </div>
               </div>
             </div>
@@ -444,17 +530,17 @@
               </div>
             </div>
           </div>
-<a data-name="1967677725%2FFunctions%2F232887997" anchor-label="suggestCopyDirs" id="1967677725%2FFunctions%2F232887997" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain"></a>
+<a data-name="301082009%2FFunctions%2F232887997" anchor-label="suggestInclusions" id="301082009%2FFunctions%2F232887997" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain"></a>
           <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="suggest-copy-dirs.html"><span>suggest</span><wbr></wbr><span>Copy</span><wbr></wbr><span><span>Dirs</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1967677725%2FFunctions%2F232887997"></span>
+                  <div><a href="suggest-inclusions.html"><span>suggest</span><wbr></wbr><span><span>Inclusions</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="301082009%2FFunctions%2F232887997"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="suggest-copy-dirs.html"><span class="token function">suggestCopyDirs</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">modpackDir<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-array-list/index.html">ArrayList</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Creates a list of suggested directories to include in server pack which is later on written to a new configuration file. The list of directories to include in the server pack which is generated by this method excludes well know directories which would not be needed by a server pack. If you have suggestions to this list, open a feature request issue on <a href="https://github.com/Griefed/ServerPackCreator/issues/new/choose">GitHub</a></p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="suggest-inclusions.html"><span class="token function">suggestInclusions</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">modpackDir<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="/&amp;lt;Error class: unknown class&amp;gt;///PointingToDeclaration/">&lt;Error class: unknown class&gt;</span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../-inclusion-specification/index.html">InclusionSpecification</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Creates a list of suggested directories to include in server pack which is later on written to a new configuration file. The list of directories to include in the server pack which is generated by this method excludes well know directories which would not be needed by a server pack. If you have suggestions to this list, open a feature request issue on <a href="https://github.com/Griefed/ServerPackCreator/issues/new/choose">GitHub</a></p></div></div></div>
                 </div>
               </div>
             </div>
@@ -596,130 +682,6 @@
           </div>
         </div>
       </div>
-      <div data-togglable="PROPERTY">
-        <h2 class="">Properties</h2>
-        <div class="table"><a data-name="892125103%2FProperties%2F232887997" anchor-label="fabric" id="892125103%2FProperties%2F232887997" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="fabric.html"><span><span>fabric</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="892125103%2FProperties%2F232887997"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword"></span><span class="token keyword">val </span><a href="fabric.html">fabric</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.text/-regex/index.html">Regex</a></div></div></div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="-784962977%2FProperties%2F232887997" anchor-label="forge" id="-784962977%2FProperties%2F232887997" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="forge.html"><span><span>forge</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-784962977%2FProperties%2F232887997"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword"></span><span class="token keyword">val </span><a href="forge.html">forge</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.text/-regex/index.html">Regex</a></div></div></div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="645707110%2FProperties%2F232887997" anchor-label="legacyFabric" id="645707110%2FProperties%2F232887997" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="legacy-fabric.html"><span>legacy</span><wbr></wbr><span><span>Fabric</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="645707110%2FProperties%2F232887997"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword"></span><span class="token keyword">val </span><a href="legacy-fabric.html">legacyFabric</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.text/-regex/index.html">Regex</a></div></div></div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="-962663582%2FProperties%2F232887997" anchor-label="log" id="-962663582%2FProperties%2F232887997" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="log.html"><span><span>log</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-962663582%2FProperties%2F232887997"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword"></span><span class="token keyword">val </span><a href="log.html">log</a><span class="token operator">: </span><span data-unresolved-link="mu/KLogger///PointingToDeclaration/">KLogger</span></div></div></div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="1004371933%2FProperties%2F232887997" anchor-label="previous" id="1004371933%2FProperties%2F232887997" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="previous.html"><span><span>previous</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1004371933%2FProperties%2F232887997"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword"></span><span class="token keyword">val </span><a href="previous.html">previous</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.text/-regex/index.html">Regex</a></div></div></div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="-1820781191%2FProperties%2F232887997" anchor-label="quilt" id="-1820781191%2FProperties%2F232887997" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="quilt.html"><span><span>quilt</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1820781191%2FProperties%2F232887997"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword"></span><span class="token keyword">val </span><a href="quilt.html">quilt</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.text/-regex/index.html">Regex</a></div></div></div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="-60172969%2FProperties%2F232887997" anchor-label="whitespace" id="-60172969%2FProperties%2F232887997" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="whitespace.html"><span><span>whitespace</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-60172969%2FProperties%2F232887997"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword"></span><span class="token keyword">val </span><a href="whitespace.html">whitespace</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.text/-regex/index.html">Regex</a></div></div></div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="2017136237%2FProperties%2F232887997" anchor-label="zipCheck" id="2017136237%2FProperties%2F232887997" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="zip-check.html"><span>zip</span><wbr></wbr><span><span>Check</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2017136237%2FProperties%2F232887997"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword"></span><span class="token keyword">val </span><a href="zip-check.html">zipCheck</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.text/-regex/index.html">Regex</a></div></div></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   </div>
 </div>
@@ -728,7 +690,8 @@
                 class="pull-right"><span>Generated by </span><a
                 href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span>
       </div>
+            </div>
+        </div>
     </div>
-</div>
 </body>
 </html>

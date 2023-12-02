@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html>
+<html class="no-js">
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
     <title>ApiPlugins</title>
     <link href="../../../images/logo-icon.svg" rel="icon" type="image/svg">
     <script>var pathToRoot = "../../../";</script>
+    <script>document.documentElement.classList.replace("no-js","js");</script>
     <script>const storage = localStorage.getItem("dokka-dark-mode")
     if (storage == null) {
         const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
@@ -18,12 +19,13 @@
         }
     }
     </script>
+<script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async="async"></script>
 <script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async="async"></script>
 <link href="../../../styles/style.css" rel="Stylesheet">
-<link href="../../../styles/jetbrains-mono.css" rel="Stylesheet">
 <link href="../../../styles/main.css" rel="Stylesheet">
 <link href="../../../styles/prism.css" rel="Stylesheet">
 <link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../styles/font-jb-sans-auto.css" rel="Stylesheet">
 <script type="text/javascript" src="../../../scripts/clipboard.js" async="async"></script>
 <script type="text/javascript" src="../../../scripts/navigation-loader.js" async="async"></script>
 <script type="text/javascript" src="../../../scripts/platform-content-handler.js" async="async"></script>
@@ -32,39 +34,44 @@
 <script type="text/javascript" src="../../../scripts/symbol-parameters-wrapper_deferred.js" defer="defer"></script>
 </head>
 <body>
-<div class="navigation-wrapper" id="navigation-wrapper">
-    <div id="leftToggler"><span class="icon-toggler"></span></div>
-    <div class="library-name">
-            <a href="../../../index.html">
-                    <span>serverpackcreator-api</span>
-            </a>
-    </div>
-    <div>
-    </div>
-    <div class="pull-right d-flex">
+    <div class="root">
+<nav class="navigation" id="navigation-wrapper">
+    <div class="navigation--inner">
+        <div class="navigation-title">
+            <button class="menu-toggle" id="menu-toggle" type="button">toggle menu</button>
+            <div class="library-name">
+                    <a class="library-name--link" href="../../../index.html">
+                            serverpackcreator-api
+                    </a>
+            </div>
+            <div class="library-version">
+            </div>
+        </div>
         <div class="filter-section" id="filter-section">
                 <button class="platform-tag platform-selector common-like" data-active="" data-filter=":serverpackcreator-api:dokkaHtml/commonMain">common</button>
                 <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button>
         </div>
-        <button id="theme-toggle-button"><span id="theme-toggle"></span></button>
-        <div id="searchBar"></div>
     </div>
-</div>
-<div id="container">
-    <div id="leftColumn">
-        <div id="sideMenu"></div>
+    <div class="navigation-controls">
+        <button class="navigation-controls--btn navigation-controls--theme" id="theme-toggle-button" type="button">switch theme</button>
+        <div class="navigation-controls--btn navigation-controls--search" id="searchBar" role="button">search in API</div>
     </div>
-    <div id="main">
+</nav>
+        <div id="container">
+            <div class="sidebar" id="leftColumn">
+                <div class="sidebar--inner" id="sideMenu"></div>
+            </div>
+            <div id="main">
 <div class="main-content" data-page-type="classlike" id="content" pageIds="serverpackcreator-api::de.griefed.serverpackcreator.api/ApiPlugins///PointingToDeclaration//1537383562">
   <div class="breadcrumbs"><a href="../../../index.html">serverpackcreator-api</a><span class="delimiter">/</span><a href="../index.html">de.griefed.serverpackcreator.api</a><span class="delimiter">/</span><span class="current">ApiPlugins</span></div>
   <div class="cover ">
     <h1 class="cover"><span>Api</span><wbr></wbr><span><span>Plugins</span></span></h1>
     <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
       <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/commonMain">common</button><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword">class </span><a href="index.html">ApiPlugins</a></div><p class="paragraph">Manager for ServerPackCreator plugins. In itself it doesn't do much. It gathers lists of all available extensions for <a href="../../de.griefed.serverpackcreator.api.plugins.swinggui/-tab-extension/index.html">TabExtension</a>,<a href="../../de.griefed.serverpackcreator.api.plugins.serverpackhandler/-pre-gen-extension/index.html">PreGenExtension</a>,<a href="../../de.griefed.serverpackcreator.api.plugins.serverpackhandler/-pre-zip-extension/index.html">PreZipExtension</a> and <a href="../../de.griefed.serverpackcreator.api.plugins.serverpackhandler/-post-gen-extension/index.html">PostGenExtension</a> so they can then be run during server pack generation and during initialization of the GUI.</p><span class="kdoc-tag"><h4 class="">Author</h4><p class="paragraph">Griefed</p></span></div><div class="content sourceset-dependent-content" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">actual </span><span class="token keyword">class </span><a href="index.html">ApiPlugins</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">tomlParser<span class="token operator">: </span><span data-unresolved-link="com.electronwill.nightconfig.toml/TomlParser///PointingToDeclaration/">TomlParser</span><span class="token punctuation">, </span></span><span class="parameter ">apiProperties<span class="token operator">: </span><a href="../-api-properties/index.html">ApiProperties</a><span class="token punctuation">, </span></span><span class="parameter ">versionMeta<span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api.versionmeta/-version-meta/index.html">VersionMeta</a><span class="token punctuation">, </span></span><span class="parameter ">utilities<span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api.utilities.common/-utilities/index.html">Utilities</a></span></span><span class="token punctuation">)</span> : <span data-unresolved-link="org.pf4j/JarPluginManager///PointingToDeclaration/">JarPluginManager</span></div><p class="paragraph">Manager for ServerPackCreator plugins. In itself it doesn't do much. It gathers lists of all available extensions for <a href="../../de.griefed.serverpackcreator.api.plugins.swinggui/-tab-extension/index.html">TabExtension</a>,<span data-unresolved-link="de.griefed.serverpackcreator.api.plugins.serverpackhandler/PreGenExtension///PointingToDeclaration/">PreGenExtension</span>,<span data-unresolved-link="de.griefed.serverpackcreator.api.plugins.serverpackhandler/PreZipExtension///PointingToDeclaration/">PreZipExtension</span> and <span data-unresolved-link="de.griefed.serverpackcreator.api.plugins.serverpackhandler/PostGenExtension///PointingToDeclaration/">PostGenExtension</span> so they can then be run during server pack generation and during initialization of the GUI.</p><span class="kdoc-tag"><h4 class="">Author</h4><p class="paragraph">Griefed</p></span><h4 class="">Parameters</h4><div class="table"><div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>toml</span><wbr></wbr><span><span>Parser</span></span></u></div></span></div><div><div class="title"><p class="paragraph">To read plugin-configurations, so they can be provided to extensions.</p></div></div></div></div><div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>api</span><wbr></wbr><span><span>Properties</span></span></u></div></span></div><div><div class="title"><p class="paragraph">ServerPackCreator settings to be provided to extensions.</p></div></div></div></div><div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>version</span><wbr></wbr><span><span>Meta</span></span></u></div></span></div><div><div class="title"><p class="paragraph">Version meta to be provided to extensions.</p></div></div></div></div><div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>utilities</span></span></u></div></span></div><div><div class="title"><p class="paragraph">Utilities to be provided to extensions.</p></div></div></div></div></div></div>    </div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword">class </span><a href="index.html">ApiPlugins</a></div><p class="paragraph">Manager for ServerPackCreator plugins. In itself it doesn't do much. It gathers lists of all available extensions for <a href="../../de.griefed.serverpackcreator.api.plugins.swinggui/-tab-extension/index.html">TabExtension</a>,<a href="../../de.griefed.serverpackcreator.api.plugins.serverpackhandler/-pre-gen-extension/index.html">PreGenExtension</a>,<a href="../../de.griefed.serverpackcreator.api.plugins.serverpackhandler/-pre-zip-extension/index.html">PreZipExtension</a> and <a href="../../de.griefed.serverpackcreator.api.plugins.serverpackhandler/-post-gen-extension/index.html">PostGenExtension</a> so they can then be run during server pack generation and during initialization of the GUI.</p><span class="kdoc-tag"><h4 class="">Author</h4><p class="paragraph">Griefed</p></span></div><div class="content sourceset-dependent-content" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">actual </span><span class="token keyword">class </span><a href="index.html">ApiPlugins</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">tomlParser<span class="token operator">: </span><span data-unresolved-link="com.electronwill.nightconfig.toml/TomlParser///PointingToDeclaration/">TomlParser</span><span class="token punctuation">, </span></span><span class="parameter ">apiProperties<span class="token operator">: </span><a href="../-api-properties/index.html">ApiProperties</a><span class="token punctuation">, </span></span><span class="parameter ">versionMeta<span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api.versionmeta/-version-meta/index.html">VersionMeta</a><span class="token punctuation">, </span></span><span class="parameter ">utilities<span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api.utilities.common/-utilities/index.html">Utilities</a></span></span><span class="token punctuation">)</span> : <span data-unresolved-link="org.pf4j/JarPluginManager///PointingToDeclaration/">JarPluginManager</span></div><p class="paragraph">Manager for ServerPackCreator plugins. In itself it doesn't do much. It gathers lists of all available extensions for <a href="../../de.griefed.serverpackcreator.api.plugins.swinggui/-tab-extension/index.html">TabExtension</a>,<a href="../../de.griefed.serverpackcreator.api.plugins.serverpackhandler/-pre-gen-extension/index.html">PreGenExtension</a>,<a href="../../de.griefed.serverpackcreator.api.plugins.serverpackhandler/-pre-zip-extension/index.html">PreZipExtension</a> and <a href="../../de.griefed.serverpackcreator.api.plugins.serverpackhandler/-post-gen-extension/index.html">PostGenExtension</a> so they can then be run during server pack generation and during initialization of the GUI.</p><span class="kdoc-tag"><h4 class="">Author</h4><p class="paragraph">Griefed</p></span><h4 class="">Parameters</h4><div class="table"><div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>toml</span><wbr></wbr><span><span>Parser</span></span></u></div></span></div><div><div class="title"><p class="paragraph">To read plugin-configurations, so they can be provided to extensions.</p></div></div></div></div><div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>api</span><wbr></wbr><span><span>Properties</span></span></u></div></span></div><div><div class="title"><p class="paragraph">ServerPackCreator settings to be provided to extensions.</p></div></div></div></div><div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>version</span><wbr></wbr><span><span>Meta</span></span></u></div></span></div><div><div class="title"><p class="paragraph">Version meta to be provided to extensions.</p></div></div></div></div><div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>utilities</span></span></u></div></span></div><div><div class="title"><p class="paragraph">Utilities to be provided to extensions.</p></div></div></div></div></div></div>    </div>
   </div>
   <div class="tabbedcontent">
-    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,FUNCTION,PROPERTY">Members</button></div>
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
     <div class="tabs-section-body">
       <div data-togglable="CONSTRUCTOR">
         <h2 class="">Constructors</h2>
@@ -81,6 +88,333 @@
                   <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
                     <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
 <div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">tomlParser<span class="token operator">: </span><span data-unresolved-link="com.electronwill.nightconfig.toml/TomlParser///PointingToDeclaration/">TomlParser</span><span class="token punctuation">, </span></span><span class="parameter ">apiProperties<span class="token operator">: </span><a href="../-api-properties/index.html">ApiProperties</a><span class="token punctuation">, </span></span><span class="parameter ">versionMeta<span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api.versionmeta/-version-meta/index.html">VersionMeta</a><span class="token punctuation">, </span></span><span class="parameter ">utilities<span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api.utilities.common/-utilities/index.html">Utilities</a></span></span><span class="token punctuation">)</span></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="PROPERTY">
+        <h2 class="">Properties</h2>
+        <div class="table"><a data-name="31539420%2FProperties%2F655084441" anchor-label="dependencyResolver" id="31539420%2FProperties%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#31539420%2FProperties%2F655084441"><span>dependency</span><wbr></wbr><span><span>Resolver</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="31539420%2FProperties%2F655084441"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword"></span><span class="token keyword">var </span><a href="index.html#31539420%2FProperties%2F655084441">dependencyResolver</a><span class="token operator">: </span><span data-unresolved-link="org.pf4j/DependencyResolver///PointingToDeclaration/">DependencyResolver</span></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1369027998%2FProperties%2F655084441" anchor-label="exactVersionAllowed" id="1369027998%2FProperties%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#1369027998%2FProperties%2F655084441"><span>exact</span><wbr></wbr><span>Version</span><wbr></wbr><span><span>Allowed</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1369027998%2FProperties%2F655084441"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword"></span><span class="token keyword">var </span><a href="index.html#1369027998%2FProperties%2F655084441">exactVersionAllowed</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-174262590%2FProperties%2F655084441" anchor-label="extensionFactory" id="-174262590%2FProperties%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-174262590%2FProperties%2F655084441"><span>extension</span><wbr></wbr><span><span>Factory</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-174262590%2FProperties%2F655084441"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword"></span><span class="token keyword">var </span><a href="index.html#-174262590%2FProperties%2F655084441">extensionFactory</a><span class="token operator">: </span><span data-unresolved-link="org.pf4j/ExtensionFactory///PointingToDeclaration/">ExtensionFactory</span></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="588122024%2FProperties%2F655084441" anchor-label="extensionFinder" id="588122024%2FProperties%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#588122024%2FProperties%2F655084441"><span>extension</span><wbr></wbr><span><span>Finder</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="588122024%2FProperties%2F655084441"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword"></span><span class="token keyword">var </span><a href="index.html#588122024%2FProperties%2F655084441">extensionFinder</a><span class="token operator">: </span><span data-unresolved-link="org.pf4j/ExtensionFinder///PointingToDeclaration/">ExtensionFinder</span></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1297395822%2FProperties%2F655084441" anchor-label="pluginClassLoaders" id="-1297395822%2FProperties%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-1297395822%2FProperties%2F655084441"><span>plugin</span><wbr></wbr><span>Class</span><wbr></wbr><span><span>Loaders</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1297395822%2FProperties%2F655084441"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword"></span><span class="token keyword">var </span><a href="index.html#-1297395822%2FProperties%2F655084441">pluginClassLoaders</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-map/index.html">MutableMap</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/ClassLoader.html">ClassLoader</a><span class="token operator">&gt;</span></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1145549979%2FProperties%2F655084441" anchor-label="pluginDescriptorFinder" id="-1145549979%2FProperties%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-1145549979%2FProperties%2F655084441"><span>plugin</span><wbr></wbr><span>Descriptor</span><wbr></wbr><span><span>Finder</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1145549979%2FProperties%2F655084441"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword"></span><span class="token keyword">var </span><a href="index.html#-1145549979%2FProperties%2F655084441">pluginDescriptorFinder</a><span class="token operator">: </span><span data-unresolved-link="org.pf4j/PluginDescriptorFinder///PointingToDeclaration/">PluginDescriptorFinder</span></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="322981590%2FProperties%2F655084441" anchor-label="pluginFactory" id="322981590%2FProperties%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#322981590%2FProperties%2F655084441"><span>plugin</span><wbr></wbr><span><span>Factory</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="322981590%2FProperties%2F655084441"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword"></span><span class="token keyword">var </span><a href="index.html#322981590%2FProperties%2F655084441">pluginFactory</a><span class="token operator">: </span><span data-unresolved-link="org.pf4j/PluginFactory///PointingToDeclaration/">PluginFactory</span></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-691570233%2FProperties%2F655084441" anchor-label="pluginLoader" id="-691570233%2FProperties%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-691570233%2FProperties%2F655084441"><span>plugin</span><wbr></wbr><span><span>Loader</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-691570233%2FProperties%2F655084441"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword"></span><span class="token keyword">var </span><a href="index.html#-691570233%2FProperties%2F655084441">pluginLoader</a><span class="token operator">: </span><span data-unresolved-link="org.pf4j/PluginLoader///PointingToDeclaration/">PluginLoader</span></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1985438704%2FProperties%2F655084441" anchor-label="pluginRepository" id="1985438704%2FProperties%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#1985438704%2FProperties%2F655084441"><span>plugin</span><wbr></wbr><span><span>Repository</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1985438704%2FProperties%2F655084441"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword"></span><span class="token keyword">var </span><a href="index.html#1985438704%2FProperties%2F655084441">pluginRepository</a><span class="token operator">: </span><span data-unresolved-link="org.pf4j/PluginRepository///PointingToDeclaration/">PluginRepository</span></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="196870573%2FProperties%2F655084441" anchor-label="plugins" id="196870573%2FProperties%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#196870573%2FProperties%2F655084441"><span><span>plugins</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="196870573%2FProperties%2F655084441"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword"></span><span class="token keyword">var </span><a href="index.html#196870573%2FProperties%2F655084441">plugins</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-map/index.html">MutableMap</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span><span class="token keyword"></span><span data-unresolved-link="org.pf4j/PluginWrapper///PointingToDeclaration/">PluginWrapper</span><span class="token operator">&gt;</span></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-341726916%2FProperties%2F655084441" anchor-label="pluginsRoots" id="-341726916%2FProperties%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-341726916%2FProperties%2F655084441"><span>plugins</span><wbr></wbr><span><span>Roots</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-341726916%2FProperties%2F655084441"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword"></span><span class="token keyword">val </span><a href="index.html#-341726916%2FProperties%2F655084441">pluginsRoots</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/nio/file/Path.html">Path</a><span class="token operator">&gt;</span></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1268305780%2FProperties%2F655084441" anchor-label="pluginStateListeners" id="-1268305780%2FProperties%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-1268305780%2FProperties%2F655084441"><span>plugin</span><wbr></wbr><span>State</span><wbr></wbr><span><span>Listeners</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1268305780%2FProperties%2F655084441"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword"></span><span class="token keyword">var </span><a href="index.html#-1268305780%2FProperties%2F655084441">pluginStateListeners</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><span class="token keyword"></span><span data-unresolved-link="org.pf4j/PluginStateListener///PointingToDeclaration/">PluginStateListener</span><span class="token operator">&gt;</span></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1742978345%2FProperties%2F655084441" anchor-label="pluginStatusProvider" id="-1742978345%2FProperties%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-1742978345%2FProperties%2F655084441"><span>plugin</span><wbr></wbr><span>Status</span><wbr></wbr><span><span>Provider</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1742978345%2FProperties%2F655084441"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword"></span><span class="token keyword">var </span><a href="index.html#-1742978345%2FProperties%2F655084441">pluginStatusProvider</a><span class="token operator">: </span><span data-unresolved-link="org.pf4j/PluginStatusProvider///PointingToDeclaration/">PluginStatusProvider</span></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1130671675%2FProperties%2F655084441" anchor-label="resolvedPlugins" id="-1130671675%2FProperties%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-1130671675%2FProperties%2F655084441"><span>resolved</span><wbr></wbr><span><span>Plugins</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1130671675%2FProperties%2F655084441"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword"></span><span class="token keyword">var </span><a href="index.html#-1130671675%2FProperties%2F655084441">resolvedPlugins</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><span class="token keyword"></span><span data-unresolved-link="org.pf4j/PluginWrapper///PointingToDeclaration/">PluginWrapper</span><span class="token operator">&gt;</span></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1150877678%2FProperties%2F655084441" anchor-label="runtimeMode" id="-1150877678%2FProperties%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-1150877678%2FProperties%2F655084441"><span>runtime</span><wbr></wbr><span><span>Mode</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1150877678%2FProperties%2F655084441"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword"></span><span class="token keyword">var </span><a href="index.html#-1150877678%2FProperties%2F655084441">runtimeMode</a><span class="token operator">: </span><span data-unresolved-link="org.pf4j/RuntimeMode///PointingToDeclaration/">RuntimeMode</span></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="186981678%2FProperties%2F655084441" anchor-label="startedPlugins" id="186981678%2FProperties%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#186981678%2FProperties%2F655084441"><span>started</span><wbr></wbr><span><span>Plugins</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="186981678%2FProperties%2F655084441"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword"></span><span class="token keyword">var </span><a href="index.html#186981678%2FProperties%2F655084441">startedPlugins</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><span class="token keyword"></span><span data-unresolved-link="org.pf4j/PluginWrapper///PointingToDeclaration/">PluginWrapper</span><span class="token operator">&gt;</span></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1731180996%2FProperties%2F655084441" anchor-label="systemVersion" id="1731180996%2FProperties%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#1731180996%2FProperties%2F655084441"><span>system</span><wbr></wbr><span><span>Version</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1731180996%2FProperties%2F655084441"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword"></span><span class="token keyword">var </span><a href="index.html#1731180996%2FProperties%2F655084441">systemVersion</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1012461406%2FProperties%2F655084441" anchor-label="unresolvedPlugins" id="1012461406%2FProperties%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#1012461406%2FProperties%2F655084441"><span>unresolved</span><wbr></wbr><span><span>Plugins</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1012461406%2FProperties%2F655084441"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword"></span><span class="token keyword">var </span><a href="index.html#1012461406%2FProperties%2F655084441">unresolvedPlugins</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><span class="token keyword"></span><span data-unresolved-link="org.pf4j/PluginWrapper///PointingToDeclaration/">PluginWrapper</span><span class="token operator">&gt;</span></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-191791592%2FProperties%2F655084441" anchor-label="versionManager" id="-191791592%2FProperties%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-191791592%2FProperties%2F655084441"><span>version</span><wbr></wbr><span><span>Manager</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-191791592%2FProperties%2F655084441"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword"></span><span class="token keyword">var </span><a href="index.html#-191791592%2FProperties%2F655084441">versionManager</a><span class="token operator">: </span><span data-unresolved-link="org.pf4j/VersionManager///PointingToDeclaration/">VersionManager</span></div></div>                  </div>
                 </div>
               </div>
             </div>
@@ -118,7 +452,7 @@
                 <div class="title">
                   <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
                     <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="add-tab-extension-tabs.html"><span class="token function">addTabExtensionTabs</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">tabbedPane<span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.desktop/javax/swing/JTabbedPane.html">JTabbedPane</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Add any and all additional tabs to the ServerPackCreator tabbed pane (main GUI). You may use this to add tabs to your own <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.desktop/javax/swing/JTabbedPane.html">JTabbedPane</a>, if you so desire. Could be pretty awesome to have your plugins extra tabs in a separate window!</p></div></div>                  </div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="add-tab-extension-tabs.html"><span class="token function">addTabExtensionTabs</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">tabbedPane<span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.desktop/javax/swing/JTabbedPane.html">JTabbedPane</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Add any and all additional tabs to the ServerPackCreator tabbed pane (main GUI). You may use this to add tabs to your own <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.desktop/javax/swing/JTabbedPane.html">JTabbedPane</a>, if you so desire. Could be pretty awesome to have your plugins extra tabs in a separate window!</p></div></div>                  </div>
                 </div>
               </div>
             </div>
@@ -254,7 +588,7 @@
                 <div class="title">
                   <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
                     <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword">open </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="index.html#2009740807%2FFunctions%2F655084441"><span class="token function">createPluginsRoot</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/nio/file/Path.html">Path</a><span class="token operator">&gt;</span></div></div>                  </div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword">open </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="index.html#2009740807%2FFunctions%2F655084441"><span class="token function">createPluginsRoot</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/nio/file/Path.html">Path</a><span class="token operator">&gt;</span></div></div>                  </div>
                 </div>
               </div>
             </div>
@@ -288,7 +622,7 @@
                 <div class="title">
                   <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
                     <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword">open </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="index.html#460076891%2FFunctions%2F655084441"><span class="token function">createPluginWrapper</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><span data-unresolved-link="org.pf4j/PluginDescriptor///PointingToDeclaration/">PluginDescriptor</span><span class="token punctuation">, </span></span><span class="parameter ">p1<span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/nio/file/Path.html">Path</a><span class="token punctuation">, </span></span><span class="parameter ">p2<span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/ClassLoader.html">ClassLoader</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="org.pf4j/PluginWrapper///PointingToDeclaration/">PluginWrapper</span></div></div>                  </div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword">open </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="index.html#460076891%2FFunctions%2F655084441"><span class="token function">createPluginWrapper</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><span data-unresolved-link="org.pf4j/PluginDescriptor///PointingToDeclaration/">PluginDescriptor</span><span class="token punctuation">, </span></span><span class="parameter ">p1<span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/nio/file/Path.html">Path</a><span class="token punctuation">, </span></span><span class="parameter ">p2<span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/ClassLoader.html">ClassLoader</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="org.pf4j/PluginWrapper///PointingToDeclaration/">PluginWrapper</span></div></div>                  </div>
                 </div>
               </div>
             </div>
@@ -390,7 +724,7 @@
                 <div class="title">
                   <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
                     <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="get-all-extensions-of-plugin.html">T</a><span class="token operator">&gt; </span><a href="get-all-extensions-of-plugin.html"><span class="token function">getAllExtensionsOfPlugin</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">plugin<span class="token operator">: </span><span data-unresolved-link="org.pf4j/PluginWrapper///PointingToDeclaration/">PluginWrapper</span><span class="token punctuation">, </span></span><span class="parameter ">type<span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Class.html">Class</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="get-all-extensions-of-plugin.html">T</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="get-all-extensions-of-plugin.html">T</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Get all extension of the specified <a href="get-all-extensions-of-plugin.html">type</a> for the specified <a href="get-all-extensions-of-plugin.html">plugin</a>.</p></div></div>                  </div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="get-all-extensions-of-plugin.html">T</a><span class="token operator">&gt; </span><a href="get-all-extensions-of-plugin.html"><span class="token function">getAllExtensionsOfPlugin</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">plugin<span class="token operator">: </span><span data-unresolved-link="org.pf4j/PluginWrapper///PointingToDeclaration/">PluginWrapper</span><span class="token punctuation">, </span></span><span class="parameter ">type<span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Class.html">Class</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="get-all-extensions-of-plugin.html">T</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="get-all-extensions-of-plugin.html">T</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Get all extension of the specified <a href="get-all-extensions-of-plugin.html">type</a> for the specified <a href="get-all-extensions-of-plugin.html">plugin</a>.</p></div></div>                  </div>
                 </div>
               </div>
             </div>
@@ -407,7 +741,7 @@
                 <div class="title">
                   <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
                     <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="get-config-panels.html"><span class="token function">getConfigPanels</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">serverPackConfigTab<span class="token operator">: </span><span data-unresolved-link="de.griefed.serverpackcreator.api.plugins.swinggui/ServerPackConfigTab///PointingToDeclaration/">ServerPackConfigTab</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../de.griefed.serverpackcreator.api.plugins.swinggui/-extension-config-panel/index.html">ExtensionConfigPanel</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Create config panels for the passed server pack configuration tab. Note that this method does <strong>NOT</strong> add the panels to the tab, it only creates them and passes the server pack config tab object-reference to each config panel, so they, in turn, may use any available fields and methods for their own operations. A given server pack config tab needs to add the panels which are returned by this method, so a user may make their configurations accordingly.</p></div></div>                  </div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="get-config-panels.html"><span class="token function">getConfigPanels</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">serverPackConfigTab<span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api.plugins.swinggui/-server-pack-config-tab/index.html">ServerPackConfigTab</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../de.griefed.serverpackcreator.api.plugins.swinggui/-extension-config-panel/index.html">ExtensionConfigPanel</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Create config panels for the passed server pack configuration tab. Note that this method does <strong>NOT</strong> add the panels to the tab, it only creates them and passes the server pack config tab object-reference to each config panel, so they, in turn, may use any available fields and methods for their own operations. A given server pack config tab needs to add the panels which are returned by this method, so a user may make their configurations accordingly.</p></div></div>                  </div>
                 </div>
               </div>
             </div>
@@ -424,7 +758,7 @@
                 <div class="title">
                   <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
                     <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="index.html#461782047%2FFunctions%2F655084441">T</a><span class="token operator"> : </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a><span class="token operator">&gt; </span><a href="index.html#461782047%2FFunctions%2F655084441"><span class="token function">getExtensionClasses</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Class.html">Class</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="index.html#461782047%2FFunctions%2F655084441">T</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Class.html">Class</a><span class="token operator">&lt;</span><span class="token keyword">out </span><a href="index.html#461782047%2FFunctions%2F655084441">T</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="index.html#-1376321164%2FFunctions%2F655084441"><span class="token function">getExtensionClasses</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Class.html">Class</a><span class="token operator">&lt;</span><span class="token operator">*</span><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword">open </span><span class="token keyword"></span><span class="token keyword">fun </span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="index.html#477645811%2FFunctions%2F655084441">T</a><span class="token operator"> : </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a><span class="token operator">&gt; </span><a href="index.html#477645811%2FFunctions%2F655084441"><span class="token function">getExtensionClasses</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><span class="token keyword"></span><span data-unresolved-link="org.pf4j/ExtensionWrapper///PointingToDeclaration/">ExtensionWrapper</span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="index.html#477645811%2FFunctions%2F655084441">T</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Class.html">Class</a><span class="token operator">&lt;</span><span class="token keyword">out </span><a href="index.html#477645811%2FFunctions%2F655084441">T</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="index.html#1481931460%2FFunctions%2F655084441">T</a><span class="token operator"> : </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a><span class="token operator">&gt; </span><a href="index.html#1481931460%2FFunctions%2F655084441"><span class="token function">getExtensionClasses</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Class.html">Class</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="index.html#1481931460%2FFunctions%2F655084441">T</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">p1<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Class.html">Class</a><span class="token operator">&lt;</span><span class="token keyword">out </span><a href="index.html#1481931460%2FFunctions%2F655084441">T</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div></div>                  </div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="index.html#461782047%2FFunctions%2F655084441">T</a><span class="token operator"> : </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a><span class="token operator">&gt; </span><a href="index.html#461782047%2FFunctions%2F655084441"><span class="token function">getExtensionClasses</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Class.html">Class</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="index.html#461782047%2FFunctions%2F655084441">T</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Class.html">Class</a><span class="token operator">&lt;</span><span class="token keyword">out </span><a href="index.html#461782047%2FFunctions%2F655084441">T</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="index.html#-1376321164%2FFunctions%2F655084441"><span class="token function">getExtensionClasses</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Class.html">Class</a><span class="token operator">&lt;</span><span class="token operator">*</span><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword">open </span><span class="token keyword"></span><span class="token keyword">fun </span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="index.html#477645811%2FFunctions%2F655084441">T</a><span class="token operator"> : </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a><span class="token operator">&gt; </span><a href="index.html#477645811%2FFunctions%2F655084441"><span class="token function">getExtensionClasses</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><span class="token keyword"></span><span data-unresolved-link="org.pf4j/ExtensionWrapper///PointingToDeclaration/">ExtensionWrapper</span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="index.html#477645811%2FFunctions%2F655084441">T</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Class.html">Class</a><span class="token operator">&lt;</span><span class="token keyword">out </span><a href="index.html#477645811%2FFunctions%2F655084441">T</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="index.html#1481931460%2FFunctions%2F655084441">T</a><span class="token operator"> : </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a><span class="token operator">&gt; </span><a href="index.html#1481931460%2FFunctions%2F655084441"><span class="token function">getExtensionClasses</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Class.html">Class</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="index.html#1481931460%2FFunctions%2F655084441">T</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">p1<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Class.html">Class</a><span class="token operator">&lt;</span><span class="token keyword">out </span><a href="index.html#1481931460%2FFunctions%2F655084441">T</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div></div>                  </div>
                 </div>
               </div>
             </div>
@@ -475,7 +809,7 @@
                 <div class="title">
                   <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
                     <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="index.html#1868818636%2FFunctions%2F655084441">T</a><span class="token operator"> : </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a><span class="token operator">&gt; </span><a href="index.html#1868818636%2FFunctions%2F655084441"><span class="token function">getExtensions</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Class.html">Class</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="index.html#1868818636%2FFunctions%2F655084441">T</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="index.html#1868818636%2FFunctions%2F655084441">T</a><span class="token operator">&gt;</span></div><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="index.html#1365567841%2FFunctions%2F655084441"><span class="token function">getExtensions</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a><span class="token operator">?</span><span class="token operator">&gt;</span></div><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword">open </span><span class="token keyword"></span><span class="token keyword">fun </span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="index.html#800510048%2FFunctions%2F655084441">T</a><span class="token operator"> : </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a><span class="token operator">&gt; </span><a href="index.html#800510048%2FFunctions%2F655084441"><span class="token function">getExtensions</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><span class="token keyword"></span><span data-unresolved-link="org.pf4j/ExtensionWrapper///PointingToDeclaration/">ExtensionWrapper</span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="index.html#800510048%2FFunctions%2F655084441">T</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="index.html#800510048%2FFunctions%2F655084441">T</a><span class="token operator">&gt;</span></div><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="index.html#1243346097%2FFunctions%2F655084441">T</a><span class="token operator"> : </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a><span class="token operator">&gt; </span><a href="index.html#1243346097%2FFunctions%2F655084441"><span class="token function">getExtensions</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Class.html">Class</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="index.html#1243346097%2FFunctions%2F655084441">T</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">p1<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="index.html#1243346097%2FFunctions%2F655084441">T</a><span class="token operator">&gt;</span></div></div>                  </div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="index.html#1868818636%2FFunctions%2F655084441">T</a><span class="token operator"> : </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a><span class="token operator">&gt; </span><a href="index.html#1868818636%2FFunctions%2F655084441"><span class="token function">getExtensions</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Class.html">Class</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="index.html#1868818636%2FFunctions%2F655084441">T</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="index.html#1868818636%2FFunctions%2F655084441">T</a><span class="token operator">&gt;</span></div><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="index.html#1365567841%2FFunctions%2F655084441"><span class="token function">getExtensions</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a><span class="token operator">?</span><span class="token operator">&gt;</span></div><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword">open </span><span class="token keyword"></span><span class="token keyword">fun </span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="index.html#800510048%2FFunctions%2F655084441">T</a><span class="token operator"> : </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a><span class="token operator">&gt; </span><a href="index.html#800510048%2FFunctions%2F655084441"><span class="token function">getExtensions</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><span class="token keyword"></span><span data-unresolved-link="org.pf4j/ExtensionWrapper///PointingToDeclaration/">ExtensionWrapper</span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="index.html#800510048%2FFunctions%2F655084441">T</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="index.html#800510048%2FFunctions%2F655084441">T</a><span class="token operator">&gt;</span></div><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="index.html#1243346097%2FFunctions%2F655084441">T</a><span class="token operator"> : </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a><span class="token operator">&gt; </span><a href="index.html#1243346097%2FFunctions%2F655084441"><span class="token function">getExtensions</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Class.html">Class</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="index.html#1243346097%2FFunctions%2F655084441">T</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">p1<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="index.html#1243346097%2FFunctions%2F655084441">T</a><span class="token operator">&gt;</span></div></div>                  </div>
                 </div>
               </div>
             </div>
@@ -509,7 +843,7 @@
                 <div class="title">
                   <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
                     <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="index.html#-222948807%2FFunctions%2F655084441"><span class="token function">getPluginClassLoader</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/ClassLoader.html">ClassLoader</a></div></div>                  </div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="index.html#-222948807%2FFunctions%2F655084441"><span class="token function">getPluginClassLoader</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/ClassLoader.html">ClassLoader</a></div></div>                  </div>
                 </div>
               </div>
             </div>
@@ -526,13 +860,13 @@
                 <div class="title">
                   <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
                     <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword">open </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="index.html#1185779580%2FFunctions%2F655084441"><span class="token function">getPluginClassLoaders</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-map/index.html">MutableMap</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/ClassLoader.html">ClassLoader</a><span class="token operator">&gt;</span></div></div>                  </div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword">open </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="index.html#1185779580%2FFunctions%2F655084441"><span class="token function">getPluginClassLoaders</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-map/index.html">MutableMap</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/ClassLoader.html">ClassLoader</a><span class="token operator">&gt;</span></div></div>                  </div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="615545273%2FFunctions%2F1537383562" anchor-label="getPluginConfig" id="615545273%2FFunctions%2F1537383562" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain">
+<a data-name="615545273%2FFunctions%2F1537383562" anchor-label="getPluginConfig" id="615545273%2FFunctions%2F1537383562" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain,:serverpackcreator-api:dokkaHtml/jvmMain"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain,:serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain,:serverpackcreator-api:dokkaHtml/jvmMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="get-plugin-config.html"><span>get</span><wbr></wbr><span>Plugin</span><wbr></wbr><span><span>Config</span></span></a></div>
@@ -543,13 +877,13 @@
                 <div class="title">
                   <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
                     <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/commonMain">common</button><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="get-plugin-config.html"><span class="token function">getPluginConfig</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">pluginId<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api.utilities/-optional/index.html">Optional</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../de.griefed.serverpackcreator.api.utilities/-commented-config/index.html">CommentedConfig</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Get the global plugin configuration for an plugin of the passed ID. The configuration is wrapped in an <a href="../../de.griefed.serverpackcreator.api.utilities/-optional/index.html">Optional</a>, because an plugin may not provide a global configuration. If you intend on using a global configuration for your plugin, make sure to check whether it is present before trying to use it!</p></div></div><div class="content sourceset-dependent-content" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">actual </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="get-plugin-config.html"><span class="token function">getPluginConfig</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">pluginId<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api.utilities/-optional/index.html">Optional</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../de.griefed.serverpackcreator.api.utilities/-commented-config/index.html">CommentedConfig</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Get the global plugin configuration for an plugin of the passed ID. The configuration is wrapped in an <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Optional.html">Optional</a>, because an plugin may not provide a global configuration. If you intend on using a global configuration for your plugin, make sure to check whether it is present before trying to use it!</p></div></div>                  </div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="get-plugin-config.html"><span class="token function">getPluginConfig</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">pluginId<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api.utilities/-optional/index.html">Optional</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../de.griefed.serverpackcreator.api.utilities/-commented-config/index.html">CommentedConfig</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Get the global plugin configuration for a plugin of the passed ID. The configuration is wrapped in an <a href="../../de.griefed.serverpackcreator.api.utilities/-optional/index.html">Optional</a>, because a plugin may not provide a global configuration. If you intend on using a global configuration for your plugin, make sure to check whether it is present before trying to use it!</p></div></div><div class="content sourceset-dependent-content" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">actual </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="get-plugin-config.html"><span class="token function">getPluginConfig</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">pluginId<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api.utilities/-optional/index.html">Optional</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../de.griefed.serverpackcreator.api.utilities/-commented-config/index.html">CommentedConfig</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Get the global plugin configuration for an plugin of the passed ID. The configuration is wrapped in an <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Optional.html">Optional</a>, because an plugin may not provide a global configuration. If you intend on using a global configuration for your plugin, make sure to check whether it is present before trying to use it!</p></div></div>                  </div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-1585130155%2FFunctions%2F1537383562" anchor-label="getPluginConfigFile" id="-1585130155%2FFunctions%2F1537383562" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain">
+<a data-name="-1585130155%2FFunctions%2F1537383562" anchor-label="getPluginConfigFile" id="-1585130155%2FFunctions%2F1537383562" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain,:serverpackcreator-api:dokkaHtml/jvmMain"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain,:serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain,:serverpackcreator-api:dokkaHtml/jvmMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="get-plugin-config-file.html"><span>get</span><wbr></wbr><span>Plugin</span><wbr></wbr><span>Config</span><wbr></wbr><span><span>File</span></span></a></div>
@@ -560,7 +894,7 @@
                 <div class="title">
                   <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
                     <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/commonMain">common</button><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="get-plugin-config-file.html"><span class="token function">getPluginConfigFile</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">pluginId<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api.utilities/-optional/index.html">Optional</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../de.griefed.serverpackcreator.api.utilities/-file/index.html">File</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Get the configuration-file for a plugin, if it exists. This is wrapped in an <a href="../../de.griefed.serverpackcreator.api.utilities/-optional/index.html">Optional</a>, because not every plugin may provide a configuration-file to use globally for the relevant plugins settings. If you intend on using a global configuration, make sure to check whether the file is present, before moving on!</p></div></div><div class="content sourceset-dependent-content" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">actual </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="get-plugin-config-file.html"><span class="token function">getPluginConfigFile</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">pluginId<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api.utilities/-optional/index.html">Optional</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../de.griefed.serverpackcreator.api.utilities/-file/index.html">File</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Get the configuration-file for a plugin, if it exists. This is wrapped in an <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Optional.html">Optional</a>, because not every plugin may provide a configuration-file to use globally for the relevant plugins settings. If you intend on using a global configuration, make sure to check whether the file is present, before moving on!</p></div></div>                  </div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="get-plugin-config-file.html"><span class="token function">getPluginConfigFile</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">pluginId<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api.utilities/-optional/index.html">Optional</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../de.griefed.serverpackcreator.api.utilities/-file/index.html">File</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Get the configuration-file for a plugin, if it exists. This is wrapped in an <a href="../../de.griefed.serverpackcreator.api.utilities/-optional/index.html">Optional</a>, because not every plugin may provide a configuration-file to use globally for the relevant plugins settings. If you intend on using a global configuration, make sure to check whether the file is present, before moving on!</p></div></div><div class="content sourceset-dependent-content" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">actual </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="get-plugin-config-file.html"><span class="token function">getPluginConfigFile</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">pluginId<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../de.griefed.serverpackcreator.api.utilities/-optional/index.html">Optional</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../de.griefed.serverpackcreator.api.utilities/-file/index.html">File</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Get the configuration-file for a plugin, if it exists. This is wrapped in an <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Optional.html">Optional</a>, because not every plugin may provide a configuration-file to use globally for the relevant plugins settings. If you intend on using a global configuration, make sure to check whether the file is present, before moving on!</p></div></div>                  </div>
                 </div>
               </div>
             </div>
@@ -662,7 +996,7 @@
                 <div class="title">
                   <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
                     <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="index.html#-155169215%2FFunctions%2F655084441"><span class="token function">getPluginsRoot</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/nio/file/Path.html">Path</a></div></div>                  </div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="index.html#-155169215%2FFunctions%2F655084441"><span class="token function">getPluginsRoot</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/nio/file/Path.html">Path</a></div></div>                  </div>
                 </div>
               </div>
             </div>
@@ -679,7 +1013,7 @@
                 <div class="title">
                   <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
                     <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="index.html#1050976422%2FFunctions%2F655084441"><span class="token function">getPluginsRoots</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/nio/file/Path.html">Path</a><span class="token operator">&gt;</span></div></div>                  </div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="index.html#1050976422%2FFunctions%2F655084441"><span class="token function">getPluginsRoots</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/nio/file/Path.html">Path</a><span class="token operator">&gt;</span></div></div>                  </div>
                 </div>
               </div>
             </div>
@@ -815,7 +1149,7 @@
                 <div class="title">
                   <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
                     <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword">open </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="index.html#-834525431%2FFunctions%2F655084441"><span class="token function">idForPath</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/nio/file/Path.html">Path</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></div></div>                  </div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword">open </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="index.html#-834525431%2FFunctions%2F655084441"><span class="token function">idForPath</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/nio/file/Path.html">Path</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></div></div>                  </div>
                 </div>
               </div>
             </div>
@@ -934,7 +1268,7 @@
                 <div class="title">
                   <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
                     <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="index.html#1236552035%2FFunctions%2F655084441"><span class="token function">loadPlugin</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/nio/file/Path.html">Path</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></div></div>                  </div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="index.html#1236552035%2FFunctions%2F655084441"><span class="token function">loadPlugin</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/nio/file/Path.html">Path</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></div></div>                  </div>
                 </div>
               </div>
             </div>
@@ -951,7 +1285,7 @@
                 <div class="title">
                   <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
                     <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="index.html#1289706247%2FFunctions%2F655084441"><span class="token function">loadPluginFromPath</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/nio/file/Path.html">Path</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="org.pf4j/PluginWrapper///PointingToDeclaration/">PluginWrapper</span></div></div>                  </div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="index.html#1289706247%2FFunctions%2F655084441"><span class="token function">loadPluginFromPath</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/nio/file/Path.html">Path</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="org.pf4j/PluginWrapper///PointingToDeclaration/">PluginWrapper</span></div></div>                  </div>
                 </div>
               </div>
             </div>
@@ -1007,25 +1341,25 @@
               </div>
             </div>
           </div>
-<a data-name="1679818570%2FFunctions%2F1537383562" anchor-label="runConfigCheckExtensions" id="1679818570%2FFunctions%2F1537383562" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain">
+<a data-name="-1594251899%2FFunctions%2F1537383562" anchor-label="runConfigCheckExtensions" id="-1594251899%2FFunctions%2F1537383562" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain,:serverpackcreator-api:dokkaHtml/jvmMain"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain,:serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain,:serverpackcreator-api:dokkaHtml/jvmMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="run-config-check-extensions.html"><span>run</span><wbr></wbr><span>Config</span><wbr></wbr><span>Check</span><wbr></wbr><span><span>Extensions</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1679818570%2FFunctions%2F1537383562"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1594251899%2FFunctions%2F1537383562"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
                   <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
                     <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/commonMain">common</button><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="run-config-check-extensions.html"><span class="token function">runConfigCheckExtensions</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">packConfig<span class="token operator">: </span><a href="../-pack-config/index.html">PackConfig</a><span class="token punctuation">, </span></span><span class="parameter ">encounteredErrors<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Run any and all configuration-check extensions, using the passed configuration model and the destination at which the server pack is to be generated and stored at.</p></div></div><div class="content sourceset-dependent-content" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">actual </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="run-config-check-extensions.html"><span class="token function">runConfigCheckExtensions</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">packConfig<span class="token operator">: </span><a href="../-pack-config/index.html">PackConfig</a><span class="token punctuation">, </span></span><span class="parameter ">encounteredErrors<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Run any and all configuration-check extensions, using the passed configuration model and the destination at which the server pack is to be generated and stored at.</p></div></div>                  </div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">expect </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="run-config-check-extensions.html"><span class="token function">runConfigCheckExtensions</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">packConfig<span class="token operator">: </span><a href="../-pack-config/index.html">PackConfig</a><span class="token punctuation">, </span></span><span class="parameter ">configCheck<span class="token operator">: </span><a href="../-config-check/index.html">ConfigCheck</a><span class="token operator"> = </span>ConfigCheck()</span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-config-check/index.html">ConfigCheck</a></div><div class="brief "><p class="paragraph">Run any and all configuration-check extensions, using the passed configuration model and the destination at which the server pack is to be generated and stored at.</p></div></div><div class="content sourceset-dependent-content" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">actual </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="run-config-check-extensions.html"><span class="token function">runConfigCheckExtensions</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">packConfig<span class="token operator">: </span><a href="../-pack-config/index.html">PackConfig</a><span class="token punctuation">, </span></span><span class="parameter ">configCheck<span class="token operator">: </span><a href="../-config-check/index.html">ConfigCheck</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-config-check/index.html">ConfigCheck</a></div><div class="brief "><p class="paragraph">Run any and all configuration-check extensions, using the passed configuration model and the destination at which the server pack is to be generated and stored at.</p></div></div>                  </div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="2051990194%2FFunctions%2F1537383562" anchor-label="runPostGenExtensions" id="2051990194%2FFunctions%2F1537383562" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain">
+<a data-name="2051990194%2FFunctions%2F1537383562" anchor-label="runPostGenExtensions" id="2051990194%2FFunctions%2F1537383562" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain,:serverpackcreator-api:dokkaHtml/jvmMain"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain,:serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain,:serverpackcreator-api:dokkaHtml/jvmMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="run-post-gen-extensions.html"><span>run</span><wbr></wbr><span>Post</span><wbr></wbr><span>Gen</span><wbr></wbr><span><span>Extensions</span></span></a></div>
@@ -1041,8 +1375,8 @@
               </div>
             </div>
           </div>
-<a data-name="-1797508237%2FFunctions%2F1537383562" anchor-label="runPreGenExtensions" id="-1797508237%2FFunctions%2F1537383562" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain">
+<a data-name="-1797508237%2FFunctions%2F1537383562" anchor-label="runPreGenExtensions" id="-1797508237%2FFunctions%2F1537383562" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain,:serverpackcreator-api:dokkaHtml/jvmMain"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain,:serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain,:serverpackcreator-api:dokkaHtml/jvmMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="run-pre-gen-extensions.html"><span>run</span><wbr></wbr><span>Pre</span><wbr></wbr><span>Gen</span><wbr></wbr><span><span>Extensions</span></span></a></div>
@@ -1058,8 +1392,8 @@
               </div>
             </div>
           </div>
-<a data-name="-1670742076%2FFunctions%2F1537383562" anchor-label="runPreZipExtensions" id="-1670742076%2FFunctions%2F1537383562" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain :serverpackcreator-api:dokkaHtml/jvmMain">
+<a data-name="-1670742076%2FFunctions%2F1537383562" anchor-label="runPreZipExtensions" id="-1670742076%2FFunctions%2F1537383562" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain,:serverpackcreator-api:dokkaHtml/jvmMain"></a>
+          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/commonMain,:serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/commonMain,:serverpackcreator-api:dokkaHtml/jvmMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="run-pre-zip-extensions.html"><span>run</span><wbr></wbr><span>Pre</span><wbr></wbr><span>Zip</span><wbr></wbr><span><span>Extensions</span></span></a></div>
@@ -1240,334 +1574,7 @@
                 <div class="title">
                   <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
                     <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="index.html#-152910477%2FFunctions%2F655084441"><span class="token function">whichPlugin</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Class.html">Class</a><span class="token operator">&lt;</span><span class="token operator">*</span><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="org.pf4j/PluginWrapper///PointingToDeclaration/">PluginWrapper</span></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div data-togglable="PROPERTY">
-        <h2 class="">Properties</h2>
-        <div class="table"><a data-name="31539420%2FProperties%2F655084441" anchor-label="dependencyResolver" id="31539420%2FProperties%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="index.html#31539420%2FProperties%2F655084441"><span>dependency</span><wbr></wbr><span><span>Resolver</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="31539420%2FProperties%2F655084441"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword"></span><span class="token keyword">var </span><a href="index.html#31539420%2FProperties%2F655084441">dependencyResolver</a><span class="token operator">: </span><span data-unresolved-link="org.pf4j/DependencyResolver///PointingToDeclaration/">DependencyResolver</span></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="1369027998%2FProperties%2F655084441" anchor-label="exactVersionAllowed" id="1369027998%2FProperties%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="index.html#1369027998%2FProperties%2F655084441"><span>exact</span><wbr></wbr><span>Version</span><wbr></wbr><span><span>Allowed</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1369027998%2FProperties%2F655084441"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword"></span><span class="token keyword">var </span><a href="index.html#1369027998%2FProperties%2F655084441">exactVersionAllowed</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="-174262590%2FProperties%2F655084441" anchor-label="extensionFactory" id="-174262590%2FProperties%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="index.html#-174262590%2FProperties%2F655084441"><span>extension</span><wbr></wbr><span><span>Factory</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-174262590%2FProperties%2F655084441"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword"></span><span class="token keyword">var </span><a href="index.html#-174262590%2FProperties%2F655084441">extensionFactory</a><span class="token operator">: </span><span data-unresolved-link="org.pf4j/ExtensionFactory///PointingToDeclaration/">ExtensionFactory</span></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="588122024%2FProperties%2F655084441" anchor-label="extensionFinder" id="588122024%2FProperties%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="index.html#588122024%2FProperties%2F655084441"><span>extension</span><wbr></wbr><span><span>Finder</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="588122024%2FProperties%2F655084441"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword"></span><span class="token keyword">var </span><a href="index.html#588122024%2FProperties%2F655084441">extensionFinder</a><span class="token operator">: </span><span data-unresolved-link="org.pf4j/ExtensionFinder///PointingToDeclaration/">ExtensionFinder</span></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="-1297395822%2FProperties%2F655084441" anchor-label="pluginClassLoaders" id="-1297395822%2FProperties%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="index.html#-1297395822%2FProperties%2F655084441"><span>plugin</span><wbr></wbr><span>Class</span><wbr></wbr><span><span>Loaders</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1297395822%2FProperties%2F655084441"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword"></span><span class="token keyword">var </span><a href="index.html#-1297395822%2FProperties%2F655084441">pluginClassLoaders</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-map/index.html">MutableMap</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/ClassLoader.html">ClassLoader</a><span class="token operator">&gt;</span></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="-1145549979%2FProperties%2F655084441" anchor-label="pluginDescriptorFinder" id="-1145549979%2FProperties%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="index.html#-1145549979%2FProperties%2F655084441"><span>plugin</span><wbr></wbr><span>Descriptor</span><wbr></wbr><span><span>Finder</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1145549979%2FProperties%2F655084441"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword"></span><span class="token keyword">var </span><a href="index.html#-1145549979%2FProperties%2F655084441">pluginDescriptorFinder</a><span class="token operator">: </span><span data-unresolved-link="org.pf4j/PluginDescriptorFinder///PointingToDeclaration/">PluginDescriptorFinder</span></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="322981590%2FProperties%2F655084441" anchor-label="pluginFactory" id="322981590%2FProperties%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="index.html#322981590%2FProperties%2F655084441"><span>plugin</span><wbr></wbr><span><span>Factory</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="322981590%2FProperties%2F655084441"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword"></span><span class="token keyword">var </span><a href="index.html#322981590%2FProperties%2F655084441">pluginFactory</a><span class="token operator">: </span><span data-unresolved-link="org.pf4j/PluginFactory///PointingToDeclaration/">PluginFactory</span></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="-691570233%2FProperties%2F655084441" anchor-label="pluginLoader" id="-691570233%2FProperties%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="index.html#-691570233%2FProperties%2F655084441"><span>plugin</span><wbr></wbr><span><span>Loader</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-691570233%2FProperties%2F655084441"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword"></span><span class="token keyword">var </span><a href="index.html#-691570233%2FProperties%2F655084441">pluginLoader</a><span class="token operator">: </span><span data-unresolved-link="org.pf4j/PluginLoader///PointingToDeclaration/">PluginLoader</span></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="1985438704%2FProperties%2F655084441" anchor-label="pluginRepository" id="1985438704%2FProperties%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="index.html#1985438704%2FProperties%2F655084441"><span>plugin</span><wbr></wbr><span><span>Repository</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1985438704%2FProperties%2F655084441"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword"></span><span class="token keyword">var </span><a href="index.html#1985438704%2FProperties%2F655084441">pluginRepository</a><span class="token operator">: </span><span data-unresolved-link="org.pf4j/PluginRepository///PointingToDeclaration/">PluginRepository</span></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="196870573%2FProperties%2F655084441" anchor-label="plugins" id="196870573%2FProperties%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="index.html#196870573%2FProperties%2F655084441"><span><span>plugins</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="196870573%2FProperties%2F655084441"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword"></span><span class="token keyword">var </span><a href="index.html#196870573%2FProperties%2F655084441">plugins</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-map/index.html">MutableMap</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span><span class="token keyword"></span><span data-unresolved-link="org.pf4j/PluginWrapper///PointingToDeclaration/">PluginWrapper</span><span class="token operator">&gt;</span></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="-341726916%2FProperties%2F655084441" anchor-label="pluginsRoots" id="-341726916%2FProperties%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="index.html#-341726916%2FProperties%2F655084441"><span>plugins</span><wbr></wbr><span><span>Roots</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-341726916%2FProperties%2F655084441"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword"></span><span class="token keyword">val </span><a href="index.html#-341726916%2FProperties%2F655084441">pluginsRoots</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/nio/file/Path.html">Path</a><span class="token operator">&gt;</span></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="-1268305780%2FProperties%2F655084441" anchor-label="pluginStateListeners" id="-1268305780%2FProperties%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="index.html#-1268305780%2FProperties%2F655084441"><span>plugin</span><wbr></wbr><span>State</span><wbr></wbr><span><span>Listeners</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1268305780%2FProperties%2F655084441"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword"></span><span class="token keyword">var </span><a href="index.html#-1268305780%2FProperties%2F655084441">pluginStateListeners</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><span class="token keyword"></span><span data-unresolved-link="org.pf4j/PluginStateListener///PointingToDeclaration/">PluginStateListener</span><span class="token operator">&gt;</span></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="-1742978345%2FProperties%2F655084441" anchor-label="pluginStatusProvider" id="-1742978345%2FProperties%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="index.html#-1742978345%2FProperties%2F655084441"><span>plugin</span><wbr></wbr><span>Status</span><wbr></wbr><span><span>Provider</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1742978345%2FProperties%2F655084441"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword"></span><span class="token keyword">var </span><a href="index.html#-1742978345%2FProperties%2F655084441">pluginStatusProvider</a><span class="token operator">: </span><span data-unresolved-link="org.pf4j/PluginStatusProvider///PointingToDeclaration/">PluginStatusProvider</span></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="-1130671675%2FProperties%2F655084441" anchor-label="resolvedPlugins" id="-1130671675%2FProperties%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="index.html#-1130671675%2FProperties%2F655084441"><span>resolved</span><wbr></wbr><span><span>Plugins</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1130671675%2FProperties%2F655084441"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword"></span><span class="token keyword">var </span><a href="index.html#-1130671675%2FProperties%2F655084441">resolvedPlugins</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><span class="token keyword"></span><span data-unresolved-link="org.pf4j/PluginWrapper///PointingToDeclaration/">PluginWrapper</span><span class="token operator">&gt;</span></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="-1150877678%2FProperties%2F655084441" anchor-label="runtimeMode" id="-1150877678%2FProperties%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="index.html#-1150877678%2FProperties%2F655084441"><span>runtime</span><wbr></wbr><span><span>Mode</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1150877678%2FProperties%2F655084441"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword"></span><span class="token keyword">var </span><a href="index.html#-1150877678%2FProperties%2F655084441">runtimeMode</a><span class="token operator">: </span><span data-unresolved-link="org.pf4j/RuntimeMode///PointingToDeclaration/">RuntimeMode</span></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="186981678%2FProperties%2F655084441" anchor-label="startedPlugins" id="186981678%2FProperties%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="index.html#186981678%2FProperties%2F655084441"><span>started</span><wbr></wbr><span><span>Plugins</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="186981678%2FProperties%2F655084441"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword"></span><span class="token keyword">var </span><a href="index.html#186981678%2FProperties%2F655084441">startedPlugins</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><span class="token keyword"></span><span data-unresolved-link="org.pf4j/PluginWrapper///PointingToDeclaration/">PluginWrapper</span><span class="token operator">&gt;</span></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="1731180996%2FProperties%2F655084441" anchor-label="systemVersion" id="1731180996%2FProperties%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="index.html#1731180996%2FProperties%2F655084441"><span>system</span><wbr></wbr><span><span>Version</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1731180996%2FProperties%2F655084441"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword"></span><span class="token keyword">var </span><a href="index.html#1731180996%2FProperties%2F655084441">systemVersion</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="1012461406%2FProperties%2F655084441" anchor-label="unresolvedPlugins" id="1012461406%2FProperties%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="index.html#1012461406%2FProperties%2F655084441"><span>unresolved</span><wbr></wbr><span><span>Plugins</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1012461406%2FProperties%2F655084441"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword"></span><span class="token keyword">var </span><a href="index.html#1012461406%2FProperties%2F655084441">unresolvedPlugins</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><span class="token keyword"></span><span data-unresolved-link="org.pf4j/PluginWrapper///PointingToDeclaration/">PluginWrapper</span><span class="token operator">&gt;</span></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="-191791592%2FProperties%2F655084441" anchor-label="versionManager" id="-191791592%2FProperties%2F655084441" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain"></a>
-          <div class="table-row" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="index.html#-191791592%2FProperties%2F655084441"><span>version</span><wbr></wbr><span><span>Manager</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-191791592%2FProperties%2F655084441"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":serverpackcreator-api:dokkaHtml/jvmMain" data-filterable-set=":serverpackcreator-api:dokkaHtml/jvmMain" data-active="" data-toggle=":serverpackcreator-api:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">protected </span><span class="token keyword"></span><span class="token keyword">var </span><a href="index.html#-191791592%2FProperties%2F655084441">versionManager</a><span class="token operator">: </span><span data-unresolved-link="org.pf4j/VersionManager///PointingToDeclaration/">VersionManager</span></div></div>                  </div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":serverpackcreator-api:dokkaHtml/jvmMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="index.html#-152910477%2FFunctions%2F655084441"><span class="token function">whichPlugin</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Class.html">Class</a><span class="token operator">&lt;</span><span class="token operator">*</span><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="org.pf4j/PluginWrapper///PointingToDeclaration/">PluginWrapper</span></div></div>                  </div>
                 </div>
               </div>
             </div>
@@ -1582,7 +1589,8 @@
                 class="pull-right"><span>Generated by </span><a
                 href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span>
       </div>
+            </div>
+        </div>
     </div>
-</div>
 </body>
 </html>
