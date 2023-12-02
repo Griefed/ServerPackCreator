@@ -1134,6 +1134,244 @@
 
 * GUI-rework for better UX, usability, expandability and more features ([5e7d540](https://git.griefed.de/Griefed/ServerPackCreator/commit/5e7d54045d2635916ab517a719f65c7615f2f6bb))
 
+
+## [4.3.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.3.1...4.3.2) (2023-10-18)
+
+
+### 📦 Other
+
+* Add more clientside mods. Thanks to @ModernGamingWorld and [@nvb-uy](https://git.griefed.de/nvb-uy) ([17153fd](https://git.griefed.de/Griefed/ServerPackCreator/commit/17153fd4a147b56ab1f935f6348627b16f4646c8))
+
+
+### 🦊 CI/CD
+
+* Remove Qodana workflow ([d097f16](https://git.griefed.de/Griefed/ServerPackCreator/commit/d097f164be54f32e004715e4db44b70bd7f77769))
+
+
+### 🛠 Fixes
+
+* Move forge JAR with old universal-name ([203cb90](https://git.griefed.de/Griefed/ServerPackCreator/commit/203cb90836a30ab98facaa52b7347ddeeb903477))
+
+## [4.3.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.3.0...4.3.1) (2023-09-16)
+
+
+### 📦 Other
+
+* Add Essential and MemoryUsageScreen to clientside mods. Thanks to @Devilswarchild and @BlakeIsMyWaifu for the reports! ([7515bd3](https://git.griefed.de/Griefed/ServerPackCreator/commit/7515bd31040932e93dc061c634e7e732b03cd515))
+* Remove debug console print ([c9ed3fd](https://git.griefed.de/Griefed/ServerPackCreator/commit/c9ed3fdc8e4c37c1d2a4b628754a491595392c56))
+
+
+### 🛠 Fixes
+
+* Fix the previous fix of only considering JARs in the mods-directory and nothing else ([ecfc8b7](https://git.griefed.de/Griefed/ServerPackCreator/commit/ecfc8b747cde9ac4b0bc797fe3ad9271fd52b93b))
+* Only consider JARs in file acquisition from mods-directory ([46e84d8](https://git.griefed.de/Griefed/ServerPackCreator/commit/46e84d8557d0b314399f6fa0b98c368a193f08da))
+* Prevent folder-inclusions from running the mods-scan if they happen to be inside the mods-directory ([38a9057](https://git.griefed.de/Griefed/ServerPackCreator/commit/38a90573f3d4452cef1f85f83cafeebd715deab0))
+* Run mods check if source is mods ([5de0742](https://git.griefed.de/Griefed/ServerPackCreator/commit/5de0742c130b49e64a37b6819b59584dcf05cd3c))
+
+## [4.3.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.2.1...4.3.0) (2023-09-02)
+
+
+### 💎 Improvements
+
+* Hint about server pack contents generated from ZIP-archives ([e0a9ac3](https://git.griefed.de/Griefed/ServerPackCreator/commit/e0a9ac30ec435868982ff37550e42f6e4a2fa625))
+
+
+### 📦 Other
+
+* Add debug logging for fabric dependency checks ([a7d9422](https://git.griefed.de/Griefed/ServerPackCreator/commit/a7d94228503d2bda01fe2bcd3b0689ecb11b022f))
+
+
+### 🦊 CI/CD
+
+* Use docker proxy to reduce traffic ([509f454](https://git.griefed.de/Griefed/ServerPackCreator/commit/509f454f07da48d8100cdbe163f289a8163fa854))
+
+
+### 🛠 Fixes
+
+* Correctly check ZIP-entries ([fb7da8a](https://git.griefed.de/Griefed/ServerPackCreator/commit/fb7da8a0fded267fd77019776474ec07ffd70810))
+
+## [4.2.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.2.0...4.2.1) (2023-07-28)
+
+
+### 📦 Other
+
+* Add lib39 to list of clientside mods. Thanks to [@nvb-uy](https://git.griefed.de/nvb-uy) for the report! ([f05dd08](https://git.griefed.de/Griefed/ServerPackCreator/commit/f05dd08a6a7dc4980e8932ee3407a731c82a15f3))
+* Add physics-mod and vr-combat to clientside-list. Thanks to @ModernGamingWorld and [@nvb-uy](https://git.griefed.de/nvb-uy) ([c1ba97b](https://git.griefed.de/Griefed/ServerPackCreator/commit/c1ba97b896a3766f4857f982e7390f6ac42f11b9))
+
+
+### 🛠 Fixes
+
+* Use save-dialog instead of open-dialog for config save as ([dd973c9](https://git.griefed.de/Griefed/ServerPackCreator/commit/dd973c9da5e61981ba76e17441cb78fa7065168e))
+
+## [4.2.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.1.5...4.2.0) (2023-07-15)
+
+
+### 💎 Improvements
+
+* Refresh user_jvm_args.txt on launch. Improve readibility. ([46de35d](https://git.griefed.de/Griefed/ServerPackCreator/commit/46de35df6c27efb4bd2c62f6cf358d776d8cd2a9))
+
+
+### 📦 Other
+
+* Add CompletionistIndex, LeaveMyBarsAlone, DurabilityTooltip to list of clientside mods. Thanks to @ModernGamingWorld for the reports! ([5e5e06a](https://git.griefed.de/Griefed/ServerPackCreator/commit/5e5e06aa36d0d9019c821cf245a938e99d88bfe6))
+* Info about real world plugin example ([4b37249](https://git.griefed.de/Griefed/ServerPackCreator/commit/4b37249e04b9dfc773c4a20fe846283477cd2c7f))
+* List jNeedle plugin as example ([3a50c58](https://git.griefed.de/Griefed/ServerPackCreator/commit/3a50c588af3958b97702f7dbbc2549aae3cd09a4))
+* Remove modmenu from list of clientside mods as newer versions appear to be required on the server now. Thanks to [@nvb-uy](https://git.griefed.de/nvb-uy) for the report! ([936eea3](https://git.griefed.de/Griefed/ServerPackCreator/commit/936eea35024548454c49aca482af35fedf91997a))
+* Small typo ([670c655](https://git.griefed.de/Griefed/ServerPackCreator/commit/670c655b6b67ccbfd564144377a675ccd494ec31))
+
+
+### 🛠 Fixes
+
+* **GH#462:** Use -LiteralPath to ensure compatibility to older versions of PowerShell. Thanks to @Frontear for the report! ([280522d](https://git.griefed.de/Griefed/ServerPackCreator/commit/280522dc9d96a3c7fac0e6190ed9bcddf6255330)), closes [GH#462](https://git.griefed.de/Griefed/GH/issues/462)
+
+## [4.1.5](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.1.4...4.1.5) (2023-06-10)
+
+
+### 📦 Other
+
+* Add BetterFog, ImmediatelyFastReforged,StylishEffects,lightspeed,whats-that-slot and rebind_narrator to clientside-mods. Thanks to @ModernGamingWorld for the report! ([d0091a0](https://git.griefed.de/Griefed/ServerPackCreator/commit/d0091a0f286f71639f43ffd82d6962fcc54140fc))
+* Add Connectedness and Reforgium to the clientside-mods list. Thanks to [@nvb-uy](https://git.griefed.de/nvb-uy) for the report! ([8a55a3a](https://git.griefed.de/Griefed/ServerPackCreator/commit/8a55a3abc1e78f40712123115be8df699c7924fa))
+* Add sodium to the clientside-mods list. Thanks to [@nvb-uy](https://git.griefed.de/nvb-uy) for the report! ([a2d4a75](https://git.griefed.de/Griefed/ServerPackCreator/commit/a2d4a75b29ff824d58aab6e807a1883b00f90086))
+* Cleanups ([1d812d4](https://git.griefed.de/Griefed/ServerPackCreator/commit/1d812d485e9a6bdd1550eb53d28c2eb4983cd09c))
+* Remove FindMe from clientside-mods. Thanks to [@nvb-uy](https://git.griefed.de/nvb-uy) for the report! ([ae38e58](https://git.griefed.de/Griefed/ServerPackCreator/commit/ae38e587e333d4edb0b82d870861ad2c23de1182))
+
+
+### 🛠 Fixes
+
+* Update plugin-ecosystem to pf4j's new context-system, removing deprecation-warnings ([320ab88](https://git.griefed.de/Griefed/ServerPackCreator/commit/320ab886721925aad43acdba6d67af7675b18931))
+
+## [4.1.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.1.3...4.1.4) (2023-05-29)
+
+
+### 🛠 Fixes
+
+* Cleanup Java args quotes in Powershell script. Thanks to @nvb-uy/ for the report! ([07b0a02](https://git.griefed.de/Griefed/ServerPackCreator/commit/07b0a0239669763408708466a7ae543a8b770f42))
+
+## [4.1.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.1.2...4.1.3) (2023-05-24)
+
+
+### 📦 Other
+
+* Update fallback clientside mods. Thanks to MoonstruckLucii for the suggestions! ([aec91d6](https://git.griefed.de/Griefed/ServerPackCreator/commit/aec91d6404992e1573d659a6fc30545571a97e17))
+* **deps:** update dependency @babel/eslint-parser to v7.21.8 ([63fcd67](https://git.griefed.de/Griefed/ServerPackCreator/commit/63fcd671208e9ba11686c063fce093c329ffce7d))
+* **deps:** update dependency @quasar/extras to v1.16.3 ([9785c7b](https://git.griefed.de/Griefed/ServerPackCreator/commit/9785c7b8ab4935e2410c4fb28b9524ca449ed838))
+* **deps:** update dependency @types/node to v18.16.3 ([76c3a1f](https://git.griefed.de/Griefed/ServerPackCreator/commit/76c3a1f27856194ca347658290302f5f1950ba3d))
+* **deps:** update dependency core-js to v3.30.1 ([6c71105](https://git.griefed.de/Griefed/ServerPackCreator/commit/6c71105f70053a6abe7a19ee2fd4bf71ad959029))
+* **deps:** update dependency eslint-plugin-vue to v9.11.0 ([b1a228f](https://git.griefed.de/Griefed/ServerPackCreator/commit/b1a228f9833cb4b968dd2be22ebae950fbb9d02a))
+* **deps:** update dependency terser to v5.17.1 ([0f2b6e1](https://git.griefed.de/Griefed/ServerPackCreator/commit/0f2b6e166111222f97ce1be469a7e0f0947c075a))
+
+
+### 🔩 Dependencies
+
+* **deps:** update actions/checkout action to v3.5.2 ([5bed74f](https://git.griefed.de/Griefed/ServerPackCreator/commit/5bed74f6bcb152eb92f430242cb143460cbfdfcf))
+* **deps:** update dependency com.fasterxml.jackson.core:jackson-databind to v2.15.0 ([5043aa5](https://git.griefed.de/Griefed/ServerPackCreator/commit/5043aa536d6756021b1eece9f2ff48adafda6a6c))
+* **deps:** update dependency com.fasterxml.jackson.module:jackson-module-kotlin to v2.15.0 ([50a624b](https://git.griefed.de/Griefed/ServerPackCreator/commit/50a624b2fdcbfd73595c72a3816d489321700097))
+* **deps:** update dependency com.github.gwenn:sqlite-dialect to v0.1.4 ([9dd2e91](https://git.griefed.de/Griefed/ServerPackCreator/commit/9dd2e91acea59e2bac88e2d006731d18b8cc7bce))
+* **deps:** update dependency de.griefed:versionchecker to v1.1.5 ([72e0aff](https://git.griefed.de/Griefed/ServerPackCreator/commit/72e0affb7b77b8ce01361195aaa29c4345017a78))
+* **deps:** update dependency de.jensklingenberg.ktorfit:ktorfit-lib to v1.1.0 ([6b8160b](https://git.griefed.de/Griefed/ServerPackCreator/commit/6b8160b4224d65db2088253d7df1f9ff225de7da))
+* **deps:** update dependency org.panteleyev:jpackage-gradle-plugin to v1.5.2 ([fa51964](https://git.griefed.de/Griefed/ServerPackCreator/commit/fa5196485239e5d787de24001e9d7ed142fcbe08))
+* **deps:** update ghcr.io/griefed/gitlab-ci-cd docker tag to v2.2.10 ([d3ddef4](https://git.griefed.de/Griefed/ServerPackCreator/commit/d3ddef4d17ce132826829d7621f9659953bc3877))
+* **deps:** update gradle/gradle-build-action action to v2.4.2 ([b8180d1](https://git.griefed.de/Griefed/ServerPackCreator/commit/b8180d14c142ad5720623d6f8d0dd545035460b8))
+* **deps:** update jetbrains/qodana-action action to v2023 ([94a6b64](https://git.griefed.de/Griefed/ServerPackCreator/commit/94a6b64b23b3b319cccdee49cf391f5a3395c2d2))
+* **deps:** update junit5 monorepo to v5.9.3 ([76fa26a](https://git.griefed.de/Griefed/ServerPackCreator/commit/76fa26ac77ad53a9692d7aebce375f23eddfddbd))
+* **deps:** update kotlin monorepo to v1.8.21 ([37ffa84](https://git.griefed.de/Griefed/ServerPackCreator/commit/37ffa8493f17baf1c0229ec773e739d90a2cc302))
+* **deps:** update spring boot to v2.7.11 ([af4311b](https://git.griefed.de/Griefed/ServerPackCreator/commit/af4311bb04975964e3f09d179c32bc659ec8b272))
+
+
+### 🛠 Fixes
+
+* **GH#460:** Source JAVA_ARGS from variables in ps1. Thanks to @Frontear for the report! ([b810ec0](https://git.griefed.de/Griefed/ServerPackCreator/commit/b810ec083181782684a84282d2ec47af18f3b402)), closes [GH#460](https://git.griefed.de/Griefed/GH/issues/460)
+
+## [4.1.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.1.1...4.1.2) (2023-04-30)
+
+
+### 🛠 Fixes
+
+* Remove configured from the default list of clientside-only mods. Thanks to [@nvb-uy](https://git.griefed.de/nvb-uy) for the report! ([f84db90](https://git.griefed.de/Griefed/ServerPackCreator/commit/f84db90cd088c5e1b909821aaf3e1a51bfc8f570))
+
+## [4.1.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.1.0...4.1.1) (2023-04-26)
+
+
+### 👀 Reverts
+
+* Remove Konkrete from default list of clientside-only mods list. Thanks to @ACrazyD for the report! ([9b10d59](https://git.griefed.de/Griefed/ServerPackCreator/commit/9b10d59d5d810b3922b105c8ef2fab1895bf0a6b))
+
+## [4.1.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.0.6...4.1.0) (2023-04-25)
+
+
+### 💎 Improvements
+
+* Tell people to backup their ServerPackCreator directory in their home-directory, if they are considering using alphas or betas. ([6c35e22](https://git.griefed.de/Griefed/ServerPackCreator/commit/6c35e22d8665f887262b0a56509fffcb27e1e366))
+
+
+### 🦊 CI/CD
+
+* Use output from Java setup for path acquisition ([c3ac1b7](https://git.griefed.de/Griefed/ServerPackCreator/commit/c3ac1b7af0a9bf1a888ea6b2e9dc0b295ee093ce))
+
+## [4.0.6](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.0.5...4.0.6) (2023-04-24)
+
+
+### 🛠 Fixes
+
+* **GH#458:** Persistently load and store properties ([c60d13f](https://git.griefed.de/Griefed/ServerPackCreator/commit/c60d13f1bccd2a8155b2eb9722299d0a332f501f)), closes [GH#458](https://git.griefed.de/Griefed/GH/issues/458)
+
+## [4.0.5](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.0.4...4.0.5) (2023-04-08)
+
+
+### 📦 Other
+
+* Add note about pre-releases to pre-release description ([1655c4b](https://git.griefed.de/Griefed/ServerPackCreator/commit/1655c4b482b12697ddb5f2924b8a722bfce8d0fc))
+* Ensure release notes never exceed the limit. Add information about installers and pre-releases. ([2084e5b](https://git.griefed.de/Griefed/ServerPackCreator/commit/2084e5b7d7dbfc23a3c31932a22e1bed37cb1bf8))
+* **deps:** update dependency @types/node to v18.15.11 ([baf1400](https://git.griefed.de/Griefed/ServerPackCreator/commit/baf1400e3d97c29cd705f70ea53322c15848e7ac))
+* **deps:** update dependency axios to v1.3.4 ([a258163](https://git.griefed.de/Griefed/ServerPackCreator/commit/a258163bc1acbe9e58e88d4cdf947ecf4c9020f3))
+* **deps:** update dependency eslint-plugin-vue to v9.10.0 ([e23feef](https://git.griefed.de/Griefed/ServerPackCreator/commit/e23feefad95d9eec799864df0438d6d407c76471))
+* **deps:** update dependency quasar to v2.11.10 ([a9a8507](https://git.griefed.de/Griefed/ServerPackCreator/commit/a9a850771bf2f9dbf12aa39797050181a33ced0d))
+* **deps:** update dependency terser to v5.16.8 ([e85fa56](https://git.griefed.de/Griefed/ServerPackCreator/commit/e85fa5698a2464170b9b8648fc919400341ea099))
+* **deps:** update dependency vue to v3.2.47 ([e17b879](https://git.griefed.de/Griefed/ServerPackCreator/commit/e17b879ee1e4ed5d02f81a2148c906f7303d4d4f))
+* **deps:** update npm to v9 ([68280af](https://git.griefed.de/Griefed/ServerPackCreator/commit/68280afb1610a59da2590f02a2c1d1054c026256))
+
+
+### 🔩 Dependencies
+
+* **deps:** update actions/checkout action to v3.5.0 ([7f80a00](https://git.griefed.de/Griefed/ServerPackCreator/commit/7f80a0000d416051aa6009ba69881aa7cd1cae5c))
+* **deps:** update actions/setup-java action to v3.11.0 ([b86c848](https://git.griefed.de/Griefed/ServerPackCreator/commit/b86c848c619d9ebc0be85a37ebf0f03b375b5b76))
+* **deps:** update actions/upload-artifact action to v3.1.2 ([89d838e](https://git.griefed.de/Griefed/ServerPackCreator/commit/89d838e35e0ca36d8a1776cc2306231dab8450fe))
+* **deps:** update dependency com.fasterxml.jackson.core:jackson-databind to v2.14.2 ([b024d99](https://git.griefed.de/Griefed/ServerPackCreator/commit/b024d99174d732b850d6fd5a596517f086a2ae95))
+* **deps:** update dependency com.fasterxml.jackson.module:jackson-module-kotlin to v2.14.2 ([7e545ec](https://git.griefed.de/Griefed/ServerPackCreator/commit/7e545ec98548c60ec157ed1f609c1c587ed9dae6))
+* **deps:** update dependency de.jensklingenberg.ktorfit:ktorfit-lib to v1.0.1 ([c574a8a](https://git.griefed.de/Griefed/ServerPackCreator/commit/c574a8a6ed56e60faeb34d5707f7ba762a5bb4ad))
+* **deps:** update dependency io.github.microutils:kotlin-logging to v3.0.5 ([98551a8](https://git.griefed.de/Griefed/ServerPackCreator/commit/98551a8292af9943b8ee38c0cf00dd6ba5249e5e))
+* **deps:** update dependency net.lingala.zip4j:zip4j to v2.11.5 ([4393473](https://git.griefed.de/Griefed/ServerPackCreator/commit/439347306c85372cf907095cdd31535525373602))
+* **deps:** update dependency org.apache.activemq:artemis-jms-server to v2.28.0 ([5acf135](https://git.griefed.de/Griefed/ServerPackCreator/commit/5acf13595789c201b48f8a3d39b9ccc3e4ce28d7))
+* **deps:** update dependency org.apache.logging.log4j:log4j-core to v2.20.0 ([780c69b](https://git.griefed.de/Griefed/ServerPackCreator/commit/780c69bb3cce5b8c0c2352d842afbe813a310395))
+* **deps:** update dependency org.jetbrains.dokka:dokka-gradle-plugin to v1.8.10 ([c8f0bce](https://git.griefed.de/Griefed/ServerPackCreator/commit/c8f0bcea52c9369e07c4611744f43989fa89d1a8))
+* **deps:** update dependency org.panteleyev:jpackage-gradle-plugin to v1.5.1 ([0351a0e](https://git.griefed.de/Griefed/ServerPackCreator/commit/0351a0e4357271ad3b23a227dcdec58984f760b3))
+* **deps:** update dependency org.pf4j:pf4j to v3.9.0 ([35b8f88](https://git.griefed.de/Griefed/ServerPackCreator/commit/35b8f886d25e4e19969f9f0371bc6cd51ce28ac8))
+* **deps:** update dependency org.xerial:sqlite-jdbc to v3.41.2.1 ([af153e8](https://git.griefed.de/Griefed/ServerPackCreator/commit/af153e8dd046b14a794fd213dfaedc889ab74983))
+* **deps:** update ghcr.io/griefed/baseimage-ubuntu-jdk17-kotlin docker tag to v1.0.4 ([0f476fe](https://git.griefed.de/Griefed/ServerPackCreator/commit/0f476fe9e9ffdc14d9401c6e36926f4d2d0476cd))
+* **deps:** update ghcr.io/griefed/gitlab-ci-cd docker tag to v2.2.9 ([0d747d9](https://git.griefed.de/Griefed/ServerPackCreator/commit/0d747d975ce8d0e14ca69f66ac77f549e421d2ac))
+* **deps:** update gradle/gradle-build-action action to v2.4.0 ([b2bf38b](https://git.griefed.de/Griefed/ServerPackCreator/commit/b2bf38b19d91b2a118a75f8ae41f812daa5c2614))
+* **deps:** update jamesives/github-pages-deploy-action action to v4.4.1 ([2dfc687](https://git.griefed.de/Griefed/ServerPackCreator/commit/2dfc6878cf87ac0ca274fd7adba4e6241df14597))
+* **deps:** update jetbrains/qodana-action action to v2022.3.4 ([6798c9b](https://git.griefed.de/Griefed/ServerPackCreator/commit/6798c9b1bc3576b227c0b189261519385f8fa68f))
+* **deps:** update junit5 monorepo to v5.9.2 ([677d87f](https://git.griefed.de/Griefed/ServerPackCreator/commit/677d87f93a88cc7dfe97220813aa19d96a29c59b))
+* **deps:** update kotlin monorepo to v1.8.20 ([3e6c856](https://git.griefed.de/Griefed/ServerPackCreator/commit/3e6c856f557d73370e5a3f742e86ad7c77595d3d))
+* **deps:** update plugin io.github.gradle-nexus.publish-plugin to v1.3.0 ([328cc8e](https://git.griefed.de/Griefed/ServerPackCreator/commit/328cc8edc44d7911b6bd7d6527bfb764f9e90ddc))
+* **deps:** update sergeysova/jq-action action to v2.3.0 ([05fb047](https://git.griefed.de/Griefed/ServerPackCreator/commit/05fb04758be339b8752bc4e466e10b72c3407dff))
+* **deps:** update spring boot to v2.7.10 ([919340d](https://git.griefed.de/Griefed/ServerPackCreator/commit/919340d56e185031b7c5f923628b6529dadaacc8))
+* **deps:** update tj-actions/branch-names action to v6.5 ([6f28719](https://git.griefed.de/Griefed/ServerPackCreator/commit/6f28719ba98c09e54057d373404f5084bf64a74f))
+
+
+### 🦊 CI/CD
+
+* Add portable release packages for Windows and Linux ([5336c47](https://git.griefed.de/Griefed/ServerPackCreator/commit/5336c47683d61531970256c52c53246ab5de8c2b))
+* Correctlry upload assets. Create portable assets in test workflow ([3cecebe](https://git.griefed.de/Griefed/ServerPackCreator/commit/3cecebe2d30f7edc1640af216de6825a311f35da))
+* Hopefully fix all dependency issue for maven publishing ([67538de](https://git.griefed.de/Griefed/ServerPackCreator/commit/67538de80c4766cd18a2e05813b4cd983f5d592f))
+* Move installer builds to separate jobs to better handle each OS as well as artifacts ([58b7e97](https://git.griefed.de/Griefed/ServerPackCreator/commit/58b7e9746d4612ef0807a0605c01c2079959c7f6))
+
+
+### 🛠 Fixes
+
+* **CI:** Provide PKG for macOS and AppImage for Linux ([9b11dbb](https://git.griefed.de/Griefed/ServerPackCreator/commit/9b11dbbccdf39808ac13eb26972c35df3fcad5e4))
+
 ## [4.0.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.0.3...4.0.4) (2023-03-18)
 
 
