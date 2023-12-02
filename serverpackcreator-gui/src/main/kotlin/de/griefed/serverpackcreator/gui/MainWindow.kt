@@ -103,9 +103,10 @@ class MainWindow(
                     }
                 }
             } else {
-                if (!apiWrapper.apiProperties.preRelease || migrationManager.migrationMessages.isNotEmpty()) {
+                if (apiWrapper.apiProperties.preRelease || migrationManager.migrationMessages.isNotEmpty()) {
                     main.displayMigrationMessages()
-                } else if (guiProps.showTipOnStartup) {
+                }
+                if (guiProps.showTipOnStartup) {
                     main.showTip()
                 }
             }
