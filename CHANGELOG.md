@@ -1,3 +1,16 @@
+## [5.0.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0...5.0.1) (2023-12-02)
+
+
+### 🦊 CI/CD
+
+* Make news job only depend on release ([f577f24](https://git.griefed.de/Griefed/ServerPackCreator/commit/f577f24056eda5ebb07807a8932499e475c023ef))
+* News post in Discord on pre-releases, too ([64ff7d1](https://git.griefed.de/Griefed/ServerPackCreator/commit/64ff7d15ed41333c810273e6662f4cd2cc3eb018))
+
+
+### 🛠 Fixes
+
+* Separate migration and tip dialogs ([df78b2c](https://git.griefed.de/Griefed/ServerPackCreator/commit/df78b2c75da9e81bd64cd562f496f68a17ba2aea))
+
 ## [5.0.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/4.3.2...5.0.0) (2023-12-02)
 
 
