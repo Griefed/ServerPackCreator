@@ -44,7 +44,7 @@ jobs:
       - uses: actions/upload-artifact@v3.1.3
         if: ${{ always() }}
         with:
-          name: build-artifacts
+          name: build-artifacts-${{ matrix.os }}
           path: |
             build
             buildSrc/build
