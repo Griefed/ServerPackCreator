@@ -1,3 +1,26 @@
+## [5.1.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.1...5.1.0) (2023-12-03)
+
+
+### 📦 Other
+
+* Update manifests ([088b79b](https://git.griefed.de/Griefed/ServerPackCreator/commit/088b79bfd799d7fcdb3e846743ff942faedbce25))
+* Use correct paths for manifest updates ([0f82c9a](https://git.griefed.de/Griefed/ServerPackCreator/commit/0f82c9a98523a3fe00dd1e16acdd4eff75865539))
+
+
+### 🦊 CI/CD
+
+* Have news depend on preparations for tag availability ([b0cbd0e](https://git.griefed.de/Griefed/ServerPackCreator/commit/b0cbd0ed538823c81dc873177f4da00a14b509d1))
+
+
+### 🚀 Features
+
+* Java paths editor in settings allows for easier testing of server packs ([4ce3712](https://git.griefed.de/Griefed/ServerPackCreator/commit/4ce37128a803bb3210f892c49afe0a8d40bed625))
+
+
+### 🛠 Fixes
+
+* Accumulate props instead of overwriting values with blanks ([cb30d6c](https://git.griefed.de/Griefed/ServerPackCreator/commit/cb30d6cae306d34128a6d4a40f839ac9e0907d72))
+
 ## [5.0.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.0...5.0.1) (2023-12-02)
 
 
