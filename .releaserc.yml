@@ -59,7 +59,7 @@ analyzeCommits:
       - type: test      # Adding missing tests or correcting existing tests
         release: false
       - type: improv    # A change which improves an already existing feature or aspect
-        release: minor
+        release: patch
       - type: deps      # Dependency changes/updates/downgrades
         release: false
 
