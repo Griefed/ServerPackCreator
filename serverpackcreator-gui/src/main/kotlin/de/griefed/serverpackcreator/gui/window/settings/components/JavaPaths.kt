@@ -1,16 +1,22 @@
 package de.griefed.serverpackcreator.gui.window.settings.components
 
-import de.griefed.serverpackcreator.api.ApiProperties
+import Gui
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.components.ConvenientJTable
 import java.util.*
 import javax.swing.event.TableModelListener
-import kotlin.collections.HashMap
 
-class JavaPaths(guiProps: GuiProps, private val apiProperties: ApiProperties, tableModelListener: TableModelListener): ConvenientJTable(guiProps) {
+class JavaPaths(guiProps: GuiProps, tableModelListener: TableModelListener) : ConvenientJTable(
+    guiProps,
+    Gui.settings_global_javapaths_key.toString(),
+    Gui.settings_global_javapaths_value.toString()
+) {
 
     init {
         addTableModelListener(tableModelListener)
+        columnModel.getColumn(0).minWidth = 50
+        columnModel.getColumn(0).width = 150
+        columnModel.getColumn(0).maxWidth = 200
     }
 
     override fun loadData(data: HashMap<String, String>, clearDataBeforeLoad: Boolean) {

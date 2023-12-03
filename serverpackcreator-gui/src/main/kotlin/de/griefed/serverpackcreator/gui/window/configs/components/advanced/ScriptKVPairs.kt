@@ -19,6 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui.window.configs.components.advanced
 
+import Gui
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.components.ConvenientJTable
 import de.griefed.serverpackcreator.gui.window.configs.ConfigEditor
@@ -29,7 +30,11 @@ import de.griefed.serverpackcreator.gui.window.configs.ConfigEditor
  *
  * @author Griefed
  */
-class ScriptKVPairs(guiProps: GuiProps, configEditor: ConfigEditor) : ConvenientJTable(guiProps) {
+class ScriptKVPairs(guiProps: GuiProps, configEditor: ConfigEditor) : ConvenientJTable(
+    guiProps,
+    Gui.createserverpack_gui_createserverpack_scriptsettings_table_column_variable.toString(),
+    Gui.createserverpack_gui_createserverpack_scriptsettings_table_column_value.toString()
+) {
 
     init {
         addTableModelListener { configEditor.validateInputFields() }

@@ -19,7 +19,6 @@
  */
 package de.griefed.serverpackcreator.gui.components
 
-import Gui
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.window.configs.components.ResizeIndicatorScrollPane
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
@@ -55,10 +54,12 @@ import javax.swing.text.JTextComponent
  */
 abstract class ConvenientJTable(
     guiProps: GuiProps,
+    keyLabel: String = "Key",
+    valueLabel: String = "Value",
     tableModel: DefaultTableModel = DefaultTableModel(
         arrayOf<Any>(
-            Gui.createserverpack_gui_createserverpack_scriptsettings_table_column_variable.toString(),
-            Gui.createserverpack_gui_createserverpack_scriptsettings_table_column_value.toString(),
+            keyLabel,
+            valueLabel,
             "", "", "", "", "", ""
         ),
         1

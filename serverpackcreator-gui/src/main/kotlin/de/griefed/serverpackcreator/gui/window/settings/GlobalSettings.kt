@@ -208,7 +208,7 @@ class GlobalSettings(
 
     private val javaPathsIcon = StatusIcon(guiProps, Gui.settings_global_javapaths_tooltip.toString())
     private val javaPathsLabel = ElementLabel(Gui.settings_global_javapaths_label.toString())
-    private val javaPathsSetting = JavaPaths(guiProps, apiProperties, tableModelListener)
+    private val javaPathsSetting = JavaPaths(guiProps, tableModelListener)
     private val javaPathsRevert = BalloonTipButton(null, guiProps.revertIcon, Gui.settings_revert.toString(), guiProps) { javaPathsSetting.loadData(apiProperties.javaPaths) }
 
     init {
