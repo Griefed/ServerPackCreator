@@ -905,7 +905,7 @@ actual class ApiProperties(
                 }
                 position = key.replace(pScriptVariablesJavaPaths, "").toIntOrNull()
                 newKey = pScriptVariablesJavaPaths + position
-                if (position != null && 8 < position!! && position!! < 256) {
+                if (position != null && 8 <= position!! && position!! < 256) {
                     internalProps.setProperty(newKey, value)
                     paths[newKey] = value
                 }
@@ -1454,7 +1454,7 @@ actual class ApiProperties(
     var serverPacksDirectory: File = File(homeDirectory, "server-packs")
         get() {
             val prop = internalProps.getProperty(pConfigurationDirectoriesServerPacks)
-            val directory: File = if (prop.isEmpty() || prop.matches(serverPacksRegex)) {
+            val directory: File = if (prop.isNullOrBlank() || prop.matches(serverPacksRegex)) {
                 defaultServerPacksDirectory()
             } else {
                 File(internalProps.getProperty(pConfigurationDirectoriesServerPacks))
@@ -1906,9 +1906,15 @@ actual class ApiProperties(
             log.warn("Properties-file does not exist: ${propertiesFile.absolutePath}.")
             return
         }
+        props.entries.removeIf { entry -> entry.value.toString().isBlank() }
         try {
+            val tempProps = Properties()
             propertiesFile.inputStream().use {
-                props.load(it)
+                tempProps.load(it)
+            }
+            tempProps.entries.removeIf { entry -> entry.value.toString().isBlank() }
+            for ((key, value) in tempProps.entries) {
+                props[key] = value
             }
             log.info("Loaded properties from $propertiesFile.")
         } catch (ex: Exception) {

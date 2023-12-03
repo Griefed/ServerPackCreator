@@ -33,6 +33,7 @@ import java.awt.BorderLayout
 import java.awt.event.ActionListener
 import javax.swing.event.ChangeListener
 import javax.swing.event.DocumentEvent
+import javax.swing.event.TableModelListener
 
 /**
  * @author Griefed
@@ -56,8 +57,9 @@ class SettingsEditorsTab(
     }
     private val actionListener = ActionListener { checkTimer.restart() }
     private val changeListener = ChangeListener { checkTimer.restart() }
+    private val tableModelListener = TableModelListener { checkTimer.restart() }
 
-    val global = GlobalSettings(guiProps, apiProperties, componentResizer, mainFrame, documentChangeListener, actionListener, controlPanel)
+    val global = GlobalSettings(guiProps, apiProperties, componentResizer, mainFrame, documentChangeListener, actionListener, tableModelListener, controlPanel)
     val webservice = WebserviceSettings(guiProps, apiProperties, mainFrame, documentChangeListener, changeListener, controlPanel)
     val gui = GuiSettings(guiProps, actionListener, changeListener, themeManager, controlPanel)
     val title = SettingsTitle(guiProps)
