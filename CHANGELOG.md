@@ -1,3 +1,15 @@
+## [5.1.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.0...5.1.1) (2023-12-03)
+
+
+### 💎 Improvements
+
+* Add tip for Java Paths ([b6d0a0d](https://git.griefed.de/Griefed/ServerPackCreator/commit/b6d0a0dd07b197990209b84b8a8979d82803baba))
+
+
+### 🦊 CI/CD
+
+* Generate patch-release on improvement ([6203c21](https://git.griefed.de/Griefed/ServerPackCreator/commit/6203c21db591eeb2a1a15ca0c4b9283c6a091a07))
+
 ## [5.1.0](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.0.1...5.1.0) (2023-12-03)
 
 
