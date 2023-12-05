@@ -18,7 +18,7 @@ jobs:
 
       - name: Get branch name
         id: branch-name
-        uses: tj-actions/branch-names@v7.0.5
+        uses: tj-actions/branch-names@v7.0.7
 
       - name: Set up JDK 21
         uses: actions/setup-java@v3.13.0

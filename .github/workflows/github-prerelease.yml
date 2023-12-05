@@ -24,7 +24,7 @@ jobs:
       # EXTRACT TAG FROM PUSH
       - name: Get tag
         id: tag
-        uses: tj-actions/branch-names@v7.0.5
+        uses: tj-actions/branch-names@v7.0.7
       - name: Use tag
         run: echo ${{steps.tag.outputs.tag}}
 
