@@ -1,3 +1,10 @@
+## [5.1.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.1...5.1.2) (2023-12-08)
+
+
+### 🛠 Fixes
+
+* Add ServerPackCreator to menu in Linux ([2def8ef](https://git.griefed.de/Griefed/ServerPackCreator/commit/2def8efbc183e22a7b815ef809c3a39246fe06b8))
+
 ## [5.1.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.0...5.1.1) (2023-12-03)
 
 
