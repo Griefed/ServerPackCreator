@@ -426,11 +426,11 @@ jobs:
           mkdir -p serverpackcreator-app/build/dist/ServerPackCreator.AppDir/usr/icons/hicolor/scalable && \
           cp -rf serverpackcreator-app/build/dist/ServerPackCreator/* \
                  serverpackcreator-app/build/dist/ServerPackCreator.AppDir && \
-          cp serverpackcreator-app/jpackagerResources/ServerPackCreator.desktop \
+          cp serverpackcreator-app/jpackagerResources/appimage.desktop \
              serverpackcreator-app/build/dist/ServerPackCreator.AppDir/usr/share/applications/ServerPackCreator.desktop && \
-          cp serverpackcreator-app/jpackagerResources/serverpackcreator.png \
+          cp serverpackcreator-app/jpackagerResources/appimage.png \
              serverpackcreator-app/build/dist/ServerPackCreator.AppDir/usr/icons/hicolor/512x512/ServerPackCreator.png && \
-          cp serverpackcreator-app/jpackagerResources/serverpackcreator.svg \
+          cp serverpackcreator-app/jpackagerResources/appimage.svg \
              serverpackcreator-app/build/dist/ServerPackCreator.AppDir/usr/icons/hicolor/scalable/ServerPackCreator.svg && \
           cd serverpackcreator-app/build/dist/ServerPackCreator.AppDir && \
             ln -s bin/ServerPackCreator \
