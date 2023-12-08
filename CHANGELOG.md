@@ -1,3 +1,10 @@
+## [5.1.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.2...5.1.3) (2023-12-08)
+
+
+### 🛠 Fixes
+
+* Re-add AppImage dekstop and icons ([a241067](https://git.griefed.de/Griefed/ServerPackCreator/commit/a241067319972fecff35a5477b7fdc3a13c9a039))
+
 ## [5.1.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.1...5.1.2) (2023-12-08)
 
 
