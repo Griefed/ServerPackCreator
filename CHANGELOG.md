@@ -1,3 +1,13 @@
+## [5.1.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.3...5.1.4) (2023-12-10)
+
+
+### 🛠 Fixes
+
+* Allow and improve inclusion-specs entering correctly ([80e6f05](https://git.griefed.de/Griefed/ServerPackCreator/commit/80e6f0544b83be1f18c1be19450c48ab6e862e4b))
+* Prefix SQLite database path ([973cd28](https://git.griefed.de/Griefed/ServerPackCreator/commit/973cd28455f5b726d96de7843eeb01dbf8d2ea98))
+* Prevent GUI freeze after unavailable server installer detection ([ccba8c0](https://git.griefed.de/Griefed/ServerPackCreator/commit/ccba8c091cf309893ecf6bdbbe3586bff02761dd))
+* Update template config to reflect current state ([613a43c](https://git.griefed.de/Griefed/ServerPackCreator/commit/613a43c829a633c3cc9a7a6ae0202e4c28f6badb))
+
 ## [5.1.3](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.2...5.1.3) (2023-12-08)
 
 
