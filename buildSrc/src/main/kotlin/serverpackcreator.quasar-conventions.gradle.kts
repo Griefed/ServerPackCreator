@@ -39,10 +39,8 @@ tasks.getByName("installNode").finalizedBy(
 )
 
 tasks.register("copyDist", Copy::class) {
-    val serverPackCreator = projectDir.absoluteFile.parentFile
-    val spa = File(File(projectDir.absoluteFile,"dist"),"spa").absoluteFile
-    from(spa)
-    into(serverPackCreator.path + File.separator + "serverpackcreator-app" + File.separator + "src" + File.separator + "main" + File.separator + "resources" + File.separator + "static")
+    from(projectDir.resolve("dist/spa"))
+    into(rootDir.resolve("serverpackcreator-web/src/main/resources/static"))
 }
 
 tasks.getByName("build").finalizedBy(
