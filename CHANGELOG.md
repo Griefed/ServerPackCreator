@@ -1,3 +1,11 @@
+## [5.1.5](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.4...5.1.5) (2023-12-10)
+
+
+### 🛠 Fixes
+
+* Allow selection of LegacyFabric and NeoForge in webservice ([cf18341](https://git.griefed.de/Griefed/ServerPackCreator/commit/cf183419de28acc5a434b6fcbe4c36fe4a69334d))
+* Include web frontend resources ([abb3f79](https://git.griefed.de/Griefed/ServerPackCreator/commit/abb3f79253b925573eda72847e2f802f91feb699))
+
 ## [5.1.4](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.3...5.1.4) (2023-12-10)
 
 
