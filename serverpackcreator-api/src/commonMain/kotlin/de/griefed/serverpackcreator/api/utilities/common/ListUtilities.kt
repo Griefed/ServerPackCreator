@@ -71,11 +71,12 @@ class ListUtilities {
         while (true) {
             stringArray = readln()
             if (stringArray.isEmpty()) {
-                return result
+                break
             } else {
                 result.add(stringArray)
             }
         }
+        return result
     }
 
     /**
