@@ -1,3 +1,4 @@
+
 import de.griefed.common.gradle.LicenseAgreementRenderer
 import de.griefed.common.gradle.SubprojectLicenseFilter
 import org.gradle.plugins.ide.idea.model.IdeaLanguageLevel
@@ -41,8 +42,12 @@ allprojects {
 }
 evaluationDependsOnChildren()
 
-project("serverpackcreator-app").tasks.getByName("build").mustRunAfter(
+project("serverpackcreator-web").tasks.getByName("build").mustRunAfter(
     project("serverpackcreator-web-frontend").tasks.getByName("build")
+)
+
+project("serverpackcreator-app").tasks.getByName("build").mustRunAfter(
+    project("serverpackcreator-web").tasks.getByName("build")
 )
 
 nexusPublishing {
