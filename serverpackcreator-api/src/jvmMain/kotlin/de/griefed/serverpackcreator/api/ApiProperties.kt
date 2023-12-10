@@ -1187,9 +1187,12 @@ actual class ApiProperties(
     @Suppress("MemberVisibilityCanBePrivate")
     var jdbcDatabaseUrl: String = "jdbc:sqlite:serverpackcreator.db"
         get() {
-            var dbPath = internalProps.getProperty(pSpringDatasourceUrl, "").replace("jdbc:sqlite:", "")
-            if (dbPath.isEmpty()) {
+            var dbPath = internalProps.getProperty(pSpringDatasourceUrl, "")
+            if (dbPath.replace("jdbc:sqlite:", "").isEmpty()) {
                 dbPath = "jdbc:sqlite:${File(homeDirectory, "serverpackcreator.db").absoluteFile}"
+            }
+            if (!dbPath.startsWith("jdbc:sqlite:")) {
+                dbPath = "jdbc:sqlite:$dbPath"
             }
             internalProps.setProperty(pSpringDatasourceUrl, dbPath)
             field = dbPath
