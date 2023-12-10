@@ -1287,6 +1287,7 @@ class ConfigEditor(
      *
      * @author Griefed
      */
+    @OptIn(DelicateCoroutinesApi::class)
     fun checkServer(): Boolean {
         var okay = true
         val mcVersion = mcVersionSetting.selectedItem!!.toString()
@@ -1305,13 +1306,15 @@ class ConfigEditor(
                 modloader,
                 modloaderVersion
             )
-            JOptionPane.showMessageDialog(
-                this.panel.parent.parent,
-                message,
-                title,
-                JOptionPane.WARNING_MESSAGE,
-                guiProps.largeWarningIcon
-            )
+            GlobalScope.launch(Dispatchers.Swing) {
+                JOptionPane.showMessageDialog(
+                    tabbedConfigsTab.panel,
+                    message,
+                    title,
+                    JOptionPane.WARNING_MESSAGE,
+                    guiProps.largeWarningIcon
+                )
+            }
             okay = false
         }
         return okay

@@ -452,6 +452,9 @@ class ConfigurationEditor(
      */
     private fun newCustomInclusionsList(): List<InclusionSpecification> {
         val inclusions = mutableListOf<InclusionSpecification>()
+        cliLog(Cli.cli_copyfiles_entries_custom_intro.toString())
+        cliLog(Cli.cli_copyfiles_entries_custom_intro2.toString())
+        cliLog(Cli.cli_copyfiles_entries_custom_intro3.toString())
         val custom: List<String> = utilities.listUtilities.readStringList()
         var split: List<String>
         cliLog(Cli.cli_answer_input_newline.toString())
@@ -459,12 +462,7 @@ class ConfigurationEditor(
             split = custom[i].split(",")
             inclusions.add(InclusionSpecification(split[0],split[1],split[2],split[3]))
         }
-        for (i in inclusions.indices) {
-            cliLog("  ${i + 1}. ${inclusions[i].source}")
-            cliLog("  ${i + 1}. ${inclusions[i].destination}")
-            cliLog("  ${i + 1}. ${inclusions[i].inclusionFilter}")
-            cliLog("  ${i + 1}. ${inclusions[i].exclusionFilter}")
-        }
+        logInclusionSpecs(inclusions)
         return inclusions
     }
 
@@ -486,12 +484,7 @@ class ConfigurationEditor(
             if (inclusions.isNotEmpty()) {
                 cliLog(Cli.cli_copyfiles_entries.toString())
                 cliLog()
-                for (inclusion in inclusions) {
-                    cliLog(inclusion.source)
-                    cliLog(inclusion.destination ?: "null")
-                    cliLog(inclusion.inclusionFilter ?: "null")
-                    cliLog(inclusion.exclusionFilter ?: "null")
-                }
+                logInclusionSpecs(inclusions)
                 cliLog()
                 cliLog(Cli.cli_copyfiles_over.toString())
                 selection = getDecision(scanner, 1, 3)
@@ -509,20 +502,23 @@ class ConfigurationEditor(
             cliLog(Cli.cli_answer.toString(), false)
         } while (!utilities.booleanUtilities.readBoolean())
         cliLog(Cli.cli_list_yours.toString())
-        for (i in inclusions.indices) {
-            cliLog("  ${i + 1}. ${inclusions[i]}")
-        }
+        logInclusionSpecs(inclusions)
         cliLog()
+    }
+
+    private fun logInclusionSpecs(inclusions: List<InclusionSpecification>) {
+        for (i in inclusions.indices) {
+            cliLog("${i + 1}. ${Cli.cli_copyfiles_entries_prefix_source}: ${inclusions[i].source}")
+            cliLog("${i + 1}. ${Cli.cli_copyfiles_entries_prefix_destination}: ${inclusions[i].destination}")
+            cliLog("${i + 1}. ${Cli.cli_copyfiles_entries_prefix_inclusion}: ${inclusions[i].inclusionFilter}")
+            cliLog("${i + 1}. ${Cli.cli_copyfiles_entries_prefix_exclusion}: ${inclusions[i].exclusionFilter}")
+            cliLog("")
+        }
     }
 
     private fun editInclusions(scanner: Scanner, inclusions: MutableList<InclusionSpecification>) {
         cliLog(Cli.cli_list_entries.toString())
-        for (i in inclusions.indices) {
-            cliLog("($i)           Source : ${inclusions[i].source}")
-            cliLog("($i)      Destination : ${inclusions[i].source}")
-            cliLog("($i) Inclusion-Filter : ${inclusions[i].source}")
-            cliLog("($i) Exclusion-Filter : ${inclusions[i].source}")
-        }
+        logInclusionSpecs(inclusions)
         val max = inclusions.size - 1
         do {
             cliLog(Cli.cli_list_which.toString())
@@ -547,12 +543,7 @@ class ConfigurationEditor(
             cliLog(Cli.cli_list_satisfied.toString())
             cliLog(Cli.cli_answer.toString(), false)
         } while (!utilities.booleanUtilities.readBoolean())
-        for (inclusion in inclusions) {
-            cliLog(inclusion.source)
-            cliLog(inclusion.destination ?: "null")
-            cliLog(inclusion.inclusionFilter ?: "null")
-            cliLog(inclusion.exclusionFilter ?: "null")
-        }
+        logInclusionSpecs(inclusions)
         cliLog(Cli.cli_list_success.toString())
     }
 
@@ -625,20 +616,6 @@ class ConfigurationEditor(
         cliLog(Cli.cli_answer_input(serverPropertiesPath))
         cliLog()
         return serverPropertiesPath
-    }
-
-    /**
-     * Get the users decision on whether they want to include the modloader server installation.
-     *
-     * @return `true` if the user wants the modloader server to be installed.
-     * @author Griefed
-     */
-    private fun installModloaderServer(): Boolean {
-        cliLog(Cli.cli_server_intro.toString())
-        cliLog(Cli.cli_server_input.toString(), false)
-        val includeServerInstallation: Boolean = utilities.booleanUtilities.readBoolean()
-        cliLog(Cli.cli_answer_input(includeServerInstallation))
-        return includeServerInstallation
     }
 
     /**
@@ -800,9 +777,9 @@ class ConfigurationEditor(
         cliLog(Cli.cli_config_save_intro.toString())
         if (utilities.booleanUtilities.readBoolean()) {
             cliLog(Cli.cli_config_save_name.toString())
-            val customFileName = File(utilities.stringUtilities.pathSecureText(getNextLine(scanner)))
+            val customFileName = File(utilities.stringUtilities.pathSecureText(getNextLine(scanner))).absoluteFile
             packConfig.save(customFileName, apiProperties)
-            cliLog(Cli.cli_config_save_saved(customFileName))
+            cliLog(Cli.cli_config_save_saved(customFileName.absolutePath))
             cliLog(Cli.cli_config_save_info.toString())
             cliLog(Cli.cli_config_save_load(customFileName))
         } else {

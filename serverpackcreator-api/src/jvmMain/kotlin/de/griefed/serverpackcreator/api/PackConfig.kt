@@ -41,8 +41,7 @@ private const val serverPackSuffixComment =
 
 private const val minecraftVersionComment =
     "\n Which Minecraft version to use. Example: \"1.16.5\"." +
-    "\n Automatically set when projectID,fileID for modpackDir has been specified." +
-    "\n Only needed if includeServerInstallation is true."
+    "\n Automatically set when projectID,fileID for modpackDir has been specified."
 
 private const val modloaderComment =
     "\n Which modloader the server pack uses. Must be either \"Forge\", \"NeoForge\", \"Fabric\", \"Quilt\" or \"LegacyFabric\"."
