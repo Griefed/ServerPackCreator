@@ -195,6 +195,24 @@
                             </q-item-section>
                           </q-item>
                         </q-list>
+                        <q-list v-else-if="modLoader === 'LegacyFabric'">
+                          <q-item v-for="version in legacyFabricVersions" v-bind:key="version"
+                                  v-close-popup
+                                  clickable @click="modloaderVersion = version">
+                            <q-item-section>
+                              {{ version }}
+                            </q-item-section>
+                          </q-item>
+                        </q-list>
+                        <q-list v-else-if="modLoader === 'NeoForge'">
+                          <q-item v-for="version in neoForgeVersions" v-bind:key="version"
+                                  v-close-popup
+                                  clickable @click="modloaderVersion = version">
+                            <q-item-section>
+                              {{ version }}
+                            </q-item-section>
+                          </q-item>
+                        </q-list>
                       </q-btn-dropdown>
                     </div>
                   </div>
@@ -312,6 +330,8 @@ export default defineComponent({
       forgeVersions: ref([]),
       fabricVersions: ref([]),
       quiltVersions: ref([]),
+      legacyFabricVersions: ref([]),
+      neoForgeVersions: ref([]),
       modloaderVersion: ref(""),
       zipName: ref(""),
       disableZip: ref(true),
@@ -422,6 +442,14 @@ export default defineComponent({
 
           this.modloaderVersion = this.quiltVersions[0];
           break;
+
+        case "LegacyFabric":
+          this.modloaderVersion = this.legacyFabricVersions[0];
+          break;
+
+        case "NeoForge":
+          this.modloaderVersion = this.neoForgeVersions[0];
+          break;
       }
 
       this.disableZip = this.modloaderVersion === 'None' || this.zipName === "";
@@ -433,8 +461,7 @@ export default defineComponent({
      */
     getForgeVersions(minecraftVersion) {
 
-      api.get("/versions/forge/" + minecraftVersion)
-      .then(response => {
+      api.get("/versions/forge/" + minecraftVersion).then(response => {
         this.forgeVersions = response.data.forge;
 
         if (this.forgeVersions.length === 0) {
@@ -460,23 +487,30 @@ export default defineComponent({
 
       switch (loader) {
         case "Forge":
-
           this.modLoader = 'Forge';
           this.getForgeVersions(this.minecraftVersion);
           break;
 
         case "Fabric":
-
           this.modLoader = 'Fabric';
           this.modloaderVersion = this.fabricVersions[0];
           break;
 
         case "Quilt":
-
           this.modLoader = 'Quilt';
           this.modloaderVersion = this.quiltVersions[0];
           break;
 
+        case "LegacyFabric":
+          this.modLoader = 'LegacyFabric';
+          this.modloaderVersion = this.legacyFabricVersions[0];
+          break;
+
+        case "NeoForge":
+          this.modLoader = 'NeoForge';
+          this.minecraftVersion = '1.20.1'
+          this.modloaderVersion = this.neoForgeVersions[0];
+          break;
       }
       this.disableZip = this.modloaderVersion === 'None' || this.zipName === "";
     },
@@ -582,23 +616,12 @@ export default defineComponent({
      * We do not get this list from Fabric directly because we need to make sure we only submit request to the backend
      * with versions that are available to the backend, too.
      */
-    api.get("/versions/fabric")
+    api.get("/versions/all")
     .then(response => {
       this.fabricVersions = response.data.fabric;
-    })
-    .catch(error => {
-      console.log(error);
-      this.errorNotification(error);
-    });
-
-    /*
-     * Acquire a list of available Quilt versions from our backend.
-     * We do not get this list from Quilt directly because we need to make sure we only submit request to the backend
-     * with versions that are available to the backend, too.
-     */
-    api.get("/versions/quilt")
-    .then(response => {
       this.quiltVersions = response.data.quilt;
+      this.legacyFabricVersions = response.data.legacyfabric;
+      this.neoForgeVersions = response.data.neoforge;
     })
     .catch(error => {
       console.log(error);

@@ -1,3 +1,4 @@
+
 import de.griefed.common.gradle.LicenseAgreementRenderer
 import de.griefed.common.gradle.SubprojectLicenseFilter
 import org.gradle.plugins.ide.idea.model.IdeaLanguageLevel

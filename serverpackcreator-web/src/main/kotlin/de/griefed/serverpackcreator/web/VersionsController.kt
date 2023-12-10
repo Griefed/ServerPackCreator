@@ -90,6 +90,23 @@ class VersionsController @Autowired constructor(
     }
 
     /**
+     * Get a list of all modloader versions that are not forge.
+     *
+     * @return Returns a list of all available Fabric versions.
+     * @author Griefed
+     */
+    @get:GetMapping(value = ["/all"])
+    val availableVersions: ResponseEntity<String>
+        get() = ResponseEntity.ok()
+            .header("Content-Type", "application/json")
+            .body(
+                "{\"fabric\": ${utilities.listUtilities.encapsulateListElements(versionMeta.fabric.loaderVersionsListDescending())}," +
+                "\"legacyfabric\": ${utilities.listUtilities.encapsulateListElements(versionMeta.legacyFabric.loaderVersionsListDescending())}," +
+                "\"quilt\": ${utilities.listUtilities.encapsulateListElements(versionMeta.quilt.loaderVersionsListDescending())}," +
+                "\"neoforge\": ${utilities.listUtilities.encapsulateListElements(versionMeta.neoForge.neoForgeVersionsDescending())}}"
+            )
+
+    /**
      * Get a list of all available Fabric versions.
      *
      * @return Returns a list of all available Fabric versions.
@@ -140,7 +157,7 @@ class VersionsController @Autowired constructor(
         get() = ResponseEntity.ok()
             .header("Content-Type", "application/json")
             .body(
-                ("{\"fabric\":"
+                ("{\"legacyfabric\":"
                         + utilities.listUtilities
                     .encapsulateListElements(
                         versionMeta.legacyFabric.loaderVersionsListDescending()

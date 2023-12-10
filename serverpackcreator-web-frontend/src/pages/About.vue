@@ -11,9 +11,8 @@
               <div class="text-h5 q-mt-sm q-mb-xs">About ServerPackCreator</div>
               <div class="text-caption">
                 <br>
-                ServerPackCreator is a Java-program which creates a server pack from any given Forge
-                or Fabric
-                modpack.<br>
+                ServerPackCreator is a Java-program which creates a server pack from any given Forge,
+                NeoForge, Fabric, LegacyFabric or Quilt modpack.<br>
                 Customize the configuration to your liking and off you go.<br>
                 Whenever you are working on an update to your modpack, you simply run
                 ServerPackCreator and BAM!<br>
