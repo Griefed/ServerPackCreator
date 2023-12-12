@@ -71,6 +71,7 @@ class MigrationManager(
     private val previous: String = apiProperties.oldVersion()
     private val current: String = apiProperties.apiVersion
     private val alphaBetaDev = ".*(alpha|beta|dev).*".toRegex()
+    private val release = "[0-9]+.[0-9]+.[0-9]+".toRegex()
     val migrationMessages: MutableList<MigrationMessage> = ArrayList(10)
 
     /**
@@ -92,19 +93,18 @@ class MigrationManager(
             log.info("No migrations to execute. Upgrading from alpha, beta or dev version.")
             return
         }
-        if (isOlder(
-                previous, current
-            )
-        ) {
+        if (!current.matches(release)) {
+            log.info("No migrations to execute. Running development branch.")
+            return
+        }
+        if (isOlder(previous, current)) {
             log.info("No migrations to execute. User went back a version. From $previous to $current.")
             return
         }
         if (previous == current) {
             log.info("No migrations to execute. User has not updated.")
         }
-        val migrationMethods = getMigrationMethods(
-            previous, current
-        )
+        val migrationMethods = getMigrationMethods(previous, current)
         if (migrationMethods.isNotEmpty()) {
             for (method in migrationMethods) {
                 log.info("Resolving migrations for: ${toSemantic(method!!.name)}")

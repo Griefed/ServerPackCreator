@@ -71,6 +71,13 @@ tasks.clean {
     doFirst {
         cleanup()
     }
+    doLast {
+        delete {
+            fileTree(projectDir.resolve("src/main/resources/static")) {
+                exclude(".gitkeep")
+            }
+        }
+    }
 }
 
 tasks.test {

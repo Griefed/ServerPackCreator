@@ -38,11 +38,3 @@ tasks.getByName("installNode").finalizedBy(
     tasks.getByName("installQuasar")
 )
 
-tasks.register("copyDist", Copy::class) {
-    from(projectDir.resolve("dist/spa"))
-    into(rootDir.resolve("serverpackcreator-web/src/main/resources/static"))
-}
-
-tasks.getByName("build").finalizedBy(
-    tasks.getByName("copyDist")
-)

@@ -42,12 +42,12 @@ allprojects {
 }
 evaluationDependsOnChildren()
 
-project("serverpackcreator-web").tasks.getByName("build").mustRunAfter(
-    project("serverpackcreator-web-frontend").tasks.getByName("build")
+project("serverpackcreator-web").tasks.build.get().mustRunAfter(
+    project("serverpackcreator-web-frontend").tasks.build.get()
 )
 
-project("serverpackcreator-app").tasks.getByName("build").mustRunAfter(
-    project("serverpackcreator-web").tasks.getByName("build")
+project("serverpackcreator-app").tasks.build.get().mustRunAfter(
+    project("serverpackcreator-web").tasks.build.get()
 )
 
 nexusPublishing {
