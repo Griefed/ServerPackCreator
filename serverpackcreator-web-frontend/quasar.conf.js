@@ -83,6 +83,7 @@ module.exports = function (ctx) {
       scopeHoisting: true,
       vueRouterMode: 'hash', // available values: 'hash', 'history'
       showProgress: true,
+      distDir: "../serverpackcreator-web/src/main/resources/static",
       gzip: false,
       analyze: false,
       publicPath: '',
