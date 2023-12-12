@@ -190,7 +190,6 @@ actual class ApiProperties(
             "Controller Support-",
             "Controlling-",
             "CraftPresence-",
-            "Create_Questing-",
             "CullLessLeaves-Reforged-",
             "CustomCursorMod-",
             "CustomMainMenu-",
