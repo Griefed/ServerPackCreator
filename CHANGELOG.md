@@ -1,3 +1,22 @@
+## [5.1.6](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.5...5.1.6) (2023-12-12)
+
+
+### 📦 Other
+
+* Remove Create-Questing from clientside-mods list. Thanks to [@nvb-uy](https://git.griefed.de/nvb-uy) for the report! ([9662ebf](https://git.griefed.de/Griefed/ServerPackCreator/commit/9662ebf18b466af1e0e75c734d6cd106100d98fa))
+
+
+### 🦊 CI/CD
+
+* Cleanup static directory ([ea80d8a](https://git.griefed.de/Griefed/ServerPackCreator/commit/ea80d8a577d29068441fbbdd00e8642dc7b16a06))
+* I said include resources! ([b9e052a](https://git.griefed.de/Griefed/ServerPackCreator/commit/b9e052a170a3100639021081b9fcaf9c4adced84))
+* Target web-resources folder directly ([fd0c255](https://git.griefed.de/Griefed/ServerPackCreator/commit/fd0c255a2511782a33420b7cdaafabc1fdbc3507))
+
+
+### 🛠 Fixes
+
+* Only consider migrations on releases ([be7f0df](https://git.griefed.de/Griefed/ServerPackCreator/commit/be7f0df6953b228a818896ed8e6dd5f5cb7ce98b))
+
 ## [5.1.5](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.4...5.1.5) (2023-12-10)
 
 
