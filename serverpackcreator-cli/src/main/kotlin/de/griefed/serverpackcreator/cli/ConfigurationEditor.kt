@@ -123,9 +123,7 @@ class ConfigurationEditor(
                 5 -> packConfig.serverPropertiesPath = getServerProperties(scanner)
                 6 -> packConfig.minecraftVersion = getMinecraftVersion(scanner)
                 7 -> packConfig.modloader = getModloader(scanner)
-                8 -> packConfig.modloaderVersion =
-                    getModloaderVersion(scanner, packConfig.minecraftVersion, packConfig.modloader)
-
+                8 -> packConfig.modloaderVersion = getModloaderVersion(scanner, packConfig.minecraftVersion, packConfig.modloader)
                 9 -> packConfig.isServerIconInclusionDesired = includeServerIcon()
                 10 -> packConfig.isServerPropertiesInclusionDesired = includeServerProperties()
                 11 -> packConfig.isZipCreationDesired = includeZipCreation()
@@ -166,28 +164,26 @@ class ConfigurationEditor(
      */
     private fun printEditMenu() {
         cliLog()
-        cliLog(Cli.cli_print_menu_edit_00.toString())
-        cliLog(Cli.cli_print_menu_edit_01.toString())
-        cliLog(Cli.cli_print_menu_edit_02.toString())
-        cliLog(Cli.cli_print_menu_edit_03.toString())
-        cliLog(Cli.cli_print_menu_edit_04.toString())
-        cliLog(Cli.cli_print_menu_edit_05.toString())
-        cliLog(Cli.cli_print_menu_edit_06.toString())
-        cliLog(Cli.cli_print_menu_edit_07.toString())
-        cliLog(Cli.cli_print_menu_edit_08.toString())
-        cliLog(Cli.cli_print_menu_edit_09.toString())
-        cliLog(Cli.cli_print_menu_edit_10.toString())
-        cliLog(Cli.cli_print_menu_edit_11.toString())
-        cliLog(Cli.cli_print_menu_edit_12.toString())
-        cliLog(Cli.cli_print_menu_edit_13.toString())
-        cliLog(Cli.cli_print_menu_edit_14.toString())
-        cliLog(Cli.cli_print_menu_edit_15.toString())
-        cliLog(Cli.cli_print_menu_edit_16.toString())
-        cliLog(Cli.cli_print_menu_edit_17.toString())
-        cliLog(Cli.cli_print_menu_edit_18.toString())
-        cliLog(Cli.cli_print_menu_edit_19.toString())
-        cliLog(Cli.cli_print_menu_edit_20.toString())
-        cliLog(Cli.cli_print_menu_edit_21.toString(), false)
+        cliLog(Cli.cli_print_menu_edit_00.toString()) //What would you like to edit?
+        cliLog(Cli.cli_print_menu_edit_01.toString()) //(1)  : Path to the modpack directory
+        cliLog(Cli.cli_print_menu_edit_02.toString()) //(2)  : List of clientside-only mods
+        cliLog(Cli.cli_print_menu_edit_03.toString()) //(3)  : List of files and/or folders to include in the server pack
+        cliLog(Cli.cli_print_menu_edit_04.toString()) //(4)  : Path to a custom server-icon.png
+        cliLog(Cli.cli_print_menu_edit_05.toString()) //(5)  : Path to a custom server.properties
+        cliLog(Cli.cli_print_menu_edit_06.toString()) //(6)  : Minecraft version
+        cliLog(Cli.cli_print_menu_edit_07.toString()) //(7)  : Modloader
+        cliLog(Cli.cli_print_menu_edit_08.toString()) //(8)  : Modloader version
+        cliLog(Cli.cli_print_menu_edit_09.toString()) //(9)  : Whether to include a server-icon.png in the server pack - Only relevant if you set (4) to a valid path
+        cliLog(Cli.cli_print_menu_edit_10.toString()) //(10) : Whether to include a server.properties in the server pack - Only relevant if you set (5) to a valid path
+        cliLog(Cli.cli_print_menu_edit_11.toString()) //(11) : Whether to create a ZIP-archive of the generated server pack
+        cliLog(Cli.cli_print_menu_edit_12.toString()) //(12) : JVM flags / Java Args to run the server of the generated server pack with - These will be used by the start scripts
+        cliLog(Cli.cli_print_menu_edit_13.toString()) //(13) : Server pack suffix
+        cliLog(Cli.cli_print_menu_edit_14.toString()) //(14) : Save config to file
+        cliLog(Cli.cli_print_menu_edit_15.toString()) //(15) : Print current config
+        cliLog(Cli.cli_print_menu_edit_16.toString()) //(16) : Check configuration
+        cliLog(Cli.cli_print_menu_edit_17.toString()) //(0)  : Exit
+        cliLog(Cli.cli_print_menu_edit_18.toString()) //---------------------------------------------------------------------------------------------------------------------------
+        cliLog(Cli.cli_print_menu_edit_19.toString(), false) // Enter the number of your selection:
     }
 
     /**
