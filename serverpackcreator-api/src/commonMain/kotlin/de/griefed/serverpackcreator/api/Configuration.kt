@@ -480,16 +480,27 @@ abstract class Configuration<F, P> {
      * @return A normalized String of the specified modloader.
      * @author Griefed
      */
-    fun getModLoaderCase(modloader: String) = if (modloader.equals("Forge", ignoreCase = true)) {
-        "Forge"
-    } else if (modloader.equals("Fabric", ignoreCase = true)) {
-        "Fabric"
-    } else if (modloader.lowercase().contains("forge")) {
-        "Forge"
-    } else if (modloader.lowercase().contains("fabric")) {
-        "Fabric"
-    } else {
-        "Forge"
+    fun getModLoaderCase(modloader: String) = when {
+        modloader.lowercase().matches(forge) || modloader.lowercase().contains("forge") &&
+                !(modloader.lowercase().matches(neoForge) || modloader.lowercase().contains("NeoForge"))-> {
+            "Forge"
+        }
+        modloader.lowercase().matches(fabric) || modloader.lowercase().contains("fabric") -> {
+            "Fabric"
+        }
+        modloader.lowercase().matches(quilt) || modloader.lowercase().contains("quilt") -> {
+            "Quilt"
+        }
+        modloader.lowercase().matches(legacyFabric) || modloader.lowercase().contains("legacyfabric") -> {
+            "LegacyFabric"
+        }
+        modloader.lowercase().matches(neoForge) || modloader.lowercase().contains("NeoForge") -> {
+            "NeoForge"
+        }
+        else -> {
+            log.warn { "No suitable modloader found. Defaulting to Forge." }
+            "Forge"
+        }
     }
 
     /**
