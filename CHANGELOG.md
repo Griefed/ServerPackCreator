@@ -1,3 +1,10 @@
+## [5.1.7](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.6...5.1.7) (2023-12-17)
+
+
+### 🛠 Fixes
+
+* Workaround for broken NeoForge manifest ([503ba7d](https://git.griefed.de/Griefed/ServerPackCreator/commit/503ba7dc8a1db1bf8ab850c7d0418a1bf25ed342))
+
 ## [5.1.6](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.5...5.1.6) (2023-12-12)
 
 
