@@ -1,3 +1,17 @@
+## [5.1.8](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.7...5.1.8) (2023-12-17)
+
+
+### 📔 Docs
+
+* Update modloaders mentioned in HELP ([709b917](https://git.griefed.de/Griefed/ServerPackCreator/commit/709b917e95f6893b4c9cc6b6624b76e37f4471e7))
+* Update README and HELP in serverpackcreator-app resources ([8eda5eb](https://git.griefed.de/Griefed/ServerPackCreator/commit/8eda5ebd0207931eea6b5156e0c44a833bf88e11))
+
+
+### 🛠 Fixes
+
+* CLI menu entries containing deprecated entries ([9b11ac1](https://git.griefed.de/Griefed/ServerPackCreator/commit/9b11ac1832094bc4c11ac0597be66026fb6a88c2))
+* Incorrect modloader returned ([20e055f](https://git.griefed.de/Griefed/ServerPackCreator/commit/20e055fb5b8f0ef22cfa21d1d6ecb46b74b74ebc))
+
 ## [5.1.7](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.6...5.1.7) (2023-12-17)
 
 
