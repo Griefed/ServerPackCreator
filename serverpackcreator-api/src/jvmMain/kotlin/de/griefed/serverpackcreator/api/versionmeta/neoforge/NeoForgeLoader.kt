@@ -91,6 +91,11 @@ internal class NeoForgeLoader(
             val children = node.childNodes
             val item = children.item(0)
             val combination = item.nodeValue.split("-")
+            if (combination.size == 1) {
+                // What the hell, NeoForge
+                // https://github.com/Griefed/ServerPackCreator/issues/489
+                continue
+            }
             val mcVersion = combination[0]
             val neoForgeVersion = combination[1]
 
