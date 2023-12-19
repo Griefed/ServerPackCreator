@@ -1,3 +1,15 @@
+## [5.1.9](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.8...5.1.9) (2023-12-19)
+
+
+### 📔 Docs
+
+* Remove deprecated entries, include and improve inclusion description ([561ad44](https://git.griefed.de/Griefed/ServerPackCreator/commit/561ad448f8f7d3cae16c8b87593e6b7d7cc01757))
+
+
+### 🛠 Fixes
+
+* **PowerShell Script Template:** Prevent 1.16+ operations for older Minecraft versions, rename forge jar appropriately ([06bcda0](https://git.griefed.de/Griefed/ServerPackCreator/commit/06bcda0918b8a287327eadaf84bf8cdb04b12824))
+
 ## [5.1.8](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.7...5.1.8) (2023-12-17)
 
 
