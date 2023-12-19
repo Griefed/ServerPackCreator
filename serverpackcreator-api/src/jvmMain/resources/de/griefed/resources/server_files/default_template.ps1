@@ -166,7 +166,7 @@ Function global:SetupForge
     $ForgeJarLocation = "do_not_manually_edit"
     $MINOR = ${MinecraftVersion}.Split(".")
 
-    if ($MINOR[1] -le 16)
+    if ([int]$MINOR[1] -le 16)
     {
         $ForgeJarLocation = "forge.jar"
         $script:LauncherJarLocation = "forge.jar"
@@ -201,7 +201,7 @@ Function global:SetupForge
         "Forge Installer downloaded. Installing..."
         RunJavaCommand "-jar forge-installer.jar --installServer"
 
-        if ($MINOR[1] -gt 16)
+        if ([int]$MINOR[1] -gt 16)
         {
             DeleteFileSilently  'run.bat'
             DeleteFileSilently  'run.sh'
@@ -210,7 +210,7 @@ Function global:SetupForge
         {
             "Renaming forge-${MinecraftVersion}-${ModLoaderVersion}.jar to forge.jar"
             Move-Item "forge-${MinecraftVersion}-${ModLoaderVersion}.jar" 'forge.jar'
-            Move-Item "forge-${MINECRAFT_VERSION}-${MODLOADER_VERSION}-universal.jar" 'forge.jar'
+            Move-Item "forge-${MinecraftVersion}-${ModLoaderVersion}-universal.jar" 'forge.jar'
         }
 
         if ((Test-Path -Path "${ForgeJarLocation}" -PathType Leaf))
@@ -237,7 +237,7 @@ Function global:SetupNeoForge
     $ForgeJarLocation = "do_not_manually_edit"
     $MINOR = ${MinecraftVersion}.Split(".")
 
-    if ($MINOR[1] -le 16)
+    if ([int]$MINOR[1] -le 16)
     {
         $ForgeJarLocation = "forge.jar"
         $script:LauncherJarLocation = "forge.jar"
@@ -272,7 +272,7 @@ Function global:SetupNeoForge
         "NeoForge Installer downloaded. Installing..."
         RunJavaCommand "-jar neoforge-installer.jar --installServer"
 
-        if ($MINOR[1] -gt 16)
+        if ([int]$MINOR[1] -gt 16)
         {
             DeleteFileSilently  'run.bat'
             DeleteFileSilently  'run.sh'
