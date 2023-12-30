@@ -1,3 +1,10 @@
+## [5.1.10](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.9...5.1.10) (2023-12-30)
+
+
+### 🛠 Fixes
+
+* When a destination is specified, actually copy to it. ([f590ca2](https://git.griefed.de/Griefed/ServerPackCreator/commit/f590ca2f39d283743c86d447b1f7027426829eaf))
+
 ## [5.1.9](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.8...5.1.9) (2023-12-19)
 
 
