@@ -19,7 +19,6 @@
  */
 package de.griefed.serverpackcreator.api
 
-import de.griefed.serverpackcreator.api.utilities.common.createDirectories
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
 import java.io.File
 import java.io.IOException
@@ -95,13 +94,7 @@ actual class ServerPackFile {
     @Throws(SecurityException::class, UnsupportedOperationException::class, IOException::class)
     actual fun copy() {
         try {
-            if (sourceFile.isFile) {
-                try {
-                    destinationFile.createDirectories()
-                } catch (ignored: IOException) {
-                }
-                sourceFile.copyTo(destinationFile, true)
-            }
+            sourceFile.copyTo(destinationFile, true)
             log.debug("Successfully copied ServerPackFile")
             log.debug("    Source: $sourcePath")
             log.debug("    Destination: $destinationPath")

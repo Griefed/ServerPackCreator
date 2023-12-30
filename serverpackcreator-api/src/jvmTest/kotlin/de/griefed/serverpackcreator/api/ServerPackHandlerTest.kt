@@ -169,6 +169,9 @@ internal class ServerPackHandlerTest {
             ).isFile
         )
         Assertions.assertFalse(File(forgeDir, "exclude_me/exclude_me_some_more/dont_include_me_either.ogg").isFile)
+        Assertions.assertTrue(File(forgeDir,"some/place/test.txt").isFile)
+        Assertions.assertTrue(File(forgeDir,"some/place/bla.txt").isFile)
+        Assertions.assertTrue(File(forgeDir,"some.file").isFile)
         try {
             File("src/jvmTest/resources/testresources/server_pack.zip").copyTo(
                 File(apiProperties.serverPacksDirectory,"forge_tests_server_pack.zip"),

@@ -262,8 +262,8 @@ actual class ServerPackHandler actual constructor(
         modloader: String
     ): List<ServerPackFile> {
         val serverPackFiles = mutableListOf<ServerPackFile>()
-        val clientDir = modpackDir + File.separator + inclusion.source
-        val serverDir = destination + File.separator + inclusion.source
+        val clientDir = File(modpackDir, inclusion.source)
+        val serverDir = File(destination, inclusion.source)
         val acquired: List<ServerPackFile>
         val processed: List<ServerPackFile>
         val serverPackFile: ServerPackFile
@@ -281,41 +281,54 @@ actual class ServerPackHandler actual constructor(
             }
 
             inclusion.hasDestination() -> {
-                if (inclusionSourceFile.isDirectory) {
-                    acquired = getExplicitFiles(inclusion.source, inclusion.destination!!, modpackDir, destination)
-                    processed = runFilters(acquired, inclusion, modpackDir)
-                    serverPackFiles.addAll(processed)
-                } else if (File(clientDir).isDirectory) {
-                    acquired = getExplicitFiles(clientDir, inclusion.destination!!, modpackDir, destination)
-                    processed = runFilters(acquired, inclusion, modpackDir)
-                    serverPackFiles.addAll(processed)
-                } else {
-                    serverPackFile = ServerPackFile(inclusionSourceFile, File(destination,inclusion.destination ?: inclusionSourceFile.name))
-                    serverPackFiles.add(serverPackFile)
+                val destinationFile = File(destination,inclusion.destination ?: inclusionSourceFile.name)
+                when {
+                    clientDir.isDirectory -> {
+                        acquired = getExplicitFiles(clientDir.absolutePath, inclusion.destination!!, modpackDir, destination)
+                        processed = runFilters(acquired, inclusion, modpackDir)
+                        serverPackFiles.addAll(processed)
+                    }
+                    clientDir.absoluteFile.isFile -> {
+                        serverPackFile = ServerPackFile(clientDir, destinationFile)
+                        serverPackFiles.add(serverPackFile)
+                    }
+                    inclusionSourceFile.isDirectory -> {
+                        acquired = getExplicitFiles(inclusion.source, inclusion.destination!!, modpackDir, destination)
+                        processed = runFilters(acquired, inclusion, modpackDir)
+                        serverPackFiles.addAll(processed)
+                    }
+                    inclusionSourceFile.isFile -> {
+                        serverPackFile = ServerPackFile(inclusionSourceFile, destinationFile)
+                        serverPackFiles.add(serverPackFile)
+                    }
+                    else -> {
+                        serverPackFile = ServerPackFile(inclusionSourceFile, destinationFile)
+                        serverPackFiles.add(serverPackFile)
+                    }
                 }
             }
 
             inclusion.source == "mods" -> {
                 try {
-                    File(serverDir).createDirectories()
+                    serverDir.createDirectories()
                 } catch (ignored: IOException) {
                 }
                 acquired = mutableListOf()
-                for (mod in getModsToInclude(clientDir, clientMods, whitelist, minecraftVersion, modloader)) {
+                for (mod in getModsToInclude(clientDir.absolutePath, clientMods, whitelist, minecraftVersion, modloader)) {
                     acquired.add(ServerPackFile(mod, File(serverDir, mod.name)))
                 }
                 processed = runFilters(acquired, inclusion, modpackDir)
                 serverPackFiles.addAll(processed)
             }
 
-            File(clientDir).absoluteFile.isDirectory -> {
-                acquired = getDirectoryFiles(clientDir, serverDir)
+            clientDir.absoluteFile.isDirectory -> {
+                acquired = getDirectoryFiles(clientDir.absolutePath, serverDir.absolutePath)
                 processed = runFilters(acquired, inclusion, modpackDir)
                 serverPackFiles.addAll(processed)
             }
 
-            File(clientDir).absoluteFile.isFile -> {
-                serverPackFile = ServerPackFile(File(clientDir), File(serverDir))
+            clientDir.absoluteFile.isFile -> {
+                serverPackFile = ServerPackFile(clientDir, serverDir)
                 serverPackFiles.add(serverPackFile)
             }
 
@@ -325,13 +338,13 @@ actual class ServerPackHandler actual constructor(
             }
 
             inclusionSourceFile.isDirectory -> {
-                acquired = getDirectoryFiles(inclusionSourceFile.absolutePath, serverDir)
+                acquired = getDirectoryFiles(inclusionSourceFile.absolutePath, serverDir.absolutePath)
                 processed = runFilters(acquired, inclusion, modpackDir)
                 serverPackFiles.addAll(processed)
             }
 
             else -> {
-                acquired = getDirectoryFiles(clientDir, serverDir)
+                acquired = getDirectoryFiles(clientDir.absolutePath, serverDir.absolutePath)
                 processed = runFilters(acquired, inclusion, modpackDir)
                 serverPackFiles.addAll(processed)
             }

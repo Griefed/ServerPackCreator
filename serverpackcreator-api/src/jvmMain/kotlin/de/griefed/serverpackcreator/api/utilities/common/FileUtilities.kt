@@ -33,6 +33,7 @@ import java.nio.file.Files
 import java.nio.file.InvalidPathException
 import java.nio.file.Path
 import java.nio.file.Paths
+import kotlin.io.path.createParentDirectories
 import kotlin.io.path.isSymbolicLink
 import kotlin.io.path.moveTo
 import kotlin.streams.asStream
@@ -493,19 +494,23 @@ actual fun File.filteredWalk(
         }
     }
 
-
 /**
  * All parent directories are created, but not the file itself.
  *
- * @param create Whether the file or directory should be created.
- * @param directory Whether a directory or file should be created
+ * [create] in combination with [directory] will result in this file being treated as a directory. As such, all
+ * parents will be created, along with this file itself being created as a directory.
+ *
+ * [create] without [directory] will result in this file being created as a file.
+ *
+ * @param create Whether the file or directory should be created. If left to `false`, then [directory] won't have any effect.
+ * @param directory Whether a directory or file should be created. Requires [create] to be set to `true`.
  * @author Griefed
  */
 actual fun File.createDirectories(create: Boolean, directory: Boolean) {
-    Files.createDirectories(this.absoluteFile.parentFile.toPath())
+    absoluteFile.toPath().createParentDirectories()
     if (create) {
         if (directory) {
-            this.mkdir()
+            this.mkdirs()
         } else {
             this.createNewFile()
         }
