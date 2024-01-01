@@ -106,21 +106,12 @@ open class ScrollTextField(
         textField.document.addDocumentListener(listener)
     }
 
-    /**
-     * @author Griefed
-     */
     override fun undoableEditHappened(e: UndoableEditEvent) {
         undoManager.addEdit(e.edit)
     }
 
-    /**
-     * @author Griefed
-     */
     override fun keyTyped(e: KeyEvent) {}
 
-    /**
-     * @author Griefed
-     */
     override fun keyPressed(e: KeyEvent) {
         when {
             e.keyCode == KeyEvent.VK_Z && e.isControlDown -> {
@@ -141,8 +132,5 @@ open class ScrollTextField(
         }
     }
 
-    /**
-     * @author Griefed
-     */
     override fun keyReleased(e: KeyEvent) {}
 }

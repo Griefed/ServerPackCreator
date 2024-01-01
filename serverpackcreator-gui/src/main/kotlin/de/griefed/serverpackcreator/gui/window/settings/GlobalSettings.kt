@@ -379,9 +379,6 @@ class GlobalSettings(
         componentResizer.registerComponent(javaPathsSetting.scrollPanel,"cell 2 $javaPathsY, grow, w 10:500:,h %s!")
     }
 
-    /**
-     * @author Griefed
-     */
     override fun loadSettings() {
         homeSetting.file = apiProperties.homeDirectory.absoluteFile
         javaSetting.file = File(apiProperties.javaPath).absoluteFile
@@ -405,9 +402,6 @@ class GlobalSettings(
         javaPathsSetting.loadData(apiProperties.javaPaths)
     }
 
-    /**
-     * @author Griefed
-     */
     override fun saveSettings() {
         apiProperties.homeDirectory = homeSetting.file.absoluteFile
         apiProperties.javaPath = javaSetting.file.absolutePath
@@ -433,9 +427,6 @@ class GlobalSettings(
         apiProperties.javaPaths = javaPaths
     }
 
-    /**
-     * @author Griefed
-     */
     override fun validateSettings(): List<String> {
         val errors = mutableListOf<String>()
         if (!homeSetting.file.absoluteFile.isDirectory || !homeSetting.file.absoluteFile.canWrite()) {
@@ -504,9 +495,6 @@ class GlobalSettings(
         return errors.toList()
     }
 
-    /**
-     * @author Griefed
-     */
     override fun hasUnsavedChanges(): Boolean {
         val javaPaths = javaPathsSetting.getData()
         javaPaths.remove("placeholder")

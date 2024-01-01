@@ -83,18 +83,12 @@ actual class ServerPackHandler actual constructor(
     private val modScanner: ModScanner
 ) : ServerPack<File, TreeSet<String>, TreeSet<File>>() {
 
-    /**
-     * @author Griefed
-     */
     override fun getServerPackDestination(packConfig: Pack<*, *, *>): String {
         var serverPackToBe = File(packConfig.modpackDir).name + packConfig.serverPackSuffix
         serverPackToBe = utilities.stringUtilities.pathSecureText(serverPackToBe.replace(" ", "_"))
         return File(apiProperties.serverPacksDirectory, serverPackToBe).path
     }
 
-    /**
-     * @author Griefed
-     */
     override fun run(packConfig: PackConfig): Boolean {
         val destination = getServerPackDestination(packConfig)
         /*
@@ -171,9 +165,6 @@ actual class ServerPackHandler actual constructor(
         return true
     }
 
-    /**
-     * @author Griefed
-     */
     override fun cleanupEnvironment(deleteZip: Boolean, destination: String) {
         log.info("Found old server pack at $destination. Cleaning up...")
         File(destination).deleteQuietly()
@@ -182,9 +173,6 @@ actual class ServerPackHandler actual constructor(
         }
     }
 
-    /**
-     * @author Griefed
-     */
     override fun copyFiles(
         modpackDir: String,
         inclusions: ArrayList<InclusionSpecification>,
@@ -405,9 +393,6 @@ actual class ServerPackHandler actual constructor(
         return processed
     }
 
-    /**
-     * @author Griefed
-     */
     override fun getImprovedFabricLauncher(minecraftVersion: String, fabricVersion: String, destination: String) {
         val fileDestination = File(destination, "fabric-server-launcher.jar")
         if (versionMeta.fabric.launcherFor(minecraftVersion, fabricVersion).isPresent) {
@@ -427,9 +412,6 @@ actual class ServerPackHandler actual constructor(
         }
     }
 
-    /**
-     * @author Griefed
-     */
     override fun copyIcon(destination: String, pathToServerIcon: String) {
         log.info("Copying server-icon.png...")
         val customIcon = File(destination, apiProperties.defaultServerIcon.name)
@@ -465,9 +447,6 @@ actual class ServerPackHandler actual constructor(
         }
     }
 
-    /**
-     * @author Griefed
-     */
     override fun copyProperties(destination: String, pathToServerProperties: String) {
         log.info("Copying server.properties...")
         val customProperties = File(destination, apiProperties.defaultServerProperties.name)
@@ -481,9 +460,6 @@ actual class ServerPackHandler actual constructor(
         }
     }
 
-    /**
-     * @author Griefed
-     */
     override fun createStartScripts(scriptSettings: HashMap<String, String>, destination: String, isLocal: Boolean) {
         for (template in apiProperties.scriptTemplates) {
             try {
@@ -506,9 +482,6 @@ actual class ServerPackHandler actual constructor(
         }
     }
 
-    /**
-     * @author Griefed
-     */
     override fun zipBuilder(
         minecraftVersion: String,
         destination: String,
@@ -546,10 +519,7 @@ actual class ServerPackHandler actual constructor(
         }
         log.info("Finished creation of zip archive.")
     }
-
-    /**
-     * @author Griefed
-     */
+    
     override fun preInstallationCleanup(destination: String) {
         log.info("Pre server installation cleanup.")
         var fileToDelete: File
@@ -560,10 +530,7 @@ actual class ServerPackHandler actual constructor(
             }
         }
     }
-
-    /**
-     * @author Griefed
-     */
+    
     override fun getExplicitFiles(
         source: String,
         destination: String,
@@ -599,9 +566,6 @@ actual class ServerPackHandler actual constructor(
         return serverPackFiles
     }
 
-    /**
-     * @author Griefed
-     */
     override fun getSaveFiles(clientDir: String, directory: String, destination: String): List<ServerPackFile> {
         val serverPackFiles: MutableList<ServerPackFile> = ArrayList(2000)
         try {
@@ -626,9 +590,6 @@ actual class ServerPackHandler actual constructor(
         return serverPackFiles
     }
 
-    /**
-     * @author Griefed
-     */
     override fun getModsToInclude(
         modsDir: String,
         userSpecifiedClientMods: List<String>,
@@ -677,9 +638,6 @@ actual class ServerPackHandler actual constructor(
         return ArrayList(modsInModpack)
     }
 
-    /**
-     * @author Griefed
-     */
     override fun getDirectoryFiles(source: String, destination: String): List<ServerPackFile> {
         val serverPackFiles: MutableList<ServerPackFile> = ArrayList(100)
         try {
@@ -707,9 +665,6 @@ actual class ServerPackHandler actual constructor(
         return serverPackFiles
     }
 
-    /**
-     * @author Griefed
-     */
     override fun excludeFileOrDirectory(modpackDir: String, fileToCheckFor: File, exclusions: List<Regex>): Boolean {
         val cleaned = fileToCheckFor.absolutePath.replace(File(modpackDir).absolutePath + File.separator, "")
         return exclusions.any { regex ->
@@ -722,9 +677,6 @@ actual class ServerPackHandler actual constructor(
         }
     }
 
-    /**
-     * @author Griefed
-     */
     override fun serverDownloadable(mcVersion: String, modloader: String, modloaderVersion: String) = when (modloader) {
         "Fabric" -> utilities.webUtilities.isReachable(versionMeta.fabric.releaseInstallerUrl())
 
@@ -751,9 +703,6 @@ actual class ServerPackHandler actual constructor(
         else -> false
     }
 
-    /**
-     * @author Griefed
-     */
     override fun postInstallCleanup(destination: String) {
         log.info("Cleanup after modloader server installation.")
         var fileToDelete: File
@@ -765,9 +714,6 @@ actual class ServerPackHandler actual constructor(
         }
     }
 
-    /**
-     * @author Griefed
-     */
     override fun excludeMods(autodiscoveredClientMods: List<File>, modsInModpack: TreeSet<File>) {
         if (autodiscoveredClientMods.isNotEmpty()) {
             log.info("Automatically detected mods: ${autodiscoveredClientMods.size}")
@@ -786,9 +732,6 @@ actual class ServerPackHandler actual constructor(
         }
     }
 
-    /**
-     * @author Griefed
-     */
     override fun excludeUserSpecifiedMod(userSpecifiedExclusions: List<String>, userSpecifiedModsWhitelist: List<String>, modsInModpack: TreeSet<File>) {
         if (userSpecifiedExclusions.isNotEmpty()) {
             log.info("Performing ${apiProperties.exclusionFilter}-type checks for user-specified clientside-only mod exclusion.")
@@ -800,9 +743,6 @@ actual class ServerPackHandler actual constructor(
         }
     }
 
-    /**
-     * @author Griefed
-     */
     override fun regexWalk(
         source: File, destination: String, regex: Regex, serverPackFiles: MutableList<ServerPackFile>
     ) {
@@ -833,9 +773,6 @@ actual class ServerPackHandler actual constructor(
         }
     }
 
-    /**
-     * @author Griefed
-     */
     override fun exclude(userSpecifiedExclusion: String, userSpecifiedModsWhitelist: List<String>, modsInModpack: TreeSet<File>) {
         modsInModpack.removeIf { modToCheck ->
             val excluded: Boolean

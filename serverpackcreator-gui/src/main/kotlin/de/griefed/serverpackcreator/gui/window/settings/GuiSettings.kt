@@ -175,9 +175,6 @@ class GuiSettings(
         panel.add(manualEditReset, "cell 4 $y")
     }
 
-    /**
-     * @author Griefed
-     */
     override fun loadSettings() {
         fontSizeSetting.value = guiProps.fontSize
         startFocusSetting.isSelected = guiProps.startFocusEnabled
@@ -187,9 +184,6 @@ class GuiSettings(
         manualEditSetting.isSelected = guiProps.allowManualEditing
     }
 
-    /**
-     * @author Griefed
-     */
     override fun saveSettings() {
         guiProps.fontSize = fontSizeSetting.value
         guiProps.startFocusEnabled = startFocusSetting.isSelected
@@ -203,9 +197,6 @@ class GuiSettings(
         guiProps.allowManualEditing = manualEditSetting.isSelected
     }
 
-    /**
-     * @author Griefed
-     */
     override fun validateSettings(): List<String> {
         val errors = mutableListOf<String>()
         if (fontSizeSetting.value < 8 || fontSizeSetting.value > 76) {
@@ -222,9 +213,6 @@ class GuiSettings(
         return errors.toList()
     }
 
-    /**
-     * @author Griefed
-     */
     override fun hasUnsavedChanges(): Boolean {
         val changes = fontSizeSetting.value != guiProps.fontSize ||
                 startFocusSetting.isSelected != guiProps.startFocusEnabled ||

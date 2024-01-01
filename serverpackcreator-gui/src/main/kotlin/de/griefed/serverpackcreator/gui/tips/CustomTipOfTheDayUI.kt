@@ -45,9 +45,6 @@ class CustomTipOfTheDayUI(tipOfTheDay: TipOfTheDay, private val guiProps: GuiPro
     private val preferredDimension = Dimension(650,350)
     private val defaultSize = Dimension(650,350)
 
-    /**
-     * @author Griefed
-     */
     override fun installDefaults(defaults: UIDefaults) {
         super.installDefaults(defaults)
         tipPane.background = UIManager.getColor("Panel.background")
@@ -58,9 +55,6 @@ class CustomTipOfTheDayUI(tipOfTheDay: TipOfTheDay, private val guiProps: GuiPro
         UIManager.put("TipOfTheDay.showOnStartupText", Gui.tips_show.toString())
     }
 
-    /**
-     * @author Griefed
-     */
     override fun installComponents(defaults: UIDefaults) {
         super.installComponents()
         val tipIcon = JLabel(Gui.tips_know.toString())
@@ -70,9 +64,6 @@ class CustomTipOfTheDayUI(tipOfTheDay: TipOfTheDay, private val guiProps: GuiPro
         tipPane.add("North", tipIcon)
     }
 
-    /**
-     * @author Griefed
-     */
     override fun addUIDefaults(defaults: UIDefaults) {
         super.addUIDefaults(defaults)
         val font = guiProps.font.deriveFont(Font.BOLD, (guiProps.fontSize + 3).toFloat())

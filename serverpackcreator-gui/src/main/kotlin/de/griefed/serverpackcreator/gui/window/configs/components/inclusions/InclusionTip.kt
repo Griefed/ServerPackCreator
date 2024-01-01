@@ -71,14 +71,8 @@ class InclusionTip(
             return textPane.text
         }
 
-    /**
-     * @author Griefed
-     */
     override fun keyTyped(e: KeyEvent) {}
 
-    /**
-     * @author Griefed
-     */
     override fun keyPressed(e: KeyEvent) {
         textPane.highlighter.removeAllHighlights()
         when {
@@ -87,9 +81,6 @@ class InclusionTip(
         }
     }
 
-    /**
-     * @author Griefed
-     */
     override fun keyReleased(e: KeyEvent) {}
 
 

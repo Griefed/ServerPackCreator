@@ -131,9 +131,6 @@ class LoggingConfig : ConfigurationFactory() {
         }
     }
 
-    /**
-     * @author Griefed
-     */
     override fun getSupportedTypes() = suffixes
 
     /**

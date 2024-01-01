@@ -122,18 +122,12 @@ class ScrollTextArea(
         textArea.document.addDocumentListener(listener)
     }
 
-    /**
-     * @author Griefed
-     */
     override fun undoableEditHappened(e: UndoableEditEvent) {
         undoManager.addEdit(e.edit)
     }
 
     override fun keyTyped(e: KeyEvent) {}
 
-    /**
-     * @author Griefed
-     */
     override fun keyPressed(e: KeyEvent) {
         textArea.highlighter.removeAllHighlights()
         when {
@@ -163,9 +157,6 @@ class ScrollTextArea(
         }
     }
 
-    /**
-     * @author Griefed
-     */
     override fun keyReleased(e: KeyEvent) {}
 
     /**

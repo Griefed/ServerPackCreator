@@ -218,9 +218,6 @@ class WebserviceSettings(
         panel.add(databaseCleanupReset, "cell 4 $y")
     }
 
-    /**
-     * @author Griefed
-     */
     override fun loadSettings() {
         artemisDataDirectorySetting.file = apiProperties.artemisDataDirectory.absoluteFile
         artemisQueueMaxDiskUsageSetting.value = apiProperties.artemisQueueMaxDiskUsage
@@ -232,9 +229,6 @@ class WebserviceSettings(
         databaseCleanupScheduleSetting.text = apiProperties.webserviceDatabaseCleanupSchedule
     }
 
-    /**
-     * @author Griefed
-     */
     override fun saveSettings() {
         apiProperties.artemisDataDirectory = artemisDataDirectorySetting.file.absoluteFile
         apiProperties.artemisQueueMaxDiskUsage = artemisQueueMaxDiskUsageSetting.value
@@ -246,9 +240,6 @@ class WebserviceSettings(
         apiProperties.webserviceDatabaseCleanupSchedule = databaseCleanupScheduleSetting.text
     }
 
-    /**
-     * @author Griefed
-     */
     override fun validateSettings(): List<String> {
         val errors = mutableListOf<String>()
         if (!artemisDataDirectorySetting.file.absoluteFile.isDirectory || !artemisDataDirectorySetting.file.absoluteFile.canWrite()) {
@@ -319,9 +310,6 @@ class WebserviceSettings(
         return errors.toList()
     }
 
-    /**
-     * @author Griefed
-     */
     override fun hasUnsavedChanges(): Boolean {
         val changes = artemisDataDirectorySetting.file.absolutePath != apiProperties.artemisDataDirectory.absolutePath ||
                 artemisQueueMaxDiskUsageSetting.value != apiProperties.artemisQueueMaxDiskUsage ||

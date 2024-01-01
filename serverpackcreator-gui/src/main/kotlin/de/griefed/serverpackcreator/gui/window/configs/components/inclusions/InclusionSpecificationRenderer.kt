@@ -38,9 +38,6 @@ class InclusionSpecificationRenderer : JLabel(), ListCellRenderer<InclusionSpeci
         isOpaque = true
     }
 
-    /**
-     * @author Griefed
-     */
     override fun getListCellRendererComponent(
         list: JList<out InclusionSpecification>,
         value: InclusionSpecification,

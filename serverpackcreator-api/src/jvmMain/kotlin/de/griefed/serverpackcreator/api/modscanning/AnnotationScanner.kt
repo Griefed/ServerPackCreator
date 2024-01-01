@@ -83,9 +83,6 @@ actual class AnnotationScanner(
         return getModsDelta(jarFiles, clientMods)
     }
 
-    /**
-     * @author Griefed
-     */
     override fun checkForClientModsAndDeps(
         filesInModsDir: Collection<File>,
         clientMods: TreeSet<String>,
@@ -529,9 +526,6 @@ actual class AnnotationScanner(
         return clientSide
     }
 
-    /**
-     * @author Griefed
-     */
     override fun getModsDelta(filesInModsDir: Collection<File>, clientMods: TreeSet<String>): TreeSet<File> {
         val modsDelta = TreeSet<File>()
         for (mod in filesInModsDir) {

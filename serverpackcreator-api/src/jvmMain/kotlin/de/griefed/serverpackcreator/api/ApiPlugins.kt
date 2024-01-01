@@ -202,9 +202,6 @@ actual class ApiPlugins(
     fun <T> getAllExtensionsOfPlugin(plugin: PluginWrapper, type: Class<T>): List<T> =
         plugin.pluginManager.getExtensions(type)
 
-    /**
-     * @author Griefed
-     */
     override fun createExtensionFactory(): ExtensionFactory =
         SingletonExtensionFactory(
             this,
@@ -216,9 +213,6 @@ actual class ApiPlugins(
             TabExtension::class.java.name
         )
 
-    /**
-     * @author Griefed
-     */
     override fun createPluginFactory(): PluginFactory {
         return CustomPluginFactory()
     }
