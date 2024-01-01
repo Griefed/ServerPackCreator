@@ -326,7 +326,7 @@ actual class ServerPackHandler actual constructor(
             }
 
             inclusionSourceFile.isDirectory -> {
-                acquired = getDirectoryFiles(inclusionSourceFile.absolutePath, serverDir.absolutePath)
+                acquired = getDirectoryFiles(inclusionSourceFile.absolutePath, inclusionDestinationFile.absolutePath)
                 processed = runFilters(acquired, inclusion, modpackDir)
                 serverPackFiles.addAll(processed)
             }
