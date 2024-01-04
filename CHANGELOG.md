@@ -1,3 +1,20 @@
+## [5.1.11](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.10...5.1.11) (2024-01-04)
+
+
+### 📔 Docs
+
+* Remove unnecessary author doc-comments from overridens ([abd2420](https://git.griefed.de/Griefed/ServerPackCreator/commit/abd24200157073e02ffb4a390dd02c89b71bfbf8))
+
+
+### 📦 Other
+
+* Add more clientside-mods. Thanks to @MoonstruckDev and [@arthurbarret0](https://git.griefed.de/arthurbarret0) for the reports! ([39e647b](https://git.griefed.de/Griefed/ServerPackCreator/commit/39e647b7744111a9536b5fe439689067966725bb))
+
+
+### 🛠 Fixes
+
+* Use correct destination for modpack-external folder-walk file-acquisition ([f26b3c7](https://git.griefed.de/Griefed/ServerPackCreator/commit/f26b3c723ca26890fde3eb7b08f0985c23ea1676))
+
 ## [5.1.10](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.9...5.1.10) (2023-12-30)
 
 
