@@ -458,7 +458,8 @@ actual class ApiProperties(
             "whats-that-slot-forge-",
             "wisla-",
             "xlifeheartcolors-",
-            "yisthereautojump-"
+            "yisthereautojump-",
+            "YungsMenuTweaks-"
         )
     )
 
