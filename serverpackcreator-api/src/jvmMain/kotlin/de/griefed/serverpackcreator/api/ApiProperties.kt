@@ -290,6 +290,7 @@ actual class ApiProperties(
             "VoidFog-",
             "WindowedFullscreen-",
             "WorldNameRandomizer-",
+            "YungsMenuTweaks-",
             "[1.12.2]DamageIndicatorsMod-",
             "[1.12.2]bspkrscore-",
             "antighost-",
