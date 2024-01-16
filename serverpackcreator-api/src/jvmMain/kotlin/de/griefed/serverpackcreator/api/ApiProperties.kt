@@ -214,6 +214,7 @@ actual class ApiProperties(
             "Fallingleaves-",
             "FancySpawnEggs",
             "FancyVideo-API-",
+            "farsight-",
             "FirstPersonMod",
             "FogTweaker-",
             "ForgeCustomCursorMod-",
