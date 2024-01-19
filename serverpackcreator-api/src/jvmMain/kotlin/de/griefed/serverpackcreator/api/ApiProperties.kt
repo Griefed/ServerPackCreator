@@ -462,7 +462,7 @@ actual class ApiProperties(
             "wisla-",
             "xlifeheartcolors-",
             "yisthereautojump-",
-            "YeetusExperimentus-Forge"
+            "YeetusExperimentus-Forge-"
         )
     )
 
