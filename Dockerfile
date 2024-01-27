@@ -46,9 +46,9 @@ RUN \
       /root/.cache \
       /tmp/*
 
+COPY root/ /
 COPY --from=builder --chown=abc:abc --chmod=764 /tmp/serverpackcreator/java/ /app/serverpackcreator/java
 COPY --from=builder --chown=abc:abc --chmod=764 /tmp/serverpackcreator/serverpackcreator-app/build/libs/serverpackcreator-app-$VERSION.jar /app/serverpackcreator/serverpackcreator.jar
-COPY --chown=abc:abc root/ /
 COPY --chown=abc:abc serverpackcreator-api/src/jvmMain/resources/de/griefed/resources/server_files /defaults/server_files
 
 
