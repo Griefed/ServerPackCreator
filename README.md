@@ -386,6 +386,9 @@ services:
     image: griefed/serverpackcreator:latest # For a list of available tags, see https://hub.docker.com/r/griefed/serverpackcreator/tags
     restart: unless-stopped
     environment:
+      TZ: Europe/Berlin # Your timezone
+      PUID: 1000 # Your user ID
+      PGID: 1000 # Your group ID
       SPC_DATABASE_PASSWORD: <YOUR_DB_PASSWORD>
       SPC_DATABASE_USERNAME: <YOUR_DB_USERNAME>
       SPC_DATABASE_URL: serverpackcreatordb:5432/serverpackcreator # Do not change this unless you absolutely know what you are doing.

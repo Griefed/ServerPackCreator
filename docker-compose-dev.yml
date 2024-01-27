@@ -15,6 +15,9 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     environment:
+      TZ: Europe/Berlin # Your timezone
+      PUID: 1000 # Your user ID
+      PGID: 1000 # Your group ID
       SPC_SCHEDULE_DATABASE_CLEANUP: 0 0 0 * * *
       SPC_SCHEDULE_FILES_CLEANUP: 0 0 0 * * *
       SPC_SCHEDULE_VERSIONS_REFRESH: 0 0 0 * * *
