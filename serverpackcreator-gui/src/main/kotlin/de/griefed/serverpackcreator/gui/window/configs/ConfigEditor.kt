@@ -1,4 +1,4 @@
-/* Copyright (C) 2023  Griefed
+/* Copyright (C) 2024  Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -292,9 +292,6 @@ class ConfigEditor(
         componentResizer.registerComponent(advSetScriptKVPairsSetting.scrollPanel, "cell 2 9 1 3,grow,w 10:500:,h %s!")
     }
 
-    /**
-     * @author Griefed
-     */
     private fun selectModpackDirectory() {
         val chooser = if (File(getModpackDirectory()).isDirectory) {
             ModpackChooser(File(getModpackDirectory()), guiProps.defaultFileChooserDimension)
@@ -311,9 +308,6 @@ class ConfigEditor(
         }
     }
 
-    /**
-     * @author Griefed
-     */
     private fun selectServerProperties() {
         val serverPropertiesChooser = if (File(getServerPropertiesPath()).isFile) {
             ServerPropertiesChooser(File(getServerPropertiesPath()), guiProps.defaultFileChooserDimension)
@@ -325,9 +319,6 @@ class ConfigEditor(
         }
     }
 
-    /**
-     * @author Griefed
-     */
     private fun selectServerIcon() {
         val serverIconChooser = if (File(getServerIconPath()).isFile) {
             ServerIconChooser(File(getServerIconPath()), guiProps.defaultFileChooserDimension)

@@ -1,4 +1,4 @@
-/* Copyright (C) 2023  Griefed
+/* Copyright (C) 2024  Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -70,17 +70,11 @@ class SettingsHandling(
         panel.add(lastActionLabel, "cell 3 0, grow, height 30!")
     }
 
-    /**
-     * @author Griefed
-     */
     private fun currentTime(): String {
         val format = SimpleDateFormat("HH:mm")
         return format.format(Date())
     }
 
-    /**
-     * @author Griefed
-     */
     fun save() {
         for (tab in settingsEditorsTab.allTabs) {
             (tab as Editor).saveSettings()
@@ -92,9 +86,6 @@ class SettingsHandling(
         controlPanel.updateStatus(Gui.settings_info_saved(apiProperties.serverPackCreatorPropertiesFile.absolutePath))
     }
 
-    /**
-     * @author Griefed
-     */
     fun load() {
         val propertiesChooser = PropertiesChooser(apiProperties, Gui.settings_handle_chooser.toString())
         if (propertiesChooser.showOpenDialog(mainFrame.frame) == JFileChooser.APPROVE_OPTION) {
@@ -108,9 +99,6 @@ class SettingsHandling(
         checkAll()
     }
 
-    /**
-     * @author Griefed
-     */
     fun checkAll() {
         val changes = settingsEditorsTab.allTabs.any {
             (it as Editor).hasUnsavedChanges()

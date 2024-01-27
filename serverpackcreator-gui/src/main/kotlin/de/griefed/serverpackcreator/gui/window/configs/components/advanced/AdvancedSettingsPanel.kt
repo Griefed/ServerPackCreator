@@ -1,4 +1,4 @@
-/* Copyright (C) 2023  Griefed
+/* Copyright (C) 2024  Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -247,18 +247,12 @@ class AdvancedSettingsPanel(
         }
     }
 
-    /**
-     * @author Griefed
-     */
     private fun revertScriptKVPairs() {
         if (configEditor.lastConfig != null) {
             configEditor.setScriptVariables(configEditor.lastConfig!!.scriptSettings)
         }
     }
 
-    /**
-     * @author Griefed
-     */
     private fun resetScriptKVPairs() {
         configEditor.setScriptVariables(guiProps.defaultScriptKVSetting)
     }

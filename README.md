@@ -36,13 +36,14 @@ into the world of programming. And here we are.
 
 ##### Disclaimer:
 
+* ServerPackCreator is not a guarantee for working server packs. It helps you create them, but you **must still test them**!
 * You are still expected to be knowledgeable about your modpack, server packs in general, server administration and managing your Java installations. ServerPackCreator is not intended to take all the work off your shoulders!
-
 * When using alpha, beta or in-dev version of ServerPackCreator, it is advised to make a backup of your ServerPackCreator-directory in your home-directory.
-Things will break with alpha releases, stuff may break when using beta releases.
-If you distribute server packs generated with a pre-release (alpha, beta) of ServerPackCreator, you do so at your own risk.
-I will not be held responsible for errors in your server pack caused by you using a pre-release.
-  * **TL;DR:** Don't use test to ship to prod!
+* Things will break with alpha releases, stuff may break when using beta releases.
+* If you distribute server packs generated with a pre-release (alpha, beta) of ServerPackCreator, you do so at your own risk.
+* I will not be held responsible for errors in your server pack caused by you using a pre-release.
+* I will not be held responsible for errors in your server pack in general. **Test your server packs before you ship them!**
+* **TL;DR:** Don't use test to ship to prod! **Test** before shipping!
 
 ##### Pre-Releases:
 
@@ -53,9 +54,11 @@ There are two kinds of pre-releases: Alphas and Betas
 
 # Screenshots
 
-| CLI                 | GUI                           | 
-|---------------------|-------------------------------|
-| ![cli](img/cli.png) | ![gui dark](img/gui_dark.png) |
+| CLI                 | GUI                           | WEB                 |
+|---------------------|-------------------------------|---------------------|
+| ![cli](img/cli.png) | ![gui dark](img/gui_dark.png) | ![web](img/web.png) |
+
+[//]: # (TODO: add web image)
 
 # Advantages/Disadvantages of CLI, GUI:
 
@@ -83,6 +86,21 @@ Note: All three ways are supported by the **.jar**-file. Which one is started de
 | Loading and saving different configurations for quick generation of multiple server packs in short succession.         |                                   |
 | Edit the configuration in the GUI. No manual file-editing required.                                                    |                                   |
 | Edit start script placeholders and values                                                                              |                                   |
+
+[//]: # (TODO: add web block)
+
+# WEB:
+
+| Advantages                                                    | Disadvantages                                                  |
+|:--------------------------------------------------------------|:---------------------------------------------------------------|
+| No software installation on clients required                  | Requires a server with sufficient space                        |
+| Easy access via web-browser                                   | Requires server-administration knowledge for setup and control |
+| Quickly share mod- and server packs with friends / colleagues | No custom script templates                                     |
+| Multiple server packs for the same modpack                    | No custom server icons                                         |
+| Re-use configurations                                         | No custom server-properties                                    |
+|                                                               | No custom server pack suffix                                   |
+|                                                               | No custom script variables or values                           |
+|                                                               | No custom inclusions or exclusions                             |
 
 ---
 
@@ -302,6 +320,101 @@ There are a couple of arguments which may or may not be helpful for you, dependi
 | `-web`    | Run ServerPackCreator as a webservice. The webservice will be reworked in version 6.                                                                                                                                    |
 | `-gui`    | Run ServerPackCreator with our GUI. If a graphical environment is supported, this is the default ServerPackCreator will enter, even when starting ServerPackCreator with no extra arguments at all.                     |
 | `--setup` | Set up and prepare the environment for subsequent runs of ServerPackCreator. This will create/copy all files needed for ServerPackCreator to function properly from inside its JAR-file and setup everything else, too. |
+
+## 6.1 Running ServerPackCreator as a webservice
+
+### 6.1.1 JAR
+
+1. Download the JAR-file from the latest release
+2. Run it once, using the `-web` argument. ServerPackCreator will crash, complaining about JDBC-related things. This is expected, don't worry.
+3. Browser to the now generated ServerPackCreator home-directory
+    1. Unsure where said home-directory is? Check the logs for `Home directory set to:`! 
+4. Install / setup / provide a PostgreSQL-database for ServerPackCreator. See [PostgreSQL Installation Tutorial](https://www.postgresql.org/docs/current/tutorial-install.html)
+5. Set the database-properties in the `serverpackcreator.properties` according to your database
+   1. `spring.datasource.password=`
+   2. `spring.datasource.url=`
+       1. Example:`jdbc\:postgresql\://localhost\:5432/serverpackcreator`
+   3. `spring.datasource.username=`
+6. Run ServerPackCreator, using the `-web`-argument, again
+7. Browse to `http://localhost:8080`
+
+#### 6.1.1.1 Tweaking the webservice
+
+You may edit the following properties inside the `serverpackcreator.properties` if you wish to change some parts of the webservice-behaviour:
+
+| Property                                                               | Description                                                                                                                          |
+|------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
+| `de.griefed.serverpackcreator.spring.schedules.database.cleanup`       | Time when the database-cleanup operations run.                                                                                       |
+| `de.griefed.serverpackcreator.spring.schedules.files.cleanup`          | Time when the filesystem-cleanup operations run.                                                                                     |
+| `de.griefed.serverpackcreator.spring.schedules.versions.refresh`       | Time when the version-refresh operation runs.                                                                                        |
+| `spring.servlet.multipart.max-file-size`                               | In combination with the property below, this sets the maximum upload size of modpacks.                                               |
+| `spring.servlet.multipart.max-request-size`                            | See above.                                                                                                                           |
+| `de.griefed.serverpackcreator.configuration.directories.mustinclude`   | Directories which must be included in a server pack, if they are present in a modpack.                                               |
+| `de.griefed.serverpackcreator.configuration.directories.shouldexclude` | Directories which should be excluded from a server pack.                                                                             |
+| `de.griefed.serverpackcreator.configuration.fallback.updateurl`        | URL to a `.properties`-file which contains definitions for clientside-only mods.                                                     |
+| `de.griefed.serverpackcreator.serverpack.autodiscovery.enabled`        | Whether ServerPackCreator should try to automatically excluded clientside-mods, in addition to the list of excluded clientside-mods. |
+| `de.griefed.serverpackcreator.serverpack.autodiscovery.filter`         | Filter method used to exclude mods from the clientside-only list. Possible values are `START`, `END`, `CONTAIN`, `REGEX`, `EITHER`   |
+| `de.griefed.serverpackcreator.serverpack.zip.exclude`                  | Files or directories which should be excluded from a server pack archive.                                                            |
+| `de.griefed.serverpackcreator.serverpack.zip.exclude.enabled`          | Whether files should be excluded from a server pack archive.                                                                         |
+| `server.port`                                                          | The port at which the webservice will be available at. Default is `8080`.                                                            |
+
+### 6.1.2 Docker (recommended)
+
+The recommended, and easiest, way to deploy ServerPackCreator as a webservice is via [docker](https://www.docker.com/) and [docker-compose](https://docs.docker.com/compose/).
+
+Available images can be viewed at https://hub.docker.com/r/griefed/serverpackcreator/tags
+
+**About Tags:**
+The example below makes use of the `latest`-tag. However, using said tag is not recommended, as there may be breaking changes between versions.
+When setting up ServerPackCreator as a webservice for production, make sure to *not* use `latest` and instead use the tag corresponding to the, at this point, latest available release version available.
+
+You must replace `<YOUR_DB_USERNAME>` and `<YOUR_DB_PASSWORD>` accordingly.
+
+```yaml
+version: '3'
+services:
+  serverpackcreatordb:
+    container_name: serverpackcreatordb
+    image: postgres:16.1
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: serverpackcreator
+      POSTGRES_USER: <YOUR_DB_USERNAME>
+      POSTGRES_PASSWORD: <YOUR_DB_PASSWORD>
+  serverpackcreator:
+    container_name: serverpackcreator
+    image: griefed/serverpackcreator:latest # For a list of available tags, see https://hub.docker.com/r/griefed/serverpackcreator/tags
+    restart: unless-stopped
+    environment:
+      SPC_DATABASE_PASSWORD: <YOUR_DB_PASSWORD>
+      SPC_DATABASE_USERNAME: <YOUR_DB_USERNAME>
+      SPC_DATABASE_URL: serverpackcreatordb:5432/serverpackcreator # Do not change this unless you absolutely know what you are doing.
+    ports:
+      - "8080:8080" # Port at which SPC will be available at on your host : Port of the webservice inside the container. Only change the left value, it at all.
+    volumes:
+      - ./modpacks:/app/serverpackcreator/modpacks # Path at which modpacks from the container will be stored at on your host : Path to the modpacks in the container. Only change the left value, if at all.
+      - ./server-packs:/app/serverpackcreator/server-packs # Path at which server packs from the container will be stored at on your host : Path to the server packs in the container. Only change the left value, if at all.
+      - ./logs:/app/serverpackcreator/logs # Path at which logs from the container will be stored at on your host : Path to the logs in the container. Only change the left value, if at all.
+```
+
+#### 6.1.2.1 Tweaking the docker deployment
+
+You may edit the following container-properties if you wish to change some parts of the webservice-behaviour:
+
+| Property                                      | Description                                                                                                                          |
+|-----------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
+| `SPC_SCHEDULE_DATABASE_CLEANUP`               | Time when the database-cleanup operations run.                                                                                       |
+| `SPC_SCHEDULE_FILES_CLEANUP`                  | Time when the filesystem-cleanup operations run.                                                                                     |
+| `SPC_SCHEDULE_VERSIONS_REFRESH`               | Time when the version-refresh operation runs.                                                                                        |
+| `SPC_MAX_UPLOAD_SIZE`                         | This sets the maximum upload size of modpacks.                                                                                       |
+| `SPC_CONFIGURATION_DIRECTORIES_MUSTINCLUDE`   | Directories which must be included in a server pack, if they are present in a modpack.                                               |
+| `SPC_CONFIGURATION_DIRECTORIES_SHOULDEXCLUDE` | Directories which should be excluded from a server pack.                                                                             |
+| `SPC_CONFIGURATION_FALLBACK_UPDATEURL`        | URL to a `.properties`-file which contains definitions for clientside-only mods.                                                     |
+| `SPC_SERVERPACK_AUTODISCOVERY_ENABLED`        | Whether ServerPackCreator should try to automatically excluded clientside-mods, in addition to the list of excluded clientside-mods. |
+| `SPC_SERVERPACK_AUTODISCOVERY_FILTER`         | Filter method used to exclude mods from the clientside-only list. Possible values are `START`, `END`, `CONTAIN`, `REGEX`, `EITHER`   |
+| `SPC_SERVERPACK_ZIP_EXCLUDE`                  | Files or directories which should be excluded from a server pack archive.                                                            |
+| `SPC_SERVERPACK_ZIP_EXCLUDE_ENABLED`          | Whether files should be excluded from a server pack archive.                                                                         |
+
 
 ## 6.1 Localization
 

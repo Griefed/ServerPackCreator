@@ -246,14 +246,14 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           ./gradlew -Pversion="${{ needs.preparations.outputs.version }}" generateLicenseReport --info --full-stacktrace
-          ./gradlew -Pversion="${{ needs.preparations.outputs.version }}" :serverpackcreator-app:build :serverpackcreator-app:copyDependencies :serverpackcreator-app:copyJar --info --full-stacktrace
+          ./gradlew -Pversion="${{ needs.preparations.outputs.version }}" build :serverpackcreator-app:copyDependencies :serverpackcreator-app:copyJar --info --full-stacktrace
 
       - name: Build Image
         run: |
           $Version = "${{ needs.preparations.outputs.version }}".split("-")
           jpackage `
             --app-version $Version[0] `
-            --copyright "Copyright (C) 2023 Griefed" `
+            --copyright "Copyright (C) 2024 Griefed" `
             --description "Create server packs from Minecraft Forge, NeoForge, Fabric, Quilt or LegacyFabric modpacks." `
             --dest "serverpackcreator-app\build\dist" `
             --icon "serverpackcreator-app\jpackagerResources\app.ico" `
@@ -261,7 +261,7 @@ jobs:
             --java-options "-Dfile.encoding=UTF-8" `
             --java-options "-Dlog4j2.formatMsgNoLookups=true" `
             --main-class de.griefed.serverpackcreator.app.ServerPackCreatorKt `
-            --main-jar serverpackcreator-app-${{ needs.preparations.outputs.version }}-plain.jar `
+            --main-jar serverpackcreator-app-${{ needs.preparations.outputs.version }}.jar `
             --name ServerPackCreator `
             --resource-dir "serverpackcreator-app\jpackagerResources" `
             --runtime-image "${{ steps.java.outputs.path }}" `
@@ -396,14 +396,14 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           ./gradlew -Pversion="${{ needs.preparations.outputs.version }}" generateLicenseReport --info --full-stacktrace
-          ./gradlew -Pversion="${{ needs.preparations.outputs.version }}" :serverpackcreator-app:build :serverpackcreator-app:copyDependencies :serverpackcreator-app:copyJar --info --full-stacktrace
+          ./gradlew -Pversion="${{ needs.preparations.outputs.version }}" build :serverpackcreator-app:copyDependencies :serverpackcreator-app:copyJar --info --full-stacktrace
 
       - name: Build Image
         run: |
           IFS="-" read -ra VERSION <<<"${{ needs.preparations.outputs.version }}"
           jpackage \
             --app-version "${VERSION[0]}" \
-            --copyright "Copyright (C) 2023 Griefed" \
+            --copyright "Copyright (C) 2024 Griefed" \
             --description "Create server packs from Minecraft Forge, NeoForge, Fabric, Quilt or LegacyFabric modpacks." \
             --dest serverpackcreator-app/build/dist \
             --icon serverpackcreator-app/jpackagerResources/app.png \
@@ -411,7 +411,7 @@ jobs:
             --java-options "-Dfile.encoding=UTF-8" \
             --java-options "-Dlog4j2.formatMsgNoLookups=true" \
             --main-class de.griefed.serverpackcreator.app.ServerPackCreatorKt \
-            --main-jar serverpackcreator-app-${{ needs.preparations.outputs.version }}-plain.jar \
+            --main-jar serverpackcreator-app-${{ needs.preparations.outputs.version }}.jar \
             --name ServerPackCreator \
             --resource-dir serverpackcreator-app/jpackagerResources \
             --runtime-image $JAVA_HOME \

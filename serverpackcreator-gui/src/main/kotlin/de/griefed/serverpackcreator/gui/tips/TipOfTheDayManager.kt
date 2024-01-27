@@ -1,4 +1,4 @@
-/* Copyright (C) 2023  Griefed
+/* Copyright (C) 2024  Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -55,9 +55,6 @@ class TipOfTheDayManager(private val mainFrame: JFrame, private val guiProps: Gu
         }
     }
 
-    /**
-     * @author Griefed
-     */
     @OptIn(DelicateCoroutinesApi::class)
     fun showTipOfTheDay() {
         GlobalScope.launch(Dispatchers.Swing, CoroutineStart.UNDISPATCHED) {
@@ -83,9 +80,6 @@ class TipOfTheDayManager(private val mainFrame: JFrame, private val guiProps: Gu
         }
     }
 
-    /**
-     * @author Griefed
-     */
     inner class ShowOnStartup : ShowOnStartupChoice {
         override fun setShowingOnStartup(showOnStartup: Boolean) {
             guiProps.showTipOnStartup = showOnStartup

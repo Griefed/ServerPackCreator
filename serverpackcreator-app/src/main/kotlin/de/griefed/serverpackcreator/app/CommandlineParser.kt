@@ -1,4 +1,4 @@
-/* Copyright (C) 2023  Griefed
+/* Copyright (C) 2024  Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -64,7 +64,7 @@ open class CommandlineParser(args: Array<String>) {
             /*
             * Check whether the user wanted us to print the help-text.
             */
-            if (argsList.contains(Mode.HELP.argument())) {
+            if (argsList.any { entry -> entry.contains(Mode.HELP.argument()) }) {
                 mode = Mode.HELP
                 return@run
             }
@@ -72,7 +72,7 @@ open class CommandlineParser(args: Array<String>) {
             /*
             * Check whether the user wants to check for update availability.
             */
-            if (argsList.contains(Mode.UPDATE.argument())) {
+            if (argsList.any { entry -> entry.contains(Mode.UPDATE.argument()) }) {
                 mode = Mode.UPDATE
                 return@run
             }
@@ -80,7 +80,7 @@ open class CommandlineParser(args: Array<String>) {
             /*
             * Check whether the user wants to generate a new serverpackcreator.conf from the commandline.
             */
-            if (argsList.contains(Mode.CGEN.argument())) {
+            if (argsList.any { entry -> entry.contains(Mode.CGEN.argument()) }) {
                 mode = Mode.CGEN
                 return@run
             }
@@ -88,10 +88,7 @@ open class CommandlineParser(args: Array<String>) {
             /*
             * Check whether the user wants to run in commandline-mode or whether a GUI would not be supported.
             */
-            if (argsList.contains(Mode.CLI.argument())) {
-                mode = Mode.CLI
-                return@run
-            } else if (GraphicsEnvironment.isHeadless()) {
+            if (argsList.any { entry -> entry.contains(Mode.CLI.argument()) }) {
                 mode = Mode.CLI
                 return@run
             }
@@ -99,7 +96,7 @@ open class CommandlineParser(args: Array<String>) {
             /*
             * Check whether the user wants ServerPackCreator to run as a webservice.
             */
-            if (argsList.contains(Mode.WEB.argument())) {
+            if (argsList.any { entry -> entry.contains(Mode.WEB.argument()) }) {
                 mode = Mode.WEB
                 return@run
             }
@@ -107,7 +104,7 @@ open class CommandlineParser(args: Array<String>) {
             /*
             * Check whether the user wants to use ServerPackCreators GUI.
             */
-            if (argsList.contains(Mode.GUI.argument())) {
+            if (argsList.any { entry -> entry.contains(Mode.GUI.argument()) } && !GraphicsEnvironment.isHeadless()) {
                 mode = Mode.GUI
                 return@run
             }
@@ -115,7 +112,7 @@ open class CommandlineParser(args: Array<String>) {
             /*
             * Check whether the user wants to set up and prepare the environment for subsequent runs.
             */
-            if (argsList.contains(Mode.SETUP.argument())) {
+            if (argsList.any { entry -> entry.contains(Mode.SETUP.argument()) }) {
                 val setupPos = argsList.indexOf(Mode.SETUP.argument()) + 1
                 val setupArg = argsList[setupPos]
                 val setupFile = File(setupArg)
@@ -132,12 +129,10 @@ open class CommandlineParser(args: Array<String>) {
             if (!GraphicsEnvironment.isHeadless()) {
                 mode = Mode.GUI
                 return@run
+            } else {
+                mode = Mode.CLI
+                return@run
             }
-
-            /*
-            * If all else fails, exit ServerPackCreator.
-            */
-            mode = Mode.EXIT
         }
     }
 }

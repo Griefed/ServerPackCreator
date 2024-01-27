@@ -1,4 +1,4 @@
-/* Copyright (C) 2023  Griefed
+/* Copyright (C) 2024  Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -210,7 +210,7 @@ actual class JarUtilities {
                     fileEnding
                 )
             } else {
-                JarFile(classToRetrieveHomeFor.source(false, tempDir)).use {
+                JarFile(classToRetrieveHomeFor.source(tempDir)).use {
                     // Production
                     copyFolderFromJar(
                         it,
@@ -361,8 +361,8 @@ actual class JarUtilities {
      */
     fun jarInformation(classInJar: Class<*>): HashMap<String, String> {
         val sysInfo = HashMap<String, String>(10)
-        sysInfo["jarPath"] = classInJar.source(true).path
-        sysInfo["jarName"] = classInJar.source(true).name
+        sysInfo["jarPath"] = classInJar.source().path
+        sysInfo["jarName"] = classInJar.source().name
         sysInfo["javaVersion"] = System.getProperty("java.version")
         sysInfo["osArch"] = System.getProperty("os.arch")
         sysInfo["osName"] = System.getProperty("os.name")

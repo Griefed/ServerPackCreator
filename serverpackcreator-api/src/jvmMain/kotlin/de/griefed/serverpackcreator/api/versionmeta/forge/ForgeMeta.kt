@@ -1,4 +1,4 @@
-/* Copyright (C) 2023  Griefed
+/* Copyright (C) 2024  Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -365,6 +365,9 @@ actual class ForgeMeta actual constructor(
             Optional.empty()
         }
 
+    fun getForgeMeta(): HashMap<String,List<String>> {
+        return forgeLoader!!.versionMeta
+    }
 
     /**
      * Installer file for the specified [forgeVersion] and [minecraftVersion] version, wrapped in an [Optional], so you

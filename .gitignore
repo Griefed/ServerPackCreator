@@ -358,6 +358,7 @@ serverpackcreator-web-frontend/dist/
 serverpackcreator-web-frontend/node_modules/
 serverpackcreator-web-frontend/node/
 serverpackcreator-web/serverpackcreator.db
+docker-compose-dev.yml
 
 # ServerPackCreator App
 serverpackcreator-app/tests/*
