@@ -1,3 +1,25 @@
+## [5.1.12-alpha.2](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.12-alpha.1...5.1.12-alpha.2) (2024-01-27)
+
+
+### 📦 Other
+
+* Add missing PUID and PGID ([b94cb7f](https://git.griefed.de/Griefed/ServerPackCreator/commit/b94cb7f1e1be763d7a3d75259208a165ce1f2a8f))
+* bump npm packages ([b0f9697](https://git.griefed.de/Griefed/ServerPackCreator/commit/b0f9697dffe5be1102516fbd7d85bfbd5dbb2fca))
+
+
+### 🦊 CI/CD
+
+* Bump actions versions ([1d0336b](https://git.griefed.de/Griefed/ServerPackCreator/commit/1d0336be9e7e83aa54993d58a39b2140fa8e6455))
+* Bump artifact download version ([f17591a](https://git.griefed.de/Griefed/ServerPackCreator/commit/f17591abbad870e96f2c8b9c73cae9689bc275d8))
+* Update tj-actions-branch-name ([e4b8220](https://git.griefed.de/Griefed/ServerPackCreator/commit/e4b82205e2e1150575cad62a76f2c1854c727edc))
+
+
+### 🛠 Fixes
+
+* Do not chown root-files ([a14b9e0](https://git.griefed.de/Griefed/ServerPackCreator/commit/a14b9e0abf5935ae9b30052af410d12fd53b582c))
+* Hopefully fix container not booting up correctly ([977fbc9](https://git.griefed.de/Griefed/ServerPackCreator/commit/977fbc93dddcb5802ef212ce12433126da1f57b4))
+* Remove explicit chmod and chown ([25e04b2](https://git.griefed.de/Griefed/ServerPackCreator/commit/25e04b2982a5ef59d4a1bd822616c67c9fcd29da))
+
 ## [5.1.12-alpha.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.11...5.1.12-alpha.1) (2024-01-27)
 
 
