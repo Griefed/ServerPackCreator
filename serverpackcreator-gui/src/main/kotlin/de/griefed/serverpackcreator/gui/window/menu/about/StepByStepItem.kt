@@ -1,4 +1,4 @@
-/* Copyright (C) 2023  Griefed
+/* Copyright (C) 2024  Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui.window.menu.about
 
-import Gui
+import Translations
 import de.griefed.serverpackcreator.gui.window.MainFrame
 import javax.swing.JMenuItem
 
@@ -28,7 +28,7 @@ import javax.swing.JMenuItem
  *
  * @author Griefed
  */
-class StepByStepItem(mainFrame: MainFrame): JMenuItem(Gui.firstrun_menu.toString()) {
+class StepByStepItem(mainFrame: MainFrame): JMenuItem(Translations.firstrun_menu.toString()) {
 
     init {
         this.addActionListener { mainFrame.stepByStepGuide() }

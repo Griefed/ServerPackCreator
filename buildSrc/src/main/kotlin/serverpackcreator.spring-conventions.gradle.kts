@@ -14,6 +14,7 @@ plugins {
     // https://kotlinlang.org/docs/reference/compiler-plugins.html#spring-support
     kotlin("plugin.spring")
     kotlin("plugin.allopen")
+    kotlin("plugin.jpa")
 }
 
 apply(plugin = "org.springframework.boot")

@@ -40,6 +40,7 @@ kotlin {
                 api("org.apache.logging.log4j:log4j-core:2.21.0")
                 api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
                 api("org.pf4j:pf4j:3.10.0")
+                api("org.bouncycastle:bcpkix-jdk18on:1.77")
             }
         }
         val jvmTest by getting {

@@ -1,4 +1,4 @@
-/* Copyright (C) 2023  Griefed
+/* Copyright (C) 2024  Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui.window.menu.file
 
-import Gui
+import Translations
 import de.griefed.serverpackcreator.gui.window.MainFrame
 import javax.swing.JMenuItem
 
@@ -28,7 +28,7 @@ import javax.swing.JMenuItem
  *
  * @author Griefed
  */
-class ExitItem(private val mainFrame: MainFrame) : JMenuItem(Gui.menubar_gui_menuitem_exit.toString()) {
+class ExitItem(private val mainFrame: MainFrame) : JMenuItem(Translations.menubar_gui_menuitem_exit.toString()) {
     init {
         this.addActionListener { mainFrame.mainPanel.closeAndExit() }
     }

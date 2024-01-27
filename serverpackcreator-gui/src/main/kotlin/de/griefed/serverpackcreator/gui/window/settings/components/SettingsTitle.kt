@@ -1,4 +1,4 @@
-/* Copyright (C) 2023  Griefed
+/* Copyright (C) 2024  Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,11 +19,11 @@
  */
 package de.griefed.serverpackcreator.gui.window.settings.components
 
-import Gui
+import Translations
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.components.TabTitle
 
 /**
  * @author Griefed
  */
-class SettingsTitle(guiProps: GuiProps) : TabTitle(guiProps, Gui.settings_title.toString())
+class SettingsTitle(guiProps: GuiProps) : TabTitle(guiProps, Translations.settings_title.toString())

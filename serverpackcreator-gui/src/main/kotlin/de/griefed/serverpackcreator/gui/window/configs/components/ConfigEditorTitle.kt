@@ -1,4 +1,4 @@
-/* Copyright (C) 2023  Griefed
+/* Copyright (C) 2024  Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui.window.configs.components
 
-import Gui
+import Translations
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.components.TabTitle
 import de.griefed.serverpackcreator.gui.utilities.DialogUtilities
@@ -47,9 +47,9 @@ class ConfigEditorTitle(
     val closeButton = JButton(guiProps.closeIcon)
     private val editorTitleMouseAdapter = object : MouseAdapter() {
         val closeSaveAndSaveAsMenu = JPopupMenu()
-        val closeTabItem = JMenuItem(Gui.createserverpack_gui_close_title.toString())
-        val saveTabItem = JMenuItem(Gui.menubar_gui_menuitem_saveconfig.toString())
-        val saveTabAsItem = JMenuItem(Gui.menubar_gui_menuitem_saveas.toString())
+        val closeTabItem = JMenuItem(Translations.createserverpack_gui_close_title.toString())
+        val saveTabItem = JMenuItem(Translations.menubar_gui_menuitem_saveconfig.toString())
+        val saveTabAsItem = JMenuItem(Translations.menubar_gui_menuitem_saveas.toString())
 
         init {
             closeTabItem.addActionListener { close() }
@@ -103,8 +103,8 @@ class ConfigEditorTitle(
         if (hasUnsavedChanges) {
             tabbedConfigsTab.tabs.selectedComponent = configEditor
             if (DialogUtilities.createShowGet(
-                    Gui.createserverpack_gui_close_unsaved_message(title),
-                    Gui.createserverpack_gui_close_unsaved_title(title),
+                    Translations.createserverpack_gui_close_unsaved_message(title),
+                    Translations.createserverpack_gui_close_unsaved_title(title),
                     tabbedConfigsTab.panel.parent,
                     JOptionPane.WARNING_MESSAGE,
                     JOptionPane.YES_NO_OPTION,

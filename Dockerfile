@@ -1,8 +1,24 @@
-FROM ghcr.io/griefed/baseimage-ubuntu-jdk17-kotlin:1.0.4
+FROM eclipse-temurin:21-jdk-jammy as builder
 
 ARG VERSION=dev
 
-ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=2
+RUN mkdir -p /tmp/serverpackcreator/java
+WORKDIR /tmp/serverpackcreator
+COPY / /tmp/serverpackcreator
+
+RUN \
+  apt-get update && apt-get install dos2unix && \
+  dos2unix gradlew && chmod +x gradlew && \
+  sh gradlew -Pversion="$VERSION" \
+    build --info --full-stacktrace \
+    -x :serverpackcreator-api:jvmTest -x :serverpackcreator-web:test && \
+  wget -O zulu21.tar.gz https://cdn.azul.com/zulu/bin/zulu21.30.15-ca-jdk21.0.1-linux_x64.tar.gz && \
+  tar -xvf zulu21.tar.gz -C /tmp/serverpackcreator/java --strip-components=1
+
+FROM ghcr.io/linuxserver/baseimage-ubuntu:jammy-version-d74de700
+
+ARG VERSION=dev
+
 ENV LOG4J_FORMAT_MSG_NO_LOOKUPS=true
 
 LABEL maintainer="Griefed <griefed@griefed.de>"
@@ -11,30 +27,30 @@ LABEL license="GNU LGPLv2.1"
 LABEL issues="https://github.com/Griefed/ServerPackCreator/issues"
 LABEL help="https://wiki.griefed.de/en/Documentation/ServerPackCreator/ServerPackCreator-Help"
 LABEL support="https://discord.griefed.de"
-LABEL homepage="https://griefed.de/#/serverpackcreator"
+LABEL homepage="https://serverpackcreator.de"
 LABEL version=$VERSION
-LABEL description="Create a server pack from a Minecraft Forge, Fabric or Quilt modpack!"
+LABEL description="Create a server pack from a Minecraft Forge, NeoForge, Fabric, LegacyFabric or Quilt modpack!"
 
 RUN \
   echo "**** Bring system up to date ****" && \
   apt-get update && apt-get upgrade -y && \
-  apt-get install --no-install-recommends -y \
+  apt-get install -y \
     libatomic1 && \
   echo "**** Creating our folder(s) ****" && \
   mkdir -p \
-    /app/serverpackcreator && \
-  mkdir \
-    /server-packs && \
+    /app/serverpackcreator/java && \
   echo "**** Cleanup ****" && \
+    apt-get autoremove -y && \
+    apt-get clean && \
     rm -rf \
       /root/.cache \
       /tmp/*
 
-COPY root/ /
-COPY --chown=grfd:grfd serverpackcreator-app/build/libs/serverpackcreator-app-${VERSION}.jar /app/serverpackcreator/serverpackcreator.jar
-COPY --chown=grfd:grfd serverpackcreator-api/src/jvmMain/resources/de/griefed/resources/server_files /defaults/server_files
-COPY --chown=grfd:grfd serverpackcreator-api/src/jvmMain/resources/de/griefed/resources/serverpackcreator.conf /defaults/serverpackcreator.conf
+COPY --from=builder --chown=abc:abc --chmod=764 /tmp/serverpackcreator/java/ /app/serverpackcreator/java
+COPY --from=builder --chown=abc:abc --chmod=764 /tmp/serverpackcreator/serverpackcreator-app/build/libs/serverpackcreator-app-$VERSION.jar /app/serverpackcreator/serverpackcreator.jar
+COPY --chown=abc:abc root/ /
+COPY --chown=abc:abc serverpackcreator-api/src/jvmMain/resources/de/griefed/resources/server_files /defaults/server_files
 
-VOLUME /data /server-packs
+
 
 EXPOSE 8080

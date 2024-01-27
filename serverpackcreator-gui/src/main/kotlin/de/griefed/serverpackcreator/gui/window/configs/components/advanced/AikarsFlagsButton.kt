@@ -1,4 +1,4 @@
-/* Copyright (C) 2023  Griefed
+/* Copyright (C) 2024  Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui.window.configs.components.advanced
 
-import Gui
+import Translations
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.components.CompoundIcon
 import de.griefed.serverpackcreator.gui.components.TextIcon
@@ -41,7 +41,7 @@ class AikarsFlagsButton(configEditor: ConfigEditor, guiProps: GuiProps) : JButto
         toolTipText = null
         val balloonTip = BalloonTip(
             this,
-            JLabel(Gui.createserverpack_gui_createserverpack_javaargs_aikar_tooltip.toString()),
+            JLabel(Translations.createserverpack_gui_createserverpack_javaargs_aikar_tooltip.toString()),
             guiProps.balloonStyle,
             false
         )
@@ -71,7 +71,7 @@ class AikarsFlagsButton(configEditor: ConfigEditor, guiProps: GuiProps) : JButto
                 balloonTip.isVisible = false
             }
         })
-        val parts = Gui.createserverpack_gui_createserverpack_javaargs_aikar.toString().split(" ")
+        val parts = Translations.createserverpack_gui_createserverpack_javaargs_aikar.toString().split(" ")
         val flags = mutableListOf<TextIcon>()
         for (part in parts) {
             flags.add(TextIcon(this, part))

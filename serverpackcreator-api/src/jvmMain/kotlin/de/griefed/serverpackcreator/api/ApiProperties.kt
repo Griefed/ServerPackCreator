@@ -1,4 +1,4 @@
-/* Copyright (C) 2023  Griefed
+/* Copyright (C) 2024  Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -134,8 +134,6 @@ actual class ApiProperties(
         "server.tomcat.basedir"
     private val pTomcatLogsDirectory =
         "server.tomcat.accesslog.directory"
-    private val pArtemisDataDirectory =
-        "spring.artemis.embedded.data-directory"
     private val pSpringDatasourceUrl =
         "spring.datasource.url"
 
@@ -145,7 +143,6 @@ actual class ApiProperties(
         jarInformation.jarFolder.absoluteFile
     }
 
-    @Suppress("SpellCheckingInspection")
     private var fallbackModsWhitelist = TreeSet(
         listOf(
             "Ping-Wheel-"
@@ -190,6 +187,7 @@ actual class ApiProperties(
             "Controller Support-",
             "Controlling-",
             "CraftPresence-",
+            "Create_Questing-",
             "CullLessLeaves-Reforged-",
             "CustomCursorMod-",
             "CustomMainMenu-",
@@ -1184,30 +1182,27 @@ actual class ApiProperties(
         }
 
     /**
-     * Path to the SQLite database used by the webservice-side of ServerPackCreator.
+     * Path to the PostgreSQL database used by the webservice-side of ServerPackCreator.
      */
     @Suppress("MemberVisibilityCanBePrivate")
-    var jdbcDatabaseUrl: String = "jdbc:sqlite:serverpackcreator.db"
+    var jdbcDatabaseUrl: String = "jdbc:postgresql://localhost:5432/serverpackcreator"
         get() {
             var dbPath = internalProps.getProperty(pSpringDatasourceUrl, "")
-            if (dbPath.replace("jdbc:sqlite:", "").isEmpty()) {
-                dbPath = "jdbc:sqlite:${File(homeDirectory, "serverpackcreator.db").absoluteFile}"
-            }
-            if (!dbPath.startsWith("jdbc:sqlite:")) {
-                dbPath = "jdbc:sqlite:$dbPath"
+            if (dbPath.isEmpty()) {
+                dbPath = "jdbc:postgresql://localhost:5432/serverpackcreator"
             }
             internalProps.setProperty(pSpringDatasourceUrl, dbPath)
             field = dbPath
             return field
         }
         set(value) {
-            if (!value.startsWith("jdbc:sqlite:")) {
-                internalProps.setProperty(pSpringDatasourceUrl, "jdbc:sqlite:$value")
+            if (!value.startsWith("jdbc:postgresql:")) {
+                internalProps.setProperty(pSpringDatasourceUrl, "jdbc:postgresql:$value")
             } else {
                 internalProps.setProperty(pSpringDatasourceUrl, value)
             }
             field = internalProps.getProperty(pSpringDatasourceUrl)
-            log.info("Set database path to: $field.")
+            log.info("Set database url to: $field.")
             log.warn("Restart ServerPackCreator for this change to take effect.")
         }
 
@@ -1232,7 +1227,7 @@ actual class ApiProperties(
             return field
         }
         set(value) {
-            internalProps.setProperty(pLanguage, language.toTag())
+            internalProps.setProperty(pLanguage, value.toTag())
             i18n4kConfig.locale = value
             field = value
             log.info("Language set to: ${field.displayLanguage} (${field.toTag()}).")
@@ -1277,30 +1272,6 @@ actual class ApiProperties(
             }
         }
 
-    /**
-     * Maximum disk usage in percent until Artemis stops accepting new entries.
-     */
-    var artemisQueueMaxDiskUsage = 90
-        get() {
-            val usage = getIntProperty(pSpringArtemisQueueMaxDiskUsage, 90)
-            field = if (usage in 0..100) {
-                getIntProperty(pSpringArtemisQueueMaxDiskUsage, 90)
-            } else {
-                log.error("Invalid max disk usage set: $usage. Defaulting to 90")
-                90
-            }
-            return field
-        }
-        set(value) {
-            if (value in 0..100) {
-                setIntProperty(pSpringArtemisQueueMaxDiskUsage, value)
-                field = value
-                log.info("Queue max disk usage set to: $field")
-            } else {
-                log.error("Invalid max disk usage specified: $value.")
-            }
-        }
-
     var webserviceCleanupSchedule: String
         get() {
             return internalProps.getProperty("de.griefed.serverpackcreator.spring.schedules.database.cleanup")
@@ -1325,18 +1296,8 @@ actual class ApiProperties(
             internalProps.setProperty("de.griefed.serverpackcreator.spring.schedules.files.cleanup", value)
         }
 
-    /**
-     * @author Griefed
-     */
-    fun defaultWebserviceDatabase(): File {
-        return File(home, "serverpackcreator.db")
-    }
-
-    /**
-     * @author Griefed
-     */
-    fun defaultArtemisDataDirectory(): File {
-        return File(workDirectory, "artemis")
+    fun defaultWebserviceDatabase(): String {
+        return "jdbc\\:postgresql\\://localhost\\:5432/serverpackcreator"
     }
 
     /**
@@ -1422,8 +1383,13 @@ actual class ApiProperties(
     @Suppress("MemberVisibilityCanBePrivate")
     var tomcatBaseDirectory: File = homeDirectory
         get() {
-            val default = homeDirectory.absolutePath
-            val dir = internalProps.getProperty(pTomcatBaseDirectory, default)
+            val prop = internalProps.getProperty(pTomcatBaseDirectory, homeDirectory.absolutePath)
+            val dir = if (prop != homeDirectory.absolutePath) {
+                internalProps.setProperty(pTomcatBaseDirectory, homeDirectory.absolutePath)
+                homeDirectory.absolutePath
+            } else {
+                internalProps.getProperty(pTomcatBaseDirectory, homeDirectory.absolutePath)
+            }
             field = File(dir).absoluteFile
             return field
         }
@@ -1433,16 +1399,10 @@ actual class ApiProperties(
             log.info("Set Tomcat base-directory to: $field")
         }
 
-    /**
-     * @author Griefed
-     */
     fun defaultTomcatBaseDirectory(): File {
         return homeDirectory.absoluteFile
     }
 
-    /**
-     * @author Griefed
-     */
     fun defaultServerPacksDirectory(): File {
         return File(homeDirectory, "server-packs").absoluteFile
     }
@@ -1503,9 +1463,6 @@ actual class ApiProperties(
             log.info("Set Tomcat logs-directory to: $field")
         }
 
-    /**
-     * @author Griefed
-     */
     fun defaultTomcatLogsDirectory(): File {
         return File(homeDirectory, "logs").absoluteFile
     }
@@ -1735,23 +1692,6 @@ actual class ApiProperties(
         private set
 
     /**
-     * Data directory for Artemis` queue-processing.
-     */
-    @Suppress("MemberVisibilityCanBePrivate")
-    var artemisDataDirectory: File = File(workDirectory, "artemis").absoluteFile
-        get() {
-            val default = File(workDirectory, "artemis").absolutePath
-            val dir = internalProps.getProperty(pArtemisDataDirectory, default)
-            field = File(dir).absoluteFile
-            return field
-        }
-        set(value) {
-            internalProps.setProperty(pArtemisDataDirectory, value.absolutePath)
-            field = value.absoluteFile
-            log.info("Set Artemis data-directory to: $field")
-        }
-
-    /**
      * Temp-directory storing files and folders required temporarily during the run of a server pack
      * generation or other operations.
      *
@@ -1780,9 +1720,9 @@ actual class ApiProperties(
      * By default, this is the `modpacks`-directory inside the `temp`-directory inside
      * ServerPackCreators home-directory.
      */
-    var modpacksDirectory: File = File(tempDirectory, "modpacks").absoluteFile
+    var modpacksDirectory: File = File(homeDirectory, "modpacks").absoluteFile
         get() {
-            field = File(tempDirectory, "modpacks").absoluteFile
+            field = File(homeDirectory, "modpacks").absoluteFile
             return field
         }
         private set
@@ -1852,20 +1792,6 @@ actual class ApiProperties(
         private set
 
     /**
-     * The database used by the webservice-portion of ServerPackCreator to do store and provide server packs and
-     * related information.
-     */
-    var serverPackCreatorDatabase: File = File(jdbcDatabaseUrl.replace("jdbc:sqlite:", "")).absoluteFile
-        get() {
-            field = File(jdbcDatabaseUrl.replace("jdbc:sqlite:", "")).absoluteFile
-            return field
-        }
-        set(value) {
-            field = value.absoluteFile
-            jdbcDatabaseUrl = field.absolutePath
-        }
-
-    /**
      * Directory in which plugins for ServerPackCreator are to be placed in.
      *
      * This directory not only holds any potential plugins for ServerPackCreator, but also contains the
@@ -1927,6 +1853,17 @@ actual class ApiProperties(
         }
     }
 
+    private fun loadOverrides() : Properties {
+        val tempProps = Properties()
+        val overrides = File(homeDirectory,"overrides.properties")
+        if (overrides.isFile) {
+            File(homeDirectory,"overrides.properties").inputStream().use {
+                tempProps.load(it)
+            }
+        }
+        return tempProps
+    }
+
     /**
      * Load properties using the default file path.
      * Only call this method on an already initialized ApiProperties-object.
@@ -1976,6 +1913,18 @@ actual class ApiProperties(
         }
 
         internalProps.putAll(props)
+        internalProps.setProperty(pTomcatBaseDirectory, homeDirectory.absolutePath)
+        if (internalProps.getProperty(pLanguage) != "en_GB") {
+            changeLocale(Locale(internalProps.getProperty(pLanguage)))
+        }
+
+        val overrides = loadOverrides()
+        for ((key,value) in overrides) {
+            log.warn("Overriding:")
+            log.warn("  $key")
+            log.warn("  $value")
+        }
+        internalProps.putAll(overrides)
 
         if (updateFallback()) {
             log.info("Fallback lists updated.")
@@ -2515,13 +2464,9 @@ actual class ApiProperties(
         manifestsDirectory.createDirectories(create = true, directory = true)
         minecraftServerManifestsDirectory.createDirectories(create = true, directory = true)
         installerCacheDirectory.createDirectories(create = true, directory = true)
-        artemisDataDirectory.createDirectories(create = true, directory = true)
         printSettings()
     }
 
-    /**
-     * @author Griefed
-     */
     @Suppress("MemberVisibilityCanBePrivate")
     fun printSettings() {
         log.info("============================== PROPERTIES ==============================")
@@ -2533,11 +2478,9 @@ actual class ApiProperties(
         log.info("Set Tomcat base-directory to:       $tomcatBaseDirectory")
         log.info("Server packs directory set to:      $serverPacksDirectory")
         log.info("Set Tomcat logs-directory to:       $tomcatLogsDirectory")
-        log.info("Set Artemis data-directory to:      $artemisDataDirectory")
         log.info("Checking for pre-releases set to:   $isCheckingForPreReleasesEnabled")
         log.info("Zip-file exclusion enabled set to:  $isZipFileExclusionEnabled")
         log.info("HasteBin documents endpoint set to: $hasteBinServerUrl")
-        log.info("Queue max disk usage set to:        $artemisQueueMaxDiskUsage")
         log.info("Directories which must always be included set to: $directoriesToInclude")
         log.info("Directories which must always be excluded set to: $directoriesToExclude")
         log.info("Cleanup of already existing server packs set to:  $isServerPackCleanupEnabled")

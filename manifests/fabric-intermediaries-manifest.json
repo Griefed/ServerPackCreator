@@ -1,5 +1,30 @@
 [
   {
+    "maven": "net.fabricmc:intermediary:24w04a",
+    "version": "24w04a",
+    "stable": true
+  },
+  {
+    "maven": "net.fabricmc:intermediary:24w03b",
+    "version": "24w03b",
+    "stable": true
+  },
+  {
+    "maven": "net.fabricmc:intermediary:24w03a",
+    "version": "24w03a",
+    "stable": true
+  },
+  {
+    "maven": "net.fabricmc:intermediary:23w51b",
+    "version": "23w51b",
+    "stable": true
+  },
+  {
+    "maven": "net.fabricmc:intermediary:23w51a",
+    "version": "23w51a",
+    "stable": true
+  },
+  {
     "maven": "net.fabricmc:intermediary:1.20.4",
     "version": "1.20.4",
     "stable": true

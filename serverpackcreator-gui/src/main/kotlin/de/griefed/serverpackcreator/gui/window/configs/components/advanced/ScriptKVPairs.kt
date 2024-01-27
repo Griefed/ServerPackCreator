@@ -1,4 +1,4 @@
-/* Copyright (C) 2023  Griefed
+/* Copyright (C) 2024  Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui.window.configs.components.advanced
 
-import Gui
+import Translations
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.components.ConvenientJTable
 import de.griefed.serverpackcreator.gui.window.configs.ConfigEditor
@@ -32,8 +32,8 @@ import de.griefed.serverpackcreator.gui.window.configs.ConfigEditor
  */
 class ScriptKVPairs(guiProps: GuiProps, configEditor: ConfigEditor) : ConvenientJTable(
     guiProps,
-    Gui.createserverpack_gui_createserverpack_scriptsettings_table_column_variable.toString(),
-    Gui.createserverpack_gui_createserverpack_scriptsettings_table_column_value.toString()
+    Translations.createserverpack_gui_createserverpack_scriptsettings_table_column_variable.toString(),
+    Translations.createserverpack_gui_createserverpack_scriptsettings_table_column_value.toString()
 ) {
 
     init {

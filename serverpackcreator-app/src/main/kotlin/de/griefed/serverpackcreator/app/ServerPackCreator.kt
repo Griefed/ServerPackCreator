@@ -1,4 +1,4 @@
-/* Copyright (C) 2023  Griefed
+/* Copyright (C) 2024  Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.app
 
-import Api
+import Translations
 import de.comahe.i18n4k.Locale
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.api.PackConfig
@@ -35,6 +35,11 @@ import org.apache.commons.io.monitor.FileAlterationListener
 import org.apache.commons.io.monitor.FileAlterationMonitor
 import org.apache.commons.io.monitor.FileAlterationObserver
 import org.apache.logging.log4j.kotlin.cachedLoggerOf
+import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.boot.autoconfigure.domain.EntityScan
+import org.springframework.boot.context.properties.EnableConfigurationProperties
+import org.springframework.context.annotation.ComponentScan
+import org.springframework.scheduling.annotation.EnableScheduling
 import org.xml.sax.SAXException
 import java.awt.GraphicsEnvironment
 import java.io.File
@@ -59,11 +64,22 @@ fun main(args: Array<String>) {
  * API-instance used to run a given instance of SPC.
  * @author Griefed
  */
+@SpringBootApplication
+@EnableConfigurationProperties
+@EntityScan(value = ["de.griefed.serverpackcreator.web"])
+@ComponentScan(value = ["de.griefed.serverpackcreator"])
+@EnableScheduling
 class ServerPackCreator(private val args: Array<String>) {
     private val log = cachedLoggerOf(this.javaClass)
-    val commandlineParser: CommandlineParser = CommandlineParser(args)
-    val apiWrapper = ApiWrapper.api(commandlineParser.propertiesFile, commandlineParser.language, false)
+    final val commandlineParser: CommandlineParser = CommandlineParser(args)
+    final val apiWrapper = ApiWrapper.api(commandlineParser.propertiesFile, false)
     private val appInfo = JarInformation(ServerPackCreator::class.java, apiWrapper.jarUtilities)
+
+    init {
+        if (commandlineParser.language != null) {
+            apiWrapper.apiProperties.changeLocale(commandlineParser.language!!)
+        }
+    }
 
     @Suppress("MemberVisibilityCanBePrivate")
     @get:Synchronized
@@ -82,6 +98,8 @@ class ServerPackCreator(private val args: Array<String>) {
     }
 
     fun run(mode: Mode = Mode.GUI) {
+        log.info("Running with args: ${args.joinToString(" ")}")
+        log.info("Running in mode: $mode")
         log.info("App information:")
         log.info("App Folder:      ${appInfo.jarFolder}")
         log.info("App Path:        ${appInfo.jarFile.absolutePath}")
@@ -511,6 +529,6 @@ class ServerPackCreator(private val args: Array<String>) {
             }
         } while (!userLocale.matches(regex))
         scanner.close()
-        println("Using language: ${Api.localeName}")
+        println("Using language: ${Translations.localeName}")
     }
 }

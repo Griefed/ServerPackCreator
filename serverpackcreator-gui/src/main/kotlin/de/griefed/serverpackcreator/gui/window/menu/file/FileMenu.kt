@@ -1,4 +1,4 @@
-/* Copyright (C) 2023  Griefed
+/* Copyright (C) 2024  Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui.window.menu.file
 
-import Gui
+import Translations
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import de.griefed.serverpackcreator.gui.GuiProps
@@ -40,7 +40,7 @@ class FileMenu(
     mainFrame: MainFrame,
     utilities: Utilities,
     guiProps: GuiProps
-) : JMenu(Gui.menubar_gui_menu_file.toString()) {
+) : JMenu(Translations.menubar_gui_menu_file.toString()) {
 
     private val newConfig = NewConfigItem(tabbedConfigsTab)
     private val loadConfig = LoadConfigItem(tabbedConfigsTab)

@@ -1,4 +1,4 @@
-/* Copyright (C) 2023  Griefed
+/* Copyright (C) 2024  Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui.window.control.components
 
-import Gui
+import Translations
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.components.BalloonTipButton
 import java.awt.event.ActionListener
@@ -30,9 +30,9 @@ import java.awt.event.ActionListener
  * @author Griefed
  */
 class ServerPacksButton(guiProps: GuiProps, openPacksAction: ActionListener) : BalloonTipButton(
-    Gui.createserverpack_gui_buttonserverpacks.toString(),
+    Translations.createserverpack_gui_buttonserverpacks.toString(),
     guiProps.packsIcon,
-    Gui.createserverpack_gui_buttonserverpacks_tip.toString(),
+    Translations.createserverpack_gui_buttonserverpacks_tip.toString(),
     guiProps,
     openPacksAction
 )

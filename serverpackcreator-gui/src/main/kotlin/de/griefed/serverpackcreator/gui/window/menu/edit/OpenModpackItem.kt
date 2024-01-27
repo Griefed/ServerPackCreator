@@ -1,4 +1,4 @@
-/* Copyright (C) 2023  Griefed
+/* Copyright (C) 2024  Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui.window.menu.edit
 
-import Gui
+import Translations
 import de.griefed.serverpackcreator.api.utilities.common.FileUtilities
 import de.griefed.serverpackcreator.gui.window.configs.TabbedConfigsTab
 import java.io.File
@@ -33,7 +33,7 @@ import javax.swing.JMenuItem
  * @author Griefed
  */
 class OpenModpackItem(private val fileUtilities: FileUtilities, private val tabbedConfigsTab: TabbedConfigsTab) :
-    JMenuItem(Gui.menubar_gui_menuitem_modpack.toString()) {
+    JMenuItem(Translations.menubar_gui_menuitem_modpack.toString()) {
     init {
         this.addActionListener { openModpack() }
     }
