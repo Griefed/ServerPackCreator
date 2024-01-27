@@ -45,7 +45,10 @@ task("copyDependencies", Copy::class) {
 }
 
 task("copyJar", Copy::class) {
-    from(tasks.jar).into("${layout.buildDirectory.asFile.get()}/jars")
+    dependsOn(tasks.sourcesJar, tasks.bootJar, tasks.javadocJar, tasks.jar)
+    from("${layout.buildDirectory.asFile.get()}/libs") {
+        include("*.jar")
+    }.into("${layout.buildDirectory.asFile.get()}/jars")
 }
 
 tasks.register<Delete>("cleanTmpPackager") {

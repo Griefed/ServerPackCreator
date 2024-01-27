@@ -1,4 +1,4 @@
-/* Copyright (C) 2023  Griefed
+/* Copyright (C) 2024  Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -138,9 +138,6 @@ class TabbedConfigsTab(
         tabs.addMouseListener(mouseAdapter)
     }
 
-    /**
-     * @author Griefed
-     */
     fun addTab(): ConfigEditor {
         val editor = ConfigEditor(
             guiProps,
@@ -155,9 +152,6 @@ class TabbedConfigsTab(
         return editor
     }
 
-    /**
-     * @author Griefed
-     */
     fun saveAll() {
         for (tab in allTabs) {
             (tab as ConfigEditor).saveCurrentConfiguration()
@@ -165,9 +159,6 @@ class TabbedConfigsTab(
         checkAll()
     }
 
-    /**
-     * @author Griefed
-     */
     fun saveAs(editor: ConfigEditor? = selectedEditor) {
         if (editor == null) {
             return
@@ -186,9 +177,6 @@ class TabbedConfigsTab(
         checkAll()
     }
 
-    /**
-     * @author Griefed
-     */
     fun checkAll() {
         timer.restart()
     }
@@ -217,9 +205,6 @@ class TabbedConfigsTab(
         }
     }
 
-    /**
-     * @author Griefed
-     */
     fun loadConfigFile() {
         val configChooser = ConfigChooser(apiWrapper.apiProperties, Gui.createserverpack_gui_buttonloadconfig_title.toString())
         configChooser.isMultiSelectionEnabled = true
@@ -261,9 +246,6 @@ class TabbedConfigsTab(
         }
     }
 
-    /**
-     * @author Griefed
-     */
     @Suppress("DuplicatedCode")
     private fun iconsDirectoryWatcher() {
         Executors.newSingleThreadExecutor().execute {
@@ -310,9 +292,6 @@ class TabbedConfigsTab(
         }
     }
 
-    /**
-     * @author Griefed
-     */
     @Suppress("DuplicatedCode")
     private fun propertiesDirectoryWatcher() {
         Executors.newSingleThreadExecutor().execute {
@@ -388,9 +367,6 @@ class TabbedConfigsTab(
         return getNames(apiWrapper.apiProperties.propertiesDirectory, guiProps.propertiesRegex)
     }
 
-    /**
-     * @author Griefed
-     */
     fun stepByStepGuide() {
         selectedEditor?.stepByStepGuide() ?: addTab().stepByStepGuide()
     }

@@ -1,0 +1,5 @@
+########################################
+#...Load all plugins except these......#
+#...Add one plugin-id per line.........#
+########################################
+#example-plugin

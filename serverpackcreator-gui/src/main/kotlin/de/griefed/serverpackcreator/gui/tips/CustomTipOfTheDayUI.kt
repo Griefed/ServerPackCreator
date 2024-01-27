@@ -1,4 +1,4 @@
-/* Copyright (C) 2023  Griefed
+/* Copyright (C) 2024  Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -211,9 +211,6 @@ class CustomTipOfTheDayUI(tipOfTheDay: TipOfTheDay, private val guiProps: GuiPro
         tipArea.repaint()
     }
 
-    /**
-     * @author Griefed
-     */
     private fun updateImage(currentTip: Int) {
         if ((tipPane.model.getTipAt(currentTip) as CustomTip).getImage() != null) {
             tipImage.icon = (tipPane.model.getTipAt(currentTip) as CustomTip).getImage()!!.getAspectRatioScaledInstsance(800)
@@ -224,9 +221,6 @@ class CustomTipOfTheDayUI(tipOfTheDay: TipOfTheDay, private val guiProps: GuiPro
         }
     }
 
-    /**
-     * @author Griefed
-     */
     private fun updatePreferredSize() {
         if (tipImage.icon == null) {
             preferredDimension.width = defaultSize.width
@@ -249,9 +243,6 @@ class CustomTipOfTheDayUI(tipOfTheDay: TipOfTheDay, private val guiProps: GuiPro
         } catch (_: NullPointerException) {}
     }
 
-    /**
-     * @author Griefed
-     */
     private fun updateViewedTips() {
         val newViewed = TreeSet(guiProps.viewedTips)
         newViewed.add(tipPane.currentTip)

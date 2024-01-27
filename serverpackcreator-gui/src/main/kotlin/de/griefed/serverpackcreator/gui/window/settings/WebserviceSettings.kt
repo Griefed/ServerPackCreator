@@ -1,4 +1,4 @@
-/* Copyright (C) 2023  Griefed
+/* Copyright (C) 2024  Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -29,8 +29,9 @@ import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.components.*
 import de.griefed.serverpackcreator.gui.window.MainFrame
 import de.griefed.serverpackcreator.gui.window.control.ControlPanel
-import de.griefed.serverpackcreator.gui.window.settings.components.*
-import java.io.File
+import de.griefed.serverpackcreator.gui.window.settings.components.Editor
+import de.griefed.serverpackcreator.gui.window.settings.components.TomcatBaseDirChooser
+import de.griefed.serverpackcreator.gui.window.settings.components.TomcatLogDirChooser
 import javax.swing.JFileChooser
 import javax.swing.JOptionPane
 import javax.swing.event.ChangeListener
@@ -50,49 +51,11 @@ class WebserviceSettings(
     private val cronDefinition = CronDefinitionBuilder.instanceDefinitionFor(CronType.SPRING)
     private val cronParser = CronParser(cronDefinition)
 
-    private val artemisDataDirectoryIcon = StatusIcon(guiProps, Gui.settings_webservice_artemisdata_tooltip.toString())
-    private val artemisDataDirectoryLabel = ElementLabel(Gui.settings_webservice_artemisdata_label.toString())
-    private val artemisDataDirectorySetting = ScrollTextFileField(guiProps,apiProperties.artemisDataDirectory.absoluteFile, documentChangeListener)
-    private val artemisDataDirectoryRevert = BalloonTipButton(null, guiProps.revertIcon,Gui.settings_revert.toString(), guiProps) { artemisDataDirectorySetting.file = apiProperties.artemisDataDirectory.absoluteFile }
-    private val artemisDataDirectoryReset = BalloonTipButton(null, guiProps.resetIcon,Gui.settings_reset.toString(), guiProps) { artemisDataDirectorySetting.file = apiProperties.defaultArtemisDataDirectory().absoluteFile }
-    private val artemisDataDirectoryChoose = BalloonTipButton(null, guiProps.folderIcon,Gui.settings_select_directory.toString(), guiProps) {
-        val artemisChooser = ArtemisDataDirChooser(apiProperties,Gui.settings_webservice_artemisdata_chooser.toString())
-        if (artemisChooser.showSaveDialog(mainFrame.frame) == JFileChooser.APPROVE_OPTION) {
-            if (artemisChooser.selectedFile.absoluteFile.testFileWrite()) {
-                artemisDataDirectorySetting.file = artemisChooser.selectedFile.absoluteFile
-            } else {
-                JOptionPane.showMessageDialog(
-                    mainFrame.frame,
-                    Gui.settings_directory_error(artemisChooser.selectedFile.absoluteFile)
-                )
-            }
-        }
-    }
-
-    private val artemisQueueMaxDiskUsageIcon = StatusIcon(guiProps,Gui.settings_webservice_artemisusage_tooltip.toString())
-    private val artemisQueueMaxDiskUsageLabel = ElementLabel(Gui.settings_webservice_artemisusage_label.toString())
-    private val artemisQueueMaxDiskUsageSetting = ActionSlider(10,90,apiProperties.artemisQueueMaxDiskUsage, changeListener)
-    private val artemisQueueMaxDiskUsageRevert = BalloonTipButton(null, guiProps.revertIcon,Gui.settings_revert.toString(), guiProps) { artemisQueueMaxDiskUsageSetting.value = apiProperties.artemisQueueMaxDiskUsage }
-    private val artemisQueueMaxDiskUsageReset = BalloonTipButton(null, guiProps.resetIcon,Gui.settings_reset.toString(), guiProps) { artemisQueueMaxDiskUsageSetting.value = apiProperties.fallbackArtemisQueueMaxDiskUsage }
-
-    private val databaseFileIcon = StatusIcon(guiProps,Gui.settings_webservice_database_tooltip.toString())
-    private val databaseFileLabel = ElementLabel(Gui.settings_webservice_database_label.toString())
-    private val databaseFileSetting = ScrollTextFileField(guiProps,apiProperties.serverPackCreatorDatabase.absoluteFile, documentChangeListener)
-    private val databaseFileRevert = BalloonTipButton(null, guiProps.revertIcon,Gui.settings_revert.toString(), guiProps) { databaseFileSetting.file = apiProperties.serverPackCreatorDatabase.absoluteFile }
-    private val databaseFileReset = BalloonTipButton(null, guiProps.resetIcon,Gui.settings_reset.toString(), guiProps) { databaseFileSetting.file = apiProperties.defaultWebserviceDatabase().absoluteFile }
-    private val databaseFileChoose = BalloonTipButton(null, guiProps.folderIcon,Gui.settings_select_directory.toString(), guiProps) {
-        val webserviceChooser = WebserviceDBDirChooser(apiProperties,Gui.settings_webservice_database_chooser.toString())
-        if (webserviceChooser.showSaveDialog(mainFrame.frame) == JFileChooser.APPROVE_OPTION) {
-            if (webserviceChooser.selectedFile.absoluteFile.testFileWrite()) {
-                databaseFileSetting.file = File(webserviceChooser.selectedFile.absoluteFile,"serverpackcreator.db").absoluteFile
-            } else {
-                JOptionPane.showMessageDialog(
-                    mainFrame.frame,
-                    Gui.settings_directory_error(webserviceChooser.selectedFile.absoluteFile)
-                )
-            }
-        }
-    }
+    private val databaseURLIcon = StatusIcon(guiProps,Gui.settings_webservice_database_tooltip.toString())
+    private val databaseURLLabel = ElementLabel(Gui.settings_webservice_database_label.toString())
+    private val databaseURLSetting = ScrollTextField(guiProps, apiProperties.jdbcDatabaseUrl, Gui.settings_webservice_database_label.toString()) //TODO add editor for password and username
+    private val databaseURLRevert = BalloonTipButton(null, guiProps.revertIcon,Gui.settings_revert.toString(), guiProps) { databaseURLSetting.text = apiProperties.jdbcDatabaseUrl }
+    private val databaseURLReset = BalloonTipButton(null, guiProps.resetIcon,Gui.settings_reset.toString(), guiProps) { databaseURLSetting.text = apiProperties.defaultWebserviceDatabase() }
 
     private val cleanupScheduleIcon = StatusIcon(guiProps,Gui.settings_webservice_schedule_cleanup_tooltip.toString())
     private val cleanupScheduleLabel = ElementLabel(Gui.settings_webservice_schedule_cleanup_label.toString())
@@ -152,33 +115,14 @@ class WebserviceSettings(
 
     init {
         loadSettings()
-        artemisQueueMaxDiskUsageSetting.paintTicks = true
-        artemisQueueMaxDiskUsageSetting.paintLabels = true
-        artemisQueueMaxDiskUsageSetting.majorTickSpacing = 10
-        artemisQueueMaxDiskUsageSetting.minorTickSpacing = 5
-
         var y = 0
-        panel.add(artemisQueueMaxDiskUsageIcon, "cell 0 $y")
-        panel.add(artemisQueueMaxDiskUsageLabel, "cell 1 $y")
-        panel.add(artemisQueueMaxDiskUsageSetting, "cell 2 $y, grow")
-        panel.add(artemisQueueMaxDiskUsageRevert, "cell 3 $y")
-        panel.add(artemisQueueMaxDiskUsageReset, "cell 4 $y")
 
         y++
-        panel.add(artemisDataDirectoryIcon, "cell 0 $y")
-        panel.add(artemisDataDirectoryLabel, "cell 1 $y")
-        panel.add(artemisDataDirectorySetting, "cell 2 $y, grow")
-        panel.add(artemisDataDirectoryRevert, "cell 3 $y")
-        panel.add(artemisDataDirectoryReset, "cell 4 $y")
-        panel.add(artemisDataDirectoryChoose, "cell 5 $y")
-
-        y++
-        panel.add(databaseFileIcon, "cell 0 $y")
-        panel.add(databaseFileLabel, "cell 1 $y")
-        panel.add(databaseFileSetting, "cell 2 $y, grow")
-        panel.add(databaseFileRevert, "cell 3 $y")
-        panel.add(databaseFileReset, "cell 4 $y")
-        panel.add(databaseFileChoose, "cell 5 $y")
+        panel.add(databaseURLIcon, "cell 0 $y")
+        panel.add(databaseURLLabel, "cell 1 $y")
+        panel.add(databaseURLSetting, "cell 2 $y, grow")
+        panel.add(databaseURLRevert, "cell 3 $y")
+        panel.add(databaseURLReset, "cell 4 $y")
 
         y++
         panel.add(logDirectoryIcon, "cell 0 $y")
@@ -219,9 +163,7 @@ class WebserviceSettings(
     }
 
     override fun loadSettings() {
-        artemisDataDirectorySetting.file = apiProperties.artemisDataDirectory.absoluteFile
-        artemisQueueMaxDiskUsageSetting.value = apiProperties.artemisQueueMaxDiskUsage
-        databaseFileSetting.file = apiProperties.serverPackCreatorDatabase.absoluteFile
+        databaseURLSetting.text = apiProperties.jdbcDatabaseUrl
         cleanupScheduleSetting.text = apiProperties.webserviceCleanupSchedule
         logDirectorySetting.file = apiProperties.tomcatLogsDirectory.absoluteFile
         baseDirSetting.file = apiProperties.tomcatBaseDirectory.absoluteFile
@@ -230,9 +172,7 @@ class WebserviceSettings(
     }
 
     override fun saveSettings() {
-        apiProperties.artemisDataDirectory = artemisDataDirectorySetting.file.absoluteFile
-        apiProperties.artemisQueueMaxDiskUsage = artemisQueueMaxDiskUsageSetting.value
-        apiProperties.serverPackCreatorDatabase = databaseFileSetting.file.absoluteFile
+        apiProperties.jdbcDatabaseUrl = databaseURLSetting.text
         apiProperties.webserviceCleanupSchedule = cleanupScheduleSetting.text
         apiProperties.tomcatLogsDirectory = logDirectorySetting.file.absoluteFile
         apiProperties.tomcatBaseDirectory = baseDirSetting.file.absoluteFile
@@ -242,26 +182,6 @@ class WebserviceSettings(
 
     override fun validateSettings(): List<String> {
         val errors = mutableListOf<String>()
-        if (!artemisDataDirectorySetting.file.absoluteFile.isDirectory || !artemisDataDirectorySetting.file.absoluteFile.canWrite()) {
-            artemisDataDirectoryIcon.error(Gui.settings_webservice_artemisdata_error.toString())
-            errors.add(Gui.settings_webservice_artemisdata_error.toString())
-        } else {
-            artemisDataDirectoryIcon.info()
-        }
-
-        if (artemisQueueMaxDiskUsageSetting.value < 10 || artemisQueueMaxDiskUsageSetting.value > 90 ) {
-            artemisQueueMaxDiskUsageIcon.error(Gui.settings_webservice_artemisusage_error.toString())
-            errors.add(Gui.settings_webservice_artemisusage_error.toString())
-        } else {
-            artemisQueueMaxDiskUsageIcon.info()
-        }
-
-        if (!databaseFileSetting.file.absoluteFile.parentFile.isDirectory || !databaseFileSetting.file.absoluteFile.parentFile.canWrite()) {
-            databaseFileIcon.error(Gui.settings_webservice_database_error.toString())
-            errors.add(Gui.settings_webservice_database_error.toString())
-        } else {
-            databaseFileIcon.info()
-        }
 
         try {
             cronParser.parse(cleanupScheduleSetting.text).validate()
@@ -311,9 +231,8 @@ class WebserviceSettings(
     }
 
     override fun hasUnsavedChanges(): Boolean {
-        val changes = artemisDataDirectorySetting.file.absolutePath != apiProperties.artemisDataDirectory.absolutePath ||
-                artemisQueueMaxDiskUsageSetting.value != apiProperties.artemisQueueMaxDiskUsage ||
-                databaseFileSetting.file.absolutePath != apiProperties.serverPackCreatorDatabase.absolutePath ||
+        val changes =
+                databaseURLSetting.text != apiProperties.jdbcDatabaseUrl ||
                 cleanupScheduleSetting.text != apiProperties.webserviceCleanupSchedule ||
                 logDirectorySetting.file.absolutePath != apiProperties.tomcatLogsDirectory.absolutePath ||
                 baseDirSetting.file.absolutePath != apiProperties.tomcatBaseDirectory.absolutePath ||

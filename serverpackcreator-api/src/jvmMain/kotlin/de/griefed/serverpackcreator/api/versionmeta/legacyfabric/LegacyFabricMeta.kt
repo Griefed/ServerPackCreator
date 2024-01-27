@@ -1,4 +1,4 @@
-/* Copyright (C) 2023  Griefed
+/* Copyright (C) 2024  Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -57,9 +57,6 @@ actual class LegacyFabricMeta actual constructor(
         installerDirectory.createDirectories(create = true, directory = true)
     }
 
-    /**
-     * @author Griefed
-     */
     @Throws(IOException::class, ParserConfigurationException::class, SAXException::class)
     override fun update() {
         gameVersions.update()
@@ -67,81 +64,25 @@ actual class LegacyFabricMeta actual constructor(
         installerVersions.update()
     }
 
-    /**
-     * @author Griefed
-     */
     actual override fun latestLoader() = loaderVersions.allVersions[0]
-
-    /**
-     * @author Griefed
-     */
     actual override fun releaseLoader() = loaderVersions.releases[0]
-
-    /**
-     * @author Griefed
-     */
     actual override fun latestInstaller() = installerVersions.latest!!
-
-    /**
-     * @author Griefed
-     */
     actual override fun releaseInstaller() = installerVersions.release!!
-
-    /**
-     * @author Griefed
-     */
     actual override fun loaderVersionsListAscending() = loaderVersionsListDescending().reversed().toMutableList()
-
-    /**
-     * @author Griefed
-     */
     actual override fun loaderVersionsListDescending() = loaderVersions.allVersions
-
-    /**
-     * @author Griefed
-     */
     actual override fun loaderVersionsArrayAscending() = loaderVersionsListAscending().toTypedArray()
-
-    /**
-     * @author Griefed
-     */
     actual override fun loaderVersionsArrayDescending() = loaderVersionsListDescending().toTypedArray()
-
-    /**
-     * @author Griefed
-     */
     actual override fun installerVersionsListAscending() = installerVersions.allVersions
-
-    /**
-     * @author Griefed
-     */
     actual override fun installerVersionsListDescending() = installerVersionsListAscending().reversed().toMutableList()
-
-    /**
-     * @author Griefed
-     */
     actual override fun installerVersionsArrayAscending() = installerVersionsListAscending().toTypedArray()
-
-    /**
-     * @author Griefed
-     */
     actual override fun installerVersionsArrayDescending() = installerVersionsListDescending().toTypedArray()
 
-    /**
-     * @author Griefed
-     */
     @Throws(MalformedURLException::class)
     override fun latestInstallerUrl() = installerVersions.latestURL()
 
-    /**
-     * @author Griefed
-     */
     @Throws(MalformedURLException::class)
     override fun releaseInstallerUrl() = installerVersions.releaseURL()
 
-    /**
-     * @author Griefed
-     */
     actual override fun installerFor(version: String) =
         if (isInstallerUrlAvailable(version)) {
             val destination = File(installerDirectory, "$version.jar")

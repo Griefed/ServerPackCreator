@@ -1,4 +1,4 @@
-/* Copyright (C) 2023  Griefed
+/* Copyright (C) 2024  Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -357,9 +357,6 @@ actual class ApiWrapper private constructor(
         }
     }
 
-    /**
-     * @author Griefed
-     */
     @Synchronized
     @Throws(IOException::class, ParserConfigurationException::class, SAXException::class)
     override fun setup(force: Boolean): ApiWrapper {
@@ -464,18 +461,12 @@ actual class ApiWrapper private constructor(
         log.info("Include this information when reporting an issue on GitHub.")
     }
 
-    /**
-     * @author Griefed
-     */
     @Throws(IOException::class, ParserConfigurationException::class, SAXException::class)
     override fun stageTwo() {
         versionMeta
         configurationHandler
     }
 
-    /**
-     * @author Griefed
-     */
     @Throws(IOException::class, ParserConfigurationException::class, SAXException::class)
     override fun stageThree() {
         apiPlugins

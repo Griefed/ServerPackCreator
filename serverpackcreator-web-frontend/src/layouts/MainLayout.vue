@@ -1,464 +1,100 @@
 <template>
   <q-layout view="hHh Lpr lff">
-    <q-header class="header" elevated reveal>
-      <q-toolbar
-          :class="this.$q.platform.is.mobile ? 'shadow-5 toolbar scroll ' : 'shadow-5 toolbar'">
-
-        <q-btn
-            v-if="!this.$q.platform.is.mobile"
-            class="q-mr-sm"
-            dense
-            flat
-            icon="menu"
-            round
-            @click="miniState = !miniState"/>
-
-        <q-btn
-            v-if="this.$q.platform.is.mobile"
-            class="q-mr-sm"
-            dense
-            flat
-            icon="menu"
-            round
-            @click="drawer = !drawer"/>
-
-        <q-item v-if="!this.$q.platform.is.mobile" to="/">
-          <q-img :ratio="323/54" :width="this.$q.platform.is.mobile ? '256px' : '256px'"
-                 alt="header"
-                 fit="contain" src="~assets/serverpackcreator.webp"/>
-        </q-item>
-
-        <q-item class="flex-center"><b>Version {{ version }}</b></q-item>
-
-        <q-toolbar-title></q-toolbar-title>
-
-        <q-btn v-if="!this.$q.platform.is.mobile" href="https://blog.griefed.de" label="News"
-               style="color: #C0FFEE"
-               target="_blank" type="a">
-          <q-tooltip>
-            Visit my blog!
-          </q-tooltip>
-        </q-btn>
-
-        <q-btn v-if="!this.$q.platform.is.mobile"
-               href="https://github.com/Griefed/ServerPackCreator" label="GitHub"
-               style="color: #C0FFEE"
-               target="_blank" type="a">
-          <q-tooltip>
-            Visit the project on GitHub!
-          </q-tooltip>
-        </q-btn>
-
-        <q-btn v-if="!this.$q.platform.is.mobile"
-               href="https://github.com/Griefed/ServerPackCreator/issues" label="Support"
-               style="color: #C0FFEE"
-               target="_blank" type="a">
-          <q-tooltip>
-            Report an issue!
-          </q-tooltip>
-        </q-btn>
-
-        <q-btn v-if="!this.$q.platform.is.mobile" href="https://discord.griefed.de" label="Discord"
-               style="color: #C0FFEE"
-               target="_blank" type="a">
-          <q-tooltip>
-            Chat and support on Discord!
-          </q-tooltip>
-        </q-btn>
-
-        <q-btn-dropdown v-if="this.$q.platform.is.mobile" label="Info">
-          <q-item>
-            <q-btn flat href="https://blog.griefed.de" label="News" target="_blank" type="a">
-            </q-btn>
-          </q-item>
-          <q-item>
-            <q-btn flat href="https://github.com/Griefed/ServerPackCreator" label="GitHub"
-                   target="_blank"
-                   type="a">
-            </q-btn>
-          </q-item>
-          <q-item>
-            <q-btn flat href="https://github.com/Griefed/ServerPackCreator/issues" label="Support"
-                   target="_blank"
-                   type="a">
-            </q-btn>
-          </q-item>
-          <q-item>
-            <q-btn flat href="https://discord.griefed.de" label="Discord" target="_blank" type="a">
-            </q-btn>
-          </q-item>
-        </q-btn-dropdown>
-
-        <q-btn
-            :icon="this.$q.dark.isActive ? 'nights_stay' : 'wb_sunny'"
-            class="q-mr-xs"
-            dense
-            @click="toggleDarkMode()">
-          <q-tooltip :disable="this.$q.platform.is.mobile">
-            {{ this.$q.dark.isActive ? 'Deactivate Dark Mode' : 'Activate Dark Mode' }}
-          </q-tooltip>
-        </q-btn>
-
-        <q-btn
-            v-if="!this.$q.platform.is.mobile"
-            :icon="this.$q.fullscreen.isActive ? 'fullscreen_exit' : 'fullscreen'"
-            class="q-mr-xs"
-            dense
-            @click="this.$q.fullscreen.toggle()">
-          <q-tooltip :disable="this.$q.platform.is.mobile">
-            {{ this.$q.fullscreen.isActive ? 'Exit Fullscreen' : 'Toggle Fullscreen' }}
-          </q-tooltip>
-        </q-btn>
-
+    <q-header elevated reveal bordered class="tile-x">
+      <q-toolbar>
+        <q-btn flat dense round icon="menu" aria-label="Menu" @click="drawerClick" />
+        <q-separator inset />
+        <q-toolbar-title>
+          <q-img :ratio="323/54" width="256px" alt="ServerPackCreator" fit="contain"
+                 src="~assets/serverpackcreator.webp" />
+        </q-toolbar-title>
       </q-toolbar>
     </q-header>
 
     <q-drawer
-        v-model="drawer"
-        :breakpoint="500"
-        :mini="miniState"
-        :width="this.$q.platform.is.mobile ? 165 : 200"
-        bordered
-        class="left-navigation text-white drawer"
-        mini-to-overlay
-        side="left">
-      <div
-          class="full-height">
-        <q-scroll-area class="fit">
-          <q-list padding>
-
-            <q-item
-                v-ripple
-                active-class="tab-active"
-                clickable
-                exact
-                to="/request">
-              <q-item-section avatar>
-                <q-icon name="mdi-webpack"/>
-              </q-item-section>
-              <q-item-section>
-                Request Server Pack
-              </q-item-section>
-            </q-item>
-
-            <q-item
-                v-ripple
-                active-class="tab-active"
-                clickable
-                to="/downloads">
-              <q-item-section avatar>
-                <q-icon name="mdi-content-save"/>
-              </q-item-section>
-              <q-item-section>
-                Downloads
-              </q-item-section>
-            </q-item>
-
-            <q-item
-                v-ripple
-                active-class="tab-active"
-                clickable
-                to="/about">
-              <q-item-section avatar>
-                <q-icon name="mdi-information-outline"/>
-              </q-item-section>
-              <q-item-section>
-                About
-              </q-item-section>
-
-            </q-item>
-          </q-list>
-        </q-scroll-area>
-      </div>
+      v-model="drawer"
+      :mini="miniState"
+      :width="270"
+      :breakpoint="500"
+      mini-to-overlay
+      bordered
+      show-if-above
+      class="tile2-y"
+    >
+      <q-list>
+        <DrawerLink
+          v-for="link in linksList"
+          :key="link.title"
+          v-bind="link"
+        />
+      </q-list>
     </q-drawer>
 
     <q-page-container>
-      <q-page class="row no-wrap">
-        <div class="col">
-          <div class="full-height full-width">
-            <q-scroll-area class="full-height full-width page">
-              <div
-                  id="particles-js"
-                  :class="this.$q.dark.isActive ? 'dark_gradient' : 'normal_gradient'"
-              />
-              <router-view/>
-            </q-scroll-area>
-          </div>
-        </div>
-      </q-page>
+      <router-view />
     </q-page-container>
-
   </q-layout>
 </template>
 
-<script>
-import {defineComponent, ref} from 'vue';
-import {tsParticles} from 'tsparticles';
-import {api} from "boot/axios";
+<script lang="ts">
+import { defineComponent, ref } from 'vue';
+import DrawerLink from 'components/DrawerLink.vue';
+
+const linksList = [
+  {
+    title: 'Home',
+    caption: 'Back to the start-page',
+    icon: 'cottage',
+    link: '/'
+  },
+  {
+    title: 'Submissions',
+    caption: 'Generate from zipped modpack',
+    icon: 'upload',
+    link: 'submissions'
+  },
+  {
+    title: 'Downloads',
+    caption: 'Browser modpacks and server packs for downloads',
+    icon: 'download',
+    link: 'downloads'
+  },
+  {
+    title: 'History',
+    caption: 'Event history',
+    icon: 'history',
+    link: 'history'
+  },
+  {
+    title: 'About',
+    caption: 'About ServerPackCreator',
+    icon: 'info',
+    link: 'about'
+  }
+];
 
 export default defineComponent({
   name: 'MainLayout',
-  data() {
+
+  components: {
+    DrawerLink: DrawerLink
+  },
+
+  setup() {
+    const drawer = ref(true);
+    const miniState = ref(true);
     return {
-      drawer: ref(true),
-      miniState: ref(true),
-      version: ref("dev")
-    }
-  },
-  methods: {
-    toggleDarkMode() {
-      this.$q.dark.toggle();
-      this.$q.cookies.set('dark.isActive', this.$q.dark.isActive)
-    }
-  },
-  mounted() {
-    api.get("/settings").then(response => {
-      this.version = response.data.serverPackCreatorVersion
-    });
-    this.$q.platform.is.mobile ? this.drawer = false : this.drawer = true;
-    this.$q.dark.set(this.$q.cookies.get('dark.isActive'));
-    tsParticles.load("particles-js", {
-      "fpsLimit": 30,
-      "particles": {
-        "number": {
-          "value": 50,
-          "density": {
-            "enable": true,
-            "value_area": 800
-          }
-        },
-        "color": {
-          "value": ["#325358", "#C0FFEE", "#31CCEC", "#6A1A78"]
-        },
-        "shape": {
-          "type": ["circle", "triangle", "edge", "polygon"],
-          "stroke": {
-            "width": 0,
-            "color": ["#325358", "#C0FFEE", "#31CCEC", "#6A1A78"]
-          },
-          "polygon": {
-            "nb_sides": 6
-          }
-        },
-        "opacity": {
-          "value": 1,
-          "random": true,
-          "anim": {
-            "enable": true,
-            "speed": 1,
-            "opacity_min": 0.1,
-            "sync": false
-          }
-        },
-        "size": {
-          "value": 3.5,
-          "random": true,
-          "anim": {
-            "enable": true,
-            "speed": 1,
-            "size_min": 0.1,
-            "sync": false
-          }
-        },
-        "links": {
-          "enable": true,
-          "distance": 150,
-          "color": "#C0FFEE",
-          "opacity": 0.4,
-          "width": 1
-        },
-        "move": {
-          "enable": true,
-          "speed": 1.5,
-          "direction": "right",
-          "random": true,
-          "straight": false,
-          "outModes": {
-            "default": "out",
-            "bottom": "out",
-            "left": "out",
-            "right": "out",
-            "top": "out"
-          },
-          "bounce": false
-        },
-      },
-      "interactivity": {
-        "detect_on": "canvas",
-        "events": {
-          "onhover": {
-            "enable": true,
-            "mode": ["bubble", "grab"]
-          },
-          "onclick": {
-            "enable": false,
-            "mode": "push"
-          },
-          "resize": true
-        },
-        "modes": {
-          "grab": {
-            "distance": 140,
-            "line_linked": {
-              "opacity": 1
-            }
-          },
-          "bubble": {
-            "distance": 200,
-            "size": 4,
-            "duration": 5,
-            "opacity": 1,
-            "speed": 0.1
-          },
-          "push": {
-            "particles_nb": 4
-          }
-        }
-      },
-      "retina_detect": true
-    });
+      linksList: linksList,
+      drawer,
+      miniState,
+      drawerClick(e: Event) {
+        miniState.value = !miniState.value;
+        e.stopPropagation();
+      }
+    };
   }
-})
+});
 </script>
 
 <style>
-#particles-js {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  background-repeat: no-repeat;
-  background-size: cover;
-  background-position: 50% 50%;
-}
-
-.normal_gradient {
-  background: radial-gradient(circle at 0% 0%,
-  rgba(161, 232, 213, 0.4),
-  rgba(50, 83, 88, 0.1),
-  rgba(50, 83, 88, 0.05) 100%
-  ),
-  radial-gradient(circle at 100% 0%,
-      rgba(133, 213, 212, 0.4),
-      rgba(50, 83, 88, 0.1),
-      rgba(50, 83, 88, 0.1) 100%
-  ),
-  radial-gradient(circle at 0% 100%,
-      rgba(197, 142, 248, 0.4),
-      rgba(50, 83, 88, 0.1),
-      rgba(50, 83, 88, 0.05) 100%
-  ),
-  radial-gradient(circle at 100% 100%,
-      rgba(171, 115, 224, 0.56),
-      rgba(50, 83, 88, 0.1),
-      rgba(50, 83, 88, 0.05) 100%
-  ),
-  radial-gradient(circle at 50% 50%,
-      rgba(143, 147, 196, 0.4),
-      rgba(50, 83, 88, 0.1),
-      rgba(50, 83, 88, 0.05) 100%
-  ),
-  radial-gradient(circle at 25% 50%,
-      rgba(96, 168, 151, 0.9),
-      rgba(50, 83, 88, 0),
-      rgba(50, 83, 88, 0) 100%
-  ),
-  radial-gradient(circle at 75% 50%,
-      rgba(107, 67, 190, 0.9),
-      rgba(50, 83, 88, 0),
-      rgba(50, 83, 88, 0) 100%
-  ),
-  radial-gradient(circle at 50% 25%,
-      rgba(97, 166, 176, 0.9),
-      rgba(50, 83, 88, 0),
-      rgba(50, 83, 88, 0) 100%
-  ),
-  radial-gradient(circle at 50% 75%,
-      rgba(137, 200, 210, 0.9),
-      rgba(50, 83, 88, 0),
-      rgba(50, 83, 88, 0) 100%
-  );
-}
-
-.dark_gradient {
-  background: radial-gradient(circle at 0% 0%,
-  rgba(34, 81, 114, 0.6),
-  rgba(50, 83, 88, 0.1),
-  rgba(50, 83, 88, 0.05) 100%
-  ),
-  radial-gradient(circle at 100% 0%,
-      rgba(17, 87, 85, 0.4),
-      rgba(50, 83, 88, 0.1),
-      rgba(50, 83, 88, 0.1) 100%
-  ),
-  radial-gradient(circle at 0% 100%,
-      rgb(49, 26, 133),
-      rgba(50, 83, 88, 0.1),
-      rgba(50, 83, 88, 0.05) 100%
-  ),
-  radial-gradient(circle at 100% 100%,
-      rgba(80, 20, 136, 0.6),
-      rgba(50, 83, 88, 0.1),
-      rgba(50, 83, 88, 0.05) 100%
-  ),
-  radial-gradient(circle at 50% 50%,
-      rgba(128, 134, 204, 0.4),
-      rgba(50, 83, 88, 0.1),
-      rgba(50, 83, 88, 0.05) 100%
-  ),
-  radial-gradient(circle at 25% 50%,
-      rgba(66, 117, 105, 0.9),
-      rgba(50, 83, 88, 0),
-      rgba(50, 83, 88, 0) 100%
-  ),
-  radial-gradient(circle at 75% 50%,
-      rgba(98, 69, 157, 0.9),
-      rgba(50, 83, 88, 0),
-      rgba(50, 83, 88, 0) 100%
-  ),
-  radial-gradient(circle at 50% 25%,
-      rgba(26, 79, 87, 0.9),
-      rgba(50, 83, 88, 0),
-      rgba(50, 83, 88, 0) 100%
-  ),
-  radial-gradient(circle at 50% 75%,
-      rgba(18, 35, 89, 1),
-      rgba(50, 83, 88, 0),
-      rgba(50, 83, 88, 0) 100%
-  );
-}
-
-.toolbar {
-  border-bottom: #c0ffee 1px solid;
-}
-
-.drawer {
-  background-image: url("~assets/tile.webp");
-  background-repeat: repeat-y;
-}
-
-.page {
-  background-image: url("~assets/background.webp");
-  background-repeat: repeat;
-  background-attachment: fixed;
-}
-
-.header {
-  background: url("~assets/tile.webp") repeat-x;
-}
-
-a:link {
-  text-decoration: none;
-}
-
-a:visited {
-  text-decoration: none;
-}
-
-a:hover {
-  text-decoration: none;
-}
-
-a:active {
-  text-decoration: none;
-}
 </style>

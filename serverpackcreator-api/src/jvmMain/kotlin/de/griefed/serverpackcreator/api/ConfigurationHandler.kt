@@ -1,4 +1,4 @@
-/* Copyright (C) 2023  Griefed
+/* Copyright (C) 2024  Griefed
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -32,7 +32,6 @@ import java.net.URI
 import java.nio.file.*
 import java.util.*
 import java.util.regex.PatternSyntaxException
-import kotlin.io.path.moveTo
 
 /**
  * Check any given [PackConfig] for errors and, if so desired, add them to a passed
@@ -138,7 +137,7 @@ actual class ConfigurationHandler(
             log.error("Modpack directory not specified. Please specify an existing directory. Specified: ${packConfig.modpackDir}")
         }
 
-        if (!checkModloader(packConfig.modloader, configCheck).modloaderChecksPassed) {
+        if (checkModloader(packConfig.modloader, configCheck).modloaderChecksPassed) {
             log.debug("modLoader settings check passed.")
         } else {
             log.error("There's something wrong with your modloader or modloader version setting.")
@@ -264,16 +263,17 @@ actual class ConfigurationHandler(
         // modpackDir points at a ZIP-file. Get the path to the would be modpack directory.
         val name = File(packConfig.modpackDir).name
         val cleaned = name.replace(zipRegex, "")
-        var unzippedModpack = "${apiProperties.modpacksDirectory}${File.separator}$cleaned"
+        val unzippedModpack = "${apiProperties.modpacksDirectory}${File.separator}$cleaned"
         if (!checkZipArchive(Paths.get(packConfig.modpackDir).toAbsolutePath().toString(), configCheck).modpackChecksPassed) {
             return configCheck
         }
 
         // Does the modpack extracted from the ZIP-archive already exist?
-        unzippedModpack = unzipDestination(unzippedModpack)
+        //unzippedModpack = unzipDestination(unzippedModpack)
 
         // Extract the archive to the modpack directory.
         utilities.fileUtilities.unzipArchive(packConfig.modpackDir, unzippedModpack)
+        packConfig.modpackDir = unzippedModpack
 
         // Expand the already set copyDirs with suggestions from extracted ZIP-archive.
         val newCopyDirs = suggestInclusions(unzippedModpack)
@@ -300,23 +300,6 @@ actual class ConfigurationHandler(
             packName = unzippedModpack
         }
         packName = File(utilities.stringUtilities.pathSecureTextAlternative(packName)).path
-
-        // Get the path to the would-be-server-pack with the new destination.
-        var createServerPackFrom = File(
-            apiProperties.serverPacksDirectory, File(packName!!).name + packConfig.serverPackSuffix
-        ).absolutePath
-
-        // Check whether a server pack for the new destination already exists.
-        // If it does, we need to change it to avoid overwriting any existing files.
-        createServerPackFrom = checkServerPacksForIncrement(unzippedModpack, createServerPackFrom)
-
-        // Finally, move to new destination to avoid overwriting of server pack
-        if (!File(unzippedModpack).name.equals(File(createServerPackFrom).name)) {
-            File(unzippedModpack).toPath().moveTo(File(createServerPackFrom).toPath(), overwrite = true)
-        }
-
-        // Last but not least, use the newly acquired packname as the modpack directory.
-        packConfig.modpackDir = createServerPackFrom
 
         // Does the modpack contain a server-icon or server.properties? If so, include
         // them in the server pack.
@@ -568,7 +551,10 @@ actual class ConfigurationHandler(
             doNotInclude = apiProperties.directoriesToExclude.toList()[i]
             dirsInModpack.removeIf { it.source == doNotInclude }
         }
-        log.info("Modpack directory checked. Suggested directories for copyDirs-setting are: $dirsInModpack")
+        log.info("Modpack directory checked. Suggested directories for copyDirs-setting are:")
+        for (inclusion in dirsInModpack) {
+            log.info("    ${inclusion.source}")
+        }
         return dirsInModpack
     }
 
