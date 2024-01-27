@@ -98,7 +98,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: ${{ always() }}
         with:
-          name: mac-installer-artifacts
+          name: mac-01-artifacts
           path: |
             serverpackcreator-app/build
           if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
@@ -148,7 +148,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: ${{ always() }}
         with:
-          name: windows-installer-artifacts
+          name: windows-01-artifacts
           path: |
             serverpackcreator-app/build
           if-no-files-found: warn # 'warn' or 'ig
@@ -232,7 +232,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: ${{ always() }}
         with:
-          name: windows-installer-artifacts
+          name: windows-02-artifacts
           path: |
             serverpackcreator-app/build/dist/ServerPackCreator-Portable-Windows.zip
           if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
@@ -278,7 +278,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: ${{ always() }}
         with:
-          name: ubuntu-installer-artifacts
+          name: ubuntu-01-artifacts
           path: |
             serverpackcreator-app/build
           if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
@@ -380,7 +380,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: ${{ always() }}
         with:
-          name: ubuntu-installer-artifacts
+          name: ubuntu-02-artifacts
           path: |
             serverpackcreator-app/build/dist/ServerPackCreator-Portable-Linux-x86_64.AppImage
           if-no-files-found: warn # 'warn' or 'ignore' are also available, defaults to `warn`
