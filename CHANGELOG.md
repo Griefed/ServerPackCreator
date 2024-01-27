@@ -1,3 +1,26 @@
+## [5.1.12-alpha.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/5.1.11...5.1.12-alpha.1) (2024-01-27)
+
+
+### 💎 Improvements
+
+* Centralize i18n, add [@arthurbarret0](https://git.griefed.de/arthurbarret0) pt_BR translations. See merge request Griefed/ServerPackCreator!563 ([1f5c6a9](https://git.griefed.de/Griefed/ServerPackCreator/commit/1f5c6a90f32a2963b793411b426a7a8ea490dabc))
+* Fix, rework and improve webservice ([8be9e4b](https://git.griefed.de/Griefed/ServerPackCreator/commit/8be9e4bf8e152ad72a7cac30b1c3f960278b2465))
+
+
+### 📦 Other
+
+* Add Yungs Menu Tweaks to clientside-mods list. Thanks to @Elrol for the report! ([85d3ba7](https://git.griefed.de/Griefed/ServerPackCreator/commit/85d3ba708219fc92ca790793269415a297c35b94))
+
+
+### 🦊 CI/CD
+
+* Move i18n to singular source ([1bdabb7](https://git.griefed.de/Griefed/ServerPackCreator/commit/1bdabb772f29b32e82d95709a69bf2fbe28ef77c))
+
+
+### 🛠 Fixes
+
+* Prevent Update Checks not being initialized from preventing SPC starting up ([db73e5e](https://git.griefed.de/Griefed/ServerPackCreator/commit/db73e5e8123eae24446f52228ef9143cbb84a759))
+
 ## [3.15.0-beta.1](https://git.griefed.de/Griefed/ServerPackCreator/compare/3.14.5...3.15.0-beta.1) (2022-10-08)
 
 
