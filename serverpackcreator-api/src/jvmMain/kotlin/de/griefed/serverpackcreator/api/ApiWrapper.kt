@@ -23,7 +23,6 @@ import com.electronwill.nightconfig.toml.TomlParser
 import com.fasterxml.jackson.core.json.JsonReadFeature
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
-import de.comahe.i18n4k.Locale
 import de.griefed.serverpackcreator.api.modscanning.*
 import de.griefed.serverpackcreator.api.utilities.common.*
 import de.griefed.serverpackcreator.api.versionmeta.VersionMeta
@@ -44,7 +43,6 @@ import javax.xml.parsers.ParserConfigurationException
  */
 actual class ApiWrapper private constructor(
     val properties: File = File("serverpackcreator.properties"),
-    val language: Locale = Locale("en_GB"),
     runSetup: Boolean = true
 ) : Api<File>() {
 
@@ -320,7 +318,6 @@ actual class ApiWrapper private constructor(
     actual val tomlScanner: TomlScanner = TomlScanner(tomlParser)
 
     init {
-        apiProperties.changeLocale(language)
         if (runSetup) {
             setup()
         }
@@ -343,13 +340,12 @@ actual class ApiWrapper private constructor(
         @Synchronized
         fun api(
             properties: File = File("serverpackcreator.properties"),
-            language: Locale = Locale("en_GB"),
             runSetup: Boolean = true
         ): ApiWrapper {
             if (api == null) {
                 synchronized(this) {
                     if (api == null) {
-                        api = ApiWrapper(properties, language, runSetup)
+                        api = ApiWrapper(properties, runSetup)
                     }
                 }
             }

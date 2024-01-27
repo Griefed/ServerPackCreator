@@ -71,9 +71,15 @@ fun main(args: Array<String>) {
 @EnableScheduling
 class ServerPackCreator(private val args: Array<String>) {
     private val log = cachedLoggerOf(this.javaClass)
-    val commandlineParser: CommandlineParser = CommandlineParser(args)
-    val apiWrapper = ApiWrapper.api(commandlineParser.propertiesFile, commandlineParser.language, false)
+    final val commandlineParser: CommandlineParser = CommandlineParser(args)
+    final val apiWrapper = ApiWrapper.api(commandlineParser.propertiesFile, false)
     private val appInfo = JarInformation(ServerPackCreator::class.java, apiWrapper.jarUtilities)
+
+    init {
+        if (commandlineParser.language != null) {
+            apiWrapper.apiProperties.changeLocale(commandlineParser.language!!)
+        }
+    }
 
     @Suppress("MemberVisibilityCanBePrivate")
     @get:Synchronized

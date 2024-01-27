@@ -1227,7 +1227,7 @@ actual class ApiProperties(
             return field
         }
         set(value) {
-            internalProps.setProperty(pLanguage, language.toTag())
+            internalProps.setProperty(pLanguage, value.toTag())
             i18n4kConfig.locale = value
             field = value
             log.info("Language set to: ${field.displayLanguage} (${field.toTag()}).")
@@ -1914,7 +1914,9 @@ actual class ApiProperties(
 
         internalProps.putAll(props)
         internalProps.setProperty(pTomcatBaseDirectory, homeDirectory.absolutePath)
-
+        if (internalProps.getProperty(pLanguage) != "en_GB") {
+            changeLocale(Locale(internalProps.getProperty(pLanguage)))
+        }
 
         val overrides = loadOverrides()
         for ((key,value) in overrides) {
