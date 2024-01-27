@@ -42,7 +42,7 @@ import java.io.File
  */
 open class CommandlineParser(args: Array<String>) {
     var mode: Mode = Mode.GUI
-    var language: Locale = Locale("en_GB")
+    var language: Locale? = null
     var propertiesFile: File = File("serverpackcreator.properties")
 
     init {
@@ -58,8 +58,9 @@ open class CommandlineParser(args: Array<String>) {
         ) {
             Locale(argsList[argsList.indexOf(Mode.LANG.argument()) + 1])
         } else {
-            Locale("en_GB")
+            null
         }
+
         run {
             /*
             * Check whether the user wanted us to print the help-text.

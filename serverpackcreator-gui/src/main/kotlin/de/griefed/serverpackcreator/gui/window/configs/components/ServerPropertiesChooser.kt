@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui.window.configs.components
 
-import Gui
+import Translations
 import de.griefed.serverpackcreator.gui.components.BaseFileChooser
 import java.awt.Dimension
 import java.io.File
@@ -34,10 +34,10 @@ class ServerPropertiesChooser(current: File?, dimension: Dimension) : BaseFileCh
     init {
         currentDirectory = current
         isFileHidingEnabled = false
-        dialogTitle = Gui.createserverpack_gui_createserverpack_chooser_properties_title.toString()
+        dialogTitle = Translations.createserverpack_gui_createserverpack_chooser_properties_title.toString()
         fileSelectionMode = FILES_ONLY
         fileFilter = FileNameExtensionFilter(
-            Gui.createserverpack_gui_createserverpack_chooser_properties_filter.toString(), "properties"
+            Translations.createserverpack_gui_createserverpack_chooser_properties_filter.toString(), "properties"
         )
         isAcceptAllFileFilterUsed = false
         isMultiSelectionEnabled = false

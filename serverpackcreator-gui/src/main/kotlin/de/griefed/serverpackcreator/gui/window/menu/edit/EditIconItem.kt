@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui.window.menu.edit
 
-import Gui
+import Translations
 import de.griefed.serverpackcreator.api.utilities.common.FileUtilities
 import de.griefed.serverpackcreator.gui.window.configs.TabbedConfigsTab
 import java.io.File
@@ -31,7 +31,7 @@ import javax.swing.JMenuItem
  * @author Griefed
  */
 class EditIconItem(private val fileUtilities: FileUtilities, private val tabbedConfigsTab: TabbedConfigsTab) :
-    JMenuItem(Gui.menubar_gui_menuitem_icon.toString()) {
+    JMenuItem(Translations.menubar_gui_menuitem_icon.toString()) {
     init {
         this.addActionListener { openIcon() }
     }

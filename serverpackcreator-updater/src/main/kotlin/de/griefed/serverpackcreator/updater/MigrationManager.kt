@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.updater
 
-import Updates
+import Translations
 import com.electronwill.nightconfig.toml.TomlParser
 import de.comahe.i18n4k.Locale
 import de.griefed.serverpackcreator.api.ApiProperties
@@ -432,7 +432,7 @@ class MigrationManager(
                         oldLogs, newLogs
                     )
                     val message: String =
-                        Updates.migrationmanager_migration_threepointonefilepointzero_directory(apiProperties.logsDirectory)
+                        Translations.migrationmanager_migration_threepointonefilepointzero_directory(apiProperties.logsDirectory)
                     changes.add(message)
                 }
                 if (log4j.contains("<Configuration status=\"WARN\">")) {
@@ -441,13 +441,13 @@ class MigrationManager(
                         "<Configuration status=\"WARN\">", "<Configuration monitorInterval=\"30\">"
                     )
                     changes.add(
-                        Updates.migrationmanager_migration_threepointonefilepointzero_interval.toString()
+                        Translations.migrationmanager_migration_threepointonefilepointzero_interval.toString()
                     )
                 }
                 if (changed) {
                     log4J2Xml.writeText(log4j)
                     changes.add(
-                        Updates.migrationmanager_migration_threepointonefilepointzero_restart.toString()
+                        Translations.migrationmanager_migration_threepointonefilepointzero_restart.toString()
                     )
                 }
                 if (changes.isNotEmpty()) {
@@ -470,7 +470,7 @@ class MigrationManager(
                     apiProperties.homeDirectory, "addons"
                 ).renameTo(apiProperties.pluginsDirectory)
             ) {
-                changes.add(Updates.migrationmanager_migration_fourpointzeropointzero_addons.toString())
+                changes.add(Translations.migrationmanager_migration_fourpointzeropointzero_addons.toString())
                 val disabled = File(apiProperties.pluginsDirectory, "disabled.txt")
                 val contents = disabled.readText()
                 for (file in apiProperties.pluginsDirectory.filteredWalk(listOf(".jar"))) {
@@ -481,7 +481,7 @@ class MigrationManager(
                     }
                     if (!contents.contains(id)) {
                         disabled.appendText(id)
-                        changes.add(Updates.migrationmanager_migration_fourpointzeropointzero_addons_disabled(id))
+                        changes.add(Translations.migrationmanager_migration_fourpointzeropointzero_addons_disabled(id))
                     }
                 }
             }
@@ -489,7 +489,7 @@ class MigrationManager(
             if (apiProperties.language.language.lowercase() == "en_us") {
                 val old = apiProperties.language.language.split("_")
                 apiProperties.changeLocale(Locale("en_GB"))
-                changes.add(Updates.migrationmanager_migration_fourpointzeropointzero_locale(old))
+                changes.add(Translations.migrationmanager_migration_fourpointzeropointzero_locale(old))
             }
 
             if (changes.isNotEmpty()) {
@@ -512,10 +512,10 @@ class MigrationManager(
             val templates = TreeSet<File>()
 
             if (previousSetting == "default_template.ps1,default_template.sh") {
-                changes.add(Updates.migrationmanager_migration_fivepointzeropointzero_scripts_default.toString())
+                changes.add(Translations.migrationmanager_migration_fivepointzeropointzero_scripts_default.toString())
                 apiProperties.scriptTemplates = TreeSet(apiProperties.defaultScriptTemplates())
             } else if (currentFiles.isNotEmpty()) {
-                changes.add(Updates.migrationmanager_migration_fivepointzeropointzero_scripts_custom.toString())
+                changes.add(Translations.migrationmanager_migration_fivepointzeropointzero_scripts_custom.toString())
                 for (file in currentFiles) {
                     templates.add(file.absoluteFile)
                 }

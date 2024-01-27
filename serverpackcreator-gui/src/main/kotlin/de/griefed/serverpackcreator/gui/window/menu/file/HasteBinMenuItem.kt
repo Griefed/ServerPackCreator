@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui.window.menu.file
 
-import Gui
+import Translations
 import de.griefed.serverpackcreator.api.utilities.common.WebUtilities
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.utilities.DialogUtilities
@@ -46,9 +46,9 @@ abstract class HasteBinMenuItem(
 ) : JMenuItem(title) {
     private val clipboard: Clipboard = Toolkit.getDefaultToolkit().systemClipboard
     private val hasteBinOptions = arrayOf(
-        Gui.createserverpack_gui_about_hastebin_dialog_yes.toString(),
-        Gui.createserverpack_gui_about_hastebin_dialog_clipboard.toString(),
-        Gui.createserverpack_gui_about_hastebin_dialog_no.toString()
+        Translations.createserverpack_gui_about_hastebin_dialog_yes.toString(),
+        Translations.createserverpack_gui_about_hastebin_dialog_clipboard.toString(),
+        Translations.createserverpack_gui_about_hastebin_dialog_no.toString()
     )
 
     /**
@@ -64,7 +64,7 @@ abstract class HasteBinMenuItem(
     ) {
         when (DialogUtilities.createShowGet(
             displayTextPane,
-            Gui.createserverpack_gui_about_hastebin_dialog.toString(),
+            Translations.createserverpack_gui_about_hastebin_dialog.toString(),
             mainFrame,
             JOptionPane.INFORMATION_MESSAGE, JOptionPane.DEFAULT_OPTION,
             guiProps.hasteBinIcon,

@@ -1,6 +1,6 @@
 package de.griefed.serverpackcreator.gui.window.settings.components
 
-import Gui
+import Translations
 import java.io.File
 
 class WritableDirectoryFilter  : javax.swing.filechooser.FileFilter() {
@@ -10,6 +10,6 @@ class WritableDirectoryFilter  : javax.swing.filechooser.FileFilter() {
     }
 
     override fun getDescription(): String {
-        return Gui.settings_directory_filter.toString()
+        return Translations.settings_directory_filter.toString()
     }
 }

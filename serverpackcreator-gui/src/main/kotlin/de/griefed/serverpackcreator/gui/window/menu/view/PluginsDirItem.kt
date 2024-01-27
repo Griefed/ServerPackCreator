@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui.window.menu.view
 
-import Gui
+import Translations
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.utilities.common.FileUtilities
 import javax.swing.JMenuItem
@@ -30,7 +30,7 @@ import javax.swing.JMenuItem
  * @author Griefed
  */
 class PluginsDirItem(private val fileUtilities: FileUtilities, private val apiProperties: ApiProperties) :
-    JMenuItem(Gui.menubar_gui_menuitem_pluginsdir.toString()) {
+    JMenuItem(Translations.menubar_gui_menuitem_pluginsdir.toString()) {
     init {
         this.addActionListener { openPluginsDir() }
     }

@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui.window.control
 
-import Gui
+import Translations
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.api.ConfigCheck
 import de.griefed.serverpackcreator.api.PackConfig
@@ -96,22 +96,22 @@ class ControlPanel(
         if (tabbedConfigsTab.selectedEditor == null) {
             JOptionPane.showMessageDialog(
                 panel,
-                Gui.createserverpack_log_error_configuration_none_message.toString(),
-                Gui.createserverpack_log_error_configuration_none_title.toString(),
+                Translations.createserverpack_log_error_configuration_none_message.toString(),
+                Translations.createserverpack_log_error_configuration_none_title.toString(),
                 JOptionPane.INFORMATION_MESSAGE, guiProps.largeInfoIcon
             )
-            statusPanel.updateStatus(Gui.createserverpack_log_error_configuration_none_message.toString())
+            statusPanel.updateStatus(Translations.createserverpack_log_error_configuration_none_message.toString())
             return
         }
         if (tabbedConfigsTab.selectedEditor!!.getInclusions().any { inclusion -> inclusion.source == "lazy_mode" }) {
-            val message = Gui.configuration_log_warn_checkconfig_copydirs_lazymode0.toString() + "\n" +
-                    Gui.configuration_log_warn_checkconfig_copydirs_lazymode1.toString() + "\n" +
-                    Gui.configuration_log_warn_checkconfig_copydirs_lazymode2.toString() + "\n" +
-                    Gui.configuration_log_warn_checkconfig_copydirs_lazymode3.toString()
+            val message = Translations.configuration_log_warn_checkconfig_copydirs_lazymode0.toString() + "\n" +
+                    Translations.configuration_log_warn_checkconfig_copydirs_lazymode1.toString() + "\n" +
+                    Translations.configuration_log_warn_checkconfig_copydirs_lazymode2.toString() + "\n" +
+                    Translations.configuration_log_warn_checkconfig_copydirs_lazymode3.toString()
             decision = JOptionPane.showConfirmDialog(
                 panel,
                 message,
-                Gui.createserverpack_gui_createserverpack_lazymode.toString(),
+                Translations.createserverpack_gui_createserverpack_lazymode.toString(),
                 JOptionPane.YES_NO_OPTION,
                 JOptionPane.INFORMATION_MESSAGE,
                 guiProps.largeWarningIcon
@@ -144,19 +144,19 @@ class ControlPanel(
         val check = ConfigCheck()
 
         log.info("Checking entered configuration.")
-        statusPanel.updateStatus(Gui.createserverpack_log_info_buttoncreateserverpack_start.toString())
+        statusPanel.updateStatus(Translations.createserverpack_log_info_buttoncreateserverpack_start.toString())
 
         if (apiWrapper.configurationHandler.checkConfiguration(packConfig, check, true).allChecksPassed) {
             if (activeTab.getModpackDirectory().endsWith(".zip",ignoreCase = true)) {
                 JOptionPane.showMessageDialog(
                     panel.parent,
-                    Gui.createserverpack_gui_config_zip_info_message.toString(),
-                    Gui.createserverpack_gui_config_zip_info_title.toString(),
+                    Translations.createserverpack_gui_config_zip_info_message.toString(),
+                    Translations.createserverpack_gui_config_zip_info_title.toString(),
                     JOptionPane.INFORMATION_MESSAGE
                 )
             }
             log.info("Config check passed.")
-            statusPanel.updateStatus(Gui.createserverpack_log_info_buttoncreateserverpack_checked.toString())
+            statusPanel.updateStatus(Translations.createserverpack_log_info_buttoncreateserverpack_checked.toString())
             generateServerPack(packConfig)
         } else {
             generationFailed(check.encounteredErrors)
@@ -168,17 +168,17 @@ class ControlPanel(
      */
     private fun generateServerPack(packConfig: PackConfig) {
         log.info("Starting ServerPackCreator run.")
-        statusPanel.updateStatus(Gui.createserverpack_log_info_buttoncreateserverpack_generating(File(packConfig.modpackDir).name))
+        statusPanel.updateStatus(Translations.createserverpack_log_info_buttoncreateserverpack_generating(File(packConfig.modpackDir).name))
         try {
             apiWrapper.serverPackHandler.run(packConfig)
-            statusPanel.updateStatus(Gui.createserverpack_log_info_buttoncreateserverpack_ready.toString())
+            statusPanel.updateStatus(Translations.createserverpack_log_info_buttoncreateserverpack_ready.toString())
             if (guiProps.generationFocusEnabled) {
                 mainFrame.toFront()
             }
             if (JOptionPane.showConfirmDialog(
                     panel.parent,
-                    Gui.createserverpack_gui_createserverpack_openfolder_browse.toString(),
-                    Gui.createserverpack_gui_createserverpack_openfolder_title.toString(),
+                    Translations.createserverpack_gui_createserverpack_openfolder_browse.toString(),
+                    Translations.createserverpack_gui_createserverpack_openfolder_title.toString(),
                     JOptionPane.YES_NO_OPTION,
                     JOptionPane.INFORMATION_MESSAGE,
                     guiProps.infoIcon
@@ -200,7 +200,7 @@ class ControlPanel(
      * @author Griefed
      */
     private fun generationFailed(encounteredErrors: List<String>) {
-        statusPanel.updateStatus(Gui.createserverpack_gui_buttongenerateserverpack_fail.toString())
+        statusPanel.updateStatus(Translations.createserverpack_gui_buttongenerateserverpack_fail.toString())
         if (encounteredErrors.isNotEmpty()) {
             val errors = StringBuilder()
             for (i in encounteredErrors.indices) {
@@ -209,7 +209,7 @@ class ControlPanel(
             JOptionPane.showMessageDialog(
                 panel.parent,
                 errors,
-                Gui.createserverpack_gui_createserverpack_errors_encountered(encounteredErrors.size),
+                Translations.createserverpack_gui_createserverpack_errors_encountered(encounteredErrors.size),
                 JOptionPane.ERROR_MESSAGE,
                 guiProps.errorIcon
             )

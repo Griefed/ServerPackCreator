@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui.window.menu.about
 
-import Gui
+import Translations
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.api.utilities.common.WebUtilities
 import de.griefed.serverpackcreator.gui.GuiProps
@@ -44,7 +44,7 @@ class AboutMenu(
     guiProps: GuiProps,
     mainFrame: MainFrame,
     updateButton: BalloonTipButton
-) : JMenu(Gui.menubar_gui_menu_about.toString()) {
+) : JMenu(Translations.menubar_gui_menu_about.toString()) {
 
     private val update = UpdateCheckItem(updateDialogs,updateButton)
     private val migration = MigrationInfoItem(apiWrapper, migrationManager, guiProps, mainFrame)

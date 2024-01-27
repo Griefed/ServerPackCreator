@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui
 
-import Gui
+import Translations
 import com.formdev.flatlaf.FlatLaf
 import com.formdev.flatlaf.extras.FlatInspector
 import com.formdev.flatlaf.extras.FlatUIDefaultsInspector
@@ -93,8 +93,8 @@ class MainWindow(
                 GlobalScope.launch(Dispatchers.Swing, CoroutineStart.UNDISPATCHED) {
                     if (JOptionPane.showConfirmDialog(
                             main.frame,
-                            Gui.firstrun_message.toString(),
-                            Gui.firstrun_title.toString(),
+                            Translations.firstrun_message.toString(),
+                            Translations.firstrun_title.toString(),
                             JOptionPane.YES_NO_OPTION,
                             JOptionPane.QUESTION_MESSAGE
                         ) == 0

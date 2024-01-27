@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui.window.control.components
 
-import Gui
+import Translations
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.components.BalloonTipButton
 import java.awt.event.ActionListener
@@ -31,9 +31,9 @@ import java.awt.event.ActionListener
  * @author Griefed
  */
 class GenerationButton(guiProps: GuiProps, generationAction: ActionListener) : BalloonTipButton(
-    Gui.createserverpack_gui_buttongenerateserverpack.toString(),
+    Translations.createserverpack_gui_buttongenerateserverpack.toString(),
     guiProps.genIcon,
-    Gui.createserverpack_gui_buttongenerateserverpack_tip.toString(),
+    Translations.createserverpack_gui_buttongenerateserverpack_tip.toString(),
     guiProps,
     generationAction
 )

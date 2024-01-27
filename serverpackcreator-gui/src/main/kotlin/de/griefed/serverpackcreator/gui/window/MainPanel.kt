@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui.window
 
-import Gui
+import Translations
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.components.TabPanel
@@ -66,10 +66,10 @@ class MainPanel(
     val settingsEditorsTab = SettingsEditorsTab(guiProps, apiWrapper.apiProperties, mainFrame, themeManager, controlPanel)
 
     init {
-        tabs.addTab(Gui.main_tabs_config.toString(), tabbedConfigsTab.panel)
+        tabs.addTab(Translations.main_tabs_config.toString(), tabbedConfigsTab.panel)
         tabs.setTabComponentAt(tabs.tabCount - 1, tabbedConfigsTab.title)
-        tabs.addTab(Gui.main_tabs_logs.toString(), tabbedLogsTab.panel)
-        tabs.addTab(Gui.main_tabs_settings.toString(), settingsEditorsTab.panel)
+        tabs.addTab(Translations.main_tabs_logs.toString(), tabbedLogsTab.panel)
+        tabs.addTab(Translations.main_tabs_settings.toString(), settingsEditorsTab.panel)
         tabs.setTabComponentAt(tabs.tabCount - 1, settingsEditorsTab.title)
         apiWrapper.apiPlugins.addTabExtensionTabs(tabs)
         panel.add(larsonScanner, "height 40!,growx, south")
@@ -88,8 +88,8 @@ class MainPanel(
                 if (!config.isNewTab() && config.hasUnsavedChanges()) {
                     tabbedConfigsTab.tabs.selectedComponent = tab
                     if (DialogUtilities.createShowGet(
-                            Gui.createserverpack_gui_close_unsaved_message(modpackName),
-                            Gui.createserverpack_gui_close_unsaved_title(modpackName),
+                            Translations.createserverpack_gui_close_unsaved_message(modpackName),
+                            Translations.createserverpack_gui_close_unsaved_title(modpackName),
                             panel,
                             JOptionPane.WARNING_MESSAGE,
                             JOptionPane.YES_NO_OPTION,
@@ -99,7 +99,7 @@ class MainPanel(
                         config.saveCurrentConfiguration()
                     }
                 }
-                if (config.configFile != null && config.title.title != Gui.createserverpack_gui_title_new.toString()) {
+                if (config.configFile != null && config.title.title != Translations.createserverpack_gui_title_new.toString()) {
                     configs.add(config.configFile!!.absolutePath)
                 }
             }
@@ -108,8 +108,8 @@ class MainPanel(
         apiWrapper.apiProperties.saveProperties(apiWrapper.apiProperties.serverPackCreatorPropertiesFile)
         if (settingsEditorsTab.allTabs.any { (it as Editor).hasUnsavedChanges() }) {
             if (DialogUtilities.createShowGet(
-                    Gui.main_unsaved_message.toString(),
-                    Gui.main_unsaved_title.toString(),
+                    Translations.main_unsaved_message.toString(),
+                    Translations.main_unsaved_title.toString(),
                     panel,
                     JOptionPane.WARNING_MESSAGE,
                     JOptionPane.YES_NO_OPTION,

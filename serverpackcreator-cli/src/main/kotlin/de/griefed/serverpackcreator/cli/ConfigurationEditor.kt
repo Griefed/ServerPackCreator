@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.cli
 
-import Cli
+import Translations
 import com.electronwill.nightconfig.core.file.NoFormatFoundException
 import de.griefed.serverpackcreator.api.*
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
@@ -65,7 +65,7 @@ class ConfigurationEditor(
             when (selection) {
                 1 -> createConfigurationFile(scanner)
                 2 -> loadAndEdit(scanner)
-                0 -> cliLog(Cli.cli_exiting.toString())
+                0 -> cliLog(Translations.cli_exiting.toString())
             }
         } while (selection != 0)
         scanner.close()
@@ -78,12 +78,12 @@ class ConfigurationEditor(
      */
     private fun printMenu() {
         cliLog()
-        cliLog(Cli.cli_print_menu_00.toString())
-        cliLog(Cli.cli_print_menu_01.toString())
-        cliLog(Cli.cli_print_menu_02.toString())
-        cliLog(Cli.cli_print_menu_03.toString())
-        cliLog(Cli.cli_print_menu_04.toString())
-        cliLog(Cli.cli_print_menu_05.toString(), false)
+        cliLog(Translations.cli_print_menu_00.toString())
+        cliLog(Translations.cli_print_menu_01.toString())
+        cliLog(Translations.cli_print_menu_02.toString())
+        cliLog(Translations.cli_print_menu_03.toString())
+        cliLog(Translations.cli_print_menu_04.toString())
+        cliLog(Translations.cli_print_menu_05.toString(), false)
     }
 
     /**
@@ -98,17 +98,17 @@ class ConfigurationEditor(
         var configLoaded = false
         do {
             try {
-                cliLog(Cli.cli_config_load_edit_input.toString())
+                cliLog(Translations.cli_config_load_edit_input.toString())
                 fileName = getNextLine(scanner)
                 packConfig = PackConfig(utilities, File(fileName))
                 configLoaded = true
             } catch (e: FileNotFoundException) {
-                cliLog(Cli.cli_config_load_edit_error(e.message.toString()))
+                cliLog(Translations.cli_config_load_edit_error(e.message.toString()))
             } catch (e: NoFormatFoundException) {
-                cliLog(Cli.cli_config_load_edit_error(e.message.toString()))
+                cliLog(Translations.cli_config_load_edit_error(e.message.toString()))
             }
         } while (!configLoaded)
-        cliLog(Cli.cli_config_load_edit_success.toString())
+        cliLog(Translations.cli_config_load_edit_success.toString())
         cliLog()
         var selection: Int
         do {
@@ -132,7 +132,7 @@ class ConfigurationEditor(
                 14 -> saveConfiguration(scanner, packConfig)
                 15 -> configurationHandler.printConfigurationModel(packConfig)
                 16 -> checkConfig(packConfig)
-                0 -> cliLog(Cli.cli_exiting.toString())
+                0 -> cliLog(Translations.cli_exiting.toString())
             }
         } while (selection != 0)
     }
@@ -148,12 +148,12 @@ class ConfigurationEditor(
         val check = ConfigCheck()
         configurationHandler.checkConfiguration(packConfig, check, false)
         if (check.encounteredErrors.isNotEmpty()) {
-            cliLog(Cli.cli_config_check_error.toString())
+            cliLog(Translations.cli_config_check_error.toString())
             for (i in check.encounteredErrors.indices) {
                 cliLog("  ($i): ${check.encounteredErrors[i]}")
             }
         } else {
-            cliLog(Cli.cli_config_check_success.toString())
+            cliLog(Translations.cli_config_check_success.toString())
         }
     }
 
@@ -164,26 +164,26 @@ class ConfigurationEditor(
      */
     private fun printEditMenu() {
         cliLog()
-        cliLog(Cli.cli_print_menu_edit_00.toString()) //What would you like to edit?
-        cliLog(Cli.cli_print_menu_edit_01.toString()) //(1)  : Path to the modpack directory
-        cliLog(Cli.cli_print_menu_edit_02.toString()) //(2)  : List of clientside-only mods
-        cliLog(Cli.cli_print_menu_edit_03.toString()) //(3)  : List of files and/or folders to include in the server pack
-        cliLog(Cli.cli_print_menu_edit_04.toString()) //(4)  : Path to a custom server-icon.png
-        cliLog(Cli.cli_print_menu_edit_05.toString()) //(5)  : Path to a custom server.properties
-        cliLog(Cli.cli_print_menu_edit_06.toString()) //(6)  : Minecraft version
-        cliLog(Cli.cli_print_menu_edit_07.toString()) //(7)  : Modloader
-        cliLog(Cli.cli_print_menu_edit_08.toString()) //(8)  : Modloader version
-        cliLog(Cli.cli_print_menu_edit_09.toString()) //(9)  : Whether to include a server-icon.png in the server pack - Only relevant if you set (4) to a valid path
-        cliLog(Cli.cli_print_menu_edit_10.toString()) //(10) : Whether to include a server.properties in the server pack - Only relevant if you set (5) to a valid path
-        cliLog(Cli.cli_print_menu_edit_11.toString()) //(11) : Whether to create a ZIP-archive of the generated server pack
-        cliLog(Cli.cli_print_menu_edit_12.toString()) //(12) : JVM flags / Java Args to run the server of the generated server pack with - These will be used by the start scripts
-        cliLog(Cli.cli_print_menu_edit_13.toString()) //(13) : Server pack suffix
-        cliLog(Cli.cli_print_menu_edit_14.toString()) //(14) : Save config to file
-        cliLog(Cli.cli_print_menu_edit_15.toString()) //(15) : Print current config
-        cliLog(Cli.cli_print_menu_edit_16.toString()) //(16) : Check configuration
-        cliLog(Cli.cli_print_menu_edit_17.toString()) //(0)  : Exit
-        cliLog(Cli.cli_print_menu_edit_18.toString()) //---------------------------------------------------------------------------------------------------------------------------
-        cliLog(Cli.cli_print_menu_edit_19.toString(), false) // Enter the number of your selection:
+        cliLog(Translations.cli_print_menu_edit_00.toString()) //What would you like to edit?
+        cliLog(Translations.cli_print_menu_edit_01.toString()) //(1)  : Path to the modpack directory
+        cliLog(Translations.cli_print_menu_edit_02.toString()) //(2)  : List of clientside-only mods
+        cliLog(Translations.cli_print_menu_edit_03.toString()) //(3)  : List of files and/or folders to include in the server pack
+        cliLog(Translations.cli_print_menu_edit_04.toString()) //(4)  : Path to a custom server-icon.png
+        cliLog(Translations.cli_print_menu_edit_05.toString()) //(5)  : Path to a custom server.properties
+        cliLog(Translations.cli_print_menu_edit_06.toString()) //(6)  : Minecraft version
+        cliLog(Translations.cli_print_menu_edit_07.toString()) //(7)  : Modloader
+        cliLog(Translations.cli_print_menu_edit_08.toString()) //(8)  : Modloader version
+        cliLog(Translations.cli_print_menu_edit_09.toString()) //(9)  : Whether to include a server-icon.png in the server pack - Only relevant if you set (4) to a valid path
+        cliLog(Translations.cli_print_menu_edit_10.toString()) //(10) : Whether to include a server.properties in the server pack - Only relevant if you set (5) to a valid path
+        cliLog(Translations.cli_print_menu_edit_11.toString()) //(11) : Whether to create a ZIP-archive of the generated server pack
+        cliLog(Translations.cli_print_menu_edit_12.toString()) //(12) : JVM flags / Java Args to run the server of the generated server pack with - These will be used by the start scripts
+        cliLog(Translations.cli_print_menu_edit_13.toString()) //(13) : Server pack suffix
+        cliLog(Translations.cli_print_menu_edit_14.toString()) //(14) : Save config to file
+        cliLog(Translations.cli_print_menu_edit_15.toString()) //(15) : Print current config
+        cliLog(Translations.cli_print_menu_edit_16.toString()) //(16) : Check configuration
+        cliLog(Translations.cli_print_menu_edit_17.toString()) //(0)  : Exit
+        cliLog(Translations.cli_print_menu_edit_18.toString()) //---------------------------------------------------------------------------------------------------------------------------
+        cliLog(Translations.cli_print_menu_edit_19.toString(), false) // Enter the number of your selection:
     }
 
     /**
@@ -245,14 +245,14 @@ class ConfigurationEditor(
             if (File(packConfig.serverIconPath).isFile) {
                 packConfig.isServerIconInclusionDesired = includeServerIcon()
             } else {
-                cliLog(Cli.cli_create_no_icon.toString())
+                cliLog(Translations.cli_create_no_icon.toString())
             }
 
             // -------------------------------WHETHER TO INCLUDE SERVER.PROPERTIES IN SERVER PACK---------
             if (File(packConfig.serverPropertiesPath).isFile) {
                 packConfig.isServerPropertiesInclusionDesired = includeServerProperties()
             } else {
-                cliLog(Cli.cli_create_no_properties.toString())
+                cliLog(Translations.cli_create_no_properties.toString())
             }
 
             // -------------------------WHETHER TO INCLUDE CREATION OF ZIP-ARCHIVE OF SERVER PACK---------
@@ -266,13 +266,13 @@ class ConfigurationEditor(
 
             // ---------------------------------------------------PRINT CONFIG TO CONSOLE AND LOG---------
             configurationHandler.printConfigurationModel(packConfig)
-            cliLog(Cli.cli_create_satisfied.toString())
-            cliLog(Cli.cli_answer.toString(), false)
+            cliLog(Translations.cli_create_satisfied.toString())
+            cliLog(Translations.cli_answer.toString(), false)
         } while (!utilities.booleanUtilities.readBoolean())
 
         // ----------------------------------------------------------------CHECK CONFIGURATION----------
-        cliLog(Cli.cli_create_check.toString())
-        cliLog(Cli.cli_answer.toString(), false)
+        cliLog(Translations.cli_create_check.toString())
+        cliLog(Translations.cli_answer.toString(), false)
         if (utilities.booleanUtilities.readBoolean()) {
             checkConfig(packConfig)
         }
@@ -290,18 +290,18 @@ class ConfigurationEditor(
      */
     private fun getModpackDirectory(scanner: Scanner): String {
         var modpackDir: String
-        cliLog(Cli.cli_modpackdir_intro.toString())
-        cliLog(Cli.cli_modpackdir_example.toString())
+        cliLog(Translations.cli_modpackdir_intro.toString())
+        cliLog(Translations.cli_modpackdir_example.toString())
         do {
             do {
-                cliLog(Cli.cli_modpackdir_input.toString(), false)
+                cliLog(Translations.cli_modpackdir_input.toString(), false)
                 modpackDir = getNextLine(scanner)
             } while (!configurationHandler.checkModpackDir(modpackDir).modpackChecksPassed)
-            cliLog(Cli.cli_answer_input(modpackDir))
-            cliLog(Cli.cli_modpackdir_satisfied.toString())
-            cliLog(Cli.cli_answer.toString(), false)
+            cliLog(Translations.cli_answer_input(modpackDir))
+            cliLog(Translations.cli_modpackdir_satisfied.toString())
+            cliLog(Translations.cli_answer.toString(), false)
         } while (!utilities.booleanUtilities.readBoolean())
-        cliLog(Cli.cli_answer_input(modpackDir))
+        cliLog(Translations.cli_answer_input(modpackDir))
         cliLog()
         return modpackDir
     }
@@ -319,8 +319,8 @@ class ConfigurationEditor(
         var selection = 2
         do {
             if (clientMods.isNotEmpty()) {
-                cliLog(Cli.cli_clientsides_entries.toString())
-                cliLog(Cli.cli_list_over.toString())
+                cliLog(Translations.cli_clientsides_entries.toString())
+                cliLog(Translations.cli_list_over.toString())
                 selection = getDecision(scanner, 1, 2)
             }
             when (selection) {
@@ -330,10 +330,10 @@ class ConfigurationEditor(
                     clientMods.addAll(newClientModsList())
                 }
             }
-            cliLog(Cli.cli_list_satisfied.toString())
-            cliLog(Cli.cli_answer.toString(), false)
+            cliLog(Translations.cli_list_satisfied.toString())
+            cliLog(Translations.cli_answer.toString(), false)
         } while (!utilities.booleanUtilities.readBoolean())
-        cliLog(Cli.cli_list_yours.toString())
+        cliLog(Translations.cli_list_yours.toString())
         utilities.listUtilities.printListToConsoleChunked(clientMods, 5, "    ", false)
         cliLog()
     }
@@ -357,7 +357,7 @@ class ConfigurationEditor(
             selection = try {
                 getNextLine(scanner).toInt()
             } catch (ex: Exception) {
-                cliLog(Cli.cli_decision(min, max))
+                cliLog(Translations.cli_decision(min, max))
                 min - 1
             }
         } while (selection in (max + 1) until min)
@@ -375,34 +375,34 @@ class ConfigurationEditor(
         scanner: Scanner,
         list: MutableList<String>
     ) {
-        cliLog(Cli.cli_list_entries.toString())
+        cliLog(Translations.cli_list_entries.toString())
         for (i in list.indices) {
             cliLog("($i) : ${list[i]}")
         }
         val max = list.size - 1
         do {
-            cliLog(Cli.cli_list_which.toString())
-            cliLog(Cli.cli_decision(0, max))
+            cliLog(Translations.cli_list_which.toString())
+            cliLog(Translations.cli_decision(0, max))
             val selection = getDecision(scanner, 0, max)
-            cliLog(Cli.cli_list_selection(selection, max, list[selection]))
-            cliLog(Cli.cli_list_delete.toString())
+            cliLog(Translations.cli_list_selection(selection, max, list[selection]))
+            cliLog(Translations.cli_list_delete.toString())
             when (getDecision(scanner, 1, 2)) {
                 1 -> {
-                    cliLog(Cli.cli_list_input.toString(), false)
+                    cliLog(Translations.cli_list_input.toString(), false)
                     list[selection] = getNextLine(scanner)
                 }
 
-                2 -> cliLog(Cli.cli_list_deleted(list.removeAt(selection)))
+                2 -> cliLog(Translations.cli_list_deleted(list.removeAt(selection)))
             }
             for (i in list.indices) {
                 cliLog("($i) : ${list[i]}")
             }
-            cliLog(Cli.cli_list_separator.toString())
-            cliLog(Cli.cli_list_satisfied.toString())
-            cliLog(Cli.cli_answer.toString(), false)
+            cliLog(Translations.cli_list_separator.toString())
+            cliLog(Translations.cli_list_satisfied.toString())
+            cliLog(Translations.cli_answer.toString(), false)
         } while (!utilities.booleanUtilities.readBoolean())
         utilities.listUtilities.printListToConsoleChunked(list, 5, "    ", false)
-        cliLog(Cli.cli_list_success.toString())
+        cliLog(Translations.cli_list_success.toString())
     }
 
     /**
@@ -412,12 +412,12 @@ class ConfigurationEditor(
      * @author Griefed
      */
     private fun newClientModsList(): List<String> {
-        cliLog(Cli.cli_clientsides_new_intro.toString())
-        cliLog(Cli.cli_clientsides_new_info.toString())
+        cliLog(Translations.cli_clientsides_new_intro.toString())
+        cliLog(Translations.cli_clientsides_new_info.toString())
         var clientMods = newCustomList()
         if (clientMods.isEmpty()) {
             clientMods = apiProperties.clientSideMods()
-            cliLog(Cli.cli_clientsides_new_fallback.toString())
+            cliLog(Translations.cli_clientsides_new_fallback.toString())
             for (mod in clientMods) {
                 cliLog("    $mod")
             }
@@ -433,7 +433,7 @@ class ConfigurationEditor(
      */
     private fun newCustomList(): List<String> {
         val custom: List<String> = utilities.listUtilities.readStringList()
-        cliLog(Cli.cli_answer_input_newline.toString())
+        cliLog(Translations.cli_answer_input_newline.toString())
         for (i in custom.indices) {
             cliLog("  ${i + 1}. ${custom[i]}")
         }
@@ -448,12 +448,12 @@ class ConfigurationEditor(
      */
     private fun newCustomInclusionsList(): List<InclusionSpecification> {
         val inclusions = mutableListOf<InclusionSpecification>()
-        cliLog(Cli.cli_copyfiles_entries_custom_intro.toString())
-        cliLog(Cli.cli_copyfiles_entries_custom_intro2.toString())
-        cliLog(Cli.cli_copyfiles_entries_custom_intro3.toString())
+        cliLog(Translations.cli_copyfiles_entries_custom_intro.toString())
+        cliLog(Translations.cli_copyfiles_entries_custom_intro2.toString())
+        cliLog(Translations.cli_copyfiles_entries_custom_intro3.toString())
         val custom: List<String> = utilities.listUtilities.readStringList()
         var split: List<String>
-        cliLog(Cli.cli_answer_input_newline.toString())
+        cliLog(Translations.cli_answer_input_newline.toString())
         for (i in custom.indices) {
             split = custom[i].split(",")
             inclusions.add(InclusionSpecification(split[0],split[1],split[2],split[3]))
@@ -473,16 +473,16 @@ class ConfigurationEditor(
         modpackDir: String,
         inclusions: MutableList<InclusionSpecification>
     ) {
-        cliLog(Cli.cli_copyfiles_intro.toString())
+        cliLog(Translations.cli_copyfiles_intro.toString())
         listModpackFilesAndFolders(modpackDir)
         var selection = 2
         do {
             if (inclusions.isNotEmpty()) {
-                cliLog(Cli.cli_copyfiles_entries.toString())
+                cliLog(Translations.cli_copyfiles_entries.toString())
                 cliLog()
                 logInclusionSpecs(inclusions)
                 cliLog()
-                cliLog(Cli.cli_copyfiles_over.toString())
+                cliLog(Translations.cli_copyfiles_over.toString())
                 selection = getDecision(scanner, 1, 3)
             }
             when (selection) {
@@ -494,53 +494,53 @@ class ConfigurationEditor(
 
                 3 -> listModpackFilesAndFolders(modpackDir)
             }
-            cliLog(Cli.cli_list_satisfied.toString())
-            cliLog(Cli.cli_answer.toString(), false)
+            cliLog(Translations.cli_list_satisfied.toString())
+            cliLog(Translations.cli_answer.toString(), false)
         } while (!utilities.booleanUtilities.readBoolean())
-        cliLog(Cli.cli_list_yours.toString())
+        cliLog(Translations.cli_list_yours.toString())
         logInclusionSpecs(inclusions)
         cliLog()
     }
 
     private fun logInclusionSpecs(inclusions: List<InclusionSpecification>) {
         for (i in inclusions.indices) {
-            cliLog("${i + 1}. ${Cli.cli_copyfiles_entries_prefix_source}: ${inclusions[i].source}")
-            cliLog("${i + 1}. ${Cli.cli_copyfiles_entries_prefix_destination}: ${inclusions[i].destination}")
-            cliLog("${i + 1}. ${Cli.cli_copyfiles_entries_prefix_inclusion}: ${inclusions[i].inclusionFilter}")
-            cliLog("${i + 1}. ${Cli.cli_copyfiles_entries_prefix_exclusion}: ${inclusions[i].exclusionFilter}")
+            cliLog("${i + 1}. ${Translations.cli_copyfiles_entries_prefix_source}: ${inclusions[i].source}")
+            cliLog("${i + 1}. ${Translations.cli_copyfiles_entries_prefix_destination}: ${inclusions[i].destination}")
+            cliLog("${i + 1}. ${Translations.cli_copyfiles_entries_prefix_inclusion}: ${inclusions[i].inclusionFilter}")
+            cliLog("${i + 1}. ${Translations.cli_copyfiles_entries_prefix_exclusion}: ${inclusions[i].exclusionFilter}")
             cliLog("")
         }
     }
 
     private fun editInclusions(scanner: Scanner, inclusions: MutableList<InclusionSpecification>) {
-        cliLog(Cli.cli_list_entries.toString())
+        cliLog(Translations.cli_list_entries.toString())
         logInclusionSpecs(inclusions)
         val max = inclusions.size - 1
         do {
-            cliLog(Cli.cli_list_which.toString())
-            cliLog(Cli.cli_decision(0, max))
+            cliLog(Translations.cli_list_which.toString())
+            cliLog(Translations.cli_decision(0, max))
             val selection = getDecision(scanner, 0, max)
-            cliLog(Cli.cli_list_selection(selection, max, inclusions[selection]))
-            cliLog(Cli.cli_list_delete.toString())
+            cliLog(Translations.cli_list_selection(selection, max, inclusions[selection]))
+            cliLog(Translations.cli_list_delete.toString())
             when (getDecision(scanner, 1, 2)) {
                 1 -> {
-                    cliLog(Cli.cli_list_input.toString(), false)
+                    cliLog(Translations.cli_list_input.toString(), false)
                     val inclusion = getNextLine(scanner).split(",")
                     inclusions[selection] =
                         InclusionSpecification(inclusion[0], inclusion[1], inclusion[2], inclusion[3])
                 }
 
-                2 -> cliLog(Cli.cli_list_deleted(inclusions.removeAt(selection)))
+                2 -> cliLog(Translations.cli_list_deleted(inclusions.removeAt(selection)))
             }
             for (i in inclusions.indices) {
                 cliLog("($i) : ${inclusions[i]}")
             }
-            cliLog(Cli.cli_list_separator.toString())
-            cliLog(Cli.cli_list_satisfied.toString())
-            cliLog(Cli.cli_answer.toString(), false)
+            cliLog(Translations.cli_list_separator.toString())
+            cliLog(Translations.cli_list_satisfied.toString())
+            cliLog(Translations.cli_answer.toString(), false)
         } while (!utilities.booleanUtilities.readBoolean())
         logInclusionSpecs(inclusions)
-        cliLog(Cli.cli_list_success.toString())
+        cliLog(Translations.cli_list_success.toString())
     }
 
     /**
@@ -554,12 +554,12 @@ class ConfigurationEditor(
         try {
             val dirList: List<File> = File(modpackDir).listFiles()?.toList() ?: listOf(File(""))
             if (dirList.isNotEmpty()) {
-                cliLog(Cli.cli_copyfiles_modpack_list.toString())
+                cliLog(Translations.cli_copyfiles_modpack_list.toString())
                 for (i in dirList.indices) {
                     cliLog("  ${i + 1}. ${dirList[i]}")
                 }
             } else {
-                cliLog(Cli.cli_copyfiles_modpack_empty(modpackDir))
+                cliLog(Translations.cli_copyfiles_modpack_empty(modpackDir))
             }
         } catch (ignored: Exception) {
         }
@@ -574,17 +574,17 @@ class ConfigurationEditor(
      */
     private fun getServerIcon(scanner: Scanner): String {
         var serverIconPath: String
-        cliLog(Cli.cli_icon_intro.toString())
+        cliLog(Translations.cli_icon_intro.toString())
         do {
             do {
-                cliLog(Cli.cli_icon_input.toString(), false)
+                cliLog(Translations.cli_icon_input.toString(), false)
                 serverIconPath = getNextLine(scanner)
             } while (!configurationHandler.checkIconAndProperties(serverIconPath))
-            cliLog(Cli.cli_answer_input(serverIconPath))
-            cliLog(Cli.cli_setting_satisfied.toString())
-            cliLog(Cli.cli_answer.toString(), false)
+            cliLog(Translations.cli_answer_input(serverIconPath))
+            cliLog(Translations.cli_setting_satisfied.toString())
+            cliLog(Translations.cli_answer.toString(), false)
         } while (!utilities.booleanUtilities.readBoolean())
-        cliLog(Cli.cli_answer_input(serverIconPath))
+        cliLog(Translations.cli_answer_input(serverIconPath))
         cliLog()
         return serverIconPath
     }
@@ -599,17 +599,17 @@ class ConfigurationEditor(
      */
     private fun getServerProperties(scanner: Scanner): String {
         var serverPropertiesPath: String
-        cliLog(Cli.cli_properties_intro.toString())
+        cliLog(Translations.cli_properties_intro.toString())
         do {
             do {
-                cliLog(Cli.cli_properties_input.toString(), false)
+                cliLog(Translations.cli_properties_input.toString(), false)
                 serverPropertiesPath = getNextLine(scanner)
             } while (!configurationHandler.checkIconAndProperties(serverPropertiesPath))
-            cliLog(Cli.cli_answer_input(serverPropertiesPath))
-            cliLog(Cli.cli_setting_satisfied.toString())
-            cliLog(Cli.cli_answer.toString(), false)
+            cliLog(Translations.cli_answer_input(serverPropertiesPath))
+            cliLog(Translations.cli_setting_satisfied.toString())
+            cliLog(Translations.cli_answer.toString(), false)
         } while (!utilities.booleanUtilities.readBoolean())
-        cliLog(Cli.cli_answer_input(serverPropertiesPath))
+        cliLog(Translations.cli_answer_input(serverPropertiesPath))
         cliLog()
         return serverPropertiesPath
     }
@@ -623,12 +623,12 @@ class ConfigurationEditor(
      */
     private fun getMinecraftVersion(scanner: Scanner): String {
         var minecraftVersion: String
-        cliLog(Cli.cli_minecraft_intro.toString())
+        cliLog(Translations.cli_minecraft_intro.toString())
         do {
-            cliLog(Cli.cli_minecraft_input.toString(), false)
+            cliLog(Translations.cli_minecraft_input.toString(), false)
             minecraftVersion = getNextLine(scanner)
         } while (!versionMeta.minecraft.isMinecraftVersionAvailable(minecraftVersion))
-        cliLog(Cli.cli_answer_input(minecraftVersion))
+        cliLog(Translations.cli_answer_input(minecraftVersion))
         cliLog()
         return minecraftVersion
     }
@@ -642,13 +642,13 @@ class ConfigurationEditor(
      */
     private fun getModloader(scanner: Scanner): String {
         var modLoader: String
-        cliLog(Cli.cli_modloader_intro.toString())
+        cliLog(Translations.cli_modloader_intro.toString())
         do {
-            cliLog(Cli.cli_modloader_modloader.toString(), false)
+            cliLog(Translations.cli_modloader_modloader.toString(), false)
             modLoader = getNextLine(scanner)
         } while (!configurationHandler.checkModloader(modLoader).modloaderChecksPassed)
         modLoader = configurationHandler.getModLoaderCase(modLoader)
-        cliLog(Cli.cli_answer_input(modLoader))
+        cliLog(Translations.cli_answer_input(modLoader))
         cliLog()
         return modLoader
     }
@@ -667,9 +667,9 @@ class ConfigurationEditor(
         modLoader: String
     ): String {
         var modLoaderVersion: String
-        cliLog(Cli.cli_modloader_version_intro(modLoader))
+        cliLog(Translations.cli_modloader_version_intro(modLoader))
         do {
-            cliLog(Cli.cli_modloader_version_version.toString(), false)
+            cliLog(Translations.cli_modloader_version_version.toString(), false)
             modLoaderVersion = getNextLine(scanner)
         } while (!configurationHandler.checkModloaderVersion(
                 modLoader, modLoaderVersion, minecraftVersion
@@ -687,10 +687,10 @@ class ConfigurationEditor(
      * @author Griefed
      */
     private fun includeServerIcon(): Boolean {
-        cliLog(Cli.cli_icon_include_intro.toString())
-        cliLog(Cli.cli_icon_include_input.toString(), false)
+        cliLog(Translations.cli_icon_include_intro.toString())
+        cliLog(Translations.cli_icon_include_input.toString(), false)
         val includeServerIcon: Boolean = utilities.booleanUtilities.readBoolean()
-        cliLog(Cli.cli_answer_input(includeServerIcon))
+        cliLog(Translations.cli_answer_input(includeServerIcon))
         cliLog()
         return includeServerIcon
     }
@@ -702,10 +702,10 @@ class ConfigurationEditor(
      * @author Griefed
      */
     private fun includeServerProperties(): Boolean {
-        cliLog(Cli.cli_properties_include_intro.toString())
-        cliLog(Cli.cli_properties_include_input.toString(), false)
+        cliLog(Translations.cli_properties_include_intro.toString())
+        cliLog(Translations.cli_properties_include_input.toString(), false)
         val includeServerProperties: Boolean = utilities.booleanUtilities.readBoolean()
-        cliLog(Cli.cli_answer_input(includeServerProperties))
+        cliLog(Translations.cli_answer_input(includeServerProperties))
         cliLog()
         return includeServerProperties
     }
@@ -718,10 +718,10 @@ class ConfigurationEditor(
      * @author Griefed
      */
     private fun includeZipCreation(): Boolean {
-        cliLog(Cli.cli_zip_include_intro.toString())
-        cliLog(Cli.cli_zip_include_input.toString(), false)
+        cliLog(Translations.cli_zip_include_intro.toString())
+        cliLog(Translations.cli_zip_include_input.toString(), false)
         val includeZipCreation: Boolean = utilities.booleanUtilities.readBoolean()
-        cliLog(Cli.cli_answer_input(includeZipCreation))
+        cliLog(Translations.cli_answer_input(includeZipCreation))
         cliLog()
         return includeZipCreation
     }
@@ -735,13 +735,13 @@ class ConfigurationEditor(
      */
     private fun getJavaArgs(scanner: Scanner): String {
         var javaArgs: String
-        cliLog(Cli.cli_java_args_intro.toString())
-        cliLog(Cli.cli_java_args_input.toString(), false)
+        cliLog(Translations.cli_java_args_intro.toString())
+        cliLog(Translations.cli_java_args_input.toString(), false)
         javaArgs = getNextLine(scanner)
         if (javaArgs.isEmpty()) {
             javaArgs = ""
         }
-        cliLog(Cli.cli_java_args(javaArgs))
+        cliLog(Translations.cli_java_args(javaArgs))
         cliLog()
         return javaArgs
     }
@@ -754,8 +754,8 @@ class ConfigurationEditor(
      * @author Griefed
      */
     private fun getServerPackSuffix(scanner: Scanner): String {
-        cliLog(Cli.cli_suffix_intro.toString())
-        cliLog(Cli.cli_suffix_input.toString(), false)
+        cliLog(Translations.cli_suffix_intro.toString())
+        cliLog(Translations.cli_suffix_input.toString(), false)
         return getNextLine(scanner)
     }
 
@@ -770,17 +770,17 @@ class ConfigurationEditor(
         scanner: Scanner,
         packConfig: PackConfig
     ) {
-        cliLog(Cli.cli_config_save_intro.toString())
+        cliLog(Translations.cli_config_save_intro.toString())
         if (utilities.booleanUtilities.readBoolean()) {
-            cliLog(Cli.cli_config_save_name.toString())
+            cliLog(Translations.cli_config_save_name.toString())
             val customFileName = File(utilities.stringUtilities.pathSecureText(getNextLine(scanner))).absoluteFile
             packConfig.save(customFileName, apiProperties)
-            cliLog(Cli.cli_config_save_saved(customFileName.absolutePath))
-            cliLog(Cli.cli_config_save_info.toString())
-            cliLog(Cli.cli_config_save_load(customFileName))
+            cliLog(Translations.cli_config_save_saved(customFileName.absolutePath))
+            cliLog(Translations.cli_config_save_info.toString())
+            cliLog(Translations.cli_config_save_load(customFileName))
         } else {
             packConfig.save(apiProperties.defaultConfig, apiProperties)
-            cliLog(Cli.cli_config_save_saved_default.toString())
+            cliLog(Translations.cli_config_save_saved_default.toString())
         }
     }
 

@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui.window.configs
 
-import Gui
+import Translations
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.api.PackConfig
 import de.griefed.serverpackcreator.api.utilities.common.InvalidFileTypeException
@@ -55,8 +55,8 @@ class TabbedConfigsTab(
     private val mainFrame: MainFrame
 ) : TabPanel() {
     private val log = cachedLoggerOf(this.javaClass)
-    private val choose = arrayOf(Gui.createserverpack_gui_quickselect_choose.toString())
-    private val noVersions = DefaultComboBoxModel(arrayOf(Gui.createserverpack_gui_createserverpack_forge_none.toString()))
+    private val choose = arrayOf(Translations.createserverpack_gui_quickselect_choose.toString())
+    private val noVersions = DefaultComboBoxModel(arrayOf(Translations.createserverpack_gui_createserverpack_forge_none.toString()))
     private val componentResizer = ComponentResizer()
     private val timer = ConfigCheckTimer(500, guiProps,this)
     val selectedEditor: ConfigEditor?
@@ -105,8 +105,8 @@ class TabbedConfigsTab(
         (activeTab!! as ConfigEditor).title.closeButton.isVisible = true
 
         val newAndLoadMenu = JPopupMenu()
-        val newTabItem = JMenuItem(Gui.createserverpack_gui_title_new.toString())
-        val loadConfigItem = JMenuItem(Gui.menubar_gui_menuitem_loadconfig.toString())
+        val newTabItem = JMenuItem(Translations.createserverpack_gui_title_new.toString())
+        val loadConfigItem = JMenuItem(Translations.menubar_gui_menuitem_loadconfig.toString())
         newTabItem.addActionListener { addTab() }
         loadConfigItem.addActionListener { loadConfigFile() }
         newAndLoadMenu.add(newTabItem)
@@ -163,7 +163,7 @@ class TabbedConfigsTab(
         if (editor == null) {
             return
         }
-        val configChooser = ConfigChooser(apiWrapper.apiProperties, Gui.menubar_gui_menuitem_saveas_title.toString())
+        val configChooser = ConfigChooser(apiWrapper.apiProperties, Translations.menubar_gui_menuitem_saveas_title.toString())
         configChooser.dialogType = JFileChooser.SAVE_DIALOG
         if (configChooser.showSaveDialog(mainFrame.frame) == JFileChooser.APPROVE_OPTION) {
             if (configChooser.selectedFile.path.endsWith(".conf")) {
@@ -197,8 +197,8 @@ class TabbedConfigsTab(
             GlobalScope.launch(Dispatchers.Swing, CoroutineStart.UNDISPATCHED) {
                 JOptionPane.showMessageDialog(
                     panel,
-                    Gui.createserverpack_gui_tabs_notfound_message(configFile.absoluteFile),
-                    Gui.createserverpack_gui_tabs_notfound_title.toString(),
+                    Translations.createserverpack_gui_tabs_notfound_message(configFile.absoluteFile),
+                    Translations.createserverpack_gui_tabs_notfound_title.toString(),
                     JOptionPane.ERROR_MESSAGE
                 )
             }
@@ -206,7 +206,7 @@ class TabbedConfigsTab(
     }
 
     fun loadConfigFile() {
-        val configChooser = ConfigChooser(apiWrapper.apiProperties, Gui.createserverpack_gui_buttonloadconfig_title.toString())
+        val configChooser = ConfigChooser(apiWrapper.apiProperties, Translations.createserverpack_gui_buttonloadconfig_title.toString())
         configChooser.isMultiSelectionEnabled = true
         if (configChooser.showOpenDialog(mainFrame.frame) == JFileChooser.APPROVE_OPTION) {
             val files = configChooser.selectedFiles.map { file ->
@@ -221,14 +221,14 @@ class TabbedConfigsTab(
                 for (file in files) {
                     if (tabs.tabCount > 0 &&
                         DialogUtilities.createShowGet(
-                            Gui.menubar_gui_config_load_message(file.absolutePath),
-                            Gui.menubar_gui_config_load_title.toString(),
+                            Translations.menubar_gui_config_load_message(file.absolutePath),
+                            Translations.menubar_gui_config_load_title.toString(),
                             mainFrame.frame,
                             JOptionPane.QUESTION_MESSAGE,
                             JOptionPane.YES_NO_OPTION,
                             guiProps.warningIcon,
                             false,
-                            arrayOf(Gui.menubar_gui_config_load_current, Gui.menubar_gui_config_load_new)
+                            arrayOf(Translations.menubar_gui_config_load_current, Translations.menubar_gui_config_load_new)
                         ) == 0
                     ) {
                         run {

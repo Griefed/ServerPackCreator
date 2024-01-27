@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui.window.menu.file
 
-import Gui
+import Translations
 import de.griefed.serverpackcreator.gui.window.configs.TabbedConfigsTab
 import javax.swing.JMenuItem
 
@@ -30,7 +30,7 @@ import javax.swing.JMenuItem
  */
 class SaveConfigAsItem(
     private val tabbedConfigsTab: TabbedConfigsTab
-) : JMenuItem(Gui.menubar_gui_menuitem_saveas.toString()) {
+) : JMenuItem(Translations.menubar_gui_menuitem_saveas.toString()) {
 
     init {
         this.addActionListener { saveAs() }

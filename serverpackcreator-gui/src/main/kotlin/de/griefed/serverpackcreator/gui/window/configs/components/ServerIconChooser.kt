@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui.window.configs.components
 
-import Gui
+import Translations
 import de.griefed.serverpackcreator.gui.components.BaseFileChooser
 import java.awt.Dimension
 import java.io.File
@@ -36,10 +36,10 @@ class ServerIconChooser(current: File?, dimension: Dimension) : BaseFileChooser(
     init {
         currentDirectory = current
         isFileHidingEnabled = false
-        dialogTitle = Gui.createserverpack_gui_createserverpack_chooser_icon_title.toString()
+        dialogTitle = Translations.createserverpack_gui_createserverpack_chooser_icon_title.toString()
         fileSelectionMode = FILES_ONLY
         fileFilter = FileNameExtensionFilter(
-            Gui.createserverpack_gui_createserverpack_chooser_icon_filter.toString(), "png", "jpg", "jpeg", "bmp"
+            Translations.createserverpack_gui_createserverpack_chooser_icon_filter.toString(), "png", "jpg", "jpeg", "bmp"
         )
         isAcceptAllFileFilterUsed = false
         isMultiSelectionEnabled = false
