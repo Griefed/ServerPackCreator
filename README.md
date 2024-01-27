@@ -381,14 +381,23 @@ services:
       POSTGRES_DB: serverpackcreator
       POSTGRES_USER: <YOUR_DB_USERNAME>
       POSTGRES_PASSWORD: <YOUR_DB_PASSWORD>
+    volumes:
+      - ./database:/var/lib/postgresql/data
   serverpackcreator:
     container_name: serverpackcreator
     image: griefed/serverpackcreator:latest # For a list of available tags, see https://hub.docker.com/r/griefed/serverpackcreator/tags
     restart: unless-stopped
+    depends_on:
+      - serverpackcreatordb
     environment:
-      SPC_DATABASE_PASSWORD: <YOUR_DB_PASSWORD>
-      SPC_DATABASE_USERNAME: <YOUR_DB_USERNAME>
-      SPC_DATABASE_URL: serverpackcreatordb:5432/serverpackcreator # Do not change this unless you absolutely know what you are doing.
+      - TZ=Europe/Berlin # Your timezone
+      - PUID=1000 # Your user ID
+      - PGID=1000 # Your group ID
+      - SPC_DATABASE_PASSWORD=<YOUR_DB_PASSWORD>
+      - SPC_DATABASE_USERNAME=<YOUR_DB_USERNAME>
+      - SPC_DATABASE_HOST=serverpackcreatordb  # Do not change this unless you absolutely know what you are doing.
+      - SPC_DATABASE_PORT=5432  # Do not change this unless you absolutely know what you are doing.
+      - SPC_DATABASE_DB=serverpackcreator # Do not change this unless you absolutely know what you are doing.
     ports:
       - "8080:8080" # Port at which SPC will be available at on your host : Port of the webservice inside the container. Only change the left value, it at all.
     volumes:

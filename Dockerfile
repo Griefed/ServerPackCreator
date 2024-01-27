@@ -7,7 +7,7 @@ WORKDIR /tmp/serverpackcreator
 COPY / /tmp/serverpackcreator
 
 RUN \
-  apt-get update && apt-get install dos2unix && \
+  apt-get update && apt-get install dos2unix -y && \
   dos2unix gradlew && chmod +x gradlew && \
   sh gradlew -Pversion="$VERSION" \
     build --info --full-stacktrace \
@@ -46,11 +46,8 @@ RUN \
       /root/.cache \
       /tmp/*
 
-COPY --from=builder --chown=abc:abc --chmod=764 /tmp/serverpackcreator/java/ /app/serverpackcreator/java
-COPY --from=builder --chown=abc:abc --chmod=764 /tmp/serverpackcreator/serverpackcreator-app/build/libs/serverpackcreator-app-$VERSION.jar /app/serverpackcreator/serverpackcreator.jar
-COPY --chown=abc:abc root/ /
-COPY --chown=abc:abc serverpackcreator-api/src/jvmMain/resources/de/griefed/resources/server_files /defaults/server_files
-
-
+COPY root/ /
+COPY --from=builder /tmp/serverpackcreator/java/ /app/serverpackcreator/java
+COPY --from=builder /tmp/serverpackcreator/serverpackcreator-app/build/libs/serverpackcreator-app-$VERSION.jar /app/serverpackcreator/serverpackcreator.jar
 
 EXPOSE 8080

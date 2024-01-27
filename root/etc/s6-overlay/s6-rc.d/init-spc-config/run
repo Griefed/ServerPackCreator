@@ -5,6 +5,8 @@ OVERRIDES=$APP_DIR/overrides.properties
 rm -f $OVERRIDES
 touch $OVERRIDES
 
+echo "**** Creating overrides.properties ****"
+
 if [[ -z ${SPC_SCHEDULE_DATABASE_CLEANUP} ]];then
   echo "de.griefed.serverpackcreator.spring.schedules.database.cleanup=0 0 0 * * *" >> $OVERRIDES
 else
@@ -35,10 +37,10 @@ else
   echo "spring.datasource.username=$SPC_DATABASE_USERNAME" >> $OVERRIDES
 fi
 
-if [[ -z ${SPC_DATABASE_URL} ]];then
-  echo "spring.datasource.url=jdbc:postgresql:" >> $OVERRIDES
+if [[ -z ${SPC_DATABASE_HOST} ]] || [[ -z ${SPC_DATABASE_PORT} ]] || [[ -z ${SPC_DATABASE_DB} ]];then
+  echo "spring.datasource.url=jdbc\:postgresql\:" >> $OVERRIDES
 else
-  echo "spring.datasource.url=jdbc:postgresql://$SPC_DATABASE_URL" >> $OVERRIDES
+  echo "spring.datasource.url=jdbc\:postgresql\://${SPC_DATABASE_HOST}\:${SPC_DATABASE_PORT}/${SPC_DATABASE_DB}" >> $OVERRIDES
 fi
 
 if [[ -z ${SPC_MAX_UPLOAD_SIZE} ]];then
@@ -100,12 +102,22 @@ fi
 echo "server.tomcat.basedir=/app/serverpackcreator" >> $OVERRIDES
 echo "de.griefed.serverpackcreator.home=/app/serverpackcreator" >> $OVERRIDES
 
-if [ ! -f /data/serverpackcreator.properties ]; then
+echo "**** Copying default /defaults/serverpackcreator.properties ****"
+
+if [ ! -f /app/serverpackcreator/serverpackcreator.properties ]; then
   echo "**** Setting up default serverpackcreator properties. ****"
   cp -f \
     /defaults/serverpackcreator.properties \
     $APP_DIR/serverpackcreator.properties
 fi
+
+echo "**** chowning $OVERRIDES & $APP_DIR/serverpackcreator.properties ****"
+
+lsiown abc:abc \
+    $APP_DIR/serverpackcreator.properties \
+    $OVERRIDES
+
+echo "**** Checking permissions ****"
 
 # check Library permissions
 PUID=${PUID:-911}
@@ -137,3 +149,5 @@ else
             /app/serverpackcreator/logs
     fi
 fi
+
+echo "**** Init done ****"
