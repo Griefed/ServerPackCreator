@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui.window.menu.about
 
-import Gui
+import Translations
 import de.griefed.serverpackcreator.gui.window.MainFrame
 import javax.swing.JMenuItem
 
@@ -28,7 +28,7 @@ import javax.swing.JMenuItem
  *
  * @author Griefed
  */
-class StepByStepItem(mainFrame: MainFrame): JMenuItem(Gui.firstrun_menu.toString()) {
+class StepByStepItem(mainFrame: MainFrame): JMenuItem(Translations.firstrun_menu.toString()) {
 
     init {
         this.addActionListener { mainFrame.stepByStepGuide() }

@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui.tips
 
-import Gui
+import Translations
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.utilities.getAspectRatioScaledInstsance
 import io.ktor.util.reflect.*
@@ -51,13 +51,13 @@ class CustomTipOfTheDayUI(tipOfTheDay: TipOfTheDay, private val guiProps: GuiPro
         tipPane.foreground = UIManager.getColor("Panel.foreground")
         tipPane.font = guiProps.font
         tipFont = guiProps.font.deriveFont(Font.BOLD)
-        UIManager.put("TipOfTheDay.dialogTitle", Gui.tips_title.toString())
-        UIManager.put("TipOfTheDay.showOnStartupText", Gui.tips_show.toString())
+        UIManager.put("TipOfTheDay.dialogTitle", Translations.tips_title.toString())
+        UIManager.put("TipOfTheDay.showOnStartupText", Translations.tips_show.toString())
     }
 
     override fun installComponents(defaults: UIDefaults) {
         super.installComponents()
-        val tipIcon = JLabel(Gui.tips_know.toString())
+        val tipIcon = JLabel(Translations.tips_know.toString())
         tipIcon.setIcon(guiProps.fancyInfoIcon)
         tipIcon.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2))
         tipIcon.font = guiProps.font.deriveFont(Font.BOLD, (guiProps.fontSize + 5).toFloat())
@@ -81,7 +81,7 @@ class CustomTipOfTheDayUI(tipOfTheDay: TipOfTheDay, private val guiProps: GuiPro
      * @author Griefed
      */
     override fun createDialog(parentComponent: Component, choice: TipOfTheDay.ShowOnStartupChoice): JDialog {
-        val title = Gui.tips_title.toString()
+        val title = Translations.tips_title.toString()
 
         val dialog: JDialog
 
@@ -105,21 +105,21 @@ class CustomTipOfTheDayUI(tipOfTheDay: TipOfTheDay, private val guiProps: GuiPro
         val controls = JPanel(BorderLayout())
         dialog.add("South", controls)
 
-        val showOnStartupBox = JCheckBox(Gui.tips_show.toString(), choice.isShowingOnStartup)
+        val showOnStartupBox = JCheckBox(Translations.tips_show.toString(), choice.isShowingOnStartup)
         controls.add(showOnStartupBox, BorderLayout.CENTER)
 
         val buttons = JPanel(GridLayout(1, 2, 9, 0))
         controls.add(buttons, BorderLayout.LINE_END)
 
-        val previousTipButton = JButton(Gui.tips_previous.toString())
+        val previousTipButton = JButton(Translations.tips_previous.toString())
         buttons.add(previousTipButton)
         previousTipButton.addActionListener(PreviousTipAction())
 
-        val nextTipButton = JButton(Gui.tips_next.toString())
+        val nextTipButton = JButton(Translations.tips_next.toString())
         buttons.add(nextTipButton)
         nextTipButton.addActionListener(NextTipAction())
 
-        val closeButton = JButton(Gui.tips_close.toString())
+        val closeButton = JButton(Translations.tips_close.toString())
         buttons.add(closeButton)
 
         closeButton.addActionListener {

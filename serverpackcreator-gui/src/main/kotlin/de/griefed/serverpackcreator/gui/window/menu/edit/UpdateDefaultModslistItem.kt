@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui.window.menu.edit
 
-import Gui
+import Translations
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.gui.GuiProps
 import javax.swing.JFrame
@@ -35,7 +35,7 @@ class UpdateDefaultModslistItem(
     private val apiProperties: ApiProperties,
     private val mainFrame: JFrame,
     private val guiProps: GuiProps
-) : JMenuItem(Gui.menubar_gui_menuitem_updatefallback.toString()) {
+) : JMenuItem(Translations.menubar_gui_menuitem_updatefallback.toString()) {
     init {
         this.addActionListener { updateFallbacks() }
     }
@@ -47,16 +47,16 @@ class UpdateDefaultModslistItem(
         if (apiProperties.updateFallback()) {
             JOptionPane.showMessageDialog(
                 mainFrame,
-                Gui.menubar_gui_menuitem_updatefallback_updated.toString(),
-                Gui.menubar_gui_menuitem_updatefallback_title.toString(),
+                Translations.menubar_gui_menuitem_updatefallback_updated.toString(),
+                Translations.menubar_gui_menuitem_updatefallback_title.toString(),
                 JOptionPane.INFORMATION_MESSAGE,
                 guiProps.infoIcon
             )
         } else {
             JOptionPane.showMessageDialog(
                 mainFrame,
-                Gui.menubar_gui_menuitem_updatefallback_nochange.toString(),
-                Gui.menubar_gui_menuitem_updatefallback_title.toString(),
+                Translations.menubar_gui_menuitem_updatefallback_nochange.toString(),
+                Translations.menubar_gui_menuitem_updatefallback_title.toString(),
                 JOptionPane.INFORMATION_MESSAGE,
                 guiProps.infoIcon
             )

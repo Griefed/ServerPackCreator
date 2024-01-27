@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui.window
 
-import Gui
+import Translations
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.utilities.common.WebUtilities
 import de.griefed.serverpackcreator.gui.GuiProps
@@ -66,7 +66,7 @@ class UpdateDialogs(
      */
     private fun displayUpdateDialog(): Boolean {
         return if (update.isPresent) {
-            val textContent: String = Gui.update_dialog_new(update.get().url())
+            val textContent: String = Translations.update_dialog_new(update.get().url())
             val styledDocument: StyledDocument = DefaultStyledDocument()
             val simpleAttributeSet = SimpleAttributeSet()
             val jTextPane = JTextPane(styledDocument)
@@ -81,9 +81,9 @@ class UpdateDialogs(
             )
             jTextPane.isOpaque = false
             jTextPane.isEditable = false
-            options[0] = Gui.update_dialog_yes.toString()
-            options[1] = Gui.update_dialog_no.toString()
-            options[2] = Gui.update_dialog_clipboard.toString()
+            options[0] = Translations.update_dialog_yes.toString()
+            options[1] = Translations.update_dialog_no.toString()
+            options[2] = Translations.update_dialog_clipboard.toString()
             try {
                 styledDocument.insertString(0, textContent, simpleAttributeSet)
             } catch (ex: BadLocationException) {
@@ -91,7 +91,7 @@ class UpdateDialogs(
             }
             when (DialogUtilities.createShowGet(
                 jTextPane,
-                Gui.update_dialog_available.toString(),
+                Translations.update_dialog_available.toString(),
                 mainFrame,
                 JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,
                 guiProps.infoIcon,
@@ -123,8 +123,8 @@ class UpdateDialogs(
         update = updateChecker.checkForUpdate(apiProperties.apiVersion, apiProperties.isCheckingForPreReleasesEnabled)
         if (!displayUpdateDialog()) {
             DialogUtilities.createDialog(
-                Gui.menubar_gui_menuitem_updates_none.toString() + "   ",
-                Gui.menubar_gui_menuitem_updates_none_title.toString() + "   ",
+                Translations.menubar_gui_menuitem_updates_none.toString() + "   ",
+                Translations.menubar_gui_menuitem_updates_none_title.toString() + "   ",
                 mainFrame,
                 JOptionPane.INFORMATION_MESSAGE, JOptionPane.DEFAULT_OPTION,
                 guiProps.infoIcon,

@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui.window.menu.file
 
-import Gui
+import Translations
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.utilities.common.Utilities
 import de.griefed.serverpackcreator.gui.GuiProps
@@ -40,7 +40,7 @@ class FileMenu(
     mainFrame: MainFrame,
     utilities: Utilities,
     guiProps: GuiProps
-) : JMenu(Gui.menubar_gui_menu_file.toString()) {
+) : JMenu(Translations.menubar_gui_menu_file.toString()) {
 
     private val newConfig = NewConfigItem(tabbedConfigsTab)
     private val loadConfig = LoadConfigItem(tabbedConfigsTab)

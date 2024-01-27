@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui.window.settings
 
-import Gui
+import Translations
 import de.comahe.i18n4k.Locale
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.ExclusionFilter
@@ -52,164 +52,164 @@ class GlobalSettings(
     actionListener: ActionListener,
     tableModelListener: TableModelListener,
     controlPanel: ControlPanel
-) : Editor(Gui.settings_global.toString(), guiProps) {
+) : Editor(Translations.settings_global.toString(), guiProps) {
 
-    private val homeIcon = StatusIcon(guiProps, Gui.settings_global_home_tooltip.toString())
-    private val homeLabel = ElementLabel(Gui.settings_global_home_label.toString())
+    private val homeIcon = StatusIcon(guiProps, Translations.settings_global_home_tooltip.toString())
+    private val homeLabel = ElementLabel(Translations.settings_global_home_label.toString())
     private val homeSetting = ScrollTextFileField(guiProps, apiProperties.homeDirectory.absoluteFile, changeListener)
-    private val homeRevert = BalloonTipButton(null, guiProps.revertIcon, Gui.settings_revert.toString(), guiProps) { homeSetting.file = apiProperties.homeDirectory }
-    private val homeReset = BalloonTipButton(null, guiProps.resetIcon,Gui.settings_reset.toString(), guiProps) { homeSetting.file = apiProperties.defaultHomeDirectory() }
-    private val homeChoose = BalloonTipButton(null, guiProps.folderIcon,Gui.settings_select_directory.toString(), guiProps) {
-        val homeChooser = HomeDirChooser(apiProperties,Gui.settings_global_home_chooser.toString())
+    private val homeRevert = BalloonTipButton(null, guiProps.revertIcon, Translations.settings_revert.toString(), guiProps) { homeSetting.file = apiProperties.homeDirectory }
+    private val homeReset = BalloonTipButton(null, guiProps.resetIcon,Translations.settings_reset.toString(), guiProps) { homeSetting.file = apiProperties.defaultHomeDirectory() }
+    private val homeChoose = BalloonTipButton(null, guiProps.folderIcon,Translations.settings_select_directory.toString(), guiProps) {
+        val homeChooser = HomeDirChooser(apiProperties,Translations.settings_global_home_chooser.toString())
         if (homeChooser.showSaveDialog(mainFrame.frame) == JFileChooser.APPROVE_OPTION) {
             if (homeChooser.selectedFile.absoluteFile.testFileWrite()) {
                 homeSetting.file = homeChooser.selectedFile.absoluteFile
             } else {
                 JOptionPane.showMessageDialog(
                     mainFrame.frame,
-                    Gui.settings_directory_error(homeChooser.selectedFile.absolutePath)
+                    Translations.settings_directory_error(homeChooser.selectedFile.absolutePath)
                 )
             }
         }
     }
 
-    private val javaIcon = StatusIcon(guiProps, Gui.settings_global_java_tooltip.toString())
-    private val javaLabel = ElementLabel(Gui.settings_global_java_label.toString())
+    private val javaIcon = StatusIcon(guiProps, Translations.settings_global_java_tooltip.toString())
+    private val javaLabel = ElementLabel(Translations.settings_global_java_label.toString())
     private val javaSetting = ScrollTextFileField(guiProps, File(apiProperties.javaPath).absoluteFile, changeListener)
-    private val javaRevert = BalloonTipButton(null, guiProps.revertIcon, Gui.settings_revert.toString(), guiProps) { javaSetting.file = File(apiProperties.javaPath).absoluteFile }
-    private val javaReset = BalloonTipButton(null, guiProps.resetIcon,Gui.settings_reset.toString(), guiProps) { javaSetting.file = File(apiProperties.acquireJavaPath()).absoluteFile }
-    private val javaChoose = BalloonTipButton(null, guiProps.folderIcon,Gui.settings_global_java_executable.toString(), guiProps) {
-        val javaChooser = JavaChooser(apiProperties,Gui.settings_global_java_chooser.toString())
+    private val javaRevert = BalloonTipButton(null, guiProps.revertIcon, Translations.settings_revert.toString(), guiProps) { javaSetting.file = File(apiProperties.javaPath).absoluteFile }
+    private val javaReset = BalloonTipButton(null, guiProps.resetIcon,Translations.settings_reset.toString(), guiProps) { javaSetting.file = File(apiProperties.acquireJavaPath()).absoluteFile }
+    private val javaChoose = BalloonTipButton(null, guiProps.folderIcon,Translations.settings_global_java_executable.toString(), guiProps) {
+        val javaChooser = JavaChooser(apiProperties,Translations.settings_global_java_chooser.toString())
         if (javaChooser.showSaveDialog(mainFrame.frame) == JFileChooser.APPROVE_OPTION) {
             javaSetting.file = javaChooser.selectedFile.absoluteFile
         }
     }
 
-    private val serverPacksIcon = StatusIcon(guiProps, Gui.settings_global_serverpacks_tooltip.toString())
-    private val serverPacksLabel = ElementLabel(Gui.settings_global_serverpacks_label.toString())
+    private val serverPacksIcon = StatusIcon(guiProps, Translations.settings_global_serverpacks_tooltip.toString())
+    private val serverPacksLabel = ElementLabel(Translations.settings_global_serverpacks_label.toString())
     private val serverPacksSetting = ScrollTextFileField(guiProps, apiProperties.serverPacksDirectory.absoluteFile, changeListener)
-    private val serverPacksRevert = BalloonTipButton(null, guiProps.revertIcon, Gui.settings_revert.toString(), guiProps) { serverPacksSetting.file = apiProperties.serverPacksDirectory }
-    private val serverPacksReset = BalloonTipButton(null, guiProps.resetIcon,Gui.settings_reset.toString(), guiProps) { serverPacksSetting.file = apiProperties.defaultServerPacksDirectory() }
-    private val serverPacksChoose = BalloonTipButton(null, guiProps.folderIcon,Gui.settings_select_directory.toString(), guiProps) {
-        val serverPackDirChooser = ServerPackDirChooser(apiProperties,Gui.settings_global_serverpacks_chooser.toString())
+    private val serverPacksRevert = BalloonTipButton(null, guiProps.revertIcon, Translations.settings_revert.toString(), guiProps) { serverPacksSetting.file = apiProperties.serverPacksDirectory }
+    private val serverPacksReset = BalloonTipButton(null, guiProps.resetIcon,Translations.settings_reset.toString(), guiProps) { serverPacksSetting.file = apiProperties.defaultServerPacksDirectory() }
+    private val serverPacksChoose = BalloonTipButton(null, guiProps.folderIcon,Translations.settings_select_directory.toString(), guiProps) {
+        val serverPackDirChooser = ServerPackDirChooser(apiProperties,Translations.settings_global_serverpacks_chooser.toString())
         if (serverPackDirChooser.showSaveDialog(mainFrame.frame) == JFileChooser.APPROVE_OPTION) {
             if (serverPackDirChooser.selectedFile.absoluteFile.testFileWrite()) {
                 serverPacksSetting.file = serverPackDirChooser.selectedFile.absoluteFile
             } else {
                 JOptionPane.showMessageDialog(
                     mainFrame.frame,
-                    Gui.settings_directory_error(serverPackDirChooser.selectedFile.absoluteFile)
+                    Translations.settings_directory_error(serverPackDirChooser.selectedFile.absoluteFile)
                 )
             }
         }
     }
 
-    private val zipIcon = StatusIcon(guiProps, Gui.settings_global_zip_tooltip.toString())
-    private val zipLabel = ElementLabel(Gui.settings_global_zip_label.toString())
-    private val zipSetting = ScrollTextArea(apiProperties.zipArchiveExclusions.joinToString(", "),Gui.settings_global_zip_label.toString(), changeListener, guiProps)
-    private val zipRevert = BalloonTipButton(null, guiProps.revertIcon, Gui.settings_revert.toString(), guiProps) { zipSetting.text = apiProperties.zipArchiveExclusions.joinToString(", ") }
-    private val zipReset = BalloonTipButton(null, guiProps.resetIcon,Gui.settings_reset.toString(), guiProps) { zipSetting.text = apiProperties.fallbackZipExclusions.joinToString(",") }
+    private val zipIcon = StatusIcon(guiProps, Translations.settings_global_zip_tooltip.toString())
+    private val zipLabel = ElementLabel(Translations.settings_global_zip_label.toString())
+    private val zipSetting = ScrollTextArea(apiProperties.zipArchiveExclusions.joinToString(", "),Translations.settings_global_zip_label.toString(), changeListener, guiProps)
+    private val zipRevert = BalloonTipButton(null, guiProps.revertIcon, Translations.settings_revert.toString(), guiProps) { zipSetting.text = apiProperties.zipArchiveExclusions.joinToString(", ") }
+    private val zipReset = BalloonTipButton(null, guiProps.resetIcon,Translations.settings_reset.toString(), guiProps) { zipSetting.text = apiProperties.fallbackZipExclusions.joinToString(",") }
 
-    private val inclusionsIcon = StatusIcon(guiProps, Gui.settings_global_inclusions_tooltip.toString())
-    private val inclusionsLabel = ElementLabel(Gui.settings_global_inclusions_label.toString())
-    private val inclusionsSetting = ScrollTextArea(apiProperties.directoriesToInclude.joinToString(", "),Gui.settings_global_inclusions_label.toString(), changeListener, guiProps)
-    private val inclusionsRevert = BalloonTipButton(null, guiProps.revertIcon, Gui.settings_revert.toString(), guiProps) { inclusionsSetting.text = apiProperties.directoriesToInclude.joinToString(", ") }
-    private val inclusionsReset = BalloonTipButton(null, guiProps.resetIcon,Gui.settings_reset.toString(), guiProps) { inclusionsSetting.text = apiProperties.fallbackDirectoriesInclusion.joinToString(",") }
+    private val inclusionsIcon = StatusIcon(guiProps, Translations.settings_global_inclusions_tooltip.toString())
+    private val inclusionsLabel = ElementLabel(Translations.settings_global_inclusions_label.toString())
+    private val inclusionsSetting = ScrollTextArea(apiProperties.directoriesToInclude.joinToString(", "),Translations.settings_global_inclusions_label.toString(), changeListener, guiProps)
+    private val inclusionsRevert = BalloonTipButton(null, guiProps.revertIcon, Translations.settings_revert.toString(), guiProps) { inclusionsSetting.text = apiProperties.directoriesToInclude.joinToString(", ") }
+    private val inclusionsReset = BalloonTipButton(null, guiProps.resetIcon,Translations.settings_reset.toString(), guiProps) { inclusionsSetting.text = apiProperties.fallbackDirectoriesInclusion.joinToString(",") }
 
-    private val aikarsIcon = StatusIcon(guiProps, Gui.settings_global_aikars_tooltip.toString())
-    private val aikarsLabel = ElementLabel(Gui.settings_global_aikars_label.toString())
-    private val aikarsSetting = ScrollTextArea(apiProperties.aikarsFlags,Gui.settings_global_aikars_label.toString(), changeListener, guiProps)
-    private val aikarsRevert = BalloonTipButton(null, guiProps.revertIcon, Gui.settings_revert.toString(), guiProps) { aikarsSetting.text = apiProperties.aikarsFlags }
-    private val aikarsReset = BalloonTipButton(null, guiProps.resetIcon,Gui.settings_reset.toString(), guiProps) { aikarsSetting.text = apiProperties.fallbackAikarsFlags }
+    private val aikarsIcon = StatusIcon(guiProps, Translations.settings_global_aikars_tooltip.toString())
+    private val aikarsLabel = ElementLabel(Translations.settings_global_aikars_label.toString())
+    private val aikarsSetting = ScrollTextArea(apiProperties.aikarsFlags,Translations.settings_global_aikars_label.toString(), changeListener, guiProps)
+    private val aikarsRevert = BalloonTipButton(null, guiProps.revertIcon, Translations.settings_revert.toString(), guiProps) { aikarsSetting.text = apiProperties.aikarsFlags }
+    private val aikarsReset = BalloonTipButton(null, guiProps.resetIcon,Translations.settings_reset.toString(), guiProps) { aikarsSetting.text = apiProperties.fallbackAikarsFlags }
 
-    private val scriptIcon = StatusIcon(guiProps, Gui.settings_global_scripts_tooltip.toString())
-    private val scriptLabel = ElementLabel(Gui.settings_global_scripts_label.toString())
-    private val scriptSetting = ScrollTextArea(apiProperties.scriptTemplates.joinToString(", "),Gui.settings_global_scripts_label.toString(), changeListener, guiProps)
-    private val scriptRevert = BalloonTipButton(null, guiProps.revertIcon, Gui.settings_revert.toString(), guiProps) { scriptSetting.text = apiProperties.scriptTemplates.joinToString(", ") }
-    private val scriptReset = BalloonTipButton(null, guiProps.resetIcon,Gui.settings_reset.toString(), guiProps) { scriptSetting.text = apiProperties.defaultScriptTemplates().joinToString(", ") }
-    private val scriptChoose = BalloonTipButton(null, guiProps.folderIcon,Gui.settings_select_directory.toString(), guiProps) {
-        val scriptChooser = ScriptTemplatesChooser(apiProperties,Gui.settings_global_scripts_chooser.toString())
+    private val scriptIcon = StatusIcon(guiProps, Translations.settings_global_scripts_tooltip.toString())
+    private val scriptLabel = ElementLabel(Translations.settings_global_scripts_label.toString())
+    private val scriptSetting = ScrollTextArea(apiProperties.scriptTemplates.joinToString(", "),Translations.settings_global_scripts_label.toString(), changeListener, guiProps)
+    private val scriptRevert = BalloonTipButton(null, guiProps.revertIcon, Translations.settings_revert.toString(), guiProps) { scriptSetting.text = apiProperties.scriptTemplates.joinToString(", ") }
+    private val scriptReset = BalloonTipButton(null, guiProps.resetIcon,Translations.settings_reset.toString(), guiProps) { scriptSetting.text = apiProperties.defaultScriptTemplates().joinToString(", ") }
+    private val scriptChoose = BalloonTipButton(null, guiProps.folderIcon,Translations.settings_select_directory.toString(), guiProps) {
+        val scriptChooser = ScriptTemplatesChooser(apiProperties,Translations.settings_global_scripts_chooser.toString())
         if (scriptChooser.showSaveDialog(mainFrame.frame) == JFileChooser.APPROVE_OPTION) {
             scriptSetting.text = scriptChooser.selectedFiles.joinToString(", ") { it.absolutePath }
         }
     }
 
-    private val fallbackURLIcon = StatusIcon(guiProps, Gui.settings_global_fallbackurl_tooltip.toString())
-    private val fallbackURLLabel = ElementLabel(Gui.settings_global_fallbackurl_label.toString())
-    private val fallbackURLSetting = ScrollTextField(guiProps,apiProperties.updateUrl.toString(),Gui.settings_global_fallbackurl_label.toString(),changeListener)
-    private val fallbackURLRevert = BalloonTipButton(null, guiProps.revertIcon, Gui.settings_revert.toString(), guiProps) { fallbackURLSetting.text = apiProperties.updateUrl.toString() }
-    private val fallbackURLReset = BalloonTipButton(null, guiProps.resetIcon,Gui.settings_reset.toString(), guiProps) { fallbackURLSetting.text = apiProperties.fallbackUpdateURL }
+    private val fallbackURLIcon = StatusIcon(guiProps, Translations.settings_global_fallbackurl_tooltip.toString())
+    private val fallbackURLLabel = ElementLabel(Translations.settings_global_fallbackurl_label.toString())
+    private val fallbackURLSetting = ScrollTextField(guiProps,apiProperties.updateUrl.toString(),Translations.settings_global_fallbackurl_label.toString(),changeListener)
+    private val fallbackURLRevert = BalloonTipButton(null, guiProps.revertIcon, Translations.settings_revert.toString(), guiProps) { fallbackURLSetting.text = apiProperties.updateUrl.toString() }
+    private val fallbackURLReset = BalloonTipButton(null, guiProps.resetIcon,Translations.settings_reset.toString(), guiProps) { fallbackURLSetting.text = apiProperties.fallbackUpdateURL }
 
-    private val exclusionIcon = StatusIcon(guiProps, Gui.settings_global_exclusions_tooltip.toString())
-    private val exclusionLabel = ElementLabel(Gui.settings_global_exclusions_label.toString())
+    private val exclusionIcon = StatusIcon(guiProps, Translations.settings_global_exclusions_tooltip.toString())
+    private val exclusionLabel = ElementLabel(Translations.settings_global_exclusions_label.toString())
     private val exclusionSetting = ActionComboBox<ExclusionFilter>(DefaultComboBoxModel(ExclusionFilter.entries.toTypedArray()), actionListener)
-    private val exclusionRevert = BalloonTipButton(null, guiProps.revertIcon, Gui.settings_revert.toString(), guiProps) { exclusionSetting.selectedItem = apiProperties.exclusionFilter }
-    private val exclusionReset = BalloonTipButton(null, guiProps.resetIcon,Gui.settings_reset.toString(), guiProps) { exclusionSetting.selectedItem = apiProperties.fallbackExclusionFilter }
+    private val exclusionRevert = BalloonTipButton(null, guiProps.revertIcon, Translations.settings_revert.toString(), guiProps) { exclusionSetting.selectedItem = apiProperties.exclusionFilter }
+    private val exclusionReset = BalloonTipButton(null, guiProps.resetIcon,Translations.settings_reset.toString(), guiProps) { exclusionSetting.selectedItem = apiProperties.fallbackExclusionFilter }
 
-    private val languageIcon = StatusIcon(guiProps, Gui.settings_global_language_tooltip.toString())
-    private val languageLabel = ElementLabel(Gui.settings_global_language_label.toString())
-    private val languageSetting = ActionComboBox<Locale>(DefaultComboBoxModel(Gui.locales.toTypedArray()), actionListener)
-    private val languageRevert = BalloonTipButton(null, guiProps.revertIcon, Gui.settings_revert.toString(), guiProps) { languageSetting.selectedItem = apiProperties.i18n4kConfig.locale }
-    private val languageReset = BalloonTipButton(null, guiProps.resetIcon,Gui.settings_reset.toString(), guiProps) { languageSetting.selectedItem = apiProperties.i18n4kConfig.defaultLocale }
+    private val languageIcon = StatusIcon(guiProps, Translations.settings_global_language_tooltip.toString())
+    private val languageLabel = ElementLabel(Translations.settings_global_language_label.toString())
+    private val languageSetting = ActionComboBox<Locale>(DefaultComboBoxModel(Translations.locales.toTypedArray()), actionListener)
+    private val languageRevert = BalloonTipButton(null, guiProps.revertIcon, Translations.settings_revert.toString(), guiProps) { languageSetting.selectedItem = apiProperties.i18n4kConfig.locale }
+    private val languageReset = BalloonTipButton(null, guiProps.resetIcon,Translations.settings_reset.toString(), guiProps) { languageSetting.selectedItem = apiProperties.i18n4kConfig.defaultLocale }
 
-    private val overwriteIcon = StatusIcon(guiProps, Gui.settings_global_overwrite_tooltip.toString())
-    private val overwriteLabel = ElementLabel(Gui.settings_global_overwrite_label.toString())
+    private val overwriteIcon = StatusIcon(guiProps, Translations.settings_global_overwrite_tooltip.toString())
+    private val overwriteLabel = ElementLabel(Translations.settings_global_overwrite_label.toString())
     private val overwriteSetting = ActionCheckBox(actionListener)
-    private val overwriteRevert = BalloonTipButton(null, guiProps.revertIcon, Gui.settings_revert.toString(), guiProps) { overwriteSetting.isSelected = apiProperties.isServerPacksOverwriteEnabled }
-    private val overwriteReset = BalloonTipButton(null, guiProps.resetIcon,Gui.settings_reset.toString(), guiProps) { overwriteSetting.isSelected = apiProperties.fallbackOverwriteEnabled }
+    private val overwriteRevert = BalloonTipButton(null, guiProps.revertIcon, Translations.settings_revert.toString(), guiProps) { overwriteSetting.isSelected = apiProperties.isServerPacksOverwriteEnabled }
+    private val overwriteReset = BalloonTipButton(null, guiProps.resetIcon,Translations.settings_reset.toString(), guiProps) { overwriteSetting.isSelected = apiProperties.fallbackOverwriteEnabled }
 
-    private val javaVariableIcon = StatusIcon(guiProps, Gui.settings_global_scriptjava_tooltip.toString())
-    private val javaVariableLabel = ElementLabel(Gui.settings_global_scriptjava_label.toString())
+    private val javaVariableIcon = StatusIcon(guiProps, Translations.settings_global_scriptjava_tooltip.toString())
+    private val javaVariableLabel = ElementLabel(Translations.settings_global_scriptjava_label.toString())
     private val javaVariableSetting = ActionCheckBox(actionListener)
-    private val javaVariableRevert = BalloonTipButton(null, guiProps.revertIcon, Gui.settings_revert.toString(), guiProps) { javaVariableSetting.isSelected = apiProperties.isJavaScriptAutoupdateEnabled }
-    private val javaVariableReset = BalloonTipButton(null, guiProps.resetIcon,Gui.settings_reset.toString(), guiProps) { javaVariableSetting.isSelected = apiProperties.fallbackJavaScriptAutoupdateEnabled }
+    private val javaVariableRevert = BalloonTipButton(null, guiProps.revertIcon, Translations.settings_revert.toString(), guiProps) { javaVariableSetting.isSelected = apiProperties.isJavaScriptAutoupdateEnabled }
+    private val javaVariableReset = BalloonTipButton(null, guiProps.resetIcon,Translations.settings_reset.toString(), guiProps) { javaVariableSetting.isSelected = apiProperties.fallbackJavaScriptAutoupdateEnabled }
 
-    private val prereleaseIcon = StatusIcon(guiProps, Gui.settings_global_prerelease_tooltip.toString())
-    private val prereleaseLabel = ElementLabel(Gui.settings_global_prerelease_label.toString())
+    private val prereleaseIcon = StatusIcon(guiProps, Translations.settings_global_prerelease_tooltip.toString())
+    private val prereleaseLabel = ElementLabel(Translations.settings_global_prerelease_label.toString())
     private val prereleaseSetting = ActionCheckBox(actionListener)
-    private val prereleaseRevert = BalloonTipButton(null, guiProps.revertIcon, Gui.settings_revert.toString(), guiProps) { prereleaseSetting.isSelected = apiProperties.isCheckingForPreReleasesEnabled }
-    private val prereleaseReset = BalloonTipButton(null, guiProps.resetIcon,Gui.settings_reset.toString(), guiProps) { prereleaseSetting.isSelected = apiProperties.fallbackCheckingForPreReleasesEnabled }
+    private val prereleaseRevert = BalloonTipButton(null, guiProps.revertIcon, Translations.settings_revert.toString(), guiProps) { prereleaseSetting.isSelected = apiProperties.isCheckingForPreReleasesEnabled }
+    private val prereleaseReset = BalloonTipButton(null, guiProps.resetIcon,Translations.settings_reset.toString(), guiProps) { prereleaseSetting.isSelected = apiProperties.fallbackCheckingForPreReleasesEnabled }
 
-    private val zipExclusionsIcon = StatusIcon(guiProps, Gui.settings_global_zipexclusions_tooltip.toString())
-    private val zipExclusionsLabel = ElementLabel(Gui.settings_global_zipexclusions_label.toString())
+    private val zipExclusionsIcon = StatusIcon(guiProps, Translations.settings_global_zipexclusions_tooltip.toString())
+    private val zipExclusionsLabel = ElementLabel(Translations.settings_global_zipexclusions_label.toString())
     private val zipExclusionsSetting = ActionCheckBox(actionListener)
-    private val zipExclusionsRevert = BalloonTipButton(null, guiProps.revertIcon, Gui.settings_revert.toString(), guiProps) { zipExclusionsSetting.isSelected = apiProperties.isZipFileExclusionEnabled }
-    private val zipExclusionsReset = BalloonTipButton(null, guiProps.resetIcon,Gui.settings_reset.toString(), guiProps) { zipExclusionsSetting.isSelected = apiProperties.fallbackZipFileExclusionEnabled }
+    private val zipExclusionsRevert = BalloonTipButton(null, guiProps.revertIcon, Translations.settings_revert.toString(), guiProps) { zipExclusionsSetting.isSelected = apiProperties.isZipFileExclusionEnabled }
+    private val zipExclusionsReset = BalloonTipButton(null, guiProps.resetIcon,Translations.settings_reset.toString(), guiProps) { zipExclusionsSetting.isSelected = apiProperties.fallbackZipFileExclusionEnabled }
 
-    private val cleanupIcon = StatusIcon(guiProps, Gui.settings_global_cleanup_tooltip.toString())
-    private val cleanupLabel = ElementLabel(Gui.settings_global_cleanup_label.toString())
+    private val cleanupIcon = StatusIcon(guiProps, Translations.settings_global_cleanup_tooltip.toString())
+    private val cleanupLabel = ElementLabel(Translations.settings_global_cleanup_label.toString())
     private val cleanupSetting = ActionCheckBox(actionListener)
-    private val cleanupRevert = BalloonTipButton(null, guiProps.revertIcon, Gui.settings_revert.toString(), guiProps) { cleanupSetting.isSelected = apiProperties.isServerPackCleanupEnabled }
-    private val cleanupReset = BalloonTipButton(null, guiProps.resetIcon,Gui.settings_reset.toString(), guiProps) { cleanupSetting.isSelected = apiProperties.fallbackServerPackCleanupEnabled }
+    private val cleanupRevert = BalloonTipButton(null, guiProps.revertIcon, Translations.settings_revert.toString(), guiProps) { cleanupSetting.isSelected = apiProperties.isServerPackCleanupEnabled }
+    private val cleanupReset = BalloonTipButton(null, guiProps.resetIcon,Translations.settings_reset.toString(), guiProps) { cleanupSetting.isSelected = apiProperties.fallbackServerPackCleanupEnabled }
 
-    private val snapshotsIcon = StatusIcon(guiProps, Gui.settings_global_snapshots_tooltip.toString())
-    private val snapshotsLabel = ElementLabel(Gui.settings_global_snapshots_label.toString())
+    private val snapshotsIcon = StatusIcon(guiProps, Translations.settings_global_snapshots_tooltip.toString())
+    private val snapshotsLabel = ElementLabel(Translations.settings_global_snapshots_label.toString())
     private val snapshotsSetting = ActionCheckBox(actionListener)
-    private val snapshotsRevert = BalloonTipButton(null, guiProps.revertIcon, Gui.settings_revert.toString(), guiProps) { snapshotsSetting.isSelected = apiProperties.isMinecraftPreReleasesAvailabilityEnabled }
-    private val snapshotsReset = BalloonTipButton(null, guiProps.resetIcon,Gui.settings_reset.toString(), guiProps) { snapshotsSetting.isSelected = apiProperties.fallbackMinecraftPreReleasesAvailabilityEnabled }
+    private val snapshotsRevert = BalloonTipButton(null, guiProps.revertIcon, Translations.settings_revert.toString(), guiProps) { snapshotsSetting.isSelected = apiProperties.isMinecraftPreReleasesAvailabilityEnabled }
+    private val snapshotsReset = BalloonTipButton(null, guiProps.resetIcon,Translations.settings_reset.toString(), guiProps) { snapshotsSetting.isSelected = apiProperties.fallbackMinecraftPreReleasesAvailabilityEnabled }
 
-    private val autodetectionIcon = StatusIcon(guiProps, Gui.settings_global_autodetection_tooltip.toString())
-    private val autodetectionLabel = ElementLabel(Gui.settings_global_autodetection_label.toString())
+    private val autodetectionIcon = StatusIcon(guiProps, Translations.settings_global_autodetection_tooltip.toString())
+    private val autodetectionLabel = ElementLabel(Translations.settings_global_autodetection_label.toString())
     private val autodetectionSetting = ActionCheckBox(actionListener)
-    private val autodetectionRevert = BalloonTipButton(null, guiProps.revertIcon, Gui.settings_revert.toString(), guiProps) { autodetectionSetting.isSelected = apiProperties.isAutoExcludingModsEnabled }
-    private val autodetectionReset = BalloonTipButton(null, guiProps.resetIcon,Gui.settings_reset.toString(), guiProps) { autodetectionSetting.isSelected = apiProperties.fallbackAutoExcludingModsEnabled }
+    private val autodetectionRevert = BalloonTipButton(null, guiProps.revertIcon, Translations.settings_revert.toString(), guiProps) { autodetectionSetting.isSelected = apiProperties.isAutoExcludingModsEnabled }
+    private val autodetectionReset = BalloonTipButton(null, guiProps.resetIcon,Translations.settings_reset.toString(), guiProps) { autodetectionSetting.isSelected = apiProperties.fallbackAutoExcludingModsEnabled }
 
-    private val preInstallFilesIcon = StatusIcon(guiProps, Gui.settings_global_install_files_pre_tooltip.toString())
-    private val preInstallFilesLabel = ElementLabel(Gui.settings_global_install_files_pre_label.toString())
-    private val preInstallFilesSetting = ScrollTextArea(apiProperties.preInstallCleanupFiles.joinToString(", "),Gui.settings_global_install_files_pre_label.toString(), changeListener, guiProps)
-    private val preInstallFilesRevert = BalloonTipButton(null, guiProps.revertIcon, Gui.settings_revert.toString(), guiProps) { preInstallFilesSetting.text = apiProperties.preInstallCleanupFiles.joinToString(", ") }
-    private val preInstallFilesReset = BalloonTipButton(null, guiProps.resetIcon,Gui.settings_reset.toString(), guiProps) { preInstallFilesSetting.text = apiProperties.fallbackPreInstallCleanupFiles.joinToString(",") }
+    private val preInstallFilesIcon = StatusIcon(guiProps, Translations.settings_global_install_files_pre_tooltip.toString())
+    private val preInstallFilesLabel = ElementLabel(Translations.settings_global_install_files_pre_label.toString())
+    private val preInstallFilesSetting = ScrollTextArea(apiProperties.preInstallCleanupFiles.joinToString(", "),Translations.settings_global_install_files_pre_label.toString(), changeListener, guiProps)
+    private val preInstallFilesRevert = BalloonTipButton(null, guiProps.revertIcon, Translations.settings_revert.toString(), guiProps) { preInstallFilesSetting.text = apiProperties.preInstallCleanupFiles.joinToString(", ") }
+    private val preInstallFilesReset = BalloonTipButton(null, guiProps.resetIcon,Translations.settings_reset.toString(), guiProps) { preInstallFilesSetting.text = apiProperties.fallbackPreInstallCleanupFiles.joinToString(",") }
 
-    private val postInstallFilesIcon = StatusIcon(guiProps, Gui.settings_global_install_files_post_tooltip.toString())
-    private val postInstallFilesLabel = ElementLabel(Gui.settings_global_install_files_post_label.toString())
-    private val postInstallFilesSetting = ScrollTextArea(apiProperties.postInstallCleanupFiles.joinToString(", "),Gui.settings_global_install_files_post_label.toString(), changeListener, guiProps)
-    private val postInstallFilesRevert = BalloonTipButton(null, guiProps.revertIcon, Gui.settings_revert.toString(), guiProps) { postInstallFilesSetting.text = apiProperties.postInstallCleanupFiles.joinToString(", ") }
-    private val postInstallFilesReset = BalloonTipButton(null, guiProps.resetIcon,Gui.settings_reset.toString(), guiProps) { postInstallFilesSetting.text = apiProperties.fallbackPostInstallCleanupFiles.joinToString(",") }
+    private val postInstallFilesIcon = StatusIcon(guiProps, Translations.settings_global_install_files_post_tooltip.toString())
+    private val postInstallFilesLabel = ElementLabel(Translations.settings_global_install_files_post_label.toString())
+    private val postInstallFilesSetting = ScrollTextArea(apiProperties.postInstallCleanupFiles.joinToString(", "),Translations.settings_global_install_files_post_label.toString(), changeListener, guiProps)
+    private val postInstallFilesRevert = BalloonTipButton(null, guiProps.revertIcon, Translations.settings_revert.toString(), guiProps) { postInstallFilesSetting.text = apiProperties.postInstallCleanupFiles.joinToString(", ") }
+    private val postInstallFilesReset = BalloonTipButton(null, guiProps.resetIcon,Translations.settings_reset.toString(), guiProps) { postInstallFilesSetting.text = apiProperties.fallbackPostInstallCleanupFiles.joinToString(",") }
 
-    private val javaPathsIcon = StatusIcon(guiProps, Gui.settings_global_javapaths_tooltip.toString())
-    private val javaPathsLabel = ElementLabel(Gui.settings_global_javapaths_label.toString())
+    private val javaPathsIcon = StatusIcon(guiProps, Translations.settings_global_javapaths_tooltip.toString())
+    private val javaPathsLabel = ElementLabel(Translations.settings_global_javapaths_label.toString())
     private val javaPathsSetting = JavaPaths(guiProps, tableModelListener)
-    private val javaPathsRevert = BalloonTipButton(null, guiProps.revertIcon, Gui.settings_revert.toString(), guiProps) { javaPathsSetting.loadData(apiProperties.javaPaths) }
+    private val javaPathsRevert = BalloonTipButton(null, guiProps.revertIcon, Translations.settings_revert.toString(), guiProps) { javaPathsSetting.loadData(apiProperties.javaPaths) }
 
     init {
         loadSettings()
@@ -430,57 +430,57 @@ class GlobalSettings(
     override fun validateSettings(): List<String> {
         val errors = mutableListOf<String>()
         if (!homeSetting.file.absoluteFile.isDirectory || !homeSetting.file.absoluteFile.canWrite()) {
-            homeIcon.error(Gui.settings_check_home.toString())
-            errors.add(Gui.settings_check_home.toString())
+            homeIcon.error(Translations.settings_check_home.toString())
+            errors.add(Translations.settings_check_home.toString())
         } else {
             homeIcon.info()
         }
 
         if (!javaSetting.file.absoluteFile.isFile || !javaSetting.file.absoluteFile.canRead() || !javaSetting.file.absoluteFile.canExecute()) {
-            javaIcon.error(Gui.settings_check_java.toString())
-            errors.add(Gui.settings_check_java.toString())
+            javaIcon.error(Translations.settings_check_java.toString())
+            errors.add(Translations.settings_check_java.toString())
         } else {
             javaIcon.info()
         }
 
         if (!serverPacksSetting.file.absoluteFile.isDirectory || !serverPacksSetting.file.absoluteFile.canWrite()) {
-            serverPacksIcon.error(Gui.settings_check_serverpacks.toString())
-            errors.add(Gui.settings_check_serverpacks.toString())
+            serverPacksIcon.error(Translations.settings_check_serverpacks.toString())
+            errors.add(Translations.settings_check_serverpacks.toString())
         } else {
             serverPacksIcon.info()
         }
 
         if (zipSetting.text.matches(guiProps.whitespace)) {
-            zipIcon.error(Gui.settings_check_whitespace.toString())
-            errors.add(Gui.settings_check_whitespace.toString())
+            zipIcon.error(Translations.settings_check_whitespace.toString())
+            errors.add(Translations.settings_check_whitespace.toString())
         } else {
             zipIcon.info()
         }
 
         if (inclusionsSetting.text.matches(guiProps.whitespace)) {
-            inclusionsIcon.error(Gui.settings_check_whitespace.toString())
-            errors.add(Gui.settings_check_whitespace.toString())
+            inclusionsIcon.error(Translations.settings_check_whitespace.toString())
+            errors.add(Translations.settings_check_whitespace.toString())
         } else {
             inclusionsIcon.info()
         }
 
         if (scriptSetting.text.matches(guiProps.whitespace)) {
-            scriptIcon.error(Gui.settings_check_whitespace.toString())
-            errors.add(Gui.settings_check_whitespace.toString())
+            scriptIcon.error(Translations.settings_check_whitespace.toString())
+            errors.add(Translations.settings_check_whitespace.toString())
         } else {
             scriptIcon.info()
         }
 
         if (preInstallFilesSetting.text.matches(guiProps.whitespace)) {
-            preInstallFilesIcon.error(Gui.settings_check_whitespace.toString())
-            errors.add(Gui.settings_check_whitespace.toString())
+            preInstallFilesIcon.error(Translations.settings_check_whitespace.toString())
+            errors.add(Translations.settings_check_whitespace.toString())
         } else {
             preInstallFilesIcon.info()
         }
 
         if (postInstallFilesSetting.text.matches(guiProps.whitespace)) {
-            postInstallFilesIcon.error(Gui.settings_check_whitespace.toString())
-            errors.add(Gui.settings_check_whitespace.toString())
+            postInstallFilesIcon.error(Translations.settings_check_whitespace.toString())
+            errors.add(Translations.settings_check_whitespace.toString())
         } else {
             postInstallFilesIcon.info()
         }
@@ -489,8 +489,8 @@ class GlobalSettings(
             URI(fallbackURLSetting.text).toURL()
             fallbackURLIcon.info()
         } catch (ex: MalformedURLException) {
-            fallbackURLIcon.error(Gui.settings_check_fallbackurl.toString())
-            errors.add(Gui.settings_check_fallbackurl.toString())
+            fallbackURLIcon.error(Translations.settings_check_fallbackurl.toString())
+            errors.add(Translations.settings_check_fallbackurl.toString())
         }
         return errors.toList()
     }

@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.app
 
-import Api
+import Translations
 import de.comahe.i18n4k.Locale
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.api.PackConfig
@@ -523,6 +523,6 @@ class ServerPackCreator(private val args: Array<String>) {
             }
         } while (!userLocale.matches(regex))
         scanner.close()
-        println("Using language: ${Api.localeName}")
+        println("Using language: ${Translations.localeName}")
     }
 }

@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui.tips
 
-import Gui
+import Translations
 import de.griefed.serverpackcreator.gui.GuiProps
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
@@ -41,15 +41,15 @@ class TipOfTheDayManager(private val mainFrame: JFrame, private val guiProps: Gu
     private val tipOfTheDayModel = DefaultTipOfTheDayModel()
 
     init {
-        val memberProperties = Gui::class.memberProperties.filter { it.name.matches("tip_\\d+_name".toRegex()) }
+        val memberProperties = Translations::class.memberProperties.filter { it.name.matches("tip_\\d+_name".toRegex()) }
         for (memberProp in memberProperties) {
             val number = memberProp.name
                 .replace("tip_", "")
                 .replace("_name", "")
-            val name = memberProp.get(Gui).toString()
-            val value = Gui::class.memberProperties
+            val name = memberProp.get(Translations).toString()
+            val value = Translations::class.memberProperties
                 .find { it.name == "tip_${number}_content" }
-                ?.get(Gui)?.toString()
+                ?.get(Translations)?.toString()
                 ?: "Could not retrieve tip for ${memberProp.name}."
             tipOfTheDayModel.add(CustomTip(name, value,"/de/griefed/resources/gui/tip$number.png"))
         }

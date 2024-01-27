@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui.window.configs.components.advanced
 
-import Gui
+import Translations
 import de.griefed.serverpackcreator.gui.components.BaseFileChooser
 import java.awt.Dimension
 import java.io.File
@@ -36,10 +36,10 @@ class ClientModsChooser(current: File?, dimension: Dimension) : BaseFileChooser(
     init {
         currentDirectory = current
         isFileHidingEnabled = false
-        dialogTitle = Gui.createserverpack_gui_buttonclientmods_title.toString()
+        dialogTitle = Translations.createserverpack_gui_buttonclientmods_title.toString()
         fileSelectionMode = FILES_ONLY
         fileFilter = FileNameExtensionFilter(
-            Gui.createserverpack_gui_buttonclientmods_filter.toString(), "jar"
+            Translations.createserverpack_gui_buttonclientmods_filter.toString(), "jar"
         )
         isAcceptAllFileFilterUsed = false
         isMultiSelectionEnabled = true

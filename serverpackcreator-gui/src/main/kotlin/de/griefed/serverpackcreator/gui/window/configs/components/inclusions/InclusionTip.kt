@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui.window.configs.components.inclusions
 
-import Gui
+import Translations
 import de.griefed.serverpackcreator.gui.GuiProps
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
@@ -47,11 +47,11 @@ class InclusionTip(
 
     private val searchFor = JTextField(100)
     private val search = arrayOf<Any>(
-        Gui.createserverpack_gui_textarea_search_message.toString(),
+        Translations.createserverpack_gui_textarea_search_message.toString(),
         searchFor
     )
     private val searchRegex = arrayOf<Any>(
-        Gui.createserverpack_gui_textarea_search_regex_message.toString(),
+        Translations.createserverpack_gui_textarea_search_regex_message.toString(),
         searchFor
     )
 
@@ -105,7 +105,7 @@ class InclusionTip(
         if (JOptionPane.showConfirmDialog(
                 parent,
                 search,
-                Gui.createserverpack_gui_textarea_search_title(name),
+                Translations.createserverpack_gui_textarea_search_title(name),
                 JOptionPane.OK_CANCEL_OPTION,
                 JOptionPane.PLAIN_MESSAGE,
                 guiProps.inspectMediumIcon
@@ -140,7 +140,7 @@ class InclusionTip(
         if (JOptionPane.showConfirmDialog(
                 parent,
                 searchRegex,
-                Gui.createserverpack_gui_textarea_search_regex_title(name),
+                Translations.createserverpack_gui_textarea_search_regex_title(name),
                 JOptionPane.OK_CANCEL_OPTION,
                 JOptionPane.QUESTION_MESSAGE,
                 guiProps.inspectMediumIcon

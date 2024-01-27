@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui.window.configs.components.inclusions
 
-import Gui
+import Translations
 import de.griefed.serverpackcreator.gui.components.BaseFileChooser
 import java.awt.Dimension
 import java.io.File
@@ -35,7 +35,7 @@ class InclusionSourceChooser(current: File?, dimension: Dimension) : BaseFileCho
 
     init {
         currentDirectory = current
-        dialogTitle = Gui.createserverpack_gui_buttoncopydirs_title.toString()
+        dialogTitle = Translations.createserverpack_gui_buttoncopydirs_title.toString()
         fileSelectionMode = FILES_AND_DIRECTORIES
         isAcceptAllFileFilterUsed = true
         isMultiSelectionEnabled = true

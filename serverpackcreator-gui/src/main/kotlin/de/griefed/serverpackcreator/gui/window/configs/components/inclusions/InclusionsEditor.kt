@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui.window.configs.components.inclusions
 
-import Gui
+import Translations
 import de.griefed.serverpackcreator.api.ApiWrapper
 import de.griefed.serverpackcreator.api.InclusionSpecification
 import de.griefed.serverpackcreator.gui.GuiProps
@@ -84,26 +84,26 @@ class InclusionsEditor(
     private val list = JList(inclusionModel)
     private val listScroller = JScrollPane(list)
 
-    private val sourceIcon = StatusIcon(guiProps,Gui.createserverpack_gui_inclusions_editor_source_info.toString())
-    private val sourceLabel = ElementLabel(Gui.createserverpack_gui_inclusions_editor_source.toString())
-    private val sourceAdd = BalloonTipButton(null, guiProps.folderIcon, Gui.settings_gui_manualedit_select.toString(), guiProps) { selectSource() }
+    private val sourceIcon = StatusIcon(guiProps,Translations.createserverpack_gui_inclusions_editor_source_info.toString())
+    private val sourceLabel = ElementLabel(Translations.createserverpack_gui_inclusions_editor_source.toString())
+    private val sourceAdd = BalloonTipButton(null, guiProps.folderIcon, Translations.settings_gui_manualedit_select.toString(), guiProps) { selectSource() }
 
-    private val destinationIcon = StatusIcon(guiProps,Gui.createserverpack_gui_inclusions_editor_destination_info.toString())
-    private val destinationLabel = ElementLabel(Gui.createserverpack_gui_inclusions_editor_destination.toString())
+    private val destinationIcon = StatusIcon(guiProps,Translations.createserverpack_gui_inclusions_editor_destination_info.toString())
+    private val destinationLabel = ElementLabel(Translations.createserverpack_gui_inclusions_editor_destination.toString())
 
-    private val inclusionIcon = StatusIcon(guiProps,Gui.createserverpack_gui_inclusions_editor_inclusion_info.toString())
-    private val inclusionLabel = ElementLabel(Gui.createserverpack_gui_inclusions_editor_inclusion.toString())
+    private val inclusionIcon = StatusIcon(guiProps,Translations.createserverpack_gui_inclusions_editor_inclusion_info.toString())
+    private val inclusionLabel = ElementLabel(Translations.createserverpack_gui_inclusions_editor_inclusion.toString())
 
-    private val exclusionIcon = StatusIcon(guiProps,Gui.createserverpack_gui_inclusions_editor_exclusion_info.toString())
-    private val exclusionLabel = ElementLabel(Gui.createserverpack_gui_inclusions_editor_exclusion.toString())
+    private val exclusionIcon = StatusIcon(guiProps,Translations.createserverpack_gui_inclusions_editor_exclusion_info.toString())
+    private val exclusionLabel = ElementLabel(Translations.createserverpack_gui_inclusions_editor_exclusion.toString())
 
     private val toggleVisibility = JToggleButton(guiProps.toggleHelpIcon)
-    private val fileAdd = BalloonTipButton(null, guiProps.addIcon,Gui.createserverpack_gui_inclusions_editor_add.toString(), guiProps) { addEntry("") }
-    private val fileRemove = BalloonTipButton(null, guiProps.deleteIcon,Gui.createserverpack_gui_inclusions_editor_delete.toString(), guiProps) { removeSelectedEntry() }
-    private val tip = InclusionTip(Gui.createserverpack_gui_inclusions_editor_tip_name.toString(), guiProps)
-    private val filesShowBrowser = BalloonTipButton(null, guiProps.folderIcon, Gui.createserverpack_gui_browser.toString(), guiProps) { selectInclusions() }
-    private val filesRevert = BalloonTipButton(null, guiProps.revertIcon, Gui.createserverpack_gui_buttoncopydirs_revert_tip.toString(), guiProps) { revertInclusions() }
-    private val filesReset = BalloonTipButton(null, guiProps.resetIcon, Gui.createserverpack_gui_buttoncopydirs_reset_tip.toString(), guiProps) { setInclusionsFromStringList(apiWrapper.apiProperties.directoriesToInclude.toMutableList()) }
+    private val fileAdd = BalloonTipButton(null, guiProps.addIcon,Translations.createserverpack_gui_inclusions_editor_add.toString(), guiProps) { addEntry("") }
+    private val fileRemove = BalloonTipButton(null, guiProps.deleteIcon,Translations.createserverpack_gui_inclusions_editor_delete.toString(), guiProps) { removeSelectedEntry() }
+    private val tip = InclusionTip(Translations.createserverpack_gui_inclusions_editor_tip_name.toString(), guiProps)
+    private val filesShowBrowser = BalloonTipButton(null, guiProps.folderIcon, Translations.createserverpack_gui_browser.toString(), guiProps) { selectInclusions() }
+    private val filesRevert = BalloonTipButton(null, guiProps.revertIcon, Translations.createserverpack_gui_buttoncopydirs_revert_tip.toString(), guiProps) { revertInclusions() }
+    private val filesReset = BalloonTipButton(null, guiProps.resetIcon, Translations.createserverpack_gui_buttoncopydirs_reset_tip.toString(), guiProps) { setInclusionsFromStringList(apiWrapper.apiProperties.directoriesToInclude.toMutableList()) }
 
     private var selectedInclusion: InclusionSpecification? = null
     private val delay = 250
@@ -192,7 +192,7 @@ class InclusionsEditor(
         list.cellRenderer = InclusionSpecificationRenderer()
         list.addListSelectionListener { event -> selectionOccurred(event) }
         leftPanel.add(listScroller, BorderLayout.CENTER)
-        tip.text = Gui.createserverpack_gui_inclusions_editor_tip_default.toString()
+        tip.text = Translations.createserverpack_gui_inclusions_editor_tip_default.toString()
         expertPanel.isVisible = false
         toggleVisibility.addActionListener { toggleVisibility() }
 
@@ -235,7 +235,7 @@ class InclusionsEditor(
             return
         }
         list.clearSelection()
-        tip.text = Gui.createserverpack_gui_inclusions_editor_tip_default.toString()
+        tip.text = Translations.createserverpack_gui_inclusions_editor_tip_default.toString()
         source.isEditable = guiProps.allowManualEditing
         destination.isEditable = false
         inclusionFilter.isEditable = false
@@ -254,23 +254,23 @@ class InclusionsEditor(
         GlobalScope.launch(guiProps.miscDispatcher) {
             tip.isEnabled = false
             list.isEnabled = false
-            tip.text = Gui.createserverpack_gui_inclusions_editor_tip_updating.toString()
+            tip.text = Translations.createserverpack_gui_inclusions_editor_tip_updating.toString()
             tip.updateUI()
             val inclusionSelection = selectedInclusion!!
             var tipContent = ""
             try {
                 if (inclusionSelection.source.isBlank()) {
-                    tipContent = Gui.createserverpack_gui_inclusions_editor_tip_blank.toString()
+                    tipContent = Translations.createserverpack_gui_inclusions_editor_tip_blank.toString()
                 } else if (!File(configEditor.getModpackDirectory(), inclusionSelection.source).exists() && !File(inclusionSelection.source).exists()) {
-                    tipContent = Gui.createserverpack_gui_inclusions_editor_tip_invalid.toString()
+                    tipContent = Translations.createserverpack_gui_inclusions_editor_tip_invalid.toString()
                 } else if (inclusionSelection.isGlobalFilter()) {
                     tipContent = if (inclusionSelection.hasInclusionFilter()) {
-                        Gui.createserverpack_gui_inclusions_editor_tip_global_inclusions.toString()
+                        Translations.createserverpack_gui_inclusions_editor_tip_global_inclusions.toString()
                     } else {
-                        Gui.createserverpack_gui_inclusions_editor_tip_global_exclusions(inclusionSelection.exclusionFilter!!)
+                        Translations.createserverpack_gui_inclusions_editor_tip_global_exclusions(inclusionSelection.exclusionFilter!!)
                     }
                 } else {
-                    tipContent = Gui.createserverpack_gui_inclusions_editor_tip_prefix.toString()
+                    tipContent = Translations.createserverpack_gui_inclusions_editor_tip_prefix.toString()
                     val prefix = if (!inclusionSelection.destination.isNullOrBlank()) {
                         inclusionSelection.destination + File.separator
                     } else {
@@ -353,7 +353,7 @@ class InclusionsEditor(
                     sourceIcon.info()
                 } else {
                     tipUpdateTimer.stop()
-                    sourceIcon.error(Gui.createserverpack_gui_inclusions_editor_source_error(source.text))
+                    sourceIcon.error(Translations.createserverpack_gui_inclusions_editor_source_error(source.text))
                 }
                 configEditor.validateInputFields()
             }
@@ -371,7 +371,7 @@ class InclusionsEditor(
                 list.updateUI()
             } else {
                 tipUpdateTimer.stop()
-                destinationIcon.error(Gui.createserverpack_gui_inclusions_editor_destination_error(destination.text))
+                destinationIcon.error(Translations.createserverpack_gui_inclusions_editor_destination_error(destination.text))
             }
         }
     }
@@ -394,7 +394,7 @@ class InclusionsEditor(
                     .replace("\t", "%20")
                     .replace("\n", "<br>")
                     .replace(" ", "&nbsp;")
-                inclusionIcon.error("<html>${Gui.createserverpack_gui_inclusions_editor_filter_error(exception)}</html>")
+                inclusionIcon.error("<html>${Translations.createserverpack_gui_inclusions_editor_filter_error(exception)}</html>")
             }
         }
     }
@@ -417,7 +417,7 @@ class InclusionsEditor(
                     .replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;")
                     .replace("\n", "<br>")
                     .replace(" ", "&nbsp;")
-                exclusionIcon.error("<html>${Gui.createserverpack_gui_inclusions_editor_filter_error(exception)}</html>")
+                exclusionIcon.error("<html>${Translations.createserverpack_gui_inclusions_editor_filter_error(exception)}</html>")
             }
         }
     }

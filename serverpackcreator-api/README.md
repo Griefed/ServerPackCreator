@@ -69,3 +69,10 @@ For concrete usage examples, browser any of the other modules in this repository
 - CLI: [serverpackcreator-cli](../serverpackcreator-cli)
 - GUI: [serverpackcreator-gui](../serverpackcreator-gui)
 - WEB: [serverpackcreator-web](../serverpackcreator-web)
+
+## i18n
+
+The web-frontend has it's own i18n implementation, as it is not written in Java or Kotlin.
+
+So, if you want to provide translations, make sure to update all translations in this library, as well as in the
+web-frontend. A detailed guide for adding translations to the web-frontend will be available in a later milestone.

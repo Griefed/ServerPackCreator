@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui.window.menu.about
 
-import Gui
+import Translations
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.tips.TipOfTheDayManager
 import de.griefed.serverpackcreator.gui.window.MainFrame
@@ -30,7 +30,7 @@ import javax.swing.JMenuItem
  *
  * @author Griefed
  */
-class TipOfTheDayItem(guiProps: GuiProps, mainFrame: MainFrame): JMenuItem(Gui.menubar_gui_menuitem_tipoftheday.toString()) {
+class TipOfTheDayItem(guiProps: GuiProps, mainFrame: MainFrame): JMenuItem(Translations.menubar_gui_menuitem_tipoftheday.toString()) {
 
     private val tipManager = TipOfTheDayManager(mainFrame.frame, guiProps)
 

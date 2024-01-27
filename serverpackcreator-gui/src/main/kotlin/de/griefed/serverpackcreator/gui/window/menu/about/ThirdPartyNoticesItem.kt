@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui.window.menu.about
 
-import Gui
+import Translations
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.utilities.DialogUtilities
 import de.griefed.serverpackcreator.gui.window.MainFrame
@@ -39,7 +39,7 @@ import javax.swing.JTextPane
  * @author Griefed
  */
 class ThirdPartyNoticesItem(private val mainFrame: MainFrame, private val guiProps: GuiProps) :
-    JMenuItem(Gui.menubar_gui_menuitem_licensereport.toString()) {
+    JMenuItem(Translations.menubar_gui_menuitem_licensereport.toString()) {
     private val thirdPartyNoticesWindowTextPane: JTextPane = JTextPane()
     private val thirdPartyNoticesScrollPane = JScrollPane(
         thirdPartyNoticesWindowTextPane,
@@ -64,7 +64,7 @@ class ThirdPartyNoticesItem(private val mainFrame: MainFrame, private val guiPro
         GlobalScope.launch(Dispatchers.Swing) {
             DialogUtilities.createDialog(
                 thirdPartyNoticesScrollPane,
-                Gui.menubar_gui_menuitem_licensereport.toString(),
+                Translations.menubar_gui_menuitem_licensereport.toString(),
                 mainFrame.frame,
                 JOptionPane.INFORMATION_MESSAGE,
                 JOptionPane.DEFAULT_OPTION,

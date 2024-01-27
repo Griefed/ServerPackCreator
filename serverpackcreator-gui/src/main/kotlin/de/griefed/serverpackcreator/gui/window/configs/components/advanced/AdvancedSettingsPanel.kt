@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui.window.configs.components.advanced
 
-import Gui
+import Translations
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.gui.GuiProps
 import de.griefed.serverpackcreator.gui.components.BalloonTipButton
@@ -58,26 +58,26 @@ class AdvancedSettingsPanel(
     )
 ) {
     private val log = cachedLoggerOf(this.javaClass)
-    private val clientModsIcon = StatusIcon(guiProps,Gui.createserverpack_gui_createserverpack_labelclientmods_tip.toString())
-    private val clientModsLabel = ElementLabel(Gui.createserverpack_gui_createserverpack_labelclientmods.toString())
-    private val clientModsRevert = BalloonTipButton(null, guiProps.revertIcon, Gui.createserverpack_gui_buttonclientmods_revert_tip.toString(), guiProps) { revertExclusions() }
-    private val clientModsChooser = BalloonTipButton(null, guiProps.folderIcon, Gui.createserverpack_gui_browser.toString(), guiProps) { selectClientMods() }
-    private val clientModsReset = BalloonTipButton(null, guiProps.resetIcon, Gui.createserverpack_gui_buttonclientmods_reset_tip.toString(), guiProps) { resetClientMods() }
+    private val clientModsIcon = StatusIcon(guiProps,Translations.createserverpack_gui_createserverpack_labelclientmods_tip.toString())
+    private val clientModsLabel = ElementLabel(Translations.createserverpack_gui_createserverpack_labelclientmods.toString())
+    private val clientModsRevert = BalloonTipButton(null, guiProps.revertIcon, Translations.createserverpack_gui_buttonclientmods_revert_tip.toString(), guiProps) { revertExclusions() }
+    private val clientModsChooser = BalloonTipButton(null, guiProps.folderIcon, Translations.createserverpack_gui_browser.toString(), guiProps) { selectClientMods() }
+    private val clientModsReset = BalloonTipButton(null, guiProps.resetIcon, Translations.createserverpack_gui_buttonclientmods_reset_tip.toString(), guiProps) { resetClientMods() }
 
-    private val whitelistModsIcon = StatusIcon(guiProps,Gui.createserverpack_gui_createserverpack_labelwhitelistmods_tip.toString())
-    private val whitelistModsLabel = ElementLabel(Gui.createserverpack_gui_createserverpack_labelwhitelistmods.toString())
-    private val whitelistModsRevert = BalloonTipButton(null, guiProps.revertIcon, Gui.createserverpack_gui_buttonwhitelistmods_revert_tip.toString(), guiProps) { revertWhitelist() }
-    private val whitelistModsChooser = BalloonTipButton(null, guiProps.folderIcon, Gui.createserverpack_gui_browser.toString(), guiProps) { selectWhitelist() }
-    private val whitelistModsReset = BalloonTipButton(null, guiProps.resetIcon, Gui.createserverpack_gui_buttonwhitelistmods_reset_tip.toString(), guiProps) { resetWhitelist() }
+    private val whitelistModsIcon = StatusIcon(guiProps,Translations.createserverpack_gui_createserverpack_labelwhitelistmods_tip.toString())
+    private val whitelistModsLabel = ElementLabel(Translations.createserverpack_gui_createserverpack_labelwhitelistmods.toString())
+    private val whitelistModsRevert = BalloonTipButton(null, guiProps.revertIcon, Translations.createserverpack_gui_buttonwhitelistmods_revert_tip.toString(), guiProps) { revertWhitelist() }
+    private val whitelistModsChooser = BalloonTipButton(null, guiProps.folderIcon, Translations.createserverpack_gui_browser.toString(), guiProps) { selectWhitelist() }
+    private val whitelistModsReset = BalloonTipButton(null, guiProps.resetIcon, Translations.createserverpack_gui_buttonwhitelistmods_reset_tip.toString(), guiProps) { resetWhitelist() }
 
-    private val javaArgsIcon = StatusIcon(guiProps,Gui.createserverpack_gui_createserverpack_javaargs_tip.toString())
-    private val javaArgsLabel = ElementLabel(Gui.createserverpack_gui_createserverpack_javaargs.toString())
+    private val javaArgsIcon = StatusIcon(guiProps,Translations.createserverpack_gui_createserverpack_javaargs_tip.toString())
+    private val javaArgsLabel = ElementLabel(Translations.createserverpack_gui_createserverpack_javaargs.toString())
     private val javaArgsAikarsFlagsButton = AikarsFlagsButton(configEditor, guiProps)
 
-    private val advScriptSettingsIcon = StatusIcon(guiProps,Gui.createserverpack_gui_createserverpack_scriptsettings_label_tooltip.toString())
-    private val advScriptSettingsLabel = ElementLabel(Gui.createserverpack_gui_createserverpack_scriptsettings_label.toString())
-    private val advScriptSettingsRevert = BalloonTipButton(null, guiProps.revertIcon, Gui.createserverpack_gui_revert.toString(), guiProps) { revertScriptKVPairs() }
-    private val advScriptSettingsReset = BalloonTipButton(null, guiProps.resetIcon, Gui.createserverpack_gui_reset.toString(), guiProps) { resetScriptKVPairs() }
+    private val advScriptSettingsIcon = StatusIcon(guiProps,Translations.createserverpack_gui_createserverpack_scriptsettings_label_tooltip.toString())
+    private val advScriptSettingsLabel = ElementLabel(Translations.createserverpack_gui_createserverpack_scriptsettings_label.toString())
+    private val advScriptSettingsRevert = BalloonTipButton(null, guiProps.revertIcon, Translations.createserverpack_gui_revert.toString(), guiProps) { revertScriptKVPairs() }
+    private val advScriptSettingsReset = BalloonTipButton(null, guiProps.resetIcon, Translations.createserverpack_gui_reset.toString(), guiProps) { resetScriptKVPairs() }
 
     init {
         var column = 0
@@ -197,8 +197,8 @@ class AdvancedSettingsPanel(
         if (!default.any { mod -> !default.contains(mod) }) {
             when (JOptionPane.showConfirmDialog(
                 this,
-                Gui.createserverpack_gui_buttonclientmods_reset_merge_message.toString(),
-                Gui.createserverpack_gui_buttonclientmods_reset_merge_title.toString(),
+                Translations.createserverpack_gui_buttonclientmods_reset_merge_message.toString(),
+                Translations.createserverpack_gui_buttonclientmods_reset_merge_title.toString(),
                 JOptionPane.YES_NO_OPTION,
                 JOptionPane.WARNING_MESSAGE,
                 guiProps.warningIcon
@@ -227,8 +227,8 @@ class AdvancedSettingsPanel(
         if (!default.any { mod -> !default.contains(mod) }) {
             when (JOptionPane.showConfirmDialog(
                 this,
-                Gui.createserverpack_gui_buttonwhitelistmods_reset_merge_message.toString(),
-                Gui.createserverpack_gui_buttonwhitelistmods_reset_merge_title.toString(),
+                Translations.createserverpack_gui_buttonwhitelistmods_reset_merge_message.toString(),
+                Translations.createserverpack_gui_buttonwhitelistmods_reset_merge_title.toString(),
                 JOptionPane.YES_NO_OPTION,
                 JOptionPane.WARNING_MESSAGE,
                 guiProps.warningIcon
@@ -267,7 +267,7 @@ class AdvancedSettingsPanel(
         if (!configEditor.getClientSideMods().matches(guiProps.whitespace)) {
             clientModsIcon.info()
         } else {
-            errors.add(Gui.configuration_log_error_formatting.toString())
+            errors.add(Translations.configuration_log_error_formatting.toString())
             clientModsIcon.error("<html>${errors.joinToString("<br>")}</html>")
         }
         for (error in errors) {
@@ -286,7 +286,7 @@ class AdvancedSettingsPanel(
         if (!configEditor.getWhitelist().matches(guiProps.whitespace)) {
             whitelistModsIcon.info()
         } else {
-            errors.add(Gui.configuration_log_error_formatting.toString())
+            errors.add(Translations.configuration_log_error_formatting.toString())
             whitelistModsIcon.error("<html>${errors.joinToString("<br>")}</html>")
         }
         for (error in errors) {

@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui.window.menu.view
 
-import Gui
+import Translations
 import de.griefed.serverpackcreator.api.ApiProperties
 import de.griefed.serverpackcreator.api.utilities.common.FileUtilities
 import java.io.File
@@ -33,7 +33,7 @@ import javax.swing.JMenuItem
 class ModloaderInstallerLogItem(
     private val fileUtilities: FileUtilities,
     private val apiProperties: ApiProperties
-) : JMenuItem(Gui.menubar_gui_menuitem_modloaderlog.toString()) {
+) : JMenuItem(Translations.menubar_gui_menuitem_modloaderlog.toString()) {
     init {
         this.addActionListener { openModloaderInstallerLog() }
     }

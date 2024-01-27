@@ -19,7 +19,7 @@
  */
 package de.griefed.serverpackcreator.gui.window.configs.components
 
-import Gui
+import Translations
 import java.awt.event.ActionListener
 import javax.swing.DefaultComboBoxModel
 import javax.swing.JComboBox
@@ -32,7 +32,7 @@ import javax.swing.JComboBox
  */
 class QuickSelect(content: List<String>, actionListener: ActionListener) : JComboBox<String>() {
     init {
-        val choose = DefaultComboBoxModel(arrayOf(Gui.createserverpack_gui_quickselect_choose.toString()))
+        val choose = DefaultComboBoxModel(arrayOf(Translations.createserverpack_gui_quickselect_choose.toString()))
         choose.addAll(content)
         model = choose
         this.addActionListener(actionListener)
