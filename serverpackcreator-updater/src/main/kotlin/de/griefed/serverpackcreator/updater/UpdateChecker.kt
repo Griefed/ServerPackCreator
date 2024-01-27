@@ -59,6 +59,10 @@ class UpdateChecker(private val apiProperties: ApiProperties) {
      * @author Griefed
      */
     private fun refresh() {
+        if (gitHub == null) {
+            log.warn("Not checking for updates. GitHub Checking not initialized.")
+            return
+        }
         try {
             gitHub!!.refresh()
         } catch (ex: Exception) {
@@ -83,7 +87,8 @@ class UpdateChecker(private val apiProperties: ApiProperties) {
         version: String,
         preReleaseCheck: Boolean
     ): Optional<Update> {
-        if (version.equals("dev", ignoreCase = true)) {
+        if (version.equals("dev", ignoreCase = true) || gitHub == null) {
+            log.warn("Not checking for updates. Either using a dev-version, or GitHub Checking is not initialized.")
             return Optional.empty<Update>()
         }
         log.debug("Checking GitHub for updates...")
