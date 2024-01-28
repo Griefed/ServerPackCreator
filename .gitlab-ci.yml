@@ -87,10 +87,6 @@ Build Test:
 Docker Test:
   stage: Tests
   image: docker.griefed.dev/griefed/gitlab-ci-cd:2.2.17
-  needs:
-    - job: Build Test
-      artifacts: true
-      optional: false
   before_script:
     - docker login -u "$DOCKERHUB_USER" -p "$DOCKERHUB_TOKEN" docker.io
     - docker login -u "$DOCKERHUB_USER" -p "$GITHUB_TOKEN" ghcr.io
